@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/capability.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 13
 retain      = true
-role        = "self-documentation: TODO describe capability.ts"
+role        = "invariant law: the capability protocol — a provider-neutral authority shore. Mesh owns the SHAPE, adapters prove it. Names the binary gate, the opaque presenter, the refusal that explains itself, and what this interface deliberately does NOT decide."
 source-file = "packages/lararium-mesh/src/capability.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/capability"
@@ -15,12 +15,58 @@ uri-path    = "ha.ka.ba/lararium/mesh/capability"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! The capability shore ~ mesh owns the shape, adapters prove it
+
+Twenty-nine lines, no dependency, no provider. Keyhive, a local-dev stub, a job handler, a future
+UCAN or CAIP or EIP-712 bridge — each satisfies this interface without any of them appearing in the
+mesh package, and the mesh reaches none of them by name.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''The shape depends on no provider.'' Nothing here imports a concrete authority package, so adding
+a provider costs the mesh no edit and removing one breaks no type.
+# ''The gate reads BINARY.'' `CapabilityAccess` admits `read` and `admin`, and app-specific policy
+narrows from there. A caller that wants a finer verb narrows AFTER this answers, never inside it.
+# ''The presenter stays OPAQUE.'' A DID, an account id, a verifying key, a provider handle — the
+shape carries a string and interprets none of it. Whoever verifies decides what the identifier means.
+# ''A question names three things.'' Who presents, which bag URL, and which access. A verify call
+carrying fewer would ask about a principal in the abstract, which no provider can answer.
+# ''A refusal MAY explain itself.'' `CapabilityVerifyResult` carries `ok` and an optional `reason`, so
+a denial can say why without the boolean losing its meaning. A caller reads `ok` and nothing else.
+# ''Verification runs ASYNC.'' A provider may reach a network, a WASM boundary or a disk, and a
+synchronous shape would have forced every one of them to lie about it.
+
+<<~/ahu>>
+
+<<~ ahu #/what-it-does-not-decide>>
+
+!! What this shore declines to answer
+
+''It never says a principal MAY act, only that a provider vouches for the pair.'' Standing and
+capability travel on different axes; a verifier that returned standing would fuse them.
+
+''It never narrows by verb.'' The richer access axis — `pull · read · edit · admin`, mirroring
+Keyhive's own verbs — stands as a MODEL at `lar:///ha.ka.ba/lares/api/pono/causal-islands`, and no
+call site in this tree narrows an action by it. Naming a tier here as though it gated would promise a
+reader a check they could then fail to find.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/capability.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+
+<<^ code="&#x0003;">>ni:///sha-256;33xZZ1sEG7-llIE4PpzV5SIhEcVrPWJiUy3Rmu7bQeo
 
 <<^ code="&#x0004;" -> to="?">>

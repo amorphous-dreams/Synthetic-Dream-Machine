@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/capability-provider.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 14
 retain      = true
-role        = "self-documentation: TODO describe capability-provider.ts"
+role        = "invariant law: CapabilityProvider — the narrow interface over Keyhive's pre-alpha API. States exactly WHAT the gate answers and what it declines to, the archive restore a joinee owes itself, the torn-tolerant boot replay, and the lazy island materialization. The four-verb access axis stands as a MODEL, never a second gate."
 source-file = "packages/lararium-keyhive/src/capability-provider.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/capability-provider"
@@ -15,12 +15,69 @@ uri-path    = "ha.ka.ba/lararium/keyhive/capability-provider"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! CapabilityProvider ~ what the gate answers, and what it does not
+
+This interface carries Keyhive's ''binary'' access gate — `read` or `admin`, cryptographic, one
+Keyhive Document per Lararium bag URL. That names the whole of what any code here checks.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/the-axis-that-does-not-gate>>
+
+!! The access axis reads as a MODEL
+
+`pull · read · edit · admin` mirrors Keyhive's own verbs one-for-one, and ''no call site in this tree
+narrows an action by verb.'' `CapabilityAccess` admits two values everywhere it appears.
+
+''Naming the axis here as a checked tier would promise a reader a gate they could then fail to find.''
+The model stands as doctrine at `lar:///ha.ka.ba/lares/api/pono/causal-islands`, where a reader meets
+it for what it does.
+
+Outside the model entirely: `promote` and `propose` name a CEREMONY, `sync` names pull-at-scale, and
+`revoke` names an admin operation. None of the three sits on the ladder.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''Provider-shaped, so implementations swap.'' KeyhiveProvider wraps the WASM; a no-op provider
+serves tests with no crypto; a Beelay-shaped provider lands when upstream settles. The interface
+moves for none of them.
+# ''One Keyhive Document per bag URL.'' `registerBag` mints or looks up, and the doc id it returns
+names the gate's subject.
+# ''A JOINEE MUST restore from its archive.'' Keyhive generates prekeys per init, so a peer that
+re-initialized fresh would lose the contact card that membership sealed to, and stop decrypting after
+a reboot. Restoring carries the prekey SECRETS and the stable card forward. ''Those bytes hold raw
+secret material and the caller persists them ENCRYPTED-AT-REST.''
+# ''A contact card precedes a delegation.'' The card carries the prekeys and identity proof another
+peer needs before it can stand as the audience of one.
+# ''A delegation ships as BYTES.'' `delegate` returns both a stable id for later revocation and the
+serialized events the audience must ingest — the federation transport carries them, and nothing
+implicit reaches the other peer.
+# ''Boot replay stays TORN-TOLERANT.'' `hydrateFromEventStore` counts what a corrupt record forced it
+to skip; a skipped cap-event degrades a membership slice and never brings down the boot.
+# ''Boot loads the SELF slice eagerly and defers the rest.'' Passing the vessel's own sentinel doc-ids
+loads the self slice plus cross-cutting events; every held or foreign island defers. Absent that list
+everything loads eagerly, which stands as the single-daemon default rather than the general case.
+# ''Materialization stays idempotent.'' Pulling one deferred island's events noops where the island
+already sits resident, so an access shore may call it every time without cost.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-keyhive/src/capability-provider.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/capability>>
+<<~ loulou lar:///ha.ka.ba/lararium/keyhive/event-store>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+
+<<^ code="&#x0003;">>ni:///sha-256;jcLswgXaFC22clJ4MUNiJQTTBeOQYKZpwEja8HWfvko
 
 <<^ code="&#x0004;" -> to="?">>
