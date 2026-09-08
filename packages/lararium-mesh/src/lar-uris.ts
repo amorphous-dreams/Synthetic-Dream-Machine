@@ -1,7 +1,6 @@
 /**
  * lar-uris — lar:/// URI constants and builders for the Lararium namespace.
- * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris
- * Grammar doc: lar:///ha.ka.ba/lararium/mesh/lar-uris (bags/lararium/mesh/lar-uris.md)
+ * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris — the law this file enacts.
  */
 
 import type { LarDoc } from "./base-doc.js";

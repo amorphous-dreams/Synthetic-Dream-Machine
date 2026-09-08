@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/event-store.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 12
 retain      = true
-role        = "self-documentation: TODO describe event-store.ts"
+role        = "invariant law: EventStore — durable persistence for Keyhive ops, and the island slice a boot may load without losing decryptability. Names why an event carries an island, which events carry NONE and must co-load with every slice, and why causality needs no sorting here."
 source-file = "packages/lararium-keyhive/src/event-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/event-store"
@@ -15,12 +15,46 @@ uri-path    = "ha.ka.ba/lararium/keyhive/event-store"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! EventStore ~ what a vessel remembers of its own capabilities
+
+Keyhive hands every op to a handler the moment it fires — a prekey rotation, a CGKA operation, a
+delegation, a revocation. The store keeps them so a vessel that reboots can replay itself back into
+the state it held.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''Replay restores; it never recomputes.'' On boot the store lists what it holds and hands the bytes
+back to Keyhive to ingest. Nothing here interprets an op.
+# ''Causality needs no sorting HERE.'' Keyhive tracks it internally, so a store that ordered events by
+its own clock would impose an order the protocol never asked for.
+# ''An event carries the island it belongs to, and the cut respects a ratchet.'' A per-island slice
+stays decryptability-safe precisely because the boundary follows the ratchet rather than convenience.
+# ''An event with NO island reads CROSS-CUTTING and co-loads with every slice.'' A prekey rotation
+belongs to a principal rather than a document; loading one island's slice without it would leave that
+island unable to read what the rotation already changed.
+# ''Where an event's island comes from differs by kind, and each answer stands local'': a delegation
+or revocation takes it from its own subject bytes; a CGKA operation borrows the active document
+operation's island under the single-writer handler.
+# ''A slice request that names no island returns EVERYTHING.'' The narrowing stays opt-in, so a
+caller that has not reasoned about slices gets the whole record rather than a silent subset.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-keyhive/src/event-store.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/keyhive/capability-provider>>
+<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Lkn1OpK4KXl-Pvnzng6U_mLjiucDL1fhC3C6WYz4BE0
 
 <<^ code="&#x0004;" -> to="?">>

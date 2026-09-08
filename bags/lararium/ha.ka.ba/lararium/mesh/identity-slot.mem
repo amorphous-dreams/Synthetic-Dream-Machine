@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/identity-slot.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 14
 retain      = true
-role        = "self-documentation: TODO describe identity-slot.ts"
+role        = "invariant law: IdentitySlot — the minimum surface a vessel needs from an identity provider. Names the DID namespace, the determinism a derived actor owes, the quine split (the class in TypeScript, the CONFIG as lar: tiddlers), and exactly which layer the open stub leaves ungated and which gates stand elsewhere."
 source-file = "packages/lararium-mesh/src/identity-slot.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/identity-slot"
@@ -15,12 +15,73 @@ uri-path    = "ha.ka.ba/lararium/mesh/identity-slot"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! IdentitySlot ~ a narrow door, three ways through
+
+A vessel asks an identity provider for very little: a DID, a stable actor id, and a verdict on a
+delegation. Bluesky, GitHub and Keyhive each satisfy that surface, and none of them appears in the
+shape.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''The interface stays MINIMUM.'' It carries what a vessel and Automerge's share policy need, and
+nothing more — so Keyhive's full three-layer stack slots in behind it without moving a signature.
+# ''A derived actor id stays DETERMINISTIC.'' The same signing key yields the same actor across
+reboots. A fresh id each boot would fork the document's own history against itself.
+# ''Every method runs ASYNC.'' An implementation may reach IndexedDB in a browser or a key file on a
+node, and a synchronous shape would have forced that work into construction.
+# ''A capability token stays OPAQUE.'' A UCAN JWT with its proof chain, a Keyhive convergent
+capability, or null where nothing gates — the shape carries the token and reads none of it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-quine-split>>
+
+!! The quine split ~ class in code, CONFIG in the wiki
+
+''Crypto primitives cannot live in the wiki'', so the implementation class stands in TypeScript. The
+identity CONFIG stands in the wiki: which DID, which provider, which capability token, each as a
+`lar:` tiddler an operator can read and override from inside the running wiki.
+
+''`$:/` stays RESERVED for TW5 core and TW5 plugins.'' Every Lararium config takes a `lar:` URI, and
+that choice does work beyond tidiness — a `lar:` tiddler stands as a heleuma sync candidate and a
+`$:/` tiddler does not, so config written to the reserved space would never travel.
+
+<<~/ahu>>
+
+<<~ ahu #/what-the-open-slot-leaves>>
+
+!! What the open slot leaves ungated, and what gates anyway
+
+`OpenIdentitySlot` mints a placeholder DID and derives a stable actor id by digest over the vessel id.
+''It names the USER-level layer, and that layer stands as an alpha stub.''
+
+''The gates that DO stand sit elsewhere, and the asymmetry holds by design:''
+
+* Keyhive runs LIVE at the OPERATOR level — the daemon's founding gates, the peer-boundary gate, the
+binding mint.
+* A node's share policy admits an inbound network peer only through the daemon-auth gate.
+* A browser admits only same-origin and in-process peers, so it reaches no peer a node would have had
+to authenticate.
+
+Naming this slot as the house's access gate would promise a reader a check that stands one layer up.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/identity-slot.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
+<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+
+<<^ code="&#x0003;">>ni:///sha-256;9MOFYwynMW_I7H_jz3p-oIhdoQMIe495k66DUGnDll4
 
 <<^ code="&#x0004;" -> to="?">>

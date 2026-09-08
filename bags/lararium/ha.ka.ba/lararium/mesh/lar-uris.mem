@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-uris.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 14
 retain      = true
-role        = "self-documentation: TODO describe lar-uris.ts"
+role        = "invariant law: the lar: URI constants and builders. Names the STABLE l-space against the volatile VM scratch space, the three predicates and what each answers (NAMING never federation), the bag/wiki/cid segments, and the dispatch marker whose absence — not presence — is the safe reading."
 source-file = "packages/lararium-mesh/src/lar-uris.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/lar-uris"
@@ -15,12 +15,56 @@ uri-path    = "ha.ka.ba/lararium/mesh/lar-uris"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! lar: URIs ~ one namespace, two l-spaces
+
+`ha.ka.ba` names the STABLE l-space: a canonical, permanent, shared address. `lararium.local.vm`
+names the volatile one, and each vessel's daemon VM owns its own.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''A volatile VM tiddler stands as SCRATCH.'' Nothing there persists through the island adaptor and nothing
+syncs through Automerge. A vessel's daemon owns that namespace alone.
+# ''The predicates answer NAMING, and nothing else.'' A stable address names a canonical,
+permanent, shared address. ''It says nothing about federation and nothing about persistence'' — reading
+either out of it fuses axes that move independently.
+# ''Everything persists EXCEPT pure volatile scratch.'' A meme persists to the local store whether its
+name reads stable or unstable; only the reserved VM space stays unwritten.
+# ''An unstable petname carries any three-term root but the reserved one.'' A session name, a
+per-relationship name, a per-place name — LOCAL, and no less real for it.
+# ''A bag takes the shape `bags/slug`, and nothing else does.'' The grammar mints first segments that name no bag —
+`tags/`, `state/`, the plugin memes, the bare-relation forms — so a predicate that took any first
+segment for a bag would enrol half the namespace.
+
+<<~/ahu>>
+
+<<~ ahu #/the-dispatch-marker>>
+
+!! The dispatch marker ~ the absence carries the safety
+
+A genuine DOM verb-summon writes `lares-dispatch`. ''The verb machinery's own invocation and outcome
+builders NEVER set it.''
+
+That negative reading does the work: a synthesized record cannot pass for a summons by accident,
+because passing requires a positive mark that only the door writes. A gate keyed on the presence of
+machinery-written fields would admit anything the machinery could produce.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/lar-uris.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/one-name-one-relation>>
+
+<<^ code="&#x0003;">>ni:///sha-256;pihBys13iOFZIaCA7s6zBnaeoyeNSlIO6_guPYMt3vY
 
 <<^ code="&#x0004;" -> to="?">>

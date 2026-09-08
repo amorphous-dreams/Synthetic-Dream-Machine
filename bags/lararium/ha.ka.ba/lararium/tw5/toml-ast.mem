@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/toml-ast.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 12
 retain      = true
-role        = "self-documentation: TODO describe toml-ast.ts"
+role        = "invariant law: the two-layer TOML engine behind a carrier's meta fence. A SYNC spec-compliant reader on the read path, a comment-preserving WASM writer lazily loaded on the write path, and a graceful fall back to the raw string where the WASM cannot load. Names the flattening contract a TW5 field imposes."
 source-file = "packages/lararium-tw5/src/toml-ast.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/toml-ast"
@@ -15,12 +15,61 @@ uri-path    = "ha.ka.ba/lararium/tw5/toml-ast"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! toml-ast ~ two layers, because reading and writing want different things
+
+A carrier's meta fence gets read on every ingest and written only when something patches it. Those
+two paths carry different costs, so they take different engines.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''The READ path stays SYNCHRONOUS and small.'' A spec-compliant pure-JS parser handles inline
+comments and TOML tables with no WASM init, so ingest never awaits and never pays a module boot.
+# ''The WRITE path PRESERVES COMMENTS.'' Patching a key through a concrete syntax tree keeps an
+operator's notes where they wrote them; a read-modify-serialize round would silently delete every
+comment in the fence.
+# ''The writer LOADS LAZILY and never enters the main bundle.'' It arrives on the first write call and
+ships as its own chunk.
+# ''An absent writer falls back to the RAW STRING rather than failing.'' Offline, an old browser, a
+unit test — the patch degrades to a string operation instead of taking down the carrier that asked
+for it.
+# ''One code path, both runtimes.'' The reader runs pure JS everywhere; the writer resolves from disk
+on a node and fetches as a chunk in a browser, and nothing above this line branches on which.
+
+<<~/ahu>>
+
+<<~ ahu #/the-flattening-contract>>
+
+!! What a TW5 field can hold, and what that costs TOML
+
+A tiddler field holds a string or a list of strings. TOML holds more, so the reader flattens on the
+way in:
+
+* ''a nested table becomes PREFIX-KEYED scalars'' — `uncertainty.foo` arrives as `uncertainty-foo`,
+so a TW5 filter reaches it without knowing TOML;
+* ''a number or a boolean coerces to its string'' — the field contract admits nothing else;
+* ''an array stays a list of strings'', which maps onto the tags-style field TW5 already reads.
+
+''The flattening runs one way.'' A reader that expected to recover the original nesting from the
+prefix only guesses where a hyphen came from, so the meta fence on disk stays the source and the
+fields stay its projection.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-tw5/src/toml-ast.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/tw5/lib-smol-toml>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0003;">>ni:///sha-256;JFRuvagN9wKiMe33b7Nxvy-AmWrWFzXAbltVEnWc0S8
 
 <<^ code="&#x0004;" -> to="?">>

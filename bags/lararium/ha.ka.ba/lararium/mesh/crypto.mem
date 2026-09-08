@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/crypto.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 15
 retain      = true
-role        = "self-documentation: TODO describe crypto.ts"
+role        = "invariant law: THE CRYPTO BOUNDARY. Lararium defines needs and implements no primitive; portable code depends on these shores and never on a platform's own crypto. Names the three doctrines, the two digest paths and which each serves, the canonical-bytes rule, and the buffer constraint a shared view would break."
 source-file = "packages/lararium-mesh/src/crypto.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/crypto"
@@ -15,12 +15,71 @@ uri-path    = "ha.ka.ba/lararium/mesh/crypto"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! The crypto boundary ~ define the need, implement nothing
+
+Every primitive this house relies on arrives from an audited library or from the platform. This module
+names WHAT the house needs and hands back one shape for it, so a caller reaches a shore rather than a
+runtime.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The doctrines
+
+# ''Lararium defines needs; it implements no primitive.'' A hand-rolled digest, cipher or random
+source belongs to nobody who can audit it.
+# ''Portable code depends on THIS module's shores.'' Never on Node's crypto, never on a browser global
+reached directly, never on hand-written arithmetic. One import, and the same law in every runtime.
+# ''A caller supplies CANONICAL BYTES, never a raw object.'' `canonicalJson` sorts keys and refuses
+what has no stable JSON reading — undefined, a function, a symbol, a BigInt, a non-finite number, a
+class instance without a well-typed representation. Two callers that serialized differently would
+digest the same value to two addresses.
+
+<<~/ahu>>
+
+<<~ ahu #/the-two-digest-paths>>
+
+!! Two paths, one digest
+
+Both stand platform-blind and both produce full-hex sha256 — the single-cid-gate isomorphism, so a
+value addressed through one path answers at the same address through the other.
+
+''The SYNC family rides `@noble/hashes` directly'' — audited, zero-dependency, browser-shippable — and
+carries the live runtime digest: the action-handler's render-hash, persona-hd, the genesis doc, and
+the memetic-wikitext reader's source cid.
+
+''The ASYNC shore takes a provider'' and serves the caller that INJECTS its own digest — for
+auditability, or to route through an HSM or a worker — or that already lives async. Reaching for it
+elsewhere buys a promise where a value would do.
+
+<<~/ahu>>
+
+<<~ ahu #/the-buffer-constraint>>
+
+!! Why the random port names its buffer
+
+`getRandomValues` binds `T extends Uint8Array<ArrayBuffer>` rather than a bare `Uint8Array`.
+
+''Web Crypto REFUSES a view backed by a SharedArrayBuffer.'' A `Uint8Array` carries its backing buffer
+as a type parameter, so an unconstrained signature admits a shared view that every implementation
+behind this port declines at runtime — ''the port would promise a fill nobody performs.'' Naming the
+buffer moves that refusal to the call site, where a caller can still choose differently.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/crypto.ts family=code role=has>>
+<<~ pranala #digest from=? -> to=packages/lararium-mesh/src/agile-digest.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/genesis-doc>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+
+<<^ code="&#x0003;">>ni:///sha-256;RMdvMot7CSsgJkDeycBq8_yTEZKxGj4nAn3VvZaMink
 
 <<^ code="&#x0004;" -> to="?">>
