@@ -81,9 +81,9 @@ Profiles tune posture, not primitive meaning.
 !!! Minimum relation, inclusion, invocation
 
 ```text
-<<~ loulou lar:///ha.ka.ba/lares/api/target>>
-<<~ aka lar:///ha.ka.ba/lares/api/source>>
-<<~ kahea lar:///ha.ka.ba/lares/api/source>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/target">>
+<<~ aka "lar:///ha.ka.ba/lares/api/source">>
+<<~ kahea "lar:///ha.ka.ba/lares/api/source">>
 ```
 
 !!! Minimum governed and uncertain work
@@ -193,6 +193,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_M4nGxfBu4RBefRpTTi5FTpYMCxhmfq2cQbinoAJn40
+<<^ code="&#x0003;">>ni:///sha-256;4eDVzym1IidBGw5Yzf85691UWn5Q-_njz9CD8CoXHeE
 
 <<^ code="&#x0004;" -> to="?">>

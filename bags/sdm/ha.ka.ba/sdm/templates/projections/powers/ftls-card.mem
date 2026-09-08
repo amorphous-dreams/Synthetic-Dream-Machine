@@ -41,7 +41,7 @@ An FTLS card projection renders a Power module as one table-facing game surface.
 
 ''Composition is declared once, as tags.'' The card's `toml meta` carries a `tags` field that mirrors the module's `#has` — the full lar: URI of each component and mount-point (every meme's title is its lar URI; tags reference titles). The `#components` section then holds a single call:
 
-`<<~ kahea lar:///ha.ka.ba/lararium/lists/components>>`
+`<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>`
 
 That procedure reads the current tiddler's `@`-prefixed tags and renders each as a clickable `tag-pill`. No hand-listing — add or drop a tag in `meta` and the pill row follows. On screen each pill clicks through to its component tiddler and a filter of every module that shares it.
 
@@ -77,6 +77,6 @@ That procedure reads the current tiddler's `@`-prefixed tags and renders each as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z0mlhm1MTE-QC7beveVtlVK9-KYhQ6vt7OOFcBtAmA8
+<<^ code="&#x0003;">>ni:///sha-256;gCXLHXoFW_srtERs_ooAW6Um5J6FBaKuFrsT6OPEpjU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -88,7 +88,7 @@ Both must hold. The compile-time DAG guard (control cycles) does not prevent ren
 
 !!! Tension 3 — `<<~!` pragma scope: carrier-local vs global
 
-`wehe`/`helu` definitions read carrier-local by default. Invariant-meme definitions may want global visibility via `<<~ aka lar:///carrier>>` (frozen transclusion brings in the definition namespace). Open: does the compiler parse `wehe`/`helu` inside `aka`-referenced carriers to build a definition index?
+`wehe`/`helu` definitions read carrier-local by default. Invariant-meme definitions may want global visibility via `<<~ aka "lar:///carrier">>` (frozen transclusion brings in the definition namespace). Open: does the compiler parse `wehe`/`helu` inside `aka`-referenced carriers to build a definition index?
 
 !!! Tension 4 — `kahea` dual dispatch — RESOLVED
 
@@ -114,7 +114,7 @@ Memetic-wikitext reads as a ''superset of TW5 wikitext'': the custom parser acce
 
 !!! Conflict 2 — TW5 `{{Title||Template}}`
 
-Simple transclusion `{{Title}}` maps to `<<~ kahea lar:///uri>>`. Template transclusion has no single-sigil form — it composes two: `<<~ meme lar:///uri>>` (bind the target as context) then `<<~ kahea lar:///template>>` (render the template against it). Authors SHOULD prefer the explicit `meme`+`kahea` pair over a hypothetical single form.
+Simple transclusion `{{Title}}` maps to `<<~ kahea "lar:///uri">>`. Template transclusion has no single-sigil form — it composes two: `<<~ meme "lar:///uri">>` (bind the target as context) then `<<~ kahea "lar:///template">>` (render the template against it). Authors SHOULD prefer the explicit `meme`+`kahea` pair over a hypothetical single form.
 
 <<~/ahu>>
 
@@ -126,6 +126,6 @@ Simple transclusion `{{Title}}` maps to `<<~ kahea lar:///uri>>`. Template trans
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mnRpg2BUWVdc1uCFokIMIjk_UyNUbNgt_dY106K0DAs
+<<^ code="&#x0003;">>ni:///sha-256;L4RTL3B2KLB2LW8ikXaaAB1LSfnLKpJH7M5vhDX5M4M
 
 <<^ code="&#x0004;" -> to="?">>

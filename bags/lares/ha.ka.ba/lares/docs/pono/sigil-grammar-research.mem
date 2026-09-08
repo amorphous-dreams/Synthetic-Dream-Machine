@@ -251,7 +251,7 @@ This meme rests as ordinary text.
 !!! Inline command
 
 ```text
-<<~ kahea lar:///ha.ka.ba/lares/mu>>
+<<~ kahea "lar:///ha.ka.ba/lares/mu">>
 ```
 
 !!! Arrowed resolution request
@@ -415,6 +415,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UIdgR60QR3Qer9OuMhAOrBmSRa70SsPe_9aSw-0lE5Q
+<<^ code="&#x0003;">>ni:///sha-256;qdJAqV5WrWZtsfRkCDRzaDxOvJ-Z4dLOuRe9KO73a7w
 
 <<^ code="&#x0004;" -> to="?">>

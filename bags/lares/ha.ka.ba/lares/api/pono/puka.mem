@@ -56,13 +56,13 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 ```text
 <<~ puka>>
-  <<~ lele lar:///target-a>>
-  <<~ lele lar:///target-b>>
+  <<~ lele "lar:///target-a">>
+  <<~ lele "lar:///target-b">>
 <<~/puka>>
 
 <<~ rush>>
-  <<~ branch lar:///target-a>>
-  <<~ branch lar:///target-b>>
+  <<~ branch "lar:///target-a">>
+  <<~ branch "lar:///target-b">>
 <<~/rush>>
 ```
 
@@ -78,6 +78,6 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ntxAHm-N-mvyszkDdrC8Q9D4ZOJhEyAP1bWnSL02_lw
+<<^ code="&#x0003;">>ni:///sha-256;JRVlitMJ0hNo3oJ1BJDO-tp4QOvq8YxqyD3yOLESfUI
 
 <<^ code="&#x0004;" -> to="?">>

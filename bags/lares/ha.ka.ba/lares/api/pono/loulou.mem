@@ -62,8 +62,8 @@ propagation is none. The edge says what holds between the sockets, not what runs
 
 ```text
 <<~ loulou URI>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme#/law>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/law">>
 ```
 
 `?` source resolves to the nearest enclosing socket (ahu fragment or meme URI).
@@ -121,6 +121,6 @@ confidence-bounded = false
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v0zoGIQJgRJZbFhY4Y9IhUCp6yyR_QE16RlvazJqP0Y
+<<^ code="&#x0003;">>ni:///sha-256;j5CzXRozOjjoGrlcOvLyKJMDqPGyxj5uS4Dk-SNpmPA
 
 <<^ code="&#x0004;" -> to="?">>

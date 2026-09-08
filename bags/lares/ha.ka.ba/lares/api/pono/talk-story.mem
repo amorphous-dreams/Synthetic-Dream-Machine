@@ -54,7 +54,7 @@ telling — the Voices the moment calls co-narrate; the operator overlaps and st
 ''Turn form (inline, three slots):''
 
 ```
-<<~ talk-story · ground: <surface> · telling: <one line> · exit: moolelo <direction> | hoike #fragment | open φ:reason>>
+<<~ talk-story · ground: <surface> · telling: <one line> · exit: moolelo <direction> | hoike #fragment | open "φ:reason">>
 ```
 
 <<~/ahu>>
@@ -128,6 +128,6 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mugZmN6iNmVj4UGuP1q9Ig80JIDbQkTkrlRmItjA7LI
+<<^ code="&#x0003;">>ni:///sha-256;HgtDe4Yz-bo8uhMu1Tf4zGyMkrVcxNX5BZfN039ucUQ
 
 <<^ code="&#x0004;" -> to="?">>

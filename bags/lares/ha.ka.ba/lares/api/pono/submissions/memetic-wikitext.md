@@ -112,7 +112,7 @@ The `<<` `>>` pair forms the outer delimiter family for every active sigil. The 
 | Prefix | TW5 macro name | Register | Example |
 |---|---|---|---|
 | --- | --- | --- | --- |
-| `<<~` | `~` | primary sigil — the speaking set | `<<~ ahu #/id>>`, `<<~ aka lar:///uri>>` |
+| `<<~` | `~` | primary sigil — the speaking set | `<<~ ahu #/id>>`, `<<~ aka "lar:///uri">>` |
 | `<<~/` | `~/name` | block close | `<<~/ahu>>` |
 | `<<~!` | `~!` | pragma (definition) | `<<~! wehe name(p)>>` |
 | `<<~?` | `~?` | unresolved-pressure | `<<~? #fragment>>` |
@@ -196,7 +196,7 @@ Memetic-wikitext SHALL read as a **superset of TW5 wikitext**: every valid TW5 w
 
 ### Shapes
 
-- **Inline** (self-closing): `<<~ loulou lar:///uri>>`
+- **Inline** (self-closing): `<<~ loulou "lar:///uri">>`
 - **Block** (open + close): `<<~ ahu #/id>>` … `<<~/ahu>>`
 - **Pragma block** (`<<~!` … `<<~/name>>`): definitions
 
@@ -366,7 +366,7 @@ alone; nothing else has to carry it. A stored field naming the same parent would
 spelling of one fact, and a second spelling can disagree with the first the moment both become editable.
 
 **Rendering carries a different relation, and no field could hold it.** One meme renders into many
-places — `<<~ ahu #/x -> lar:///other>>` points a worksite at a full address — so the relation runs
+places — `<<~ ahu #/x -> "lar:///other">>` points a worksite at a full address — so the relation runs
 many-to-many and lives in the **markers that hold it**, in the carriers that write them. A child cannot
 list its renderers without a write on every transclusion.
 
@@ -549,7 +549,7 @@ carrier states first ([FRAMING] #declaration-register):
 <<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
-Body text, with a live embed: <<~ kahea lar:///ha.ka.ba/lares/api/pono/meme>>.
+Body text, with a live embed: <<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme">>.
 <<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci" family="control" role="has">>
 
 <<~/ahu>>
@@ -596,11 +596,11 @@ A canvas reaction wire (flow surface):
 | heritage construct | memetic-wikitext analog |
 |---|---|
 | --- | --- |
-| TW5 `[[Title]]` link | `<<~ loulou lar:///uri>>` |
-| TW5 `{{Title}}` transclusion | `<<~ kahea lar:///uri>>` |
-| TW5 shadow tiddler | `<<~ aka lar:///uri>>` |
+| TW5 `[[Title]]` link | `<<~ loulou "lar:///uri">>` |
+| TW5 `{{Title}}` transclusion | `<<~ kahea "lar:///uri">>` |
+| TW5 shadow tiddler | `<<~ aka "lar:///uri">>` |
 | TW5 `\procedure` / `\function` | `<<~! wehe …>>` / `<<~! helu …>>` |
-| TW5 `<$tiddler>` context | `<<~ meme lar:///uri>>` |
+| TW5 `<$tiddler>` context | `<<~ meme "lar:///uri">>` |
 | TW5 `<$list>` filter / iterate | `<<~ wai …>>` / `<<~ huli …>>` |
 | Verse `sync`/`race`/`rush`/`branch` | `<<~ hui>>` / `holo` / `puka` / `lele` |
 | Verse device event binding | `<<~ papalohe …>>` (reaction) |

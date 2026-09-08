@@ -59,7 +59,7 @@ A trace MAY also ''suspend'' honestly --- reaching a phase and naming an externa
 Summon the lens and aim it at a target, the way `aim` carries a bearing vector:
 
 ```text
-<<~ conformance -> lar:///ha.ka.ba/bags/some/target/content>>   # aim at an addressed artifact
+<<~ conformance -> "lar:///ha.ka.ba/bags/some/target/content">>   # aim at an addressed artifact
 <<~ conformance -> "<pasted or quoted content>">>           # aim at content inline
 ```
 
@@ -119,6 +119,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x4reZLos93ghvBCXJou2LlvCT7WCVmQfD7l8hS_-6to
+<<^ code="&#x0003;">>ni:///sha-256;0sWZ6TUg2H0b9XL0My8UiPnaBEDSZvIMeb6zosYXf04
 
 <<^ code="&#x0004;" -> to="?">>

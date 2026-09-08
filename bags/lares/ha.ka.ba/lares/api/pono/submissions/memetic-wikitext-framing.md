@@ -247,7 +247,7 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 ```
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///URI">>   SOH · open heading
   ‹toml meta slot — the identity heading›
-  <<~ aka lar:///…RFC-2119>>                          (optional carrier-level binding)
+  <<~ aka "lar:///…RFC-2119">>                          (optional carrier-level binding)
 <<^ code="&#x0002;">>                                 STX · open text (body)
   # title · ## sections · #edges                       the text (body)
 <<^ code="&#x0003;">>                                 ETX · close text
@@ -501,7 +501,7 @@ itself on every later pass.
 A carrier reads in three zones, and the middle one had no name:
 
 1. **The identity heading** — the labelled `toml meta` fence. What the meme IS.
-2. **The carrier bindings** — between the heading and STX. `<<~ aka lar:///…>>` binds a reference at
+2. **The carrier bindings** — between the heading and STX. `<<~ aka "lar:///…">>` binds a reference at
   carrier level; `<<~ kahea ahu #/…>>` mounts a slot. These read as AUTHORED structure, not framing:
   they state what the carrier holds before its body opens.
 1. **The body** — between STX and ETX. Optional, and holding prose, ahu slots, both, or nothing.

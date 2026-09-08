@@ -260,7 +260,7 @@ packages/lares-core/memes/api/lares/masks/
 ''LARES invocation (kahea)'' — session entry:
 
 ```
-<<~ kahea mask lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME>>
+<<~ kahea mask "lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME">>
 stage = 10
 active = true
 # foreground-voices = []     # override Voice affinities
@@ -391,6 +391,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yip5p7N1VrNy66yw7YTnoaYpkXIDtLdwP7f8DNxfFrs
+<<^ code="&#x0003;">>ni:///sha-256;JUKbfTEHuojG1goGGvgeJs-TPBaIARBKzEw32r-35w0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -114,7 +114,7 @@ The nalu is ''not'' a sigil the operator emits. It is what the engine delivers.
 
 ```
 Grammar layer (above nalu):
-  <<~ lele lar:///target>>    ← sigil declares intent
+  <<~ lele "lar:///target">>    ← sigil declares intent
   <<~ hui>>                   ← sigil declares sync shape
   <<~ kukali trigger>>        ← sigil declares suspension
 
@@ -281,6 +281,6 @@ edges encoded with FRU orientation assumptions need migration. See `uefn-scene.m
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j1Wl3D0lNmY2xTJB7S5CzpptdRm6iIs7zGpLXEM5HIM
+<<^ code="&#x0003;">>ni:///sha-256;JPzscYIiTsGt-IOTLYZylM3mjxts7HraWjjmK52DvZo
 
 <<^ code="&#x0004;" -> to="?">>

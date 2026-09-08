@@ -49,8 +49,8 @@ A lele edge MUST NOT wait for a response from the target.
 !! Syntax
 
 ```text
-<<~ lele lar:///target/uri>>
-<<~ branch lar:///target/uri>>
+<<~ lele "lar:///target/uri">>
+<<~ branch "lar:///target/uri">>
 ```
 
 <<~/ahu>>
@@ -63,6 +63,6 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sxGrdpLJvzV6M-e4MzDQ03bagu4TK2tCkgT0jPE8JmU
+<<^ code="&#x0003;">>ni:///sha-256;UudJYBs8fxkVTpuSasVuJw9d5f5IQ3Zo_LdLOVoFYNw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -70,8 +70,8 @@ The two forms are distinguished at parse time by URI shape:
 
 URI form (creates transclusion edge):
 ```text
-<<~ kahea lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ kahea lar:///ha.ka.ba/lares/api/pono/meme#/law>>
+<<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme#/law">>
 <<~ kahea relative/path>>
 ```
 
@@ -149,6 +149,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1sZrua4WMMw4TB689eK-FGyYl7POHdeG5AQBIF7Bp2o
+<<^ code="&#x0003;">>ni:///sha-256;RajSvg-c1raI905gr1tfvLkDdj9jqy4POsxunl-PdoM
 
 <<^ code="&#x0004;" -> to="?">>

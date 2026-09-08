@@ -66,8 +66,8 @@ A lens reads its tool-bind through the `syad` `/` grammar (`syad=🏛️/*!`); e
 Declare the lenses, then delegate `->` to the target:
 
 ```text
-<<~ prism conformance -> lar:///ha.ka.ba/bags/some/target/content>>       # single lens, addressed
-<<~ prism syad=🏛️ 🗡️ conformance -> lar:///draft.fix.lands>>          # composed spectrum
+<<~ prism conformance -> "lar:///ha.ka.ba/bags/some/target/content">>       # single lens, addressed
+<<~ prism syad=🏛️ 🗡️ conformance -> "lar:///draft.fix.lands">>          # composed spectrum
 <<~ prism mu=*! -> "<pasted or quoted content>">>                     # a tool facet, inline
 ```
 
@@ -113,6 +113,6 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_5_kGB0fF75mbnVHK3yvVnveCuN-NYjqOpk0APwr6wg
+<<^ code="&#x0003;">>ni:///sha-256;12y-jApuXD5dshYMDY0mGLRmSyUPXlOYVBQf-RKzUk4
 
 <<^ code="&#x0004;" -> to="?">>

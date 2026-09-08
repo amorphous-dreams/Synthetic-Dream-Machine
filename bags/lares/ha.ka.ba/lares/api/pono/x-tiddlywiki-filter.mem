@@ -93,8 +93,8 @@ as `x-tiddlywiki-filter` / `wikitext-filter` automatically:
 
 ```text
 <<~ wai [tag[invariant]sort[title]]>>
-<<~ huli [toml:l-space[grammar]] as item>>
-<<~ ui [edge:family[control]role[has]]>>
+<<~ huli "[toml:l-space[grammar]]" as item>>
+<<~ ui "[edge:family[control]role[has]]">>
 ```
 
 ''Block'' — via `hana` with an explicit grammar key when the expression is
@@ -128,6 +128,6 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H2uC8Fth0Sjcg3vTys_lc8WAkGIsmDEJhAsp_ROstuw
+<<^ code="&#x0003;">>ni:///sha-256;Yn1jaifmmXC0hZFonl3Tk4bTHC83yU1uemUlmQYmjnQ
 
 <<^ code="&#x0004;" -> to="?">>

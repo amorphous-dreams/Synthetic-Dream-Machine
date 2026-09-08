@@ -53,13 +53,13 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 
 ```text
 <<~ holo>>
-  <<~ lele lar:///target-a>>
-  <<~ lele lar:///target-b>>
+  <<~ lele "lar:///target-a">>
+  <<~ lele "lar:///target-b">>
 <<~/holo>>
 
 <<~ race>>
-  <<~ branch lar:///target-a>>
-  <<~ branch lar:///target-b>>
+  <<~ branch "lar:///target-a">>
+  <<~ branch "lar:///target-b">>
 <<~/race>>
 ```
 
@@ -75,6 +75,6 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9uyLVNjgU0LNidMi71xbK01LWO8gfD5oGjXPT0rzI34
+<<^ code="&#x0003;">>ni:///sha-256;PSXnor-ioMMa3w7niVfrWesLrzdDcdOOVUAFS9_Cy8U
 
 <<^ code="&#x0004;" -> to="?">>

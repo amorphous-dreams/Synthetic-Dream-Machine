@@ -66,8 +66,8 @@ that lack a confidence rating when the source-side context signals uncertainty.
 
 ```text
 <<~ aka URI>>
-<<~ aka lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 ```
 
 `?` source resolves to the nearest enclosing socket.
@@ -124,6 +124,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_nEVjWqJwqEHZsIyf-HjersUspE0j0-pYJUaJuIjbJ8
+<<^ code="&#x0003;">>ni:///sha-256;fxq3T7ZVM6UIBMST8VjfNcweqdtXGOsR9UHvOvw5xzY
 
 <<^ code="&#x0004;" -> to="?">>

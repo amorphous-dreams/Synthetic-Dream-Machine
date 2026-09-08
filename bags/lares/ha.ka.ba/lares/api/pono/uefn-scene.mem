@@ -61,7 +61,7 @@ Every UEFN scene element maps to exactly one of three tiddler kinds:
 ** `spatial:contains` edges: nested class relationships
 
 ''Instance meme'' (`lar:///scene-bag/instances/{placementId}`) — one per placed device.
-** `kahea` edge to its type meme: `<<~ kahea lar:///scene-bag/types/{ClassName}>>`
+** `kahea` edge to its type meme: `<<~ kahea "lar:///scene-bag/types/{ClassName}">>`
 ** `papalohe` edges: Direct Event Binding wires (`listenable` → subscribable function)
 ** Ahu slots: `@editable` property values as child tiddlers
 
@@ -210,6 +210,6 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oAmXGMbz7Fc6kBBKU6lTN5scMq6qeA1Hauw8WQs8sbA
+<<^ code="&#x0003;">>ni:///sha-256;CRvsEnBGwXlgIx022ZOCpvSvHdj6Ub0hyRdmoSWOFrM
 
 <<^ code="&#x0004;" -> to="?">>

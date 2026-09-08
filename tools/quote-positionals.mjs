@@ -17,10 +17,24 @@
  * original text, and no other named parameter moves. Anything else is reported and left alone.
  *
  * ── AND A FENCE IS NOT A SIGIL ───────────────────────────────────────────────────────────────────
- * A carrier that SHOWS the grammar writes sigils inside fences and tick spans. Those open nothing and
- * teach the reader the form as written, so the mask keeps them whole.
+ * A carrier that SHOWS the grammar writes sigils inside fences and tick spans. Those open nothing, so
+ * by default the mask keeps them whole.
  *
- * Usage:  node tools/quote-positionals.mjs [--write] [<path.mem> | <dir>] …
+ * ── `--teaching` REACHES INSIDE THE FENCE, AND VERIFIES DIFFERENTLY ─────────────────────────────
+ * A fenced example still TEACHES, and a spec teaching a form that loses its positional teaches a
+ * reader to write a carrier the wiki will mis-read. So this mode edits inside fences — and cannot
+ * verify the way the default does, because a fenced sigil yields no parse node at all.
+ *
+ * It verifies the claim the example actually makes: the edited text, READ AS A SIGIL RATHER THAN AS
+ * A QUOTATION, hands its positional back. An example only earns the change if the form it now shows
+ * would work.
+ *
+ * ── AND A RECORD IS NOT A LESSON ────────────────────────────────────────────────────────────────
+ * `lares-history` archives prior worldlines, and `tw5-calls-colon-caveat` DEMONSTRATES the hazard by
+ * writing it out — moving either would edit the record, or delete the very thing the caveat exists to
+ * show. Both stay, declared.
+ *
+ * Usage:  node tools/quote-positionals.mjs [--write] [--teaching] [<path.mem> | <dir>] …
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -32,6 +46,12 @@ const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
 const argv = process.argv.slice(2);
 const write = argv.includes("--write");
+const teaching = argv.includes("--teaching");
+/** DECLARED EXEMPTIONS — a record, and a carrier whose lesson IS the broken form. */
+const EXEMPT = [
+  "bags/lares-history/",
+  "bags/lares/ha.ka.ba/lares/docs/tw5-calls-colon-caveat.mem",
+];
 const given = argv.filter((a) => !a.startsWith("--"));
 
 for (const need of ["sigil-attrs.js", "meme-ast/fence-mask.js", "tw5-vm.js", "generated-tw5-version.js"]) {
@@ -83,6 +103,7 @@ let touched = 0, quoted = 0, fenced = 0;
 const refused = [];
 
 for (const rel of files) {
+  if (EXEMPT.some((e) => rel.startsWith(e) || rel === e)) continue;
   const path = join(REPO, rel);
   const text = readFileSync(path, "utf8");
   const spans = fencedSpans(text);
@@ -90,7 +111,7 @@ for (const rel of files) {
   SIGIL.lastIndex = 0;
   let m;
   while ((m = SIGIL.exec(text)) !== null) {
-    if (inMask(spans, m.index)) { fenced++; continue; }
+    if (inMask(spans, m.index) && !teaching) { fenced++; continue; }
     const src = m[0];
     const body = src.replace(/^<<~?[ \t]*/, "").replace(/>>$/, "");
     const hazards = schemeShapedPositionals(body);
@@ -104,6 +125,7 @@ for (const rel of files) {
       if (!re.test(edited)) { ok = false; break; }
       edited = edited.replace(re, `$1"${h}"`);
     }
+    // A FENCED example is verified as the sigil it teaches, not as the quotation it sits in.
     if (!ok || !hazards.every((h) => positionalArrives(edited, h))) {
       refused.push(`${rel}  ${src.slice(0, 92)}`);
       continue;

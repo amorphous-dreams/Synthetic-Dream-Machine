@@ -96,7 +96,7 @@ Three subtypes. Each subtype lives in its own directory.
 All masks enter a session via kahea transclusion in LARES:
 
 ```
-<<~ kahea mask lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME>>
+<<~ kahea mask "lar:///ha.ka.ba/lares/api/masks/SUBTYPE/MASK-NAME">>
 stage = 10
 active = true
 <<~/kahea>>
@@ -123,6 +123,6 @@ Named Voice masks may also be invoked directly by their earned name in Voice hou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JxqgK1UIqiMRTFYiCFMnQUkAXUa9oN5390dnJBi-gD4
+<<^ code="&#x0003;">>ni:///sha-256;IWSYSj6AFKPhiYeAMFySmTYUTI42lM8QyAz-QDnOrLE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/sigil-aka"
 
 ! ~aka Sigil Design
 
-`<<~ aka lar:///target>>` — shadow transclusion.
+`<<~ aka "lar:///target">>` — shadow transclusion.
 
 The `aka` sigil renders a ''projection'' of a canonical URI into the current meme.
 The target remains canonical at its source.
@@ -43,7 +43,7 @@ The summary header always shows the target URI as a link, so the projection alwa
 
 Cascade tag: `lar:///ha.ka.ba/tags/aka-template` — operator can override the render template per scope.
 
-Call-site template override: `<<~ aka lar:///target lar:///my-template>>` (p2 bypasses cascade).
+Call-site template override: `<<~ aka "lar:///target" "lar:///my-template">>` (p2 bypasses cascade).
 
 <<~/ahu>>
 
@@ -117,6 +117,6 @@ could include thumbnail + og-title in the handshake). Hold open.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EN1VmMN8derMlVMNSFDY-diHgMmkmD2gkRl13ShSLgA
+<<^ code="&#x0003;">>ni:///sha-256;Xw9vzXPW1ZxlorRz_7Wbo8AyX430QkHcYc1mhFlQVCY
 
 <<^ code="&#x0004;" -> to="?">>
