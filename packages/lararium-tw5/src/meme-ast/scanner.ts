@@ -48,6 +48,17 @@ export interface ParseEvent {
 // syntax, so a bare `lar:///x` standing positionally binds a phantom parameter and the slot stays
 // empty; the corpus quotes such values, and a capture that kept the pair would carry it into an
 // address. See lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat.
+// ── A CALL BINDS WITH `=`, AND A SCAN STILL RECOGNISES THE SIGIL ───────────────────────────────
+// The tail DELIMITER below stays permissive on purpose. A carrier written with `:` is not the house
+// form, but it is still a sigil TiddlyWiki parses — and a scan that refused it would grade the sigil
+// `missing` and LOSE ITS TARGET, which is a parse breaking badly (#/graceful-parsing). The sigil
+// matches, keeps its address, and the BINDER (builder `attrOf`) declines the value, so the parameter
+// falls back to its declared default rather than the edge vanishing.
+//
+// `:` binds a DEFAULT in a `\procedure` definition. `=` in a CALL arrived later and unlocks the
+// indirect forms — a filtered, indirect, macro or substituted value reaches a parameter ONLY through
+// it (TiddlyWiki `parseMacroParameterAsAttribute`: `isNewStyleSeparator = (op === "=")`). Every scan
+// below binds the call form, and the corpus writes it.
 export const BOOTSTRAP_SCANS: SigilScan[] = [
   // ASCII control-character framing — SOH / STX / ETX / EOT
   //
@@ -87,8 +98,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>/g,  eventType: "open" },
   { sigilName: "kahea-invoke", regex: /<<~\/kahea\s*>>/g,                                     eventType: "close" },
   { sigilName: "kahea",        regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
-  { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
-  { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
+  { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
   { sigilName: "lele",    regex: /<<~\s*lele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,               eventType: "leaf" },
   { sigilName: "\\branch", canonicalName: "lele", regex: /<<~\s*\\branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g, eventType: "leaf" },
   // Concurrency — grammar + scanner wired; Verse runtime semantics pending (async-first)
@@ -98,7 +109,7 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "holo",  regex: /<<~\/holo\s*>>/g,                         eventType: "close" },
   { sigilName: "puka",  regex: /<<~\s*puka\s*>>/g,                        eventType: "open"  },
   { sigilName: "puka",  regex: /<<~\/puka\s*>>/g,                         eventType: "close" },
-  { sigilName: "papalohe", regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "papalohe", regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+listenable="?([\w.-]+)"?)?(?:\s+subscribable="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
   // TOML data block
   { sigilName: "toml", regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g,  eventType: "leaf" },
   { sigilName: "toml", regex: /<<~\s*toml\s*>>([\s\S]*?)<<~\/toml\s*>>/g,                   eventType: "leaf" },
@@ -143,8 +154,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "hana", regex: /<<~\s*hana\s+([^\n>]+?)\s*>>/g,                eventType: "open"  },
   { sigilName: "hana", regex: /<<~\/hana\s*>>/g,                               eventType: "close" },
   // kukali — reactive wait posture
-  { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
-  { sigilName: "\\suspends", canonicalName: "kukali", regex: /<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
+  { sigilName: "\\suspends", canonicalName: "kukali", regex: /<<~\s*\\suspends(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
 
   // GENERIC catch-all — MUST stay last (position-dedup lets every specific scan win first). Recognizes
   // any sharktooth form no specific pattern matched: a known sigil in a novel param shape

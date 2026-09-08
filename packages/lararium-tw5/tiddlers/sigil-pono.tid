@@ -3,7 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/pono-sigil
 lar-see-also: \constraint
-lar-pattern: <<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role:([\w-]+))?\s*>>
+lar-pattern: <<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- pono — correctness-asserting edge; asserts FROM holds constraint satisfied by TO.

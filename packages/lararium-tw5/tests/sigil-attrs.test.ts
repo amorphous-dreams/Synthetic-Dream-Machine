@@ -43,6 +43,22 @@ describe("★ THE SEPARATOR DECIDES WHAT A VALUE MAY BE ★", () => {
     expect(readSigilAttrs("p:{{Some Tiddler}}")[0]?.kind).not.toBe("indirect");
   });
 
+  test("★ a string literal wears FOUR delimiters, all legal after either separator ★", () => {
+    for (const sep of ["=", ":"]) {
+      expect(sigilAttrValue(`p${sep}"A Title"`, "p")).toBe("A Title");
+      expect(sigilAttrValue(`p${sep}'A Title'`, "p")).toBe("A Title");
+      expect(sigilAttrValue(`p${sep}[[A Title]]`, "p")).toBe("A Title");
+      expect(sigilAttrValue(`p${sep}"""A "quoted" Title"""`, "p")).toBe('A "quoted" Title');
+    }
+  });
+
+  test("★ a bracketed title reports QUOTED — it needs no further wrapping ★", () => {
+    const a = readSigilAttrs("p=[[A Title]]")[0]!;
+    expect(a.quoted).toBe(true);
+    expect(a.kind).toBe("string");
+    expect(quotableAttrs("p=[[A Title]] q=bare")).toHaveLength(1);
+  });
+
   test("a QUOTED value stands legal after either separator", () => {
     expect(sigilAttrValue('p="v"', "p")).toBe("v");
     expect(sigilAttrValue('p:"v"', "p")).toBe("v");

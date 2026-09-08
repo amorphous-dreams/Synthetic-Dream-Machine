@@ -2,10 +2,12 @@
  * A PRANALA'S FAMILY AND ROLE READ IN EVERY SPELLING THE GRAPH WRITES.
  *
  * ── MEASURED ─────────────────────────────────────────────────────────────────────────────────────────────
- * Across the lares bags the attribute appears as `family=reference` (121), `family:reference` (34) and
- * `family="reference"` (4). A reader keyed on the quoted form alone recovers the fourth case and silently
- * hands back the default for the rest — an edge that declares its family reads as `relation`, and nothing
- * says so.
+ * Across the lares bags the attribute appears as `family=reference` (121) and `family="reference"` (4);
+ * a reader keyed on the quoted form alone silently hands back the default for the rest — an edge that
+ * declares its family reads as `relation`, and nothing says so.
+ *
+ * RULED: a CALL binds with `=`. `:` binds a DEFAULT in a `\procedure` definition, and only `=` unlocks
+ * an indirect value. Measured at the ruling: no carrier binds family or role with `:`.
  *
  * TiddlyWiki accepts all three: `parseMacroParameterAsAttribute` takes `=` or `:` as the separator, then a
  * string literal or `reUnquotedAttribute`. The reader here answers to the same range.
@@ -60,8 +62,20 @@ describe("a pranala reads its family in every spelling", () => {
     expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family=reference>>').family).toBe("reference");
   });
 
-  test("the colon spelling still reads", () => {
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>').family).toBe("reference");
+  test("★ the colon spelling no longer BINDS — a call binds with `=` ★", () => {
+    // RULED: every procedure/macro/sigil CALL site binds with `=`. `:` binds a DEFAULT in a
+    // `\procedure` definition, and only `=` unlocks an indirect value. No carrier in this corpus
+    // binds family or role with `:`; the two colons that remain sit inside prose.
+    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>').family).toBe("relation");
+  });
+
+  test("★ …and the sigil KEEPS ITS TARGET — a parse never breaks badly ★", () => {
+    // The tail delimiter stays permissive so a `:`-spelled sigil still matches. Refusing it would
+    // grade the sigil `missing` and lose its address (#/graceful-parsing); the parameter falls back
+    // to its declared default instead, and the edge stands.
+    const p = pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>');
+    expect(p.recoveredAs ?? null).toBe(null);
+    expect(p.toRaw).not.toBe("");
   });
 
   test("role reads the same way", () => {

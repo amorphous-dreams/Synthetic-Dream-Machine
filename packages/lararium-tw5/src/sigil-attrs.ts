@@ -45,6 +45,19 @@ export interface SigilAttr {
   readonly end: number;
 }
 
+/**
+ * The four delimiters a string literal wears — `"""…"""`, `"…"`, `'…'`, `[[…]]`. Mirrors
+ * TiddlyWiki's own `parseStringLiteral`, which strips the pair and reports a plain string.
+ */
+function matchStringLiteral(body: string, at: number): { value: string; end: number } | null {
+  const re = /(?:"""([\s\S]*?)"""|"([^"]*)")|(?:'([^']*)')|\[\[((?:[^\]]|\](?!\]))*)\]\]/y;
+  re.lastIndex = at;
+  const m = re.exec(body);
+  if (!m || m.index !== at) return null;
+  const value = m[1] !== undefined ? m[1] : m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4]!;
+  return { value, end: at + m[0].length };
+}
+
 /** A scheme is not a parameter. `lar:///x` carries no key named `lar`. */
 const SCHEMES = new Set([
   "lar", "ni", "did", "http", "https", "file", "urn", "data", "mailto", "at", "ipfs", "ipns",
@@ -59,8 +72,12 @@ const SCHEMES = new Set([
  * A quoted value stands legal after EITHER separator — the string literal is tried first, before the
  * new-style branch opens.
  *
- * (The `[[title]]` form belongs to `parseMacroParameter`, the older invocation parser. The attribute
- * path this reader mirrors carries no such branch, so naming one here would invent a kind.)
+ * ── AND A STRING LITERAL WEARS FOUR DELIMITERS ───────────────────────────────────────────────────
+ * `parseStringLiteral` takes `"""triple"""`, `"double"`, `'single'` AND `[[bracketed]]`, each yielding
+ * a plain string with the delimiters stripped. It runs BEFORE the new-style branch, so all four stand
+ * legal after either separator — `p=[[A Title]]` and `p:[[A Title]]` both hand back `A Title`.
+ *
+ * A value already wearing any of the four needs no further quoting.
  */
 const NEW_STYLE: ReadonlyArray<readonly [string, string, SigilValueKind]> = [
   ["{{{", "}}}", "filtered"],
@@ -113,12 +130,11 @@ export function readSigilAttrs(body: string): SigilAttr[] {
       }
     }
 
-    const q = two[0];
-    if (q === '"' || q === "'") {
-      const end = body.indexOf(q, at + 1);
-      const stop = end === -1 ? body.length : end;
-      out.push({ name, value: body.slice(at + 1, stop), sep, quoted: true, kind: "string", start: m.index, end: stop + 1 });
-      re.lastIndex = stop + 1;
+    // A STRING LITERAL, in any of its four delimiters — tried before the unquoted run, as the parser does.
+    const lit = matchStringLiteral(body, at);
+    if (lit) {
+      out.push({ name, value: lit.value, sep, quoted: true, kind: "string", start: m.index, end: lit.end });
+      re.lastIndex = lit.end;
       continue;
     }
 

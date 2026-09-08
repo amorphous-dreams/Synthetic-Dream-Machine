@@ -99,8 +99,14 @@ function attrsFromGroups(
  * all three ways.
  */
 function attrOf(tail: string, name: string): string | null {
-  const m = new RegExp(`\\b${name}\\s*[=:]\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>"']+))`).exec(tail);
-  return m ? (m[1] ?? m[2] ?? m[3] ?? null) : null;
+  // ── A CALL BINDS WITH `=` ────────────────────────────────────────────────────────────────────
+  // `:` binds a DEFAULT in a `\procedure` definition; a CALL binds with `=`, which is also the only
+  // separator that unlocks an indirect value. And a STRING LITERAL wears FOUR delimiters — `"""…"""`,
+  // `"…"`, `'…'` and `[[…]]` — each stripped to a plain value by TiddlyWiki's own parseStringLiteral.
+  const m = new RegExp(
+    `\\b${name}\\s*=\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"']+))`,
+  ).exec(tail);
+  return m ? (m[1] ?? m[2] ?? m[3] ?? m[4] ?? m[5] ?? null) : null;
 }
 
 function kaheaInvokeNode(

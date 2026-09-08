@@ -3,7 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: leaf
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kukali
 lar-see-also: \suspends
-lar-pattern: <<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>
+lar-pattern: <<~\s*kukali(?:\s+trigger="?([\w.-]+)"?)?\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- kukali — wait-until-trigger leaf; parks causal island until named papalohe fires.
