@@ -74,11 +74,49 @@ describe.skipIf(wikiSkip)(`a sigil renders on a gradient${skipNote}`, () => {
     expect(html).toContain("undefinedthing");
   });
 
-  test("★ `\\link` renders — the alias reaches loulou ★", () => {
-    // The sigil spells with its backslash: `\link` aliases `loulou`.
-    const html = r('<<~ \\link "lar:///ha.ka.ba/lares/api/pono/meme">>');
-    expect(html).not.toBe("");
-    expect(html).toContain("lar:///ha.ka.ba/lares/api/pono/meme");
+  /**
+   * ⚠ "NOT EMPTY" PROVES NOTHING NOW. The gradient renders an unknown sigil AS ITS OWN TEXT, so every
+   * sigil renders something. A vector that only refused "" would pass on the fallback it was written
+   * to catch. `rendered()` asks the question that still separates them: did the DEFINITION run, or did
+   * the sigil merely echo itself?
+   */
+  const rendered = (src: string): boolean => {
+    const html = r(src);
+    return html !== "" && !html.includes("&lt;&lt;~") && !html.includes("<<~");
+  };
+
+  test("★ `link` renders its DEFINITION — an English mirror is a PURE NAME ★", () => {
+    // RULED: an English mirror of a sigil name reasons as a Name. No slash. `link` mirrors `loulou`.
+    expect(rendered('<<~ link "lar:///ha.ka.ba/lares/api/pono/meme">>'),
+      "`link` echoed itself instead of rendering — the mirror still wants a slash").toBe(true);
+  });
+
+  test("★ AN ENGLISH MIRROR BEHAVES AS ITS ORIGINAL — that is what mirroring means ★", () => {
+    // The mirror does not owe a rendering; it owes the SAME ANSWER its original gives. Where the
+    // original carries a runtime the mirror renders; where the original waits on one — `lele` holds
+    // Verse concurrency semantics pending — the mirror echoes, and the gradient is working.
+    const PAIRS: Array<[string, string]> = [
+      ["link", "loulou"], ["branch", "lele"], ["shadow", "aka"], ["transclude", "kahea"],
+    ];
+    const arg = '"lar:///ha.ka.ba/lares/api/pono/meme"';
+    const split = PAIRS.filter(([m, o]) => rendered(`<<~ ${m} ${arg}>>`) !== rendered(`<<~ ${o} ${arg}>>`));
+    expect(split.map(([m, o]) => `${m}≠${o}`), "a mirror parted company with its original").toEqual([]);
+  });
+
+  test("★ …and a mirror answers to its BARE name, never a slash ★", () => {
+    // RULED: an English mirror reasons as a pure Name. The slashed spelling names nothing.
+    expect(rendered('<<~ link "lar:///ha.ka.ba/lares/api/pono/meme">>')).toBe(true);
+    expect(rendered('<<~ \\link "lar:///ha.ka.ba/lares/api/pono/meme">>'),
+      "the slashed spelling still resolved — the retired form is still wired").toBe(false);
+  });
+
+  test("CONTROL — the Hawaiian original renders its definition", () => {
+    expect(rendered('<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>')).toBe(true);
+  });
+
+  test("CONTROL — and a truly unknown sigil ECHOES, which is the gradient working", () => {
+    expect(rendered("<<~ nosuchsigil arg>>")).toBe(false);
+    expect(r("<<~ nosuchsigil arg>>")).toContain("nosuchsigil");
   });
 
   test("an unknown sigil keeps its ARGUMENTS on the page, not just its name", () => {

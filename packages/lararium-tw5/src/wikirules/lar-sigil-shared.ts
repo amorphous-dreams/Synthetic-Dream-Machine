@@ -81,7 +81,12 @@ export interface CompoundSigilMatch {
 // Matches <<~ WORD [WORD2] ARGS>> for any simple sigil invocation.
 // Does not match pranala (arrow syntax, handled by matchPranalaOpenAt).
 // Does not match control chars or <<~! pragma forms (no leading \s+ match).
-const COMPOUND_OPEN_RE = /<<~\s+(\\?[\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
+// ── AN ENGLISH MIRROR IS A PURE NAME ─────────────────────────────────────────────────────────────
+// RULED: a mirror of a sigil name reasons as a Name — `link`, never `\link`. The slashed spelling
+// named nothing of its own; it aliased TiddlyWiki's pragma punctuation into a namespace that already
+// had a word for the thing. A slashed form now reaches no definition and falls to the gradient,
+// rendering as the text an author wrote, which is what an unknown sigil owes a reader.
+const COMPOUND_OPEN_RE = /<<~\s+([\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
 
 /**
  * Generic compound-sigil opener for the matchAhuOpenAt + matchUriFormSigilAt
@@ -105,7 +110,7 @@ export function matchCompoundSigilAt(
   COMPOUND_OPEN_RE.lastIndex = start;
   const m = COMPOUND_OPEN_RE.exec(source);
   if (!m || m.index !== start) return null;
-  const word1 = m[1]!.replace(/^\\/, "");
+  const word1 = m[1]!;
   // PRANALA CARRIES TWO TYPED ENDS. This reader hands back one undifferentiated `rest`, and an edge
   // needs its `from` told apart from its `to`: whoever reads whichever address comes first reads the
   // SOURCE, and a graph built on that points backwards. `matchPranalaOpenAt` types the two ends, so

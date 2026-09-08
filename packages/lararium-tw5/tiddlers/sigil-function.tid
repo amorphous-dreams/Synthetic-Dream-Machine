@@ -3,12 +3,12 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/function
 lar-alias-for: \function
-lar-pattern: <<~\s*\\function\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
+lar-pattern: <<~\s*function\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- \function — English alias for the TW5 \function pragma (TW5 5.3+).
      No direct Hawaiian equivalent; filter-function semantics are TW5-native.
 
-     <<~ \function name(params)>>filter-expression<<~/ \function>> declares
+     <<~ function name(params)>>filter-expression<<~/ function>> declares
      a named filter function. Leaf-only (no block body in practice — filter bodies
      are inline expressions). lar-kind: pragma-alias — no render output. -->

@@ -15,3 +15,4 @@ type: text/vnd.tiddlywiki
 <$set name="_h-interp" filter="[<p1>addprefix[lar:///ha.ka.ba/lararium/hana-interpreter/]] [all[shadows+tiddlers+system]tag<_h-interp>!is[draft]first[]]">
 <%if [<_h-interp>!match[]]%><$transclude $tiddler=<<_h-interp>> hana-key=<<p1>> hana-body=<<p2>>/><%else%><pre class="lar-hana" data-hana-key=<<p1>>><code><<p2>></code></pre><%endif%>
 </$set>\end
+\end

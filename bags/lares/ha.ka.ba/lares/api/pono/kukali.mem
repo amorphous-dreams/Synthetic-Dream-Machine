@@ -63,8 +63,8 @@ A kukali that cancels MUST reject its suspension Promise cleanly without leaking
 ```text
 <<~ kukali>>
 <<~ kukali trigger=SlotName>>
-<<~ \suspends>>
-<<~ \suspends trigger:SlotName>>
+<<~ suspends>>
+<<~ suspends trigger:SlotName>>
 ```
 
 `\suspends` is the canonical English alias — emits the same `SigilNode { sigilName: "kukali" }`.
@@ -145,6 +145,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;27n3auTOlR6uCsVVr6NmINP-OJOxyKYsz4nGYCruBlg
+<<^ code="&#x0003;">>ni:///sha-256;rCTm8MAdiY4VNuNlJjT5kyajd4N02X6HQxDjV0iEalQ
 
 <<^ code="&#x0004;" -> to="?">>

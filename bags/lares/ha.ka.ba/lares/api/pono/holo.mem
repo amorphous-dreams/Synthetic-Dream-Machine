@@ -58,8 +58,8 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 <<~/holo>>
 
 <<~ \race>>
-  <<~ \branch lar:///target-a>>
-  <<~ \branch lar:///target-b>>
+  <<~ branch lar:///target-a>>
+  <<~ branch lar:///target-b>>
 <<~/\race>>
 ```
 
@@ -75,6 +75,6 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;npiOi3ObBMnWRaB8TZsdlcl8Z0nsFw7DdWlpOzjrob4
+<<^ code="&#x0003;">>ni:///sha-256;Er-tzuwuDpHd_VUqO0B7l6wf1uOD58MhDcC4Y2kgP7s
 
 <<^ code="&#x0004;" -> to="?">>

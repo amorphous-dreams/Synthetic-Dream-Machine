@@ -8,3 +8,4 @@ type: text/vnd.tiddlywiki
 
 \procedure ~mukuwai(p2:"")
 <$transclude $variable="~" name=<<p2>>/>
+\end

@@ -10,3 +10,4 @@ type: text/vnd.tiddlywiki
 
 \procedure ~\tiddler(p1:"" p2:"")
 <$tiddler tiddler=<<p1>>><$transclude $variable="~" name=<<p2>>/></$tiddler>
+\end

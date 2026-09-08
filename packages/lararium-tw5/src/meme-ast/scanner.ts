@@ -99,9 +99,9 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "kahea-invoke", regex: /<<~\/kahea\s*>>/g,                                     eventType: "close" },
   { sigilName: "kahea",        regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
   { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-  { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
+  { sigilName: "constraint", canonicalName: "pono", regex: /<<~\s*constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
   { sigilName: "lele",    regex: /<<~\s*lele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,               eventType: "leaf" },
-  { sigilName: "\\branch", canonicalName: "lele", regex: /<<~\s*\\branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g, eventType: "leaf" },
+  { sigilName: "branch", canonicalName: "lele", regex: /<<~\s*branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g, eventType: "leaf" },
   // Concurrency — grammar + scanner wired; Verse runtime semantics pending (async-first)
   { sigilName: "hui",   regex: /<<~\s*hui\s*>>/g,                          eventType: "open"  },
   { sigilName: "hui",   regex: /<<~\/hui\s*>>/g,                           eventType: "close" },
@@ -137,8 +137,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // English aliases — emit canonical name directly (inline erasure)
   { sigilName: "\\if",   canonicalName: "heihei",  regex: /<<~\s*\\if\s+([^\n>]+?)\s*>>/g,     eventType: "open"  },
   { sigilName: "\\if",   canonicalName: "heihei",  regex: /<<~\/\\if\s*>>/g,                    eventType: "close" },
-  { sigilName: "\\else", canonicalName: "mukuwai", regex: /<<~\s*\\else\s*>>/g,                 eventType: "leaf"  },
-  { sigilName: "\\elif", canonicalName: "kahawai", regex: /<<~\s*\\elif\s+([^\n>]+?)\s*>>/g,   eventType: "leaf"  },
+  { sigilName: "else", canonicalName: "mukuwai", regex: /<<~\s*else\s*>>/g,                 eventType: "leaf"  },
+  { sigilName: "elif", canonicalName: "kahawai", regex: /<<~\s*elif\s+([^\n>]+?)\s*>>/g,   eventType: "leaf"  },
   { sigilName: "\\const", canonicalName: "waiho",  regex: /<<~!\s*\\const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },
   { sigilName: "\\let",  canonicalName: "waiho",   regex: /<<~\s*\\let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
   { sigilName: "\\let",  canonicalName: "waiho",   regex: /<<~\/\\let\s*>>/g,                   eventType: "close" },
@@ -155,7 +155,7 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "hana", regex: /<<~\/hana\s*>>/g,                               eventType: "close" },
   // kukali — reactive wait posture
   { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-  { sigilName: "\\suspends", canonicalName: "kukali", regex: /<<~\s*\\suspends(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
+  { sigilName: "suspends", canonicalName: "kukali", regex: /<<~\s*suspends(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
 
   // GENERIC catch-all — MUST stay last (position-dedup lets every specific scan win first). Recognizes
   // any sharktooth form no specific pattern matched: a known sigil in a novel param shape

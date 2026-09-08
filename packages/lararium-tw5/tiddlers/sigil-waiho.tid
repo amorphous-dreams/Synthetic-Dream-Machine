@@ -9,3 +9,4 @@ type: text/vnd.tiddlywiki
 
 \procedure ~waiho(p1:"" p2:"" p3:"")
 <$set name=<<p1>> value=<<p2>>><$transclude $variable="~" name=<<p3>>/></$set>
+\end

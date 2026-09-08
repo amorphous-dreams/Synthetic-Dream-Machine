@@ -57,8 +57,8 @@ and no preceding condition in the chain has already rendered.
 English alias forms:
 ```text
 <<~ \if [first-filter]>>  ...
-<<~ \elif [second-filter]>>  ...
-<<~ \else>>  ...
+<<~ elif [second-filter]>>  ...
+<<~ else>>  ...
 ```
 
 <<~/ahu>>
@@ -73,6 +73,6 @@ English alias forms:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OgBOgvAM7FGOVwbTMUeW_H3HDHfeqZLnhPlGi8W-Ia8
+<<^ code="&#x0003;">>ni:///sha-256;UcIWrD1uaWIMGGgb8WEb3D5X_Vk9C530-BM-eVrUasM
 
 <<^ code="&#x0004;" -> to="?">>

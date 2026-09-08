@@ -45,7 +45,7 @@ A ui sigil MUST evaluate the filter in the current tiddler context.
 
 ```text
 <<~ ui [filter-expression]>>
-<<~ \query [filter-expression]>>
+<<~ query [filter-expression]>>
 ```
 
 TW5 filter expansion:
@@ -63,6 +63,6 @@ TW5 filter expansion:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hONPa4flsa0QyRRqRePXaCArdAruVAo4QhqKgRc5Scg
+<<^ code="&#x0003;">>ni:///sha-256;Bs0gKlokqIwh-iidBK9tuXLpWEUDh4adGb1Gbdhz_d8
 
 <<^ code="&#x0004;" -> to="?">>

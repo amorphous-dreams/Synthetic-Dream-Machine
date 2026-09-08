@@ -2,10 +2,11 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-link
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/loulou
-lar-alias-for: \link
+lar-alias-for: loulou
 lar-see-also: loulou
-lar-pattern: <<~\s*\\link\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-pattern: <<~\s*link\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 type: text/vnd.tiddlywiki
 
-\procedure ~\link(p1:"")
+\procedure ~link(p1:"")
 <$transclude $variable="~loulou" p1=<<p1>>/>
+\end

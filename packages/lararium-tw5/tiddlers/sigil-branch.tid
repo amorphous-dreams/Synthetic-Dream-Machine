@@ -4,7 +4,7 @@ lar-kind: concurrency
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/lele
 lar-alias-for: lele
 lar-see-also: lele
-lar-pattern: <<~\s*\\branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-pattern: <<~\s*branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 type: text/vnd.tiddlywiki
 
-<!-- \branch — English alias for lele; Verse branch keyword; parser maps to lele before evaluation. -->
+<!-- branch — English alias for lele; Verse branch keyword; parser maps to lele before evaluation. -->
