@@ -27,6 +27,36 @@ describe("both spellings reach one reading", () => {
   });
 });
 
+describe("★ THE SEPARATOR DECIDES WHAT A VALUE MAY BE ★", () => {
+  // `=` in a CALL arrived to unlock the indirect forms; `:` predates them. Read out of TiddlyWiki
+  // 5.5.0 `parseMacroParameterAsAttribute`: only `isNewStyleSeparator` (`=`) opens the branch that
+  // looks for a filtered, indirect, macro or substituted value.
+  test("★ `=` opens the new-style values ★", () => {
+    expect(readSigilAttrs("p={{{[tag[x]]}}}")[0]!.kind).toBe("filtered");
+    expect(readSigilAttrs("p={{Some Tiddler}}")[0]!.kind).toBe("indirect");
+    expect(readSigilAttrs("p=<<name>>")[0]!.kind).toBe("macro");
+    expect(readSigilAttrs("p=`subst`")[0]!.kind).toBe("substituted");
+  });
+
+  test("★ `:` opens NONE of them — it takes a string and nothing else ★", () => {
+    expect(readSigilAttrs("p:<<name>>")[0]?.kind).not.toBe("macro");
+    expect(readSigilAttrs("p:{{Some Tiddler}}")[0]?.kind).not.toBe("indirect");
+  });
+
+  test("a QUOTED value stands legal after either separator", () => {
+    expect(sigilAttrValue('p="v"', "p")).toBe("v");
+    expect(sigilAttrValue('p:"v"', "p")).toBe("v");
+  });
+
+  test("★ the colon demands a STRICT identifier ★", () => {
+    // "to avoid mis-parsing values like `$:/foo`" — where the name is not [A-Za-z0-9-_]+ the parser
+    // discards name AND separator, and the token reads as a positional.
+    expect(readSigilAttrs("a.b:v").map((x) => x.name)).not.toContain("a.b");
+    expect(sigilAttrValue("a.b=v", "a.b")).toBe("v");        // …but `=` takes the wide name
+    expect(sigilAttrValue("a-b:v", "a-b")).toBe("v");        // …and a strict name still binds
+  });
+});
+
 describe("★ a TYPED value is not a string, and quoting would break it ★", () => {
   // 13 stand in the corpus, all shaped `name=<<name>>`. Quoting one makes it a string and the macro
   // stops being called — so no canonicalizer may touch it.
@@ -37,14 +67,13 @@ describe("★ a TYPED value is not a string, and quoting would break it ★", ()
     expect(a.value).toBe("<<name>>");
   });
 
-  test("a transclusion, a title and a filter each report their kind", () => {
-    expect(readSigilAttrs("p={{Some Tiddler}}")[0]!.kind).toBe("transclude");
-    expect(readSigilAttrs("p=[[A Title]]")[0]!.kind).toBe("title");
-    expect(readSigilAttrs("p=[{$:/state/x}]")[0]!.kind).toBe("filter");
+  test("an indirect and a filtered value each report their kind", () => {
+    expect(readSigilAttrs("p={{Some Tiddler}}")[0]!.kind).toBe("indirect");
+    expect(readSigilAttrs("p={{{[tag[x]]}}}")[0]!.kind).toBe("filtered");
   });
 
   test("★ quotableAttrs REFUSES every typed value ★", () => {
-    const body = 'season name=<<name>> family=code p={{X}} role="has"';
+    const body = 'season name=<<name>> family=code p={{X}} q={{{[tag[t]]}}} role="has"';
     expect(quotableAttrs(body).map((a) => a.name)).toEqual(["family"]);
   });
 });

@@ -20,8 +20,13 @@
 
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
 
-/** What a parameter's value carries beyond its text. */
-export type SigilValueKind = "string" | "macro" | "transclude" | "filter" | "substitution" | "title";
+/**
+ * What a parameter's value carries beyond its text — the kinds TiddlyWiki itself assigns.
+ *
+ * `filtered`, `indirect`, `macro` and `substituted` reach a call ONLY through the `=` separator; the
+ * `:` separator admits a quoted or unquoted string and nothing else.
+ */
+export type SigilValueKind = "string" | "macro" | "indirect" | "filtered" | "substituted";
 
 export interface SigilAttr {
   readonly name: string;
@@ -45,13 +50,24 @@ const SCHEMES = new Set([
   "lar", "ni", "did", "http", "https", "file", "urn", "data", "mailto", "at", "ipfs", "ipns",
 ]);
 
-/** The opening bracket pair that names a typed value, and the kind it carries. */
-const TYPED: ReadonlyArray<readonly [string, SigilValueKind]> = [
-  ["<<", "macro"],
-  ["{{", "transclude"],
-  ["[[", "title"],
-  ["[{", "filter"],
-  ["${", "substitution"],
+/**
+ * ── THE SEPARATOR DECIDES WHAT A VALUE MAY BE ────────────────────────────────────────────────────
+ * `=` in a CALL arrived to unlock the indirect forms. Only after it does TiddlyWiki look for a
+ * filtered `{{{…}}}`, an indirect `{{…}}`, a macro `<<…>>` or a substituted `` `…` `` value; after
+ * `:` it takes a string literal or an unquoted run and nothing else.
+ *
+ * A quoted value stands legal after EITHER separator — the string literal is tried first, before the
+ * new-style branch opens.
+ *
+ * (The `[[title]]` form belongs to `parseMacroParameter`, the older invocation parser. The attribute
+ * path this reader mirrors carries no such branch, so naming one here would invent a kind.)
+ */
+const NEW_STYLE: ReadonlyArray<readonly [string, string, SigilValueKind]> = [
+  ["{{{", "}}}", "filtered"],
+  ["{{",  "}}",  "indirect"],
+  ["<<",  ">>",  "macro"],
+  ["```", "```", "substituted"],
+  ["`",   "`",   "substituted"],
 ];
 
 /**
@@ -62,30 +78,39 @@ const TYPED: ReadonlyArray<readonly [string, SigilValueKind]> = [
  */
 export function readSigilAttrs(body: string): SigilAttr[] {
   const out: SigilAttr[] = [];
-  // ── THE NAME CHARSET IS THE PARSER'S, NOT A GUESS ──────────────────────────────────────────────
-  // Measured against TiddlyWiki 5.5.0: `a-b` `a_b` `a+b` `a.b` `a$b` `a#b` `a@b` `a!b` `a%b` `a*b` all
-  // parse as ONE parameter name; only `a/b` does not. A narrower charset reads a DIFFERENT name out of
-  // the same bytes — `…+precariousness=Varela` became `precariousness=` — and then disagrees with the
-  // parser about a parameter neither side is wrong about.
+  // ── THE NAME CHARSET IS THE PARSER'S, AND THE SEPARATOR NARROWS IT ─────────────────────────────
+  // `reAttributeName` admits `[^\/\s>"'`=:]+` — so `a-b` `a_b` `a+b` `a.b` `a$b` `a#b` `a@b` `a!b`
+  // `a%b` `a*b` all name ONE parameter and only `a/b` does not.
+  //
+  // ⚠ AND THE COLON DEMANDS A STRICT IDENTIFIER. TiddlyWiki discards the name and the separator
+  // where `:` follows anything but `[A-Za-z0-9-_]+` — "to avoid mis-parsing values like `$:/foo`" —
+  // and the token then reads as a POSITIONAL. A reader that bound `a.b:v` as a named parameter would
+  // report one where the parser reports none.
   //
   // A key stands where no `:` or `/` precedes it, so a URI's scheme and a path segment fall away.
-  const re = /(?<![\w:/@.-])([^\s=:>"'/]+)\s*([=:])\s*/g;
+  const re = /(?<![\w:/@.-])([^\s=:>"'`/]+)\s*([=:])\s*/g;
+  const STRICT = /^[A-Za-z0-9\-_]+$/;
   let m: RegExpExecArray | null;
   while ((m = re.exec(body)) !== null) {
     const name = m[1]!, sep = m[2]! as "=" | ":";
     if (SCHEMES.has(name.toLowerCase())) continue;
+    // The colon binds only a strict identifier; anything else reads as a positional, name and all.
+    if (sep === ":" && !STRICT.test(name)) continue;
     const at = m.index + m[0].length;
     const two = body.slice(at, at + 2);
 
-    const typed = TYPED.find(([open]) => two === open);
-    if (typed) {
-      // A TYPED value ends at its own closing pair; the sigil's `>>` may sit inside it.
-      const close = { "<<": ">>", "{{": "}}", "[[": "]]", "[{": "}]", "${": "}$" }[two] ?? ">>";
-      const end = body.indexOf(close, at + 2);
-      const stop = end === -1 ? body.length : end + close.length;
-      out.push({ name, value: body.slice(at, stop), sep, quoted: false, kind: typed[1], start: m.index, end: stop });
-      re.lastIndex = stop;
-      continue;
+    // A QUOTED value stands legal after EITHER separator — the string literal is tried first.
+    const q0 = body[at];
+    if (q0 !== '"' && q0 !== "'" && sep === "=") {
+      const typed = NEW_STYLE.find(([open]) => body.startsWith(open, at));
+      if (typed) {
+        const [open, close, kind] = typed;
+        const end = body.indexOf(close, at + open.length);
+        const stop = end === -1 ? body.length : end + close.length;
+        out.push({ name, value: body.slice(at, stop), sep, quoted: false, kind, start: m.index, end: stop });
+        re.lastIndex = stop;
+        continue;
+      }
     }
 
     const q = two[0];
