@@ -110,8 +110,8 @@ So the quorum ''seats'' an office (rare) and the ''renewal rides the lease-epoch
 
 !!! ② CAP ⊥ STANDING — and only one of them rides a device
 
-<<~ranks cap what-may-I-do -> flows-DOWN-by-delegation -> signed-scoped-EXPIRING -> carried-on-a-device/YES>>
-<<~ranks standing what-do-I-count-as -> flows-UP-by-conferral -> a-live-query-never-a-stored-number -> carried-on-a-device/NEVER>>
+<<~ scale cap "what-may-I-do -> flows-DOWN-by-delegation -> signed-scoped-EXPIRING -> carried-on-a-device/YES">>
+<<~ scale standing "what-do-I-count-as -> flows-UP-by-conferral -> a-live-query-never-a-stored-number -> carried-on-a-device/NEVER">>
 
 ''//May tend this crossroads// rides as a CAP. //Belongs to the Union// stands as a STANDING'', and a standing carried on a device rebuilds the apex this house removed. So the Union holds no members anywhere — ''a walker carries what they may do, and what they count as answers live, or not at all''.
 
@@ -370,6 +370,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Eop5d_cFKJxkbHusvf8XGeLDdNaHd3rKEPlfijTwoq0
+<<^ code="&#x0003;">>ni:///sha-256;6JPdvzB-rthftfdj7sWPRAe7WFF6-soc1n4f5ItBA_c
 
 <<^ code="&#x0004;" -> to="?">>

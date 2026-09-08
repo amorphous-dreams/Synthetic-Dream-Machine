@@ -110,6 +110,13 @@ describe("★ A KEY INSIDE A QUOTED VALUE IS NOT A PARAMETER ★", () => {
     expect(sigilAttrValue('Task T1.1 "a note" role=has', "role")).toBe("has");
   });
 
+  test("★ a TRIPLE-quoted note binds nothing, and its own quotes stay inside ★", () => {
+    // `"""…"""` admits almost anything, including the quotes a single pair would end on. A mask that
+    // matched `"` first would close at the delimiter's second character and read the interior bare.
+    const body = 'scale locality """hostless ~ "a quoted thing" — prov:Delegation carries it"""';
+    expect(readSigilAttrs(body).map((a) => a.name)).toEqual([]);
+  });
+
   test("a quoted value carrying an `=` binds nothing either", () => {
     expect(readSigilAttrs('x "a note with a=b inside it"').map((a) => a.name)).toEqual([]);
   });

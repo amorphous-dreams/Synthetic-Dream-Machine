@@ -123,7 +123,7 @@ The render carries `register-dressed-never-gated` into render code: ''every''
 ''instrument renders its reading on its `0..20` band, dressed by register — never a''
 ''✓/✗.'' Telemetry reports values; it does not judge.
 
-<<~ranks reading provisional@1..4 ~ cool, the play register -> synthesis@9..12 ~ working -> canon@17..20 ~ warm, weight-bearing>>
+<<~ scale reading "provisional@1..4 ~ cool, the play register -> synthesis@9..12 ~ working -> canon@17..20 ~ warm, weight-bearing">>
 
 * `confidence` renders a ''band-colored dial'' at its value, not a checkmark.
 * `ward` renders its ''breach count as drift-marks on a gradient'' — a Sword close
@@ -179,7 +179,7 @@ only durable home. A queryable `<<~ ui>>` filter layer reads the drawers later.
 "One runtime in @daemon" pressing against "capture must never lose a turn" resolves
 on one shore:
 
-<<~ranks capture verbatim ~ VM-free · the drawer body · ALWAYS lands -> telemetry ~ @daemon-owned · the lar_* readings · EVENTUAL>>
+<<~ scale capture "verbatim ~ VM-free · the drawer body · ALWAYS lands -> telemetry ~ @daemon-owned · the lar_* readings · EVENTUAL">>
 
 * ''Verbatim capture'' (the mine leg) stays VM-free and lands every turn — the
   journey is never lost, @daemon up or down.
@@ -226,6 +226,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;du6-7GHWeZVxLVrXGtbrJ_JnkmiqI37X0UVpc2RC-4k
+<<^ code="&#x0003;">>ni:///sha-256;Y3gF1iTWB3CcB4h049-zi2ddChxFPZa0oCwuepTfwos
 
 <<^ code="&#x0004;" -> to="?">>

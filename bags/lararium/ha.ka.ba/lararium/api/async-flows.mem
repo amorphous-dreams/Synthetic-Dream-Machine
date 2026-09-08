@@ -64,7 +64,7 @@ Precedent: `gh run watch --exit-status`, `kubectl wait --for=condition --timeout
 
 !! The Job Machine ~ five states, terminal-once
 
-<<~ranks job working ~ in progress -> input_required ~ awaiting the operator -> completed ~ ok, terminal -> failed ~ error, terminal -> cancelled ~ stopped, terminal>>
+<<~ scale job "working ~ in progress -> input_required ~ awaiting the operator -> completed ~ ok, terminal -> failed ~ error, terminal -> cancelled ~ stopped, terminal">>
 
 ''Terminal-once:'' once a job reaches completed/failed/cancelled it never moves
 again. ''Poll is authoritative'' (not pushed notifications, which drop) — non-terminal
@@ -150,7 +150,7 @@ One progress event stream; the existing renderer splits it:
 
 The three pieces already exist:
 
-<<~ranks have daemon-jobs ~ mempalace `--daemon --background` → job-id → daemon jobs/wait/status (we call mine SYNCHRONOUSLY instead) -> durable-results ~ lares summons → @daemon/outcomes/<requestId> (CRDT, survives a CLI timeout, re-queryable) -> dual-render ~ render.ts prose/JSON (the progress-event split shore)>>
+<<~ scale have "daemon-jobs ~ mempalace `--daemon --background` → job-id → daemon jobs/wait/status (we call mine SYNCHRONOUSLY instead) -> durable-results ~ lares summons → @daemon/outcomes/<requestId> (CRDT, survives a CLI timeout, re-queryable) -> dual-render ~ render.ts prose/JSON (the progress-event split shore)">>
 
 ''Implementation order'' (write-toward; confirm interfaces first — see caveat):
 # Make long ops ''return the request-id fast'' (+ `--detach`); default TTY attaches to `watch`.
@@ -175,6 +175,6 @@ write toward, not a description of current emission.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qNIrbNdXjVFvONJBwT8PspvL4Wgks0IHGcBWv4h2TvQ
+<<^ code="&#x0003;">>ni:///sha-256;OI_aBybWSr2Qk_EtLgp7RfaV9yR0aEEMUVmVL7kk4RA
 
 <<^ code="&#x0004;" -> to="?">>

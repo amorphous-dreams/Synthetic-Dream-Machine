@@ -1,0 +1,23 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-scale
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: ordered-scale
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/scale
+lar-alias-for: scale
+lar-pattern: <<~\s*scale\s+([\w-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- scale — an ORDERED SCALE and the ranks it carries. A SCALE is the thing; RANKS are what it
+     holds, joined by the bearing arrow with a gloss apiece:
+
+         <<~ scale organ "mempalace ~ FIRST -> structurepalace ~ structure plane">>
+
+     The boot seed held this shape before the sigil did — `\procedure scale(name ranks)` called as
+     `<<scale levels "rank-1@0..4 -> rank-2@5..8 -> …">>`. A name, then a ranked body.
+
+     THE CHAIN RIDES QUOTED. It carries `->`, `~`, backticks, colons and prose; unquoted, every arrow
+     reads as structure and every `word:` binds a parameter nobody named. One pair of quotes makes the
+     whole chain ONE value, and the ranks read within it. -->
+
+\procedure ~scale(p1:"" p2:"")
+<span class="lar-scale"><<p1>> <<p2>></span>
+\end

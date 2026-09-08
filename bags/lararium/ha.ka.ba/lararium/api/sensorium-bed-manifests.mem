@@ -33,7 +33,7 @@ The Sensorium Palace's test beds rise from ''manifests'' the way the genesis isl
 
 !! The bed manifest ~ five members
 
-<<~ranks manifest-members flow ~ source globs + exclusions (every exclusion COUNTED at pour, never silent) + the record-unit rule per file-kind: one-file-one-record .mem · turn-per-record transcripts · tiddler-per-record .tid · module-per-record TW5 js -> worldline ~ which orderings run REAL (in-file byte order · dir-tree containment · git history · turn sequence) and which arbitrary — a corpus that lives as a PLACE declares its walk-order accidental; a transcript declares its turns sacred -> twins ~ DERIVED from the worldline: a null twin scrambles only the real orderings, at a declared grain, SIZE-MATCHED BY CONSTRUCTION — the size confound and the null-grain confound die in the schema -> apertures ~ the readings that land at pour: path-address (containment; the bags path already reads as an ultrametric prefix) · declared-fields per kind (meta blocks · .tid headers · TW5 module headers) · the plane readings · git-position where it exists — each tagged given ⊥ induced -> predictions ~ a pointer into the pre-registration sheet; a bed REFUSES to pour while its predictions entry stands absent>>
+<<~ scale manifest-members "flow ~ source globs + exclusions (every exclusion COUNTED at pour, never silent) + the record-unit rule per file-kind: one-file-one-record .mem · turn-per-record transcripts · tiddler-per-record .tid · module-per-record TW5 js -> worldline ~ which orderings run REAL (in-file byte order · dir-tree containment · git history · turn sequence) and which arbitrary — a corpus that lives as a PLACE declares its walk-order accidental; a transcript declares its turns sacred -> twins ~ DERIVED from the worldline: a null twin scrambles only the real orderings, at a declared grain, SIZE-MATCHED BY CONSTRUCTION — the size confound and the null-grain confound die in the schema -> apertures ~ the readings that land at pour: path-address (containment; the bags path already reads as an ultrametric prefix) · declared-fields per kind (meta blocks · .tid headers · TW5 module headers) · the plane readings · git-position where it exists — each tagged given ⊥ induced -> predictions ~ a pointer into the pre-registration sheet; a bed REFUSES to pour while its predictions entry stands absent">>
 
 <<~/ahu>>
 
@@ -49,7 +49,7 @@ Three kinds stand distinct as ''declared dialects'': memetic-wikitext (the house
 
 !! The three corpora ~ liturgy, pidgin, and the foreign shelf
 
-<<~ranks corpus-registers liturgical ~ the bags canon whole — sigil-dense, self-describing, formally regular; the wrapping rides native here -> pidgin ~ the ai-session transcripts — turn-grained worldlines braiding prose, code, tool-speech, and sigils mid-sentence -> foreign ~ the TiddlyWiki5 tree whole — a fifteen-year human-authored codebase carrying two real orders (spatial dir-tree · temporal git history) and all three meaning strata in its own conventions>>
+<<~ scale corpus-registers "liturgical ~ the bags canon whole — sigil-dense, self-describing, formally regular; the wrapping rides native here -> pidgin ~ the ai-session transcripts — turn-grained worldlines braiding prose, code, tool-speech, and sigils mid-sentence -> foreign ~ the TiddlyWiki5 tree whole — a fifteen-year human-authored codebase carrying two real orders (spatial dir-tree · temporal git history) and all three meaning strata in its own conventions">>
 
 The register split rides as a ''hypothesis the harness itself tests'': liturgical and pidgin beds at matched size should induce visibly different constructicons, and a mixed bed's templates should classify register above chance — a separation trial that dodges the size and wrapping confounds by construction.
 
@@ -57,6 +57,6 @@ The register split rides as a ''hypothesis the harness itself tests'': liturgica
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E3Kob-SxQMYDws1-uRJPC7_ZsOqgU5BNohGLt1Tmm7E
+<<^ code="&#x0003;">>ni:///sha-256;DSUAzeS089pSVQCQ1jN45Ijo1jHDcc1dbVkQguK9Mrg
 
 <<^ code="&#x0004;" -> to="?">>

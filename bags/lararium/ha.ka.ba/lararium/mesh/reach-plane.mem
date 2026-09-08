@@ -122,7 +122,7 @@ Of the surfaces a foreign identity protocol offers, take the ''resolvable-identi
 
 A reach credential rides the ''same'' chain a bag rides (#/cap-tier) and the ''same'' delivery mechanism (keyring-delivery to a recipient set). It differs in one structural way: ''the chain truncates.''
 
-<<~ranks reach veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · keyring-delivered so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match>>
+<<~ scale reach "veil@0 ~ {this-vessel} · the credential opens nowhere else -> personagroup@1 ~ {your-fleet} · keyring-delivered so every device of yours may post -> contract@2 ~ {your-fleet ∪ a-cabal} · a genuinely shared account, and the blast radius grows to match">>
 
 ''PUBLIC IS REFUSED BY TYPE.'' A world-readable credential stops being a credential. The reach plane therefore carries a ''ceiling at CONTRACT'' where the content chain carries none — the one place the two planes' orders differ, and the difference is not a policy but a definition.
 
@@ -278,6 +278,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qieEgjsorqw2_xXTYPjYE1ljk2XeZLbDIC04Ivd8i_k
+<<^ code="&#x0003;">>ni:///sha-256;fQp2NA9_LdoeTN0YX-90EH3HPS9bSpOsZiSwZY_g2ZU
 
 <<^ code="&#x0004;" -> to="?">>

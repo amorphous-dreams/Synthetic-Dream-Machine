@@ -28,7 +28,7 @@ The golden path for getting //any// chat session + its telemetry into the palace
 ''write-bare-then-enrich-in-a-second-pass'' (ELT load-then-transform — a race window, an
 "eventually annotated" drawer). The cure: ''annotate at the source, write once.''
 
-<<~ranks flow source -> producer(exchange-assembler) -> capture-verb -> nalu(born-annotate+WAL) -> flush(mine --source ndjson) -> mempalace-drawer>>
+<<~ scale flow "source -> producer(exchange-assembler) -> capture-verb -> nalu(born-annotate+WAL) -> flush(mine --source ndjson) -> mempalace-drawer">>
 
 <<~/ahu>>
 
@@ -188,6 +188,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;azdzBD1FgaT4QjFV4s4ChwwU0kaSuUiNqyMh2ppVM80
+<<^ code="&#x0003;">>ni:///sha-256;B4x8k4qMnS5kac9VKRi6eZImboYkrnG-KEtpBuYIfZk
 
 <<^ code="&#x0004;" -> to="?">>

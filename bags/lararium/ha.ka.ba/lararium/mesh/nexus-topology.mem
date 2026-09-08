@@ -66,7 +66,7 @@ The `.app` TLD ships ''HSTS-preloaded across the whole zone'' — browsers refus
 
 !! Three serving layers ~ where a request actually lands
 
-<<~ranks serving household@0..6 ~ a split-horizon resolver answers Nexus names with LAN addresses; the home node serves; no internet at all -> operator-lan@7..13 ~ a contracted operator routes their own LAN under a delegated challenge label, forwarding outward through the Nexus name -> cloud-shelf@14..20 ~ the general internet resolves to the Nexus's own hosts>>
+<<~ scale serving "household@0..6 ~ a split-horizon resolver answers Nexus names with LAN addresses; the home node serves; no internet at all -> operator-lan@7..13 ~ a contracted operator routes their own LAN under a delegated challenge label, forwarding outward through the Nexus name -> cloud-shelf@14..20 ~ the general internet resolves to the Nexus's own hosts">>
 
 ''The same name answers differently by vantage'' — which reads as the honest shape rather than a trick, because a causal island only ever knows what its own resolver told it (#/causal-islands). A household that loses its uplink keeps every local answer; a visitor from the wider internet reaches the cloud shelf; neither one holds a global view, and neither needs one.
 
@@ -216,6 +216,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DekYBPpIMkDMD6lKULHrZMF3pLED-QtihstMAZNYrCg
+<<^ code="&#x0003;">>ni:///sha-256;j6rvdMtvPz5lfw1v1EcnOFe7ytsR0cYUaeJEzTA4Qkw
 
 <<^ code="&#x0004;" -> to="?">>

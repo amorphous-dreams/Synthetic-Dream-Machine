@@ -50,7 +50,7 @@ A bag answers ''one question'' about its sealing — WHO holds the read-cap — 
 
 The tier names the read-cap holder-set, ascending in openness — a lower rank names a ''smaller'' set (fewer readers → more restrictive):
 
-<<~ranks captier veil@0 ~ {this-vessel} · cleartext-local, nothing crosses in the clear -> personagroup@1 ~ {your-fleet} · keyring-delivered to the operator's own persona fleet -> contract@2 ~ {your-fleet ∪ a-cabal} · keyring-delivered to the fleet PLUS a contracted cabal -> public@3 ~ {world} · the deterministically-federatable public shelf>>
+<<~ scale captier "veil@0 ~ {this-vessel} · cleartext-local, nothing crosses in the clear -> personagroup@1 ~ {your-fleet} · keyring-delivered to the operator's own persona fleet -> contract@2 ~ {your-fleet ∪ a-cabal} · keyring-delivered to the fleet PLUS a contracted cabal -> public@3 ~ {world} · the deterministically-federatable public shelf">>
 
 ''TWO RATCHETS, OPPOSITE DIRECTIONS, ORTHOGONAL PLANES.'' This chain ratchets ''tighter'' — a declaration only ever narrows the read-cap holder-set, mechanically never widens it. The dwelling plane ratchets the other way: `nohopapa` ''deposits'' depth by staying, and erodes when tending stops (`identity-enacts-relation`). Disclosure narrows; dwelling deepens. `papa` carries //layer · rank · structured sequence// and BOTH planes read as strata — which is exactly why they must stay named apart. ''A deep dweller holds no wider read-cap, and a public bag confers no depth.'' Fusing them would let standing buy disclosure, which is the shape this stack refuses.
 
@@ -156,6 +156,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HfbNCJ8Wmh5X-jR6bAfiii9sTI8pIkOIgFEmH7_RF8c
+<<^ code="&#x0003;">>ni:///sha-256;OsiUWvPFPPad1rOb6WyA9IfIC3jDZLGc8usQFXil7S8
 
 <<^ code="&#x0004;" -> to="?">>

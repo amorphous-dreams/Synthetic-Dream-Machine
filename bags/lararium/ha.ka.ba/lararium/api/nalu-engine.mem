@@ -117,7 +117,7 @@ across all bags, //per-bag accumulators do not exist// — yet `projection-nalu`
 ''carrier-root'' and ''per bag''. Both stand; they sit at OPPOSITE ENDS of the one shape
 `SOURCE → gate → SINK`, never the same layer.
 
-<<~ranks shore UPSTREAM/shore-coalesce-per-key -> DOWNSTREAM/engine-unified-queue-per-frame>>
+<<~ scale shore "UPSTREAM/shore-coalesce-per-key -> DOWNSTREAM/engine-unified-queue-per-frame">>
 
 * ''UPSTREAM — the shore gates (physics).'' `MemeProvider` (the TS-side, before the
   shore crossing) draws the coalesce gates: a per-URI debounce window collapses the
@@ -156,6 +156,6 @@ transact per frame (crest). WITNESSED: the queue (`nalu-engine.ts`) + the shore 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QlYxQGcAVuuJBvp0nFtcR6qoaJgvNYGkpYmQlZauhds
+<<^ code="&#x0003;">>ni:///sha-256;5JvqeclNXzZOhc7WzZ_Rfb2JH-BBuZzVA6S80b0aN_A
 
 <<^ code="&#x0004;" -> to="?">>

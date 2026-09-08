@@ -31,7 +31,7 @@ and the named `FFZ_PROFILES` (per-domain bound tuples).
 
 The five levels mark rhythmic position, anchored to the operator's perceptual grain:
 
-<<~ranks ffz pulse@0 ~ sub-perceptual system tick (operator-invisible) -> beat@1 ~ operator perceptual grain — the smallest transition the operator treats as a completed meaningful unit; the invariant anchor -> measure@2 ~ the topic-shift, a lexical-cohesion boundary (membership, #the-spine) -> arc@3 ~ the session-island (source_file, given free) -> theme@4 ~ the thread/project cluster — a content-community spanning islands, anti-aliasing guard, unbounded by invariant, operator-declared>>
+<<~ scale ffz "pulse@0 ~ sub-perceptual system tick (operator-invisible) -> beat@1 ~ operator perceptual grain — the smallest transition the operator treats as a completed meaningful unit; the invariant anchor -> measure@2 ~ the topic-shift, a lexical-cohesion boundary (membership, #the-spine) -> arc@3 ~ the session-island (source_file, given free) -> theme@4 ~ the thread/project cluster — a content-community spanning islands, anti-aliasing guard, unbounded by invariant, operator-declared">>
 
 L1 (Beat) ticks on the ''grounding act'' — the operator's acknowledgment — never on
 response delivery; L4 (Theme) holds unbounded by invariant. ''The grounding rule'':
@@ -66,19 +66,19 @@ per-island ratchet (Beat, below) stays local and partial, never palace-wide.
 FFZ stands as a ''rooted tree'' read as a ''meet-semilattice'', carrying the ULTRAMETRIC
 `d = co-depth(LCA)`. ''ONE operation reads three ways:''
 
-<<~ranks meet ultrametric-distance ~ how far up two drawers climb before they share a band -> longest-common-prefix ~ the shared head their two addresses hold -> lattice-meet ~ their lowest common ancestor, the LCA>>
+<<~ scale meet "ultrametric-distance ~ how far up two drawers climb before they share a band -> longest-common-prefix ~ the shared head their two addresses hold -> lattice-meet ~ their lowest common ancestor, the LCA">>
 
 So the rhythmic distance between two drawers measures ''how far up the tree they climb before''
 ''they share a band'' — the same turn? only the same session? only the same project? —
 ''ORDER-FREE, no timeline crossed''. The geometry resolves clean:
 
-<<~ranks geometry address ~ the node -> distance ~ the shared-band height -> coarsen ~ prefix-truncate -> handback ~ the lattice JOIN -> local-first ~ presheaf locality, each island reading its own section, WITHOUT the sheaf's global reassembly>>
+<<~ scale geometry "address ~ the node -> distance ~ the shared-band height -> coarsen ~ prefix-truncate -> handback ~ the lattice JOIN -> local-first ~ presheaf locality, each island reading its own section, WITHOUT the sheaf's global reassembly">>
 
 !!! The per-band membership schema ~ five grains, each island local
 
 The discourse reads its own structure at five grains; every membership stays island-local:
 
-<<~ranks membership pulse ~ the drawer / inscription-atom -> beat ~ the turn / grounding-act — the LONE ratchet, per-island, null-graceful where a foreign store carries no turns -> measure ~ the topic-shift, a lexical-cohesion boundary -> arc ~ the session-island (source_file, given free) -> theme ~ the thread / project cluster — a rhizome-graph community, spanning islands by CONTENT, never by time>>
+<<~ scale membership "pulse ~ the drawer / inscription-atom -> beat ~ the turn / grounding-act — the LONE ratchet, per-island, null-graceful where a foreign store carries no turns -> measure ~ the topic-shift, a lexical-cohesion boundary -> arc ~ the session-island (source_file, given free) -> theme ~ the thread / project cluster — a rhizome-graph community, spanning islands by CONTENT, never by time">>
 
 Beat alone ratchets (the grounding act, #contract); the bands around it read as ''containment'',
 derived locally. This ''re-levels'' the earlier calendar reading — the old "day" band retires
@@ -130,7 +130,7 @@ grain carries containment, never a colinear count.
 
 Three readings of one shape converge, cited as grounds:
 
-<<~ranks convergence formal ~ the ultrametric / Baire metric · the meet-semilattice · the materialized-path tree — the address IS the longest-common-prefix -> natural ~ cladistics · the prosodic hierarchy · GTTM metrical structure · the renormalization group · Schenkerian levels · X-bar · RST · biological levels-of-organization (8 of 9 surveyed domains read a nested non-counting membership) -> cached-projection ~ FfzClock as a materialized VIEW, "as of my last read" (Kleppmann local-first), re-derivable from the edge-DAG, never the authority (#the-two-domain-boundary, [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/ffz-binding]])>>
+<<~ scale convergence """formal ~ the ultrametric / Baire metric · the meet-semilattice · the materialized-path tree — the address IS the longest-common-prefix -> natural ~ cladistics · the prosodic hierarchy · GTTM metrical structure · the renormalization group · Schenkerian levels · X-bar · RST · biological levels-of-organization (8 of 9 surveyed domains read a nested non-counting membership) -> cached-projection ~ FfzClock as a materialized VIEW, "as of my last read" (Kleppmann local-first), re-derivable from the edge-DAG, never the authority (#the-two-domain-boundary, [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/ffz-binding]])""">>
 
 Eight of nine natural domains plus the formal linchpin
 (ultrametric ≡ LCP ≡ lattice-meet) converge on the membership-tree reading; the convergence
@@ -148,7 +148,7 @@ sharpens the boundary rather than weakening it.
 ''serves the MEMES, never this clock).'' The boundary follows the actor-boundary; it splits
 clean in two:
 
-<<~ranks domain inside-automerge ~ docs · wiki-CRDTs: ''Automerge logical time'' owns causal order (`<counter,actorId>` · `getHeads` · the `drifted` frontier as a fork). FfzClock NEVER carries causal order here, and `ffzCompare`/`ffzMerge`'s LWW total-order MUST NOT drive a revocation or fork decision inside the CRDT — a rhythmic total-order ruling a causal question manufactures a global-now the mesh cannot hold (#three-instruments, lar:///ha.ka.ba/lares/api/pono/causal-islands) -> everywhere-else ~ all non-Automerge domains where its rhythmic position applies: the ''agent-worldline cadence'' (the worldline's happened-before itself rides the reified edge-DAG, NOT FfzClock — see lar:///ha.ka.ba/lararium/api/agent-worldline#/time; FfzClock paces the worldline's grain only) · ''external streams'' pulled across the causal-island boundary (game · Mudlet · video · DAW · market feed · CI/CD · IoT) · ''capability-leases'' (epoch-cadence decay). FfzClock is the temporal instrument for all of them, profile-scoped>>
+<<~ scale domain "inside-automerge ~ docs · wiki-CRDTs: ''Automerge logical time'' owns causal order (`<counter,actorId>` · `getHeads` · the `drifted` frontier as a fork). FfzClock NEVER carries causal order here, and `ffzCompare`/`ffzMerge`'s LWW total-order MUST NOT drive a revocation or fork decision inside the CRDT — a rhythmic total-order ruling a causal question manufactures a global-now the mesh cannot hold (#three-instruments, lar:///ha.ka.ba/lares/api/pono/causal-islands) -> everywhere-else ~ all non-Automerge domains where its rhythmic position applies: the ''agent-worldline cadence'' (the worldline's happened-before itself rides the reified edge-DAG, NOT FfzClock — see lar:///ha.ka.ba/lararium/api/agent-worldline#/time; FfzClock paces the worldline's grain only) · ''external streams'' pulled across the causal-island boundary (game · Mudlet · video · DAW · market feed · CI/CD · IoT) · ''capability-leases'' (epoch-cadence decay). FfzClock is the temporal instrument for all of them, profile-scoped">>
 
 ''The retired over-claim stays retired.'' Earlier chronometer research read FfzClock's
 epoch-dominance as //"universal causal ordering across all instances."// That reading
@@ -256,7 +256,7 @@ A form-palace reads this clock's stamps as a ''cached projection'' — its world
 (lar:///ha.ka.ba/lararium/api/living-grammar-palace#/ffz-binding), never the causal authority. The
 ratified P0 (12-Voice mufakat, 2026-06-29) ships only ''TWO'' ordering ladders off that facet:
 
-<<~ranks p0-ladder causal-depth ~ the bare turn-DAG coordinate, projected straight off the edge-DAG -> settledness ~ how firmly a captured move's form has entrenched>>
+<<~ scale p0-ladder "causal-depth ~ the bare turn-DAG coordinate, projected straight off the edge-DAG -> settledness ~ how firmly a captured move's form has entrenched">>
 
 ''Six ladders WAIT for a real query'' — ''transaction-axis · consolidation-ascent · retention-decay ·''
 ''compressed-past · cross-island-freshness · capture-now'' — no ladder ships ahead of a reader. The
@@ -283,7 +283,7 @@ Three structural patterns recur across every surveyed domain: a ''bounded inner 
 below the epoch); ''continuous-to-discrete duality'' (a 120 Hz engine ticks L0 only
 when a step produces an operator-meaningful event, not 120×/s).
 
-<<~ranks profile operator-agent ~ default Lares (the Claude-agent profile) · L0/L1/L2/L3 = 64/512/64/128 (Loom-grounded @ 100+-turn scale; SHAPE grounded, constants SEEDED — calibrate against real transcript histograms): L0 Pulse = one generation SEGMENT (`stop_reason`/tool_use round) ≤64/Beat, with a block sub-offset ≤16 (index, not a tick); L1 Beat = one grounded exchange turn ≤512/Measure; L2 Measure = session ≤64/Arc; L3 Arc = day ≤128/Theme. Ticks on the operator grounding act, read from the HARNESS transcript (#/rhythmic-address) -> ttrpg ~ 128/512/2048/32768; scene-beat = Beat -> strategy ~ 256/1024/8192/131072; turn-resolution = Beat -> action-rpg ~ 512/2048/16384/262144; encounter-beat = Beat -> physics-sandbox ~ Katamari-style 1024/256/4096/65536; rolling-decision-burst = Beat -> rhythm-daw ~ 191/5/31/1024 (coprime-prime near 192/4/32 — shared factors collide in hash-merge paths); measure/bar = Beat -> ci-cd ~ 64/128/1024/16384; pipeline-stage = Beat -> market-iot ~ 1024/512/4096/65536; candle-close / sensor-threshold = Beat -> async-social ~ PR/Slack 32/64/512/8192; review-round = Beat>>
+<<~ scale profile "operator-agent ~ default Lares (the Claude-agent profile) · L0/L1/L2/L3 = 64/512/64/128 (Loom-grounded @ 100+-turn scale; SHAPE grounded, constants SEEDED — calibrate against real transcript histograms): L0 Pulse = one generation SEGMENT (`stop_reason`/tool_use round) ≤64/Beat, with a block sub-offset ≤16 (index, not a tick); L1 Beat = one grounded exchange turn ≤512/Measure; L2 Measure = session ≤64/Arc; L3 Arc = day ≤128/Theme. Ticks on the operator grounding act, read from the HARNESS transcript (#/rhythmic-address) -> ttrpg ~ 128/512/2048/32768; scene-beat = Beat -> strategy ~ 256/1024/8192/131072; turn-resolution = Beat -> action-rpg ~ 512/2048/16384/262144; encounter-beat = Beat -> physics-sandbox ~ Katamari-style 1024/256/4096/65536; rolling-decision-burst = Beat -> rhythm-daw ~ 191/5/31/1024 (coprime-prime near 192/4/32 — shared factors collide in hash-merge paths); measure/bar = Beat -> ci-cd ~ 64/128/1024/16384; pipeline-stage = Beat -> market-iot ~ 1024/512/4096/65536; candle-close / sensor-threshold = Beat -> async-social ~ PR/Slack 32/64/512/8192; review-round = Beat">>
 
 All profiles leave L4 = ∞ (operator-declared epoch). ''HOMONYM — this //epoch// names a RHYTHMIC BAND and no mechanism''; the mesh's fencing epoch is a different word wearing the same letters (epoch-binding-surfaces#whose-word-is-it). A grep for the fence should read past every L4 mention here. The register names
 (Pulse/Beat/Measure/Arc/Theme) apply uniformly; only the bounds differ.
@@ -300,7 +300,7 @@ island-local, the membership names the container.
 Sits above the exploration/campaign clock; its Pulse ticks whenever the exploration
 clock's Theme (L4) advances:
 
-<<~ranks world week@W0 ~ ticks when exploration Theme ticks -> month@W1 ~ 4 World Pulses -> season@W2 ~ ~3 World Beats -> year@W3 ~ 4 Measures -> era@W4 ~ unbounded, operator-declared>>
+<<~ scale world "week@W0 ~ ticks when exploration Theme ticks -> month@W1 ~ 4 World Pulses -> season@W2 ~ ~3 World Beats -> year@W3 ~ 4 Measures -> era@W4 ~ unbounded, operator-declared">>
 
 Applies in campaign worlds, persistent simulations, any domain needing a calendar
 above the session clock. Canonical grain reference:
@@ -321,7 +321,7 @@ lar:///ha.ka.ba/lararium/api/agent-worldline#/time), and answers //"where in the
 
 !!! The address ~ a prefix-truncatable materialized PATH (the membership tree)
 
-<<~ranks ffz-address theme ~ epoch -> arc ~ day -> measure ~ session -> beat ~ one grounded exchange turn -> segment ~ one generation step (the tick) -> block ~ a sub-offset, index NOT a tick>>
+<<~ scale ffz-address "theme ~ epoch -> arc ~ day -> measure ~ session -> beat ~ one grounded exchange turn -> segment ~ one generation step (the tick) -> block ~ a sub-offset, index NOT a tick">>
 
 `lar_ffz = Theme.Arc.Measure.Beat.Segment[.block]` — a positional address, ''prefix-valid at''
 ''every cut'' (Geohash/Plus-Codes): drop `.block` → the segment; drop `.Segment` → the Beat —
@@ -379,7 +379,7 @@ The address realizes as a ''hand-rolled materialized-path'' — the stored path 
 longest-common-prefix, so distance reads by string-prefix, no separate index. Deliberate tool
 choices follow the spine:
 
-<<~ranks tool materialized-path ~ a dendrogram / TREE, NOT the p-adic metric (a fixed prime couples the bands — integer coupling, the very thing φ refuses, #non-interference) -> nested-intervals ~ store nested INTERVALS, never integer lft/rgt (lft/rgt is a global positional count that re-breaks on every insert) -> measure-boundary ~ reuse the nomic embedder, cosine-drop = the topic-shift, the same encoder the formpalace holds -> theme-community ~ python-igraph CPM-Leiden + a label-propagation delta — INCREMENTAL, so a fresh node joins a community with no global recompute (no-global-now) -> the-cap-boundary ~ @endo (Far / CapTP) carries the #has-cap-stack boundary ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]])>>
+<<~ scale tool "materialized-path ~ a dendrogram / TREE, NOT the p-adic metric (a fixed prime couples the bands — integer coupling, the very thing φ refuses, #non-interference) -> nested-intervals ~ store nested INTERVALS, never integer lft/rgt (lft/rgt is a global positional count that re-breaks on every insert) -> measure-boundary ~ reuse the nomic embedder, cosine-drop = the topic-shift, the same encoder the formpalace holds -> theme-community ~ python-igraph CPM-Leiden + a label-propagation delta — INCREMENTAL, so a fresh node joins a community with no global recompute (no-global-now) -> the-cap-boundary ~ @endo (Far / CapTP) carries the #has-cap-stack boundary ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]])">>
 
 These name the implementation seat, never a built surface; the
 serializer + Claude-agent profile already stand (#/open), the membership-derivation (Measure
@@ -471,6 +471,6 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5CGy0VN9JkFAxu4LVB65f2WyII9ApaqLc7tdZasl5y4
+<<^ code="&#x0003;">>ni:///sha-256;Gy2zE1T6cOjkb5rgANlJi3PDzMzvNM22b9NpI6qQ9LU
 
 <<^ code="&#x0004;" -> to="?">>

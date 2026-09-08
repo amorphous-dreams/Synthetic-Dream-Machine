@@ -234,8 +234,8 @@ disabled''. A dismissal that silences one instance teaches the instrument nothin
 Dixon & Wickens separate two channels that MUST NOT trade against
 each other:
 
-<<~ranks compliance acting-when-it-fires ~ degraded by FALSE ALARMS>>
-<<~ranks reliance trusting-the-silence ~ degraded by MISSES>>
+<<~ scale compliance "acting-when-it-fires ~ degraded by FALSE ALARMS">>
+<<~ scale reliance "trusting-the-silence ~ degraded by MISSES">>
 
 ''A quiet run makes a claim.'' Suppressing a noisy check to protect compliance draws down
 reliance, and nothing surfaces that draw unless the instrument counts both.
@@ -321,6 +321,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NgIGQJU6kcMhw3q0xMUr2BQUxIWIWegJW5H56oS35uA
+<<^ code="&#x0003;">>ni:///sha-256;cJStZP01Lpp6tPa5j5os_P-6UlVbohnpEJn21PlNBWE
 
 <<^ code="&#x0004;" -> to="?">>

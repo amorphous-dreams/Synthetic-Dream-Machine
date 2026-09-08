@@ -58,8 +58,8 @@ No axis commands the other. The SOCIAL axis carries ''delegation and read-access
 
 Read the two axes as a ''2D coordinate plane, never a single ladder''. A vessel stands at a `(WHO, INFRA)` ''point'' — its two standings set independently, each climbed on its own gate; the ▲-stacks above draw each axis //alone//, never a combined rank. Neither coordinate ranks the other.
 
-* ''INFRA axis (carriage · contract-gated)'' — the shrine-tier scaling, each step a wider carriage radius entered by a deliberately-signed contract: <<~ranks infra consumer -> Herm -> Lararium -> Household -> Crossroads -> Temple -> Nexus -> DreamNet>>. The Amorphous Dreams Cabal gates the upper steps at first (the kahu floor, #infra-axis), loosening as the mesh thickens.
-* ''WHO axis (read · pledge-gated)'' — the veil and its handles, each step entered by a pledge a member vouches: <<~ranks who anon-veil -> PersonaGroup-Handle -> CabalGroup-Circle>>. Read-scope rides this axis alone (#/social-axis).
+* ''INFRA axis (carriage · contract-gated)'' — the shrine-tier scaling, each step a wider carriage radius entered by a deliberately-signed contract: <<~ scale infra "consumer -> Herm -> Lararium -> Household -> Crossroads -> Temple -> Nexus -> DreamNet">>. The Amorphous Dreams Cabal gates the upper steps at first (the kahu floor, #infra-axis), loosening as the mesh thickens.
+* ''WHO axis (read · pledge-gated)'' — the veil and its handles, each step entered by a pledge a member vouches: <<~ scale who "anon-veil -> PersonaGroup-Handle -> CabalGroup-Circle">>. Read-scope rides this axis alone (#/social-axis).
 
 ''"Operator" names a VERTICAL position on the INFRA axis — runs-infrastructure — never a WHO/social tier.'' A human who founds and runs a Lararium reads //operator// on INFRA; that same human faces the WHO axis under a veiled persona, anon by default. Both standings ride one body at once and never collapse — text that files "operator" beside anon/persona/cabal mislabels an INFRA-vertical standing as a social rung. The correction holds the operator on INFRA.
 
@@ -479,6 +479,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kY_3e6HoC7Fof0icPRA9SUDZq6yiZL7v0-hllQnJzbM
+<<^ code="&#x0003;">>ni:///sha-256;WqDNbbi2YUGFLsmGrAqXO0zDHZ2TpRSLk3Mtz9G_XvE
 
 <<^ code="&#x0004;" -> to="?">>

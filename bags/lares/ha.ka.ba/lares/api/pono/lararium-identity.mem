@@ -251,7 +251,7 @@ only when severance must run ''irreversible AND jointly-witnessed AND costly AND
 other crossing ''LIFTs'' — one key climbs over time. The test reads as one question: //does the//
 //crossing need to destroy the way home, or merely grant a wider room?//
 
-<<~ranks crossing anon→known-user ~ LIFT — a first signed interaction mints a petname, trust climbs from zero -> known-user→operator ~ the WITNESSED ceremony — the signed edge ENACTS it, never an auto-grant -> ongoing-standing ~ the LEASE governs (#/the-lease), soft-state even after the crossing>>
+<<~ scale crossing "anon→known-user ~ LIFT — a first signed interaction mints a petname, trust climbs from zero -> known-user→operator ~ the WITNESSED ceremony — the signed edge ENACTS it, never an auto-grant -> ongoing-standing ~ the LEASE governs (#/the-lease), soft-state even after the crossing">>
 
 The ''HOLD'' path fires when a //lived// veil carries a public past that MUST stay severed from the
 persona it joins — keeping the key would publicly weld the anon's history to the group (the
@@ -555,7 +555,7 @@ architecture's task: anchor it at the contract, never re-invent it.
 The temporary build hides behind four ports, drawn at Keyhive/Beelay's own shores, so the
 real stack slots in piecewise:
 
-<<~ranks port identity ~ vessel keypair, opaque pubkey -> capabilities ~ signed delegation edges (→ Keyhive groups) -> group-keying ~ sealed-box wrap + rotate (→ BeeKEM CGKA) -> transport ~ Automerge sync over our relay (→ Beelay sedimentree)>>
+<<~ scale port "identity ~ vessel keypair, opaque pubkey -> capabilities ~ signed delegation edges (→ Keyhive groups) -> group-keying ~ sealed-box wrap + rotate (→ BeeKEM CGKA) -> transport ~ Automerge sync over our relay (→ Beelay sedimentree)">>
 
 ''Honest posture.'' This layer has ''no forward-secrecy and no''
 ''retroactive revocation'' — and on an append-only CRDT that fact ''IS the security posture'',
@@ -613,6 +613,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5LOptgUl-5OKmj2r2lgYmGURsxiMfw6CcJBchUlPAhg
+<<^ code="&#x0003;">>ni:///sha-256;YNrT2XdnoodybfQpccTycYdr4gYD47wVRMDwqGOyY3o
 
 <<^ code="&#x0004;" -> to="?">>

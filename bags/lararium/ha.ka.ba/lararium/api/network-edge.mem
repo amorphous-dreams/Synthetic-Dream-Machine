@@ -28,7 +28,7 @@ written   = "2026-06-26"
 
 A lararium sits at the edge of an ''unbounded, only-partially-known'' peer set — no registry, no global census, only "as of my last sync." Four research spirits (Erdős/random-graph · local-first SOTA · biology · physics/social, 2026-06-26) swept this edge and ''converged on one shape'':
 
-<<~ranks edge-law connects-as-a-PHASE-TRANSITION -> reasoned-PROBABILISTICALLY -> carried-by-the-WEAK-CROSSING -> admitted-by-admit-then-SEVER>>
+<<~ scale edge-law "connects-as-a-PHASE-TRANSITION -> reasoned-PROBABILISTICALLY -> carried-by-the-WEAK-CROSSING -> admitted-by-admit-then-SEVER">>
 
 The federated core is ''not built'' — past a threshold of local crossings it ''cannot help but exist'', the way a giant component crystallizes in a random graph. Design //for the threshold//, never for the census.
 
@@ -123,7 +123,7 @@ The local-first field converged hard (2024–2026) and ships the crossing's mach
 
 A sibling Lares (tending the intra-island gate-models) handed this ring across the tideline: ''the network ring is not a new invention — it is the projection-nalu gate-model with the SINK moved `local → peer → many`.'' The mapping (mirror: `projection-nalu#network-ring`, `dreamnet-architecture#transport-kernel`, `federated-causal-islands#task-handoff`):
 
-<<~ranks transport-kernel accumulate=reliable-ordered -> coalesce=gossip-epidemic -> servo=congestion-control>>
+<<~ scale transport-kernel "accumulate=reliable-ordered -> coalesce=gossip-epidemic -> servo=congestion-control">>
 
 * ''accumulate → reliable-ordered'' (TCP/ARQ; the reserve = the retransmit buffer; CRDT-as-dedup = at-least-once + idempotent; vector clocks order across peers — never a global now).
 * ''coalesce → gossip / epidemic'' (newest-wins → last-write-wins; one → many; eventual; the lossy drop stays the correct dual at scale).
@@ -140,6 +140,6 @@ A sibling Lares (tending the intra-island gate-models) handed this ring across t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7_d0Tbc82BBFFFQ7-l1SgvENEGkot1mabbc2PeAw83Q
+<<^ code="&#x0003;">>ni:///sha-256;-0wzEKSplAFZUwqQg5_aM55j02vWKbyyYRe2AdVhNx0
 
 <<^ code="&#x0004;" -> to="?">>

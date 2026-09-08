@@ -87,7 +87,7 @@ the pool.
 
 An operator's membership entry carries the ''floor and nothing above it'' (operator-ruled):
 
-<<~ranks payload operator-pubkey -> accepts-carriage -> charter-epoch>>
+<<~ scale payload "operator-pubkey -> accepts-carriage -> charter-epoch">>
 
 ''No name, no email, no device list, no behavior.'' A quorum-signed `MembershipEntry` (the antigen's
 allow-twin, `blocked{}` ⊥ `members{}`, #carry-contract) — the operator signs "I accept carriage",
@@ -204,6 +204,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FK0RX9f344mX0SFMiI1ZJZgiv6DNdutm29zdoIgi7uE
+<<^ code="&#x0003;">>ni:///sha-256;3_38XuUMEoBZtxOkFN6yQh2DSns-czD47OkeY66O1b8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -45,7 +45,7 @@ fast local ''submit/await'' channel. Every web3 invariant survives.
 
 !! Split by Topology ~ substrate-not-sovereignty, made literal
 
-<<~ranks bind co-located ~ Unix-domain socket (the docker.sock / tailscale-LocalAPI / gopls thin-client→warm-daemon shape); same machine = share the substrate -> remote ~ WebSocket + leaf-vessel + full sync; crossing the mesh = a real island boundary, full Ed25519 V3 gate>>
+<<~ scale bind "co-located ~ Unix-domain socket (the docker.sock / tailscale-LocalAPI / gopls thin-client→warm-daemon shape); same machine = share the substrate -> remote ~ WebSocket + leaf-vessel + full sync; crossing the mesh = a real island boundary, full Ed25519 V3 gate">>
 
 ''The CLI holds ONE end of that ladder.'' A remote peer speaks WS to the ''daemon's own''
 ''relay'' — the browser vessel does exactly this. The CLI carries no WS and no Automerge:
@@ -170,6 +170,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wiUksT2jHihRVbe96QtntVmkYJqhejAaMLpRsyAG_eI
+<<^ code="&#x0003;">>ni:///sha-256;ngkFMLfSKCS2qLOuB4dyQP_DUIcIucFRwdXysOphHdU
 
 <<^ code="&#x0004;" -> to="?">>

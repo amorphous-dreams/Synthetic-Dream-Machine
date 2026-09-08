@@ -62,7 +62,7 @@ The maintainer's anti-pattern names //undeclared// writes, not chroma writes. So
 
 The net (flat scalars — chroma's law):
 
-<<~ranks lar-net lar_hv ~ enrich-version gate -> lar_surface ~ originating harness -> -> lar_bearing_conf ~ 0..20 gradient -> lar_aim · lar_yield ~ bearing -> lar_voices ~ who held it -> lar_feedback ~ the closing tally -> lar_drift ~ parse drift -> lar_hall ~ function-hall>>
+<<~ scale lar-net "lar_hv ~ enrich-version gate -> lar_surface ~ originating harness -> -> lar_bearing_conf ~ 0..20 gradient -> lar_aim · lar_yield ~ bearing -> lar_voices ~ who held it -> lar_feedback ~ the closing tally -> lar_drift ~ parse drift -> lar_hall ~ function-hall">>
 
 `lar_hv` carries the Kappa upgrade gate: a logic change bumps it, and the next sweep re-enriches exactly the stale drawers.
 
@@ -136,6 +136,6 @@ lares harvest --all                                      # sweep every transcrip
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SCWpgRbD1Yf2gJToFzbDR5R5MEhAjms8KVU1wd1R-Is
+<<^ code="&#x0003;">>ni:///sha-256;7GKsrUaXN9U0s5lcgwWEb8Q8cVWD4-A7pjvMGAgkmeg
 
 <<^ code="&#x0004;" -> to="?">>

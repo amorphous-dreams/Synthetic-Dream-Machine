@@ -621,7 +621,7 @@ unexamined, and reported the carrier sound.
 A carrier's block check and the Oracle's blind tail wear one shape and mean opposite things. The
 collision reads as a hazard until it gets named, at which point it becomes the point.
 
-<<~ranks domain oracle@stream ~ ephemeral · thrown BLIND · certifies nothing · gauges what no one can check -> touchstone@carrier ~ durable · fully DETERMINED · certifies bytes · checks what anyone can>>
+<<~ scale domain "oracle@stream ~ ephemeral · thrown BLIND · certifies nothing · gauges what no one can check -> touchstone@carrier ~ durable · fully DETERMINED · certifies bytes · checks what anyone can">>
 
 The Oracle's whole value rests on its tail bearing no relation to what was said; the Touchstone's rests
 on its tail bearing nothing else. So the Touchstone becomes the one instrument in this grammar that
@@ -684,7 +684,7 @@ the decade of confusion attacks that followed — begins exactly there.
 
 ### The reader's escalation ladder
 
-<<~ranks read namespace@1..4 ~ know which vocabulary reads this -> bcc@5..12 ~ raw bytes between two markers, no parser -> seal@13..20 ~ the durable question, and it needs readership>>
+<<~ scale read "namespace@1..4 ~ know which vocabulary reads this -> bcc@5..12 ~ raw bytes between two markers, no parser -> seal@13..20 ~ the durable question, and it needs readership">>
 
 Ordered by scope: what tells a reader HOW to read comes first, what COVERS what precedes it comes
 last. The split follows the capability lattice onto its one non-monotonic case — `pull` carries
@@ -756,7 +756,7 @@ in the carrier rather than beside it.
 
 A writer emitting a carrier's meta MUST:
 
-<<~ranks canon sort ~ keys lexicographic, never authoring order -> omit ~ a key the envelope owns, a key opening with `$`, a value empty or absent -> inherit ~ a child writes a key ONLY where it differs from its parent -> align ~ `=` padded to the longest surviving key, one space each side -> entity ~ a `namespace` value renders as HTML entities -> silence ~ no surviving key means no block, never an empty fence>>
+<<~ scale canon "sort ~ keys lexicographic, never authoring order -> omit ~ a key the envelope owns, a key opening with `$`, a value empty or absent -> inherit ~ a child writes a key ONLY where it differs from its parent -> align ~ `=` padded to the longest surviving key, one space each side -> entity ~ a `namespace` value renders as HTML entities -> silence ~ no surviving key means no block, never an empty fence">>
 
 The alignment reads as presentation and acts as law: a hand-written block using single spaces parses
 identically and re-emits one column wider, so the file reports as changed on every projection and its
@@ -805,7 +805,7 @@ beside the field map, never injected into it.
 
 So this grammar reserves those and their record-stratum siblings, and nothing else:
 
-<<~ranks reserved title ~ the host overwrites it -> revision ~ the host overwrites it -> text ~ the body rebuilds from the frame -> modified ~ the record stratum carries it>>
+<<~ scale reserved "title ~ the host overwrites it -> revision ~ the host overwrites it -> text ~ the body rebuilds from the frame -> modified ~ the record stratum carries it">>
 
 `type` joins them for a different reason: the host reads it to CHOOSE a deserializer, exactly as
 TiddlyWiki's own filetype registry does, so a carrier IS its type and the value re-derives on every
@@ -838,7 +838,7 @@ A TiddlyWiki `.tid` file parses its header line by line and splits the body at t
 (`boot.js`, `application/x-tiddler`). **Only `text` may carry a newline.** A value that can only survive
 inside one file format cannot travel — so a multi-line part cannot be a field anywhere, at any name.
 
-<<~ranks carriage scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$carrier-sila` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it>>
+<<~ scale carriage "scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$carrier-sila` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it">>
 
 The split runs **scalar-or-multi-line**, never reserved-or-free. A date, a slot name, a bag address:
 each stays a field, and making it a record would cost the filter surface and buy nothing.
@@ -880,7 +880,7 @@ So a carrier's health reads as a **gradient**, never a verdict. A reader names t
 itself to be, and the marks that kind requires and lacks. The kind reads from the DECLARATION, never
 from the path: where a file rests says where it rests; what it IS, it states.
 
-<<~ranks kind carrier ~ declares `uri-path` — a meme; wants the whole frame and a check -> descriptor ~ declares `bag` — a bag declaring itself; a body frame would claim it holds a meme's text -> shelf ~ declares neither, and its head names an address the declaration omits — the fault that makes a file invisible -> unframed ~ no head at all; bytes wearing an extension>>
+<<~ scale kind "carrier ~ declares `uri-path` — a meme; wants the whole frame and a check -> descriptor ~ declares `bag` — a bag declaring itself; a body frame would claim it holds a meme's text -> shelf ~ declares neither, and its head names an address the declaration omits — the fault that makes a file invisible -> unframed ~ no head at all; bytes wearing an extension">>
 
 `lares normalize --gradient` reads it. It fails on a **fault** and never on a **kind**: a descriptor
 carrying no body frame stands exactly where it should, and a content file declaring itself in a `.meta`
@@ -1056,6 +1056,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IjyR-KdwnlIgWcA-qDNYDRqmRT7U4GVNAeV_cAolF3Y
+<<^ code="&#x0003;">>ni:///sha-256;u3f1A6FsEtk_OqssJ2oRHivnXMU36aaJm3UrZFPsujw
 
 <<^ code="&#x0004;" -> to="?">>

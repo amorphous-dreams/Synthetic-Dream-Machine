@@ -45,7 +45,7 @@ session artifact ids, storage artifact ids, and any other first-class name.
 
 ''The authority says where the named thing lives:''
 
-<<~ranks locality hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it>>
+<<~ scale locality """hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it""">>
 
 ''So one glance at a name says whether the thing it names outlives the session.'' A hostless name outlives
 the node; a hostful one does not, and reading a hostful name as durable NAMES the failure this law makes
@@ -265,6 +265,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mSHl_Ip55YS9tGbH8b0BbErlxHZvcXmpS7lFMVDQ00w
+<<^ code="&#x0003;">>ni:///sha-256;lm86beph5JYRmabnQAVcot9HB8Vfqxc_KTg71Jp5JpU
 
 <<^ code="&#x0004;" -> to="?">>

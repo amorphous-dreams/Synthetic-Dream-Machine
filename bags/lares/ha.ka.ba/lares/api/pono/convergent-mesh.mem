@@ -29,7 +29,7 @@ written   = "2026-06-24"
 
 Three problems the mesh once held apart — ''adjudicating a revision'' to shared canon, ''revoking'' a capability, and ''reading group membership'' — collapse to ''one shape'' under the `#has`-stack lens (`has-stack-ontology`): an entity carries a nameless stack of capabilities, and all three become operations on that stack. The shape, six properties:
 
-<<~ranks convergent local ~ read/check/act against what THIS node verifies, as of last sync; never a global census -> decaying-lease ~ a capability fades unless fed (feed-the-Lar = ratchet); not persistent-state-changed-by-events -> graded-belief ~ hold a degree (Maybe-Logic 0..20), commit on a hysteretic threshold -> cost-bound ~ each proof costs-to-forge or binds-to-position (per-vessel-key + delegation) -> lineage-scoped ~ revocation notice · membership cost · revision reliance all ride the delegation lineage -> constitutional-core ~ a small unamendable core, fork-by-fiat, the rest self-adjudicated locally>>
+<<~ scale convergent "local ~ read/check/act against what THIS node verifies, as of last sync; never a global census -> decaying-lease ~ a capability fades unless fed (feed-the-Lar = ratchet); not persistent-state-changed-by-events -> graded-belief ~ hold a degree (Maybe-Logic 0..20), commit on a hysteretic threshold -> cost-bound ~ each proof costs-to-forge or binds-to-position (per-vessel-key + delegation) -> lineage-scoped ~ revocation notice · membership cost · revision reliance all ride the delegation lineage -> constitutional-core ~ a small unamendable core, fork-by-fiat, the rest self-adjudicated locally">>
 
 Five of the six rest on machinery the house already holds — the ratchet, the residency ladder, the Maybe-Logic band, the per-vessel-key, the causal islands. Only the constitutional core stays genuinely new — and it names the ''kahu's'' office (`kahu`).
 
@@ -138,6 +138,6 @@ The Scope-1 CAD-blob pipe now carries a ''concrete design'' (`content-resolution
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;edysFhsv4r5-iJmMgcRaJ9xYsc7l8EMyd-inGayGPcU
+<<^ code="&#x0003;">>ni:///sha-256;f6JolSBcsf3h4a0_VXEsSgKEqurE143X_laUJX5HE6I
 
 <<^ code="&#x0004;" -> to="?">>

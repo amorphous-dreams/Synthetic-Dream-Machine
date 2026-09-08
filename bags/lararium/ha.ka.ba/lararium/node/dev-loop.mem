@@ -37,7 +37,7 @@ run from any prior state (running · stale · none), so the loop never needs a c
 
 Ordered by how much they touch — reach for the //least// that fixes your case:
 
-<<~ranks reach serve -> reconcile -> rebuild -> refresh -> fresh -> reset -> wake>>
+<<~ scale reach "serve -> reconcile -> rebuild -> refresh -> fresh -> reset -> wake">>
 
 ```
 \procedure ~Cure(Type:"" Params:"") ~Cure <<Type>> holds [{{{ [<Params>] }}}]
@@ -74,7 +74,7 @@ HOUSE, ''lar'' names the NAMESPACE. Every siting answers ''whose is this?'':
 | `<lararium>` (`~/.local/share/lararium`) | `library/` the acquired shelf · `sensoriums/` operator history + DreamNet history | the HOUSE'S — nothing here re-derives |
 | `<state>` (`~/.local/state/lares`) | `projection/` synced-tree watermark · `harvest/` · `harvest-stage/` | nobody's for long — all of it re-derives |
 
-<<~ranks corpus repo/genesis/baked-island.bin-seed+bootstrap -> repo/bags/seed-memes -> repo/packages/code>>
+<<~ scale corpus "repo/genesis/baked-island.bin-seed+bootstrap -> repo/bags/seed-memes -> repo/packages/code">>
 
 ''The resolver'' — ONE source, `@lararium/node/vessel-paths.ts` (`larHome` · `larDataDir` ·
 `larIdentityDir` · `larProjectionDir` · `larHarvest*`) over `@lararium/mempalace/xdg-base`
@@ -96,7 +96,7 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 !! The invariants the loop rests on
 
-<<~ranks law dist-not-tsx -> genesis-before-init -> identity-survives-reset -> only-explicit-LAR_ROOT -> deterministic-genesis>>
+<<~ scale law "dist-not-tsx -> genesis-before-init -> identity-survives-reset -> only-explicit-LAR_ROOT -> deterministic-genesis">>
 
 * ''dist, not tsx'' — island workers spawn compiled; a stale dist is a half-dead vessel. `refresh` rebuilds.
 * ''genesis before init'' — init founds the hearth FROM the engine CID, so the baked artifact must
@@ -121,6 +121,6 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ejpavqk2SQYL58e8F7y6pp1JZ3-7H74f0IH8GWZPKWY
+<<^ code="&#x0003;">>ni:///sha-256;hOO5Qi7fITKpfPzupwmYNluPmHbWb0E2pl7_OfPX2ew
 
 <<^ code="&#x0004;" -> to="?">>

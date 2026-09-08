@@ -189,7 +189,7 @@ Ask of the row's relation: ''what does it DO?'' The answer routes the verb.
 | ''composes · wears'' //(default)// | a holds-set | `<<~holds family/member …>>` | identity |
 | ''follows · flows'' | a flow-chain | `<<~flows a -> b -> c>>` · `<<~loops …>>` | sequence-fused-as-identity |
 | ''moves across'' | a transition | `<<~moves X -> Y on/trigger if/guard do/effect>>` | before-welded-to-after |
-| ''grades · ranks'' | a gradation | `<<~ranks family a -> b -> c>>` | level-welded-to-meaning |
+| ''grades · ranks'' | a gradation | `<<~ scale family "a -> b -> c">>` | level-welded-to-meaning |
 
 `holds` carries most of the boot; the other three carry a minority — the
 ordered loops, the graded registers. Default to `holds`; reach past it
@@ -236,12 +236,12 @@ a rank //exceeds// another by an unknown span; no level //welds// to its
 meaning. The Evidence Question — //how do I know?// — hands over the verb.
 
 ```
-<<~ranks syad literal@0 ~ unsupported -> figurative@20 ~ fully-confirmed>>
-<<~ranks stage green-room@1..4 -> wings@5..12 -> downstage@13..20>>
-<<~ranks rating noise -> data -> meme -> ano -> kapu>>
+<<~ scale syad "literal@0 ~ unsupported -> figurative@20 ~ fully-confirmed">>
+<<~ scale stage "green-room@1..4 -> wings@5..12 -> downstage@13..20">>
+<<~ scale rating "noise -> data -> meme -> ano -> kapu">>
 ```
 
-Author as `<<~ranks family a -> b -> c>>` — anchors `member[@coord][~ descriptor]`,
+Author as `<<~ scale family "a -> b -> c">>` — anchors `member[@coord][~ descriptor]`,
 `@n` a point, `@lo..hi` a band; the order ascends, never sorted. A
 descriptor //describes// what a level looks like; it rides the droppable red
 aside and never welds the number to the meaning.
@@ -271,6 +271,6 @@ order or lattice would later mint it, the floor unbuilt until a usage demands.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NvqSeMjF8e4RFvIGoWtKdqjx3C62XnlSOYWHoak8dDI
+<<^ code="&#x0003;">>ni:///sha-256;HYSPHs7YmJxkLvWs1qZZ0q6tmnSWCTKLtsArv7uesiQ
 
 <<^ code="&#x0004;" -> to="?">>

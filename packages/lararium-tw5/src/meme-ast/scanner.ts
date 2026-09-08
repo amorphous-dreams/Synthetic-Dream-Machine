@@ -89,6 +89,8 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
   // Edge sugar
+  // scale — an ordered scale and the ranks it carries; the chain rides QUOTED as one value.
+  { sigilName: "scale",   regex: /<<~\s*scale\s+([\w-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>/g, eventType: "leaf" },
   { sigilName: "loulou",  regex: /<<~\s*loulou\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,             eventType: "leaf" },
   // aka — URI form then child-slot form
   { sigilName: "aka", regex: /<<~\s*aka\s+([a-z][\w-]*)\s+(#[\w-]+)\s*>>/g, eventType: "leaf" },

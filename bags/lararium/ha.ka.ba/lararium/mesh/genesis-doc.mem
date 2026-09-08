@@ -25,7 +25,7 @@ uri-path    = "ha.ka.ba/lararium/mesh/genesis-doc"
 
 The vessel stands on ''two orthogonal planes, soft-coupled at the `@oracle`'' — tuber and rhizome, moving independently:
 
-<<~ranks plane cid@immutable-FLOW-rhizome -> crdt@epoch-ratchet-STATE-tuber>>
+<<~ scale plane "cid@immutable-FLOW-rhizome -> crdt@epoch-ratchet-STATE-tuber">>
 
 The genesis is ''not'' an Automerge binary carrying bytes. It is a ''thin `@oracle` pointer-doc'' (~4 KB, metadata + pointers, NO blob bytes), a ''CID manifest'' (`island.manifest.json`), and the ''CAS blobs'' (`genesis/cas/<cid>`). `buildGenesisDoc()` constructs the deterministic doc + the manifest + the cas entries; the caller writes each to its sink.
 
@@ -61,7 +61,7 @@ The `@oracle` is a ''served, signed POINTER doc'' — the public crossroads wher
 
 The `@oracle` docId derives from the FOUNDING vessel's `@daemon` identity-root (the home node) — safe ''genesis'', not authority, PROVIDED three couplings stay apart (seed-authority research, 2026-06-28):
 
-<<~ranks coupling origin@keep -> governance@disperse -> liveness@pluralize>>
+<<~ scale coupling "origin@keep -> governance@disperse -> liveness@pluralize">>
 
 * ''Origin (docId derivation) — KEEP.'' Born from the home `@daemon` identity yet names no host; once minted it outlives the home node (a DID, not an ActivityPub URL). Record the derivation publicly so anyone re-verifies genesis without the founder.
 * ''Governance (write authority) — DISPERSE.'' A sole home-root retains the UCAN reach-back revocation veto — //that// is the central authority. Keeper-phase ladder: founder (n=1, genesis) -> founder-multisig (a 2nd keeper contracts in → write delegates to a GROUP; the group, not the original key, becomes root) -> k-of-n quorum (admission/eviction by quorum). After phase 2 the home key can vanish and keepers still govern — no reach-back, no single revoker. A DECLARED sunset, not implicit trust.
@@ -176,7 +176,7 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 !! Grounds (the realized flow)
 
-<<~ranks commit cid-plane@9c90b390 -> slice-1-blob-strip@940a023e -> structurepalace-instance@991bfbe7 -> daemon-lifecycle@7fb1c3bb>>
+<<~ scale commit "cid-plane@9c90b390 -> slice-1-blob-strip@940a023e -> structurepalace-instance@991bfbe7 -> daemon-lifecycle@7fb1c3bb">>
 
 * ''9c90b390 — CID plane:'' kernel resolves engine/plugins CAS-only by CID; the byte-blob left the `@oracle` CRDT (where the merge-into-stale had made it an unresolved actor conflict — the boot-skew root).
 * ''940a023e — slice 1:'' blob bytes leave the genesis doc entirely → `genesis/cas/` + `island.manifest.json`; `island.bin` 547 KB → 4 KB. Merge-conflict-on-bytes class gone structurally. Isomorphic (node fs · browser OPFS).
@@ -198,6 +198,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BdxPIMUCw8PUCk-WKb2jJ0PXdByux8-73Yfuyt4j4Yc
+<<^ code="&#x0003;">>ni:///sha-256;Rz2MRvOwew60q1fsuxoA9p3kOHKcUdP7Zi3keVrv-fU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -51,7 +51,7 @@ These the lineage does not //extend// — it ''inherits''. To re-derive them rea
 
 The load-bearing cousins. Each carries //one// of the three recursions whole — and stays blind to the other two. This blindness names the whole opportunity.
 
-<<~ranks recursion authority@Keyhive -> wiring-as-security@Genode -> transport@RINA>>
+<<~ scale recursion "authority@Keyhive -> wiring-as-security@Genode -> transport@RINA">>
 
 ''Keyhive (Ink & Switch — and it runs on our own stack).'' The authority recursion, built. It treats //individuals, devices, groups, and documents uniformly as principals in a recursive delegation graph// — a person reads as a group of devices, an org as a group of person-groups, a document as a group whose members hold access. That folds ''membership ⊥ device-sovereignty'' into one recursive principal-is-a-group fractal, in WASM, over Automerge. It splits its own internals deliberately: ''Access-Control (delegation edges) ⊥ Key-Agreement (BeeKEM) ⊥ Transport (Beelay, kept blind/E2E)''. The load-bearing sentence: ''Keyhive deliberately excludes binding a human identity to a key — "left to a future layer."'' That blank names a REFUSAL this stack keeps rather than a doorway it fills: no constructor for a human stands anywhere in the model, so the Lar declares the hole permanently open and maps relations ACROSS it — not //who//, but which hearth one tends. [inkandswitch.com/keyhive/notebook]
 
@@ -113,6 +113,6 @@ No one has made ''one composition primitive serve simultaneously as the code-wir
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
-<<^ code="&#x0003;">>ni:///sha-256;P2J8MdJGxIhIoBVHpwNnJb0-3QrIRWCj0Bh0-y4RUDw
+<<^ code="&#x0003;">>ni:///sha-256;CGckymPa0U9mCOXDQXFcQeeoCwSvunvdHFC2Bw8pidk
 
 <<^ code="&#x0004;" -> to="?">>

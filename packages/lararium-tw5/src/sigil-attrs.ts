@@ -185,7 +185,8 @@ export function quotableAttrs(body: string): SigilAttr[] {
  * Blank every span whose interior a delimiter already protects, keeping offsets.
  *
  * TWO KINDS, and both carry spaces so a word-walker cannot see their edges:
- *   · a QUOTED value — `feedback="closed 1↺ -> open 1φ @◇:reason"`, where the colon separates nothing;
+ *   · a QUOTED value — `feedback="closed 1↺ -> open 1φ @◇:reason"`, where the colon separates nothing,
+ *     in any of the delimiters a string literal wears, `"""…"""` included and tried FIRST;
  *   · a WIKILINK — `[[label|lar:///x]]`, which TiddlyWiki reads as one link and which quoting would
  *     BREAK. A sigil carrying prose carries these, and they are already well-formed.
  */
@@ -194,6 +195,14 @@ function maskProtectedSpans(body: string): string {
   const blank = (from: number, to: number) => { for (let j = from; j <= to && j < out.length; j++) out[j] = " "; };
   for (let i = 0; i < out.length; i++) {
     const c = body[i];
+    // THE TRIPLE FORM IS TRIED FIRST, as TiddlyWiki tries it — `"""…"""` admits almost anything,
+    // including the very quotes a single pair would end on. Matching `"` first would close the span
+    // at the opening delimiter's second character and read the interior as bare text.
+    if (body.startsWith('"""', i)) {
+      const end = body.indexOf('"""', i + 3);
+      if (end === -1) break;
+      blank(i, end + 2); i = end + 2; continue;
+    }
     if (c === '"' || c === "'") {
       const end = body.indexOf(c, i + 1);
       if (end === -1) break;

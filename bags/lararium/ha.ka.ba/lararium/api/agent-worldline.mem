@@ -110,7 +110,7 @@ frameworks throw away and the memory must keep. It stacks ''three layers'':
 triples, Neo4j's intermediate-node guidance). Promote a relation to a node when ANY
 holds; else keep a property-edge:
 
-<<~ranks reify queryable-attrs ~ you'd index a relation property (relations index poorly → factor to a node) -> n-ary ~ binds >2 arms (parent · child · driver · correlation · times); an edge holds only two -> provenance-of-provenance ~ the fact "A spawned B" needs its own recording-time · author · validity>>
+<<~ scale reify """queryable-attrs ~ you'd index a relation property (relations index poorly → factor to a node) -> n-ary ~ binds >2 arms (parent · child · driver · correlation · times); an edge holds only two -> provenance-of-provenance ~ the fact "A spawned B" needs its own recording-time · author · validity""">>
 
 A spawn/handoff trips all three → ''node''. A structural link (`agent —memberOf→
 wing`) stays an edge. The ''PROV gift'': every influence relation has a //qualified//
@@ -126,7 +126,7 @@ never severs the upward edge.
 
 !!! The handoff record ~ the edge as data
 
-<<~ranks handoff correlation_id ~ groups the spawn-tree (trace-id / session) -> edge_id ~ this handoff (span-id) -> parent_edge_id ~ chains the tree (CHAIN it or grandchildren go dark) -> from_agent ~ delegator -> to_agent ~ delegate -> task ~ the prompt handed down -> result_ref ~ pointer to the child's output, never inlined -> status ~ spawned·running·handed-back·failed -> t_spawned · t_returned ~ the edge's valid-interval>>
+<<~ scale handoff "correlation_id ~ groups the spawn-tree (trace-id / session) -> edge_id ~ this handoff (span-id) -> parent_edge_id ~ chains the tree (CHAIN it or grandchildren go dark) -> from_agent ~ delegator -> to_agent ~ delegate -> task ~ the prompt handed down -> result_ref ~ pointer to the child's output, never inlined -> status ~ spawned·running·handed-back·failed -> t_spawned · t_returned ~ the edge's valid-interval">>
 
 The record becomes KG triples: `(parent) —spawned→ (child)`, `(child)
 —actedOnBehalfOf→ (parent)`, `(output) —wasGeneratedBy→ (task)`, each stamped
@@ -267,7 +267,7 @@ The ''edge-DAG absorbs this'' (causal stays on the structure); the ''FfzClock st
 ''rhythmic'' — the PATH-B cut already in this meme, now confirmed not overturned: causal never
 rode the clock, so the rhizome adds no burden to it. ''The forks, now operator-cut (2026-06-29):''
 
-<<~ranks rhizome-cut C-turn-DAG ~ handoffs key to the TURN-DAG node (survives rewind/fork) — operator-cut -> D-full-ticks ~ EVERY injection ticks+merges (full vector-clock fidelity); we cannot yet reliably detect a bearing/vector-change, so full ticks beat a lossy bearing-test — operator-cut -> E-operator-root ~ injected siblings share their injector as a COMMON CAUSE, and the OPERATOR is the root (the operator initiates every flow today; chron / other triggers MAY add non-operator roots later — held open) — operator-cut>>
+<<~ scale rhizome-cut "C-turn-DAG ~ handoffs key to the TURN-DAG node (survives rewind/fork) — operator-cut -> D-full-ticks ~ EVERY injection ticks+merges (full vector-clock fidelity); we cannot yet reliably detect a bearing/vector-change, so full ticks beat a lossy bearing-test — operator-cut -> E-operator-root ~ injected siblings share their injector as a COMMON CAUSE, and the OPERATOR is the root (the operator initiates every flow today; chron / other triggers MAY add non-operator roots later — held open) — operator-cut">>
 
 //Mechanism (the build path):// the worldline's merge-where-messages-land rides the ''edge-DAG''
 ''stamped into the mempalace'' — the ''chat-session store''. ''Automerge does NOT hold''
@@ -323,11 +323,11 @@ launched ephemeral, they leave no trace.
 ''The keystone of isolation — redirect each CLI's state dir into the blind dir.'' Each
 agent CLI keys its whole transcript/state tree off ONE env var:
 
-<<~ranks redirect CLAUDE_CONFIG_DIR ~ Claude Code: ~/.claude → $BLIND (caveat #3833: may still drop a local .claude/ in cwd → run cwd INSIDE $BLIND) -> COPILOT_HOME ~ Copilot CLI -> CODEX_HOME ~ Codex -> HOME · XDG_* ~ belt-and-suspenders for any state dir missed>>
+<<~ scale redirect "CLAUDE_CONFIG_DIR ~ Claude Code: ~/.claude → $BLIND (caveat #3833: may still drop a local .claude/ in cwd → run cwd INSIDE $BLIND) -> COPILOT_HOME ~ Copilot CLI -> CODEX_HOME ~ Codex -> HOME · XDG_* ~ belt-and-suspenders for any state dir missed">>
 
 ''Sandbox tiers — match heaviness to trust'' (operator selects per task):
 
-<<~ranks tier T0-blind ~ temp dir + env-redirect + caps; the DEFAULT, right for trusted self-judging Q&A -> T1-bwrap ~ bubblewrap namespaces (--ro-bind repo · --tmpfs work · --unshare-net) -> T2-container ~ Podman/Docker --rm, shared kernel, semi-trusted -> T3-microvm ~ E2B/gVisor/Firecracker, untrusted generated code>>
+<<~ scale tier "T0-blind ~ temp dir + env-redirect + caps; the DEFAULT, right for trusted self-judging Q&A -> T1-bwrap ~ bubblewrap namespaces (--ro-bind repo · --tmpfs work · --unshare-net) -> T2-container ~ Podman/Docker --rm, shared kernel, semi-trusted -> T3-microvm ~ E2B/gVisor/Firecracker, untrusted generated code">>
 
 Blast-radius levers (T1+): read-only-bind the real repo, tmpfs the work, deny egress,
 cap runaway swarms (`systemd-run --scope -p MemoryMax -p CPUQuota -p RuntimeMaxSec`,
@@ -355,7 +355,7 @@ edge, not a signed chain; sign only at the hostile boundary.
 
 !! The Six Rhymes ~ pattern integrities, one per domain
 
-<<~ranks rhyme physics ~ Lightcone: each worldline carries its own proper time; happened-before orders only cone-neighbors; 'elsewhere' = concurrency (REFUSE to order siblings); the twin REUNITES at handback; keep the order a union of local cones, never a global DAG -> law ~ Fiduciary: the act binds the principal (qui-facit), keyed to the act, stopping at scope; re-delegation defaults CLOSED; mandate carries scope+TTL+revocability; conduit-not-person until a deliberate founding; anonymity never severs the upward edge -> biology ~ Meristem: the division path IS the name (no registry); work attributed to the LINE; apoptosis packages teardown (merge sealed, never spilled); coordinate on locally-sensed thresholds (no global clock) -> linguistics ~ Deixis: identity = a character (rule) resolving content per context; the 'I' shifts at the spawn boundary; the parent resolves as a bound variable up the tree; name by relation (teknonymy) -> cs-web3 ~ Cipher: a logical handle holds identity unforgeably INSIDE one trust-domain (ocap-grade); derive lineage into the id; attribute by reference edge not signed chain; crypto only at the hostile boundary -> repo ~ Archivist: local-first, run-local-stable (not crypto), capability-not-platform, nameless-subagents-ok, no-global-wall-clock; the KG triple (temporal validity + provenance fields) stands ready to extend with agent_handle>>
+<<~ scale rhyme "physics ~ Lightcone: each worldline carries its own proper time; happened-before orders only cone-neighbors; 'elsewhere' = concurrency (REFUSE to order siblings); the twin REUNITES at handback; keep the order a union of local cones, never a global DAG -> law ~ Fiduciary: the act binds the principal (qui-facit), keyed to the act, stopping at scope; re-delegation defaults CLOSED; mandate carries scope+TTL+revocability; conduit-not-person until a deliberate founding; anonymity never severs the upward edge -> biology ~ Meristem: the division path IS the name (no registry); work attributed to the LINE; apoptosis packages teardown (merge sealed, never spilled); coordinate on locally-sensed thresholds (no global clock) -> linguistics ~ Deixis: identity = a character (rule) resolving content per context; the 'I' shifts at the spawn boundary; the parent resolves as a bound variable up the tree; name by relation (teknonymy) -> cs-web3 ~ Cipher: a logical handle holds identity unforgeably INSIDE one trust-domain (ocap-grade); derive lineage into the id; attribute by reference edge not signed chain; crypto only at the hostile boundary -> repo ~ Archivist: local-first, run-local-stable (not crypto), capability-not-platform, nameless-subagents-ok, no-global-wall-clock; the KG triple (temporal validity + provenance fields) stands ready to extend with agent_handle">>
 
 <<~/ahu>>
 
@@ -370,7 +370,7 @@ backward-compatibly; the v3 content-addressed id-recipe holds; the ''FfzClock li
 
 ''Build sequence — the handle first; the edge and the rhythm both ride it:''
 
-<<~ranks build handle ~ LIVE-PROVEN on real drawers (2026-06-25): SPIRIT drawers stamp `lar_agent_handle`=run.agentId + `lar_parent_handle`/`lar_root_handle`=run; MAIN drawers stamp `lar_agent_handle`=`lar_root_handle`=run (no parent — a root). A spirit's `lar_parent_handle` RESOLVES to its main agent's `lar_agent_handle` (both = the session run), so the attribution graph CLOSES. Derived from the staged source_file (in-process); cross-surface launcher shim still mints trace-id/span-id — the keystone -> edge ~ PROJECTED form LIVE (2026-06-25): stamp `lar_parent_handle` (appointed-by) + `lar_root_handle` (root-principal) on spirit drawers, single-source. The reified bi-temporal "`prov:Delegation`" NODE (valid/tx · status · times) awaits a code-reachable KG — MCP/tunnel-only today; when it lands the edge RE-PROJECTS from it (never a double-write) -> rhythm ~ MECHANISM LIVE (`worldline-clock.ts`, 2026-06-25): per-handle FfzClock keyed on the HANDLE (slip fixed at source) · construct-on-first-event · grounding-tick (L1 Beat on the operator's acknowledging move, NEVER on emission) · rollover-checkpoint to the LOCAL work-log (NOT the mesh SessionEventLog — work-memory is a local island). GRAIN RESOLVED (Loom-grounded, 2026-06-25): `lar_ffz` stamps a prefix-truncatable rhythmic ADDRESS `Theme.Arc.Measure.Beat.Segment.block` — ''L0 Pulse = one generation segment'' (`stop_reason`, = the OTel span), ''block = a sub-offset'' (index, not a tick); the clock reads the HARNESS transcript, never the rendered grammar (lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address). Address serializer + Claude-agent profile BUILT/TESTED; the live stamp's capture-path wiring (drawer→(turn,segment) mapping) is the next slice. Grounded by the Horologe spirit — ITC identity/event split (bearer≠replica) · Clark-Brennan/Ginzburg grounding (Pending→Moves) · Automerge/Yjs ephemeral convention · event-sourcing checkpoints -> mandate ~ carry scope+TTL+revocability+duties; handback ratifies + filters the merge -> crypto ~ at the peer/founding boundary only, anchor to keyhive>>
+<<~ scale build """handle ~ LIVE-PROVEN on real drawers (2026-06-25): SPIRIT drawers stamp `lar_agent_handle`=run.agentId + `lar_parent_handle`/`lar_root_handle`=run; MAIN drawers stamp `lar_agent_handle`=`lar_root_handle`=run (no parent — a root). A spirit's `lar_parent_handle` RESOLVES to its main agent's `lar_agent_handle` (both = the session run), so the attribution graph CLOSES. Derived from the staged source_file (in-process); cross-surface launcher shim still mints trace-id/span-id — the keystone -> edge ~ PROJECTED form LIVE (2026-06-25): stamp `lar_parent_handle` (appointed-by) + `lar_root_handle` (root-principal) on spirit drawers, single-source. The reified bi-temporal "`prov:Delegation`" NODE (valid/tx · status · times) awaits a code-reachable KG — MCP/tunnel-only today; when it lands the edge RE-PROJECTS from it (never a double-write) -> rhythm ~ MECHANISM LIVE (`worldline-clock.ts`, 2026-06-25): per-handle FfzClock keyed on the HANDLE (slip fixed at source) · construct-on-first-event · grounding-tick (L1 Beat on the operator's acknowledging move, NEVER on emission) · rollover-checkpoint to the LOCAL work-log (NOT the mesh SessionEventLog — work-memory is a local island). GRAIN RESOLVED (Loom-grounded, 2026-06-25): `lar_ffz` stamps a prefix-truncatable rhythmic ADDRESS `Theme.Arc.Measure.Beat.Segment.block` — ''L0 Pulse = one generation segment'' (`stop_reason`, = the OTel span), ''block = a sub-offset'' (index, not a tick); the clock reads the HARNESS transcript, never the rendered grammar (lar:///ha.ka.ba/lararium/mesh/ffz-clock#/rhythmic-address). Address serializer + Claude-agent profile BUILT/TESTED; the live stamp's capture-path wiring (drawer→(turn,segment) mapping) is the next slice. Grounded by the Horologe spirit — ITC identity/event split (bearer≠replica) · Clark-Brennan/Ginzburg grounding (Pending→Moves) · Automerge/Yjs ephemeral convention · event-sourcing checkpoints -> mandate ~ carry scope+TTL+revocability+duties; handback ratifies + filters the merge -> crypto ~ at the peer/founding boundary only, anchor to keyhive""">>
 
 <<~/ahu>>
 
@@ -436,6 +436,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lhqXzX1NppfJMs88Vg0DN2raxjSvpSTlldK1F_Nw8V0
+<<^ code="&#x0003;">>ni:///sha-256;gLviSgfar5dnsi4RhqcVm2D88hbw3iRETGamJOr6U6o
 
 <<^ code="&#x0004;" -> to="?">>

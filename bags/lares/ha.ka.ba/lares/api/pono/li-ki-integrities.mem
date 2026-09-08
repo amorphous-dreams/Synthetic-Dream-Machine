@@ -41,8 +41,8 @@ The silat correction (operator, guru-defined): //ki carries the pattern-integrit
 
 ''This meme holds the POSTURE; the machina's design-of-record moves to [[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina]].'' Two roles, two memes: 理/氣 name the two stances a pattern-integrity takes (the argument below, unchanged); the machina names what runs, what it may claim, and what it may never claim. Read the machina for the planes, the arrow, the grain, and the family.
 
-<<~ranks li-planes content ~ recurring coherence -> structure ~ the AST grain, literally the jade-vein -> form ~ the induced grammar qi already obeys>>
-<<~ranks ki-planes boundary ~ where the generating regime turns over -> coupling ~ the directed nagare between streams -> standing ~ what witnesses OUTSIDE the trace vouch for>>
+<<~ scale li-planes "content ~ recurring coherence -> structure ~ the AST grain, literally the jade-vein -> form ~ the induced grammar qi already obeys">>
+<<~ scale ki-planes "boundary ~ where the generating regime turns over -> coupling ~ the directed nagare between streams -> standing ~ what witnesses OUTSIDE the trace vouch for">>
 
 * ''coupling = ki, cleanest in the scheme'' ~ 氣-no-nagare, "the flow of ki," reads inherently //directional//; transfer-entropy reads the nagare //between// streams (informs, never causes; effective + surrogate-null-gated). It stands as the ''one irreducibly cosheaf'' reading: every li plane coarsens ONE stream, and no coarsening of one stream reaches a fact about two.
 * ''bands RETIRES as a plane'' ~ the earlier reading called it "the hinge," energy read through a fixed scale-lattice. That lattice was a ''frequency ladder'', and a bandpass reports where //energy at its scale// concentrates while a change-point reports where the //generating regime// turns over — a ''category error, never a tuning failure'' ([[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/ki]]). ''Bands was never a plane; it was an ADDRESS'', and the address moves into ''li'' as a stored prefix code (the membership tree, [[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]).
@@ -101,7 +101,7 @@ The sensorium runs ''~90% modality-invariant'' ~ content=embed · structure=shap
 
 ''To sense a new li/ki/* flow'' ~ a MUD, a market feed, a DAW, a CI-CD pipeline, an IoT stream ~ write ''one'' StreamAdapter (the modality-specific parse + signal-map); every integrity below applies unchanged:
 
-<<~ranks integrities the-li-chain-read (content↠structure↠form) -> the-three-ki-readings (boundary·coupling·standing) -> the #has-cap-composition -> couple-then-decouple-sovereignty -> the-skeletal-tier-+-association-graph -> the-two-axes-span×channel -> ki-anchoring-integrity-over-instance>>
+<<~ scale integrities "the-li-chain-read (content↠structure↠form) -> the-three-ki-readings (boundary·coupling·standing) -> the #has-cap-composition -> couple-then-decouple-sovereignty -> the-skeletal-tier-+-association-graph -> the-two-axes-span×channel -> ki-anchoring-integrity-over-instance">>
 
 The sensorium is not a text tool that generalizes ~ it carries a ''li/ki sensor'' and currently wears a text intake.
 
@@ -152,7 +152,7 @@ Ki flows undifferentiated by type until a focus narrows it — as li holds patte
 
 The members compose as nameless entities carrying `#has` capability-stacks:
 
-<<~ranks flow-members reading ~ #has [flow-ref · aperture · watermark · value] — the watermark vows "as of my last sync"; a bare reading without its aperture reads as degraded -> aperture ~ #has [focus-spec · admissibility-witness · grain(support × locus)] — first-class, named, checkable; reach spans TWO axes, temporal support ⊥ epistemic locus, so apertures cover rather than chain -> obstruction-reading ~ #has [cover-ref · obstruction-class] — a gluing failure rides as a FIRST-CLASS reading (contextuality: locally-consistent readings may admit no global joint, and the cohomology class measures exactly that) -> invariants-ledger ~ #has [invariant …] — the causal order, the log itself, conserved counts: what no aperture may contradict; co-consistency = invariants + overlap-agreement, never a master focus -> trust-valuation ~ #has [opinion(b,d,u,a) · discount-op · fusion-op] — STANDING modulates every reading as the site's lighting; it composes by discount-and-fuse (order-sensitive), never by colimit, so it rides beside the apertures, not among them>>
+<<~ scale flow-members """reading ~ #has [flow-ref · aperture · watermark · value] — the watermark vows "as of my last sync"; a bare reading without its aperture reads as degraded -> aperture ~ #has [focus-spec · admissibility-witness · grain(support × locus)] — first-class, named, checkable; reach spans TWO axes, temporal support ⊥ epistemic locus, so apertures cover rather than chain -> obstruction-reading ~ #has [cover-ref · obstruction-class] — a gluing failure rides as a FIRST-CLASS reading (contextuality: locally-consistent readings may admit no global joint, and the cohomology class measures exactly that) -> invariants-ledger ~ #has [invariant …] — the causal order, the log itself, conserved counts: what no aperture may contradict; co-consistency = invariants + overlap-agreement, never a master focus -> trust-valuation ~ #has [opinion(b,d,u,a) · discount-op · fusion-op] — STANDING modulates every reading as the site's lighting; it composes by discount-and-fuse (order-sensitive), never by colimit, so it rides beside the apertures, not among them""">>
 
 The named apertures the house already holds, honored and explained: ''boundary'' (own-history martingale reading — anytime-valid, island-local guarantee) · ''three coupling apertures'', each its own entity (surrogate-gated effective TE · Gaussian conditional-TE with parametric gate · salience-sidecar fusion) — three focusings of one flow, never one plane wearing three estimators; coupling claims ''directed predictive dependence'', never causation (transfer entropy conflates dyadic and polyadic dependence; the PID synergy atom names what no coarsening of one stream reaches). The one shore where the flow already runs undifferentiated in the machinery: the FFZ AlignedTick — any two streams join iff their addresses meet, no type on what flows.
 
@@ -162,6 +162,6 @@ Named empty seats, held open: ''value/preference'' (nothing yet reads what the n
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bg35Fd2JZcq10Ae6pQdgkaXZH-984niR4MM_mtAOFuY
+<<^ code="&#x0003;">>ni:///sha-256;J4k8yxOY0L6Mt28caXd_m96mwXqBt8IA6qdS0qGo_VA
 
 <<^ code="&#x0004;" -> to="?">>

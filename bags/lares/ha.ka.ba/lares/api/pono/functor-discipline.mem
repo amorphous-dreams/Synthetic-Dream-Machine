@@ -66,7 +66,7 @@ A ''functor'' `F : C → D` maps a source category to a target: ''objects ↦ ob
 ''morphisms'' (the arrows — the relations, transformations, //verbs// between objects), and it ''preserves''
 ''the two laws'' that make a category cohere:
 
-<<~ranks functor-law identity ~ F(id_A) = id_{F(A)} -> composition ~ F(g ∘ f) = F(g) ∘ F(f)>>
+<<~ scale functor-law "identity ~ F(id_A) = id_{F(A)} -> composition ~ F(g ∘ f) = F(g) ∘ F(f)">>
 
 The arrows carry the load. A map that keeps the objects but drops
 the arrows throws away exactly what the source category //was// — its structure lived in the morphisms,
@@ -358,6 +358,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KHaw9ml62mtwaoJmcPMlBCMYqABBRQuJyRtLMFbzHBg
+<<^ code="&#x0003;">>ni:///sha-256;1gSS-U2d6G_gfE5JVck5JepF7SnQEmKgAjG8BANltCA
 
 <<^ code="&#x0004;" -> to="?">>
