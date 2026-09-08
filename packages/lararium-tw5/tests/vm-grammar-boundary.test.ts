@@ -143,6 +143,46 @@ describe("pono grammar boundary", () => {
     expect(offenders, "a bearing read belongs in carrier-head.ts — see its header").toEqual([]);
   });
 
+  /**
+   * ★ AND THE SAME LAW ONE LAYER OUT ★
+   *
+   * A reader that matches a SIGIL and captures a value after `key=` holds its own spelling of a
+   * question `sigil-attrs` answers. Nine such spellings of the control bearing broke in one minute
+   * when the corpus quoted its values; the speaking sigils carry the same hazard, and the RENDER-path
+   * pranala rule was found still holding its own capture AFTER the corpus had moved.
+   */
+  test("★ no reader outside the shore captures a sigil parameter ★", () => {
+    const SHORES = ["carrier-head.ts", "sigil-attrs.ts"];
+    /** DECLARED EXEMPTIONS, each with the reason it stands. A list that only shrinks. */
+    const EXEMPT = [
+      {
+        file: "src/meme-ast/scanner.ts",
+        since: "2026-09-07",
+        why: "THE INDEPENDENT RECOGNISER — `frame-parity` reads this file's own literals as the side no " +
+             "tiddler governs; sourcing them from the shore makes that comparison tautological.",
+      },
+      {
+        file: "src/wikirules/lar-sigil-shared.ts",
+        since: "2026-09-07",
+        why: "THE RENDER PATH runs inside the wikitext parser, before any shore import would resolve " +
+             "in a packed plugin module. Its captures carry the same law and a vector holds them " +
+             "(pranala-attribute-spellings).",
+      },
+    ];
+    const offenders: string[] = [];
+    for (const file of walk(join(ROOT, "src")).filter((f) => f.endsWith(".ts"))) {
+      if (SHORES.some((sh) => file.endsWith(sh))) continue;
+      if (file.endsWith(".generated.ts")) continue;
+      if (EXEMPT.some((e) => file.endsWith(e.file))) continue;
+      readFileSync(file, "utf8").split("\n").forEach((line, i) => {
+        if (!/<<[~^\\]/.test(line)) return;          // it must be reading a SIGIL
+        if (!/[A-Za-z-]+=\(/.test(line)) return;       // …and capturing right after a `key=`
+        offenders.push(`${relative(ROOT, file)}:${i + 1}  ${line.trim().slice(0, 96)}`);
+      });
+    }
+    expect(offenders, "a sigil parameter read belongs in sigil-attrs.ts — see its header").toEqual([]);
+  });
+
   test("tests do not import meme-ast internals as the canonical grammar surface", () => {
     const testDir = join(ROOT, "tests");
     const offenders = walk(testDir)

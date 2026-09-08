@@ -9,6 +9,12 @@
  *
  * TiddlyWiki accepts all three: `parseMacroParameterAsAttribute` takes `=` or `:` as the separator, then a
  * string literal or `reUnquotedAttribute`. The reader here answers to the same range.
+ *
+ * ── AND THE BEARING ENDS TAKE THE SAME LAW ───────────────────────────────────────────────────────
+ * The corpus writes `from="?" -> to="lar:///d"`, because an unquoted `lar:///x` standing positionally
+ * binds a phantom parameter and the slot stays empty (tw5-calls-colon-caveat). The RENDER-path rule
+ * kept its own spelling of that capture and handed back `"\"lar:///d\""` — quote marks rendered into
+ * the address a reader clicks. Both spellings must reach one value on every path.
  */
 
 import { describe, test, expect } from "vitest";
@@ -20,6 +26,30 @@ function pranalaOf(sigil: string) {
   const src = sigil + "\n";
   return buildMemeAst(collectEvents(src), src, URI)[0] as any;
 }
+
+import { matchPranalaOpenAt } from "../src/wikirules/lar-sigil-shared.js";
+
+describe("★ the RENDER path reads both spellings of the bearing ★", () => {
+  const bare   = '<<~ pranala #x from=? -> to=lar:///d family=code role=has>>';
+  const quoted = '<<~ pranala #x from="?" -> to="lar:///d" family="code" role="has">>';
+
+  test("a quoted bearing hands back its interior, never the pair", () => {
+    const m = matchPranalaOpenAt(quoted, 0)!;
+    expect(m.from).toBe("?");
+    expect(m.to).toBe("lar:///d");
+  });
+
+  test("and the bare spelling reaches the same value", () => {
+    const m = matchPranalaOpenAt(bare, 0)!;
+    expect(m.from).toBe("?");
+    expect(m.to).toBe("lar:///d");
+  });
+
+  test("★ the trailing parameters follow the same law ★", () => {
+    expect(matchPranalaOpenAt(quoted, 0)!.attrs).toEqual({ family: "code", role: "has" });
+    expect(matchPranalaOpenAt(bare, 0)!.attrs).toEqual({ family: "code", role: "has" });
+  });
+});
 
 describe("a pranala reads its family in every spelling", () => {
   test("quoted with an equals sign", () => {

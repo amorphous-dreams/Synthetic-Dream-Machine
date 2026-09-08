@@ -137,7 +137,12 @@ export function matchCompoundSigilAt(
  *
  * The two forms share opener parsing; closer presence distinguishes them.
  */
-export const PRANALA_OPEN_RE = /<<~\s*pranala\s+(?:(#[\w-]+)\s+)?from=(\S+)\s*->\s*to=(\S+)((?:\s+\w+=[^\s>]+)*)\s*>>/g;
+// THE QUOTE IS NOT PART OF THE VALUE, AND THIS RULE STANDS ON THE RENDER PATH. TiddlyWiki types
+// `to=lar:///x` and `to="lar:///x"` identically, and the corpus writes the quoted form — an unquoted
+// `lar:///x` in a positional slot would bind a phantom parameter (tw5-calls-colon-caveat). A capture
+// that kept the pair renders the quote marks into the address a reader clicks.
+export const PRANALA_OPEN_RE =
+  /<<~\s*pranala\s+(?:(#[\w-]+)\s+)?from="?([^"\s>]+)"?\s*->\s*to="?([^"\s>]+)"?((?:\s+\w+=(?:"[^"]*"|[^\s>]+))*)\s*>>/g;
 
 export interface PranalaOpenMatch {
   readonly start:  number;
@@ -155,10 +160,12 @@ export function matchPranalaOpenAt(source: string, start: number): PranalaOpenMa
   const [, slot, from, to, tail] = m;
   const attrs: Record<string, string> = {};
   if (tail) {
-    const attrRe = /(\w+)=([^\s>]+)/g;
+    // …and the trailing parameters take the same law: a quoted value hands back its interior.
+    const attrRe = /(\w+)="([^"]*)"|(\w+)=([^\s>]+)/g;
     let am: RegExpExecArray | null;
     while ((am = attrRe.exec(tail)) !== null) {
-      attrs[am[1]!] = am[2]!;
+      if (am[1] !== undefined) attrs[am[1]] = am[2]!;
+      else attrs[am[3]!] = am[4]!;
     }
   }
   return {
