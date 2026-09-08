@@ -4,6 +4,13 @@ lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/dispatcher
 type: text/vnd.tiddlywiki
 
-\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"")
-<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>/>
+<!-- THE GRADIENT'S FLOOR. A transclude renders its CHILDREN where the target resolves to nothing, so
+     `src` — the sigil's own verbatim text, handed down by the wikirule — goes to the page when this
+     wiki has never seen the procedure. A sigil a reader typed never disappears.
+
+     It rides through `<$text>` and NOT through `<<src>>`: the verbatim IS sigil syntax, so rendering
+     it as wikitext would re-enter the rule that produced it. Literal text ends the recursion. -->
+
+\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"" src:"")
+<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>><$text text=<<src>>/></$transclude>
 \end

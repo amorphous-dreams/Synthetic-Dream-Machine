@@ -72,3 +72,26 @@ export async function bootTestWiki(opts: {
   for (const t of opts.tiddlers ?? []) engine.setTiddler(t);
   return engine;
 }
+
+/**
+ * THE GLOBAL IMPORT PRAGMA — without it a rendered tiddler sees no grammar at all.
+ *
+ * TiddlyWiki carries global definitions through a FILTER, not through the wiki store: the core's
+ * `$:/core/config/GlobalImportFilter` names `[all[shadows+tiddlers]tag[$:/tags/Global]]`, and the
+ * ViewTemplate applies it with an `\import` pragma. A raw `renderTiddler` applies no template, so
+ * every `\procedure` and `\widget` the plugin ships stays invisible and every sigil renders EMPTY.
+ *
+ * Measured: that silence cost three probes in one session, each reading as "the grammar is broken"
+ * when the grammar had simply never been imported.
+ */
+export const GLOBAL_IMPORT = "\\import [all[shadows+tiddlers]tag[$:/tags/Global]!is[draft]]\n";
+
+/**
+ * Render wikitext AS A WIKI WOULD — grammar imported, one tiddler, HTML out.
+ *
+ * Whitespace collapses so a vector reads its own claim; a caller wanting exact bytes renders itself.
+ */
+export function renderWikitext(engine: TW5Engine, text: string, title = "lar:///test/render"): string {
+  engine.setTiddler({ title, type: "text/vnd.tiddlywiki", text: GLOBAL_IMPORT + text });
+  return engine.wiki.renderTiddler("text/html", title).replace(/\s+/g, " ").trim();
+}

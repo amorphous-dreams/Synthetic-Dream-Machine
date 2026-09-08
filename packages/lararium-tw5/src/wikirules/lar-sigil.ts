@@ -98,13 +98,15 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
           const body = source.slice(compound.end, closeTagStart);
           this.matchPos = pos;
           this.matchEnd = closeEnd;
-          this.attrs    = { __compound__: compound.name, __body__: body, p1: compound.p1 };
+          this.attrs    = { __compound__: compound.name, __body__: body, p1: compound.p1,
+                            __verbatim__: source.slice(pos, compound.end) };
           return pos;
         }
       }
       this.matchPos = pos;
       this.matchEnd = compound.end;
-      this.attrs    = { __compound__: compound.name, p1: compound.p1 };
+      this.attrs    = { __compound__: compound.name, p1: compound.p1,
+                        __verbatim__: source.slice(pos, compound.end) };
       return pos;
     }
 
@@ -190,13 +192,30 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
   // text — block body drops here without data loss.
   if ("__compound__" in attrs) {
     const dispatchName = attrs["__compound__"]!;
+    const verbatim     = attrs["__verbatim__"] ?? "";
     delete attrs["__compound__"];
     delete attrs["__body__"];
-    return [{ type: "macrocall", attributes: {
+    delete attrs["__verbatim__"];
+    // ── THE NODE THE PARSER ITSELF EMITS ──────────────────────────────────────────────────────────
+    // TiddlyWiki parses `<<name …>>` to a TRANSCLUDE carrying `$variable`
+    // (`parseMacroInvocationAsTransclusion`). The legacy `macrocall` widget survives, but it reads its
+    // name from `parseTreeNode.name` — a node FIELD — or a `$name` attribute:
+    //
+    //     this.macroName = this.parseTreeNode.name || this.getAttribute("$name")
+    //
+    // A node carrying `$variable` and a plain `name` ATTRIBUTE satisfies neither, so the widget
+    // resolved no macro and rendered NOTHING. Every spaced sigil in this corpus went to the page as
+    // the empty string, silently, and no vector asked.
+    // ── THE GRADIENT'S FLOOR RIDES AS THE TRANSCLUDE'S OWN FALLBACK ───────────────────────────────
+    // TiddlyWiki renders a transclude's CHILDREN where the target resolves to nothing. So a sigil
+    // whose procedure this wiki has never seen puts its own text on the page instead of vanishing —
+    // the mechanism is the parser's, not a second one bolted beside it.
+    return [{ type: "transclude", attributes: {
       "$variable": { type: "string", value: "~" },
       "name":      { type: "string", value: dispatchName },
       "p1":        { type: "string", value: attrs["p1"] ?? "" },
-    }, children: [] }];
+      "src":       { type: "string", value: verbatim },
+    }, children: [{ type: "text", text: verbatim }] }];
   }
 
   if ("__pranala_block__" in attrs) {
@@ -211,7 +230,7 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"]! };
     if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"]! };
     if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"]! };
-    return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
+    return [{ type: "transclude", attributes: macroAttrs, children: [] }];
   }
 
   if ("__sigil__" in attrs) {
@@ -227,7 +246,7 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
       if (attrs["slot"])   macroAttrs["slot"]   = { type: "string", value: attrs["slot"]! };
       if (attrs["family"]) macroAttrs["family"] = { type: "string", value: attrs["family"]! };
       if (attrs["role"])   macroAttrs["role"]   = { type: "string", value: attrs["role"]! };
-      return [{ type: "macrocall", attributes: macroAttrs, children: [] }];
+      return [{ type: "transclude", attributes: macroAttrs, children: [] }];
     }
     // Grammar-registered inline sigil (edge/edge-sugar from operator tiddlers).
     return [{
