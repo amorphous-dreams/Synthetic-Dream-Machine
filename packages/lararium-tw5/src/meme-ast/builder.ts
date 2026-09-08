@@ -99,12 +99,16 @@ function attrsFromGroups(
  * all three ways.
  */
 function attrOf(tail: string, name: string): string | null {
-  // ── A CALL BINDS WITH `=` ────────────────────────────────────────────────────────────────────
-  // `:` binds a DEFAULT in a `\procedure` definition; a CALL binds with `=`, which is also the only
-  // separator that unlocks an indirect value. And a STRING LITERAL wears FOUR delimiters — `"""…"""`,
-  // `"…"`, `'…'` and `[[…]]` — each stripped to a plain value by TiddlyWiki's own parseStringLiteral.
+  // ── THE SPEC WRITES `=`; THE ENGINE READS WHAT THE PARSER READS ──────────────────────────────
+  // The memetic-wikitext SPEC locks a CALL to `=` — the separator that also unlocks an indirect
+  // value. The ENGINE keeps back-compat, because TiddlyWiki's own `parseMacroParameterAsAttribute`
+  // takes `=` or `:` and the parser is canonical here: a reader narrower than it would refuse a
+  // sigil the wiki renders.
+  //
+  // A STRING LITERAL wears FOUR delimiters — `"""…"""`, `"…"`, `'…'` and `[[…]]` — each stripped to
+  // a plain value by TiddlyWiki's own `parseStringLiteral`, and all four legal after either.
   const m = new RegExp(
-    `\\b${name}\\s*=\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"']+))`,
+    `\\b${name}\\s*[=:]\\s*(?:"""([\\s\\S]*?)"""|"([^"]*)"|'([^']*)'|\\[\\[((?:[^\\]]|\\](?!\\]))*)\\]\\]|([^\\s>"']+))`,
   ).exec(tail);
   return m ? (m[1] ?? m[2] ?? m[3] ?? m[4] ?? m[5] ?? null) : null;
 }

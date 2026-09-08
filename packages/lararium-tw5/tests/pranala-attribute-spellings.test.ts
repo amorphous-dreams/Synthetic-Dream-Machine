@@ -9,8 +9,12 @@
  * RULED: a CALL binds with `=`. `:` binds a DEFAULT in a `\procedure` definition, and only `=` unlocks
  * an indirect value. Measured at the ruling: no carrier binds family or role with `:`.
  *
- * TiddlyWiki accepts all three: `parseMacroParameterAsAttribute` takes `=` or `:` as the separator, then a
- * string literal or `reUnquotedAttribute`. The reader here answers to the same range.
+ * TiddlyWiki's `parseMacroParameterAsAttribute` takes `=` or `:`, then a string literal or an unquoted
+ * run — AND THE PARSER IS CANONICAL HERE. The memetic-wikitext SPEC locks a CALL to `=`, the separator
+ * that also unlocks an indirect value; the ENGINE keeps back-compat, because a reader narrower than the
+ * parser would refuse a sigil the wiki renders.
+ *
+ * So: the spec writes one spelling, the engine reads every spelling TiddlyWiki reads.
  *
  * ── AND THE BEARING ENDS TAKE THE SAME LAW ───────────────────────────────────────────────────────
  * The corpus writes `from="?" -> to="lar:///d"`, because an unquoted `lar:///x` standing positionally
@@ -53,7 +57,7 @@ describe("★ the RENDER path reads both spellings of the bearing ★", () => {
   });
 });
 
-describe("a pranala reads its family in every spelling", () => {
+describe("a pranala reads its family in every spelling the CALL form admits", () => {
   test("quoted with an equals sign", () => {
     expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family="reference">>').family).toBe("reference");
   });
@@ -62,20 +66,10 @@ describe("a pranala reads its family in every spelling", () => {
     expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family=reference>>').family).toBe("reference");
   });
 
-  test("★ the colon spelling no longer BINDS — a call binds with `=` ★", () => {
-    // RULED: every procedure/macro/sigil CALL site binds with `=`. `:` binds a DEFAULT in a
-    // `\procedure` definition, and only `=` unlocks an indirect value. No carrier in this corpus
-    // binds family or role with `:`; the two colons that remain sit inside prose.
-    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>').family).toBe("relation");
-  });
-
-  test("★ …and the sigil KEEPS ITS TARGET — a parse never breaks badly ★", () => {
-    // The tail delimiter stays permissive so a `:`-spelled sigil still matches. Refusing it would
-    // grade the sigil `missing` and lose its address (#/graceful-parsing); the parameter falls back
-    // to its declared default instead, and the edge stands.
-    const p = pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>');
-    expect(p.recoveredAs ?? null).toBe(null);
-    expect(p.toRaw).not.toBe("");
+  test("★ the ENGINE still reads the colon — the parser is canonical ★", () => {
+    // The SPEC writes `=`. A carrier already written with `:` still binds, because TiddlyWiki binds
+    // it and a reader narrower than the parser would refuse a sigil the wiki renders.
+    expect(pranalaOf('<<~ pranala #x from=? -> to=lar:///d family:reference>>').family).toBe("reference");
   });
 
   test("role reads the same way", () => {

@@ -336,9 +336,13 @@ own — a parameter labelled with its name and a colon, values in single, double
 `[[bracket]]` quotes), TW5 tiddler-field headers, YAML, JSON and CSS. A frame that reads correctly in
 the host's calling syntax IS a call in that host, never a lookalike.
 
-**The colon, never the equals.** TW5 treats `=` and `:` as equivalent separators today, with newer work
-distinguishing `=` for dynamic parameters. A carrier frame holds still for centuries; it takes the
-stable separator and leaves the evolving one alone.
+**The equals, and the spec writes only that.** TW5 takes `=` or `:` between a name and its value, and
+they part company past that point: ONLY `=` admits a filtered, indirect, macro or substituted value,
+and `:` additionally demands a strict identifier name so `$:/foo` never mis-reads as a parameter.
+
+A frame that took the narrower separator would forbid, at every call site it governs, the one form
+that reaches a computed value. **The spec writes `=`; the ENGINE reads both**, because TiddlyWiki's
+parser reads both and a reader narrower than the parser refuses a sigil the wiki renders.
 
 ### The marks that stand
 
