@@ -42,13 +42,9 @@ The whole design turns on ''one split, held absolutely'': a foreign credential b
 
 !! Three planes, unfused
 
-```
-\procedure ~Plane(Type:"" Params:"") ~Plane <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Plane Sovereign "holds/vessel-keys holds/persona-KELs holds/the-Nexus-contract leaves/never custody/NON-CUSTODIAL-BY-TYPE">>
-<<~Plane Reach "holds/foreign-app-credentials reads/an-instrument-never-an-identity seals/at-rest separates/per-app-HKDF-info travels/fleet-only">>
-<<~Plane Projection "holds/nothing renders/bag-to-foreign-surface law/RENDER-never-copy">>
+<<~ has Plane Sovereign "holds/vessel-keys holds/persona-KELs holds/the-Nexus-contract leaves/never custody/NON-CUSTODIAL-BY-TYPE">>
+<<~ has Plane Reach "holds/foreign-app-credentials reads/an-instrument-never-an-identity seals/at-rest separates/per-app-HKDF-info travels/fleet-only">>
+<<~ has Plane Projection "holds/nothing renders/bag-to-foreign-surface law/RENDER-never-copy">>
 
 ''The sovereign plane stands unchanged by this doctrine.'' It gains no credential, loses no rule. The reach plane sits ''beside'' it, and the projection plane consumes both.
 
@@ -278,6 +274,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fQp2NA9_LdoeTN0YX-90EH3HPS9bSpOsZiSwZY_g2ZU
+<<^ code="&#x0003;">>ni:///sha-256;l7uvw1JrT2YFLhv6pO6eB7PpjGLxhJVM179ek10i7_c
 
 <<^ code="&#x0004;" -> to="?">>

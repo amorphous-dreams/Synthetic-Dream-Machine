@@ -117,27 +117,26 @@ The Mu table, before — the header vows, the cells honor by position:
 | name | ascii | element | glyph | pull |
 |---|---|---|---|---|
 
-After — one ''family constructor'' sets the pattern, then each carrier invokes
-it as a named sigil. The constructor takes two params: `~Type` (the name,
-defaulting to the family's ground member) and `~Params` (the whole holds-body
-as one string — an absent slot just stays unwritten). It hands `~Params` to the
-`holds` verb by backtick filtered transclusion, never a nested
-`<<macro <<macro>> >>` (the parser refuses that):
+After — ''one relation, and the family rides as its first word''. `has` takes
+three positionals: the ENTITY (the family), the NAME (the row), and what that
+row HOLDS as one string. An absent third slot just stays unwritten.
 
-```
-\procedure ~Mu(Type:Arcana Params:"ascii/0 glyph/🜍 element/Orichalcum pull/reset") ~Mu <<Type>> holds [{{{ [<Params>] }}}]
-```
+<<~ has Mu Wand "ascii/* glyph/🜂 element/Fire pull/ignition">>
+<<~ has Mu Arcana "ascii/0 glyph/🜍 element/Orichalcum pull/reset">>
 
-<<~Mu Wand "ascii/* glyph/🜂 element/Fire pull/ignition">>
-<<~Mu Arcana>>
+The Wand-row wears all five; the Arcana-row wears the ground member's own,
+written where a reader can see them. ''A DEFAULT LIVES IN A DEFINITION AND A
+CARRIER HOLDS NO DEFINITIONS'' — a row leaning on one reads empty to everyone
+who never opens the constructor, and thirty-five carriers wrote thirty-five
+constructors to lean on.
 
-The Wand-row wears all five; the Arcana-row rides the constructor's default and
-needs no params — the open world reads each unwritten slot absent. Every `<<~`
-sigil binds its first param tight — `<<~Mu`, `<<~holds`, no space — the sigil
-redirecting to its first word. The rule, spoken once for all thirteen: ''one''
-''constructor per family sets the verb; each row invokes the named family sigil.''
-A stack too wide for one line wears the block form — `<<~holds>>`, one
-`family/member` per line, `<<~/holds>>` — the same set, the same canonical bytes.
+''AND THE SPACE BINDS.'' `<<~ has …>>` carries a space after the sharktooth,
+because that space IS what tells the parser a sigil opens: `<<~Mu` reaches no
+definition and degrades to the text a reader typed, which measured true for
+three hundred and sixty-five calls that each looked live. The rule, spoken once
+for all thirteen: ''one relation names every family; the family rides as its''
+''first word.'' A stack too wide for one line wears the block form — `<<~ holds>>`,
+one `family/member` per line, `<<~/holds>>` — the same set, the same canonical bytes.
 
 <<~/ahu>>
 
@@ -147,22 +146,19 @@ A stack too wide for one line wears the block form — `<<~holds>>`, one
 
 ''THE SIGIL AND THE WORD BOTH STAND, and neither defines the other.''
 
-```
-\procedure ~Hold(Type:"" Params:"") ~Hold <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Hold Graph "writes/`<<~holds x>>` binds/carrier-to-component demands/x-names-a-meme reads/the-memegraph ~ the copula-free predicate; the held thing speaks" >>
-<<~Hold Stream "writes/`holds` bare binds/nothing demands/nothing reads/the-chat-stream ~ an ordinary English verb doing the ward's own cure in a sentence">>
+<<~ has Hold Graph "writes/`<<~holds x>>` binds/carrier-to-component demands/x-names-a-meme reads/the-memegraph ~ the copula-free predicate; the held thing speaks" >>
+<<~ has Hold Stream "writes/`holds` bare binds/nothing demands/nothing reads/the-chat-stream ~ an ordinary English verb doing the ward's own cure in a sentence">>
 
 ''ONE CHARACTER DECIDES WHICH, and it decides everywhere else too.'' A
 sharktooth marks a sigil the house resolves; its absence marks a word the reader reads. The two senses
 sit a keystroke apart and answer to different laws — the sigil answers to the five clauses above, the
 word answers only to L-Prime, which it satisfies by naming a verb.
 
-⚠ ''A ROW BODY TAKES THE WORD, NEVER THE SIGIL.'' `NAME <<Type>> holds [{{{ [<Params>] }}}]` reads a
-param bag, and a param bag names no carrier — clause 2 refuses it outright. Firing the sigil there
-would smuggle exactly the dead water the sigil exists to catch, so a row that reads //holds// carries
-the plain verb and makes no composition claim.
+⚠ ''A ROW BODY TAKES THE WORD, NEVER THE SIGIL.'' `<<~ has Mu Wand "ascii/*">>` renders //Mu Wand
+holds [ascii/*]//, and the word standing in that render reads a param bag. A param bag names no
+carrier — clause 2 refuses it outright. Firing the sigil there would smuggle exactly the dead water
+the sigil exists to catch, so a row that reads //holds// carries the plain verb and makes no
+composition claim.
 
 ''NEITHER NAME MOVES.'' Renaming one to part them would spend a good word on a distinction the
 sharktooth already draws, and would leave two names for one region in a house whose alias law binds
@@ -271,6 +267,6 @@ order or lattice would later mint it, the floor unbuilt until a usage demands.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s3aEuJHZj1GrBH0X7zUDxc11PV1trYZMInUAOErECD8
+<<^ code="&#x0003;">>ni:///sha-256;FcCO3RKl9Wcfwj-uY79aQKeUkmnz7F1pR42Y3T8noLg
 
 <<^ code="&#x0004;" -> to="?">>

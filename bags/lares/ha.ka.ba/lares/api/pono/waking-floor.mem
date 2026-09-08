@@ -72,17 +72,13 @@ floor reads as real structure rather than as a special case either occasion inve
 
 !! The shape ~ rest, announce, raise
 
-```
-\procedure ~Wake(Type:"" Params:"") ~Wake <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Wake Stand "at/the-minimum-reachable-cap-stack ~ never a refusal">>
-<<~Wake Serve "what/needs-no-secret ~ the public shelf serves without opening anything">>
-<<~Wake Hold "closed/every-sovereign-act ~ a locked vessel signs nothing">>
-<<~Wake Announce "loudly/what-it-cannot-do signed/always ~ an unsigned announcement spoofs and targets">>
-<<~Wake Stamp "every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain">>
-<<~Wake Raise "by/recognition on/a-nonce-THIS-vessel-emitted ~ never a pre-baked blob">>
-<<~Wake Expire "the-raise/lapses-back-to-the-floor ~ nobody lowers it; it simply stops being renewed">>
+<<~ has Wake Stand "at/the-minimum-reachable-cap-stack ~ never a refusal">>
+<<~ has Wake Serve "what/needs-no-secret ~ the public shelf serves without opening anything">>
+<<~ has Wake Hold "closed/every-sovereign-act ~ a locked vessel signs nothing">>
+<<~ has Wake Announce "loudly/what-it-cannot-do signed/always ~ an unsigned announcement spoofs and targets">>
+<<~ has Wake Stamp "every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain">>
+<<~ has Wake Raise "by/recognition on/a-nonce-THIS-vessel-emitted ~ never a pre-baked blob">>
+<<~ has Wake Expire "the-raise/lapses-back-to-the-floor ~ nobody lowers it; it simply stops being renewed">>
 
 ''ANNOUNCING carries more weight than it looks, and MORE than the first draft granted it.'' A vessel
 standing at the floor and quiet reads worse than one refusing, because a caller cannot tell a held act from
@@ -238,14 +234,10 @@ explicit law with a review gate'', never as an intention.
 ''An adversary CAN force the floor'' — cut the power. Cheap, deniable, repeatable. What that buys them
 splits, and only the first line reads well for us:
 
-```
-\procedure ~Profit(Type:"" Params:"") ~Profit <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Profit Secret-harvest "verdict/NO ~ forcing the floor produces the BFU result extraction vendors call the BAD outcome. The floor holds.">>
-<<~Profit Veto "verdict/YES-and-severe ~ a permanent deniable veto to whoever can drop power (MITRE T1562.010)">>
-<<~Profit Raise-oracle "verdict/YES ~ forced reboots MANUFACTURE the moment kahu present material; repetition harvests it">>
-<<~Profit Gray-failure "verdict/YES ~ peers cannot tell AT-THE-FLOOR from COMPROMISED-AND-IMITATING-THE-FLOOR">>
+<<~ has Profit Secret-harvest "verdict/NO ~ forcing the floor produces the BFU result extraction vendors call the BAD outcome. The floor holds.">>
+<<~ has Profit Veto "verdict/YES-and-severe ~ a permanent deniable veto to whoever can drop power (MITRE T1562.010)">>
+<<~ has Profit Raise-oracle "verdict/YES ~ forced reboots MANUFACTURE the moment kahu present material; repetition harvests it">>
+<<~ has Profit Gray-failure "verdict/YES ~ peers cannot tell AT-THE-FLOOR from COMPROMISED-AND-IMITATING-THE-FLOOR">>
 
 ''THE VETO READS AS THE WORST OF THE FOUR, and it reads worst precisely because it stays QUIET.'' A civic
 mesh whose function runs on sovereign acts hands a deniable, repeatable veto to whoever can reliably drop
@@ -329,6 +321,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;np-N74TiK_gmNk-H3FLuzubpjaQyW--qzvIuI__CQWA
+<<^ code="&#x0003;">>ni:///sha-256;PPzAguClMqyF-ztrg7h1mesLXIN-3Vq9v5U9R1YjScQ
 
 <<^ code="&#x0004;" -> to="?">>

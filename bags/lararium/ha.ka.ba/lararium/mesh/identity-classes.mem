@@ -41,14 +41,10 @@ across four axes and fixes how each RECOVERS — the axis Reading-B re-cuts.
 
 !! The four classes ~ four axes
 
-```
-\procedure ~Class(Type:"" Params:"") ~Class <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Class USER "runs/NO infra (browser-style vessel) carries/short cap-stack · @oracle-read + own mesh-palace · a READ-CAP reaching its OWN operator's private data ACROSS the rhizome (relays blind-transit the ciphertext; the user decrypts) class/KERI non-transferable OR delegated recovers/abandon-and-recreate">>
-<<~Class OPERATOR "runs/a node vessel carries/MANDATORY tier (@oracle + @crossroads + Kapae) · full VESSEL stack (tuber/bulb) · sovereign @catalog · BLIND-TRANSITS private ciphertext for the mesh (MLS Delivery-Service; carry ⊥ read) class/KERI transferable (its persona-KEL IS a key-event-log) recovers/recovery-root-authorizes-rotation (Reading-B)">>
-<<~Class KAHU "runs/a node vessel — AND SEPARATELY holds a seat in the charter k-of-n (the vessel is layer ①, the seat layer ③; a seat moves without the vessel moving, and a vessel raises without the seat) carries/OPERATOR stack + the charter epoch chain + the steward repair-kit class/transferable, in TWO chains (own persona-KEL + the charter-KEL) recovers/personal (Reading-B) PLUS charter-quorum steward re-seat">>
-<<~Class HERM "runs/the @daemon keel + own mesh-palace + own refresh clock (semi-autonomous relay) carries/MANDATORY public/infra + BLIND-TRANSIT of private CIPHERTEXT (carry ⊥ read; holds the replica, reads NONE) · NO read-cap on operator-content · NO sovereign @catalog class/NONE-CIVIC — holds a PLACE DID (the self-certifying key names a SOMEWHERE: addressable, vouchable, carriage-contractable) and NO operator DID (no human key rests at a crossroads to steal); authority rides a wax-sealed carriage contract recovers/re-established by its operator — no self-recovery of a civic identity it never holds">>
+<<~ has Class USER "runs/NO infra (browser-style vessel) carries/short cap-stack · @oracle-read + own mesh-palace · a READ-CAP reaching its OWN operator's private data ACROSS the rhizome (relays blind-transit the ciphertext; the user decrypts) class/KERI non-transferable OR delegated recovers/abandon-and-recreate">>
+<<~ has Class OPERATOR "runs/a node vessel carries/MANDATORY tier (@oracle + @crossroads + Kapae) · full VESSEL stack (tuber/bulb) · sovereign @catalog · BLIND-TRANSITS private ciphertext for the mesh (MLS Delivery-Service; carry ⊥ read) class/KERI transferable (its persona-KEL IS a key-event-log) recovers/recovery-root-authorizes-rotation (Reading-B)">>
+<<~ has Class KAHU "runs/a node vessel — AND SEPARATELY holds a seat in the charter k-of-n (the vessel is layer ①, the seat layer ③; a seat moves without the vessel moving, and a vessel raises without the seat) carries/OPERATOR stack + the charter epoch chain + the steward repair-kit class/transferable, in TWO chains (own persona-KEL + the charter-KEL) recovers/personal (Reading-B) PLUS charter-quorum steward re-seat">>
+<<~ has Class HERM "runs/the @daemon keel + own mesh-palace + own refresh clock (semi-autonomous relay) carries/MANDATORY public/infra + BLIND-TRANSIT of private CIPHERTEXT (carry ⊥ read; holds the replica, reads NONE) · NO read-cap on operator-content · NO sovereign @catalog class/NONE-CIVIC — holds a PLACE DID (the self-certifying key names a SOMEWHERE: addressable, vouchable, carriage-contractable) and NO operator DID (no human key rests at a crossroads to steal); authority rides a wax-sealed carriage contract recovers/re-established by its operator — no self-recovery of a civic identity it never holds">>
 
 !!! ★ HERM READS AS A STATE EVERY VESSEL PASSES THROUGH, not only a class one vessel IS ★
 
@@ -176,12 +172,8 @@ the recovery.
 
 ''A founding carries a SOMEWHERE and a SOMEONE, and canon keeps them apart.'' #herm-establishment rules it directly: a Herm ''boots permissionlessly on its own key — it asks no blessing to exist'', and ''no civic identity mints into'' it. A rite that minted a human root before a vessel could carry a byte would seat on every crossroads the one thing the class exists to refuse.
 
-```
-\procedure ~Half(Type:"" Params:"") ~Half <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Half Place "stands/@daemon · the vessel's own Keyhive individual · the hearth-true-name · the ContactCard asks/nobody ~ carries, serves the public shelf, holds every sovereign act closed">>
-<<~Half Face "stands/the PersonaGroup + its private plane · the social planes · the device-delegation edge · the persona-KEL inception · the MeshCabal arrives/by an operator act ~ lights the hearth fire">>
+<<~ has Half Place "stands/@daemon · the vessel's own Keyhive individual · the hearth-true-name · the ContactCard asks/nobody ~ carries, serves the public shelf, holds every sovereign act closed">>
+<<~ has Half Face "stands/the PersonaGroup + its private plane · the social planes · the device-delegation edge · the persona-KEL inception · the MeshCabal arrives/by an operator act ~ lights the hearth fire">>
 
 ''The place founds ALONE; the face lands on top of it, by a hand that came to dwell.'' A hearth whose operator stands right there runs both in one breath and gains nothing by typing twice. A crossroads never types the second at all.
 
@@ -215,8 +207,8 @@ So the quorum ''seats'' (rare); the ''renewal rides the lease-epoch roll'' (freq
 
 !!! Two sources of caps, answering two layers
 
-<<~Half Self-raise "layer/① act/open THIS vessel's archive holder/whoever holds this vessel's opening secret ~ bootstraps the first hearth; serves the portable node">>
-<<~Half Office-grant "layer/③ act/a standing Nexus seats an office holder/any current office-holder opens it ~ no circularity: the Nexus already stands">>
+<<~ has Half Self-raise "layer/① act/open THIS vessel's archive holder/whoever holds this vessel's opening secret ~ bootstraps the first hearth; serves the portable node">>
+<<~ has Half Office-grant "layer/③ act/a standing Nexus seats an office holder/any current office-holder opens it ~ no circularity: the Nexus already stands">>
 
 ''An office grant reaches NO archive by itself.'' A quorum's acts sit at ③, and a kahu holding shares becomes the collector the house forbids. The ① answer that survives: ''an OFFICE KEY, never a persona key'' — Place-DID-rooted, minted at establishment, opened through the raise door the mesh already stands. A human signs; ''never THE operator''. That difference carries the whole property.
 
@@ -292,12 +284,8 @@ read, or the data never reaches its remote authorized reader across a foreign le
 self-slot ''conflates carry-deny with read-deny for private planes'', and the mesh-breathes role needs
 them split:
 
-```
-\procedure ~Fork(Type:"" Params:"") ~Fork <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Fork SELF-SLOT-A "keep/the committed posture — a cross-operator carries ONLY the federatable set, private ciphertext never transits a foreign relay cost/the mesh does NOT breathe across operator boundaries; a remote same-operator user reaches its private data only over IN-fleet legs, never a cabal-mate's relay">>
-<<~Fork SELF-SLOT-B "refine/split sharePolicy's private-plane denial into DENY-READ-CAP (keep, absolute) ⊥ ALLOW-CARRY-of-ciphertext-to-a-blind-relay (new) — a cross-operator relay blind-transits sealed private bytes it can never read cost/a new carry-tier between MANDATORY and private-read; the relay holds encrypted replicas of planes it cannot decrypt (storage + the read-floor as the sole guard) gain/the mesh breathes — private data reaches its remote reader across ANY honest leg, carry-generous under the read-floor">>
+<<~ has Fork SELF-SLOT-A "keep/the committed posture — a cross-operator carries ONLY the federatable set, private ciphertext never transits a foreign relay cost/the mesh does NOT breathe across operator boundaries; a remote same-operator user reaches its private data only over IN-fleet legs, never a cabal-mate's relay">>
+<<~ has Fork SELF-SLOT-B "refine/split sharePolicy's private-plane denial into DENY-READ-CAP (keep, absolute) ⊥ ALLOW-CARRY-of-ciphertext-to-a-blind-relay (new) — a cross-operator relay blind-transits sealed private bytes it can never read cost/a new carry-tier between MANDATORY and private-read; the relay holds encrypted replicas of planes it cannot decrypt (storage + the read-floor as the sole guard) gain/the mesh breathes — private data reaches its remote reader across ANY honest leg, carry-generous under the read-floor">>
 
 ''The recommendation leans SELF-SLOT-B'', because the mesh-breathes
 role the operator named REQUIRES private ciphertext to cross foreign legs, and carry ⊥ read makes it safe
@@ -601,6 +589,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ixVRLDqy65SFt0QJi0EBYHC3iSHXwXOXjSdXJI3y86I
+<<^ code="&#x0003;">>ni:///sha-256;sot6W5Zf8KRFukOiWH9AdsTQ0CQgvi0bbvTpHp04yCM
 
 <<^ code="&#x0004;" -> to="?">>

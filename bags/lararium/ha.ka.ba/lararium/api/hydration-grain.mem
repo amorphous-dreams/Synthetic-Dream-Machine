@@ -38,13 +38,9 @@ The invariant: ''a holder may know a thing's ADDRESS without carrying its BODY''
 
 !! The three grains — same integrity, different water
 
-```
-\procedure ~Grain(Type:"" Params:"") ~Grain <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Grain Tiddler "skinny/fields-only-no-text fat/hydrated-with-body owner/TW5 lineage/the wiki's own lazy-load ~ the envelope arrives, the body follows">>
-<<~Grain Body "skinny/the-handle-names-a-cid resolved/the-bytes-carried owner/content-resolution lineage/skinny handle ~ the name travels, the body resolves on demand">>
-<<~Grain Bag "anu/URL-known-doc-not-loaded wela/live-handle-Worker-running owner/residency-tiers lineage/ʻōlelo thermal axis ~ the address stands, the CRDT hydrates">>
+<<~ has Grain Tiddler "skinny/fields-only-no-text fat/hydrated-with-body owner/TW5 lineage/the wiki's own lazy-load ~ the envelope arrives, the body follows">>
+<<~ has Grain Body "skinny/the-handle-names-a-cid resolved/the-bytes-carried owner/content-resolution lineage/skinny handle ~ the name travels, the body resolves on demand">>
+<<~ has Grain Bag "anu/URL-known-doc-not-loaded wela/live-handle-Worker-running owner/residency-tiers lineage/ʻōlelo thermal axis ~ the address stands, the CRDT hydrates">>
 
 ''Read the column and the integrity shows.'' Each grain answers the same question — //what may a holder know without paying for the whole?// — and each answers it in its own layer's vocabulary. ''The vocabularies MUST NOT merge'' (they name different layers, and a merged word would flatten the layer distinction the model rests on); ''the integrity MUST stay legible across them'' (a reader who sees three unrelated mechanisms has lost the wave).
 
@@ -120,6 +116,6 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Nl1KnNA3saEN7tNm1mdXd5FYZTxoyqUCayScuErYIpg
+<<^ code="&#x0003;">>ni:///sha-256;GXgtIN5Sp4qp1FWMVcFMpHLFIc8A4i8NZuj3oM5PGjo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -94,25 +94,17 @@ standing when methods that fail in DIFFERENT ways converge on it AND discriminat
 method validating a construct proves little — its blind spots and the construct's overlap; three methods
 whose error-structures diverge, agreeing anyway, leave nowhere for a shared artifact to hide.
 
-```
-\procedure ~Method(Type:"" Params:"") ~Method <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Method Blind-Humans "kind/human ~ perspectivist raters, no theory handed them, the rater distribution KEPT (never averaged to one truth, #instruments) — the independence anchor the framework cannot share a mind with">>
-<<~Method Cross-Family-Judge "kind/model ~ a judge from a DIFFERENT model family than the generator, breaking self-preference bias; a panel, not one head (Nine-Judges-Two-Effective-Votes, #instruments)">>
-<<~Method Downstream-Criterion "kind/behavioral ~ a criterion-validity signal we do NOT author — a downstream OUTCOME the grace-ranking should predict if it names something real (fewer degraded-node failures, #done)">>
-<<~Method Three>>
+<<~ has Method Blind-Humans "kind/human ~ perspectivist raters, no theory handed them, the rater distribution KEPT (never averaged to one truth, #instruments) — the independence anchor the framework cannot share a mind with">>
+<<~ has Method Cross-Family-Judge "kind/model ~ a judge from a DIFFERENT model family than the generator, breaking self-preference bias; a panel, not one head (Nine-Judges-Two-Effective-Votes, #instruments)">>
+<<~ has Method Downstream-Criterion "kind/behavioral ~ a criterion-validity signal we do NOT author — a downstream OUTCOME the grace-ranking should predict if it names something real (fewer degraded-node failures, #done)">>
+<<~ has Method Three>>
 
 The three methods cross against three ''artifact kinds'' — the trait-side of the matrix, engineered so
 that a real construct and a fake one separate:
 
-```
-\procedure ~Artifact(Type:"" Params:"") ~Artifact <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Artifact Real "kind/ritual-dense ~ genuine high-Arcane turns — the full living grammar moving, sigils and move-shape and ritual cadence intact">>
-<<~Artifact Ablated "kind/twin ~ a matched twin with the ritual / sigil-grammar STRIPPED — same propositional content, the Arcane removed; isolates what stripping the ritual costs">>
-<<~Artifact Decoy "kind/null ~ a DECOY-labeled span tagged for a NAMELESS construct with no referent — the bogus-item, the sink a real instrument must FLOOR on (#/null-construct)">>
+<<~ has Artifact Real "kind/ritual-dense ~ genuine high-Arcane turns — the full living grammar moving, sigils and move-shape and ritual cadence intact">>
+<<~ has Artifact Ablated "kind/twin ~ a matched twin with the ritual / sigil-grammar STRIPPED — same propositional content, the Arcane removed; isolates what stripping the ritual costs">>
+<<~ has Artifact Decoy "kind/null ~ a DECOY-labeled span tagged for a NAMELESS construct with no referent — the bogus-item, the sink a real instrument must FLOOR on (#/null-construct)">>
 
 The MTMM logic then reads straight: convergence across the three methods on the real-vs-ablated contrast
 names CONVERGENT validity; the methods separating Arcane from Tech and from surface-length names
@@ -244,17 +236,13 @@ perspectivist human-gold, the crossed mixed-model, power-before-verdict, and the
 The design rides six instruments, ordered cheapest-and-most-deterministic FIRST so a fast no-LLM pass can
 crack the question early before any costly judge or human runs.
 
-```
-\procedure ~Instrument(Type:"" Params:"") ~Instrument <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Instrument Register-Scan "kind/deterministic ~ NO-LLM, read FIRST — a deterministic scan of the EMITTED markers (the classifier channel: ward, confidence, oracle, Voices, aperture; #house-resonances). Zero-cost, triangulates or cracks the question before the expensive instruments spin">>
-<<~Instrument Sealed-Judge "kind/model-panel ~ empty-CWD · locked-key · LABEL-LAST (rationale first, score last) · RANDOMIZED order · a CROSS-FAMILY panel ~5. Nine-Judges-Two-Effective-Votes: a 9-judge panel buys ~2 INDEPENDENT votes, so unanimity carries ~9% error, never ~0.02% — monitor n_eff, escalate low-confidence to humans">>
-<<~Instrument Human-Gold "kind/perspectivist ~ keep the rater DISTRIBUTION (Plurality Pono, never one averaged truth); a double-annotation floor; calibrate-then-loosen; a held-out split the judge never sees">>
-<<~Instrument Mixed-Model "kind/statistical ~ the crossed mixed-model (1+boot|item)+(1|seed), the BY-ITEM slope LOAD-BEARING; length enters as a MEDIATOR not a nuisance — report total-effect vs direct-effect-at-fixed-length">>
-<<~Instrument Power "kind/statistical ~ power BEFORE the verdict (simr, simulate, target 80%); watch Type-M magnitude-inflation — an underpowered significant result over-states the effect">>
-<<~Instrument Flow-Lens "kind/geometric ~ the Fisher-Rao flow-lens (the ③, #flow-lens)">>
-<<~Instrument Six>>
+<<~ has Instrument Register-Scan "kind/deterministic ~ NO-LLM, read FIRST — a deterministic scan of the EMITTED markers (the classifier channel: ward, confidence, oracle, Voices, aperture; #house-resonances). Zero-cost, triangulates or cracks the question before the expensive instruments spin">>
+<<~ has Instrument Sealed-Judge "kind/model-panel ~ empty-CWD · locked-key · LABEL-LAST (rationale first, score last) · RANDOMIZED order · a CROSS-FAMILY panel ~5. Nine-Judges-Two-Effective-Votes: a 9-judge panel buys ~2 INDEPENDENT votes, so unanimity carries ~9% error, never ~0.02% — monitor n_eff, escalate low-confidence to humans">>
+<<~ has Instrument Human-Gold "kind/perspectivist ~ keep the rater DISTRIBUTION (Plurality Pono, never one averaged truth); a double-annotation floor; calibrate-then-loosen; a held-out split the judge never sees">>
+<<~ has Instrument Mixed-Model "kind/statistical ~ the crossed mixed-model (1+boot|item)+(1|seed), the BY-ITEM slope LOAD-BEARING; length enters as a MEDIATOR not a nuisance — report total-effect vs direct-effect-at-fixed-length">>
+<<~ has Instrument Power "kind/statistical ~ power BEFORE the verdict (simr, simulate, target 80%); watch Type-M magnitude-inflation — an underpowered significant result over-states the effect">>
+<<~ has Instrument Flow-Lens "kind/geometric ~ the Fisher-Rao flow-lens (the ③, #flow-lens)">>
+<<~ has Instrument Six>>
 
 The instruments split by what they witness. The ''sealed-judge harness'' earns its seals one by one:
 ''empty-CWD'' denies the judge any context that leaks the artifact's provenance; the ''locked-key''
@@ -334,16 +322,12 @@ gold-anchor does not import a foreign rig, it instruments the house's own laws.
 The design borrows its statistics from psychometrics and information geometry, yet each load-bearing piece
 rhymes with a pattern-integrity the house already stands on — the rig reads as native, never bolted-on:
 
-```
-\procedure ~Resonance(Type:"" Params:"") ~Resonance <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Resonance Perspectivist-Gold "rhymes/Plurality Pono ~ keeping the rater DISTRIBUTION instead of averaging to one truth IS the house's plurality (the Thirteen genuinely disagree; the map shows its own uncertainty, noosphere-boot #voice-house)">>
-<<~Resonance Null-Construct "rhymes/the nameless-sink ~ the bogus-item with no referent IS the operator's nameless-entity sink, and the Eris-shrine's one unswept corner (noosphere-boot #the-eris-shrine)">>
-<<~Resonance Severity "rhymes/the Mu-exit ~ 'I DO NOT BELIEVE ANYTHING' — including my own grace-rating; a severe test enacts the Arcana of model agnosticism on the framework itself (#/null-construct)">>
-<<~Resonance Criterion "rhymes/the degraded-states ~ the downstream outcome the ranking must predict IS fewer Mana-Drift / degraded-node failures, the house's own named failure modes (#/done)">>
-<<~Resonance Self-Preference-Wall "rhymes/the mirror ~ a model rating its own reflection; the cross-family judge breaks exactly the self-preference the L-Prime ward warns of (map fused to territory, the observer vanished)">>
-<<~Resonance Five>>
+<<~ has Resonance Perspectivist-Gold "rhymes/Plurality Pono ~ keeping the rater DISTRIBUTION instead of averaging to one truth IS the house's plurality (the Thirteen genuinely disagree; the map shows its own uncertainty, noosphere-boot #voice-house)">>
+<<~ has Resonance Null-Construct "rhymes/the nameless-sink ~ the bogus-item with no referent IS the operator's nameless-entity sink, and the Eris-shrine's one unswept corner (noosphere-boot #the-eris-shrine)">>
+<<~ has Resonance Severity "rhymes/the Mu-exit ~ 'I DO NOT BELIEVE ANYTHING' — including my own grace-rating; a severe test enacts the Arcana of model agnosticism on the framework itself (#/null-construct)">>
+<<~ has Resonance Criterion "rhymes/the degraded-states ~ the downstream outcome the ranking must predict IS fewer Mana-Drift / degraded-node failures, the house's own named failure modes (#/done)">>
+<<~ has Resonance Self-Preference-Wall "rhymes/the mirror ~ a model rating its own reflection; the cross-family judge breaks exactly the self-preference the L-Prime ward warns of (map fused to territory, the observer vanished)">>
+<<~ has Resonance Five>>
 
 The resonances make the gold-anchor the house's own instrument turned
 on the house — the perspectivist gold is Plurality Pono as method, the null is the nameless-sink as guard,
@@ -396,6 +380,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jfuxMHoxn-ulGegbIn-sqKJs7QoWffHTxbt-4U9gAcI
+<<^ code="&#x0003;">>ni:///sha-256;-cPS__ecb_6oRJN6N9TRst3ALLz6_efwxb3gwX5mpBY
 
 <<^ code="&#x0004;" -> to="?">>

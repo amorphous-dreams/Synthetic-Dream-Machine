@@ -3,8 +3,8 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/widget
 lar-alias-for: widget
-lar-open-pattern: <<~\s*\\?widget\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
-lar-close-pattern: <<~\/\\?widget\s*>>
+lar-open-pattern: <<~\s*widget\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
+lar-close-pattern: <<~\/widget\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- \widget — English alias for the TW5 \widget pragma.

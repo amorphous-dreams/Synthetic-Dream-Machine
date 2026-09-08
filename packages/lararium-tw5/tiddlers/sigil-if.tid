@@ -4,8 +4,8 @@ lar-kind: control
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/heihei
 lar-alias-for: if
 lar-see-also: heihei
-lar-open-pattern: <<~\s*\\?if\s+([^>]+?)\s*>>
-lar-close-pattern: <<~\/\\?if\s*>>
+lar-open-pattern: <<~\s*if\s+([^>]+?)\s*>>
+lar-close-pattern: <<~\/if\s*>>
 lar-example: <<~ if "[<x>match[1]]">>
 type: text/vnd.tiddlywiki
 

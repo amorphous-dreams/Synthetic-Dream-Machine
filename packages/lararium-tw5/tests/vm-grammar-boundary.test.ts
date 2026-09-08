@@ -199,6 +199,11 @@ describe("pono grammar boundary", () => {
       // anchors on `to=` alone and never exposes family or role, so the claim has no other surface. It
       // blesses no grammar; it holds one layer to the range TiddlyWiki itself parses.
       .filter((f) => !f.endsWith("pranala-attribute-spellings.test.ts"))
+      // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
+      // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
+      // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
+      // asks only how it is spelled. The boundary guards the RUNTIME surface, which this never touches.
+      .filter((f) => !f.endsWith("sigil-unslashed-shelf.test.ts"))
       .filter((f) => {
         // The boundary guards the RUNTIME grammar surface — reaching past a blessed entry point to
         // drive the compile layer directly. A `import type` of a rule SHAPE binds no runtime surface

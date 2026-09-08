@@ -138,12 +138,8 @@ A browser vessel persists its signing key as a hex seed, so a same-origin read y
 
 ''The vessel's own insight applies to exactly one of the two keys the browser holds.''
 
-```
-\procedure ~KeyClass(Type:"" Params:"") ~KeyClass <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~KeyClass Device "opaque/YES resurrection/never — re-mint and re-admit cure/a non-extractable handle">>
-<<~KeyClass PersonaRoot "opaque/STRUCTURALLY-NO resurrection/losing it loses the persona cure/an at-rest seal">>
+<<~ has KeyClass Device "opaque/YES resurrection/never — re-mint and re-admit cure/a non-extractable handle">>
+<<~ has KeyClass PersonaRoot "opaque/STRUCTURALLY-NO resurrection/losing it loses the persona cure/an at-rest seal">>
 
 ''Why a persona root cannot go opaque:'' hierarchical derivation feeds the PARENT PRIVATE KEY back in as bytes at every step. A handle can never supply them. So the durable identity keeps needing a seed, and the seal that protects it stays owed — the code already says as much beside the store: the browser holds no seal for self-sovereign secrets, and a persona root persists cleartext exactly as the device key beside it does.
 
@@ -220,6 +216,6 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AW2G0H54v_HJOdg8MF5XgOjqQfNdZz3vlDmRTyr1zgI
+<<^ code="&#x0003;">>ni:///sha-256;s135PXiJUB_A1RhPCLQI_CmSldhE-KFA5MZ9h_ijR-o
 
 <<^ code="&#x0004;" -> to="?">>

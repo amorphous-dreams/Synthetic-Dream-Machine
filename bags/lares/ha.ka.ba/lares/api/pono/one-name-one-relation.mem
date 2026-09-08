@@ -25,13 +25,9 @@ The address space grew from the work, which is the honest way to grow one — an
 
 !! The Three Relations a Name May Carry
 
-```
-\procedure ~Relation(Type:"" Params:"") ~Relation <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Relation Holding "verb/a-vessel-HOLDS-this identity/a-minted-or-derived-address mounts/yes registers/yes cap-checked/yes ~ bags · wikis · content bodies">>
-<<~Relation Meeting "verb/principals-MEET-here identity/a-url-derived-from-a-Nexus-key mounts/no registers/no federates/by-contract ~ boards">>
-<<~Relation Being "verb/this-IS-someone identity/a-KEY-or-a-membership-document mounts/no registers/no names/never-a-path ~ dyads · PersonaGroups · cabals · Nexuses">>
+<<~ has Relation Holding "verb/a-vessel-HOLDS-this identity/a-minted-or-derived-address mounts/yes registers/yes cap-checked/yes ~ bags · wikis · content bodies">>
+<<~ has Relation Meeting "verb/principals-MEET-here identity/a-url-derived-from-a-Nexus-key mounts/no registers/no federates/by-contract ~ boards">>
+<<~ has Relation Being "verb/this-IS-someone identity/a-KEY-or-a-membership-document mounts/no registers/no names/never-a-path ~ dyads · PersonaGroups · cabals · Nexuses">>
 
 ''THE LAW: a name carries exactly ONE relation.'' A name carrying two fuses two things a reader cannot tell apart — and worse, cannot tell apart ''silently'', since both readings resolve.
 
@@ -53,19 +49,15 @@ A name that carries two of these takes ''two owners''. The `@` sigil grew to car
 
 Reading up from the atom. Each rung names its relation, so a reader can tell at a glance what kind of thing they hold.
 
-```
-\procedure ~Rung(Type:"" Params:"") ~Rung <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Rung Vessel-Veil-Dyad "relation/BEING identity/two-keys ~ device-minted vessel-key ⊥ sovereign veiled-user-key; a LOCAL identity in its own right, never a component of something above it">>
-<<~Rung PersonaGroup "relation/BEING identity/the-closure-of-mutual-bindings ~ a human's own vessels holding one handle↔DID; HOLDS exactly one artifact, its private plane">>
-<<~Rung Persona-Plane "relation/HOLDING identity/derived-from-the-group ~ `bags/persona-<tag>`; seeded, mounted, registered, cap-checked under that one name">>
-<<~Rung Vault "relation/BEING identity/a-secret-never-presented ~ the me-Circle collecting a human's compartments; NOTHING above it, or the layer above IS the Nymwars root">>
-<<~Rung Handle "relation/NONE-OF-THE-THREE ~ a NAME a principal announces, on a signed card, at a meeting place; the declaring act binds it, never the characters">>
-<<~Rung Contract "relation/A-RELATION-BETWEEN-BEINGS identity/a-signed-bilateral-lease ~ recorded AT a meeting place; never a thing held">>
-<<~Rung Cabal "relation/BEING identity/a-multi-principal-closure ~ the tie-break its own members constitute">>
-<<~Rung Kahu-Cabal "relation/BEING identity/a-cabal-seated-for-charter-acts ~ a seat, revocable, never a root">>
-<<~Rung Nexus "relation/BEING identity/a-key ~ a confederation of Lararia; it HOSTS meeting places, and hosting is not holding">>
+<<~ has Rung Vessel-Veil-Dyad "relation/BEING identity/two-keys ~ device-minted vessel-key ⊥ sovereign veiled-user-key; a LOCAL identity in its own right, never a component of something above it">>
+<<~ has Rung PersonaGroup "relation/BEING identity/the-closure-of-mutual-bindings ~ a human's own vessels holding one handle↔DID; HOLDS exactly one artifact, its private plane">>
+<<~ has Rung Persona-Plane "relation/HOLDING identity/derived-from-the-group ~ `bags/persona-<tag>`; seeded, mounted, registered, cap-checked under that one name">>
+<<~ has Rung Vault "relation/BEING identity/a-secret-never-presented ~ the me-Circle collecting a human's compartments; NOTHING above it, or the layer above IS the Nymwars root">>
+<<~ has Rung Handle "relation/NONE-OF-THE-THREE ~ a NAME a principal announces, on a signed card, at a meeting place; the declaring act binds it, never the characters">>
+<<~ has Rung Contract "relation/A-RELATION-BETWEEN-BEINGS identity/a-signed-bilateral-lease ~ recorded AT a meeting place; never a thing held">>
+<<~ has Rung Cabal "relation/BEING identity/a-multi-principal-closure ~ the tie-break its own members constitute">>
+<<~ has Rung Kahu-Cabal "relation/BEING identity/a-cabal-seated-for-charter-acts ~ a seat, revocable, never a root">>
+<<~ has Rung Nexus "relation/BEING identity/a-key ~ a confederation of Lararia; it HOSTS meeting places, and hosting is not holding">>
 
 !!! What the ladder shows once sorted
 
@@ -160,6 +152,6 @@ Three moves, smallest first, each standing on its own.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-uris">>
 
-<<^ code="&#x0003;">>ni:///sha-256;KOCbTA8CyoLjUwY2mWCiepDn8x5TNJdV2oCBX9OgDhw
+<<^ code="&#x0003;">>ni:///sha-256;QlpeCzZsxcs5dPRzvAhug50COviDZ_3JLDhwr4aCFMg
 
 <<^ code="&#x0004;" -> to="?">>

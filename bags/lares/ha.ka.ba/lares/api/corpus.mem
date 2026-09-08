@@ -88,17 +88,13 @@ The lifecycle models three battle-proven idioms: ''`docker run''
 ''--rm`'' (run-then-reap), ''nix-shell'' ephemeral environments (a derived env that exists for the duration),
 and ''mktemp + trap EXIT'' (the scratch dir guaranteed-swept on success OR error). The noun-verb tree:
 
-```
-\procedure ~Verb(Type:"" Params:"") ~Verb <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Verb run "args/<path> [-- <analysis>] ~ EPHEMERAL-DEFAULT: open→ingest→analyze→DISSOLVE; `--keep` lands it durable">>
-<<~Verb open "args/<path> [--name] ~ stand a scratch palace, hold it open for queries">>
-<<~Verb query "args/<id> <kw> ~ ask an open scratch palace">>
-<<~Verb ls "args/ ~ list the live scratch instances">>
-<<~Verb keep "args/<id> ~ EXPLICIT promote — land a scratch palace into the durable store">>
-<<~Verb dissolve "args/<id | --all | --orphans> ~ idempotent reap + orphan-reaping">>
-<<~Verb help "args/ ~ examples-first cheat from the help registry">>
+<<~ has Verb run "args/<path> [-- <analysis>] ~ EPHEMERAL-DEFAULT: open→ingest→analyze→DISSOLVE; `--keep` lands it durable">>
+<<~ has Verb open "args/<path> [--name] ~ stand a scratch palace, hold it open for queries">>
+<<~ has Verb query "args/<id> <kw> ~ ask an open scratch palace">>
+<<~ has Verb ls "args/ ~ list the live scratch instances">>
+<<~ has Verb keep "args/<id> ~ EXPLICIT promote — land a scratch palace into the durable store">>
+<<~ has Verb dissolve "args/<id | --all | --orphans> ~ idempotent reap + orphan-reaping">>
+<<~ has Verb help "args/ ~ examples-first cheat from the help registry">>
 
 !!! The lifecycle law
 
@@ -123,15 +119,11 @@ never leak past two independent reapers (the trap AND the sweep).
 Four of the five caps stand on built or stock ground; one
 (form) carries the research:
 
-```
-\procedure ~Cap(Type:"" Params:"") ~Cap <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Cap content "stock/the nomic embedder over verbatim words ~ off-the-shelf, no new work">>
-<<~Cap structure "ALREADY-SOLVED/our content-free structurepalace encoder + a tree-sitter parse-ROUTER (code · markdown · wikitext · json → one CST API; prose fallback → benepar/Stanza constituency); BONUS: a thin tree-sitter grammar for our own `<<~…>>` sigils (~1 file, high value)" >>
-<<~Cap bands "the GRAIN + the BOUNDARY tree ~ #the-bands below — the FFZ membership-tree address (a prefix code, li) + ecp::e.divisive's nested changepoint tree (ki, boundary), cosine-drift the signal">>
-<<~Cap form "the INDUCTION STACK ~ #the-form-induction below — the research-grade half">>
-<<~Cap coupling "the BASE cap that glues sub-sensoria ~ the directed child↔child flow read ON DEMAND through the H¹ cohomological gate (fuse when H¹=0, hold-open when H¹≠0 — never a silent average); empty for a single frozen corpus, present as the plane">>
+<<~ has Cap content "stock/the nomic embedder over verbatim words ~ off-the-shelf, no new work">>
+<<~ has Cap structure "ALREADY-SOLVED/our content-free structurepalace encoder + a tree-sitter parse-ROUTER (code · markdown · wikitext · json → one CST API; prose fallback → benepar/Stanza constituency); BONUS: a thin tree-sitter grammar for our own `<<~…>>` sigils (~1 file, high value)" >>
+<<~ has Cap bands "the GRAIN + the BOUNDARY tree ~ #the-bands below — the FFZ membership-tree address (a prefix code, li) + ecp::e.divisive's nested changepoint tree (ki, boundary), cosine-drift the signal">>
+<<~ has Cap form "the INDUCTION STACK ~ #the-form-induction below — the research-grade half">>
+<<~ has Cap coupling "the BASE cap that glues sub-sensoria ~ the directed child↔child flow read ON DEMAND through the H¹ cohomological gate (fuse when H¹=0, hold-open when H¹≠0 — never a silent average); empty for a single frozen corpus, present as the plane">>
 
 ''The structure plane is the cheap win.'' The structurepalace already encodes content-free shape vectors — it
 reads any tree. The new work is a ''parse-ROUTER'': route code/markdown/wikitext/json through tree-sitter
@@ -355,14 +347,10 @@ now homes the sensorium itself — the model reads py-side rather than behind TS
 S0 is UNGATED (no upstream blocker); the cap sprints follow. The
 TW5-quine runs after S0 + S2.
 
-```
-\procedure ~Sprint(Type:"" Params:"") ~Sprint <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Sprint S0 "name/CLI foundation [UNGATED] ~ palaceOrgans registry · setup-wires-all-five · help-registry · `lares corpus` ephemeral-lifecycle · THIS corpus.md heleuma meme ~ ACCEPT: `lares vessel read --palaces` lists all five organs; `lares corpus run <path>` opens, analyzes, and DISSOLVES on exit; an interrupted run leaves no scratch under ~/.lares/.corpus/; `lares heleuma` ties this meme to the corpus help registry">>
-<<~Sprint S1 "name/bands cap ~ the grain address (FFZ membership tree) + the boundary tree R leg (ecp::e.divisive nested changepoints over content+form+structure, cosine-drift the signal) ~ ACCEPT: the grain address maps Pulse→Theme as containment LEVELS; a bootstrap reproduces the locked boundaries (resampling-consensus gate fires)">>
-<<~Sprint S2 "name/structure cap ~ tree-sitter router → the existing structurepalace encoder + the `<<~…>>` sigil grammar ~ ACCEPT: code/markdown/wikitext/json route through one CST API; the sigil grammar parses a meme's `<<~…>>` spans; the encoder yields content-free shape vectors" >>
-<<~Sprint S3 "name/form cap ~ the induction holder (TreeMiner + PrefixSpan/BIDE + c2xg, EM-iterated, MDL-stopped) ~ ACCEPT: the `induce` batch surfaces templates that each pay their description-length; the LLM labels them AFTER mining, never inside the loop">>
+<<~ has Sprint S0 "name/CLI foundation [UNGATED] ~ palaceOrgans registry · setup-wires-all-five · help-registry · `lares corpus` ephemeral-lifecycle · THIS corpus.md heleuma meme ~ ACCEPT: `lares vessel read --palaces` lists all five organs; `lares corpus run <path>` opens, analyzes, and DISSOLVES on exit; an interrupted run leaves no scratch under ~/.lares/.corpus/; `lares heleuma` ties this meme to the corpus help registry">>
+<<~ has Sprint S1 "name/bands cap ~ the grain address (FFZ membership tree) + the boundary tree R leg (ecp::e.divisive nested changepoints over content+form+structure, cosine-drift the signal) ~ ACCEPT: the grain address maps Pulse→Theme as containment LEVELS; a bootstrap reproduces the locked boundaries (resampling-consensus gate fires)">>
+<<~ has Sprint S2 "name/structure cap ~ tree-sitter router → the existing structurepalace encoder + the `<<~…>>` sigil grammar ~ ACCEPT: code/markdown/wikitext/json route through one CST API; the sigil grammar parses a meme's `<<~…>>` spans; the encoder yields content-free shape vectors" >>
+<<~ has Sprint S3 "name/form cap ~ the induction holder (TreeMiner + PrefixSpan/BIDE + c2xg, EM-iterated, MDL-stopped) ~ ACCEPT: the `induce` batch surfaces templates that each pay their description-length; the LLM labels them AFTER mining, never inside the loop">>
 
 <<~ scale gate "S0 ~ UNGATED — build now -> S1 ~ after S0 -> S2 ~ after S0; with S0 unlocks the TW5-quine run -> S3 ~ after S0 + S2 (form induces over structure)">>
 
@@ -526,6 +514,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w1Ja3aC2q4SC3wXvVJme_GqHD00HHKXt_S4NyS23Ufc
+<<^ code="&#x0003;">>ni:///sha-256;qKyd-flnHHz9BwrgiNy7ZTmS4U8CovZH49uLM6dXg0w
 
 <<^ code="&#x0004;" -> to="?">>

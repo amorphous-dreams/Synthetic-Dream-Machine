@@ -46,14 +46,10 @@ Every long op returns its ''request-id fast'' (the durable idempotency key we
 already mint). On a TTY with no `--detach` it transparently attaches to `watch`;
 off-TTY / `--detach` it returns the id and exits.
 
-```
-\procedure ~Verb(Type:"" Params:"") ~Verb <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Verb status "lares vessel read <id> ~ one-shot, authoritative current state; emits a pollInterval hint">>
-<<~Verb watch "lares watch <id> ~ stream progress until terminal; --exit-status mirrors the job result into the CLI exit code (gh/kubectl shape)">>
-<<~Verb wait "lares wait <id> --timeout <s> ~ block until terminal-or-timeout; timeout → structured 'still running + progress', NEVER a hard fail (the work lives in the job, not the call)">>
-<<~Verb cancel "lares cancel <id> ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)">>
+<<~ has Verb status "lares vessel read <id> ~ one-shot, authoritative current state; emits a pollInterval hint">>
+<<~ has Verb watch "lares watch <id> ~ stream progress until terminal; --exit-status mirrors the job result into the CLI exit code (gh/kubectl shape)">>
+<<~ has Verb wait "lares wait <id> --timeout <s> ~ block until terminal-or-timeout; timeout → structured 'still running + progress', NEVER a hard fail (the work lives in the job, not the call)">>
+<<~ has Verb cancel "lares cancel <id> ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)">>
 
 Precedent: `gh run watch --exit-status`, `kubectl wait --for=condition --timeout`,
 `clig.dev` ("a start command that returns a job ID, and a status command to poll").
@@ -175,6 +171,6 @@ write toward, not a description of current emission.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OI_aBybWSr2Qk_EtLgp7RfaV9yR0aEEMUVmVL7kk4RA
+<<^ code="&#x0003;">>ni:///sha-256;ljp4MjRwmLe3PZ75Batpg6xdILugTrxSi7PFaU2-578
 
 <<^ code="&#x0004;" -> to="?">>

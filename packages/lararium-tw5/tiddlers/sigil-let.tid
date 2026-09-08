@@ -4,8 +4,8 @@ lar-kind: pragma-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/waiho
 lar-alias-for: let
 lar-see-also: waiho
-lar-open-pattern: <<~\s*\\?let\s+([\w-]+)\s+([^\n>]+?)\s*>>
-lar-close-pattern: <<~\/\\?let\s*>>
+lar-open-pattern: <<~\s*let\s+([\w-]+)\s+([^\n>]+?)\s*>>
+lar-close-pattern: <<~\/let\s*>>
 lar-example: <<~ let name "value">>
 type: text/vnd.tiddlywiki
 

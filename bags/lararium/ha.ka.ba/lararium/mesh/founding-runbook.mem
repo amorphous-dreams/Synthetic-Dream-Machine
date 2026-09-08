@@ -399,15 +399,11 @@ cleared tree, so the idempotency claim reads tested rather than asserted. 2m36s 
 ''FOUR OF THE FIVE FAILURES THAT GOT HERE WERE INSTRUMENTS, NOT THE RITE'' — and each one had reported
 green, or reported red against something innocent:
 
-```
-\procedure ~Found(Type:"" Params:"") ~Found <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Found Impatience "read/no socket after 60s truth/the CLI budgets 120 for a cold boot ~ the harness out-waited what it measured">>
-<<~Found Poisoned-seed "read/hearth-private doc unavailable truth/a `cp -r` carried one founding's address book into another ~ the vessel refused correctly">>
-<<~Found Port-liveness "read/status LIVE truth/a fataled node keeps its port bound ~ the gate inspected where it had to connect">>
-<<~Found Probe-as-act "read/the node died truth/the probe rebuilt the workspace and cleaned dist ~ a reading disturbed what it read">>
-<<~Found Silent-misroute "read/1682 specs green truth/554 of 555 framed memes stopped reading as carriers ~ nothing tested detection against a swept meme">>
+<<~ has Found Impatience "read/no socket after 60s truth/the CLI budgets 120 for a cold boot ~ the harness out-waited what it measured">>
+<<~ has Found Poisoned-seed "read/hearth-private doc unavailable truth/a `cp -r` carried one founding's address book into another ~ the vessel refused correctly">>
+<<~ has Found Port-liveness "read/status LIVE truth/a fataled node keeps its port bound ~ the gate inspected where it had to connect">>
+<<~ has Found Probe-as-act "read/the node died truth/the probe rebuilt the workspace and cleaned dist ~ a reading disturbed what it read">>
+<<~ has Found Silent-misroute "read/1682 specs green truth/554 of 555 framed memes stopped reading as carriers ~ nothing tested detection against a swept meme">>
 
 ''The rehearsal earned its keep on the instruments alone.'' Movements ②–⑥
 were sound early; what stood between them and a green run was a harness that measured its own patience, a
@@ -430,15 +426,11 @@ rhymes with every neighbouring ruling rather than inventing a new shape: a cabal
 and never by an act; a standing lift ''EXPIRES'' and no party holds a lowering act; //nobody dissolves a Cabal
 by preventing its meetings//. ''The correct admin capability here reads as NONE.''
 
-```
-\procedure ~Stage(Type:"" Params:"") ~Stage <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Stage Birth "verb/nexus-seal-seat admin/none ~ the operator's own personas declare and stand">>
-<<~Stage Advance "verb/nexus-seal-rotate admin/none ~ pre-committed, quorum-bound">>
-<<~Stage Succession "verb/nexus-seal-rotate admin/none ~ the roster becomes exactly what STANDS">>
-<<~Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
-<<~Stage Quiet "verb/none admin/none ~ the absence of traffic, and that IS the point">>
+<<~ has Stage Birth "verb/nexus-seal-seat admin/none ~ the operator's own personas declare and stand">>
+<<~ has Stage Advance "verb/nexus-seal-rotate admin/none ~ pre-committed, quorum-bound">>
+<<~ has Stage Succession "verb/nexus-seal-rotate admin/none ~ the roster becomes exactly what STANDS">>
+<<~ has Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
+<<~ has Stage Quiet "verb/none admin/none ~ the absence of traffic, and that IS the point">>
 
 ''SUCCESSION RIDES ROTATE, and needed no new verb.'' A kahu steps down by ''no longer standing''; a new one
 takes a chair by declaring a Handle and standing. A rotation then seats the roster that stands — and the
@@ -459,13 +451,9 @@ A bag already declares ''who may read it'' (`CapTier`) and ''whether it stands l
 temperature). Neither answers ''where its bytes rest'', and one pair proves the axis stands apart: the canon
 memes and the Nexus seal read as equally PUBLIC and want ''opposite homes''.
 
-```
-\procedure ~Home(Type:"" Params:"") ~Home <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Home Repository "rests/a-configured-source-control-repo clone-carries/yes ~ canon, memes, seeds — the history IS the point">>
-<<~Home Hearth "rests/the-operator's-DATA-home clone-carries/no ~ identity · the seal · the follow-graph · the persona names · the acquired shelf">>
-<<~Home Ley "rests/nowhere-durable clone-carries/nothing ~ it lives while the mesh carries it">>
+<<~ has Home Repository "rests/a-configured-source-control-repo clone-carries/yes ~ canon, memes, seeds — the history IS the point">>
+<<~ has Home Hearth "rests/the-operator's-DATA-home clone-carries/no ~ identity · the seal · the follow-graph · the persona names · the acquired shelf">>
+<<~ has Home Ley "rests/nowhere-durable clone-carries/nothing ~ it lives while the mesh carries it">>
 
 ''FAIL-CLOSED TO HEARTH, and the asymmetry carries the reason.'' Only `hearth` can be wrong quietly — a bag
 that should have ridden the repository merely fails to be shared, and an operator notices. The other two fail
@@ -830,13 +818,9 @@ what — ''the label answers //who do I call at recovery//'', nothing more.
 ''one'' share, which is nothing. The inverse matters more: ''the two guardians recover WITHOUT you''. That
 converts a death, a hospitalization, or a lost vault from the end of the lineage into a survivable event.
 
-```
-\procedure ~Ask(Type:"" Params:"") ~Ask <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Ask Collusion "asks/would-these-two-combine-against-me ~ together they hold the Nexus; pick two whose interests differ FROM EACH OTHER">>
-<<~Ask Correlation "asks/could-one-fire-flood-or-subpoena-reach-both ~ two cards in one house reads as a 1-of-1 wearing a costume">>
-<<~Ask Reachability "asks/can-someone-who-is-NOT-me-find-them-on-the-worst-day ~ a guardian only you can reach recovers nothing">>
+<<~ has Ask Collusion "asks/would-these-two-combine-against-me ~ together they hold the Nexus; pick two whose interests differ FROM EACH OTHER">>
+<<~ has Ask Correlation "asks/could-one-fire-flood-or-subpoena-reach-both ~ two cards in one house reads as a 1-of-1 wearing a costume">>
+<<~ has Ask Reachability "asks/can-someone-who-is-NOT-me-find-them-on-the-worst-day ~ a guardian only you can reach recovers nothing">>
 
 ''THE NAMES MAY STAND UNASSIGNED AT FOUNDING'' — and a founder short of an answer should let them. The split
 runs 2-of-3 either way; the labels store as `unassigned` and the cards print regardless. ''Naming is a
@@ -1456,6 +1440,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xsXz-4MkgOYGNPp8xgcQ0SonHaNlSrFOruUDjZiUHoc
+<<^ code="&#x0003;">>ni:///sha-256;ejDd4ox5Kssksa3Qe5kOOx1cdBJLqNtFYQcg8Bu4Meo
 
 <<^ code="&#x0004;" -> to="?">>

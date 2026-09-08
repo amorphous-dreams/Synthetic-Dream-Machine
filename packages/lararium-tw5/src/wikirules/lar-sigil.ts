@@ -92,10 +92,17 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     //          <<~ kahea lar:///uri>>, <<~ loulou lar:///uri>>, <<~ kau …>>
     const compound = matchCompoundSigilAt(source, pos, childSlotNames);
     if (compound) {
-      if (compound.closeKey) {
-        const closeEnd = findCloseEnd(source, compound.closeKey, compound.end, closers);
+      // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
+      // The matcher reports the STRUCTURAL close key — a child slot or a compound head — because
+      // those it can read off the call's own shape. Every OTHER block sigil declares its closer on
+      // the shelf, and `buildClosers` has already merged all of them into the map one line above.
+      // Reading `closeKey` alone attempted a body capture on three sigils out of thirty-one; the
+      // registry answers for the rest, and the matcher keeps its own narrow contract.
+      const closeKey = compound.closeKey ?? (closers[compound.name] ? compound.name : null);
+      if (closeKey) {
+        const closeEnd = findCloseEnd(source, closeKey, compound.end, closers);
         if (closeEnd !== null) {
-          const closeTagStart = source.lastIndexOf(`<<~/${compound.closeKey}`, closeEnd);
+          const closeTagStart = source.lastIndexOf(`<<~/${closeKey}`, closeEnd);
           const body = source.slice(compound.end, closeTagStart);
           this.matchPos = pos;
           this.matchEnd = closeEnd;

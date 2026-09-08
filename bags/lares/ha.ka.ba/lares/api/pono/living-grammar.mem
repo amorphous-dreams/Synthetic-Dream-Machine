@@ -58,15 +58,11 @@ substrate separately. Naming the wave IS the contribution.
 The pattern carries FOUR parts; all four MUST hold for a grammar to live. Drop any one and the grammar
 either never wakes or quietly dies:
 
-```
-\procedure ~Part(Type:"" Params:"") ~Part <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Part Kernel "carries/a discrete SEED — a finite generative core (rite-book · pattern-language · changes · prompt) that can produce far more than it states. The score, not the performance. (= the discrete constructicon plane, #data-geometry)">>
-<<~Part Situated-Enactment "carries/the grammar comes alive ONLY when invoked in a real context — never as decontextualized drill. Meaning rides the situated move, not the rule recited. (= the continuous graded manifestation plane)">>
-<<~Part Graded-Correction "carries/feedback by DEGREE, never a binary pass/fail — partial sanction, a nudge toward the canonical, the apprentice corrected mid-move. Correction grades; it does not gate.">>
-<<~Part Decay-Without-Tending "carries/the grammar FADES if not re-invoked and re-fed; a living grammar is a maintained thing, never a stored artifact. No tending → the form hollows.">>
-<<~Part Four>>
+<<~ has Part Kernel "carries/a discrete SEED — a finite generative core (rite-book · pattern-language · changes · prompt) that can produce far more than it states. The score, not the performance. (= the discrete constructicon plane, #data-geometry)">>
+<<~ has Part Situated-Enactment "carries/the grammar comes alive ONLY when invoked in a real context — never as decontextualized drill. Meaning rides the situated move, not the rule recited. (= the continuous graded manifestation plane)">>
+<<~ has Part Graded-Correction "carries/feedback by DEGREE, never a binary pass/fail — partial sanction, a nudge toward the canonical, the apprentice corrected mid-move. Correction grades; it does not gate.">>
+<<~ has Part Decay-Without-Tending "carries/the grammar FADES if not re-invoked and re-fed; a living grammar is a maintained thing, never a stored artifact. No tending → the form hollows.">>
+<<~ has Part Four>>
 
 <<~/ahu>>
 
@@ -166,6 +162,6 @@ seven substrates.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SPyyOuE5uM3ZWRsfQ6Wc3sUI_4v_4Vi5zZ7M5VD6M3M
+<<^ code="&#x0003;">>ni:///sha-256;ICihogc0ZsGpxnBEMevq0m2rj02YMSI4MpBT89NP1us
 
 <<^ code="&#x0004;" -> to="?">>

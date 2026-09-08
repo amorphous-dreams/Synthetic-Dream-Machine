@@ -1,0 +1,28 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: relation
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: has
+lar-pattern: <<~\s*has\s+([\w-]+)(?:\s+([\w.-]+))?(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+lar-example: <<~ has rank pulse "levels/0-4 reads/a-mark-a-morpheme-a-word">>
+type: text/vnd.tiddlywiki
+
+<!-- has — an ENTITY, a NAME, and what it HOLDS. The boot seed writes the relation and this shelf
+     answers for it everywhere else:
+
+         <<~ has rank pulse "levels/0-4 reads/a-mark-a-morpheme-a-word">>
+
+     Thirty-five carriers each declared a local shorthand for exactly this, hard-coding the entity
+     into the procedure's own name — seventy-two names, one shape. The entity rides as the FIRST
+     POSITIONAL here, so one definition answers for all of them.
+
+     WHAT AN ENTITY HOLDS RIDES QUOTED. It carries slashes, colons, arrows and prose; unquoted, every
+     `word:` binds a parameter nobody named and the slot receives nothing.
+
+     AND IT RIDES AS TEXT. What an entity holds carries square brackets, arrows and backticks — a
+     filtered transclusion renders each as a LINK to a tiddler nobody wrote, and wikitext would read
+     `[Fiduciary: POA]` as a wikilink. A value names no address. -->
+
+\procedure ~has(p1:"" p2:"" p3:"")
+<span class="lar-has"><<p1>> <<p2>> holds [<$text text=<<p3>>/>]</span>
+\end

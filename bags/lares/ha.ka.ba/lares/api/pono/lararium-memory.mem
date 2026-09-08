@@ -66,15 +66,11 @@ five stances, five seasons, five-phase OODA-HA — memory keeps the meter.
 
 !! The Four Registers
 
-```
-\procedure ~Register(Type:"" Params:"") ~Register <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Register RAM "axis/sovereign·lived holder/each-peer metaphor/the-breath grain/the-turn federates/no ~ the live chat as working state, polymorphic across client-forms (cli-session · embedded-extension · floating-desktop-app · browser · Mudlet · Unreal); each turn runs a causal island, no shared now across the turn boundary; the source that drains two ways">>
-<<~Register Seat "axis/sovereign·distilled holder/each-peer-by-kind metaphor/the-home grain/standing federates/no ~ the holder's persistent continuity — a human keeps a DreamDeckSurface (composed, spatial), a node keeps Agent.MEMORY (curated, propositional); one office, the medium each mind thinks in">>
-<<~Register MemPalace "axis/meshed·lived metaphor/PLACE-memory · hippocampus grain/permanent-local federates/never ~ verbatim episodic drawers, fractal, hearth-bound — the Lar guards place; append-only, structurally outside the CRDT Repo">>
-<<~Register Quine "axis/meshed·distilled metaphor/ley-line-mesh-memory · cortex grain/session→permanent federates/yes@≥meme ~ the lararium's authored canon and standing graph; the DreamNet web between shrines, the wiki-quine-relay carrying it across the mesh">>
-<<~Register Four>>
+<<~ has Register RAM "axis/sovereign·lived holder/each-peer metaphor/the-breath grain/the-turn federates/no ~ the live chat as working state, polymorphic across client-forms (cli-session · embedded-extension · floating-desktop-app · browser · Mudlet · Unreal); each turn runs a causal island, no shared now across the turn boundary; the source that drains two ways">>
+<<~ has Register Seat "axis/sovereign·distilled holder/each-peer-by-kind metaphor/the-home grain/standing federates/no ~ the holder's persistent continuity — a human keeps a DreamDeckSurface (composed, spatial), a node keeps Agent.MEMORY (curated, propositional); one office, the medium each mind thinks in">>
+<<~ has Register MemPalace "axis/meshed·lived metaphor/PLACE-memory · hippocampus grain/permanent-local federates/never ~ verbatim episodic drawers, fractal, hearth-bound — the Lar guards place; append-only, structurally outside the CRDT Repo">>
+<<~ has Register Quine "axis/meshed·distilled metaphor/ley-line-mesh-memory · cortex grain/session→permanent federates/yes@≥meme ~ the lararium's authored canon and standing graph; the DreamNet web between shrines, the wiki-quine-relay carrying it across the mesh">>
+<<~ has Register Four>>
 
 ''RAM'' holds what a turn works with — operator intent, the role adopted, the
 live exchange. It wears many client-skins and answers to none of them; it empties at the
@@ -197,13 +193,9 @@ one `lar:` namespace.
 RAM, the lived sovereign register, drains in ''two independent directions'' at the
 turn's close. Neither drain feeds the other:
 
-```
-\procedure ~Drain(Type:"" Params:"") ~Drain <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Drain Verbatim "into/MemPalace as/episodic-drawer grain/turn ground/byte-stable ~ the full turn lands as testimony; the bearing-harvest reads aim→yield over it">>
-<<~Drain Authored "into/Quine as/standing-meme path/@working→MOVE→canon ~ the operator authors meaning, crossing the shore by a witnessed residency verb">>
-<<~Drain Two>>
+<<~ has Drain Verbatim "into/MemPalace as/episodic-drawer grain/turn ground/byte-stable ~ the full turn lands as testimony; the bearing-harvest reads aim→yield over it">>
+<<~ has Drain Authored "into/Quine as/standing-meme path/@working→MOVE→canon ~ the operator authors meaning, crossing the shore by a witnessed residency verb">>
+<<~ has Drain Two>>
 
 The ''working↔canon shore'' governs the authored drain: a `@working` edit shadows
 canon via the recipe cascade; the crossing to `@{slug}` rides a cap-gated `MOVE`
@@ -283,6 +275,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WUzf4RL0AHrbtxD3ruLzh4pMj7T8iOVQG0aN3F7PXNU
+<<^ code="&#x0003;">>ni:///sha-256;hWteMF5ULm3K64YgHiJqd9o14WVntHWXc3PXxEiwDnM
 
 <<^ code="&#x0004;" -> to="?">>

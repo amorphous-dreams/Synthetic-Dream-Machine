@@ -58,6 +58,33 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
     expect(notEchoed(call), `<<~ ${name} …>> echoes — the shelf still spells it \\${name}`).toBe(true);
   });
 
+  test("★ no PATTERN on the shelf reads a slashed name either ★", async () => {
+    // A definition and the pattern that finds it move together, or the shelf answers to one spelling
+    // and looks for another. `closePatternToTag` reduces a close pattern to a literal `indexOf` tag,
+    // so a pattern carrying `\\` — or the `\\?` that once tolerated both — reduces to a tag no reader
+    // can write, and the block silently loses its closer.
+    const { readdirSync, readFileSync } = await import("node:fs");
+    const dir = new URL("../tiddlers/", import.meta.url).pathname;
+    const offenders: string[] = [];
+    for (const f of readdirSync(dir).filter((n) => n.endsWith(".tid"))) {
+      for (const line of readFileSync(dir + f, "utf8").split("\n")) {
+        if (/^lar-(?:open-|close-)?pattern:|^lar-(?:alias-for|see-also):/.test(line) && /\\\\\??[a-z]/.test(line)) {
+          offenders.push(`${f}: ${line.trim()}`);
+        }
+      }
+    }
+    expect(offenders, "a pattern still reads the pragma punctuation the names were ruled out of").toEqual([]);
+  });
+
+  test("★ and the bootstrap scanner reports pure names too ★", async () => {
+    // The scanner names what a decomposed carrier RECORDS. A slashed `sigilName` writes a spelling
+    // into every meme-AST event that no call in the corpus wears.
+    const { readFileSync } = await import("node:fs");
+    const src = readFileSync(new URL("../src/meme-ast/scanner.ts", import.meta.url).pathname, "utf8");
+    const offenders = [...src.matchAll(/sigilName: "(\\\\[^"]*)"/g)].map((m) => m[1]!);
+    expect(offenders, "a scan reports a name the grammar retired").toEqual([]);
+  });
+
   test("★ and no definition on the shelf answers to a slashed name any more ★", async () => {
     const { readdirSync, readFileSync } = await import("node:fs");
     const dir = new URL("../tiddlers/", import.meta.url).pathname;

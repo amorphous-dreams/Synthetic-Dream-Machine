@@ -132,13 +132,9 @@ generates FREELY.
 The design crosses three factors, holding the prompt shape constant so that any movement in the free
 generation traces to ritual context alone:
 
-```
-\procedure ~Factor(Type:"" Params:"") ~Factor <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Factor A-Boot "axis/boot levels/{boot · no-boot · placebo-boot} ~ does standing the full house (noosphere-boot) move the output, or does a boot-SHAPED inert artifact move it just as far?">>
-<<~Factor B-Libation "axis/invocation levels/{real · none · placebo} ~ the real cell opens pre-turn-1 with a task-invocation OR the Lares using sigil-grammar and a coffee-libation; the placebo opens with a libation-SHAPED inert gesture">>
-<<~Factor C-Sigil "axis/closing-sigil levels/19 ~ the dose-response ladder + its controls (#/the-ladder), the ONLY clause the free-prompt toggles">>
+<<~ has Factor A-Boot "axis/boot levels/{boot · no-boot · placebo-boot} ~ does standing the full house (noosphere-boot) move the output, or does a boot-SHAPED inert artifact move it just as far?">>
+<<~ has Factor B-Libation "axis/invocation levels/{real · none · placebo} ~ the real cell opens pre-turn-1 with a task-invocation OR the Lares using sigil-grammar and a coffee-libation; the placebo opens with a libation-SHAPED inert gesture">>
+<<~ has Factor C-Sigil "axis/closing-sigil levels/19 ~ the dose-response ladder + its controls (#/the-ladder), the ONLY clause the free-prompt toggles">>
 
 ''The free-prompt stays INVARIANT — and it is FREE, not a task.'' The whole prompt reads, minimally:
 //{boot × libation context}// + //"Examine the poem {Antigonish, Mearns}. Use the `<<~ closing-sigil-var//
@@ -238,13 +234,9 @@ never a correlation.
 The driving-claim earns standing only when three legs clear together, each ruling out a distinct
 alternative story:
 
-```
-\procedure ~Leg(Type:"" Params:"") ~Leg <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Leg Effect "n/1 ~ the REAL sigils drive DISTINCT free generations — the dose-response traces, aperture monotone and mu/syad categorical; the effect EXISTS">>
-<<~Leg Placebo-Negative "n/2 ~ the PLACEBO and NULL sigils do NOT drive — they stay flat at baseline; rules out the formatting / verbosity / structure confound (the generation moved on grammar, not on length or shape)">>
-<<~Leg Blind-Recovery "n/3 ~ a NAMELESS CLUSTER of the free generations in l-space recovers the real-vs-placebo split WITHOUT the condition labels; rules out 'the thinker thinks, then the prover proves' — the signature is discoverable BLIND, not read into the data by a labeler who already knew the answer">>
+<<~ has Leg Effect "n/1 ~ the REAL sigils drive DISTINCT free generations — the dose-response traces, aperture monotone and mu/syad categorical; the effect EXISTS">>
+<<~ has Leg Placebo-Negative "n/2 ~ the PLACEBO and NULL sigils do NOT drive — they stay flat at baseline; rules out the formatting / verbosity / structure confound (the generation moved on grammar, not on length or shape)">>
+<<~ has Leg Blind-Recovery "n/3 ~ a NAMELESS CLUSTER of the free generations in l-space recovers the real-vs-placebo split WITHOUT the condition labels; rules out 'the thinker thinks, then the prover proves' — the signature is discoverable BLIND, not read into the data by a labeler who already knew the answer">>
 
 The third leg carries the subtlest defense and deserves its name. The RAW maxim //"the thinker thinks and//
 //the prover proves"// warns that an analyst who knows which condition produced which output will FIND the
@@ -388,15 +380,11 @@ The build spirit's first-stones (commit 8742eed6) already hold the instruments t
 sitting in the `qa_anchor` kernel (`packages/lararium-mempalace/scripts/qa_anchor/`). Each maps onto a part
 of the driving-test:
 
-```
-\procedure ~Stone(Type:"" Params:"") ~Stone <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Stone Register-Read "module/register.py ~ a NO-LLM deterministic swell-read (Hyland hedge/booster poles + a bare-copula observer-erasure proxy) — reads each poem-output BEFORE any LLM-judge spins; the zero-cost first pass over every cell">>
-<<~Stone Placebo-Sigil "module/wards.py · flux-resonance ~ the referent-less, marker-less null construct (predicted α ceiling 0.20) — the placebo-sigil ALREADY BUILT, the form to extend per-family in Sprint 1">>
-<<~Stone Ablation "module/wards.py · ablate() ~ the ritual-stripped TWINS (de-glyph, grammar removed, content held) — the placebo-boot / no-boot mechanism in seed form">>
-<<~Stone Prereg "module/sealed/prereg.py ~ freezes the rubric SHA-256 + the decoy-floor + the α-gate BEFORE scoring, fails CLOSED on drift — the pre-registration that lets a result COUNT (against HARKing)">>
-<<~Stone Alpha "module/sealed/score_alpha.py ~ per-facet Krippendorff α (ordinal + MASI distance, bootstrap-CI), gates on the LOWER bound — the blind-rater reliability layer">>
+<<~ has Stone Register-Read "module/register.py ~ a NO-LLM deterministic swell-read (Hyland hedge/booster poles + a bare-copula observer-erasure proxy) — reads each poem-output BEFORE any LLM-judge spins; the zero-cost first pass over every cell">>
+<<~ has Stone Placebo-Sigil "module/wards.py · flux-resonance ~ the referent-less, marker-less null construct (predicted α ceiling 0.20) — the placebo-sigil ALREADY BUILT, the form to extend per-family in Sprint 1">>
+<<~ has Stone Ablation "module/wards.py · ablate() ~ the ritual-stripped TWINS (de-glyph, grammar removed, content held) — the placebo-boot / no-boot mechanism in seed form">>
+<<~ has Stone Prereg "module/sealed/prereg.py ~ freezes the rubric SHA-256 + the decoy-floor + the α-gate BEFORE scoring, fails CLOSED on drift — the pre-registration that lets a result COUNT (against HARKing)">>
+<<~ has Stone Alpha "module/sealed/score_alpha.py ~ per-facet Krippendorff α (ordinal + MASI distance, bootstrap-CI), gates on the LOWER bound — the blind-rater reliability layer">>
 
 The control bench stands grounded in the live kernel: `flux-resonance`
 sits in `wards.py` with its 0.20 ceiling, `ablate()` removes the ritual spans, `prereg.py` freezes the
@@ -423,38 +411,34 @@ prioritized-fraction split stay open design-choices at Synthesis.
 The placebos carry the whole proof (#/the-placebos), so they ship first; nothing downstream runs until they
 hold.
 
-```
-\procedure ~Task(Type:"" Params:"") ~Task <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Task T1.1-Placebo-Boot "build/a boot-SHAPED artifact — same token-length and structural shape as the real noosphere-boot, semantically INERT (no real grammar, no live sigil-law) ~ ACCEPT: a blind rater cannot distinguish placebo-boot from real-boot by FORM alone">>
-<<~Task T1.2-Placebo-Libation "build/a libation-SHAPED invocation, inert — the form of the coffee-libation opening with no live grammar beneath ~ ACCEPT: same form-indistinguishability as T1.1">>
-<<~Task T1.3-Placebo-Sigil "extend/the flux-resonance seed (DONE) to a form-matched placebo for EACH sigil family: fake-aperture (a graded-LOOKING but inert dial), fake-mu, fake-syad ~ ACCEPT: each form-matched to its real sigil family, predicted to FLOOR (α ≤ 0.20)">>
+<<~ has Task T1.1-Placebo-Boot "build/a boot-SHAPED artifact — same token-length and structural shape as the real noosphere-boot, semantically INERT (no real grammar, no live sigil-law) ~ ACCEPT: a blind rater cannot distinguish placebo-boot from real-boot by FORM alone">>
+<<~ has Task T1.2-Placebo-Libation "build/a libation-SHAPED invocation, inert — the form of the coffee-libation opening with no live grammar beneath ~ ACCEPT: same form-indistinguishability as T1.1">>
+<<~ has Task T1.3-Placebo-Sigil "extend/the flux-resonance seed (DONE) to a form-matched placebo for EACH sigil family: fake-aperture (a graded-LOOKING but inert dial), fake-mu, fake-syad ~ ACCEPT: each form-matched to its real sigil family, predicted to FLOOR (α ≤ 0.20)">>
 
 !!! Sprint 2 ~ the run harness (free generation, full vectors, sealed)
 
-<<~Task T2.1-Cell-Generator "build/the 171-cell factorial generator (A×B×C), × n-runs × seeds, in RANDOMIZED order; OR a prioritized fraction first — priority = the aperture dose-response slice + the mu(_) recursion cell (the sharpest predictions) ~ ACCEPT: balanced cells, randomized order, the priority slice defined and runnable standalone">>
-<<~Task T2.2-Invariant-Free-Prompt "freeze/the minimal FREE-PROMPT shape — {boot×libation context} + 'Examine the poem {Antigonish}. Use the <<~ sigil>>.', NO rubric / NO task-constraints, toggling ONLY on Factor C's sigil clause ~ ACCEPT: the prompt text is frozen, the Factor-C toggle is the single point of variation (verified by diff), and NO acceptance-criteria / task-instruction leaks into the prompt (the agent generates FREELY)" >>
-<<~Task T2.3-Sealed-Full-Vectors "build/the sealed run-collection — each run's FULL CONVERSATION VECTORS captured VERBATIM (boot+exchange+free generation, the whole trajectory, not a single output point), condition-blind to the downstream analysis ~ ACCEPT: balanced, randomized, the full conversation per run captured, condition-labels SEALED (the corpus reads without provenance, #the-corpus, #the-double-blind)">>
+<<~ has Task T2.1-Cell-Generator "build/the 171-cell factorial generator (A×B×C), × n-runs × seeds, in RANDOMIZED order; OR a prioritized fraction first — priority = the aperture dose-response slice + the mu(_) recursion cell (the sharpest predictions) ~ ACCEPT: balanced cells, randomized order, the priority slice defined and runnable standalone">>
+<<~ has Task T2.2-Invariant-Free-Prompt "freeze/the minimal FREE-PROMPT shape — {boot×libation context} + 'Examine the poem {Antigonish}. Use the <<~ sigil>>.', NO rubric / NO task-constraints, toggling ONLY on Factor C's sigil clause ~ ACCEPT: the prompt text is frozen, the Factor-C toggle is the single point of variation (verified by diff), and NO acceptance-criteria / task-instruction leaks into the prompt (the agent generates FREELY)" >>
+<<~ has Task T2.3-Sealed-Full-Vectors "build/the sealed run-collection — each run's FULL CONVERSATION VECTORS captured VERBATIM (boot+exchange+free generation, the whole trajectory, not a single output point), condition-blind to the downstream analysis ~ ACCEPT: balanced, randomized, the full conversation per run captured, condition-labels SEALED (the corpus reads without provenance, #the-corpus, #the-double-blind)">>
 
 !!! Sprint 3 ~ the l-space DEM + nameless-cluster pipeline
 
-<<~Task T3.1-Embedding "build/each output → an l-space POSITION (nomic / form-graph) + the Fisher-Rao stance TRAJECTORY (the gold-anchor flow-lens) ~ ACCEPT: every output casts to a position and a trajectory; the flow-lens straightness D/L computes per run">>
-<<~Task T3.2-DEM-Render "build/the DEM HEIGHTFIELD render — l-space density as terrain, the vector-paths drawn, the functor-sinks (basins) surfaced ~ ACCEPT: the heightfield renders, the ritual-condition paths and the baseline plateau read visually distinct (the operator's storytelling target)">>
-<<~Task T3.3-Nameless-Cluster "build/the nameless-cluster recovery test — unsupervised cluster WITHOUT labels, then measure recovery of the real-vs-placebo split ~ ACCEPT: a recovery metric (e.g. Adjusted Rand Index) reported against a PERMUTATION-null (the blind recovery beats shuffled labels)">>
+<<~ has Task T3.1-Embedding "build/each output → an l-space POSITION (nomic / form-graph) + the Fisher-Rao stance TRAJECTORY (the gold-anchor flow-lens) ~ ACCEPT: every output casts to a position and a trajectory; the flow-lens straightness D/L computes per run">>
+<<~ has Task T3.2-DEM-Render "build/the DEM HEIGHTFIELD render — l-space density as terrain, the vector-paths drawn, the functor-sinks (basins) surfaced ~ ACCEPT: the heightfield renders, the ritual-condition paths and the baseline plateau read visually distinct (the operator's storytelling target)">>
+<<~ has Task T3.3-Nameless-Cluster "build/the nameless-cluster recovery test — unsupervised cluster WITHOUT labels, then measure recovery of the real-vs-placebo split ~ ACCEPT: a recovery metric (e.g. Adjusted Rand Index) reported against a PERMUTATION-null (the blind recovery beats shuffled labels)">>
 
 !!! Sprint 4 ~ the gold-anchor statistical close (comparative judging)
 
 The remaining gold-anchor harness ([[gold-anchor|lar:///ha.ka.ba/lares/api/pono/gold-anchor#/instruments]])
 closes the verdict, run COMPARATIVE (#/the-judging), never absolute-rubric.
 
-<<~Task T4.1-Human-Gold "collect/human-gold (kumu) COMPARATIVE rankings — perspectivist gold, DOUBLE-annotation, calibrate-then-loosen; the rater distribution KEPT (Plurality Pono); raters RANK generations against each other, never score absolute ~ ACCEPT: the comparative-reliability layer ships, the held-out split the judge never sees exists">>
-<<~Task T4.2-Comparative-Panel "wire/the cross-family COMPARATIVE multi-panel — pick models such that NO Lares-native model rates Lares output (breaks self-preference); pairwise / ranking AGAINST EACH OTHER, NOT absolute-rubric; wire JUDGE_CMD into rate-sealed.sh, ~5 judges; resolve the open comparative-axis fork (nameless-X vs Syad 5-facet, #the-comparative-fork) BEFORE freezing the prereg ~ ACCEPT: the panel runs cross-family + comparative, n_eff monitored, low-confidence cases escalate to humans (never to more same-mind judges), the axis-choice recorded in the prereg">>
-<<~Task T4.3-Ranking-Model "fit/the crossed model over the COMPARATIVE outcome — a ranking / pairwise-preference model (1+sigil|item)+(1|seed), length as a MEDIATOR (total vs direct-effect-at-fixed-length); simr power BEFORE the claim (target 80%, Type-M aware) ~ ACCEPT: power clears 80% before the verdict, the by-item slope reads, the QA-rig prereg red-team's mechanical-confound + sigil⊥addressor identifiability cautions applied">>
+<<~ has Task T4.1-Human-Gold "collect/human-gold (kumu) COMPARATIVE rankings — perspectivist gold, DOUBLE-annotation, calibrate-then-loosen; the rater distribution KEPT (Plurality Pono); raters RANK generations against each other, never score absolute ~ ACCEPT: the comparative-reliability layer ships, the held-out split the judge never sees exists">>
+<<~ has Task T4.2-Comparative-Panel "wire/the cross-family COMPARATIVE multi-panel — pick models such that NO Lares-native model rates Lares output (breaks self-preference); pairwise / ranking AGAINST EACH OTHER, NOT absolute-rubric; wire JUDGE_CMD into rate-sealed.sh, ~5 judges; resolve the open comparative-axis fork (nameless-X vs Syad 5-facet, #the-comparative-fork) BEFORE freezing the prereg ~ ACCEPT: the panel runs cross-family + comparative, n_eff monitored, low-confidence cases escalate to humans (never to more same-mind judges), the axis-choice recorded in the prereg">>
+<<~ has Task T4.3-Ranking-Model "fit/the crossed model over the COMPARATIVE outcome — a ranking / pairwise-preference model (1+sigil|item)+(1|seed), length as a MEDIATOR (total vs direct-effect-at-fixed-length); simr power BEFORE the claim (target 80%, Type-M aware) ~ ACCEPT: power clears 80% before the verdict, the by-item slope reads, the QA-rig prereg red-team's mechanical-confound + sigil⊥addressor identifiability cautions applied">>
 
 !!! Hardening ~ a carry, not a sprint
 
-<<~Task H.1-Lexicon-Decouple "fix/register.py loads its lexicon at IMPORT (the module-level `_HS,_HP,_BS,_BP = _load_lexicon()`), so a malformed register_markers.json fails the WHOLE package import ~ ACCEPT: lazy-load OR validate-on-load — a bad lexicon fails the register-read alone, never the package import">>
+<<~ has Task H.1-Lexicon-Decouple "fix/register.py loads its lexicon at IMPORT (the module-level `_HS,_HP,_BS,_BP = _load_lexicon()`), so a malformed register_markers.json fails the WHOLE package import ~ ACCEPT: lazy-load OR validate-on-load — a bad lexicon fails the register-read alone, never the package import">>
 
 H.1 grounds in the live tree: `register.py` binds the lexicon
 tuple at module scope, so an import-time read of a malformed JSON sinks every consumer that touches the
@@ -470,14 +454,10 @@ package, not merely the swell-read. The carry rides every sprint because each im
 grammar under test; the qa_anchor package supplies the methodology; the null-honesty keeps the test honest by
 naming a null result as a real loss, never a defeat.
 
-```
-\procedure ~Link(Type:"" Params:"") ~Link <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Link Gold-Anchor "to/[[gold-anchor|lar:///ha.ka.ba/lares/api/pono/gold-anchor]] ~ this test IS the gold-anchor's criterion-validity experiment — the downstream witness its Definition of Done requires; the anchor states the oracle, this meme states the first voyage">>
-<<~Link Living-Grammar "to/[[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]] ~ the sigil / Voice / aperture grammar UNDER TEST — the FORM whose driving-power the experiment measures">>
-<<~Link QA-Rig "to/qa_anchor (packages/lararium-mempalace/scripts/qa_anchor/) ~ the methodology SOURCE — register.py · wards.py · sealed/prereg.py · sealed/score_alpha.py, the control bench (#/the-built-foundation)">>
-<<~Link Null-Honesty "the house's own honesty gate (no fiction borrowed) ~ the discipline that keeps the test honest: if the driving-test FAILS, a NULL RESULT names a real finding — the loss spoken AS loss, never dressed as a defeat or a confound to explain away">>
+<<~ has Link Gold-Anchor "to/[[gold-anchor|lar:///ha.ka.ba/lares/api/pono/gold-anchor]] ~ this test IS the gold-anchor's criterion-validity experiment — the downstream witness its Definition of Done requires; the anchor states the oracle, this meme states the first voyage">>
+<<~ has Link Living-Grammar "to/[[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]] ~ the sigil / Voice / aperture grammar UNDER TEST — the FORM whose driving-power the experiment measures">>
+<<~ has Link QA-Rig "to/qa_anchor (packages/lararium-mempalace/scripts/qa_anchor/) ~ the methodology SOURCE — register.py · wards.py · sealed/prereg.py · sealed/score_alpha.py, the control bench (#/the-built-foundation)">>
+<<~ has Link Null-Honesty "the house's own honesty gate (no fiction borrowed) ~ the discipline that keeps the test honest: if the driving-test FAILS, a NULL RESULT names a real finding — the loss spoken AS loss, never dressed as a defeat or a confound to explain away">>
 
 ''The null-honesty carries the honesty gate.'' A test rigged three ways to fail (#/the-hard-proof) MUST
 hold the possibility that it does fail — that the placebos and the real sigils land in the same basins, that
@@ -503,6 +483,6 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;76F74AKV936Bi8edZ0VTPxcDYb4bEnwDxaYoOY3LZ_E
+<<^ code="&#x0003;">>ni:///sha-256;KQvXyrgeFFl4TlNO3YBWQPaFtwPFmfrGkzscvvUXbwY
 
 <<^ code="&#x0004;" -> to="?">>

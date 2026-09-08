@@ -93,13 +93,9 @@ The catma's payoff: a corpus that grows 100× turns a dial (fewer neighbors, low
 
 The sensorium's confidence and precision reads resist the pull toward iterative fitting. Three identities keep them closed-form — cheap, stable, and honest:
 
-```
-\procedure ~Numeric(Type:"" Params:"") ~Numeric <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Numeric Signal-Fraction "form/conf = var(t) / (var(t) + var(r)) ~ a PARTITION-OF-VARIANCE confidence — task-variance over task-plus-residual variance; the fraction of the reading explained by signal, closed-form, no fit; conf→1 as residual vanishes, conf→0 as signal drowns">>
-<<~Numeric Closed-Form-Precision "form/π* analytic ~ the optimal precision SETTLES analytically — the precision-weighting ([[li-ki-integrities|lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested]], confidence = precision) has a closed-form minimizer, so the settle takes ONE step, never an iteration to convergence">>
-<<~Numeric Complementary-Guard "form/π→conf via the complement ~ where the DIRECT π→conf map diverges numerically (large mean-squared-error ε̄², the precision-blows-up regime), compute through the COMPLEMENTARY form — algebraically identical, numerically stable — so the read holds at the extreme instead of overflowing">>
+<<~ has Numeric Signal-Fraction "form/conf = var(t) / (var(t) + var(r)) ~ a PARTITION-OF-VARIANCE confidence — task-variance over task-plus-residual variance; the fraction of the reading explained by signal, closed-form, no fit; conf→1 as residual vanishes, conf→0 as signal drowns">>
+<<~ has Numeric Closed-Form-Precision "form/π* analytic ~ the optimal precision SETTLES analytically — the precision-weighting ([[li-ki-integrities|lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested]], confidence = precision) has a closed-form minimizer, so the settle takes ONE step, never an iteration to convergence">>
+<<~ has Numeric Complementary-Guard "form/π→conf via the complement ~ where the DIRECT π→conf map diverges numerically (large mean-squared-error ε̄², the precision-blows-up regime), compute through the COMPLEMENTARY form — algebraically identical, numerically stable — so the read holds at the extreme instead of overflowing">>
 
 ''This path is partly ENACTED, not only designed.'' The sensorium's `settlePrecision` already carries the closed-form settle and the complementary-form guard against the large-ε̄² divergence (commit lineage `f50a35b8` //sensorium.numerics.harden — signal-fraction confidence · closed-form settle · complementary π→conf//; the QA hardening in `ab85fc2b` caught the large-ε̄² divergence and the false-critical / EWS-guard leaks). That enactment lives ''py/R'' — the full sensorium model's home, instanced per-stream — while TS keeps the pure-functor math floor these identities also seed. The record honors the enacted-vs-aimed cut: the numerical path stands in code py/R-side, where the sensorium reads; the fusion escape and the structure descent stand as design grounded in established algorithms not yet all wired.
 
@@ -146,6 +142,6 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lqo3oX0ocq5tZSfpqcQ2odgPe70aEAEewByWeqF4jV8
+<<^ code="&#x0003;">>ni:///sha-256;foFzFKf_HbSHWW3EFIEoyb1gIFRjOV64lbz3J26qZbo
 
 <<^ code="&#x0004;" -> to="?">>

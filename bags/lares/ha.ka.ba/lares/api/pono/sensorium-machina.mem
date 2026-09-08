@@ -64,14 +64,10 @@ no-imposed-prior law, never a softening.
 
 ''Per plane, concretely:''
 
-```
-\procedure ~Code(Type:"" Params:"") ~Code <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Code Content "l(G)/the shared vocabulary and embedding basis l(D|G)/the record's own bytes, the part no template reaches ~ content reaches hardest for the RESIDUAL">>
-<<~Code Structure "l(G)/the canonical AST shapes that recur — the structural hashes l(D|G)/the leaf fills a shape does not determine ~ structure reaches hardest for the GRAMMAR">>
-<<~Code Form "l(G)/the induced constructicon — templates over templates, the miners' surfaced subtrees and move-sequences l(D|G)/the records the constructicon fails to cover ~ form IS the grammar, priced">>
-<<~Code Grain "l(G)/the band alphabet — how many Themes, Arcs, Measures the tree admits l(D|G)/the address itself, a PREFIX CODE, so its length reads in bits (`ffz_address.address_bits`) ~ the grain FOLDS INTO the code rather than sitting beside it">>
+<<~ has Code Content "l(G)/the shared vocabulary and embedding basis l(D|G)/the record's own bytes, the part no template reaches ~ content reaches hardest for the RESIDUAL">>
+<<~ has Code Structure "l(G)/the canonical AST shapes that recur — the structural hashes l(D|G)/the leaf fills a shape does not determine ~ structure reaches hardest for the GRAMMAR">>
+<<~ has Code Form "l(G)/the induced constructicon — templates over templates, the miners' surfaced subtrees and move-sequences l(D|G)/the records the constructicon fails to cover ~ form IS the grammar, priced">>
+<<~ has Code Grain "l(G)/the band alphabet — how many Themes, Arcs, Measures the tree admits l(D|G)/the address itself, a PREFIX CODE, so its length reads in bits (`ffz_address.address_bits`) ~ the grain FOLDS INTO the code rather than sitting beside it">>
 
 ''What the objective FORBIDS.'' No plane may be weighted against another. There sits no fusion rule,
 no log-opinion-pool, no RRF weighting, no whitening — every hand-tuned weight in that stack read as a
@@ -181,13 +177,9 @@ and the address has ''moved into li'' as a stored prefix code (#/the-grain).
 
 Under the variance test, exactly three readings extend — and no others:
 
-```
-\procedure ~Ki(Type:"" Params:"") ~Ki <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Ki Boundary "asks/where does the generating REGIME turn over extends/it reads a WINDOW, never a span — a cut exists only against its neighbours engines/Foote-novelty over the character-class channel · `ecp::e.divisive` (the nested TREE) · PELT · Harris branching-entropy product/the FFZ address — which CROSSES into li (#/the-arrow)">>
-<<~Ki Coupling "asks/who leads whom, ACROSS streams extends/irreducibly — a relation BETWEEN streams that NO coarsening of one stream can ever reach engines/effective transfer entropy (`coupling.R`, RTransferEntropy::calc_ete), surrogate-null gated; ΦID atoms (redundancy · unique · synergy) as the depth extension product/a directed, null-certified edge — a HYPOTHESIS surfaced, never a verdict">>
-<<~Ki Standing "asks/what does the world OUTSIDE this trace vouch for extends/only distinct-signer witness edges raise it — repetition and recall move it not at all engines/`persistence-keel.ts` product/the r-axis rating (noise→data→meme→ano→kapu), ceiling pinned at 16 — kapu seats by talk-story alone">>
+<<~ has Ki Boundary "asks/where does the generating REGIME turn over extends/it reads a WINDOW, never a span — a cut exists only against its neighbours engines/Foote-novelty over the character-class channel · `ecp::e.divisive` (the nested TREE) · PELT · Harris branching-entropy product/the FFZ address — which CROSSES into li (#/the-arrow)">>
+<<~ has Ki Coupling "asks/who leads whom, ACROSS streams extends/irreducibly — a relation BETWEEN streams that NO coarsening of one stream can ever reach engines/effective transfer entropy (`coupling.R`, RTransferEntropy::calc_ete), surrogate-null gated; ΦID atoms (redundancy · unique · synergy) as the depth extension product/a directed, null-certified edge — a HYPOTHESIS surfaced, never a verdict">>
+<<~ has Ki Standing "asks/what does the world OUTSIDE this trace vouch for extends/only distinct-signer witness edges raise it — repetition and recall move it not at all engines/`persistence-keel.ts` product/the r-axis rating (noise→data→meme→ano→kapu), ceiling pinned at 16 — kapu seats by talk-story alone">>
 
 ''COUPLING survives the chain, and it is the ONE genuinely cosheaf-shaped thing left.''
 Take the position plainly: every li plane is a ''quotient of one stream''; coupling is a ''relation between''
@@ -240,13 +232,9 @@ reads as a ''boundary'' signal, exactly as the FFZ meme specified in June — //
 Each R leg rides the `drawer_io` NDJSON contract — one request on stdin, one response on stdout — and
 ''every one of them degrades gracefully'': a missing R never faults the run.
 
-```
-\procedure ~RLeg(Type:"" Params:"") ~RLeg <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~RLeg bands_ecp.R "owns/`ecp::e.divisive` — nonparametric, MULTIVARIATE, DIVISIVE hierarchical changepoints (Matteson & James 2014); the discovery ORDER is the nested tree verdict/SURVIVES, PROMOTED — it stops serving a frequency ladder and becomes the BOUNDARY plane's tree engine, which is what it always was fallback/`ruptures` Binseg / KernelCPD-rbf (incremental-Binseg order IS a divisive hierarchy)">>
-<<~RLeg coupling.R "owns/`RTransferEntropy::calc_ete` — the effective (bias-corrected) TRANSFER ENTROPY, directional, model-free, with a bootstrap source-permutation null verdict/SURVIVES — the one irreducibly-ki plane's one engine fallback/NONE, by design: coupling has no python fallback, so an absent R yields the HONEST ZERO, never a fabricated edge">>
-<<~RLeg ews.R "owns/`earlywarnings::generic_ews` — rolling lag-1-AC / variance / skewness + Kendall-τ trends; `surrogates_ews` supplies the ARMA-null false-positive guard verdict/SURVIVES, RE-SEATED — critical-slowing-down forecasts the APPROACH of a regime turn, which reads as a BOUNDARY-approach instrument, never a per-band one; it now runs on the ONE cohesion signal, and the per-band framing retires with the ladder fallback/native numpy estimators">>
+<<~ has RLeg bands_ecp.R "owns/`ecp::e.divisive` — nonparametric, MULTIVARIATE, DIVISIVE hierarchical changepoints (Matteson & James 2014); the discovery ORDER is the nested tree verdict/SURVIVES, PROMOTED — it stops serving a frequency ladder and becomes the BOUNDARY plane's tree engine, which is what it always was fallback/`ruptures` Binseg / KernelCPD-rbf (incremental-Binseg order IS a divisive hierarchy)">>
+<<~ has RLeg coupling.R "owns/`RTransferEntropy::calc_ete` — the effective (bias-corrected) TRANSFER ENTROPY, directional, model-free, with a bootstrap source-permutation null verdict/SURVIVES — the one irreducibly-ki plane's one engine fallback/NONE, by design: coupling has no python fallback, so an absent R yields the HONEST ZERO, never a fabricated edge">>
+<<~ has RLeg ews.R "owns/`earlywarnings::generic_ews` — rolling lag-1-AC / variance / skewness + Kendall-τ trends; `surrogates_ews` supplies the ARMA-null false-positive guard verdict/SURVIVES, RE-SEATED — critical-slowing-down forecasts the APPROACH of a regime turn, which reads as a BOUNDARY-approach instrument, never a per-band one; it now runs on the ONE cohesion signal, and the per-band framing retires with the ladder fallback/native numpy estimators">>
 
 ''Py-side, the standing organs:'' `plane_capacity` (the ceiling gate, #li) · `ffz_address` (the grain,
 #the-grain) · `form_induction` (the `l(G)` ledger) · `persistence_io` + `persistence-keel.ts` (the arrow,
@@ -364,13 +352,9 @@ counter manufactures a global now.
 
 !!! What it needs that a text corpus does not
 
-```
-\procedure ~Need(Type:"" Params:"") ~Need <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Need The-Beat "given/the harness hands it over — it ticks on the operator's grounding act why/a curated corpus must DETECT every band it has; the rhizome is HANDED one, and the detection budget frees for the bands nobody gives (Measure, Theme)">>
-<<~Need The-Causal-DAG "given/the fork, the injection, the handback — a partial order the source WROTE DOWN why/''you cannot DISCOVER what you were handed.'' The DAG rides the GIVEN axis (#/ki), so it lands in ''li'', and inducing it would be an instrument re-deriving its own input">>
-<<~Need A-Pidgin-Proof-Boundary "given/nothing — this one must be EARNED why/see below; a single-grammar instrument DIES on this corpus">>
+<<~ has Need The-Beat "given/the harness hands it over — it ticks on the operator's grounding act why/a curated corpus must DETECT every band it has; the rhizome is HANDED one, and the detection budget frees for the bands nobody gives (Measure, Theme)">>
+<<~ has Need The-Causal-DAG "given/the fork, the injection, the handback — a partial order the source WROTE DOWN why/''you cannot DISCOVER what you were handed.'' The DAG rides the GIVEN axis (#/ki), so it lands in ''li'', and inducing it would be an instrument re-deriving its own input">>
+<<~ has Need A-Pidgin-Proof-Boundary "given/nothing — this one must be EARNED why/see below; a single-grammar instrument DIES on this corpus">>
 
 !!! The register-switch problem ~ the corpus runs as a PIDGIN
 
@@ -419,13 +403,9 @@ this goalpost sits where the operator put it.
 
 ''One machina, many sensoria. Each holds its own store; none of them federate'' (operator ruling, standing).
 
-```
-\procedure ~Sensorium(Type:"" Params:"") ~Sensorium <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Sensorium Session-Rhizome "holds/the AI↔operator worldlines mood/RHIZOME — the Beat GIVEN status/BUILT; the first memory-sensorium capture ran 2026-07-10 note/the ONE bed where coupling is well-posed (#/memory-sensorium)">>
-<<~Sensorium Text-Corpus "holds/one curated artifact per store — the Kumulipo, a codebase, TW5's own tree mood/GEOLOGY — the Beat reads NULL status/BUILT; the beds that taught us the category error note/it must EARN every band it has">>
-<<~Sensorium DreamNet-Mesh "holds/the federated mesh's own sense-data — each node read as a stream mood/UNDECIDED — the mesh has no grounding act, so it may hold no Beat at all status/PLANNED — the LEAST DESIGNED, and named so note/the Good-Regulator leap (Conant & Ashby) — a good regulator MUST model the system it regulates; a mesh regulating itself must carry a model of itself">>
+<<~ has Sensorium Session-Rhizome "holds/the AI↔operator worldlines mood/RHIZOME — the Beat GIVEN status/BUILT; the first memory-sensorium capture ran 2026-07-10 note/the ONE bed where coupling is well-posed (#/memory-sensorium)">>
+<<~ has Sensorium Text-Corpus "holds/one curated artifact per store — the Kumulipo, a codebase, TW5's own tree mood/GEOLOGY — the Beat reads NULL status/BUILT; the beds that taught us the category error note/it must EARN every band it has">>
+<<~ has Sensorium DreamNet-Mesh "holds/the federated mesh's own sense-data — each node read as a stream mood/UNDECIDED — the mesh has no grounding act, so it may hold no Beat at all status/PLANNED — the LEAST DESIGNED, and named so note/the Good-Regulator leap (Conant & Ashby) — a good regulator MUST model the system it regulates; a mesh regulating itself must carry a model of itself">>
 
 !!! The DreamNet sensorium ~ what it still lacks
 
@@ -557,6 +537,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZU_xRdqqoKORs0bRqYqfAo6MBFVvYb4FUw0yJlnr7Kk
+<<^ code="&#x0003;">>ni:///sha-256;2udPn14PKuFOsXQzC2zoCMN6khRXZ9le9ZIx8BWUK-k
 
 <<^ code="&#x0004;" -> to="?">>

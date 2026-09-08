@@ -75,13 +75,9 @@ antibody.
 
 The contract falls into three tiers — and answers ''what a Nexus carries vs withholds'':
 
-```
-\procedure ~Tier(Type:"" Params:"") ~Tier <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Tier MANDATORY "who/operator↔kahu carries/@oracle + @crossroads (public + infra) + the Kapae antigen when/AT ALL TIMES ~ contracting into a Nexus IS agreeing to be an immune-propagation node">>
-<<~Tier BILATERAL "who/operator↔operator carries/cabal + shared docs when/by direct peer contract ~ the guarded/classes tier, negotiated node-to-node, NOT via the kahu">>
-<<~Tier PRIVATE "who/the vessel alone carries/nothing outward when/never ~ stays home, never federates">>
+<<~ has Tier MANDATORY "who/operator↔kahu carries/@oracle + @crossroads (public + infra) + the Kapae antigen when/AT ALL TIMES ~ contracting into a Nexus IS agreeing to be an immune-propagation node">>
+<<~ has Tier BILATERAL "who/operator↔operator carries/cabal + shared docs when/by direct peer contract ~ the guarded/classes tier, negotiated node-to-node, NOT via the kahu">>
+<<~ has Tier PRIVATE "who/the vessel alone carries/nothing outward when/never ~ stays home, never federates">>
 
 ''The mandatory tier is the operator↔kahu contract's spine.'' To contract with a Nexus'
 kahu-priesthood is to owe the mesh continuous carriage of its public + infra streams — and the
@@ -185,6 +181,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;im_IxcfjpeuWGsosEpwYz6k_-W0KsUrMpcCLqVBqR1M
+<<^ code="&#x0003;">>ni:///sha-256;xlt9yYZrz4g36kdQgfrJYe1gwUkKgQf8xW6ANbYFhfU
 
 <<^ code="&#x0004;" -> to="?">>

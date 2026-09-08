@@ -4,8 +4,8 @@ lar-kind: context-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/meme
 lar-alias-for: tiddler
 lar-see-also: meme
-lar-open-pattern: <<~\s*\\?tiddler\s+(\S+)\s*>>
-lar-close-pattern: <<~\/\\?tiddler\s*>>
+lar-open-pattern: <<~\s*tiddler\s+(\S+)\s*>>
+lar-close-pattern: <<~\/tiddler\s*>>
 lar-example: <<~ tiddler "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 

@@ -89,6 +89,12 @@ describe.skipIf(wikiSkip)(
    * The META BLOCK IS EXEMPT — key realignment and added metadata are the renderer's business and the
    * operator has ruled them acceptable. Only BODY drift fails.
    */
+  /**
+   * THE GRAMMAR NOW LOADS, AND IT COSTS TIME. This walks seven hundred carriers through a wiki
+   * holding eighty-one live sigil rules rather than the dozen hardcoded bootstrap scans, so the
+   * default five seconds no longer covers it. The number below names the real cost rather than
+   * hiding it in a global.
+   */
   test("every carrier renders back to the bytes the WIKI parsed it from", () => {
     const carriers = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
       .split("\n").filter(Boolean);
@@ -108,7 +114,7 @@ describe.skipIf(wikiSkip)(
     }
     expect(carriers.length).toBeGreaterThan(500);
     expect(drift).toEqual([]);
-  });
+  }, 60_000);
 
   /**
    * TWO FAULTS THAT VANISH RATHER THAN FAIL, and neither is body drift.

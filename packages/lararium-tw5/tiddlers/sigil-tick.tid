@@ -2,9 +2,9 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: concurrency
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/tick
-lar-see-also: \simulate
-lar-open-pattern: <<~\s*\\tick\s*>>
-lar-close-pattern: <<~\/\\tick\s*>>
+lar-see-also: simulate
+lar-open-pattern: <<~\s*tick\s*>>
+lar-close-pattern: <<~\/tick\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- \tick — device lifecycle hook: run this block once per nalu (simulation tick / refresh wave).

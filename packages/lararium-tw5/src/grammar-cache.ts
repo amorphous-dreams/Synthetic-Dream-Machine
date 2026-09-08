@@ -155,7 +155,16 @@ function familyFromFields(title: string, fields: Readonly<Record<string, unknown
 }
 
 /**
- * Assemble GrammarRules from all `[tag[lar:///ha.ka.ba/tags/SharktoothSigil]]` tiddlers.
+ * Assemble GrammarRules from every `[all[shadows+tiddlers]tag[…SharktoothSigil]]` tiddler.
+ *
+ * ── THE GRAMMAR ARRIVES AS SHADOWS ─────────────────────────────────────────────────────────────
+ * These tiddlers ride inside the plugin, which makes every one of them a SHADOW, and TiddlyWiki's
+ * `[tag[…]]` reads the tiddler store alone. Naming only the store matched ZERO in every wiki that
+ * boots the grammar as a plugin — which is every vessel — so this returned null from its own
+ * empty-set guard and the hardcoded bootstrap scans carried the whole render, silently.
+ *
+ * SHADOWS FIRST, so a non-shadow tiddler of the same title overrides the packed one — the ordering
+ * the vocabulary-cid documents, and the one TiddlyWiki's own global-import filter spells out loud.
  *   - lar-kind != "family" → SigilRule
  *   - lar-kind == "family" → FamilyRule
  *
@@ -163,7 +172,7 @@ function familyFromFields(title: string, fields: Readonly<Record<string, unknown
  * The `toml` data-fence sigil lives at lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-toml.
  */
 function buildGrammarFromWiki(wiki: TW5Wiki): GrammarRules | null {
-  const titles = wiki.filterTiddlers(`[tag[${GRAMMAR_TAG}]]`);
+  const titles = wiki.filterTiddlers(`[all[shadows+tiddlers]tag[${GRAMMAR_TAG}]]`);
   const sigils:   SigilRule[]   = [];
   const families: FamilyRule[]  = [];
   for (const title of titles) {

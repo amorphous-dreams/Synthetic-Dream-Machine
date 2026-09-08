@@ -96,17 +96,13 @@ offices: the ''word'' (teaches the parser), the ''field-read'' (the structured
 gradient reading), the ''gradient render'' (a `\procedure`, band-dressed). The
 gauge panel the engine learns to read:
 
-```
-\procedure ~Gauge(Type:"" Params:"") ~Gauge <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Gauge Lares "form/leaf reads/aimRoot=w1.w2.w3 · yieldRoot · holding? ~ the bearing vector">>
-<<~Gauge Hud "form/leaf reads/aperture=0..20 + band{pulse·beat·measure·arc·theme} · oodaCount · phase{✶⏿◇▶↺} · suspendReason ~ the gauges">>
-<<~Gauge Ward "form/leaf reads/office{* ! ? _ 0} · swordLed? · breaches:N · quoted:N · lifted? ~ the L-Prime drift register, NOT a verdict">>
-<<~Gauge Confidence "form/leaf reads/register · value=0..20 · band{provisional..canon} ~ the certainty dial">>
-<<~Gauge Oracle "form/leaf reads/driftSpend=↯N · die · count · tailLen · crossCheckOk? ~ the entropy meter">>
-<<~Gauge Syad-Mu "form/leaf reads/stances[] / tools[] ~ the standpoint + tool lenses">>
-<<~Gauge Voice "form/prose-header reads/voices[]{name · role · mask} ~ the Thirteen, anchored in the stream not a <<~>>" >>
+<<~ has Gauge Lares "form/leaf reads/aimRoot=w1.w2.w3 · yieldRoot · holding? ~ the bearing vector">>
+<<~ has Gauge Hud "form/leaf reads/aperture=0..20 + band{pulse·beat·measure·arc·theme} · oodaCount · phase{✶⏿◇▶↺} · suspendReason ~ the gauges">>
+<<~ has Gauge Ward "form/leaf reads/office{* ! ? _ 0} · swordLed? · breaches:N · quoted:N · lifted? ~ the L-Prime drift register, NOT a verdict">>
+<<~ has Gauge Confidence "form/leaf reads/register · value=0..20 · band{provisional..canon} ~ the certainty dial">>
+<<~ has Gauge Oracle "form/leaf reads/driftSpend=↯N · die · count · tailLen · crossCheckOk? ~ the entropy meter">>
+<<~ has Gauge Syad-Mu "form/leaf reads/stances[] / tools[] ~ the standpoint + tool lenses">>
+<<~ has Gauge Voice "form/prose-header reads/voices[]{name · role · mask} ~ the Thirteen, anchored in the stream not a <<~>>" >>
 
 The grammar entry (`sigil-X.tid`: `lar-kind`, the inline pattern) teaches the word;
 the reading (`\procedure`, tagged Global, routed by the `~` dispatcher) reads `p1`
@@ -226,6 +222,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Y3gF1iTWB3CcB4h049-zi2ddChxFPZa0oCwuepTfwos
+<<^ code="&#x0003;">>ni:///sha-256;-xHFz7qRHMYnba7cPhQvC7PEw39kglqpgqH_MkPaK4o
 
 <<^ code="&#x0004;" -> to="?">>

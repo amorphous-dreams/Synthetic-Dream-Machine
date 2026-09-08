@@ -58,14 +58,10 @@ Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freed
 
 ''An office attaches to the PLACE, never to the person.'' Rome's ''vicomagistri'' held a college seat at a ''compitum''; the office belonged to the vicus, the person rotated through, and the shrine kept standing.
 
-```
-\procedure ~Office(Type:"" Params:"") ~Office <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Office Grant "what/a-quorum-countersigns subject/the-vessel's-PLACE-DID requires/the-vessel's-own-contractSig ~ bilateral; a Nexus conscripts nobody">>
-<<~Office Fence "what/boundEpoch >= effectiveLeaseEpoch scope/per-Nexus ~ the same comparison device-delegation already makes">>
-<<~Office Ending "how/non-renewal ~ nobody exercises a lowering act; a newer grant binds higher and the frontier rolls past the old">>
-<<~Office Exception "when/a-malicious-self-renew rides/convergent-removal + kapae ~ never the counter">>
+<<~ has Office Grant "what/a-quorum-countersigns subject/the-vessel's-PLACE-DID requires/the-vessel's-own-contractSig ~ bilateral; a Nexus conscripts nobody">>
+<<~ has Office Fence "what/boundEpoch >= effectiveLeaseEpoch scope/per-Nexus ~ the same comparison device-delegation already makes">>
+<<~ has Office Ending "how/non-renewal ~ nobody exercises a lowering act; a newer grant binds higher and the frontier rolls past the old">>
+<<~ has Office Exception "when/a-malicious-self-renew rides/convergent-removal + kapae ~ never the counter">>
 
 !!! ★ THE KULEANA FACE RUNS TWO HALVES, AT TWO ADDRESSES ★
 
@@ -164,13 +160,9 @@ Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 5
 
 !! The immune coupling ~ innate, adaptive, memory
 
-```
-\procedure ~Layer(Type:"" Params:"") ~Layer <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Layer Innate "organ/lamplighters acts/patrol · notice · repair holds/tend caps ONLY ~ presents, never condemns">>
-<<~Layer Adaptive "organ/kahu-quorum acts/seat-a-presented-candidate holds/quorum-signature ~ the only condemning body">>
-<<~Layer Memory "organ/the-antigen shape/durable · convergent · per-Nexus ~ the emergency brake, never the default death">>
+<<~ has Layer Innate "organ/lamplighters acts/patrol · notice · repair holds/tend caps ONLY ~ presents, never condemns">>
+<<~ has Layer Adaptive "organ/kahu-quorum acts/seat-a-presented-candidate holds/quorum-signature ~ the only condemning body">>
+<<~ has Layer Memory "organ/the-antigen shape/durable · convergent · per-Nexus ~ the emergency brake, never the default death">>
 
 !!! ★ PRESENTATION ⊥ CONDEMNATION ★
 
@@ -370,6 +362,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6JPdvzB-rthftfdj7sWPRAe7WFF6-soc1n4f5ItBA_c
+<<^ code="&#x0003;">>ni:///sha-256;c7_OMBcDR-R-NdnkPXFhKh3kKGCEe1WAvUxSu8-4J3g
 
 <<^ code="&#x0004;" -> to="?">>

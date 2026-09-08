@@ -257,8 +257,13 @@ export function closePatternToTag(pattern: string): string | null {
   const unescaped = raw.replace(/\\\//g, "/");
   // strip trailing `\s*>>` or `\s+>>` or `>>` — we only need the prefix tag
   const tag = unescaped.replace(/\\s[*+]?>?>?$/, "").replace(/>>$/, "").trimEnd();
-  if (!tag.startsWith("<<~/")) return null;
-  return tag;
+  // ── A DERIVATION THAT FAILS SAYS SO ───────────────────────────────────────────────────────────
+  // `findCloseEnd` scans for this tag with `indexOf`, so anything the reduction could not reduce
+  // travels on as LITERAL TEXT to search for. A guard reading only the `<<~/` prefix passed every
+  // such residue — an optional group, an alternation, a character class — and handed back a tag no
+  // reader could ever write, which then failed silently as "this block has no closer here".
+  // A closer tag spells `<<~/` and a plain sigil name, or it does not exist.
+  return /^<<~\/[A-Za-z][\w-]*$/.test(tag) ? tag : null;
 }
 
 /**

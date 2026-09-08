@@ -79,17 +79,13 @@ grows back wherever the law has not reached, and where to look when it does.
 
 Every substrate motion in this CLI composes from these, and no composition earns a primitive's seat.
 
-```
-\procedure ~Primitive(Type:"" Params:"") ~Primitive <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Primitive stop "ends a running daemon by port, graceful then forced ~ never a restart in disguise">>
-<<~Primitive wipe "pares the vessel store + the projection watermark ~ identity, seal, library and registry stand outside it">>
-<<~Primitive build "compiles the workspace and STAMPS the source digest ~ a build that skips the stamp leaves the tree reading stale">>
-<<~Primitive bake "re-derives the genesis island from the engine + the packed plugin ~ moves NO identity">>
-<<~Primitive found "mints the vessel identity, the persona root, the social planes and the bootstrap ~ idempotent, skips what stands">>
-<<~Primitive stand "brings the daemon up, foreground or detached, and reports what it found ~ attach when one already answers">>
-<<~Primitive seed "plants every bags holding back into its doc, kind-routed, diff-gated ~ idempotent; a converged tree no-ops">>
+<<~ has Primitive stop "ends a running daemon by port, graceful then forced ~ never a restart in disguise">>
+<<~ has Primitive wipe "pares the vessel store + the projection watermark ~ identity, seal, library and registry stand outside it">>
+<<~ has Primitive build "compiles the workspace and STAMPS the source digest ~ a build that skips the stamp leaves the tree reading stale">>
+<<~ has Primitive bake "re-derives the genesis island from the engine + the packed plugin ~ moves NO identity">>
+<<~ has Primitive found "mints the vessel identity, the persona root, the social planes and the bootstrap ~ idempotent, skips what stands">>
+<<~ has Primitive stand "brings the daemon up, foreground or detached, and reports what it found ~ attach when one already answers">>
+<<~ has Primitive seed "plants every bags holding back into its doc, kind-routed, diff-gated ~ idempotent; a converged tree no-ops">>
 
 ''An eighth reads, and belongs beside them'': `read` — the pure inspection that starts nothing (bootstrap
 presence, storage size, port, seal state, personas, quorum).
@@ -265,6 +261,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lm86beph5JYRmabnQAVcot9HB8Vfqxc_KTg71Jp5JpU
+<<^ code="&#x0003;">>ni:///sha-256;dhpr1G_eVW4un95G_m1FLiggoWNmrPHxMTrTHsj8uN4
 
 <<^ code="&#x0004;" -> to="?">>

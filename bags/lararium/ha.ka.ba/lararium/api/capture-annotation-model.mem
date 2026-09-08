@@ -48,16 +48,12 @@ holds them together.
 mempalace, vendored, captures verbatim and searches it. The lararium needs five
 things it does not natively model:
 
-```
-\procedure ~Hole(Type:"" Params:"") ~Hole <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Hole Gradient "miss/the turn's HUD instruments (confidence·ward·oracle·Voices·band·aperture·bearing) render as prose and DISSOLVE ~ no structured annotation of HOW a turn stood">>
-<<~Hole Subagent "miss/tasked-spirit transcripts are BLURRED into the parent wing (recursive mine, issue #111) or DROPPED (our hook stages top-level only) ~ no distinct spirit memory">>
-<<~Hole Multi-Agent "miss/who-drove-whom across surfaces (claude coordinator → gh-copilot worker) is LOST ~ no relationship graph">>
-<<~Hole Identity "miss/no stable, recallable agent identity ~ re-spawned spirits cannot find prior work">>
-<<~Hole Ephemeral "miss/thousands of throwaway Q&A flows (blind judge-panels) would POLLUTE the palace ~ no exclusion-by-construction">>
-<<~Hole Five>>
+<<~ has Hole Gradient "miss/the turn's HUD instruments (confidence·ward·oracle·Voices·band·aperture·bearing) render as prose and DISSOLVE ~ no structured annotation of HOW a turn stood">>
+<<~ has Hole Subagent "miss/tasked-spirit transcripts are BLURRED into the parent wing (recursive mine, issue #111) or DROPPED (our hook stages top-level only) ~ no distinct spirit memory">>
+<<~ has Hole Multi-Agent "miss/who-drove-whom across surfaces (claude coordinator → gh-copilot worker) is LOST ~ no relationship graph">>
+<<~ has Hole Identity "miss/no stable, recallable agent identity ~ re-spawned spirits cannot find prior work">>
+<<~ has Hole Ephemeral "miss/thousands of throwaway Q&A flows (blind judge-panels) would POLLUTE the palace ~ no exclusion-by-construction">>
+<<~ has Hole Five>>
 
 This model closes all five — capture (subagent · ephemeral) + annotation (gradient
 · multi-agent · identity) — without editing mempalace (web3-only; vendored sibling
@@ -275,16 +271,12 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 
 !! The Operator Command Surface
 
-```
-\procedure ~Cmd(Type:"" Params:"") ~Cmd <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Cmd harvest "does/sweep transcripts → verbatim drawers (--all backfill; lar_hv idempotent) ~ BUILT">>
-<<~Cmd subagents "does/mine <session>/subagents/* into wing_<w>__spirits, named, both sides ~ BUILT">>
-<<~Cmd telemetry "does/read a wing's instruments through @daemon → project lar_* (--wing) ~ BUILT (write shore)">>
-<<~Cmd recall "does/read the verbatim PLACE through @daemon (search·list·drawer) ~ BUILT (read shore)">>
-<<~Cmd ephemeral "does/launch a task into an isolated ephemeral swarm (blind dir; --cleanup off by default) ~ SPECIFIED">>
-<<~Cmd track "does/(superseded by ephemeral — capture is on by default, no toggle)">>
+<<~ has Cmd harvest "does/sweep transcripts → verbatim drawers (--all backfill; lar_hv idempotent) ~ BUILT">>
+<<~ has Cmd subagents "does/mine <session>/subagents/* into wing_<w>__spirits, named, both sides ~ BUILT">>
+<<~ has Cmd telemetry "does/read a wing's instruments through @daemon → project lar_* (--wing) ~ BUILT (write shore)">>
+<<~ has Cmd recall "does/read the verbatim PLACE through @daemon (search·list·drawer) ~ BUILT (read shore)">>
+<<~ has Cmd ephemeral "does/launch a task into an isolated ephemeral swarm (blind dir; --cleanup off by default) ~ SPECIFIED">>
+<<~ has Cmd track "does/(superseded by ephemeral — capture is on by default, no toggle)">>
 
 <<~/ahu>>
 
@@ -349,6 +341,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0KSFGE-PA9iVp3viYn2cAvJbttZ7BY6oJPK4kYYRDXg
+<<^ code="&#x0003;">>ni:///sha-256;Hrezuu8e8LSIWOOHJWRdOgwLpQAQBRhVw8STpTZBXUY
 
 <<^ code="&#x0004;" -> to="?">>

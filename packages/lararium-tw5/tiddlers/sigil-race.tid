@@ -4,8 +4,8 @@ lar-kind: concurrency-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/holo
 lar-alias-for: holo
 lar-see-also: holo
-lar-open-pattern: <<~\s*\\race\s*>>
-lar-close-pattern: <<~\/\\race\s*>>
+lar-open-pattern: <<~\s*race\s*>>
+lar-close-pattern: <<~\/race\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- \race — English alias for holo (cancelling race; Verse `race`); first wins, all losers cancel.

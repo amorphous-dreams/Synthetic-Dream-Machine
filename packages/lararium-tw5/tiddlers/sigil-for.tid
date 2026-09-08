@@ -4,8 +4,8 @@ lar-kind: control
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/huli
 lar-alias-for: for
 lar-see-also: huli
-lar-open-pattern: <<~\s*\\?for\s+([^>]+?)\s*>>
-lar-close-pattern: <<~\/\\?for\s*>>
+lar-open-pattern: <<~\s*for\s+([^>]+?)\s*>>
+lar-close-pattern: <<~\/for\s*>>
 lar-example: <<~ for "[tag[x]]">>
 type: text/vnd.tiddlywiki
 

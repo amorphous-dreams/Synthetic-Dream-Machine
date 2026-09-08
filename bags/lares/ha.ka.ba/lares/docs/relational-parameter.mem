@@ -75,13 +75,9 @@ cannot run at parse time.
 
 ''SO THE PARSE STAYS PERMISSIVE AND THE BINDING TURNS SELECTIVE:''
 
-```
-\procedure ~Step(Type:"" Params:"") ~Step <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Step Parse "does/mark-the-token keeps/position keeps/value adds/relation-field ~ the tree GAINS a field; no tree LOSES one">>
-<<~Step Declare "does/accept-a-relational-slot where/parseParameterDefinition reads/`\\procedure agent(fires from -> to)`">>
-<<~Step Bind "does/read-the-mark where/ParametersWidget ~ a procedure that declared a relation reads it; one that did not sees the positional it saw before">>
+<<~ has Step Parse "does/mark-the-token keeps/position keeps/value adds/relation-field ~ the tree GAINS a field; no tree LOSES one">>
+<<~ has Step Declare "does/accept-a-relational-slot where/parseParameterDefinition reads/`\\procedure agent(fires from -> to)`">>
+<<~ has Step Bind "does/read-the-mark where/ParametersWidget ~ a procedure that declared a relation reads it; one that did not sees the positional it saw before">>
 
 ''THAT SPLIT IS WHAT MAKES THE CHANGE ADDITIVE.'' An undeclared procedure
 receives byte-identical parameters before and after. The feature reaches only the definitions that ask
@@ -149,14 +145,10 @@ letting the same bare form render.
 
 !! What the field already decided
 
-```
-\procedure ~Art(Type:"" Params:"") ~Art <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Art Cypher "stands/FOR gives/visual-correspondence ~ arrows read as relations because the syntax looks like the graph; direction MANDATORY on write, OPTIONAL on read - the `->` `<-` `<->` triple">>
-<<~Art DOT "stands/FOR gives/chain-desugars-pairwise ~ `A -> B -> C` becomes adjacent edges; no variable arity anywhere in the model">>
-<<~Art Prolog "stands/AGAINST gives/the-anti-pattern ~ a GLOBAL operator makes other files read differently, and text reads SILENTLY into a different term; the cure the field reached: operators local to a module, imported on purpose">>
-<<~Art TW5 "stands/PROCEDURE gives/the-house-precedent ~ v5.3.0 met new expressivity with a NEW DELIMITED TOKEN (`<% %>`), never by overloading an existing form">>
+<<~ has Art Cypher "stands/FOR gives/visual-correspondence ~ arrows read as relations because the syntax looks like the graph; direction MANDATORY on write, OPTIONAL on read - the `->` `<-` `<->` triple">>
+<<~ has Art DOT "stands/FOR gives/chain-desugars-pairwise ~ `A -> B -> C` becomes adjacent edges; no variable arity anywhere in the model">>
+<<~ has Art Prolog "stands/AGAINST gives/the-anti-pattern ~ a GLOBAL operator makes other files read differently, and text reads SILENTLY into a different term; the cure the field reached: operators local to a module, imported on purpose">>
+<<~ has Art TW5 "stands/PROCEDURE gives/the-house-precedent ~ v5.3.0 met new expressivity with a NEW DELIMITED TOKEN (`<% %>`), never by overloading an existing form">>
 
 ⚠ ''THE PROLOG WARNING LANDS ON THE GLOBAL FORM AND MISSES THE DECLARED ONE.'' Marking a token without
 re-reading it, and gating the meaning behind a definition, IS the module-local cure transposed.
@@ -210,15 +202,11 @@ It wants the core shape settled first, so the two speak one law rather than two.
 
 !! The plan
 
-```
-\procedure ~Phase(Type:"" Params:"") ~Phase <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Phase One "does/free-the-scheme touches/parseMacroParameterAsAttribute risk/low ~ a colon followed by `//` reads as a value; ships alone, wanted by the arrow or not">>
-<<~Phase Two "does/mark-the-arrow touches/both-parameter-parsers risk/low ~ the token keeps its position and value and gains a relation field; every existing parse stands">>
-<<~Phase Three "does/declare-the-slot touches/parseParameterDefinition risk/medium ~ `\\procedure agent(fires from -> to)`; the definition grammar grows one form">>
-<<~Phase Four "does/read-the-mark touches/ParametersWidget+TranscludeWidget risk/medium ~ a declared relation binds; an undeclared one reads as the positional it always was">>
-<<~Phase Five "does/prove-the-chain touches/tests risk/low ~ pairwise desugaring, direction triple, and a control that an undeclared procedure sees no change">>
+<<~ has Phase One "does/free-the-scheme touches/parseMacroParameterAsAttribute risk/low ~ a colon followed by `//` reads as a value; ships alone, wanted by the arrow or not">>
+<<~ has Phase Two "does/mark-the-arrow touches/both-parameter-parsers risk/low ~ the token keeps its position and value and gains a relation field; every existing parse stands">>
+<<~ has Phase Three "does/declare-the-slot touches/parseParameterDefinition risk/medium ~ `\\procedure agent(fires from -> to)`; the definition grammar grows one form">>
+<<~ has Phase Four "does/read-the-mark touches/ParametersWidget+TranscludeWidget risk/medium ~ a declared relation binds; an undeclared one reads as the positional it always was">>
+<<~ has Phase Five "does/prove-the-chain touches/tests risk/low ~ pairwise desugaring, direction triple, and a control that an undeclared procedure sees no change">>
 
 ''EACH PHASE STANDS ALONE.'' One through four each leave the engine correct and the corpus green;
 stopping after any of them costs nothing.
@@ -232,16 +220,12 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 !! What the house counts
 
-```
-\procedure ~Gauge(Type:"" Params:"") ~Gauge <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Gauge Additive "counts/parse-trees-that-differ-for-an-undeclared-procedure red/any ~ one difference and the change stops reading as additive">>
-<<~Gauge Silence "counts/invocations-that-re-read-without-erroring red/any ~ the Prolog failure arrives silent, never as a syntax error">>
-<<~Gauge Nesting "counts/arrows-marked-inside-brackets-or-quotes red/any-unmarked ~ `Gauge(10 -> 12)` degrades on the gradient; a mark inside a nest reads as a fault">>
-<<~Gauge Reach "counts/sigil-invocations-that-changed red/any ~ the sigil path stands outside this work by design">>
-<<~Gauge Standing "counts/arrow-chains-the-seeds-write-unquoted green/all ~ the authored form ALREADY reads as the plan renders it; a quote returning to a chain marks the plan slipping">>
-<<~Gauge Glyph "counts/glyph-arrows-read-as-structure red/any ~ only the ASCII `->` structures a call; a glyph arrow rides inside a value and MUST stay prose">>
+<<~ has Gauge Additive "counts/parse-trees-that-differ-for-an-undeclared-procedure red/any ~ one difference and the change stops reading as additive">>
+<<~ has Gauge Silence "counts/invocations-that-re-read-without-erroring red/any ~ the Prolog failure arrives silent, never as a syntax error">>
+<<~ has Gauge Nesting "counts/arrows-marked-inside-brackets-or-quotes red/any-unmarked ~ `Gauge(10 -> 12)` degrades on the gradient; a mark inside a nest reads as a fault">>
+<<~ has Gauge Reach "counts/sigil-invocations-that-changed red/any ~ the sigil path stands outside this work by design">>
+<<~ has Gauge Standing "counts/arrow-chains-the-seeds-write-unquoted green/all ~ the authored form ALREADY reads as the plan renders it; a quote returning to a chain marks the plan slipping">>
+<<~ has Gauge Glyph "counts/glyph-arrows-read-as-structure red/any ~ only the ASCII `->` structures a call; a glyph arrow rides inside a value and MUST stay prose">>
 
 <<~/ahu>>
 
@@ -256,6 +240,6 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ye4hPN_wm8IKsxxPr_SyfY2wxrJJS63HbalLLHX2XCQ
+<<^ code="&#x0003;">>ni:///sha-256;CtA0GB2EXq4-wMAq-AYlEO521d_XbwdVBSMdAnXZ-GA
 
 <<^ code="&#x0004;" -> to="?">>

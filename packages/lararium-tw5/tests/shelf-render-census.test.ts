@@ -1,12 +1,4 @@
 /**
- * ── AND A CLOSER IS NOT A CALL ──────────────────────────────────────────────────────────────────
- * Every example here rides the LEAF form, because only three closers reach a body capture today —
- * `ahu`, `pranala`, `kahea` — while the corpus writes some twenty kinds. `waiho`, `heihei`, `huli`,
- * `hana` and the declaration forms each carry a taught closer that renders as WATER. That debt is
- * measured and OWED; this census does not hide it behind a leaf-form vector, it names it here.
- */
-
-/**
  * The shelf renders itself — every definition ships one worked call, and this runs it.
  *
  * ── THE RATIO THAT HID EVERY DEFECT ─────────────────────────────────────────────────────────────

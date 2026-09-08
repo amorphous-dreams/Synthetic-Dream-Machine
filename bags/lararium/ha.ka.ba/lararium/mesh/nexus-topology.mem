@@ -38,13 +38,9 @@ The two-axis meme (#/dreamnet-architecture) names how a mesh ''relates''; this o
 
 !! The names ~ two Nexuses, one mobile reserve
 
-```
-\procedure ~Namespace(Type:"" Params:"") ~Namespace <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Namespace First-Nexus "name/*.amorphousdreams.net serves/the-first-Nexus glass/desktop-and-LAN">>
-<<~Namespace Second-Nexus "name/*.elyncia.net serves/the-second-Nexus glass/desktop-and-LAN">>
-<<~Namespace Mobile-Reserve "name/elyncia.app serves/the-mobile-surface glass/phone-and-tablet held/RESERVED">>
+<<~ has Namespace First-Nexus "name/*.amorphousdreams.net serves/the-first-Nexus glass/desktop-and-LAN">>
+<<~ has Namespace Second-Nexus "name/*.elyncia.net serves/the-second-Nexus glass/desktop-and-LAN">>
+<<~ has Namespace Mobile-Reserve "name/elyncia.app serves/the-mobile-surface glass/phone-and-tablet held/RESERVED">>
 
 ''Both Nexuses ride the same TLD.'' One registry operator, so ''one policy surface and one seizure procedure'' rather than two — which simplifies the drill and concentrates the exposure in the same act. Name both halves: a single procedure rehearses once and covers both names; a single procedure also fails once and takes both.
 
@@ -216,6 +212,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j6rvdMtvPz5lfw1v1EcnOFe7ytsR0cYUaeJEzTA4Qkw
+<<^ code="&#x0003;">>ni:///sha-256;DOsZHrHdBlq5mYL-3rK5Ei0mpE9udGXAmLGk94rZckQ
 
 <<^ code="&#x0004;" -> to="?">>

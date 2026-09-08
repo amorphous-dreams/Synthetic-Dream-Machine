@@ -74,14 +74,10 @@ The net (flat scalars — chroma's law):
 
 Memory recalls //and// captures across every harness, and each drawer carries its origin in `lar_surface`:
 
-```
-\procedure ~Surface(Type:"" Params:"") ~Surface <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Surface Claude "store/~~/.claude/projects route/cwd parse/native ~ CLI + VS Code ext share the store">>
-<<~Surface Codex "store/~~/.codex/sessions/rollout-*.jsonl route/session_meta.cwd parse/native ~ Codex CLI + VS Code ChatGPT ext share the store">>
-<<~Surface Copilot-Vscode "store/workspaceStorage/<hash>/GitHub.copilot-chat/transcripts route/path-scrape parse/normalize ~ own store, no cwd">>
-<<~Surface Copilot-Cli "store/~~/.copilot/session-state/<id>/events.jsonl route/path-scrape parse/normalize ~ standalone CLI">>
+<<~ has Surface Claude "store/~~/.claude/projects route/cwd parse/native ~ CLI + VS Code ext share the store">>
+<<~ has Surface Codex "store/~~/.codex/sessions/rollout-*.jsonl route/session_meta.cwd parse/native ~ Codex CLI + VS Code ChatGPT ext share the store">>
+<<~ has Surface Copilot-Vscode "store/workspaceStorage/<hash>/GitHub.copilot-chat/transcripts route/path-scrape parse/normalize ~ own store, no cwd">>
+<<~ has Surface Copilot-Cli "store/~~/.copilot/session-state/<id>/events.jsonl route/path-scrape parse/normalize ~ standalone CLI">>
 
 ''Recall'' rides MCP (`mempalace-mcp`, a generic stdio server) into each harness home + every VS Code variant (stable + Insiders, remote + local). ''Capture'' mines the stored transcripts — editors fire no CLI hooks, so capture sweeps after the fact, //transcripts only//.
 
@@ -136,6 +132,6 @@ lares harvest --all                                      # sweep every transcrip
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7GKsrUaXN9U0s5lcgwWEb8Q8cVWD4-A7pjvMGAgkmeg
+<<^ code="&#x0003;">>ni:///sha-256;vvyOW3KUVeez9D9AaEwi25qG4UkAB7f0PSNyGzcg2Bw
 
 <<^ code="&#x0004;" -> to="?">>

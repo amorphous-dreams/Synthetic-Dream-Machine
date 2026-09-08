@@ -2,10 +2,10 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-waiho
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/waiho
-lar-see-also: \let
+lar-see-also: let
 lar-open-pattern: <<~\s*waiho\s+([\w-]+)\s+([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/waiho\s*>>
-lar-example: <<~ waiho name "value">>
+lar-example: <<~ waiho name "value">>\nbody\n<<~/waiho>>
 type: text/vnd.tiddlywiki
 
 \procedure ~waiho(p1:"" p2:"" p3:"")

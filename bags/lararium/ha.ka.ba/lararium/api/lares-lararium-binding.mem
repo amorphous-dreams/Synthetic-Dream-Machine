@@ -67,14 +67,10 @@ one client abstraction (tailscale's shape).
 
 The load-bearing shore (UCAN/ucanto proves it battle-tested):
 
-```
-\procedure ~Layer(Type:"" Params:"") ~Layer <<Type>> holds [{{{ [<Params>] }}}]
-```
-
-<<~Layer Transport "the UDS channel ~ pluggable, authority-AGNOSTIC; just moves bytes fast (ucanto: transport stays agnostic to authorization)">>
-<<~Layer Authority "the capability-bearing verb-summons ~ a UCAN-shape signed invocation; the prf chain rides WITH each call (no ambient session/bearer) — authority IS the message">>
-<<~Layer Record "the CRDT outcome ~ the persisted RECEIPT; idempotent · re-queryable · exactly-once; spec leaves receipt persistence to the impl — our outcome tiddler IS that home">>
-<<~Layer Three>>
+<<~ has Layer Transport "the UDS channel ~ pluggable, authority-AGNOSTIC; just moves bytes fast (ucanto: transport stays agnostic to authorization)">>
+<<~ has Layer Authority "the capability-bearing verb-summons ~ a UCAN-shape signed invocation; the prf chain rides WITH each call (no ambient session/bearer) — authority IS the message">>
+<<~ has Layer Record "the CRDT outcome ~ the persisted RECEIPT; idempotent · re-queryable · exactly-once; spec leaves receipt persistence to the impl — our outcome tiddler IS that home">>
+<<~ has Layer Three>>
 
 Transport speed and record durability stop fighting because ''they never shared one''
 ''concern.'' UDS carries the invocation; the outcome lands as a CRDT change in
@@ -170,6 +166,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ngkFMLfSKCS2qLOuB4dyQP_DUIcIucFRwdXysOphHdU
+<<^ code="&#x0003;">>ni:///sha-256;3TPKVoeUUG9uYRmDZz9_e2PsWUs9TQM62nunL8UZok0
 
 <<^ code="&#x0004;" -> to="?">>

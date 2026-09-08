@@ -4,8 +4,8 @@ lar-kind: pragma-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/waiho
 lar-alias-for: const
 lar-see-also: waiho
-lar-open-pattern: <<~\s*\\?const\s+([\w-]+)\s+([^\n>]+?)\s*>>
-lar-close-pattern: <<~\/\\?const\s*>>
+lar-open-pattern: <<~\s*const\s+([\w-]+)\s+([^\n>]+?)\s*>>
+lar-close-pattern: <<~\/const\s*>>
 lar-example: <<~ const name "value">>
 type: text/vnd.tiddlywiki
 
