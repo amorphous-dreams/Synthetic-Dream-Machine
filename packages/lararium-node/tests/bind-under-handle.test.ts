@@ -18,8 +18,9 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
-  runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing,
+  runDeviceAdmitEdge, runApplyAdmitPayload, packPersonaCrossing, replayCapEvents,
 } from "@lararium/keyhive";
+import { deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, hexToBytes } from "@lararium/mesh";
 import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, type LarDoc,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
@@ -78,8 +79,15 @@ describe("two vessels bind under one Handle", () => {
 
     // Founder registers the shared bag, then mints the joinee into the PersonaGroup + packs the content.
     const { docId } = await founder.registerBag(BAG);
+    // The SEAT is the creator-veil, re-stood from the persisted founding tag — the two-handed pack.
+    const daemonHandle = await founderRepo.find(cer.daemonUrl as AutomergeUrl);
+    const tag = tiddlerText((daemonHandle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
+    const veilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
+    const seat = new KeyhiveProvider();
+    await seat.init({ seed: hexToBytes(veilKeys.signingKey), eventStore: await replayCapEvents(daemonHandle as never) });
+    await seat.hydrateFromEventStore();
     const bundle = await packPersonaCrossing(founder, joineeCard, pg,
-      [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("shared under the Handle") }]);
+      [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("shared under the Handle") }], seat);
 
     // Admit payload: the signed edge + the membership capEvents.
     const base = await runDeviceAdmitEdge({

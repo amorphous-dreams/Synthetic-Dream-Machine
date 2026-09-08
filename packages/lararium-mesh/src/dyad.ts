@@ -327,18 +327,34 @@ export function vesselDyads(doc: LarDoc | undefined | null): DyadRecord[] {
 const DYAD_VEIL_HMAC_KEY = new TextEncoder().encode(DYAD_VEIL_INFO);
 
 /**
- * dyadVeilIndex — the per-PersonaGroup hardened index for the dyad-veil leaf.
+ * dyadVeilIndex — the per-group hardened index for the dyad-veil leaf.
  *
- * Domain-separated HMAC-SHA256 over the group's doc id, masked to a 31-bit raw index — the same
- * convention `circleScopeIndex` runs one tree over. CASE-FOLDED like `nexusScopeIndex`, because the
- * material is hex (two spellings name one group; folding keeps one group from deriving two veils).
- * Same group → same leaf (rejoin-stable); different group → a different, unlinkable face.
+ * Domain-separated HMAC-SHA256 over a GROUP TAG, masked to a 31-bit raw index — the same convention
+ * `circleScopeIndex` runs one tree over. CASE-FOLDED like `nexusScopeIndex` (hex-shaped tags spell
+ * one group two ways; folding keeps one group from deriving two veils). Same tag → same leaf
+ * (rejoin-stable); different tag → a different, unlinkable face.
+ *
+ * TWO DERIVATION MOMENTS, TWO TAGS — never one input: a FOUNDER derives its creator-veil BEFORE the
+ * group exists, from a minted founding tag (`mintVeilTag`, persisted beside the group ids so boot
+ * re-derives); a JOINEE derives its own veil AFTER, from the real group doc id its admit carries.
  */
-export function dyadVeilIndex(personaGroupDocIdHex: string): number {
-  const mac = hmac(sha256, DYAD_VEIL_HMAC_KEY, new TextEncoder().encode(personaGroupDocIdHex.toLowerCase()));
+export function dyadVeilIndex(groupTag: string): number {
+  const mac = hmac(sha256, DYAD_VEIL_HMAC_KEY, new TextEncoder().encode(groupTag.toLowerCase()));
   const u32 = new DataView(mac.buffer, mac.byteOffset, 4).getUint32(0, false);
   return u32 & 0x7fffffff;
 }
+
+/** Mint a founder's pre-birth veil tag — 32 random bytes, hex. Not a secret (the veil SEED derives
+ *  from the vessel seed; the tag only namespaces the leaf) — it persists in the daemon doc so boot
+ *  re-derives the same creator-veil for the life of the group. */
+export function mintVeilTag(): string {
+  const b = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(b);
+  return Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+
+/** The daemon-doc tiddler carrying a founded group's veil tag — read at boot to stand the veil identity. */
+export const DYAD_VEIL_TAG_TIDDLER = "lar:///ha.ka.ba/dreamnet/dyad-veil-tag" as const;
 
 /**
  * deriveDyadVeil — the per-handle credential a vessel joins a handle-group under, and the veilDid a
@@ -348,7 +364,7 @@ export function dyadVeilIndex(personaGroupDocIdHex: string): number {
  */
 export async function deriveDyadVeil(
   vesselSeed: Uint8Array,
-  personaGroupDocIdHex: string,
+  groupTag: string,
 ): Promise<{ signingKey: string; verifyingKey: string }> {
-  return derivePersonaKeypair(vesselSeed, [dyadVeilIndex(personaGroupDocIdHex)]);
+  return derivePersonaKeypair(vesselSeed, [dyadVeilIndex(groupTag)]);
 }

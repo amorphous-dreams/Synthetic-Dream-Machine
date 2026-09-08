@@ -52,19 +52,47 @@ export async function packPersonaCrossing(
   joineeContactCardBytes: Uint8Array,
   personaGroup: PersonaGroupRef,
   content: readonly CrossingPlaintext[],
+  /** The GROUP'S HOLDER — under a veil-born founding the creator-veil, which alone can seat. Defaults
+   *  to `founder` for a group the founder itself created (raw-provider benches, pre-face groups). */
+  seat: KeyhiveProvider = founder,
 ): Promise<PersonaCrossingBundle> {
-  const { id: joineeAgentId } = await founder.receiveContactCard(joineeContactCardBytes);
-  await founder.addSentinelMember(joineeAgentId, personaGroup.docIdHex);  // ADD first — forward-only demands it
+  const { id: joineeAgentId } = await seat.receiveContactCard(joineeContactCardBytes);
+  if (seat !== founder) {
+    try { await founder.receiveContactCard(joineeContactCardBytes); } catch { /* already known reads fine */ }
+  }
+  await seat.addSentinelMember(joineeAgentId, personaGroup.docIdHex);  // ADD first — forward-only demands it
+
+  // Two-handed, the bag reaches the group THROUGH THE SEAT: the vessel never learns the group agent
+  // (an event addressed at the vessel would spell its raw key into the carried log — the byte-law).
+  // The founder delegates each bag to the VEIL (one per-group edge, non-correlating), the seat ingests
+  // the bag chain, and the seat — holding bag-admin AND the group — seats the bag under the group and
+  // seals the content.
+  const bagHand = seat === founder ? founder : seat;
+  if (seat !== founder) {
+    try { await seat.receiveContactCard(await founder.contactCard()); } catch { /* already known */ }
+    try { await founder.receiveContactCard(await seat.contactCard()); } catch { /* already known */ }
+    const seatId = await seat.vesselIdentifierHex();
+    for (const c of content) {
+      await founder.delegate({ bagUrl: c.bagUrl, audience: seatId, access: "admin" });
+    }
+    await seat.ingestPeerEvents(await founder.eventsForPeer(seatId));
+    // The seat adopts each bag's mapping (the founder minted the doc; the seat must not re-mint).
+    for (const c of content) seat.adoptBag(c.bagUrl, c.docIdHex);
+  }
   const packed: CrossingContent[] = [];
   for (const c of content) {
     // Route A: RE-DELEGATE the bag to the PersonaGroup after the join, so the bag's tree sees the re-keyed
     // group (incl. the joinee) — the transitive re-key does NOT auto-propagate to a bag delegated before the
     // join. THEN encrypt, so the ciphertext keys to an epoch the joinee reaches.
-    await founder.delegate({ bagUrl: c.bagUrl, audience: personaGroup.agentIdHex, access: "read" });
-    const ct = await founder.encryptContent(c.bagUrl, c.plaintext);       // ENCRYPT after re-delegate
+    await bagHand.delegate({ bagUrl: c.bagUrl, audience: personaGroup.agentIdHex, access: "read" });
+    const ct = await bagHand.encryptContent(c.bagUrl, c.plaintext);       // ENCRYPT after re-delegate
     packed.push({ bagUrl: c.bagUrl, docIdHex: c.docIdHex, ciphertext: bytesToBase64(ct) });
   }
-  const events = await founder.eventsForPeer(joineeAgentId);              // CAPTURE after the encrypt
+  // CAPTURE after the encrypt — the seat holds the whole reach (group + ingested bag chain), and the
+  // founder's slice rides beside it for the bag's own registration ops.
+  const events = seat === founder
+    ? await founder.eventsForPeer(joineeAgentId)
+    : [...(await seat.eventsForPeer(joineeAgentId)), ...(await founder.eventsForPeer(joineeAgentId))];
   return {
     founderCard: bytesToBase64(await founder.contactCard()),
     capEvents:   events.map(bytesToBase64),

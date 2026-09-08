@@ -53,6 +53,7 @@ import {
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
   type PersonaKelEvent,
   deriveDyadVeil, dyadId, signDyadBindingWithSeed, writeDyad, didFromVerifyingKey,
+  mintVeilTag, DYAD_VEIL_TAG_TIDDLER, hexToBytes,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
 } from "@lararium/mesh";
@@ -275,10 +276,20 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   await keyhive.init({ seed: vesselSeed, eventStore: store });
   await keyhive.hydrateFromEventStore();
 
-  const vesselIdentifierHex = await keyhive.vesselIdentifierHex();
+  // ── THE GROUP IS BORN UNDER THE VEIL ──────────────────────────────────────────────────────────
+  // The creator's identifier rides every carried event in CLEARTEXT (the host-surface probe), a
+  // creator can never leave its roster, and any access grade IS roster membership — so the raw
+  // vessel Individual must never create or hold the WHO-plane sentinels. The founding mints a tag,
+  // derives the creator-veil off the VESSEL seed, and stands the veil identity over the SAME event
+  // store (both slices flush to the daemon doc; boot re-derives from the persisted tag). The vessel
+  // identity keeps custody and transport; the veil keeps the group.
+  const veilTag      = mintVeilTag();
+  const dyadVeilKeys = await deriveDyadVeil(vesselSeed, veilTag);
+  const veilKeyhive  = new KeyhiveProvider();
+  await veilKeyhive.init({ seed: hexToBytes(dyadVeilKeys.signingKey), eventStore: store });
+  await veilKeyhive.hydrateFromEventStore();
 
-  const personaGroup = await keyhive.createSentinelDoc(PERSONA_GROUP_SENTINEL_URI);
-  await keyhive.addSentinelMember(vesselIdentifierHex, personaGroup.docIdHex);
+  const personaGroup = await veilKeyhive.createSentinelDoc(PERSONA_GROUP_SENTINEL_URI);
 
   // THE FACE'S FOUR PLANES, SEEDED ONLY NOW — every one of them names the group's own tag, so the group
   // must exist before any of them can stand under its true name. The capability layer keys a document by
@@ -308,8 +319,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   }
 
   // The cabal stands WITH the face, seated on the PersonaGroup that can actually hold a seat in it.
-  const meshCabal = await keyhive.createSentinelDoc(MESH_CABAL_SENTINEL_URI);
-  await keyhive.addSentinelMember(personaGroup.agentIdHex, meshCabal.docIdHex);
+  const meshCabal = await veilKeyhive.createSentinelDoc(MESH_CABAL_SENTINEL_URI);
+  await veilKeyhive.addSentinelMember(personaGroup.agentIdHex, meshCabal.docIdHex);
 
   await flushCapEvents(store, daemonHandle);
 
@@ -324,6 +335,10 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     };
     doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = {
       tiddler: { title: PERSONA_GROUP_AGENT_ID_TIDDLER, text: personaGroup.agentIdHex, kind: "sentinel-id" },
+      meta: { authority: "lares-init" },
+    };
+    doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = {
+      tiddler: { title: DYAD_VEIL_TAG_TIDDLER, text: veilTag, kind: "dyad-veil-tag" },
       meta: { authority: "lares-init" },
     };
   });
@@ -401,8 +416,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // which spans devices and names no veil. Self-stood, the group root stands in these same hands,
   // so the binding SIGNS at the genesis epoch; contracted, no root is present and the absence
   // travels as binding:null rather than hiding behind a label.
-  const dyadVeil = await deriveDyadVeil(vesselSeed, personaGroup.docIdHex);
-  const dyadRef: DyadRef = { vesselDid: founderEdge.deviceDid, veilDid: didFromVerifyingKey(dyadVeil.verifyingKey) };
+  const dyadRef: DyadRef = { vesselDid: founderEdge.deviceDid, veilDid: didFromVerifyingKey(dyadVeilKeys.verifyingKey) };
   const dyadBinding = input.binding.mode === "self-stood"
     ? await signDyadBindingWithSeed(dyadRef, signerDid, `epoch0-${personaGroup.docIdHex}`, input.binding.signerSeed)
     : null;
@@ -427,6 +441,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   });
 
   await keyhive.dispose();
+  await veilKeyhive.dispose();
 
   return {
     meshCabalDocIdHex: meshCabal.docIdHex,
@@ -471,7 +486,7 @@ async function flushCapEvents(
 }
 
 /** Read the daemon doc's cap events back into a fresh store, so a later ceremony resumes the same lattice. */
-async function replayCapEvents(
+export async function replayCapEvents(
   daemonHandle: ReturnType<typeof seedDaemonDoc>,
 ): Promise<InMemoryEventStore> {
   const store = new InMemoryEventStore();

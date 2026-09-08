@@ -43,6 +43,7 @@ export type {
 
 export {
   foundThePlace, foundTheFace, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload,
+  replayCapEvents,
 } from "./ceremony-core.js";
 export type {
   PlaceFoundingInput, PlaceFoundingResult, FaceFoundingInput, FaceFoundingResult,

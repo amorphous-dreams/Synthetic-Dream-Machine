@@ -61,6 +61,9 @@ export interface ResolveBindingArgs {
   readonly daemonStore: CompositeStore;
   /** Keyhive provider — registers the minted bag + delegates it to the PersonaGroup. */
   readonly keyhive: CapabilityProvider;
+  /** The face-delegation road. Under a veil-born founding the vessel never knows the group agent, so
+   *  the caller injects the veil road (vessel→veil→group); absent, the direct delegate runs. */
+  readonly delegateToFace?: (bagUrl: string, access: "read" | "admin") => Promise<void>;
   /**
    * PersonaGroup AGENT Identifier hex (getAgent-resolvable) — the delegation
    * audience. NOT the group's DocumentId (that is the membership-check target).
@@ -121,11 +124,15 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   // (marginal authority ≈ 0; every PersonaGroup device already holds admin on the daemon bag).
   // Adopt "edit" the moment the gate accepts it. Debt: causal-islands.md.
   if (args.personaGroupAgentIdHex) {
-    await args.keyhive.delegate({
-      bagUrl:   handle.url,
-      audience: args.personaGroupAgentIdHex,
-      access:   "admin",
-    });
+    if (args.delegateToFace) {
+      await args.delegateToFace(handle.url, "admin");
+    } else {
+      await args.keyhive.delegate({
+        bagUrl:   handle.url,
+        audience: args.personaGroupAgentIdHex,
+        access:   "admin",
+      });
+    }
   }
 
   // Record the binding in the daemon doc — replicates to the operator's other

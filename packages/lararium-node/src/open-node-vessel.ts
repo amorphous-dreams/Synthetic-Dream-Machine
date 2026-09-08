@@ -77,7 +77,7 @@ import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
-import { vesselDyads } from "@lararium/mesh";
+import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -938,6 +938,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // grants no persona caps at all, and refuses a TORN face outright. So absence buys fewer caps, never
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
     const signerDid  = tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
+    const dyadVeilTag = tiddlerText(daemonDoc?.tiddlers?.[DYAD_VEIL_TAG_TIDDLER]) ?? undefined;
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     const deviceEdge = edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined;
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
@@ -1021,6 +1022,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
+      ...(dyadVeilTag ? { dyadVeilTag } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as
       // explicit `undefined` would read as a torn face rather than an unlit one.
       ...(personaGroupDocIdHex   ? { personaGroupDocIdHex }   : {}),

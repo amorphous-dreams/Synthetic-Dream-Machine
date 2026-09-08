@@ -56,10 +56,11 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
 };
 import { PERSONAL_BINDINGS_PREFIX, DRAFT_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
+import { deriveDyadVeil, hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore } from "./daemon-event-store.js";
 import { resolveOrMintBinding } from "./resolve-binding.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
-import type { KeyhiveProvider } from "./keyhive-provider.js";
+import { KeyhiveProvider } from "./keyhive-provider.js";
 
 /**
  * Build the operator's daemon-island behavior from a manifest. With no auth
@@ -73,6 +74,25 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   if (!daemonAuth) return { ...daemonExtra };
 
   let kh: KeyhiveProvider | null = null;
+  // The VEIL identity — the group's creator, re-derived from (vessel seed × persisted tag). Stands
+  // beside the vessel identity at boot; sentinel ops (the face-join seat) run through it, while bag
+  // delegation and transport stay the vessel's. Absent tag → a pre-veil-born doc; joins refuse there.
+  let veilKh: KeyhiveProvider | null = null;
+  // ONE ROAD for every vessel-bag→face delegation: the vessel delegates the bag to the VEIL (one
+  // per-group edge, non-correlating), the veil ingests the chain, adopts the mapping, and seats the
+  // bag under the face — the vessel never learns the group agent (the byte-law).
+  const delegateToFaceViaVeil = async (bagUrl: string, access: "read" | "admin"): Promise<void> => {
+    if (!kh) throw new Error("delegate: keyhive unbooted");
+    if (!veilKh) throw new Error("delegate: no veil identity stands — this doc predates the veil-born founding; re-found the face.");
+    try { await veilKh.receiveContactCard(await kh.contactCard()); } catch { /* known */ }
+    try { await kh.receiveContactCard(await veilKh.contactCard()); } catch { /* known */ }
+    const veilId = await veilKh.vesselIdentifierHex();
+    await kh.delegate({ bagUrl, audience: veilId, access: "admin" });
+    await veilKh.ingestPeerEvents(await kh.eventsForPeer(veilId));
+    const { docId } = await kh.registerBag(bagUrl);   // idempotent — the cached mapping
+    veilKh.adoptBag(bagUrl, docId);
+    await veilKh.delegate({ bagUrl, audience: faceAgent(), access });
+  };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
 
   // ── PERSONA-SCOPED ACTS NEED A FACE, AND SAY SO ────────────────────────────────────────────────
@@ -127,7 +147,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // bagUrl = the lar: bag URL — the key registerBag/delegate/verify all share,
         // the same string boot-registration registers (never the automerge doc url).
         await kh.registerBag(bagUrl);
-        await kh.delegate({ bagUrl, audience: faceAgent(), access: FACE_SEATS_AND_UNSEATS });
+        await delegateToFaceViaVeil(bagUrl, FACE_SEATS_AND_UNSEATS);
       };
       registerActionReactors(registry, {
         composite: ctx.composite,
@@ -341,7 +361,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               if (typeof text === "string") slots.push(text);
             }
 
-            const outcome = await runFaceJoin(kh, summons, {
+            // THE TWO-HANDED JOIN: the VEIL seats (it holds the group), the VESSEL re-grants its own
+            // bags, and the joinee ingests BOTH slices. The contact card lands in both registries so
+            // each identity can address the joinee.
+            if (!veilKh) return { verb: "face-join", admitted: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
+            const veil = veilKh;
+            const vessel = kh;
+            const joinProvider = {
+              receiveContactCard: async (bytes: Uint8Array) => {
+                const got = await veil.receiveContactCard(bytes);
+                try { await vessel.receiveContactCard(bytes); } catch { /* already known reads fine */ }
+                return got;
+              },
+              verifySentinelMembership: (a: string, d: string) => veil.verifySentinelMembership(a, d),
+              addSentinelMember:        (a: string, d: string) => veil.addSentinelMember(a, d),
+              delegate:                 async (args: { bagUrl: string; audience: string; access: "read" | "admin" }) =>
+                delegateToFaceViaVeil(args.bagUrl, args.access),
+              eventsForPeer:            async (peer: string) => [
+                ...(await veil.eventsForPeer(peer)),
+                ...(await vessel.eventsForPeer(peer)),
+              ],
+              contactCard:              () => vessel.contactCard(),
+            };
+            const outcome = await runFaceJoin(joinProvider, summons, {
               personaRootDid:         ownEdge.personaRootDid,
               hearthTrueName:         ownEdge.hearthTrueName,
               personaGroupDocIdHex:   faceGroup(),
@@ -431,6 +473,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       });
       kh = keyhive;
       mintedByHex = did;
+      if (daemonAuth.dyadVeilTag) {
+        const veilKeys = await deriveDyadVeil(daemonAuth.seed, daemonAuth.dyadVeilTag);
+        const v = new KeyhiveProvider();
+        await v.init({ seed: meshHexToBytes(veilKeys.signingKey), eventStore: new DaemonEventStore({ daemon: ctx.composite }) });
+        await v.hydrateFromEventStore();
+        veilKh = v;
+      }
       // M3 — seed the on-disk archive FLOOR every boot: exportArchive() captures the founding +
       // hydrated membership/capability DAG (+ prekey secrets) so a later torn daemon doc restores from
       // here instead of orphaning the veiled Handle. Best-effort — a failed export never blocks boot.
@@ -574,6 +623,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const common = {
         fingerprint, repo: ctx.repo, daemonStore: ctx.composite, keyhive: kh,
         ...(daemonAuth.personaGroupAgentIdHex ? { personaGroupAgentIdHex: daemonAuth.personaGroupAgentIdHex } : {}),
+        ...(veilKh ? { delegateToFace: (bagUrl: string, access: "read" | "admin") => delegateToFaceViaVeil(bagUrl, access) } : {}),
         mintedByHex, recipeTrace,
       } as const;
       const personal = await resolveOrMintBinding({ ...common, kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX });

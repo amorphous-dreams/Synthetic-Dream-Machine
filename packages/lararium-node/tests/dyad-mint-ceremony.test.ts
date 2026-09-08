@@ -15,7 +15,7 @@ import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
-import { hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, type DyadRecord } from "@lararium/mesh";
+import { hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type DyadRecord } from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
@@ -52,7 +52,11 @@ describe("the ceremony mints the dyad", () => {
     const slots = await dyadSlotsOf(repo, f.daemonUrl);
     expect(slots.length, "founding mints exactly one dyad").toBe(1);
 
-    const veil = await deriveDyadVeil(FOUNDER_SEED, f.personaGroupDocIdHex);
+    // The founder's veil derives from the PERSISTED FOUNDING TAG (the pre-birth moment of the
+    // two-tag split); the joinee's derives from the carried doc id (the post-birth moment).
+    const handle = await repo.find(f.daemonUrl as never);
+    const tag = tiddlerText((handle.doc() as { tiddlers: Record<string, unknown> }).tiddlers[DYAD_VEIL_TAG_TIDDLER] as never)!;
+    const veil = await deriveDyadVeil(FOUNDER_SEED, tag);
     const slot = slots[0]!;
     expect(slot.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
     expect(slot.ref.veilDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
@@ -99,7 +103,8 @@ describe("the ceremony mints the dyad", () => {
 
     const dyads = vesselDyads(doc);
     expect(dyads.length, "one relationship, slot and edge united").toBe(1);
-    const veil = await deriveDyadVeil(FOUNDER_SEED, f.personaGroupDocIdHex);
+    const tag = tiddlerText((doc as unknown as { tiddlers: Record<string, unknown> }).tiddlers[DYAD_VEIL_TAG_TIDDLER] as never)!;
+    const veil = await deriveDyadVeil(FOUNDER_SEED, tag);
     expect(dyads[0]!.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
     expect(dyads[0]!.ref.veilDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
     expect(dyads[0]!.binding).not.toBeNull();
