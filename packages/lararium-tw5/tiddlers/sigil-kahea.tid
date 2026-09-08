@@ -7,6 +7,7 @@ lar-open-pattern: <<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/kahea\s*>>
 lar-default-family: dataflow
 lar-layer: both
+lar-example: <<~ kahea "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
 <!-- kahea — live transclusion; picks KaheaTemplate cascade.

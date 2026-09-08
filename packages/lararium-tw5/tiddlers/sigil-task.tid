@@ -6,6 +6,7 @@ lar-alias-for: task
 lar-see-also: hana
 lar-open-pattern: <<~\s*\\?task\s+([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/\\?task\s*>>
+lar-example: <<~ task "write the thing">>
 type: text/vnd.tiddlywiki
 
 <!-- \task — English alias for hana; bounded guest-grammar / work block. -->

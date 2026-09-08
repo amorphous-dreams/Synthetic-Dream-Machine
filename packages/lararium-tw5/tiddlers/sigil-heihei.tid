@@ -6,6 +6,7 @@ lar-alias-for: if
 lar-see-also: \if
 lar-open-pattern: <<~\s*heihei\s+([^>]+?)\s*>>
 lar-close-pattern: <<~\/heihei\s*>>
+lar-example: <<~ heihei "[<x>match[1]]">>
 type: text/vnd.tiddlywiki
 
 \procedure ~heihei(p1:"" p2:"")

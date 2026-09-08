@@ -4,6 +4,7 @@ lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/loulou
 lar-pattern: <<~\s*loulou\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 lar-default-family: relation
+lar-example: <<~ loulou "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
 \widget ~loulou(p1:"" p2:"")

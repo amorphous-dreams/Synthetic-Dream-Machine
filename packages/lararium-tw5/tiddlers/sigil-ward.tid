@@ -3,6 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: metadata
 lar-pattern: Drift-Ward\s*\(
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/drift-ward
+lar-example: <<~ ward * L-Prime>>
 type: text/vnd.tiddlywiki
 
 <!-- Drift-Ward — the ward, fired INSIDE the `hud` panel rather than as a sigil of its own

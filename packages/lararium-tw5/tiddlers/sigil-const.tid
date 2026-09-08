@@ -6,6 +6,7 @@ lar-alias-for: const
 lar-see-also: waiho
 lar-open-pattern: <<~\s*\\?const\s+([\w-]+)\s+([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/\\?const\s*>>
+lar-example: <<~ const name "value">>
 type: text/vnd.tiddlywiki
 
 \procedure ~const(p1:"" p2:"" p3:"")

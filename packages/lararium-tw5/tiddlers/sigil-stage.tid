@@ -4,6 +4,7 @@ lar-kind: mask-summon
 lar-pono-uri: lar:///ha.ka.ba/lares/api/masks
 lar-alias-for: stage
 lar-pattern: <<~\s*stage\s+"?(\d+)"?(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+lar-example: <<~ stage "20" "Mischief-Muse">>
 type: text/vnd.tiddlywiki
 
 <!-- stage — a MASK and the theatrical depth it stands at. THE DEPTH FIRST, THE MASK SECOND: a summon

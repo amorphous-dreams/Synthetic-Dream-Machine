@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kapu
 lar-alias-for: kapu
 lar-see-also: kapu
 lar-pattern: <<~\s*guard\s+([^\n>]*)\s*>>
+lar-example: <<~ guard "[tag[x]]">>
 type: text/vnd.tiddlywiki
 
 <!-- guard — compile-layer boundary annotation; English alias for kapu.

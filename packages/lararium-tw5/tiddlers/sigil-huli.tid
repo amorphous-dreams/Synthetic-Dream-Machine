@@ -6,6 +6,7 @@ lar-alias-for: for
 lar-see-also: \for
 lar-open-pattern: <<~\s*huli\s+([^>]+?)\s*>>
 lar-close-pattern: <<~\/huli\s*>>
+lar-example: <<~ huli "[tag[x]]">>
 type: text/vnd.tiddlywiki
 
 \procedure ~huli(p1:"" p2:"")

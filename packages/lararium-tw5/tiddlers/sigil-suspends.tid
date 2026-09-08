@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kukali
 lar-alias-for: kukali
 lar-see-also: kukali
 lar-pattern: <<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>
+lar-example: <<~ suspends "reason">>
 type: text/vnd.tiddlywiki
 
 <!-- \suspends — English alias for kukali; Verse suspends analogue.

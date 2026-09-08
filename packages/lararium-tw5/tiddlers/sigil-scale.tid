@@ -4,6 +4,7 @@ lar-kind: ordered-scale
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/scale
 lar-alias-for: scale
 lar-pattern: <<~\s*scale\s+([\w-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+lar-example: <<~ scale organ "a ~ one -> b ~ two">>
 type: text/vnd.tiddlywiki
 
 <!-- scale — an ORDERED SCALE and the ranks it carries. A SCALE is the thing; RANKS are what it

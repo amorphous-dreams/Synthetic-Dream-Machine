@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/mukuwai
 lar-alias-for: mukuwai
 lar-see-also: mukuwai
 lar-pattern: <<~\s*else\s*>>
+lar-example: <<~ else>>
 type: text/vnd.tiddlywiki
 
 \procedure ~else(p2:"")

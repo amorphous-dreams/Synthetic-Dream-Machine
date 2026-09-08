@@ -6,6 +6,7 @@ lar-inline-pattern: <<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\
 lar-block-pattern: <<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?\s*>>([\s\S]*?)<<~\/pranala\s*>>
 lar-close-pattern: <<~\/pranala\s*>>
 lar-default-family: relation
+lar-example: <<~ pranala from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>
 type: text/vnd.tiddlywiki
 
 <!-- pranala — permanent JS exception: arrow syntax FROM -> TO + keyword attrs

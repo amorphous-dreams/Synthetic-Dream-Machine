@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kahawai
 lar-alias-for: kahawai
 lar-see-also: kahawai
 lar-pattern: <<~\s*elif\s+([^\n>]+?)\s*>>
+lar-example: <<~ elif "[<x>match[2]]">>
 type: text/vnd.tiddlywiki
 
 \procedure ~elif(p1:"" p2:"")

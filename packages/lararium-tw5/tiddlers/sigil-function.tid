@@ -4,6 +4,7 @@ lar-kind: pragma-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/function
 lar-alias-for: \function
 lar-pattern: <<~\s*function\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
+lar-example: <<~ function name "params">>
 type: text/vnd.tiddlywiki
 
 <!-- \function — English alias for the TW5 \function pragma (TW5 5.3+).

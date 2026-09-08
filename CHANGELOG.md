@@ -17,6 +17,7 @@ The four founding-watch rulings closed (the veil · layered recovery · seat-ado
 - `board:members-registry` renamed `board:carriage-contracts` — the board holds self-announced operator contracts; the label now says so.
 
 **Added**
+- THE SHELF RENDERS ITSELF: every sigil definition ships one worked call in `lar-example`, and the census runs all of them. Two laws over one vector — a DEFINED sigil's example must not echo (the definition ran), a PATTERN-ONLY sigil's example must echo (the gradient held) — so neither can pass by the harness rendering nothing. 46 vectors where six stood; it found `pranala-header` unreachable and `waiho`'s closer reaching no capture on its first run.
 - `stage` — a MASK and the theatrical depth it stands at, the summon the masks canon has written since before a definition stood for it. The depth rides first (a summon answers //how near// before //who//) and reads on the 0–20 stage scale the boot seed declares by name, so the sigil carries no band table of its own. A carrier's own `~Stage` — a lifecycle phase, one capital apart — keeps its own scope.
 - `positionalsOf` joins `readSigilAttrs` on the sigil-parameter shore: the same reader now answers both halves of one question, so a slot and a name cannot drift apart.
 - `deriveDyadVeil` — the dyad's veil derives per-PersonaGroup off the DEVICE-MINTED vessel seed (never the persona seed); both ceremony sites mint the dyad slot; `vesselDyads` (mesh, one platform-blind door) reads it at boot on node and browser alike.

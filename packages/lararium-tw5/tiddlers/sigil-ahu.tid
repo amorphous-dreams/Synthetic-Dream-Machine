@@ -4,6 +4,7 @@ lar-kind: child-slot
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/ahu
 lar-open-pattern: <<~[^>]*\bahu\s+(#[\w-]+)\s*>>
 lar-close-pattern: <<~\/ahu\s*>>
+lar-example: <<~ ahu #/head>>\nbody\n<<~/ahu>>
 type: text/vnd.tiddlywiki
 
 <!-- ahu — worksite scope boundary; addressable child-slot tiddler at parentUri+slot.

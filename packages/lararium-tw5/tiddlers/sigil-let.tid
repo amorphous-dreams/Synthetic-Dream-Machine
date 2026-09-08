@@ -6,6 +6,7 @@ lar-alias-for: let
 lar-see-also: waiho
 lar-open-pattern: <<~\s*\\?let\s+([\w-]+)\s+([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/\\?let\s*>>
+lar-example: <<~ let name "value">>
 type: text/vnd.tiddlywiki
 
 \procedure ~let(p1:"" p2:"" p3:"")

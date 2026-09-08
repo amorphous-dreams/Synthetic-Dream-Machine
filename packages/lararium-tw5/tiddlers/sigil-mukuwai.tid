@@ -4,6 +4,7 @@ lar-kind: control
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/mukuwai
 lar-see-also: \else
 lar-pattern: <<~\s*mukuwai\s*>>
+lar-example: <<~ mukuwai>>
 type: text/vnd.tiddlywiki
 
 \procedure ~mukuwai(p2:"")

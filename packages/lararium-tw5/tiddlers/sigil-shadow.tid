@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/aka
 lar-alias-for: aka
 lar-see-also: aka
 lar-pattern: <<~\s*shadow\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-example: <<~ shadow "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
 \procedure ~shadow(p1:"")

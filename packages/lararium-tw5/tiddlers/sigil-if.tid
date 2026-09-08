@@ -6,6 +6,7 @@ lar-alias-for: if
 lar-see-also: heihei
 lar-open-pattern: <<~\s*\\?if\s+([^>]+?)\s*>>
 lar-close-pattern: <<~\/\\?if\s*>>
+lar-example: <<~ if "[<x>match[1]]">>
 type: text/vnd.tiddlywiki
 
 <!-- \if — conditional block using TW5 <%if filter%>...<%endif%> shortcut (TW5 5.3+).

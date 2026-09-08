@@ -3,6 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: child-slot
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kau
 lar-pattern: <<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>
+lar-example: <<~ kau Laptop>>
 type: text/vnd.tiddlywiki
 
 <!-- kau — device-slot child-slot sigil. TW5-native \widget handles all render;

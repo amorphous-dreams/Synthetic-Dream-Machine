@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/ui
 lar-alias-for: ui
 lar-see-also: ui
 lar-pattern: <<~\s*query\s+([^\n>]+?)\s*>>
+lar-example: <<~ query "[tag[x]]">>
 type: text/vnd.tiddlywiki
 
 \procedure ~query(p1:"")

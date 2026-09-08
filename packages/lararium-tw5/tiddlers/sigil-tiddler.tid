@@ -6,6 +6,7 @@ lar-alias-for: tiddler
 lar-see-also: meme
 lar-open-pattern: <<~\s*\\?tiddler\s+(\S+)\s*>>
 lar-close-pattern: <<~\/\\?tiddler\s*>>
+lar-example: <<~ tiddler "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
 \procedure ~tiddler(p1:"" p2:"")

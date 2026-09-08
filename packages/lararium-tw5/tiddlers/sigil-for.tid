@@ -6,6 +6,7 @@ lar-alias-for: for
 lar-see-also: huli
 lar-open-pattern: <<~\s*\\?for\s+([^>]+?)\s*>>
 lar-close-pattern: <<~\/\\?for\s*>>
+lar-example: <<~ for "[tag[x]]">>
 type: text/vnd.tiddlywiki
 
 <!-- \for — iteration block; maps a filter over a body template.

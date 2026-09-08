@@ -3,6 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: metadata
 lar-pattern: <<~\s*oracle\b([\s\S]*?)>>
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#exchange-protocol
+lar-example: <<~ oracle "↯15 ✲ ⚄(5)">>
 type: text/vnd.tiddlywiki
 
 <!-- oracle — the entropy drain (↯ ✲ die ⁂ tail). HUD-frame sigil: recognized in the tree, rendered as

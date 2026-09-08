@@ -6,6 +6,7 @@ lar-alias-for: var
 lar-see-also: waiho
 lar-open-pattern: <<~\s*\\?var\s+([\w-]+)\s+([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/\\?var\s*>>
+lar-example: <<~ var name "value">>
 type: text/vnd.tiddlywiki
 
 \procedure ~var(p1:"" p2:"" p3:"")

@@ -4,6 +4,7 @@ lar-kind: concurrency
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/hoolele
 lar-see-also: \spawn
 lar-pattern: <<~\s*hoolele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-example: <<~ hoolele "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
 <!-- hoolele — unstructured escape hatch (Verse spawn); creates a NEW task tree root independent of the calling scope.

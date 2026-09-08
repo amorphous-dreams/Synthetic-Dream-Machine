@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/pono-sigil
 lar-alias-for: pono
 lar-see-also: pono
 lar-pattern: <<~\s*constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role[=:]"?([\w.-]+)"?)?\s*>>
+lar-example: <<~ constraint "lar:///a.b.c/x" -> "lar:///a.b.c/y">>
 type: text/vnd.tiddlywiki
 
 \procedure ~constraint(p1:"" p2:"" p3:"" p4:"")
