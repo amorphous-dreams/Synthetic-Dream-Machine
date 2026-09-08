@@ -95,6 +95,13 @@ const NEW_STYLE: ReadonlyArray<readonly [string, string, SigilValueKind]> = [
  */
 export function readSigilAttrs(body: string): SigilAttr[] {
   const out: SigilAttr[] = [];
+  // ── A KEY INSIDE A QUOTED VALUE IS NOT A PARAMETER ──────────────────────────────────────────────
+  // A free note wrapped in quotes is ONE string literal, and TiddlyWiki finds no parameter inside it.
+  // Scanning the raw body invents one wherever the prose happens to carry `word:` or `word=` — and a
+  // carrier writing `<<~Task T1.1 "build/… ~ ACCEPT: a blind rater…">>` reads as bearing an `ACCEPT`
+  // parameter the parser never assigns. The scan runs over the MASKED body and the values are cut
+  // from the raw one, so a value keeps its own text while a quoted interior names nothing.
+  const scan = maskProtectedSpans(body);
   // ── THE NAME CHARSET IS THE PARSER'S, AND THE SEPARATOR NARROWS IT ─────────────────────────────
   // `reAttributeName` admits `[^\/\s>"'`=:]+` — so `a-b` `a_b` `a+b` `a.b` `a$b` `a#b` `a@b` `a!b`
   // `a%b` `a*b` all name ONE parameter and only `a/b` does not.
@@ -105,15 +112,19 @@ export function readSigilAttrs(body: string): SigilAttr[] {
   // report one where the parser reports none.
   //
   // A key stands where no `:` or `/` precedes it, so a URI's scheme and a path segment fall away.
-  const re = /(?<![\w:/@.-])([^\s=:>"'`/]+)\s*([=:])\s*/g;
+  // The scan stops AT the separator — a trailing `\s*` would eat a masked value whole, since the mask
+  // writes spaces where the quoted text stood, and the read position would land past it.
+  const re = /(?<![\w:/@.-])([^\s=:>"'`/]+)[ \t]*([=:])/g;
   const STRICT = /^[A-Za-z0-9\-_]+$/;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(body)) !== null) {
+  while ((m = re.exec(scan)) !== null) {
     const name = m[1]!, sep = m[2]! as "=" | ":";
     if (SCHEMES.has(name.toLowerCase())) continue;
     // The colon binds only a strict identifier; anything else reads as a positional, name and all.
     if (sep === ":" && !STRICT.test(name)) continue;
-    const at = m.index + m[0].length;
+    // whitespace after the separator is skipped against the RAW body, where the value still stands
+    let at = m.index + m[0].length;
+    while (at < body.length && (body[at] === " " || body[at] === "\t")) at++;
     const two = body.slice(at, at + 2);
 
     // A QUOTED value stands legal after EITHER separator — the string literal is tried first.

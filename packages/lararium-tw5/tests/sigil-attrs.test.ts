@@ -94,6 +94,27 @@ describe("★ a TYPED value is not a string, and quoting would break it ★", ()
   });
 });
 
+describe("★ A KEY INSIDE A QUOTED VALUE IS NOT A PARAMETER ★", () => {
+  // A free note wrapped in quotes is ONE string literal. TiddlyWiki reads it whole and finds no
+  // parameter inside it; a reader that walked the body without masking the quotes invents one.
+  //
+  // Measured against the parser on a real carrier:
+  //   <<~Task T1.1 "build/… ~ ACCEPT: a blind rater cannot distinguish">>
+  //   parser -> [pos]=T1.1  [pos]="build/… ACCEPT: …"      ours -> ACCEPT:"a"   ← invented
+  test("a colon-word inside a quoted note binds nothing", () => {
+    const body = 'Task T1.1 "build/a thing ~ ACCEPT: a blind rater cannot distinguish"';
+    expect(readSigilAttrs(body).map((a) => a.name)).toEqual([]);
+  });
+
+  test("…and one OUTSIDE the quotes still binds", () => {
+    expect(sigilAttrValue('Task T1.1 "a note" role=has', "role")).toBe("has");
+  });
+
+  test("a quoted value carrying an `=` binds nothing either", () => {
+    expect(readSigilAttrs('x "a note with a=b inside it"').map((a) => a.name)).toEqual([]);
+  });
+});
+
 describe("a scheme is not a parameter", () => {
   test("★ `lar:///x` carries no key named lar ★", () => {
     expect(readSigilAttrs(" lar:///ha.ka.ba/lares/api/pono/meme").map((a) => a.name)).toEqual([]);

@@ -41,6 +41,19 @@ for (const need of ["sigil-attrs.js", "tw5-vm.js", "generated-tw5-version.js"]) 
   }
 }
 const { readSigilAttrs } = await import(join(DIST, "sigil-attrs.js"));
+
+/**
+ * A sigil the GRAMMAR registers is a call; one invented in prose is not.
+ *
+ * `<<~ranks …>>`, `<<~Face …>>`, `<<~moves …>>` name nothing in the grammar, resolve to no definition
+ * and render VERBATIM by the gradient — so parameter parity for them asks about a call that never
+ * happens. They are counted, never failed.
+ */
+const REGISTERED = new Set(
+  execSync("ls packages/lararium-tw5/tiddlers/sigil-*.tid", { cwd: REPO, encoding: "utf8" })
+    .split("\n").filter(Boolean)
+    .map((p) => p.split("/").pop().replace("sigil-", "").replace(".tid", "").toLowerCase()),
+);
 const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
 const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
 
@@ -68,6 +81,7 @@ const files = execSync('git ls-files "bags/**/*.mem"', { cwd: REPO, encoding: "u
 let sigilCount = 0, attrCount = 0, carried = 0;
 const drift = [];
 const positionalLoss = [];
+const proseOnly = [];
 
 for (const rel of files) {
   const text = readFileSync(join(REPO, rel), "utf8");
@@ -82,6 +96,20 @@ for (const rel of files) {
     // the BODY: past the head word, up to the closing brackets
     const body = src.replace(/^<<[~^]?\s*/, "").replace(/>>\s*$/, "");
     const ours = new Map(readSigilAttrs(body).map((a) => [a.name, a]));
+
+    // ── AND THE COMPARISON RUNS BOTH WAYS ──────────────────────────────────────────────────────
+    // Walking only the parser's attributes asks "did we miss one?" and never "did we invent one?".
+    // Measured: a reader scanning the raw body read `ACCEPT` out of the INSIDE of a quoted note, and
+    // this witness reported 0 drift for as long as it only looked in one direction.
+    const head = /^<<~?[ \t]*([A-Za-z][\w-]*)/.exec(src)?.[1]?.toLowerCase() ?? "";
+    const isCall = REGISTERED.has(head);
+    for (const [name, mine] of ours) {
+      if (mine.kind !== "string") continue;
+      const theirs = n.attributes[name];
+      if (theirs && !theirs.isPositional) continue;
+      if (!isCall) { proseOnly.push({ rel, head, name }); continue; }
+      drift.push({ rel, src, name, parser: "(no such parameter)", ours: mine.value });
+    }
 
     for (const [name, attr] of Object.entries(n.attributes)) {
       if (name === "$variable" || attr.isPositional) continue;
@@ -104,6 +132,10 @@ for (const rel of files) {
 const lossFiles = new Set(positionalLoss.map((p) => p.rel));
 console.log(`[sigil-parity] ${files.length} carriers · ${sigilCount} sigils · ${attrCount} string params compared · ${carried} typed, carried · ${drift.length} DRIFT`);
 console.log(`  positional-loss (measured debt, awaiting a ruling): ${positionalLoss.length} in ${lossFiles.size} carriers`);
+const proseFiles = new Set(proseOnly.map((p) => p.rel));
+console.log(`  prose-only (a sigil the grammar registers no call for): ${proseOnly.length} in ${proseFiles.size} carriers`);
+console.log(`    <<~ranks …>> and its family resolve to no definition and render VERBATIM, so parameter`);
+console.log(`    parity for them asks about a call that never happens`);
 console.log(`    an unquoted positional carrying a colon reads as a NAMED parameter and the positional`);
 console.log(`    receives nothing — see lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat`);
 if (drift.length) {
