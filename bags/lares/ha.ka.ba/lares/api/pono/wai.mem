@@ -46,7 +46,7 @@ Water chooses its channel. `wai` selects //which content renders// in the docume
 !! Law (Kānāwai)
 
 A `wai` block MUST carry a TW5 filter expression as its first argument.
-A `wai` block MUST close with `<<~/ wai>>` (or `<<~/ \if>>`).
+A `wai` block MUST close with `<<~/wai>>` (or `<<~/if>>`).
 A `wai` block body MUST render only when the filter yields a non-empty result.
 A `wai` filter MUST be a valid TW5 filter expression, evaluated in `currentTiddler` context.
 A `wai` block MUST NOT carry `mode=` — a conditional carries no projection posture.
@@ -64,19 +64,19 @@ Hawaiian form:
 ```text
 <<~ wai [filter-expression]>>
 body rendered when filter passes
-<<~/ wai>>
+<<~/wai>>
 ```
 
 English alias form (identical semantics):
 ```text
-<<~ \if [filter-expression]>>
+<<~ if [filter-expression]>>
 body
-<<~/ \if>>
+<<~/if>>
 ```
 
 Full water cascade:
 ```text
-<<~ wai [filter-a]>>first<<~ kahawai [filter-b]>>second<<~ mukuwai>>default<<~/ wai>>
+<<~ wai [filter-a]>>first<<~ kahawai [filter-b]>>second<<~ mukuwai>>default<<~/wai>>
 ```
 
 TW5 shortcut expansion: `<%if filter%>body<%endif%>`.
@@ -117,6 +117,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;68miTamAM6hah6NlJpm2mqcL6y74eMHnEd7iBU85TMw
+<<^ code="&#x0003;">>ni:///sha-256;IaTvcdFiW7WsGhd216NnwkMUVPALI8vzll7udtNv5DI
 
 <<^ code="&#x0004;" -> to="?">>

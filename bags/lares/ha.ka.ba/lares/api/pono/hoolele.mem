@@ -114,7 +114,7 @@ the formal mechanism that allows it to create a new root with no parent scope.
 
 ```text
 <<~ hoolele lar:///target/uri>>
-<<~ \spawn lar:///target/uri>>
+<<~ spawn lar:///target/uri>>
 ```
 
 Returns a `task(t)` handle. The caller MUST retain it for later `Cancel()` or
@@ -152,6 +152,6 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rYWOFYgfDWXwpMzGXveRR-B486BcTEwFFftBny5OJHI
+<<^ code="&#x0003;">>ni:///sha-256;b6h5ukiYuTqT7GqbXehxZqN_RLvocZXmSiE27jR69x0
 
 <<^ code="&#x0004;" -> to="?">>

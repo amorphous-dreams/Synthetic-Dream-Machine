@@ -49,7 +49,7 @@ Sugar for the TW5 `\procedure` pragma, first-class in memetic-wikitext as a bloc
 !! Law (Kānāwai)
 
 A wehe block MUST declare a name and optional parameter signature.
-A wehe block MUST close with `<<~/ wehe>>` (or `<<~/ \procedure>>`).
+A wehe block MUST close with `<<~/wehe>>` (or `<<~/procedure>>`).
 A wehe block MUST function as a declaration, producing no render output (not a transclusion).
 A wehe name MUST be unique within the current tiddler's procedure namespace.
 A wehe block SHOULD use the `~` prefix convention for sigil-dispatched procedures: `<<~ wehe ~name(params)>>`.
@@ -66,21 +66,21 @@ Hawaiian form:
 ```text
 <<~ wehe name(param1:"default" param2:"")>>
 procedure body
-<<~/ wehe>>
+<<~/wehe>>
 ```
 
 English alias form (identical semantics):
 ```text
-<<~ \procedure name(param1:"default" param2:"")>>
+<<~ procedure name(param1:"default" param2:"")>>
 procedure body
-<<~/ \procedure>>
+<<~/procedure>>
 ```
 
 `~`-dispatched convention (operator-extension sigils):
 ```text
-<<~ \procedure ~mysigil(uri:"" p1:"")>>
+<<~ procedure ~mysigil(uri:"" p1:"")>>
 <$tiddler tiddler=<<uri>>>...
-<<~/ \procedure>>
+<<~/procedure>>
 ```
 
 <<~/ahu>>
@@ -117,6 +117,6 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ocLgshoQvo31U-m3yH2hj-IyYzDIcpZltX6JVeRZ6Cc
+<<^ code="&#x0003;">>ni:///sha-256;3fl96lgLM5yZkChcyjgxxqaFuS8m7rjip0uSycH5Nys
 
 <<^ code="&#x0004;" -> to="?">>

@@ -49,10 +49,10 @@ A kumu declaration MUST register a type definition only, producing no render out
 ```text
 <<~ kumu TypeName(params)>>
   body template
-<<~/ kumu>>
+<<~/kumu>>
 
-<<~ \type TypeName(params)>>  ...  <<~/ \type>>
-<<~ \typos TypeName(params)>>  ...  <<~/ \typos>>
+<<~ type TypeName(params)>>  ...  <<~/type>>
+<<~ typos TypeName(params)>>  ...  <<~/typos>>
 ```
 
 <<~/ahu>>
@@ -67,6 +67,6 @@ A kumu declaration MUST register a type definition only, producing no render out
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GAhGakRf213Msz7OmSfD10PGJIRyV_0ibxQEEzT7hQw
+<<^ code="&#x0003;">>ni:///sha-256;wCIXI8vOJ22gNKweHCt6CCG2wWB8kVVC6FZqyRBJXuU
 
 <<^ code="&#x0004;" -> to="?">>

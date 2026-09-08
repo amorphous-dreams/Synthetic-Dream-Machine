@@ -38,7 +38,7 @@ grammar interpreter consumes the body, it closes.
 
 A hana block MUST carry a grammar-key as its first argument.
 The grammar-key MUST identify a registered guest interpreter.
-A hana block MUST close with `<<~/ hana>>`.
+A hana block MUST close with `<<~/hana>>`.
 A hana block body MUST be valid input for the named grammar interpreter.
 
 <<~/ahu>>
@@ -50,9 +50,9 @@ A hana block body MUST be valid input for the named grammar interpreter.
 ```text
 <<~ hana grammar-key>>
   body content in the guest grammar
-<<~/ hana>>
+<<~/hana>>
 
-<<~ \task grammar-key>>  ...body...  <<~/ \task>>
+<<~ task grammar-key>>  ...body...  <<~/task>>
 ```
 
 <<~/ahu>>
@@ -65,6 +65,6 @@ A hana block body MUST be valid input for the named grammar interpreter.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QBgRxY2NS06PV2atG5ayckKXDgK2ypRLqshKth8NbQI
+<<^ code="&#x0003;">>ni:///sha-256;EL0Z5P6X9oa1O1XW-I6KCBGEvENUXKpUNO9opL8Bsi0
 
 <<^ code="&#x0004;" -> to="?">>

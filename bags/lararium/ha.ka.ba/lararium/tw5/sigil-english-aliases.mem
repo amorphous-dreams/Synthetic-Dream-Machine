@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/sigil-english-aliases"
 ! English Alias Sigil Vocabulary
 
 Memetic-wikitext sigils read the same in English and Hawaiian.
-`<<~ \procedure ...>>` and `<<~ wehe ...>>` reach the same executor.
+`<<~ procedure ...>>` and `<<~ wehe ...>>` reach the same executor.
 This document records the bidirectional alias map.
 
 <<~/ahu>>
@@ -74,6 +74,6 @@ the canonical dispatch through the Hawaiian implementation.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G3QM8bCfedbWE2SechZ0b52TlFd48dVAU6KL5OzqzGw
+<<^ code="&#x0003;">>ni:///sha-256;aPF8KYJx7bEP1LEBXqobmmEa7o0o0wKqVq_MWo3F0qg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -61,7 +61,7 @@ The condition is a failure context, not a boolean test: the `then` arm fires whe
 
 Verse `if` form (failable condition → one arm):
 ```text
-<<~ heihei (Condition)>>then-flow<<~ mukuwai>>else-flow<<~/ heihei>>
+<<~ heihei (Condition)>>then-flow<<~ mukuwai>>else-flow<<~/heihei>>
 ```
 
 Verse `case` form (value-match → one arm):
@@ -70,7 +70,7 @@ Verse `case` form (value-match → one arm):
   MatchA => arm-a
   MatchB => arm-b
   _       => default-arm
-<<~/ heihei>>
+<<~/heihei>>
 ```
 
 Verse grounding: `if (Condition): then else: else` (the condition runs in a `<decides>` failure context); `case (Value): A => …  _ => …`.
@@ -104,6 +104,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kGdefG26rghxFzv0hEVLHP4hKgBwnh7zgAnY7rDpQWQ
+<<^ code="&#x0003;">>ni:///sha-256;bmoaod2R-2qiyv2zPDNHOGiE-0CUWG_GAd32ab4gaAw
 
 <<^ code="&#x0004;" -> to="?">>

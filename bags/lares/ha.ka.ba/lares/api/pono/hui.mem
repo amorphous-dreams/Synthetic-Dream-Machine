@@ -52,10 +52,10 @@ A hui block MUST propagate failure from any child flow to the containing flow.
   <<~ lele lar:///target-b>>
 <<~/hui>>
 
-<<~ \sync>>
+<<~ sync>>
   <<~ branch lar:///target-a>>
   <<~ branch lar:///target-b>>
-<<~/\sync>>
+<<~/sync>>
 ```
 
 <<~/ahu>>
@@ -68,6 +68,6 @@ A hui block MUST propagate failure from any child flow to the containing flow.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VEN91TM6shL5ck50kQgyo_afZP6CE7MMQFdaa0RA8-U
+<<^ code="&#x0003;">>ni:///sha-256;PKNE6jAlmHhZlcMVVd1AYe0peIn1SKEJUYkO7E9x2Tg
 
 <<^ code="&#x0004;" -> to="?">>

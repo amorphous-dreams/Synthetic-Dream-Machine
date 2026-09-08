@@ -22,7 +22,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/function"
 ! \function
 
 English-form filter-function declaration pragma (TW5 5.3+).
-`<<~ function name(params)>>filter-expression<<~/ \function>>` declares a named filter function
+`<<~ function name(params)>>filter-expression<<~/function>>` declares a named filter function
 callable in TW5 filter expressions as `[function[name]]` or `[name[args]]`.
 
 No direct Hawaiian equivalent. TW5 filter-function semantics have no natural Hawaiian sigil form in
@@ -49,7 +49,7 @@ return wikitext. Do not use interchangeably.
 !! Syntax
 
 ```text
-<<~ function myFilter(param:"")>>[<param>match[value]]<<~/ \function>>
+<<~ function myFilter(param:"")>>[<param>match[value]]<<~/function>>
 ```
 
 TW5 native equivalent:
@@ -69,6 +69,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WeBIwQ3IuP6jId_k4mZbrxRFAaGQEbmAyMx6RYJ1yZw
+<<^ code="&#x0003;">>ni:///sha-256;4jsV9hNiWf_F_I5KaCTz6YTTILZjTFOFH-hHEyXRzj0
 
 <<^ code="&#x0004;" -> to="?">>

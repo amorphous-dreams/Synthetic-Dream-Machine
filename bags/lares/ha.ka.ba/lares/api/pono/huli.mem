@@ -51,7 +51,7 @@ directed attention moving through the set.
 !! Law (Kānāwai)
 
 A huli block MUST carry a TW5 filter expression as its first argument.
-A huli block MUST close with `<<~/ huli>>` (or `<<~/ \for>>`).
+A huli block MUST close with `<<~/huli>>` (or `<<~/for>>`).
 A huli block body MUST render once per filter result, with `currentTiddler` bound to each result.
 A huli block MUST NOT carry mode= — control flow has no projection posture.
 A huli block with an empty filter result MUST produce no output.
@@ -71,14 +71,14 @@ Hawaiian form:
 ```text
 <<~ huli [filter-expression]>>
 body template (currentTiddler = each result)
-<<~/ huli>>
+<<~/huli>>
 ```
 
 English alias form (identical semantics):
 ```text
-<<~ \for [filter-expression]>>
+<<~ for [filter-expression]>>
 body template (currentTiddler = each result)
-<<~/ \for>>
+<<~/for>>
 ```
 
 TW5 expansion:
@@ -120,6 +120,6 @@ close-pattern = '<<~\/huli\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;X8BVWC9IJKF5io5r16e60WuGDLJT3dpaCuYXOLf-Vtg
+<<^ code="&#x0003;">>ni:///sha-256;rnxvk0cl229E2pUTzuFPryz4MzcVVO9yBzsCp_Hbi1s
 
 <<^ code="&#x0004;" -> to="?">>

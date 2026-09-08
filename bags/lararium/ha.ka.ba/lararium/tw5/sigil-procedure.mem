@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/sigil-procedure"
 
 ! ~\procedure Sigil Design
 
-`<<~ \procedure name(params)>>body<<~/ \procedure>>` — TW5 procedure declaration form.
+`<<~ procedure name(params)>>body<<~/procedure>>` — TW5 procedure declaration form.
 
 The `\procedure` sigil makes TW5's `\procedure` pragma first-class in memetic-wikitext and aligns the meme with the submodule-on-disk definition and call patterns.
 Hawaiian equivalent: `wehe` (procedure/function executor; outside/exit boundary).
@@ -47,7 +47,7 @@ Cross-ref: `lar-see-also: wehe`. When `sigil-wehe.tid` ships (Path G.SharktoothS
 !! Dispatch Form
 
 ```
-<<~ \procedure greet(name:"world")>>Hello <<name>>!<<~/ \procedure>>
+<<~ procedure greet(name:"world")>>Hello <<name>>!<<~/procedure>>
 ```
 
 Equivalent native TW5:
@@ -57,7 +57,7 @@ Hello <<name>>!
 \end
 ```
 
-The `lar-sigil.ts` wikirule matches `<<~ \procedure …>>` as a compound block opener;
+The `lar-sigil.ts` wikirule matches `<<~ procedure …>>` as a compound block opener;
 the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
@@ -73,6 +73,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nMsx4u5aMnV5sCLqqTP-kt-6Mr4EZEfSPTW1uiSVIdY
+<<^ code="&#x0003;">>ni:///sha-256;ai2_uHwYSeG_06Xdqqk8EasP7HAbzE8vT_YKwM8oVjw
 
 <<^ code="&#x0004;" -> to="?">>

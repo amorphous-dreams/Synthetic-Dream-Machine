@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/widget"
 
 ! \widget
 
-English-form widget declaration pragma. `<<~ \widget ~name(params)>>body<<~/ \widget>>` declares
+English-form widget declaration pragma. `<<~ widget ~name(params)>>body<<~/widget>>` declares
 a named widget body callable as `<<~ name args>>` via the `~` dispatcher.
 
 The `~` prefix convention: all operator-defined callable sigils use `~name`. The `\widget` sigil
@@ -38,7 +38,7 @@ No direct Hawaiian equivalent. The `~` prefix carries the Lares convention for c
 !! Law (Kānāwai)
 
 A `\widget` declaration MUST use the `~` prefix on the widget name.
-A `\widget` declaration MUST close with `<<~/ \widget>>`.
+A `\widget` declaration MUST close with `<<~/widget>>`.
 A `\widget` declaration MUST function as a declaration only, producing no render output.
 The declared name MUST be unique in the current tiddler scope.
 `\widget` and `\procedure` MAY be used interchangeably for render-only bodies; use `\widget` when
@@ -51,11 +51,11 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 !! Syntax
 
 ```text
-<<~ \widget ~mysigil(uri:"" p1:"")>>
+<<~ widget ~mysigil(uri:"" p1:"")>>
 <$tiddler tiddler=<<uri>>>
 ...
 </$tiddler>
-<<~/ \widget>>
+<<~/widget>>
 ```
 
 <<~/ahu>>
@@ -69,6 +69,6 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hKJFoWMyp9rsgsoJHBnM5EdWJdpYzAt2Wlq24Z3Mbg8
+<<^ code="&#x0003;">>ni:///sha-256;ZuU0bfF-xWKO_tmyr0zygnOHUDWBU_EfjanZNQO_YFE
 
 <<^ code="&#x0004;" -> to="?">>

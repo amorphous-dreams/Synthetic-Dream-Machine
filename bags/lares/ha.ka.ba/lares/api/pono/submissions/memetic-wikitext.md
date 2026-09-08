@@ -419,7 +419,7 @@ Guest grammar MUST leave host primitives intact, and malformed guest work MUST d
 
 ## English Alias Namespace
 
-The `\` prefix marks the English alias namespace. An alias carries identical semantics to its Hawaiian canonical and MUST map to it before evaluation; the compiled tree carries only canonical names, and diagnostics MUST use the canonical name. Aliases serve onboarding and visual contrast; they introduce no separate AST node. A block alias closes with `<<~/\name>>`, which a processor MUST resolve to the canonical close before matching.
+The `\` prefix marks the English alias namespace. An alias carries identical semantics to its Hawaiian canonical and MUST map to it before evaluation; the compiled tree carries only canonical names, and diagnostics MUST use the canonical name. Aliases serve onboarding and visual contrast; they introduce no separate AST node. A block alias closes with `<<~/name>>`, which a processor MUST resolve to the canonical close before matching.
 
 ### Two registers, one vocabulary
 
