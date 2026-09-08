@@ -38,6 +38,8 @@ module-type: library
  * `lares carrier project-md` both call {@link projectSubmission}.
  */
 
+import { matchCarrierHeadLine } from "./carrier-head.js";
+
 export interface SubmissionProjection {
   /** The markdown body — what a reviewer reads. */
   markdown: string;
@@ -51,8 +53,6 @@ export interface SubmissionProjection {
 
 /** Line-standing frame sigil (any control code), with whatever rides after the closer. */
 const FRAME_LINE = /^<<\^ code="&#x00[0-9A-Fa-f]{2};"(?:[^>\n]|>(?!>))*>>.*$/;
-/** The SOH heading, capturing the carrier's declared address. The tail admits `->`. */
-const SOH_LINE = /^<<\^ code="&#x00[01]1;"(?:[^>\n]|>(?!>))*"?\?"?\s*->\s*to="?(lar:\/\/\/(?:[^"\s>]|>(?!>))+)"?\s*>>/;
 /** The ETX closer with its adjacent check. */
 const ETX_LINE = /^<<\^ code="&#x0003;"[^\n]*>>(\S+)?/;
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
@@ -140,8 +140,8 @@ export function transposeMarkdown(text: string): { markdown: string; uri?: strin
     if (fence > 0) { out.push(line); continue; }
 
     // ── carriage, dropped; address and check captured on the way past ──
-    const soh = SOH_LINE.exec(line);
-    if (soh) { uri = uri ?? soh[1]; continue; }
+    const soh = matchCarrierHeadLine(line);
+    if (soh) { uri = uri ?? soh.uri; continue; }
     const etx = ETX_LINE.exec(line);
     if (etx) { check = check ?? etx[1]; continue; }
     if (FRAME_LINE.test(line) || DOCTYPE_LINE.test(line)) continue;

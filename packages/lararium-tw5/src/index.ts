@@ -243,6 +243,12 @@ export type {
 
 export * from "./memetic-wikitext-sensorium.js";
 export { readCarrierShape } from "./carrier-shape.js";
+// THE ONE READER of a carrier's framing ends. Nine spellings stood before it; see carrier-head.ts.
+export {
+  matchCarrierHead, matchCarrierHeadLine, matchCarrierMark, headUriOf,
+  carrierHeadPattern, carrierMarkPattern, carrierReleasePattern,
+} from "./carrier-head.js";
+export type { CarrierHead, CarrierMark } from "./carrier-head.js";
 export type { CarrierShape, CarrierKind, CarrierMarks } from "./carrier-shape.js";
 export { readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";

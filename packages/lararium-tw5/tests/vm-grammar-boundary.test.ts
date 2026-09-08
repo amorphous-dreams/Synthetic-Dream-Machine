@@ -97,6 +97,52 @@ describe("pono grammar boundary", () => {
     expect(records.map((r) => r.tiddler.title)).toEqual(["lar:///test"]);
   });
 
+  /**
+   * ★ THE GATE THAT MISSED IT ★
+   *
+   * This boundary read `src/index.ts` for forbidden EXPORTS — the door — while nine readers inside the
+   * package each carried their own spelling of one question: what address does a carrier's head name?
+   * When the corpus quoted its control values, eight stopped matching in the same minute.
+   *
+   * A bearing read is a control code, a bearing arrow, and a capture. One file holds the answer, and
+   * every exemption below is DECLARED with its reason — a list that only shrinks.
+   */
+  test("★ no reader outside the shore captures a carrier's bearing ★", () => {
+    const SHORE = "carrier-head.ts";
+    /**
+     * DECLARED EXEMPTIONS, each with the reason it stands. Adding one is a ruling, not a convenience.
+     */
+    const EXEMPT = [
+      {
+        file: "src/meme-ast/scanner.ts",
+        since: "2026-09-07",
+        why:
+          "THE INDEPENDENT RECOGNISER. `frame-parity` reads this file's control literals as the side " +
+          "no tiddler governs — comparing the spec against tiddlers alone reads tautological while " +
+          "one hand writes both. Sourcing its patterns from the shore deletes the seam that witness " +
+          "measures, which is how this exemption was found: repointing it turned frame-parity red.",
+      },
+    ];
+    const offenders: string[] = [];
+    for (const file of walk(join(ROOT, "src")).filter((f) => f.endsWith(".ts"))) {
+      if (file.endsWith(SHORE)) continue;
+      // GENERATED OUTPUT CARRIES THE SHORE'S OWN BODY. The packed plugin inlines every module it
+      // bundles, so the shore's pattern appears there by construction — reading it as a second reader
+      // would fail this gate on the very file that proves the collapse worked.
+      if (file.endsWith(".generated.ts")) continue;
+      if (EXEMPT.some((e) => file.endsWith(e.file))) continue;
+      const src = readFileSync(file, "utf8");
+      src.split("\n").forEach((line, i) => {
+        // a regex literal or a RegExp source naming a HEAD code, reaching an arrow, and capturing
+        if (!/&#x00(?:01|11)/.test(line)) return;
+        if (!line.includes("->")) return;
+        if (!/\(\[\^|\(\?:to=\)|\(\\S\+\)|\((?!\?:)/.test(line)) return;
+        offenders.push(`${relative(ROOT, file)}:${i + 1}  ${line.trim().slice(0, 96)}`);
+      });
+    }
+    expect(offenders, "a bearing read belongs in carrier-head.ts — see its header").toEqual([]);
+  });
+
   test("tests do not import meme-ast internals as the canonical grammar surface", () => {
     const testDir = join(ROOT, "tests");
     const offenders = walk(testDir)

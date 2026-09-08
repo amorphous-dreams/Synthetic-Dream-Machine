@@ -46,7 +46,13 @@ export interface ParseEvent {
 
 export const BOOTSTRAP_SCANS: SigilScan[] = [
   // ASCII control-character framing — SOH / STX / ETX / EOT
-  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?:[^>]|>(?!>))*"?\?"?\s*->\s*to="?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
+  //
+  // ⚠ THESE PATTERNS STAY HAND-WRITTEN, and that is the point. `frame-parity` reads the control codes
+  // out of THIS FILE as the independent second recogniser — comparing the spec against tiddlers alone
+  // reads tautological while one hand writes both. Sourcing them from the shared shore would delete
+  // the very seam that witness exists to measure. The bearing READ collapsed (carrier-head.ts); the
+  // bootstrap SCAN did not, by the same ruling that keeps every frame scan local (frame-marks.ts).
+  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
   { sigilName: "control-stx", regex: /<<\^(?:[^>]|>(?!>))*&#x0002;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-etx", regex: /<<\^(?:[^>]|>(?!>))*&#x0003;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0004;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
@@ -55,7 +61,7 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // on the read path ever saw what went missing.
   { sigilName: "control-etb", regex: /<<\^(?:[^>]|>(?!>))*&#x0017;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   // Kapu extended range — DC1 (&#x0011;) SOH variant, DC4 (&#x0014;) EOT variant
-  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*to="?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
+  { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0014;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   // Structural: ahu — slot identifier supports nested fragment paths via
   // `/`-separated segments (`#/parent/child/grandchild`). Per memetic-wikitext

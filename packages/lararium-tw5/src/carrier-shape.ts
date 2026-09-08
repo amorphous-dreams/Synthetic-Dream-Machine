@@ -28,6 +28,7 @@
  */
 
 import { fencedSpans, maskedExec, maskedExecAll } from "./meme-ast/fence-mask.js";
+import { carrierMarkPattern, matchCarrierHead } from "./carrier-head.js";
 import { verifyBcc } from "./carrier-check.js";
 
 /** One mark's presence, read through the fence mask so a teaching example never counts as a frame. */
@@ -74,7 +75,7 @@ export function readCarrierShape(text: string): CarrierShape {
   // scanned as `[^>\n]*` stops at the first one and the sigil never closes, and the corpus reads unframed.
   // The PREFIX still stops at `&`: a namespace written as entities would otherwise be read as the
   // control code, which is the quietest way this frame has broken.
-  const headM = maskedExec(text, /<<\^[^&\n]*&#x(?:0001|0011);(?:[^>\n]|>(?!>))*>>/g, spans);
+  const headM = maskedExec(text, carrierMarkPattern("head", "g"), spans);
   const marks: CarrierMarks = {
     doctype: /^<<!DOCTYPE /m.test(text),
     head:    headM !== null,
@@ -88,9 +89,8 @@ export function readCarrierShape(text: string): CarrierShape {
     // Every carrier in the corpus writes `from=? -> to=lar:///…`, so an unnamed read returned
     // `to=lar:///…` on 639 of 639 files while the only vector for it built its fixture in the bare form
     // and stayed green. The name is optional in the grammar and stripped when present.
-    // AND THE QUOTE IS NOT PART OF THE ADDRESS — the canonical head writes `to="lar:///…"`, so the
-    // capture drops the pair rather than carrying it into the value.
-    headUri: headM ? (/->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/.exec(headM[0])?.[1] ?? null) : null,
+    // AND THE ADDRESS COMES FROM THE SHORE, which strips the quote pair and refuses a torn head.
+    headUri: headM ? (matchCarrierHead(headM[0])?.uri ?? null) : null,
     stx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g),
     etx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/g),
     eot:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x(?:0004|0014);(?:[^>\n]|>(?!>))*>>/g),

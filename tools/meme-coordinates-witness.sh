@@ -20,12 +20,23 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 python3 - <<'PY'
-import pathlib, re, sys
+import pathlib, re, sys, json, subprocess
+
+# THE HEAD IS READ BY THE SHORE, NEVER BY THIS FILE. Nine spellings of that question stood across the
+# tree, and eight stopped matching in one minute when the corpus quoted its control values. One process
+# answers for every carrier — spawning node per file would cost 700 starts for a single question.
+def heads(paths):
+    out = subprocess.run(
+        ["node", "tools/carrier-head.mjs", "--stdin"],
+        input="\n".join(str(p) for p in paths), capture_output=True, text=True)
+    if out.returncode != 0:
+        print(out.stderr.strip() or "[meme-coordinates] the shore did not answer"); sys.exit(1)
+    return {r["file"]: r for r in (json.loads(l) for l in out.stdout.splitlines() if l.strip())}
 
 drift = []
-for f in sorted(pathlib.Path("bags").rglob("*.mem")):
-    if f.parts[1] == "lares-history":
-        continue
+_carriers = [f for f in sorted(pathlib.Path("bags").rglob("*.mem")) if f.parts[1] != "lares-history"]
+_heads = heads(_carriers)
+for f in _carriers:
     head = f.read_text(errors="replace")[:4000]
 
     m = re.search(r'(?m)^file-path\s*=\s*"(.*?)"', head)
@@ -35,15 +46,10 @@ for f in sorted(pathlib.Path("bags").rglob("*.mem")):
     # `uri-path` answers to the HEAD SIGIL, never to the tree: a root resource may deliberately carry a
     # rootless address (`lar:///AGENTS`), and the field must follow the address rather than the folder.
     u = re.search(r'(?m)^uri-path\s*=\s*"(.*?)"', head)
-    # THE HEAD NAMES ITS TARGET WITH `to=`. A reader that wants a bare `lar:///` after the arrow does
-    # not match the head at all — and then matches the first TEACHING EXAMPLE further down instead,
-    # reporting a carrier as standing at an address its own prose only quoted.
-    #
-    # AND THE QUOTE IS NOT PART OF THE ADDRESS. `to=lar:///x` and `to="lar:///x"` name one target;
-    # binding the bare form alone re-opens the exact miss above, silently, the day the corpus quotes.
-    h = re.search(r'<<[\^~][^>]*?->\s*(?:to=)?"?lar:///([^"\s>]+?)"?\s*>>', head)
-    if u and h and u.group(1) != h.group(1):
-        drift.append((str(f), "uri-path", u.group(1), h.group(1)))
+    _u = _heads.get(str(f), {}).get("uri")
+    _hd = _u[len("lar:///"):] if _u and _u.startswith("lar:///") else None
+    if u and _hd and u.group(1) != _hd:
+        drift.append((str(f), "uri-path", u.group(1), _hd))
 
 if not drift:
     print("[meme-coordinates] every file-path names its own file, and every uri-path its own address")

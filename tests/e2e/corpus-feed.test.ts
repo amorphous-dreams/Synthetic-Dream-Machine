@@ -14,6 +14,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
+import { matchCarrierHead } from "@lararium/tw5";
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { execSync } from "node:child_process";
@@ -60,11 +61,11 @@ function expectedRoots(): Set<string> {
   const files = execSync(`find ${CORPUS} -name '*.mem'`, { encoding: "utf8" }).trim().split("\n");
   const roots = new Set<string>();
   for (const f of files) {
-    // AND THE QUOTE IS NOT PART OF THE BEARING. The canonical head writes `from="?" -> to="lar:///…"`,
-    // so a finder bound to the bare spelling matched ONE carrier in 700 — and this suite runs under
-    // `test:e2e`, which `pnpm -r test` skips by design, so nothing routine would have reported it.
-    const m = /<<[\^~][^\n]*&#x(?:0001|0011);[^\n]*from="?\?"? -> to="?([^"\s>]+)"?\s*>>/.exec(readFileSync(f, "utf8"));
-    if (m?.[1]?.startsWith("lar:///ha.ka.ba/lares/")) roots.add(m[1]);
+    // THE SHORE ANSWERS. A finder with its own spelling of this question matched ONE carrier in 700
+    // the day the corpus quoted its control values — and this suite runs under `test:e2e`, which
+    // `pnpm -r test` skips by design, so nothing routine would have reported it.
+    const uri = matchCarrierHead(readFileSync(f, "utf8"))?.uri;
+    if (uri?.startsWith("lar:///ha.ka.ba/lares/")) roots.add(uri);
   }
   return roots;
 }

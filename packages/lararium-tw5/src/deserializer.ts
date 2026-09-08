@@ -31,6 +31,7 @@ module-type: tiddlerdeserializer
 
 import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
 import { MemeStreamParser } from "./meme-stream.js";
+import { carrierHeadLinePattern } from "./carrier-head.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   findTopLevelAhuBlocks,
@@ -305,7 +306,7 @@ function safeSplitMeme(uri: string, text: string, fields: TiddlerFields): Tiddle
 // Control sigils live on ONE line by law — `[^>\n]` keeps the scan from
 // crossing lines (a greedy multi-line match once swallowed from a quoted
 // `<<~` mention down to the real closer; found on loci.md).
-const SOH_LINE_RE = /^<<\^(?:[^>\n]|>(?!>))*&#x(?:0001|0011);(?:[^>\n]|>(?!>))*>>\n?/;
+const SOH_LINE_RE = carrierHeadLinePattern();
 const STX_LINE_RE = /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>\n?/;
 
 function stripLeadingNewlines(text: string): string {
