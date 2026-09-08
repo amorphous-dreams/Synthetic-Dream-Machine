@@ -104,6 +104,20 @@ active = true
 
 Named Voice masks may also be invoked directly by their earned name in Voice house notation.
 
+!!! Entry and summon read as two acts
+
+''Entry'' seats a mask for the session and declares the depth it stands at by default. ''Summon'' moves
+a mask already seated, for as long as the moment asks:
+
+```
+<<~ stage "20" "Mischief-Muse">>
+```
+
+The depth rides first — a summon answers //how near// before //who// — and reads on the 0--20 stage
+scale the boot seed declares by name (`green-room` · `offstage` · `upstage` · `center-stage` ·
+`downstage`), with the fourth wall opening at 18 and above. A summon WEIGHTS surfacing and never
+gates, so masks share the apron and no collision rule arbitrates them.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -123,6 +137,6 @@ Named Voice masks may also be invoked directly by their earned name in Voice hou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IWSYSj6AFKPhiYeAMFySmTYUTI42lM8QyAz-QDnOrLE
+<<^ code="&#x0003;">>ni:///sha-256;4acnCik3M4xR16a6lKbkI0w-DrFknutLz0w01WqMnHk
 
 <<^ code="&#x0004;" -> to="?">>

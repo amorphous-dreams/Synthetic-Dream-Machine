@@ -9,20 +9,22 @@ type: text/vnd.tiddlywiki
      ~kahea~kau and ~aka~kau follow the ahu template-cascade pattern.
 
      Dispatch shapes:
-       <<~ kau #frag Name props>>    → ~kau(p1="#frag Name props") — placement
-       <<~ kau Name>>                → ~kau(p1="Name")              — invocation
+       <<~ kau #frag Name props>>    → ~kau(args="#frag Name props") — placement
+       <<~ kau Name>>                → ~kau(args="Name")             — invocation
        <<~ kahea kau #slot>>         → ~kahea~kau(p1="#slot")
        <<~ aka   kau #slot>>         → ~aka~kau(p1="#slot")
 
-     p1 parse: first token starting with # = fragment; remainder = name + props.
+     args parse: first token starting with # = fragment; remainder = name + props. This widget
+     reads the argument RUN and not the slots, because its shape is positional-by-prefix rather
+     than positional-by-arity — a placement carries a fragment the invocation form omits.
      Template cascade tag: lar:///ha.ka.ba/tags/kau-template
      Keyhive capability and UUID write-back: deferred; handled by explicit action
      tiddlers when Keyhive WASM lands. -->
 
-\widget ~kau(p1:"" p2:"" p3:"")
-<$set name="_kau-fst" filter="[<p1>split[ ]first[]]" emptyValue="">
+\widget ~kau(p1:"" p2:"" p3:"" args:"")
+<$set name="_kau-fst" filter="[<args>split[ ]first[]]" emptyValue="">
 <$set name="_kau-frag" filter="[<_kau-fst>regexp[^#]]" emptyValue="">
-<$set name="_kau-after" filter="[<_kau-fst>regexp[^#]]" value={{{ [<p1>removeprefix<_kau-fst>trim[]] }}} emptyValue=<<p1>>>
+<$set name="_kau-after" filter="[<_kau-fst>regexp[^#]]" value={{{ [<args>removeprefix<_kau-fst>trim[]] }}} emptyValue=<<args>>>
 <$set name="_kau-name" filter="[<_kau-after>split[ ]first[]]" emptyValue="">
 <$set name="_kau-props" filter="[<_kau-after>removeprefix<_kau-name>trim[]]" emptyValue="">
 <$let _kau-def={{{ [all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<_kau-name>first[]else[]] }}}
@@ -41,8 +43,8 @@ type: text/vnd.tiddlywiki
 </$set></$set></$set></$set></$set>
 \end
 
-\procedure ~kahea~kau(p1:"" p2:"" p3:"")
-<$transclude $variable="~kau" p1=<<p1>> p2=<<p2>> p3=<<p3>>/>
+\procedure ~kahea~kau(p1:"" p2:"" p3:"" args:"")
+<$transclude $variable="~kau" p1=<<p1>> p2=<<p2>> p3=<<p3>> args=<<args>>/>
 \end
 
 \procedure ~aka~kau(slot:"" uri:"" p1:"")

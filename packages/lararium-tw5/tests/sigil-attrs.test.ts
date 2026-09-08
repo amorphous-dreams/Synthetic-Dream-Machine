@@ -4,7 +4,7 @@
  * Every vector here names a shape the corpus actually carries, or a shape that would break if quoted.
  */
 import { describe, test, expect } from "vitest";
-import { readSigilAttrs, sigilAttrValue, quotableAttrs } from "../src/sigil-attrs.js";
+import { readSigilAttrs, sigilAttrValue, quotableAttrs, positionalsOf } from "../src/sigil-attrs.js";
 
 describe("both spellings reach one reading", () => {
   test("★ bare and quoted name the same value ★", () => {
@@ -193,5 +193,53 @@ describe("the corpus shapes, verbatim", () => {
     const a = Object.fromEntries(readSigilAttrs(b).map((x) => [x.name, x.value]));
     expect(a["from"]).toBe("lar://mara:operator@crossroads/a.b.c");
     expect(a["to"]).toBe("lar://compita:agent@crossroads/d.e.f");
+  });
+});
+
+/**
+ * ── THE POSITIONAL SIDE OF THE SAME QUESTION ────────────────────────────────────────────────────
+ * `readSigilAttrs` answers what a sigil's NAMED parameters carry. A dispatcher declaring `p1 … p5`
+ * asks the other half: what does each positional SLOT carry? Twenty-nine sigil definitions declare
+ * those slots, so the reader that fills them belongs beside the one that fills names — and its rules
+ * are the same rules, since a positional wears the same four delimiters and stands beside the same
+ * `name=value` pairs it must step over.
+ */
+describe("positionalsOf — the slots a dispatcher fills", () => {
+  test("bare words read in order", () => {
+    expect(positionalsOf("organ mempalace")).toEqual(["organ", "mempalace"]);
+  });
+
+  test("★ the delimiters come off — a quote binds a value, it is not part of one ★", () => {
+    expect(positionalsOf('"20" "Mischief-Muse"')).toEqual(["20", "Mischief-Muse"]);
+  });
+
+  test("★ a quoted positional carrying spaces stays ONE slot ★", () => {
+    expect(positionalsOf('"16" "Ghost of Mark Twain"')).toEqual(["16", "Ghost of Mark Twain"]);
+  });
+
+  test("★ all four delimiters, as parseStringLiteral takes them ★", () => {
+    expect(positionalsOf(`"""a -> b""" 'c d' [[A Title]] plain`))
+      .toEqual(["a -> b", "c d", "A Title", "plain"]);
+  });
+
+  test("★ a named parameter fills a NAME and never a slot ★", () => {
+    expect(positionalsOf('aim from="a" -> to="b"')).toEqual(["aim", "->"]);
+  });
+
+  test("★ a colon-bearing value inside a quoted slot is prose, not a separator ★", () => {
+    expect(positionalsOf('rhyme "physics ~ Lightcone: proper time"'))
+      .toEqual(["rhyme", "physics ~ Lightcone: proper time"]);
+  });
+
+  test("an empty body fills no slot", () => {
+    expect(positionalsOf("")).toEqual([]);
+    expect(positionalsOf("   ")).toEqual([]);
+  });
+
+  test("★ an unquoted scheme still binds a name — the hazard reads the same from this side ★", () => {
+    // `lar:///x` spells with parameter-name characters, so TiddlyWiki takes it as `lar` = `///x`
+    // and the SLOT RECEIVES NOTHING. This reader must agree with that, never paper over it.
+    expect(positionalsOf("loulou lar:///x")).toEqual(["loulou"]);
+    expect(positionalsOf('loulou "lar:///x"')).toEqual(["loulou", "lar:///x"]);
   });
 });

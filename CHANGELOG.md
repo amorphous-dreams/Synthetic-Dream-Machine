@@ -7,12 +7,18 @@
 The four founding-watch rulings closed (the veil · layered recovery · seat-adoption · the nym's chain), and the wiring census emptied. History between v4.1.1 and here lives in the git log and `bags/lares/ha.ka.ba/lares/docs/handoff.mem`.
 
 **Fixed**
+- THE DISPATCHER'S SLOTS ARE FILLED, NOT PROMISED: `p1 … p5` carried the whole argument run in `p1` and nothing in the rest, so twenty-nine definitions composed from empty slots and rendered one raw string. `positionalsOf` splits under TiddlyWiki's own rules — four delimiters stripped, `name=value` stepped over, an unquoted scheme left to the name it binds — and `args` carries the run whole for `pono`, `papalohe` and `kau`, which read a shape rather than an arity.
+- An empty dispatch name resolved to the DISPATCHER ITSELF: `[<name>addprefix[~]]` on a blank name yields the bare `~`, and definitions that compose by handing down a name they were given (`if`, `meme`, `tiddler`, `let`, `var`) recursed until the stack ended — a thrown parse, not a degraded render. `!is[blank]` empties the variable, and an empty variable lands on the gradient floor already standing there.
+- THE UNSLASHING REACHED THE SHELF: the corpus held zero slashed firings while seven definitions still answered to `~\let`, `~\var`, `~\const`, `~\if`, `~\for`, `~\task`, `~\tiddler` — every live call reaching nothing and rendering as its own text, which is exactly what an UNKNOWN sigil correctly owes a reader. Patterns keep reading either spelling, so a record written before the ruling still decomposes.
+- `\end` written at the tail of a body line closes nothing and goes to the page as text — `pono`, `papalohe` and `hana` each carried one behind their markup.
 - The crossing gate prices transfers by DIRECTION: an outward copy/move (toward public) refuses without the kahu-cabal; inward stays cheap (`action-handler` + `vessel-bag-tier`, the hearth-manifest tier reader threaded through keyhive's fs-blind door).
 - `coerceDyad` no longer rebuilds a dyad slot from its edge — the slot's ref is authoritative for the veil, fenced to the edge's own device; the pre-ruling (device × root) fallback deleted whole.
 - The hoike witness law sheds the spirit-incapacity recital: a tasked spirit stands the full house; the handback saksi attests the crossing.
 - `board:members-registry` renamed `board:carriage-contracts` — the board holds self-announced operator contracts; the label now says so.
 
 **Added**
+- `stage` — a MASK and the theatrical depth it stands at, the summon the masks canon has written since before a definition stood for it. The depth rides first (a summon answers //how near// before //who//) and reads on the 0–20 stage scale the boot seed declares by name, so the sigil carries no band table of its own. A carrier's own `~Stage` — a lifecycle phase, one capital apart — keeps its own scope.
+- `positionalsOf` joins `readSigilAttrs` on the sigil-parameter shore: the same reader now answers both halves of one question, so a slot and a name cannot drift apart.
 - `deriveDyadVeil` — the dyad's veil derives per-PersonaGroup off the DEVICE-MINTED vessel seed (never the persona seed); both ceremony sites mint the dyad slot; `vesselDyads` (mesh, one platform-blind door) reads it at boot on node and browser alike.
 - The armed inception: every self-stood founding pre-commits the founder's 1-of-1 self-recovery digest (`deriveSelfRecoveryKey`) — no prefix incepts unarmed, and self-rotation works from day one.
 - The ROLLING RECOVERY COMMITMENT: every persona-KEL event carries `nextRecoverySetHash`; guardian sets graft log-wise while the prefix keeps binding the genesis set.

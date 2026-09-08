@@ -249,10 +249,11 @@ export {
   carrierHeadPattern, carrierMarkPattern, carrierReleasePattern,
 } from "./carrier-head.js";
 export type { CarrierHead, CarrierMark } from "./carrier-head.js";
-// THE ONE READER of a sigil's named parameters, and of the positionals a scheme would steal.
+// THE ONE READER of a sigil's parameters — the names it binds, the SLOTS it fills, and the
+// positionals a scheme would steal.
 export {
   readSigilAttrs, sigilAttr, sigilAttrValue, quotableAttrs,
-  schemeShapedPositionals, lostPositionals,
+  positionalsOf, schemeShapedPositionals, lostPositionals,
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierKind, CarrierMarks } from "./carrier-shape.js";

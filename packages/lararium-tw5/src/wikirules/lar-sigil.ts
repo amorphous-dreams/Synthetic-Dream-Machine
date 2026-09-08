@@ -19,6 +19,7 @@ module-type: wikirule
  */
 
 import { getGrammar } from "../grammar-cache.js";
+import { positionalsOf } from "../sigil-attrs.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { severityOfRung } from "../meme-ast/diagnostics.js";
 import type { RecoveryRung } from "../meme-ast/diagnostics.js";
@@ -210,12 +211,24 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     // TiddlyWiki renders a transclude's CHILDREN where the target resolves to nothing. So a sigil
     // whose procedure this wiki has never seen puts its own text on the page instead of vanishing —
     // the mechanism is the parser's, not a second one bolted beside it.
-    return [{ type: "transclude", attributes: {
+    // ── AND THE SLOTS ARE FILLED, NOT PROMISED ────────────────────────────────────────────────────
+    // The dispatcher declares `p1 … p5` and twenty-nine definitions write against them. Handing the
+    // whole argument run to `p1` alone leaves `p2 … p5` empty on every call, so a definition composing
+    // two slots renders one raw string and a gap — and reads correct, because the raw string still
+    // CONTAINS every word the call was written with. `positionalsOf` splits under TiddlyWiki's own
+    // rules: four delimiters stripped, `name=value` pairs stepped over, an unquoted scheme left to the
+    // name it binds.
+    const run   = attrs["p1"] ?? "";
+    const slots = positionalsOf(run);
+    const macroAttrs: Record<string, { type: "string"; value: string }> = {
       "$variable": { type: "string", value: "~" },
       "name":      { type: "string", value: dispatchName },
-      "p1":        { type: "string", value: attrs["p1"] ?? "" },
+      "args":      { type: "string", value: run },
       "src":       { type: "string", value: verbatim },
-    }, children: [{ type: "text", text: verbatim }] }];
+    };
+    for (let i = 0; i < 5; i++) macroAttrs[`p${i + 1}`] = { type: "string", value: slots[i] ?? "" };
+    return [{ type: "transclude", attributes: macroAttrs,
+      children: [{ type: "text", text: verbatim }] }];
   }
 
   if ("__pranala_block__" in attrs) {

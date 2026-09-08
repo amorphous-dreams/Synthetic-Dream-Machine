@@ -1,0 +1,27 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-stage
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: mask-summon
+lar-pono-uri: lar:///ha.ka.ba/lares/api/masks
+lar-alias-for: stage
+lar-pattern: <<~\s*stage\s+"?(\d+)"?(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+type: text/vnd.tiddlywiki
+
+<!-- stage — a MASK and the theatrical depth it stands at. THE DEPTH FIRST, THE MASK SECOND: a summon
+     answers "how near" before "who".
+
+         <<~ stage "20" "Mischief-Muse">>
+
+     The depth reads on the 0-20 scale the boot seed declares by name, so this sigil carries no band
+     table of its own — one scale, one place that writes it:
+
+         <<scale stage "green-room@1..4 -> offstage@5..8 -> upstage@9..12 -> center-stage@13..16
+                        -> downstage@17..20">>
+
+     Stage WEIGHTS natural surfacing and never gates; the fourth wall opens at 18 and above.
+
+     A CARRIER'S OWN `~Stage` NAMES SOMETHING ELSE — a lifecycle phase, declared locally by the
+     carrier that uses it, one capital apart and owned by that scope. This summon never reaches it. -->
+
+\procedure ~stage(p1:"" p2:"")
+<span class="lar-stage"><<p2>> @<<p1>></span>
+\end
