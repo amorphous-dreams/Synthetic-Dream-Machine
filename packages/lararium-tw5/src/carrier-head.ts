@@ -49,6 +49,7 @@
  * mark added there read correct in every file while this one quietly dropped it.
  */
 import { FRAME_MARKS } from "./frame-marks.js";
+import { maskedExec } from "./meme-ast/fence-mask.js";
 
 const hexOf = (name: string): string =>
   FRAME_MARKS.filter((m) => m.name.startsWith(name)).map((m) => m.code.replace(/^&#x|;$/g, "")).join("|");
@@ -71,8 +72,12 @@ const UNK = '"?\\?"?';
  * THE NAME IS OPTIONAL IN THE GRAMMAR. `? -> lar:///x` is the positional spelling the framing ends
  * carried before they took names, and `normalize` converts it — so a reader that required `to=` would
  * refuse the very carriers normalization exists to reach.
+ *
+ * AND A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS. TiddlyWiki's `reUnquotedAttribute` admits
+ * `>(?!>)` inside a value, so an address carrying a bracket rides as content. A capture that excluded
+ * `>` outright read NULL where the parser read the whole address — measured against the parse tree.
  */
-const TARGET = '(?:to=)?"?([^"\\s>]+)"?';
+const TARGET = '(?:to=)?"?((?:[^"\\s>]|>(?!>))+)"?';
 
 export interface CarrierMark {
   /** Offset of `<<^`, relative to the text handed in. */
@@ -116,11 +121,22 @@ export const carrierReleasePattern = (flags = ""): RegExp =>
 const CODE_RE = new RegExp(`&#x(${hexOf("SOH")}|${hexOf("EOT")});`);
 const NS_RE = /\bnamespace="([^"]*)"|\bnamespace=([^\s>"]+)/;
 
-/** What does this carrier's head NAME? Null where no head carries a bearing. */
+/**
+ * What does this carrier's head NAME? Null where no head carries a bearing.
+ *
+ * ── A QUOTED HEAD IS NOT A HEAD ──────────────────────────────────────────────────────────────────
+ * A carrier that SHOWS the grammar — a spec, a lesson, a scout's record — writes a head-shaped line
+ * inside a fence or a tick span, and that line opens nothing. TiddlyWiki's parser produces no node
+ * there; an unmasked pattern takes the first one it meets. Measured against the parser over the whole
+ * corpus, a fenced decoy placed above a real head is the ONE reading where the two ever diverged.
+ *
+ * So the mask rides here rather than in each caller. The same law already cost this tree a silent
+ * truncation at ingest, where a fenced ETX mention ended every carrier that quoted one.
+ */
 export function matchCarrierHead(text: string, from = 0): CarrierHead | null {
-  const re = carrierHeadPattern("g");
-  re.lastIndex = from;
-  const m = re.exec(text);
+  const m = from === 0
+    ? maskedExec(text, carrierHeadPattern("g"))
+    : (() => { const re = carrierHeadPattern("g"); re.lastIndex = from; return re.exec(text); })();
   if (!m) return null;
   const ns = NS_RE.exec(m[0]);
   return {

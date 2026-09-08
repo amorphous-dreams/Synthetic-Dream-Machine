@@ -145,6 +145,42 @@ describe("the prefix stops at an entity", () => {
   });
 });
 
+describe("a `>` rides as content", () => {
+  // TiddlyWiki's reUnquotedAttribute admits `>(?!>)` inside a value. A capture that excluded `>`
+  // outright read NULL where the parser read the whole address — found against the parse tree.
+  test("★ an address carrying a bracket survives, quoted ★", () => {
+    expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to="lar:///a>b">>`)?.uri).toBe("lar:///a>b");
+  });
+
+  test("★ and bare ★", () => {
+    expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to=lar:///a>b>>`)?.uri).toBe("lar:///a>b");
+  });
+
+  test("but `>>` still closes the sigil", () => {
+    expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to="${URI}">> trailing`)?.uri).toBe(URI);
+  });
+});
+
+describe("a QUOTED head opens nothing", () => {
+  // Found by measuring the shore against TiddlyWiki's own parse tree over 700 carriers: a fenced decoy
+  // standing above a real head is the one reading where pattern and parser ever diverged.
+  const real = `<<^ code="&#x0001;" from="?" -> to="${URI}">>`;
+
+  test("★ a head inside a fence is not this carrier's head ★", () => {
+    const decoy = '```\n<<^ code="&#x0001;" from="?" -> to="lar:///DECOY">>\n```\n\n';
+    expect(matchCarrierHead(decoy + real)?.uri).toBe(URI);
+  });
+
+  test("★ nor one inside a tick span ★", () => {
+    const ticked = 'the head reads `<<^ code="&#x0001;" from="?" -> to="lar:///DECOY">>` like so\n\n';
+    expect(matchCarrierHead(ticked + real)?.uri).toBe(URI);
+  });
+
+  test("a carrier that only QUOTES a head names no address", () => {
+    expect(matchCarrierHead('```\n' + real + '\n```')).toBeNull();
+  });
+});
+
 describe("CONTROLS — what must NOT read as a head", () => {
   test("a speaking sigil is not a control frame", () => {
     expect(matchCarrierHead(`<<~ ahu #/entry>>`)).toBeNull();
