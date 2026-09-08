@@ -230,9 +230,14 @@ Examples, profile guidance, and extended bridge notes belong in the sidecars.
 
 ## Sigil Registry
 
-Grammar self-hosted. 65 SharktoothSigil tiddlers carry the full vocabulary.
-`grammar-cache.ts` reads only `lar:///ha.ka.ba/tags/SharktoothSigil`-tagged tiddlers.
+Grammar self-hosted. 97 SharktoothSigil tiddlers carry the full vocabulary.
+`grammar-cache.ts` reads `[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/SharktoothSigil]]`.
 Adding a sigil means tagging a tiddler — no code change required.
+
+THE SHADOW STORE IS NOT OPTIONAL. These tiddlers ride inside the plugin, so every one of them is a
+SHADOW; a filter naming the tiddler store alone matched zero, and the loader returned null from its
+own empty-set guard while the hardcoded bootstrap scans carried the whole render. Self-hosting became
+REAL on 2026-09-08, not on the day it was written.
 
 <<~ loulou lar:///ha.ka.ba/lares/api/pono/sharktooth-sigils>>
 

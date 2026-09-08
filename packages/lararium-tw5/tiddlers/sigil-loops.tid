@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-loops
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: frame
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: loops
+lar-pattern: <<~\s*loops\s+"?((?:[^"]|"(?!\s*>>))*)"?\s*>>
+lar-example: <<~ loops "observe -> orient -> decide -> act -> ha">>
+type: text/vnd.tiddlywiki
+
+<!-- loops — the phases a turn runs. All five always run; the gauge reads VISIBILITY alone, so the
+     phase list names what a reader sees rather than what the turn did. -->
+
+\procedure ~loops(p1:"")
+<span class="lar-loops"><$text text=<<p1>>/></span>
+\end

@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-config
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: relation
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: config
+lar-pattern: <<~\s*config\s+([\w.-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+lar-example: <<~ config Defaults "l-prime/true feedback/5">>
+type: text/vnd.tiddlywiki
+
+<!-- config — a CONFIG and what it holds. The boot seed declares it as `has` with the entity fixed, so this stands as
+     that same relation under its own head: a NAME, and what it holds, quoted. -->
+
+\procedure ~config(p1:"" p2:"")
+<$transclude $variable="~has" p1="config" p2=<<p1>> p3=<<p2>>/>
+\end

@@ -1,0 +1,17 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-set
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: frame
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: set
+lar-pattern: <<~\s*set\b((?:[^>]|>(?!>))*)>>
+lar-example: <<~ set hud="aim" mode="build" focus="9/measure" feedback="closed 1↺">>
+type: text/vnd.tiddlywiki
+
+<!-- set — the TURN FRAME, gathered. Every gauge that stands alone mid-stream also rides here as a
+     KEY: two grips, one handle. `hud` names which end of the turn the panel closes over — the
+     ward rides LAST at aim and FIRST at yield, one chiasmus — and a key left blank writes
+     nothing, so an absent instrument reads absent rather than empty. -->
+
+\procedure ~set(hud:"" mode:"" mood:"" mu:"" stance:"" focus:"" feedback:"" drift-ward:"" note:"")
+<span class="lar-set" data-hud=<<hud>>><$list filter="[[hud]] [[mode]] [[mood]] [[mu]] [[stance]] [[focus]] [[feedback]] [[drift-ward]] [[note]]" variable="k"><$list filter="[<k>getvariable[]!is[blank]]" variable="v"><span class="lar-set-key"><$text text=<<k>>/>=<$text text=<<v>>/></span> </$list></$list></span>
+\end

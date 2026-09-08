@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-mu
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: relation
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: mu
+lar-pattern: <<~\s*mu\s+([\w.-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+lar-example: <<~ mu Wand "ascii/* glyph/🜂 element/Fire pull/ignition">>
+type: text/vnd.tiddlywiki
+
+<!-- mu — a TOOL of the four, and the standpoint it carries. The boot seed declares it as `has` with the entity fixed, so this stands as
+     that same relation under its own head: a NAME, and what it holds, quoted. -->
+
+\procedure ~mu(p1:"" p2:"")
+<$transclude $variable="~has" p1="mu" p2=<<p1>> p3=<<p2>>/>
+\end

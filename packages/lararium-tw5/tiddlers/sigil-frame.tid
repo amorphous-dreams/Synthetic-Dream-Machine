@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-frame
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: relation
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: frame
+lar-pattern: <<~\s*frame\s+([\w.-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>
+lar-example: <<~ frame turn "aim -> yield">>
+type: text/vnd.tiddlywiki
+
+<!-- frame — a FRAME and what it holds. The boot seed declares it as `has` with the entity fixed, so this stands as
+     that same relation under its own head: a NAME, and what it holds, quoted. -->
+
+\procedure ~frame(p1:"" p2:"")
+<$transclude $variable="~has" p1="frame" p2=<<p1>> p3=<<p2>>/>
+\end

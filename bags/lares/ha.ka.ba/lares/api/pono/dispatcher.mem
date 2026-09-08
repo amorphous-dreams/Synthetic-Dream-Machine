@@ -40,8 +40,13 @@ grammar: new sigils need only a tiddler — no code change required.
 ✶ sense the sigil name — what named body does this invocation reach?
 ⏿ orient: dispatcher looks up `~name` in TW5 procedure/widget namespace; delegates via $transclude
 ◇ name MUST match a declared `\widget ~name` or `\procedure ~name` in accessible scope
-▶ emit macrocall node; `~` widget transcludes the named procedure with p1–p5 args threaded through
-↺ named body renders in place; no edge created; pure render-time delegation; confirm named procedure resolved; no infinite dispatch loops
+▶ emit a TRANSCLUDE naming `~name` directly, carrying p1–p5, the argument run whole as `args`,
+  the verbatim source as `src`, and every NAMED parameter the call bound — TiddlyWiki hands a
+  procedure only the parameters it declares, so a generic forwarder could pass none of them on
+↺ named body renders in place; no edge created; pure render-time delegation. Where the name
+  resolves to nothing the transclude renders its CHILDREN — the sigil's own text — which is the
+  gradient's floor. The `~` widget stays for INDIRECT dispatch, where a definition hands down a
+  name it was given, and a blank name there resolves to nothing rather than to the widget itself
 
 <<~/ahu>>
 
@@ -82,6 +87,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fs2uzdmSvv7NWHZHQ186bgkTWaFeLZWjE0gAW_7xRTw
+<<^ code="&#x0003;">>ni:///sha-256;pCHz3fgp0HkI1mhxut0gXu3s_DeRiwTvRmKb5rUY6fM
 
 <<^ code="&#x0004;" -> to="?">>

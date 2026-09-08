@@ -1,10 +1,15 @@
 title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-oracle
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
-lar-kind: metadata
+lar-kind: frame
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: oracle
 lar-pattern: <<~\s*oracle\b([\s\S]*?)>>
-lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#exchange-protocol
-lar-example: <<~ oracle "↯15 ✲ ⚄(5)">>
+lar-example: <<~ oracle "↯15 ✲ ⚄(5) ⁂:⚖️🪞⟁◈〰️">>
 type: text/vnd.tiddlywiki
 
-<!-- oracle — the entropy drain (↯ ✲ die ⁂ tail). HUD-frame sigil: recognized in the tree, rendered as
-     plain literal text for now. -->
+<!-- oracle — the entropy drain (↯ ✲ die ⁂ tail). A throw stands as ONE quoted string: it carries
+     glyphs, digits, parentheses and colons, and every one of them reads as the throw. -->
+
+\procedure ~oracle(p1:"")
+<span class="lar-oracle"><$text text=<<p1>>/></span>
+\end

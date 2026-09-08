@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-feedback
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: gauge
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: feedback
+lar-pattern: <<~\s*feedback\s+"?((?:[^"]|"(?!\s*>>))*)"?\s*>>
+lar-example: <<~ feedback "closed 1↺">>
+type: text/vnd.tiddlywiki
+
+<!-- feedback — a HANDOFF GAUGE, standing alone mid-stream. The same instrument rides `set` as a KEY:
+     two grips, one handle. The boot seed declares both spellings, and both reach one reading. -->
+
+\procedure ~feedback(p1:"")
+<span class="lar-gauge" data-gauge="feedback"><$text text=<<p1>>/></span>
+\end

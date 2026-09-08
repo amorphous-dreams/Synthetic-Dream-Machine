@@ -1,11 +1,16 @@
 title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lares
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
-lar-kind: metadata
+lar-kind: frame
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: lares
 lar-pattern: <<~\s*lares\s+(aim|yield)\s+(?:from=)?"?((?:[^"\s>]|>(?!>))+)"?(?:\s*->\s*(?:to=)?"?((?:[^"\s>]|>(?!>))+)"?)?\s*>>
-lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#exchange-protocol
 lar-example: <<~ lares aim from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>
 type: text/vnd.tiddlywiki
 
-<!-- lares — the turn's bearing vector (aim · yield). A HUD-frame sigil: the meme-ast tree RECOGNIZES it
-     (so a chat turn's own frame is structured, not graded as degraded); the live wiki renders it as plain
-     literal text for now (its chat-stream appearance) — iterate to a rendered frame later via hooks. -->
+<!-- lares — the turn's BEARING: which way it fires, where it comes from, where it points. `aim` opens
+     a turn and `yield` closes it, and the two spell one chiasmus. The ends ride as NAMED
+     parameters, so the arrow between them stays readable and binds nothing. -->
+
+\procedure ~lares(p1:"aim" from:"?" to:"?")
+<span class="lar-bearing" data-fires=<<p1>>><$text text=<<from>>/> -> <$text text=<<to>>/></span>
+\end

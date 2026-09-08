@@ -19,12 +19,14 @@ module-type: wikirule
  */
 
 import { getGrammar } from "../grammar-cache.js";
-import { positionalsOf } from "../sigil-attrs.js";
+import { positionalsOf, readSigilAttrs } from "../sigil-attrs.js";
+import type { SigilAttr } from "../sigil-attrs.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { severityOfRung } from "../meme-ast/diagnostics.js";
 import type { RecoveryRung } from "../meme-ast/diagnostics.js";
 import {
   ParseTreeNode,
+  ParseTreeAttribute,
   WikiParser,
   RuleInstance,
   matchCompoundSigilAt,
@@ -43,6 +45,22 @@ export const types = { block: true, inline: true };
 
 export function init(this: RuleInstance, parser: WikiParser): void {
   this.parser = parser;
+}
+
+/**
+ * One sigil parameter as the parse tree carries it.
+ *
+ * Four of TiddlyWiki's five value kinds map straight across. A `macro` value would need its own
+ * parse to build a `macrocall` node, so it rides as the source text it was written with — a DECLARED
+ * limit: the corpus carries two typed values in total, and `pranala` reads its own on a separate path.
+ */
+function attrNodeOf(a: SigilAttr): ParseTreeAttribute {
+  switch (a.kind) {
+    case "indirect":    return { type: "indirect",    textReference: a.value.replace(/^\{\{|\}\}$/g, "") };
+    case "filtered":    return { type: "filtered",    filter: a.value.replace(/^\{\{\{|\}\}\}$/g, "") };
+    case "substituted": return { type: "substituted", rawValue: a.value.replace(/^`|`$/g, "") };
+    default:            return { type: "string",      value: a.value };
+  }
 }
 
 export function findNextMatch(this: RuleInstance, startPos: number): number | undefined {
@@ -225,15 +243,26 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
     // CONTAINS every word the call was written with. `positionalsOf` splits under TiddlyWiki's own
     // rules: four delimiters stripped, `name=value` pairs stepped over, an unquoted scheme left to the
     // name it binds.
+    // ── THE RULE NAMES ITS TARGET ─────────────────────────────────────────────────────────────────
+    // TiddlyWiki hands a procedure only the parameters it DECLARES, so a generic forwarder cannot
+    // pass `hud=` to a callee whose signature it has never seen — and every named parameter a sigil
+    // carried reached nothing. The rule already knows the target at parse time, so it names the
+    // target and hands over everything the call carried.
+    //
+    // The gradient is untouched: a transclude renders its CHILDREN where the target resolves to
+    // nothing, which is the very floor the dispatcher stood on. The dispatcher itself stays — it
+    // answers INDIRECT dispatch, where a definition hands down a name it was given.
     const run   = attrs["p1"] ?? "";
     const slots = positionalsOf(run);
-    const macroAttrs: Record<string, { type: "string"; value: string }> = {
-      "$variable": { type: "string", value: "~" },
-      "name":      { type: "string", value: dispatchName },
+    const macroAttrs: Record<string, ParseTreeAttribute> = {
+      "$variable": { type: "string", value: `~${dispatchName}` },
       "args":      { type: "string", value: run },
       "src":       { type: "string", value: verbatim },
     };
     for (let i = 0; i < 5; i++) macroAttrs[`p${i + 1}`] = { type: "string", value: slots[i] ?? "" };
+    // A NAME WINS ITS OWN SLOT. Written last, so a call carrying `args=` or `src=` reaches the
+    // definition's own parameter rather than the rule's bookkeeping.
+    for (const a of readSigilAttrs(run)) macroAttrs[a.name] = attrNodeOf(a);
     return [{ type: "transclude", attributes: macroAttrs,
       children: [{ type: "text", text: verbatim }] }];
   }

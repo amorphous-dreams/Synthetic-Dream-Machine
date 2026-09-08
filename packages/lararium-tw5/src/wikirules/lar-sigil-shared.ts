@@ -13,9 +13,22 @@
 import type { GrammarRules } from "../meme-ast/types.js";
 import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
 
+/**
+ * A parse-tree attribute, in the shapes TiddlyWiki's own parser emits.
+ *
+ * A sigil's named parameters reach their definition through these, so the four kinds a call can bind
+ * — a plain string, a text reference, a filter, a substitution — each keep the type that makes them
+ * mean what they say. Flattening one to a string renders its source text instead of its value.
+ */
+export type ParseTreeAttribute =
+  | { type: "string";      value: string }
+  | { type: "indirect";    textReference: string }
+  | { type: "filtered";    filter: string }
+  | { type: "substituted"; rawValue: string };
+
 export interface ParseTreeNode {
   readonly type:        string;
-  readonly attributes?: Record<string, { type: "string"; value: string }>;
+  readonly attributes?: Record<string, ParseTreeAttribute>;
   readonly children?:   ParseTreeNode[];
   readonly text?:       string;
 }

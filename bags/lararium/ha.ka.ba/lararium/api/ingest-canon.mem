@@ -100,16 +100,19 @@ no flat-index duplication survives. (`CaptureRecord` type · `ndjson.py` adapter
 !! The gradient build ~ examined gaps + grade-on-a-gradient (2026-06-27)
 
 The grammar is self-hosted: a tiddler tagged `lar:///ha.ka.ba/tags/SharktoothSigil` teaches the
-parser a word (grammar-cache.ts reads `lar-*` fields → SigilRule; 62 sigils / 8 families today). The
+parser a word (grammar-cache.ts reads `lar-*` fields → SigilRule; 97 sigil tiddlers today). The
 AST (meme-ast) parses the DOCUMENT sigils (ahu · pranala · edge-sugar · control · guest-grammar …).
 
-''THE HEADLINE GAP — the TURN sigils aren't registered.'' `lares aim/yield` · `confidence` · `hud` ·
-`ward` · `oracle` · `syad` have NO `.tid` files and no bootstrap scans — the engine can't parse them
-(they fall to Dynamic/water); ONLY the regex shadow (`turn-harvest.ts`) reads them. So the engine
-decomposes documents but not TURNS. THE BUILD: register those ~6 turn sigils as gradient-valued
-SharktoothSigil tids (the Explore est. ~30 lines), each carrying the recalled triad — the ''word''
-(teaches the parser) · the ''gradient-reading'' (how it grades: confidence 0–20 → band) · the
-''render''. Then the VM is the one turn-decomposer; the gradient module walks the AST.
+''THE TURN SIGILS STAND REGISTERED'' (2026-09-08). `lares` · `set` · `stance` · `mu` · `focus` ·
+`feedback` · `drift-ward` · `oracle` · `persona` · `carry` — each carries a tiddler, and each renders
+its own definition rather than falling to water. The turn frame the boot seed declares now stands on
+the shelf beside the document sigils, so the VM reads a TURN the way it reads a document, and
+`turn-harvest.ts` stops standing as the only reader of the frame.
+
+''AND THE READER OUTLIVES THE GRAMMAR THAT WROTE IT.'' `confidence` · `hud` · `ward` keep their
+tiddlers as PATTERN-ONLY entries: the tree recognises them and the page shows them verbatim. A corpus
+states ONE grammar; a reader tolerates every grammar it will meet, and a transcript written before
+the panel gathered its gauges still decomposes.
 
 ''GRADE ON A GRADIENT — the builder is binary where it should grade'' (the creative-grammar cure):
 * `meme-ast/builder.ts:277-281` DROPS unclosed/malformed frames → instead emit a ''MalformedSigil /''
@@ -184,6 +187,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EZiyhAjyIKqo1v6wpnhI1TUR2_wABKH54BjAFDWmHtc
+<<^ code="&#x0003;">>ni:///sha-256;Qqhy7FVY-mNKdwtpYEiVi0QtCguP6rJCed1R_A9W2D0
 
 <<^ code="&#x0004;" -> to="?">>

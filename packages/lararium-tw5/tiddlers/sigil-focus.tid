@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-focus
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: gauge
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-alias-for: focus
+lar-pattern: <<~\s*focus\s+"?((?:[^"]|"(?!\s*>>))*)"?\s*>>
+lar-example: <<~ focus "9/measure">>
+type: text/vnd.tiddlywiki
+
+<!-- focus — a HANDOFF GAUGE, standing alone mid-stream. The same instrument rides `set` as a KEY:
+     two grips, one handle. The boot seed declares both spellings, and both reach one reading. -->
+
+\procedure ~focus(p1:"")
+<span class="lar-gauge" data-gauge="focus"><$text text=<<p1>>/></span>
+\end
