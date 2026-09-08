@@ -14,6 +14,16 @@
  *
  * So a head that dropped quotes would carry them on one parameter and not the other, and a writer would
  * decide per value which case it faces. One spelling costs two characters and no judgement.
+ *
+ * ── AND THE LAW REACHES THE BEARING ENDS ─────────────────────────────────────────────────────────────────
+ * `from=` and `to=` take the same spelling as `code=` and `namespace=`. The ARROW between them stays an
+ * unnamed positional — that is what carries the relation — so quoting reaches only the two values it
+ * stands between and a bearing never demotes to a field.
+ *
+ * The cost of learning this: 2131 values took quotes in one pass, TiddlyWiki re-parsed every carrier
+ * identically, and EIGHT hand-rolled readers that never meet the parser stopped matching at once — the
+ * tw5 suite fell to 10 failures and one witness reported 1395 torn frames. The tests below are the guard:
+ * both spellings must reach the same reading, and the canonical emit must be the quoted one.
  */
 
 import { describe, test, expect } from "vitest";
@@ -33,5 +43,23 @@ describe("the control head quotes its values", () => {
     // The whole reason the head keeps one spelling. This value stands in 66 carriers.
     const shape = readCarrierShape(carrier('<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///x>>'));
     expect(shape.marks.head).toBe(true);
+  });
+
+  test("★ both spellings of the bearing reach ONE reading ★", () => {
+    const bare   = readCarrierShape(carrier('<<^ code="&#x0001;" from=? -> to=lar:///x>>'));
+    const quoted = readCarrierShape(carrier('<<^ code="&#x0001;" from="?" -> to="lar:///x">>'));
+    expect(quoted.marks.headUri).toBe("lar:///x");
+    expect(quoted.marks.headUri).toBe(bare.marks.headUri);
+    expect(quoted.marks.head).toBe(bare.marks.head);
+  });
+
+  test("★ the canonical emit quotes both ends ★", async () => {
+    const { memeticWikitextDeserializer, expandMemeRefs } = await import("../src/deserializer.js");
+    const URI = "lar:///ha.ka.ba/lares/test/quoting";
+    const records = memeticWikitextDeserializer("Body.\n", { title: URI });
+    const map = new Map(records.map((r) => [String(r.title), r] as const));
+    const out = expandMemeRefs((t) => map.get(t), URI)!;
+    expect(out).toContain(`from="?" -> to="${URI}"`);
+    expect(out).toMatch(/-> to="\?">>/);
   });
 });
