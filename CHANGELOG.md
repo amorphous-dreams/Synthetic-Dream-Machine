@@ -18,6 +18,7 @@ The four founding-watch rulings closed (the veil · layered recovery · seat-ado
 - The ROLLING RECOVERY COMMITMENT: every persona-KEL event carries `nextRecoverySetHash`; guardian sets graft log-wise while the prefix keeps binding the genesis set.
 - `recovery-registration` — Fork B's guardian registration split from the Fork A share card (own module, own confirm domain, typed provisioning: the wrong object is not selectable).
 - `reserve-transition` + `lares nexus seal grow` — the growth rite's crossing record and its CLI ceremony (open · bind · sign · witness · seal): old quorum signs the handoff, new countersigns, independent witnesses checkable as keys in neither set.
+- The G1 probe campaign: a Keyhive creator cannot leave its own roster; ANY access grade is CGKA membership; carriage alone materializes nothing; and the CREATOR's identifier rides carried events in cleartext — the veil-born-group arc stands byte-measured as necessity, its design brief fully constraint-driven.
 - Six unbuilt-law reds declared (the Handle's chain-to-burn · the veto-rides-the-chain contest · the guardian-compartment check · two liveness fences); register stands 27 declared · 0 greened by accident.
 
 **Changed**
