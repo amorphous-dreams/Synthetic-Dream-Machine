@@ -98,7 +98,7 @@ describe("INGEST — the gate composed with replace-by-group", () => {
     expect(seeded.length).toBeGreaterThan(10);
 
     // Edit: change a heading AND remove the #classifier-channel ahu block whole.
-    const blockStart = source.indexOf("<<~ ahu #classifier-channel>>");
+    const blockStart = source.indexOf("<<~ ahu #/classifier-channel>>");
     const blockEnd   = source.indexOf("<<~/ahu>>", blockStart) + "<<~/ahu>>".length;
     expect(blockStart).toBeGreaterThan(0);
     const edited = (source.slice(0, blockStart) + source.slice(blockEnd))
