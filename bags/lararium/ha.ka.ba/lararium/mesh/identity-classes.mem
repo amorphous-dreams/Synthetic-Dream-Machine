@@ -450,13 +450,39 @@ The forks answered different layers all along, and the ruling seats each where i
   hands; self-escrow holds a quorum of one — the field's own courierability property, kept where it
   belongs.
 * ''The CONTEST: FORK C, ON THE CHAIN'' — a recovery rotation enters the prefix's OWN KEL as
-  PROVISIONAL and hardens causally (safety from corm-fencing/ITC: an unpartitioned holder's veto
-  out-competes whenever it syncs, no clock race; liveness from φ-accrual, separately). NEVER a
-  pending-row on any board — a board of pending recoveries is a compiled registry of the vulnerable
-  (the registry filter, `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE is a
-  guardian-cabal realm (the subject + their chosen guardians, ciphered): the realm coordinates, the
-  chain hardens. The hardening rule's φ-accrual half stands UNWALKED — the one design debt this
-  ruling still carries.
+  PROVISIONAL and hardens causally. NEVER a pending-row on any board — a board of pending recoveries
+  is a compiled registry of the vulnerable (the registry filter,
+  `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE is a guardian-cabal realm
+  (the subject + their chosen guardians, ciphered): the realm coordinates, the chain hardens.
+
+!!! ✓ THE HARDENING RULE — walked (2026-09-08), the φ-accrual half filled
+
+Four clauses, each carrying its no-global-now discipline:
+
+# ''A PROVISIONAL head confers only kapae-reversible authority.'' Until an observer hardens it, the
+  fresh op-key performs ONLY acts whose supersession runs clean under remove-wins — re-standing the
+  vessel, reading, presenting. It signs NO admission, NO burn, NO grant: exactly the act-set whose
+  reversal costs nothing names the act-set a contested key may hold.
+# ''The VETO out-competes causally, always.'' A competing event signed by the pre-provisional op-key
+  supersedes the provisional wherever and WHENEVER it syncs — no window expires against an
+  unpartitioned holder, because the contest is a causal fold, never a clock race. A veto arriving
+  after some observer hardened still supersedes there; that observer's provisional-era state falls to
+  kapae cleanup, which clause 1 guaranteed stays clean.
+# ''Hardening is OBSERVER-LOCAL, by silence-across-K-local-epochs.'' Each gate accrues its own
+  suspicion (the φ-accrual shape, made clockless): K of the OBSERVER'S OWN board-sync epochs advance
+  with zero events from the prior op-key since the provisional entered — silence measured against
+  local progress, never a wall clock. At the gate's own threshold, THAT gate treats the provisional
+  head as head, full authority forward from its view. Gates harden at different causal moments and
+  no agreement is needed, because clauses 1–2 kept safety independent of when anyone hardened. K
+  rides per-gate policy; the end-user default runs generous.
+# ''The board carries the CONTEST, never adjudicates it.'' Competing events at one seq demand
+  contest-aware keying — `{prefix}/{seq}/{eventCid}`, never `{prefix}/{seq}` (a last-writer-wins
+  slot would collapse a contest arbitrarily) — and the FOLD rule reads: a verified veto beats a
+  provisional at the same seq, everywhere, always. An OPTIONAL Roughtime mark may stamp the
+  provisional's mint as a bound-past for human reading; it never enters the fold.
+
+''The G2 settlement this walk licenses:'' the persona-KEL's ONE remaining bytes-change adds exactly
+the provisional marker and the veto kind (with the board keying above); nothing else rides it.
 * ''CIVIC stays as wired'' — pre-rotation-with-reveal at the charter, the reserve-seed Shamir one
   layer beneath. The incumbent never generalizes upward.
 
@@ -495,6 +521,36 @@ have bought — superseding a compromise OF the current rolling set between graf
 contest window's job (Fork C: a provisional rotation the true holder out-competes causally). Delegation
 stays REJECTED for the persona plane; a future entity that genuinely wants a standing superior (an
 office, never a person) may revisit it under its own name.
+
+<<~/ahu>>
+
+<<~ ahu #/the-handle-chain>>
+
+!! The Handle's chain ~ a SIBLING grammar, never an extension (walked 2026-09-08)
+
+The nym's ruled chain (burn · re-key · public attestation) fits the persona-KEL's ''primitives'' and
+not its ''grammar'', and forcing one grammar over both would couple what the ontology holds apart:
+
+* ''Shared primitives:'' the hash-linked event core, the prefix-over-inception binding, the rolling
+  recovery commitment (a Handle incepts ARMED like every prefix now does), the content-address
+  discipline. One implementation family, reused.
+* ''The handle-KEL's OWN kinds, absent from the persona grammar:'' an ''ATTESTATION'' event — a claim
+  signed under the head ("this Handle controls `example.net`"), verified reader-locally against the
+  claimed surface, carried ON the card per the registry filter — and a ''BURN'' — a terminal event
+  after which no successor verifies, the Shadowtalk ending made structural.
+* ''The OWNER-BINDING at inception:'' a Handle's inception carries its owning PERSONA-prefix, and the
+  persona's KEL head authorizes handle rotations. This wears delegation's shape and pays none of its
+  rejected price — the "permanent name inside the prefix" reads as a landlord on the persona plane
+  and as the OWNER on the handle plane, because a Handle announcing whose face it is IS the
+  bidirectional handle↔identity proof this canon already demands (#the-four-classes kin;
+  `mesh/handle-card`). Burn authority rides the same binding: the persona buries its own name.
+* ''Public by design:'' a handle-KEL diffuses wherever the card announces — the persona-KEL's
+  per-Nexus board discipline does not govern it, and mixing the two grammars would have leaked one
+  plane's diffusion posture into the other.
+
+''So G2 splits clean:'' the persona-KEL freezes after the provisional/veto change; the handle-KEL
+stands as a NEW sibling module (its own domain, its own kinds) with no bytes-change anywhere, built
+in G3 on the frozen primitives.
 
 <<~/ahu>>
 
@@ -545,6 +601,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9SaIGRS5B7APRZfDprkLB-sYf00Bljem07o-l8kEHuQ
+<<^ code="&#x0003;">>ni:///sha-256;ixVRLDqy65SFt0QJi0EBYHC3iSHXwXOXjSdXJI3y86I
 
 <<^ code="&#x0004;" -> to="?">>

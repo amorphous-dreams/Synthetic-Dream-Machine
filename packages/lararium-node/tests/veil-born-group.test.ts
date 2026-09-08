@@ -138,6 +138,47 @@ describe("the veil-born group", () => {
     expect(streamHex.includes(joineeRawId.replace(/^0x/, "").toLowerCase()), "no carried event spells the raw joinee key").toBe(false);
   });
 
+  test("★ THE RESTORED VEIL STILL OPENS — material sealed to the first card survives the restore ★", async () => {
+    // The archive's whole purpose, proven: content keyed to the veil's FIRST-boot prekeys decrypts
+    // on a veil stood FROM THE ARCHIVE — never a fresh mint whose prekeys match nothing.
+    const { f, handle } = await found();
+    const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
+    const founderVeilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
+    const seat = new KeyhiveProvider();
+    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never) });
+    await seat.hydrateFromEventStore();
+    const founderVessel = new KeyhiveProvider();
+    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
+    await founderVessel.hydrateFromEventStore();
+
+    // The joinee's FIRST boot: mint the veil, export the archive, present the card, receive content.
+    const JOINEE_SEED = new Uint8Array(32).fill(43);
+    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupDocIdHex);
+    const firstBoot = new KeyhiveProvider();
+    await firstBoot.init({ seed: hexToBytes(joineeVeilKeys.signingKey), eventStore: new InMemoryEventStore() });
+    const card = await firstBoot.contactCard();
+    const archive = await firstBoot.exportArchive();
+
+    const BAG = "lar:///ha.ka.ba/bags/catalog/restore-proof";
+    const { docId } = await founderVessel.registerBag(BAG);
+    const bundle = await packPersonaCrossing(
+      founderVessel, card,
+      { docIdHex: f.personaGroupDocIdHex, agentIdHex: f.personaGroupAgentIdHex },
+      [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("opens after the night") }],
+      seat,
+    );
+
+    // The SECOND boot: the veil stands FROM THE ARCHIVE (the exact restore path the daemon walks).
+    const restored = new KeyhiveProvider();
+    await restored.init({
+      seed: hexToBytes(joineeVeilKeys.signingKey),
+      eventStore: new InMemoryEventStore(),
+      archiveBytes: archive,
+    });
+    const read = await applyPersonaCrossing(restored, bundle);
+    expect(new TextDecoder().decode(read[0]!.plaintext)).toBe("opens after the night");
+  });
+
   test("★ NO CARRIED EVENT SPELLS THE RAW VESSEL KEY ★", async () => {
     // The byte-level law the host-surface probe measured: whatever a carrier holds, the raw device
     // identifier must not be greppable from the founded face's cap events.
