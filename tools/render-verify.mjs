@@ -16,6 +16,16 @@ if (!COMMIT) {
 }
 const LIMIT = Number(process.argv[3] ?? 120);
 
+// ── THE BLOCK CHECK RENDERS, AND A RESTAMP NECESSARILY MOVES IT ────────────────────────────────
+// A carrier's ETX check rides in its body, so it reaches the HTML like any other text. Every carrier
+// an edit touches gets restamped, and the check moves with it — which reports EVERY edited carrier as
+// a render change and buries the question this tool exists to ask.
+//
+// Measured: a 574-carrier sweep read 560 MOVED unmasked and 11 masked, and those 11 were teaching
+// examples inside fences whose text the sweep meant to change. The mask is what makes the answer
+// legible; without it the tool is loudest exactly where it has least to say.
+const maskCheck = (html) => html.replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+/g, "ni:///sha-256;<check>");
+
 const render = (text) => {
   try {
     const tree = $tw.wiki.parseText("text/vnd.tiddlywiki", text).tree;
@@ -36,7 +46,7 @@ for (const f of changed) {
     after = execSync(`git show ${COMMIT}:${JSON.stringify(f).slice(1, -1)}`, { encoding: "utf8", maxBuffer: 1 << 26 });
   } catch { continue; }
   read++;
-  const a = render(before), b = render(after);
+  const a = maskCheck(render(before)), b = maskCheck(render(after));
   if (a === b) same++; else moved.push([f, a.length, b.length]);
 }
 console.log(`carriers rendered before and after: ${read}`);
