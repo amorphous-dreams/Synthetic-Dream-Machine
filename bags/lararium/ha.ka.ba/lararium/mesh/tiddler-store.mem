@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-store.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 14
 retain      = true
-role        = "self-documentation: TODO describe tiddler-store.ts"
+role        = "invariant law: LarTiddlerStore — the TW5-NEUTRAL store contract. Five layers with a stated priority, and four hard rules: the live view may override canon and MUST NOT mutate it, the session layer must not leak drafts or temp into shared state, canon promotion stays closed until a receipt graph stands, and deletion marks rather than removes."
 source-file = "packages/lararium-mesh/src/tiddler-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/tiddler-store"
@@ -15,12 +15,58 @@ uri-path    = "ha.ka.ba/lararium/mesh/tiddler-store"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! LarTiddlerStore ~ the contract that names no wiki
+
+The mesh owns this shape and imports no TiddlyWiki runtime. Three stores satisfy it — a CRDT-backed
+one, a canon one, a memory one — and the shape moves for none of them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/the-five-layers>>
+
+!! Five layers, one priority
+
+| ''layer'' | ''holds'' |
+|core |TW5 core, plugin and shadow tiddlers |
+|canon |hostless `lares/` carriers, resident and long-lived |
+|wiki |shared live wiki edits, CRDT-backed |
+|user |operator private notes and personal overlays |
+|session |drafts, focus state, temp tiddlers, cursors — personal |
+
+''Priority runs core < canon < wiki < user < session'', so the nearest hand wins the view while the
+furthest holds the record.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! The four hard rules
+
+# ''The wiki layer OVERRIDES canon for the live view and MUST NOT mutate it.'' A reader sees the
+working edit; the canon copy underneath stays untouched. Shadowing and writing look alike
+from the view and differ entirely in what survives.
+# ''The session layer MUST NOT leak into shared state.'' A draft, a temp tiddler, a cursor — each
+belongs to one operator at one moment, and a sync that carried them would publish a hand mid-motion.
+# ''Canon promotion stays CLOSED.'' `put` never writes to `lares/`, and it stays that way until a
+Keyhive-backed proposal-and-receipt graph stands to say who promoted what and on whose authority.
+Opening it earlier would put canon behind a door with no record of who walked through.
+# ''Deletion MARKS, and does not remove.'' A tombstone records the deletion in live wiki state; no
+hard delete happens by default, so a removal stays a claim another replica can see and reconcile
+rather than an absence it must guess at.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/tiddler-store.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-provider>>
+<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
+
+<<^ code="&#x0003;">>ni:///sha-256;2IY1pqxFiUlD34zu2YmGwpG5dP-pT1JQdGgCt14n5IQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/node-vessel-identity.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 16
 retain      = true
-role        = "self-documentation: TODO describe node-vessel-identity.ts"
+role        = "invariant law: THE TRUE NAME MODEL — three parts that bind without merging. The VESSEL key belongs to the PLACE and never travels; the PERSONA ROOT belongs to the HUMAN and derives from no vessel seed; the DELEGATION EDGE binds them without collapsing them. Names why the split carries the whole veil architecture, and what a single copied key would present to every verifier."
 source-file = "packages/lararium-node/src/node-vessel-identity.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/node-vessel-identity"
@@ -15,12 +15,71 @@ uri-path    = "ha.ka.ba/lararium/node/node-vessel-identity"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! The True Name model ~ three parts that bind without merging
+
+A device holds an Ed25519 keypair minted where it stands. A human holds a persona root of their own.
+An edge joins them and keeps them apart.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/the-three-parts>>
+
+!! Three parts, and each answers for something different
+
+# ''The VESSEL key belongs to the PLACE.'' Founding mints it per-install off the local CSPRNG, it
+persists owner-only on that disk, and ''it NEVER travels to another vessel.'' It names a somewhere,
+and it signs only AS ITSELF.
+# ''The PERSONA ROOT belongs to the HUMAN.'' A DISTINCT key in its own slot — never derived from the
+vessel seed, never the same bytes, never copied outward.
+# ''The DELEGATION EDGE binds the two without collapsing them.'' The persona root signs that an
+operator delegates to a device AT A PLACE, and the hearth's True Name rides in that statement. ''The
+edge IS the relationship'', and the vessel's stack holds it as a capability rather than as an
+identity.
+
+The three read as a stack of capabilities on a nameless entity — never as a numbered plane, and never
+as one key wearing three hats.
+
+<<~/ahu>>
+
+<<~ ahu #/why-the-split-carries-weight>>
+
+!! What one key would cost
+
+''A single key copied across a person's vessels presents the SAME collector to every verifier.'' One
+bit then links every self they hold — every handle, every circle, every face — and no policy above
+that layer can unlink them again.
+
+Holding the vessel apart from the persona makes the veil, the PersonaGroup and the Handle
+architecture implementable at all. ''The separation does not harden a design that would otherwise
+work; it decides whether the design exists.''
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! The lifecycle invariants
+
+# ''The keypair generates DEVICE-LOCAL and persists owner-only.'' Nothing mints it elsewhere and
+carries it in.
+# ''The verifying key feeds `did:key`, and the DERIVATION happens in the TW5 VM.'' The cold-boot
+ceremony owns that step, so the naming rite stays inside the wiki rather than in host code.
+# ''A display name derives from LOCAL truth.'' It reads the operator's own git config and makes no
+network call, so opening a vessel asks nobody's permission to know what to call itself.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-node/src/node-vessel-identity.ts family=code role=has>>
+<<~ pranala #ceremony from=? -> to=packages/lararium-tw5/src/cold-boot-ceremony.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-slot>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/one-name-one-relation>>
+
+<<^ code="&#x0003;">>ni:///sha-256;twdAN0c9Ckj8gsrvx-B5pIXvRfstwHGjD7swpYW1R80
 
 <<^ code="&#x0004;" -> to="?">>

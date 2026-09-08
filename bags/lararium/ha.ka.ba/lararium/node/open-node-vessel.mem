@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/open-node-vessel.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 15
 retain      = true
-role        = "self-documentation: TODO describe open-node-vessel.ts"
+role        = "invariant law: the Node vessel factory — a thin opener over the composable keel. ONE preparation, TWO doors: a HEARTH lifting the caps a face carries, and a CROSSROADS serving an HTTP floor with no wiki and no pool. The node vessel holds NO semantic privilege — roads, docks and sync only; live VM state lives in sovereign islands."
 source-file = "packages/lararium-node/src/open-node-vessel.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/open-node-vessel"
@@ -15,12 +15,47 @@ uri-path    = "ha.ka.ba/lararium/node/open-node-vessel"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! openNodeVessel ~ one preparation, two doors
+
+Node supplies the platform atoms — filesystem storage, the relay and its auth gate, a worker pool —
+and the capability pieces it alone holds. Everything above that comes from the shared keel.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''ONE preparation, run by BOTH doors.'' The atoms, the keel and the boot closures build once, and
+the two entry points differ ONLY in which capability stack they compose over that single preparation.
+A second preparation per door would let the doors drift while both still opened.
+# ''A HEARTH lifts what a FACE carries.'' The base course plus the caps a lit face brings.
+# ''A CROSSROADS serves an HTTP floor.'' The base course plus the caps that floor needs — no wiki, no
+pool. The daemon stays, because the immune core rides in every vessel, and bag registration omits the
+user-wiki bags where no wiki stands.
+# ''Each stack DECLARES itself at its compose site.'' The composition derives from that declaration
+rather than from a table one layer up, so a reader finds the answer where the choice happened.
+# ''The node vessel holds NO semantic privilege.'' It carries roads, docks and sync. Live VM state
+lives in sovereign islands — the daemon and the wiki — and a host that also held meaning would make
+every other vessel a client of this one.
+# ''All Node-specific code lives HERE.'' The trim tab: a platform detail anywhere else spreads a
+second Node into code that claims isomorphism.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-node/src/open-node-vessel.ts family=code role=has>>
+<<~ pranala #daemon from=? -> to=packages/lararium-node/src/open-daemon-vm.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/causal-island>>
+
+<<^ code="&#x0003;">>ni:///sha-256;JWzjP7HVxYtfFgxWZ_o-E6fFeUvn1N3JEQZZEzFyhgc
 
 <<^ code="&#x0004;" -> to="?">>

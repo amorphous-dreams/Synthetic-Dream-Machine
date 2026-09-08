@@ -5,9 +5,9 @@
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/composite-store.mem"
 l-space     = "lararium"
-mana        = 3
+mana        = 14
 retain      = true
-role        = "self-documentation: TODO describe composite-store.ts"
+role        = "invariant law: CompositeStore — a recipe-ordered overlay of store layers under standard TW5 recipe law. Reads fan out and the highest priority wins; every write routes to ONE designated writable store. Names the async-layer hazard a caller must order around, and why a subscriber must read origin."
 source-file = "packages/lararium-mesh/src/composite-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/composite-store"
@@ -15,12 +15,56 @@ uri-path    = "ha.ka.ba/lararium/mesh/composite-store"
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! CompositeStore ~ many layers, one reading
+
+Layers stack lowest to highest. A title standing in several bags resolves to the highest-priority bag
+that holds it — ''standard TW5 recipe law, unchanged'', so an operator who knows TiddlyWiki already
+knows this one.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/law>>
+
+!! The invariants
+
+# ''READS fan out; the highest priority answers.'' A get or a visible-list consults every layer and
+returns the topmost holder.
+# ''WRITES route to ONE designated store.'' A put or a tombstone lands in the writable bag — the wiki
+layer by default — and never scatters across the stack. A write that chose its layer by lookup would
+mutate whichever bag happened to answer the read.
+# ''A subscriber MUST read the change's ORIGIN.'' Subscription fans out to every layer, so a caller
+that ignored origin would hear its own write echo back and act on it again.
+# ''A layer MAY arrive after construction.'' Corpus islands land async, so the stack grows while the
+store already serves reads.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ordering-hazard>>
+
+!! Subscribe BEFORE the layer arrives
+
+A layer added after construction begins emitting the moment it lands. ''A caller that subscribes
+afterward misses every change the layer carried in with it'' — and a missed arrival looks exactly like a
+layer that held nothing.
+
+Two orderings answer it, and a caller takes one deliberately: subscribe first and let the arrival
+flow through, or add the layer and then force a refresh once it returns. ''Doing neither reads as an
+empty bag rather than as a missed window'' — the failure this note exists to name.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from=? -> to=packages/lararium-mesh/src/composite-store.ts family=code role=has>>
+<<~ pranala #recipe from=? -> to=packages/lararium-mesh/src/recipe.ts family=code role=has>>
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/tiddler-store>>
+<<~ loulou lar:///ha.ka.ba/lararium/docs/lararium-doc-stack>>
+
+<<^ code="&#x0003;">>ni:///sha-256;33tZpv_nFJQdHHqQ3G68RUFVwhePVud3jvn1yvtDDCY
 
 <<^ code="&#x0004;" -> to="?">>
