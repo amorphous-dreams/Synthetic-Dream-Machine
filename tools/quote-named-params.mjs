@@ -62,6 +62,24 @@ paths.forEach(gather);
 
 const oracle = boot(resolveTiddlyWiki(), {});
 
+/**
+ * The wrapper a value can take, from the delimiters it already holds.
+ *
+ * parseStringLiteral admits four forms and NO escape character, so the choice stands forced
+ * rather than preferred: a value carrying a double quote takes single quotes, one carrying a
+ * single quote takes double, one carrying both takes triples, and one carrying a literal triple
+ * takes none and stays exactly as it is.
+ */
+function quoteFor(value) {
+  const TRIPLE = '\u0022\u0022\u0022';
+  if (value.includes(TRIPLE)) return null;
+  const double = value.includes('\u0022');
+  const single = value.includes('\u0027');
+  if (double && single) return TRIPLE;
+  if (double) return '\u0027';
+  return '\u0022';
+}
+
 /** Lines inside a fenced block, which a sweep never enters. */
 function fenced(lines) {
   const skip = new Array(lines.length).fill(false);
@@ -138,8 +156,9 @@ for (const file of carriers) {
     if (/^["']/.test(raw)) { already += 1; continue; }
     if (a.type !== "string") { skippedType += 1; continue; }
     if (/^\[\[/.test(raw)) { skippedType += 1; continue; }        // the brackets survive into the value
-    if (raw.includes('"')) { skippedQuote += 1; continue; }       // a quote inside wants a hand
-    edits.push({ at: a.start + eq + 1, len: raw.length, raw });
+    const wrap = quoteFor(raw);
+    if (!wrap) { skippedQuote += 1; continue; }                    // carries a literal triple quote
+    edits.push({ at: a.start + eq + 1, len: raw.length, raw, wrap });
   }
   // ── the second pass: a control sigil the parser never read ────────────────────────────────
   // A fenced or ticked sigil carries no attribute for the oracle to type, so the text answers.
@@ -161,7 +180,9 @@ for (const file of carriers) {
       if (/^(<<|\{\{|`|\[\[)/.test(m[2])) { skippedType += 1; continue; }
       const at = starts[i] + m.index + m[1].length + 1;
       if (read.some(([from, to]) => at >= from && at < to)) continue;   // the parser read it
-      edits.push({ at, len: m[2].length, raw: m[2] });
+      const wrap = quoteFor(m[2]);
+      if (!wrap) { skippedQuote += 1; continue; }
+      edits.push({ at, len: m[2].length, raw: m[2], wrap });
       skippedZone += 1;                                            // counted as the fenced pass
     }
   });
@@ -171,7 +192,7 @@ for (const file of carriers) {
 
   let after = before;
   for (const e of edits.sort((x, y) => y.at - x.at)) {
-    after = after.slice(0, e.at) + '"' + e.raw + '"' + after.slice(e.at + e.len);
+    after = after.slice(0, e.at) + e.wrap + e.raw + e.wrap + after.slice(e.at + e.len);
   }
   if (reading(after) !== reading(before)) { refused += 1; moved.push(file); continue; }
   quoted += edits.length;
@@ -180,7 +201,7 @@ for (const file of carriers) {
 
 console.log(`quote-named-params  host <<${host} …>>  ${carriers.length} carrier(s) read, ${files} would change`);
 console.log(`  ${quoted} value(s) ${write ? "quoted" : "TO QUOTE"}`);
-console.log(`  ${already} already quoted · ${skippedType} skipped by TYPE · ${skippedZone} inside a fence or tick · ${skippedQuote} carrying a quote`);
+console.log(`  ${already} already quoted · ${skippedType} skipped by TYPE · ${skippedZone} inside a fence or tick · ${skippedQuote} carrying a triple quote`);
 if (refused) {
   console.error(`  ${refused} carrier(s) REFUSED — the reading moved, and nothing was written to them:`);
   for (const f of moved.slice(0, 10)) console.error(`     ${f}`);
