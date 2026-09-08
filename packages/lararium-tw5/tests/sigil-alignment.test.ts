@@ -26,7 +26,7 @@ import { schemeShapedPositionals, readSigilAttrs, sigilAttrValue, lostPositional
 /**
  * DECLARED EXEMPTIONS, each with the reason it stands. A list that only shrinks.
  *
- * A `<<~ranks …>>` carrying free PROSE puts a wikilink and a bold run inside a call body. TiddlyWiki
+ * A prose-bearing sigil carrying free PROSE puts a wikilink and a bold run inside a call body. TiddlyWiki
  * binds a phantom parameter off that prose, and quoting the address would break the wikilink that
  * already reads — so the cure is not a quote. Aligning prose-bearing sigils is a separate ruling.
  */

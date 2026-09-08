@@ -153,7 +153,7 @@ describe("normalizeMemeSource — sigil close spacing", () => {
   });
 
   test("a close crossing a newline is left alone — a sigil closes on the line it opens", () => {
-    const wrapped = ["<<~ ranks a ~ one", "-> b ~ two", ">>"].join("\n");
+    const wrapped = ["<<~ scale a ~ one", "-> b ~ two", ">>"].join("\n");
     const src = CLOSE_HEAD("").replace("body", wrapped);
     expect(normalizeMemeSource(src).text).toContain(wrapped);
   });

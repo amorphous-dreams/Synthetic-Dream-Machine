@@ -254,7 +254,7 @@ sorted, deduped) carries `holds`. The //arrow-chain// spine (order-preserving,
 never sorted) carries `flows`/`loops` and `ranks` alike — one bytes-law, two
 readings: the arrow sequences for `flows`, ascends ordinally for `ranks`
 (a poset's `a -> b` already means `a ≤ b`). The //transition// spine carries
-`moves`. Comparison folds into the query face — `<<~ranks? a -> b>>` asks
+`moves`. Comparison folds into the query face — `<<~ scale? a -> b>>` asks
 "a ranks at-or-below b?" — so no `compares` verb mints now; a non-linear
 order or lattice would later mint it, the floor unbuilt until a usage demands.
 
@@ -271,6 +271,6 @@ order or lattice would later mint it, the floor unbuilt until a usage demands.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HYSPHs7YmJxkLvWs1qZZ0q6tmnSWCTKLtsArv7uesiQ
+<<^ code="&#x0003;">>ni:///sha-256;s3aEuJHZj1GrBH0X7zUDxc11PV1trYZMInUAOErECD8
 
 <<^ code="&#x0004;" -> to="?">>

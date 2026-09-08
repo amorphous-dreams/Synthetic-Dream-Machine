@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/noosphere-project-instructions"
 ```
 
-<<~ aka RFC-2119: MUST, MUST NOT, SHOULD, MAY carry IETF semantics.>>
+<<~ aka "RFC-2119: MUST, MUST NOT, SHOULD, MAY carry IETF semantics.">>
 
 <<^ code="&#x0002;">>
 
