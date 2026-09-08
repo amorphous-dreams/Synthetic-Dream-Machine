@@ -35,6 +35,9 @@ The four founding-watch rulings closed (the veil · layered recovery · seat-ado
 
 - G1 LANDED both moments of the veil split: the founding mints a veil tag and the VEIL-KEYED identity creates both WHO-plane sentinels (no carried event spells the raw vessel key — witnessed at ceremony grain); the joinee derives its veil from the carried group doc id and seats veil-keyed; the runtime stands both identities from the persisted tag; every vessel-bag→face delegation walks one road (delegateToFaceViaVeil); both identities' archives persist across boots.
 
+- THE KEL FROZE: the G2 settlement took the grammar's last bytes-change — the provisional marker and the veto kind (Fork C's contest, all four walked clauses witnessed: kapae-reversible provisional authority, the always-superseding veto, observer-local hardening, contest-aware board keying). The handle-KEL builds as a sibling grammar with no bytes-change.
+- The restored veil provably OPENS: content keyed to a first-boot card decrypts on an archive-stood veil.
+
 **Changed**
 - Persona-KEL event bytes gained the rolling-commitment field — every CID and prefix re-derives; rehearsal vessels re-found (early alpha carries no backward compatibility).
 - `vesselDyads` reads ceremony-minted slots only; a bare delegation edge presents no relationship, and the boot says the drift aloud.

@@ -190,9 +190,13 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("handleKelChain");
   });
 
-  test.skip("A VETO RIDES THE CHAIN, NEVER A ROSTER — RULED 2026-09-06, MECHANISM WALKED 2026-09-08 (identity-classes#the-two-forks, the hardening rule): a provisional head confers only kapae-reversible authority · the veto out-competes causally always · hardening is OBSERVER-LOCAL by silence-across-K-local-epochs · the board keys contests {prefix}/{seq}/{eventCid} with a veto-beats-provisional fold. The G2 settlement = exactly the provisional marker + the veto kind, ONE bytes-change. UNBUILT", () => {
-    expect(Object.keys(mesh)).toContain("provisionalRotation");
-  });
+  // KEPT 2026-09-08 — A VETO RIDES THE CHAIN, NEVER A ROSTER greened by the G2 settlement: the
+  // provisional marker + the veto kind landed as the persona-KEL's LAST bytes-change (mintVeto ·
+  // foldPersonaContests · headOpKey's provisional restraint · the board's {prefix}/{seq}/{eventCid}
+  // contest keying with the veto-beats-provisional fold). All four walked clauses stand witnessed in
+  // tests/provisional-veto.test.ts — including the late veto killing a hardened provisional's
+  // descendants, and the idle observer whose patience is the resting state. THE GRAMMAR IS FROZEN
+  // for the alpha; the handle-KEL builds as a sibling on these primitives, no bytes-change (G3).
 
   test.skip("A PRE-COMMITMENT NEVER EXPIRES UNNOTICED — the quorum's OUTPUT freshness fails before its keys do (a root-metadata expiry took clients down while every key stood healthy); no epoch, pre-commit, or rolling recovery commitment in this stack carries a freshness horizon a reader surfaces BEFORE a gate fails on it", () => {
     expect(Object.keys(mesh)).toContain("commitmentFreshness");

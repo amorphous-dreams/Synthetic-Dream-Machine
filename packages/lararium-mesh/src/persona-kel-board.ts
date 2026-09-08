@@ -22,7 +22,7 @@
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
-import { PERSONA_KEL_DOMAIN, type PersonaKelEvent } from "./persona-kel.js";
+import { PERSONA_KEL_DOMAIN, type PersonaKelEvent, foldPersonaContests } from "./persona-kel.js";
 
 /**
  * The tiddler-key prefix every persona-KEL event rides under — so the log events namespace apart from a
@@ -36,8 +36,14 @@ export const PERSONA_KEL_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/persona-kel/" 
  * (seq 0) and a rotation (seq 1) land under DISTINCT keys and BOTH survive. Keying by prefix alone would let
  * a later event win the Automerge LWW merge in place and silently drop the lineage the fold must walk.
  */
-export function personaKelEntryKey(prefix: string, seq: number): string {
-  return `${PERSONA_KEL_ENTRY_PREFIX}${prefix}/${seq}`;
+export function personaKelEntryKey(prefix: string, seq: number, eventCid?: string): string {
+  // CONTEST-AWARE KEYING (the walked clause ④'s board half): a provisional and its veto COMPETE at
+  // one seq, and a `{prefix}/{seq}` slot would let last-writer-wins adjudicate a contest by accident.
+  // The cid suffix keeps both; `foldPersonaContests` picks — a verified veto beats a provisional,
+  // everywhere, always.
+  return eventCid === undefined
+    ? `${PERSONA_KEL_ENTRY_PREFIX}${prefix}/${seq}`
+    : `${PERSONA_KEL_ENTRY_PREFIX}${prefix}/${seq}/${eventCid}`;
 }
 
 /**
@@ -48,7 +54,7 @@ export function personaKelEntryKey(prefix: string, seq: number): string {
  * carries the event's own cid — provenance only, never authority.
  */
 export function writePersonaKelEvent(draft: LarDoc, event: PersonaKelEvent): void {
-  const key = personaKelEntryKey(event.prefix, event.seq);
+  const key = personaKelEntryKey(event.prefix, event.seq, event.eventCid);
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(event) }, event.eventCid);
 }
 
@@ -81,6 +87,8 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
   if (typeof p["opKeyDid"] !== "string" || p["opKeyDid"].length === 0)         return null;
   if (typeof p["recoverySetHash"] !== "string")                               return null; // "" allowed (unarmed)
   if (typeof p["nextRecoverySetHash"] !== "string")                           return null; // the rolling commitment
+  if (typeof p["provisional"] !== "boolean")                                  return null; // the contest marker
+  if (p["vetoOfCid"] !== null && typeof p["vetoOfCid"] !== "string")          return null; // a veto names its contested cid
   const recoveryRoster = coerceStringArray(p["recoveryRoster"]);
   if (recoveryRoster === null)                                                return null;
   if (!Number.isFinite(p["recoveryThreshold"]))                              return null;
@@ -103,6 +111,9 @@ function coercePersonaKelEvent(parsed: unknown): PersonaKelEvent | null {
     opKeyDid:          p["opKeyDid"],
     recoverySetHash:   p["recoverySetHash"],
     nextRecoverySetHash: p["nextRecoverySetHash"],
+    provisional:       p["provisional"] as boolean,
+    vetoOfCid:         p["vetoOfCid"] as string | null,
+    ...(typeof p["vetoSig"] === "string" ? { vetoSig: p["vetoSig"] as string } : {}),
     recoveryRoster,
     recoveryThreshold: p["recoveryThreshold"] as number,
     prevEventCid:      prevRaw,
@@ -144,6 +155,7 @@ export function personaKelChainsFromBoard(doc: LarDoc | undefined | null): Map<s
     chains.set(e.prefix, chain);
   }
   for (const chain of chains.values()) chain.sort((a, b) => a.seq - b.seq);
+  for (const [prefix, evs] of chains) chains.set(prefix, foldPersonaContests(evs));
   return chains;
 }
 

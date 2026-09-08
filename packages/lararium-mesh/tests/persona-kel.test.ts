@@ -114,6 +114,7 @@ describe("persona-kel — threshold-attest rotation (Fork B, NOTHING reconstruct
     expect(bytes).toEqual(personaEventBytes({
       seq: 1, prefix: inception.prefix, opKeyDid: freshOpKeyDid,
       recoverySetHash: inception.recoverySetHash, nextRecoverySetHash: inception.nextRecoverySetHash,
+      provisional: false, vetoOfCid: null,
       prevEventCid: inception.eventCid,
     }));
   });

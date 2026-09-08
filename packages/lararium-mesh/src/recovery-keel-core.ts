@@ -261,11 +261,14 @@ export async function attestAndRotate(input: {
   /** The NEXT guardian set this rotation GRAFTS — TYPED registrations, never bare hex (the wrong-object
    *  cure holds at the ceremony door). Absent, the standing commitment carries forward unchanged. */
   readonly next?: { readonly guardians: readonly GuardianRecoveryRegistration[]; readonly threshold: number };
+  /** A contest-window entry (Fork C): the rotation lands PROVISIONAL — kapae-reversible authority
+   *  until an observer hardens it, the standing op-key's veto killing it at any causal distance. */
+  readonly provisional?: boolean;
 }): Promise<PersonaRotateResult> {
   const nextRecoverySetHash = input.next
     ? sealKeySetHash(input.next.guardians.map((g) => g.recoveryPubKey), input.next.threshold)
     : input.head.nextRecoverySetHash;
-  const bytes = personaRotationSigningBytes(input.head, input.freshOpKeyDid, nextRecoverySetHash);
+  const bytes = personaRotationSigningBytes(input.head, input.freshOpKeyDid, nextRecoverySetHash, input.provisional ?? false);
   const rotationSigs: QuorumSignature[] = [];
   for (const g of input.guardianSigners) {
     rotationSigs.push({ signer: g.signer, sig: await g.sign(bytes) });
@@ -277,5 +280,6 @@ export async function attestAndRotate(input: {
     recoveryThreshold: input.recoveryThreshold,
     rotationSigs,
     nextRecoverySetHash,
+    ...(input.provisional ? { provisional: true } : {}),
   });
 }

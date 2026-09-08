@@ -47,7 +47,10 @@ export interface PersonaKelEvent {
   readonly recoveryRoster:    readonly string[];  // the n guardian recovery pubkeys — EMPTY at inception, REVEALED at a rotation
   readonly recoveryThreshold: number;             // k — REVEALED at a rotation (0 at inception; folded into recoverySetHash)
   readonly prevEventCid:      string | null;      // hash-link to the predecessor (null at inception)
+  readonly provisional:       boolean;            // a recovery rotation NOT yet hardened — kapae-reversible authority only
+  readonly vetoOfCid:         string | null;      // a VETO names the provisional it kills; null on every other kind
   readonly rotationSigs:      readonly QuorumSignature[]; // [] at inception; ≥ threshold guardian sigs on a rotation
+  readonly vetoSig?:          string | null;      // the standing op-key's signature over a veto's bytes (outside the cid, like rotationSigs)
 }
 
 /** The authority fields an event's content-address + the guardian signatures BOTH bind — the fields a
@@ -55,7 +58,7 @@ export interface PersonaKelEvent {
  *  which IS bound here), so re-carrying an event never re-signs it (the kapae-antigen sig-outside pattern). */
 type PersonaEventCore = Pick<
   PersonaKelEvent,
-  "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid"
+  "seq" | "prefix" | "opKeyDid" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "provisional" | "vetoOfCid"
 >;
 
 /** The canonical bytes an event's cid commits AND each guardian rotation-signature signs over. Binding the
@@ -70,6 +73,8 @@ export function personaEventBytes(core: PersonaEventCore): Uint8Array {
     recoverySetHash: core.recoverySetHash,
     nextRecoverySetHash: core.nextRecoverySetHash,
     prevEventCid:    core.prevEventCid,
+    provisional:     core.provisional,
+    vetoOfCid:       core.vetoOfCid,
   });
 }
 
@@ -84,6 +89,8 @@ export function personaEventCidOf(core: PersonaEventCore): string {
     recoverySetHash: core.recoverySetHash,
     nextRecoverySetHash: core.nextRecoverySetHash,
     prevEventCid:    core.prevEventCid,
+    provisional:     core.provisional,
+    vetoOfCid:       core.vetoOfCid,
   }))}`;
 }
 
@@ -114,7 +121,7 @@ export function personaPrefixOf(inceptionOpKeyDid: string, recoverySetHash: stri
 export function mintPersonaInception(opKeyDid: string, recoverySetHash: string): PersonaKelEvent {
   const prefix = personaPrefixOf(opKeyDid, recoverySetHash);
   // The genesis set fills BOTH slots: it is the prefix's anti-swap wall AND the first rotation's authority.
-  const core: PersonaEventCore = { seq: 0, prefix, opKeyDid, recoverySetHash, nextRecoverySetHash: recoverySetHash, prevEventCid: null };
+  const core: PersonaEventCore = { seq: 0, prefix, opKeyDid, recoverySetHash, nextRecoverySetHash: recoverySetHash, prevEventCid: null, provisional: false, vetoOfCid: null };
   return {
     ...core,
     eventCid:          personaEventCidOf(core),
@@ -132,6 +139,7 @@ export function mintPersonaInception(opKeyDid: string, recoverySetHash: string):
  */
 export function personaRotationSigningBytes(
   head: PersonaKelEvent, freshOpKeyDid: string, nextRecoverySetHash: string = head.nextRecoverySetHash,
+  provisional = false,
 ): Uint8Array {
   return personaEventBytes({
     seq:             head.seq + 1,
@@ -140,6 +148,8 @@ export function personaRotationSigningBytes(
     recoverySetHash: head.recoverySetHash,          // the genesis wall, carried unchanged
     nextRecoverySetHash,                            // the graft rides INSIDE the signed bytes
     prevEventCid:    head.eventCid,
+    provisional,                                    // the marker rides the signed bytes too
+    vetoOfCid:       null,
   });
 }
 
@@ -169,6 +179,9 @@ export async function mintPersonaRotation(input: {
   /** The NEXT recovery-set digest this rotation commits — the graft. Absent, the standing commitment
    *  carries forward: a set change is always an explicit act, never a silent drop. */
   readonly nextRecoverySetHash?: string;
+  /** A recovery rotation entering the contest window (Fork C) — kapae-reversible authority until an
+   *  observer hardens it; the standing op-key's veto kills it at any causal distance. */
+  readonly provisional?: boolean;
 }): Promise<PersonaRotateResult> {
   const { head, freshOpKeyDid, recoveryRoster, recoveryThreshold, rotationSigs } = input;
   const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
@@ -185,6 +198,8 @@ export async function mintPersonaRotation(input: {
     recoverySetHash: head.recoverySetHash, // the GENESIS wall carries forward unchanged
     nextRecoverySetHash,                   // the graft: the set that authorizes the NEXT rotation
     prevEventCid:    head.eventCid,
+    provisional:     input.provisional ?? false,
+    vetoOfCid:       null,
   };
   const quorum = await verifyRotationQuorum(core, recoveryRoster, recoveryThreshold, rotationSigs, head.nextRecoverySetHash);
   if (!quorum.ok) return { ok: false, reason: quorum.reason ?? "rotation quorum unsatisfied" };
@@ -192,6 +207,73 @@ export async function mintPersonaRotation(input: {
     ok: true,
     event: { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [...recoveryRoster], recoveryThreshold, rotationSigs: [...rotationSigs] },
   };
+}
+
+// ── The CONTEST (Fork C, the walked hardening rule — identity-classes#the-two-forks) ────────────
+
+/** The bytes a STANDING op-key signs to kill a provisional — the veto's core, binding the contested
+ *  cid so a veto never floats onto another contest. */
+export function personaVetoSigningBytes(contested: PersonaKelEvent, standing: PersonaKelEvent): Uint8Array {
+  return personaEventBytes(vetoCore(contested, standing));
+}
+
+function vetoCore(contested: PersonaKelEvent, standing: PersonaKelEvent): PersonaEventCore {
+  return {
+    seq:             contested.seq,                    // the veto COMPETES at the contested seq
+    prefix:          contested.prefix,
+    opKeyDid:        standing.opKeyDid,                // the standing holder re-asserts itself
+    recoverySetHash: standing.recoverySetHash,         // the genesis wall
+    nextRecoverySetHash: standing.nextRecoverySetHash, // the standing rolling commitment restores
+    prevEventCid:    contested.prevEventCid,           // both link the same predecessor
+    provisional:     false,
+    vetoOfCid:       contested.eventCid,
+  };
+}
+
+/**
+ * Mint the VETO — one signature by the standing op-key, no quorum: the holder's own hand is the whole
+ * authority the contest exists to protect. The chain continues FROM the veto; the provisional and
+ * every descendant of it fall at the fold, their state to kapae cleanup (which the provisional's
+ * kapae-reversible authority kept clean).
+ */
+export async function mintVeto(input: {
+  readonly contested: PersonaKelEvent;                       // the provisional under contest
+  readonly standing:  PersonaKelEvent;                       // the head the holder still holds
+  readonly sign:      (bytes: Uint8Array) => Promise<string>; // the STANDING op-key's signer
+}): Promise<PersonaKelEvent> {
+  const core = vetoCore(input.contested, input.standing);
+  return {
+    ...core,
+    eventCid: personaEventCidOf(core),
+    recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [],
+    vetoSig: await input.sign(personaEventBytes(core)),
+  };
+}
+
+/**
+ * Fold contests into ONE linear lineage: at each seq, a veto naming a present provisional wins (its
+ * cid carries the chain forward; the provisional and everything descending from it drop). STRUCTURAL —
+ * the veto's signature verifies in `verifyPersonaKelFull`, and a gate walking full REFUSES a chain
+ * whose veto does not verify (halt, never a silent pick: the Binding Gate's own discipline).
+ */
+export function foldPersonaContests(events: readonly PersonaKelEvent[]): PersonaKelEvent[] {
+  const bySeq = new Map<number, PersonaKelEvent[]>();
+  for (const e of events) {
+    const list = bySeq.get(e.seq) ?? [];
+    list.push(e);
+    bySeq.set(e.seq, list);
+  }
+  const out: PersonaKelEvent[] = [];
+  let prevCid: string | null = null;
+  for (let seq = 0; bySeq.has(seq); seq++) {
+    const candidates = bySeq.get(seq)!.filter((e) => e.prevEventCid === prevCid);
+    if (candidates.length === 0) break;
+    const veto = candidates.find((e) => e.vetoOfCid !== null && candidates.some((c) => c.eventCid === e.vetoOfCid));
+    const winner = veto ?? candidates.find((e) => e.vetoOfCid === null) ?? candidates[0]!;
+    out.push(winner);
+    prevCid = winner.eventCid;
+  }
+  return out;
 }
 
 /**
@@ -246,9 +328,22 @@ export function verifyPersonaKel(chain: readonly PersonaKelEvent[]): boolean {
   if (genesis.seq !== 0 || genesis.prevEventCid !== null) return false;
   if (genesis.prefix !== personaPrefixOf(genesis.opKeyDid, genesis.recoverySetHash)) return false;
   if (genesis.nextRecoverySetHash !== genesis.recoverySetHash) return false;   // inception seats ONE set in both slots
+  if (genesis.provisional || genesis.vetoOfCid !== null) return false;         // an inception never contests
   if (genesis.eventCid !== personaEventCidOf(genesis)) return false;
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!, prev = chain[i - 1]!;
+    if (e.vetoOfCid !== null) {
+      // a veto competes AT its contested seq: it links the same predecessor and restores the
+      // standing head's op-key and rolling commitment; its signature verifies in the full walk.
+      if (e.seq !== prev.seq + 1)                       return false;
+      if (e.prevEventCid !== prev.eventCid)             return false;
+      if (e.opKeyDid !== prev.opKeyDid)                 return false;   // only the standing holder vetoes
+      if (e.nextRecoverySetHash !== prev.nextRecoverySetHash) return false;
+      if (e.provisional)                                return false;   // a veto never reads provisional
+      if (e.recoverySetHash !== prev.recoverySetHash)   return false;
+      if (e.eventCid !== personaEventCidOf(e))          return false;
+      continue;
+    }
     if (e.seq !== prev.seq + 1)                     return false;   // monotonic
     if (e.prevEventCid !== prev.eventCid)           return false;   // hash-linked
     if (e.prefix !== prev.prefix)                   return false;   // the identifier stays fixed
@@ -271,7 +366,18 @@ export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): P
     const core: PersonaEventCore = {
       seq: e.seq, prefix: e.prefix, opKeyDid: e.opKeyDid, recoverySetHash: e.recoverySetHash,
       nextRecoverySetHash: e.nextRecoverySetHash, prevEventCid: e.prevEventCid,
+      provisional: e.provisional, vetoOfCid: e.vetoOfCid,
     };
+    if (e.vetoOfCid !== null) {
+      // A veto carries ONE signature — the standing op-key's, over its own bytes. Unverifiable → the
+      // whole chain refuses (halt, never a silent pick of either head).
+      if (!e.vetoSig) return { ok: false, reason: `veto seq ${e.seq}: unsigned` };
+      let ok = false;
+      try { ok = await ed25519.verifyAsync(hexToBytes(e.vetoSig), personaEventBytes(core), hexToBytes(e.opKeyDid.replace(/^0x/, ""))); }
+      catch { ok = false; }
+      if (!ok) return { ok: false, reason: `veto seq ${e.seq}: signature does not verify against the standing op-key` };
+      continue;
+    }
     const q = await verifyRotationQuorum(core, e.recoveryRoster, e.recoveryThreshold, e.rotationSigs, prev.nextRecoverySetHash);
     if (!q.ok) return { ok: false, reason: `rotation seq ${e.seq}: ${q.reason ?? "quorum unsatisfied"}` };
   }
@@ -286,14 +392,22 @@ export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): P
  */
 export async function headOpKey(
   chain: readonly PersonaKelEvent[],
-  opts: { verifyQuorums?: boolean } = {},
+  opts: { verifyQuorums?: boolean; acceptProvisional?: boolean } = {},
 ): Promise<string | null> {
   if (opts.verifyQuorums) {
     if (!(await verifyPersonaKelFull(chain)).ok) return null;
   } else if (!verifyPersonaKel(chain)) {
     return null;
   }
-  return chain[chain.length - 1]!.opKeyDid;
+  // A provisional head confers nothing by default (the walked clause ①): the prior key stays head
+  // until THE OBSERVER accepts — its own silence-across-K-local-epochs policy, passed here as a
+  // verdict, never computed from a clock. NOT accepting is the resting state (clause ④).
+  for (let i = chain.length - 1; i >= 0; i--) {
+    const e = chain[i]!;
+    if (e.provisional && !opts.acceptProvisional) continue;
+    return e.opKeyDid;
+  }
+  return null;
 }
 
 /**
