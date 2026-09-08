@@ -116,7 +116,7 @@ import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
-import { loadIdentityArchive } from "./identity-anchors.js";
+import { loadIdentityArchive, loadVeilArchive } from "./identity-anchors.js";
 import { archiveOpens } from "./archive-passphrase.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import {
@@ -1019,10 +1019,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // Reading rather than asserting is the ruling itself (canon: waking-floor). Nothing is lowered — a
     // vessel that cannot open simply never rose, and an operator supplying the key raises it.
     const archiveBytes = archiveOpens() ? loadIdentityArchive() : null;
+    const veilArchiveBytes = archiveOpens() ? loadVeilArchive() : null;
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
       ...(dyadVeilTag ? { dyadVeilTag } : {}),
+      ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as
       // explicit `undefined` would read as a torn face rather than an unlit one.
       ...(personaGroupDocIdHex   ? { personaGroupDocIdHex }   : {}),

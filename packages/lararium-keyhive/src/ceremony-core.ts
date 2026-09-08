@@ -723,6 +723,12 @@ export async function runApplyAdmitPayload(
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...payload.deviceEdge },
       meta: { authority: "lares-init-admit" },
     };
+    // The joinee's veil tag IS the carried group doc id (the split's second moment) — persisted under
+    // the same tiddler the founder's minted tag rides, so ONE boot rule stands either veil.
+    doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = {
+      tiddler: { title: DYAD_VEIL_TAG_TIDDLER, text: payload.personaGroupDocIdHex, kind: "dyad-veil-tag" },
+      meta: { authority: "lares-init-admit" },
+    };
     // The PINNED identifier — the joinee's Binding Gate walks THIS to the current head op-key (the founder's
     // persona-root, until a Reading-B rotation). The raw signer-DID above stays for provenance only.
     doc.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = {

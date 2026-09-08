@@ -142,6 +142,29 @@ export function persistIdentityArchive(bytes: Uint8Array): void {
  * unseals here; a wrong/absent key throws LOUD (never a silent null — that would boot a fresh
  * empty identity over the sealed one). A bare read failure (file vanished) still reads null.
  */
+/** The veil identity's archive path — beside the vessel's, same seal policy, same custody. */
+function veilArchivePath(): string {
+  return join(larIdentityDir(), "veil-archive.bin");
+}
+
+/** Persist the VEIL identity's archive — the group-creator's prekeys must survive boots, or material
+ *  keyed to the card the veil presented stops opening. Same seal machinery as the vessel's archive. */
+export function persistVeilArchive(bytes: Uint8Array): void {
+  mkdirSync(larIdentityDir(), { recursive: true });
+  const policy = resolveSealPolicy();
+  atomicWriteFileSync(veilArchivePath(), sealArchiveBytes(asSelfSovereignSecret(bytes), policy));
+  try { chmodSync(veilArchivePath(), 0o600); } catch { /* best-effort on a non-POSIX fs */ }
+}
+
+/** Read the veil archive back — the same loud-on-sealed-without-key discipline as the vessel's. */
+export function loadVeilArchive(): Uint8Array | null {
+  const path = veilArchivePath();
+  if (!existsSync(path)) return null;
+  let stored: Uint8Array;
+  try { stored = readFileSync(path); } catch { return null; }
+  return openArchiveBytes(stored);
+}
+
 export function loadIdentityArchive(): Uint8Array | null {
   const path = archivePath();
   if (!existsSync(path)) return null;

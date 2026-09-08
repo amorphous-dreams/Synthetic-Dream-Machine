@@ -42,6 +42,9 @@ import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from 
  *  makeDaemonBehavior). Absent (a browser vessel with no fs) → the archive floor simply never persists. */
 type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTickMs" | "onBoot" | "runnableHulls"> & {
   persistArchive?: (bytes: Uint8Array) => void | Promise<void>;
+  /** The veil identity's archive persistence — the same inversion, its own file. Absent → the veil's
+   *  prekeys regenerate per boot, and material keyed to an earlier card stops opening. */
+  persistVeilArchive?: (bytes: Uint8Array) => void | Promise<void>;
   /** `vault` — the SAME Boundary-1 inversion for the at-rest seal LIFECYCLE (#60): keyhive stays
    *  fs-blind, so NODE injects the handler that seals/rotates/exports the identity-home carriers and
    *  updates the worker's own in-memory seal policy (no un-rotate). Registered as the `vault-*` worker
@@ -69,7 +72,7 @@ import { KeyhiveProvider } from "./keyhive-provider.js";
  */
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, vault, bagTier, ...daemonExtra } = extra;
+  const { persistArchive, persistVeilArchive, vault, bagTier, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) return { ...daemonExtra };
 
@@ -476,9 +479,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (daemonAuth.dyadVeilTag) {
         const veilKeys = await deriveDyadVeil(daemonAuth.seed, daemonAuth.dyadVeilTag);
         const v = new KeyhiveProvider();
-        await v.init({ seed: meshHexToBytes(veilKeys.signingKey), eventStore: new DaemonEventStore({ daemon: ctx.composite }) });
+        await v.init({
+          seed: meshHexToBytes(veilKeys.signingKey),
+          eventStore: new DaemonEventStore({ daemon: ctx.composite }),
+          ...(daemonAuth.veilArchiveBytes ? { archiveBytes: daemonAuth.veilArchiveBytes } : {}),
+        });
         await v.hydrateFromEventStore();
         veilKh = v;
+        if (persistVeilArchive) {
+          try { await persistVeilArchive(await v.exportArchive()); }
+          catch (err) { console.warn(`[daemon] veil archive export skipped: ${(err as Error)?.message ?? err}`); }
+        }
       }
       // M3 — seed the on-disk archive FLOOR every boot: exportArchive() captures the founding +
       // hydrated membership/capability DAG (+ prekey secrets) so a later torn daemon doc restores from

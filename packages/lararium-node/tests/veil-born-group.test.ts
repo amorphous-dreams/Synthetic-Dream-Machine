@@ -11,7 +11,7 @@
 import { describe, test, expect } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, replayCapEvents, KeyhiveProvider } from "@lararium/keyhive";
+import { runFoundingCeremony, replayCapEvents, KeyhiveProvider, InMemoryEventStore, packPersonaCrossing, applyPersonaCrossing } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, hexToBytes, deriveDyadVeil, DYAD_VEIL_TAG_TIDDLER, tiddlerText, vesselDyads,
@@ -93,15 +93,52 @@ describe("the veil-born group", () => {
     expect(dyads[0]!.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
   });
 
-  // DECLARED RED — the JOINEE's seat still rides its RAW vessel key: the admit flow seats the contact
-  // card the joinee minted from its device identity, so every group a joinee enters carries the same
-  // raw id — the cross-group correlator, surviving on the joinee side. The cure mirrors the founder's:
-  // the joinee derives its veil from the CARRIED group doc id (the split's second moment — the
-  // derivation already mints its dyad slot), stands a veil-keyed identity, and presents THAT card in
-  // the admit. Wake condition: the admit payload carries a veil-keyed card, this unskips, and the
-  // joinee's roster entry greps as a per-group veil.
-  test.skip("★ A JOINEE JOINS UNDER ITS VEIL — the admit card is veil-keyed ★", () => {
-    expect(true).toBe(false);
+  test("★ A JOINEE JOINS UNDER ITS VEIL — the veil-keyed card seats, and the veil reads ★", async () => {
+    // The split's second moment: the joinee derives its veil from the CARRIED group doc id, stands a
+    // veil-keyed identity, and presents THAT card. The seat then greps as a per-group veil, the raw
+    // joinee key touches no roster and no carried event, and the joinee's VEIL decrypts the content
+    // (the group's material keys to the prekeys the seated card carried).
+    const { f, handle } = await found();
+    const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
+    const founderVeilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
+    const seat = new KeyhiveProvider();
+    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never) });
+    await seat.hydrateFromEventStore();
+
+    const founderVessel = new KeyhiveProvider();
+    await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
+    await founderVessel.hydrateFromEventStore();
+
+    const JOINEE_SEED = new Uint8Array(32).fill(41);
+    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupDocIdHex);
+    const joineeVeil = new KeyhiveProvider();
+    await joineeVeil.init({ seed: hexToBytes(joineeVeilKeys.signingKey), eventStore: new InMemoryEventStore() });
+    const joineeRawId = await (async () => {
+      const raw = new KeyhiveProvider();
+      await raw.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore() });
+      return raw.vesselIdentifierHex();
+    })();
+
+    const BAG = "lar:///ha.ka.ba/bags/catalog/veil-joinee-shared";
+    const { docId } = await founderVessel.registerBag(BAG);
+    const bundle = await packPersonaCrossing(
+      founderVessel,
+      await joineeVeil.contactCard(),
+      { docIdHex: f.personaGroupDocIdHex, agentIdHex: f.personaGroupAgentIdHex },
+      [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("keyed to the veil") }],
+      seat,
+    );
+    const read = await applyPersonaCrossing(joineeVeil, {
+      ...bundle, capEvents: bundle.capEvents,
+    });
+    expect(new TextDecoder().decode(read[0]!.plaintext)).toBe("keyed to the veil");
+
+    const members = await seat.sentinelCgkaMembers(f.personaGroupDocIdHex);
+    expect(members, "the joinee's veil holds the seat").toContain(await joineeVeil.vesselIdentifierHex());
+    expect(members, "the raw joinee key touches no roster").not.toContain(joineeRawId);
+    const streamHex = bundle.capEvents.map((b64: string) =>
+      Array.from(Buffer.from(b64, "base64")).map((x) => x.toString(16).padStart(2, "0")).join("")).join("|");
+    expect(streamHex.includes(joineeRawId.replace(/^0x/, "").toLowerCase()), "no carried event spells the raw joinee key").toBe(false);
   });
 
   test("★ NO CARRIED EVENT SPELLS THE RAW VESSEL KEY ★", async () => {

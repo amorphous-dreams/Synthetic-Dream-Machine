@@ -7,7 +7,7 @@
 
 import { runSovereignWorker } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
-import { persistIdentityArchive } from "./identity-anchors.js";
+import { persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL } from "@lararium/mesh";
@@ -27,6 +27,7 @@ runSovereignWorker((manifest) => {
   // wart is gone). The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
   const base = makeOperatorDaemonBehavior(manifest, {
     persistArchive: (bytes) => persistIdentityArchive(bytes),
+    persistVeilArchive: (bytes) => persistVeilArchive(bytes),
     vault:          (verb, args) => runVaultVerb(verb, args),
     // The crossing gate reads each bag's declared cap-tier off this vessel's hearth manifests,
     // so an outward transfer (veil-ward -> public-ward) refuses without the kahu-cabal.

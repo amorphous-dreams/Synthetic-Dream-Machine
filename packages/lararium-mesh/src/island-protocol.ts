@@ -188,6 +188,9 @@ export interface IslandMsg_Manifest {
   daemonAuth?: {
     /** The founding veil tag — boot re-derives the group's creator-veil from (vessel seed × tag). */
     dyadVeilTag?: string;
+    /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
+     *  keeps opening across boots. */
+    veilArchiveBytes?: Uint8Array;
     /** The PLACE's own 32-byte signing seed — this vessel IS the Keyhive Individual it inits. */
     seed:                  Uint8Array;
     /** Hex Ed25519 verifying key the keyhive identity MUST resolve to (Gate A) — the VESSEL's, not a human's. */
