@@ -22,7 +22,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-model"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -291,14 +291,14 @@ Two Sprint deferrals (modal-view reader at the bag-pin surface; commit-queue for
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium/wiki-recipe>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/personal-slot>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/verb-tiddler>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/nalu-engine>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/island-adaptor>>
-<<~ loulou lar:///packages/EPIC-RESIDENCY-MODEL>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///packages/EPIC-RESIDENCY-MODEL">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
 ''Tie ~ the palace reads at apertures.'' The living-grammar memory-palace ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]])
 retrieves multi-aperture (RAPTOR collapsed-tree turn→session→arc levels) — a scale-selection that
@@ -306,6 +306,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CQUEEjuQgjRrooppQvyjg7T9wioXs6NwJOqMpK5od6Q
+<<^ code="&#x0003;">>ni:///sha-256;SL5aEn6zbZX6YMIQj69v-xa66VYme6m0y2fvMBkqDI0
 
 <<^ code="&#x0004;" -> to="?">>

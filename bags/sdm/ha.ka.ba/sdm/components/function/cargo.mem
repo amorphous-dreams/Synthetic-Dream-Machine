@@ -66,10 +66,10 @@ Pairs with `domain/stuckforce` (the force that lifts) and often `hook/sustained`
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;an_-Htkf4YCQcKX_FC-E-jveN7gYiJ5OVa5DCPM1NCE
+<<^ code="&#x0003;">>ni:///sha-256;7GTdY6VZmGIsWtewyCgW_U9Z-_5LmEjILAVjMq_sXQ4
 
 <<^ code="&#x0004;" -> to="?">>

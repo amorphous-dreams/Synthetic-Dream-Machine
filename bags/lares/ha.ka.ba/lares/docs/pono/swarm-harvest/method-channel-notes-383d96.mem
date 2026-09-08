@@ -470,10 +470,10 @@ Confidence overall: **medium-high**. The load-bearing weakness is the Bluesky 2.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J79Wj-NRc4LwJf96kGaSc6KVVCwy8sf7DJDJ7gG-OQs
+<<^ code="&#x0003;">>ni:///sha-256;G3T7YrMBqK4H3CDb0mxfghqhkigKBJa367ngi7CRxqs
 
 <<^ code="&#x0004;" -> to="?">>

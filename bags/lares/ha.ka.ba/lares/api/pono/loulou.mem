@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/loulou"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -77,7 +77,7 @@ Groups: `[full, target-uri]`
 
 Full pranala expansion:
 ```text
-<<~ pranala from=? -> to=URI family=relation lifecycle=instance traversal=source-to-target propagation=none>>
+<<~ pranala from="?" -> to="URI" family="relation" lifecycle="instance" traversal="source-to-target" propagation="none">>
 ```
 
 <<~/ahu>>
@@ -113,14 +113,14 @@ confidence-bounded = false
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/aka>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahea>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-link>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-link">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0E37v2PNhP1-0GOPX5NRuo7AihKBC2Y8nu9GHiw0qBc
+<<^ code="&#x0003;">>ni:///sha-256;v0zoGIQJgRJZbFhY4Y9IhUCp6yyR_QE16RlvazJqP0Y
 
 <<^ code="&#x0004;" -> to="?">>

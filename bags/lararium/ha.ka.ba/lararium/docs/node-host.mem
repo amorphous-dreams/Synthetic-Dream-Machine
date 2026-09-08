@@ -124,10 +124,10 @@ export interface CorpusSource {
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/corpus-sources>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/corpus-sources">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GScwpbIf6qVeX33bxIl-sdY2-yj-sdDeH0BEyNTja-4
+<<^ code="&#x0003;">>ni:///sha-256;hfjW3YafDtWiW3hbkxRNRgcRCD0qQIZGn36E5FAcNPg
 
 <<^ code="&#x0004;" -> to="?">>

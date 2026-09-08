@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/lar-uri"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -451,12 +451,12 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/identity-stack>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/identity-stack">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T-1FIfaGfIYiN5XhgsOsewaO03Woh4e4kNWSR6Zus9k
+<<^ code="&#x0003;">>ni:///sha-256;QJB72ohwwUpTT6PoTTCsJBYlTM5Z-Kgl0uCppSETjCM
 
 <<^ code="&#x0004;" -> to="?">>

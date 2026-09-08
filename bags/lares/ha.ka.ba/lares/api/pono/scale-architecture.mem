@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/scale-architecture"
 written   = "2026-07-01"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -138,14 +138,14 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/corpus>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cohomological-gate>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/sensorium-machina>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/li-ki-integrities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/gold-anchor>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cohomological-gate">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;poFi_r5uK8N172bMc2UlFGyph0yKDE52lFV-T6kRKTA
+<<^ code="&#x0003;">>ni:///sha-256;6iYjVyxeKXe8kOnJbtv9HiIxtBP1tPAUHjFURU10zcQ
 
 <<^ code="&#x0004;" -> to="?">>

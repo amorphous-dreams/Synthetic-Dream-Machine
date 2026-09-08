@@ -651,10 +651,10 @@ Across five research streams, **not one documented failure in the entire public 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IiOqBeQy5RrLve_rft-EZtsactcXDY27EJweIk_vIBI
+<<^ code="&#x0003;">>ni:///sha-256;NbMo_WQQvImbQdq4lU7ZqT33Uoex_hhNZ_FuB6gfBiI
 
 <<^ code="&#x0004;" -> to="?">>

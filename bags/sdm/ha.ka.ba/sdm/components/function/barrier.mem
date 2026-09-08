@@ -66,10 +66,10 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9rIgCQssSbBbMj5Ia_PGtbzgsfA-LRZ0s22p-wTxXaY
+<<^ code="&#x0003;">>ni:///sha-256;h8Ba0GhmPpGnp468NLo_wGjQtSZhNHjW4QuEFgLh0dY
 
 <<^ code="&#x0004;" -> to="?">>

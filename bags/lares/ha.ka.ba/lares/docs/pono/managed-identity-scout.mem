@@ -163,11 +163,11 @@ A coercive-control statute names //"monitoring a person via online communication
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qrUnUYA9uczUkI9_CWNDHvGj0unFWWPoRZMGpr52dSA
+<<^ code="&#x0003;">>ni:///sha-256;OOHOaRbyJSXMoj58rcXgFhy2Pz2AkR8ET4E-IPZ6VDc
 
 <<^ code="&#x0004;" -> to="?">>

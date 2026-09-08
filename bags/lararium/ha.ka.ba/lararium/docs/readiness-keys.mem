@@ -91,11 +91,11 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/open-phases>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/open-phases">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Tp2ccByvqPs_QBpRKLDtXf8gXEZhtI6lLjPSwp9cWKw
+<<^ code="&#x0003;">>ni:///sha-256;x4tkHDxmrDvmdm8bnc-UfderZQol3by-KmxSWnuMOBU
 
 <<^ code="&#x0004;" -> to="?">>

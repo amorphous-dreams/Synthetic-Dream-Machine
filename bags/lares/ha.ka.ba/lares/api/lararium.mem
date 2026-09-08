@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/lararium"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -48,11 +48,11 @@ The lararium prepares the handoff to `lar:///ha.ka.ba/lares/api/pono/config` by 
 
 !! Core Hydration
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium/exchange-vector>>
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium/templates/index>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/exchange-vector">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/templates/index">>
 
 <<~/ahu>>
 
@@ -60,14 +60,14 @@ The lararium prepares the handoff to `lar:///ha.ka.ba/lares/api/pono/config` by 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/hud>>
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/continuity>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/continuity">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WQAD7MkVFN13X2NIvrlqautgQnureKTD7GroFF5l_Z0
+<<^ code="&#x0003;">>ni:///sha-256;dQguaKBNCsbAYwDoeqmL9_ieCPvOTb04aptlhex84XU
 
 <<^ code="&#x0004;" -> to="?">>

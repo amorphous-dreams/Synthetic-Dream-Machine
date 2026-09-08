@@ -179,12 +179,12 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u9nf8y3WFjq10CoIC79nl2atXBZzS607Vm7CEHAfdNU
+<<^ code="&#x0003;">>ni:///sha-256;fK6FoRLSGiFmVpvCh3iD6SSL6eETEEs5wuKge0q7HlI
 
 <<^ code="&#x0004;" -> to="?">>

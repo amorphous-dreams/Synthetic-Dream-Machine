@@ -106,13 +106,13 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/ea>>
-<<~ loulou lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-tiers>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ea">>
+<<~ loulou "lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f2UUZBkYydvJ5mFrVtlXPAGt_FNh3VwcJAEmPLXvltE
+<<^ code="&#x0003;">>ni:///sha-256;0uueHGvvRzM8yRMicIjgPA8s-0_12G5BI0ALLTi_bhE
 
 <<^ code="&#x0004;" -> to="?">>

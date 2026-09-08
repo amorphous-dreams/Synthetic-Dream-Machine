@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/api/lar-telemetry"
 written   = "2026-06-24"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/lararium-memory#/capture-before-wire>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/lararium-memory#/capture-before-wire">>
 
 <<^ code="&#x0002;">>
 
@@ -208,16 +208,16 @@ vendored web2 sibling reached through the seat, never a citizen of the stack
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-memory>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/nalu-engine>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/mempalace-integration>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nihomano-sigils>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/parser>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/lararium-canonical-model>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/living-grammar>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/living-grammar">>
 
 ''Tie ~ the markers feed the form-palace.'' The classifier channel this process reads (the `<<~ …>>`
 instrument sigils — the red that steers) is exactly the marker-emission Route A the living-grammar
@@ -226,6 +226,6 @@ readings AND the form-capture both drain the one emitted-marker stream, no disco
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TFN8H0LCfF7DoxBpkpNbd-N6mjqS5T410fgjLrOg-UM
+<<^ code="&#x0003;">>ni:///sha-256;du6-7GHWeZVxLVrXGtbrJ_JnkmiqI37X0UVpc2RC-4k
 
 <<^ code="&#x0004;" -> to="?">>

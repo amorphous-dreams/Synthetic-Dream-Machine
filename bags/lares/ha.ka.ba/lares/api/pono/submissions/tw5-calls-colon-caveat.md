@@ -70,5 +70,5 @@ A time of day trips the case a URI trips, so the warning leads with the general 
 
 <a id="/edges"></a>
 
-- `lar:///ha.ka.ba/lares/docs/relational-parameter`
-- `lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext`
+- `"lar:///ha.ka.ba/lares/docs/relational-parameter"`
+- `"lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"`

@@ -115,12 +115,12 @@ the only place the question means anything.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/graceful-parsing>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tw5-deserializer>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-deserializer">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yijWUvruvuF6G_APvJ6llxfoMEOhcuuQU1oY1SBB5Nc
+<<^ code="&#x0003;">>ni:///sha-256;zDx7Uy61a-ZF60RweqHggB3QVEKYjBwSzTbXdDV-ZaE
 
 <<^ code="&#x0004;" -> to="?">>

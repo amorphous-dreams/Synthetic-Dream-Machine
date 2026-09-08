@@ -65,12 +65,12 @@ Working definition:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/render-targets>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ftvd0erq2ZCkY6JtwdmDDmnM65Wg_0oSPclSOtK4Fig
+<<^ code="&#x0003;">>ni:///sha-256;xQREZU7f0IGP-MwfBnBWZB7TytbMSF0-rkVBg8pVmJs
 
 <<^ code="&#x0004;" -> to="?">>

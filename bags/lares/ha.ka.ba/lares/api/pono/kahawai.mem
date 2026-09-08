@@ -67,12 +67,12 @@ English alias forms:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wai>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/mukuwai>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-elif>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/mukuwai">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-elif">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kxWdrvh-SnfYNcEqwcNp2LNnmPkVVQY-JZ-Dfpz9xJo
+<<^ code="&#x0003;">>ni:///sha-256;OgBOgvAM7FGOVwbTMUeW_H3HDHfeqZLnhPlGi8W-Ia8
 
 <<^ code="&#x0004;" -> to="?">>

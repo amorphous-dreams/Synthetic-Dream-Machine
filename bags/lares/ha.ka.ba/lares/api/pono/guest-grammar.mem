@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/guest-grammar"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -37,7 +37,7 @@ Parser, render, and pono detail move outward.
 ▶ write the smallest bounded guest region that preserves priming payload, guest body, and honest degradation.
 ↺ verify the host keeps its own primitives, the guest keeps its own family, and the handoff boundary stays explicit; close with residue named; malformed or unsupported guest work degrades locally rather than collapsing the parent.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
 
 <<~/ahu>>
 
@@ -124,14 +124,14 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/guest-grammar>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PdjJIyiHTGuJEMKqYQiy5YcaDjBLQebf2AXPfku0ApY
+<<^ code="&#x0003;">>ni:///sha-256;CEU8cEnWh4oso5OAowrRvdeR8rMnz1qIU_KVykAwl_A
 
 <<^ code="&#x0004;" -> to="?">>

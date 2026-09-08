@@ -67,15 +67,15 @@ a real cost target against a measured reconcile.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-node/src/disk-projector.ts family=code role=has>>
-<<~ pranala #siting from=? -> to=packages/lararium-node/src/bag-paths.ts family=code role=has>>
-<<~ pranala #law from=? -> to=lar:///ha.ka.ba/lararium/api/disk-projection family=relation role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-node/src/disk-projector.ts" family="code" role="has">>
+<<~ pranala #siting from="?" -> to="packages/lararium-node/src/bag-paths.ts" family="code" role="has">>
+<<~ pranala #law from="?" -> to="lar:///ha.ka.ba/lararium/api/disk-projection" family="relation" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/schema/projection-codec>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
 
-<<^ code="&#x0003;">>ni:///sha-256;BzmmoM0LDEOMRMrnTwck7eybixZJJpTjC9GAKr29FIU
+<<^ code="&#x0003;">>ni:///sha-256;X1YKWdQfzPFXmrtvdbMgAMY0L6c129Gq3dpQwa1VqVQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -213,13 +213,13 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/nodes>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/traversal>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_sa_L3IKH-loC7npkF4jBapI2e407BFivLs7g0Owb2o
+<<^ code="&#x0003;">>ni:///sha-256;VF_UAP1GiDwUFM4X2wFGGzsSBKlDO0rGzkaAjlDnrig
 
 <<^ code="&#x0004;" -> to="?">>

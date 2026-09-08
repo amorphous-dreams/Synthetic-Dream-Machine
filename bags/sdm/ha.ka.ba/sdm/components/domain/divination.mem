@@ -67,10 +67,10 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0NUCI-S9bFkmBZj1hZXFdaqMM7fl_qXn5mpVpLL9HOs
+<<^ code="&#x0003;">>ni:///sha-256;Iz8imj2j-5u-PMvviU5Ku4GuFwdqoaGPF-lcVW5q-SI
 
 <<^ code="&#x0004;" -> to="?">>

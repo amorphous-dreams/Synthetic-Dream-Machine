@@ -111,11 +111,11 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme/SKILL>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GUM-BNIdaAPfPqDAvp3jeCSRjT1JIgXXAzpNHaST6qw
+<<^ code="&#x0003;">>ni:///sha-256;KIHAjBhH9o7RGa0OQkvE0zY1vJEzFKr5XsDTLPzFbM8
 
 <<^ code="&#x0004;" -> to="?">>

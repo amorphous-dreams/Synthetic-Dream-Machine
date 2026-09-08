@@ -194,16 +194,16 @@ Whether that equals thought remains with Liminal.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle">>
 
-<<~ pranala #consumed-from-kindling from=? -> to=lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node family=reference role=source>>
-<<~ pranala #gaia-side-companion from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself family=relation role=companion>>
+<<~ pranala #consumed-from-kindling from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node" family="reference" role="source">>
+<<~ pranala #gaia-side-companion from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself" family="relation" role="companion">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KhJqMbNxX0-TbOwX8IAf1WS9Qk8UZyXavgyTgrmwu3w
+<<^ code="&#x0003;">>ni:///sha-256;KvIvmMRedKmfgZuZPld3mJsK7uRKjaZTPAVNSAh2Nlk
 
 <<^ code="&#x0004;" -> to="?">>

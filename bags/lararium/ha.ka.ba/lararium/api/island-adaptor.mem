@@ -104,12 +104,12 @@ its seed state synchronously before `behavior.onEa` runs.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/nalu-engine>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/verse-mesh>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xJwWTB64E5rxvx7uQh2QacIBMhCyqe1UA8Rq6zFEbCU
+<<^ code="&#x0003;">>ni:///sha-256;b4_H-uYk7r_LYsGsPLzrgqZaBQmllRkMC1fttnMGRDg
 
 <<^ code="&#x0004;" -> to="?">>

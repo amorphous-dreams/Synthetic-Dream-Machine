@@ -216,12 +216,12 @@ Then widen: does the stack describe itself coherently after the pass? An Afterma
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci/meta>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci/meta">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YX84XNfpa2IHJwqLjZtxomDgtHdRtcVvOVsNamxDU2E
+<<^ code="&#x0003;">>ni:///sha-256;XdSuLNG2A6XAaG_NJq0VzGnsqenob_h0aYbEelogQpw
 
 <<^ code="&#x0004;" -> to="?">>

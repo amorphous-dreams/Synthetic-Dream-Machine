@@ -58,10 +58,10 @@ The v0.1 ''Porter's Pebble'' is the epic's first ''module-nesting'' proof:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/modules/items/porters-pebble>>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/items/porters-pebble">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uzM2Q3mkgORomJBiaZcvFd-_VYkVTvDHIT7t4L_0_e4
+<<^ code="&#x0003;">>ni:///sha-256;H718fXlTJiv7EWFrNezeMG3UV3YnyFLKS_YjobeeLJ0
 
 <<^ code="&#x0004;" -> to="?">>

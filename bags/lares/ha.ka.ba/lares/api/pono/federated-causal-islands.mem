@@ -377,11 +377,11 @@ causal-island-may = [
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/research-streams>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FCg01slIDDaCq0VnC2IX5O38-6flaZTDPprrUNG25lk
+<<^ code="&#x0003;">>ni:///sha-256;YJXi0aiYpDYj_TPK7JwLE-gQqQhk1gr-5kbO7F4vYR8
 
 <<^ code="&#x0004;" -> to="?">>

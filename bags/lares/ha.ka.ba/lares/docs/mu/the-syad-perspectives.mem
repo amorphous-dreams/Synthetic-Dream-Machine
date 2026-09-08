@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -112,12 +112,12 @@ The archive-derived research bundle lives at:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BguS_gJD2c2l_qPFG6vRNS4BMps82_R013wjWKDLu1k
+<<^ code="&#x0003;">>ni:///sha-256;1NVQd1f_1qs_UqIbahjaesUJGy3RIOAqDycVlmMoEKk
 
 <<^ code="&#x0004;" -> to="?">>

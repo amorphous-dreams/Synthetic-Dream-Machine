@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/reality-tunnels"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -81,12 +81,12 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/chao>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xDtEM2JB9I8zxfFIsJ6W4AaMtrfnQ3s-W8cWJ_15mSI
+<<^ code="&#x0003;">>ni:///sha-256;UKCn1BUleNJ4y9clan-FezYYYLVyr8Lk9q4tijScNUc
 
 <<^ code="&#x0004;" -> to="?">>

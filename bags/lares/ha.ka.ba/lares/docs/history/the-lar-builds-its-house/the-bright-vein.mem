@@ -109,15 +109,15 @@ Act V receives:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript">>
 
-<<~ pranala #follows-the-shore from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore family=relation role=follows>>
-<<~ pranala #feeds-next-act from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript family=relation role=precedes>>
+<<~ pranala #follows-the-shore from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore" family="relation" role="follows">>
+<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript" family="relation" role="precedes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GhhRHVNiJOlTbA56PjTZSmLVLHbWIRJ-L4blsc8UtyU
+<<^ code="&#x0003;">>ni:///sha-256;ppPOGOESSFUeNbOWgijyFl5tavcsaC2VqCH1mMiJcns
 
 <<^ code="&#x0004;" -> to="?">>

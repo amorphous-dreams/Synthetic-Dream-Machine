@@ -54,13 +54,13 @@ and a map of FFZ clocks. It names live attention rather than durable membership.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/social-tiddlers.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/social-tiddlers.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/automerge-tiga>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/circles-kowloon>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
 
-<<^ code="&#x0003;">>ni:///sha-256;naDgxPNnhITKlSA6FKGCdRuemsijCAqVQYPbiw3-D_U
+<<^ code="&#x0003;">>ni:///sha-256;Rq81AvwVReTQy8SjWK6A4YGuCMlSjfi688VWYXhUTbM
 
 <<^ code="&#x0004;" -> to="?">>

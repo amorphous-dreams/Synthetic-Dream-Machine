@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wai"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -107,16 +107,16 @@ close-pattern = '<<~\/wai\s*>>'
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahawai>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/mukuwai>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/heihei>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/huli>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahawai">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/mukuwai">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heihei">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/huli">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LF-fwdAY05ZClfQCjV6EWmMoMJloVllF3UTVSKJPowQ
+<<^ code="&#x0003;">>ni:///sha-256;68miTamAM6hah6NlJpm2mqcL6y74eMHnEd7iBU85TMw
 
 <<^ code="&#x0004;" -> to="?">>

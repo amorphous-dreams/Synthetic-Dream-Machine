@@ -83,13 +83,13 @@ As Basic, with the clarification that the disc follows at the caster's current m
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/floating-disc>>
-<<~ loulou lar:///ha.ka.ba/sdm/source/becmi/basic>>
-<<~ loulou lar:///ha.ka.ba/sdm/source/uvg2e/floating-disc>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
+<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/basic">>
+<<~ loulou "lar:///ha.ka.ba/sdm/source/uvg2e/floating-disc">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FI3KgkTgWYfCGdHViE-blqMNZJP0Q0Zlfy2iMUHXn10
+<<^ code="&#x0003;">>ni:///sha-256;B1EghZBrmA-7HHNYcRlN3hHFr-4nSSzR62Byjj3aK_k
 
 <<^ code="&#x0004;" -> to="?">>

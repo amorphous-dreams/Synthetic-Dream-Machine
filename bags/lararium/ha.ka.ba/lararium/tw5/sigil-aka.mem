@@ -109,14 +109,14 @@ could include thumbnail + og-title in the handshake). Hold open.
 
 !! Source Shelf
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tw5-module>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
 <<~/pranala>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-ast>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-ast">>
 <<~/pranala>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WCSVdE6HUklbc7UcoUQ-Cpq7TXSV1zufbXvW1P5jokE
+<<^ code="&#x0003;">>ni:///sha-256;EN1VmMN8derMlVMNSFDY-diHgMmkmD2gkRl13ShSLgA
 
 <<^ code="&#x0004;" -> to="?">>

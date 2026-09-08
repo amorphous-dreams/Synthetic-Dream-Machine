@@ -99,11 +99,11 @@ A time of day trips the case a URI trips, so the warning leads with the general 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/relational-parameter>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/relational-parameter">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MlkLqRmErlF8RcdHUtX-M5-8_yzJNfoj7c6KrBBvj2k
+<<^ code="&#x0003;">>ni:///sha-256;4aw-CNSp29RbUg60xnYClOHDJGN8wxMWpm-q_PiGCYM
 
 <<^ code="&#x0004;" -> to="?">>

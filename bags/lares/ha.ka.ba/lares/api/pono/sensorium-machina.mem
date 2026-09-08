@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/sensorium-machina"
 written   = "2026-07-13"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -509,14 +509,14 @@ low-dimensional intuition is where that failure hides.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/li-ki-integrities>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/persistence-keel>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cohomological-gate>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/corpus>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/gold-anchor>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persistence-keel">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cohomological-gate">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
 
 <<~/ahu>>
 
@@ -557,6 +557,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_qWlIlpWHO4Bjw4yjutFek79h_kACB2U0aFGchlrqCY
+<<^ code="&#x0003;">>ni:///sha-256;MpwyrpLrzG0SS_4QIDAaVw2epwc9LTqpNdISqjJeB_k
 
 <<^ code="&#x0004;" -> to="?">>

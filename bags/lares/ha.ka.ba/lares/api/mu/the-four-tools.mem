@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-four-tools"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -294,13 +294,13 @@ arcana   = "release"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/chao>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vxqeLfYiyS-fQXzqHVhVwJ9XNu_zbKa83scBonl_nUE
+<<^ code="&#x0003;">>ni:///sha-256;gTheymGVVbxVD46T7ULpdLhb0DZyOyG3oI1lvgtyKVA
 
 <<^ code="&#x0004;" -> to="?">>

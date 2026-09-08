@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kahea"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -93,7 +93,7 @@ Regex — name-call form (canonical):
 
 Full pranala expansion (URI form):
 ```text
-<<~ pranala from=? -> to=URI family=transclusion lifecycle=instance traversal=source-to-target propagation=push-forward>>
+<<~ pranala from="?" -> to="URI" family="transclusion" lifecycle="instance" traversal="source-to-target" propagation="push-forward">>
 ```
 
 <<~/ahu>>
@@ -140,15 +140,15 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loulou>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/aka>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-transclude>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-import>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-transclude">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-import">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pWLGMNMvCs4F1sOR-Jrdre3mqTOWo-5BhGKC86xb7wI
+<<^ code="&#x0003;">>ni:///sha-256;1sZrua4WMMw4TB689eK-FGyYl7POHdeG5AQBIF7Bp2o
 
 <<^ code="&#x0004;" -> to="?">>

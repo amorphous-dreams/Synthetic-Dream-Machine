@@ -20,7 +20,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/lararium-identity"
 written    = "2026-06-23"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -35,7 +35,7 @@ rides ''from the first write''. The model stands whole here rather than scattere
 the capability, architecture and federation memes, which carry their own faces of it.
 
 > ''What makes a scale REAL rides one meme over'' (PROVISIONAL):
-> <<~ loulou lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation>> — the constructor,
+> <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> — the constructor,
 > the declared partition (there exists //no partition-free fact// about whether a level is real),
 > declaration ⊥ measurement ⊥ decision as three artifacts with three owners, and fluid-never-frozen rank whose lift expires.
 > It expands the five scales below; it replaces nothing here.
@@ -95,7 +95,7 @@ bond) composes up the ''SOCIAL axis'' only as far as ''CabalGroup'' (vessel → 
 reads). ''NexusGroup'' and ''DreamNet'' stand on the orthogonal ''INFRA axis'': they federate by
 ''treaty / mutual carriage-contract'' (who relays whose sealed bytes), never by delegation-up — a
 relay carries without reading. The two axes cross at the vessel; the mesh-topology split stands whole
-at <<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology>>.
+at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>.
 
 ''Circles ride orthogonal — never a rung.'' A ''Circle'' names a Kowloon local-membership set that
 ''never federates'' (`circles-kowloon`); a vessel holds circles //within// its Lararium, and circles
@@ -109,7 +109,7 @@ A human runs MANY handles, collected in a ''Vault'' (a private namespace — the
 vaults as deliberately-unlinkable compartments (Senior-Engineer ⊥ Guru ⊥ Telarus-KSC). The vault does NOT
 appear on the five-scale group axis: a scale is a //published// principal, and a collector that names its
 handles would link them (the merge failure). The vault stays off-roster, on the human's own device, the
-only join their meat-brain. Full ontology: <<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault>>.
+only join their meat-brain. Full ontology: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault">>.
 
 <<~/ahu>>
 
@@ -398,7 +398,7 @@ BBS per-verifier + Semaphore · Merton + Francis for the warning.
 !! The @oracle Plane ~ read-open by content-address, write-gated by relay-tier
 
 > ''COHERE → oracle-governance (2026-06-29).'' The governance face of this plane refines forward at
-> <<~ loulou lar:///ha.ka.ba/lararium/mesh/oracle-governance>>: an `@oracle` board lives
+> <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>: an `@oracle` board lives
 > ''per-nexus'', never one global DreamNet board (grounds run ownership + scale, never no-global-now —
 > a shared `docId` names a ''rendezvous'', each peer materializing its own causal island over it);
 > governance rides a ''threshold-signed steward SOURCE → verify-only public READ projection'', never
@@ -599,20 +599,20 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares-history/lares_research/research-streams/lararium/S7-CIRCLES-IDENTITIES-REDESIGN>>
-<<~ loulou lar:///ha.ka.ba/lares-history/lares_research/research-streams/lararium/CAPABILITY-LAYER>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/federation>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/circles-kowloon>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-memory>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/cap-tier>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/secure-context>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing>>
+<<~ loulou "lar:///ha.ka.ba/lares-history/lares_research/research-streams/lararium/S7-CIRCLES-IDENTITIES-REDESIGN">>
+<<~ loulou "lar:///ha.ka.ba/lares-history/lares_research/research-streams/lararium/CAPABILITY-LAYER">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3NmywR25tODCbRLfWEbwQkhXX4kXVgCmTVMxeo4z-oU
+<<^ code="&#x0003;">>ni:///sha-256;5LOptgUl-5OKmj2r2lgYmGURsxiMfw6CcJBchUlPAhg
 
 <<^ code="&#x0004;" -> to="?">>

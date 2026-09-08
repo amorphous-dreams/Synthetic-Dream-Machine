@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-syad-perspectives"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -217,7 +217,7 @@ The number does not widen itself. Each claim carries its own confidence, and the
 
 The naya↔predication relationship grounds in the Jain canon: Umāsvāti's //Tattvārtha Sūtra// 1.34–35 (five standpoints unfolding to seven), Matilal's two-wings framing of anekānta, and Akalaṅka's //krama/////yugapad// distinction that sets the `avaktavya` pole apart. The extracted derivation lives in docs space; Discordian witness texts rest in library space.
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives#/provenance>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives#/provenance">>
 
 ```toml
 family = "reference"
@@ -232,7 +232,7 @@ payload = {
 
 <<~/pranala>>
 
-<<~ loulou lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious#/reading>>
+<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious#/reading">>
 
 ```toml
 family = "reference"
@@ -294,16 +294,16 @@ satirist-operational = "nasti-avaktavya"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/chao>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iYBFpYy2cbQYAa8KoZzFJDlm9vz_zIyaZ0MiBLGPtFc
+<<^ code="&#x0003;">>ni:///sha-256;pN3WEkiSg-qXRaRML8wbF36fJjTxZ0IG1b6vO5F6HiQ
 
 <<^ code="&#x0004;" -> to="?">>

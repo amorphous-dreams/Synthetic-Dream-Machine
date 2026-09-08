@@ -207,10 +207,10 @@ Three postures, and only one of them is the one you're asking about:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GAsteoiUrbJ3sqEj41aKNNYrNk8yrDvJwAX9Md2eutg
+<<^ code="&#x0003;">>ni:///sha-256;GjACDbf6lVRSK8KfXuBgB0Vuu4FRetwDdsgkL0x_oyI
 
 <<^ code="&#x0004;" -> to="?">>

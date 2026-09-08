@@ -15,7 +15,7 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/api/pono/meme"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>⊙:5de4551845d0a7b9
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>⊙:5de4551845d0a7b9
 
 <<^ code="&#x0002;">>
 
@@ -46,7 +46,7 @@ through a social network.
 ▶ write or revise the meme so the minimum lawful shape appears early and the governing role stays explicit.
 ↺ verify opener, `#meta`, body thresholds, phase map, edges, and return throat before the file crosses into use; close with residue named; declared depth and unresolved paths remain visible rather than implied away.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme/SKILL>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
 
 <<~/ahu>>
 
@@ -93,7 +93,7 @@ Optional depth raises yield; it does not replace the minimum shape.
 | the authored grammar | ''fast'' — drifts with use | any author, any pour |
 | engines and plugins | ''slow'' — a rejim cadence | kahu action, never a single hand |
 
-''So a grammar may retire an address between pours'', while the engine and plugin that parse it retire on a cadence the kahu hold — and a reader that carried the old parse keeps reading correctly until the slower ratchet moves beneath it. The two rates ride the genesis artifact already (<<~ loulou lar:///ha.ka.ba/lararium/mesh/genesis-doc>>): a plugin change must never perturb the engine, and neither perturbs what an author wrote yesterday.
+''So a grammar may retire an address between pours'', while the engine and plugin that parse it retire on a cadence the kahu hold — and a reader that carried the old parse keeps reading correctly until the slower ratchet moves beneath it. The two rates ride the genesis artifact already (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>): a plugin change must never perturb the engine, and neither perturbs what an author wrote yesterday.
 
 <<~/ahu>>
 
@@ -133,7 +133,7 @@ Hold declared-unresolved distinct from absent.
 Treat a link as depth only when it carries real pressure, backlog, or adjacency.
 Use outward callouts only when they carry real pressure, real backlog, or real adjacency.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
 
 <<~/ahu>>
 
@@ -148,10 +148,10 @@ This root governs meme shape.
 `invariant` governs compressed constitutional pressure.
 Procedure, skeleton blocks, conformance checklists, and research backlog move outward.
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
@@ -159,17 +159,17 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tiddler>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tiddler">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kQ2TNaj_cuSt59cgpyy5hBqxTokd7o7HttoeGUGpQVI
+<<^ code="&#x0003;">>ni:///sha-256;dlKXYwy8O6eESmjTuZRXzpnV37DnyLdu3PoTSqdkQYM
 
 <<^ code="&#x0004;" -> to="?">>

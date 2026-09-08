@@ -327,18 +327,18 @@ class MyAdapter:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/spine>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/carrier-law>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/local-clients>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/sprint-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph>>
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/spine">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/carrier-law">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/local-clients">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/sprint-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;772ouR39s5C-1Pt8ph2xtNj8AbbFLpT-4cCC96qV4Aw
+<<^ code="&#x0003;">>ni:///sha-256;NwPr8a_g3M9LcreAPwugQimDHo40NS3xGojdIIFqttc
 
 <<^ code="&#x0004;" -> to="?">>

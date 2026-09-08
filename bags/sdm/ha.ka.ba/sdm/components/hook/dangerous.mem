@@ -66,10 +66,10 @@ Composes with any domain or function. ''Vertical-vs-flat pressure lives here:'' 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3BgvXVbKjxxO9j3xmCFet8MVrDoTDy79O6Kh7hoapYA
+<<^ code="&#x0003;">>ni:///sha-256;MTtk3Ap0W41ZdPWAFlhOwrdWY7FgdyBF-NDsJVirXhM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -89,11 +89,11 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZPpLFmHIxo0trD8a_1sXLrxN54VVMcZ9WcqjRByeTIM
+<<^ code="&#x0003;">>ni:///sha-256;qaaeiqPIKihQY7r6SfXnw7BjeTsWsvCcmI5Pwf2aTCQ
 
 <<^ code="&#x0004;" -> to="?">>

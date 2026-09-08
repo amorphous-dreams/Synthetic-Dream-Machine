@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/ai-phrasebook-design"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -66,7 +66,7 @@ KIND, and a kind-name keeps its home in the design rather than on the door.
 !! The dialect boundary already stands specified
 
 ''THE PHRASEBOOK FORKS NOTHING.'' The language spec draws the line this design rides
-(<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>):
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>):
 
 > Memetic-wikitext SHALL read as a ''superset of TW5 wikitext'' … A processor reads bare `<<name>>` as
 > an inherited TW5 macro call; the sharktooth `~` immediately after `<<` marks the Lararium sigil
@@ -96,7 +96,7 @@ vanilla TiddlyWiki with no plugin — and it renders NOTHING at all where its pr
 !! ⚠ The rule that decides the whole design ~ an unbound call renders as NOTHING
 
 The base grammar measures three properties, and the second one governs everything below
-(<<~ loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext#/the-load-bearing-property>>):
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext#/the-load-bearing-property">>):
 
 > ''An unbound macro call lands harmless, and renders as nothing.'' A call `<<name>>` whose name binds
 > no definition parses cleanly into a transclusion node; at render, the missing-target fallback emits
@@ -694,14 +694,14 @@ into a preferred text and a companion, by habit rather than by ruling.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8ObK_SjtZkjDocgIP055hYVQ8isytbhPL6CsPhAiGDI
+<<^ code="&#x0003;">>ni:///sha-256;953RBcSvOMlgk4MtXcrD3k2TEYs4u9TPdH-0MAUkY-w
 
 <<^ code="&#x0004;" -> to="?">>

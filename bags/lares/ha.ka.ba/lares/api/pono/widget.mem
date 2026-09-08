@@ -64,11 +64,11 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/dispatcher>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wehe>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/dispatcher">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k_qyOO3ycmVzkjMaoCCV2Ow2HSZ97QtqAbp9zeMKw0A
+<<^ code="&#x0003;">>ni:///sha-256;hKJFoWMyp9rsgsoJHBnM5EdWJdpYzAt2Wlq24Z3Mbg8
 
 <<^ code="&#x0004;" -> to="?">>

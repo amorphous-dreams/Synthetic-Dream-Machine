@@ -19,7 +19,7 @@ uri-path      = "ha.ka.ba/lares/api/pono/oracle"
 written       = "2026-06-16"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -201,13 +201,13 @@ certifies  = "nothing"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot#/exchange-protocol>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/exchange-protocol">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hGe47YemwYT9b4NHMSuS05pCgt0reJfP8NMxiecNbtk
+<<^ code="&#x0003;">>ni:///sha-256;cIB7ahCJ2-ptbaFYXuQLLkKx0-YE1-c6BiL5Lm9N6yw
 
 <<^ code="&#x0004;" -> to="?">>

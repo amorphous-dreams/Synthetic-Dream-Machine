@@ -27,10 +27,10 @@ pipeline the spec submissions share.
 
 The working design surface — the doctrine-and-paper draft the submission condenses from — rides the documentation shelf:
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/infrastructure-as-myth>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/infrastructure-as-myth">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1Ekwc78wjevquLUoPeZVmYgNxTlXv1ENUOE_CcNMyKE
+<<^ code="&#x0003;">>ni:///sha-256;3IbaWtK0WTAOAlq_bTxd5rCB1Cr5VrRwhpt6QRyn4oE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -82,13 +82,13 @@ Derived from the court-dragon alignment canon, never invented whole:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/lamplighters-union>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/grandmother-spider>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-fae-clans>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J2aZTUOQJgW1HGmMhqOaAIp4LxeiBuh6qgx08OZNoI0
+<<^ code="&#x0003;">>ni:///sha-256;AXncckSiCetphjlpvvvkl2TTRTxR9-jluteL_JOVEy4
 
 <<^ code="&#x0004;" -> to="?">>

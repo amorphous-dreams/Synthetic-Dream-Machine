@@ -105,12 +105,12 @@ Individual story stubs may remain as issue-style trace records; they no longer n
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/spine>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/local-clients>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/spine">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/local-clients">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f1gemylj4ERsSl-96yStObvBkeYWGUzyJgMMS1k9LF0
+<<^ code="&#x0003;">>ni:///sha-256;6CgGTGLlQrpRFb4-pYlWNUVvg70dnBe7ZR5aJlG76IU
 
 <<^ code="&#x0004;" -> to="?">>

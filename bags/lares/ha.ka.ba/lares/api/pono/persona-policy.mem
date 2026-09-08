@@ -19,7 +19,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/persona-policy"
 written           = "2026-07-20"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -167,16 +167,16 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/crossroads>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oybLmh3TZ6yY2eD03XAz5NXcEAwH0sV4h-zg57V5Xco
+<<^ code="&#x0003;">>ni:///sha-256;qBWEQM1L7Anwgn6wPjvZpv0IaItYnrQBYeNf0pjxErM
 
 <<^ code="&#x0004;" -> to="?">>

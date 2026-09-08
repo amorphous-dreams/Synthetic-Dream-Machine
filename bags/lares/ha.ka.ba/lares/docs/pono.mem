@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -45,12 +45,12 @@ Use this branch for:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QVjO8_72zQpOq1DnPyICULuqZU-wxVzZJNHsJsR5gdU
+<<^ code="&#x0003;">>ni:///sha-256;v1AT8Lp-jSCKAe3ut6nGOF-QyIFCkS8s8gagoosEYus
 
 <<^ code="&#x0004;" -> to="?">>

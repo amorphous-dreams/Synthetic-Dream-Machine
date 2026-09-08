@@ -204,12 +204,12 @@ pranala edge payloads. They feed future Verse code generation from the graph.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kumu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kumu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sGrLGmyB9gMs0_syQcS4j9SQ8EMfSneTAdDa6XVonWM
+<<^ code="&#x0003;">>ni:///sha-256;oAmXGMbz7Fc6kBBKU6lTN5scMq6qeA1Hauw8WQs8sbA
 
 <<^ code="&#x0004;" -> to="?">>

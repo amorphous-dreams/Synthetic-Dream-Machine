@@ -11,7 +11,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/circles-kowloon"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -105,12 +105,12 @@ Enforced at handler level (`ActivityParser/handlers/Add/index.js`): rejects if `
 > as an ''edge-closure'' — the reciprocal-edge fan over signed, typed, `lar:`-named
 > member edges, //evaluated// as a query — never a central `CirclesDoc` object a single
 > node owns as a roster
-> (<<~ loulou lar:///ha.ka.ba/lares/api/pono/group-as-closure>>). So the mapping rows
+> (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>). So the mapping rows
 > below that read a circle as one owner-held doc carry ''retire-residue'' framing: keep
 > them as the faithful Kowloon prior-art trace they document, but for //our// design read
 > `CirclesDoc`/`actorId`-ownership as the closure each member's own edge composes, and
 > read eviction as a kāpae on the membership stack
-> (<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense>>). The Kowloon
+> (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>). The Kowloon
 > reference itself stands unchanged — Kowloon legitimately uses a central object.
 
 | Kowloon | Lararium |
@@ -185,12 +185,12 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/heleuma/ka>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heleuma/ka">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rzddWtENSEp1xXjlIZPI4frO-0ydr-I6qvHmfgqpZ5c
+<<^ code="&#x0003;">>ni:///sha-256;C2pyptL1ocNqE2vO4-p1IZn8S8YtWumzwn8BcXOW4Fs
 
 <<^ code="&#x0004;" -> to="?">>

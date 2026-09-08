@@ -44,13 +44,13 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/core/meme-ast/types>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/core/meme-ast/scanner>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/core/meme-ast/builder>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/core/meme-ast/edges>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/core/meme-ast/parse>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-ast>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/deserializer>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/types">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/scanner">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/builder">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/edges">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/core/meme-ast/parse">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-ast">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
 
 <<~/ahu>>
 
@@ -58,6 +58,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PC9599fMjaeqC-A5p4ucv3I2-bMN2HGxQCJs5vuHILM
+<<^ code="&#x0003;">>ni:///sha-256;He1t2y3TvtjiSVO3CnMmYqvH5-vpMcgb_193RztwRcI
 
 <<^ code="&#x0004;" -> to="?">>

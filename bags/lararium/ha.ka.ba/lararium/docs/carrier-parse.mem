@@ -64,11 +64,11 @@ export function deserializeCarrier(
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/schema/projection-codec>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3S3dppNSbr1kZFwuHONTyaogW0oXSNfQvKdwQmYoHZA
+<<^ code="&#x0003;">>ni:///sha-256;r3kgfwL-oRnCd5FSS-Ukk9Go8YbRt9kW8ieXO8Tne3Y
 
 <<^ code="&#x0004;" -> to="?">>

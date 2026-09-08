@@ -117,12 +117,12 @@ column of small unreadable type down the left margin.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret>>
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qbj8FjyEWeeUQtJ7cOpUe4aAi8svFWTFb6vSMf3Ug2I
+<<^ code="&#x0003;">>ni:///sha-256;hsXZPV1FRbFLRMyPAyk2qk4E36UxfvsOjSkbrDa_Ewk
 
 <<^ code="&#x0004;" -> to="?">>

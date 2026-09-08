@@ -337,10 +337,10 @@ The platforms wrote the persistent-notification rule for everyone but themselves
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ALPv6N9GOE0j92af7hFJkqFvC8gH2uQLenghGd14t7A
+<<^ code="&#x0003;">>ni:///sha-256;om1vHKNNXHoqKdBe8QErC_NeqVTGOoiFA0Y9Lo13j8o
 
 <<^ code="&#x0004;" -> to="?">>

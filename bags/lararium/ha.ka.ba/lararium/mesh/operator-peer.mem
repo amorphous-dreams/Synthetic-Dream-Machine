@@ -238,13 +238,13 @@ identical ea rights.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/browser/pono-charter>>
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sFCka64Dzd0cq9ZOXWt7itQXz-z5TRnGa9YqeNPrLSc
+<<^ code="&#x0003;">>ni:///sha-256;VOEHpXkC4f0XYBd6_1XH3dGoJkfCs6pMc1n5ngRqRSs
 
 <<^ code="&#x0004;" -> to="?">>

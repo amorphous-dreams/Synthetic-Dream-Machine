@@ -120,11 +120,11 @@ as a flex sibling unaffected by tldraw's internal layout changes.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tw5-module>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/canvas>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/canvas">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T31fhqmAZ3sHgiwI7Gp6-0XVRpjyqGpLYIdn8uB99m0
+<<^ code="&#x0003;">>ni:///sha-256;oTa78xd2EMgu8jz7sV_51edlkc9SQu6az3M-HBIMbwg
 
 <<^ code="&#x0004;" -> to="?">>

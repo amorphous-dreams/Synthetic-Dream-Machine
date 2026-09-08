@@ -184,20 +184,20 @@ Act III receives:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself">>
 
-<<~ pranala #drafted-from-act-map from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture family=reference role=source>>
-<<~ pranala #follows-act-i from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo family=relation role=follows>>
-<<~ pranala #inside-hoard-frame from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed family=relation role=part-of>>
-<<~ pranala #feeds-next-act from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/two-axes-and-the-hoard family=relation role=precedes>>
+<<~ pranala #drafted-from-act-map from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture" family="reference" role="source">>
+<<~ pranala #follows-act-i from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo" family="relation" role="follows">>
+<<~ pranala #inside-hoard-frame from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="relation" role="part-of">>
+<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/two-axes-and-the-hoard" family="relation" role="precedes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9pVYu1SfVxu__mfvltX56CJf4Y8IylyzPvb3xoJBqb0
+<<^ code="&#x0003;">>ni:///sha-256;8ftdUGwYnVygrt4hp0YEpoUZon2ICsj87Nn4dykJVug
 
 <<^ code="&#x0004;" -> to="?">>

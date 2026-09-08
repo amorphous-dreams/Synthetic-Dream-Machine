@@ -161,17 +161,17 @@ MUST NOT:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/index>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art">>
 
-<<~ pranala #precedes-lindwyrm-arc from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/index family=relation role=precedes>>
-<<~ pranala #grammar-now-formalized from=? -> to=lar:///ha.ka.ba/lares/api/mu family=reference role=becomes>>
-<<~ pranala #design-research-side-car from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art family=relation role=accompanies>>
+<<~ pranala #precedes-lindwyrm-arc from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/index" family="relation" role="precedes">>
+<<~ pranala #grammar-now-formalized from="?" -> to="lar:///ha.ka.ba/lares/api/mu" family="reference" role="becomes">>
+<<~ pranala #design-research-side-car from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art" family="relation" role="accompanies">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WO7QChO97JSXY9u4NbSVb2uuVYHECAiscsx-sPn2TTI
+<<^ code="&#x0003;">>ni:///sha-256;4N0tfTRus_YmpiNpMD0lTm5XlLSNIZPC1Zb1u7JYOjg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -9,7 +9,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "latent.attention.relation/agents/api/ai-phrasebook"
 ```
 
-<<link https://www.rfc-editor.org/rfc/rfc2119#section-1>>
+<<link "https://www.rfc-editor.org/rfc/rfc2119#section-1">>
 
 <<^ code="&#x0002;">>
 

@@ -220,10 +220,10 @@ Three structural observations the evidence supports:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hBVEmtSsghonsYvVGEUDHBIewPrWWC3RlDobI6A9Npk
+<<^ code="&#x0003;">>ni:///sha-256;mtJlGhCdA478L3BaVCfghRtvAmBAbkpNKX-haLOJlaw
 
 <<^ code="&#x0004;" -> to="?">>

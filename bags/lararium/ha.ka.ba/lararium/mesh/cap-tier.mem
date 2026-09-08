@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/cap-tier"
 written   = "2026-07-23"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -141,21 +141,21 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reach-plane>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/content-resolution>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/membership-doctrine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/secure-context>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/convergent-mesh>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity#/encrypt-from-start>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/encrypt-from-start">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rk6cTyWNTF6KH8nVNxJBuUQARVoISswp1PUOoUXFhXA
+<<^ code="&#x0003;">>ni:///sha-256;HfbNCJ8Wmh5X-jR6bAfiii9sTI8pIkOIgFEmH7_RF8c
 
 <<^ code="&#x0004;" -> to="?">>

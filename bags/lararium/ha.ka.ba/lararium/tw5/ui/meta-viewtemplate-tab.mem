@@ -25,10 +25,10 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab"
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/ui/meta-panel>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ui/meta-panel">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Pjb_JJCkuCvieC6usoFSLO7gl-Ol6ikw7cng9y0gK-U
+<<^ code="&#x0003;">>ni:///sha-256;8DFE_IghGDeg1xbOdY4H359PQ69d2rATiM5gPb1AFCA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -65,10 +65,10 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/minting-over-a-retirement>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/minting-over-a-retirement">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XF28V1WXUXRPdSZNHEa-fdt1lYgu4CfBaJo7qsHuMhg
+<<^ code="&#x0003;">>ni:///sha-256;ayZdBAKaWjm4Bb8OnI5b6uWlfI9d43qAEqsuW2TJgBk
 
 <<^ code="&#x0004;" -> to="?">>

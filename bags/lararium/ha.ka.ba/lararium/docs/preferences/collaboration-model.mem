@@ -77,12 +77,12 @@ This room leans toward future deeper articulation in:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences>>
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/continuity>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/continuity">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h89kDddkfABQ2fHQzLW9RkyQwC9doce69LrTYRnZLtI
+<<^ code="&#x0003;">>ni:///sha-256;fGAAu8JDifS7orGWF8vBVdrxHWBaCJVWlfaDx1dPtr8
 
 <<^ code="&#x0004;" -> to="?">>

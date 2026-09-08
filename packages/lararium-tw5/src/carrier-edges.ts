@@ -41,8 +41,11 @@ export interface CarrierEdge {
   readonly form: EdgeForm;
 }
 
+// AND THE QUOTE IS NOT PART OF THE ADDRESS. TiddlyWiki reads `name:value` as call syntax, so an
+// UNQUOTED `lar:///x` in a positional slot binds a phantom parameter named `lar` and the positional
+// receives nothing — the corpus quotes them for that reason, and every scan here strips the pair.
 const PATTERNS: ReadonlyArray<readonly [EdgeForm, RegExp]> = [
-  ["loulou",   /<<~\s*loulou\s+lar:\/\/\/(\S+?)\s*>>/g],
+  ["loulou",   /<<~\s*loulou\s+"?lar:\/\/\/([^"\s>]+?)"?\s*>>/g],
   // A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS — TiddlyWiki's own `reUnquotedAttribute` law. A
   // `pranala` states its target past a bearing arrow, so a scan of `[^>]*?` stops at that arrow and the
   // sigil never reaches its own address — silently, as a form that simply reports no edges. Every scan in this grammar spells it
@@ -54,8 +57,8 @@ const PATTERNS: ReadonlyArray<readonly [EdgeForm, RegExp]> = [
   // the first address after the sigil reads whichever end is written first: it agrees wherever the
   // source is `?` and inverts wherever the source is an address, counting a carrier's own ground as a
   // dangling edge while the target it points at goes uncounted. Position is not the relation.
-  ["pranala",  /<<~\s*pranala(?:[^>]|>(?!>))*?\bto=lar:\/\/\/(\S+?)[\s>]/g],
-  ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?lar:\/\/\/(\S+?)[\s>]/g],
+  ["pranala",  /<<~\s*pranala(?:[^>]|>(?!>))*?\bto="?lar:\/\/\/([^"\s>]+?)"?[\s>]/g],
+  ["kahea",    /<<~\s*kahea(?:[^>]|>(?!>))*?"?lar:\/\/\/([^"\s>]+?)"?[\s>]/g],
   ["wikilink", /\[\[[^\]|]*\|lar:\/\/\/([^\]]+)\]\]/g],
   ["wikilink", /\[\[lar:\/\/\/([^\]|]+)\]\]/g],
   // THE FORM THAT PREDATES THE ADDRESS. Before the corpus poured to `.mem`, a carrier linked its

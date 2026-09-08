@@ -189,13 +189,13 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/reaction-graph>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reaction-engine>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zK3hWiVvGUlnbYo_I6oGMzwPOCWQTckCmC8XNrGrrbE
+<<^ code="&#x0003;">>ni:///sha-256;8MmKj4XIhy_whXThW6K2N2lwQ_-zmzfj7qMAct0UXVY
 
 <<^ code="&#x0004;" -> to="?">>

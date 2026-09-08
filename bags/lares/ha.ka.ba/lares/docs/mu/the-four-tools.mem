@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-four-tools"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -79,13 +79,13 @@ one clean preference for model agnosticism over paranoia.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/library/discordia/mordecai-malignatus/cosmic-trigger-i/chapel-perilous-prologue>>
-<<~ loulou lar:///ha.ka.ba/lares/library/discordia/the-count-of-5s/common-sense-tarot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/mordecai-malignatus/cosmic-trigger-i/chapel-perilous-prologue">>
+<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/the-count-of-5s/common-sense-tarot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2QJqtGfX6b6ldRh6-E1i46NLAD_lHWlc-4vWMiTnDuU
+<<^ code="&#x0003;">>ni:///sha-256;e8NosC7y0Zf51eo1qOLHE-4zyVFxdUWiWPraBVMH6Ys
 
 <<^ code="&#x0004;" -> to="?">>

@@ -151,11 +151,11 @@ infrastructure rather than rolling a separate exporter.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/composite-store>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/composite-store">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cI9tDWicrQ_X__gXvzzw4BRIkFmQZGusf-2OLRClvr4
+<<^ code="&#x0003;">>ni:///sha-256;FZs5V1dTdoQc58elb9jS-eRQHHrN0Zl1NT5apv5Jwgk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -553,10 +553,10 @@ Krombholz et al., *"The Other Side of the Coin"* (Financial Cryptography 2016, D
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RWIoY8hsPqh0aqhud6xxXWJPJ2TvQfELxtCOnrj4r_4
+<<^ code="&#x0003;">>ni:///sha-256;4F8Qm3k8VBdbCBKXyDcvoOOP1n1krwBUH-up5z6BhmU
 
 <<^ code="&#x0004;" -> to="?">>

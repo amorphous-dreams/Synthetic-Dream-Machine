@@ -65,11 +65,11 @@ Source: https://owasp.org/www-project-application-security-verification-standard
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/research-streams>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HA3cLNKrN-i_ubkKzKa2c9FNytvXn-4R-UxMy_GA7uI
+<<^ code="&#x0003;">>ni:///sha-256;ke2enOVNayIi-ZnboaiMDcwwWzvNkgUkoCiE-EPYXQs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/api/lares-lararium-binding"
 written   = "2026-06-25"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/mesh/operator-peer>>
+<<~ aka "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
 
 <<^ code="&#x0002;">>
 
@@ -163,13 +163,13 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/operator-peer>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/async-flows>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/capture-annotation-model>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/async-flows">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cptCYVB-IJ0lakjI8_BK-Qxx_clDjFpndEVsGJGfTj8
+<<^ code="&#x0003;">>ni:///sha-256;wiUksT2jHihRVbe96QtntVmkYJqhejAaMLpRsyAG_eI
 
 <<^ code="&#x0004;" -> to="?">>

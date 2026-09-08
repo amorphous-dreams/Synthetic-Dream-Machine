@@ -67,10 +67,10 @@ Carries `hook/attack` (the grip resolves against Defense). Pairs with `domain/st
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wvF6qdXm2_OS7rFt4LneKkPTTji5IaqeD4xzEalrcwQ
+<<^ code="&#x0003;">>ni:///sha-256;34_T1HFjwODERTmpz_CEq82KAt2T4iyOR8KDck9QeXY
 
 <<^ code="&#x0004;" -> to="?">>

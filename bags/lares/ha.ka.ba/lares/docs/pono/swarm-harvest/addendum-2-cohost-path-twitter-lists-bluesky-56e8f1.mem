@@ -493,10 +493,10 @@ I could not locate a primary source. Checked: TechCrunch 2011-09-08 Smart Lists 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sYmT4BLEdIWLJeaN3TPUexpKz525h_aR6yZltXr9JFs
+<<^ code="&#x0003;">>ni:///sha-256;-jtMHeZIvqcFOlHK_gFLeikH9RkAVHk_A7TVYNfXvZc
 
 <<^ code="&#x0004;" -> to="?">>

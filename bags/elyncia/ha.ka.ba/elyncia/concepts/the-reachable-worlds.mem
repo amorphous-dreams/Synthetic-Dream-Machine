@@ -144,13 +144,13 @@ settled pet-name for the tideline of worlds yet.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-fae-clans>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-burned-library>>
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J73c1yXqcay_ZeVE8n8YKXpNMfFb6hS3mb05xPQzyqQ
+<<^ code="&#x0003;">>ni:///sha-256;hR1Z24sy2jL_xYc-LmVeAup8sQ0TiN1vWxBjmWTf9vI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -320,12 +320,12 @@ Confirmed ''unresolved rather than absent'': Khera / Drèze primary sources and 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/crossroads>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8jFXIN60QNXcRTHBUl9AiKuw3lgVAvSl1-v0FTHzjUg
+<<^ code="&#x0003;">>ni:///sha-256;eNayvI7wC8kwKuZbjiSMFn6goDx6L7mbvLdHK_w3EeU
 
 <<^ code="&#x0004;" -> to="?">>

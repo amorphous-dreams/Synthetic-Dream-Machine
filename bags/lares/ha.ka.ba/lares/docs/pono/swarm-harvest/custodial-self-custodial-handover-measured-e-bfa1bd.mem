@@ -258,10 +258,10 @@ The two independent systems that expose the answer agree on the order of magnitu
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nZg-lB62LfjZVgYq42qFxXeduQWWxwVOjSLOXYUM0TI
+<<^ code="&#x0003;">>ni:///sha-256;EHkIqaRvrMkK-pTeG3hSXY8YI_pY_u478VoqHSluhzA
 
 <<^ code="&#x0004;" -> to="?">>

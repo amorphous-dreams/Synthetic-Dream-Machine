@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/rewind-adapter"
 written   = "2026-06-30"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -248,15 +248,15 @@ Two research spirits stood the survey:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/agent-worldline#/time>>
-<<~ loulou lar:///ha.ka.ba/lares/api/corpus>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/gold-anchor>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-memory>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline#/time">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/corpus">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YxhBqDPUjR8Y4U-BJzCl0Q3JO4vVS2cRxBdy5JSeuH0
+<<^ code="&#x0003;">>ni:///sha-256;Y1phExwMM_X9ppnuo_0kVNOj_I3SpSvji6mtUtrMyyQ
 
 <<^ code="&#x0004;" -> to="?">>

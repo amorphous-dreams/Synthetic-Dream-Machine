@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/prism"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -105,14 +105,14 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/conformance>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/conformance">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wdq81T7pmaXeY8J_x6uRafbsUf8YReQjWuV628CJnUs
+<<^ code="&#x0003;">>ni:///sha-256;_5_kGB0fF75mbnVHK3yvVnveCuN-NYjqOpk0APwr6wg
 
 <<^ code="&#x0004;" -> to="?">>

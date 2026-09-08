@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/mount-points/storage-class"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -58,10 +58,10 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/modules/power>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5610o4YSNOOOHVqSntN7cjOczrM2BtcAGtWLBYr0EHQ
+<<^ code="&#x0003;">>ni:///sha-256;q4NJ0siL42WOqb9palHyh_8bF3HJuuH_3Feg5025AO4
 
 <<^ code="&#x0004;" -> to="?">>

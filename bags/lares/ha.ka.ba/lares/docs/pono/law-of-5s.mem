@@ -163,12 +163,12 @@ Each dot-separated position corresponds to one band. Reading left to right zooms
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y73l0xUEnEbnH1dvmebhGo9dztOk06XVg3Fch4UVl3U
+<<^ code="&#x0003;">>ni:///sha-256;M2MT9rTt-ICv115tBeoEuzYJWQI8r_u1QAsplzAZwEY
 
 <<^ code="&#x0004;" -> to="?">>

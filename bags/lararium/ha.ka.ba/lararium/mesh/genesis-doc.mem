@@ -17,7 +17,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/genesis-doc"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
+<<~ aka "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
 <<^ code="&#x0002;">>
 
@@ -69,7 +69,7 @@ The `@oracle` docId derives from the FOUNDING vessel's `@daemon` identity-root (
 
 ''Backstop — exit/fork.'' `@oracle` is a synced CRDT with a host-independent docId → the net can fork it and continue at zero loss. A founder who CAN be forked cannot rule — a property, not a promise. The rhizome forbids a //filiation//, not a //seed//; a seed that becomes one alliance-point among many is fully rhizomatic.
 
-''The governance face.'' This doc ''seeds'' the board (the docId derivation, the three couplings); who ''signs'' the steward source, why the board lives ''per-nexus'' (ownership + scale, never a no-global-now prohibition — a shared docId names a rendezvous each peer materializes as its own causal island), and how the fork guards it — that face stands worked at <<~ loulou lar:///ha.ka.ba/lararium/mesh/oracle-governance>>. The three couplings here (origin · governance · liveness) carry forward there as //founder seeds · circle governs · fork guards//.
+''The governance face.'' This doc ''seeds'' the board (the docId derivation, the three couplings); who ''signs'' the steward source, why the board lives ''per-nexus'' (ownership + scale, never a no-global-now prohibition — a shared docId names a rendezvous each peer materializes as its own causal island), and how the fork guards it — that face stands worked at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>. The three couplings here (origin · governance · liveness) carry forward there as //founder seeds · circle governs · fork guards//.
 
 architecture correct + stack-aligned; UNVERIFIED + load-bearing (code-scouts for the build): does alpha Keyhive express group-as-root-subject + quorum admission TODAY · does the Hermai invite path carry an `@oracle` introduction along the trust edge. Rhymes: genesis-block (founder-not-dictator) · UCAN (delegate-out; the revocation-veto is the trap) · ATProto (host-independent identity) · Stellar k-of-n + founder-multisig · petname/TOFU introduction · the rhizome (alliance not filiation).
 
@@ -164,7 +164,7 @@ That makes `engineCid` ⊥ `pluginsCid` the artifact a merge-time model agreemen
 
 Worse for a shelter brief: an implementation hash ''mandates a monoculture'', and independent implementations read as a SAFETY property — where one implementation stands alone, its bug becomes the rule.
 
-''So the pair names the HEARTH'' — this place's own true-name and its own composition — and a Nexus reads off the PARSE (<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>).
+''So the pair names the HEARTH'' — this place's own true-name and its own composition — and a Nexus reads off the PARSE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>).
 
 ''AND THE VERSION LABELS LEFT BOTH PREIMAGES.'' Folding a version string in beside the digest made a pure RE-TAG — identical bytes, renamed — mint a fresh true-name, which manufactures a schism out of an editorial act and reads identical to a real change. The sha256 already binds every byte the label could describe. ''A false difference and no true one'', now cut; the label rides the blob descriptor for a human to read, where a wrong one misleads nobody's identity.
 
@@ -187,17 +187,17 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/base-doc>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-uris>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/crypto>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/oracle-governance>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/island-protocol>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/base-doc">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-uris">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/crypto">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HggIa5RktgRkYIU6sFhdX_opWEK41YnoUXaKITffXPk
+<<^ code="&#x0003;">>ni:///sha-256;BdxPIMUCw8PUCk-WKb2jJ0PXdByux8-73Yfuyt4j4Yc
 
 <<^ code="&#x0004;" -> to="?">>

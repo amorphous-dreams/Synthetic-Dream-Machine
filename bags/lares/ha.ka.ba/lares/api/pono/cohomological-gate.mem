@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/cohomological-gate"
 written   = "2026-07-01"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -180,18 +180,18 @@ Frontier research, 2026 sources, grounded on established classical mathematics (
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/li-ki-integrities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/scale-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/antigonish-driving-test>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/talk-story>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot#/degraded-states>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-seal>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/scale-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/antigonish-driving-test">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/degraded-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-seal">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2aOsbrg8wxaDElKEQEq740QCU56XM02VQbGo_XdYBjc
+<<^ code="&#x0003;">>ni:///sha-256;_MaYHV0vXkOKc3T2VqmM7nYZ9RklDhbezI6zEdvD1sM
 
 <<^ code="&#x0004;" -> to="?">>

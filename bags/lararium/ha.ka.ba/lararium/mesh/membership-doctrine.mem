@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/membership-doctrine"
 written   = "2026-07-21"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -47,7 +47,7 @@ written   = "2026-07-21"
 
 ''So the check adds no trace, no roster row, and no new authority'' — it rides where the crypto already rides, bilaterally, peer-local, exactly like the rest of this doctrine.
 
-''AND ITS SCALE IS BOUNDED, which the no-roster ruling already anticipated.'' Exclusion power is bounded by the excluder's market share: three fields built this gate correctly and three retreated under open-internet pressure. The one that held gates at the ''group'' boundary, where the members are the whole relevant population and the roster stays local. ''Deployable at Lararium and Nexus scale; at DreamNet scale it predicts the same retreat'' — which is why a bilateral leased contract per operator, and never a confederation-wide roster, is the shape that survives. <<~ loulou lar:///ha.ka.ba/lararium/mesh/grammar-invariants>>
+''AND ITS SCALE IS BOUNDED, which the no-roster ruling already anticipated.'' Exclusion power is bounded by the excluder's market share: three fields built this gate correctly and three retreated under open-internet pressure. The one that held gates at the ''group'' boundary, where the members are the whole relevant population and the roster stays local. ''Deployable at Lararium and Nexus scale; at DreamNet scale it predicts the same retreat'' — which is why a bilateral leased contract per operator, and never a confederation-wide roster, is the shape that survives. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
 
 — the condition stands ruled; ''its mechanism stands UNBUILT'', and a prior treatment waits on another worldline to surface from the sensorium.
 
@@ -175,7 +175,7 @@ Fields that manufacture standing-to-object publish all four. ''This stack publis
 
 > ''STANDING-TO-OBJECT SCOPES TO THE TIER AT WHICH A THING GETS PUBLISHED.''
 
-A realm publishing its declaration at the public tier gains outside challengers; one publishing at Handle tier keeps its challengers internal. ''Same machinery, one dial'' — and a realm under threat withdraws the tier without losing the faculty. Note what this does NOT buy: it names a procedural capacity to challenge, never an accrued position. ''Standing-to-object ⊥ `kūlana``'' (<<~ loulou lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation>>).
+A realm publishing its declaration at the public tier gains outside challengers; one publishing at Handle tier keeps its challengers internal. ''Same machinery, one dial'' — and a realm under threat withdraws the tier without losing the faculty. Note what this does NOT buy: it names a procedural capacity to challenge, never an accrued position. ''Standing-to-object ⊥ `kūlana``'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>).
 
 <<~/ahu>>
 
@@ -194,16 +194,16 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/cap-tier>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/attestation-plane>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xCYLJ5AtTMRqzveAZrfTUm1u9G_XCuxf_V4_B3n5JsA
+<<^ code="&#x0003;">>ni:///sha-256;FK0RX9f344mX0SFMiI1ZJZgiv6DNdutm29zdoIgi7uE
 
 <<^ code="&#x0004;" -> to="?">>

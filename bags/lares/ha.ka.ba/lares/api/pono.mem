@@ -38,12 +38,12 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9L5fIZOIip_x7guAJeQDDpuHz0Hz5jhcLWivILh81f4
+<<^ code="&#x0003;">>ni:///sha-256;jKAXEkZvjebU4rqQIr_9FJQ5fjD9MBTCeOt0CZISpUw
 
 <<^ code="&#x0004;" -> to="?">>

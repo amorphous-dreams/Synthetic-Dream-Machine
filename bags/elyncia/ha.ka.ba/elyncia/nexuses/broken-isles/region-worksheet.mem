@@ -152,14 +152,14 @@ not to say about it.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/strandbeests>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zPsN_DvgpM92DRCgSjV3jKtygBL-e3DtQuefQBvcCUc
+<<^ code="&#x0003;">>ni:///sha-256;-UW0Moa6l6UuwrNrhJs3Kwd55LGAdmvxuCkDst2P7uY
 
 <<^ code="&#x0004;" -> to="?">>

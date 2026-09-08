@@ -19,7 +19,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/alignment-layer"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -229,14 +229,14 @@ right — to decide whose presence the hearth refuses.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-model>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/group-as-closure>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/siege-resilience>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/membership-sense">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CHGp9wvy1lFJOaZvkbnoni2GUaS3ABRdIC4_IaDOmY8
+<<^ code="&#x0003;">>ni:///sha-256;YfMkknkUDs8RYCkDpYyxlQdSDj3tQqn2pQ5gXO0piA4
 
 <<^ code="&#x0004;" -> to="?">>

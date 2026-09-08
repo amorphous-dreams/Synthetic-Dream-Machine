@@ -358,10 +358,10 @@ I'm making no recommendation, per the brief. One caveat to carry forward: my con
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D8GuVRfj8J6nlbMO8hv4kxP47PQp_4Bauza45uGdwyg
+<<^ code="&#x0003;">>ni:///sha-256;iLFhMlOUhsFV8a-HQ-aPnessWOGt_sZ9P5ybpqINkCI
 
 <<^ code="&#x0004;" -> to="?">>

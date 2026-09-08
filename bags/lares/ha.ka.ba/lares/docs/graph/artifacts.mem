@@ -297,14 +297,14 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/nodes>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/traversal>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/nodes>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QknMwbTb9y0b_jYrMF0mW1cBc7xgDNbj9PIU9Xfgr7k
+<<^ code="&#x0003;">>ni:///sha-256;4Ya4j4nU5gNmDAALwgHWZ7db5nwVQDhQq-mT1NoogLw
 
 <<^ code="&#x0004;" -> to="?">>

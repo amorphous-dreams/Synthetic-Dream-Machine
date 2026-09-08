@@ -18,7 +18,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/system-pattern-integrities"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -281,7 +281,7 @@ label = "The five FPIs and the five SYSTEM laws are the same pattern-integrity i
 desc  = "Fuller's five pattern integrities (tensegrity, wave/water, synergy, ephemeralization, trim tab) and the five architecture SYSTEM laws (web3 smell test, TW5 vm primacy, TS-as-projection, tiddler format, meme-as-projection) are not separate lists. They are the same structural pattern expressed in different registers: Fuller's in geometry/physics, FFZ's in code architecture. Neither list supersedes the other; violations in one register typically produce violations in the other."
 ```
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/attention-scale>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
 
 <<~/ahu>>
 
@@ -346,16 +346,16 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/grammar-pattern-integrities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/automerge-tiga>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/pattern-integrity>>
-<<~ loulou lar:///elyncia/Elyncia_02_The_Lares_DreamNet>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-pattern-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
+<<~ loulou "lar:///elyncia/Elyncia_02_The_Lares_DreamNet">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Jxg0-eu2fKJut5Zk019zwizQZuYyzVSQx9h6G4rOpOY
+<<^ code="&#x0003;">>ni:///sha-256;k_BmFXSLwOwg4-Giz6oXzw2QSWPIF1-GMEpVHvWAyEQ
 
 <<^ code="&#x0004;" -> to="?">>

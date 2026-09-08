@@ -4,7 +4,7 @@ lar-kind: edge-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/loulou
 lar-alias-for: \link
 lar-see-also: loulou
-lar-pattern: <<~\s*\\link\s+(\S+)\s*>>
+lar-pattern: <<~\s*\\link\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 type: text/vnd.tiddlywiki
 
 \procedure ~\link(p1:"")

@@ -130,12 +130,12 @@ Delete or quarantine these patterns. Each deletion happens after the replacement
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/browser/pono-charter>>
-<<~ loulou lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface>>
+<<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
+<<~ loulou "lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;betJgdYpEznva34pPv0kK8e7cDle4z9lNQZo3RvsGJk
+<<^ code="&#x0003;">>ni:///sha-256;RN4xrfAIBfvV8yezocrE7dmiU6SXe8-eYSH-PlJg-fw
 
 <<^ code="&#x0004;" -> to="?">>

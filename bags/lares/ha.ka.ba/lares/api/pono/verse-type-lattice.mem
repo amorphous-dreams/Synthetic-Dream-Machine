@@ -181,15 +181,15 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-task-tree>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/uefn-scene>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/heihei>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heihei">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0xRNCJubAChB5b1Mz-vpQs2MsR3VOZQ9iHj4SIxTjgs
+<<^ code="&#x0003;">>ni:///sha-256;9Lzvp350WCZqQe-s4FRB9Cbmt5u17yyVO5aSQ6NTFY8
 
 <<^ code="&#x0004;" -> to="?">>

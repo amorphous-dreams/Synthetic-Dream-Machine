@@ -24,7 +24,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/chorus/lagrange-chorus"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -155,11 +155,11 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GYhdTBbWC0X5959ABRKy9xjm0DIt1zGGsh9piNR--xM
+<<^ code="&#x0003;">>ni:///sha-256;3GpaspAQL-9BEdBzzjw9vtyyFs7MO8zOJ0m1pVFFXBk
 
 <<^ code="&#x0004;" -> to="?">>

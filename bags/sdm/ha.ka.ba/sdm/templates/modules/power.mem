@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/modules/power"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -82,11 +82,11 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card>>
-<<~ loulou lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vXCUJPMe7pUiw_AdEGjkQhFIm0FMyoAwn8e7PUYYw2Y
+<<^ code="&#x0003;">>ni:///sha-256;R2h2UnOithffhTnBV9-cBnec0AyY_LpGSTs64cKo_y0
 
 <<^ code="&#x0004;" -> to="?">>

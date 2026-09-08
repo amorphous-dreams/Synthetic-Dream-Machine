@@ -383,10 +383,10 @@ Mechanism, verbatim:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q4_Qq-p0bhEUaBnAY9H5id5xxEbQ4e6nd9BXlWZqXXU
+<<^ code="&#x0003;">>ni:///sha-256;8QEtHSUHENCMTuOp7IfdhzQemV1IggSscvahvx7TFM4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -66,10 +66,10 @@ Feeds `function/magic-decode` and `function/archive`. The `ecm` counter-set — 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;opPs_NcfdjmmOV0lquCVQJREXAX_dn0GcKHqS8B1CCA
+<<^ code="&#x0003;">>ni:///sha-256;tLFihD836sw7zBX88FG6Ra841N6BfRbdegAvHqANhGQ
 
 <<^ code="&#x0004;" -> to="?">>

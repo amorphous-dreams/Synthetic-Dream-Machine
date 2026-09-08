@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/nexus-topology"
 written   = "2026-08-08"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -206,16 +206,16 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/secure-context>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/attestation-plane>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reach-plane>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/kahu>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/network-edge>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/network-edge">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1H10hPg002k-pslRtgQjecaC-uiLEtghqiWhVmq16z0
+<<^ code="&#x0003;">>ni:///sha-256;DekYBPpIMkDMD6lKULHrZMF3pLED-QtihstMAZNYrCg
 
 <<^ code="&#x0004;" -> to="?">>

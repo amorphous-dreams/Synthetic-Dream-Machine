@@ -353,10 +353,10 @@ From `src/app/config/auth_dirs.inc` and confirmed against the live consensus:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m0E-1vgNERyliXHDUOP_36JwWTUJE44DicOGtDJlMJo
+<<^ code="&#x0003;">>ni:///sha-256;qx1PQ8jzBiqut0nMIf0vhjzvrUaN3vqbNlcWSmnSryA
 
 <<^ code="&#x0004;" -> to="?">>

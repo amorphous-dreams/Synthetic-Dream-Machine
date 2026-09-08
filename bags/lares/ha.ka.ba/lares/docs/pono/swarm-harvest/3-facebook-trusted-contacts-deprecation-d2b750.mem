@@ -167,10 +167,10 @@ No local files were read; all sources above were fetched live from the web (arxi
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aid2GQJX1OHhZ2Zsh3iEsI7dvNKKx1yX9C_dVFPI-C8
+<<^ code="&#x0003;">>ni:///sha-256;__DnY6Uu-8B6idq4d2Men9u8T2WGgP3HFOSkyqIXxmM
 
 <<^ code="&#x0004;" -> to="?">>

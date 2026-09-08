@@ -154,11 +154,11 @@ inputs      = ["uri: string"]
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/node-host>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/reaction-graph>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/node-host">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C7NrORfPWeE3TxgLvr2l2tlNcbLrxUdeM4pvSAzFDSY
+<<^ code="&#x0003;">>ni:///sha-256;3JUoXXOedoyTYJFKuSL0eBovtmgxOtrW0lPexKRRTNc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -287,10 +287,10 @@ So the honest range: **$34/mo (non-archiving, 2-hour window) → ~$152/mo (archi
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9whfOKIz_jNi9o3uQiNpXOh-FqC49qe25OPBpiewoeQ
+<<^ code="&#x0003;">>ni:///sha-256;oYlEmvIdjQtOy0TTxvQjTUG_A4QtRBIfvu5aL46sSXY
 
 <<^ code="&#x0004;" -> to="?">>

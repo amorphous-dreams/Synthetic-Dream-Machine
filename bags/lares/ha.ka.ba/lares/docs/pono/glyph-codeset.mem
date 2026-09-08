@@ -323,12 +323,12 @@ Round-trip fidelity: Storage → Interchange → Storage MUST produce identical 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kAFKMPImR3wMtCxS-CEiIStKQn0M4tUaGcrrijfAhmg
+<<^ code="&#x0003;">>ni:///sha-256;1KqaVkzz9oh1ujXarRvfggo1gQqYgxizsaGmciG3WtA
 
 <<^ code="&#x0004;" -> to="?">>

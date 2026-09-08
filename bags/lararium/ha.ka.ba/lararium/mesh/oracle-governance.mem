@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/oracle-governance"
 written   = "2026-06-29"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -38,7 +38,7 @@ The `@oracle` carries a public read substrate — //what this neighborhood holds
 ''One `@oracle`, two faces — never a second board.'' This governance board reads as the
 ''read face'' over the //same// `@oracle` substrate the registry/recipe plane already holds.
 The ''content/registry face'' mints the recipe + engine-blob CIDs + protocol invariants
-(<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes>>); the
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">>); the
 governed ''read face'' named here projects that content for public verify-only sight. The
 two name one `@oracle` seen two ways — no reader should mistake this board for a second
 `@oracle`.
@@ -53,7 +53,7 @@ board for all of DreamNet. The grounds run ''OWNERSHIP and SCALE'', never no-glo
 * ''Ownership'' — each nexus governs its own public surface; no single board accrues
   authority over a hundred thousand sovereign Lararia (that re-introduces the hub the
   watershed guardrail forbids,
-  <<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/rhizome-rhymes>>).
+  <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/rhizome-rhymes">>).
 * ''Scale'' — a planet-wide board concentrates write-pressure and read-fan into one
   bottleneck; per-nexus boards keep the lattice flat.
 
@@ -61,7 +61,7 @@ board for all of DreamNet. The grounds run ''OWNERSHIP and SCALE'', never no-glo
 no-global-now. A shared `docId` names a ''rendezvous'' — an address, not a shared present.
 Each peer that dials it ''materializes its own converging causal island'' over that
 address; the address coordinates, the state stays local-first. //That IS no-global-now//
-//enacted, not breached// (<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>).
+//enacted, not breached// (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>).
 So per-nexus rests on ownership and scale, never on a no-global-now prohibition the shared
 address would not trigger anyway.
 
@@ -93,8 +93,8 @@ no peer holds the whole board //at once//, and none needs to.
 `@oracle` the ''public crossroads bulletin board'' — a host-independent-docId CRDT the
 net may ''fork'' (a founder who CAN be forked cannot rule), riding atop the system
 pointer/recipe plane
-(<<~ loulou lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer>>;
-<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>). This meme adds the
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer">>;
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>). This meme adds the
 ''governance face'' over that existing board — who signs its public-read projection, at
 what scale — never a second `@oracle`. The forkability the genesis doc already grants
 IS the //liveness// coupling below.
@@ -111,7 +111,7 @@ The board governs through a ''projection shore'', never a single writable doc:
   The cap-tier lives in ''WHO-CAN-SIGN-THE-SOURCE'', never in a write-cap on the published
   doc.
 * ''The projection'' — the source projects to a ''verify-only public READ plane'' (the
-  Two-Faced read-face, <<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>;
+  Two-Faced read-face, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>;
   the TUF / DNSSEC shape: a signed source, a verifiable public mirror). Readers verify the
   projection against the steward signatures; they never write the published surface.
 
@@ -119,7 +119,7 @@ The board governs through a ''projection shore'', never a single writable doc:
 ''point of capture'' — steal the cap, own the board. The projection-nalu shore dissolves
 that: a sovereign SOURCE → gated wave → public SINK, the read plane carrying no write
 authority at all
-(<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu>>). ''Users read the''
+(<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>). ''Users read the''
 ''projection AND run their own topic boards'' off the well-known root — the board hands out
 sight, never a write-throne.
 
@@ -142,7 +142,7 @@ another:
   thereby command the board forever. //The founder seeds.//
 * ''② Governance.'' The ''keeper-cabal-quorum signs'' the steward source — a threshold
   subject composed as a closure over the keepers' independent signatures
-  (<<~ loulou lar:///ha.ka.ba/lares/api/pono/group-as-closure>>). No one keeper, and no
+  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>). No one keeper, and no
   one stolen key, moves the board. //The circle governs.//
 * ''③ Liveness.'' The board rides ''content-addressed'' snapshots; the trust edge resolves
   by ''petname / TOFU introduction'' (home-nexus //listed//, never //required//). And the
@@ -163,7 +163,7 @@ board.
 
 The `@oracle` rendezvous carries the DreamNet answer to ''capability-gated provider''
 ''discovery WITHOUT a global DHT'' — the load-bearing question the content-resolution
-design chased (<<~ loulou lar:///ha.ka.ba/lararium/mesh/content-resolution>>). A content
+design chased (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>). A content
 address names //what// a peer wants; //who holds it// resolves through the rendezvous, never
 through a planet-wide index.
 
@@ -186,23 +186,23 @@ this reads as a ''convergence'', not a fresh invention:
 the outside re-derived the inside. Two external waves, chasing capability-gated discovery
 cold, arrived at the rendezvous the `@oracle` canon already stood — pattern-integrity
 confirmed by independent arrival, the way a proof gains weight when a second hand reaches
-it through a different door (<<~ loulou lar:///ha.ka.ba/lararium/docs/peer-discovery>>).
+it through a different door (<<~ loulou "lar:///ha.ka.ba/lararium/docs/peer-discovery">>).
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/group-as-closure>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/content-resolution>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/peer-discovery>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/kahu>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/group-as-closure">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/peer-discovery">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZjTHWtzXed5DNyvsSJxhTmvfV0ywts-Qrvz1umpFsXk
+<<^ code="&#x0003;">>ni:///sha-256;QQDUFnSWBjAEAHHbumOZwgKIbYSzUb3Gz4sYu3zwrYE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -175,16 +175,16 @@ Act II receives:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine">>
 
-<<~ pranala #follows-self-booting from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium family=relation role=follows>>
-<<~ pranala #feeds-next-act from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine family=relation role=precedes>>
+<<~ pranala #follows-self-booting from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium" family="relation" role="follows">>
+<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine" family="relation" role="precedes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S7hFYmNwnaw4pqiAKinTnYQ_ppiyexgI0AEfxudx21c
+<<^ code="&#x0003;">>ni:///sha-256;ZwAKB11y6gaVFKq-POzUj04FtwQ7rHgYRXQI1NoxKkg
 
 <<^ code="&#x0004;" -> to="?">>

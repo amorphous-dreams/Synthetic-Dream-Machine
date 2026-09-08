@@ -61,12 +61,12 @@ on an answer their founder knows was a lie.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-necrospire>>
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/league-of-free-cities>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/league-of-free-cities">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OVmbxdEtTXHXOy5oZSqyaz8ju9lQw3elQWugIa4fI5g
+<<^ code="&#x0003;">>ni:///sha-256;9GnITHe-8E0bK8D72KruzJZT29IuXXCeM9lDh76vbiY
 
 <<^ code="&#x0004;" -> to="?">>

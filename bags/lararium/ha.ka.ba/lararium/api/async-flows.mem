@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/api/async-flows"
 written   = "2026-06-25"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/mesh/operator-peer>>
+<<~ aka "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
 
 <<^ code="&#x0002;">>
 
@@ -169,12 +169,12 @@ write toward, not a description of current emission.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/operator-peer>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/capture-annotation-model>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/mempalace-integration>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dBrKaBflLl833GbXmCgIg_RL7F31eZHvKGuY8OzNQNg
+<<^ code="&#x0003;">>ni:///sha-256;qNIrbNdXjVFvONJBwT8PspvL4Wgks0IHGcBWv4h2TvQ
 
 <<^ code="&#x0004;" -> to="?">>

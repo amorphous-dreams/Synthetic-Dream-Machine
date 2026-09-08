@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -122,10 +122,10 @@ Simple transclusion `{{Title}}` maps to `<<~ kahea lar:///uri>>`. Template trans
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kWuUFtane9P5LdA738waWU2JT249HBy19liPMX3gOtE
+<<^ code="&#x0003;">>ni:///sha-256;mnRpg2BUWVdc1uCFokIMIjk_UyNUbNgt_dY106K0DAs
 
 <<^ code="&#x0004;" -> to="?">>

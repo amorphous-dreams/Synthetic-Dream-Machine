@@ -163,15 +163,15 @@ Phases 1, 3, and 4 may proceed independently.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/nodes>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/traversal>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/pranala-parser>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/artifacts>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/pranala-parser">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/artifacts">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bZRYF-wXjxCFYkIAfF_50nKgSlcAotXEmumUNOpG3dM
+<<^ code="&#x0003;">>ni:///sha-256;eOvUpQVN8YL99yyOrs3wFuXs4ojQ5dW7pZxYbHr4qZA
 
 <<^ code="&#x0004;" -> to="?">>

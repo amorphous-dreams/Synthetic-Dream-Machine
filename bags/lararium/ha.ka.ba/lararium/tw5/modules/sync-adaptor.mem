@@ -45,11 +45,11 @@ Echo-loop guard rule:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/sync/save-cascade>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/boot-gate>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/sync/save-cascade">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FW2VcFj0yu_nSKVuTFwmvhy7ARdTQBR_VouUzgyruk4
+<<^ code="&#x0003;">>ni:///sha-256;hNG-z_RWCqBPV0RAz47Nr1C4RXJzx9ZZkq7eeZ7rzfo
 
 <<^ code="&#x0004;" -> to="?">>

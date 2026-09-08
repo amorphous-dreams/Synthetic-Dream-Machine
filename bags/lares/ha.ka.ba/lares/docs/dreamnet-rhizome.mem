@@ -23,7 +23,7 @@ written    = "2026-07-14"
 
 !! The Ground ~ must fall back to anon
 
-Every vessel — a browser at elyncia.app, a node at a Lararium, any device — ''stands anon at its floor'': its own veiled-key, its own local content, no group, and it MUST always return there. Caps, node infrastructure, Handle memberships stack ABOVE the floor; none dissolves it. The whole mesh rests on this one unremovable ground (<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model>>).
+Every vessel — a browser at elyncia.app, a node at a Lararium, any device — ''stands anon at its floor'': its own veiled-key, its own local content, no group, and it MUST always return there. Caps, node infrastructure, Handle memberships stack ABOVE the floor; none dissolves it. The whole mesh rests on this one unremovable ground (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model">>).
 
 <<~/ahu>>
 
@@ -37,7 +37,7 @@ Each rung rides as an OPTIONAL overlay ON the floor; burning any overlay drops t
 
 * ''anon vessel'' — one device, own key, own content. The floor. Every visitor to either surface starts here.
 * ''known-user'' — a PersonaGroup of a human's OWN vessels, sharing doc-syncs (the crossing, `persona-crossing`). Single-principal; converges under one ordering authority.
-* ''operator'' — a known-user who RUNS a node vessel + local infrastructure (a Lararium) and relays. The rhizome node; the scale ladder's first rung (<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>).
+* ''operator'' — a known-user who RUNS a node vessel + local infrastructure (a Lararium) and relays. The rhizome node; the scale ladder's first rung (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>).
 * ''cabal'' — a multi-principal Circle (operators + users share a charter and corpus). Rides CGKA under bounded concurrency (`cabal-two-human`); the tie-break narrows to the add-while-remove window, which accept-and-heal covers for a small cabal.
 * ''nexus → DreamNet'' — Lararia federating by treaty; the super-mesh of all nexuses. No global now; each Lararium a causal island.
 
@@ -70,11 +70,11 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/federation>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 
-<<^ code="&#x0003;">>ni:///sha-256;LNreN8DAoq8b3XZ1cMG-GOk_7zrBsRS0tlhk8nWBGW0
+<<^ code="&#x0003;">>ni:///sha-256;qUA7baJ1Hl8VME55oOA8QaVlytfmu-U0xk708FL1ccs
 
 <<^ code="&#x0004;" -> to="?">>

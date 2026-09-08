@@ -19,7 +19,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/carry-contract"
 written    = "2026-07-20"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -168,23 +168,23 @@ cannot.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/oracle-governance>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/steward-doctrine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/siege-resilience>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/kahu>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/crossroads>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/federation>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/membership-doctrine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/cap-tier>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/secure-context>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CBaPdlVuh5_7DMr-EL-cPY4MpELEr1TkPBzSVx9tPbM
+<<^ code="&#x0003;">>ni:///sha-256;im_IxcfjpeuWGsosEpwYz6k_-W0KsUrMpcCLqVBqR1M
 
 <<^ code="&#x0004;" -> to="?">>

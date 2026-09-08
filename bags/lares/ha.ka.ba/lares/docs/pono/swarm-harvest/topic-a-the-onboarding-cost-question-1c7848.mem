@@ -411,10 +411,10 @@ Also not retrieved: **Notary** root rotation semantics. No findings.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z4NPWZZFfgamj2fU61o6wBDCrynfxO_9SU0kT7NhU2M
+<<^ code="&#x0003;">>ni:///sha-256;Ecm1SFSeI10BXcka37QqESihJRc36MPzunT1qfpQ9-w
 
 <<^ code="&#x0004;" -> to="?">>

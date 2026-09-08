@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heihei"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -97,13 +97,13 @@ arm-wire       = "reaction"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wai>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/holo>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/holo">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dm5QOo0MNLaM2i-P9AXjL-nhEihEqfDwT_MHjCCkrIU
+<<^ code="&#x0003;">>ni:///sha-256;kGdefG26rghxFzv0hEVLHP4hKgBwnh7zgAnY7rDpQWQ
 
 <<^ code="&#x0004;" -> to="?">>

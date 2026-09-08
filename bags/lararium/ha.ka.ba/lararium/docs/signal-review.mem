@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal-review"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -242,15 +242,15 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/l-space>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/render-targets>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/sa-display>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/l-space">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Obu1WiIolXJvBLnUWevhgs3TtWzyBbp4A9nleCfVUg4
+<<^ code="&#x0003;">>ni:///sha-256;jP3z8hk69WvhASRl49JMKFef_FPl-B055buga1EU5UQ
 
 <<^ code="&#x0004;" -> to="?">>

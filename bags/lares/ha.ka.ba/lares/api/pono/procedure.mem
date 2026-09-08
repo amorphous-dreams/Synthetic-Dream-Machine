@@ -23,13 +23,13 @@ uri-path  = "ha.ka.ba/lares/api/pono/procedure"
 
 English alias for `wehe`. See canonical spec:
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/wehe>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/wehe">>
 
 `\procedure` and `wehe` share identical semantics. Both declare a named callable body.
 Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2vL4VJcPCsObQgBFKttj1KKwCtThDIpqfUw9diyJpms
+<<^ code="&#x0003;">>ni:///sha-256;fhmLFOR6nV_vMGB4wTn8a3Jl_1gRbFLYhDyOD5x5_AA
 
 <<^ code="&#x0004;" -> to="?">>

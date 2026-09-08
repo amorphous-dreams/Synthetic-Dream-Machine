@@ -33,10 +33,10 @@ Concurrency runtime (async-first sprint) is a prerequisite. Grammar registration
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nalu>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XDQdGtTpRWZJmK_N_CUcKxXOTBci7PhL1ImrCADzhVU
+<<^ code="&#x0003;">>ni:///sha-256;dTXgW4tI-x94hDlxRcgqI0nCvwUPqc2_OO1QNT1Wxgw
 
 <<^ code="&#x0004;" -> to="?">>

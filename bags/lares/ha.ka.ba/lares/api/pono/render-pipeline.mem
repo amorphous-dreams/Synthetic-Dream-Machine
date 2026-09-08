@@ -17,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/render-pipeline"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -249,13 +249,13 @@ Trace continuity across the causal island boundary:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/parser>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/ahu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahea>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6t8ySW1boUNwSDGRrWGqD4DFdP12aYB-1M-S22th-Mo
+<<^ code="&#x0003;">>ni:///sha-256;cgL8eQi_gVA8qzbXs8p7EEbzWyKMJN4vfPXP9DQVqdA
 
 <<^ code="&#x0004;" -> to="?">>

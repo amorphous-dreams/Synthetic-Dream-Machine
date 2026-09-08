@@ -368,11 +368,11 @@ rather than minting sibling types.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4l3-SqAlzX-AxULZdeblTth2zAsTfF2RR1tGBqBIkKQ
+<<^ code="&#x0003;">>ni:///sha-256;RfozqIC0SbmQ2sl7BxNjys0d9htu4cib1x4TSaMnI_s
 
 <<^ code="&#x0004;" -> to="?">>

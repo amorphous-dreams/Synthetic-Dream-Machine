@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/api/capture-annotation-model"
 written   = "2026-06-25"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/lararium-memory>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
 
 <<^ code="&#x0002;">>
 
@@ -332,14 +332,14 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/lar-telemetry>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/agent-worldline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-memory>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/mempalace-integration>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/lararium-canonical-model>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/living-grammar>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lar-telemetry">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/living-grammar">>
 
 ''Tie ~ FORM beside CONTENT.'' This model captures CONTENT (the verbatim journey + gradient
 annotations); its orthogonal twin, [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]], captures the turn's FORM (the constructicon
@@ -349,6 +349,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;btJGza8qz0ym0QNn9OTm7JLlR4DzOhWXn3L0qHQRpjE
+<<^ code="&#x0003;">>ni:///sha-256;CQGLM_RNDbLtAKNskT0Sv1wCx19wb3mV74mdt1ax9Xk
 
 <<^ code="&#x0004;" -> to="?">>

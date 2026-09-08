@@ -22,7 +22,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -126,11 +126,11 @@ The model holds two tiers (`wela` live / `anu` torn down). A third (warm / froze
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-model>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/alignment-architecture>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
 ''Tie ~ apertures, not tiers.'' The living-grammar memory-palace ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]]) selects a
 retrieval APERTURE (turn → session → arc) where this model selects a THERMAL tier (wela/anu) — adjacent
@@ -145,6 +145,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pB72OvF-Zsc0u234Hdew9dseJ2bCatN58AeZAU0QY1Y
+<<^ code="&#x0003;">>ni:///sha-256;SJvlJE1zkAKJK3TRBMHz5qbglCGJHqVhD1xUmv7EM7A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -115,12 +115,12 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/node/open-node-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/node/node-vessel-identity>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/open-node-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/node-vessel-identity">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HK2px-4Hw4ZLyGD0sjyBh5qai-NVQRnEwGGhWKvE-SA
+<<^ code="&#x0003;">>ni:///sha-256;Ejpavqk2SQYL58e8F7y6pp1JZ3-7H74f0IH8GWZPKWY
 
 <<^ code="&#x0004;" -> to="?">>

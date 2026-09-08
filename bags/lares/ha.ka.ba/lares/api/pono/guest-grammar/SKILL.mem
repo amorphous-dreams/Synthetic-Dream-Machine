@@ -230,11 +230,11 @@ Aftermath — close by naming:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/guest-grammar>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Iax4Kqjlt4IUSqX94gcejLyU3lGUCbi_op7gxrQpIyo
+<<^ code="&#x0003;">>ni:///sha-256;PmK4k7HVAtWAGQuo00Fj05CZJD7JbDTdnuv3ZTVSCHo
 
 <<^ code="&#x0004;" -> to="?">>

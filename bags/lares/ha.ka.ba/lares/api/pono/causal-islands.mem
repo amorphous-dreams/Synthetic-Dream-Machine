@@ -70,7 +70,7 @@ homogeneous-trust (those devices already hold `admin` on `@daemon`, so marginal 
 (2026-06-29 cohere); above it the mesh scales on the orthogonal ''INFRA axis'' — `Nexus` and
 `DreamNet` join by ''treaty / mutual-carriage contract'' (who relays whose sealed bytes), never by
 delegation-up, a relay carrying without reading
-(<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology>>). "DreamNet"
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>). "DreamNet"
 names no registry and no canonical graph; it emerges as the transitive closure of who-relays-to-whom
 under everyone's local stances. Read the earlier single rope
 (`⊂ Neighborhood ⊂ City ⊂ Nexus ⊂ DreamNet` as delegation-nested SOCIAL rings) as retire-residue the
@@ -369,6 +369,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2jc7T4jOwBmnBuYDVKVuX9Yv6yHLNmYO4GnrUOdDEIQ
+<<^ code="&#x0003;">>ni:///sha-256;r7YTBJ54rkW9BoZFlPUZVlZxcL_Aam9i_8hs_IF6_d4
 
 <<^ code="&#x0004;" -> to="?">>

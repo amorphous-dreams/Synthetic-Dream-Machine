@@ -76,15 +76,15 @@ names.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/lar-vessel.ts family=code role=has>>
-<<~ pranala #identity from=? -> to=packages/lararium-mesh/src/identity-slot.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/lar-vessel.ts" family="code" role="has">>
+<<~ pranala #identity from="?" -> to="packages/lararium-mesh/src/identity-slot.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/vessel-caps>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/island-protocol>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 
-<<^ code="&#x0003;">>ni:///sha-256;zk3GgngZ9mVdkRoVzpj7ZO8tYjFR6xB9SFkGvvklm_c
+<<^ code="&#x0003;">>ni:///sha-256;7H1lrD1SOJae2CMN7tpCrF3Hh1ZRmXaC-NBiDwKwLL0
 
 <<^ code="&#x0004;" -> to="?">>

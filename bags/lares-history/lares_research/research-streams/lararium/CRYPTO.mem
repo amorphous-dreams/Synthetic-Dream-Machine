@@ -210,11 +210,11 @@ Target state (Milestone 4):
 
 !! Edges
 
-<<~ pranala #to-roadmap from=? -> to=lar:///LARARIUM-NODE/ROADMAP family=relation role=documents>>
-<<~ pranala #to-auth from=? -> to=lar:///LARARIUM-NODE/AUTH-ATPROTO family=relation role=sibling>>
+<<~ pranala #to-roadmap from="?" -> to="lar:///LARARIUM-NODE/ROADMAP" family="relation" role="documents">>
+<<~ pranala #to-auth from="?" -> to="lar:///LARARIUM-NODE/AUTH-ATPROTO" family="relation" role="sibling">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8T-JagpTiwQ9LTMf_EtHm_FmB3aa-7Bn0mqkDUWlhd4
+<<^ code="&#x0003;">>ni:///sha-256;Ic1nIxVFD1WDIMIZQ-3mQhjaHDftJV3UDWbSPqx_kWc
 
 <<^ code="&#x0004;" -> to="?">>

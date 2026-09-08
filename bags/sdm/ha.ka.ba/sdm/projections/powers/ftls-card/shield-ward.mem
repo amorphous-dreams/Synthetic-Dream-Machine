@@ -43,7 +43,7 @@ A barrier less than an inch from your skin, moving with you. Strong cover agains
 
 !! Components
 
-<<~ kahea lar:///ha.ka.ba/lararium/lists/components>>
+<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
 
 <<~/ahu>>
 
@@ -51,12 +51,12 @@ A barrier less than an inch from your skin, moving with you. Strong cover agains
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/shield-ward>>
-<<~ loulou lar:///ha.ka.ba/sdm/procedures/tag-pill>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/shield-ward">>
+<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SR2JCI1bGAu1b74hkTQsdClIbwJjxl1Z4fNkKeFCFQ8
+<<^ code="&#x0003;">>ni:///sha-256;97-QNHkzmq9-2MoVGSKmBqRorNZoow3P1Ocos8P71jg
 
 <<^ code="&#x0004;" -> to="?">>

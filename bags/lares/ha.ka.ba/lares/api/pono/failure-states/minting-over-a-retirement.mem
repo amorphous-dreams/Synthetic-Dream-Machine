@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/minting-over-a-retirement"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -65,10 +65,10 @@ If a ruled word exists with no residue and the node minted anyway, that reads as
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ux--pHspW9Er24SJpDhNavmFI7sBtsF8z5zu5cD9YxU
+<<^ code="&#x0003;">>ni:///sha-256;7YHxyvaMl0JnVCUdD6R1ijffXNpec3YNJrhYbnsQr-U
 
 <<^ code="&#x0004;" -> to="?">>

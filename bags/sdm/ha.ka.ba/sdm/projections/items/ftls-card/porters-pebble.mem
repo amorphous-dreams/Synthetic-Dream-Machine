@@ -36,7 +36,7 @@ A warm, palm-sized pebble of Long Ago make. Press it and it unfolds the ''Floati
 
 This item carries one Power. The card shows it as a doorway — tap through to the live module:
 
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/floating-disc>>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
 
 The carried Floating Disc runs at its own card's stats (P:2 · R:30m · T:point · D:1 hour); the relic changes only who sources it and how it is held.
 
@@ -46,7 +46,7 @@ The carried Floating Disc runs at its own card's stats (P:2 · R:30m · T:point 
 
 !! Components
 
-<<~ kahea lar:///ha.ka.ba/lararium/lists/components>>
+<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
 
 <<~/ahu>>
 
@@ -54,12 +54,12 @@ The carried Floating Disc runs at its own card's stats (P:2 · R:30m · T:point 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/items/porters-pebble>>
-<<~ loulou lar:///ha.ka.ba/sdm/procedures/tag-pill>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/items/porters-pebble">>
+<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hcKPaNKNgKm52KXTSZ1SYfW6iZ-1JvheSPfZseVHdN4
+<<^ code="&#x0003;">>ni:///sha-256;73c-E-DxA9UHcgYZFOS3dEnZKxMKuCdQl0QzWiuWfi0
 
 <<^ code="&#x0004;" -> to="?">>

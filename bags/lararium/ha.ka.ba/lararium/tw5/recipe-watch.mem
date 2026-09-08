@@ -80,12 +80,12 @@ CRDT slot the oracles point at.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/engine-watch>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/recipe>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/compaction-handlers>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/recipe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cVu0upcKN0Hk7JFceQlOw8dHcJoWcmDG0PZoxUnUI5s
+<<^ code="&#x0003;">>ni:///sha-256;DRCwjB9UNjeazS1wODHukA3lWsLHCI20tiPKfaKFWGs
 
 <<^ code="&#x0004;" -> to="?">>

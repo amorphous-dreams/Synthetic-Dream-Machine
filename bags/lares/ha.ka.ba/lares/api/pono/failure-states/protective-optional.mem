@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/protective-optional"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -61,10 +61,10 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HZX45fWkv3_RiFNLNYHR5DxICIhZj2jM0dOmPIAcOJE
+<<^ code="&#x0003;">>ni:///sha-256;Ew9-6GIaHnTgBDEhvAxNa8emRIaMz0ksaWHOdvpWBJQ
 
 <<^ code="&#x0004;" -> to="?">>

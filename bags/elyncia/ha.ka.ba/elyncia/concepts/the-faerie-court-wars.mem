@@ -140,13 +140,13 @@ Court Wars carries no default register; it carries the register of the front it 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-fae-clans>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-necrospire>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fY3x47hBAc--PuO58CsO5R1puNBX1hJUAPoPZeFniCM
+<<^ code="&#x0003;">>ni:///sha-256;4LsqykkmhNgtHHvtEKcIRHaUjAf2gk4ESl1OjzQyFLg
 
 <<^ code="&#x0004;" -> to="?">>

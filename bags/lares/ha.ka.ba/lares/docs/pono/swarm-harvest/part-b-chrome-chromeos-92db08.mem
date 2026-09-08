@@ -269,10 +269,10 @@ The deep-link `.../ms-bkrp/044ea320-...` 404'd; the landing page above is the re
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KVBhRCroh4em7REdSR8b_a8vuekWvnn-CgPTfiWcWsA
+<<^ code="&#x0003;">>ni:///sha-256;4C6ZVQhkSbzk19GL5jLnOFLzpa0VITqRg4kvOdXx_kg
 
 <<^ code="&#x0004;" -> to="?">>

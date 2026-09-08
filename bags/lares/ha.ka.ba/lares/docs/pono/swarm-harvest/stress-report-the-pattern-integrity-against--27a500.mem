@@ -346,10 +346,10 @@ Specifically unretrieved, and **not** filled from memory: Karst et al.'s interna
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5uS7F--q6IYkNRscQUbNuJtAZgap6KjQyUd3a09A-mc
+<<^ code="&#x0003;">>ni:///sha-256;qDqJofsYxAjuDzslvT8fTXdRRMqKmL8cuEtx69CBCf0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -607,12 +607,12 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wmzA9ITkq0k-Po2X8OeWexa5x1iMhGyc34ADFmrKH5o
+<<^ code="&#x0003;">>ni:///sha-256;u76sONSE7CbjV7Pe3UFBaWXCWU4yq8i0PNO7w5UWyCc
 
 <<^ code="&#x0004;" -> to="?">>

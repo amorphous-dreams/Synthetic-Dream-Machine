@@ -360,13 +360,13 @@ via TW5's own event bus.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/vm-projection-bus>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/uefn-scene>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wk16ECSpVGNzPmCXGzh_Y3LSJayWRCXjlkOQbsGUvuY
+<<^ code="&#x0003;">>ni:///sha-256;Jyqzaa0LPGf3B_v-8sJF3PvczciU-48F5GoyARaGOtg
 
 <<^ code="&#x0004;" -> to="?">>

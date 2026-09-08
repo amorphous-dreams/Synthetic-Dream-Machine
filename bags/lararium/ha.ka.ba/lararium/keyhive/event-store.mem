@@ -48,13 +48,13 @@ caller that has not reasoned about slices gets the whole record rather than a si
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-keyhive/src/event-store.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-keyhive/src/event-store.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/capability-provider>>
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lkn1OpK4KXl-Pvnzng6U_mLjiucDL1fhC3C6WYz4BE0
+<<^ code="&#x0003;">>ni:///sha-256;BD3KG5ucVE9DYz2fgKrusU3VjZzn8OSod4EX_jDd55E
 
 <<^ code="&#x0004;" -> to="?">>

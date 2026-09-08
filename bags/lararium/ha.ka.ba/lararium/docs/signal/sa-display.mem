@@ -112,13 +112,13 @@ Per-position stance modifier glyph design remains in motion; current record-form
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/render-targets>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/l-space>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/l-space">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sSuluAGK-Ld8WZ8yKIBHtyBpl8bqYgemeIbZmvshOrI
+<<^ code="&#x0003;">>ni:///sha-256;jwe4OAcynBWk2acWQvLYvauyFJRjM59E7YKfbwN3Vdg
 
 <<^ code="&#x0004;" -> to="?">>

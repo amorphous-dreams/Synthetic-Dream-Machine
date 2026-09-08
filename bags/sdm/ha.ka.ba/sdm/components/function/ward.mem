@@ -66,10 +66,10 @@ Pairs with `domain/abjuration`. Often `hook/sustained` or `hook/imbued` to keep 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5u2bO7SIAhv_TIiXalV2xDLbEvNvr99h149dQtJGE5U
+<<^ code="&#x0003;">>ni:///sha-256;rHP41ZXlySkfPFP-AwZEgEcuWFkKzzC9QssGNsJpUgw
 
 <<^ code="&#x0004;" -> to="?">>

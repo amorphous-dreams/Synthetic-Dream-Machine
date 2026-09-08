@@ -86,11 +86,11 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/sdm/docs/arcana-model>>
-<<~ loulou lar:///ha.ka.ba/sdm/docs/composition-model>>
+<<~ loulou "lar:///ha.ka.ba/sdm/docs/arcana-model">>
+<<~ loulou "lar:///ha.ka.ba/sdm/docs/composition-model">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zm_iZ2Uqve4ILVmSoOtz4L4HOV-wNuz6kDhTn3HJOAk
+<<^ code="&#x0003;">>ni:///sha-256;lNW9sGY7-tCQvO--zEHLm9nCXUpKXRglg9WJ2axLbRI
 
 <<^ code="&#x0004;" -> to="?">>

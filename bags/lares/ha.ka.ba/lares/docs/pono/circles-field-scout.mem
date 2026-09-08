@@ -164,11 +164,11 @@ The spirit retracts these outright after failing to re-fetch them:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/circles-kowloon>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LFv2Jxvv-fxEjXc-Q4-g3MN4J9C_Xtfaq7fYlvPaqGE
+<<^ code="&#x0003;">>ni:///sha-256;6bq1LSdmSibXiIFw_F52k-BLQ5-6HbfwRfhSI8sgjtw
 
 <<^ code="&#x0004;" -> to="?">>

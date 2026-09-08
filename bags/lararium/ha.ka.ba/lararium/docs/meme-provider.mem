@@ -74,15 +74,15 @@ the reference, and the law below it stays the part a reader needs anyway.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/meme-provider.ts family=code role=has>>
-<<~ pranala #gate from=? -> to=packages/lararium-mesh/src/projection-nalu.ts family=code role=has>>
-<<~ pranala #contract from=? -> to=packages/lararium-mesh/src/tiddler-store.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/meme-provider.ts" family="code" role="has">>
+<<~ pranala #gate from="?" -> to="packages/lararium-mesh/src/projection-nalu.ts" family="code" role="has">>
+<<~ pranala #contract from="?" -> to="packages/lararium-mesh/src/tiddler-store.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/tiddler-store>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction">>
 
-<<^ code="&#x0003;">>ni:///sha-256;3mFeBhfPfapAT5yjqC4zzyyx0kz7eFrcYOnubHYOlPs
+<<^ code="&#x0003;">>ni:///sha-256;M0DimTvPXgAidsm8lsvwrEYOWIyEDrr08aTs-Iyh04o
 
 <<^ code="&#x0004;" -> to="?">>

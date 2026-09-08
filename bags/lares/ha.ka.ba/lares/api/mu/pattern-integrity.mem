@@ -215,12 +215,12 @@ Run this against any new code before merging:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/quine-principles>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qw014eacrwDptFgIWgG49q5Zhtjxe-OeWqXPIcEzPhg
+<<^ code="&#x0003;">>ni:///sha-256;jXEBzhNYb8BkOR2BgR7C46UJgd739wmjbBapfFBQq6U
 
 <<^ code="&#x0004;" -> to="?">>

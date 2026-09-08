@@ -66,10 +66,10 @@ Pairs with `function/barrier` and `function/ward`. Counters offensive crossings;
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;urzDc5EmFDe6qEKbURmR648_y0irpIpHXvZ6gWF1jdo
+<<^ code="&#x0003;">>ni:///sha-256;aqvfKJw48qAbyMV2setbFYM-ZA4vQMIk4YgxCEs17V4
 
 <<^ code="&#x0004;" -> to="?">>

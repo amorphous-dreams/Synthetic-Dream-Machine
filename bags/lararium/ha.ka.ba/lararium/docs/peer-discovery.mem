@@ -286,10 +286,10 @@ state stays local-first, no-global-now enacted rather than breached.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/content-resolution>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dv4PDZvOT9DhgJ5yfOgayPN20LL9IWtyhQWjchxphN0
+<<^ code="&#x0003;">>ni:///sha-256;3eqLYdK6v1F1QD3-O23PcZDbTNDYadOr29W8c3NaMkA
 
 <<^ code="&#x0004;" -> to="?">>

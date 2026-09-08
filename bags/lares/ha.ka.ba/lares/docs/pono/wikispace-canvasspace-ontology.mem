@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -239,13 +239,13 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/alignment-architecture>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J_tqbJPZptf1kdLTtt5bviVh5gQnkhsHs6Ut-XQFR6E
+<<^ code="&#x0003;">>ni:///sha-256;6FOb2Vl3NyoHxzxTBNVsn-ZneVGSwFCIrvo5XR703lk
 
 <<^ code="&#x0004;" -> to="?">>

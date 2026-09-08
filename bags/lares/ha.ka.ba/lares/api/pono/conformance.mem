@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/conformance"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -113,12 +113,12 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/exchange-vector>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/exchange-vector">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jSfXRlBrYitpuZWAd2XNC1fhSmeni7jVMW-Cl8NMJuQ
+<<^ code="&#x0003;">>ni:///sha-256;x4reZLos93ghvBCXJou2LlvCT7WCVmQfD7l8hS_-6to
 
 <<^ code="&#x0004;" -> to="?">>

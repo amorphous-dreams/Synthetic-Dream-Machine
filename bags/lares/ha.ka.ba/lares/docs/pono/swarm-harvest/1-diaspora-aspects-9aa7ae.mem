@@ -252,10 +252,10 @@ Across all four systems, **the same measurement gap recurs**: every one ships th
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sdt5Kw4mHzM68Bf52AHdI4WRakTjhmeBZZrWVNNccdM
+<<^ code="&#x0003;">>ni:///sha-256;KT6gYdyS0xjwJgLdyDm07YKIvjELK5IW7THpotRD6TE
 
 <<^ code="&#x0004;" -> to="?">>

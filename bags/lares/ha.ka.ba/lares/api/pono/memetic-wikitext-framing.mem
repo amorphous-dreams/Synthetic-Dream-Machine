@@ -19,7 +19,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -1041,17 +1041,17 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/parser>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/carrier-parse>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapu>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/carrier-parse">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MRqu1jt8VlndeXRjFZnakbYzHtBHrchSdQENC-O9ezQ
+<<^ code="&#x0003;">>ni:///sha-256;jBddP4CaFnNQcGrecWcNyt1QSqf75bKnyeI68Bdj018
 
 <<^ code="&#x0004;" -> to="?">>

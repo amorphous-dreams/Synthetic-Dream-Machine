@@ -62,10 +62,10 @@ comes only after all source text reads as moved.)//
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/books/index>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/books/index">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aZ2hThatGJyClkCIf-t_ctnmsfsL9WPkw7vc4H5AOTY
+<<^ code="&#x0003;">>ni:///sha-256;A2apwrubF_NWAzm9OWS_0j9MacUGNXisnnQy_pIHPYE
 
 <<^ code="&#x0004;" -> to="?">>

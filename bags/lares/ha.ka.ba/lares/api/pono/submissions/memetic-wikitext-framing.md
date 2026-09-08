@@ -1,6 +1,6 @@
 
 
-- `lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language`
+- `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
 <a id="/abstract"></a>
 
@@ -978,11 +978,11 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 ## Edges
 
-- `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/lares/api/pono/lar-uri`
-- `lar:///ha.ka.ba/lares/api/pono/parser`
-- `lar:///ha.ka.ba/lararium/docs/carrier-parse`
-- `lar:///ha.ka.ba/lares/api/pono/render-pipeline`
-- `lar:///ha.ka.ba/lares/api/pono/meme`
-- `lar:///ha.ka.ba/lares/api/pono/kapu`
-- `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds`
+- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
+- `"lar:///ha.ka.ba/lares/api/pono/lar-uri"`
+- `"lar:///ha.ka.ba/lares/api/pono/parser"`
+- `"lar:///ha.ka.ba/lararium/docs/carrier-parse"`
+- `"lar:///ha.ka.ba/lares/api/pono/render-pipeline"`
+- `"lar:///ha.ka.ba/lares/api/pono/meme"`
+- `"lar:///ha.ka.ba/lares/api/pono/kapu"`
+- `"lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`

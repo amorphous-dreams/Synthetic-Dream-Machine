@@ -262,16 +262,16 @@ async-aware, deterministic semantics with the concurrency operators.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lele>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/holo>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/puka>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hui>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-type-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lele">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/holo">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/puka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hui">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-type-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ahlj1bYtvW0jGNMsGsCFEaD0A3utUZfwFD3VL80zJ3g
+<<^ code="&#x0003;">>ni:///sha-256;eEC3zYYX7DEqlwIl0QrQbtbQ_VX1nwZymdmre8YyHF4
 
 <<^ code="&#x0004;" -> to="?">>

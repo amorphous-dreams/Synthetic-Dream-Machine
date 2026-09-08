@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/ffz-mesh-timing"
 written   = "2026-06-29"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/mesh/ffz-clock>>
+<<~ aka "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
 
 <<^ code="&#x0002;">>
 
@@ -123,15 +123,15 @@ Eight independent domains converge on a single shape — ''three axes, no global
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/ffz-clock>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/siege-resilience>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/agent-worldline>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/vessel-caps>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RZDMBWaDnHkoqFLDStZn_UtROlI2TfEbpHIoV1WI72o
+<<^ code="&#x0003;">>ni:///sha-256;j_ereAhen-OsLqj31cj5FZY5JsZC-mkQnWeH-VZNug0
 
 <<^ code="&#x0004;" -> to="?">>

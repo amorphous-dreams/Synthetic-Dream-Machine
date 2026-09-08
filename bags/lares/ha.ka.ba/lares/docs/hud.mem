@@ -186,12 +186,12 @@ The opening header declares the state that //governs// a span (prospective). In-
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/hud>>
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pjBqB9jpQ_D5deD5QsKx5R4nQhtFCjE0YKc7YFsLrcs
+<<^ code="&#x0003;">>ni:///sha-256;R5eH0221mrLsKNlNUkmHrlXFFYzSW4kXa3Spy_rMsjk
 
 <<^ code="&#x0004;" -> to="?">>

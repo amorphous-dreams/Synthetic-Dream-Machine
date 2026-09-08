@@ -20,7 +20,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/secure-context"
 written    = "2026-07-23"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -206,20 +206,20 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/cap-tier>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reach-plane>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/nexus-topology>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-slot>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/federation>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;atZAMSZTCQdkz0qULFo9r8lUwJbtqUQ82-X4gJwAeeE
+<<^ code="&#x0003;">>ni:///sha-256;AW2G0H54v_HJOdg8MF5XgOjqQfNdZz3vlDmRTyr1zgI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -135,7 +135,7 @@ Islands resolve each slot from its plane: invariants + system bags from the `@or
 
 `@daemon` keeps its seat on `@oracle` as a SYSTEM plane, and the same ruling grounds it: `@daemon` stands alone on a faceless crossroads, which names exactly the universality `@oracle` holds.
 
-''Content face ↔ read face (one `@oracle`, never two boards).'' This recipe/invariant plane names the ''content face'' of `@oracle`; its governed ''read face'' — who signs the public-read projection, at what scale, and how it stays un-capturable — refines forward at <<~ loulou lar:///ha.ka.ba/lararium/mesh/oracle-governance>>. Same `@oracle` seen two ways.
+''Content face ↔ read face (one `@oracle`, never two boards).'' This recipe/invariant plane names the ''content face'' of `@oracle`; its governed ''read face'' — who signs the public-read projection, at what scale, and how it stays un-capturable — refines forward at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>. Same `@oracle` seen two ways.
 
 <<~/ahu>>
 
@@ -285,14 +285,14 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/lararium-doc-stack>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-model>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JiRlIk3cw5Y_6jjzcGW0kYeQH0E9LrXTVMH56HkR0X0
+<<^ code="&#x0003;">>ni:///sha-256;w0wJv4JNZiixhozX9M_K0qaDDCrqmOaoDUvX8RW7SKI
 
 <<^ code="&#x0004;" -> to="?">>

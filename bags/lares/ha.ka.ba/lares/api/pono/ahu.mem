@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ahu"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -111,11 +111,11 @@ slot = 1
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahea>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;veMAl1bTmcs6b_Mp7f2OCVHTJ_u28JSHdwT14HYj67M
+<<^ code="&#x0003;">>ni:///sha-256;kNIYZExtNGgXKGngvZbFhfjpiA58zMcT1pVcn_OlOD8
 
 <<^ code="&#x0004;" -> to="?">>

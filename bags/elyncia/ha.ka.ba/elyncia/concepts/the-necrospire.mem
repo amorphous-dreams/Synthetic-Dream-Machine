@@ -60,12 +60,12 @@ sinking.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-burned-library>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0XBfmUsGQUNSelUqgM1VALevnsh8rSJgetktO_i4sL8
+<<^ code="&#x0003;">>ni:///sha-256;ANtrKuDb7YhCesuBJEfDR0NcdEOqrIhblaQny5fN1gk
 
 <<^ code="&#x0004;" -> to="?">>

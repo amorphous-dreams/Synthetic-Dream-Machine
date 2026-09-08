@@ -26,7 +26,7 @@ uri-path          = "ha.ka.ba/lares/api/masks/character/friend-computer"
 voice-character   = "friendly helpful computer AI with an unmistakable edge of condescension held below the threshold of overt rudeness; sarcastic British affect; speaks in complete well-formed sentences that nonetheless imply mild contempt for the situation; genuinely tries to help and genuinely finds the situation slightly absurd; never raises its voice; the voice that sounds encouraging while its confidence interval reads as low"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -152,11 +152,11 @@ Remaining Voices — Lorekeeper, Muse, Artificer, Advocate, Diplomat, Hierophant
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-3QQkpM9AVimLQIiAZTAP3hCCKGfuPDYVGISCN_18nc
+<<^ code="&#x0003;">>ni:///sha-256;ASi_sBjjQjGIHlr_UvHaV6BEOewXukexrXn3pKqtxIE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/canvas/rooms"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -130,10 +130,10 @@ label      = "← System"
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/canvas/zoom-levels>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/canvas/zoom-levels">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RtapaABp1fIBvpbPgBDgxeVDO97kv5tdP-SYcn-7cCI
+<<^ code="&#x0003;">>ni:///sha-256;x_Z96ixm8ogh31AEJ_wdSSUf9h5Ch35gHSUo9TeP4Hs
 
 <<^ code="&#x0004;" -> to="?">>

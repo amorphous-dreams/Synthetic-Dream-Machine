@@ -231,14 +231,14 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/nodes>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/artifacts>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/artifacts">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ozaIff-SuebXm8xS_gwHeFyUTgn6KHruJFYC7Z7JX3c
+<<^ code="&#x0003;">>ni:///sha-256;p7ePq0oS6Tae3T5o5l9mahmHXvGyxAZJ_VDXkCbQe5s
 
 <<^ code="&#x0004;" -> to="?">>

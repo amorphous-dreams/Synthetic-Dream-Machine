@@ -222,11 +222,11 @@ Systematic find-replace for authors migrating TW5 content:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e3bEMYjdUubtvlPAh0oOdVJ9jneQkPurn41hNX6pqzA
+<<^ code="&#x0003;">>ni:///sha-256;Il39tjjKpc0WR_W6KEtLTe3mY8QZLuJhZlr7wQY0b1k
 
 <<^ code="&#x0004;" -> to="?">>

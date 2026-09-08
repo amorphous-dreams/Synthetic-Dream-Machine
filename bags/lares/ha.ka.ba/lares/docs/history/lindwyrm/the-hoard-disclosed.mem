@@ -259,17 +259,17 @@ The thread above sealed in the far calendar of New Delos. This annotation speaks
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
 
-<<~ pranala #hands-off-to-build-arc from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index family=relation role=precedes>>
-<<~ pranala #consumed-from-act-vii from=? -> to=lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT family=reference role=source>>
-<<~ pranala #part-of-hoard-story from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger family=relation role=companion>>
+<<~ pranala #hands-off-to-build-arc from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index" family="relation" role="precedes">>
+<<~ pranala #consumed-from-act-vii from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT" family="reference" role="source">>
+<<~ pranala #part-of-hoard-story from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger" family="relation" role="companion">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ieJVGkhEyN4RQUyyCruye6lHlKKiS2-d5-CL9GfXP00
+<<^ code="&#x0003;">>ni:///sha-256;KyIWd0NHWmImqkFwLB4pjVENLItqlyEGsEGvESxX7lM
 
 <<^ code="&#x0004;" -> to="?">>

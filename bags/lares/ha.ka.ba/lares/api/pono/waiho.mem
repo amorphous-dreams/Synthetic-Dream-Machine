@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/waiho"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -82,15 +82,15 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kau>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/aka>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kau">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-const>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-let>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-var>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-const">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-let">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-var">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UF5Ln6Det7KGFLbZ5lSYxau48sRILJITK7PD7Hdg6cw
+<<^ code="&#x0003;">>ni:///sha-256;zWl21hljkaBKBf7eipPJ3BXVitJ77__4e8xg0BHFeEM
 
 <<^ code="&#x0004;" -> to="?">>

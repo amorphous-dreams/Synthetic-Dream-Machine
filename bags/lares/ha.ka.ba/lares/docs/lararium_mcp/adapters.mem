@@ -215,12 +215,12 @@ The following remain blocked until explicit policy lands:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/spine>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/spine">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2KY1S4RDPrm0Xi-GaYo92DhDBAM2mK8PXzPw1rXyBWU
+<<^ code="&#x0003;">>ni:///sha-256;BiVetTFQOjbOsczL91emn3SRR9nl1ozx12Ashqlan5M
 
 <<^ code="&#x0004;" -> to="?">>

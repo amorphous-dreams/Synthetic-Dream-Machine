@@ -179,10 +179,10 @@ https://www.iana.org/dnssec/procedures/ksk-operator/KSK_Key_Management_Procedure
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TZ747jlS3mZIsxzYVr4dTMhT-2gShbphCjJY-VmMyuI
+<<^ code="&#x0003;">>ni:///sha-256;tKc95KcCeuxT_f_MgTMWqca7drSEOh1item2OPmcxzQ
 
 <<^ code="&#x0004;" -> to="?">>

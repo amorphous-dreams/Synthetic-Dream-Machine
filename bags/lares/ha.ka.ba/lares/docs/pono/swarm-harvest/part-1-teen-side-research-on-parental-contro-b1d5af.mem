@@ -347,10 +347,10 @@ Two tooling notes for whoever picks this up: **OpenAlex hit its free daily budge
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n7MhdmkRUqXxUK4twPxsH9OJaabQaOQD9x1Ny9U1vAs
+<<^ code="&#x0003;">>ni:///sha-256;Px-xuePWv6qHx-_O_0bHCNdyGGY7v32wc8pkKYDriUA
 
 <<^ code="&#x0004;" -> to="?">>

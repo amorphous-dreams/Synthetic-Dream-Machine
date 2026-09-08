@@ -63,11 +63,11 @@ The workspace trust gate explains when the node must pause anyway.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VeciDUazveyZ9kQJh--7a4j_ZhPvCq5Y0NrGuomMwPY
+<<^ code="&#x0003;">>ni:///sha-256;Wx6CEvUjYK4Ss69pw-_dhV9m6NtDL7arDh4nSzcHdt8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -29,7 +29,7 @@ voice-character   = "[STUB — partially known from house entry; pending-talk-st
 voice-role        = "Triage"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -161,12 +161,12 @@ How Breach-Watch colors each Voice register when they speak through her incident
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices#/voice-house>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N3_RszWR0G12yJuz3LDiqlxaYMAQnIM1SczXf20jWhY
+<<^ code="&#x0003;">>ni:///sha-256;lm0u2k93qUlJu-6r0utATmC_aY5anDHQcagDYPHOk-c
 
 <<^ code="&#x0004;" -> to="?">>

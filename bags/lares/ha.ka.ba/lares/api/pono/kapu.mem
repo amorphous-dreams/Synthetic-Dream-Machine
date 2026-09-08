@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -78,8 +78,8 @@ A kapu carrier MAY declare children that are themselves kapu, forming a kernel l
 The `live-session-overwrite` failure mode names the specific violation: a lower-tier live exchange record claiming to override a kapu carrier by recency, repetition, or charm.
 The `canon-boundary` names the gate: crossing from live session pressure into kapu canon requires explicit ceremony, not silent accumulation.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
 
 <<~/ahu>>
 
@@ -111,9 +111,9 @@ This meme governs the kapu rating and above-namespace trust law.
 `loci` governs stable-address coherence and the canon MOVE ceremony.
 `l-space-trust` governs the shared l-space authority ordering.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
 
 <<~/ahu>>
 
@@ -121,17 +121,17 @@ This meme governs the kapu rating and above-namespace trust law.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Vb6_W0OT_fxx1AdgmGLZ7KIlLRQAuY6ttKWPYrS-wro
+<<^ code="&#x0003;">>ni:///sha-256;996sjI132WG1DD4PJvAFwqBTG16WLEx2JK0ciExy7dc
 
 <<^ code="&#x0004;" -> to="?">>
 <<^ code="&#x0014;" -> to="?">>

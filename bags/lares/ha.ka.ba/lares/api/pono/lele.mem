@@ -59,10 +59,10 @@ A lele edge MUST NOT wait for a response from the target.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-branch">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qoiGfQ1UDeZ2buxzLykQZCHiuB0s8M2IM4WIRrahH_c
+<<^ code="&#x0003;">>ni:///sha-256;etCj6gJSkRcALnKR0FEXbyvoite8pYsSWVM7iF_UbRY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -163,13 +163,13 @@ appears in production paths.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kukali>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reaction-engine>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mY6a4QuDYjp-q0u08zGjRE9HvypDST8dRe-ByjYTfHE
+<<^ code="&#x0003;">>ni:///sha-256;zaCYOa6zcA1UHXjafXWupfC0j7WQkfUhaGwtLlJZQPs
 
 <<^ code="&#x0004;" -> to="?">>

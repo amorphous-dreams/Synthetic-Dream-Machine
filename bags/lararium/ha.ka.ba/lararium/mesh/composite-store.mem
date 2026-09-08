@@ -57,14 +57,14 @@ empty bag rather than as a missed window'' — the failure this note exists to n
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/composite-store.ts family=code role=has>>
-<<~ pranala #recipe from=? -> to=packages/lararium-mesh/src/recipe.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/composite-store.ts" family="code" role="has">>
+<<~ pranala #recipe from="?" -> to="packages/lararium-mesh/src/recipe.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/tiddler-store>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/lararium-doc-stack>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
 
-<<^ code="&#x0003;">>ni:///sha-256;33tZpv_nFJQdHHqQ3G68RUFVwhePVud3jvn1yvtDDCY
+<<^ code="&#x0003;">>ni:///sha-256;cHdwfWpgzPFk7f-NL7AweV0wpLtjyUb4Lgf5k8_vwog
 
 <<^ code="&#x0004;" -> to="?">>

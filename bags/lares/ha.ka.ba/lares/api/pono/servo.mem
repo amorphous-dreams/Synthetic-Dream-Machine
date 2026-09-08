@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/servo"
 written   = "2026-06-29"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/api/projection-nalu#/servo>>
+<<~ aka "lar:///ha.ka.ba/lararium/api/projection-nalu#/servo">>
 
 <<^ code="&#x0002;">>
 
@@ -179,12 +179,12 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/capture-annotation-model#/nalu-flush-hardening>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model#/nalu-flush-hardening">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hbPvkJ_WPnJVV0ZYBYaWot8iTmF-3x1zkAjTm3tguzQ
+<<^ code="&#x0003;">>ni:///sha-256;SIUVzyeLlWdgoYMYEfx4s0WXDkjKw5Mk_4XML8ztQjM
 
 <<^ code="&#x0004;" -> to="?">>

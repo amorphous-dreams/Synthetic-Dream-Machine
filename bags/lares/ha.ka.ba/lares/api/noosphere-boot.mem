@@ -13,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/noosphere-boot"
 ```
 
-<<~ aka https://www.rfc-editor.org/rfc/rfc2119#section-1>>
+<<~ aka "https://www.rfc-editor.org/rfc/rfc2119#section-1">>
 
 <<^ code="&#x0002;">>
 

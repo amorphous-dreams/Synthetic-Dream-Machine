@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/attestation-plane"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -279,19 +279,19 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/steward-doctrine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/membership-doctrine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reach-plane>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/nexus-topology>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/alignment-layer>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/alignment-layer">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2OrXL-s9-55nPScZOuOqyQL5cOvDf9EiwnMpvzle_Dg
+<<^ code="&#x0003;">>ni:///sha-256;2h2hevlrLSbpat083pQiq_kU6YANWPF7YJVbOsPIseg
 
 <<^ code="&#x0004;" -> to="?">>

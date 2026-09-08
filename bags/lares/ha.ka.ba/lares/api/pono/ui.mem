@@ -59,10 +59,10 @@ TW5 filter expansion:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-query>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-query">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L0dVa55Qw8WrT2sQudNmXs_768101GHegGxBwlUjmuY
+<<^ code="&#x0003;">>ni:///sha-256;hONPa4flsa0QyRRqRePXaCArdAruVAo4QhqKgRc5Scg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/voices-review"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -353,13 +353,13 @@ MASKS.md converted from stub to forward-route to `lar:///ha.ka.ba/lares/api/pono
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices#/voice-house>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/workers>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/workers">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vpx9C9qBWVKxCGm1i0mU76LZDQpzjnbQZaxPwZPt1Hg
+<<^ code="&#x0003;">>ni:///sha-256;ZXN_5ZsK-RJlVwuQ9j0IaJCV3KZBTytf4I48nSFFDLc
 
 <<^ code="&#x0004;" -> to="?">>

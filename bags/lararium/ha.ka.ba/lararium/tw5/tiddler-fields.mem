@@ -88,12 +88,12 @@ This split removes the old flat-record ambiguity where TW5 content fields and ho
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tw5-module>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/tiddler-store>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_uI5AohW-s0T1DLgqgte1DQP86m9zKuTZE-rN_Eq86E
+<<^ code="&#x0003;">>ni:///sha-256;JnTV4GdSrSbu2qBba5JDMILJT_shUIJauAJS9iZKnxU
 
 <<^ code="&#x0004;" -> to="?">>

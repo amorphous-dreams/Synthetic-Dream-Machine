@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hooponopono"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -104,14 +104,14 @@ Boundary event fields:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;91xV3kQiLNMEayn_APx4KuIhVEvT2eETzUAWHJQeJTU
+<<^ code="&#x0003;">>ni:///sha-256;w8ltt3BIApUkuNVyuVYZOjA4l6ZmRd5zINd1WZf0faw
 
 <<^ code="&#x0004;" -> to="?">>

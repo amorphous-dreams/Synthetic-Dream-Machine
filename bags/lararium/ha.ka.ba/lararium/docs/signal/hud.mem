@@ -53,15 +53,15 @@ The instrument grammar itself stays in the pair; this room holds only the signal
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/hud>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/drift>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/provenance>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/sa-display>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/drift">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/provenance">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zfEW_aPwT9iN1Por-b3giqOyrQcy2dcaLomV6BC6Jdw
+<<^ code="&#x0003;">>ni:///sha-256;TyBV1jiD7lt1ockJVbiuLQxqVrWCuvOUxlhfoZlN81w
 
 <<^ code="&#x0004;" -> to="?">>

@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -76,14 +76,14 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Yp4R3Q9HusNzOgt1_9TJj7tmovlC3YqeAbvI5FLqucc
+<<^ code="&#x0003;">>ni:///sha-256;7QjjBry21n58hZf5pzlN1wuq_uP3eafC6yRg3w6rn-c
 
 <<^ code="&#x0004;" -> to="?">>

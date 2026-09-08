@@ -79,12 +79,12 @@ only as much as suits her.''
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mEAX12HEtb_mvNjQABcLsG5gfDN8m2UdzKJXoPA7xkc
+<<^ code="&#x0003;">>ni:///sha-256;JgL1m9XPBYIJ64zUmFS4DWjKVEWhoFCM3byIQUyl99U
 
 <<^ code="&#x0004;" -> to="?">>

@@ -20,7 +20,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/api/action-handler"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -109,12 +109,12 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-model#/effect-record>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/personal-slot>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hiWFv0pCu9CqJ71E6ZFen963nTXndrPr3aqCrmRFmO0
+<<^ code="&#x0003;">>ni:///sha-256;Guvq4c2c8N5RAjfQZOuxDV0qRvHurgfSK0QyJ0H_ENk
 
 <<^ code="&#x0004;" -> to="?">>

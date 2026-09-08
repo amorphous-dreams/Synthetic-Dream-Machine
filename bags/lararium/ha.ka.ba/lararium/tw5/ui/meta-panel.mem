@@ -113,11 +113,11 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/hud>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ui/meta-viewtemplate-tab">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/hud">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KcEXDkFuxiA0fHtIFYW0W_f8ivVoCrXRS3j5qXdztBo
+<<^ code="&#x0003;">>ni:///sha-256;r3lDvG0uWB6kk0oDbpqcxQWvxL1dXDA2JgkBrZWCG1w
 
 <<^ code="&#x0004;" -> to="?">>

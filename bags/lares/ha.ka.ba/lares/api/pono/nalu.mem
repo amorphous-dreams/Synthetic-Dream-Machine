@@ -272,15 +272,15 @@ edges encoded with FRU orientation assumptions need migration. See `uefn-scene.m
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-task-tree>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/vm-projection-bus>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/reaction-graph>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/uefn-scene>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/uefn-scene">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4kEYH3GFyn6VbNoDKlZMcNiC2ECycjNEcny5QXG2UoM
+<<^ code="&#x0003;">>ni:///sha-256;j1Wl3D0lNmY2xTJB7S5CzpptdRm6iIs7zGpLXEM5HIM
 
 <<^ code="&#x0004;" -> to="?">>

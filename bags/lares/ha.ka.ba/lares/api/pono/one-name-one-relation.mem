@@ -69,10 +69,10 @@ Reading up from the atom. Each rung names its relation, so a reader can tell at 
 
 !!! What the ladder shows once sorted
 
-* ''A Handle sits on NO rung.'' It names a principal from outside; it holds nothing and it meets nothing. Treating it as an entity is how a published face gets mistaken for the compartment behind it (<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>).
+* ''A Handle sits on NO rung.'' It names a principal from outside; it holds nothing and it meets nothing. Treating it as an entity is how a published face gets mistaken for the compartment behind it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>).
 * ''A PersonaGroup and its plane read as TWO things.'' The group BEING, the plane HOLDING. One name for both would put a principal in the capability ring.
 * ''Hosting is not holding.'' A Nexus hosts meeting places; it does not hold them, and no vessel mounts them by standing in that Nexus.
-* ''The Herm names a COMPOSITION, never a rung'' — a vessel carrying carriage pieces and no tuber sovereignty, the base course every vessel stands on. A vessel's role lives in its ''keel'' — `VesselKeel`, the substrate composition it supplies — and what an operator asks it to stand as rides `AskedStanding`. ''`recipe` names the pinned wiki's composition and nothing else'' (operator ruling): borrowing it for the vessel put one word across two layers (<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>).
+* ''The Herm names a COMPOSITION, never a rung'' — a vessel carrying carriage pieces and no tuber sovereignty, the base course every vessel stands on. A vessel's role lives in its ''keel'' — `VesselKeel`, the substrate composition it supplies — and what an operator asks it to stand as rides `AskedStanding`. ''`recipe` names the pinned wiki's composition and nothing else'' (operator ruling): borrowing it for the vessel put one word across two layers (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>).
 
 <<~/ahu>>
 
@@ -154,12 +154,12 @@ Three moves, smallest first, each standing on its own.
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-uris>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-uris">>
 
-<<^ code="&#x0003;">>ni:///sha-256;dH5vbsUApRn70X-wLNIBFY8pZdQvzWHGKqB0cvVeof0
+<<^ code="&#x0003;">>ni:///sha-256;KOCbTA8CyoLjUwY2mWCiepDn8x5TNJdV2oCBX9OgDhw
 
 <<^ code="&#x0004;" -> to="?">>

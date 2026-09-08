@@ -110,12 +110,12 @@ its island's red for the rest.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dGlGB_KBo_-gEqg243rSw1TCwChPwlxpWv-8iAeMpCU
+<<^ code="&#x0003;">>ni:///sha-256;xgKoq4OpMSoIBj4y9uPnA4-EvqpkIG7D5z2xYAxddrQ
 
 <<^ code="&#x0004;" -> to="?">>

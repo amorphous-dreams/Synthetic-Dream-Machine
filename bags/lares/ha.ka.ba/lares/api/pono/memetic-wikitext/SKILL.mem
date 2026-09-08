@@ -216,11 +216,11 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2LW63kB8Z-I_2yLEzm5gjRxGEsoJLn9cqGsdM3BweT0
+<<^ code="&#x0003;">>ni:///sha-256;C6uvhtj9k_lN5qxISiWOFbmqlFASTSSzHUrmhH6O7HA
 
 <<^ code="&#x0004;" -> to="?">>

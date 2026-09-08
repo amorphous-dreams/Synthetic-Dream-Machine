@@ -64,10 +64,10 @@ A hui block MUST propagate failure from any child flow to the containing flow.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-sync>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-sync">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hw-KgFHrq_PjnCgJSVRizJzLBxSxlZfEbzR1wXo54tw
+<<^ code="&#x0003;">>ni:///sha-256;av-QQMu9107iZ4pQ9m-kByap_nCV4-yjLrtpUc8XQ_Q
 
 <<^ code="&#x0004;" -> to="?">>

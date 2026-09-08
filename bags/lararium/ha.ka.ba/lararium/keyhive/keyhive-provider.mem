@@ -116,13 +116,13 @@ enters the PersonaGroup doc. The private scalar never leaves the memory of the f
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/operator-peer>>
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/capability-provider>>
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/event-store>>
-<<~ loulou lar:///ha.ka.ba/lararium/node/two-vessel-mesh>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/two-vessel-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zjtUKbYR_0UUSxOOVoGerE49ZsTQlr5r8prSfBgZLb0
+<<^ code="&#x0003;">>ni:///sha-256;KZYP_cUx3JumCAIqZz9W6J9kifE39U5WVwyUKcoRP84
 
 <<^ code="&#x0004;" -> to="?">>

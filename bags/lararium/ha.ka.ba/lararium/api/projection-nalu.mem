@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/api/projection-nalu"
 written   = "2026-06-26"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/nalu>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/nalu">>
 
 <<^ code="&#x0002;">>
 
@@ -172,13 +172,13 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the disk nalu (`disk-pr
 
 ''Held for the live-wire:'' the real embed + commit shores (through the @daemon), a shared durable quarantine (merge-gate's per-item proofread-reject ⋈ capture-nalu's batch-poison, two triggers one lane), the SubagentStop→nalu hook, and retiring the `lares subagents` direct-mine bypass.
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/task-handoff>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/nalu-engine>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/servo>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands#/task-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nkkjx9VqR5kMF8tAhn-eB8SGBcbUd5-PtygtN7WL6K8
+<<^ code="&#x0003;">>ni:///sha-256;FxRGgcV_ck-m4xzYRCRs7kZzQnHbcGNa2vrxamDwvsI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/chao"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -147,13 +147,13 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mHrzseGyyYXrKB-3J3a_heBg4R2mcRYqSF6DCV7qzmo
+<<^ code="&#x0003;">>ni:///sha-256;IlwkZdBUM1NkYXcFzf8isVxp3rGx9y_qtdYmLWzyY3M
 
 <<^ code="&#x0004;" -> to="?">>

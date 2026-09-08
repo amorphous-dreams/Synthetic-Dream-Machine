@@ -333,10 +333,10 @@ All MEASURED, RIPE Atlas + authoritative-side traffic:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;viVoEYRhpXApGXQBYSfkYlnTQssCbY__rFa5GejQF3w
+<<^ code="&#x0003;">>ni:///sha-256;VEQFtPILI3z-6PohmpHfnmby8SL_Rbv2J8IpAvM6100
 
 <<^ code="&#x0004;" -> to="?">>

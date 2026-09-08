@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/talk-story"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -121,13 +121,13 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P_h-NjqBpRmPcGOLpd3rGk6rnwVEchQsIf0CdZGeH_8
+<<^ code="&#x0003;">>ni:///sha-256;mugZmN6iNmVj4UGuP1q9Ig80JIDbQkTkrlRmItjA7LI
 
 <<^ code="&#x0004;" -> to="?">>

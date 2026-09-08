@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/masks"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -383,14 +383,14 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices#/voice-house>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/workers>>
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/workers">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o8gfv3uFzO5N4BpQRjpoRjMoGNjnBoDHr04XVn_zJA4
+<<^ code="&#x0003;">>ni:///sha-256;s8_xBz5dHO3U1VaCLwL4RqYEcN73SiEPJfF7GSUzYYs
 
 <<^ code="&#x0004;" -> to="?">>

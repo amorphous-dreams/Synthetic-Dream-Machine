@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/message-routing"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -87,11 +87,11 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Z7OGVG-hGZ-vkc1qY2GPhiz9KicDpaYkZQl0YguP5F0
+<<^ code="&#x0003;">>ni:///sha-256;cc0dRsiz11vfl1wYDuxKnP07XFxIxYQB6YAcLSi8iH4
 
 <<^ code="&#x0004;" -> to="?">>

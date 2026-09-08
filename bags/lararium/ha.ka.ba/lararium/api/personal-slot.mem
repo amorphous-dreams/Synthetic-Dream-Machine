@@ -22,7 +22,7 @@ uri-path    = "ha.ka.ba/lararium/api/personal-slot"
 uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -491,13 +491,13 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-model>>
-<<~ loulou lar:///ha.ka.ba/lares/api/keyhive/persona-group>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/memory-store>>
-<<~ loulou lar:///ha.ka.ba/lararium/config/bag-paths>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/keyhive/persona-group">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/memory-store">>
+<<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
 ''Tie ~ palettes as casual register.'' A per-operator overlay (palette, view-state) reads as the CASUAL
 register's lived surface — the living grammar in use before curation lifts it ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]]
@@ -505,6 +505,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jFC5vkf_VKOb9sQ1WnpOpeWY1_Q9ajXH5p4LAo2Vytw
+<<^ code="&#x0003;">>ni:///sha-256;eKDPdqjuKClUcKuaBb6BUp85EQczRLS6fZy_8MkTgYU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -166,10 +166,10 @@ spatial    = "light-blue"
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ffDKABfs8SULnGrmzljNtz6MGyRdOJV-7nSutqsx7PQ
+<<^ code="&#x0003;">>ni:///sha-256;GFiSje8n2BvW6-9rITr7J7igYk9mKTa4_dIv3-gOZIA
 
 <<^ code="&#x0004;" -> to="?">>

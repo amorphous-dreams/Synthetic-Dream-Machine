@@ -80,11 +80,11 @@ lowest tide.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-necrospire>>
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xh2UnReByXzMfMByWaHOFBm4AnEpm0eb_io90MKXVpc
+<<^ code="&#x0003;">>ni:///sha-256;FF_pEKMsI1kxb_Bk7hpbOMiaY1plykoPTPbXaNoAbug
 
 <<^ code="&#x0004;" -> to="?">>

@@ -243,14 +243,14 @@ This lets a client verify the complete minimal-boot prefix byte-for-byte without
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/traversal>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/pranala-parser>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/pranala-parser">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6vGPr19InHkffK8r1N8k0MPMXkRG698JXJRzXwYeoUo
+<<^ code="&#x0003;">>ni:///sha-256;Dmc9ovcgk52VcyZQvW_2v_hpEIAZhN_ECB_znmRKasw
 
 <<^ code="&#x0004;" -> to="?">>

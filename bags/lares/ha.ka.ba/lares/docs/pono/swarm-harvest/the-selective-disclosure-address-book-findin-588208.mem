@@ -196,10 +196,10 @@ Cwtch does ship multiple profiles, one Tor v3 onion each — but **nowhere claim
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WaXO4epmGFydzrIW0pnITLCQniAEvgmDlNY-1EIwG34
+<<^ code="&#x0003;">>ni:///sha-256;fjOYYRpLDesmceUdHYaWKO71yyfDAHbRJiG2ccmySfU
 
 <<^ code="&#x0004;" -> to="?">>

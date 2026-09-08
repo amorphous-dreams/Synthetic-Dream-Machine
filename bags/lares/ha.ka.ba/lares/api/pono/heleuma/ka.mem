@@ -78,10 +78,10 @@ When `body-sha256` is present and all signal thresholds are met, `_bootModules()
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/boot-gate>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0AoW7Oa6QXw7rJyZfA9DeWmZAHhs9B9oy4RTrz2vVxI
+<<^ code="&#x0003;">>ni:///sha-256;LiGCKuXYq_wngwK151IHb_2eeNRi3FMwMMGqdteyZBE
 
 <<^ code="&#x0004;" -> to="?">>

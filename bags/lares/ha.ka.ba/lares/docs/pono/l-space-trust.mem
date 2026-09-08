@@ -143,14 +143,14 @@ Speaker role and truth tier must stay separate.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/canon-boundary>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gxIZPArvsJD0m58Xl-tBIrtm6pzzFUkuD42jhHEKx1o
+<<^ code="&#x0003;">>ni:///sha-256;nEKRwDXJQSRy9ooPDXKONJ-9jjqyRqjvjkFLARHgKYo
 
 <<^ code="&#x0004;" -> to="?">>

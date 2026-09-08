@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/lararium-memory"
 written   = "2026-06-24"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -268,21 +268,21 @@ conflict press a `hoike`.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/mempalace-integration>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/lararium-canonical-model>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/operator-peer>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/talk-story>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7ZNwr0RUb3rcnNcbTelqvzhrb7zLDjjfG-U7vYcSj5o
+<<^ code="&#x0003;">>ni:///sha-256;gO92jCdAB8p1K1JyNeyyW-BsuTbgN50G-N7bTZeq4NM
 
 <<^ code="&#x0004;" -> to="?">>

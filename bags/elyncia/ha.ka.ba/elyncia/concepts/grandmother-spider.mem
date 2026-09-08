@@ -77,13 +77,13 @@ debts do not reduce to one.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/index>>
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/lamplighters-union>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/strandbeests>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o55KnLEHGRUoAQQW86PWTypRiuHjM0kJLKavFXqhMls
+<<^ code="&#x0003;">>ni:///sha-256;ccGXDcKFIflv8cYnilpkOB9Qn4rdaztrcSJaK32PlS4
 
 <<^ code="&#x0004;" -> to="?">>

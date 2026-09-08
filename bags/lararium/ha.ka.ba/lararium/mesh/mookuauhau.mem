@@ -23,7 +23,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/mookuauhau"
 
 A genealogy chants where a thing //comes from//. This one names the bloodline of the DreamNet's core move — ''a nameless entity that `#has` a stack of capabilities, composed by one rite (`composeVessel`) that routes only what each cap declares and refuses to boot on a missing dep'' — and asks the adversarial question: //who already stands here?//
 
-The chart sits beside the 2026-05-28 layer-survey, never replacing it — that one maps prior art onto the stack's components; this one traces the //fractal idea itself//. <<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art>>
+The chart sits beside the 2026-05-28 layer-survey, never replacing it — that one maps prior art onto the stack's components; this one traces the //fractal idea itself//. <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-prior-art">>
 
 ''The one-line verdict (chant it first, defend it after):'' the pieces stand ~80% built across ''two lineages that have never married'' — and so the novel work names a ''weld'', never an invention. //the smaller, defensible claim survives contact; the grander one falls to the first cousin who did it earlier.//
 
@@ -92,7 +92,7 @@ Matrix //nominally// separates rooms ⊥ federation ⊥ power-levels. In practic
 
 Keyhive's own notebook, p2panda-auth's notes, and a formal-verification paper (arXiv 2604.23560) flag the ''same'' edge, independently: the ''concurrent add-while-remove key-leak'' — a member added concurrently with a removal can, under CRDT merge, hold a key they should never have seen — //unsolvable without consensus-before-key-handover.// And "no global now" ''forbids'' that consensus. So the house holds, by construction, one room whose lock it cannot prove.
 
-This the lineage does not sweep. The leak rides ''bounded'', never sealed: every membership decays (the lease), and the ''kapae'' tombstone marks the cast-off so a removal converges. The disease and the cure share one vow. Boundary-test where it bites; consecrate the corner; refuse the false promise of a fortress. <<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae>>
+This the lineage does not sweep. The leak rides ''bounded'', never sealed: every membership decays (the lease), and the ''kapae'' tombstone marks the cast-off so a removal converges. The disease and the cure share one vow. Boundary-test where it bites; consecrate the corner; refuse the false promise of a fortress. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
 
 <<~/ahu>>
 
@@ -107,12 +107,12 @@ Lay the three recursions side by side and the gap shows: they live in ''two unma
 
 No one has made ''one composition primitive serve simultaneously as the code-wiring AND the authority graph AND the transport-recursion, across a no-global-now causal-island mesh.'' That marriage names the ''novel delta'' — plus binding identity in the exact layer Keyhive leaves blank, which for the Lar reads not as //who// but as ''which hearth one tends'' (place, and the petname-constellation that acts in each context).
 
-''Claim the weld, never the invention.'' //"We married three known fractals and filled the doorway one of them left open"// stands; //"we invented a fractal"// falls to Ink & Switch, to RINA, to Genode — each of whom built their third of it first. The rite that performs the marriage already sits in the code wearing the name of a function. <<~ loulou lar:///ha.ka.ba/lararium/api/composable-keel>>
+''Claim the weld, never the invention.'' //"We married three known fractals and filled the doorway one of them left open"// stands; //"we invented a fractal"// falls to Ink & Switch, to RINA, to Genode — each of whom built their third of it first. The rite that performs the marriage already sits in the code wearing the name of a function. <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
-<<^ code="&#x0003;">>ni:///sha-256;HQasKpuT75qgeWAGw3LpXHNdV95-UoUMhbXboIFw4T4
+<<^ code="&#x0003;">>ni:///sha-256;P2J8MdJGxIhIoBVHpwNnJb0-3QrIRWCj0Bh0-y4RUDw
 
 <<^ code="&#x0004;" -> to="?">>

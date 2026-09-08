@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/reference-fusion"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -63,14 +63,14 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LBRsIDz7baeNhS4-5sY6YfWQkka9O2ovS6KY5wHoMXI
+<<^ code="&#x0003;">>ni:///sha-256;gyO7qtxtr8vwPy9fuCfFkP6zQjZpTaplcsoD8_yWPRA
 
 <<^ code="&#x0004;" -> to="?">>

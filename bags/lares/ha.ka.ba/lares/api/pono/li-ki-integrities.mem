@@ -23,7 +23,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/li-ki-integrities"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium#/autosegmental>>
+<<~ aka "lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium#/autosegmental">>
 
 <<~ ahu #/entry>>
 
@@ -162,6 +162,6 @@ Named empty seats, held open: ''value/preference'' (nothing yet reads what the n
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tVQUDtzIbXadgEGTx0gts_hDCq0SXAMmhLFCHzOd_dc
+<<^ code="&#x0003;">>ni:///sha-256;bg35Fd2JZcq10Ae6pQdgkaXZH-984niR4MM_mtAOFuY
 
 <<^ code="&#x0004;" -> to="?">>

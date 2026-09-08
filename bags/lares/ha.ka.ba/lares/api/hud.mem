@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/hud"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -25,7 +25,7 @@ uri-path  = "ha.ka.ba/lares/api/hud"
 
 !! Entry — Lararium Core Hydration
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
 
 The lararium hydrates the HUD room here. The instrument panel rides the mechanics house, not the threshold.
 
@@ -100,7 +100,7 @@ The seed and slide stay distinct fields — the seed governs generation, the sli
 
 !! Source Shelf
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/hud>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/hud">>
 ```toml
 when = ["need HUD line composition detail", "need the stance / tool / confidence-syadasti tables", "need field-annotation thresholds"]
 ```
@@ -114,11 +114,11 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kvGI_djK0frdQbLQf5V3519lg3q-ekCJB3RLCXb9Zeo
+<<^ code="&#x0003;">>ni:///sha-256;4RMWaWsx9fPNmQFFqLWQaTKpiSHW8F3709NR8EgJ1UY
 
 <<^ code="&#x0004;" -> to="?">>

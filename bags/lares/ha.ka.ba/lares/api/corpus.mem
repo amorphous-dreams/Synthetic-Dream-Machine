@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/corpus"
 written   = "2026-06-30"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -339,7 +339,7 @@ telemetry/metadata stamping fire ''py-side'', where the model reads. TS keeps th
 the py-side instance and offloads to it. The batch bands sensorium already runs py/R; the streaming layer
 ''twins it py-side'', never re-homed into TS.
 
-<<~ranks engine boundary ~ python — the per-chunk cosine-drift signal + ruptures (Binseg / KernelCPD) as the python changepoint fallback -> form ~ python — tree-sitter · tree-sitter-languages · prefixspan · c2xg · treeminer · spacy+benepar (or stanza) -> stats ~ a thin R leg — ecp::e.divisive (the boundary tree) + a bootstrap / jackknife reproduction grade -> induce ~ the `induce` job mines a corpus end-to-end; the STREAMING layer TWINS it py-side, a live per-stream instance running the SAME model>>
+<<~ranks engine boundary ~ python — the per-chunk cosine-drift signal + ruptures (Binseg / KernelCPD) as the python changepoint fallback -> form ~ python — tree-sitter · tree-sitter-languages · prefixspan · c2xg · treeminer · spacy+benepar (or stanza) -> stats ~ a thin R leg — "ecp::e.divisive" (the boundary tree) + a bootstrap / jackknife reproduction grade -> induce ~ the `induce` job mines a corpus end-to-end; the STREAMING layer TWINS it py-side, a live per-stream instance running the SAME model>>
 
 ''The install carries the model, live and batch alike.'' Every dependency lands in the venv, and the venv
 now homes the sensorium itself — the model reads py-side rather than behind TS:
@@ -526,6 +526,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nVD-zCpE8BGJ5vsgR1RFaqEifM8N0NQFtX_i3GCjsNY
+<<^ code="&#x0003;">>ni:///sha-256;ySpDWIsznzSfl2hhV-K9rdKLvWBO3yzTLIIX3MAA9vA
 
 <<^ code="&#x0004;" -> to="?">>

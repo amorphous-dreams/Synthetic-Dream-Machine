@@ -153,10 +153,10 @@ This is a real, recent, cross-confirmed postmortem-class event, corroborated ind
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SiN3S9LjKYgxsifR-jM6OjV5Fwp4KHQOmazsVjKxUKM
+<<^ code="&#x0003;">>ni:///sha-256;dnv00qiSnQ2Z8xy76Mf3lKSPeUOlS53TEvpivQTttuk
 
 <<^ code="&#x0004;" -> to="?">>

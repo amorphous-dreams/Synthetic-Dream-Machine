@@ -47,15 +47,15 @@ second Node into code that claims isomorphism.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-node/src/open-node-vessel.ts family=code role=has>>
-<<~ pranala #daemon from=? -> to=packages/lararium-node/src/open-daemon-vm.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-node/src/open-node-vessel.ts" family="code" role="has">>
+<<~ pranala #daemon from="?" -> to="packages/lararium-node/src/open-daemon-vm.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/causal-island>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>
 
-<<^ code="&#x0003;">>ni:///sha-256;JWzjP7HVxYtfFgxWZ_o-E6fFeUvn1N3JEQZZEzFyhgc
+<<^ code="&#x0003;">>ni:///sha-256;D0JHt8fljiDo5Aa-h59riiR4KXfSCvvNrNgyVULbv2M
 
 <<^ code="&#x0004;" -> to="?">>

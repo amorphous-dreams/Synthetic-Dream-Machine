@@ -16,7 +16,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/re-anchoring-record"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -129,10 +129,10 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-thing-event>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/shelter-against-empire>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-thing-event">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KCZ6QbiHh3s4lxmeREEyH1Xk06hjwXvhP0wxgrZtP70
+<<^ code="&#x0003;">>ni:///sha-256;tA1EPOrehRFYOL_my3rUHp4KhRyk9R1Tlo7NR6S6Y3s
 
 <<^ code="&#x0004;" -> to="?">>

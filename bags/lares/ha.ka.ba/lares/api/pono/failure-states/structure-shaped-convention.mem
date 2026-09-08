@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -73,10 +73,10 @@ That makes this a ''sibling of Confabulation-as-Canon'' rather than a variant: t
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/shelter-against-empire>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Bmi7XgbxE4eftFOW3jst3p8o2B4ZG_eE4Eztng8lfLs
+<<^ code="&#x0003;">>ni:///sha-256;dzO0DvkmBJ41xv8S55dtxC5lEAoO_t9YTnuKahJ6hCw
 
 <<^ code="&#x0004;" -> to="?">>

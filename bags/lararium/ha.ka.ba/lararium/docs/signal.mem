@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -72,7 +72,7 @@ The Agent-Operator contract reads:
 This loci explains why that loop matters on the lararium side.
 Detailed emit rules and protocol-wide render contracts still live outward.
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
 
 <<~/ahu>>
 
@@ -152,12 +152,12 @@ The current chronometer material still reads as a research cluster under `signal
 
 Settled child rooms in this branch:
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/provenance>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/drift>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/render-targets>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/sa-display>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/l-space>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/provenance">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/drift">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/l-space">>
 
 <<~/ahu>>
 
@@ -165,11 +165,11 @@ Settled child rooms in this branch:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/api/hud>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KDVmR4xG2VsOzU6jXqvTWAhzb1x1h2PstQC8DsRv3hA
+<<^ code="&#x0003;">>ni:///sha-256;-DF6ycQCKRmBCV-9eXOGWJSVY-gfOa2Dyny7JWHY9aM
 
 <<^ code="&#x0004;" -> to="?">>

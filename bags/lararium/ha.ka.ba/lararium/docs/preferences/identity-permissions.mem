@@ -77,12 +77,12 @@ This shelf keeps the older bundle intact for now.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/continuity>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/continuity">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v1B3PmkWTfVhNX7W9o3f_WS-JGb7MqfJnOMOLf-8FdI
+<<^ code="&#x0003;">>ni:///sha-256;imaM85bDcGmUb_7_zG9WrTkvhTbmSzYcnVvx9CwOCUo
 
 <<^ code="&#x0004;" -> to="?">>

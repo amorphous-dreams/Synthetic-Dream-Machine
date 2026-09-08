@@ -42,10 +42,10 @@ Walks the AST, collects all `PranalaNode` and `PranalaSugarNode` instances, retu
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/ast>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/pranala-parser>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/memetic-parser>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ast">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/pranala-parser">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/memetic-parser">>
 
-<<^ code="&#x0003;">>ni:///sha-256;A-CU7liEhfnk7lNYcDRJJrai7Dx_Sh2QXpT1581h11E
+<<^ code="&#x0003;">>ni:///sha-256;FjhouascanmzpsEruS6tjHSaX8Pg0Ae0Uar7pAbN_mI
 
 <<^ code="&#x0004;" -> to="?">>

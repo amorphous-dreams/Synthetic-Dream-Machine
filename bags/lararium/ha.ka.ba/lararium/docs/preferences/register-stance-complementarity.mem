@@ -68,13 +68,13 @@ Current comparison surfaces:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/epistemology>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/epistemology">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jwWCwRCsgYq4HnMwvSSQeG8NDSayDfZVhx3omBYzfEc
+<<^ code="&#x0003;">>ni:///sha-256;kimFllX6Iz0B6LzhAMWRKThswI2mQnW1Uf5YrdwDI4E
 
 <<^ code="&#x0004;" -> to="?">>

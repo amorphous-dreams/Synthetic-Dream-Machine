@@ -84,13 +84,13 @@ The spellcaster may read — not speak — magical words or runes on scrolls and
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/read-magic>>
-<<~ loulou lar:///ha.ka.ba/sdm/source/becmi/basic>>
-<<~ loulou lar:///ha.ka.ba/sdm/source/becmi/rules-cyclopedia>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/read-magic">>
+<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/basic">>
+<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/rules-cyclopedia">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1CK6PdQQ_SqGo6tqrF-Cl9UnPU9TRcd2eny26ITFu-A
+<<^ code="&#x0003;">>ni:///sha-256;MvvP5D15oVC-efbCz0jIDZIH0Xj-aV3zhHJQiLZIozU
 
 <<^ code="&#x0004;" -> to="?">>

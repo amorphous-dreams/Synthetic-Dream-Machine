@@ -425,10 +425,10 @@ The requested figure, confirmed at source:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YLqE42u00j2JO_Hx-AGs3gusIQJ6rx1qCORMR5obEBw
+<<^ code="&#x0003;">>ni:///sha-256;JiEanXB8o0Iu9Cyep-eQcptASknWI-dN2qzFi3VjlhE
 
 <<^ code="&#x0004;" -> to="?">>

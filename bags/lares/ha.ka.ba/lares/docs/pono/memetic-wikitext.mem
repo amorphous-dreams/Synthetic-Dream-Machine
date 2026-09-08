@@ -188,11 +188,11 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;REG9nZuH6JeEk3ur1c28EACAh5E-KMeu0-qMFD9FSX8
+<<^ code="&#x0003;">>ni:///sha-256;_M4nGxfBu4RBefRpTTi5FTpYMCxhmfq2cQbinoAJn40
 
 <<^ code="&#x0004;" -> to="?">>

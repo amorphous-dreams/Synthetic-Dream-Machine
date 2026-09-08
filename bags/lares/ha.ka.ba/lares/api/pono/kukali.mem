@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kukali"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -78,11 +78,11 @@ Regex (canonical):
 !!! Paired usage with papalohe
 
 ```text
-<<~ papalohe #on-score DeviceA -> ScoreDisplay trigger=OnEliminated fn=Show>>
+<<~ papalohe #on-score DeviceA -> ScoreDisplay trigger="OnEliminated" fn="Show">>
 
 ... body ...
 
-<<~ kukali trigger=on-score>>
+<<~ kukali trigger="on-score">>
 ```
 
 `trigger:on-score` in kukali references `#on-score` — the fragment of the papalohe wire above.
@@ -102,7 +102,7 @@ OnEliminated<override>()<suspends> : void =
 ```
 
 Kukali maps this into memetic-wikitext:
-* `<suspends>` annotation → `<<~ kukali trigger=slot-name>>`
+* `<suspends>` annotation → `<<~ kukali trigger="slot-name">>`
 * Coroutine yield point → kukali sigil position in the carrier body
 * Resume on event → papalohe trigger fires; ReactionGraph resolves the subscribeOnce Promise
 
@@ -138,13 +138,13 @@ sigilName = "kukali"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-suspends>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-suspends">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;93Kn4dLAjuv1_x6t4iYzey0rF89Bgv9HuiIXh1oVEgw
+<<^ code="&#x0003;">>ni:///sha-256;27n3auTOlR6uCsVVr6NmINP-OJOxyKYsz4nGYCruBlg
 
 <<^ code="&#x0004;" -> to="?">>

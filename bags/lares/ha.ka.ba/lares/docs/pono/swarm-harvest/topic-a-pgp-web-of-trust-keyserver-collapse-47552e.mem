@@ -183,10 +183,10 @@ Brave Search returned HTTP 429 on every attempt across the whole session, and `r
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TXJewGWhS2esGDn8_Iqmh7gIJ2StUx7fJ0wMDC4pb_U
+<<^ code="&#x0003;">>ni:///sha-256;lmxfv2IcgEoHojBcNkLss93i6BmSpqLiEmXFE7XvS5U
 
 <<^ code="&#x0004;" -> to="?">>

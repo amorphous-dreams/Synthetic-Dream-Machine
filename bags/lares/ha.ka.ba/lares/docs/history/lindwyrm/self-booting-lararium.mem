@@ -275,17 +275,17 @@ It hums.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself">>
 
-<<~ pranala #consumed-from-self-booting-archive from=? -> to=lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE family=reference role=source>>
-<<~ pranala #consumed-from-self-booting-dev-story from=? -> to=lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY family=reference role=source>>
-<<~ pranala #threshold-after-kindling from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node family=relation role=follows>>
+<<~ pranala #consumed-from-self-booting-archive from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE" family="reference" role="source">>
+<<~ pranala #consumed-from-self-booting-dev-story from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY" family="reference" role="source">>
+<<~ pranala #threshold-after-kindling from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node" family="relation" role="follows">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6sZM98OEFyq1EhqOKoU3cpN09AWVJmBtNoSuZxj4Ang
+<<^ code="&#x0003;">>ni:///sha-256;KbKxGVWR8av2vjP3eThO4PVCCGZO_juMD9nR5eVmv38
 
 <<^ code="&#x0004;" -> to="?">>

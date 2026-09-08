@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/trait"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -81,10 +81,10 @@ Past capacity, additional patterns become Burdens (−1 to all rolls each) or wa
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/mount-points/storage-class>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2Fd7BFVFGxFzdItLrb5YyOn3vlzeK1bZXb45iUvFCEU
+<<^ code="&#x0003;">>ni:///sha-256;wjA7jWP9pnhzSCw5SZPRGq6ZcmMaPg04GxijK8hKtPs
 
 <<^ code="&#x0004;" -> to="?">>

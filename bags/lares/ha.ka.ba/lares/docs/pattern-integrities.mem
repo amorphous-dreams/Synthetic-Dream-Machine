@@ -95,12 +95,12 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/handoff>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/island-isomorphism>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2b0MkC8moIQh9JdX55KaX3ZOFOf8Svuf6iNZfkEsKp8
+<<^ code="&#x0003;">>ni:///sha-256;RLbu7oqpmxUvCAdVD6WWpVjlL6L8xEvHEp8PF32siCg
 
 <<^ code="&#x0004;" -> to="?">>

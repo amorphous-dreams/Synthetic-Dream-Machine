@@ -77,12 +77,12 @@ This shelf preserves the heavier runtime choreography once wrapped around them.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vx72L7bVvfBeikwgHZQOHsBtyKmo3KCtP8weLjVCDL0
+<<^ code="&#x0003;">>ni:///sha-256;TVVQwFAnF8--BIT4WIaiW8qUuU-W9o3BunNiRI1bwXw
 
 <<^ code="&#x0004;" -> to="?">>

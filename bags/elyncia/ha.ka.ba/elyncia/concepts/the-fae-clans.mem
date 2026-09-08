@@ -118,12 +118,12 @@ and reads as an outrage to anyone who does not.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars>>
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/index>>
-<<~ loulou lar:///ha.ka.ba/elyncia/concepts/grandmother-spider>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gnCnYy76aBlfYa0THxno3hRX79HXUk0RCHiQsdr5wyU
+<<^ code="&#x0003;">>ni:///sha-256;HFt6UKtgqLLpTz-ZQt7smhqoPwECsdinuYCwGrfbdSk
 
 <<^ code="&#x0004;" -> to="?">>

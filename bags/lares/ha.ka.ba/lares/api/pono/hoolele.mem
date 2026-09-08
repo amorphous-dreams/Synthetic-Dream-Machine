@@ -147,11 +147,11 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lele>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-task-tree>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lele">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A_IPpk9St0iXiww6BlkkyznGniqHKeFQgJgMygl_kbA
+<<^ code="&#x0003;">>ni:///sha-256;rYWOFYgfDWXwpMzGXveRR-B486BcTEwFFftBny5OJHI
 
 <<^ code="&#x0004;" -> to="?">>

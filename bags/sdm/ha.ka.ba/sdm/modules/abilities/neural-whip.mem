@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/abilities/neural-whip"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -71,9 +71,9 @@ On a botched strike or interfered control, choose one: the tentacle grips the wr
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/modules/power>>
-<<~ loulou lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip>>
-<<~ loulou lar:///ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou "lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip">>
+<<~ loulou "lar:///ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip">>
 
 <<~/ahu>>
 
@@ -88,6 +88,6 @@ On a botched strike or interfered control, choose one: the tentacle grips the wr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IcRoa0j57e-nLE-3dr0in_O2iDaIben6cwkno7-c1DU
+<<^ code="&#x0003;">>ni:///sha-256;lSBcL5fGpZTWRuAcWW5mH8up-6sEJRXh9zXRzqtl2pI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -60,13 +60,13 @@ reader a check they could then fail to find.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/capability.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/capability.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;33xZZ1sEG7-llIE4PpzV5SIhEcVrPWJiUy3Rmu7bQeo
+<<^ code="&#x0003;">>ni:///sha-256;cQTijkeMG6noyHTYpp4F4idCpbQvuT_kCdoBI2g_tsU
 
 <<^ code="&#x0004;" -> to="?">>

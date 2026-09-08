@@ -72,12 +72,12 @@ class, where the alert stays the permanent mechanism.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium/wiki-recipe>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/genesis-doc>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/engine-watch>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rd332pfEzMmtIDhd9BNUKkxkor0SY28SmwPCRjwKm9g
+<<^ code="&#x0003;">>ni:///sha-256;DlBf9NZPmM4Zw2hFBkMgySqslXqo44b7GG6Np3RTaZg
 
 <<^ code="&#x0004;" -> to="?">>

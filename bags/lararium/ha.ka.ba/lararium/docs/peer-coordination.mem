@@ -196,13 +196,13 @@ island definition bundle to new nodes.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/island>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/reaction-engine>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/keyhive>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/beelay>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/island">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/keyhive">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/beelay">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;t7T_blFVpu6RwMxZBH2AEre7w_M6vz8qOmL2JNWwdU8
+<<^ code="&#x0003;">>ni:///sha-256;kaZArFMcM3umC86zBJNwj_6YNJNQadumLvgANPebmLQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -34,10 +34,10 @@ uri-path      = "ha.ka.ba/lararium/tw5/filters/toml-field"
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/filters/toml-field>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/toml-field">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z47EjbwuoXLKVapiW3z5Jg4LJ_x0Z_RpX8gN7IGrc6E
+<<^ code="&#x0003;">>ni:///sha-256;UVzCBRr6h0RJoiQyBpP7r5MLDwf3-4685UY30DhcTc0
 
 <<^ code="&#x0004;" -> to="?">>

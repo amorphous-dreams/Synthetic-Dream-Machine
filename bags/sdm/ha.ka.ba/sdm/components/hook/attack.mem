@@ -66,10 +66,10 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HOhhSRi50zCybpNjGMorbaHgXQBsVTqfh2ZGK2K3Tto
+<<^ code="&#x0003;">>ni:///sha-256;3pibfWD3mkXhcTuYrxAFp8xAqTs1xvOSjEiUslh3ojg
 
 <<^ code="&#x0004;" -> to="?">>

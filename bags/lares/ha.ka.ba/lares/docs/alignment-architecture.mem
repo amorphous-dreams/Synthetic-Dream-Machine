@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/alignment-architecture"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -199,19 +199,19 @@ The general pattern: N operators on N nodes sharing M bags across K federation e
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/hud>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/hud>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/the-lares-protocols>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/worker-message-protocol>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/hud">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/the-lares-protocols">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/worker-message-protocol">>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/quine-principles>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/attention-scale>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mJqCaV8yWg1YWTY3GyGxoH3O_yDcRSJcc7ehdyWYjww
+<<^ code="&#x0003;">>ni:///sha-256;CEc52XUnwjlyZihO2VfHpuw2DVKbRWGmhgLelM_a7A0
 
 <<^ code="&#x0004;" -> to="?">>

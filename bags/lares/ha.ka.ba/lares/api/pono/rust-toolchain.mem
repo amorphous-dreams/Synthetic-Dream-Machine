@@ -128,9 +128,9 @@ So, MUST:
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/two-integrities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
-<<^ code="&#x0003;">>ni:///sha-256;feasDXYId1ElhwhWkO5EeZxmj8YgUkuKKA4gRxFzrKk
+<<^ code="&#x0003;">>ni:///sha-256;YVSVJf5EfFEY94T2XkAmdEqJmJ5am2s13xBWXzXMiKw
 
 <<^ code="&#x0004;" -> to="?">>

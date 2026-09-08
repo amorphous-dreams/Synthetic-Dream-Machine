@@ -44,7 +44,7 @@ Tune to the writing and read its magical interface layer. The referee gives the 
 
 !! Components
 
-<<~ kahea lar:///ha.ka.ba/lararium/lists/components>>
+<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
 
 <<~/ahu>>
 
@@ -52,12 +52,12 @@ Tune to the writing and read its magical interface layer. The referee gives the 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/read-magic>>
-<<~ loulou lar:///ha.ka.ba/sdm/procedures/tag-pill>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/read-magic">>
+<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;odj1jdzeIkVHFn8bWeRqzovhgnPWrYSZ9SDWhVoqIn0
+<<^ code="&#x0003;">>ni:///sha-256;Ykvrnaa6VaxWrKvallwYwaRKJ47yq-RHBkrCi-WIsqY
 
 <<^ code="&#x0004;" -> to="?">>

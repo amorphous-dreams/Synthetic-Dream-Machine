@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/cli/vessel-door"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -45,7 +45,7 @@ session artifact ids, storage artifact ids, and any other first-class name.
 
 ''The authority says where the named thing lives:''
 
-<<~ranks locality hostless ~ `lar:///ha.ka.ba/lares/commands/promote/…` — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ `lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…` — a LIVE session artifact, named at the node holding it>>
+<<~ranks locality hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it>>
 
 ''So one glance at a name says whether the thing it names outlives the session.'' A hostless name outlives
 the node; a hostful one does not, and reading a hostful name as durable NAMES the failure this law makes
@@ -261,10 +261,10 @@ reached.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/lares-lararium-binding>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>> · <<~ loulou lar:///ha.ka.ba/lararium/api/sensorium-runbook>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> · <<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SHmCGQI4J7TpNk0lK3ldvrdr5pLu6UzbK9XYflN3u_k
+<<^ code="&#x0003;">>ni:///sha-256;mSHl_Ip55YS9tGbH8b0BbErlxHZvcXmpS7lFMVDQ00w
 
 <<^ code="&#x0004;" -> to="?">>

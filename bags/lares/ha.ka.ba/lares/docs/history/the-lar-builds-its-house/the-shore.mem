@@ -161,17 +161,17 @@ Act IV receives:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<~ pranala #follows-the-quine from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine family=relation role=follows>>
-<<~ pranala #feeds-next-act from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein family=relation role=precedes>>
+<<~ pranala #follows-the-quine from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine" family="relation" role="follows">>
+<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein" family="relation" role="precedes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lxv2UCEd1iw87RalfE3JzWJYUND8ltkDGU383_s0d2Q
+<<^ code="&#x0003;">>ni:///sha-256;Qged8Z-2dqGBipbQ3cA4-kbdPF3nm5fA691D7BS3lWg
 
 <<^ code="&#x0004;" -> to="?">>

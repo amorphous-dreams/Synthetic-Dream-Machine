@@ -56,10 +56,10 @@ choose aftermath anchor/vector
 emit fenced CLOSE: ward-slide + HUD-slide + aftermath-vector -> ?
 ```
 
-<<~ loulou lar:///ha.ka.ba/lares/api/voices#/exchange-protocol>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices#/exchange-protocol">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bcRtSNVGBA7SiR_SOUYwe2sPQPCQOIVan3CJcmV3jlg
+<<^ code="&#x0003;">>ni:///sha-256;vI10crq8Rkeq933_S_Ww3qIJ7dceq0-opLz8r9wjTIU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -95,13 +95,13 @@ As Basic: a barrier an inch from the body, moving with the caster, AC 2 vs missi
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/shield-ward>>
-<<~ loulou lar:///ha.ka.ba/sdm/source/becmi/basic>>
-<<~ loulou lar:///ha.ka.ba/sdm/source/becmi/rules-cyclopedia>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/witness/powers/osr-spells">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/shield-ward">>
+<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/basic">>
+<<~ loulou "lar:///ha.ka.ba/sdm/source/becmi/rules-cyclopedia">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NafMf41-onRWCNzVp5VO72wQ1BIGv7aRER189zfWoIo
+<<^ code="&#x0003;">>ni:///sha-256;mCyrDcONBa-GvTR-gC0FX_LC7KRvEc9MxqHl8gu08c4
 
 <<^ code="&#x0004;" -> to="?">>

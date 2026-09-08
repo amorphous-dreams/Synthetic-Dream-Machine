@@ -187,10 +187,10 @@ This is consistent with — though not sufficient on its own to prove — your h
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Kvo6XMmnils0RbfcvDxtcDrwdiTOtRl1L1yZwMWMnBY
+<<^ code="&#x0003;">>ni:///sha-256;GCtgIJIp4lLfHdWAr7-pkx7vfzJaNXdymxmdXYNpKNY
 
 <<^ code="&#x0004;" -> to="?">>

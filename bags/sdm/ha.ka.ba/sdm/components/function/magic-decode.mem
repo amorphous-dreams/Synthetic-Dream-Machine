@@ -66,10 +66,10 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Eod-7dxyWJGLNuN_I-jBU5DV-oNmukgcvh6erw-S8zA
+<<^ code="&#x0003;">>ni:///sha-256;IzPV7Rvq2gwgxRVpu5lCyHw8Vv_uo9ljkdaOKMTLdYM
 
 <<^ code="&#x0004;" -> to="?">>

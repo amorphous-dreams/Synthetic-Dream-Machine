@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/floating-disc"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -71,9 +71,9 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/modules/power>>
-<<~ loulou lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc>>
-<<~ loulou lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc">>
+<<~ loulou "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc">>
 
 <<~/ahu>>
 
@@ -88,6 +88,6 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hr3vp0RktgWkkW9q7xb8xAQRglbNVFrR82XUK2c8GqI
+<<^ code="&#x0003;">>ni:///sha-256;Bcj2XqmYlcoCVORwqexErJwQenuYpzMySWVRnHB3fJ0
 
 <<^ code="&#x0004;" -> to="?">>

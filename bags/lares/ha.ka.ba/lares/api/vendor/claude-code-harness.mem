@@ -91,7 +91,7 @@ configuration edits, carrying `source` and `file_path` — the drift surface a p
 watches. RAW: a hook MAY block the change, and ''a blocked change surfaces no message to the
 operator or to the agent — only a debug-log line''. ''So on this seam, acting runs invisible
 and only observing speaks''
-(<<~ loulou lar:///ha.ka.ba/lararium/docs/kairos#refusal>>).
+(<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos#refusal">>).
 
 ''The frame ceiling.'' Hook output strings, `additionalContext`
 included, cap at 10,000 characters; past it the text lands in a file and the exchange
@@ -118,7 +118,7 @@ Each stands substrate-neutral — true of any harness, ours included.
 ''Context runs finite, with diminishing returns.'' Recall degrades as
 a window fills; the design objective reads as the smallest set of high-signal tokens that
 carries the outcome. ''The transclusion substrate enacts this''
-(<<~ loulou lar:///ha.ka.ba/lararium/api/context-substrate>>).
+(<<~ loulou "lar:///ha.ka.ba/lararium/api/context-substrate">>).
 
 ''Just-in-time retrieval over pre-loading.'' Hold lightweight
 identifiers; load content at runtime through them. ''A `lar:` URI stands as that
@@ -162,7 +162,7 @@ loses all three together.
 ''A pattern bounds a string; only a runtime bounds authority.''
 Wherever an allowed program can name another program, an allow-list has delegated its whole
 authority to text the pattern never sees
-(<<~ loulou lar:///ha.ka.ba/lararium/docs/kairos#check-set-one>>).
+(<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos#check-set-one">>).
 
 <<~/ahu>>
 
@@ -188,14 +188,14 @@ built against them tests behaviour, never a schema.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/context-substrate>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/kairos>>
-<<~ loulou lar:///ha.ka.ba/lares/api/infrastructure-as-myth>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/context-substrate">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/infrastructure-as-myth">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uGxfAiaeoyP5hrMbxT9WP7x4itscFSPtDt-oq1Q_52s
+<<^ code="&#x0003;">>ni:///sha-256;NtcWsZqhFaZx9W-pWVkLjSSMGtY4Pb5dmZD46LgcpBQ
 
 <<^ code="&#x0004;" -> to="?">>

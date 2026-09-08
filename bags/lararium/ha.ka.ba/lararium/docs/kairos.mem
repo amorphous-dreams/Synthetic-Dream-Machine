@@ -32,7 +32,7 @@ never a subsystem bolted beside it.
 
 <<~/ahu>>
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<~ ahu #/provenance>>
 
@@ -223,7 +223,7 @@ teaches the operator that dismissal does nothing, and that lesson generalizes to
 button files against the ''analyzer author'', and analyzers with high dismissal rates ''get
 disabled''. A dismissal that silences one instance teaches the instrument nothing.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
 
 <<~/ahu>>
 
@@ -312,15 +312,15 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/operations-review>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/degraded-states>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/operations-review">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7iV_dNUIh8lKQOVJezRvLsu1G5yj2K_4XFcp1mVAOoI
+<<^ code="&#x0003;">>ni:///sha-256;NgIGQJU6kcMhw3q0xMUr2BQUxIWIWegJW5H56oS35uA
 
 <<^ code="&#x0004;" -> to="?">>

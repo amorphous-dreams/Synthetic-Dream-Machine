@@ -29,7 +29,7 @@ voice-character   = "[STUB — partially known from house entry; pending-talk-st
 voice-role        = "Scryer"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -161,12 +161,12 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices#/voice-house>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M2w2dwzwe-YsKtauoiyKDKDgekzZrnbUHxJNGAgg7m4
+<<^ code="&#x0003;">>ni:///sha-256;oRxYJ9241u9E9f9aH75hPw1POFx0cogxlkqGnNRwlWY
 
 <<^ code="&#x0004;" -> to="?">>

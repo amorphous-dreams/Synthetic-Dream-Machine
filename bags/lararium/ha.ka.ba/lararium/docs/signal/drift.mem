@@ -53,12 +53,12 @@ The in-span loop surfacing rides the `OODA-HA` Level (`lar:///ha.ka.ba/lares/api
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/sa-display>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r6fqsaPrk0mY0KKARZLC6La6L8hRjO9S2agoBzEuf4Q
+<<^ code="&#x0003;">>ni:///sha-256;OaMnrImVk44DyCKN0uvA1Dp4LJKyWMsdomVLH24PNFY
 
 <<^ code="&#x0004;" -> to="?">>

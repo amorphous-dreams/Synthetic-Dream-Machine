@@ -108,11 +108,11 @@ Use this witness carrier for provenance.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/named/mischief-muse>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/mischief-muse">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0YNLGqYRN8_auxCogT8ep1IhHSbHaDzZy4OgamJFur0
+<<^ code="&#x0003;">>ni:///sha-256;h9MwLTVfTFRl6LYj3gxKLH7bv7aVHzKmvHfs0sX-Wx4
 
 <<^ code="&#x0004;" -> to="?">>

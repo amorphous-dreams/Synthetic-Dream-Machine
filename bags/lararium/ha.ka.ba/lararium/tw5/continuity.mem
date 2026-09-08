@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/continuity"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -25,7 +25,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/continuity"
 
 !! Entry — Lararium Core Hydration
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
 
 The lararium hydrates the continuity room here.
 Session carry belongs to the lararium side, not the threshold side.
@@ -76,12 +76,12 @@ This child meme keeps the cold-hydration contract small.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/crystal>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/crystal">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ehaZP0lLulU3rCk352TWkiUuN6dsYyddbo5yzqfvaKs
+<<^ code="&#x0003;">>ni:///sha-256;RAQQW5YGOpewWRJzWj9CD1OuEzfyG_XmWOhME-p0hno
 
 <<^ code="&#x0004;" -> to="?">>

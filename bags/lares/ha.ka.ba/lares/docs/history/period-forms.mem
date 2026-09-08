@@ -65,11 +65,11 @@ glyph-definition drafts and the `lares-*.instructions` files.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/consume-archive>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/consume-archive">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GcrsHbCHFUOXp9O46omz0RAV2tZ7efhX9yl9M-GRImY
+<<^ code="&#x0003;">>ni:///sha-256;K3V73QAQWp9DNTh40TF_plKvOx9n88EDKWneUxqapwE
 
 <<^ code="&#x0004;" -> to="?">>

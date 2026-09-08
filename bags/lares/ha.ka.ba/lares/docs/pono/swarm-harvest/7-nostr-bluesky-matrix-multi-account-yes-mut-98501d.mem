@@ -303,10 +303,10 @@ Briar's FAQ is the only place any of these projects writes the general law down,
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jUdjnUPNk0oasqymZAmGVuulCwA2BhZ8xNs_I0wGtUg
+<<^ code="&#x0003;">>ni:///sha-256;v2H6ExprtZmjC_ul2fBl5T7Lz_npZ6YNbuVTRcToaRI
 
 <<^ code="&#x0004;" -> to="?">>

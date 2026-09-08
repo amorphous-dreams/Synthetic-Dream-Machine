@@ -123,10 +123,10 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/dreamdom>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;kkkrw1jFcuwRLKCmLGaOXaQMMYdw10HgYFJhxEmvTxg
+<<^ code="&#x0003;">>ni:///sha-256;WMOeB-Fwufa6wLuaA-CuDo7ZIvdhCbwjJsNHvvGKfo0
 
 <<^ code="&#x0004;" -> to="?">>

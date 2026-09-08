@@ -128,14 +128,14 @@ Forward, open, to the arc that follows — unwritten, its outcome unclaimed:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein">>
 
-<<~ pranala #follows-the-bright-vein from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein family=relation role=follows>>
-<<~ pranala #hands-forward-open from=? -> to=lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index family=relation role=opens-onward>>
+<<~ pranala #follows-the-bright-vein from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-bright-vein" family="relation" role="follows">>
+<<~ pranala #hands-forward-open from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index" family="relation" role="opens-onward">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Pe1Vt9znUNUbkpppDtNdpA-22AM8I64zOWtGYkyETnQ
+<<^ code="&#x0003;">>ni:///sha-256;AMDcTAxdviyKLbb28z2eJ7AenXP6KZ6n2pfbSq5KUBc
 
 <<^ code="&#x0004;" -> to="?">>

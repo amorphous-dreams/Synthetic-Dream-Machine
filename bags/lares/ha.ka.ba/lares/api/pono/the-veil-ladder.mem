@@ -53,7 +53,7 @@ A ''PersonaGroup rides as an OVERLAY, never a promotion that consumes the anon''
 ''THE FLOOR CARRIES TWO OCCASIONS, and only one of them is chosen.'' This section names the floor a BURN
 falls to — a deliberate shedding. A vessel that WAKES unable to open its sealed archive falls to the same
 floor by an ''unchosen'' absence, and the rule reads identically: it has lost its CAPS, never its FLOOR, so
-it stands rather than refuses. <<~ loulou lar:///ha.ka.ba/lares/api/pono/waking-floor>>
+it stands rather than refuses. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
 
 ''Burning the Handle severs the overlay FORWARD, never the floor.'' The vessels lose sync over //new// shared content until the user or operator resolves it (re-invite, re-key), and drop back to their anon floor — keeping their own content AND whatever shared content they ''already decrypted''. keyhive (BeeKEM) carries ''post-compromise security'' but NOT forward secrecy: revoke re-keys the group so the burned vessel reads nothing shared //after// the burn, yet it never erases the past it already read. The cut runs one-way — future, not history (`persona-content-crossing`, the burn test). That forward severance names the DreamNet's ''risk / reward / cost''.
 
@@ -131,16 +131,16 @@ For a thing with ''no king'', this is not a gap — it is the only honest archit
 
 The burn (#/the-price) reads as a //chosen// shedding; ''involuntary key-loss'' is the same cut made by accident — and it lands hardest on the ''lone 1-vessel citizen'' (one device, no Circle) whose declared Handle, unlike a cheap anon-veil, carries accreted standing a dead key forfeits. The floor, held: recovery ''re-admits, never escrows a secret at rest'' (device re-admission, the G-recovery keel). The one bound that governs all of it: ''the recovery quorum IS the impersonation quorum'' (Camenisch-Lysyanskaya) — no party can restore you without being able to //become// you, so there reads ''no safe custodial escrow, only priced quorums'' (raise k · hide guardians · time-delay + live-key veto).
 
-For the citizen with ''no quorum yet'', the floor is a ''standalone recorded code as the FIRST non-device share'' of their own threshold (not a vault-key — the one recovery act a lone citizen performs alone, Apple-shape blind escrow; Google/Samsung both need a second device and fail the lone case). Birth quorum = `{device, recorded-code}`; a peer node MAY hold one share (Delivery-Service) but ''never a quorum'' (never Auth-Root). The quorum grows `code → +2nd device → +Circle guardians → FROST/TSS` (no reconstruction window), retiring imported trust as the Circle forms. Across every migration the ''anonymity ⊥ non-transferability'' bound holds (the same law that prices the burn, #the-price): ''positive rep rides holder-continuity proofs'' (no watcher), ''negative marks bind to the RETIRED key as anergy'' — tolerated-inert, ''never laundered'' by a recovery. Recovery restores the seat + earned standing, never a clean slate. <<~ loulou lar:///ha.ka.ba/lares/api/pono/the-recovery-keel>>
+For the citizen with ''no quorum yet'', the floor is a ''standalone recorded code as the FIRST non-device share'' of their own threshold (not a vault-key — the one recovery act a lone citizen performs alone, Apple-shape blind escrow; Google/Samsung both need a second device and fail the lone case). Birth quorum = `{device, recorded-code}`; a peer node MAY hold one share (Delivery-Service) but ''never a quorum'' (never Auth-Root). The quorum grows `code → +2nd device → +Circle guardians → FROST/TSS` (no reconstruction window), retiring imported trust as the Circle forms. Across every migration the ''anonymity ⊥ non-transferability'' bound holds (the same law that prices the burn, #the-price): ''positive rep rides holder-continuity proofs'' (no watcher), ''negative marks bind to the RETIRED key as anergy'' — tolerated-inert, ''never laundered'' by a recovery. Recovery restores the seat + earned standing, never a clean slate. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-recovery-keel">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-circle>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm#/two-roots>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/multi-fractal>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/attestation-plane>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/two-roots">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 
-<<^ code="&#x0003;">>ni:///sha-256;7uM9hNRwiiwtCV35QY7Zx5nZMGjn3a1_sWZD3WqjJE8
+<<^ code="&#x0003;">>ni:///sha-256;aA-15XTpePKVNOlcQIz_o3qd0xfDvU901On7gxUQXfQ
 
 <<^ code="&#x0004;" -> to="?">>

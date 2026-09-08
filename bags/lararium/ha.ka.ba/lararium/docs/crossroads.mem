@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/crossroads"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -94,13 +94,13 @@ Who writes @crossroads (community authority shape), how Nexus-level federation d
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/content-resolution>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GLb7nqNcNuBb0UHUftC9GgfP0fHkLsdeY3FKENxGSsU
+<<^ code="&#x0003;">>ni:///sha-256;181UIcOFZORBZyWQdtQK7mF-uT_LpNZWG2smCR0hENw
 
 <<^ code="&#x0004;" -> to="?">>

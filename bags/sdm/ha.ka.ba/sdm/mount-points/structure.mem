@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/structure"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -88,10 +88,10 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/mount-points/storage-class>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xWoUX6bvWxGK2uaexGlEhpbU6IuOnpj1ffD6N1MJjUk
+<<^ code="&#x0003;">>ni:///sha-256;ayhokcOlM5bL_5n9_kPK11ySxWYNBtmW5hbf10T6eEM
 
 <<^ code="&#x0004;" -> to="?">>

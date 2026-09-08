@@ -43,7 +43,7 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 !! Components
 
-<<~ kahea lar:///ha.ka.ba/lararium/lists/components>>
+<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
 
 <<~/ahu>>
 
@@ -51,12 +51,12 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/abilities/neural-whip>>
-<<~ loulou lar:///ha.ka.ba/sdm/procedures/tag-pill>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/abilities/neural-whip">>
+<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qZJvUUR6z1YNS0B_pAz2SubROo7HlU7SSGwydAGIgWM
+<<^ code="&#x0003;">>ni:///sha-256;42cF8lL1ABgDFlKywQNZfKSu7N4jpq3DCklJmN6QKPA
 
 <<^ code="&#x0004;" -> to="?">>

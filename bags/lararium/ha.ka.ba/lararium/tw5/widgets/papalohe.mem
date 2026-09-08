@@ -34,10 +34,10 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/papalohe"
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/widgets/papalohe>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/papalohe">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KZmLi5bv4jk6SzOkMgdtzQXo4jPI_KCd35zl2FFeM8c
+<<^ code="&#x0003;">>ni:///sha-256;wYbsiMYqQMdnFtxaKdXw1fMMLJ9PwvohWCPcSTuQLsE
 
 <<^ code="&#x0004;" -> to="?">>

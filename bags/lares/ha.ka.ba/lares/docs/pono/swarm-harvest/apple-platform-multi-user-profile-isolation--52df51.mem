@@ -299,10 +299,10 @@ CVE-2005-2509 (Mac OS X ≤10.4.2, loginwindow, "allows attackers to log into ot
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k8jJrS547H0tF1oq8yMVygRtXsLDwfBPvSQNikoIdSg
+<<^ code="&#x0003;">>ni:///sha-256;-yAzIdfSeuqi69ut1-CKnqyOa1eJ2WyUSbhw2Eg4ZFY
 
 <<^ code="&#x0004;" -> to="?">>

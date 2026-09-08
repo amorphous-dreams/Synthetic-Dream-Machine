@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/vessel-caps"
 
 ! Vessel Caps ~ a vessel is its composed cap-stack
 
-A vessel does not have a ''type''. A vessel ''carries a composed `#has`-stack of capabilities'', and its role //emerges// from which caps it holds and lights. Enumerating vessel-kinds (node-lararium, node-relay, browser-lararium) re-grows the subclass-explosion the `#has`-ontology already retired (<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>). This meme replaces that enumeration with ''composition'' — so a full node, a bare relay, a browser, a Mudlet instance, an Unreal Engine instance, and the next vessel nobody has built yet all mesh by the ''same move: declaring the caps they carry.''
+A vessel does not have a ''type''. A vessel ''carries a composed `#has`-stack of capabilities'', and its role //emerges// from which caps it holds and lights. Enumerating vessel-kinds (node-lararium, node-relay, browser-lararium) re-grows the subclass-explosion the `#has`-ontology already retired (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>). This meme replaces that enumeration with ''composition'' — so a full node, a bare relay, a browser, a Mudlet instance, an Unreal Engine instance, and the next vessel nobody has built yet all mesh by the ''same move: declaring the caps they carry.''
 
 <<~ ahu #/the-five-caps>>
 
@@ -69,7 +69,7 @@ behavior = a system                  — runs over whichever vessels hold the ma
 
 A ''role'' computes as a ''structural predicate over the cap-stack'' — //"if a vessel `#has` these caps, it may play this role"// — satisfied, never declared (duck-typing / traits / structural interfaces). No nominal class, no type-tag, no central registry; a would-be "vessel-type" reads as just a ''named point in cap-composition space.''
 
-''ECS shapes the //declaration//, never the boot engine.'' The `entity = vessel, component = cap` reading stays exact — but as the ''inventory vocabulary'': the flat, dependency-blind set of caps a vessel HAS (//what a vessel IS//). A separate move does the ''wiring'' — a ''composition-root'' (`composeVessel`) reads the stack and topologically builds the live components, build-or-REFUSE on a missing mandatory dep, a cycle, or a dup. So ECS answers //what// a vessel holds; the composable keel answers //how it wires or refuses to boot//: <<~ loulou lar:///ha.ka.ba/lararium/api/composable-keel>>.
+''ECS shapes the //declaration//, never the boot engine.'' The `entity = vessel, component = cap` reading stays exact — but as the ''inventory vocabulary'': the flat, dependency-blind set of caps a vessel HAS (//what a vessel IS//). A separate move does the ''wiring'' — a ''composition-root'' (`composeVessel`) reads the stack and topologically builds the live components, build-or-REFUSE on a missing mandatory dep, a cycle, or a dup. So ECS answers //what// a vessel holds; the composable keel answers //how it wires or refuses to boot//: <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>.
 
 <<~/ahu>>
 
@@ -115,7 +115,7 @@ The smallest composition that still meshes — ''the Hermai'', the crossroads-ma
 
 The `@daemon` carries the ''autonomy organ'': it runs the siege repair-kit — ''re-key · evict · heal · re-share'' — at the Herm's ''own shrine tier''. A dumb pipe holds no such organ and cannot defend the segment it carries; the keel grows the teeth. This follows ''Stafford Beer's VSM recursion'' — the viable-system kit runs at //every// tier, each tier autonomous, never one central immune system. So a Herm at a crossroads repairs its own neighborhood: it re-keys a soured leyline, evicts a bad peer, heals a torn segment, re-shares the floor. Carrying the engine-blob, it brings ''the fire to cold hearths'' — any traveler kindles a fresh node from the wayfarer's own bulb.
 
-A Herm ''boots permissionlessly'' (its own self-certifying key, anon — no blessing asked, #integrity); every leyline it forms rides a ''separately-signed PEER/TRANSIT edge'', never a membership grant — carriage means transit, not trust. It reads the public floor and routes the map, yet the ''disclosure shore holds at the wire'': sovereign content never crosses it. The Lares Viales proves the architecture's floor in one figure — ''immune-core ⊕ blind-carriage ⊕ public-read'' — the minimal node every richer vessel composes //up// from (the Hello-World of the stack, now with teeth). The fiction names it the road-lares and the crossroads-herm: <<~ loulou lar:///ha.ka.ba/elyncia/concepts/lares-viales>>.
+A Herm ''boots permissionlessly'' (its own self-certifying key, anon — no blessing asked, #integrity); every leyline it forms rides a ''separately-signed PEER/TRANSIT edge'', never a membership grant — carriage means transit, not trust. It reads the public floor and routes the map, yet the ''disclosure shore holds at the wire'': sovereign content never crosses it. The Lares Viales proves the architecture's floor in one figure — ''immune-core ⊕ blind-carriage ⊕ public-read'' — the minimal node every richer vessel composes //up// from (the Hello-World of the stack, now with teeth). The fiction names it the road-lares and the crossroads-herm: <<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>.
 
 ''Retire-residue (attractor).'' An earlier draft named the Herm a ''minimal serve-carry process'' — a stripped pipe serving the public FLOW-map and forwarding bytes, with no `@daemon` and no engine. That picture ''superseded'': a pipe grows no immune function, so a mesh of pipes cannot repair itself under siege. The current model keeps the figure (minimal, blind-carriage, public-read) and ''adds the keel'' — the @daemon + mesh-palace immune core — so the floor defends itself at every tier.
 
@@ -176,7 +176,7 @@ The model assembles from adopted parts; the `#has`-ontology //is// the protocol 
 * ''integrity'' → ocap references over ''Iroh'' (key-sovereign transport, fungible relays).
 * ''differentiation'' → hold-vs-express (light the cap-set per context).
 
-What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`rhizome.forward`, `tuber.author`, …) and the wiring; the //structure// is all adopt. See <<~ loulou lar:///ha.ka.ba/lares/memory/build-leverage-ledger>>.
+What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`rhizome.forward`, `tuber.author`, …) and the wiring; the //structure// is all adopt. See <<~ loulou "lar:///ha.ka.ba/lares/memory/build-leverage-ledger">>.
 
 <<~/ahu>>
 
@@ -184,18 +184,18 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/composable-keel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-routing-substrate>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/open-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/capability>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-identity>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-routing-substrate">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BbRtKoW05r1hDFidwyGC0k2p1TQrKmTcIjGYxWxBIKA
+<<^ code="&#x0003;">>ni:///sha-256;jbxm0RpKFYRI08viquls_0iMv2ibvIc6UH1lgjQReDY
 
 <<^ code="&#x0004;" -> to="?">>

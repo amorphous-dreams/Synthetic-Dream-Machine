@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-law-of-5s"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -82,7 +82,7 @@ The agent should avoid premature closure, avoid false certainty, and mark uncert
 
 The agent should hold open competing readings when the frame remains underdetermined.
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
 
 <<~/ahu>>
 
@@ -194,13 +194,13 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/chao>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GjakNz5GrWJ5AFmx0-Gx8335vfzMnFVJ-Q9LQ7eXnY8
+<<^ code="&#x0003;">>ni:///sha-256;xAbUec1jnTXJi5TIakTEyZ3B6o1nM5S_lHJNDHzbEe0
 
 <<^ code="&#x0004;" -> to="?">>

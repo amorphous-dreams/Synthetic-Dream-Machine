@@ -69,11 +69,11 @@ export function abilityImplies(have: OrichalcumAbility, need: OrichalcumAbility)
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BIyrymPqHY68BijOKeI_h4I_4BENIzlVows-xqAZrWc
+<<^ code="&#x0003;">>ni:///sha-256;ROFnWKNKXc0PsUilV51vikt5FbFyo1t2-1AvCL92QXE
 
 <<^ code="&#x0004;" -> to="?">>

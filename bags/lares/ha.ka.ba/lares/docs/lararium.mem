@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/lararium"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -62,15 +62,15 @@ The rooms may deepen later without moving the seat again.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/crystal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/story>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/crystal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/story">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;t5I0ZfL9jpQeuPdN4KN7LGnobKG7VO_1bgh_EG2Q5Rw
+<<^ code="&#x0003;">>ni:///sha-256;lOY15ognAihQDHeqDhYTXpm45bcrnL5eNyth_tzRXE0
 
 <<^ code="&#x0004;" -> to="?">>

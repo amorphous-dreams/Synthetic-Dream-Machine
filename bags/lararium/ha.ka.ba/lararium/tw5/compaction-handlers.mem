@@ -23,7 +23,7 @@ uri-path    = "ha.ka.ba/lararium/tw5/compaction-handlers"
 This `epoch` (the DXOS-style snapshot-restart that mints a fresh history-less doc) names
 the ''compaction'' that bounds CRDT history — DISTINCT from the authority/liveness
 ''lease-epoch'' (the re-key / re-share clock, max-register, coordinator-free) that runs the
-siege refresh window at <<~ loulou lar:///ha.ka.ba/lararium/mesh/siege-resilience>>. The
+siege refresh window at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>. The
 two MAY co-occur at a boundary, never fuse: this one bounds //state-history growth//, the
 lease-epoch bounds //who may still act//. Reserve bare //epoch// for the lease going forward;
 read this mechanism as ''compaction''. ''AND THE VERB NOW SAYS SO'': `lares bag compact` /
@@ -38,7 +38,7 @@ frontier and nothing else; every other claimant carries a qualifier that names w
 and it blanks where ours picks a winner), ''seal'' epoch (ours, charter grain), ''POSIX ms'' for a
 wall-clock (never spelled //epoch// beside a clockless fence). One question separates them: does the
 fold pick a WINNER, or blank both paths? This one picks nothing — a compaction is a CUT, not a fold.
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
 
 <<~/ahu>>
 
@@ -123,13 +123,13 @@ is free recovery until growth on a long-lived high-churn bag actually bites
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/engine-watch>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/recipe>>
-<<~ loulou lar:///ha.ka.ba/lararium/node/handler-args>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/recipe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/handler-args">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xukwwj3c96rDRPMvsr3hfFWWo1VL5Wq0bg5WlB1Rkyw
+<<^ code="&#x0003;">>ni:///sha-256;eiS5t3hB7ieHY5NBUQYrGERihfJlSuRy37X-00yMt4c
 
 <<^ code="&#x0004;" -> to="?">>

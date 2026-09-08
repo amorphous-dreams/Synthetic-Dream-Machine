@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -63,14 +63,14 @@ AST reader: read the sockets, then route.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/model-agnosticism>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu/reality-tunnels>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/model-agnosticism">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/reality-tunnels">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LUE_vO-CQLStrIA05gbUBP_l6Apj3_8y92AcIGWYWmE
+<<^ code="&#x0003;">>ni:///sha-256;EumXh4z0Bw6Qu4RSWDwwK8OeeZn9Le-E8c0uJxOe17I
 
 <<^ code="&#x0004;" -> to="?">>

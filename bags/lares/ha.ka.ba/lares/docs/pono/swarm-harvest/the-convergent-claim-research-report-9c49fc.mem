@@ -602,10 +602,10 @@ McDaniel & Rubin's rebuttal to Rivest (Springer auth wall; abstract publisher-el
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qZbp_faC_BY-pyMAsI7e-sFF-fCXaoFGbrO6z6vUdEE
+<<^ code="&#x0003;">>ni:///sha-256;C0rHaCoSQccAM3LGThNXk1WSLRhjW26uvzxMIoOtEcQ
 
 <<^ code="&#x0004;" -> to="?">>

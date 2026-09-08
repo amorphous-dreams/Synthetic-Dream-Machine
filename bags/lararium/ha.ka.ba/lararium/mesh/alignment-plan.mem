@@ -122,11 +122,11 @@ These items name known inconsistencies in the current tree. Each carries a resol
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/browser/pono-charter>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bIIh2RiDozTT98z7wrgBPZSWn0TNc7qtfUAOsP15XRk
+<<^ code="&#x0003;">>ni:///sha-256;jPUp6d_J1W4hxHbuZFVGKSYpxMhQ8Gp9ak4apgeRTO4
 
 <<^ code="&#x0004;" -> to="?">>

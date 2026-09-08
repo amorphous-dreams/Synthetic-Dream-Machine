@@ -14,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/composition-model"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -125,13 +125,13 @@ Full lineage table lives in the epic. See edges.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite>>
-<<~ loulou lar:///ha.ka.ba/sdm/templates/modules/power>>
-<<~ loulou lar:///ha.ka.ba/sdm/mount-points/structure>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite">>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou "lar:///ha.ka.ba/sdm/mount-points/structure">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BNpFxmtC1fDs3UbpttOncWIA2NJhDmk8AFDyLt-_d2k
+<<^ code="&#x0003;">>ni:///sha-256;_wvst8WvTt0pixUmTlUWQmJ4SN_2-THUkFXlGPj_K08
 
 <<^ code="&#x0004;" -> to="?">>

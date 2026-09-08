@@ -103,11 +103,11 @@ Prefer another surface when the work concerns:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HAelwemI8OHYc5C8yN1G7LkPnUrA9r7uDTD9nSpADx0
+<<^ code="&#x0003;">>ni:///sha-256;q5IfQUIhptmC7-ZP2Dz_xSTCoH_h0V97SJsyHaLJkg4
 
 <<^ code="&#x0004;" -> to="?">>

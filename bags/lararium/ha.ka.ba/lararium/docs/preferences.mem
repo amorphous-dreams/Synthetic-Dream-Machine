@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -74,10 +74,10 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u8CqGbbooT_zBe6jn2ccglv1xKizhlCePiQTTjVWBP8
+<<^ code="&#x0003;">>ni:///sha-256;0u2wb2rapJTT2EAedmuERnKVRZKeUgLGGVzHonkPbqA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1081,8 +1081,8 @@ The format itself is sufficient. §Extension Mechanism grants a URI-identified p
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/dreamdom>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;I9UPH53oGLEtsQQAp0JysSPe0vzGnh8ER0eeHyB5a9Y
+<<^ code="&#x0003;">>ni:///sha-256;Jyvv9ULB0EBe42bybMpT6SExz1RDcwbdHgAPH4p0zvE
 
 <<^ code="&#x0004;" -> to="?">>

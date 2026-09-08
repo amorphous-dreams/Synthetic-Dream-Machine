@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/gold-anchor"
 written   = "2026-06-30"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -385,17 +385,17 @@ spirit's lane); this meme states the design they enact.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/degraded-states>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/conformance>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/functor-discipline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
-<<~ loulou lar:///ha.ka.ba/lares/api/infrastructure-as-myth>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/conformance">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/functor-discipline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/infrastructure-as-myth">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pegAOfhlloxAEk1QwI4ZjykPHcE05qc9pvfEfKxp1go
+<<^ code="&#x0003;">>ni:///sha-256;k-48AtDnYkoHMinHY0fYyY-9__HCQeeiyIxLSW8XFVo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -165,10 +165,10 @@ Source: [signal.org/blog/secure-value-recovery/](https://signal.org/blog/secure-
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PcLYgBZOool-5ikSoGzOsa6Pp9-CfZv8cA7pX9fql7A
+<<^ code="&#x0003;">>ni:///sha-256;gM6UoR4eQmcxN1dYm0A0YgakXHqbFyeGch8X-rv0Djw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -330,13 +330,13 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/ffz-clock>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TbIP-St0WRA3h9GXSRgICJdbUPheixPQw-exKvGCRHg
+<<^ code="&#x0003;">>ni:///sha-256;azskeVFcBgOG8g5dGPpV3YNPFsBud700Qb_UxuE_WGo
 
 <<^ code="&#x0004;" -> to="?">>

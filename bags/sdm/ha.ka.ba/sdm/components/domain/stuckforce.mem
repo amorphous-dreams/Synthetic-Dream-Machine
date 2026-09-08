@@ -66,10 +66,10 @@ Pairs with `function/cargo` (haul a load) and `function/barrier` (hold a wall of
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AM8EZrAnuOVaSB2uwAaXKlf_GR5OBqfSriswqhKWHbA
+<<^ code="&#x0003;">>ni:///sha-256;ZyIvoPFqxrrDllBUZGPUmkUEBIHLKcgbatPxD2SB9O0
 
 <<^ code="&#x0004;" -> to="?">>

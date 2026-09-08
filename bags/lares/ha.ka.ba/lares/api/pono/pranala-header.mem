@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pranala-header"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -102,12 +102,12 @@ agrees-with    = "uri-path"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nWFuVlA7LrKmr1eVry6RGQj5t3MIKMwPY4sCYA1hrIg
+<<^ code="&#x0003;">>ni:///sha-256;kbU82FR0uQXBJJJyikqH_CkVQ-Yc_leam9mHJLl9xrc
 
 <<^ code="&#x0004;" -> to="?">>

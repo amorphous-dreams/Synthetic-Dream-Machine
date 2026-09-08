@@ -161,14 +161,14 @@ Minimal boot should remain small enough to avoid compaction.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/carrier-law>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/carrier-law">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Oxh8vpaSUpcD37FbtO0H3l2PcLE4ZHuzbLp3hx40p2M
+<<^ code="&#x0003;">>ni:///sha-256;c7tQraV7l5-KLo4oJjVHsh_2aSp3-y1rAJY0RvySyeI
 
 <<^ code="&#x0004;" -> to="?">>

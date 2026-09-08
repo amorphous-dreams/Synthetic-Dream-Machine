@@ -16,7 +16,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/ffz-clock"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/api/agent-worldline>>
+<<~ aka "lar:///ha.ka.ba/lararium/api/agent-worldline">>
 
 <<^ code="&#x0002;">>
 
@@ -304,7 +304,7 @@ clock's Theme (L4) advances:
 
 Applies in campaign worlds, persistent simulations, any domain needing a calendar
 above the session clock. Canonical grain reference:
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/attention-scale>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
 
 <<~/ahu>>
 
@@ -465,12 +465,12 @@ targeted revocation MUST ride Keyhive's convergent removal, never the counter
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/agent-worldline>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0Xo3vlW6qvuryVhf8ApyO7alRbzYeZZl1FLpZPww56w
+<<^ code="&#x0003;">>ni:///sha-256;5CGy0VN9JkFAxu4LVB65f2WyII9ApaqLc7tdZasl5y4
 
 <<^ code="&#x0004;" -> to="?">>

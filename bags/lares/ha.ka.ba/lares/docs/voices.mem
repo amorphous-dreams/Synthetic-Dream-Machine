@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -228,10 +228,10 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 !! Rooms
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/workers>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/invariant-plan>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/voices-review>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/workers">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/invariant-plan">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/voices-review">>
 
 <<~/ahu>>
 
@@ -239,16 +239,16 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/chao>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/exchange-protocol>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/law-of-5s#/p-parameter-mapping>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/exchange-protocol">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/law-of-5s#/p-parameter-mapping">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BESQZt1KIzO8LxnjHnA7JhmFhaiY-iz5-Ku3a10D1wQ
+<<^ code="&#x0003;">>ni:///sha-256;93hdY2YcrgukATeh7MF3snY6oXUulNc8lQveQqwbTA0
 
 <<^ code="&#x0004;" -> to="?">>

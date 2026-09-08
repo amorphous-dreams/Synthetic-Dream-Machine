@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/read-magic"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -75,9 +75,9 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/modules/power>>
-<<~ loulou lar:///ha.ka.ba/sdm/projections/powers/ftls-card/read-magic>>
-<<~ loulou lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/read-magic">>
+<<~ loulou "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic">>
 
 <<~/ahu>>
 
@@ -92,6 +92,6 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hJ7euiSeKOsMOp80TgynuuNGlWe-PtGv7mhNB4V6Qj4
+<<^ code="&#x0003;">>ni:///sha-256;-4dJvBhn9yX9Uq6d4cb7zyGq_Lym1SJDBHW2NDOEaCY
 
 <<^ code="&#x0004;" -> to="?">>

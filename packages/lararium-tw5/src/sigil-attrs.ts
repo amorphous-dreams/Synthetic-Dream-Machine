@@ -18,6 +18,8 @@
  * `=` and `:` both appear in this corpus. A reader binding one meets carriers written in the other.
  */
 
+import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
+
 /** What a parameter's value carries beyond its text. */
 export type SigilValueKind = "string" | "macro" | "transclude" | "filter" | "substitution" | "title";
 
@@ -125,4 +127,104 @@ export function sigilAttrValue(body: string, name: string): string | undefined {
 /** Every parameter a canonicalizer MAY quote: a plain string that stands bare today. */
 export function quotableAttrs(body: string): SigilAttr[] {
   return readSigilAttrs(body).filter((a) => a.kind === "string" && !a.quoted);
+}
+
+/**
+ * Blank every span whose interior a delimiter already protects, keeping offsets.
+ *
+ * TWO KINDS, and both carry spaces so a word-walker cannot see their edges:
+ *   · a QUOTED value — `feedback="closed 1↺ -> open 1φ @◇:reason"`, where the colon separates nothing;
+ *   · a WIKILINK — `[[label|lar:///x]]`, which TiddlyWiki reads as one link and which quoting would
+ *     BREAK. A sigil carrying prose carries these, and they are already well-formed.
+ */
+function maskProtectedSpans(body: string): string {
+  const out = body.split("");
+  const blank = (from: number, to: number) => { for (let j = from; j <= to && j < out.length; j++) out[j] = " "; };
+  for (let i = 0; i < out.length; i++) {
+    const c = body[i];
+    if (c === '"' || c === "'") {
+      const end = body.indexOf(c, i + 1);
+      if (end === -1) break;
+      blank(i, end); i = end; continue;
+    }
+    if (c === "[" && body[i + 1] === "[") {
+      const end = body.indexOf("]]", i + 2);
+      if (end === -1) continue;
+      blank(i, end + 1); i = end + 1;
+    }
+  }
+  return out.join("");
+}
+
+/**
+ * A POSITIONAL argument that TiddlyWiki would read as a NAMED PARAMETER instead.
+ *
+ * ── THE HAZARD, MEASURED ─────────────────────────────────────────────────────────────────────────
+ * `param-name ":" value` is call syntax. A URI scheme spells with exactly the characters a parameter
+ * name admits, so an unquoted `lar:///x` standing in a positional slot binds a parameter named `lar`
+ * and THE POSITIONAL RECEIVES NOTHING. Measured against TiddlyWiki 5.5.0:
+ *
+ *   <<~ loulou lar:///x>>     positional [0="loulou"]              named [lar="///x"]
+ *   <<~ loulou "lar:///x">>   positional [0="loulou", 1="lar:///x"]
+ *
+ * Upstream's `Calls` overstates when delimiters may be dropped; the correction this house wrote
+ * stands at lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat.
+ *
+ * Quoting the value is the whole cure: the colon stops being a separator and the slot fills.
+ */
+export function schemeShapedPositionals(body: string): string[] {
+  const out: string[] = [];
+  // ── A QUOTED SPAN IS ALREADY SAFE, AND IT CARRIES SPACES ──────────────────────────────────────
+  // A word-walker that only refused words BEGINNING with a quote still reads the interior of
+  // `feedback="closed 1↺ -> open 1φ @◇:reason"` as bare words, and reports a hazard inside a value
+  // that is already delimited. The span is masked whole before any word is read.
+  const masked = maskProtectedSpans(body);
+  const word = /(?:^|\s)(?!["'])((?:[^\s>"']|>(?!>))+)/g;
+  let m: RegExpExecArray | null;
+  while ((m = word.exec(masked)) !== null) {
+    const w = m[1]!;
+    // A NAMED parameter is not a positional — `family=lar:///x` fills a name, and its value may carry
+    // any colon it likes.
+    if (/^[^\s=:>"'/]+\s*=/.test(w)) continue;
+    // The hazard shape: a parameter-name-shaped run, then a colon, then more.
+    const hazard = /^([^\s=:>"'/]+):(.+)$/.exec(w);
+    if (hazard) out.push(w);
+  }
+  return out;
+}
+
+/** One sigil found in a carrier, with the positionals TiddlyWiki would lose. */
+export interface LostPositional {
+  /** Offset of `<<` in the carrier. */
+  readonly index: number;
+  /** The whole sigil as written. */
+  readonly sigil: string;
+  /** Every positional value a scheme would steal. */
+  readonly values: readonly string[];
+}
+
+const SIGIL_RE = /<<(?:~[ \t]*)?[A-Za-z][\w-]*(?:[^>]|>(?!>))*>>/g;
+
+/**
+ * Walk a WHOLE carrier and report every sigil whose positional TiddlyWiki would lose to a scheme.
+ *
+ * ── A FENCED SIGIL OPENS NOTHING ─────────────────────────────────────────────────────────────────
+ * A carrier that SHOWS the grammar writes sigils inside a fence or a tick span. TiddlyWiki produces
+ * no node there, so such a sigil teaches the form and calls no procedure — the mask keeps it whole
+ * and this reader passes over it.
+ *
+ * The corpus-level question lives HERE so no caller reaches past the shore to ask it.
+ */
+export function lostPositionals(carrierText: string): LostPositional[] {
+  const spans = fencedSpans(carrierText);
+  const out: LostPositional[] = [];
+  SIGIL_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = SIGIL_RE.exec(carrierText)) !== null) {
+    if (inMask(spans, m.index)) continue;
+    const body = m[0].replace(/^<<~?[ \t]*/, "").replace(/>>$/, "");
+    const values = schemeShapedPositionals(body);
+    if (values.length) out.push({ index: m.index, sigil: m[0], values });
+  }
+  return out;
 }

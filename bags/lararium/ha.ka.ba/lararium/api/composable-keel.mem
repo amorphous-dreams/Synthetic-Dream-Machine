@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/api/composable-keel"
 written   = "2026-06-29"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/has-stack>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 
 <<^ code="&#x0002;">>
 
@@ -26,13 +26,13 @@ written   = "2026-06-29"
 
 ! Composable Keel ~ declare the stack, wire it or refuse
 
-A vessel ''declares'' what it carries; a separate move ''wires'' that declaration into a live thing. The `#has-cap-stack` names the caps a vessel holds (#the-vessel-is-its-caps in <<~ loulou lar:///ha.ka.ba/lararium/mesh/vessel-caps>>) — flat, dependency-blind, what a vessel //is//. The ''composable keel'' names the other half: a ''composition-root'' reads that stack and builds the running components, in dependency order, or ''refuses to boot, loud''.
+A vessel ''declares'' what it carries; a separate move ''wires'' that declaration into a live thing. The `#has-cap-stack` names the caps a vessel holds (#the-vessel-is-its-caps in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>) — flat, dependency-blind, what a vessel //is//. The ''composable keel'' names the other half: a ''composition-root'' reads that stack and builds the running components, in dependency order, or ''refuses to boot, loud''.
 
 <<~ranks keel declare -> wire -> run-or-refuse>>
 
 ''Declare ⊥ wire.'' The same shore the architecture cuts everywhere — ''INFRA ⊥ WHO'', ''map ⊥ territory'', the inventory ⊥ the engine. The `#has-cap-stack` carries the inventory; `composeVessel` carries the engine. Neither folds into the other: a stack stays a pure data declaration any vessel can hold without running, and the root stays a transient builder that retains nothing once it hands back the read-face.
 
-''Source authority:'' the operator's composable-keel recognition (2026-06-29); the prior-art convergence at #rhymes; the `#has`-ontology that already retired typed edges (<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>). WITNESSED in code + LIVE in Docker (#/witnessed).
+''Source authority:'' the operator's composable-keel recognition (2026-06-29); the prior-art convergence at #rhymes; the `#has`-ontology that already retired typed edges (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>). WITNESSED in code + LIVE in Docker (#/witnessed).
 
 <<~/ahu>>
 
@@ -40,7 +40,7 @@ A vessel ''declares'' what it carries; a separate move ''wires'' that declaratio
 
 !! Declare ~ the cap-stack as ECS inventory
 
-The `#has-cap-stack` reads ''entity-component-system'' (ECS) and stays purely declarative: a ''nameless vessel'' carries a ''flat set of `#has`-cap tags'' — //what is present//, nothing more. It carries ''no edges'' (the retired-typed-edge ruling holds, <<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>): the stack never says //how// caps connect, only //which// a vessel holds.
+The `#has-cap-stack` reads ''entity-component-system'' (ECS) and stays purely declarative: a ''nameless vessel'' carries a ''flat set of `#has`-cap tags'' — //what is present//, nothing more. It carries ''no edges'' (the retired-typed-edge ruling holds, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>): the stack never says //how// caps connect, only //which// a vessel holds.
 
 ```text
 #has-cap-stack = (VesselId, Set<CapModule>)   — flat, edgeless, dependency-blind
@@ -132,7 +132,7 @@ The keel invents nothing structural; four well-worn patterns each carry a face o
 * ''OSGi Declarative Services'' — //declared cardinality//: a component declares mandatory (1..1) and optional (0..1) references; the runtime satisfies them or holds the component unsatisfied. Our per-module `requires` / `optional`.
 * ''the ocap powerbox / Granovetter'' — //transient broad authority, then POLA//: a one-shot broad grant distributes narrow caps and steps away; //"only connectivity begets connectivity."// Our transient composer (#/transient-composer).
 
-Four domains converging on one shape reads as a real pattern integrity, not a local trick — the convergence carries the weight (the BREAK-not-bless survey discipline, <<~ loulou lar:///ha.ka.ba/lararium/api/causal-island-pattern>>).
+Four domains converging on one shape reads as a real pattern integrity, not a local trick — the convergence carries the weight (the BREAK-not-bless survey discipline, <<~ loulou "lar:///ha.ka.ba/lararium/api/causal-island-pattern">>).
 
 <<~/ahu>>
 
@@ -140,14 +140,14 @@ Four domains converging on one shape reads as a real pattern integrity, not a lo
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/vessel-caps>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/causal-island-pattern>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/causal-island-pattern">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ddsvph901muwp6xfJpR9NwndvNHGDpW-FbTrJVI_tdg
+<<^ code="&#x0003;">>ni:///sha-256;z8OLgRIuf7jemaoNmYzFhzNfjU9kbiF36PRZWD-l42U
 
 <<^ code="&#x0004;" -> to="?">>

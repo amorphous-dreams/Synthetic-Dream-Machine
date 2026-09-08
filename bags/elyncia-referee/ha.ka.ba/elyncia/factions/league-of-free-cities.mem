@@ -76,12 +76,12 @@ have defined each other's borders ever since.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/index>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier>>
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5WursGEbXw6WKSGmQc-agf14dBSjEwEKPo5UB5TnR-Q
+<<^ code="&#x0003;">>ni:///sha-256;J850NWcIdfSUovdNoBdcEwG01bTR9BlzPyYvd4jbThQ
 
 <<^ code="&#x0004;" -> to="?">>

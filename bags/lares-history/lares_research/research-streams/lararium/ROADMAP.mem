@@ -2448,13 +2448,13 @@ room island     (bag: "room",  writable)        — primary content gate
 
 !! Edges
 
-<<~ loulou lar:///LARARIUM-NODE/RESEARCH-SEED>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium/signal/render-targets>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/traversal>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/graph/pranala-parser>>
+<<~ loulou "lar:///LARARIUM-NODE/RESEARCH-SEED">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium/signal/render-targets">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/graph/pranala-parser">>
 
 <<~ pranala #to-canvas-wiki from=? -> to=lar:///LARARIUM-NODE/MULTIPLAYER-INFINITE-CANVAS-WIKI family=relation role=companion>>
 
@@ -3281,6 +3281,6 @@ The CJS's `exports` parameter is a fresh `{}` — TW5's injected `exports` objec
 * MCP `hud`/`receipt` storage-dir fix
 * Widget export key normalization: PascalCase `KauWidget` → lowercase `kau` for TW5 tag registration
 
-<<^ code="&#x0003;">>ni:///sha-256;l_gsFeSqYuR2x3M79jkkx_19PQknWFKLbrxyYX6d_hU
+<<^ code="&#x0003;">>ni:///sha-256;BnZ12djA84af085QispzsBfVoeEiHpX9pGVS1z3EU1A
 
 <<^ code="&#x0004;" -> to="?">>

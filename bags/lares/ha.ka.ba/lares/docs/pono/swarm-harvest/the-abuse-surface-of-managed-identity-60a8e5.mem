@@ -722,10 +722,10 @@ The supervised party can *discover* the relation in Google and Apple, and is tol
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wzDxOKlpTtfy0xVnqJokxpD4howHJ7Db16fkkQ6-90c
+<<^ code="&#x0003;">>ni:///sha-256;LFuFX2BFNRdhNA0raqOj3Nhmg8QFnwwpxx6J91x0R-8
 
 <<^ code="&#x0004;" -> to="?">>

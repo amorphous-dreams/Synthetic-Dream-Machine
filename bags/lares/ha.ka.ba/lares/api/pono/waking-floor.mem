@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/waking-floor"
 written   = "2026-08-08"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -189,7 +189,7 @@ point the same way, which is the strongest signal available here.
 
 ''Supersession and expiry come from that one mechanism, with no clock anywhere.'' A newer grant binds a higher epoch; an old one goes stale when the frontier rolls past it. A paused, forwarded or replayed raise self-revokes at the next roll — no global broadcast, no duration anybody must agree on, and a returning holder stays fenced whether or not anyone suspected it. This matters most for the vessel this law governs: ''a vessel AT THE FLOOR holds no trustworthy wall time at all''.
 
-''A draft carried a rolling WINDOW of markers here, and it is STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers is a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces>>.
+''A draft carried a rolling WINDOW of markers here, and it is STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers is a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>.
 
 ''The ending rides a SECOND wire, deliberately unfused.'' Deciding //stop waiting for a renewal// cannot come from safety alone — under asynchrony nothing tells a slow recogniser from a departed one. That belongs to the liveness wire: local, monotone, suspicion-accruing, never leaving its island as a timestamp anyone else must agree on. Fusing the two is how a global now gets smuggled back in.
 
@@ -296,7 +296,7 @@ floor names WHAT A VESSEL SERVES, never what it weakens.''
 ''OPEN'': whether an unattended boot refuses or rests, what may raise it, and the renewal interval a raise
 expires on. The boot gate throws today because ''refusing stays the safe default while the answer is
 unmade'' — an outage recovers and a silently-raised identity does not.
-<<~ loulou lar:///ha.ka.ba/lararium/node/archive-passphrase>> carries the option space where the refusal
+<<~ loulou "lar:///ha.ka.ba/lararium/node/archive-passphrase">> carries the option space where the refusal
 happens.
 
 <<~/ahu>>
@@ -325,10 +325,10 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/shelter-against-empire>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9ViBUhbpkhWSwNlcAe1RVX6EH008abYOfMbGa93DnrE
+<<^ code="&#x0003;">>ni:///sha-256;np-N74TiK_gmNk-H3FLuzubpjaQyW--qzvIuI__CQWA
 
 <<^ code="&#x0004;" -> to="?">>

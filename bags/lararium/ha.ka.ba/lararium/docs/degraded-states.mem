@@ -31,7 +31,7 @@ extraction-note = "Content copied verbatim from Preferences v4.0.1 and lightly f
 
 <<~/ahu>>
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<~ ahu #/meme-header>>
 
@@ -203,14 +203,14 @@ The operator naming a degraded state constitutes correction input, not accusatio
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices#/voice-house>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sr1xYS9hzXLl3kuHbesoptk-RVJdeTuQYNeIT0X5xoU
+<<^ code="&#x0003;">>ni:///sha-256;CAInHZ4A650VDw2bIkGT46ODYNQXeizkkDResK4WIAg
 
 <<^ code="&#x0004;" -> to="?">>

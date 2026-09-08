@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wehe"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -109,14 +109,14 @@ close-pattern = '<<~\/wehe\s*>>'
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahea>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wai>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/huli>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/huli">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-define>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-define">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j1yrCvtwuDsb1LdJgyGjlk3p6zsyHrkhGkuXd7Xl8xU
+<<^ code="&#x0003;">>ni:///sha-256;ocLgshoQvo31U-m3yH2hj-IyYzDIcpZltX6JVeRZ6Cc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -78,13 +78,13 @@ stays a table question.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/company-structure>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/company-structure">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RFB_jZgD6Wje2MjsaNoVlMaguVMLo3hYAd-7cYhe9vQ
+<<^ code="&#x0003;">>ni:///sha-256;_ag7Ud0mv17PI2wEwrxIvL3rXlZnf66w-XVLgdXcCBA
 
 <<^ code="&#x0004;" -> to="?">>

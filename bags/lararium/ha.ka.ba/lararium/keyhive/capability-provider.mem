@@ -70,14 +70,14 @@ already sits resident, so an access shore may call it every time without cost.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-keyhive/src/capability-provider.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-keyhive/src/capability-provider.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/capability>>
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/event-store>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;jcLswgXaFC22clJ4MUNiJQTTBeOQYKZpwEja8HWfvko
+<<^ code="&#x0003;">>ni:///sha-256;9sJrZ6HCwSc0KSzpZYa6e96_yzBJtzWiNMQoz9Q0954
 
 <<^ code="&#x0004;" -> to="?">>

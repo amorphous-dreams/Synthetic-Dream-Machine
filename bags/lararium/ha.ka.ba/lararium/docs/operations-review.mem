@@ -30,7 +30,7 @@ scope-note = "Plan only — no content extracted in this memo. Extractions to fo
 
 <<~/ahu>>
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<~ ahu #/meme-header>>
 
@@ -287,14 +287,14 @@ After the extraction pass closes, these questions remain for a future consolidat
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/degraded-states>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/voices-review>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/voices-review">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YCEdAtd0yrIwH-8ApFih1DvJAXe2ebfY-xX_KKvr8sU
+<<^ code="&#x0003;">>ni:///sha-256;6vm91AYmZeTMp9E0qvBn3MoV3mPmpMcxUFSis8lak6U
 
 <<^ code="&#x0004;" -> to="?">>

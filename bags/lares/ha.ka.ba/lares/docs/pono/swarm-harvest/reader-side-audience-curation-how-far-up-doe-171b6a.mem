@@ -447,10 +447,10 @@ Confidence overall on the addendum: **medium-high** — most quotes came from op
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_TX2KpvPU51a5rQMIydIWWri4hygZ9YKbEiCtjFImoU
+<<^ code="&#x0003;">>ni:///sha-256;psJeYdYZXSJJ9gupI4rcVXJEn2hA1CxdJe0JMqYFhjk
 
 <<^ code="&#x0004;" -> to="?">>

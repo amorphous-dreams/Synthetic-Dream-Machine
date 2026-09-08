@@ -75,13 +75,13 @@ Naming this slot as the house's access gate would promise a reader a check that 
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/identity-slot.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/identity-slot.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lar-vessel>>
-<<~ loulou lar:///ha.ka.ba/lararium/keyhive/keyhive-provider>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;9MOFYwynMW_I7H_jz3p-oIhdoQMIe495k66DUGnDll4
+<<^ code="&#x0003;">>ni:///sha-256;U7iE119lODZdnb9b2mv6lrwr5HBxAWBMCL8bDqMvLBk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -252,13 +252,13 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/pattern-integrity>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/local-first>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/vm-projection-bus>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v1nMBh1GWqaqRXg-y1Zfvx7cG5sSW9b4C3ZHdCt4Kt4
+<<^ code="&#x0003;">>ni:///sha-256;r4VH3tooq3DQQbGbbTykg0vZvFgrwsELElzekS2rldE
 
 <<^ code="&#x0004;" -> to="?">>

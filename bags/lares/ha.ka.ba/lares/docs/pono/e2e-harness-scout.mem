@@ -219,8 +219,8 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/dreamdom>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;XMwyMU6G2zCAfP0MeLw6RcTcK4Z_rfZV5lhTv1hcDyA
+<<^ code="&#x0003;">>ni:///sha-256;SO1I3z0sXR_thHOoeTFjfMqtHlNyvqUkHMtdYy1OWvw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/reach-plane"
 written   = "2026-08-08"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -264,20 +264,20 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/cap-tier>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/nexus-topology>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/attestation-plane>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/membership-doctrine>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/secure-context>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/crypto>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/disk-projection-law>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/network-edge>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/crypto">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/disk-projection-law">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/network-edge">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jK1rQc-RbQiShL93eqo58rtzNVTpK6pFfxJmprz-QPs
+<<^ code="&#x0003;">>ni:///sha-256;qieEgjsorqw2_xXTYPjYE1ljk2XeZLbDIC04Ivd8i_k
 
 <<^ code="&#x0004;" -> to="?">>

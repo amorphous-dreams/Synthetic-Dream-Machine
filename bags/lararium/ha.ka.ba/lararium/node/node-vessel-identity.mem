@@ -72,14 +72,14 @@ network call, so opening a vessel asks nobody's permission to know what to call 
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-node/src/node-vessel-identity.ts family=code role=has>>
-<<~ pranala #ceremony from=? -> to=packages/lararium-tw5/src/cold-boot-ceremony.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-node/src/node-vessel-identity.ts" family="code" role="has">>
+<<~ pranala #ceremony from="?" -> to="packages/lararium-tw5/src/cold-boot-ceremony.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-slot>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/one-name-one-relation>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation">>
 
-<<^ code="&#x0003;">>ni:///sha-256;twdAN0c9Ckj8gsrvx-B5pIXvRfstwHGjD7swpYW1R80
+<<^ code="&#x0003;">>ni:///sha-256;mVUlEql_LniOCRmG8vUWUvbpWAukshk11j1h9_Khy4A
 
 <<^ code="&#x0004;" -> to="?">>

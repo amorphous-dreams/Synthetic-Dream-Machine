@@ -129,14 +129,14 @@ file, a browser agent takes the carrier pasted in.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/grammars/memetic-wikitext>>
-<<~ loulou lar:///lararium-node/ROADMAP>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/grammars/memetic-wikitext">>
+<<~ loulou "lar:///lararium-node/ROADMAP">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ezpsoo3M-_tpy4LN4LN2QRix95C34DNChvw4Tsf28N0
+<<^ code="&#x0003;">>ni:///sha-256;-Cz199Tnl9Sf0m98YGH9goegePIQ6RvmJalnE44R6jU
 
 <<^ code="&#x0004;" -> to="?">>

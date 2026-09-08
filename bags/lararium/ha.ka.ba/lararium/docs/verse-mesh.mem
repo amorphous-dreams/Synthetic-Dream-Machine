@@ -251,13 +251,13 @@ The tick source changes; the drain contract does not.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/island-adaptor>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/camera-mount>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-provider>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;M1-wIIyZU8sWH0Qt-QxI3yXcZKYzm_49y-WerIc15R4
+<<^ code="&#x0003;">>ni:///sha-256;2f1E4R-1di1JISGcmdq4Wy5eq13fmmrT7R8mxIquGo8
 
 <<^ code="&#x0004;" -> to="?">>

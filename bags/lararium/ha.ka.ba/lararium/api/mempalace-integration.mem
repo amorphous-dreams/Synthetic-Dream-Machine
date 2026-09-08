@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 ```
 
-<<~ aka lar:///ha.ka.ba/lararium/api/lararium-canonical-model>>
+<<~ aka "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
 
 <<^ code="&#x0002;">>
 
@@ -25,7 +25,7 @@ uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 
 ! mempalace ~ the lararium's memory-library
 
-''mempalace holds the journey; the lararium holds the canon; the curated notes hold the conclusions.'' Three strands of memory pull against each other — and the work tends the pulling, never any one strand alone. In Elyncian terms: ''mempalace keeps the PLACE memory'' (the hearth's verbatim record, for the Lar guards place), the ''quine keeps the astral ley-line-mesh memory'' (the canon that runs between shrines). The whole topology — four registers, two peers, one mesh — stands at <<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-memory>>.
+''mempalace holds the journey; the lararium holds the canon; the curated notes hold the conclusions.'' Three strands of memory pull against each other — and the work tends the pulling, never any one strand alone. In Elyncian terms: ''mempalace keeps the PLACE memory'' (the hearth's verbatim record, for the Lar guards place), the ''quine keeps the astral ley-line-mesh memory'' (the canon that runs between shrines). The whole topology — four registers, two peers, one mesh — stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>.
 
 mempalace serves as a ''library-kind member of the bag stack'', accessed-not-loaded: the keeper reaches its verbatim drawers on demand, never hydrates 27k drawers into the VM. It rides ''behind the causal-island boundary'' — web2 substrate (ChromaDB/SQLite/Python), a vendored sibling, never a citizen of the Lares stack proper (web3-only law). The `@daemon` island keeps it; the rest of the house never touches it directly.
 
@@ -95,7 +95,7 @@ The curation files (CLAUDE.md · AGENTS.md · MEMORY.md · Copilot `memory-tool`
 
 Mining `bags/` design memes through `--mode projects` clears, as docs-substrate. Mining `MEMORY.md` / `project_*.md` does not.
 
-''Settled (the operator's hand, 2026-06-24):'' the question MU'd — not //which// layer owns recall but ''what context each owns''. The curated notes (Agent.MEMORY) keep the distilled conclusions; mempalace keeps the verbatim PLACE journey; the quine keeps the ley-line canon. Recall ''composes across all four registers'' and surfaces conflict to Talk-Story, never arbitrating one over another. Full model: <<~ loulou lar:///ha.ka.ba/lares/api/pono/lararium-memory#/shared-mesh>>.
+''Settled (the operator's hand, 2026-06-24):'' the question MU'd — not //which// layer owns recall but ''what context each owns''. The curated notes (Agent.MEMORY) keep the distilled conclusions; mempalace keeps the verbatim PLACE journey; the quine keeps the ley-line canon. Recall ''composes across all four registers'' and surfaces conflict to Talk-Story, never arbitrating one over another. Full model: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory#/shared-mesh">>.
 
 <<~/ahu>>
 
@@ -121,7 +121,7 @@ lares harvest --all                                      # sweep every transcrip
 # then reload the editor / fresh session so the live hooks fire
 ```
 
-`--init` pins `hooks.auto_save=false` — the gate that keeps the vendored hook from re-paving the old `sessions` mega-wing. Full reference: <<~ loulou lar:///packages/MEMPALACE-INTEGRATION>>.
+`--init` pins `hooks.auto_save=false` — the gate that keeps the vendored hook from re-paving the old `sessions` mega-wing. Full reference: <<~ loulou "lar:///packages/MEMPALACE-INTEGRATION">>.
 
 <<~/ahu>>
 
@@ -136,6 +136,6 @@ lares harvest --all                                      # sweep every transcrip
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;llq3PuGXtKYAZXYapFwOoeaE9YOymLd-_LMNChB-5Gc
+<<^ code="&#x0003;">>ni:///sha-256;SCWpgRbD1Yf2gJToFzbDR5R5MEhAjms8KVU1wd1R-Is
 
 <<^ code="&#x0004;" -> to="?">>

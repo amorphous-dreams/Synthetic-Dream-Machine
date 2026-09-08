@@ -51,10 +51,10 @@ rigged with cloth, and a crew's toasts run in rounds, in sequence, by rank.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/index>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0rM4rlJPJOwYWvgRSQAInfxKsTqExORADGW_fLkqA-g
+<<^ code="&#x0003;">>ni:///sha-256;SswlFG-wpzCGMMYpFotsm6tlJpR0QfH5viSG8Bx1UOc
 
 <<^ code="&#x0004;" -> to="?">>

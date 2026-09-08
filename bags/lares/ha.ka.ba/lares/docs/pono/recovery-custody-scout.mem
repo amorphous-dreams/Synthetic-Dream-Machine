@@ -193,11 +193,11 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. â
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wbPe4RAl8ohvCEWz6Idd-6yuKaWlWHfxSI1TwBX0HSI
+<<^ code="&#x0003;">>ni:///sha-256;Rl_Ann5bZ0lmjlLS0-NQ6YTh7o6gFvE-iBhTcpJlbEM
 
 <<^ code="&#x0004;" -> to="?">>

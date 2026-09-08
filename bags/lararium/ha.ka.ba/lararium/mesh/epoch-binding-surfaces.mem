@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/epoch-binding-surfaces"
 written   = "2026-08-08"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -213,10 +213,10 @@ are acts, never upgrades''.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/genesis-doc>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/device-delegation>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/device-delegation">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7Im0dnTXYRr3IC5smsBJFLpFmBhlYjgmwfj8uq_KP7I
+<<^ code="&#x0003;">>ni:///sha-256;xUoNphfNEj_L6bVF8Zf1aHF94qYSs0eZeq22j4OjhWM
 
 <<^ code="&#x0004;" -> to="?">>

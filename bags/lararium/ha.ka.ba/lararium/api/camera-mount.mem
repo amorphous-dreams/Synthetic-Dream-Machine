@@ -144,10 +144,10 @@ The `mountCamera` interface stays identical. The `document` type changes; the ch
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/verse-mesh>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A9Fj-FejGAJhj0kMg2R_dHJh0hcziijf2c6mdfnFbYQ
+<<^ code="&#x0003;">>ni:///sha-256;AAmFKAx-vuiPUKA4fvMc7MrZdpIkgLIYRGP4nti0tWo
 
 <<^ code="&#x0004;" -> to="?">>

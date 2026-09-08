@@ -63,13 +63,13 @@ fields stay its projection.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-tw5/src/toml-ast.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/toml-ast.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/lib-smol-toml>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/lib-smol-toml">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0003;">>ni:///sha-256;JFRuvagN9wKiMe33b7Nxvy-AmWrWFzXAbltVEnWc0S8
+<<^ code="&#x0003;">>ni:///sha-256;vYusf19yfq8QZlF6TU73jJyproO_1CwhRZ5vV4ntMbs
 
 <<^ code="&#x0004;" -> to="?">>

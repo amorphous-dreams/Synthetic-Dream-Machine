@@ -15,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/x-tiddlywiki-filter"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -122,12 +122,12 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wikitext-filter>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wikitext-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IQU1NOv1yw-OWNYwabdxtltXYSBmBW8cxDtAP5leGfs
+<<^ code="&#x0003;">>ni:///sha-256;H2uC8Fth0Sjcg3vTys_lc8WAkGIsmDEJhAsp_ROstuw
 
 <<^ code="&#x0004;" -> to="?">>

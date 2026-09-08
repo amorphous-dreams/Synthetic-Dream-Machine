@@ -133,12 +133,12 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/hud>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/signal/sa-display>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k_8XSeDbrI9c9yoBDtkw9aQdL6-P1MRZn7kZSwVwFkc
+<<^ code="&#x0003;">>ni:///sha-256;x50OkN6c5m2ByIbmwsUm5SkHoRS6wYNAw_Qdh-8ZZ5g
 
 <<^ code="&#x0004;" -> to="?">>

@@ -72,14 +72,14 @@ buffer moves that refusal to the call site, where a caller can still choose diff
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/crypto.ts family=code role=has>>
-<<~ pranala #digest from=? -> to=packages/lararium-mesh/src/agile-digest.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/crypto.ts" family="code" role="has">>
+<<~ pranala #digest from="?" -> to="packages/lararium-mesh/src/agile-digest.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/genesis-doc>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
-<<^ code="&#x0003;">>ni:///sha-256;RMdvMot7CSsgJkDeycBq8_yTEZKxGj4nAn3VvZaMink
+<<^ code="&#x0003;">>ni:///sha-256;aNMjzoEkHNlG_Jxwv_UcFgy7F4FGngDpZkFOIEdB_yM
 
 <<^ code="&#x0004;" -> to="?">>

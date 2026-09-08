@@ -286,10 +286,10 @@ Note the twin: **Emby CVE-2021-25827 (X-Forwarded-For → local IP → login byp
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ioErHr5kvwnkJ-jvi529ne33QeYrSJ3811duG-s582s
+<<^ code="&#x0003;">>ni:///sha-256;ikzFTAujdscSwPbxgyp93N9dVuZ_ppuhDJAwqBuyR6Y
 
 <<^ code="&#x0004;" -> to="?">>

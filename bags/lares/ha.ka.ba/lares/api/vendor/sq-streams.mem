@@ -66,10 +66,10 @@ version bumped in the file and not here leaves the tree carrying one thing and s
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tw5-module>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Yfn89XpXJRa1GDMzCAa0SPfcAOEFoHxtivF7mVtHgKY
+<<^ code="&#x0003;">>ni:///sha-256;YlFA2kkHHuGULGQ8Fps-AoYNae1mCd9cBev36FQ8Bdk
 
 <<^ code="&#x0004;" -> to="?">>

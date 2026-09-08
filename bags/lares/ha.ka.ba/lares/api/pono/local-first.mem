@@ -254,14 +254,14 @@ Beelay's sync protocol operates below this boundary — transparent to the meme 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/pattern-integrity>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/research-streams>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/quine-principles>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BEYSvNAQvgFzO3ZQ0gbmK3NZcYKEQZ1gcRfG1doIRrs
+<<^ code="&#x0003;">>ni:///sha-256;uCcVX0qu7XQ75SdTr2s_gW8-RAqEtORTmYun9Qrby7I
 
 <<^ code="&#x0004;" -> to="?">>

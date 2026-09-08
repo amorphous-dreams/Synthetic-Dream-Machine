@@ -131,14 +131,14 @@ same change record any AutomergeDocStore would emit.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium/wiki-recipe>>
-<<~ loulou lar:///ha.ka.ba/lararium/config/bag-paths>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/island-recipe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/personal-slot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/island-recipe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri#/bag-tag-rule">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Un3P7pRA-f6B6sIGKyLL8vdMaD6I_8q9bXx4DIOEScc
+<<^ code="&#x0003;">>ni:///sha-256;77lmCJ9bk_ZJJ2w-3PZHffJmibZCjJghK-W8UaXA5so
 
 <<^ code="&#x0004;" -> to="?">>

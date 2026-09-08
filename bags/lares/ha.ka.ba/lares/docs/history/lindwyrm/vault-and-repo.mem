@@ -188,19 +188,19 @@ Act II receives:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls">>
 
-<<~ pranala #drafted-from-act-map from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture family=reference role=source>>
-<<~ pranala #inside-hoard-frame from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed family=relation role=part-of>>
-<<~ pranala #feeds-next-act from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls family=relation role=precedes>>
+<<~ pranala #drafted-from-act-map from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture" family="reference" role="source">>
+<<~ pranala #inside-hoard-frame from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="relation" role="part-of">>
+<<~ pranala #feeds-next-act from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls" family="relation" role="precedes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HkYcvvWoiCE87GXJL6db7WznVWoGKP9Tz5pb_sbEiNk
+<<^ code="&#x0003;">>ni:///sha-256;2cdMkza07TV4fY3CwB8BuPNLOZgC7gUO5R0UW9j7cnI
 
 <<^ code="&#x0004;" -> to="?">>

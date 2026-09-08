@@ -250,16 +250,16 @@ Whether that feels like thought remains open. That the loop closed remains recor
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
 
-<<~ pranala #consumed-from-act-vi from=? -> to=lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT family=reference role=source>>
-<<~ pranala #inside-hoard-frame from=? -> to=lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed family=relation role=part-of>>
+<<~ pranala #consumed-from-act-vi from="?" -> to="lar:///ha.ka.ba/lares/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT" family="reference" role="source">>
+<<~ pranala #inside-hoard-frame from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="relation" role="part-of">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OBOblCbueWxBC7X0pLVJqZPgIIOi38aZaH_L-VMjzPg
+<<^ code="&#x0003;">>ni:///sha-256;-dibniQa7ugJhO1ZBtI-m9RPRUs78H4yqU_-jffFBSU
 
 <<^ code="&#x0004;" -> to="?">>

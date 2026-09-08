@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/shield-ward"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -74,9 +74,9 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/modules/power>>
-<<~ loulou lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward>>
-<<~ loulou lar:///ha.ka.ba/sdm/witness/powers/osr-spells/shield-ward>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<~ loulou "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/shield-ward">>
+<<~ loulou "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/shield-ward">>
 
 <<~/ahu>>
 
@@ -90,6 +90,6 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qYCzjzbYoxMbLbe0qydiRMexX-o6YqKEKD0b3dEs71E
+<<^ code="&#x0003;">>ni:///sha-256;cSn10J26MPSnqecfVRffwrBsxYVpkVJzh3MtPUcnjQk
 
 <<^ code="&#x0004;" -> to="?">>

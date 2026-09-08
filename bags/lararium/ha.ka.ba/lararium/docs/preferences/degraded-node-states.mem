@@ -72,12 +72,12 @@ A fuller future recovery may sort the old failure lexicon by domain.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/preferences>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vlDAB8CZgH75nbnBA1KSYxAlDU_y91OT-22eh-DN5GM
+<<^ code="&#x0003;">>ni:///sha-256;qGHuv1rJ-CF6KqZCkk4VDPUVb4PGAvH3d68GgSIn61I
 
 <<^ code="&#x0004;" -> to="?">>

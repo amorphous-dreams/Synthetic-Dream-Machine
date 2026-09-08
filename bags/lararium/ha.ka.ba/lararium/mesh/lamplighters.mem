@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/lamplighters"
 written   = "2026-08-14"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -42,7 +42,7 @@ Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freed
 
 !!! ★ THE FICTION AND THE MECHANISM WELD, and they agree ★
 
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/lamplighters-union>> holds the Elyncia reading — soot-cloaked walkers who relight a toppled herm, a cold wayside lararium, a flickering crossroads, carrying ledgers of every dark stretch. This carrier holds the MECHANISM half; both name one body.
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">> holds the Elyncia reading — soot-cloaked walkers who relight a toppled herm, a cold wayside lararium, a flickering crossroads, carrying ledgers of every dark stretch. This carrier holds the MECHANISM half; both name one body.
 
 ''The faction canon states the Union holds infrastructure BEYOND ANY ONE NEXUS, and that agrees with the fence rather than straining it.'' The Union spans the mesh SOCIALLY; every grant it produces binds to exactly ONE Nexus, because an epoch means nothing outside the island that rolls it. So a walker tending crossroads in three Nexuses holds ''three'' grants, each countersigned in its own island, each lapsing on its own roll, none reading the others. ''Social span ⊥ authority scope'' — and a bad walker therefore cannot be swept from the whole mesh by one act, nor carry a seating from one island into another.
 
@@ -366,10 +366,10 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/waking-floor>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/attestation-plane>> · <<~ loulou lar:///ha.ka.ba/lararium/mesh/convergent-mesh>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/convergent-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r3zkRvyaoD_ZZPqTo6UjicvbJpZhXbE_9kYvSwq0ELc
+<<^ code="&#x0003;">>ni:///sha-256;Eop5d_cFKJxkbHusvf8XGeLDdNaHd3rKEPlfijTwoq0
 
 <<^ code="&#x0004;" -> to="?">>

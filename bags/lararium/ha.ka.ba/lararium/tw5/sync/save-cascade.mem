@@ -94,10 +94,10 @@ rationale     = "canonical lar: URI memes — write one LarTiddlerRecord per tid
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yjlDNzBhk8ZY2Midb0ITwygFHWveILGsJdp2FOclwxc
+<<^ code="&#x0003;">>ni:///sha-256;lGog8j3P7qsPLT5h9TcSN83sBB_nBimuKgbBmpcC3SA
 
 <<^ code="&#x0004;" -> to="?">>

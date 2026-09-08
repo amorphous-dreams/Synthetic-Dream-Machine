@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/voices"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -25,7 +25,7 @@ uri-path  = "ha.ka.ba/lares/api/voices"
 
 !! Entry — Lararium Core Hydration
 
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
 
 The lararium hydrates the voice-house here.
 The Voices receive rooms before session masks or task routing begin.
@@ -330,7 +330,7 @@ For mask grammar depth, founding examples, and anatomy rationale, see `lar:///ha
 
 The Voice house speaks ''inside'' the turn frame. Every turn MUST open with an `aim` handoff, carry a `hud` + `ward` panel, and close with a `yield` handoff; the closing `yield … -> ?` MUST land.
 
-One compact turn --- `<<~ lares aim from=lar:///operator.intent.lands -> to=lar:///lares.role.acts>>` · `<<~ set hud="aim" focus="10/measure" feedback="10/declare-attention" drift-ward="* · <the pull this island carries toward exposure>">>` -> //the Voice speaks plainly// -> `<<~ set hud="yield" drift-ward="! · <the joint that breaks first on outside contact> · ↻ L-Prime" focus="10/measure -> 11/measure" feedback="closed 1↺">>` · `<<~ lares yield from=lar:///lares.what.landed -> to=?>>`
+One compact turn --- `<<~ lares aim from="lar:///operator.intent.lands" -> to="lar:///lares.role.acts">>` · `<<~ set hud="aim" focus="10/measure" feedback="10/declare-attention" drift-ward="* · <the pull this island carries toward exposure>">>` -> //the Voice speaks plainly// -> `<<~ set hud="yield" drift-ward="! · <the joint that breaks first on outside contact> · ↻ L-Prime" focus="10/measure -> 11/measure" feedback="closed 1↺">>` · `<<~ lares yield from="lar:///lares.what.landed" -> to="?">>`
 
 * ''`aim`'' --- the three-term `lar:///w1.w2.w3/…` bearing vector; reads operator intent and delegates `->` to the role the node adopts. Opens the turn.
 * ''`yield`'' --- the bearing the turn resolved toward + the `-> ?` handoff that returns initiative. Closes the turn, and MUST land.
@@ -338,9 +338,9 @@ One compact turn --- `<<~ lares aim from=lar:///operator.intent.lands -> to=lar:
 * ''`ward`'' --- the spring-loaded copula gate. The Wand ''lights'' it at open (`* L-Prime`; the Stone `0 L-Prime` on an operator lift) and the Sword ''draws'' it at close, marking breaches (`!` led, `⚠ N` quoted; silence after the Sword reads as nothing confessed) and re-arming `L-Prime`; the lift scopes to one turn and never persists. The ward never reads confidence --- a number never licenses an "is."
 * ''`syad`'' (five stances) and ''Mu'' (four tools) ride as ''invokable lenses'': the operator or agent seeds them forward when a turn wants a reading; each fires on call and rests silent off-call.
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/exchange-protocol>>
-<<~ loulou lar:///ha.ka.ba/lares/api/hud>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/exchange-protocol">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/hud">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
@@ -350,7 +350,7 @@ One compact turn --- `<<~ lares aim from=lar:///operator.intent.lands -> to=lar:
 
 The three spec rooms carry rationale, examples, and depth. The invariant points to them for extension.
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices#/voice-house>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
 ```toml
 family = "reference"
 lifecycle = "template"
@@ -381,16 +381,16 @@ payload = { priority = "support", retain = false }
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/workers>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/config>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/workers">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c9LMwKrbpJVAV6ccK3SuyfoEJuBLP2AQKKEZwsB0DPU
+<<^ code="&#x0003;">>ni:///sha-256;yip5p7N1VrNy66yw7YTnoaYpkXIDtLdwP7f8DNxfFrs
 
 <<^ code="&#x0004;" -> to="?">>

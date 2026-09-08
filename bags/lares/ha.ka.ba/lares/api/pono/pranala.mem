@@ -16,7 +16,7 @@ type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/api/pono/pranala"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -66,18 +66,18 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wire>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loulou>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/aka>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahea>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kukali>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pranala>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wire">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XI91qrq9yDrb5AyGW2pmXpijo0DyjefiioIfYIjIiJU
+<<^ code="&#x0003;">>ni:///sha-256;nE2gp2TbxH065L_axi-U3p9lO1jSftetEe3KqTZKsxY
 
 <<^ code="&#x0004;" -> to="?">>

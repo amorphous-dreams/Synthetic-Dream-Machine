@@ -121,13 +121,13 @@ fields = [
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/readiness-keys>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/open-phases>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/schema/auth-providers>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/readiness-keys">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/open-phases">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/auth-providers">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q5tSvw_5ySMkJ-uzoa3zbeHQHDGZz9UuaDV_v8Nz5tA
+<<^ code="&#x0003;">>ni:///sha-256;bPKc_7-aLV4i16hK7j4E3kogiw1qzgn3d03_nxpMfvE
 
 <<^ code="&#x0004;" -> to="?">>

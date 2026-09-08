@@ -53,12 +53,12 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/carrier-split>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/meme-stream>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/deserializer>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/carrier-split">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/meme-stream">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tdUy_c5tTajRObuW4xo5FpBVQ5-97SIFykE3vgwRwJU
+<<^ code="&#x0003;">>ni:///sha-256;ktf4d-vjlw3p3K_NHJqaUOWdSp_NdcUDTQ5_0KjS5BY
 
 <<^ code="&#x0004;" -> to="?">>

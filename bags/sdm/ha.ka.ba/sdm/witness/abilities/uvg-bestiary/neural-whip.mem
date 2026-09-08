@@ -62,10 +62,10 @@ The v0.1 ''Neural Whip'' module abstracts the creature's signature tentacle into
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/modules/abilities/neural-whip>>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/abilities/neural-whip">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;a04SbVbc6RGjDifTLa5Rbsm0OWLrCvFZyGmKZTfOT0Y
+<<^ code="&#x0003;">>ni:///sha-256;5F6XS4Yt48PNdV9sITPn-eNDv6Z2Jzjm_UALLVxy7VU
 
 <<^ code="&#x0004;" -> to="?">>

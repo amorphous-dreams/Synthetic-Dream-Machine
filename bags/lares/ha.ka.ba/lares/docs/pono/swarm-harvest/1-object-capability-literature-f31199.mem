@@ -236,10 +236,10 @@ req.Header.Del(authenticationv1.ImpersonateUIDHeader)
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;erUnPT1PpoW_USOZ7zF0uWNJwkqDb7ilffmkgpihPic
+<<^ code="&#x0003;">>ni:///sha-256;WIGmwcA89Bn_v7ic5JnCQDccLoOSJgGSVSilSCMKwLM
 
 <<^ code="&#x0004;" -> to="?">>

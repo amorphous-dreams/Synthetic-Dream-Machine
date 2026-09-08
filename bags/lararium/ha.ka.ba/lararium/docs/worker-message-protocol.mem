@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/worker-message-protocol"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -108,11 +108,11 @@ These three types cover the full P.3 boundary surface. Lock them before shipping
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/alignment-architecture>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-tiers>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fjH_bs0CXsrJVMHIuazoPgqKdoTDhXum7hz3JyJilxw
+<<^ code="&#x0003;">>ni:///sha-256;CWkY17VayXNsOVj4HDp_G2O4FIXYOvy8htADcw78KmQ
 
 <<^ code="&#x0004;" -> to="?">>

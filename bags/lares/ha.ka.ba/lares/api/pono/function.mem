@@ -65,10 +65,10 @@ TW5 native equivalent:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wehe>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gsmUMV94004IgjKM8OeoulJKpPwet0PnXs-bRUUw7MU
+<<^ code="&#x0003;">>ni:///sha-256;LPzd4N7WLWOvVCrr10DI5UDvWeiUG-uLmuihDEd_9iM
 
 <<^ code="&#x0004;" -> to="?">>

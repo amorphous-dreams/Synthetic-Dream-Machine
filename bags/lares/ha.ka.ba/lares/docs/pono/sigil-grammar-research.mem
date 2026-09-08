@@ -410,11 +410,11 @@ When editing grammar meme or parser:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fJ94nVmrsSKZZ3UyKMufDNthCeYV-NU3Uqx3iZ9Dx9A
+<<^ code="&#x0003;">>ni:///sha-256;UIdgR60QR3Qer9OuMhAOrBmSRa70SsPe_9aSw-0lE5Q
 
 <<^ code="&#x0004;" -> to="?">>

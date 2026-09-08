@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -91,14 +91,14 @@ This dual-distribution shape names a ''packaging convention, not a namespace exc
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/save-path>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-model>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AFf5HDPsB9XZYjoUyzPOR-lEvVcbiKj4Qv7wtTW49YM
+<<^ code="&#x0003;">>ni:///sha-256;K05BM-PXcndM0ZPO-paV5rNqgMN9oszH3HwA4-0J4iY
 
 <<^ code="&#x0004;" -> to="?">>

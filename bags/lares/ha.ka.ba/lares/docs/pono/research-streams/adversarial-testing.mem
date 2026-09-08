@@ -73,12 +73,12 @@ Source: https://github.com/tlaplus/Examples
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/research-streams>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NNBc4wuhShsuil86qunBEnWv9iLiTM11R-3QJjPF02o
+<<^ code="&#x0003;">>ni:///sha-256;3HtSIs0UbArw7n_RtB56P5-fXfSvXG7mIwUFmbf6EkE
 
 <<^ code="&#x0004;" -> to="?">>

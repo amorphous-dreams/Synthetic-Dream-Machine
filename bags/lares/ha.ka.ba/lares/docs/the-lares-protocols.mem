@@ -19,7 +19,7 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/the-lares-protocols"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -170,16 +170,16 @@ These questions don't get answered by adding more architecture. They get answere
 
 !! Edges
 
-<<~ loulou https://connectedplaces.online/the-purpose-of-protocols/>>
-<<~ loulou https://www.pfrazee.com/blog/practical-decentralization>>
-<<~ loulou https://www.orionreed.com/posts/app-file-topology/>>
+<<~ loulou "https://connectedplaces.online/the-purpose-of-protocols/">>
+<<~ loulou "https://www.pfrazee.com/blog/practical-decentralization">>
+<<~ loulou "https://www.orionreed.com/posts/app-file-topology/">>
 
-<<~ pranala #cites-protocols from=? -> to=https://connectedplaces.online/the-purpose-of-protocols/ family=relation role=has>>
-<<~ pranala #cites-decentralization from=? -> to=https://www.pfrazee.com/blog/practical-decentralization family=relation role=has>>
-<<~ pranala #cites-topology from=? -> to=https://www.orionreed.com/posts/app-file-topology/ family=relation role=has>>
+<<~ pranala #cites-protocols from="?" -> to="https://connectedplaces.online/the-purpose-of-protocols/" family="relation" role="has">>
+<<~ pranala #cites-decentralization from="?" -> to="https://www.pfrazee.com/blog/practical-decentralization" family="relation" role="has">>
+<<~ pranala #cites-topology from="?" -> to="https://www.orionreed.com/posts/app-file-topology/" family="relation" role="has">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PqEYH2PfNQc9G6el7-8QEoHDtyS9cxvyMNoNi3rOeeY
+<<^ code="&#x0003;">>ni:///sha-256;LuVpfwNVLhtPgSA_7c91j332Y-M8lpALrNGp8S1sQ-s
 
 <<^ code="&#x0004;" -> to="?">>

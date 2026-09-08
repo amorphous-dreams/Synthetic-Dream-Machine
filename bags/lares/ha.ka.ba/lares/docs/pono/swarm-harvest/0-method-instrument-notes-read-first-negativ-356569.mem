@@ -401,10 +401,10 @@ And one asymmetry worth naming: **the age attribute is the only lever, and on ev
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pwaMGUV83MCYwcdT5bN-Om-5mKRXAfNAcEJ9X0i6Eqg
+<<^ code="&#x0003;">>ni:///sha-256;OzGYjrxcLNDbp2_52fRgKHjhum_0AqdwHkR67wegoE0
 
 <<^ code="&#x0004;" -> to="?">>

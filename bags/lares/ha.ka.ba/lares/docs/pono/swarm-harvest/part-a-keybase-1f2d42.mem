@@ -141,10 +141,10 @@ All three systems that market themselves as "no single key" arrive at the *same*
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VdHZMgf5uJv-uo7xBnbGP0FLRmxKzZJCUUxY2pKCBd8
+<<^ code="&#x0003;">>ni:///sha-256;iSxm59USZdZDunjsMc9xvHGUsekBwBMEkO0oPGQWBmM
 
 <<^ code="&#x0004;" -> to="?">>

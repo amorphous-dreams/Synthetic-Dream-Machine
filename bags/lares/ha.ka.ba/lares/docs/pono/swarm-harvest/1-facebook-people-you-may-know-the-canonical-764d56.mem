@@ -184,10 +184,10 @@ Two strong measured cases, both about **the unguessable handle turning out to be
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;K1tDFPrY3AXkwz_sWncDf2ChinYJM1TK_gL20oqkrvo
+<<^ code="&#x0003;">>ni:///sha-256;zilsQ00Z8SmWtc93nwkOWAicPZjwMARLmMxoBy45Q04
 
 <<^ code="&#x0004;" -> to="?">>

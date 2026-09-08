@@ -27,7 +27,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/cabal-place"
 
 ''This address stopped carrying the model.'' The whole substance — the hearth-beside framing, the verb-not-noun Mu, the Ostrom · Matrix/SSB · CRDT-tombstone braid, the BeeKEM epoch tie-break, Plane-B convergent-removal, the unswept corner, the seal, the two roots, the wax-stamp — walks on, unabridged, at:
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
 
 ''Why the name moved'' (operator ruling). Three words that once blurred now cut apart:
 * ''Place'' — reserved for the identity-bearing Lararium: the hearth that holds a DID.
@@ -42,6 +42,6 @@ So ''cabal-place'' released the word ''place'' back to the hearth, and the model
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mbE2y03cCYBcWw60tbLOtM9FaMMkiZVUPVHIzzNP3SI
+<<^ code="&#x0003;">>ni:///sha-256;liiolhsGbTo239h7K96ptTeXtZSYmChNR_6ZbZKq_94
 
 <<^ code="&#x0004;" -> to="?">>

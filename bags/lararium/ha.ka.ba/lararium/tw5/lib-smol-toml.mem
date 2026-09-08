@@ -65,12 +65,12 @@ component properties, and tick-scoped state in a WYSIWYG-friendly field structur
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/toml-ast>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-toml>>
-<<~ loulou lar:///plugins/lares/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/toml-ast">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-toml">>
+<<~ loulou "lar:///plugins/lares/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3IuJihXeG83eh-A989LfJROFzKl_36FtfjwvOt6fNHU
+<<^ code="&#x0003;">>ni:///sha-256;p-LnmhBNNSX-enVTv4wsimrzB2krVFbH0JBg_L3WUZE
 
 <<^ code="&#x0004;" -> to="?">>

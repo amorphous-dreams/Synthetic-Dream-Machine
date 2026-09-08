@@ -76,12 +76,12 @@ Each row: a research file the pass consumed, and the doctrine that carries its c
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/period-forms>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/period-forms">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JZGtQ402y3lX3tfOm7EgP-3zqQS7Kk-st6owV0j-L6I
+<<^ code="&#x0003;">>ni:///sha-256;-wcWby-ywCwVG_jTd88u3jRNw9UsA02gNmFiKUatH64
 
 <<^ code="&#x0004;" -> to="?">>

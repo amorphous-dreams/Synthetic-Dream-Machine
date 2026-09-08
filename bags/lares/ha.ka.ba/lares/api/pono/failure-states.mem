@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -66,13 +66,13 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/reference-fusion>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/reference-fusion">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Vq6hckLlYbdmUsC63ywLUKyxI4_-DVd0quColdFkse4
+<<^ code="&#x0003;">>ni:///sha-256;oBG7i0ilrElychAQxpoY5ckCroUG8c9-LhI2KSSQYoc
 
 <<^ code="&#x0004;" -> to="?">>

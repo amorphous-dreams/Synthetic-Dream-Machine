@@ -58,13 +58,13 @@ machinery-written fields would admit anything the machinery could produce.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/lar-uris.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/lar-uris.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/one-name-one-relation>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation">>
 
-<<^ code="&#x0003;">>ni:///sha-256;pihBys13iOFZIaCA7s6zBnaeoyeNSlIO6_guPYMt3vY
+<<^ code="&#x0003;">>ni:///sha-256;HI7lsPMjgJ55N6JPCtribRZg1HFa8km_0IsCqDh-z0k
 
 <<^ code="&#x0004;" -> to="?">>

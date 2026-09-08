@@ -44,6 +44,10 @@ export interface ParseEvent {
 // decorated forms like <<^ code="&#x0002;" ahu #meme-body-open>> remain structural.
 // ---------------------------------------------------------------------------
 
+// EVERY POSITIONAL CAPTURE STRIPS AN OPTIONAL QUOTE PAIR. TiddlyWiki reads `name:value` as call
+// syntax, so a bare `lar:///x` standing positionally binds a phantom parameter and the slot stays
+// empty; the corpus quotes such values, and a capture that kept the pair would carry it into an
+// address. See lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat.
 export const BOOTSTRAP_SCANS: SigilScan[] = [
   // ASCII control-character framing — SOH / STX / ETX / EOT
   //
@@ -68,25 +72,25 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // spec §5.3 + lar-uri.md §5.6, the URI fragment is a path within the meme;
   // nested ahu blocks produce child tiddlers at `parentUri#/parent/child`
   // rather than dedicated `#parent#child` URIs (single-hash invariant).
-  { sigilName: "ahu", regex: /<<~(?:[^>]|>(?!>))*\bahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+(\S+))?\s*>>/g, eventType: "open"  },
+  { sigilName: "ahu", regex: /<<~(?:[^>]|>(?!>))*\bahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)"?)?\s*>>/g, eventType: "open"  },
   { sigilName: "ahu", regex: /<<~\/ahu\s*>>/g,                                                          eventType: "close" },
   // Pranala — block before inline (block wins at same position)
-  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
-  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
+  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
+  { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
   // Edge sugar
-  { sigilName: "loulou",  regex: /<<~\s*loulou\s+(\S+)\s*>>/g,             eventType: "leaf" },
+  { sigilName: "loulou",  regex: /<<~\s*loulou\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,             eventType: "leaf" },
   // aka — URI form then child-slot form
   { sigilName: "aka", regex: /<<~\s*aka\s+([a-z][\w-]*)\s+(#[\w-]+)\s*>>/g, eventType: "leaf" },
-  { sigilName: "aka", regex: /<<~\s*aka\s+(\S+)\s*>>/g,                      eventType: "leaf" },
+  { sigilName: "aka", regex: /<<~\s*aka\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,                      eventType: "leaf" },
   // kahea — leaf then open then URI-dataflow
   { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>/g,     eventType: "leaf" },
   { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>/g,  eventType: "open" },
   { sigilName: "kahea-invoke", regex: /<<~\/kahea\s*>>/g,                                     eventType: "close" },
   { sigilName: "kahea",        regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
-  { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
-  { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
-  { sigilName: "lele",    regex: /<<~\s*lele\s+(\S+)\s*>>/g,               eventType: "leaf" },
-  { sigilName: "\\branch", canonicalName: "lele", regex: /<<~\s*\\branch\s+(\S+)\s*>>/g, eventType: "leaf" },
+  { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "\\constraint", canonicalName: "pono", regex: /<<~\s*\\constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role:([\w-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "lele",    regex: /<<~\s*lele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,               eventType: "leaf" },
+  { sigilName: "\\branch", canonicalName: "lele", regex: /<<~\s*\\branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g, eventType: "leaf" },
   // Concurrency — grammar + scanner wired; Verse runtime semantics pending (async-first)
   { sigilName: "hui",   regex: /<<~\s*hui\s*>>/g,                          eventType: "open"  },
   { sigilName: "hui",   regex: /<<~\/hui\s*>>/g,                           eventType: "close" },
@@ -94,7 +98,7 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "holo",  regex: /<<~\/holo\s*>>/g,                         eventType: "close" },
   { sigilName: "puka",  regex: /<<~\s*puka\s*>>/g,                        eventType: "open"  },
   { sigilName: "puka",  regex: /<<~\/puka\s*>>/g,                         eventType: "close" },
-  { sigilName: "papalohe", regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>/g, eventType: "leaf" },
+  { sigilName: "papalohe", regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>/g, eventType: "leaf" },
   // TOML data block
   { sigilName: "toml", regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g,  eventType: "leaf" },
   { sigilName: "toml", regex: /<<~\s*toml\s*>>([\s\S]*?)<<~\/toml\s*>>/g,                   eventType: "leaf" },
@@ -117,7 +121,7 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "wehe", regex: /<<~\s*wehe\s+([\w-]+)(?:\s+([^>]*?))?\s*>>/g,  eventType: "open"  },
   { sigilName: "wehe", regex: /<<~\/wehe\s*>>/g,                                eventType: "close" },
   // meme — tiddler context block
-  { sigilName: "meme", regex: /<<~\s*meme\s+(\S+)\s*>>/g,                      eventType: "open"  },
+  { sigilName: "meme", regex: /<<~\s*meme\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,                      eventType: "open"  },
   { sigilName: "meme", regex: /<<~\/meme\s*>>/g,                                eventType: "close" },
   // English aliases — emit canonical name directly (inline erasure)
   { sigilName: "\\if",   canonicalName: "heihei",  regex: /<<~\s*\\if\s+([^\n>]+?)\s*>>/g,     eventType: "open"  },
@@ -190,7 +194,7 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
 
   // Pranala block spans: inline events inside a pranala block body are excluded
   const blockSpans: [number, number][] = [];
-  for (const m of text.matchAll(/<<~\s*pranala\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs)) {
+  for (const m of text.matchAll(/<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs)) {
     blockSpans.push([m.index!, m.index! + m[0].length]);
   }
   const inBlock = (pos: number): boolean => blockSpans.some(([s, e]) => pos >= s && pos < e);

@@ -19,7 +19,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -204,10 +204,10 @@ moved.
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/graceful-parsing>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Et2-_0uQQe_Q4aQEj6xPFDYF5w26wiqkLQnRHuwN_SY
+<<^ code="&#x0003;">>ni:///sha-256;2AO6vpcUnBMyuZGRVS3JjV2t9qIKwcqAo_EboVq2xWA
 
 <<^ code="&#x0004;" -> to="?">>

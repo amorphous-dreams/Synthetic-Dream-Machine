@@ -68,11 +68,11 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/pranala>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wehe>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wehe">>
 <<~/pranala>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bPWsokGxzPfCb3TDqcm9WDCBVJ4b2_kI2L2AKjAiHTo
+<<^ code="&#x0003;">>ni:///sha-256;nMsx4u5aMnV5sCLqqTP-kt-6Mr4EZEfSPTW1uiSVIdY
 
 <<^ code="&#x0004;" -> to="?">>

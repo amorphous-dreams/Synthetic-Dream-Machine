@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -416,14 +416,14 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/sync-namespace>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/sync-namespace">>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZlBJW8y9_d5mNM1yHAgHXCnIlvhUG-WrP6YuwGUTvXQ
+<<^ code="&#x0003;">>ni:///sha-256;bqwew78NjnFdm-N9SwhmCdx_lkACc5Nz-MR6dDj-OBA
 
 <<^ code="&#x0004;" -> to="?">>

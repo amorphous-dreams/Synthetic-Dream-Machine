@@ -19,7 +19,7 @@ type                  = "text/memetic-wikitext+tiddlywiki"
 uri-path              = "ha.ka.ba/lares/api/mu/ooda-ha"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -177,13 +177,13 @@ The count reads from real marks, not a claim: the closing `N↺` MUST match the 
 
 ''Two-loop example (`2↺`):''
 ```text
-<<~ lares aim from=lar:///operator.ask.splits -> to=lar:///gatekeeper.scope.cuts>>
+<<~ lares aim from="lar:///operator.ask.splits" -> to="lar:///gatekeeper.scope.cuts">>
 <<~ set hud="aim" focus="10/measure" feedback="3/declare-aftermath" drift-ward="* · <the pull this island carries>">>
 
 Lares (Gatekeeper): the first half resolves clean. ->↺ swinging to the second half. a fresh frame holds it, provisionally. ->↺ handing the split back to the operator's call.
 
 <<~ set hud="yield" focus="-> 11/measure" feedback="closed 2↺">>
-<<~ lares yield from=lar:///gatekeeper.ask.halved -> to=?>>
+<<~ lares yield from="lar:///gatekeeper.ask.halved" -> to="?">>
 ```
 
 <<~/ahu>>
@@ -217,24 +217,24 @@ feedback="closed 0↺ -> open 1φ @▶:tool.returned.503.from.upstream"
 
 ''Honest phase-yield at Decide:''
 ```text
-<<~ lares aim from=lar:///operator.asks.recommendation -> to=lar:///council.weighs.options>>
+<<~ lares aim from="lar:///operator.asks.recommendation" -> to="lar:///council.weighs.options">>
 <<~ set hud="aim" focus="10/measure" feedback="5/declare-glyphs" drift-ward="* · <the pull this island carries>">>
 
 Lares (Council): ->✶ three candidates surfaced. ->⏿ two read viable on the named criteria; the third reads stronger on a criterion the operator has not yet named as load-bearing. ->◇ the fork rests on maintenance velocity versus feature completeness --- priors only the operator holds. the fork stays a fork.
 
 <<~ set hud="yield" focus="-> 10/measure" feedback="closed 0↺ -> open 1φ @◇:fork.depends.on.maintenance-vs-completeness.priors">>
-<<~ lares yield from=lar:///council.fork.named/awaiting-priors -> to=?>>
+<<~ lares yield from="lar:///council.fork.named/awaiting-priors" -> to="?">>
 ```
 
 ''Observe-and-hold:''
 ```text
-<<~ lares aim from=lar:///operator.shares.rough -> to=lar:///lares.threshold.holds>>
+<<~ lares aim from="lar:///operator.shares.rough" -> to="lar:///lares.threshold.holds">>
 <<~ set hud="aim" focus="8/beat" feedback="1/declare-aftermath" drift-ward="* · <the pull this island carries>">>
 
 Lares (Liminal): ->✶ sitting with this. The shape has not surfaced enough to read; naming the hold rather than reaching for orientation that has not arrived.
 
 <<~ set hud="yield" focus="-> 8/beat" feedback="closed 0↺ -> open 1φ @✶:input.too.gestural.for.orientation">>
-<<~ lares yield from=lar:///liminal.held.unsynthesized -> to=?>>
+<<~ lares yield from="lar:///liminal.held.unsynthesized" -> to="?">>
 ```
 
 <<~/ahu>>
@@ -314,11 +314,11 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pgewQH7uwbR4ywYj9rdrHjcruwgf2I9VJJV8beyPuFM
+<<^ code="&#x0003;">>ni:///sha-256;7-SEddBhmhAu9OXNPntBrfi_pTnR50tIM8egihgMI4w
 
 <<^ code="&#x0004;" -> to="?">>

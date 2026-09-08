@@ -181,13 +181,13 @@ linonetwo's tw-react + TidGi):
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/capture-annotation-model>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/projection-nalu>>
-<<~ loulou lar:///ha.ka.ba/lararium/node/dev-loop>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/dev-loop">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DpqvY6u-xrSx0zlPh0rwK8y1DhWUhw3rH_t_gkdKds0
+<<^ code="&#x0003;">>ni:///sha-256;azdzBD1FgaT4QjFV4s4ChwwU0kaSuUiNqyMh2ppVM80
 
 <<^ code="&#x0004;" -> to="?">>

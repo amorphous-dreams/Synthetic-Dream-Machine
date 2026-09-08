@@ -43,7 +43,7 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 !! Components
 
-<<~ kahea lar:///ha.ka.ba/lararium/lists/components>>
+<<~ kahea "lar:///ha.ka.ba/lararium/lists/components">>
 
 <<~/ahu>>
 
@@ -51,12 +51,12 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card>>
-<<~ loulou lar:///ha.ka.ba/sdm/modules/powers/floating-disc>>
-<<~ loulou lar:///ha.ka.ba/sdm/procedures/tag-pill>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/projections/powers/ftls-card">>
+<<~ loulou "lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
+<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8H7NN4ABprFMHCP4yEznBVigD_5hV5GTp_RMG28Ame4
+<<^ code="&#x0003;">>ni:///sha-256;WA3K1FbwUNyjYmiZD8tF5N7Mn-TO5W3KfTxAl9sl_4g
 
 <<^ code="&#x0004;" -> to="?">>

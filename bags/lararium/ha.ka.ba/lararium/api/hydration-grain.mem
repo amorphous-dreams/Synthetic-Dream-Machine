@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/hydration-grain"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -108,18 +108,18 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/residency-tiers>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/content-resolution>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<~ pranala #same-integrity-at from=? -> to=lar:///ha.ka.ba/lararium/api/residency-tiers family=relation role=bag-grain>>
-<<~ pranala #same-integrity-at from=? -> to=lar:///ha.ka.ba/lararium/mesh/content-resolution family=relation role=body-grain>>
-<<~ pranala #gated-by from=? -> to=lar:///ha.ka.ba/lararium/api/residency-tiers#/third-tier-gate family=constraint role=governed-by>>
-<<~ pranala #projection-law from=? -> to=lar:///ha.ka.ba/lararium/api/disk-projection family=constraint role=governed-by>>
+<<~ pranala #same-integrity-at from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers" family="relation" role="bag-grain">>
+<<~ pranala #same-integrity-at from="?" -> to="lar:///ha.ka.ba/lararium/mesh/content-resolution" family="relation" role="body-grain">>
+<<~ pranala #gated-by from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers#/third-tier-gate" family="constraint" role="governed-by">>
+<<~ pranala #projection-law from="?" -> to="lar:///ha.ka.ba/lararium/api/disk-projection" family="constraint" role="governed-by">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WjzyIXe9owye2PGgXyIDQY0KmSgWip1xmlluxwB_IPk
+<<^ code="&#x0003;">>ni:///sha-256;Nl1KnNA3saEN7tNm1mdXd5FYZTxoyqUCayScuErYIpg
 
 <<^ code="&#x0004;" -> to="?">>

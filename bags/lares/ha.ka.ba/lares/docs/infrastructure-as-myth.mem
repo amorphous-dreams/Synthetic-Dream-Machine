@@ -27,7 +27,7 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/infrastructure-as-myth"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -656,16 +656,16 @@ This carrier is authored //through// the grammar it describes — verb-forward u
 
 The sibling specifications and companion memes enter here as typed edges — the paper's apparatus IS its address graph:
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ aka lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ aka lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ aka lar:///ha.ka.ba/lares/api/pono/quine-principles>>
-<<~ kahea lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ kahea lar:///ha.ka.ba/lares/api/pono/attention-scale>>
-<<~ loulou lar:///ha.ka.ba/lares/findings/hoike/syad-harness>>
-<<~ loulou lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/sensorium-machina>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/stream-sensorium-ontology>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ aka "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
+<<~ kahea "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ kahea "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
+<<~ loulou "lar:///ha.ka.ba/lares/findings/hoike/syad-harness">>
+<<~ loulou "lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/stream-sensorium-ontology">>
 
 The Sensorium serves as the deterministic instrument, successor to the founding rig; the founding measurements' apparatus and hoike records reside externally in the rig package, pending ingestion at the `findings/hoike/` seats above.
 
@@ -675,13 +675,13 @@ The Sensorium serves as the deterministic instrument, successor to the founding 
 
 !! Edges
 
-<<~ pranala #grammar-of from=? -> to=lar:///ha.ka.ba/lares/api/pono/memetic-wikitext family=control role=realized-in>>
-<<~ pranala #addresses from=? -> to=lar:///ha.ka.ba/lares/api/pono/lar-uri family=relation role=sibling-spec>>
-<<~ pranala #lens from=? -> to=lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives family=control role=applies>>
-<<~ pranala #measures from=? -> to=lar:///ha.ka.ba/lares/api/pono/sensorium-machina family=observe role=instrumented-by>>
-<<~ pranala #honesty-gate from=? -> to=lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement family=constraint role=governed-by>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/alignment-architecture>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/the-lares-protocols>>
+<<~ pranala #grammar-of from="?" -> to="lar:///ha.ka.ba/lares/api/pono/memetic-wikitext" family="control" role="realized-in">>
+<<~ pranala #addresses from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lar-uri" family="relation" role="sibling-spec">>
+<<~ pranala #lens from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives" family="control" role="applies">>
+<<~ pranala #measures from="?" -> to="lar:///ha.ka.ba/lares/api/pono/sensorium-machina" family="observe" role="instrumented-by">>
+<<~ pranala #honesty-gate from="?" -> to="lar:///ha.ka.ba/lares/findings/hoike/syad-lens-refinement" family="constraint" role="governed-by">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/the-lares-protocols">>
 
 <<~/ahu>>
 
@@ -693,6 +693,6 @@ Aikhenvald 2000, //Classifiers// · Asai et al. 2023, //Self-RAG//, arXiv:2310.1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o16xavn2nNyPFtyOcpy_7e_ij4rWCt0doGyJ2-beGfU
+<<^ code="&#x0003;">>ni:///sha-256;vhuIEAGNdpaH0gLnrv_js_ghwEt3ruhAEhHP0QigDIM
 
 <<^ code="&#x0004;" -> to="?">>

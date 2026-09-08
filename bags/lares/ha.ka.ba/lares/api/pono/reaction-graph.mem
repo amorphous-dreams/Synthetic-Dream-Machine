@@ -204,12 +204,12 @@ The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the tw
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/papalohe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kukali>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1FYonQPFBM1oeGBGNyqvcI5hIBl4sOINXCn59NWDelg
+<<^ code="&#x0003;">>ni:///sha-256;VHohpS0jHq2AuTw-tK9AXfJAggk6XbLYNWEoPNY5IHU
 
 <<^ code="&#x0004;" -> to="?">>

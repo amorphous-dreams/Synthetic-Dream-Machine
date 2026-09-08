@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/identity-classes"
 written   = "2026-07-20"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -56,7 +56,7 @@ across four axes and fixes how each RECOVERS — the axis Reading-B re-cuts.
 
 ''So HERM reads two ways and both hold'': as a ''standing'' (a crossroads whose operator never intends to light it, contracted, faceless for good) and as a ''passage'' (any vessel, before its raise or after its raise lapses). The class rows describe the first; the floor describes the second.
 
-''SEATED ⊥ RAISED keeps the class law intact through the passage.'' The Herm's zero persona-slot ceiling bars a ''SEATED'' persona root — a human's key RESTING on a crossroads. It bars nothing about a ''RAISED'' cap: those arrive WITH a recognised operator, ride that operator's own keys, and stop standing when the recognition stops. The at-rest state never changes, so a stolen disk still yields nothing of anybody's person, and a herm may grow a house without ever becoming a place that keeps one. <<~ loulou lar:///ha.ka.ba/lares/api/pono/waking-floor>>
+''SEATED ⊥ RAISED keeps the class law intact through the passage.'' The Herm's zero persona-slot ceiling bars a ''SEATED'' persona root — a human's key RESTING on a crossroads. It bars nothing about a ''RAISED'' cap: those arrive WITH a recognised operator, ride that operator's own keys, and stop standing when the recognition stops. The at-rest state never changes, so a stolen disk still yields nothing of anybody's person, and a herm may grow a house without ever becoming a place that keeps one. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
 
 ''And the floor is the HARDENED state, never a degraded one'' — the field inverted our first vocabulary, treating before-first-unlock as hardened and after-first-unlock as the liability. A vessel at the floor has lost its CAPS, never its FLOOR.
 
@@ -222,7 +222,7 @@ So the quorum ''seats'' (rare); the ''renewal rides the lease-epoch roll'' (freq
 
 ''And the civic FLOOR runs far larger than a hearth's'': relay, public shelf, bulb, map-publish and segment-repair all stand with ''zero secret''. A district's service survives a power cut; only signing waits for a holder.
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/lamplighters>> carries the Guild that tends these places, the immune coupling, and the tending caps.
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> carries the Guild that tends these places, the immune coupling, and the tending caps.
 
 <<~/ahu>>
 
@@ -531,20 +531,20 @@ Three walls hold this design, and each stays named:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/vessel-caps>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/carry-contract>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/persona-policy>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/siege-resilience>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/founding-runbook>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/charter-chain>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/charter-reserve>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/guardian-card>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/recovery-keel-core>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kapae>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/charter-chain">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/charter-reserve">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/guardian-card">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/recovery-keel-core">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZJcjo68ARpAL-0X4Z5gPJwREPGhacnkgpg3gypQj9eY
+<<^ code="&#x0003;">>ni:///sha-256;9SaIGRS5B7APRZfDprkLB-sYf00Bljem07o-l8kEHuQ
 
 <<^ code="&#x0004;" -> to="?">>

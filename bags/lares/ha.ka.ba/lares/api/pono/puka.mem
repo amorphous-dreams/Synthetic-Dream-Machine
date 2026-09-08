@@ -72,12 +72,12 @@ A puka block MUST NOT appear directly inside a `huli` (`\for`) iteration body.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-rush>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/holo>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-task-tree>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-rush">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/holo">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-task-tree">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y_qJteYTnXwTDU9Sjp3Z7CjWNQEqunL96fcXpZMLhV4
+<<^ code="&#x0003;">>ni:///sha-256;zlUP36HdLn7w5kiP5kPp-PpIa08y53j_7_h4YWjvYpU
 
 <<^ code="&#x0004;" -> to="?">>

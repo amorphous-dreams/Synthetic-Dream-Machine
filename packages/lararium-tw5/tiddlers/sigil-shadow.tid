@@ -4,7 +4,7 @@ lar-kind: edge-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/aka
 lar-alias-for: \shadow
 lar-see-also: aka
-lar-pattern: <<~\s*\\shadow\s+(\S+)\s*>>
+lar-pattern: <<~\s*\\shadow\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 type: text/vnd.tiddlywiki
 
 \procedure ~\shadow(p1:"")

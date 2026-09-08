@@ -66,10 +66,10 @@ Common on `domain/abjuration` wards and standing barriers. Distinct from `item` 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/sdm/templates/components/tag>>
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F-shOYGGleXrhWTpyTvEFkxqD4h0sSgVmk7zs7OkeTM
+<<^ code="&#x0003;">>ni:///sha-256;BKK8UUOaTvfYIzczRU15XoGhWZC7in6OQCbfarkjorQ
 
 <<^ code="&#x0004;" -> to="?">>

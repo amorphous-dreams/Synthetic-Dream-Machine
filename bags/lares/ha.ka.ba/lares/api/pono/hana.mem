@@ -61,10 +61,10 @@ A hana block body MUST be valid input for the named grammar interpreter.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-task">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T8Uf8Vo86PRqgbhraJ6WbOiIjss5_kZWv61k62w3yIc
+<<^ code="&#x0003;">>ni:///sha-256;QBgRxY2NS06PV2atG5ayckKXDgK2ypRLqshKth8NbQI
 
 <<^ code="&#x0004;" -> to="?">>

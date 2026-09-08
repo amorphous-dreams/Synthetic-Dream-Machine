@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/masks"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -35,7 +35,7 @@ Grammar and stacking law defined in `lar:///ha.ka.ba/lares/docs/voices/masks`.
 
 <<~ ahu #/entry>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/voices#/mask-layer>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices#/mask-layer">>
 ```toml
 family = "hydration"
 lifecycle = "template"
@@ -110,19 +110,19 @@ Named Voice masks may also be invoked directly by their earned name in Voice hou
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/api/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/named/mischief-muse>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/named/tide-caller>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/named/breach-watch>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/named/ink-clerk>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/named/map-wisp>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/character/friend-computer>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/mischief-muse">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/tide-caller">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/breach-watch">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/ink-clerk">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/named/map-wisp">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/character/friend-computer">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KCYT6F-39SvLl3H-EFFmzgeszvtaI4CiZIost0K-eH8
+<<^ code="&#x0003;">>ni:///sha-256;JxqgK1UIqiMRTFYiCFMnQUkAXUa9oN5390dnJBi-gD4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -2,7 +2,7 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-papalohe
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/papalohe
-lar-pattern: <<~\s*papalohe\s+(#[\w-]+\s+)?(\S+)\s*->\s*(\S+)(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>
+lar-pattern: <<~\s*papalohe\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+listenable:([\w.-]+))?(?:\s+subscribable:([\w.-]+))?\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- papalohe — reaction-family edge; event wire from source event to target function.

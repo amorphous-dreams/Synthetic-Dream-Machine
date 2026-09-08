@@ -23,7 +23,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/if"
 
 English alias for `wai`, the wikispace conditional. See the canonical spec:
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/wai>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/wai">>
 
 `\if` and `wai` share identical semantics. Both test a TW5 filter condition and render the
 body only on a non-empty result, and both chain through `kahawai` (`\elseif`) and `mukuwai`
@@ -32,6 +32,6 @@ Verse `if`/`case` on the flow surface — lives at `heihei`.)
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QzSrYg7ecbBQm9VNRYIlSJyWaaXIuhYztTK7_7LymL4
+<<^ code="&#x0003;">>ni:///sha-256;xn5wwktfFPbmEKMtuzzqGH3ifZJNQZ3zimTnQpUbOOA
 
 <<^ code="&#x0004;" -> to="?">>

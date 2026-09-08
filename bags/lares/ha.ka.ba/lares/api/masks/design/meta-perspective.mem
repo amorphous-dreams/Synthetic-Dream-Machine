@@ -21,7 +21,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/masks/design/meta-perspective"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -61,10 +61,10 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5Fo-QZjx8txXTb-Kpjm6c4cChX_8zK094me6NUYV2iE
+<<^ code="&#x0003;">>ni:///sha-256;VMMoxxKVIC6Gj_WtehFJXJ-AvahqmY4kzcscOShcMmk
 
 <<^ code="&#x0004;" -> to="?">>

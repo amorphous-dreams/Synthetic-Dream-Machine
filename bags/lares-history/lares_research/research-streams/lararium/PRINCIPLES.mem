@@ -120,11 +120,11 @@ carrier canon
 
 <<~ ahu #/edges>>
 
-<<~ pranala #implements from=? -> to=lar:///LARARIUM-NODE/ROADMAP family=control role=principles>>
-<<~ pranala #guards from=? -> to=lar:///ha.ka.ba/lares/api/pono/meme family=control role=authority-law>>
+<<~ pranala #implements from="?" -> to="lar:///LARARIUM-NODE/ROADMAP" family="control" role="principles">>
+<<~ pranala #guards from="?" -> to="lar:///ha.ka.ba/lares/api/pono/meme" family="control" role="authority-law">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cnXlnTPn3tCY5HWPV_XRLQ9DvjtxexC5YZwlBT2M13I
+<<^ code="&#x0003;">>ni:///sha-256;R3WRKc5nvh6JXRH8UyWHszLIdP_7mcFlQan5TasAbac
 
 <<^ code="&#x0004;" -> to="?">>

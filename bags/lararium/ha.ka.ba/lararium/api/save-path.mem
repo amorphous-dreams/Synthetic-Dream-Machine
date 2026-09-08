@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/save-path"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -146,11 +146,11 @@ No callbacks fire after `stop()`.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lararium/api/island-adaptor>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/verse-mesh>>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uM-djar7MTa4OY0KHTGWvCHZLzaaxWL4lg-wUaXuHgM
+<<^ code="&#x0003;">>ni:///sha-256;7903YzW3UqmnyR2iIcS1Ia5GnsktgaKxJdGTWQYGnPo
 
 <<^ code="&#x0004;" -> to="?">>

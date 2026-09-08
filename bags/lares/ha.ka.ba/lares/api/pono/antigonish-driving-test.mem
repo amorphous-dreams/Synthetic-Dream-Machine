@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/antigonish-driving-test"
 written   = "2026-06-30"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -493,16 +493,16 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/gold-anchor>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/living-grammar-palace>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/living-grammar>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/functor-discipline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/degraded-states>>
-<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/gold-anchor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/living-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/functor-discipline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QMSh_aSjdn59dzfgG5zJiYWXdywf3SIiuzNox3Y8Qu8
+<<^ code="&#x0003;">>ni:///sha-256;DPFNy65820eRoVmJ7FvcOhvGKCnf4lgY4NZe1y_AtMo
 
 <<^ code="&#x0004;" -> to="?">>

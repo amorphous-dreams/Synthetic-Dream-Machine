@@ -122,10 +122,10 @@ Why this is survivable, per Ayer: clients require SCTs from **multiple logs acro
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0vNqXYIBnwg9j6oVRayIl4MjoWzJBfr0s2F1RpazUR4
+<<^ code="&#x0003;">>ni:///sha-256;5qGKL_oC3enjR348QdxNzCOuUojuOZnBTKlY0Vz-amU
 
 <<^ code="&#x0004;" -> to="?">>

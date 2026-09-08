@@ -188,13 +188,13 @@ First-Breaking cult fragment? Where do the smuggling wars actually land their ca
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index>>
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/index>>
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/index">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/index">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cNBkJdq4jy9BRXaAJYI4-lyaKAfVL1AJDrxO3vgvGL4
+<<^ code="&#x0003;">>ni:///sha-256;cIxDjIkM65TYVQSgOie4kO8U9NyrRBroo4PEJvu_0Z0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,6 @@
 
 
-- `lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language`
+- `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
 <a id="/abstract"></a>
 
@@ -548,7 +548,7 @@ carrier states first ([FRAMING] #declaration-register):
 
 <<~ ahu #/head>>
 Body text, with a live embed: <<~ kahea lar:///ha.ka.ba/lares/api/pono/meme>>.
-<<~ pranala #governs from=? -> to=lar:///ha.ka.ba/lares/api/pono/loci family=control role=has>>
+<<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci" family="control" role="has">>
 
 <<~/ahu>>
 
@@ -623,16 +623,16 @@ A canvas reaction wire (flow surface):
 
 ## Edges
 
-- `lar:///ha.ka.ba/lares/api/pono/pranala`
-- `lar:///ha.ka.ba/lares/api/pono/lar-uri`
-- `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`
-- `lar:///ha.ka.ba/lares/api/pono/render-pipeline`
-- `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/kernel`
-- `lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter`
-- `lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/lares/api/pono/guest-grammar`
-- `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL`
-- `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`
-- `lar:///ha.ka.ba/lares/api/mu/the-four-tools`
-- `lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`
-- `lar:///ha.ka.ba/lares/api/pono/attention-scale`
+- `"lar:///ha.ka.ba/lares/api/pono/pranala"`
+- `"lar:///ha.ka.ba/lares/api/pono/lar-uri"`
+- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"`
+- `"lar:///ha.ka.ba/lares/api/pono/render-pipeline"`
+- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/kernel"`
+- `"lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter"`
+- `"lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext"`
+- `"lar:///ha.ka.ba/lares/api/pono/guest-grammar"`
+- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL"`
+- `"lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives"`
+- `"lar:///ha.ka.ba/lares/api/mu/the-four-tools"`
+- `"lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"`
+- `"lar:///ha.ka.ba/lares/api/pono/attention-scale"`

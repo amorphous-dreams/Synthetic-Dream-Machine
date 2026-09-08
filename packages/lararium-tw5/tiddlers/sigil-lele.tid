@@ -3,7 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: concurrency
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/lele
 lar-see-also: \branch
-lar-pattern: <<~\s*lele\s+(\S+)\s*>>
+lar-pattern: <<~\s*lele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 type: text/vnd.tiddlywiki
 
 <!-- lele — structured fire-and-continue (Verse branch); child node in the task tree.

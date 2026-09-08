@@ -254,11 +254,11 @@ Aftermath — close by naming:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/meme>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AuTC6pH2Pim3hT32sprAt8FHBbl3_0vw78zqGMxiaXk
+<<^ code="&#x0003;">>ni:///sha-256;l9dsB4E4ZNJQlenGv0-uXEPMNhXTT9CD6zIILnZwEkQ
 
 <<^ code="&#x0004;" -> to="?">>

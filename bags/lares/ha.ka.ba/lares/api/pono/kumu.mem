@@ -61,12 +61,12 @@ A kumu declaration MUST register a type definition only, producing no render out
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wehe>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-type>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-typos>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-type">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-typos">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qWz7cHdnTPvCyXd9_VjrPf9BdZYl6qEWsoxwMPOhX2k
+<<^ code="&#x0003;">>ni:///sha-256;GAhGakRf213Msz7OmSfD10PGJIRyV_0ibxQEEzT7hQw
 
 <<^ code="&#x0004;" -> to="?">>

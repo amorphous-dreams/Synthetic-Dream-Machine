@@ -89,11 +89,11 @@ The current shape keeps:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MIkcdA6Q-IK_u3OTQZNEQfE9x1DjH2uR9I_c1NrID0w
+<<^ code="&#x0003;">>ni:///sha-256;FkYiZyKfSLRai-n1I8E3hlpXL74U7_vQU-8hUvvXivc
 
 <<^ code="&#x0004;" -> to="?">>

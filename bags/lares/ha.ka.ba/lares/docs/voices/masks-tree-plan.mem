@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/masks-tree-plan"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -255,13 +255,13 @@ The tree deepens incrementally — each talk-story session fills one section of 
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/masks>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/voices/invariant-plan>>
-<<~ loulou lar:///ha.ka.ba/lares/api/masks>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/invariant-plan">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rnwfcny6Xh_W-5HyUmjkirYvG4BAYDD4uukMluDU4i4
+<<^ code="&#x0003;">>ni:///sha-256;bH3fL6Iuw6ABPwzW3rakpXicHNEcHnSavb1PAGv2BbQ
 
 <<^ code="&#x0004;" -> to="?">>

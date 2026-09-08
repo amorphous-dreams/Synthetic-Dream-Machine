@@ -16,7 +16,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/what-a-nexus-wants"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -56,10 +56,10 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-thing-event>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/cabal-realm>> · <<~ loulou lar:///ha.ka.ba/lares/api/pono/shelter-against-empire>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-thing-event">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XQWS-dlkabc2z1_dl3q7GipjWaNXB1pXvG-2i4rPQlA
+<<^ code="&#x0003;">>ni:///sha-256;mJLB7Jnf9fAitplOQOm_irlLh6z374VoqvvaEZsCeNw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -292,11 +292,11 @@ the crypto gate, not instead of it.
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/federated-causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/research-streams>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k3gwOV0KjkUq4k5QShHW4SLymfdbrLWQJEKQhhrAvvk
+<<^ code="&#x0003;">>ni:///sha-256;I6JwYM9O_tnVT1_m8qgg68OO-Yl8FPqHa_AJddIpQo8
 
 <<^ code="&#x0004;" -> to="?">>

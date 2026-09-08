@@ -262,10 +262,10 @@ Findings from this series:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cb2dR8NPTph6pQVIc8a_PBA_OHuWlo-D4-IDenxffDU
+<<^ code="&#x0003;">>ni:///sha-256;x9kbGZlN4Z45XorHDWU7XjIWyYRTf6sZMW9dy9LUHBE
 
 <<^ code="&#x0004;" -> to="?">>

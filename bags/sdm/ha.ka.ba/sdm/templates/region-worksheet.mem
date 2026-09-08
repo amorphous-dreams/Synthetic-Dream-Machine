@@ -122,12 +122,12 @@ grain, blessed before moving:
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet>>
-<<~ loulou lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet>>
-<<~ loulou lar:///ha.ka.ba/sdm/docs/arcana-model>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
+<<~ loulou "lar:///ha.ka.ba/sdm/docs/arcana-model">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0RkfKE1CXAiEgsy18LhBJ64UsoRz3X10j5C5wcuyL4U
+<<^ code="&#x0003;">>ni:///sha-256;bjDpVXlxbMYcgLMkacx1qksHm8bTQTQHuc7wQxcy_10
 
 <<^ code="&#x0004;" -> to="?">>

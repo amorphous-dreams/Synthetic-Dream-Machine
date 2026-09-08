@@ -55,12 +55,12 @@ Carrier laws may explain local usage, but MUST cite this meme rather than re-dec
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/RFC-2119>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/RFC-2119">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N1b53VcVFsrJAD61JIDVYUvJLkkYFyJQr-B-U-FpR0o
+<<^ code="&#x0003;">>ni:///sha-256;Xoaa3ykaTzRUXaOPluNI1p7VsAPGtsvZ7QHq9tiJjqA
 
 <<^ code="&#x0004;" -> to="?">>

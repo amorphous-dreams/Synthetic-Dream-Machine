@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/l-prime"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -143,13 +143,13 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/oracle>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/l-prime>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/oracle">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-prime">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tk0M3I3voRDQ1BDMUG5ME0rA2rl2PLRN-30SQ7Weqt8
+<<^ code="&#x0003;">>ni:///sha-256;wxr6adZ95EcxdejS07bk4BsGpYqmOd1bo0k0NxQXch4
 
 <<^ code="&#x0004;" -> to="?">>

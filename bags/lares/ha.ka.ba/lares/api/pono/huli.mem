@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/huli"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -113,13 +113,13 @@ close-pattern = '<<~\/huli\s*>>'
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wehe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wai>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wai">>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ETQImNLBqO7g_22oUwvPefdNYKsip9mElqnmmp7yKXU
+<<^ code="&#x0003;">>ni:///sha-256;X8BVWC9IJKF5io5r16e60WuGDLJT3dpaCuYXOLf-Vtg
 
 <<^ code="&#x0004;" -> to="?">>

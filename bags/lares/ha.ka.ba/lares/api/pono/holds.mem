@@ -14,8 +14,8 @@ uri-path  = "ha.ka.ba/lares/api/pono/holds"
 written   = "2026-06-14"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -104,7 +104,7 @@ sigil compiles to the runtime filter operator `[holds[]]` /
 sharktooth never rides inside a filter run, so the brackets keep the query
 that composes (`[all[tiddlers]holds[element/Fire]sort[title]]`).
 
-<<~ pranala #source from=? -> to=packages/lararium-tw5/src/holds.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/holds.ts" family="code" role="has">>
 
 <<~/ahu>>
 
@@ -264,13 +264,13 @@ order or lattice would later mint it, the floor unbuilt until a usage demands.
 
 !! Edges reach out
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/meme>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loci>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4mKPVi2H0MQ_Kzccv9Lz304RlpwMglViKheVGGV0Pg0
+<<^ code="&#x0003;">>ni:///sha-256;NvqSeMjF8e4RFvIGoWtKdqjx3C62XnlSOYWHoak8dDI
 
 <<^ code="&#x0004;" -> to="?">>

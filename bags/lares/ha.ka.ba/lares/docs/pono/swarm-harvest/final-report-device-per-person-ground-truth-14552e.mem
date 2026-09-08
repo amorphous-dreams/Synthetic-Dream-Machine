@@ -161,10 +161,10 @@ I could not reach GSMA's Mobile Gender Gap Report directly (403 on all URL guess
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JtPlCZG0m30fFSdoFd2h4jRWdq0vkid9wyZDJCLOUQc
+<<^ code="&#x0003;">>ni:///sha-256;nNfR9gYAHkUY4XvZrWD5NeDbvsmttl47Y0_f0OgYfkE
 
 <<^ code="&#x0004;" -> to="?">>

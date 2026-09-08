@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/parser"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -277,14 +277,14 @@ trigger = "end of stream"
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/ahu>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JJN72fJJbehgi635bClvLUWrBRATjzrydz4_Ls-0E6U
+<<^ code="&#x0003;">>ni:///sha-256;gLU-9btOErtnrqylDNsVk-so1xKZReOCggy8BlQc0w8
 
 <<^ code="&#x0004;" -> to="?">>

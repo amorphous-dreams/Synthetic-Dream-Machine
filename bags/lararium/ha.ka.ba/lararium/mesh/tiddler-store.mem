@@ -60,13 +60,13 @@ rather than an absence it must guess at.
 
 <<~ ahu #/edges>>
 
-<<~ pranala #source from=? -> to=packages/lararium-mesh/src/tiddler-store.ts family=code role=has>>
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/tiddler-store.ts" family="code" role="has">>
 
 <<~/ahu>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/docs/meme-provider>>
-<<~ loulou lar:///ha.ka.ba/lararium/api/disk-projection>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 
-<<^ code="&#x0003;">>ni:///sha-256;2IY1pqxFiUlD34zu2YmGwpG5dP-pT1JQdGgCt14n5IQ
+<<^ code="&#x0003;">>ni:///sha-256;krqBmwx2rlYk2gYQaVff8L2ybQWMZA5CxpiH4yayaSw
 
 <<^ code="&#x0004;" -> to="?">>

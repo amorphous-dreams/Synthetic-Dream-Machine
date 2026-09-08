@@ -327,5 +327,5 @@ rather than minting sibling types.
 
 <a id="/edges"></a>
 
-- `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
-- `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`
+- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
+- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"`

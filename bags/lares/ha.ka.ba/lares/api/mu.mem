@@ -32,7 +32,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -59,10 +59,10 @@ The grammar appears as Mu performing itself.
 
 !! Core Hydration
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/l-prime>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/ooda-ha>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/lararium>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
 
 <<~/ahu>>
 
@@ -98,13 +98,13 @@ Mu does not hold:
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/chao>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/chao">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R2gZP7TE88Qxqc40rTjKzIKqrWNdq7ZE7WSMc3ElhJM
+<<^ code="&#x0003;">>ni:///sha-256;L3taItnCBph6EP4jDIYV801CT94-aHTM687t0F5VBoQ
 
 <<^ code="&#x0004;" -> to="?">>

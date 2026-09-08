@@ -60,11 +60,11 @@ An optional `role:` qualifier further specifies the constraint kind.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-constraint>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-constraint">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0g3qTJpAlBtka3auE39VpdZ-NIrSAU1fYfI_KK8Sat8
+<<^ code="&#x0003;">>ni:///sha-256;iYnDA_pHXzHvQGzzwWzWzNeUGSbpoaUZGkn4003Ci7Y
 
 <<^ code="&#x0004;" -> to="?">>

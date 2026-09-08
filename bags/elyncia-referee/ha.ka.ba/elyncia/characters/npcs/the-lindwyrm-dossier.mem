@@ -95,11 +95,11 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm>>
-<<~ loulou lar:///ha.ka.ba/elyncia/factions/league-of-free-cities>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/league-of-free-cities">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-0BOWdu0f7uzinuZfHSPDh1fMUz2wPrBFAqVkhAmHTQ
+<<^ code="&#x0003;">>ni:///sha-256;P37xESAwoTv3Z_OslLJBRTf71TolcYTQnUxwQblNIa0
 
 <<^ code="&#x0004;" -> to="?">>

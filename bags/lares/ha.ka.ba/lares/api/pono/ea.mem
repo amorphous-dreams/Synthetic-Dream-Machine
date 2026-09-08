@@ -108,11 +108,11 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
-<<~ loulou lar:///ha.ka.ba/lararium/mesh/island-protocol>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z68RVAKVt0TSXMzPg27ROVxUCowdjPPkSV_HaN5yH50
+<<^ code="&#x0003;">>ni:///sha-256;O84T5_1ImE5h8k1whoBMzmKwVHt6rGBftWVUvAzj8WM
 
 <<^ code="&#x0004;" -> to="?">>

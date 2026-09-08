@@ -318,14 +318,14 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki>>
-<<~ loulou lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/causal-islands>>
+<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BNyyG0mlCvCyqqLWQ5lJuxDDvAi8To1em5KpCGm3kYc
+<<^ code="&#x0003;">>ni:///sha-256;V5dZCcSaL3k1eSdpuT_pDeSmP3cTwKcl3qLW9KL6Srg
 
 <<^ code="&#x0004;" -> to="?">>

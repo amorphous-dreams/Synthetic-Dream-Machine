@@ -95,11 +95,11 @@ ahu-slot-children     = "independent records — not embedded in parent record"
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/schema/projection-codec>>
-<<~ loulou lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor>>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-hYFeo0RM-099Jwn0MBwDEIqla6s2a25BPxRLRsuPF4
+<<^ code="&#x0003;">>ni:///sha-256;B9ReFnNerFc7CZjix6q07jLACjeQQlaovrvUlcNDpxY
 
 <<^ code="&#x0004;" -> to="?">>

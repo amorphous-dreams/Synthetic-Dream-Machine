@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/model-agnosticism"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -128,12 +128,12 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/mu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r1Fb5LrcqgU94KaaVBumvR7nEUucJkh4OrhPlN2KnRE
+<<^ code="&#x0003;">>ni:///sha-256;zYyZhXA7nokbtkHZtmNDRo6JzFSQjYAhuoXumFl0TGI
 
 <<^ code="&#x0004;" -> to="?">>

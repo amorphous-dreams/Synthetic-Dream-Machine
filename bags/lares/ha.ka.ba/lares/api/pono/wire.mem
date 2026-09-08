@@ -15,7 +15,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/wire"
 written   = "2026-06-12"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -79,14 +79,14 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/has-stack>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/verse-event-lattice>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FlUEoBu2AVdlkMvkgb2s-fOvrhuOkB4rrAnaN7TT3ro
+<<^ code="&#x0003;">>ni:///sha-256;ZYjJSxAnT1ryEX5Y30ek3xQPSCCu_6PLG0sGsoNqRkM
 
 <<^ code="&#x0004;" -> to="?">>

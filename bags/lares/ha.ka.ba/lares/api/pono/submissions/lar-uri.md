@@ -1,6 +1,6 @@
 
 
-- `lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language`
+- `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
 <a id="/meme-header"></a>
 
@@ -403,6 +403,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 ## Edges
 
-- `lar:///ha.ka.ba/lares/api/pono/lar-uri`
-- `lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL`
-- `lar:///ha.ka.ba/lares/docs/pono/identity-stack`
+- `"lar:///ha.ka.ba/lares/api/pono/lar-uri"`
+- `"lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL"`
+- `"lar:///ha.ka.ba/lares/docs/pono/identity-stack"`

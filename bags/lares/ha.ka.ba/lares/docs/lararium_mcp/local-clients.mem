@@ -121,11 +121,11 @@ Tool annotations: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHin
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters>>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pvNRkat3Ex4kDpx7qnx5OMYtBrCldbvsyRjn8JSGfgM
+<<^ code="&#x0003;">>ni:///sha-256;LdInXRyUxpt4nKf6JbJyNQCPma482kKZSP2gWjQMdjM
 
 <<^ code="&#x0004;" -> to="?">>

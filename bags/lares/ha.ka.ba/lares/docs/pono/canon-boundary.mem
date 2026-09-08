@@ -188,14 +188,14 @@ If the answers remain vague, the claim should stay as session pressure.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/hooponopono>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/l-space-trust>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;57ezK6R4phgY-g55oP19J1y1v-NWFvkLTlk30c9erh0
+<<^ code="&#x0003;">>ni:///sha-256;OWU5piWzyVqEKbPIiThUq7g-dCZwdlR1N_DG_IbEu88
 
 <<^ code="&#x0004;" -> to="?">>

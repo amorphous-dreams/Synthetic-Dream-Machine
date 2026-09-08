@@ -456,13 +456,13 @@ Leave the unresolved items visible and bounded. Hidden residue is how architectu
 
 <<~ ahu #/edges>>
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/parser>>
-<<~ loulou lar:///ha.ka.ba/lararium/docs/tw5-deserializer>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/history/consume-archive>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/tw5-deserializer">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/history/consume-archive">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XrY_xBq-JbuYMPzxvASlMfyYvWQmPafHnoZsknocgQo
+<<^ code="&#x0003;">>ni:///sha-256;7hzas02twdN_WMRigQOlxfbP4Z8pm7Ku59Dlas4bcLA
 
 <<^ code="&#x0004;" -> to="?">>

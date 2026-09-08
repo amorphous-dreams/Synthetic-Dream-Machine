@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/relational-parameter"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -249,13 +249,13 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/graceful-parsing>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/ai-phrasebook-design>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/ai-phrasebook-design">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;De9cKx-VG7HgPwwWticKoD13n4FSzo9jl47lS-0KAM0
+<<^ code="&#x0003;">>ni:///sha-256;Ye4hPN_wm8IKsxxPr_SyfY2wxrJJS63HbalLLHX2XCQ
 
 <<^ code="&#x0004;" -> to="?">>

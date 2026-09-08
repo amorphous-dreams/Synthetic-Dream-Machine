@@ -262,19 +262,19 @@ lives in a tiddler.
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/ahu>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/kahea>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/aka>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/loulou>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/wehe>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/heihei>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/huli>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/sharktooth-sigils>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/heihei">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/huli">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sharktooth-sigils">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YudVmJ9KGBMiGB8QgO6XVCyLzfmRo7A_Brbqi7MAFjE
+<<^ code="&#x0003;">>ni:///sha-256;lXlLLvf08can8Sr5zO_nDmvlnisjswoXktRXOgAVpe8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -19,7 +19,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext"
 ```
 
-<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language>>
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
 <<^ code="&#x0002;">>
 
@@ -599,7 +599,7 @@ carrier states first ([FRAMING] #declaration-register):
 
 <<~ ahu #/head>>
 Body text, with a live embed: <<~ kahea lar:///ha.ka.ba/lares/api/pono/meme>>.
-<<~ pranala #governs from=? -> to=lar:///ha.ka.ba/lares/api/pono/loci family=control role=has>>
+<<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci" family="control" role="has">>
 
 <<~/ahu>>
 
@@ -681,22 +681,22 @@ A canvas reaction wire (flow surface):
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/kernel>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter>>
-<<~ loulou lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/guest-grammar>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-four-tools>>
-<<~ loulou lar:///ha.ka.ba/lares/api/mu/the-law-of-5s>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/attention-scale>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/kernel">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/attention-scale">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3qYd0Bq3_lr-W-cFxKxFq8Tc-bXwYGRqXVTCdbs_7Z8
+<<^ code="&#x0003;">>ni:///sha-256;AgfFQZk2je7NNCiXuQuV15FSgD9_GNLdGwI9e7Q-7Ho
 
 <<^ code="&#x0004;" -> to="?">>

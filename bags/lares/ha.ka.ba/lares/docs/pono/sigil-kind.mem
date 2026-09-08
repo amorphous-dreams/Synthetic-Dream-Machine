@@ -191,12 +191,12 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 !! Edges
 
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/parser>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/pranala-families>>
-<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u6zmuuyYaH-OKxu_fVHkq0g3oog0UCl9kqaTeL1JYpA
+<<^ code="&#x0003;">>ni:///sha-256;RbNg77ZtP-R3tQEToaVq_tasg4szFFmcnr4LMN89v94
 
 <<^ code="&#x0004;" -> to="?">>
