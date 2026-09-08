@@ -190,7 +190,7 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("handleKelChain");
   });
 
-  test.skip("A VETO RIDES THE CHAIN, NEVER A ROSTER — RULED 2026-09-06 (Fork C, the end-user default contest shape) and RE-CUT by the REGISTRY FILTER: a pending-recovery ROW ON A BOARD is a compiled one-Nexus registry of the vulnerable, and a window the holder must OBSERVE fuses safety to liveness. The contest enters the prefix's OWN KEL as a PROVISIONAL rotation and hardens by corm-fencing/ITC (clockless-lease: safety from fencing — an unpartitioned holder's veto out-competes causally whenever it syncs; liveness from phi-accrual, separately). UNBUILT", () => {
+  test.skip("A VETO RIDES THE CHAIN, NEVER A ROSTER — RULED 2026-09-06, MECHANISM WALKED 2026-09-08 (identity-classes#the-two-forks, the hardening rule): a provisional head confers only kapae-reversible authority · the veto out-competes causally always · hardening is OBSERVER-LOCAL by silence-across-K-local-epochs · the board keys contests {prefix}/{seq}/{eventCid} with a veto-beats-provisional fold. The G2 settlement = exactly the provisional marker + the veto kind, ONE bytes-change. UNBUILT", () => {
     expect(Object.keys(mesh)).toContain("provisionalRotation");
   });
 
