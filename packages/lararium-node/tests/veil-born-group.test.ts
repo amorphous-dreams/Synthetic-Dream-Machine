@@ -55,14 +55,11 @@ describe("the veil-born group", () => {
     const veilKh = new KeyhiveProvider();
     await veilKh.init({ seed: hexToBytes(veil.signingKey), eventStore: await replayCapEvents(handle as never) });
     await veilKh.hydrateFromEventStore();
-    const veilId = await veilKh.vesselIdentifierHex();
-
     const vesselKh = new KeyhiveProvider();
     await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
     await vesselKh.hydrateFromEventStore();
     const vesselId = await vesselKh.vesselIdentifierHex();
 
-    void veilId;
     // MEASURED SEMANTICS: `cgkaMembers` enumerates the doc's own agent plus EXPLICITLY seated
     // members — a creator never appears as a row; its hold is OPERATIONAL AUTHORITY. So the vector
     // asserts both halves as they actually exist: the raw key sits on no roster, and the re-stood

@@ -21,6 +21,8 @@ The four founding-watch rulings closed (the veil · layered recovery · seat-ado
 - The G1 probe campaign: a Keyhive creator cannot leave its own roster; ANY access grade is CGKA membership; carriage alone materializes nothing; and the CREATOR's identifier rides carried events in cleartext — the veil-born-group arc stands byte-measured as necessity, its design brief fully constraint-driven.
 - Six unbuilt-law reds declared (the Handle's chain-to-burn · the veto-rides-the-chain contest · the guardian-compartment check · two liveness fences); register stands 27 declared · 0 greened by accident.
 
+- G1 LANDED both moments of the veil split: the founding mints a veil tag and the VEIL-KEYED identity creates both WHO-plane sentinels (no carried event spells the raw vessel key — witnessed at ceremony grain); the joinee derives its veil from the carried group doc id and seats veil-keyed; the runtime stands both identities from the persisted tag; every vessel-bag→face delegation walks one road (delegateToFaceViaVeil); both identities' archives persist across boots.
+
 **Changed**
 - Persona-KEL event bytes gained the rolling-commitment field — every CID and prefix re-derives; rehearsal vessels re-found (early alpha carries no backward compatibility).
 - `vesselDyads` reads ceremony-minted slots only; a bare delegation edge presents no relationship, and the boot says the drift aloud.
