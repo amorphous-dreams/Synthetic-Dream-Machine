@@ -11,7 +11,6 @@
  */
 import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
-import { writeFileSync } from "node:fs";
 
 async function vessel(fill: number): Promise<KeyhiveProvider> {
   const p = new KeyhiveProvider();
@@ -32,22 +31,10 @@ describe("the creator asks to leave its own roster", () => {
     const before = await creator.sentinelCgkaMembers(docIdHex);
     expect(before).toContain(veilId);
 
-    let evicted = false; let refusal = "";
-    try {
-      await creator.revokeSentinelMember(creatorId, docIdHex);
-      evicted = true;
-    } catch (e) { refusal = e instanceof Error ? e.message : String(e); }
-
-    if (evicted) {
-      const after = await creator.sentinelCgkaMembers(docIdHex);
-      // The measurement, both halves: the creator gone, the veil standing.
-      expect(after, "the veil keeps its seat").toContain(veilId);
-      expect(after, "the creator stepped off").not.toContain(creatorId);
-      writeFileSync("/tmp/self-eviction-probe.json", JSON.stringify({ verdict: "WORKS", roster: after }));
-    } else {
-      writeFileSync("/tmp/self-eviction-probe.json", JSON.stringify({ verdict: "REFUSED", refusal }));
-      // The refusal is itself the measurement; the probe passes by MEASURING, not by wishing.
-      expect(refusal.length).toBeGreaterThan(0);
-    }
+    // CANARY (measured 2026-09-07: REFUSED, "Redelagation error"). The two-identity boot rests on
+    // this refusal — an upstream keyhive that ever ALLOWS a creator to leave its roster re-scopes
+    // the whole veil-born architecture, and this assertion is the alarm that says so.
+    await expect(creator.revokeSentinelMember(creatorId, docIdHex)).rejects.toThrow();
+    void veilId;
   });
 });

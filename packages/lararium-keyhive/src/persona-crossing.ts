@@ -67,7 +67,6 @@ export async function packPersonaCrossing(
   // The founder delegates each bag to the VEIL (one per-group edge, non-correlating), the seat ingests
   // the bag chain, and the seat — holding bag-admin AND the group — seats the bag under the group and
   // seals the content.
-  const bagHand = seat === founder ? founder : seat;
   if (seat !== founder) {
     try { await seat.receiveContactCard(await founder.contactCard()); } catch { /* already known */ }
     try { await founder.receiveContactCard(await seat.contactCard()); } catch { /* already known */ }
@@ -84,8 +83,8 @@ export async function packPersonaCrossing(
     // Route A: RE-DELEGATE the bag to the PersonaGroup after the join, so the bag's tree sees the re-keyed
     // group (incl. the joinee) — the transitive re-key does NOT auto-propagate to a bag delegated before the
     // join. THEN encrypt, so the ciphertext keys to an epoch the joinee reaches.
-    await bagHand.delegate({ bagUrl: c.bagUrl, audience: personaGroup.agentIdHex, access: "read" });
-    const ct = await bagHand.encryptContent(c.bagUrl, c.plaintext);       // ENCRYPT after re-delegate
+    await seat.delegate({ bagUrl: c.bagUrl, audience: personaGroup.agentIdHex, access: "read" });
+    const ct = await seat.encryptContent(c.bagUrl, c.plaintext);       // ENCRYPT after re-delegate
     packed.push({ bagUrl: c.bagUrl, docIdHex: c.docIdHex, ciphertext: bytesToBase64(ct) });
   }
   // CAPTURE after the encrypt — the seat holds the whole reach (group + ingested bag chain), and the

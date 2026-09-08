@@ -11,7 +11,6 @@
  *   · identifiers ABSENT → the CGKA-roster reading stood, and the log leaks structure only.
  */
 import { describe, test, expect } from "vitest";
-import { writeFileSync } from "node:fs";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 
 async function vessel(fill: number): Promise<KeyhiveProvider> {
@@ -47,14 +46,13 @@ describe("what a carrier can read", () => {
     // disk image) can grep with no keys at all.
     const streamHex = events.map((e) => Array.from(e).map((b) => b.toString(16).padStart(2, "0")).join("")).join("|");
 
-    const finding = {
-      eventCount:            events.length,
-      streamBytes:           streamHex.length / 2,
-      memberIdInCleartext:   streamHex.includes(memberId),
-      creatorIdInCleartext:  streamHex.includes(creatorId),
-      groupDocIdInCleartext: streamHex.includes(strip(docIdHex)),
-    };
-    writeFileSync("/tmp/host-surface-probe.json", JSON.stringify(finding, null, 2));
-    expect(events.length).toBeGreaterThan(0);   // the probe passes by measuring
+    // CANARY (measured 2026-09-08): the CREATOR's id rides carried events in cleartext — the leak
+    // the veil-born design covers (a per-group veil in cleartext correlates nothing). An upstream
+    // that ciphers the creator out of the log shifts the design's cost, and this alarm says so.
+    // The admitted member's id stays out of a bystander stream (also pinned).
+    expect(events.length).toBeGreaterThan(0);
+    expect(streamHex.includes(creatorId), "the creator still spells in carried events (upstream)").toBe(true);
+    expect(streamHex.includes(memberId), "a member's id stays out of a bystander stream").toBe(false);
+    void docIdHex;
   });
 });

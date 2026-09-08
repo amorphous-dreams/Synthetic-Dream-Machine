@@ -11,7 +11,6 @@
  *            SEE the document without membership — the boot's minimum need?
  */
 import { describe, test, expect } from "vitest";
-import { writeFileSync } from "node:fs";
 import * as KH from "@keyhive/keyhive/slim";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 
@@ -23,8 +22,6 @@ async function vessel(fill: number): Promise<KeyhiveProvider> {
 const rawKh = (p: KeyhiveProvider): any => (p as unknown as { requireKh: () => unknown }).requireKh();
 const hexOf = (b: Uint8Array): string => "0x" + Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
 const bytesOf = (idHex: string): Uint8Array => Uint8Array.from(Buffer.from(idHex.replace(/^0x/, ""), "hex"));
-const verdict = (door: string, v: unknown): void =>
-  writeFileSync(`/tmp/g1-probe-${door}.json`, JSON.stringify(v, null, 2));
 
 describe("G1 scope probes", () => {
   // MEASURED 2026-09-07 — UNMEASURABLE AT THIS SURFACE: passing a `toPeer()` handle back into
@@ -50,14 +47,8 @@ describe("G1 scope probes", () => {
       const docIdHex = hexOf(doc.doc_id.toBytes());
       const members = await creator.sentinelCgkaMembers(docIdHex);
       const creatorId = await creator.vesselIdentifierHex();
-      verdict("door1", {
-        verdict: "OPENED",
-        veilOnCgkaAtBirth: members.includes(veilId),
-        creatorOnCgka: members.includes(creatorId),
-        rosterSize: members.length,
-      });
-    } catch (e) { verdict("door1", { verdict: "REFUSED", refusal: String(e).slice(0, 300) }); }
-    expect(true).toBe(true);
+      void members; void creatorId;
+    } catch { /* the upstream Peer-marshaling pothole — the skip note above records it */ }
   });
 
   test("DOOR 2 — read-grade access vs the CGKA enumeration", { timeout: 90_000 }, async () => {
@@ -73,9 +64,11 @@ describe("G1 scope probes", () => {
       if (!access) throw new Error("Access 'read' is not a recognized grade");
       await kh.addMember(agent, doc.toMembered(), access, []);
       const members = await creator.sentinelCgkaMembers(docIdHex);
-      verdict("door2", { verdict: "OPENED", readGradeExists: true, readerOnCgka: members.includes(readerId) });
-    } catch (e) { verdict("door2", { verdict: "REFUSED", refusal: String(e).slice(0, 300) }); }
-    expect(true).toBe(true);
+      // CANARY (measured 2026-09-08: TRUE): ANY access grade is CGKA membership — no sub-roster
+      // grade exists. An upstream that splits reader-grades off the tree loosens the veil-born
+      // "no direct grade for the vessel" constraint, and this alarm says so.
+      expect(members, "a read-grade member rides the CGKA").toContain(readerId);
+    } catch (e) { throw new Error(`door 2 no longer opens: ${String(e).slice(0, 200)}`); }
   });
 
   test("DOOR 3 — carriage without membership", { timeout: 90_000 }, async () => {
@@ -86,10 +79,11 @@ describe("G1 scope probes", () => {
       const { id: daemonId } = await veilBorn.receiveContactCard(await daemon.contactCard());
       const events = await veilBorn.eventsForPeer(daemonId);
       await daemon.ingestPeerEvents(events);
-      let sees = false;
-      try { await daemon.sentinelCgkaMembers(docIdHex); sees = true; } catch { sees = false; }
-      verdict("door3", { verdict: "OPENED", eventsCarried: events.length, daemonSeesDoc: sees });
-    } catch (e) { verdict("door3", { verdict: "REFUSED", refusal: String(e).slice(0, 300) }); }
-    expect(true).toBe(true);
+      // CANARY (measured 2026-09-08: refuses): carriage alone materializes nothing — a boot must
+      // STAND an identity, never merely replay its events. An upstream that materializes from bare
+      // ingest shifts the two-identity boot's necessity, and this alarm says so.
+      await expect(daemon.sentinelCgkaMembers(docIdHex)).rejects.toThrow();
+      void events;
+    } catch (e) { throw e; }
   });
 });
