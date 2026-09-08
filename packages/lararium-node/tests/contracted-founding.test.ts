@@ -13,7 +13,9 @@ import { describe, expect, it } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import {
-  buildDeviceDelegation, mintPersonaInception, hex, type PersonaKelEvent,
+  buildDeviceDelegation, hex, deriveSelfRecoveryKey,
+  provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
+  type PersonaKelEvent,
 } from "@lararium/mesh";
 import { runFoundingCeremony } from "@lararium/keyhive";
 
@@ -33,7 +35,14 @@ async function bundleFor(deviceVerifyingKey: string, hearthTrueName = HEARTH) {
     expiresAt: new Date("2027-07-20T00:00:00Z").toISOString(),
     boundEpoch: 0,
   });
-  const inception: PersonaKelEvent = mintPersonaInception(edge.personaRootDid, "");
+  // NO PREFIX INCEPTS UNARMED — the carried chain arms exactly as a self-stood founding does: the
+  // contracting operator's own 1-of-1 self-recovery digest, pre-committed at inception.
+  const selfRecovery = await deriveSelfRecoveryKey(OPERATOR_SEED);
+  const inception: PersonaKelEvent = provisionThresholdRecoveryAtFounding({
+    foundingOpKeyDid: edge.personaRootDid,
+    guardians: [guardianRecoveryRegistrationCard("mine", selfRecovery.verifyingKey, null)],
+    recoveryThreshold: 1,
+  }).inception;
   return { edge, personaKelPrefix: inception.prefix, personaKelChain: [inception] as const };
 }
 
