@@ -192,6 +192,8 @@ the very reason the instruction channel and the claim channel must never share a
 
 Memetic-wikitext SHALL read as a **superset of TW5 wikitext**: every valid TW5 wikitext document reads as valid memetic-wikitext. A processor reads bare `<<name>>` as an inherited TW5 macro call; the sharktooth `~` immediately after `<<` marks the Lararium sigil namespace. `<<~` opens a Lararium sigil; bare `<<` opens an inherited TW5 macro — the two coexist.
 
+**TiddlyWiki OWNS the bare form, and every law that follows it.** A Lararium rule claims `<<~` and nothing else. That boundary decides where a behaviour belongs: the GRADIENT — an unrecognised call rendering as the text an author wrote rather than as nothing — holds inside the sharktooth namespace by this grammar's own rule, and belongs UPSTREAM for the bare form. A rule reaching past `<<~` would take every core macro with it and owe TiddlyWiki's parameter parsing exactly, or silently change how a core macro reads its arguments.
+
 ### Shapes
 
 - **Inline** (self-closing): `<<~ loulou lar:///uri>>`

@@ -53,25 +53,25 @@ describe.skipIf(wikiSkip)(`a sigil renders on a gradient${skipNote}`, () => {
   });
 
   /**
-   * DECLARED RED — meant to be UNSKIPPED, never deleted.
+   * NOT OURS — RULED: TiddlyWiki OWNS the bare `<<…>>` form.
    *
-   * A PLAIN `<<name>>` call carries no sharktooth, so `lar-sigil` never claims it and TiddlyWiki's own
-   * `macrocallinline` rule takes it. TiddlyWiki answers an undefined call with the empty string, and
-   * that answer reaches the page unchanged.
+   * A plain `<<name>>` carries no sharktooth, so no Lararium rule claims it and TiddlyWiki answers an
+   * undefined call with the empty string. The gradient this house keeps — an unrecognised call
+   * rendering as the text an author wrote — holds INSIDE the sharktooth namespace, by this grammar's
+   * own rule, and belongs UPSTREAM for the bare form.
    *
-   * THE MECHANISM IS KNOWN AND COSTS A RULING, NOT A FIX. The same transclude fallback that carries the
-   * sharktooth gradient would carry this one: claim `<<word …>>`, emit `transclude $variable=word` with
-   * the verbatim as its children, and TiddlyWiki renders the macro where it resolves and the text where
-   * it does not — no parse-time knowledge of what is defined.
+   * A rule reaching past `<<~` would take every core macro with it and owe TiddlyWiki's parameter
+   * parsing exactly, or silently change how a core macro reads its arguments. So the vector below
+   * asserts the BOUNDARY rather than the behaviour: our rule leaves the bare form alone.
    *
-   * What it costs: this rule would then claim EVERY macro call in the wiki, core ones included, and
-   * would have to reproduce TiddlyWiki's own parameter parsing faithfully or silently change how a
-   * core macro reads its arguments. That is an architectural decision about who owns `<<…>>`.
+   * The gradient for it rides the TiddlyWiki5 submodule's own working branch (`dev/sdm-integration`,
+   * where `feature/parser-diagnostics` already carries gradient-failure intent).
    */
-  test.skip("★ a plain undefined macro call renders its input text too — RULING OWED: claiming <<…>> means owning every macro call ★", () => {
-    const html = r("<<undefinedthing>>");
-    expect(html, "a bare undefined call VANISHED from the page").not.toBe("");
-    expect(html).toContain("undefinedthing");
+  test("★ the bare form belongs to TiddlyWiki — our rule leaves it alone ★", () => {
+    // TiddlyWiki's own answer, unchanged by us: an undefined call renders as nothing.
+    expect(r("<<undefinedthing>>")).toBe("");
+    // …and a DEFINED core macro still renders, so nothing here has taken the bare form hostage.
+    expect(r("<<now YYYY>>")).not.toBe("");
   });
 
   /**
