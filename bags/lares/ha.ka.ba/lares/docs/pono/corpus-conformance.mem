@@ -27,8 +27,8 @@ uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
 
 ! Corpus Conformance ~ a run, not a claim
 
-A spec that says //the grammar is X// asks a reader to believe it. A spec that says //this corpus obeys
-X, and here is the command// hands the reader an instrument. The difference decides whether an outside
+A spec that merely STATES its grammar asks a reader to believe it. A spec that says //this corpus obeys
+X, and here stands the command// hands the reader an instrument. The difference decides whether an outside
 reviewer can check the work without learning the house first.
 
 ''The run answers ONE question:'' does this corpus obey the grammar THIS seed declares?
@@ -83,7 +83,7 @@ corpus lags the seed. Those want different hands.
 
 !!! C ~ Round-trip laws — the reader and the writer agree
 
-# `render(parse(disk))` returns the body it was given.
+# `render(parse(disk))` returns the body handed to it.
 # A carrier normalizes to itself: `normalize --check` reads canonical.
 # One closer, idempotent, content-whole.
 
@@ -98,10 +98,10 @@ the seed retired six months ago: the bytes hold, the frame stands, the projectio
 grammar has drifted underneath all of it.
 
 # No carrier fires a form the seed retired, EXCEPT a carrier that declares itself a record.
-# Every sigil head the corpus fires is declared — by the seed, or by an `api/` carrier that stands.
+# Every sigil head the corpus fires answers to a declaration — the seed's, or an `api/` carrier's.
 # Every panel key the corpus writes appears in the seed's `set` signature, or reports as novel.
 
-''The exempt set is DECLARED, never inferred.'' A record — a transcript, an experiment log, a campaign
+''A run DECLARES its exempt set, and infers none of it.'' A record — a transcript, an experiment log, a campaign
 scroll — quotes a grammar rather than speaking it, and a run that silently skipped such carriers would
 report a clean corpus while hiding its own blind spot. The run NAMES what it exempted and why, in the
 record it writes.
@@ -113,7 +113,7 @@ record it writes.
 !! The drift reading ~ why the record matters more than the verdict
 
 ''Conformance reads as a boolean at an instant and as a SHAPE across time.'' The seed moves — four times
-in one session, on the day this was designed — and each move is a boundary, not a fault. Between two
+in one session, on the day this design landed — and each move names a boundary rather than a fault. Between two
 seed-states a run reports:
 
 * ''which laws changed'' — the grammar's own diff, stated as laws rather than bytes;
@@ -145,7 +145,7 @@ the house's own grammar-history the way it reads a chant.
 
 !! Failure discipline ~ four rules the instruments earned
 
-Each rule below was paid for by a measured failure, not reasoned from principle.
+A measured failure paid for each rule below; none of them follows from principle.
 
 # ''A law that cannot run reports `unchecked`, never `pass`.'' Absence and conformance name different
 facts, and a run that collapsed them would read cleanest exactly where it saw least. The block check
@@ -155,13 +155,13 @@ grep that produced it; a list sends them to the bytes.
 # ''A run over a corpus that moved mid-run reads VOID, never partial.'' Chaining a witness behind a
 writer measures the writer: three phantom failures appeared that way in one session, each vanishing on
 a quiet read. The run takes the corpus's digest at open and at close, and voids itself if they differ.
-# ''A probe narrower than the reader it guards is a FAILING gate, not a passing one.'' Measured four
+# ''A probe narrower than the reader it guards FAILS, however green it reads.'' Measured four
 times in one night — a gate matching `#name` where the reader takes `#/name`; nine readers spelling a
 literal space the parser never required; a word-boundary matching inside `#meta-ha`; a file-list grep
 tighter than the matcher it fed, which hid every law carrier and showed only the records. So the run
 carries a cross-check: for each law, run the LAW's pattern and the READER's pattern over the same
 corpus, and report where the counts diverge. A silent agreement proves nothing; a divergence names a
-gate that has been reporting green about a question it never asked.
+gate reporting green about a question it never asked.
 
 <<~/ahu>>
 
@@ -169,9 +169,9 @@ gate that has been reporting green about a question it never asked.
 
 !! What a conformance run MUST NOT claim
 
-# ''Never that the grammar is correct.'' The run reads a corpus against a seed. A seed that states a
+# ''Never that the grammar holds.'' The run reads a corpus against a seed. A seed that states a
 bad law yields a clean run.
-# ''Never that the spec is settled.'' The seed-check names ONE state; a series of them names movement,
+# ''Never that the spec has settled.'' The seed-check names ONE state; a series of them names movement,
 and movement reads as structure rather than as failure.
 # ''Never that no retired form exists.'' It reports what it walked and what it exempted, and a reader
 who disagrees with the exempt set can re-run without it.
@@ -192,7 +192,7 @@ lares corpus conform [--seed <carrier>] [--exempt <glob>…] [--emit <record>] [
 
 # ''Bind what stands.'' One runner over the ten witnesses and nine predicates; one verdict; the record
 written. No new law, and the first record dated from a corpus already measured.
-# ''Add class E.'' Vocabulary conformance — the retired-form sweep this house has been running by hand
+# ''Add class E.'' Vocabulary conformance — the retired-form sweep this house runs by hand
 becomes a law with an exempt set stated in the open.
 # ''Add the cross-check.'' Each law's probe measured against its reader's, divergence reported.
 # ''Read the series.'' The sensorium reads the emitted records as a rhythm; the lag curve names the
@@ -208,6 +208,6 @@ moved.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
-<<^ code="&#x0003;">>ni:///sha-256;2AO6vpcUnBMyuZGRVS3JjV2t9qIKwcqAo_EboVq2xWA
+<<^ code="&#x0003;">>ni:///sha-256;3b03VRdllGKgSV_19EvMNjZUb8q8tNFbvzil8-OCs4A
 
 <<^ code="&#x0004;" -> to="?">>

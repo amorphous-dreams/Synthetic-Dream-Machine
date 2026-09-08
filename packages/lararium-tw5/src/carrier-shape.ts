@@ -86,9 +86,10 @@ export function readCarrierShape(text: string): CarrierShape {
     uriPath: metaValue(text, "uri-path"),
     bag:     metaValue(text, "bag"),
     // THE ARROW'S FAR SIDE IS A NAMED FIELD, and reading the token after `->` takes the name with it.
-    // Every carrier in the corpus writes `from=? -> to=lar:///…`, so an unnamed read returned
-    // `to=lar:///…` on 639 of 639 files while the only vector for it built its fixture in the bare form
-    // and stayed green. The name is optional in the grammar and stripped when present.
+    // Every carrier in the corpus names that side, so an unnamed read returned `to=lar:///…` on 639 of
+    // 639 files while the only vector for it built its fixture without the name and stayed green. The
+    // name stays OPTIONAL in the grammar — `? -> lar:///x` is the positional spelling normalize
+    // converts — and it is stripped where present.
     // AND THE ADDRESS COMES FROM THE SHORE, which strips the quote pair and refuses a torn head.
     headUri: headM ? (matchCarrierHead(headM[0])?.uri ?? null) : null,
     stx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g),
