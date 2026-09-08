@@ -64,15 +64,15 @@ A kukali that cancels MUST reject its suspension Promise cleanly without leaking
 <<~ kukali>>
 <<~ kukali trigger=SlotName>>
 <<~ suspends>>
-<<~ suspends trigger:SlotName>>
+<<~ suspends trigger=SlotName>>
 ```
 
-`\suspends` is the canonical English alias — emits the same `SigilNode { sigilName: "kukali" }`.
+`suspends` carries the canonical English name — it emits the same `SigilNode { sigilName: "kukali" }`.
 
 Regex (canonical):
 ```
 /<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>/
-/<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>/
+/<<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>/
 ```
 
 !!! Paired usage with papalohe
@@ -119,10 +119,10 @@ Canonical TOML form. Source of truth for the kukali case in
 sigil           = "kukali"
 kind            = "leaf"
 layer           = "both"
-canonical-alias = "\\suspends"
+canonical-alias = "suspends"
 
 pattern       = '<<~\s*kukali(?:\s+trigger:([\w.-]+))?\s*>>'
-alias-pattern = '<<~\s*\\suspends(?:\s+trigger:([\w.-]+))?\s*>>'
+alias-pattern = '<<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>'
 
 [captures]
 trigger = 1
@@ -145,6 +145,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rCTm8MAdiY4VNuNlJjT5kyajd4N02X6HQxDjV0iEalQ
+<<^ code="&#x0003;">>ni:///sha-256;PcK1Khru4n0oW3yb-0GZZupmRXzeA-O3aZlVaw0kbDE
 
 <<^ code="&#x0004;" -> to="?">>

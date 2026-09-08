@@ -9,7 +9,7 @@ manao     = 17
 manaoio   = 17
 namespace = "&#x2299;"
 retain    = true
-role      = "\\function pragma-alias sigil — declares a named TW5 filter function (TW5 5.3+); leaf-only"
+role      = "function pragma-alias sigil — declares a named TW5 filter function (TW5 5.3+); leaf-only"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-function"]
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/function"
@@ -35,11 +35,11 @@ the current vocabulary. `lar-kind: pragma-alias` — the sigil serves as the dec
 !! Law (Kānāwai)
 
 A `\function` declaration MUST carry a valid TW5 filter expression as its body.
-A `\function` declaration is leaf-only in practice — filter bodies are inline expressions.
+A `\function` declaration stands leaf-only in practice — filter bodies ride as inline expressions.
 A `\function` name MUST be unique in current tiddler scope.
 A `\function` MUST function as a declaration only, producing no render output.
 
-Note: TW5 `\function` is distinct from `\procedure` — functions return filter results, procedures
+Note: TW5 `\function` differs from `\procedure` — functions return filter results, procedures
 return wikitext. Do not use interchangeably.
 
 <<~/ahu>>
@@ -69,6 +69,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jRZ_WyntdsazqEQdSeRJybIqR-HmJVmvZqgYFhjfA3k
+<<^ code="&#x0003;">>ni:///sha-256;WeBIwQ3IuP6jId_k4mZbrxRFAaGQEbmAyMx6RYJ1yZw
 
 <<^ code="&#x0004;" -> to="?">>
