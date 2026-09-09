@@ -7,7 +7,7 @@
  * carried ON the card, verified reader-locally, never an event and never a board), and a GRAFT (the
  * succession move — the presenting owner-set turns over).
  *
- * ★ THE MU (operator, 2026-09-08) — A HANDLE IS A QUORUM-PRESENTED NAME, NOT A LONE KEY. ★ The
+ * ★ THE k-of-n HANDLEGLAMOUR (operator, 2026-09-08) — A HANDLE IS A QUORUM-PRESENTED NAME, NOT A LONE KEY. ★ The
  * owner-binding generalizes from a single `ownerPrefix` to a PRESENTING OWNER-SET (persona-prefix
  * members + a graft threshold). A public Handle (the Dread Pirate Roberts) reads VALID against the
  * CURRENT set, and whether ONE or MORE humans hold the right to present it stays unknowable by design

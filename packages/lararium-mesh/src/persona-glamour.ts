@@ -110,6 +110,9 @@ export async function mintPersonaGlamour(opts: {
   glamour: string;
   now: number;
   store: OwnPublicHandleStore;
+  /** The owning persona's KEL prefix — the sole owner-set member of this 1-of-1 face. Its head op-key
+   *  authorizes rotation/graft, so a lost handle key recovers THROUGH the persona. */
+  ownerPersonaKelPrefix: string;
   contextIndex?: number;
   ttlMs?: number;
   standing?: string | null;
@@ -121,17 +124,21 @@ export async function mintPersonaGlamour(opts: {
   if (glamour.length === 0) {
     throw new Error(`[persona-glamour] empty glamour for persona h${opts.handleIndex} — a face needs a display name`);
   }
+  if (opts.ownerPersonaKelPrefix.length === 0) {
+    throw new Error(`[persona-glamour] empty owner persona prefix for h${opts.handleIndex} — a face is owned by its persona, never itself`);
+  }
   const contextIndex = opts.contextIndex ?? PERSONA_GLAMOUR_CONTEXT;
   const veiled = await deriveVeiledUserKey(opts.seed, opts.handleIndex, contextIndex);
 
-  // FOUND the 1-of-1 handle-KEL — the veiled key is the Handle's OWN inception key, and (the degenerate
-  // self-owned case the MU names) it is also its sole owner-set member. The recovery pre-commitment derives
-  // deterministically off that key, so a re-mint reproduces the SAME prefix — the card's stable identifier
-  // holds across lease renewals. A real founding supplies the owning PersonaGroup prefix + a guardian
-  // recovery set here instead; that wiring rides the founding path, not this personal-face mint.
+  // FOUND the 1-of-1 handle-KEL PERSONA-ANCHORED: the veiled key is the Handle's presentation key, and the
+  // OWNING PERSONA-KEL prefix is the sole owner-set member. The persona's head authorizes rotation, so a
+  // lost presentation key recovers through the persona rather than orphaning the face. The prefix binds the
+  // handle key + the (persona-owner) genesis digest + the recovery pre-commit, all stable inputs, so a
+  // re-mint reproduces the SAME identifier — the card holds its name across lease renewals. A k-of-n
+  // HandleGlamour supplies an owner SET here instead; that quorum founding rides its own path.
   const handleKeyDid    = `0x${veiled.verifyingKey}`;
   const recoverySetHash = sealKeySetHash([handleKeyDid], 1);
-  const chain: HandleKelEvent[] = [mintHandleInception(handleKeyDid, handleKeyDid, recoverySetHash)];
+  const chain: HandleKelEvent[] = [mintHandleInception(handleKeyDid, opts.ownerPersonaKelPrefix, recoverySetHash)];
   const nym = chain[0]!.prefix;
 
   const prior = await opts.store.load(opts.handleIndex);
@@ -184,6 +191,7 @@ export async function publishPersonaGlamour(opts: {
   glamour: string;
   now: number;
   store: OwnPublicHandleStore;
+  ownerPersonaKelPrefix: string;
   contextIndex?: number;
   ttlMs?: number;
   standing?: string | null;

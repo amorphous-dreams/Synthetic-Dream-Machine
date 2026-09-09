@@ -78,6 +78,8 @@ function makeFakeBoard(): { doc(): LarDoc; change(fn: (d: LarDoc) => void): void
 }
 
 const SEED = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 5 + 1) & 0xff));
+// The owning persona's KEL prefix — a personal face is owned by its persona, so the mint takes it.
+const OWNER = "persona-" + "ab".repeat(32);
 
 describe("persona-petname — the PRIVATE own-persona label (#64 stage 4)", () => {
   test("rename sets a private label; clear drops it; a blank rename is refused", async () => {
@@ -115,7 +117,7 @@ describe("persona-petname — the MULTITUDE-VIEW (#64 stage 4)", () => {
     await renameOwnPersona(petnames, 3, "the-joinee");
     // Persona 0 federates a public glamour.
     await publishPersonaGlamour({
-      board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", now: 1000, store: publicStore,
+      board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", now: 1000, store: publicStore, ownerPersonaKelPrefix: OWNER,
     });
 
     const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
@@ -134,7 +136,7 @@ describe("persona-petname — the MULTITUDE-VIEW (#64 stage 4)", () => {
     await generateOrLoadPersonaRoot(vault, memCrypto, 0);
     await generateOrLoadPersonaRoot(vault, memCrypto, 1);
     await generateOrLoadPersonaRoot(vault, memCrypto, 2);
-    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 1, glamour: "The-Face", now: 1, store: publicStore });
+    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 1, glamour: "The-Face", now: 1, store: publicStore, ownerPersonaKelPrefix: OWNER });
 
     const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
     expect(view.filter((e) => e.heldHere)).toHaveLength(3);                  // the private pool sees all N
@@ -159,7 +161,7 @@ describe("persona-petname — the pet-name NEVER PUBLICLY FEDERATES (#64 stage 4
 
     // The human names persona 0 privately, then publishes a DIFFERENT public glamour for it.
     await renameOwnPersona(petnames, 0, "my-throwaway-burner");
-    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", now: 5, store: publicStore });
+    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", now: 5, store: publicStore, ownerPersonaKelPrefix: OWNER });
 
     // What reached the board carries ONLY the public glamour — the private label appears nowhere on the wire.
     const announced = readHandleAnnounces(board.doc());
@@ -175,7 +177,7 @@ describe("persona-petname — the pet-name NEVER PUBLICLY FEDERATES (#64 stage 4
 describe("persona-glamour — the persona-index → HandleCard wire (#64 stage 4)", () => {
   test("mint derives the veiled key as the card nym; the card certifies itself", async () => {
     const store = makeInMemoryPublicStore();
-    const { card, record } = await mintPersonaGlamour({ seed: SEED, handleIndex: 4, glamour: "Tide-Caller", now: 100, store });
+    const { card, record } = await mintPersonaGlamour({ seed: SEED, handleIndex: 4, glamour: "Tide-Caller", now: 100, store, ownerPersonaKelPrefix: OWNER });
     // The nym IS the derived veiled-user verifying key; the signature checks against it (self-certifying).
     expect(card.nym).toBe(record.nym);
     expect((await verifyHandleCard(card, 100)).ok).toBe(true);
@@ -191,16 +193,16 @@ describe("persona-glamour — the persona-index → HandleCard wire (#64 stage 4
 
   test("a DIFFERENT persona-index derives a DIFFERENT nym (unlinkable faces)", async () => {
     const store = makeInMemoryPublicStore();
-    const a = await mintPersonaGlamour({ seed: SEED, handleIndex: 0, glamour: "A", now: 1, store });
-    const b = await mintPersonaGlamour({ seed: SEED, handleIndex: 1, glamour: "B", now: 1, store });
+    const a = await mintPersonaGlamour({ seed: SEED, handleIndex: 0, glamour: "A", now: 1, store, ownerPersonaKelPrefix: OWNER });
+    const b = await mintPersonaGlamour({ seed: SEED, handleIndex: 1, glamour: "B", now: 1, store, ownerPersonaKelPrefix: OWNER });
     expect(a.card.nym).not.toBe(b.card.nym);
   });
 
   test("a re-publish advances the monotone lineage the recogniser holds to (version bump + prev link)", async () => {
     const store = makeInMemoryPublicStore();
     const board = makeFakeBoard();
-    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v1", now: 10, store });
-    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v2", now: 20, store });
+    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v1", now: 10, store, ownerPersonaKelPrefix: OWNER });
+    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v2", now: 20, store, ownerPersonaKelPrefix: OWNER });
 
     expect(second.version).toBe(2);
     expect(second.prev).toBe(await handleCardId({
@@ -220,6 +222,6 @@ describe("persona-glamour — the persona-index → HandleCard wire (#64 stage 4
 
   test("an empty glamour is refused — a federated face needs a display name", async () => {
     const store = makeInMemoryPublicStore();
-    await expect(mintPersonaGlamour({ seed: SEED, handleIndex: 0, glamour: "   ", now: 1, store })).rejects.toThrow(/empty glamour/);
+    await expect(mintPersonaGlamour({ seed: SEED, handleIndex: 0, glamour: "   ", now: 1, store, ownerPersonaKelPrefix: OWNER })).rejects.toThrow(/empty glamour/);
   });
 });

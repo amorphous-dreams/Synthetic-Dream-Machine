@@ -7,7 +7,7 @@ file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/handle-card.mem"
 l-space     = "lararium"
 mana        = 15
 retain      = true
-role        = "invariant law: a Handle is a QUORUM-PRESENTED NAME, and its card is what one such name shows the world. Names the Mu (the owner-set generalises the lone key, 1-of-1 the degenerate personal face), the self-certifying card, the owner-binding folded into the prefix, the four moves (rotation · burn · graft · attest), and the TWO verification tiers — self-contained structure ⊥ board-checked presentation authority."
+role        = "invariant law: a Handle is a QUORUM-PRESENTED NAME, and its card is what one such name shows the world. Names the k-of-n HandleGlamour (the owner-set generalises the lone key, 1-of-1 the degenerate personal face), the self-certifying card, the owner-binding folded into the prefix, the four moves (rotation · burn · graft · attest), and the TWO verification tiers — self-contained structure ⊥ board-checked presentation authority."
 source-file = "packages/lararium-mesh/src/handle-card.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/handle-card"
@@ -30,7 +30,7 @@ knows them one human is never published.
 
 <<~ ahu #/the-mu>>
 
-!! The Mu ~ a Handle is a quorum-presented name, not a lone key (operator, 2026-09-08)
+!! The k-of-n HandleGlamour ~ a Handle is a quorum-presented name, not a lone key (operator, 2026-09-08)
 
 The owner-binding generalises from a single owner key to a ''presenting owner-set'' — the member persona
 prefixes plus a graft threshold. A public Handle reads VALID against its CURRENT set, and whether ONE human
@@ -168,6 +168,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;RyhfS8NTKmDqsinH6yiKqSNptFipncLumfI4aPIpU2o
+<<^ code="&#x0003;">>ni:///sha-256;OPzjyyUQhYE1804PX16Y6N5kIL0_mvN-mnquUWDnp3Q
 
 <<^ code="&#x0004;" -> to="?">>

@@ -2,7 +2,7 @@
 
 ---
 
-## [Unreleased] — the identity watch (2026-09-05 → 06)
+## [Unreleased] — the identity watch (2026-09-05 → 09)
 
 The four founding-watch rulings closed (the veil · layered recovery · seat-adoption · the nym's chain), and the wiring census emptied. History between v4.1.1 and here lives in the git log and `bags/lares/ha.ka.ba/lares/docs/handoff.mem`.
 
@@ -65,6 +65,8 @@ The four founding-watch rulings closed (the veil · layered recovery · seat-ado
 - Persona-KEL event bytes gained the rolling-commitment field — every CID and prefix re-derives; rehearsal vessels re-found (early alpha carries no backward compatibility).
 - `vesselDyads` reads ceremony-minted slots only; a bare delegation edge presents no relationship, and the boot says the drift aloud.
 - `provisionThresholdRecoveryAtFounding` accepts typed guardian registrations, never bare hex.
+- A PERSONAL FACE IS OWNED BY ITS PERSONA, NEVER ITSELF. `mintPersonaGlamour`/`publishPersonaGlamour` take an `ownerPersonaKelPrefix` and seat the owning persona-KEL prefix as the sole owner-set member of the 1-of-1 handle-KEL — where a self-owned face had seated its own handle key. A self-owned member resolves to no persona head, so its `ownerHeadResolver` could authorize no rotation and a lost presentation key orphaned the face; anchoring to the persona lets a lost key recover through the persona's authorization. The contact-read found ONE owner model, not two: `mintHandleInception` is sugar over `mintHandleInceptionSet([owner],1,…)`, so the 1-of-1 personal face and the k-of-n shared name are one structure. A deliberately-standalone sovereign-handle class stays a named door, unbuilt.
+- The k-of-n quorum-presented Handle reads as a `k-of-n HandleGlamour` throughout the identity surface — the temp pet-name "the Mu" retired across `handle-kel`, `handle-card`, `identity-classes` and `field-collision`. The foundational Mu concept is untouched.
 
 ---
 

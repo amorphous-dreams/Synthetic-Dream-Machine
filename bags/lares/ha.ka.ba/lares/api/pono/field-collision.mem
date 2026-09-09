@@ -65,7 +65,7 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 
 !! Anti-patterns ~ measured graves, do not dig them
 
-* ''SSB's FROZEN IDENTITY (the builder-risk we already escaped).'' Secure Scuttlebutt bound identity to ONE keypair on an append-only log and shipped NO rotation: a compromised key appends to your log forever; the only cure is a NEW identity, losing every social tie. ''This is the grave of getting succession wrong under carriage.'' We escaped it BY CONSTRUCTION — the name binds a ROLLING QUORUM (the Mu), not a fixed key; the rolling recovery commitment + armed inception are the KERI-pre-rotation SSB lacked. Note it as the thing our design exists to avoid.
+* ''SSB's FROZEN IDENTITY (the builder-risk we already escaped).'' Secure Scuttlebutt bound identity to ONE keypair on an append-only log and shipped NO rotation: a compromised key appends to your log forever; the only cure is a NEW identity, losing every social tie. ''This is the grave of getting succession wrong under carriage.'' We escaped it BY CONSTRUCTION — the name binds a ROLLING QUORUM (the k-of-n HandleGlamour), not a fixed key; the rolling recovery commitment + armed inception are the KERI-pre-rotation SSB lacked. Note it as the thing our design exists to avoid.
 * ''SILENCE IS AMBIGUOUS'' (TUF freshness). A withheld update and a slow link look identical, so observer-local hardening-by-silence must BOUND the wait or an attacker freezes a victim indefinitely by withholding. SHARPENS the φ-accrual clause: silence-across-K-local-epochs needs the local epochs to genuinely ADVANCE and an explicit bound — the idle-mesh edge, now doubly flagged.
 * ''SYBIL RINGS blend into the social graph'' (BrightID-measured). A k-of-n Handle is INDISTINGUISHABLE from a self-vouching sybil ring; graph defense has a measured hole for small sophisticated rings. The cost-dial (rb>c, the voucher co-pays) PRICES sybil, never eliminates it — already canon, re-confirmed.
 * ''ACL/registry thinking drags back the CONFUSED DEPUTY'' (Miller). Any residual place that enumerates holders IS an ACL and re-imports ambient authority. Carriage-not-registry is the security-correct choice, not only the private one.
@@ -96,6 +96,6 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/clockless-lease-model">>
 
-<<^ code="&#x0003;">>ni:///sha-256;AAHKv3gBjMDRORTHrUze7f2EKMSjv7l6JZ1OQrpTKKg
+<<^ code="&#x0003;">>ni:///sha-256;V8D6eH4CrRd6PdCR1vc3mZ6YGPfKdD-YpA_1OwR9HvU
 
 <<^ code="&#x0004;" -> to="?">>

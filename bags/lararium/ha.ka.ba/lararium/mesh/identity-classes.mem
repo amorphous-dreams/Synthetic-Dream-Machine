@@ -540,7 +540,7 @@ not its ''grammar'', and forcing one grammar over both would couple what the ont
 stands as a NEW sibling module (its own domain, its own kinds) with no bytes-change anywhere, built
 in G3 on the frozen primitives.
 
-!!! ✓ THE MU (operator, 2026-09-08) — a Handle is a QUORUM-presented name, not a lone key
+!!! ✓ THE k-of-n HANDLEGLAMOUR (operator, 2026-09-08) — a Handle is a QUORUM-presented name, not a lone key
 
 ''A cabal-realm and a public Handle carry ONE pattern integrity:'' a presentation reads VALID against
 the current authority, and whether ONE or MORE humans hold the right to present it stays unknowable —
@@ -624,6 +624,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yfN_a3sTqB-vcje2tjsnzkCOaZJvbMKqVzFcI7zR7Gw
+<<^ code="&#x0003;">>ni:///sha-256;noQsFwy6rVr--ngiD6BwB9z05GOzGMCLQOITh3kf4Do
 
 <<^ code="&#x0004;" -> to="?">>
