@@ -267,8 +267,8 @@ bags/sdm/
 Pranala form:
 
 ```text
-<<~ pranala #has from=? -> to=lar:///ha.ka.ba/sdm/components/function/ecm-scan>>
-<<~ pranala #has from=? -> to=lar:///ha.ka.ba/sdm/mount-points/trait>>
+<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ecm-scan">>
+<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
 ```
 
 <<~/ahu>>
@@ -403,9 +403,9 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 ```
 
 ```text
-<<~ pranala #has from=? -> to=lar:///ha.ka.ba/sdm/components/function/ecm-scan>>
-<<~ pranala #has from=? -> to=lar:///ha.ka.ba/sdm/components/domain/divination>>
-<<~ pranala #has from=? -> to=lar:///ha.ka.ba/sdm/mount-points/trait>>
+<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/function/ecm-scan">>
+<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/divination">>
+<<~ pranala #has from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
 ```
 
 ''Mount-point'': `#contract #activation #cost #failure #removal #overflow #aftermath`
@@ -776,6 +776,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D_dje6sdhbM3cvMoh-lE0SbcUrm4g9UK9fwO-_If_xY
+<<^ code="&#x0003;">>ni:///sha-256;lT8LUpEcUnVrt5FhxDmlpSzHrGTTJ8wtEZtRp-KqRBQ
 
 <<^ code="&#x0004;" -> to="?">>

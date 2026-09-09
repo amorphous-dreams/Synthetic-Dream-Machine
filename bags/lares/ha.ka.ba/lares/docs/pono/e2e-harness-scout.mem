@@ -158,9 +158,9 @@ Measured through the built deserializer, `noosphere-boot.mem` yields **22**: par
 
 ### RC-H · The framing head took named ends — **1 failure + 1 FALSE GREEN**
 Commit **`5acdf71ca`** (2026-08-29, "the graph names its own ends — 628 carriers take from= and to="). Touched **0** files under `tests/`. The head is now
-`<<^ code="&#x0001;" namespace="…" from=? -> to=lar:///…>>`.
+`<<^ code="&#x0001;" namespace="…" from="?" -> to="lar:///…">>`.
 
-**Failure:** `load-tw5-filetypes.test.ts:38` writes the retired head `<<^ code="&#x0001;" from=? -> to=lar:///…>>`. Collided directly against `packages/lararium-tw5/dist/deserializer.js`:
+**Failure:** `load-tw5-filetypes.test.ts:38` writes the retired head `<<^ code="&#x0001;" from="?" -> to="lar:///…">>`. Collided directly against `packages/lararium-tw5/dist/deserializer.js`:
 
 ```
 OLD head → 1 record titled 'fallback-title'                       ← membrane does not read it
@@ -221,6 +221,6 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;SO1I3z0sXR_thHOoeTFjfMqtHlNyvqUkHMtdYy1OWvw
+<<^ code="&#x0003;">>ni:///sha-256;jWi6TFILd8lMJH5p_N5FFt5MAXqXyU6P_da0JTGbn-A
 
 <<^ code="&#x0004;" -> to="?">>

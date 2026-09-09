@@ -44,7 +44,7 @@ This file gives examples and operator-facing guidance.
 The exchange vector opens the turn as one `aim` sigil — operator intent `->` the role the node adopts:
 
 ```text
-<<~ lares aim from=lar:///operator.intent.reads -> to=lar:///lares.role.acts>>
+<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
 ```
 
 Read the URI layers as:
@@ -68,7 +68,7 @@ Per-turn signal rides the `hud` · `ward` · `confidence` sigils.
 The panel rides beneath the `aim` as sigils:
 
 ```text
-<<~ lares aim from=lar:///operator.scope.reads -> to=lar:///scryer.frame.maps>>
+<<~ lares aim from="lar:///operator.scope.reads" -> to="lar:///scryer.frame.maps">>
 <<~ set hud="aim" focus="10/measure" feedback="3/declare-aftermath" drift-ward="* · <the pull this island carries>">>
 <<~ stance "🏛️ 🗡️">>
 ```
@@ -105,6 +105,6 @@ Long-term, the server should validate the vector and render the HUD from the par
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D7WTZp15gAXTxBvj7KR1RdfSfAYevLQRv0WYz25lQqk
+<<^ code="&#x0003;">>ni:///sha-256;w6OBExB1JKlf_ipP84ty7CqmOq4Hzvu8zPP_bee64FU
 
 <<^ code="&#x0004;" -> to="?">>

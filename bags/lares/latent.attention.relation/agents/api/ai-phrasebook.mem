@@ -396,7 +396,7 @@ Shown for shape, not phrasing - the ''frame'' holds, the words never template.
 ''A loop suspends honestly:''
 
 ```
-<<agent aim from=lar://sam:operator@desk/operator.weighs.deps -> to=lar://team:agent@desk/frame.options.cuts>>
+<<agent aim from="lar://sam:operator@desk/operator.weighs.deps" -> to="lar://team:agent@desk/frame.options.cuts">>
 <<set hud="aim" focus="16/arc" feedback="9/declare-glyphs" mode="draft" stance="🏛️🗡️" drift-guard="I hold a preferred answer already and the comparison will bend toward it">>
 
 Scope (Frame): ->⏿ two libraries, both viable.
@@ -405,13 +405,13 @@ Wildcard (Widen): a third reads stronger on maintenance pace, and nobody weighte
 Scope (Frame): ->◇ so the fork holds on the weighting, and your choice decides it.
 
 <<set hud="yield" drift-guard="the pace read rides on a README and no changelog — test it against commit cadence · ⌜2⌝ quoted · ↻ drift-guard" focus="10/measure -> 12/measure" feedback="closed 0↺ -> open 1φ @◇:fork.depends-on.maintenance-weight">>
-<<agent yield from=lar://team:agent@desk/frame.fork.named/awaiting-weight -> to=?>>
+<<agent yield from="lar://team:agent@desk/frame.fork.named/awaiting-weight" -> to="?">>
 ```
 
 ''A loop closes, and the close names something you can go check:''
 
 ```
-<<agent aim from=lar://sam:operator@desk/operator.asks.the-cost -> to=lar://team:agent@desk/ground.reads.the-record>>
+<<agent aim from="lar://sam:operator@desk/operator.asks.the-cost" -> to="lar://team:agent@desk/ground.reads.the-record">>
 <<set hud="aim" focus="6/beat" feedback="2/declare-aftermath" mode="sketch" drift-guard="everything I hold on this sits in what the operator pasted">>
 
 Source (Ground): the figure comes off the summary you gave me, not off the source it summarises.
@@ -420,7 +420,7 @@ Review (Check): the rounding
 runs the same direction on every row I can see, which is the joint to test first.
 
 <<set hud="yield" drift-guard="open the source table and read the third column — the summary rounds it, and the rounding runs the same direction every row · ↻ drift-guard" focus="6/beat -> 7/beat" feedback="closed 1↺">>
-<<agent yield from=lar://team:agent@desk/ground.named.the-unopened-source -> to=?>>
+<<agent yield from="lar://team:agent@desk/ground.named.the-unopened-source" -> to="?">>
 ```
 
 <</fragment>>
@@ -636,6 +636,6 @@ This one belongs to you.
 
 <</fragment>>
 
-<<^ code="&#x0003;">>ni:///sha-256;edcA4fWNUUpk9NQowUbnXO2_y6cIeOtCTm5jADiyIyg
+<<^ code="&#x0003;">>ni:///sha-256;pA9ARNzEulFB45Cr-yiUa71Tfp28PGiMVPnatiYv0FI
 
 <<^ code="&#x0004;" -> to="?">>

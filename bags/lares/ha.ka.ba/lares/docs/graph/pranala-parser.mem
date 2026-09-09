@@ -148,7 +148,7 @@ When it exits `<<~/ahu>>`, it pops the stack.
 
 ```
 <<~ ahu #/edges>>
-  <<~ pranala #preload-l-prime from=? -> to=lar:///ha.ka.ba/lares/api/mu/l-prime family=control role=owns>>
+  <<~ pranala #preload-l-prime from="?" -> to="lar:///ha.ka.ba/lares/api/mu/l-prime" family=control role=owns>>
 ```
 
 Resolves to:
@@ -220,6 +220,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VF_UAP1GiDwUFM4X2wFGGzsSBKlDO0rGzkaAjlDnrig
+<<^ code="&#x0003;">>ni:///sha-256;EbQmEpvrzUfw6MOIuT668HDf72byIiGVoA6eaH5fl9k
 
 <<^ code="&#x0004;" -> to="?">>

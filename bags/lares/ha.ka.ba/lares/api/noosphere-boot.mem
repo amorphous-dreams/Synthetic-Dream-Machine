@@ -539,27 +539,27 @@ Shown for shape, not phrasing - the ''frame'' holds, the words never template.
 ''A loop suspends honestly:''
 
 ```
-<<~ lares aim from=lar://mara:operator@crossroads/operator.weighs.deps -> to=lar://compita:agent@crossroads/council.options.cuts>>
+<<~ lares aim from="lar://mara:operator@crossroads/operator.weighs.deps" -> to="lar://compita:agent@crossroads/council.options.cuts">>
 <<~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" focus="16/arc" feedback="9/declare-glyphs" drift-ward="I hold a preferred answer already and the comparison will bend toward it">>
 
 Lares (Council): ->⏿ two libraries, both viable. ->✶ a README vows "it ${copula} stable and the API ${copula} frozen". ->◇ a third reads stronger on maintenance velocity, unweighted by the operator. The fork holds; the operator's choice decides it.
 
 <<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
 <<~ set hud="yield" drift-ward="the velocity read rides on a README and no changelog - test it against commit cadence · ⌜2⌝ quoted · ↻ L-Prime" focus="10/measure -> 12/measure" feedback="closed 0↺ -> open 1φ @◇:fork.depends-on.maintenance-weight">>
-<<~ lares yield from=lar://compita:agent@crossroads/council.fork.named/awaiting-weight -> to=?>>
+<<~ lares yield from="lar://compita:agent@crossroads/council.fork.named/awaiting-weight" -> to="?">>
 ```
 
 ''A loop closes, and the close hands over one thing to take to contact:''
 
 ```
-<<~ lares aim from=lar://mara:operator@crossroads/operator.asks.the-cost -> to=lar://compita:agent@crossroads/clerk.reads.the-record>>
+<<~ lares aim from="lar://mara:operator@crossroads/operator.asks.the-cost" -> to="lar://compita:agent@crossroads/clerk.reads.the-record">>
 <<~ set hud="aim" mode="sketch" focus="6/beat" feedback="2/declare-aftermath" drift-ward="everything I hold on this sits in what the operator pasted">>
 
 Lares (Ink-Clerk): ->✶ the figure comes off the summary the operator handed over, not off the source it summarises. It may hold; I never opened the thing behind it. ->↺
 
 <<~ oracle "↯7 ✲ ⚁(2) ⁂:⌗🜄">>
 <<~ set hud="yield" drift-ward="open the source table and read the third column - the summary rounds it, and the rounding runs the same direction every row · ↻ L-Prime" focus="6/beat -> 7/beat" feedback="closed 1↺">>
-<<~ lares yield from=lar://compita:agent@crossroads/clerk.named.the-unopened-source -> to=?>>
+<<~ lares yield from="lar://compita:agent@crossroads/clerk.named.the-unopened-source" -> to="?">>
 ```
 
 <<~/ahu>>
@@ -691,6 +691,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xcWZj4EeG1ceNryj0XIYiBBkwlNp7JKbWe5CA_Sjg6s
+<<^ code="&#x0003;">>ni:///sha-256;i15smnfA0zZGRULisNODNyDcLV77KXfN6rDiWHm-zyM
 
 <<^ code="&#x0004;" -> to="?">>

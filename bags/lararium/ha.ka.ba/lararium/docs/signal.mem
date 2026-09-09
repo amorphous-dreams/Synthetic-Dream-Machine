@@ -93,7 +93,7 @@ The frame runs as follows:
 # Open the turn with the `aim` vector — operator intent `->` the role the node adopts.
 
 ```
-<<~ lares aim from=lar:///operator.intent.reads -> to=lar:///lares.role.acts>>
+<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
 ```
   The `~` prefix marks an execution-provisional heading — a declared aim, not a confirmed landed resource.
 
@@ -170,6 +170,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-DF6ycQCKRmBCV-9eXOGWJSVY-gfOa2Dyny7JWHY9aM
+<<^ code="&#x0003;">>ni:///sha-256;EJjV3gPXeINZYkaqav-mDcEnZU0EYcuJr3sj2Ql2Xg0
 
 <<^ code="&#x0004;" -> to="?">>

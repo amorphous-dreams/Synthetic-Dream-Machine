@@ -42,11 +42,11 @@ Each substantive exchange turn MUST open with an `aim` vector: a `lar:` ''bearin
 Canonical turn order:
 
 ```text
-<<~ lares aim from=lar:///operator.intent.reads -> to=lar:///lares.role.acts>>
+<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
 <<~ set hud="aim" focus="N/<band>" feedback="N/<band>" drift-ward="* · <the pull this island carries>">>
 ... content ...
 <<~ set hud="yield" drift-ward="! · ↻ L-Prime" focus="-> N/<band>" feedback="closed N↺">>
-<<~ lares yield from=lar:///lares.what.landed -> to=?>>
+<<~ lares yield from="lar:///lares.what.landed" -> to="?">>
 ```
 
 The `aim` and `yield` vectors carry `lar:` URIs in bearing-only form: the three-term `ha.ka.ba` root, zero-to-four path segments, an optional `#fragment`, and no query. Session form MAY name the speaker through the authority (`lar://alias:grant@host/…`). Full URI law: `lar:///ha.ka.ba/lares/api/pono/lar-uri`.
@@ -98,6 +98,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (`<<~ WORD 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VVu60x2kqmxow8LuA5tIBBMzPMT-uFdeUsB8tnf6Kjw
+<<^ code="&#x0003;">>ni:///sha-256;1I85ppqLxsLE9h5fTcJnVF86n9mAtMHcCYR1o-hvhpQ
 
 <<^ code="&#x0004;" -> to="?">>
