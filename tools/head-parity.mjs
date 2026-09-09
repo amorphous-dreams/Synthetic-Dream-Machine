@@ -26,6 +26,15 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[head-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { currentCarrierFiles } = await import(DIST_CARRIERS);
+
 
 // THE ABSENCE NAMES ITS CURE. A witness that skipped here would read clean over an unbuilt tree.
 for (const need of ["carrier-head.js", "tw5-vm.js", "generated-tw5-version.js"]) {
@@ -74,8 +83,7 @@ function parserHeadUri(text) {
   return null;
 }
 
-const files = execSync('git ls-files "bags/**/*.mem" "wikis/**/*.mem"', { cwd: REPO, encoding: "utf8" })
-  .split("\n").filter(Boolean);
+const files = currentCarrierFiles(REPO);
 
 const drift = [];
 let agreed = 0, neither = 0;

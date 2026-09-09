@@ -18,6 +18,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { readCarrierShape } from "../src/carrier-shape.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
@@ -49,8 +50,7 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
    * this one asks every carrier and refuses an address carrying a field name into itself.
    */
   test("no carrier's head address carries a field name into it", () => {
-    const files = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
+    const files = currentCarrierFiles(REPO);
     const mangled = files
       .map((f) => [f, readCarrierShape(readFileSync(path.join(REPO, f), "utf8")).marks.headUri] as const)
       .filter(([, u]) => u !== null && !u.startsWith("lar:"))
@@ -100,8 +100,7 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
 
   /** The corpus itself: no file may sit below the floor of the kind it declares. */
   test("every carrier in the corpus stands at its kind's floor", () => {
-    const files = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
+    const files = currentCarrierFiles(REPO);
     const below = files
       .map((f) => [f, readCarrierShape(readFileSync(path.join(REPO, f), "utf8"))] as const)
       .filter(([, s]) => s.faults.length > 0)

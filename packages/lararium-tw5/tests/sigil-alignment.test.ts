@@ -22,6 +22,7 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { schemeShapedPositionals, readSigilAttrs, sigilAttrValue, lostPositionals } from "../src/sigil-attrs.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 
 /**
  * DECLARED EXEMPTIONS, each with the reason it stands. A list that only shrinks.
@@ -40,9 +41,7 @@ const REPO = join(new URL("..", import.meta.url).pathname, "../..");
 
 /** Every carrier the corpus stands, read once. */
 function carriers(): Array<{ rel: string; text: string }> {
-  return execSync('git ls-files "bags/**/*.mem"', { cwd: REPO, encoding: "utf8" })
-    .split("\n").filter(Boolean)
-    .map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
+  return currentCarrierFiles(REPO).map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
 }
 
 describe("★ the alignment law, over the whole corpus ★", () => {

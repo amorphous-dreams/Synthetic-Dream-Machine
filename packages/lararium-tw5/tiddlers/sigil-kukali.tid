@@ -4,8 +4,24 @@ lar-kind: leaf
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kukali
 lar-see-also: \suspends
 lar-pattern: <<~\s*kukali(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>
-lar-example: <<~ kukali trigger="x">>
+lar-example: <<~ kukali trigger="on-score">>
 type: text/vnd.tiddlywiki
 
-<!-- kukali — wait-until-trigger leaf; parks causal island until named papalohe fires.
-     Compile-layer: no render output. Verse `suspends` analogue. -->
+<!-- kukali — a WAIT inside a causal island, until a named trigger fires:
+
+         <<~ kukali trigger="on-score">>
+
+     //kūkali// waits, patient, remaining in suspense. The island parks rather than freezes, and it
+     resumes EXACTLY ONCE — subscribeOnce semantics. `trigger` names the `#slot` fragment of a
+     papalohe wire in the same carrier; omitted, the wait takes the first reaction that arrives.
+     papalohe declares the wire and kukali declares the wait at the receiving end.
+
+     THE TRIGGER RIDES AS A NAMED PARAMETER, under either separator — `trigger="x"` and `trigger:x`
+     both reach the slot, since a call binds a name through `=` and `:` alike.
+
+     THE PAGE STAYS CLEAR. A wait governs execution and never layout, so the definition hands the
+     compile layer a data annotation carrying the trigger and renders nothing. -->
+
+\procedure ~kukali(trigger:"")
+<span class="lar-kukali" data-kukali-trigger=<<trigger>> hidden="true"/>
+\end

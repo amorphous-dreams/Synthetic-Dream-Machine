@@ -19,6 +19,7 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { BLOCK_CLOSERS } from "../src/wikirules/lar-sigil-shared.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 
 const REPO = join(new URL("..", import.meta.url).pathname, "../..");
 
@@ -34,11 +35,16 @@ const REPO = join(new URL("..", import.meta.url).pathname, "../..");
 const BROKEN_CLOSER = /<<~\/(?:\s+[\\]?[\w-]+|\\[\w-]+)/g;
 const ANY_CLOSER = /<<~\/[\w-]*/g;
 
+/**
+ * TWO SOURCES, TWO QUESTIONS. The CORPUS comes from the one finder — a file counts because it
+ * DECLARES, never because a path matched. The grammar's own sigil-definition tiddlers declare nothing
+ * and are not corpus, yet they TEACH the closing form to every reader who opens one, so they are
+ * named here as a second source rather than folded into the corpus answer.
+ */
 function taught(): Array<{ rel: string; text: string }> {
-  const files = execSync(
-    'git ls-files "bags/**/*.mem" "packages/lararium-tw5/tiddlers/*.tid"',
-    { cwd: REPO, encoding: "utf8" },
-  ).split("\n").filter(Boolean);
+  const defs = execSync('git ls-files "packages/lararium-tw5/tiddlers/*.tid"', { cwd: REPO, encoding: "utf8" })
+    .split("\n").filter(Boolean);
+  const files = [...new Set([...currentCarrierFiles(REPO), ...defs])];
   return files.map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
 }
 

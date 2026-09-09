@@ -11,15 +11,21 @@
 // So this gate binds the two facts no single carrier holds alone: whether a room stands EMPTY, and
 // whether anyone SENT a reader to it. An uncited stub owes nobody and reports as slack, never as a
 // fault. A cited stub is a broken promise and fails.
-import { readFileSync } from "fs";
-import { execSync } from "child_process";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[empty-room] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { currentCarrierFiles } = await import(DIST_CARRIERS);
 
-const carriers = execSync("git ls-files 'bags/**/*.mem' 'wikis/**/*.mem'", {
-  encoding: "utf8", cwd: REPO,
-}).split("\n").filter(Boolean);
+
+const carriers = currentCarrierFiles(REPO);
 
 // SPACING IS NOT THE LAW. A key written `role = ` and one written `role      = ` state the same fact,
 // and a probe that binds one spelling reports the other as absent — measured, twice, in one night.

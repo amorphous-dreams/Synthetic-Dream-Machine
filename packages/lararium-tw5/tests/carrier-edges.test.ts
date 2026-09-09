@@ -14,6 +14,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { readCarrierEdges } from "../src/carrier-edges.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
 describe("carrier-edges — every address a carrier points at", () => {
@@ -73,10 +74,16 @@ describe("carrier-edges — every address a carrier points at", () => {
    * raises the count without anything having broken — the edges it surfaces dangled all along, unread.
    * A rise is only allowed to be absorbed here for the second reason, and only with the cause named;
    * absorbing the first one silently is how a ceiling stops measuring anything.
+   *
+   * 196 → 198, and the cause is the SECOND kind. The corpus finder learned to read the DECLARATION
+   * rather than a `bags/**` path, and the runtime kernel face at
+   * packages/lararium-tw5/tiddlers/memetic-wikitext.tid entered a corpus no reader had ever walked.
+   * Its four edges — three at `…/api/pono/invariant`, one at `lararium-node/MEME-STORE-FOUNDATIONS` —
+   * pointed at nothing before this test could see them, and two of them are offset by the uri-paths
+   * that same carrier now holds. Nothing broke; a blind spot closed.
    */
   test("the corpus points at no more nothing than it already did", () => {
-    const files = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
+    const files = currentCarrierFiles(REPO);
     const held = new Set<string>(), texts: string[] = [];
     for (const f of files) {
       const t = readFileSync(path.join(REPO, f), "utf8");
@@ -89,6 +96,6 @@ describe("carrier-edges — every address a carrier points at", () => {
     const dangling = texts.flatMap(readCarrierEdges)
       .filter((e) => e.address !== null && !held.has(e.address));
     expect(files.length).toBeGreaterThan(500);
-    expect(dangling.length, "an edge broke — run `lares carrier normalize --edges` to name it").toBeLessThanOrEqual(196);
+    expect(dangling.length, "an edge broke — run `lares carrier normalize --edges` to name it").toBeLessThanOrEqual(198);
   });
 });

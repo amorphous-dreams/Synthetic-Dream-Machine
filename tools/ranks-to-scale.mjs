@@ -26,6 +26,15 @@ import { createRequire } from "node:module";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[ranks-to-scale] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { carrierFiles } = await import(DIST_CARRIERS);
+
 const write = process.argv.includes("--write");
 const require = createRequire(import.meta.url);
 const { resolveTiddlyWiki, boot } = require(join(REPO, "VSCode-TW5-Syntax/tools/tw5-oracle.js"));
@@ -47,7 +56,7 @@ function positionals(src) {
 }
 
 const CALL = /<<~[ \t]*ranks[ \t]+((?:[^>]|>(?!>))*?)[ \t]*>>/g;
-const files = execSync('git ls-files "bags/**/*.mem"', { cwd: REPO, encoding: "utf8" }).split("\n").filter(Boolean);
+const files = carrierFiles(REPO);
 
 let moved = 0, touched = 0, triple = 0;
 const refused = [];

@@ -7,7 +7,21 @@ lar-pattern: <<~\s*lele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 lar-example: <<~ lele "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
-<!-- lele — structured fire-and-continue (Verse branch); child node in the task tree.
-     Parent continues immediately; child bounded by enclosing function scope — auto-cancelled on scope exit.
-     Distinct from hoolele (\spawn): spawn exits the tree entirely. Grammar and scanner wired. Verse concurrency runtime semantics pending (async-first sprint). -->
+<!-- lele — a SIDE FLOW at a target, and the caller carries on. THE TARGET RIDES AS THE FIRST
+     POSITIONAL and it rides QUOTED:
 
+         <<~ lele "lar:///a.b.c/x">>
+
+     //lele// leaps and knows the tree it left. The edge emits into the message family, starts the
+     target flow, and waits for no answer; the enclosing async context bounds the leap and cancels
+     what remains when that context completes. `hoolele` makes the other move — it leaves the tree.
+
+     AN UNQUOTED ADDRESS REACHES NOTHING. `lar:///x` standing bare in a positional slot binds a
+     parameter named `lar`, and the slot receives nothing; one pair of quotes fills it.
+
+     THE PAGE STAYS CLEAR. A side flow governs execution and never layout, so the definition hands
+     the compile layer a data annotation carrying the target and renders nothing. -->
+
+\procedure ~lele(p1:"")
+<span class="lar-lele" data-lele-target=<<p1>> data-bound="enclosing-scope" hidden="true"/>
+\end

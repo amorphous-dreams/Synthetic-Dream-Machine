@@ -5,7 +5,23 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/helu
 lar-see-also: \function
 lar-open-pattern: <<~\s*helu\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/helu\s*>>
+lar-example: <<~ helu tally "[tag[x]count[]]">>
 type: text/vnd.tiddlywiki
 
-<!-- helu — filter-function declaration pragma; Hawaiian canonical for \function.
-     Body is a TW5 filter expression. No render output — registers a named filter function. -->
+<!-- helu — a NAMED FILTER FUNCTION and the filter it reckons. THE NAME FIRST, THE FILTER SECOND:
+
+         <<~ helu tally "[tag[x]count[]]">>
+
+     //helu// counts, enumerates, reckons. Where `wehe` declares a body that RENDERS, helu declares
+     one that COMPUTES — the body yields a filter result set, never wikitext.
+
+     THE PAGE STAYS CLEAR. Its law reads "register a function definition only, producing no render
+     output", so the definition hands the compile layer a data annotation and leaves the reader
+     nothing to step over.
+
+     THE FILTER RIDES QUOTED. It carries brackets, colons and prose; unquoted, every `word:` binds a
+     parameter nobody named and the slot receives nothing. -->
+
+\procedure ~helu(p1:"" p2:"")
+<span class="lar-helu" data-helu-name=<<p1>> data-helu-filter=<<p2>> hidden="true"/>
+\end

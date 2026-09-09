@@ -249,6 +249,15 @@ export {
   carrierHeadPattern, carrierMarkPattern, carrierReleasePattern,
 } from "./carrier-head.js";
 export type { CarrierHead, CarrierMark } from "./carrier-head.js";
+// THE ONE FINDER of the corpus. Twenty-two readers enumerated it by hardcoded glob, in three
+// disagreeing answers, and the disagreement hid a real carrier from every gate. Read the DECLARATION,
+// never the path — see carrier-files.ts.
+export {
+  carrierFiles, currentCarrierFiles, retiredCarrierFiles, readCarrierFiles, forgetCarrierFiles,
+  declaresCarrier, inSubmodule,
+  SUBMODULES,
+} from "./carrier-files.js";
+export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
 // THE ONE READER of a sigil's parameters — the names it binds, the SLOTS it fills, and the
 // positionals a scheme would steal.
 export {

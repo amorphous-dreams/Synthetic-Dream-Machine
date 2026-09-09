@@ -15,11 +15,20 @@
 // The reading runs one way on purpose: a mark the SPEC stands and no TIDDLER declares is a promise the
 // tree cannot keep, and it fails. A tiddler declaring a mark the spec never wrote down only means the
 // readers hold more than the spec says — reported, never refused.
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { execSync } from "child_process";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[frame-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { carrierFiles } = await import(DIST_CARRIERS);
+
 const SPEC = join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem");
 
 /** Rows of the control-set table: `|`&#x000N;` |MARK |slots |carries |`. */
@@ -71,8 +80,7 @@ for (const f of tiddlers) {
 //
 // The corpus decides. Each pattern must find the mark it names in a real carrier, and must MISS the
 // speaking head, because a frame pattern that also matches `<<~` erases the split the heads make.
-const corpus = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-  .split("\n").filter(Boolean).slice(0, 400)
+const corpus = carrierFiles(REPO).slice(0, 400)
   .map((f) => readFileSync(join(REPO, f), "utf8")).join("\n");
 
 // A MARK THE CORPUS NEVER WRITES AND A PATTERN THAT CANNOT FIND ONE READ AS DIFFERENT FACTS, and

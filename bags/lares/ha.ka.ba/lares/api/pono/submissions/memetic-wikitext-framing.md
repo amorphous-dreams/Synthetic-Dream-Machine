@@ -206,6 +206,26 @@ BOM — where an outside consumer requires one, and the declaration follows it.
 
 `<<~moves prologue -> admits/a-foreign-header on/byte-zero if/an-outside-reader-requires-it do/yield-the-slot>>`
 
+### And the FORM follows what that reader can carry
+
+The same outside reader that claims byte zero also decides how a declaration may LOOK to it. A `.mem`
+or a `.tid` answers to this grammar alone, so its declaration stands bare on its own line. A `.md`
+answers to a MARKDOWN READER TOO, and a bare `<<!DOCTYPE …>>` reaches that reader as visible text at
+the top of the page — a declaration doing its work for one reader by defacing the page for the other.
+
+So a carrier that shows its own source declares inside a comment its other reader already hides:
+
+```
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+```
+
+**THE CORPUS KEPT THIS LAW BEFORE ANYONE WROTE IT.** Eleven of eleven markdown carriers wear the
+comment form, with no counter-example anywhere. The form reads as a FUNCTION OF THE FILE and never as
+a spelling choice: wearing the wrong one for your kind fails, and wearing the right one passes,
+whichever it happens to be.
+
+`<<~moves declaration -> takes/the-form-its-other-reader-can-carry if/a-second-reader-renders-the-file do/declare-where-that-reader-hides>>`
+
 The order stands fixed:
 
 | position | claimant | required by |

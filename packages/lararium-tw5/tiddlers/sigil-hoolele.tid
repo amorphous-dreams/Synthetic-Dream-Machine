@@ -7,7 +7,25 @@ lar-pattern: <<~\s*hoolele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
 lar-example: <<~ hoolele "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
-<!-- hoolele — unstructured escape hatch (Verse spawn); creates a NEW task tree root independent of the calling scope.
-     The spawned task outlives its creator; never auto-cancelled; requires explicit Cancel() or timeout.
-     Use only when work MUST complete regardless of parent scope. Prefer lele (\branch) for bounded side-work.
-     Stub — pono law spec pending. Grammar and scanner wired. Verse concurrency runtime semantics pending (async-first sprint). -->
+<!-- hoolele — a NEW TASK ROOT at a target, outside the tree that launched it. THE TARGET RIDES AS
+     THE FIRST POSITIONAL and it rides QUOTED:
+
+         <<~ hoolele "lar:///a.b.c/x">>
+
+     //hoʻolele// causes to fly — the kite released, the canoe with no line back to shore. The task
+     outlives the scope that created it; no scope exit reaches it, and only an explicit Cancel() on
+     the handle it returns ends it. The one unstructured move in the family: it hides the suspends
+     effect from its caller, which supplies the escape.
+
+     PREFER `lele` FOR ANYTHING LOSABLE. hoolele answers the three cases whose work MUST land —
+     persistence across scope destruction, cross-island work, a background daemon loop.
+
+     AN UNQUOTED ADDRESS REACHES NOTHING. `lar:///x` standing bare in a positional slot binds a
+     parameter named `lar`, and the slot receives nothing; one pair of quotes fills it.
+
+     THE PAGE STAYS CLEAR. A launch governs execution and never layout, so the definition hands the
+     compile layer a data annotation carrying the target and renders nothing. -->
+
+\procedure ~hoolele(p1:"")
+<span class="lar-hoolele" data-hoolele-target=<<p1>> data-cancellation="explicit" hidden="true"/>
+\end

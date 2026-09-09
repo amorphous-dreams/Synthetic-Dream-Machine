@@ -58,8 +58,6 @@ const EXEMPT = new Set([
                                                                 // census call would leave a definition behind
   "frame-eot", "frame-eot2", "frame-etb", "frame-etx", "frame-soh", "frame-soh2", "frame-stx",
   "toml",                  // control marks and the meta fence — `frame-parity` reads these
-  "helu", "holo", "hui", "hoolele", "kukali", "lele", "puka", "race", "rush", "sync", "tick",
-                           // no definition and no vector yet — OWED, and named here rather than skipped
 ]);
 
 const shelf = readShelf().filter((s) => !EXEMPT.has(s.name));

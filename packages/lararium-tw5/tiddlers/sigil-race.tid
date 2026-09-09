@@ -6,8 +6,15 @@ lar-alias-for: holo
 lar-see-also: holo
 lar-open-pattern: <<~\s*race\s*>>
 lar-close-pattern: <<~\/race\s*>>
+lar-example: <<~ race>>
 type: text/vnd.tiddlywiki
 
-<!-- \race — English alias for holo (cancelling race; Verse `race`); first wins, all losers cancel.
-     Distinct from \rush (puka): losers in puka continue in background. Parser maps to holo. -->
+<!-- race — the English mirror of `holo`, the cancelling race: first flow through wins, every losing
+     arm cancels recursively.
 
+     ONE DEFINITION ANSWERS FOR BOTH. The mirror delegates to the head rather than restating it, so
+     the discipline moves in one place. `rush` mirrors `puka`, which keeps the other discipline. -->
+
+\procedure ~race()
+<$transclude $variable="~holo"/>
+\end

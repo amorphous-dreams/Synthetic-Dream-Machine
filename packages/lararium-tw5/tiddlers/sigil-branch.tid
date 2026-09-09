@@ -5,7 +5,15 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/lele
 lar-alias-for: lele
 lar-see-also: lele
 lar-pattern: <<~\s*branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
-lar-example: <<~ branch "main">>
+lar-example: <<~ branch "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
 
-<!-- branch — English alias for lele; Verse branch keyword; parser maps to lele before evaluation. -->
+<!-- branch — the English mirror of `lele`, the side flow the caller does not wait on. The enclosing
+     async context bounds it and cancels what remains when that context completes.
+
+     ONE DEFINITION ANSWERS FOR BOTH. The mirror delegates to the head rather than restating it, so
+     the discipline moves in one place. -->
+
+\procedure ~branch(p1:"")
+<$transclude $variable="~lele" p1=<<p1>>/>
+\end

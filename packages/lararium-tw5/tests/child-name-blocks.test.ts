@@ -31,6 +31,7 @@ import {
   type TiddlerFields,
 } from "../src/deserializer.js";
 import { parseTaploFields } from "../src/toml-ast.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
@@ -171,8 +172,7 @@ describe("child name blocks — what a fragment may declare", () => {
    * reader verifying a block check written inside an example.
    */
   test("no meta block any carrier declares carries a `$` name", () => {
-    const carriers = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
+    const carriers = currentCarrierFiles(REPO);
     const offenders: string[] = [];
     for (const f of carriers) {
       const text = readFileSync(path.join(REPO, f), "utf8");

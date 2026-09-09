@@ -27,6 +27,15 @@ if (!existsSync(SHORE)) {
 const { carrierHeadPattern, carrierReleasePattern } = await import(SHORE);
 
 const REPO = process.env["REPO"] ?? process.cwd();
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[frame-shape] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { carrierFiles } = await import(DIST_CARRIERS);
+
 const MARKS = [
   ["&#x0001;", "SOH", true],
   ["&#x0011;", "SOH2", false],
@@ -37,8 +46,7 @@ const MARKS = [
   ["&#x0014;", "EOT2", false],
 ];
 
-const files = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-  .split("\n").filter(Boolean);
+const files = carrierFiles(REPO);
 
 const faults = [];
 for (const f of files) {

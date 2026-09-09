@@ -92,9 +92,9 @@ describe.skipIf(wikiSkip)(`a sigil renders on a gradient${skipNote}`, () => {
   });
 
   test("★ AN ENGLISH MIRROR BEHAVES AS ITS ORIGINAL — that is what mirroring means ★", () => {
-    // The mirror does not owe a rendering; it owes the SAME ANSWER its original gives. Where the
-    // original carries a runtime the mirror renders; where the original waits on one — `lele` holds
-    // Verse concurrency semantics pending — the mirror echoes, and the gradient is working.
+    // The mirror does not owe a rendering of its own; it owes the SAME ANSWER its original gives.
+    // A mirror that delegates to its head cannot part company with it; a mirror carrying no
+    // definition while its head carries one splits the pair, and this vector reads the split.
     const PAIRS: Array<[string, string]> = [
       ["link", "loulou"], ["branch", "lele"], ["shadow", "aka"], ["transclude", "kahea"],
     ];

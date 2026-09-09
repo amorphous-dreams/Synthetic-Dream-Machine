@@ -36,6 +36,7 @@ import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { expandMemeRefs, memeticWikitextDeserializer } from "../src/deserializer.js";
 import { parseTaploFields } from "../src/toml-ast.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
@@ -96,9 +97,13 @@ describe.skipIf(wikiSkip)(
    * hiding it in a global.
    */
   test("every carrier renders back to the bytes the WIKI parsed it from", () => {
-    const carriers = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
-    const stripMeta = (t: string) => t.replace(/```toml meta\n[\s\S]*?\n```\n/g, "```toml meta\n<META>\n```\n");
+    const carriers = currentCarrierFiles(REPO);
+    // THE DECLARATION PRECEDES ITS GRAMMAR, NEVER THE FILE. Byte zero belongs to whatever outside
+    // reader requires it — a `.tid`'s field header, YAML front-matter, a shebang — and the carrier
+    // begins at the declaration. The projector emits the CARRIER; comparing whole files would report
+    // a `.tid`'s three field lines as grammar drift.
+    const fromDeclaration = (t: string) => { const at = t.indexOf("<<!DOCTYPE"); return at < 0 ? t : t.slice(at); };
+    const stripMeta = (t: string) => fromDeclaration(t).replace(/```toml meta\n[\s\S]*?\n```\n/g, "```toml meta\n<META>\n```\n");
     const drift: string[] = [];
     for (const f of carriers) {
       const disk = readFileSync(path.join(REPO, f), "utf8");
@@ -127,8 +132,7 @@ describe.skipIf(wikiSkip)(
    *   then carries its old home.
    */
   test("no carrier strands content past ETX, and none stamps its residency into canon", () => {
-    const carriers = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
+    const carriers = currentCarrierFiles(REPO);
     const stranded: string[] = [], stamped: string[] = [];
     for (const f of carriers) {
       const disk = readFileSync(path.join(REPO, f), "utf8");
@@ -266,8 +270,7 @@ describe.skipIf(wikiSkip)(
   // (a parallel build once pushed it past the 5s default and flaked a green law red). The budget says
   // what the test is: thorough, never fast.
   test("a carrier's meta block already reads as the emitter would write it", { timeout: 30_000 }, () => {
-    const carriers = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-      .split("\n").filter(Boolean);
+    const carriers = currentCarrierFiles(REPO);
     const metaOf = (t: string) => /```toml meta\n([\s\S]*?)\n```/.exec(t)?.[1] ?? null;
 
     // WHAT `guarantee 2` FORGIVES, AND WHAT IT DOES NOT.

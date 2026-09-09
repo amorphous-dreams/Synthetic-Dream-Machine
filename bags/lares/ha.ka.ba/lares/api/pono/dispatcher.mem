@@ -39,14 +39,20 @@ grammar: new sigils need only a tiddler — no code change required.
 
 ✶ sense the sigil name — what named body does this invocation reach?
 ⏿ orient: dispatcher looks up `~name` in TW5 procedure/widget namespace; delegates via $transclude
+   ⚠ A SECOND WORD NAMING A CHILD SLOT OPENS A COMPOUND. `<<~ season kau …>>` resolves `~season~kau`,
+     never `~season` with a positional `kau` — the child-slot words stand as `ahu` and `kau`, and any
+     sigil whose second word spells one of them binds a compound head. Measured against a definition
+     that stood and a call that reached nothing.
+   ⚠ AND THE SPACE AFTER THE SHARKTOOTH BINDS. `<<~name …>>` written tight opens no head and falls to
+     the gradient; the space carries the decision. Measured across 365 calls that each looked live.
 ◇ name MUST match a declared `\widget ~name` or `\procedure ~name` in accessible scope
 ▶ emit a TRANSCLUDE naming `~name` directly, carrying p1–p5, the argument run whole as `args`,
   the verbatim source as `src`, and every NAMED parameter the call bound — TiddlyWiki hands a
   procedure only the parameters it declares, so a generic forwarder could pass none of them on
 ↺ named body renders in place; no edge created; pure render-time delegation. Where the name
-  resolves to nothing the transclude renders its CHILDREN — the sigil's own text — which is the
-  gradient's floor. The `~` widget stays for INDIRECT dispatch, where a definition hands down a
-  name it was given, and a blank name there resolves to nothing rather than to the widget itself
+  resolves to nothing the transclude renders its CHILDREN — the sigil's own text — which lands on
+  the gradient's floor. The `~` widget stays for INDIRECT dispatch, where a definition hands down a
+  name handed down to it, and a blank name there resolves to nothing rather than to the widget itself
 
 <<~/ahu>>
 
@@ -87,6 +93,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pCHz3fgp0HkI1mhxut0gXu3s_DeRiwTvRmKb5rUY6fM
+<<^ code="&#x0003;">>ni:///sha-256;crseoWZX3ELIBIsxdVK_avlpnU9Li7wXlL7sF-slgRk
 
 <<^ code="&#x0004;" -> to="?">>

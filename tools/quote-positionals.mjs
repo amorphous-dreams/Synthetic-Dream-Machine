@@ -44,6 +44,15 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[quote-positionals] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { carrierFiles } = await import(DIST_CARRIERS);
+
 const argv = process.argv.slice(2);
 const write = argv.includes("--write");
 const teaching = argv.includes("--teaching");
@@ -96,7 +105,7 @@ function positionalArrives(after, value) {
 
 const files = given.length
   ? execSync(`git ls-files ${given.map((g) => `"${g}"`).join(" ")}`, { cwd: REPO, encoding: "utf8" }).split("\n").filter(Boolean)
-  : execSync('git ls-files "bags/**/*.mem"', { cwd: REPO, encoding: "utf8" }).split("\n").filter(Boolean);
+  : carrierFiles(REPO);
 
 const SIGIL = /<<(?:~[ \t]*)?[A-Za-z][\w-]*(?:[^>]|>(?!>))*>>/g;
 let touched = 0, quoted = 0, fenced = 0;

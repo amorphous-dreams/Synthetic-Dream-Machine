@@ -12,6 +12,8 @@
 
 import type { GrammarRules } from "../meme-ast/types.js";
 import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
+import { fencedSpans, inMask } from "../meme-ast/fence-mask.js";
+import type { MaskSpan } from "../meme-ast/fence-mask.js";
 
 /**
  * A parse-tree attribute, in the shapes TiddlyWiki's own parser emits.
@@ -221,6 +223,56 @@ export const BLOCK_CLOSERS: Record<string, string> = {
   kahea:   "<<~/kahea",
 };
 
+// ── A CLOSER BELONGS TO ONE OPENER ───────────────────────────────────────────────────────────────
+// One scan, two readings of the same name: `<<~/name…>>` closes, `<<~ name…>>` opens. A closer
+// spells its slash TIGHT against the mark with the name immediately after — `closePatternToTag`
+// emits exactly that shape and the corpus writes 4005 of them — so `<<~/ ahu>>` names nothing. An
+// opener reads on ONE line, the width `COMPOUND_OPEN_RE` and `ANY_OPEN_RE` already read.
+const closeOrOpenRe = (name: string): RegExp =>
+  new RegExp(`<<~(?:\\/(${name})(?![\\w-])[^>]*?>>|\\s*(${name})(?![\\w-])(?:[^\\n]*?)?>>)`, "g");
+
+/** Quoted-code spans of the carrier the walk is scanning; one entry, because a parse walks one source. */
+let maskedSource: string | null = null;
+let maskedSpans: MaskSpan[] = [];
+function quotedSpansOf(source: string): MaskSpan[] {
+  if (maskedSource !== source) { maskedSource = source; maskedSpans = fencedSpans(source); }
+  return maskedSpans;
+}
+
+/**
+ * The end of the closer belonging to the opener whose own `>>` ended at `fromPos`, or null.
+ *
+ * ── WHY A WALK AND NOT AN indexOf ────────────────────────────────────────────────────────────────
+ * `indexOf` answers "where does the first closer of this name stand later in the carrier", which
+ * matches "where does THIS body end" only while a name opens at most once per carrier. The shelf
+ * declares `lar-close-pattern` on thirty-one sigils and `buildClosers` merges every one, so
+ * thirty-one names reach a body capture: a LEAF call — `<<~ meme "lar:///x">>`, no closer of its own
+ * — standing before an unrelated block of the same name took that block's closer and swallowed every
+ * byte between them into one body. The corpus does not write that shape today; chat turns, ingested
+ * documents and operator drafts reach the same rule.
+ *
+ * ── THE LAW ─────────────────────────────────────────────────────────────────────────────────────
+ * The closer that closes an opener stands at DEPTH ZERO: each further opener of the same name claims
+ * the next closer first, so a nearer opener always wins its closer and an opener whose closer another
+ * opener claimed closes nothing. Nested blocks of one kind capture correctly, which a first-match
+ * scan cannot do at all.
+ *
+ * ── AND A QUOTED SIGIL OPENS NOTHING ────────────────────────────────────────────────────────────
+ * Measured over 700 carriers: teaching docs write `<<~ ahu #example>>` and `# <<~/ahu>>` inside
+ * fences, and 15 captures ENDED at a closer the operator was merely SHOWING — a section truncated
+ * mid-body while the render read clean. Quoted spans mask, the fence-mask law every other structural
+ * scanner on this shore already keeps.
+ *
+ * `ahu-scan` holds this same pairing — masked scan, balanced stack — for the ingest and split paths.
+ * The render path spells it here; the two agree by construction, and a divergence between them
+ * would split one carrier two ways.
+ *
+ * ── WHAT THIS DELIBERATELY DOES NOT DECIDE ──────────────────────────────────────────────────────
+ * Openers and closers of OTHER names pass under the walk untouched. Reading them as structure — a
+ * foreign block's end barring the way — reads a well-formedness the corpus does not carry: 38
+ * sections hold an unpaired closer of another name in plain prose, and a walk that stopped at one
+ * dropped bodies that render correctly today.
+ */
 export function findCloseEnd(
   source: string,
   sigil: string,
@@ -229,11 +281,27 @@ export function findCloseEnd(
 ): number | null {
   const tag = closers[sigil];
   if (!tag) return null;
-  const idx = source.indexOf(tag, fromPos);
-  if (idx === -1) return null;
-  const closingEnd = source.indexOf(">>", idx + tag.length);
-  if (closingEnd === -1) return null;
-  return closingEnd + 2;
+  // The map holds the tag; the walk needs the NAME it spells, so a caller-supplied tag that names
+  // something else than its key still governs which closer counts.
+  const name = /^<<~\/([A-Za-z][\w-]*)$/.exec(tag)?.[1];
+  if (!name) return null;
+  const spans = quotedSpansOf(source);
+  const re    = closeOrOpenRe(name);
+  re.lastIndex = fromPos;
+  let depth = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(source)) !== null) {
+    // A masked match may span bytes a real token starts inside, so re-seek rather than skip past it
+    // — the same step `maskedExecAll` takes.
+    if (inMask(spans, m.index)) { re.lastIndex = m.index + 1; continue; }
+    if (m[1] !== undefined) {
+      if (depth === 0) return m.index + m[0].length;
+      depth--;
+    } else {
+      depth++;
+    }
+  }
+  return null;
 }
 
 export function findGenericOpenAt(source: string, start: number): { end: number; sigil: string | null } | null {

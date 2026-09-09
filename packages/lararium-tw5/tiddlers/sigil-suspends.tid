@@ -5,8 +5,15 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kukali
 lar-alias-for: kukali
 lar-see-also: kukali
 lar-pattern: <<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>
-lar-example: <<~ suspends "reason">>
+lar-example: <<~ suspends trigger="on-score">>
 type: text/vnd.tiddlywiki
 
-<!-- \suspends — English alias for kukali; Verse suspends analogue.
-     Compile-layer leaf: parks causal island until trigger fires. No render output. -->
+<!-- suspends — the English mirror of `kukali`, the wait that parks a causal island until a named
+     trigger fires. The island parks rather than freezes, and it resumes exactly once.
+
+     ONE DEFINITION ANSWERS FOR BOTH. The mirror delegates to the head rather than restating it, so
+     the discipline moves in one place. -->
+
+\procedure ~suspends(trigger:"")
+<$transclude $variable="~kukali" trigger=<<trigger>>/>
+\end

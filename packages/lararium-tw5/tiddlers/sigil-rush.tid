@@ -6,7 +6,15 @@ lar-alias-for: puka
 lar-see-also: puka
 lar-open-pattern: <<~\s*rush\s*>>
 lar-close-pattern: <<~\/rush\s*>>
+lar-example: <<~ rush>>
 type: text/vnd.tiddlywiki
 
-<!-- \rush — English alias for puka; Verse rush keyword; parser maps to puka before evaluation. -->
+<!-- rush — the English mirror of `puka`, the selecting race: first flow through wins, the losers run
+     on until the enclosing scope exits.
 
+     ONE DEFINITION ANSWERS FOR BOTH. The mirror delegates to the head rather than restating it, so
+     the discipline moves in one place. `race` mirrors `holo`, which cancels its losers at once. -->
+
+\procedure ~rush()
+<$transclude $variable="~puka"/>
+\end

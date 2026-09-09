@@ -5,9 +5,24 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/hui
 lar-see-also: sync
 lar-open-pattern: <<~\s*hui\s*>>
 lar-close-pattern: <<~\/hui\s*>>
+lar-example: <<~ hui>>
 type: text/vnd.tiddlywiki
 
-<!-- hui — await-all join node (Verse sync); fan-out then fan-in. All child flows must settle before containing flow resumes.
-     Children cancelled if enclosing scope exits before all settle.
-     Grammar and scanner wired. Verse concurrency runtime semantics pending (async-first sprint). -->
+<!-- hui — an AWAIT-ALL JOIN over the flows its block opens. Fan out, then fan in: the containing
+     flow resumes only once every child settles, and a failure in any child reaches the container:
 
+         <<~ hui>>
+           <<~ lele "lar:///target-a">>
+           <<~ lele "lar:///target-b">>
+         <<~/hui>>
+
+     A //hui// gathers and holds the gathering — no member leaves while another still travels. An
+     enclosing scope that exits first cancels what remains. `sync` mirrors this head in English and
+     delegates here.
+
+     THE PAGE STAYS CLEAR. Coordination governs execution and never layout, so the definition hands
+     the compile layer a data annotation naming the discipline and renders nothing. -->
+
+\procedure ~hui()
+<span class="lar-hui" data-join="await-all" hidden="true"/>
+\end

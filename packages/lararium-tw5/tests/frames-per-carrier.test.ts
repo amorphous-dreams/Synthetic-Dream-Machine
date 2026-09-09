@@ -24,6 +24,7 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { maskedExecAll } from "../src/deserializer.js";
 import { checkSpan } from "../src/carrier-check.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
 /** ETX sigils the parser would honour — quoted mentions masked out. */
@@ -32,8 +33,7 @@ function liveFrames(text: string): number {
 }
 
 describe("a carrier's bodies, counted through the parser's own fence mask", () => {
-  const carriers = execSync("find bags -name '*.mem'", { cwd: REPO, encoding: "utf8" })
-    .trim().split("\n").filter(Boolean);
+  const carriers = currentCarrierFiles(REPO);
 
   /** A run that scanned nothing must not read as a run that found nothing. */
   test("the corpus is present", () => {
@@ -61,8 +61,7 @@ describe("a carrier's bodies, counted through the parser's own fence mask", () =
 });
 
 describe("the check reader divides a carrier where the parser divides it", () => {
-  const carriers = execSync("find bags -name '*.mem'", { cwd: REPO, encoding: "utf8" })
-    .trim().split("\n").filter(Boolean);
+  const carriers = currentCarrierFiles(REPO);
 
   /**
    * THE READER AND THE WRITER MUST MEET ON ONE SPAN.
@@ -126,8 +125,7 @@ describe("the frame head locks to control, in both directions", () => {
 });
 
 describe("what the corpus witnesses can and cannot see", () => {
-  const carriers = execSync("git ls-files 'bags/**/*.mem'", { cwd: REPO, encoding: "utf8" })
-    .trim().split("\n").filter(Boolean);
+  const carriers = currentCarrierFiles(REPO);
 
   /**
    * NAMING A CARRIER ADMITS IT TO THE WITNESS.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bcc-witness — verify every bags carrier's block check with the repo's OWN verifyBcc, and exit
+# bcc-witness — verify every carrier's block check with the repo's OWN verifyBcc, and exit
 # non-zero if any mismatch stands.
 #
 # ── WHY THIS EXISTS ─────────────────────────────────────────────────────────────────────────────
@@ -21,7 +21,11 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 const { verifyBcc } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-check.js"));
-const files = execSync("find bags -name \"*.mem\"", { encoding: "utf8" }).trim().split("\n").filter(Boolean);
+// THE CORPUS COMES FROM THE ONE FINDER. A `find bags -name "*.mem"` answers a question about paths
+// and walks untracked scratch besides; the law asks which files DECLARE. A carrier in the retired
+// comment spelling carries no ETX check to verify, so this witness takes the current corpus.
+const { currentCarrierFiles } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-files.js"));
+const files = currentCarrierFiles(process.cwd());
 let ok = 0, mismatch = 0, unchecked = 0, torn = 0;
 for (const f of files) {
   const verdict = verifyBcc(readFileSync(f, "utf8"));

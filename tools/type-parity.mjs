@@ -10,11 +10,20 @@
 //
 // So `carrier-type.ts` holds the declaration and this witness checks that nothing spells it inline.
 // A LITERAL IS THE FAULT, not a mismatch — by the time two literals disagree the damage has landed.
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { execSync } from "child_process";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[type-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { carrierFiles } = await import(DIST_CARRIERS);
+
 const DECL = "packages/lararium-mesh/src/carrier-type.ts";
 
 const decl = readFileSync(join(REPO, DECL), "utf8");
@@ -72,8 +81,7 @@ for (const f of SOURCES) {
 // AND THE CORPUS. A carrier declares its own type in its own meta block. Reported, never failed:
 // rewriting a carrier's type re-addresses it wherever a store addresses carriers by their bytes, so a
 // census belongs in a reading rather than in a gate.
-const carriers = execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-  .split("\n").filter(Boolean);
+const carriers = carrierFiles(REPO);
 let declared = 0, neither = 0;
 for (const f of carriers) {
   const t = readFileSync(join(REPO, f), "utf8");

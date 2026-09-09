@@ -33,6 +33,15 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
+// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
+// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
+const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
+if (!existsSync(DIST_CARRIERS)) {
+  console.error(`[sigil-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { carrierFiles } = await import(DIST_CARRIERS);
+
 
 for (const need of ["sigil-attrs.js", "tw5-vm.js", "generated-tw5-version.js"]) {
   if (!existsSync(join(DIST, need))) {
@@ -75,8 +84,7 @@ function sigils(nodes, out = []) {
   return out;
 }
 
-const files = execSync('git ls-files "bags/**/*.mem"', { cwd: REPO, encoding: "utf8" })
-  .split("\n").filter(Boolean);
+const files = carrierFiles(REPO);
 
 let sigilCount = 0, attrCount = 0, carried = 0;
 const drift = [];

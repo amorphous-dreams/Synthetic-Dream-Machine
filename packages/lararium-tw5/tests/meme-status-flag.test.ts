@@ -31,15 +31,13 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 
 const REPO = resolve(__dirname, "../../..");
 const STATES = ["designed", "standing", "rite"] as const;
 
 function memegraph(): string[] {
-  const out = execFileSync("git", ["ls-files", "bags"], {
-    cwd: REPO, encoding: "utf8", maxBuffer: 16 * 1024 * 1024,
-  });
-  return out.split("\n").filter((f) => f.endsWith(".mem"));
+  return currentCarrierFiles(REPO).filter((f) => f.endsWith(".mem"));
 }
 
 function statusOf(src: string): { state?: string; why?: string } {

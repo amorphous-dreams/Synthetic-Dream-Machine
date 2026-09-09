@@ -6,7 +6,15 @@ lar-alias-for: hui
 lar-see-also: hui
 lar-open-pattern: <<~\s*sync\s*>>
 lar-close-pattern: <<~\/sync\s*>>
+lar-example: <<~ sync>>
 type: text/vnd.tiddlywiki
 
-<!-- \sync — English alias for hui; Verse sync keyword; parser maps to hui before evaluation. -->
+<!-- sync — the English mirror of `hui`, the await-all join: the containing flow resumes once every
+     child settles.
 
+     ONE DEFINITION ANSWERS FOR BOTH. The mirror delegates to the head rather than restating it, so
+     the discipline moves in one place. -->
+
+\procedure ~sync()
+<$transclude $variable="~hui"/>
+\end

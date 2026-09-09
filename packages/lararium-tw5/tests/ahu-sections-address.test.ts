@@ -30,6 +30,7 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
+import { currentCarrierFiles } from "../src/carrier-files.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
@@ -41,8 +42,7 @@ const REPO = new URL("../../..", import.meta.url).pathname;
  * what the house holds itself to without editing its own record.
  */
 const carriers = (): string[] =>
-  execSync("git ls-files 'bags/**/*.mem'", { encoding: "utf8", cwd: REPO })
-    .split("\n").filter(Boolean).filter((f) => !f.startsWith("bags/lares-history/"));
+  currentCarrierFiles(REPO).filter((f) => !f.startsWith("bags/lares-history/"));
 
 /** Section opens and closes, counted outside fenced blocks — a fence carries examples, never structure. */
 function frame(text: string): { opens: string[]; closes: number } {
