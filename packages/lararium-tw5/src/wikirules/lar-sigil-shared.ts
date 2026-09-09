@@ -363,14 +363,21 @@ export function findCloseEnd(
   return null;
 }
 
-export function findGenericOpenAt(source: string, start: number): { end: number; sigil: string | null } | null {
+export function findGenericOpenAt(
+  source: string,
+  start:  number,
+): { end: number; sigil: string | null; spaced: boolean } | null {
   if (!opensSigilAt(source, start)) return null;
   const end = sigilOpenEnd(source, start);
   if (end < 0) return null;
   const inner = source.slice(start + 3, end - 2).trim();
   const kwMatch = inner.match(/^[!⊙]?(?:&#x[0-9a-fA-F]+;)?\s*(\\?[a-zA-Z][\w-]*)?/);
   const sigil = kwMatch?.[1]?.replace(/^\\/, "") ?? null;
-  return { end, sigil };
+  // WHETHER A SPACE FOLLOWS THE SHARKTOOTH. TiddlyWiki reads `<<~name …>>` as its OWN macrocall — a
+  // macro named `~name` — and reads `<<~ name …>>` as nothing at all. The two forms answer to
+  // different owners, so a caller must be able to tell them apart.
+  const spaced = /^<<[~^][ \t]/.test(source.slice(start));
+  return { end, sigil, spaced };
 }
 
 

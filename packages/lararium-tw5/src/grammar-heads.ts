@@ -78,6 +78,33 @@ function headOf(title: string, fields: HeadFields): string | null {
   return null;
 }
 
+/** A rule as the grammar cache builds it — enough of one to read a head off. */
+export interface HeadRule {
+  readonly name?: unknown;
+  readonly kind?: unknown;
+  readonly pattern?: unknown;
+  readonly openPattern?: unknown;
+}
+
+/**
+ * Every head a set of BUILT RULES knows — the same reading, entered from the cache rather than the
+ * wiki. A caller already holding `getGrammar()` pays no second filter for the same answer, and the
+ * two entries share one implementation so they cannot drift apart.
+ */
+export function grammarHeadsOf(rules: { sigils?: readonly HeadRule[] } | undefined | null): Set<string> {
+  const heads = new Set<string>();
+  for (const r of rules?.sigils ?? []) {
+    const head = headOf(str(r.name), {
+      "lar-kind":         r.kind,
+      "lar-name":         r.name,
+      "lar-pattern":      r.pattern,
+      "lar-open-pattern": r.openPattern,
+    });
+    if (head) heads.add(head);
+  }
+  return heads;
+}
+
 /**
  * Every head the grammar in THIS WIKI knows — the canonical read.
  *

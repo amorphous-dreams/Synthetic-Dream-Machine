@@ -20,6 +20,7 @@ module-type: wikirule
 
 import { getGrammar } from "../grammar-cache.js";
 import { positionalsOf, readSigilAttrs } from "../sigil-attrs.js";
+import { grammarHeadsOf } from "../grammar-heads.js";
 import type { SigilAttr } from "../sigil-attrs.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { severityOfRung } from "../meme-ast/diagnostics.js";
@@ -87,6 +88,8 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
   const closers        = buildClosers(grammar);
   const inlineSigils   = grammarInlineSigils(grammar);
   const childSlotNames = grammarChildSlotNames(grammar);
+  // THE ONE DOOR — which heads the shelf registers, off the grammar the cache already holds.
+  const registeredHeads = grammarHeadsOf(grammar);
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
     // pranala: permanent JS exception — <<~ pranala FROM -> TO>> arrow syntax with
@@ -160,6 +163,17 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // prevents a bare <<~ pranala>> (no arrow) from silently becoming a literal block.
     const generic = findGenericOpenAt(source, pos);
     if (generic) {
+      // ── THE TIGHT FORM BELONGS TO TIDDLYWIKI ────────────────────────────────────────────────────
+      // `<<~name …>>` IS a macrocall to a macro named `~name`, and the host parses it natively. This
+      // rule exists for the SPACED form, which the host cannot read at all. Measured in a bare wiki
+      // with no plugin: tight-and-defined renders its definition, spaced-and-defined renders nothing.
+      //
+      // The fallback below still claims a tight call, and rightly — measured in the same bare wiki, a
+      // tight call to an UNDEFINED macro VANISHES, text and all, and this house never drops a
+      // reader's source. So the two cases part on one fact the grammar now carries: where the shelf
+      // REGISTERS the head, the host runs it; where it does not, the floor catches what the host
+      // would swallow.
+      if (!generic.spaced && generic.sigil && registeredHeads.has(generic.sigil)) return undefined;
       if (generic.sigil && closers[generic.sigil] && generic.sigil !== "pranala") {
         const closeEnd = findCloseEnd(source, generic.sigil, generic.end, closers);
         if (closeEnd !== null) {
