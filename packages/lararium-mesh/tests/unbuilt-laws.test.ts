@@ -186,8 +186,20 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("gatherFleetAtBoot");
   });
 
-  test.skip("A HANDLE CARRIES A CHAIN TO BURN — RULED 2026-09-06 (the nym gains a KEL-shaped chain; public Handles will sign publicly accountable things, e.g. domain-ownership attestations) and UNBUILT: handle-card `nym` rides a bare ed25519 key with no chain, so burn/abandon/adversary-recovery cannot be expressed at the layer the Shadowtalk myth lives at", () => {
-    expect(Object.keys(mesh)).toContain("handleKelChain");
+  // KEPT 2026-09-08 — A HANDLE CARRIES A CHAIN TO BURN greened (G3 core): the handle-KEL stands as a
+  // SIBLING grammar on the frozen persona-KEL primitives — its own domain (HANDLE_KEL_DOMAIN), armed
+  // inception carrying the owner-binding (the persona AID inside the prefix hash — the bidirectional
+  // proof IS the name), rotation authorized by the owner's head (an injected resolver, so the module
+  // never imports the persona grammar), a TERMINAL burn after which any successor refuses forever,
+  // and attestations as signed STATEMENTS under the head (no lineage bloat, no board — carried ON the
+  // card, registry-filter clean). Witnessed in tests/handle-kel.test.ts (burn-terminality, superseded-
+  // owner-rotates-nothing, owner-binding-survives-rotation, attestation end-to-end + the no-roster
+  // fence, armed inception). The NYM RETIREMENT (wiring handle-card + antigen onto it) rides G3's
+  // build; ruling 4 is TWO lifts (the antigen shedding rides the persona-KEL pin-move, not this).
+  test("the handle-KEL grammar is exported and burns", () => {
+    for (const sym of ["mintHandleInception", "mintHandleRotation", "mintHandleBurn", "verifyHandleKel", "isBurned", "attestUnderHead"]) {
+      expect(Object.keys(mesh)).toContain(sym);
+    }
   });
 
   // KEPT 2026-09-08 — A VETO RIDES THE CHAIN, NEVER A ROSTER greened by the G2 settlement: the

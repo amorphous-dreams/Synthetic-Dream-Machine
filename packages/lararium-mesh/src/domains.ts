@@ -54,6 +54,9 @@ export const DEVICE_DELEGATION_DOMAIN = d("device-delegation");
 export const PERSONA_KEL_DOMAIN = d("persona-kel");
 /** The announced outward face: a self-certifying HandleCard. */
 export const HANDLE_CARD_DOMAIN = d("handle-card");
+/** A Handle's key-event log entry — the SIBLING chain (burn · rotate · attest) whose prefix binds its
+ *  owning persona at inception (identity-classes#the-handle-chain). */
+export const HANDLE_KEL_DOMAIN = d("handle-kel");
 /** A fleet proof: one nym carried across a human's own vessels. */
 export const FLEET_PROOF_DOMAIN = d("fleet-proof");
 /** The vessel×veil dyad, and the binding that names it. */
@@ -136,7 +139,7 @@ export const RAISE_CHALLENGE_DOMAIN = d("raise-challenge");
  * still cannot hide: the witness also refuses any domain literal written outside this file.
  */
 export const ALL_DOMAINS: readonly string[] = [
-  DEVICE_DELEGATION_DOMAIN, PERSONA_KEL_DOMAIN, HANDLE_CARD_DOMAIN,   FLEET_PROOF_DOMAIN, DYAD_ID_DOMAIN, DYAD_BINDING_DOMAIN,
+  DEVICE_DELEGATION_DOMAIN, PERSONA_KEL_DOMAIN, HANDLE_CARD_DOMAIN, HANDLE_KEL_DOMAIN, FLEET_PROOF_DOMAIN, DYAD_ID_DOMAIN, DYAD_BINDING_DOMAIN,
   PERSONA_ENROLL_DOMAIN, PERSONA_GRANT_DOMAIN, PERSONA_SEALED_DOMAIN, PERSONA_JOIN_DOMAIN,
   PERSONA_ADMIT_SEAL_INFO, BOOT_INVITE_DOMAIN, CABAL_INVITE_DOMAIN,
   NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,

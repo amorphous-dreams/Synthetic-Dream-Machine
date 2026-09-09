@@ -41,6 +41,8 @@ The four founding-watch rulings closed (the veil · layered recovery · seat-ado
 - THE KEL FROZE: the G2 settlement took the grammar's last bytes-change — the provisional marker and the veto kind (Fork C's contest, all four walked clauses witnessed: kapae-reversible provisional authority, the always-superseding veto, observer-local hardening, contest-aware board keying). The handle-KEL builds as a sibling grammar with no bytes-change.
 - The restored veil provably OPENS: content keyed to a first-boot card decrypts on an archive-stood veil.
 
+- G3 CORE: the handle-KEL, a sibling grammar giving a Face bones — armed owner-bound inception (the persona AID inside the prefix hash IS the bidirectional proof), owner-authorized rotation, TERMINAL burn (the Shadowtalk ending made structural), and attestations as signed statements carried on the card (registry-filter clean, no board). Two G4-entry measurements landed: the one-road cost scales superlinear (fleet-gather must batch), and the realm-crossing GAP is a one-store wire (the feed lands on the daemon bag, not the shared substrate).
+
 **Changed**
 - Persona-KEL event bytes gained the rolling-commitment field — every CID and prefix re-derives; rehearsal vessels re-found (early alpha carries no backward compatibility).
 - `vesselDyads` reads ceremony-minted slots only; a bare delegation edge presents no relationship, and the boot says the drift aloud.

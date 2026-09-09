@@ -235,6 +235,8 @@ export * from "./anergy-ledger.js";
 export * from "./recovery-seat.js";
 export * from "./wax-stamp.js";
 export * from "./persona-kel.js";
+// The Handle's SIBLING chain — burn · rotate · attest under an owner-bound prefix (identity-classes#the-handle-chain).
+export * from "./handle-kel.js";
 export * from "./conviction-dial.js";
 export * from "./capture-reading.js";
 export * from "./transfer-entropy.js";
