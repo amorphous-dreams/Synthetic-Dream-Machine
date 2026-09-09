@@ -235,7 +235,7 @@ because a verification an operator has to remember to run is a verification that
 ''Land the substrate collapse only on a quiet tree.'' It touches the entry point every other thread stands
 on, so it wants to arrive between phases rather than during one.
 
-<<~loops ✶ primitives-and-door -> ⏿ rites -> ◇ ripples -> ▶ verifications -> ↺ the-rite-and-its-harness>>
+<<~ loops "✶ primitives-and-door -> ⏿ rites -> ◇ ripples -> ▶ verifications -> ↺ the-rite-and-its-harness">>
 
 # ''Stand the door and the primitives first, with the old verbs still answering.'' The two surfaces
   co-exist for exactly one commit, which keeps every caller working while the new shape gets proven.
@@ -261,6 +261,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dhpr1G_eVW4un95G_m1FLiggoWNmrPHxMTrTHsj8uN4
+<<^ code="&#x0003;">>ni:///sha-256;30KSK7KeFb7r06wAsHM3fvt88vzz5X28wHNZ6SSIre4
 
 <<^ code="&#x0004;" -> to="?">>

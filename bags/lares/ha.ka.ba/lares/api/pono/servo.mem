@@ -50,7 +50,7 @@ at #enaction).
 
 The governor runs one negative-feedback cycle, the OODA loop in miniature:
 
-<<~loops ✶ observe-the-signal -> ⏿ smooth-EWMA -> ◇ compute-error-vs-set-point -> ▶ nudge-and-clamp -> ↺ re-observe>>
+<<~ loops "✶ observe-the-signal -> ⏿ smooth-EWMA -> ◇ compute-error-vs-set-point -> ▶ nudge-and-clamp -> ↺ re-observe">>
 
 * ''observe'' — measure the bound's true cost on each completion (a flush latency, a reconcile
   duration, a mine wall-time). Only COMPLETIONS teach — a killed or faulted sample never folds in,
@@ -185,6 +185,6 @@ TS/py shore; the polarity law and the two-loop shape hold identically wherever t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NKDBfPubUEMsHK90VaXbqO2fpORUsoJs0gWlC2hTQ5g
+<<^ code="&#x0003;">>ni:///sha-256;gl9Yt8i8US4rppZ4UMOf4-002lI-UELF9v2gsg2J-tY
 
 <<^ code="&#x0004;" -> to="?">>

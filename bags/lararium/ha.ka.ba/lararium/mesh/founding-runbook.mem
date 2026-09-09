@@ -34,7 +34,7 @@ written    = "2026-07-20"
 
 !! The rite ~ rehearsed first, then the six movements, then the growing
 
-<<~loops ⓪ rehearse -> ✶ clear -> ⏿ found -> ◇ reserve -> ▶ seal-and-back-up -> ↺ seed -> LIVE -> ⚲ crossroads -> ⊕ grow -> ⊛ gather -> ⊙ feed -> ⊘ dwell>>
+<<~ loops "⓪ rehearse -> ✶ clear -> ⏿ found -> ◇ reserve -> ▶ seal-and-back-up -> ↺ seed -> LIVE -> ⚲ crossroads -> ⊕ grow -> ⊛ gather -> ⊙ feed -> ⊘ dwell">>
 
 ''Rehearse'' runs the whole rite in containers, disposably, until it bores (#/rehearse) · ''clear''
 pares the vessel to void · ''found'' stands the device + the three kahu · ''reserve'' forges the
@@ -1440,6 +1440,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ejDd4ox5Kssksa3Qe5kOOx1cdBJLqNtFYQcg8Bu4Meo
+<<^ code="&#x0003;">>ni:///sha-256;mqRSQblHeNcaFumZ_M5LW8-yrfh1z2GSGYEUAyI6z9k
 
 <<^ code="&#x0004;" -> to="?">>
