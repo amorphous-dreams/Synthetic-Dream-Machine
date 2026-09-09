@@ -202,6 +202,7 @@ export * from "./admission-price.js";
 export * from "./vouch-dag.js";
 export * from "./realm-admission.js";
 export * from "./handle-card.js";
+export * from "./handle-publish.js";
 export * from "./handle-book.js";
 // The card-arrival front door — decode a carried (paste / QR / URL-fragment) HandleCard so a follow can admit
 // an unmet nym WITHOUT the CLI's `--card <file>` (the card arrives as data, boot-invite posture).

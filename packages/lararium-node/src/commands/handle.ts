@@ -12,48 +12,17 @@
  */
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
+import type { AutomergeUrl } from "@automerge/automerge-repo";
 import { readFileSync, existsSync } from "node:fs";
 import {
-  DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, tiddlerText,
-  publishPersonaGlamour, materializeSharedLarDoc, whoBoardDocUrl,
-  type LarDoc, type HandleCard, type OwnPublicHandleStore,
+  DAEMON_BAG_ID, materializeSharedLarDoc, whoBoardDocUrl,
+  publishHandleFromDaemonDoc,
+  type LarDoc, type HandleCard,
 } from "@lararium/mesh";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import {
   loadPersonaGroupRootSeed, loadVesselVerifyingKey, makeNodePublicHandleStore, loadActivePersonaIndex,
 } from "../node-vessel-identity.js";
-
-/**
- * The command's OWN logic, platform-blind and testable: read the persona-KEL prefix off the daemon doc and
- * seat it as the published face's owner. FAIL CLOSED when the doc carries no prefix — a face with no persona
- * to own it never self-owns (self-ownership resolves to no persona head and forecloses recovery), so the
- * absence refuses rather than defaults.
- */
-export async function publishHandleFromDaemonDoc(opts: {
-  daemonDoc: LarDoc;
-  board: DocHandle<LarDoc>;
-  seed: Uint8Array;
-  handleIndex: number;
-  glamour: string;
-  now: number;
-  store: OwnPublicHandleStore;
-}): Promise<HandleCard> {
-  const prefix = tiddlerText(
-    (opts.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as never,
-  );
-  if (!prefix) {
-    throw new Error(
-      "[lares handle publish] no persona-KEL prefix on the daemon doc — a face is owned by its persona, " +
-      "never itself; found the vessel first (fail-closed, the face never self-owns).",
-    );
-  }
-  return publishPersonaGlamour({
-    board: opts.board, seed: opts.seed, handleIndex: opts.handleIndex,
-    glamour: opts.glamour, now: opts.now, store: opts.store,
-    ownerPersonaKelPrefix: prefix,
-  });
-}
 
 export interface HandlePublishOptions {
   /** The display name the world reads — "Guru-Josh", "The Dread Pirate Roberts". */
