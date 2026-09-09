@@ -3,15 +3,36 @@
  * extension (identity-classes#the-handle-chain). It reuses the frozen persona-KEL's PRIMITIVES by
  * shape — hash-linked events, a content-addressed cid, a prefix derived over the inception, an ARMED
  * inception carrying a rolling recovery commitment — and mints its OWN kinds the persona grammar
- * lacks: a BURN (terminal — the Shadowtalk ending made structural) and an ATTESTATION (a signed
- * claim carried ON the card, verified reader-locally, never an event and never a board).
+ * lacks: a BURN (terminal — the Shadowtalk ending made structural), an ATTESTATION (a signed claim
+ * carried ON the card, verified reader-locally, never an event and never a board), and a GRAFT (the
+ * succession move — the presenting owner-set turns over).
  *
- * THE OWNER-BINDING: a Handle's inception folds its owning PERSONA-prefix into the identifier's own
- * bytes, so the Handle's prefix IS the bidirectional handle↔identity proof — no re-parenting, no
- * detachment, and the proof survives every rotation because the prefix does. Rotation authority
- * walks the OWNER's persona-KEL head: the rotation signature verifies against the owner's current
- * op-key. The module stays persona-KEL-DECOUPLED — the mint takes an injected `ownerHeadOpKeyDid`
- * and the full walk takes an injected `OwnerHeadResolver`; nothing here imports the persona grammar.
+ * ★ THE MU (operator, 2026-09-08) — A HANDLE IS A QUORUM-PRESENTED NAME, NOT A LONE KEY. ★ The
+ * owner-binding generalizes from a single `ownerPrefix` to a PRESENTING OWNER-SET (persona-prefix
+ * members + a graft threshold). A public Handle (the Dread Pirate Roberts) reads VALID against the
+ * CURRENT set, and whether ONE or MORE humans hold the right to present it stays unknowable by design
+ * — exactly as a cabal refuses "which member signed". ''1-of-1 is the degenerate case that IS the
+ * personal face'' — the same shape all the way down, no special civic tier (`mintHandleInception`
+ * keeps the single-owner path ergonomic as sugar over a one-member set).
+ *
+ * THE OWNER-BINDING: a Handle's inception folds a DIGEST of its GENESIS owner-SET into the identifier's
+ * own bytes (`sealKeySetHash(members, graftThreshold)`, the persona shape), so the founding quorum is
+ * fixed in the name FOREVER (anti-swap: the name never moves) and the handle↔identity proof never
+ * detaches. Alongside the fixed genesis wall each event carries a ROLLING `ownerSetHash` — the CURRENT
+ * presenting-set digest — separate from the rolling recovery commitment; genesis seats one set in both
+ * the prefix and the rolling slot.
+ *
+ * PRESENTATION (rotation · burn · attest) is authorized by ANY CURRENT MEMBER: an event names which
+ * member presents (`ownerAuthMemberPrefix`) and that member's head op-key (`ownerAuthKeyDid`); verify
+ * checks (a) the member stands in the CURRENT owner set and (b) the injected `OwnerHeadResolver`
+ * confirms the key is that member's authoritative head. GRAFT (the membership move — succession)
+ * reveals the NEW current owner set and carries authorization from the PRIOR set; for THIS build a
+ * graft authorized by ONE current member suffices (DPR's real case — Roberts cedes to Westley by one
+ * willing hand). TRUE k-of-n graft governance (a guild requiring a THRESHOLD to consent) rides
+ * DECLARED, not built (a skipped red — `handle-kel.test.ts`).
+ *
+ * The module stays persona-KEL-DECOUPLED — the mint takes an injected authorizing key and the full
+ * walk takes an injected `OwnerHeadResolver`; nothing here imports the persona grammar.
  *
  * PUBLIC BY DESIGN: a handle-KEL diffuses wherever the card announces — the persona-KEL's per-Nexus
  * board discipline does not govern it. Accordingly the module handles ONE chain per call and exposes
@@ -24,59 +45,75 @@
 import { HANDLE_KEL_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { sha256HexSync, canonicalJson, canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { sealKeySetHash } from "./wax-stamp.js";
 
 /** The domain the handle-KEL prefix + event bytes tag — separates a Handle's chain from every other hash. */
 export { HANDLE_KEL_DOMAIN } from "./domains.js";
 
-/** The handle-KEL's own kinds — a sibling grammar, absent from the persona-KEL. */
-export type HandleKelKind = "inception" | "rotation" | "burn";
+/** The handle-KEL's own kinds — a sibling grammar, absent from the persona-KEL. A GRAFT turns the
+ *  presenting owner-set over (succession); a BURN ends the name. */
+export type HandleKelKind = "inception" | "rotation" | "burn" | "graft";
 
 /**
  * One event in a Handle's hash-linked key-event-log. Content-addressed by `eventCid`.
  *
- * INCEPTION (seq 0) seats the Handle's own signing key, self-certified by the prefix derivation
- * (like the persona inception, no signature rides it). A ROTATION seats a fresh Handle key under
- * the OWNER's authority — `ownerAuthKeyDid` names the owner op-key that authorized and `authSig`
- * carries that key's signature over the event bytes. A BURN terminates the chain — `authSig`
- * carries the seated Handle key's own signature; NOTHING verifies after it, forever.
+ * INCEPTION (seq 0) seats the Handle's own signing key and REVEALS the genesis owner-set, self-certified
+ * by the prefix derivation (like the persona inception, no signature rides it). A ROTATION seats a fresh
+ * Handle key under a CURRENT member's authority — `ownerAuthMemberPrefix` + `ownerAuthKeyDid` name the
+ * presenter and `authSig` carries that key's signature. A GRAFT reveals a NEW current owner-set under a
+ * PRIOR member's authority (succession). A BURN terminates the chain — `authSig` carries the seated
+ * Handle key's own signature (self-burn) OR a current member's (owner-burn); NOTHING verifies after it.
+ *
+ * The owner-set MEMBERS + THRESHOLD ride OUTSIDE the cid (the persona-KEL roster pattern): they are
+ * REVEALED at inception and at every graft, verified against the bound digest (`genesisOwnerSetHash` at
+ * inception, `ownerSetHash` at a graft), and stay EMPTY on presentation events (rotation · burn), which
+ * change no set.
  */
 export interface HandleKelEvent {
   readonly seq:                 number;              // monotonic sequence; inception = 0
   readonly kind:                HandleKelKind;
   readonly eventCid:            string;              // content-address of THIS event (its own hash)
-  readonly prefix:              string;              // the STABLE identifier — fixed across every rotation
+  readonly prefix:              string;              // the STABLE identifier — fixed across every rotation/graft
   readonly handleKeyDid:        string;              // "0x"+hex — the Handle's own key this event seats (head signs attestations)
-  readonly ownerPrefix:         string;              // the owning persona's AID — folded into the prefix at inception, stable for life
+  readonly genesisOwnerSetHash: string;              // the GENESIS owner-set digest — folded into the prefix, fixed for life (anti-swap)
+  readonly ownerSetHash:        string;              // the ROLLING commitment — the CURRENT presenting-set digest; grafts advance it
+  readonly ownerSetMembers:     readonly string[];   // the CURRENT owner set's persona prefixes — REVEALED at inception + graft; [] on presentation
+  readonly ownerSetThreshold:   number;              // the graft threshold of the current set — REVEALED with the members; 0 on presentation
   readonly recoverySetHash:     string;              // the GENESIS recovery digest — folded into the prefix, fixed (anti-swap)
-  readonly nextRecoverySetHash: string;              // the ROLLING commitment — armed at inception like every prefix now is
+  readonly nextRecoverySetHash: string;              // the ROLLING recovery commitment — armed at inception like every prefix now is
   readonly prevEventCid:        string | null;       // hash-link to the predecessor (null at inception)
-  readonly ownerAuthKeyDid:     string | null;       // rotation only: the owner head op-key that authorized; null elsewhere
-  readonly authSig:             string | null;       // rotation: the owner key's sig · burn: the seated Handle key's sig · null at inception (outside the cid)
+  readonly ownerAuthMemberPrefix: string | null;     // presentation/graft: WHICH member presents; null at inception
+  readonly ownerAuthKeyDid:     string | null;       // presentation/graft: that member's head op-key; null at inception + self-burn
+  readonly authSig:             string | null;       // rotation/graft: the member key's sig · burn: self-key OR member sig · null at inception (outside the cid)
 }
 
 /** The authority fields an event's content-address binds AND the authorizing signature signs over.
- *  `authSig` rides OUTSIDE (the sig-outside-the-cid pattern), so carrying an event never re-signs it. */
+ *  The owner-set MEMBERS + THRESHOLD ride OUTSIDE (verified against the bound digest), and `authSig`
+ *  rides OUTSIDE too (the sig-outside-the-cid pattern), so carrying an event never re-signs it. */
 type HandleEventCore = Pick<
   HandleKelEvent,
-  "seq" | "kind" | "prefix" | "handleKeyDid" | "ownerPrefix" | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "ownerAuthKeyDid"
+  | "seq" | "kind" | "prefix" | "handleKeyDid" | "genesisOwnerSetHash" | "ownerSetHash"
+  | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "ownerAuthMemberPrefix" | "ownerAuthKeyDid"
 >;
 
 /** The canonical bytes an event's cid commits AND the authorizing key signs over. Binding the seq +
- *  kind + prefix + the seated Handle key + the OWNER prefix + the recovery commits + the prev-link
- *  ties an authorization to the EXACT event context — a signature never replays onto another head,
- *  key, owner, or fork. */
+ *  kind + prefix + the seated Handle key + the genesis-owner wall + the CURRENT owner digest + the
+ *  recovery commits + the prev-link + the presenting member ties an authorization to the EXACT event
+ *  context — a signature never replays onto another head, key, set-epoch, owner, or fork. */
 export function handleEventBytes(core: HandleEventCore): Uint8Array {
   return canonicalJsonBytes({
-    domain:              HANDLE_KEL_DOMAIN,
-    seq:                 core.seq,
-    kind:                core.kind,
-    prefix:              core.prefix,
-    handleKeyDid:        core.handleKeyDid,
-    ownerPrefix:         core.ownerPrefix,
-    recoverySetHash:     core.recoverySetHash,
-    nextRecoverySetHash: core.nextRecoverySetHash,
-    prevEventCid:        core.prevEventCid,
-    ownerAuthKeyDid:     core.ownerAuthKeyDid,
+    domain:                HANDLE_KEL_DOMAIN,
+    seq:                   core.seq,
+    kind:                  core.kind,
+    prefix:                core.prefix,
+    handleKeyDid:          core.handleKeyDid,
+    genesisOwnerSetHash:   core.genesisOwnerSetHash,
+    ownerSetHash:          core.ownerSetHash,
+    recoverySetHash:       core.recoverySetHash,
+    nextRecoverySetHash:   core.nextRecoverySetHash,
+    prevEventCid:          core.prevEventCid,
+    ownerAuthMemberPrefix: core.ownerAuthMemberPrefix,
+    ownerAuthKeyDid:       core.ownerAuthKeyDid,
   });
 }
 
@@ -84,76 +121,108 @@ export function handleEventBytes(core: HandleEventCore): Uint8Array {
  *  bound field yields a different cid, so the hash-link the successor carries is tamper-evident. */
 export function handleEventCidOf(core: HandleEventCore): string {
   return `hkel${core.seq}-${sha256HexSync(canonicalJson({
-    domain:              HANDLE_KEL_DOMAIN,
-    seq:                 core.seq,
-    kind:                core.kind,
-    prefix:              core.prefix,
-    handleKeyDid:        core.handleKeyDid,
-    ownerPrefix:         core.ownerPrefix,
-    recoverySetHash:     core.recoverySetHash,
-    nextRecoverySetHash: core.nextRecoverySetHash,
-    prevEventCid:        core.prevEventCid,
-    ownerAuthKeyDid:     core.ownerAuthKeyDid,
+    domain:                HANDLE_KEL_DOMAIN,
+    seq:                   core.seq,
+    kind:                  core.kind,
+    prefix:                core.prefix,
+    handleKeyDid:          core.handleKeyDid,
+    genesisOwnerSetHash:   core.genesisOwnerSetHash,
+    ownerSetHash:          core.ownerSetHash,
+    recoverySetHash:       core.recoverySetHash,
+    nextRecoverySetHash:   core.nextRecoverySetHash,
+    prevEventCid:          core.prevEventCid,
+    ownerAuthMemberPrefix: core.ownerAuthMemberPrefix,
+    ownerAuthKeyDid:       core.ownerAuthKeyDid,
   }))}`;
 }
 
 /**
  * THE OWNER-BINDING. The Handle identifier — a content-address over the inception Handle key + the
- * owning PERSONA prefix + the pre-committed recovery digest. It stays FIXED for the Handle's whole
- * life, so the handle↔identity proof never detaches: re-writing the carried `ownerPrefix` no longer
- * derives the pinned prefix, and the SAME key under a DIFFERENT owner mints a DIFFERENT identifier.
+ * GENESIS owner-SET digest + the pre-committed recovery digest. It stays FIXED for the Handle's whole
+ * life, so the handle↔identity proof never detaches: re-writing the revealed owner set no longer
+ * derives the pinned prefix (the founding quorum is fixed in the name), and the SAME key under a
+ * DIFFERENT genesis set mints a DIFFERENT identifier. `sealKeySetHash([ownerPrefix], 1)` for the
+ * degenerate personal face is the same derivation, one member deep.
  */
-export function handlePrefixOf(inceptionHandleKeyDid: string, ownerPrefix: string, recoverySetHash: string): string {
+export function handlePrefixOf(inceptionHandleKeyDid: string, genesisOwnerSetHash: string, recoverySetHash: string): string {
   return `handle-${sha256HexSync(canonicalJson({
     domain: HANDLE_KEL_DOMAIN,
     key:    inceptionHandleKeyDid,
-    ownerPrefix,
+    genesisOwnerSetHash,
     recoverySetHash,
   }))}`;
 }
 
 /**
- * Seat the INCEPTION (seq 0, no predecessor): the Handle's own key + its owning persona's prefix +
- * a rolling recovery pre-commitment. INCEPTS ARMED — an empty `recoverySetHash` or an empty
- * `ownerPrefix` THROWS: no Handle prefix ever incepts unarmed or unowned (the settlement's rule that
- * every prefix now carries a rolling commitment from birth, and a Handle's whole point rides its
- * owner-binding). Self-certified by the prefix derivation, like the persona inception.
+ * Seat the INCEPTION over a GENESIS OWNER-SET (seq 0, no predecessor): the Handle's own key + its
+ * founding owner quorum (members + graft threshold) + a rolling recovery pre-commitment. INCEPTS ARMED
+ * — an empty `recoverySetHash`, an empty owner set, or a threshold out of `[1, members.length]` THROWS:
+ * no Handle prefix ever incepts unarmed, unowned, or with an unsatisfiable graft rule. Self-certified by
+ * the prefix derivation, like the persona inception. The genesis set fills BOTH the prefix wall
+ * (`genesisOwnerSetHash`) and the rolling slot (`ownerSetHash`).
  */
-export function mintHandleInception(handleKeyDid: string, ownerPrefix: string, recoverySetHash: string): HandleKelEvent {
+export function mintHandleInceptionSet(
+  handleKeyDid: string, ownerSetMembers: readonly string[], ownerSetThreshold: number, recoverySetHash: string,
+): HandleKelEvent {
   if (recoverySetHash.length === 0) {
     throw new Error("handle inception unarmed — an empty recovery pre-commitment mints no prefix");
   }
-  if (ownerPrefix.length === 0) {
-    throw new Error("handle inception unowned — the owner-binding is the identifier's whole proof");
+  if (ownerSetMembers.length === 0) {
+    throw new Error("handle inception unowned — the owner-set binding is the identifier's whole proof");
   }
-  const prefix = handlePrefixOf(handleKeyDid, ownerPrefix, recoverySetHash);
+  if (ownerSetThreshold < 1 || ownerSetThreshold > ownerSetMembers.length) {
+    throw new Error("handle inception — the graft threshold must sit within [1, members.length]");
+  }
+  const genesisOwnerSetHash = sealKeySetHash(ownerSetMembers, ownerSetThreshold);
+  const prefix = handlePrefixOf(handleKeyDid, genesisOwnerSetHash, recoverySetHash);
   const core: HandleEventCore = {
-    seq: 0, kind: "inception", prefix, handleKeyDid, ownerPrefix,
-    recoverySetHash, nextRecoverySetHash: recoverySetHash,   // the genesis set fills BOTH slots, the persona shape
-    prevEventCid: null, ownerAuthKeyDid: null,
+    seq: 0, kind: "inception", prefix, handleKeyDid,
+    genesisOwnerSetHash,
+    ownerSetHash: genesisOwnerSetHash,       // the genesis set fills BOTH slots, the persona shape
+    recoverySetHash, nextRecoverySetHash: recoverySetHash,
+    prevEventCid: null, ownerAuthMemberPrefix: null, ownerAuthKeyDid: null,
   };
-  return { ...core, eventCid: handleEventCidOf(core), authSig: null };
+  return {
+    ...core, ownerSetMembers, ownerSetThreshold,
+    eventCid: handleEventCidOf(core), authSig: null,
+  };
 }
 
 /**
- * The exact bytes the OWNER's head op-key signs to authorize a rotation — bound to the next seq +
- * the stable prefix + the fresh Handle key + the recovery commits + the prev-link + the authorizing
- * owner key itself. `mintHandleRotation` recomputes the identical bytes to verify.
+ * The 1-of-1 CONVENIENCE — the degenerate case that IS the personal face. Sugar over
+ * `mintHandleInceptionSet` for a single owning persona: the founding quorum is the one hand, the graft
+ * threshold is 1. The common single-owner path stays ergonomic and unchanged in shape.
+ */
+export function mintHandleInception(handleKeyDid: string, ownerPrefix: string, recoverySetHash: string): HandleKelEvent {
+  if (ownerPrefix.length === 0) {
+    throw new Error("handle inception unowned — the owner-set binding is the identifier's whole proof");
+  }
+  return mintHandleInceptionSet(handleKeyDid, [ownerPrefix], 1, recoverySetHash);
+}
+
+/**
+ * The exact bytes a CURRENT member's head op-key signs to authorize a rotation — bound to the next seq +
+ * the stable prefix + the fresh Handle key + the genesis-owner wall + the current owner digest + the
+ * recovery commits + the prev-link + the presenting member. `mintHandleRotation` recomputes the identical
+ * bytes to verify.
  */
 export function handleRotationSigningBytes(
-  head: HandleKelEvent, freshHandleKeyDid: string, ownerHeadOpKeyDid: string,
+  head: HandleKelEvent, freshHandleKeyDid: string,
+  ownerAuthMemberPrefix: string, ownerHeadOpKeyDid: string,
   nextRecoverySetHash: string = head.nextRecoverySetHash,
 ): Uint8Array {
   return handleEventBytes({
-    seq:                 head.seq + 1,
-    kind:                "rotation",
-    prefix:              head.prefix,
-    handleKeyDid:        freshHandleKeyDid,
-    ownerPrefix:         head.ownerPrefix,
-    recoverySetHash:     head.recoverySetHash,   // the genesis wall, carried unchanged
-    nextRecoverySetHash,                         // the graft rides INSIDE the signed bytes
-    prevEventCid:        head.eventCid,
-    ownerAuthKeyDid:     ownerHeadOpKeyDid,
+    seq:                   head.seq + 1,
+    kind:                  "rotation",
+    prefix:                head.prefix,
+    handleKeyDid:          freshHandleKeyDid,
+    genesisOwnerSetHash:   head.genesisOwnerSetHash,   // the genesis wall, carried unchanged
+    ownerSetHash:          head.ownerSetHash,          // the current presenting-set, unchanged by a rotation
+    recoverySetHash:       head.recoverySetHash,       // the genesis recovery wall, carried unchanged
+    nextRecoverySetHash,                               // the recovery graft rides INSIDE the signed bytes
+    prevEventCid:          head.eventCid,
+    ownerAuthMemberPrefix,
+    ownerAuthKeyDid:       ownerHeadOpKeyDid,
   });
 }
 
@@ -163,179 +232,284 @@ export type HandleMintResult =
   | { readonly ok: false; readonly reason: string };
 
 /**
- * ROTATE: seat a fresh Handle key under the OWNER's authority — the persona buries and renews its
- * own name. The signature verifies here against the injected `ownerHeadOpKeyDid` (a signer whose
- * bytes do not verify against the key it claims rotates nothing); WHETHER that key stands as the
- * owner's CURRENT head is the full walk's question (`verifyHandleKelFull` + the resolver) — a
- * rotation minted under a superseded owner key passes this gate and falls at that one. FAILS
- * CLOSED on a burned head: a burn is terminal, forever.
+ * ROTATE: seat a fresh Handle key under a CURRENT member's authority — a current holder renews the
+ * name. The signature verifies here against the injected `ownerHeadOpKeyDid` (a signer whose bytes do
+ * not verify against the key it claims rotates nothing). WHETHER `ownerAuthMemberPrefix` stands in the
+ * CURRENT owner set is `verifyHandleKel`'s structural question, and WHETHER `ownerHeadOpKeyDid` is that
+ * member's authoritative head is the full walk's (`verifyHandleKelFull` + the resolver) — a rotation
+ * minted under a superseded key or a non-member passes this gate and falls at those. FAILS CLOSED on a
+ * burned head.
  */
 export async function mintHandleRotation(input: {
-  readonly head:              HandleKelEvent;
-  readonly freshHandleKeyDid: string;                          // the Handle key this rotation seats
-  readonly ownerHeadOpKeyDid: string;                          // the owner persona's CURRENT head op-key (injected — no persona import)
-  readonly sign:              (bytes: Uint8Array) => Promise<string>;   // the owner head op-key's signer
+  readonly head:                  HandleKelEvent;
+  readonly freshHandleKeyDid:     string;                     // the Handle key this rotation seats
+  readonly ownerAuthMemberPrefix: string;                     // WHICH current member presents (their persona AID)
+  readonly ownerHeadOpKeyDid:     string;                     // that member's CURRENT head op-key (injected — no persona import)
+  readonly sign:                  (bytes: Uint8Array) => Promise<string>;   // that member's head op-key signer
   /** The NEXT recovery-set digest this rotation commits. Absent, the standing commitment carries
    *  forward: a set change is always an explicit act, never a silent drop. */
   readonly nextRecoverySetHash?: string;
 }): Promise<HandleMintResult> {
-  const { head, freshHandleKeyDid, ownerHeadOpKeyDid } = input;
+  const { head, freshHandleKeyDid, ownerAuthMemberPrefix, ownerHeadOpKeyDid } = input;
   if (head.kind === "burn") {
     return { ok: false, reason: "the Handle is burned — a burn is terminal; no successor, forever" };
   }
   const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
   const core: HandleEventCore = {
-    seq:                 head.seq + 1,
-    kind:                "rotation",
-    prefix:              head.prefix,            // the identifier stays FIXED
-    handleKeyDid:        freshHandleKeyDid,
-    ownerPrefix:         head.ownerPrefix,       // ★ the owner-binding carries forward unchanged
-    recoverySetHash:     head.recoverySetHash,   // the genesis wall
+    seq:                   head.seq + 1,
+    kind:                  "rotation",
+    prefix:                head.prefix,               // the identifier stays FIXED
+    handleKeyDid:          freshHandleKeyDid,
+    genesisOwnerSetHash:   head.genesisOwnerSetHash,  // ★ the genesis owner wall carries forward unchanged
+    ownerSetHash:          head.ownerSetHash,         // a rotation changes no set
+    recoverySetHash:       head.recoverySetHash,      // the genesis recovery wall
     nextRecoverySetHash,
-    prevEventCid:        head.eventCid,
-    ownerAuthKeyDid:     ownerHeadOpKeyDid,
+    prevEventCid:          head.eventCid,
+    ownerAuthMemberPrefix,
+    ownerAuthKeyDid:       ownerHeadOpKeyDid,
   };
   const bytes = handleEventBytes(core);
   const sig   = await input.sign(bytes);
   if (!(await verifySig(sig, bytes, ownerHeadOpKeyDid))) {
-    return { ok: false, reason: "rotation signature does not verify against the claimed owner head op-key" };
+    return { ok: false, reason: "rotation signature does not verify against the claimed member head op-key" };
   }
-  return { ok: true, event: { ...core, eventCid: handleEventCidOf(core), authSig: sig } };
+  return { ok: true, event: { ...core, ownerSetMembers: [], ownerSetThreshold: 0, eventCid: handleEventCidOf(core), authSig: sig } };
+}
+
+/**
+ * GRAFT: turn the presenting OWNER-SET over — succession. Reveals the NEW current owner set (members +
+ * threshold, hashing to the new rolling `ownerSetHash`) and carries authorization from the PRIOR set.
+ * SCOPE (this build): a graft authorized by ONE current member suffices — Roberts cedes to Westley by
+ * one willing hand, grafting the successor in and the outgoing holder out. The signature verifies here
+ * against the claimed key; WHETHER the presenter stood in the PRIOR set is `verifyHandleKel`'s question
+ * and whether the key is the presenter's head is the resolver's. FAILS CLOSED on a burned head. The
+ * Handle key carries forward unchanged — a graft seats no fresh key.
+ *
+ * ⚠ TRUE k-of-n GRAFT GOVERNANCE — a guild requiring a THRESHOLD of the current set to consent to a
+ * membership change — rides DECLARED, not built (a skipped red in `handle-kel.test.ts`). This build
+ * enforces exactly one authorizing member; the threshold rides in the digest (anti-swap) and names what
+ * that future enforcement would count.
+ */
+export async function mintHandleGraft(input: {
+  readonly head:                  HandleKelEvent;
+  readonly newOwnerSetMembers:    readonly string[];          // the NEW current owner set (revealed)
+  readonly newOwnerSetThreshold:  number;                     // the NEW set's graft threshold
+  readonly ownerAuthMemberPrefix: string;                     // a PRIOR-set member who authorizes the graft
+  readonly ownerHeadOpKeyDid:     string;                     // that prior member's head op-key
+  readonly sign:                  (bytes: Uint8Array) => Promise<string>;
+  readonly nextRecoverySetHash?:  string;
+}): Promise<HandleMintResult> {
+  const { head, newOwnerSetMembers, newOwnerSetThreshold, ownerAuthMemberPrefix, ownerHeadOpKeyDid } = input;
+  if (head.kind === "burn") {
+    return { ok: false, reason: "the Handle is burned — a burn is terminal; no successor, forever" };
+  }
+  if (newOwnerSetMembers.length === 0) {
+    return { ok: false, reason: "a graft reveals a non-empty owner set — an empty presenting set is no name" };
+  }
+  if (newOwnerSetThreshold < 1 || newOwnerSetThreshold > newOwnerSetMembers.length) {
+    return { ok: false, reason: "graft threshold out of range — it must sit within [1, members.length]" };
+  }
+  const newOwnerSetHash     = sealKeySetHash(newOwnerSetMembers, newOwnerSetThreshold);
+  const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
+  const core: HandleEventCore = {
+    seq:                   head.seq + 1,
+    kind:                  "graft",
+    prefix:                head.prefix,               // the identifier stays FIXED — the name never moves
+    handleKeyDid:          head.handleKeyDid,         // a graft seats no fresh Handle key
+    genesisOwnerSetHash:   head.genesisOwnerSetHash,  // ★ the founding quorum stays fixed in the name forever
+    ownerSetHash:          newOwnerSetHash,           // the NEW current presenting-set digest
+    recoverySetHash:       head.recoverySetHash,
+    nextRecoverySetHash,
+    prevEventCid:          head.eventCid,
+    ownerAuthMemberPrefix,
+    ownerAuthKeyDid:       ownerHeadOpKeyDid,
+  };
+  const bytes = handleEventBytes(core);
+  const sig   = await input.sign(bytes);
+  if (!(await verifySig(sig, bytes, ownerHeadOpKeyDid))) {
+    return { ok: false, reason: "graft signature does not verify against the claimed authorizing member key" };
+  }
+  return {
+    ok: true,
+    event: { ...core, ownerSetMembers: newOwnerSetMembers, ownerSetThreshold: newOwnerSetThreshold, eventCid: handleEventCidOf(core), authSig: sig },
+  };
 }
 
 /**
  * BURN: the TERMINAL event — the Shadowtalk ending made structural. EITHER HAND may strike it
  * (operator ruling, Option C, 2026-09-08): the SEATED Handle key closes its own name (a panic burn,
- * local, card-self-verifiable), OR the OWNER's head op-key buries it from above (a burn a
- * thief-of-the-face cannot forge — "the persona buries its own name"). The core's `ownerAuthKeyDid`
- * records WHICH hand. After a burn `verifyHandleKel` REFUSES any successor forever, `headHandleKey`
- * seats nothing, and `attestUnderHead` throws. FAILS CLOSED on an already burned head.
+ * local, card-self-verifiable), OR ANY CURRENT MEMBER buries it from above (a burn a thief-of-the-face
+ * cannot forge — the presenting quorum buries its own name). The core's `ownerAuthMemberPrefix` records
+ * WHICH member's hand (null on a self-burn). After a burn `verifyHandleKel` REFUSES any successor
+ * forever, `headHandleKey` seats nothing, and `attestUnderHead` throws. FAILS CLOSED on an already
+ * burned head.
  */
 export async function mintHandleBurn(input: {
   readonly head: HandleKelEvent;
   /** THE SELF-BURN (Option C, path one): the seated Handle head key closes its own name — fast,
    *  local, card-self-verifiable, no owner lookup. The panic burn a compromised face strikes now. */
   readonly sign?: (bytes: Uint8Array) => Promise<string>;
-  /** THE OWNER-BURN (Option C, path two — "the persona buries its own name"): the owning persona's
-   *  head op-key strikes the name from above, a burn a thief-of-the-face cannot forge. Names the
-   *  owner key in the core; `verifyHandleKelFull` checks it against the owner-head resolver. */
-  readonly ownerBurn?: { readonly ownerAuthKeyDid: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
+  /** THE OWNER-BURN (Option C, path two): a CURRENT member of the presenting set strikes the name from
+   *  above, a burn a thief-of-the-face cannot forge. Names the member + its head key in the core;
+   *  `verifyHandleKel` checks membership and `verifyHandleKelFull` checks the head against the resolver. */
+  readonly ownerBurn?: { readonly ownerAuthMemberPrefix: string; readonly ownerAuthKeyDid: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
 }): Promise<HandleMintResult> {
   const { head } = input;
   if (head.kind === "burn") {
     return { ok: false, reason: "the Handle is already burned — a burn is terminal" };
   }
   if ((input.sign && input.ownerBurn) || (!input.sign && !input.ownerBurn)) {
-    return { ok: false, reason: "a burn is struck by EXACTLY one hand — the seated key (`sign`) OR the owner (`ownerBurn`), never both, never neither" };
+    return { ok: false, reason: "a burn is struck by EXACTLY one hand — the seated key (`sign`) OR a current member (`ownerBurn`), never both, never neither" };
   }
   const core: HandleEventCore = {
-    seq:                 head.seq + 1,
-    kind:                "burn",
-    prefix:              head.prefix,
-    handleKeyDid:        head.handleKeyDid,      // a burn seats no fresh key, either hand
-    ownerPrefix:         head.ownerPrefix,
-    recoverySetHash:     head.recoverySetHash,
-    nextRecoverySetHash: head.nextRecoverySetHash,
-    prevEventCid:        head.eventCid,
-    ownerAuthKeyDid:     input.ownerBurn ? input.ownerBurn.ownerAuthKeyDid : null,   // the record says WHICH hand
+    seq:                   head.seq + 1,
+    kind:                  "burn",
+    prefix:                head.prefix,
+    handleKeyDid:          head.handleKeyDid,      // a burn seats no fresh key, either hand
+    genesisOwnerSetHash:   head.genesisOwnerSetHash,
+    ownerSetHash:          head.ownerSetHash,      // a burn changes no set
+    recoverySetHash:       head.recoverySetHash,
+    nextRecoverySetHash:   head.nextRecoverySetHash,
+    prevEventCid:          head.eventCid,
+    ownerAuthMemberPrefix: input.ownerBurn ? input.ownerBurn.ownerAuthMemberPrefix : null,   // the record says WHICH hand
+    ownerAuthKeyDid:       input.ownerBurn ? input.ownerBurn.ownerAuthKeyDid       : null,
   };
   const signer = input.ownerBurn ? input.ownerBurn.sign : input.sign!;
   const sig = await signer(handleEventBytes(core));
-  return { ok: true, event: { ...core, eventCid: handleEventCidOf(core), authSig: sig } };
+  return { ok: true, event: { ...core, ownerSetMembers: [], ownerSetThreshold: 0, eventCid: handleEventCidOf(core), authSig: sig } };
 }
 
 /**
- * Verify the chain's STRUCTURAL integrity: monotonic sequence + hash-links + a STABLE prefix,
- * STABLE owner-binding, and STABLE genesis recovery-commit across every event, each cid recomputing
- * over its bound core, and BURN TERMINALITY — any event following a burn REFUSES the whole chain.
- * Inception (seq 0) carries no predecessor, incepts ARMED, and its prefix MUST derive from its own
- * (key + owner + recovery-set) — the owner-binding. PURE and sync — it verifies no signatures
- * (those ride `verifyHandleKelFull`). Mirrors `verifyPersonaKel` by shape.
+ * Verify the chain's STRUCTURAL integrity: monotonic sequence + hash-links + a STABLE prefix, STABLE
+ * genesis-owner wall, and STABLE genesis recovery-commit across every event, each cid recomputing over
+ * its bound core, and BURN TERMINALITY — any event following a burn REFUSES the whole chain. Inception
+ * (seq 0) carries no predecessor, incepts ARMED, REVEALS a genesis owner set whose digest derives the
+ * prefix (the owner-binding). The CURRENT presenting set is tracked forward: a rotation/burn must name a
+ * member of the CURRENT set (structural membership) and carry the CURRENT `ownerSetHash`; a GRAFT reveals
+ * a new set (its digest recomputing to the new `ownerSetHash`), authorized by a PRIOR-set member. PURE
+ * and sync — it verifies no signatures NOR resolver heads (those ride `verifyHandleKelFull`). Mirrors
+ * `verifyPersonaKel` by shape.
  */
 export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
   if (chain.length === 0) return false;
-  const genesis = chain[0]!;
-  if (genesis.seq !== 0 || genesis.kind !== "inception" || genesis.prevEventCid !== null) return false;
-  if (genesis.recoverySetHash.length === 0 || genesis.ownerPrefix.length === 0)           return false;   // armed + owned, from birth
-  if (genesis.prefix !== handlePrefixOf(genesis.handleKeyDid, genesis.ownerPrefix, genesis.recoverySetHash)) return false;
-  if (genesis.nextRecoverySetHash !== genesis.recoverySetHash) return false;   // inception seats ONE set in both slots
-  if (genesis.ownerAuthKeyDid !== null)                        return false;
-  if (genesis.eventCid !== handleEventCidOf(genesis))          return false;
+  const g = chain[0]!;
+  if (g.seq !== 0 || g.kind !== "inception" || g.prevEventCid !== null) return false;
+  if (g.recoverySetHash.length === 0)                                    return false;   // armed, from birth
+  if (g.ownerSetMembers.length === 0)                                    return false;   // owned, from birth
+  if (g.ownerSetThreshold < 1 || g.ownerSetThreshold > g.ownerSetMembers.length) return false;
+  if (g.genesisOwnerSetHash !== sealKeySetHash(g.ownerSetMembers, g.ownerSetThreshold)) return false;   // the reveal matches the genesis digest
+  if (g.prefix !== handlePrefixOf(g.handleKeyDid, g.genesisOwnerSetHash, g.recoverySetHash))            return false;   // the owner-set is fixed in the name
+  if (g.ownerSetHash !== g.genesisOwnerSetHash)               return false;   // inception seats ONE set in both slots
+  if (g.nextRecoverySetHash !== g.recoverySetHash)            return false;   // and one recovery set in both slots
+  if (g.ownerAuthMemberPrefix !== null || g.ownerAuthKeyDid !== null) return false;
+  if (g.eventCid !== handleEventCidOf(g))                     return false;
+
+  let curMembers = new Set(g.ownerSetMembers.map((m) => m.toLowerCase()));
+  let curOwnerSetHash = g.genesisOwnerSetHash;
+
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!, prev = chain[i - 1]!;
-    if (prev.kind === "burn")                       return false;   // ★ a burn is terminal, forever
-    if (e.kind === "inception")                     return false;   // one birth per name
-    if (e.seq !== prev.seq + 1)                     return false;   // monotonic
-    if (e.prevEventCid !== prev.eventCid)           return false;   // hash-linked
-    if (e.prefix !== prev.prefix)                   return false;   // the identifier stays fixed
-    if (e.ownerPrefix !== prev.ownerPrefix)         return false;   // ★ the owner-binding never detaches
-    if (e.recoverySetHash !== prev.recoverySetHash) return false;   // the genesis wall stays fixed; the rolling slot grafts freely
-    if (e.kind === "rotation" && (e.ownerAuthKeyDid === null || !e.authSig)) return false;   // owner authority named + signed
-    if (e.kind === "burn") {
-      if (e.handleKeyDid !== prev.handleKeyDid)     return false;   // a burn seats no fresh key, either hand
-      if (!e.authSig)                               return false;   // a burn is always signed (self OR owner)
-      // ownerAuthKeyDid null → self-burn (seated key); set → owner-burn — full-verify checks the hand
+    if (prev.kind === "burn")                             return false;   // ★ a burn is terminal, forever
+    if (e.kind === "inception")                           return false;   // one birth per name
+    if (e.seq !== prev.seq + 1)                           return false;   // monotonic
+    if (e.prevEventCid !== prev.eventCid)                 return false;   // hash-linked
+    if (e.prefix !== prev.prefix)                         return false;   // the identifier stays fixed
+    if (e.genesisOwnerSetHash !== prev.genesisOwnerSetHash) return false; // ★ the founding quorum never detaches
+    if (e.recoverySetHash !== prev.recoverySetHash)       return false;   // the genesis recovery wall stays fixed
+
+    if (e.kind === "rotation") {
+      if (e.ownerAuthMemberPrefix === null || e.ownerAuthKeyDid === null || !e.authSig) return false;   // a member is named + signs
+      if (e.ownerSetMembers.length !== 0 || e.ownerSetThreshold !== 0) return false;   // presentation reveals no set
+      if (e.ownerSetHash !== curOwnerSetHash)             return false;   // bound to the current set-epoch
+      if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // ★ a CURRENT member presents (non-member refuses)
+    } else if (e.kind === "graft") {
+      if (e.ownerAuthMemberPrefix === null || e.ownerAuthKeyDid === null || !e.authSig) return false;
+      if (e.handleKeyDid !== prev.handleKeyDid)           return false;   // a graft seats no fresh Handle key
+      if (e.ownerSetMembers.length === 0)                 return false;   // reveals a NEW set
+      if (e.ownerSetThreshold < 1 || e.ownerSetThreshold > e.ownerSetMembers.length) return false;
+      if (e.ownerSetHash !== sealKeySetHash(e.ownerSetMembers, e.ownerSetThreshold))  return false;   // the reveal hashes to the new rolling digest
+      if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // a PRIOR-set member authorizes the succession
+      curMembers = new Set(e.ownerSetMembers.map((m) => m.toLowerCase()));   // the presenting set turns over AFTER the prior-member check
+      curOwnerSetHash = e.ownerSetHash;
+    } else if (e.kind === "burn") {
+      if (e.handleKeyDid !== prev.handleKeyDid)           return false;   // a burn seats no fresh key, either hand
+      if (!e.authSig)                                     return false;   // a burn is always signed (self OR member)
+      if (e.ownerSetMembers.length !== 0 || e.ownerSetThreshold !== 0) return false;
+      if (e.ownerSetHash !== curOwnerSetHash)             return false;
+      if (e.ownerAuthMemberPrefix !== null) {
+        if (e.ownerAuthKeyDid === null)                   return false;   // owner-burn names a member key
+        if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // ★ a CURRENT member buries it
+      } else {
+        if (e.ownerAuthKeyDid !== null)                   return false;   // self-burn names no member
+      }
+    } else {
+      return false;
     }
-    if (e.eventCid !== handleEventCidOf(e))         return false;   // cid recomputes over the bound core
+    if (e.eventCid !== handleEventCidOf(e))               return false;   // cid recomputes over the bound core
   }
   return true;
 }
 
 /**
  * The injected owner-head oracle — the ONE seam where the sibling grammar touches the persona plane,
- * kept as an interface so this module never imports the persona-KEL. Answers whether `ownerAuthKeyDid`
- * stands as the owner persona's AUTHORITATIVE head op-key under the CALLER's policy — typically a walk
- * of the owner's local persona-KEL replica to its verified head (`headOpKey(chain, {verifyQuorums:true})`),
- * so a SUPERSEDED owner key answers false. A verifier holding the owner's chain snapshot (carried
- * beside the card) resolves reader-locally; one without it needs the owner's board — the resolver
- * names that dependency instead of hiding it.
+ * kept as an interface so this module never imports the persona-KEL. Answers whether `authKeyDid`
+ * stands as the persona `memberPersonaPrefix`'s AUTHORITATIVE head op-key under the CALLER's policy —
+ * typically a walk of that member's local persona-KEL replica to its verified head
+ * (`headOpKey(chain, {verifyQuorums:true})`), so a SUPERSEDED member key answers false. A verifier
+ * holding the members' chain snapshots (carried beside the card) resolves reader-locally; one without
+ * them needs the members' boards — the resolver names that dependency instead of hiding it.
  */
-export type OwnerHeadResolver = (ownerPrefix: string, ownerAuthKeyDid: string) => Promise<boolean>;
+export type OwnerHeadResolver = (memberPersonaPrefix: string, authKeyDid: string) => Promise<boolean>;
 
 /**
- * Verify the chain structurally AND verify every signature + rotation authority — the full assurance
- * a reader needs before trusting the head Handle key. Each ROTATION's `authSig` MUST verify over the
- * event bytes against its named `ownerAuthKeyDid`, and that key MUST stand as the owner's head per
- * the injected resolver — a rotation signed by a SUPERSEDED owner key refuses HERE (the settlement's
- * rule: rotation authority walks the OWNER's persona-KEL head). Each BURN's `authSig` MUST verify
- * against the seated Handle key. FAILS CLOSED on the first break.
+ * Verify the chain structurally AND verify every signature + presentation authority — the full assurance
+ * a reader needs before trusting the head Handle key. Each ROTATION and GRAFT `authSig` MUST verify over
+ * the event bytes against its named `ownerAuthKeyDid`, and that key MUST stand as the named member's head
+ * per the injected resolver — a presentation signed by a SUPERSEDED member key refuses HERE (the
+ * settlement's rule: presentation authority walks the presenting member's persona-KEL head). Each
+ * OWNER-BURN checks the same; each SELF-BURN `authSig` MUST verify against the seated Handle key (no
+ * resolver). FAILS CLOSED on the first break.
  */
 export async function verifyHandleKelFull(
   chain: readonly HandleKelEvent[],
   ownerHeadResolver: OwnerHeadResolver,
 ): Promise<{ ok: boolean; reason?: string }> {
   if (!verifyHandleKel(chain)) {
-    return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / owner-binding / burn-terminality / cid)" };
+    return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / owner-binding / membership / burn-terminality / cid)" };
   }
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!;
     const core: HandleEventCore = {
-      seq: e.seq, kind: e.kind, prefix: e.prefix, handleKeyDid: e.handleKeyDid, ownerPrefix: e.ownerPrefix,
+      seq: e.seq, kind: e.kind, prefix: e.prefix, handleKeyDid: e.handleKeyDid,
+      genesisOwnerSetHash: e.genesisOwnerSetHash, ownerSetHash: e.ownerSetHash,
       recoverySetHash: e.recoverySetHash, nextRecoverySetHash: e.nextRecoverySetHash,
-      prevEventCid: e.prevEventCid, ownerAuthKeyDid: e.ownerAuthKeyDid,
+      prevEventCid: e.prevEventCid, ownerAuthMemberPrefix: e.ownerAuthMemberPrefix, ownerAuthKeyDid: e.ownerAuthKeyDid,
     };
-    if (e.kind === "rotation") {
-      if (!e.authSig || e.ownerAuthKeyDid === null) return { ok: false, reason: `rotation seq ${e.seq}: unsigned` };
-      if (!(await verifySig(e.authSig, handleEventBytes(core), e.ownerAuthKeyDid))) {
-        return { ok: false, reason: `rotation seq ${e.seq}: signature does not verify against its named owner key` };
+    if (e.kind === "rotation" || e.kind === "graft") {
+      if (!e.authSig || e.ownerAuthMemberPrefix === null || e.ownerAuthKeyDid === null) {
+        return { ok: false, reason: `${e.kind} seq ${e.seq}: unsigned or unnamed presenter` };
       }
-      if (!(await ownerHeadResolver(e.ownerPrefix, e.ownerAuthKeyDid))) {
-        return { ok: false, reason: `rotation seq ${e.seq}: its owner key does not stand as the owner's head (superseded or unrecognized)` };
+      if (!(await verifySig(e.authSig, handleEventBytes(core), e.ownerAuthKeyDid))) {
+        return { ok: false, reason: `${e.kind} seq ${e.seq}: signature does not verify against its named member key` };
+      }
+      if (!(await ownerHeadResolver(e.ownerAuthMemberPrefix, e.ownerAuthKeyDid))) {
+        return { ok: false, reason: `${e.kind} seq ${e.seq}: its member key does not stand as that member's head (superseded or unrecognized)` };
       }
     } else if (e.kind === "burn") {
       if (!e.authSig) return { ok: false, reason: `burn seq ${e.seq}: unsigned` };
-      if (e.ownerAuthKeyDid === null) {
+      if (e.ownerAuthMemberPrefix === null) {
         // SELF-BURN — the seated Handle head key closed its own name; no owner lookup.
         if (!(await verifySig(e.authSig, handleEventBytes(core), e.handleKeyDid))) {
           return { ok: false, reason: `burn seq ${e.seq}: self-burn signature does not verify against the seated Handle key` };
         }
       } else {
-        // OWNER-BURN — the persona buries its own name; the owner key must sign AND stand as the owner's head.
+        // OWNER-BURN — a current member buries the name; its key must sign AND stand as that member's head.
+        if (e.ownerAuthKeyDid === null) return { ok: false, reason: `burn seq ${e.seq}: owner-burn names no member key` };
         if (!(await verifySig(e.authSig, handleEventBytes(core), e.ownerAuthKeyDid))) {
-          return { ok: false, reason: `burn seq ${e.seq}: owner-burn signature does not verify against its named owner key` };
+          return { ok: false, reason: `burn seq ${e.seq}: owner-burn signature does not verify against its named member key` };
         }
-        if (!(await ownerHeadResolver(e.ownerPrefix, e.ownerAuthKeyDid))) {
-          return { ok: false, reason: `burn seq ${e.seq}: its owner key does not stand as the owner's head (a superseded key cannot bury the name)` };
+        if (!(await ownerHeadResolver(e.ownerAuthMemberPrefix, e.ownerAuthKeyDid))) {
+          return { ok: false, reason: `burn seq ${e.seq}: its member key does not stand as that member's head (a superseded key cannot bury the name)` };
         }
       }
     }
@@ -349,9 +523,9 @@ export function isBurned(chain: readonly HandleKelEvent[]): boolean {
 }
 
 /**
- * The authoritative Handle key — the LATEST head's `handleKeyDid`, IFF the chain verifies
- * structurally AND does not end burned. A buried name seats NO key (null), and a broken chain
- * seats none either (a reader MUST NOT trust a head off a broken lineage).
+ * The authoritative Handle key — the LATEST head's `handleKeyDid`, IFF the chain verifies structurally
+ * AND does not end burned. A buried name seats NO key (null), and a broken chain seats none either (a
+ * reader MUST NOT trust a head off a broken lineage).
  */
 export function headHandleKey(chain: readonly HandleKelEvent[]): string | null {
   if (!verifyHandleKel(chain)) return null;
@@ -359,10 +533,28 @@ export function headHandleKey(chain: readonly HandleKelEvent[]): string | null {
   return chain[chain.length - 1]!.handleKeyDid;
 }
 
+/**
+ * The CURRENT presenting owner-set — the members + threshold + digest standing at the chain's head,
+ * IFF the chain verifies structurally. The genesis set unless a graft turned it over; a later graft
+ * wins. NULL on a broken chain. A reader tests "may this persona present as this Handle" against the
+ * returned members; the degenerate 1-of-1 returns its single member.
+ */
+export function currentOwnerSet(
+  chain: readonly HandleKelEvent[],
+): { readonly members: readonly string[]; readonly threshold: number; readonly hash: string } | null {
+  if (!verifyHandleKel(chain)) return null;
+  const g = chain[0]!;
+  let members = g.ownerSetMembers, threshold = g.ownerSetThreshold, hash = g.genesisOwnerSetHash;
+  for (const e of chain) {
+    if (e.kind === "graft") { members = e.ownerSetMembers; threshold = e.ownerSetThreshold; hash = e.ownerSetHash; }
+  }
+  return { members, threshold, hash };
+}
+
 // ── ATTESTATION — a signed statement, never an event kind ───────────────────────────────────────
 // A claim must not bloat the lineage or need a board: it travels ON the card and verifies
 // reader-locally against the head key. Binding the head's cid ties the claim to a chain STATE —
-// a rotation or burn stales it, and the fresh head re-attests to renew.
+// a rotation, graft, or burn stales it, and the fresh head re-attests to renew.
 
 /** A claim signed under the Handle's head — "this Handle controls example.net" — carried on the card. */
 export interface HandleAttestation {
@@ -378,9 +570,9 @@ export function handleAttestationBytes(prefix: string, headEventCid: string, cla
 }
 
 /**
- * ATTEST under the chain's head: sign a claim with the seated head Handle key. THROWS on a broken
- * chain and on a burned one — nothing attests under a buried name. The returned statement is
- * self-describing carriage for the card; `verifyAttestation` is its reader-local other half.
+ * ATTEST under the chain's head: sign a claim with the seated head Handle key. THROWS on a broken chain
+ * and on a burned one — nothing attests under a buried name. The returned statement is self-describing
+ * carriage for the card; `verifyAttestation` is its reader-local other half.
  */
 export async function attestUnderHead(
   chain: readonly HandleKelEvent[],
@@ -397,7 +589,7 @@ export async function attestUnderHead(
 /**
  * Verify an attestation READER-LOCALLY against the chain it claims under: the chain verifies
  * structurally, stands unburned, matches the statement's prefix, its HEAD is the very event the
- * statement bound, and the signature verifies against that head's Handle key. A rotation or burn
+ * statement bound, and the signature verifies against that head's Handle key. A rotation, graft, or burn
  * since the attestation REFUSES (stale — the fresh head re-attests); no board is consulted.
  */
 export async function verifyAttestation(
