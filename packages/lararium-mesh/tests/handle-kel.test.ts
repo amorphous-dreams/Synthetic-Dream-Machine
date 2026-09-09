@@ -214,4 +214,36 @@ describe("handle-kel — attestation, reader-local, no board", () => {
     expect(src).not.toMatch(/HandleKelEvent\[\]\[\]/);
     expect(src).not.toMatch(/readonly \(readonly HandleKelEvent\[\]\)\[\]/);
   });
+describe("Option C — either hand may burn, the record says which (ruling 2026-09-08)", () => {
+  test("★ THE OWNER BURIES ITS OWN NAME — an owner-op-key burn verifies, distinct from a self-burn ★", async () => {
+    const { inception, ownerPrefix, ownerOpKeyDidA } = await foundedHandle();
+
+    // the OWNER buries the name from above — signed by the owner op-key, naming it in the burn core
+    const burn = await mintHandleBurn({ head: inception, ownerBurn: { ownerAuthKeyDid: ownerOpKeyDidA, sign: signerOf(SEEDS.ownerA) } });
+    expect(burn.ok, burn.ok ? "" : burn.reason).toBe(true);
+    if (!burn.ok) return;
+    expect(burn.event.ownerAuthKeyDid, "the record names the owner as the hand").toBe(ownerOpKeyDidA);
+
+    const buried = [inception, burn.event];
+    expect(verifyHandleKel(buried), "an owner burn passes structural").toBe(true);
+    expect(isBurned(buried)).toBe(true);
+    const full = await verifyHandleKelFull(buried, headOnly(ownerPrefix, ownerOpKeyDidA));
+    expect(full.ok, full.ok ? "" : full.reason).toBe(true);
+    // a SUPERSEDED owner key cannot bury the name (the resolver refuses)
+    const stale = await verifyHandleKelFull(buried, async () => false);
+    expect(stale.ok).toBe(false);
+  });
+
+  test("★ THE SELF-BURN STILL STANDS — the seated key closes its own name, ownerAuthKeyDid null ★", async () => {
+    const { inception, handleKeyDid } = await foundedHandle();
+    void handleKeyDid;
+    const selfBurn = await mintHandleBurn({ head: inception, sign: signerOf(SEEDS.hA) });
+    expect(selfBurn.ok).toBe(true);
+    if (!selfBurn.ok) return;
+    expect(selfBurn.event.ownerAuthKeyDid, "a self-burn names no owner").toBeNull();
+    const full = await verifyHandleKelFull([inception, selfBurn.event], async () => false);
+    expect(full.ok, "a self-burn needs no owner-head — the resolver is never consulted").toBe(true);
+  });
+});
+
 });

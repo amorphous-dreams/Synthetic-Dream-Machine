@@ -204,31 +204,43 @@ export async function mintHandleRotation(input: {
 }
 
 /**
- * BURN: the TERMINAL event — the Shadowtalk ending made structural. Signed by the Handle's own
- * seated head key (the name closes itself); after a burn `verifyHandleKel` REFUSES any successor,
- * forever, `headHandleKey` seats nothing, and `attestUnderHead` throws. FAILS CLOSED on an already
- * burned head: terminal means terminal.
+ * BURN: the TERMINAL event — the Shadowtalk ending made structural. EITHER HAND may strike it
+ * (operator ruling, Option C, 2026-09-08): the SEATED Handle key closes its own name (a panic burn,
+ * local, card-self-verifiable), OR the OWNER's head op-key buries it from above (a burn a
+ * thief-of-the-face cannot forge — "the persona buries its own name"). The core's `ownerAuthKeyDid`
+ * records WHICH hand. After a burn `verifyHandleKel` REFUSES any successor forever, `headHandleKey`
+ * seats nothing, and `attestUnderHead` throws. FAILS CLOSED on an already burned head.
  */
 export async function mintHandleBurn(input: {
   readonly head: HandleKelEvent;
-  readonly sign: (bytes: Uint8Array) => Promise<string>;   // the seated Handle head key's signer
+  /** THE SELF-BURN (Option C, path one): the seated Handle head key closes its own name — fast,
+   *  local, card-self-verifiable, no owner lookup. The panic burn a compromised face strikes now. */
+  readonly sign?: (bytes: Uint8Array) => Promise<string>;
+  /** THE OWNER-BURN (Option C, path two — "the persona buries its own name"): the owning persona's
+   *  head op-key strikes the name from above, a burn a thief-of-the-face cannot forge. Names the
+   *  owner key in the core; `verifyHandleKelFull` checks it against the owner-head resolver. */
+  readonly ownerBurn?: { readonly ownerAuthKeyDid: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
 }): Promise<HandleMintResult> {
   const { head } = input;
   if (head.kind === "burn") {
     return { ok: false, reason: "the Handle is already burned — a burn is terminal" };
   }
+  if ((input.sign && input.ownerBurn) || (!input.sign && !input.ownerBurn)) {
+    return { ok: false, reason: "a burn is struck by EXACTLY one hand — the seated key (`sign`) OR the owner (`ownerBurn`), never both, never neither" };
+  }
   const core: HandleEventCore = {
     seq:                 head.seq + 1,
     kind:                "burn",
     prefix:              head.prefix,
-    handleKeyDid:        head.handleKeyDid,      // the seated key closes its own name; no fresh key seats
+    handleKeyDid:        head.handleKeyDid,      // a burn seats no fresh key, either hand
     ownerPrefix:         head.ownerPrefix,
     recoverySetHash:     head.recoverySetHash,
     nextRecoverySetHash: head.nextRecoverySetHash,
     prevEventCid:        head.eventCid,
-    ownerAuthKeyDid:     null,
+    ownerAuthKeyDid:     input.ownerBurn ? input.ownerBurn.ownerAuthKeyDid : null,   // the record says WHICH hand
   };
-  const sig = await input.sign(handleEventBytes(core));
+  const signer = input.ownerBurn ? input.ownerBurn.sign : input.sign!;
+  const sig = await signer(handleEventBytes(core));
   return { ok: true, event: { ...core, eventCid: handleEventCidOf(core), authSig: sig } };
 }
 
@@ -260,8 +272,9 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
     if (e.recoverySetHash !== prev.recoverySetHash) return false;   // the genesis wall stays fixed; the rolling slot grafts freely
     if (e.kind === "rotation" && (e.ownerAuthKeyDid === null || !e.authSig)) return false;   // owner authority named + signed
     if (e.kind === "burn") {
-      if (e.handleKeyDid !== prev.handleKeyDid)     return false;   // a burn seats no fresh key
-      if (e.ownerAuthKeyDid !== null || !e.authSig) return false;   // the seated key signs its own ending
+      if (e.handleKeyDid !== prev.handleKeyDid)     return false;   // a burn seats no fresh key, either hand
+      if (!e.authSig)                               return false;   // a burn is always signed (self OR owner)
+      // ownerAuthKeyDid null → self-burn (seated key); set → owner-burn — full-verify checks the hand
     }
     if (e.eventCid !== handleEventCidOf(e))         return false;   // cid recomputes over the bound core
   }
@@ -311,8 +324,19 @@ export async function verifyHandleKelFull(
       }
     } else if (e.kind === "burn") {
       if (!e.authSig) return { ok: false, reason: `burn seq ${e.seq}: unsigned` };
-      if (!(await verifySig(e.authSig, handleEventBytes(core), e.handleKeyDid))) {
-        return { ok: false, reason: `burn seq ${e.seq}: signature does not verify against the seated Handle key` };
+      if (e.ownerAuthKeyDid === null) {
+        // SELF-BURN — the seated Handle head key closed its own name; no owner lookup.
+        if (!(await verifySig(e.authSig, handleEventBytes(core), e.handleKeyDid))) {
+          return { ok: false, reason: `burn seq ${e.seq}: self-burn signature does not verify against the seated Handle key` };
+        }
+      } else {
+        // OWNER-BURN — the persona buries its own name; the owner key must sign AND stand as the owner's head.
+        if (!(await verifySig(e.authSig, handleEventBytes(core), e.ownerAuthKeyDid))) {
+          return { ok: false, reason: `burn seq ${e.seq}: owner-burn signature does not verify against its named owner key` };
+        }
+        if (!(await ownerHeadResolver(e.ownerPrefix, e.ownerAuthKeyDid))) {
+          return { ok: false, reason: `burn seq ${e.seq}: its owner key does not stand as the owner's head (a superseded key cannot bury the name)` };
+        }
       }
     }
   }
