@@ -1,0 +1,99 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/field-collision>>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/api/pono/field-collision.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 16
+manao             = 16
+manaoio           = 15
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+role              = "field-collision — the outside field collided against our three models (identity-as-relation · no-global-now · carriage-not-registry), 2026-09-08: prior art that BUILT our shape, golden principles we must hold, measured anti-patterns, deep pattern-integrities, and the standing tensions the field leaves open (moderation, beneficial-ownership). The CONIKS #1-exposure RESOLVED at primary source."
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/api/pono/field-collision"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Field Collision ~ where our models meet the outside record
+
+Three models thrown at the field at once (Collision-Diver, 2026-09-08), then the sharpest finding collided against its own primary source. Each survivor tagged VINDICATE · CONTRADICT · EXTEND.
+
+<<~/ahu>>
+
+<<~ ahu #/strongest-ground>>
+
+!! The strongest ground ~ the ontology arrived at twice, decades apart
+
+''SPKI/SDSI (Rivest & Lampson 1996, RFC 2693) and KERI (Smith 2019) converged INDEPENDENTLY on our exact ontology.'' SDSI: names read LOCALLY, authority a KEY not a registry, a principal exports bindings ("Joe's poker-buddies") — identity-as-relation, standardized 27 years ago. KERI: self-certifying identifier · key-STATE as presenting authority · succession by GRAFTING the key-state (chained signed KEL) · identifier fixed for life · duplicity caught WITHOUT a clock. ''Two generations of security researchers reached the name-is-an-edge, the-authority-is-a-rolling-key-state, the-identifier-is-permanent-while-holders-are-not — from first principles.'' The model is where the field arrives when it takes decentralization seriously. Caution kept: SDSI LOST the market to X.509's global CAs — the better naming theory does not win on merit.
+
+<<~/ahu>>
+
+<<~ ahu #/the-coniks-resolution>>
+
+!! The #1 exposure, RESOLVED at the source ~ equivocation-detection IS carriage
+
+The collision named its own biggest threat: ''does carriage-not-registry forfeit equivocation-detection?'' — the CONIKS/Key-Transparency result that you catch a lying authority (one showing different keys to different readers) by publishing an append-only Merkle log. Collided against the primary paper (eprint 2014/1004):
+
+''It DISSOLVES.'' CONIKS detects equivocation by ''GOSSIPING a COMPACT signed commitment (the Signed Tree Root), compared PER-READER'' — never by publishing the directory. //"users can detect if a provider is equivocating by comparing the STRs they receive."// A compact commitment, announced by the authority, replicated causally, compared as-of-each-reader's-view: ''that IS carriage.'' KERI reaches the same from the other side — two inconsistent KEL instances are provable duplicity, caught by WATCHERS who gossip what they saw. ''The registry filter survives whole.''
+
+''What the collision actually surfaced — an OWED CAPABILITY, not a contradiction: WATCHERS.'' A per-reader view catches equivocation only if readers can COMPARE views — the gossip-of-what-you've-seen layer. We hold the duplicity-PROOF primitive (a veto out-competes as proof-of-contradiction, no clock); we have NOT built the watcher layer that circulates head-sightings so one reader catches a Handle showing quorum-A here and quorum-B there. ''The watcher gossips a signed "the head I saw for prefix X", which is carriage (a sighting announced by its observer), never a compiled who-is-who.'' Declared, unbuilt.
+
+<<~/ahu>>
+
+<<~ ahu #/golden-principles>>
+
+!! Golden principles the field converged on ~ hold these
+
+* ''NO-GLOBAL-NOW is a hardware law, not a preference'' (FLP 1985 · CAP · PACELC 2010). Deterministic consensus is impossible under pure asynchrony with one crash fault; the only escapes are randomization, partial synchrony, or WEAKENED liveness. We chose weakened liveness (φ-accrual) and are honest about it. EXTEND — ''PACELC names the tax at peace:'' even with no partition you still trade Latency for Consistency. We stand PA/EL — ''a linearizable read is one we can NEVER offer.'' Say so at every gate.
+* ''Fork/join membership without a roster is PROVEN'' — Interval Tree Clocks (Almeida-Baquero-Fonte 2008): fork a new participant, join to reduce, reconfigure with LOCAL information, no global id authority — in production (Riak, Akka). Our quorum-rollover has a working clock underneath it. `[verify the Riak deployment figure before it enters a claim]`
+* ''Weak subjectivity names the boundary'' (Buterin 2014): a node offline past a horizon cannot self-heal from cryptography alone — it needs an out-of-band social checkpoint. Matches our "beyond horizon K a lone island asks a human." And the 2024 caution: DON'T overload social consensus.
+* ''Data-protection-by-architecture'' (GDPR Art. 25): pseudonymization-by-default, minimize extent/period/accessibility. Our rejection-law reads as a COMPLIANCE posture, not only an aesthetic.
+
+<<~/ahu>>
+
+<<~ ahu #/anti-patterns>>
+
+!! Anti-patterns ~ measured graves, do not dig them
+
+* ''SSB's FROZEN IDENTITY (the builder-risk we already escaped).'' Secure Scuttlebutt bound identity to ONE keypair on an append-only log and shipped NO rotation: a compromised key appends to your log forever; the only cure is a NEW identity, losing every social tie. ''This is the grave of getting succession wrong under carriage.'' We escaped it BY CONSTRUCTION — the name binds a ROLLING QUORUM (the Mu), not a fixed key; the rolling recovery commitment + armed inception are the KERI-pre-rotation SSB lacked. Note it as the thing our design exists to avoid.
+* ''SILENCE IS AMBIGUOUS'' (TUF freshness). A withheld update and a slow link look identical, so observer-local hardening-by-silence must BOUND the wait or an attacker freezes a victim indefinitely by withholding. SHARPENS the φ-accrual clause: silence-across-K-local-epochs needs the local epochs to genuinely ADVANCE and an explicit bound — the idle-mesh edge, now doubly flagged.
+* ''SYBIL RINGS blend into the social graph'' (BrightID-measured). A k-of-n Handle is INDISTINGUISHABLE from a self-vouching sybil ring; graph defense has a measured hole for small sophisticated rings. The cost-dial (rb>c, the voucher co-pays) PRICES sybil, never eliminates it — already canon, re-confirmed.
+* ''ACL/registry thinking drags back the CONFUSED DEPUTY'' (Miller). Any residual place that enumerates holders IS an ACL and re-imports ambient authority. Carriage-not-registry is the security-correct choice, not only the private one.
+
+<<~/ahu>>
+
+<<~ ahu #/pattern-integrities>>
+
+!! Pattern-integrities ~ the waves, not the water
+
+* ''LOCAL NAMES over GLOBAL IDENTIFIERS'' — recurs identically in contact lists, SDSI, petnames, Nostr NIP-05, DNS-read-adversarially. Human-meaningful naming is ALWAYS a local overlay on a machine-meaningful identifier; fuse them and you get phishing (DNS) or unmemorable keys. Our Handle-over-edge is this wave.
+* ''IMPROPER NAMES'' (Deseriis) — the k-of-n Handle is a STUDIED social form, not a novelty, and gives us vocabulary: a ''multiple-use name'' (Luther Blissett — hundreds sharing one open name, 1994–99, then VOLUNTARILY RETIRED — a deliberate succession) vs a ''collective pseudonym'' (Wu Ming — a specific controlled group). Maps EXACTLY onto our 1-of-1-that-many-present vs k-of-n-chartered split. The Dread Pirate Roberts is a multiple-use name; a chartered cabal is a collective pseudonym.
+* ''DUPLICITY-DETECTION is the deep DUAL of registry'' — CONIKS and KERI converge: you catch a lying authority not by consulting a registry of truth but by detecting EQUIVOCATION (two signed statements that cannot both be true). Our veto out-competes causally BECAUSE it is proof-of-contradiction, needing no clock. This is the wave; the watcher layer (#the-coniks-resolution) is the water it needs.
+
+<<~/ahu>>
+
+<<~ ahu #/standing-tensions>>
+
+!! Standing tensions ~ what the field leaves genuinely open (operator-aware)
+
+* ''MODERATION at scale.'' Hidden human-cardinality removes "ban the PERSON, not the account" — the primitive real-name policies wanted (and the Nymwars proved those policies HARM the vulnerable, so hiding cardinality is protective, and the abuse problem was never solved, only DEFERRED). Our partial answer: a ban propagates by CAPABILITY (kapae/antigen, the vouch-lineage slash), never by de-anonymizing. Honestly open — a k-of-n name a ban cannot reach one human behind is a real cost accepted for the pre-SIN stance.
+* ''BENEFICIAL-OWNERSHIP LAW'' (US CTA 2024 · EU AMLD). Where a Handle touches money or contracts, the law DEMANDS the who-is-who record our law forbids compiling. The answer rides the causal-island boundary (`bridge-and-reach-plane`): the legal/KYC record lives at the WEB2 BRIDGE, behind the island wall, never in the sovereign carriage — a Handle that must be KYC'd crosses into a contract plane carrying the legal record OUTSIDE the sovereign plane. Named, not yet built.
+
+<<~/ahu>>
+
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/registry-filter>>
+<<~ loulou lar:///ha.ka.ba/lararium/mesh/identity-classes>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder>>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/clockless-lease-model>>
+
+<<^ code="&#x0003;">>ni:///sha-256;R9MmqSN5Mb3mmuq35h71TERSGq43lza_f6MBYPBwHBk
+
+<<^ code="&#x0004;" -> to=?>>
