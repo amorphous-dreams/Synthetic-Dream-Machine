@@ -163,6 +163,26 @@ point the same way, which is the strongest signal available here.
 
 ''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all — precisely the vessel this law governs. The clockless model already rules the form: a raise carries a ''corm epoch'' (a fencing token, never a timer), the vessel holds its highest-admitted epoch, and anything beneath it is refused. A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock. Deciding //stop waiting for a renewal// rides the separate LIVENESS wire (local, suspicion-accruing, never leaving its island as a timestamp anyone must agree on); acting on a wrong suspicion stays safe because the fence still holds. ''Fusing the two wires is how a global now gets smuggled back in.''
 
+''AND THE FENCE CARRIES TWO CONDITIONS the raise cannot hold without.''
+
+# ''THE RESOURCE FENCES, or the model reads as nothing.'' Every guarded surface holds its own
+  ''highest-admitted epoch'' and refuses anything beneath it. Where a surface keeps no high-water
+  mark, two holders act on it at once and the epoch decorates a grant that fences nobody — the raise
+  reads sound and the door stands open. ''A model that fences at the grant and not at the door has
+  moved the check somewhere nobody performs it.''
+# ''SPLIT-BRAIN NAMES THE REAL HOLE, and the liveness wire cannot see it.'' Two minters issuing the
+  same epoch defeats a high-water mark exactly, because neither exceeds the other. The suspicion wire
+  ''never says concurrent'' — it accrues doubt about a peer and reports nothing about the ORDER of two
+  events — so it cannot adjudicate here and must not be asked to. ''Ask the causal stamp for
+  concurrency; a rhythm cannot answer it.'' Either the causal stamp adjudicates with a deterministic
+  tiebreak, or one minter per epoch stands enforced.
+
+''ROUGH AND TIGHT NEVER TRADE PLACES.'' The epoch counter carries a TIGHT guarantee — higher-than-N,
+exact, logical. A witness carries a ROUGH one — an interval with its own stated uncertainty, useful
+for calibrating a rate and load-bearing for neither ordering nor revocation. Asking the rough layer
+for a tight answer smuggles the global now back under a different name, and a raise stays generous
+against a witness radius rather than tuned to it.
+
 ''What stays OPEN, and it is the whole of the remaining design'': what ''recognition'' means here (which edge, presented how, verified against what), and whether a season-long raise differs from a visit by anything but its renewal interval. The house already rules the shape — the raise expires, nobody lowers it, the operator seats a renewal interval rather than a rate — so the open part reads as ''who is recognised'', never ''how does it end''.
 
 !! ★ THE RAISE IS A VESSEL-LAYER ACT — the layer error, named ★
@@ -321,6 +341,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PPzAguClMqyF-ztrg7h1mesLXIN-3Vq9v5U9R1YjScQ
+<<^ code="&#x0003;">>ni:///sha-256;W_vyFnfJLjw1ocfI0IFFM4E-1bP86mQN2bdPpVf3ENs
 
 <<^ code="&#x0004;" -> to="?">>
