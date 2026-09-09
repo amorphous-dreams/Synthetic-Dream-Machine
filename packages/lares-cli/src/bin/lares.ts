@@ -41,6 +41,7 @@ import { cmdCleanupDays }             from "../commands/cleanup-days.js";
 import { renderCommandHelp }          from "../command-help.js";
 import { cmdTestQuine, cmdHeleuma } from "../commands/scripted.js";
 import { cmdDeviceAdmit }             from "../commands/device-admit.js";
+import { cmdHandle }                   from "../commands/handle.js";
 import { cmdVault }                    from "../commands/vault.js";
 import { cmdPersona }                  from "../commands/persona.js";
 import { cmdLibrary }                  from "../commands/library.js";
@@ -128,6 +129,7 @@ const COMMANDS: readonly Command[] = [
   { name: "raise",         summary: "The RECOGNISER's half of the raise ceremony. A vessel standing at the WAKING FLOOR emits a challenge; `raise sign <challenge-json> [--as <index>]` signs it with one of YOUR persona roots and hands back a grant. The caps that arrive at that vessel ride YOUR key \u2014 no key of yours ever rests on the vessel you raise, and the grant stands only until that Nexus's lease epoch rolls past it.", handler: cmdRaise, signs: true /* signs with a persona root */ },
   { name: "nexus",         summary: "The Nexus founding-kahu ROSTER + its PRE-ROTATED charter-epoch chain (TUF≈KERI) — the Kapae immune antigen's authority home. `nexus seal seat` seats the held personas' ed25519 VERIFYING keys (read from the vault, never the seed; matched by DECLARED HANDLE — never the private label, which would weld a compartment's private name to a public commitment) + establishes the genesis epoch with a `--next-key-commit` pre-rotation; `nexus seal rotate` reveals the pre-committed next key-set + advances the chain (FAIL-CLOSED on reveal mismatch); `nexus seal commit --keys` computes a commitment digest; `nexus seal show` reads the roster, chain head, + quorum verdict. `nexus kapae <nym> [--reason]` RAISES a quorum-signed ban onto the always-carried antigen board (a banned presenter draws Mu); `nexus kapae --list` folds the currently-Kapae'd set; `nexus un_kapae <nym>` mints a quorum-signed lift at a strictly higher version (FAIL-CLOSED: a sub-quorum or unseated charter REFUSES, writing nothing).", handler: cmdNexus, signs: true /* quorum-signs admits, kapae and charter acts */ },
   { name: "device-admit",  summary: "Admit a new vessel into your operator PersonaGroup (produces an admit payload via runDeviceAdmit; QR/NFC/LAN transport pending).",    handler: cmdDeviceAdmit, signs: true /* signs a device-delegation edge */ },
+  { name: "handle",        summary: "Publish this persona's public \"here I am\" note — a Handle. `publish \"<glamour>\" [--persona <index>]` mints a self-certifying card carrying the display name and announces it onto the Nexus WHO board the relay syncs. The face ANCHORS to its persona (the persona-KEL prefix owns it), so a lost presentation key recovers THROUGH the persona; a vessel with no founded persona refuses rather than self-owns. This is the deliberate outward act `persona --handle` only DECLARES as intent.", handler: cmdHandle, signs: true /* mints + signs a HandleCard */ },
 ];
 
 /**
