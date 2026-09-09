@@ -173,28 +173,33 @@ const KNOWN_VOICES = new Set([
  * is indistinguishable from a turn that skipped the instrument.
  */
 const KNOWN_KINDS = new Set([
-  "lares",
-  "set",
-  "oracle",
-  "stance",
-  "mu",
-  "persona",
-  "kahea",
-  "ahu",
-  "aka",
-  "loulou",
-  "aim",
-  "yield",
-  "ranks",
-  "loops",
-  "flows",
-  "moves",
-  "holds",
-  // heads the frame has since retired, kept readable so an older turn still harvests
-  "hud",
-  "ward",
-  "syad",
-  "confidence",
+  // ── THE SHELF'S OWN HEADS ─────────────────────────────────────────────────────────────────────
+  // Every head a `<<~ …>>` call can wear, read off the shelf's patterns. THIS HALF STANDS PROVED
+  // COMPLETE: `tools/turn-parity.mjs` compares the two sets directly and FAILS on any head the shelf
+  // declares and this list omits. A hand-written enumeration reads honest only while something proves
+  // it whole — the parse path keeps its purity, and the witness carries the proof.
+  "aka", "branch", "carry", "confidence", "config", "const",
+  "constraint", "define", "drift-ward", "elif", "else", "feedback",
+  "focus", "for", "frame", "function", "guard", "hana",
+  "has", "heihei", "helu", "holo", "hoolele", "hud",
+  "hui", "huli", "if", "import", "integrity", "kahawai",
+  "kahea", "kapu", "kau", "kukali", "kumu", "lares",
+  "lele", "let", "link", "loops", "loulou", "meme",
+  "mu", "mukuwai", "oracle", "papalohe", "persona", "pono",
+  "procedure", "puka", "query", "race", "rush", "scale",
+  "season", "set", "shadow", "shrine", "stage", "stance",
+  "suspends", "syad", "sync", "task", "tick", "tiddler",
+  "transclude", "type", "typos", "ui", "var", "waiho",
+  "wehe", "widget",
+  // ── AND THE HEADS THE SHELF DECLARES NONE FOR ─────────────────────────────────────────────────
+  // `aim` and `yield` name the two words `lares` binds rather than heads of their own.
+  "aim", "yield",
+  // Frame words a carrier fires that no tiddler patterns — the reader meets them and must not
+  // report a turn that spoke as a turn that said nothing.
+  "ahu", "aka", "flows", "holds", "moves", "ranks",
+  // Instruments the frame has since set down. A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY
+  // GRAMMAR IT WILL MEET — a turn written under an earlier frame still harvests here.
+  "hud", "ward", "syad", "confidence",
 ]);
 
 function leadingWord(body: string): string {

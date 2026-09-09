@@ -398,5 +398,38 @@ if (unclassified.length) {
   console.log("\n  every divergence falls in a named class; nothing unaccounted");
 }
 
-const red = unclassified.length + keyDrift.length;
+// ── THE ENUMERATION MUST COVER THE SHELF ─────────────────────────────────────────────────────────
+// `shelf-blind` above catches a miss a TURN happened to exercise. That answers a weaker question than
+// the one worth asking: FOUR misses surfaced across eighty-seven worked examples, while the sets
+// themselves disagreed on sixty-one heads. A corpus of examples cannot report what no example wrote.
+//
+// So the law reads the two sets directly and compares them, and it fails. A hand-written enumeration
+// stands honest only while something proves it complete — the harvester keeps its purity (no I/O in
+// the parse path, by its own design) and this witness carries the proof.
+const HARVEST_SRC = join(REPO, "packages/lararium-mesh/src/turn-harvest.ts");
+const KNOWN_BODY = /const KNOWN_KINDS = new Set\(\[([\s\S]*?)\]\)/.exec(readFileSync(HARVEST_SRC, "utf8"))?.[1] ?? "";
+const KNOWN = new Set([...KNOWN_BODY.matchAll(/"([^"]+)"/g)].map((m) => m[1].toLowerCase()));
+
+// A HEAD IS WHAT A CALL WEARS, read off the shelf's own patterns — never off a tiddler's filename.
+// `sigil-frame-etx` and `sigil-dispatcher` name tiddlers no `<<~ …>>` call ever spells.
+const SHELF_HEADS = new Set();
+{
+  const tiddlers = JSON.parse(pluginJson.text).tiddlers;
+  for (const t of Object.values(tiddlers)) {
+    if (!String(t.tags ?? "").includes(GRAMMAR_TAG)) continue;
+    for (const fld of ["lar-pattern", "lar-open-pattern"]) {
+      const h = /<<~!?\\s\*([A-Za-z][\w-]*)/.exec(String(t[fld] ?? ""));
+      if (h) SHELF_HEADS.add(h[1].toLowerCase());
+    }
+  }
+}
+const uncovered = [...SHELF_HEADS].filter((h) => !KNOWN.has(h)).sort();
+console.log(`\n  KNOWN_KINDS covers ${SHELF_HEADS.size - uncovered.length} of ${SHELF_HEADS.size} shelf heads`);
+if (uncovered.length) {
+  console.log(`  ${uncovered.length} head(s) the shelf declares and the harvester counts as WATER:`);
+  console.log("      " + uncovered.join(" "));
+  console.log("  a turn firing any of these reads as a turn that fired nothing");
+}
+
+const red = unclassified.length + keyDrift.length + uncovered.length;
 process.exit(red ? 1 : 0);
