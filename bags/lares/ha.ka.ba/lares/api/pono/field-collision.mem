@@ -44,7 +44,9 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 
 ''It DISSOLVES.'' CONIKS detects equivocation by ''GOSSIPING a COMPACT signed commitment (the Signed Tree Root), compared PER-READER'' — never by publishing the directory. //"users can detect if a provider is equivocating by comparing the STRs they receive."// A compact commitment, announced by the authority, replicated causally, compared as-of-each-reader's-view: ''that IS carriage.'' KERI reaches the same from the other side — two inconsistent KEL instances are provable duplicity, caught by WATCHERS who gossip what they saw. ''The registry filter survives whole.''
 
-''What the collision actually surfaced — an OWED CAPABILITY, not a contradiction: WATCHERS.'' A per-reader view catches equivocation only if readers can COMPARE views — the gossip-of-what-you've-seen layer. We hold the duplicity-PROOF primitive (a veto out-competes as proof-of-contradiction, no clock); we have NOT built the watcher layer that circulates head-sightings so one reader catches a Handle showing quorum-A here and quorum-B there. ''The watcher gossips a signed "the head I saw for prefix X", which is carriage (a sighting announced by its observer), never a compiled who-is-who.'' Declared, unbuilt.
+''What the collision actually surfaced — an OWED CAPABILITY, not a contradiction: WATCHERS.'' A per-reader view catches equivocation only if readers can COMPARE views — the gossip-of-what-you've-seen layer. We hold the duplicity-PROOF primitive (a veto out-competes as proof-of-contradiction, no clock); we have NOT built the watcher layer that circulates head-sightings so one reader catches a Handle showing quorum-A here and quorum-B there. ''The watcher gossips a signed "the head I saw for prefix X", which is carriage (a sighting announced by its observer), never a compiled who-is-who.''
+
+''ITS HOME IS ALREADY DESIGNED (operator, 2026-09-08) — two layers that split exactly right:'' the ''Herm'' (the near-open crossroads relay, `carry⊥read`, sealed bytes — <<~ loulou lar:///ha.ka.ba/lares/api/pono/dreamnet-architecture>>) is the BLIND CARRIAGE: it forwards sighting-gossip like any bytes and cannot read it (the blind-relay integrity — a Herm diffuses, never watches). The ''Meshpalace'' (the Scope-1 CID/CAD/CRDT DreamNet gossip sensorium, the LAST palace, ITC/`getHeads`-shaped — the exact clock #golden-principles vindicated; `convergent-mesh` #three-clocks, `corpus` #organ) is the WATCHER'S HOME: a node's Meshpalace gossips a signed head-sighting, compares incoming sightings against its own view and the chain, and surfaces two-inconsistent-heads-for-one-prefix as a DUPLICITY PROOF the veto/fold already consumes (`identity-classes#the-two-forks`). So watchers = a Meshpalace capability carried blind by Herms — ''a WIRE onto designed ground, not a new subsystem,'' registry-clean by construction. The ITC vindication and the watcher-home are ONE layer. Awaits the Meshpalace's build (mempalace stands; the meshpalace is the federation-last instance).
 
 <<~/ahu>>
 
@@ -94,6 +96,6 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 <<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder>>
 <<~ loulou lar:///ha.ka.ba/lares/api/pono/clockless-lease-model>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R9MmqSN5Mb3mmuq35h71TERSGq43lza_f6MBYPBwHBk
+<<^ code="&#x0003;">>ni:///sha-256;CHLD_Uoe7ULRseoF7Z7Y4SwTbqHvic3yMzx99snrPFw
 
 <<^ code="&#x0004;" -> to=?>>
