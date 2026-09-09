@@ -72,6 +72,15 @@ export type HandleKelKind = "inception" | "rotation" | "burn" | "graft";
  * inception, `ownerSetHash` at a graft), and stay EMPTY on presentation events (rotation · burn), which
  * change no set.
  */
+/** One co-signer's consent to a GRAFT — a distinct current member's head key signing the graft bytes.
+ *  Rides OUTSIDE the cid (the sig-outside-the-cid pattern), beside the presenter's own `authSig`, so
+ *  succession gathers a THRESHOLD of the prior set (the persona-KEL QuorumSignature shape). */
+export interface HandleGraftSig {
+  readonly memberPrefix: string;   // a prior-set member's persona prefix
+  readonly keyDid:       string;   // that member's head op-key that signed
+  readonly sig:          string;   // its signature over handleEventBytes(core), the SAME bytes the presenter signed
+}
+
 export interface HandleKelEvent {
   readonly seq:                 number;              // monotonic sequence; inception = 0
   readonly kind:                HandleKelKind;
@@ -88,6 +97,7 @@ export interface HandleKelEvent {
   readonly ownerAuthMemberPrefix: string | null;     // presentation/graft: WHICH member presents; null at inception
   readonly ownerAuthKeyDid:     string | null;       // presentation/graft: that member's head op-key; null at inception + self-burn
   readonly authSig:             string | null;       // rotation/graft: the member key's sig · burn: self-key OR member sig · null at inception (outside the cid)
+  readonly graftSigs?:          readonly HandleGraftSig[];   // GRAFT only: co-signers BEYOND the presenter — succession gathers ≥ prior-threshold DISTINCT current-member sigs (outside the cid)
 }
 
 /** The authority fields an event's content-address binds AND the authorizing signature signs over.
@@ -282,24 +292,24 @@ export async function mintHandleRotation(input: {
 /**
  * GRAFT: turn the presenting OWNER-SET over — succession. Reveals the NEW current owner set (members +
  * threshold, hashing to the new rolling `ownerSetHash`) and carries authorization from the PRIOR set.
- * SCOPE (this build): a graft authorized by ONE current member suffices — Roberts cedes to Westley by
- * one willing hand, grafting the successor in and the outgoing holder out. The signature verifies here
- * against the claimed key; WHETHER the presenter stood in the PRIOR set is `verifyHandleKel`'s question
- * and whether the key is the presenter's head is the resolver's. FAILS CLOSED on a burned head. The
- * Handle key carries forward unchanged — a graft seats no fresh key.
- *
- * ⚠ TRUE k-of-n GRAFT GOVERNANCE — a guild requiring a THRESHOLD of the current set to consent to a
- * membership change — rides DECLARED, not built (a skipped red in `handle-kel.test.ts`). This build
- * enforces exactly one authorizing member; the threshold rides in the digest (anti-swap) and names what
- * that future enforcement would count.
+ * SUCCESSION answers to the PRIOR set's THRESHOLD: k of the current n consent, gathered as the presenter
+ * (`ownerAuthMemberPrefix` + `sign`) plus `coSigners` — each a distinct current member signing the SAME
+ * graft bytes. A 1-of-1 (Roberts cedes to Westley) grafts by one willing hand; a k-of-n guild gathers k.
+ * Each signature verifies here against its claimed key; WHETHER the signers stood in the PRIOR set and
+ * REACH its threshold is `verifyHandleKel`'s question, and whether each key is that member's head is the
+ * resolver's. FAILS CLOSED on a burned head. The Handle key carries forward unchanged — a graft seats no
+ * fresh key.
  */
 export async function mintHandleGraft(input: {
   readonly head:                  HandleKelEvent;
   readonly newOwnerSetMembers:    readonly string[];          // the NEW current owner set (revealed)
   readonly newOwnerSetThreshold:  number;                     // the NEW set's graft threshold
-  readonly ownerAuthMemberPrefix: string;                     // a PRIOR-set member who authorizes the graft
+  readonly ownerAuthMemberPrefix: string;                     // a PRIOR-set member who presents the graft
   readonly ownerHeadOpKeyDid:     string;                     // that prior member's head op-key
   readonly sign:                  (bytes: Uint8Array) => Promise<string>;
+  /** DISTINCT prior-set members BEYOND the presenter, gathered toward the prior set's threshold. A 2-of-2
+   *  guild passes one co-signer here; a 1-of-1 passes none. */
+  readonly coSigners?:            readonly { readonly memberPrefix: string; readonly keyDid: string; readonly sign: (bytes: Uint8Array) => Promise<string> }[];
   readonly nextRecoverySetHash?:  string;
 }): Promise<HandleMintResult> {
   const { head, newOwnerSetMembers, newOwnerSetThreshold, ownerAuthMemberPrefix, ownerHeadOpKeyDid } = input;
@@ -330,11 +340,23 @@ export async function mintHandleGraft(input: {
   const bytes = handleEventBytes(core);
   const sig   = await input.sign(bytes);
   if (!(await verifySig(sig, bytes, ownerHeadOpKeyDid))) {
-    return { ok: false, reason: "graft signature does not verify against the claimed authorizing member key" };
+    return { ok: false, reason: "graft signature does not verify against the claimed presenting member key" };
+  }
+  // Gather each co-signer over the SAME bytes — the presenter names the message, the quorum consents to it.
+  const graftSigs: HandleGraftSig[] = [];
+  for (const c of input.coSigners ?? []) {
+    const cSig = await c.sign(bytes);
+    if (!(await verifySig(cSig, bytes, c.keyDid))) {
+      return { ok: false, reason: `graft co-signature for ${c.memberPrefix.slice(0, 16)}… does not verify against its claimed key` };
+    }
+    graftSigs.push({ memberPrefix: c.memberPrefix, keyDid: c.keyDid, sig: cSig });
   }
   return {
     ok: true,
-    event: { ...core, ownerSetMembers: newOwnerSetMembers, ownerSetThreshold: newOwnerSetThreshold, eventCid: handleEventCidOf(core), authSig: sig },
+    event: {
+      ...core, ownerSetMembers: newOwnerSetMembers, ownerSetThreshold: newOwnerSetThreshold,
+      eventCid: handleEventCidOf(core), authSig: sig, graftSigs,
+    },
   };
 }
 
@@ -409,6 +431,7 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
 
   let curMembers = new Set(g.ownerSetMembers.map((m) => m.toLowerCase()));
   let curOwnerSetHash = g.genesisOwnerSetHash;
+  let curThreshold = g.ownerSetThreshold;   // the PRIOR set's graft threshold, tracked forward across grafts
 
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!, prev = chain[i - 1]!;
@@ -431,9 +454,18 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       if (e.ownerSetMembers.length === 0)                 return false;   // reveals a NEW set
       if (e.ownerSetThreshold < 1 || e.ownerSetThreshold > e.ownerSetMembers.length) return false;
       if (e.ownerSetHash !== sealKeySetHash(e.ownerSetMembers, e.ownerSetThreshold))  return false;   // the reveal hashes to the new rolling digest
-      if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // a PRIOR-set member authorizes the succession
-      curMembers = new Set(e.ownerSetMembers.map((m) => m.toLowerCase()));   // the presenting set turns over AFTER the prior-member check
+      if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // the presenter stood in the PRIOR set
+      // ★ SUCCESSION reaches the PRIOR set's THRESHOLD — count DISTINCT prior-set members consenting (the
+      // presenter plus each co-signer that stood in the prior set); a co-sig from a non-member never counts.
+      const authorizers = new Set<string>([e.ownerAuthMemberPrefix.toLowerCase()]);
+      for (const s of e.graftSigs ?? []) {
+        const m = s.memberPrefix.toLowerCase();
+        if (curMembers.has(m)) authorizers.add(m);
+      }
+      if (authorizers.size < curThreshold)               return false;   // below the prior threshold — no succession
+      curMembers = new Set(e.ownerSetMembers.map((m) => m.toLowerCase()));   // the presenting set turns over AFTER the threshold check
       curOwnerSetHash = e.ownerSetHash;
+      curThreshold    = e.ownerSetThreshold;   // the new set carries its own threshold forward
     } else if (e.kind === "burn") {
       if (e.handleKeyDid !== prev.handleKeyDid)           return false;   // a burn seats no fresh key, either hand
       if (!e.authSig)                                     return false;   // a burn is always signed (self OR member)
@@ -497,6 +529,18 @@ export async function verifyHandleKelFull(
       }
       if (!(await ownerHeadResolver(e.ownerAuthMemberPrefix, e.ownerAuthKeyDid))) {
         return { ok: false, reason: `${e.kind} seq ${e.seq}: its member key does not stand as that member's head (superseded or unrecognized)` };
+      }
+      if (e.kind === "graft") {
+        // Each co-signer's consent verifies against its named key AND stands as that member's head — the
+        // threshold COUNT held structurally, here every gathered signature proves genuine and unsuperseded.
+        for (const s of e.graftSigs ?? []) {
+          if (!(await verifySig(s.sig, handleEventBytes(core), s.keyDid))) {
+            return { ok: false, reason: `graft seq ${e.seq}: a co-signature does not verify against its named member key` };
+          }
+          if (!(await ownerHeadResolver(s.memberPrefix, s.keyDid))) {
+            return { ok: false, reason: `graft seq ${e.seq}: a co-signer's key does not stand as that member's head (superseded or unrecognized)` };
+          }
+        }
       }
     } else if (e.kind === "burn") {
       if (!e.authSig) return { ok: false, reason: `burn seq ${e.seq}: unsigned` };

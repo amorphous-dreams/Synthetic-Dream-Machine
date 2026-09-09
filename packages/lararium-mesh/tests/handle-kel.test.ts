@@ -389,17 +389,79 @@ describe("handle-kel — attestation, reader-local, no board", () => {
   });
 });
 
-describe("handle-kel — the generalization beyond DPR (declared, not built)", () => {
-  // ⚠ WAKE CONDITION: enact this when a Handle needs TRUE k-of-n graft governance — a guild whose
-  // membership changes require a THRESHOLD of the current set to consent, not one willing hand. THIS
-  // BUILD authorizes a graft by ONE current member (DPR's real case — Roberts cedes to Westley alone).
-  // The `ownerSetThreshold` already rides in the digest naming what that future would count; the build
-  // needed is `mintHandleGraft` gathering ≥ threshold DISTINCT current-member signatures over the graft
-  // bytes (the persona-KEL `rotationSigs` shape) and `verifyHandleKel` counting them against the PRIOR
-  // set's threshold. Until then a single-hand graft is the whole succession mechanism.
-  test.skip("A GUILD NEEDS A THRESHOLD TO GRAFT — k-of-n graft governance carries k distinct member signatures (DECLARED)", async () => {
-    // When built: found a 2-member Handle at graft threshold 2; a graft carrying ONE member's signature
-    // refuses; a graft carrying BOTH members' distinct signatures over the graft bytes verifies.
-    expect(true).toBe(true);
+describe("handle-kel — TRUE k-of-n graft governance (a guild's membership change needs a threshold)", () => {
+  // A graft turns the presenting set over — a membership change. Presentation (rotation/burn) answers to
+  // ANY one current member, but SUCCESSION answers to the PRIOR set's THRESHOLD: k of the current n must
+  // consent, gathered as k distinct current-member signatures over the graft bytes (the persona-KEL
+  // QuorumSignature shape). A single willing hand stays the whole mechanism for a 1-of-1 (DPR); a 2-of-2
+  // guild refuses a one-hand graft and accepts a two-hand one.
+  async function found2of2() {
+    const handleKeyDid    = await didOf(SEEDS.hA);
+    const recoverySetHash = sealKeySetHash([await pubOf(SEEDS.g1)], 1);
+    const mAKey = await didOf(SEEDS.westley), mBKey = await didOf(SEEDS.memberY);
+    const mA = mintPersonaInception(mAKey, recoverySetHash).prefix;
+    const mB = mintPersonaInception(mBKey, recoverySetHash).prefix;
+    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 2, recoverySetHash);
+    const succPrefix = mintPersonaInception(await didOf(SEEDS.succ), recoverySetHash).prefix;
+    return { inception, mA, mB, mAKey, mBKey, succPrefix };
+  }
+
+  test("★ ONE hand cannot graft a 2-of-2 guild — succession refuses below the prior threshold ★", async () => {
+    const { inception, mA, mAKey } = await found2of2();
+    // Member A alone attempts the succession — a lone hand where the guild set two.
+    const graft = await mintHandleGraft({
+      head: inception,
+      newOwnerSetMembers: [mA], newOwnerSetThreshold: 1,
+      ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
+    });
+    expect(graft.ok, graft.ok ? "" : graft.reason).toBe(true);   // the mint gathers one hand…
+    if (!graft.ok) return;
+    // …but ONE of TWO consenting members is below the prior set's threshold — the chain refuses.
+    expect(verifyHandleKel([inception, graft.event])).toBe(false);
+  });
+
+  test("★ BOTH hands graft the 2-of-2 guild — k distinct member signatures over the graft bytes verify ★", async () => {
+    const { inception, mA, mB, mAKey, mBKey, succPrefix } = await found2of2();
+    const graft = await mintHandleGraft({
+      head: inception,
+      newOwnerSetMembers: [succPrefix], newOwnerSetThreshold: 1,
+      ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
+      coSigners: [{ memberPrefix: mB, keyDid: mBKey, sign: signerOf(SEEDS.memberY) }],
+    });
+    expect(graft.ok, graft.ok ? "" : graft.reason).toBe(true);
+    if (!graft.ok) return;
+    const chain: HandleKelEvent[] = [inception, graft.event];
+    expect(verifyHandleKel(chain)).toBe(true);                          // two distinct prior members consent
+    expect(currentOwnerSet(chain)!.members).toEqual([succPrefix]);      // the set turned over
+    const resolver = headsAre({ [mA]: mAKey, [mB]: mBKey, [succPrefix]: await didOf(SEEDS.succ) });
+    expect((await verifyHandleKelFull(chain, resolver)).ok).toBe(true);  // both signatures + heads check
+  });
+
+  test("CONTROL — two hands but one from a NON-member cannot reach the threshold", async () => {
+    const { inception, mA, mAKey, succPrefix } = await found2of2();
+    const outsiderPrefix = mintPersonaInception(await didOf(SEEDS.outside), inception.recoverySetHash).prefix;
+    // A presents; an OUTSIDER co-signs — two signatures, but only ONE stands in the prior set.
+    const graft = await mintHandleGraft({
+      head: inception,
+      newOwnerSetMembers: [succPrefix], newOwnerSetThreshold: 1,
+      ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
+      coSigners: [{ memberPrefix: outsiderPrefix, keyDid: await didOf(SEEDS.outside), sign: signerOf(SEEDS.outside) }],
+    });
+    expect(graft.ok, graft.ok ? "" : graft.reason).toBe(true);
+    if (!graft.ok) return;
+    // One member + one outsider = one member of two — the succession refuses.
+    expect(verifyHandleKel([inception, graft.event])).toBe(false);
+  });
+
+  test("the 1-of-1 (DPR) still grafts by one willing hand — the degenerate threshold-1 case unbroken", async () => {
+    const { inception, westleyPrefix, westleyOpKeyA } = await foundedHandle();
+    const succPrefix = mintPersonaInception(await didOf(SEEDS.succ), inception.recoverySetHash).prefix;
+    const graft = await mintHandleGraft({
+      head: inception, newOwnerSetMembers: [succPrefix], newOwnerSetThreshold: 1,
+      ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
+    });
+    expect(graft.ok, graft.ok ? "" : graft.reason).toBe(true);
+    if (!graft.ok) return;
+    expect(verifyHandleKel([inception, graft.event])).toBe(true);
   });
 });

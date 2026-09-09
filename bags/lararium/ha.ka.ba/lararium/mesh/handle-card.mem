@@ -112,8 +112,11 @@ and that member's head op-key; verify checks the member stands in the current ow
 # ''BURN is terminal'' — the Shadowtalk ending made structural. A buried name attests nothing; nothing rotates
 or grafts past it. A burn signs either by the seated Handle key (self-burn) or by a current member (owner-burn).
 # ''GRAFT is the succession move'' — the presenting owner-set turns over. It reveals the NEW current set and
-carries authorization from the PRIOR set; for this build ONE current member suffices (Roberts cedes to Westley
-by one willing hand). TRUE k-of-n graft governance rides DECLARED, not built.
+carries authorization from the PRIOR set, reaching that set's THRESHOLD: k of the current n consent, gathered
+as the presenter plus `graftSigs` co-signers — each a distinct current member signing the same graft bytes
+(the persona-KEL QuorumSignature shape). A 1-of-1 grafts by one willing hand (Roberts cedes to Westley); a
+k-of-n guild refuses a one-hand graft and accepts a k-hand one. `verifyHandleKel` counts distinct prior-set
+authorizers against the prior threshold (structural), `verifyHandleKelFull` proves each signature + head.
 # ''ATTEST is a signed claim carried ON the card, never an event and never a board.'' A claim ("this Handle
 controls example.net") binds the head event cid, so a rotation/graft/burn STALES it and the fresh head
 re-attests. A domain-attestation travels on the card and verifies reader-locally against the empire's own
@@ -168,6 +171,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;OPzjyyUQhYE1804PX16Y6N5kIL0_mvN-mnquUWDnp3Q
+<<^ code="&#x0003;">>ni:///sha-256;qGClFKe0X5f_RIbZkHV0-_pM6XRmCESPwUYmMfKf_fE
 
 <<^ code="&#x0004;" -> to="?">>
