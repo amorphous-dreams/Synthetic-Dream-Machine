@@ -27,7 +27,12 @@ const PROBE = {
   title: "lar:///test/sigil-probe",
   tags: "$:/tags/Global",
   type: "text/vnd.tiddlywiki",
-  text: '\\procedure ~probe(alpha:"" beta:"" p1:"")\nA=<<alpha>> B=<<beta>> P=<<p1>>\n\\end\n',
+  text:
+    '\\procedure ~probe(alpha:"" beta:"" p1:"")\nA=<<alpha>> B=<<beta>> P=<<p1>>\n\\end\n' +
+    // the ORACLE's own call, same signature under a name TiddlyWiki dispatches natively
+    '\\procedure nprobe(alpha:"")\nN=<<alpha>>\n\\end\n' +
+    // a macro to pass BY CALL rather than by its text
+    "\\procedure greeting()\nAloha\n\\end\n",
 };
 
 describe.skipIf(wikiSkip)(`a named parameter reaches its definition${skipNote}`, () => {
@@ -57,5 +62,63 @@ describe.skipIf(wikiSkip)(`a named parameter reaches its definition${skipNote}`,
 
   test("★ and the gradient still holds for a head nothing answers to ★", () => {
     expect(r('<<~ vorpal-snicker alpha="x">>')).toContain("vorpal-snicker");
+  });
+});
+
+/**
+ * ── A MACRO VALUE ARRIVES AS A CALL ─────────────────────────────────────────────────────────────
+ * TiddlyWiki types five value kinds on a named parameter, and `macro` — `name=<<something>>` — is the
+ * one a sigil could not carry. The limit read as a flattening; MEASURED, it costs more than that.
+ * Against the vendored core, `<<nprobe alpha=<<greeting>> >>` renders `N=Aloha`, while the sigil form
+ * rendered `A=&lt;&lt;greeting` and spilled the leftover `>>` into the page as an empty blockquote:
+ * the opener scan stopped at the INNER call's `>>`, so the value flattened AND the sigil truncated.
+ *
+ * The corpus writes zero macro-valued parameters (`sigil-parity`: 14,690 sigils, 2 typed values, and
+ * a scan for `=<<` finds none), so this closes an interface rather than repairing a live carrier.
+ * The parse tree stays the ORACLE — the node comes from core's own
+ * `parseMacroInvocationAsTransclusion`, never from a shape spelled here.
+ */
+describe.skipIf(wikiSkip)(`a macro value reaches its parameter as a call${skipNote}`, () => {
+  let e: TW5Engine;
+  beforeAll(async () => { e = await bootTestWiki({ tiddlers: [PROBE] }); }, 60_000);
+  const r = (t: string) => renderWikitext(e, t);
+
+  test("ORACLE — TiddlyWiki's own call runs the macro and binds its result", () => {
+    expect(r("<<nprobe alpha=<<greeting>> >>")).toContain("N=Aloha");
+    expect(r("<<nprobe alpha=<<greeting>>>>")).toContain("N=Aloha");
+  });
+
+  test("★ the sigil binds the macro's RESULT, not its source text ★", () => {
+    const html = r("<<~ probe alpha=<<greeting>> >>");
+    expect(html).toContain("A=Aloha");
+    expect(html).not.toContain("greeting");
+  });
+
+  test("★ the sigil ends at its OWN closer, so nothing spills past it ★", () => {
+    const html = r("<<~ probe alpha=<<greeting>>>>");
+    expect(html).toContain("A=Aloha");
+    expect(html).not.toContain("blockquote");
+  });
+
+  test("★ a macro value rides beside a string one, and a positional still lands ★", () => {
+    const html = r('<<~ probe one alpha=<<greeting>> beta="plain">>');
+    expect(html).toContain("A=Aloha");
+    expect(html).toContain("B=plain");
+    expect(html).toContain("P=one");
+  });
+
+  test("★ a quoted value carrying `>>` reaches the parameter whole ★", () => {
+    // Five LIVE `<<~ has …>>` sigils write `>>` inside a quoted value. The call ends at its own
+    // closer, so the value arrives entire rather than cut at the first `>>` it contains.
+    expect(r('<<~ has Hold Graph "writes/`<<~holds x>>` binds/x">>'))
+      .toContain("writes/`&lt;&lt;~holds x&gt;&gt;` binds/x");
+  });
+
+  test("CONTROL — a string value reads exactly as the ORACLE reads it", () => {
+    // Bound whole, then rendered: core drops an unresolved inner call on the way to the page, and
+    // the sigil form must land in the same place rather than a kinder one.
+    const oracle = r('<<nprobe alpha="literal <<not-a-call>>">>');
+    expect(oracle).toContain("N=literal");
+    expect(r('<<~ probe alpha="literal <<not-a-call>>">>')).toContain("A=literal");
   });
 });

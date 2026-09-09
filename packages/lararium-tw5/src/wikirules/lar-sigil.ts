@@ -47,18 +47,36 @@ export function init(this: RuleInstance, parser: WikiParser): void {
   this.parser = parser;
 }
 
+// TW5's evalGlobal injects `$tw` as a direct parameter into module code; in the Node VM sandbox
+// globalThis is the empty context, so the injected variable is the only reachable spelling.
+declare const $tw: {
+  utils?: { parseMacroInvocationAsTransclusion?: (source: string, pos: number) => ParseTreeNode | null };
+} | undefined;
+
 /**
  * One sigil parameter as the parse tree carries it.
  *
- * Four of TiddlyWiki's five value kinds map straight across. A `macro` value would need its own
- * parse to build a `macrocall` node, so it rides as the source text it was written with — a DECLARED
- * limit: the corpus carries two typed values in total, and `pranala` reads its own on a separate path.
+ * ── ALL FIVE VALUE KINDS ARRIVE AS THEMSELVES ───────────────────────────────────────────────────
+ * A `macro` value — `name=<<something>>` — needs a PARSE, not a copy. Handing over its source text
+ * cost more than the flattening it looked like: measured against the vendored core,
+ * `<<nprobe alpha=<<greeting>> >>` renders `N=Aloha`, while the sigil form rendered
+ * `A=&lt;&lt;greeting` and spilled the leftover `>>` into the page.
+ *
+ * The node comes from core's OWN `parseMacroInvocationAsTransclusion`, so the shape stays the
+ * parser's to define and cannot drift from what every other call site receives. Where that reader is
+ * out of reach — a parse driven outside the VM — or where it declines the text, the value falls back
+ * to its string, because a parse must not break badly (#/graceful-parsing).
  */
 function attrNodeOf(a: SigilAttr): ParseTreeAttribute {
   switch (a.kind) {
     case "indirect":    return { type: "indirect",    textReference: a.value.replace(/^\{\{|\}\}$/g, "") };
     case "filtered":    return { type: "filtered",    filter: a.value.replace(/^\{\{\{|\}\}\}$/g, "") };
     case "substituted": return { type: "substituted", rawValue: a.value.replace(/^`|`$/g, "") };
+    case "macro": {
+      const parse = typeof $tw !== "undefined" ? $tw?.utils?.parseMacroInvocationAsTransclusion : undefined;
+      const node  = parse ? parse(a.value, 0) : null;
+      return node ? { type: "macro", value: node } : { type: "string", value: a.value };
+    }
     default:            return { type: "string",      value: a.value };
   }
 }

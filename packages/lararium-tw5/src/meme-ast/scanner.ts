@@ -13,6 +13,7 @@
  */
 
 import type { GrammarRules, SigilRule } from "./types.js";
+import { fencedSpans, maskedExecAll } from "./fence-mask.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -205,9 +206,23 @@ export function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
 export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[] {
   const scans = grammar ? buildScansFromGrammar(grammar.sigils) : BOOTSTRAP_SCANS;
 
+  // ── A FENCED SIGIL TEACHES; IT DECLARES AND FIRES NOTHING ──────────────────────────────────────
+  // Every scan below reads through the quoted-code mask, computed ONCE for the carrier. A grammar
+  // spec shows the sigils it names, and an unmasked scan compiles the lesson: measured over the 718
+  // declared carriers, 739 of 15,666 events stood inside a quoted span across 122 carriers — 34
+  // `ahu` openers and 23 closers among them, opening scopes no author wrote, plus 19 SOH / 11 ETX
+  // control pragmas the framing never meant. The render side already rules that a fenced sigil calls
+  // nothing; the compile side gives the same answer, from the same module, so the two cannot drift.
+  //
+  // `allowSpanStart` — a scan whose TARGET is a fence. The meta block spells itself ```toml, so a
+  // mask that refused every span erased 840 of the corpus's 852 meta reads. A match landing exactly
+  // on a span's opening character stands; one in the interior — a ````-quoted ```toml example — does
+  // not. No `<<~` form can begin at a span opener, so the admission reaches the fence scans alone.
+  const mask = fencedSpans(text);
+
   // Pranala block spans: inline events inside a pranala block body are excluded
   const blockSpans: [number, number][] = [];
-  for (const m of text.matchAll(/<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs)) {
+  for (const m of maskedExecAll(text, /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, mask, true)) {
     blockSpans.push([m.index!, m.index! + m[0].length]);
   }
   const inBlock = (pos: number): boolean => blockSpans.some(([s, e]) => pos >= s && pos < e);
@@ -218,7 +233,7 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
   for (const scan of scans) {
     const rx       = new RegExp(scan.regex.source, scan.regex.flags.includes("s") ? "gs" : "g");
     const emitName = scan.canonicalName ?? scan.sigilName;
-    for (const m of text.matchAll(rx)) {
+    for (const m of maskedExecAll(text, rx, mask, true)) {
       const pos = m.index!;
       if (seen.has(pos)) continue;
       if (scan.eventType !== "open" && scan.eventType !== "close" && inBlock(pos)) continue;

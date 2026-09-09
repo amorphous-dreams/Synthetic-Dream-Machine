@@ -125,14 +125,24 @@ export function maskedExec(text: string, re: RegExp, spans?: readonly MaskSpan[]
   return null;
 }
 
-/** Every unmasked match of `re` in `text`. */
-export function maskedExecAll(text: string, re: RegExp, spans?: readonly MaskSpan[]): RegExpExecArray[] {
+/**
+ * Every unmasked match of `re` in `text`.
+ *
+ * `allowSpanStart` admits a match beginning exactly ON a span's opening
+ * character — for scans whose TARGET is a fence. The meta block spells itself
+ * ```toml, so a mask that refused every span erased 840 of the corpus's 852
+ * meta reads and took the carriers' identity with them; admitting the opener
+ * keeps a carrier's own meta block and still refuses a ````-quoted example of
+ * one, which starts in the interior.
+ */
+export function maskedExecAll(text: string, re: RegExp, spans?: readonly MaskSpan[], allowSpanStart = false): RegExpExecArray[] {
   const mask = spans ?? fencedSpans(text);
   const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
   const out: RegExpExecArray[] = [];
   let m: RegExpExecArray | null;
   while ((m = g.exec(text)) !== null) {
-    if (!inMask(mask, m.index)) {
+    const blocked = allowSpanStart ? inMaskInterior(mask, m.index) : inMask(mask, m.index);
+    if (!blocked) {
       out.push(m);
       if (g.lastIndex === m.index) g.lastIndex++;   // zero-width guard
     } else {

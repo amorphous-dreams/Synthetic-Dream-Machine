@@ -26,7 +26,11 @@ export type ParseTreeAttribute =
   | { type: "string";      value: string }
   | { type: "indirect";    textReference: string }
   | { type: "filtered";    filter: string }
-  | { type: "substituted"; rawValue: string };
+  | { type: "substituted"; rawValue: string }
+  // A `macro` value carries a parsed CALL, never text. Core spells the inner node `transclude`
+  // (`parseMacroInvocationAsTransclusion`), and this side never spells it — the parse tree is the
+  // oracle for its own shape.
+  | { type: "macro";       value: ParseTreeNode };
 
 export interface ParseTreeNode {
   readonly type:        string;
@@ -103,6 +107,57 @@ export interface CompoundSigilMatch {
 // rendering as the text an author wrote, which is what an unknown sigil owes a reader.
 const COMPOUND_OPEN_RE = /<<~\s+([\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
 
+// ── A SIGIL ENDS AT ITS OWN `>>`, NEVER AT ONE ITS VALUE CARRIES ─────────────────────────────────
+// A lazy scan for the first `>>` reads a value's closer as the call's. MEASURED against the vendored
+// core: `<<nprobe alpha=<<greeting>> >>` renders `N=Aloha`, while the sigil form rendered
+// `A=&lt;&lt;greeting` and spilled the leftover `>>` into the page as an empty blockquote — the value
+// flattened AND the call truncated. Five LIVE `<<~ has …>>` sigils carry `>>` inside a quoted value
+// and lose it the same way.
+//
+// TiddlyWiki's own `parseMacroParametersAsAttributes` consumes a string literal whole and a macro
+// value through `parseMacroInvocationAsTransclusion`, so neither can close the call it sits in. This
+// walk reads to the same boundary.
+//
+// A QUOTE WITH NO PARTNER ON THE LINE IS A CHARACTER. Measured: `Phonology=don't` hands the parser
+// `don`, and a walk that took the apostrophe as a literal opener would swallow the rest of the call.
+// An opener reads on ONE line — the width every other reader here already stands on.
+/**
+ * Index just past the `>>` that closes the sigil opening at `start`, or -1 where none stands.
+ *
+ * Dispatches on the character before comparing any delimiter — this walk runs once per sigil across
+ * the whole corpus, and a per-character list scan showed up as corpus-walk time in the suite.
+ */
+export function sigilOpenEnd(source: string, start: number): number {
+  const nl      = source.indexOf("\n", start);
+  const lineEnd = nl < 0 ? source.length : nl;
+  /** Past `close` when it stands on this line, else -1. */
+  const skip = (from: number, close: string): number => {
+    const at = source.indexOf(close, from);
+    return at >= 0 && at < lineEnd ? at + close.length : -1;
+  };
+  let i = start + 2;   // past the `<<` of the sigil's own mark
+  let depth = 0;
+  while (i < lineEnd) {
+    const c = source[i]!;
+    if (c === '"' || c === "'" || c === "[" || c === "<" || c === ">") {
+      const triple = c === '"' && source.startsWith('"""', i);
+      const open   = triple ? '"""' : c === "[" ? "[[" : c === "<" ? "<<" : c === ">" ? ">>" : c;
+      // a lone `[`, `<` or `>` carries no span and no depth — an ordinary character
+      if (open.length === 2 && !source.startsWith(open, i)) { i += 1; continue; }
+      if (open === "<<") { depth += 1; i += 2; continue; }
+      if (open === ">>") {
+        if (depth === 0) return i + 2;
+        depth -= 1; i += 2; continue;
+      }
+      const past = skip(i + open.length, open === "[[" ? "]]" : open);
+      i = past >= 0 ? past : i + 1;   // no partner on the line: an ordinary character
+      continue;
+    }
+    i += 1;
+  }
+  return -1;
+}
+
 /**
  * Generic compound-sigil opener for the matchAhuOpenAt + matchUriFormSigilAt
  * forms. Child-slot detection uses the grammar registry
@@ -125,17 +180,21 @@ export function matchCompoundSigilAt(
   COMPOUND_OPEN_RE.lastIndex = start;
   const m = COMPOUND_OPEN_RE.exec(source);
   if (!m || m.index !== start) return null;
+  // The head regex names the sigil; `sigilOpenEnd` says where the CALL ends, since a value may carry
+  // a `>>` of its own.
+  const end = sigilOpenEnd(source, start);
+  if (end < 0) return null;
   const word1 = m[1]!;
   // PRANALA CARRIES TWO TYPED ENDS. This reader hands back one undifferentiated `rest`, and an edge
   // needs its `from` told apart from its `to`: whoever reads whichever address comes first reads the
   // SOURCE, and a graph built on that points backwards. `matchPranalaOpenAt` types the two ends, so
   // pranala routes there.
   if (word1 === "pranala") return null;
-  const rest = (m[2] ?? "").trim();
+  const rest = source.slice(start + m[0].indexOf(word1) + word1.length, end - 2).trim();
 
   if (childSlotNames.has(word1)) {
     // bare child-slot: <<~ ahu #slot>> or <<~ kau #device …>>
-    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, closeKey: word1 };
+    return { start: m.index, end, name: word1, p1: rest, closeKey: word1 };
   }
   // peek at the first token of rest to detect a compound: <<~ kahea ahu #slot>>
   const spaceIdx  = rest.search(/\s/);
@@ -143,10 +202,10 @@ export function matchCompoundSigilAt(
   const remainder = spaceIdx >= 0 ? rest.slice(spaceIdx).trim() : "";
   if (word2 && childSlotNames.has(word2)) {
     // closeKey = word1 (e.g. "kahea") — the compound block closes with <<~/kahea>>, not <<~/ahu>>
-    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: `${word1}~${word2}`, p1: remainder, closeKey: word1 };
+    return { start: m.index, end, name: `${word1}~${word2}`, p1: remainder, closeKey: word1 };
   }
   // simple leaf: <<~ kahea lar:///uri>> or <<~ loulou …>>
-  return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, closeKey: null };
+  return { start: m.index, end, name: word1, p1: rest, closeKey: null };
 }
 
 /**
@@ -306,13 +365,12 @@ export function findCloseEnd(
 
 export function findGenericOpenAt(source: string, start: number): { end: number; sigil: string | null } | null {
   if (!opensSigilAt(source, start)) return null;
-  ANY_OPEN_RE.lastIndex = start;
-  const m = ANY_OPEN_RE.exec(source);
-  if (!m || m.index !== start) return null;
-  const inner = source.slice(start + 3, m.index + m[0].length - 2).trim();
+  const end = sigilOpenEnd(source, start);
+  if (end < 0) return null;
+  const inner = source.slice(start + 3, end - 2).trim();
   const kwMatch = inner.match(/^[!⊙]?(?:&#x[0-9a-fA-F]+;)?\s*(\\?[a-zA-Z][\w-]*)?/);
   const sigil = kwMatch?.[1]?.replace(/^\\/, "") ?? null;
-  return { end: m.index + m[0].length, sigil };
+  return { end, sigil };
 }
 
 
