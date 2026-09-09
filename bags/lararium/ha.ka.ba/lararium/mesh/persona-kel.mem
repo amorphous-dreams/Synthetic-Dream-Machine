@@ -1,0 +1,149 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/persona-kel">>
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/persona-kel.mem"
+l-space     = "lararium"
+mana        = 15
+retain      = true
+role        = "invariant law: the persona-KEL — a stable identifier PREFIX the operational key rotates BENEATH, so continuity rides the LOG, never the key. Names the armed inception + rolling recovery commitment, Fork-B threshold-attest (nothing reconstructs), the provisional/veto contest folded structurally, the board as an additive per-Nexus CRDT, the frozen-for-alpha status, and duplicity-detection as the dual of a registry."
+source-file = "packages/lararium-mesh/src/persona-kel.ts"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/persona-kel"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! The persona-KEL ~ continuity rides the log, never the key
+
+A persona's identifier is a stable PREFIX (a KERI autonomic-identifier / AID) that the operational signing key
+rotates BENEATH. Reading-B recovery rotates the op-key rather than resurrecting it, so continuity CANNOT ride
+the op-key — it rides this key-event-log. The module lifts the charter's proven epoch-chain machinery DOWN to
+persona scale: it invents nothing structural, it re-sites what stands.
+
+<<~/ahu>>
+
+<<~ ahu #/the-invariant>>
+
+!! The invariant ~ prefix fixed, head authoritative, old key superseded
+
+# ''The identifier PREFIX stays FIXED'' — a content-address over the inception op-key plus the pre-committed
+recovery-set digest, unchanged across every rotation (`personaPrefixOf`). Binding the recovery digest INTO
+the prefix walls off a swap: no attacker incepts a DIFFERENT recovery set under the same identifier.
+# ''Each event SEATS one operational key; the LATEST head carries the authoritative key.'' A rotation ADVANCES
+the head, hash-linked onto its predecessor.
+# ''The old op-key SUPERSEDES, never revives'' — eviction runs forward-only. A thief of today's op-key learns
+nothing of the recovery future.
+
+Every event content-addresses by `eventCid` over an authority CORE, and the guardian rotation-signatures sign
+the SAME bytes — the revealed roster/threshold ride OUTSIDE, verified against the bound `recoverySetHash`, so
+re-carrying an event never re-signs it (the sig-outside pattern). A single bit-flip yields a different cid, so
+the hash-link the next event binds is tamper-evident.
+
+<<~/ahu>>
+
+<<~ ahu #/armed-inception>>
+
+!! Armed inception + the rolling recovery commitment
+
+Inception (seq 0, no predecessor) seats the founding op-key self-authorized — exactly as today's founder edge
+self-signs. It commits only the recovery DIGEST (`recoverySetHash`), never the roster: the KERI pre-rotation
+reveal happens at the ROTATION, never before, so a compromise of the operational PRESENT cannot forge the
+recovery FUTURE. The inception is ''armed'' — it carries a `nextRecoverySetHash`, the rolling commitment that
+authorizes the NEXT rotation, seated equal to the genesis digest at inception and grafted per event thereafter.
+
+''Fork-B — threshold-attest'' (identity-classes#the-two-forks): inception pre-commits the k-of-n DIGEST of the
+guardians' recovery PUBLIC keys (`sealKeySetHash`); a rotation carries k guardian SIGNATURES over the event
+bytes, verified against that pre-commit. ''NOTHING reconstructs'' — no secret ever assembles. The recovery
+authority signs ONLY rotations, never content.
+
+<<~/ahu>>
+
+<<~ ahu #/the-contest>>
+
+!! The provisional / veto contest ~ liveness proposes, the standing hand disposes
+
+A recovery rotation may land ''provisional'' — a rotation NOT yet hardened, conferring kapae-reversible
+authority only. An observer hardens it by its own silence-across-K-local-epochs policy (passed as a verdict,
+never computed from a clock); NOT accepting is the resting state, so a provisional head confers nothing by
+default and the prior key stays head until the observer accepts.
+
+The standing op-key's ''veto'' kills a provisional at any causal distance: one signature by the standing
+holder — no quorum, because the holder's own hand IS the whole authority the contest exists to protect. A veto
+COMPETES at the contested seq, links the same predecessor, and the chain continues FROM the veto; the
+provisional and every descendant fall.
+
+''The contest folds STRUCTURALLY.'' `foldPersonaContests` collapses the competing events into ONE linear
+lineage — at each seq a verified veto naming a present provisional wins, the provisional and its descendants
+drop. The veto's signature verifies in `verifyPersonaKelFull`, and a gate walking full REFUSES a chain whose
+veto does not verify: a halt, never a silent pick.
+
+<<~/ahu>>
+
+<<~ ahu #/the-board>>
+
+!! The board ~ an additive per-Nexus CRDT, fail-closed end to end
+
+The DOC face of the persona-KEL extracts events from a per-Nexus KEL BOARD — one deterministic `LarDoc`
+holding EVERY persona's log keyed by `{prefix}/{seq}`. One board per Nexus federates once and every island
+member walks the same identifier→head mapping "as of my last sync" — no global lookup, no global now.
+
+# ''Keying by `{prefix}/{seq}` makes the board ADDITIVE.'' A rotation accretes a new seq under a distinct key,
+so a concurrent write never overwrites a standing event in place; the FOLD decides the head, never the write.
+# ''Contest-aware keying'' suffixes the cid where a provisional and its veto compete at one seq, so a
+last-writer-wins merge cannot adjudicate a contest by accident — both survive and `foldPersonaContests` picks.
+# ''Extraction is PERMISSIVE, trust is downstream.'' A torn / foreign / non-KEL tiddler is SKIPPED, never
+guessed; a malformed event that slips extraction dies at `verifyPersonaKel`.
+# ''FAIL CLOSED.'' An absent or empty board surfaces NO chains, a prefix resolves to a null head, and the
+Binding-Gate walk denies. A not-yet-synced reader surfaces a shorter chain or none, and the pin-move fails
+closed on it.
+
+The gate-walk (`verifyEdgeAgainstPersonaKel`) walks the KEL to its current authoritative op-key, then verifies
+a device-delegation edge against THAT head — the pin moves from a raw op-key to the identifier's live head. A
+rotated key still verifies via a fresh edge; an edge signed by a superseded op-key rejects.
+
+<<~/ahu>>
+
+<<~ ahu #/frozen-for-alpha>>
+
+!! Frozen for alpha ~ the primitives the sibling grammar builds on
+
+The persona-KEL ''freezes after the provisional/veto change'' — its bytes stop moving, and the handle-KEL is
+built on the frozen primitives (identity-classes). The freeze is what lets a SIBLING grammar reuse the shape
+by structure rather than chase a moving target: the armed inception, the rolling commitment, the content
+-addressed cid, the sig-outside pattern all stand fixed. TRUE k-of-n graft governance and the Binding-Gate
+wiring ride DECLARED above the freeze, not folded into it.
+
+<<~/ahu>>
+
+<<~ ahu #/duplicity-dual>>
+
+!! Duplicity-detection ~ the dual of a registry
+
+A registry catches a cheat by compiling a place that records everyone; this stack refuses that place
+(registry-filter). The persona-KEL catches the same cheat by the DUAL move — ''duplicity is algorithmically
+detectable'' (wax-stamp): two signed inconsistent events at one sequence stand as an equivocation any replica
+spots locally, and the contest-aware board keeps both so the fold can see the fork rather than let a merge
+hide it. The board diffuses chains their subjects author (carriage, per the filter's own construction); the
+DAY any gate reads board-presence as truth-of-now it crosses into registry. Safety turns on the CHAIN — the
+fold, the quorum, the veto — never on the board's liveness.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/persona-kel.ts" family="code" role="has">>
+<<~ pranala #board from="?" -> to="packages/lararium-mesh/src/persona-kel-board.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+
+<<^ code="&#x0003;">>ni:///sha-256;zPT1fUXdCEfouiBQWRYL9dCzr6No2LqrZ6Dleit-vtE
+
+<<^ code="&#x0004;" -> to="?">>

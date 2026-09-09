@@ -1,0 +1,173 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/handle-card">>
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/handle-card.mem"
+l-space     = "lararium"
+mana        = 15
+retain      = true
+role        = "invariant law: a Handle is a QUORUM-PRESENTED NAME, and its card is what one such name shows the world. Names the Mu (the owner-set generalises the lone key, 1-of-1 the degenerate personal face), the self-certifying card, the owner-binding folded into the prefix, the four moves (rotation · burn · graft · attest), and the TWO verification tiers — self-contained structure ⊥ board-checked presentation authority."
+source-file = "packages/lararium-mesh/src/handle-card.ts"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/handle-card"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! The Handle ~ a quorum-presented name, recognised by its own key
+
+A ''Handle'' names a face the world may recognise again — the Dread Pirate Roberts, Guru-Josh, Luther
+Blissett. Two modules stand it: a ''handle-card'' publishes ONE face (its key, a display glamour, pointers
+to where its standing lives) and certifies itself; a ''handle-KEL'' carries that face's key-event-log — the
+chain the card points into. A human keeps many unlinkable Handles in a private vault (persona-circle
+#the-vault); publishing one reveals nothing of the others, because they share no key and the collector that
+knows them one human is never published.
+
+<<~/ahu>>
+
+<<~ ahu #/the-mu>>
+
+!! The Mu ~ a Handle is a quorum-presented name, not a lone key (operator, 2026-09-08)
+
+The owner-binding generalises from a single owner key to a ''presenting owner-set'' — the member persona
+prefixes plus a graft threshold. A public Handle reads VALID against its CURRENT set, and whether ONE human
+or MANY hold the right to present it stays ''unknowable by design'', exactly as a cabal refuses "which member
+signed".
+
+# ''1-of-1 is the degenerate case that IS the personal face.'' The same shape all the way down — no special
+civic tier. `mintHandleInception` keeps the single-owner path ergonomic as sugar over a one-member set.
+# ''The field's own vocabulary (Deseriis, improper names).'' A many-present name is a MULTIPLE-USE NAME
+(Luther Blissett — hundreds shared one, then retired it); a chartered set is a COLLECTIVE PSEUDONYM (Wu Ming
+— a controlled group). The 1-of-1-that-many-present and the k-of-n-chartered ARE those two forms.
+
+<<~/ahu>>
+
+<<~ ahu #/self-certifying>>
+
+!! The card certifies ITSELF ~ the name contains the key
+
+The card is signed by the Handle's OWN key, and that key rides IN the card (`nym`). A recogniser verifies the
+signature against the embedded key and ''needs no directory to trust'' (Mazières' self-certifying names;
+did:key; a Nostr npub). Zooko's triangle resolves: the identifier stands secure-and-decentralised because it
+IS the key, and memorable because each recogniser keeps a ''LOCAL petname'' for it. No SIN, no global registry
+to capture.
+
+''Recognition runs in TWO steps, and conflating them is the classic error.'' First the card must certify
+itself — a valid signature by the key it names (`verifyHandleCard`). Then the recogniser asks whether that
+key is the one their petname points at (`recognizeHandle`). A card can certify itself perfectly and STILL be
+a stranger; only the local petname turns a valid key into "the mover who healed Neo-Thracia". The petname
+lives in the recogniser's own book, never on any wire.
+
+''A rejection NAMES itself.'' `CardRejection` distinguishes wrong-domain · malformed · bad-signature ·
+expired · wrong-nym · rollback · lineage-break. A recogniser that learns only "invalid" cannot tell a forgery
+from a lapsed lease from a typo, and re-presents blind.
+
+<<~/ahu>>
+
+<<~ ahu #/monotone-leased-lineage>>
+
+!! Monotone, leased, lineage-linked ~ a face carried over time
+
+The card carries a monotone `version` (a stale card cannot roll a fresh one back), a `prev` link (the
+recogniser follows one face's history), and an `expiry` (a lease read against the recogniser's LOCAL clock —
+an unfed card goes stale on its own, since a negative fact cannot be made to arrive). The word is
+deliberately not `epoch`: that names the mesh's fencing frontier, never a wall-clock.
+
+''Identity and signature answer different questions, so they cover different bytes.'' The card's IDENTITY
+content (`handleCardIdBytes`) leaves `expiry` OUT, so a renewal — the same face, a fresh lease — keeps the
+SAME card id and the `prev` lineage stays stable across heartbeats. The SIGNED content (`handleCardBytes`)
+folds `expiry` IN, so no one extends anyone's lease by editing a number the signer never covered. One
+function cannot serve both; two do.
+
+''The announce reader rule'' (`acceptHandleUpdate`) accepts the NEWER face and refuses a rollback or a fork:
+it carries the anti-rollback-by-version and anti-equivocation-by-prev discipline `oracle-substrate` proves
+for its pointer, applied to the card's own monotone fields. Idempotent replay of the current card passes
+under gossip/merge; only a card that PURPORTS to advance is held to the lineage link.
+
+''A face may prove it speaks for a FLEET.'' An optional `fleetProof` — a delegation edge the persona root
+signed over this nym — lets a recogniser walk nym → root in one extra verify. Absent, the card certifies only
+itself, which stays complete and honest: a face that claims no fleet claims nothing false. The root signs the
+nym before the card exists, so no circle forms.
+
+<<~/ahu>>
+
+<<~ ahu #/the-chain>>
+
+!! The handle-KEL ~ a SIBLING grammar to the persona-KEL, never an extension
+
+The handle-KEL reuses the frozen persona-KEL's PRIMITIVES by shape — hash-linked events, a content-addressed
+cid, a prefix derived over the inception, an ARMED inception carrying a rolling recovery commitment — and
+mints its OWN kinds the persona grammar lacks.
+
+# ''The owner-binding folds a DIGEST of the GENESIS owner-set into the prefix'' (`sealKeySetHash` over the
+members + graft threshold), so the founding quorum is fixed in the name FOREVER (anti-swap: the name never
+moves) and the handle↔identity proof never detaches. Alongside that fixed genesis wall, each event carries a
+ROLLING `ownerSetHash` — the CURRENT presenting-set digest — separate from the rolling recovery commitment.
+# ''ROTATION · BURN · ATTEST are authorized by ANY CURRENT MEMBER.'' An event names which member presents
+and that member's head op-key; verify checks the member stands in the current owner set AND that an injected
+`OwnerHeadResolver` confirms the key is that member's authoritative head.
+# ''BURN is terminal'' — the Shadowtalk ending made structural. A buried name attests nothing; nothing rotates
+or grafts past it. A burn signs either by the seated Handle key (self-burn) or by a current member (owner-burn).
+# ''GRAFT is the succession move'' — the presenting owner-set turns over. It reveals the NEW current set and
+carries authorization from the PRIOR set; for this build ONE current member suffices (Roberts cedes to Westley
+by one willing hand). TRUE k-of-n graft governance rides DECLARED, not built.
+# ''ATTEST is a signed claim carried ON the card, never an event and never a board.'' A claim ("this Handle
+controls example.net") binds the head event cid, so a rotation/graft/burn STALES it and the fresh head
+re-attests. A domain-attestation travels on the card and verifies reader-locally against the empire's own
+registry (DNS); this stack MUST NOT compile a Handle→domain index, ever (registry-filter).
+
+<<~/ahu>>
+
+<<~ ahu #/two-tiers>>
+
+!! Two verification tiers ~ self-contained structure ⊥ board-checked presentation
+
+The chain answers at two assurance depths, and they cross different ground:
+
+* ''Tier-1 — self-contained'' (`verifyHandleKel`): sequence, hash-link, prefix, owner-binding, membership,
+burn-terminality, and cid all recompute from the chain's OWN bytes. No injection, no board, no network — a
+recogniser holding the chain settles structure alone. `verifyAttestation` and `verifyHandleCard` ride here.
+* ''Tier-2 — board-checked presentation authority'' (`verifyHandleKelFull`): every rotation and graft
+`authSig` must verify AND its signer must stand as the named member's authoritative head, per the injected
+`OwnerHeadResolver` — a presentation signed by a SUPERSEDED member key refuses HERE. That resolver typically
+walks each member's persona-KEL to its verified head; a verifier holding the members' chain snapshots
+(carried beside the card) resolves reader-locally, one without them needs the members' boards. ''The
+resolver NAMES that dependency instead of hiding it.''
+
+Both fail CLOSED on the first break. The tiers are the ONE seam where the sibling grammar touches the persona
+plane, kept as an interface so this module never imports the persona-KEL.
+
+<<~/ahu>>
+
+<<~ ahu #/public-by-design>>
+
+!! Public by design ~ one chain per call, no registry surface
+
+A handle-KEL diffuses wherever the card announces — the persona-KEL's per-Nexus board discipline does NOT
+govern it. Accordingly the module handles ONE chain per call and exposes NO surface accepting a collection of
+others' Handles. A compiled index over self-announced cards — however helpful its face — is the rejected
+registry; the cards pass, the compilation does not (registry-filter).
+
+Pure and isomorphic: the module holds no I/O and no key. The vessel supplies the signer; the caller carries
+the bytes; the read-open oracle plane serves the published blob.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/handle-card.ts" family="code" role="has">>
+<<~ pranala #chain from="?" -> to="packages/lararium-mesh/src/handle-kel.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+
+<<^ code="&#x0003;">>ni:///sha-256;RyhfS8NTKmDqsinH6yiKqSNptFipncLumfI4aPIpU2o
+
+<<^ code="&#x0004;" -> to="?">>

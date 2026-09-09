@@ -1,0 +1,78 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/quorum-entry.mem"
+l-space     = "lararium"
+mana        = 13
+retain      = true
+role        = "invariant law: the ONE canonical byte-image every quorum-signed steward entry signs over — shared beneath the Kapae antigen board and the members set. Names the subtraction, the domain-stays-first-and-required separation, and the deliberate refusal to carry a verdict (fold + quorum stay board-local, so a shared verifier cannot turn admission into conscription)."
+source-file = "packages/lararium-mesh/src/quorum-entry.ts"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/quorum-entry"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! quorum-entry ~ one byte-image, two boards, no drift
+
+The Kapae antigen board (`kapae-antigen`) and the members set (`membership-registry`) stand the SAME structure:
+a monotone per-nym CRDT of quorum-signed steward acts. Their signed bytes carry the identical five fields in
+the identical order — only the `kind` DOMAIN separates them. This module holds that common image once, so the
+two boards can never drift a field apart while both claiming a quorum verified them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-subtraction>>
+
+!! The subtraction ~ the shared act beneath two boards
+
+`QuorumEntryFields` names the steward act every quorum board carries: `kind` (the signing domain), `nym` (the
+subject's verifying-key hex — an identity, never a doc), `action` (the board-local act — `kapae`/`un_kapae`,
+`admit`/`revoke`), `version` (monotone per nym; a higher verified version supersedes a lower), and
+`sealEpochCid` (the charter epoch the act roots on — an entry citing an unknown epoch is IGNORED).
+
+`quorumEntryBytes` canonicalises exactly those five, sorted-key stable. ''The signatures ride OUTSIDE the
+signed content'', so re-carrying an entry never re-signs it.
+
+<<~/ahu>>
+
+<<~ ahu #/domain-first>>
+
+!! The domain stays first and stays required ~ the cross-board separation
+
+`kind` rides as the FIRST canonical field and every caller supplies its own domain constant — ''that value IS
+the cross-board separation.'' An antigen signature and a membership signature cover different bytes because
+they cover different domains, so no signature raised on one board can ever be re-presented on the other. A
+shared image with an optional or defaulted domain would dissolve exactly that guarantee; this signature keeps
+the domain un-defaultable.
+
+<<~/ahu>>
+
+<<~ ahu #/refuses-a-verdict>>
+
+!! What this module refuses ~ bytes only, never a verdict
+
+The module carries the BYTES ONLY. The two boards gate DIFFERENTLY on purpose: the members set additionally
+requires the operator's OWN accepts-carriage contract token (`carriageContractBytes`), and the antigen
+requires no such consent. ''A shared verifier that forgot that token would turn admission into conscription.''
+So the fold and the quorum verdicts stay board-local, deliberately — this module names the common bytes and
+declines every judgment about them.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/quorum-entry.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+
+<<^ code="&#x0003;">>ni:///sha-256;7owXhy6EeP_KBr3fpRXpJ9GzKiobBniUyCsz2meazmY
+
+<<^ code="&#x0004;" -> to="?">>
