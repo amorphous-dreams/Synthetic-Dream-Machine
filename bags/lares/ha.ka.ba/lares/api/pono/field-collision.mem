@@ -55,7 +55,7 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 !! Golden principles the field converged on ~ hold these
 
 * ''NO-GLOBAL-NOW is a hardware law, not a preference'' (FLP 1985 · CAP · PACELC 2010). Deterministic consensus is impossible under pure asynchrony with one crash fault; the only escapes are randomization, partial synchrony, or WEAKENED liveness. We chose weakened liveness (φ-accrual) and are honest about it. EXTEND — ''PACELC names the tax at peace:'' even with no partition you still trade Latency for Consistency. We stand PA/EL — ''a linearizable read is one we can NEVER offer.'' Say so at every gate.
-* ''Fork/join membership without a roster is PROVEN'' — Interval Tree Clocks (Almeida-Baquero-Fonte 2008): fork a new participant, join to reduce, reconfigure with LOCAL information, no global id authority — in production (Riak, Akka). Our quorum-rollover has a working clock underneath it. `[verify the Riak deployment figure before it enters a claim]`
+* ''Fork/join membership without a roster is PROVEN in theory'' — Interval Tree Clocks (Almeida-Baquero-Fonte 2008), VERIFIED at the primary source (eprint fetch 2026-09-08): fork produces two clones with disjoint event ids that evolve independently, join merges them, event increments locally — "no global coordination or central authority required for generating unique identifiers." Our quorum-rollover has a sound clock-shape underneath it. ⚠ ''CORRECTION:'' the earlier "in production (Riak, Akka)" claim rode a search-summary and the ITC PAPER makes NO deployment claim — struck as unverified (and likely erroneous: Riak ships DOTTED VERSION VECTORS, not ITC). The vindication is the MECHANISM (proven, cited), never a deployment (unproven, withdrawn).
 * ''Weak subjectivity names the boundary'' (Buterin 2014): a node offline past a horizon cannot self-heal from cryptography alone — it needs an out-of-band social checkpoint. Matches our "beyond horizon K a lone island asks a human." And the 2024 caution: DON'T overload social consensus.
 * ''Data-protection-by-architecture'' (GDPR Art. 25): pseudonymization-by-default, minimize extent/period/accessibility. Our rejection-law reads as a COMPLIANCE posture, not only an aesthetic.
 
@@ -87,7 +87,7 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 !! Standing tensions ~ what the field leaves genuinely open (operator-aware)
 
 * ''MODERATION at scale.'' Hidden human-cardinality removes "ban the PERSON, not the account" — the primitive real-name policies wanted (and the Nymwars proved those policies HARM the vulnerable, so hiding cardinality is protective, and the abuse problem was never solved, only DEFERRED). Our partial answer: a ban propagates by CAPABILITY (kapae/antigen, the vouch-lineage slash), never by de-anonymizing. Honestly open — a k-of-n name a ban cannot reach one human behind is a real cost accepted for the pre-SIN stance.
-* ''BENEFICIAL-OWNERSHIP LAW'' (US CTA 2024 · EU AMLD). Where a Handle touches money or contracts, the law DEMANDS the who-is-who record our law forbids compiling. The answer rides the causal-island boundary (`bridge-and-reach-plane`): the legal/KYC record lives at the WEB2 BRIDGE, behind the island wall, never in the sovereign carriage — a Handle that must be KYC'd crosses into a contract plane carrying the legal record OUTSIDE the sovereign plane. Named, not yet built.
+* ''BENEFICIAL-OWNERSHIP LAW — DOCTRINE FIRMED (2026-09-08)'' (US CTA 2024 · EU AMLD). Where a Handle touches money or contracts, the law DEMANDS the who-is-who record our law forbids compiling. ''The two do not collide — they SEPARATE at the island wall:'' the sovereign carriage NEVER holds a KYC record (the registry filter holds absolutely inside the sovereign plane), and the legal/KYC record lives ENTIRELY at the WEB2 BRIDGE (`bridge-and-reach-plane`, operator-locked bridge scope; foreign credentials ride as `#has` caps held apart from the sovereign plane). ''A Handle that must be KYC'd does not leak its holders into carriage — it CROSSES into a contract plane whose legal record sits outside the sovereign wall, by construction a web2-bridge artifact behind a causal-island boundary'' (the web3-only law: any web2 bridge sits behind an island boundary; no web2 ontology enters the Lares stack proper). The DreamNet's own name for its holders stays unknowable; the LAW's record is a separate object in a separate plane. Named as doctrine; the contract-plane KYC artifact stands unbuilt (a declared red).
 
 <<~/ahu>>
 
@@ -96,6 +96,6 @@ The collision named its own biggest threat: ''does carriage-not-registry forfeit
 <<~ loulou lar:///ha.ka.ba/lares/api/pono/the-veil-ladder>>
 <<~ loulou lar:///ha.ka.ba/lares/api/pono/clockless-lease-model>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CHLD_Uoe7ULRseoF7Z7Y4SwTbqHvic3yMzx99snrPFw
+<<^ code="&#x0003;">>ni:///sha-256;5BgDePmlJk4Nsk5PQEv_fi_1JQP9KHK9Zn1Ie9Np7HY
 
 <<^ code="&#x0004;" -> to=?>>

@@ -13,7 +13,10 @@
  * CURRENT set, and whether ONE or MORE humans hold the right to present it stays unknowable by design
  * — exactly as a cabal refuses "which member signed". ''1-of-1 is the degenerate case that IS the
  * personal face'' — the same shape all the way down, no special civic tier (`mintHandleInception`
- * keeps the single-owner path ergonomic as sugar over a one-member set).
+ * keeps the single-owner path ergonomic as sugar over a one-member set). The field's own vocabulary
+ * (Deseriis, "improper names"): a many-present name is a MULTIPLE-USE NAME (Luther Blissett — hundreds
+ * shared one, then retired it), a chartered set is a COLLECTIVE PSEUDONYM (Wu Ming — a controlled
+ * group); our 1-of-1-that-many-present and k-of-n-chartered are those two forms.
  *
  * THE OWNER-BINDING: a Handle's inception folds a DIGEST of its GENESIS owner-SET into the identifier's
  * own bytes (`sealKeySetHash(members, graftThreshold)`, the persona shape), so the founding quorum is

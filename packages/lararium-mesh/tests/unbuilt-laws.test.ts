@@ -175,6 +175,10 @@ describe("⑤ the outward gate", () => {
 // the same state `crossingDirection` and the recovery keel stand in, and it is a state worth naming
 // rather than counting as built: a law specified in code is stronger than a design meme and weaker
 // than a wired path, and the corpus keeps mistaking the first for the third.
+  test.skip("A KYC RECORD LIVES AT THE BRIDGE, NEVER IN CARRIAGE — DOCTRINE 2026-09-08 (field-collision#standing-tensions): beneficial-ownership law (CTA/AMLD) demands a who-is-who record where a Handle touches money/contracts; the sovereign carriage NEVER holds it (the registry filter is absolute inside the plane) and the legal record lives ENTIRELY at the web2 bridge (bridge-and-reach-plane, foreign creds as #has caps behind the island wall). UNBUILT: no contract-plane KYC artifact exists at the bridge, and no gate refuses a money-touching Handle that lacks one", () => {
+    expect(Object.keys(mesh)).toContain("contractPlaneKycAtBridge");
+  });
+
 describe("⑨ the dyad, specified and unwired", () => {
   test("the model exports what the doctrine claims of it", () => {
     for (const sym of ["dyadId", "fleetOfGroup", "signDyadBinding", "dyadsOnVessel"]) {
