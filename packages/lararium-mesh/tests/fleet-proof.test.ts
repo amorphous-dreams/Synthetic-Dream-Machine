@@ -18,6 +18,7 @@ import * as ed from "@noble/ed25519";
 import {
   signHandleCard, signFleetProof, verifyFleetProof, verifyHandleCard,
   handleCardId, handleCardBytes, fleetProofSubject, delegationBytes, DELEGATION_DOMAIN, type HandleCard,
+  mintHandleInception, type HandleKelEvent,
 } from "../src/index.js";
 import { hex, hexToBytes } from "../src/crypto.js";
 
@@ -30,11 +31,15 @@ const signer = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).th
 const pubOf  = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const verify = (b: Uint8Array, sig: string, did: string) =>
   ed.verifyAsync(hexToBytes(sig), b, hexToBytes(did)).catch(() => false);
+const RECOVERY = "ab".repeat(32);
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+/** The FACE's STABLE nym — its handle-KEL prefix (the fleet-proof binds root→this identifier). */
+const nymOf = async (seed: Uint8Array): Promise<string> => chainOf(await pubOf(seed))[0]!.prefix;
 
 async function card(over: Partial<HandleCard> = {}): Promise<HandleCard> {
-  const nym = await pubOf(FACE_SEED);
+  const chain = chainOf(await pubOf(FACE_SEED));
   const base = {
-    nym, glamour: "FastJack", version: 1, prev: null,
+    nym: chain[0]!.prefix, chain, glamour: "FastJack", version: 1, prev: null,
     expiry: 4_000_000_000_000, standing: null, fleetProof: null,
     ...over,
   };
@@ -43,7 +48,7 @@ async function card(over: Partial<HandleCard> = {}): Promise<HandleCard> {
 
 describe("the edge turns a convention into a proof", () => {
   test("★ a face bound by its OWN root verifies ★", async () => {
-    const nym  = await pubOf(FACE_SEED);
+    const nym  = await nymOf(FACE_SEED);
     const root = await pubOf(ROOT_SEED);
     const c = await card({ fleetProof: await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED)) });
 
@@ -52,21 +57,22 @@ describe("the edge turns a convention into a proof", () => {
   });
 
   test("★ a FORGED claim on someone else's fleet REFUSES ★", async () => {
-    const nym = await pubOf(FACE_SEED);
+    const nym = await nymOf(FACE_SEED);
     // the forger names a root it does not hold, and signs with its own key
     const forged = await signFleetProof({ nym, rootDid: await pubOf(OTHER_ROOT), epochCid: EPOCH }, signer(FACE_SEED));
     expect(await verifyFleetProof(await card({ fleetProof: forged }), verify)).toBe(false);
   });
 
   test("an edge cannot be LIFTED from one card onto another — it covers the nym it speaks for", async () => {
-    const nym  = await pubOf(FACE_SEED);
+    const nym  = await nymOf(FACE_SEED);
     const root = await pubOf(ROOT_SEED);
     const honest = await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED));
 
     // paste that edge onto a DIFFERENT face
     const otherFace = new Uint8Array(32).fill(9);
+    const otherChain = chainOf(await pubOf(otherFace));
     const stolen = await signHandleCard({
-      nym: await pubOf(otherFace), glamour: "FastJack", version: 1, prev: null,
+      nym: otherChain[0]!.prefix, chain: otherChain, glamour: "FastJack", version: 1, prev: null,
       expiry: 4_000_000_000_000, standing: null, fleetProof: honest,
     } as Omit<HandleCard, "kind" | "sig">, signer(otherFace));
 
@@ -74,7 +80,7 @@ describe("the edge turns a convention into a proof", () => {
   });
 
   test("an edge bound at a DIFFERENT epochCid refuses — the epochCid orders the binding", async () => {
-    const nym  = await pubOf(FACE_SEED);
+    const nym  = await nymOf(FACE_SEED);
     const root = await pubOf(ROOT_SEED);
     const p = await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED));
     const moved = await card({ fleetProof: { ...p, epochCid: "epoch1-deadbeef" } });
@@ -90,7 +96,7 @@ describe("the edge turns a convention into a proof", () => {
   });
 
   test("the card never carries a device key or a member list — the privacy rests on absence", async () => {
-    const nym  = await pubOf(FACE_SEED);
+    const nym  = await nymOf(FACE_SEED);
     const root = await pubOf(ROOT_SEED);
     const c = await card({ fleetProof: await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED)) });
     const fields = new Set(Object.keys(c).concat(Object.keys(c.fleetProof!)));
@@ -117,7 +123,7 @@ describe("identity and signature answer different questions, so they cover diffe
   });
 
   test("BINDING a face changes its identity — a recogniser sees a version, never a silent mutation", async () => {
-    const nym  = await pubOf(FACE_SEED);
+    const nym  = await nymOf(FACE_SEED);
     const root = await pubOf(ROOT_SEED);
     const unbound = await card();
     const bound = await card({ fleetProof: await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED)) });

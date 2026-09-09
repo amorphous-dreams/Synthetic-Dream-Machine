@@ -35,6 +35,8 @@ import { assertHandleIndex } from "./persona-vault.js";
 import {
   signHandleCard, handleCardId, type HandleCard,
 } from "./handle-card.js";
+import { mintHandleInception, type HandleKelEvent } from "./handle-kel.js";
+import { sealKeySetHash } from "./wax-stamp.js";
 import type { DelegationEdge } from "./delegation-edge.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
 import { hexToBytes } from "./crypto.js";
@@ -50,6 +52,7 @@ import type { OwnPublicHandleView } from "./persona-petname.js";
  */
 export const PERSONA_GLAMOUR_CONTEXT = 0;
 
+
 /** The default freshness lease a glamour card carries — 30 days, read against the recogniser's LOCAL clock
  *  (handle-card's expiry rides no global now; an unfed card goes stale on its own). Re-publish renews it. */
 export const DEFAULT_GLAMOUR_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -61,7 +64,8 @@ export interface PersonaPublicHandleRecord {
   readonly handleIndex: number;
   /** The context-index the veiled face derived at (default PERSONA_GLAMOUR_CONTEXT). */
   readonly contextIndex: number;
-  /** The persona's veiled-user verifying key — the card's `nym`, its self-certifying identifier. */
+  /** The face's handle-KEL PREFIX — the card's `nym`, the STABLE self-certifying identifier (retired off the
+   *  bare veiled key onto the founded chain). A re-mint reproduces it, so the lineage holds across renewals. */
   readonly nym: string;
   /** The current published display glamour. */
   readonly glamour: string;
@@ -120,17 +124,28 @@ export async function mintPersonaGlamour(opts: {
   const contextIndex = opts.contextIndex ?? PERSONA_GLAMOUR_CONTEXT;
   const veiled = await deriveVeiledUserKey(opts.seed, opts.handleIndex, contextIndex);
 
+  // FOUND the 1-of-1 handle-KEL — the veiled key is the Handle's OWN inception key, and (the degenerate
+  // self-owned case the MU names) it is also its sole owner-set member. The recovery pre-commitment derives
+  // deterministically off that key, so a re-mint reproduces the SAME prefix — the card's stable identifier
+  // holds across lease renewals. A real founding supplies the owning PersonaGroup prefix + a guardian
+  // recovery set here instead; that wiring rides the founding path, not this personal-face mint.
+  const handleKeyDid    = `0x${veiled.verifyingKey}`;
+  const recoverySetHash = sealKeySetHash([handleKeyDid], 1);
+  const chain: HandleKelEvent[] = [mintHandleInception(handleKeyDid, handleKeyDid, recoverySetHash)];
+  const nym = chain[0]!.prefix;
+
   const prior = await opts.store.load(opts.handleIndex);
   // A re-publish for the SAME persona must advance its own lineage — a peer's HandleBook refuses a card that
   // rolls the version back or forks the `prev` chain (handle-card#acceptHandleUpdate). A prior record for a
-  // DIFFERENT nym (a re-derivation drift) never links across keys, so the lineage restarts from that face.
-  const sameFace = prior !== null && prior.nym === veiled.verifyingKey;
+  // DIFFERENT prefix (a re-derivation drift) never links across chains, so the lineage restarts from that face.
+  const sameFace = prior !== null && prior.nym === nym;
   const version  = sameFace ? prior.version + 1 : 1;
   const prev     = sameFace ? prior.cardId : null;
 
   const card = await signHandleCard(
     {
-      nym:      veiled.verifyingKey,
+      nym,
+      chain,
       glamour,
       version,
       prev,
@@ -140,6 +155,7 @@ export async function mintPersonaGlamour(opts: {
       // honestly and claims no fleet. Binding stays a deliberate act, exactly as announcing does.
       fleetProof: opts.fleetProof ?? null,
     },
+    // The card is signed by the chain's HEAD Handle key — at inception, the veiled key itself.
     ed25519SignerFromSeed(hexToBytes(veiled.signingKey)),
   );
 
@@ -147,7 +163,7 @@ export async function mintPersonaGlamour(opts: {
   const record: PersonaPublicHandleRecord = {
     handleIndex:  opts.handleIndex,
     contextIndex,
-    nym:          veiled.verifyingKey,
+    nym,
     glamour,
     version,
     cardId:       await handleCardId(unsigned),

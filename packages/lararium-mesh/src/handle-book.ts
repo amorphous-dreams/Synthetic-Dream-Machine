@@ -36,8 +36,20 @@ export interface HandleRecord {
   readonly petname:          string | null;
 }
 
+/**
+ * The snapshot's on-disk ERA. Bumped when a stored record's shape changes incompatibly. Era 2 is the
+ * KEL-bearing card (the nym RETIRED onto a handle-KEL chain, identity-classes#the-handle-chain); era 1 (or a
+ * versionless snapshot) stored a BARE-KEY nym and a chain-less card. A bare key is NOT a chain — there is no
+ * inception event to synthesise from it — so a pre-KEL record CANNOT be migrated forward losslessly; it is
+ * DROPPED on load and re-learned from the next fresh announce (TOFU). The drop is DELIBERATE and versioned,
+ * never the silent catch→new() wipe a shape change would otherwise cause.
+ */
+export const HANDLE_BOOK_SNAPSHOT_VERSION = 2 as const;
+
 /** A plain-object export of the whole book — serialise this to persist recognition across reboots. */
 export interface HandleBookSnapshot {
+  /** The on-disk era (HANDLE_BOOK_SNAPSHOT_VERSION). Absent on a pre-KEL (era-1) snapshot. */
+  readonly version?: number;
   readonly records: readonly HandleRecord[];
 }
 
@@ -50,7 +62,13 @@ export class HandleBook {
   private readonly records = new Map<string, HandleRecord>();
 
   constructor(snapshot?: HandleBookSnapshot) {
-    for (const r of snapshot?.records ?? []) this.records.set(r.nym, r);
+    // A snapshot from an OLDER era stored un-reconstructable bare-key records — drop them wholesale (a
+    // versioned, deliberate reset) rather than load cards that can never re-verify. A same-era snapshot
+    // still has each record's card validated defensively: a record whose card carries no chain is skipped.
+    if (snapshot && (snapshot.version ?? 1) !== HANDLE_BOOK_SNAPSHOT_VERSION) return;
+    for (const r of snapshot?.records ?? []) {
+      if (Array.isArray(r.card?.chain) && r.card.chain.length > 0) this.records.set(r.nym, r);
+    }
   }
 
   /**
@@ -99,8 +117,9 @@ export class HandleBook {
     return [...this.records.keys()];
   }
 
-  /** Export the whole book — serialise to persist recognition across a reboot; rehydrate via the constructor. */
+  /** Export the whole book — serialise to persist recognition across a reboot; rehydrate via the constructor.
+   *  Stamped with the current era so a future shape change detects (and declines) a stale snapshot. */
   snapshot(): HandleBookSnapshot {
-    return { records: [...this.records.values()] };
+    return { version: HANDLE_BOOK_SNAPSHOT_VERSION, records: [...this.records.values()] };
   }
 }

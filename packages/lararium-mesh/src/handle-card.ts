@@ -29,22 +29,38 @@ import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
+import {
+  verifyHandleKel, verifyHandleKelFull, headHandleKey, isBurned,
+  type HandleKelEvent, type OwnerHeadResolver,
+} from "./handle-kel.js";
 import * as ed25519 from "@noble/ed25519";
+
+/** The stable identifier a card presents — a handle-KEL prefix (`handle-<64hex>`), fixed across every key
+ *  rotation and graft. The nym RETIRED off a bare key onto this chain-anchored name (identity-classes#the-handle-chain). */
+const HANDLE_PREFIX_RE = /^handle-[0-9a-f]{64}$/;
 
 /** The domain a card signs over. A signature is meaningless without the domain it was made in. */
 export { HANDLE_CARD_DOMAIN } from "./domains.js";
 /**
  * The published face of one handle — PUBLIC data only. Nothing here may reach the vault or another face.
  *
- * `nym` is the handle's verifying key: the identifier IS the key, so the card certifies itself. In the
- * upgraded model this is a scope-exclusive pseudonym `PRF_s(scope)` proven in ZK (persona-circle#the-vault);
- * here it rides as the raw ed25519 verifying key, and the ZK proof binding it to a committed master secret
- * is the owed layer above this one.
+ * `nym` carries the handle-KEL PREFIX — the stable identifier folded over
+ * the inception (handle-kel#handlePrefixOf), fixed across every rotation, graft and burn. The signing
+ * authority lives in `chain`: the card is signed by the CURRENT head Handle key, which the chain seats and a
+ * rotation moves. So a Handle can BURN (recognition ends), ROTATE its key (the nym holds), and present as a
+ * QUORUM (the owner-set grafts) — none of which a bare key could do (identity-classes#the-handle-chain,
+ * #THE-MU). Recognition still self-certifies: a reader verifies the chain structurally and the card's sig
+ * against the chain's head key, no registry consulted (Tier 1).
  */
 export interface HandleCard {
   readonly kind:     typeof HANDLE_CARD_DOMAIN;
-  /** The handle's verifying-key hex — the identifier that certifies the card. Recognition checks against this. */
+  /** The handle-KEL PREFIX (`handle-<64hex>`) — the stable identifier a recogniser's petname points at.
+   *  MUST equal `chain[0].prefix`; recognition keys on this, not on the rotating head key. */
   readonly nym:      string;
+  /** The handle's key-event-log — inception (+ any rotation/graft/burn), carried SELF-CONTAINED so a reader
+   *  verifies the head key and the burn/rotation lineage without any board (Tier 1). The owner-head snapshot
+   *  the strict tier walks rides beside it in the reader's resolver, never on the card. */
+  readonly chain:    readonly HandleKelEvent[];
   /** The display glamour — a chosen name/mask, never a legal identity. Memorable, never authoritative. */
   readonly glamour:  string;
   /** Monotone counter — a later card supersedes an earlier one; a stale card cannot roll it back. */
@@ -78,6 +94,7 @@ export function handleCardIdBytes(card: Omit<HandleCard, "sig" | "expiry">): Uin
   return canonicalJsonBytes({
     kind:       card.kind,
     nym:        card.nym,
+    chain:      card.chain,
     glamour:    card.glamour,
     version:    card.version,
     prev:       card.prev,
@@ -151,51 +168,97 @@ export async function signHandleCard(
 
 /** Why a card failed to verify — a recogniser learns exactly what is wrong rather than a bare "invalid". */
 export type CardRejection =
-  | "wrong-domain"      // not a handle-card
-  | "malformed"         // a field is the wrong shape (nym/sig not hex, etc.)
-  | "bad-signature"     // the card was not signed by the key it names — it certifies nothing
-  | "expired"           // the lease lapsed against the local clock (only checked when `now` is given)
-  | "wrong-nym"         // the card names a DIFFERENT handle than the one a recogniser tracks — not an update
-  | "rollback"          // the card's version sits below one the recogniser already accepted — a replay
-  | "lineage-break";    // the card's `prev` fails to link the last card held — an equivocation/fork
+  | "wrong-domain"       // not a handle-card
+  | "malformed"          // a field is the wrong shape (nym not a handle-prefix, sig not hex, chain absent, etc.)
+  | "chain-invalid"      // the carried handle-KEL fails structural verification — a broken lineage seats no head
+  | "nym-mismatch"       // the presented nym is not the chain's own prefix — the name does not match its chain
+  | "burned"             // the Handle's chain ends in a burn — recognition ENDS at the burn, forever
+  | "bad-signature"      // the card was not signed by the chain's CURRENT head Handle key — it certifies nothing
+  | "expired"            // the lease lapsed against the local clock (only checked when `now` is given)
+  | "owner-head-refused" // TIER 2 only: a presentation rides a SUPERSEDED / non-member owner key (the strict walk refuses)
+  | "wrong-nym"          // the card names a DIFFERENT handle than the one a recogniser tracks — not an update
+  | "rollback"           // the card's version sits below one the recogniser already accepted — a replay
+  | "lineage-break";     // the card's `prev` fails to link the last card held — an equivocation/fork
+
+/**
+ * The recognition tier a PASS was earned at — the third axis, held apart from ok/reject so a Tier-1 pass can
+ * NEVER masquerade as a Tier-2 one.
+ *   · Tier 1 (SELF-CONTAINED) — the chain verified structurally, stands unburned, and the card's sig checks
+ *     against its head key. No board, no resolver. The default a recogniser gets for free.
+ *   · Tier 2 (OWNER-HEAD-CHECKED) — everything in Tier 1 PLUS the full walk: every rotation/graft/owner-burn
+ *     presented under a member key that STILL stands as that member's head, per the injected resolver
+ *     (against the persona board). A superseded presenter refuses here. Opt-in, by passing a resolver.
+ */
+export type CardTier = 1 | 2;
 
 export interface CardVerdict {
   readonly ok:      boolean;
-  readonly nym?:    string;         // the recognised key, on success — the thing a petname points at
+  readonly nym?:    string;         // the recognised STABLE prefix, on success — the thing a petname points at
+  readonly headKey?: string;        // the CURRENT head Handle key the card is signed by, on success (the rotating key)
+  readonly tier?:   CardTier;       // the tier this pass was earned at — 1 self-contained, 2 owner-head-checked
   readonly reject?: CardRejection;
 }
 
 /**
- * Verify a card certifies ITSELF: the signature must check against the key the card names.
+ * Verify a card certifies ITSELF against its carried handle-KEL — TWO tiers, held apart on the verdict.
  *
- * This is the whole of recognition, and it needs no registry — a card is trustworthy exactly insofar as the
- * key inside it signed it. Passing `now` additionally checks the freshness lease; omitting it verifies the
- * signature alone (a recogniser may accept a stale-but-signed card as a last-known face, its own call).
+ * TIER 1 (SELF-CONTAINED, the default). The chain verifies structurally (`verifyHandleKel`), the presented
+ * nym IS the chain's prefix, the Handle is not burned, and the card's signature checks against the chain's
+ * CURRENT head key. This needs no registry — a card is trustworthy exactly insofar as its chain seats a live
+ * head that signed it. Passing `now` additionally checks the freshness lease.
  *
- * A rejection NAMES itself. A recogniser that only learns "invalid" cannot tell a forgery from a lapsed
- * lease from a typo, and re-presents blind.
+ * TIER 2 (OWNER-HEAD-CHECKED, opt-in). Pass an `ownerHeadResolver` and the verify additionally runs the full
+ * walk (`verifyHandleKelFull`): every presentation event must ride a member key that STILL stands as that
+ * member's head. A rotated/grafted head that presents under a CURRENT owner passes; one signed by a SUPERSEDED
+ * member key refuses as `owner-head-refused`. The verdict's `tier` names which assurance the pass carries, so
+ * a caller can never read a self-contained pass as a board-checked one.
+ *
+ * A rejection NAMES itself. A recogniser that only learns "invalid" cannot tell a forgery from a lapsed lease
+ * from a buried name, and re-presents blind.
  */
 export async function verifyHandleCard(
   card: HandleCard,
   now?: number,
+  ownerHeadResolver?: OwnerHeadResolver,
 ): Promise<CardVerdict> {
+  const tier: CardTier = ownerHeadResolver ? 2 : 1;
   if (card.kind !== HANDLE_CARD_DOMAIN) return { ok: false, reject: "wrong-domain" };
-  if (!/^[0-9a-f]{64}$/.test(card.nym) || !/^[0-9a-f]{128}$/.test(card.sig)) {
+  if (!HANDLE_PREFIX_RE.test(card.nym) || !/^[0-9a-f]{128}$/.test(card.sig) || !Array.isArray(card.chain) || card.chain.length === 0) {
     return { ok: false, reject: "malformed" };
   }
-  // Freshness before the signature: a card whose lease lapsed is stale WHATEVER its signature, and saying so
-  // first keeps a recogniser from treating an old face as current merely because the crypto still checks.
+  // The chain is the whole of the identity now — a broken lineage seats no trustworthy head, so it fails
+  // BEFORE the signature (a sig over a broken chain proves nothing about a live Handle).
+  if (!verifyHandleKel(card.chain))            return { ok: false, reject: "chain-invalid" };
+  if (card.nym !== card.chain[0]!.prefix)      return { ok: false, reject: "nym-mismatch" };
+  // A burned name refuses WHATEVER its lease or signature — recognition ends at the burn, structurally.
+  if (isBurned(card.chain))                    return { ok: false, reject: "burned" };
+  // Freshness before the signature: a card whose lease lapsed is stale whatever its signature.
   if (now !== undefined && Number.isFinite(card.expiry) && card.expiry <= now) {
     return { ok: false, reject: "expired" };
   }
-  const { sig, ...unsigned } = card;
+  const headKey = headHandleKey(card.chain);   // non-null: the chain verified and stands unburned
+  if (headKey === null)                        return { ok: false, reject: "chain-invalid" };
+  const { sig } = card;
   let ok = false;
   try {
-    ok = await ed25519.verifyAsync(hexToBytes(sig), handleCardBytes(unsigned), hexToBytes(card.nym));
+    ok = await ed25519.verifyAsync(hexToBytes(sig), handleCardBytes(cardUnsigned(card)), hexToBytes(headKey.replace(/^0x/, "")));
   } catch {
     return { ok: false, reject: "malformed" };
   }
-  return ok ? { ok: true, nym: card.nym } : { ok: false, reject: "bad-signature" };
+  if (!ok) return { ok: false, reject: "bad-signature" };
+  // TIER 2 — the strict walk of presentation authority against the persona board (opt-in via the resolver).
+  if (ownerHeadResolver) {
+    const full = await verifyHandleKelFull(card.chain, ownerHeadResolver);
+    if (!full.ok) return { ok: false, reject: "owner-head-refused" };
+  }
+  return { ok: true, nym: card.nym, headKey, tier };
+}
+
+/** The card minus its signature — the bytes `handleCardBytes` covers. Named once so the mint and the verify
+ *  never disagree about which fields the head key signed. */
+function cardUnsigned(card: HandleCard): Omit<HandleCard, "sig"> {
+  const { sig: _sig, ...unsigned } = card;
+  return unsigned;
 }
 
 /**

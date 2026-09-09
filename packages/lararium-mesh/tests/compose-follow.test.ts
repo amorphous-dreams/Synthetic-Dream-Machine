@@ -18,6 +18,7 @@ import {
   composeFollow, composeUnfollow, listFollows, FollowRefused,
   type CircleStore, type HandleCard,
 } from "../src/index.js";
+import { mintHandleInception, type HandleKelEvent } from "../src/handle-kel.js";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 
@@ -35,10 +36,14 @@ function spyCircleStore() {
   return { store, writes, map };
 }
 
+const RECOVERY = "ab".repeat(32);
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+
 async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: string; card: HandleCard }> {
-  const nym = await ed.getPublicKeyAsync(seed).then(hex);
+  const chain = chainOf(await ed.getPublicKeyAsync(seed).then(hex));
+  const nym = chain[0]!.prefix;   // the recognised identity is the handle-KEL prefix, not the raw key
   const card = await signHandleCard(
-    { nym, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
     ed25519SignerFromSeed(seed),
   );
   return { nym, card };

@@ -12,6 +12,7 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { from, merge, change, clone } from "@automerge/automerge";
+import { mintHandleInception, type HandleKelEvent } from "../src/handle-kel.js";
 import { signHandleCard, handleCardId, type HandleCard } from "../src/handle-card.js";
 import { HandleBook } from "../src/handle-book.js";
 import { writeHandleAnnounce, ingestAnnounceDoc } from "../src/handle-announce.js";
@@ -26,12 +27,16 @@ const VESSEL_B_SEED = new Uint8Array(32).fill(22);
 const NEXUS_PUBKEY  = "abcdef0123456789";
 
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf  = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
+const rawPub = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
+const RECOVERY = "ab".repeat(32);
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+/** The identity a recogniser keys on — the handle-KEL PREFIX (the nym retired onto the chain). */
+const pubOf  = async (seed: Uint8Array): Promise<string> => chainOf(await rawPub(seed))[0]!.prefix;
 
 async function announce(seed: Uint8Array, glamour: string, over: Partial<HandleCard> = {}): Promise<HandleCard> {
-  const nym = await pubOf(seed);
+  const chain = chainOf(await rawPub(seed));
   return signHandleCard({
-    nym, glamour, version: 1, prev: null, expiry: 4_000_000_000_000, standing: null, ...over,
+    nym: chain[0]!.prefix, chain, glamour, version: 1, prev: null, expiry: 4_000_000_000_000, standing: null, ...over,
   }, signer(seed));
 }
 

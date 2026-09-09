@@ -13,10 +13,11 @@
 import { describe, test, expect } from "vitest";
 import {
   HandleBook, signHandleCard, ed25519SignerFromSeed,
-  parseHandleCardCarriage, toHandleCardCarriage,
+  parseHandleCardCarriage, toHandleCardCarriage, carriageMode, fitsQrCarriage, QR_CARRIAGE_MAX_EVENTS,
   composeFollow, FollowRefused,
   type CircleStore, type HandleCard,
 } from "../src/index.js";
+import { mintHandleInception, mintHandleRotation, type HandleKelEvent } from "../src/handle-kel.js";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 
@@ -30,10 +31,14 @@ function spyCircleStore(): CircleStore {
   };
 }
 
+const RECOVERY = "ab".repeat(32);
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+
 async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: string; card: HandleCard }> {
-  const nym = await ed.getPublicKeyAsync(seed).then(hex);
+  const chain = chainOf(await ed.getPublicKeyAsync(seed).then(hex));
+  const nym = chain[0]!.prefix;   // the recognised identity is the handle-KEL prefix, not the raw key
   const card = await signHandleCard(
-    { nym, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
     ed25519SignerFromSeed(seed),
   );
   return { nym, card };
@@ -90,5 +95,52 @@ describe("handle-carriage — the card-arrival front door", () => {
     // The book is the trust gate — it REJECTS the forged signature on ingest.
     const verdict = await new HandleBook().ingest(decoded!);
     expect(verdict.ok).toBe(false);
+  });
+});
+
+describe("★ THE QR CARRIAGE CEILING — a NAMED boundary, not one discovered at the shrine ★", () => {
+  // A self-owned N-event chain: inception, then (N-1) rotations under the sole owner (the handle key itself).
+  async function chainOfLength(seed: Uint8Array, n: number): Promise<HandleKelEvent[]> {
+    const pub = await ed.getPublicKeyAsync(seed).then(hex);
+    const did = `0x${pub}`;
+    const chain: HandleKelEvent[] = [mintHandleInception(did, did, "ab".repeat(32))];
+    for (let i = 1; i < n; i++) {
+      const rot = await mintHandleRotation({
+        head: chain[chain.length - 1]!, freshHandleKeyDid: did,
+        ownerAuthMemberPrefix: did, ownerHeadOpKeyDid: did,
+        sign: (b) => ed.signAsync(b, seed).then(hex),
+      });
+      if (!rot.ok) throw new Error(rot.reason);
+      chain.push(rot.event);
+    }
+    return chain;
+  }
+  async function cardWithChain(seed: Uint8Array, n: number): Promise<HandleCard> {
+    const chain = await chainOfLength(seed, n);
+    return signHandleCard(
+      { nym: chain[0]!.prefix, chain, glamour: "Eris", version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+      ed25519SignerFromSeed(seed),
+    );
+  }
+
+  test("the ceiling is a DECLARED constant (2), never a magic number in a branch", () => {
+    expect(QR_CARRIAGE_MAX_EVENTS).toBe(2);
+  });
+
+  test("a card AT or UNDER the ceiling rides a QR; one PAST it is paste-or-file", async () => {
+    const SEED = new Uint8Array(32).fill(19);
+    const inception = await cardWithChain(SEED, 1);
+    const rotated   = await cardWithChain(SEED, 2);   // at the ceiling
+    const grown     = await cardWithChain(SEED, 3);   // one past it
+
+    expect(carriageMode(inception)).toBe("qr");
+    expect(fitsQrCarriage(inception)).toBe(true);
+    expect(carriageMode(rotated)).toBe("qr");
+    expect(fitsQrCarriage(rotated)).toBe(true);
+    expect(carriageMode(grown)).toBe("paste-or-file");
+    expect(fitsQrCarriage(grown)).toBe(false);
+
+    // …and past the ceiling the carriage STILL round-trips verbatim — only the printed QR stops being right.
+    expect(parseHandleCardCarriage(toHandleCardCarriage(grown))).toEqual(grown);
   });
 });

@@ -8,7 +8,7 @@
  * (circlePanelStateArgs) the `circle-state` worker verb writes.
  */
 import { describe, test, expect, afterEach } from "vitest";
-import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, type FollowView } from "@lararium/mesh";
+import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, type FollowView } from "@lararium/mesh";
 import {
   browserComposeFollow, browserComposeUnfollow, browserListFollows, makeBrowserCircleStore,
 } from "../src/browser-circle-store.js";
@@ -26,9 +26,13 @@ function deleteIdb(name: string): Promise<void> {
 afterEach(async () => { for (const n of opened) await deleteIdb(n); opened.clear(); });
 
 async function card(seedByte: number, glamour: string) {
-  const { signingKey, verifyingKey: nym } = await derivePersonaKeypair(new Uint8Array(32).fill(seedByte), [0]);
+  const { signingKey, verifyingKey } = await derivePersonaKeypair(new Uint8Array(32).fill(seedByte), [0]);
+  const did = `0x${verifyingKey}`;
+  // the personal 1-of-1 handle-KEL — the veiled key is the Handle key AND its sole owner (nym on the chain)
+  const chain = [mintHandleInception(did, did, "ab".repeat(32))];
+  const nym = chain[0]!.prefix;
   const c = await signHandleCard(
-    { nym, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
     ed25519SignerFromSeed(signingSeedFromHex(signingKey)),
   );
   return { nym, card: c };

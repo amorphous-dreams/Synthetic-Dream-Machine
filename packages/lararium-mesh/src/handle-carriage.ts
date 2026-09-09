@@ -53,7 +53,28 @@ export function parseHandleCardCarriage(carriage: string): HandleCard | null {
   if (typeof p["nym"] !== "string" || !p["nym"]) return null;
   if (typeof p["sig"] !== "string" || !p["sig"]) return null;
   if (typeof p["version"] !== "number") return null;
+  if (!Array.isArray(p["chain"]) || p["chain"].length === 0) return null;   // the card carries its handle-KEL, or it is not one
   return parsed as HandleCard;
+}
+
+/**
+ * THE QR CARRIAGE CEILING — named, never discovered. A QR code holds only so many bytes at a scannable
+ * density, and a handle-card's weight rides its `chain`: an inception-only or once-rotated card fits a QR a
+ * phone reads across a room; a card whose Handle has rotated/grafted many times outgrows it. Past this many
+ * handle-KEL events, the card is PASTE-OR-FILE ONLY (a `#card=` URL, a stick) — the carriage still round-trips
+ * verbatim, but a printed QR stops being the right vessel. A caller checks the boundary UP FRONT rather than
+ * discovering a dense unscannable code at the shrine.
+ */
+export const QR_CARRIAGE_MAX_EVENTS = 2 as const;
+
+/** How this card should carry: "qr" when its chain sits at or under the QR ceiling, "paste-or-file" past it. */
+export function carriageMode(card: HandleCard): "qr" | "paste-or-file" {
+  return card.chain.length <= QR_CARRIAGE_MAX_EVENTS ? "qr" : "paste-or-file";
+}
+
+/** Whether a printed QR is still the right vessel for this card — the boundary read as a boolean. */
+export function fitsQrCarriage(card: HandleCard): boolean {
+  return carriageMode(card) === "qr";
 }
 
 /** Encode a HandleCard into the carriage form the announcer prints and a recogniser pastes — the round-trip
