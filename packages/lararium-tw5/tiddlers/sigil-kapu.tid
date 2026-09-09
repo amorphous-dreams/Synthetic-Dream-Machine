@@ -7,6 +7,7 @@ lar-pattern: <<~\s*kapu\s+([^\n>]*)\s*>>
 lar-open-pattern: <<~\s*kapu\s+([^\n>]*)\s*>>
 lar-close-pattern: <<~\/kapu\s*>>
 lar-example: <<~ kapu "reason">>
+lar-render: compile
 type: text/vnd.tiddlywiki
 
 <!-- kapu — boundary/restriction annotation; compile-layer edge sugar.

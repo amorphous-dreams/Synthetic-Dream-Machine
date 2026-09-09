@@ -6,6 +6,7 @@ lar-alias-for: type
 lar-see-also: kumu
 lar-open-pattern: <<~\s*type\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/type\s*>>
+lar-render: declares
 type: text/vnd.tiddlywiki
 
 <!-- \type — English alias for kumu (structural declaration emphasis). -->

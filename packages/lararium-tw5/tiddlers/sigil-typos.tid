@@ -6,6 +6,7 @@ lar-alias-for: typos
 lar-see-also: kumu
 lar-open-pattern: <<~\s*typos\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/typos\s*>>
+lar-render: declares
 type: text/vnd.tiddlywiki
 
 <!-- \typos — English alias for kumu (Greek: typos = impression/mold/type). -->

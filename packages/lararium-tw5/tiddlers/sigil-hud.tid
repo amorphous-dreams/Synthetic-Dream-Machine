@@ -4,6 +4,7 @@ lar-kind: metadata
 lar-pattern: <<~\s*hud\b([\s\S]*?)>>
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#exchange-protocol
 lar-example: <<~ hud Focus(11)>>
+lar-render: literal
 type: text/vnd.tiddlywiki
 
 <!-- hud — the turn gauges (Aperture · OODA-HA). HUD-frame sigil: recognized in the tree, rendered as

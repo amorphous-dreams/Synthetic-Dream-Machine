@@ -6,6 +6,7 @@ lar-code: &#x0004;
 lar-slots: code target
 lar-pattern: <<\^[^>\n]*&#x0004;
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+lar-render: mark
 type: text/vnd.tiddlywiki
 
 <!-- EOT &#x0004; — transmission ends, bearing forward. The pattern anchors on the CONTROL CODE, never on what precedes

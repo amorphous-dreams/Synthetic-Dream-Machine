@@ -51,6 +51,19 @@ The per-wiki live layers ride above the fold, each rooted at the wiki's identity
 
 ''The decoupling is the safety.'' The boot floor is CID-frozen in @daemon and the live wikis never mount it, so editing `wikis/lares` cannot break the boot. Promotion to the mesh renders the live edits to fresh CIDs and launches them to @daemon; only then does @daemon behaviour change. Edit freely, promote deliberately, immune core sealed until mint.
 
+''THE DAEMON HOLDS THE ENGINE'' (operator ruling). The memetic-wikitext engine rides the @daemon
+wiki-worker, CID-frozen beside the boot seed, and every device reaches THE SAME ENGINE by hash. That
+buys an ''idempotent control surface'': the parser a vessel runs answers to a CID rather than to what
+that vessel happens to hold, so two devices at the same engine-CID read a carrier identically and a
+third that lags reads it identically once its CAS answers the hash. A wiki gains no parser by
+mounting a bag and loses none by dropping one.
+
+''AND THE CONTROL SURFACE STANDS APART FROM USER DATA.'' The engine crosses by CAS, the corpus by
+recipe, and the two paths never fuse — the pair the next paragraph names. So an operator edits `wikis/lares`
+freely without touching what parses it, and promoting an edit mints a new CID rather than mutating a
+running engine. The safety and the idempotence carry one mechanism: ''the engine has no edit surface
+at all'' — it answers to a hash, and a hash answers to nobody.
+
 ''The engine is universal; the corpus is content.'' `@oracle` names ONE doc — the genesis island — and every wiki reaches it by ''two independent paths'' that must not be read as one:
 
 * ''By CID, for its blobs — off the recipe entirely.'' The oracle doc's `blobs` carry the engine core (`engineCid`) and the memetic-wikitext plugin tiddlers (parser, grammar, all-memes modules). `pluginCidsFromIslandBlobs(islandHandle.doc()?.blobs)` derives that CID set once, and the daemon and every wiki island resolve the bytes ''from the local CAS by hash'' (the breath path), never CRDT-syncing them over the port. A wiki renders the grammar because CAS answers its hashes. No slot lays the engine, and no recipe can withhold it.
@@ -73,6 +86,6 @@ Two registries, cleanly separated:
 
 `@oracle` names the runtime system island, and the node's public read-face serves ''the oracle doc itself'' as a content-addressed snapshot (`GET /oracle/pointer` · `GET /oracle/<cid>.bin`, `exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. `lares`/`lararium` are ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
 
-<<^ code="&#x0003;">>ni:///sha-256;LXSJhyoc3UOfj_5s8W7VCu0PJKi56WVBIhgrccw9Scc
+<<^ code="&#x0003;">>ni:///sha-256;uZEbSEJ2xqQuDpJB2sW2jcCQt-RQ5GpLa3DJhkI2H7c
 
 <<^ code="&#x0004;" -> to="?">>

@@ -6,6 +6,7 @@ lar-alias-for: procedure
 lar-see-also: procedure
 lar-open-pattern: <<~\s*wehe\s+([\w-]+)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/wehe\s*>>
+lar-render: declares
 type: text/vnd.tiddlywiki
 
 <!-- wehe — Hawaiian procedure executor; alias for \procedure.

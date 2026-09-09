@@ -4,6 +4,7 @@ lar-kind: data
 lar-name: toml
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-spec
 lar-pattern: ```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```
+lar-render: mark
 type: text/vnd.tiddlywiki
 
 <!-- toml — TOML data fence. Optional profile name in group 1.

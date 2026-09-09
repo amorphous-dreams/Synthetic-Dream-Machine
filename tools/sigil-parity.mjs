@@ -58,11 +58,13 @@ const { readSigilAttrs } = await import(join(DIST, "sigil-attrs.js"));
  * and render VERBATIM by the gradient — so parameter parity for them asks about a call that never
  * happens. They are counted, never failed.
  */
-const REGISTERED = new Set(
-  execSync("ls packages/lararium-tw5/tiddlers/sigil-*.tid", { cwd: REPO, encoding: "utf8" })
-    .split("\n").filter(Boolean)
-    .map((p) => p.split("/").pop().replace("sigil-", "").replace(".tid", "").toLowerCase()),
-);
+// THE ONE FALLBACK. This witness boots VANILLA TiddlyWiki on purpose — its wiki serves as the parse
+// ORACLE and holds no grammar — so it asks the packed plugin rather than the VM. Reading
+// `ls tiddlers/sigil-*.tid` answered off FILENAMES, and a filename names a tiddler: the frame
+// marks and the dispatcher entered a set of heads no call can wear.
+const { grammarHeadsFromPlugin } = await import(join(DIST, "grammar-heads.js"));
+const PLUGIN_JSON = join(REPO, "packages/lararium-tw5/plugins/lares-memetic-wikitext.json");
+const REGISTERED = grammarHeadsFromPlugin(JSON.parse(readFileSync(PLUGIN_JSON, "utf8")));
 const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
 const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
 

@@ -6,6 +6,7 @@ lar-code: &#x0002;
 lar-slots: code
 lar-pattern: <<\^[^>\n]*&#x0002;
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+lar-render: mark
 type: text/vnd.tiddlywiki
 
 <!-- STX &#x0002; — text begins. The pattern anchors on the CONTROL CODE, never on what precedes

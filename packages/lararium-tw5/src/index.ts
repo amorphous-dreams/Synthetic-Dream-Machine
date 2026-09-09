@@ -258,6 +258,14 @@ export {
   SUBMODULES,
 } from "./carrier-files.js";
 export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
+// THE ONE READER of WHICH HEADS THE GRAMMAR KNOWS. Four readers rebuilt it from four artifacts, two
+// of them off filenames — and a filename names a tiddler, never a head a call can wear. The VM answers
+// wherever a wiki holds the grammar; ONE fallback reads the packed plugin for a reader whose wiki does
+// not, and fails gracefully so a capture still records its turn.
+export { grammarHeads, grammarHeadsFromPlugin, GRAMMAR_TAG } from "./grammar-heads.js";
+export type { HeadWiki } from "./grammar-heads.js";
+export { getGrammar, resetGrammar, getVocabularyCid } from "./grammar-cache.js";
+
 // THE ONE READER of a sigil's parameters — the names it binds, the SLOTS it fills, and the
 // positionals a scheme would steal.
 export {

@@ -5,6 +5,7 @@ lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kumu
 lar-see-also: type
 lar-open-pattern: <<~\s*kumu\s+([\w~-]+)(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/kumu\s*>>
+lar-render: compile
 type: text/vnd.tiddlywiki
 
 <!-- kumu — element-type declaration pragma; declares named structural node type.

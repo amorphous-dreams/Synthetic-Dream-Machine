@@ -6,6 +6,7 @@ lar-alias-for: kapu
 lar-see-also: kapu
 lar-pattern: <<~\s*guard\s+([^\n>]*)\s*>>
 lar-example: <<~ guard "[tag[x]]">>
+lar-render: compile
 type: text/vnd.tiddlywiki
 
 <!-- guard — compile-layer boundary annotation; English alias for kapu.

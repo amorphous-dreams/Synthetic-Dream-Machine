@@ -126,15 +126,11 @@ const wiki = engine.wiki ?? engine._tw?.wiki;
 // A head the grammar registers, read off the packed plugin's SharktoothSigil tiddlers. The head is
 // the tiddler's own name, so a sigil added by tagging a tiddler enters this set with no code change.
 const GRAMMAR_TAG = "lar:///ha.ka.ba/tags/SharktoothSigil";
-const SHELF = new Set();
-{
-  const tiddlers = JSON.parse(pluginJson.text).tiddlers;
-  for (const [title, t] of Object.entries(tiddlers)) {
-    if (!String(t.tags ?? "").includes(GRAMMAR_TAG)) continue;
-    const m = /\/sigil-([\w-]+)$/.exec(title);
-    if (m) SHELF.add(m[1].toLowerCase());
-  }
-}
+// THE ONE DOOR. This witness boots a wiki holding the grammar, so it asks the VM — the packed
+// plugin it loads answers the same question, and a reader that opened the other door would be
+// choosing its answer by which artifact it happened to parse.
+const { grammarHeads } = await import(join(TW5, "dist/grammar-heads.js"));
+const SHELF = grammarHeads(wiki);
 
 // ── THE CORPUS ──────────────────────────────────────────────────────────────────────────────────
 // A TURN anchors at `<<~ lares aim` and runs to its `lares yield` close, or to the next aim. The span
@@ -410,19 +406,7 @@ const HARVEST_SRC = join(REPO, "packages/lararium-mesh/src/turn-harvest.ts");
 const KNOWN_BODY = /const KNOWN_KINDS = new Set\(\[([\s\S]*?)\]\)/.exec(readFileSync(HARVEST_SRC, "utf8"))?.[1] ?? "";
 const KNOWN = new Set([...KNOWN_BODY.matchAll(/"([^"]+)"/g)].map((m) => m[1].toLowerCase()));
 
-// A HEAD IS WHAT A CALL WEARS, read off the shelf's own patterns — never off a tiddler's filename.
-// `sigil-frame-etx` and `sigil-dispatcher` name tiddlers no `<<~ …>>` call ever spells.
-const SHELF_HEADS = new Set();
-{
-  const tiddlers = JSON.parse(pluginJson.text).tiddlers;
-  for (const t of Object.values(tiddlers)) {
-    if (!String(t.tags ?? "").includes(GRAMMAR_TAG)) continue;
-    for (const fld of ["lar-pattern", "lar-open-pattern"]) {
-      const h = /<<~!?\\s\*([A-Za-z][\w-]*)/.exec(String(t[fld] ?? ""));
-      if (h) SHELF_HEADS.add(h[1].toLowerCase());
-    }
-  }
-}
+const SHELF_HEADS = SHELF;
 const uncovered = [...SHELF_HEADS].filter((h) => !KNOWN.has(h)).sort();
 console.log(`\n  KNOWN_KINDS covers ${SHELF_HEADS.size - uncovered.length} of ${SHELF_HEADS.size} shelf heads`);
 if (uncovered.length) {

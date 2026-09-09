@@ -6,6 +6,7 @@ lar-code: &#x0011;
 lar-slots: code namespace bearing uri
 lar-pattern: <<\^[^>\n]*&#x0011;
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+lar-render: mark
 type: text/vnd.tiddlywiki
 
 <!-- SOH₂ &#x0011; — the second heading form. The pattern anchors on the CONTROL CODE, never on what precedes

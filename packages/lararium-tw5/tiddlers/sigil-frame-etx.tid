@@ -6,6 +6,7 @@ lar-code: &#x0003;
 lar-slots: code bcc
 lar-pattern: <<\^[^>\n]*&#x0003;
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+lar-render: mark
 type: text/vnd.tiddlywiki
 
 <!-- ETX &#x0003; — text ends; the block check follows the mark directly. The pattern anchors on the CONTROL CODE, never on what precedes
