@@ -154,7 +154,7 @@ Carried forward from the grammar watch and extended by this one. Collide each be
 * ''A digest gate'' answers "do these bytes match this hash", never "do these bytes belong here".
 * ''A fixture pins the grammar; only the corpus pins the reader.'' A hand-written fixture agreed with itself and disagreed with 639 files out of 639.
 * ''A grep for callers'' counts mentions, including comments that say the caller does not exist. Follow the call; never grep the door.
-* ''A blanket re-stamp signs edits nobody authored.'' `tools/restamp.mjs` names its files and takes no glob, because a re-stamp driven by `git diff` will sign the OTHER writer's work.
+* ''A blanket re-stamp signs edits nobody authored.'' `lares carrier normalize` names its files and takes no glob, because a re-stamp driven by `git diff` will sign the OTHER writer's work — and it NAMES every dirty carrier the run passed over, since a carrier nobody named reads two ways and the door cannot tell which.
 * ''The other writer usually turns out to be the operator.'' Parallel `lares` sessions share this tree. `git status` before believing any red; a dirty file of unknown provenance gets REPORTED, copied aside, never reverted.
 
 !! Parallel watches standing right now
@@ -635,6 +635,6 @@ re-entry: closed — the floor convened and the held review condition met; the c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CJb7iK_D_A22i7Fc-tfE2Jihdy4bQu6NBA5LQPh82uA
+<<^ code="&#x0003;">>ni:///sha-256;r0fzg5a7YXO0vWfCDk4Oe8hkRAGoDw_uLGVexQpoKaw
 
 <<^ code="&#x0004;" -> to="?">>

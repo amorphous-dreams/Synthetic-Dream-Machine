@@ -42,6 +42,7 @@
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { isAbsolute, join } from "node:path";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan } from "@lararium/tw5";
@@ -92,6 +93,26 @@ export async function cmdNormalize(args: ParsedArgs): Promise<number> {
 
   let drifted = 0;
   let flagged = 0;
+
+  // ── AND IT NAMES WHAT IT DID NOT STAMP ─────────────────────────────────────────────────────────
+  // Stamping SEALS a carrier's bytes. Doing it while OTHER carriers sit dirty and unread is how one
+  // hand seals another hand's half-finished work — the check goes over whatever stands, and afterwards
+  // nothing distinguishes a body its author finished from a body someone else caught mid-edit.
+  //
+  // Refusing a glob stops a blanket sweep; it says nothing about the carriers a NAMED run passes over.
+  // Measured live: two carriers stamped through this door while a third stood dirty and unnamed, and
+  // the door reported success.
+  //
+  // A dirty carrier nobody named reads two ways — yours and forgotten, or nobody's — and this door
+  // cannot tell which. So it NAMES them and carries on: a warning a caller can weigh, never a refusal
+  // that would block a legitimate partial sweep.
+  let unnamed: string[] = [];
+  try {
+    const dirty = String(execFileSync("git", ["diff", "--name-only", "--", "*.mem"], { encoding: "utf8" }))
+      .split("\n").filter(Boolean);
+    unnamed = dirty.filter((d: string) => !files.some((p) => p.endsWith(d) || d.endsWith(p)));
+  } catch { /* not a git tree, or git absent — the naming rule carries alone */ }
+
   for (const f of files) {
     const abs = isAbsolute(f) ? f : join(process.cwd(), f);
     let src: string;
@@ -135,6 +156,11 @@ export async function cmdNormalize(args: ParsedArgs): Promise<number> {
       console.log(check ? "  - block check would re-stamp over the body it follows"
                         : "  - block check re-stamped over the body it follows");
     }
+  }
+
+  if (unnamed.length > 0) {
+    console.log("\n  ⚠ dirty and NOT named on this run — read each before stamping it:");
+    for (const u of unnamed) console.log(`      ${u}`);
   }
 
   const tail = flagged > 0 ? ` (${flagged} flagged for triage)` : "";

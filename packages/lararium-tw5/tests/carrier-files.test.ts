@@ -176,7 +176,6 @@ describe("no reader enumerates the corpus by its own glob", () => {
     // Not a corpus finder: it sweeps prose and source for a retired photocopy verb.
     ["tools/photocopies-to-has.mjs", "sweeps prose and source for a verb spelling, never the corpus"],
     // Not a corpus finder: it asks which carriers the WORKING TREE shows dirty, to refuse a blind stamp.
-    ["tools/restamp.mjs", "reads `git diff`, not the corpus — it names what moved, never what declares"],
   ]);
 
   /**
