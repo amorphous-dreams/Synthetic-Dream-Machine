@@ -683,7 +683,9 @@ lares persona list                                  # h0/h1/h2 stand: label -> d
 * `--name` sets the ''PRIVATE label'' — what the operator calls that compartment. It rides the human's
   own fleet (that face's `persona-<tag>` plane) and ''never publicly federates''.
 * `--handle` declares the ''PUBLIC Handle'' the persona answers to. A ''local intent'', not a publish:
-  only a publicly announced Handle binds a PersonaGroup to a public glamour.
+  only a publicly announced Handle binds a PersonaGroup to a public glamour. The announce is its own
+  deliberate act, `lares handle publish "<Handle>"` — the face anchors to its persona (the persona-KEL
+  prefix owns it), so a lost presentation key recovers through the persona.
 * `--seat` stands the persona for a ''Kahu chair on THIS node''. It stays local — a chair names a seat
   on a particular node, so it never rides the fleet.
 
@@ -1440,6 +1442,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mqRSQblHeNcaFumZ_M5LW8-yrfh1z2GSGYEUAyI6z9k
+<<^ code="&#x0003;">>ni:///sha-256;CaOE103nZkmcN2vI2HnvwrXjxJr6GSPj-cVLTvOcE2w
 
 <<^ code="&#x0004;" -> to="?">>

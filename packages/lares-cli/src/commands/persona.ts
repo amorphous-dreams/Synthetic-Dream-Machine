@@ -15,10 +15,10 @@
  *
  * The pet-name stays PRIVATE (persona-petname: fleet-syncs among the human's own vessels, never PUBLICLY
  * federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
- * a PersonaGroup to a public glamour — a separate, deliberate publish.
+ * a PersonaGroup to a public glamour — a separate, deliberate publish, which `lares handle publish` performs.
  *
  * THREE NAMES, THREE JOBS (dyad, persona-declare). `--name` labels a compartment to its keeper and their own
- * fleet; `--handle` declares what that persona answers to outward; the announce publishes it. The label and
+ * fleet; `--handle` declares what that persona answers to outward; `lares handle publish` announces it. The label and
  * the Handle MAY read identical and stay two acts, so a human whose compartment reads "the-burner" can still
  * stand under any declared Handle — nothing joins them but the human's own say-so. Founder-side: `new` mints an
  * operator-root this vessel holds — a joining vessel receives a root by admit, never mints one here.
@@ -48,7 +48,7 @@ function usage(): void {
   console.error("usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat] | wear <index> | list>");
   console.error("");
   console.error("  new <index> --name <name>   mint/load the persona-root at <index> + set its private pet-name");
-  console.error("    [--handle <Handle>]       declare the public Handle it answers to (intent; the announce publishes)");
+  console.error("    [--handle <Handle>]       declare the public Handle it answers to (intent; `lares handle publish` announces it)");
   console.error("    [--seat]                  stand it for a Kahu chair on this node (needs a Handle)");
   console.error("  wear <index>                switch the active persona (reboot-to-switch — one face to the mesh)");
   console.error("  list                        the private multitude — held indices, active marker, labels, Handles");
@@ -200,7 +200,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       console.log(`  pet-name is PRIVATE — it fleet-syncs among your own vessels and never PUBLICLY federates.`);
       if (declaration?.handle) {
         console.log(`  declares the Handle "${declaration.handle}" — a local intent until you announce it;`);
-        console.log(`  only a publicly announced Handle binds this persona to a public glamour.`);
+        console.log(`  only a publicly announced Handle binds this persona to a public glamour — announce it with \`lares handle publish\`.`);
       } else {
         console.log(`  declares no Handle — name one with --handle '<Handle>' when it should answer outward.`);
       }
