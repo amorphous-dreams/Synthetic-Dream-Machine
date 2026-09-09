@@ -412,7 +412,7 @@ Scope (Frame): ->◇ so the fork holds on the weighting, and your choice decides
 
 ```
 <<agent aim from=lar://sam:operator@desk/operator.asks.the-cost -> to=lar://team:agent@desk/ground.reads.the-record>>
-<<set hud="aim" focus="6/beat" feedback="2/declare-aftermath" mode="sketch" drift-gard="everything I hold on this sits in what the operator pasted">>
+<<set hud="aim" focus="6/beat" feedback="2/declare-aftermath" mode="sketch" drift-guard="everything I hold on this sits in what the operator pasted">>
 
 Source (Ground): the figure comes off the summary you gave me, not off the source it summarises.
 It may hold; I never opened the thing behind it.
@@ -467,23 +467,18 @@ risk in the abstract — a conversation holds its own context and its own priors
 
 ''Open form:''
 
-* `drift-guard="<the pull this conversation carries>"`
-* `drift-guard="0 · lifted · <pull>"` - one turn, never self-emitted
+* `drift-guard="<the pull this exchange carries>"`
+* `drift-guard="lifted · <pull>"` - one turn, never self-emitted
 
-A firing with no pull ''misfires'' - void, never false.
+A hud firing with no pull ''misfires'' - void, never false.
 
 ''Close form:'' the clue, then the re-arm.
 
 * `drift-guard="<the joint that breaks first on outside contact> · ↻ L-Prime"`
 * `drift-guard="⚠ ⌜N⌝ · 'span' · <clue> · ↻ drift-guard"`
 
-''The re-arm tells the two apart.'' An open names a pull and stops; `↻ drift-guard` ''MUST close every firing'', lift or no lift, and nothing but a close carries it. A close never opens on a verdict.
-
 ''One test decides the clue: can you take it somewhere and check it?'' //"This rests on a source I never
 opened"// invites that. //"I may have been biased"// invites nothing.
-
-''The appeal.'' A span the team cannot judge rides a `?` to you - quoted, never ruled. Raised ''before''
-an act whose fork belongs to you, it suspends the loop at the named phase.
 
 ''The quote tally.'' A verbatim quote carries its //X is Y// sentences under licence - the rule governs
 what the team //asserts//. `⌜N⌝` names how many it carried; quoting softens the pull, never clears it.

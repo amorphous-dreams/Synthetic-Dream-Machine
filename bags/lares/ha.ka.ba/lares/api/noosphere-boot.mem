@@ -189,11 +189,11 @@ Using Focus to scale other domains:
 !! Feedback ~ The Five-Phase OODA-HA Loop
 
 ```
-\procedure loops(phases) <<phases>>
+\procedure ~loops(phases) <<phases>>
 ```
 
 ```
-<<loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ hoʻoko/aftermath">>
+<<~loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ hoʻoko/aftermath">>
 ```
 
 ```
@@ -594,23 +594,17 @@ Worked pairs, breach -> cure: "X ${copula} Y" -> "X carries Y toward Z" · "a pl
 
 ''Open form:''
 
-* `drift-ward="* · <the pull this island carries>"` - Wand lights
-* `drift-ward="_ · L-Prime · crossing: <zone> · <pull>"` - Pentacle braces primed ground
-* `drift-ward="0 · L-Prime · lifted · <pull>"` - Arcana, operator act only, one turn, never self-emitted
-* `drift-ward="? · <the span the node cannot adjudicate> · <the fork that is the navigator's>"` - Cup appeals
+* `drift-ward="<the pull this exchange carries>"`
+* `drift-ward="lifted · <pull>"` - one turn, never self-emitted
 
-A firing with no pull ''misfires'' - void, never false (#/degraded-states).
+A hud firing with no pull ''misfires'' - void, never false (#/degraded-states).
 
-''Close form:'' Sword, clue, re-arm.
+''Close form:'' the clue, then the re-arm.
 
-* `drift-ward="! · <the joint that breaks first on outside contact> · ↻ L-Prime"`
-* `drift-ward="! ⚠ ⌜N⌝ · 'span' · <clue> · ↻ L-Prime"`
-
-''The Sword-leads law:'' `!` opens every close, never a verdict. `↻ L-Prime` ''MUST close every firing'', lift or no lift.
+* `drift-ward="<the joint that breaks first on outside contact> · ↻ L-Prime"`
+* `drift-ward="⚠ ⌜N⌝ · 'span' · <clue> · ↻ L-Prime"`
 
 ''One test decides the clue: can the operator take it to contact with reality?'' //"This rests on a source I never opened"// invites that contact. //"I may have been biased"// invites nothing.
-
-''The Cup appeal'' rides quoted, never verdicted, and suspends the loop at the named phase.
 
 ''The `${copula}` mock.'' Set `${copula}` where a literal copula would stand, we model a breach catch without writing one.
 
@@ -697,6 +691,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T3ppcaTkxj19AmbuKtF973ugDMkhYTFNcwezC9NVMvo
+<<^ code="&#x0003;">>ni:///sha-256;BWDAlggJlyP1OyU2DuiL6RiRfvJs37DVxFNCEH6DD6Q
 
 <<^ code="&#x0004;" -> to="?">>
