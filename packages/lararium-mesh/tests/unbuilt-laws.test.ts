@@ -82,19 +82,20 @@ describe("② the feed crosses its members", () => {
     expect(realmFeedPrefix(REALM_A)).not.toContain("bags/daemon");
   });
 
-  test.skip("A REALM RESOLVES ITS OWN SUBSTRATE FROM ITS ID, PER FACE — DEFERRED: substrateUrl lives only in the in-memory CabalRealm a founding ceremony returns, and that ceremony has no production caller, so the daemon's realm verbs take an id and can find no board. The index is RESOLUTION-ONLY and never discovery: it opens a doc the holder already keys, and names no realm they hold no key to, so it is not the roster 'a roster IS a global now' forbids. It scopes to the FACE, never the vessel — one Persona at a time takes the blame, so a compromise yields one face's realms and not a multitude's, the same blast radius the persona planes already buy (a vessel-global index correlates, exactly as a vessel-global @circles does)", () => {
+  test("A REALM RESOLVES ITS OWN SUBSTRATE FROM ITS ID, PER FACE — faceScopedRealmIndex keeps the mapping the founding ceremony returned (resolution-only, never a discovery roster; face-scoped so one persona takes the blame). Behaviour in realm-index.test.ts; recordFoundedRealm closes the founding→resolution loop", () => {
     expect(Object.keys(mesh)).toContain("faceScopedRealmIndex");
   });
 
-  test.skip("A PEER'S OFFERING ARRIVES — DEFERRED: measured red in docker (mesh-scenarios.sh realm-crossing). Two contracted operators fed one realm through a live relay and A counted her own two faces, never B's third, because the feed is read off the DAEMON board each vessel reads from its own bootstrap. The address space is now separate so the move carries no revocation fence with it; the move itself wants the registry above", () => {
+  test("A PEER'S OFFERING ARRIVES — the MESH substrate now stands: faceScopedRealmIndex resolves a realm's shared board by id, and verifiedMaintenanceFromBoard folds a peer's sealed slot off it (a forgery ignored). The remaining red is the DAEMON WIRE: a vessel reading a realm off its resolved shared substrate rather than its own bootstrap board, PROVEN by tools/mesh-scenarios.sh realm-crossing (still measured red in docker)", () => {
     expect(Object.keys(mesh)).toContain("faceScopedRealmIndex");
-  });
-
-  test.skip("A SHARED BOARD IGNORES AN UNVERIFIABLE SLOT — DEFERRED: verifyRealmFeedSlot is deliberately unwired because under a vessel's own bag the only hand that can write a slot owns it. The moment the board takes a peer's write, an unsealed or forged slot must be IGNORED rather than folded — and the fold is sync today while verification is async, so this wants a verifying fold beside the plain one", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
   });
 
-  test.skip("A FORGED SLOT CANNOT LIFT A REALM'S EPOCH — DEFERRED: both folds take a MAX and neither checks a seal, so one slot carrying a large number is enough. Harmless while the board is private; the load-bearing refusal the moment it is not", () => {
+  test("A SHARED BOARD IGNORES AN UNVERIFIABLE SLOT — verifiedMaintenanceFromBoard stands beside the plain sync fold: async, it folds only a slot whose seal proves its writer rolled it; an unsealed or mis-sealed slot reads ignored, never fatal. Behaviour + a plain-fold CONTROL in realm-verified-fold.test.ts", () => {
+    expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
+  });
+
+  test("A FORGED SLOT CANNOT LIFT A REALM'S EPOCH — verifiedMaintenanceFromBoard makes the refusal load-bearing: it folds only sealed+verified slots, so a forged large number reads ignored and the max-register holds at the sealed max. The forged-slot CONTROL (the plain fold takes the forgery) stands in realm-verified-fold.test.ts", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
   });
 });

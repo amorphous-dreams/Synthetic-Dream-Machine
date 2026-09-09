@@ -145,6 +145,33 @@ export function realmMaintenanceFromBoard(doc: LarDoc, realmDocIdHex: string): C
   return cabalRealmMaintenanceProvenance(realmDocIdHex, realmLeaseSlotsFromBoard(doc, realmDocIdHex));
 }
 
+/**
+ * Read a realm's maintenance from a SHARED board — where any dweller may write, so a seal decides which
+ * slots fold.
+ *
+ * The plain read above trusts the board that carries it, sound under a vessel's own bag. This one trusts
+ * the SIGNATURE instead: it folds a slot only when the slot proves the writer named in its uri rolled that
+ * epoch (`verifyRealmFeedSlot`). An unsealed slot, a mis-sealed slot, and a malformed slot each read as
+ * IGNORED — never folded, never fatal — so a forged high roll cannot lift the max-register the lease rides.
+ * Async, because the check is; a caller that already trusts its board keeps the sync read.
+ */
+export async function verifiedMaintenanceFromBoard(
+  doc: LarDoc,
+  realmDocIdHex: string,
+): Promise<CabalRealmMaintenanceProvenance> {
+  const prefix   = realmFeedPrefix(realmDocIdHex);
+  const verified = new Map<string, string>();
+  for (const [slotUri, value] of realmLeaseSlotsFromBoard(doc, realmDocIdHex)) {
+    const parsed = readRealmFeedSlot(value);
+    if (!parsed || parsed.sig === undefined) continue;   // a bare (unsealed) or malformed slot never folds on a shared board
+    const writer = decodeURIComponent(slotUri.slice(prefix.length));
+    if (await verifyRealmFeedSlot({ realm: realmDocIdHex, writer, epoch: parsed.epoch, sig: parsed.sig })) {
+      verified.set(slotUri, value);
+    }
+  }
+  return cabalRealmMaintenanceProvenance(realmDocIdHex, verified);
+}
+
 /** The write one writer makes to FEED a realm — its own slot, and the epoch it rolls to. */
 export interface RealmFeedWrite {
   /** The slot tiddler this writer owns for this realm — last-writer-wins is safe inside it. */
