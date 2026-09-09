@@ -114,13 +114,6 @@ wrote, and wikitext would read `[Fiduciary: POA]` as a wikilink. A value names n
 address; the shelf renders the slot through `<$text>` so the bytes a reader typed reach
 the page unchanged.
 
-''AND A DEFAULT LIVES IN A DEFINITION WHILE A CARRIER HOLDS NO DEFINITIONS.'' A row
-leaning on a default reads empty to everyone who never opens the constructor. Every row
-writes what it holds where a reader can see it.
-
-A holding too wide for one line takes a second call under the same entity and name,
-never a truncation: the slot states no order, so what one call writes two calls write.
-
 <<~/ahu>>
 
 <<~ ahu #/table-lift>>
@@ -141,6 +134,13 @@ The same fact, as rows — ''one relation, and the family rides as its first wor
 
 The Wand-row wears all five; the Arcana-row wears the ground member's own, written where
 a reader can see them. Neither row carries a null, and neither leans on a constructor.
+
+''A DEFAULT LIVES IN A DEFINITION WHILE A CARRIER HOLDS NO DEFINITIONS.'' A row leaning
+on a default reads empty to everyone who never opens the constructor. Every row writes
+what it holds where a reader can see it.
+
+A holding too wide for one line takes a second call under the same entity and name,
+never a truncation: the slot states no order, so what one call writes two calls write.
 
 <<~/ahu>>
 
@@ -219,6 +219,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ntoLzel_4S9fKIWc9kswrd6lmJUCoYW8wd9Z5mN26uY
+<<^ code="&#x0003;">>ni:///sha-256;IN0amkot9F_ILw7gOsapMaHs5YBxfSurxLtTc4w_C_A
 
 <<^ code="&#x0004;" -> to="?">>
