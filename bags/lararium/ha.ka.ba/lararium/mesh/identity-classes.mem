@@ -540,6 +540,34 @@ not its ''grammar'', and forcing one grammar over both would couple what the ont
 stands as a NEW sibling module (its own domain, its own kinds) with no bytes-change anywhere, built
 in G3 on the frozen primitives.
 
+!!! ✓ THE MU (operator, 2026-09-08) — a Handle is a QUORUM-presented name, not a lone key
+
+''A cabal-realm and a public Handle carry ONE pattern integrity:'' a presentation reads VALID against
+the current authority, and whether ONE or MORE humans hold the right to present it stays unknowable —
+by design, exactly as a cabal refuses "which member signed". So the Dread Pirate Roberts was never a
+succession MECHANISM; ''he is a Handle whose presenting authority is a QUORUM that grafts members'' —
+Westley joins the presenting set, the old Roberts leaves, and the name reads continuously valid
+because the presentation still satisfies the current quorum.
+
+* ''The owner-binding generalizes'' from a single `ownerPrefix` to an OWNER-SET (persona-prefix
+  members + a graft threshold), its digest folded into the prefix like the recovery set. ''1-of-1 is
+  the degenerate case that IS the personal face'' — the same shape all the way down, no special
+  civic tier.
+* ''PRESENTATION (rotate · burn · attest) is authorized by ANY CURRENT MEMBER'' — you present as
+  Roberts if you are a current holder. ''GRAFT (add/remove a member) is authorized by a THRESHOLD of
+  the current set'' — the governance seam: a 1-of-1's sole willing hand, a guild's cabal quorum.
+* ''Succession = grafting the presenting set via the rolling commitment ALREADY in the grammar'' —
+  the prefix binds the GENESIS owner set (anti-swap: the name never moves), the rolling slot carries
+  the CURRENT set. One signed graft event, cryptographic, no registry, no new persona bytes, ''no
+  freeze spent'' (the handle-KEL is an in-flight sibling).
+* ''It answers both kept kue'' — a civic name's cryptographic continuity (the graft IS the chain, no
+  social hand-wave) and a crew resurrecting a name its holder can no longer cede (a k-of-n survives a
+  lost member; the crew IS the quorum). The willing-cede residue shrinks to "a threshold of the
+  current set consents" and routes to the human floor.
+
+''This SUPERSEDES the cede-fork'' (was: new-kind-A ⊥ social-attestation-B): the answer is neither,
+because succession was never a new thing — the name is a cabal, and the cabal grafts.
+
 <<~/ahu>>
 
 <<~ ahu #/the-honest-edges>>
@@ -589,6 +617,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sot6W5Zf8KRFukOiWH9AdsTQ0CQgvi0bbvTpHp04yCM
+<<^ code="&#x0003;">>ni:///sha-256;zK17Ur4k-8_8O1PFxeC-CDGu5H-S4hdwNX9-gynV60Y
 
 <<^ code="&#x0004;" -> to="?">>
