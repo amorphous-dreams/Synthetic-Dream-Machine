@@ -1,0 +1,224 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/has">>
+```toml meta
+cacheable = true
+l-space   = "stable"
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/has.mem"
+mana      = 16
+manao     = 17
+manaoio   = 15
+namespace = "&#x2299;"
+retain    = true
+role      = "the has sigil — one relation in three slots: an ENTITY, a NAME, and what that name HOLDS. Names the copula-free predicate the corpus authors rows with; states the quoting law and the text law that decide what a slot receives; routes the relations has refuses (sequence, crossing, grade) to their own verbs"
+tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has"]
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/has"
+written   = "2026-09-09"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Has ~ one relation, three slots, and it fuses nothing
+
+`has` carries one relation: an ''ENTITY'', a ''NAME'' under that entity, and ''what that
+name holds''. The held thing answers for itself; the edge keeps silent.
+
+```
+<<~ has rank pulse "levels/0-4 reads/a-mark-a-morpheme-a-word">>
+```
+
+Where prose fuses map to territory (`X ${copula} Y`, the dead water), `has` re-opens
+the hand: a name //holds// what it holds, keeps the two apart, leaves the holding
+droppable, and rests the name's essence nowhere. A holding sets down without wounding
+what held it; a name that drops one keeps its address and keeps its name.
+
+''The entity rides FIRST, so one definition answers for every family.'' The boot seats
+eight of them on the relation directly — `mu` · `carry` · `persona` · `frame` ·
+`season` · `config` · `integrity` · `shrine` — and the corpus authors rows under
+seventy-five entities besides. Each names a region; each writes the same three slots.
+The boot seed states the relation once, and the shelf answers for it everywhere else.
+
+''Two regions wear the same word, and the field parts them.'' `has` authors a row in a
+carrier's ''body'' — an entity a reader meets in prose. `has-stack` governs a carrier's
+''own'' stack in the meta `tags` field — what THIS carrier wears. One law reads what a
+body says; the other reads what a carrier composes from.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Three clauses hold the law
+
+# ''Has carries what a name holds, and refuses essence.'' `<<~ has E N "…">>` writes
+   what the name `N` under the entity `E` holds; the pair holds it, and never turns
+   into it. A line that reads `E N holds Y` where prose fused `E N ${copula} Y` clears
+   the ward, and the held thing answers for itself.
+
+# ''Header-and-rows tables fall to has by one rule.'' The header vows the families (the
+   column grain); each body row authors one call, writing one `family/cell` per column it
+   fills. A row skips the columns it leaves empty — open-world omission, never a null.
+   The boot's carrier-tables fall to this rule untouched by hand.
+
+# ''Order, crossing and grade each ride their own verb.'' `has` carries what a name
+   holds and states no order over it. A relation that //sequences//, //crosses// or
+   //grades// slips the dead water past a `has` row; `#/when-not-has` routes each to
+   its verb.
+
+''A row's steering data rides the `~` red aside'' (`element/Fire ~ rating/GR2` —
+confidence · provenance · resolved-status): red annotates the row, never black-asserts
+it, and the aside stays out of the carrier's canonical bytes.
+
+''A row states a holding; it opens no query face.'' The predicate runs over the `tags`
+field instead, through the filter `has-stack` names — `[stack[]]` / `[stack:has[<name>]]`.
+
+<<~ pranala #shelf from="?" -> to="packages/lararium-tw5/tiddlers/sigil-has.tid" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ ahu #/the-three-slots>>
+
+!! The three slots, and the three laws that decide what a slot receives
+
+| ''slot'' | ''carries'' | ''shape'' |
+|1 · ENTITY |the family — the region the row belongs to |one word |
+|2 · NAME |the row — the member within that family |one word |
+|3 · HOLDS |what that name holds, whole |ONE quoted string |
+
+''One relation names every family, and the family rides as its first word.''
+
+''AND THE SPACE AFTER THE SHARKTOOTH BINDS.'' `lar-sigil` claims every `<<~` — the spaced
+form through its compound branch, the tight form through the generic fallback — but only
+the compound branch reaches a DEFINITION. Measured at the render:
+
+|! call |! page |
+|`<<~ has Verb run "args/x">>` |`Verb run holds [args/x]` |
+|`<<~has Verb run "args/x">>` |`&lt;&lt;~has Verb run "args/x"&gt;&gt;` |
+
+A claim by the rule and a call to the definition name different acts, and the tight form
+performs the first alone. Three hundred and sixty-five rows crossed to `has` wearing the
+tight spelling, each one reading live on the page and reaching nothing.
+
+''THE THIRD SLOT RIDES QUOTED.'' It carries slashes, colons, arrows and prose. A call
+binds a named parameter with `=`, and TiddlyWiki reads any unquoted `word:` as exactly
+that — so a bare third slot hands its payload to a parameter nobody named and leaves the
+positional ''EMPTY''. One pair of quotes makes the whole payload ONE value.
+
+''AND IT RENDERS AS TEXT.'' What a row holds carries square brackets, arrows and
+backticks. A filtered transclusion would render each as a LINK to a tiddler nobody
+wrote, and wikitext would read `[Fiduciary: POA]` as a wikilink. A value names no
+address; the shelf renders the slot through `<$text>` so the bytes a reader typed reach
+the page unchanged.
+
+''AND A DEFAULT LIVES IN A DEFINITION WHILE A CARRIER HOLDS NO DEFINITIONS.'' A row
+leaning on a default reads empty to everyone who never opens the constructor. Every row
+writes what it holds where a reader can see it.
+
+A holding too wide for one line takes a second call under the same entity and name,
+never a truncation: the slot states no order, so what one call writes two calls write.
+
+<<~/ahu>>
+
+<<~ ahu #/table-lift>>
+
+!! A table falls to has ~ a worked lift
+
+The Mu table, as a table — the header vows, the cells honor by position:
+
+| name | ascii | element | glyph | pull |
+|---|---|---|---|---|
+|Wand |* |Fire |🜂 |ignition |
+|Arcana |0 |Orichalcum |🜍 |reset |
+
+The same fact, as rows — ''one relation, and the family rides as its first word'':
+
+<<~ has Mu Wand "ascii/* glyph/🜂 element/Fire pull/ignition">>
+<<~ has Mu Arcana "ascii/0 glyph/🜍 element/Orichalcum pull/reset">>
+
+The Wand-row wears all five; the Arcana-row wears the ground member's own, written where
+a reader can see them. Neither row carries a null, and neither leans on a constructor.
+
+<<~/ahu>>
+
+<<~ ahu #/when-not-has>>
+
+!! When not to reach for has ~ the other copula-free grammars
+
+`has` cures one fused relation: ''identity'' (`X ${copula} Y`, map welded to territory).
+The dead water welds //other// relations too — sequence, crossing, grade — and `has`
+flattens each. A row that //orders//, //moves// or //ranks// wants its own verb. Reach
+past `has` only once a row fails the ''holds-test''.
+
+!!! The diagnostic ~ ask one question
+
+Ask of the row's relation: ''what does it DO?'' The answer routes the verb.
+
+| ''when the relation…'' | ''rides…'' | ''authors as…'' | ''and cures the dead water of…'' |
+|''holds · wears'' //(default)// |a holding under a name |`<<~ has entity name "family/member …">>` |identity |
+|''follows · flows'' |a phase chain |`<<~ loops "a -> b -> c">>` |sequence-fused-as-identity |
+|''grades · ranks'' |a gradation |`<<~ scale family "a ~ one -> b ~ two">>` |level-welded-to-meaning |
+|''moves across'' |a transition |a trigger · a guard · an effect, each named |before-welded-to-after |
+
+`has` carries most of the boot; the others carry a minority — the ordered runs, the
+graded registers, the phase changes. Default to `has`; reach past it only once the
+holds-test fails.
+
+!!! A run that FOLLOWS ~ the phase chain (sequence rides content)
+
+A run whose order carries meaning — the Ladders, OODA-HA, the boot-chain — moves as
+sequence, never as composition. The arrow names the pull: a chain //leans on verbs, reads
+left-to-right// and never folds inside-out. TW5 carries this in the `list` field (which
+runs apart from `tags`), walked first-to-last.
+
+```
+<<~ loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ aftermath">>
+```
+
+The arrow //moves//; nothing welds to anything. The tail MAY re-enter the head — OODA-HA
+keeps its ↺ Aftermath glyph as a phase. Each ladder earns its own meme; `loci` carries
+the address.
+
+!!! A run that GRADES ~ the gradation verb (asymmetric relation)
+
+A scale that ranks — the Syad registers, the stage bands — moves as gradation. The
+ordinal anchor: a rank //exceeds// another by an unknown span, and no level //welds// to
+its meaning. The Evidence Question — //how do I know?// — hands over the verb.
+
+```
+<<~ scale syad "literal@0 ~ unsupported -> figurative@20 ~ fully-confirmed">>
+<<~ scale stage "green-room@1..4 -> wings@5..12 -> downstage@13..20">>
+<<~ scale rating "noise -> data -> meme -> ano -> kapu">>
+```
+
+Anchors read `member[@coord][~ descriptor]` — `@n` a point, `@lo..hi` a band; the order
+ascends, never sorted. A descriptor //describes// what a level looks like; it rides the
+droppable red aside and never welds the number to the meaning.
+
+!!! A row that MOVES ACROSS ~ the transition (trigger · guard · effect)
+
+A relation that carries a thing //across// conditions — a phase change, a degraded-state
+recovery — moves as transition. The state-machine grammar runs verb-forward by nature: a
+transition names ''what fires it, what gates it, what it does'', and never pronounces the
+after welded to the before. The trigger does the work the dead water would have smuggled.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges reach out
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ntoLzel_4S9fKIWc9kswrd6lmJUCoYW8wd9Z5mN26uY
+
+<<^ code="&#x0004;" -> to="?">>
