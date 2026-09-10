@@ -46,7 +46,7 @@ export async function extendOwnHandle(opts: {
   nym:             string;
   expectedHeadCid: string;
   mintNext:        (currentChain: HandleKelEvent[]) => Promise<HandleMintResult>;
-  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard;
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
   const doc = opts.board.doc();
   if (!doc) return { ok: false, reason: "the board doc is not ready — the WHO board resolved to nothing (fail-closed)" };
@@ -64,30 +64,43 @@ export async function extendOwnHandle(opts: {
   const minted = await opts.mintNext(chain);
   if (!minted.ok) return { ok: false, reason: minted.reason };
   const newChain = [...chain, minted.event];
-  const card = opts.buildCard(minted.event, newChain);
+  const card = await opts.buildCard(minted.event, newChain);
   opts.board.change((d) => writeHandleAnnounce(d, card));
   return { ok: true, card };
 }
 
 /**
- * BURN a Handle from above — the first verb specialized over the leased-projection core, and the template
- * the others (rotate · graft · attest) follow: supply only the verb's mint + card-build; the lease + resolve
- * + announce stay shared. The owner (a current member — for a personal face, the owning persona) buries the
- * name (Option C, path two), a burn a thief-of-the-face cannot forge. The mint runs over the board's CURRENT
- * chain, never a stale local one, so a burn cannot land on a head the board already moved past.
+ * BURN a Handle — the first verb specialized over the leased-projection core, and the template the others
+ * (rotate · graft · attest) follow: supply only the verb's mint + card-build; the lease + resolve + announce
+ * stay shared. EITHER HAND (Option C): the SEATED handle key closes its own name (`sign` — the panic
+ * self-burn, local, card-self-verifiable) OR the OWNER buries it from above (`ownerBurn` — a burn a
+ * thief-of-the-face cannot forge). Exactly one hand; supplying neither or both refuses. The burn's effect
+ * needs no valid card signature — a reader refuses a burned chain BEFORE checking the sig — so an owner-burn
+ * lands even when the seated key is lost. The mint runs over the board's CURRENT chain, so a stale lease
+ * cannot burn a name off a head the board already moved past.
  */
 export async function burnOwnHandle(opts: {
   board:           DocHandle<LarDoc>;
   nym:             string;
   expectedHeadCid: string;
-  ownerBurn:       { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (bytes: Uint8Array) => Promise<string> };
-  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard;
+  /** THE SELF-BURN — the seated handle key signs. Mutually exclusive with `ownerBurn`. */
+  sign?:           (bytes: Uint8Array) => Promise<string>;
+  /** THE OWNER-BURN — a current member (a personal face's owning persona) buries the name from above. */
+  ownerBurn?:      { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (bytes: Uint8Array) => Promise<string> };
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  if ((opts.sign === undefined) === (opts.ownerBurn === undefined)) {
+    return { ok: false, reason: "a burn strikes with EXACTLY ONE hand — pass `sign` (self) or `ownerBurn` (owner), never neither nor both" };
+  }
   return extendOwnHandle({
     board:           opts.board,
     nym:             opts.nym,
     expectedHeadCid: opts.expectedHeadCid,
-    mintNext:        (chain) => mintHandleBurn({ head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn }),
+    mintNext:        (chain) => mintHandleBurn(
+      opts.sign !== undefined
+        ? { head: chain[chain.length - 1]!, sign: opts.sign }
+        : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn! },   // the one-hand guard above proved it set
+    ),
     buildCard:       opts.buildCard,
   });
 }

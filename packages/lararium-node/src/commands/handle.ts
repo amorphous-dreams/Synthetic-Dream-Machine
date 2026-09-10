@@ -17,7 +17,9 @@ import { readFileSync, existsSync } from "node:fs";
 import {
   DAEMON_BAG_ID, materializeSharedLarDoc, whoBoardDocUrl,
   publishHandleFromDaemonDoc,
-  type LarDoc, type HandleCard,
+  resolveOwnHandleChain, boardHeadCid, burnOwnHandle, signHandleCard,
+  deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes,
+  type LarDoc, type HandleCard, type HandleKelEvent,
 } from "@lararium/mesh";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import {
@@ -74,4 +76,79 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
   });
   await repo.flush();
   return card;
+}
+
+export interface HandleBurnOptions {
+  /** Which persona's face to bury; defaults to the worn persona, then 0. */
+  readonly handleIndex?: number;
+  readonly storageDir?: string;
+  readonly now?: number;
+}
+
+/**
+ * runHandleBurn — the disk adapter for `lares handle burn` (SELF-burn: the seated handle key closes its own
+ * name). Resolve the vessel's own published nym for the chosen persona, resolve the CURRENT chain off the WHO
+ * board, mint a terminal burn over it under the lease, and re-announce the burned card. A reader refuses the
+ * burned chain before ever checking the card's signature, so recognition ends structurally at the burn. The
+ * owner-burn hand (the persona buries the face from above, `--from-persona`) rides a later increment — it
+ * wants the persona head op-key signer wired.
+ */
+export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard> {
+  const storageDir = opts.storageDir ?? larDataDir();
+  const bootstrap  = larBootstrapPath();
+  if (!existsSync(bootstrap)) {
+    throw new Error(`[lares handle burn] ${bootstrap} not found — run \`lares vessel found\` first.`);
+  }
+  const tiddlers = (JSON.parse(
+    (JSON.parse(readFileSync(bootstrap, "utf8")) as { text?: string }).text ?? "{}",
+  ) as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
+  const daemonUrl = tiddlers[DAEMON_BAG_ID]?.text ?? null;
+  if (!daemonUrl) {
+    throw new Error("[lares handle burn] daemon doc URL missing from social-bootstrap.json — run `lares vessel found`.");
+  }
+
+  const repo     = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
+  const progress = repo.findWithProgress(daemonUrl as AutomergeUrl);
+  await Promise.race([
+    progress.whenReady(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("[lares handle burn] daemon doc not ready after 5s")), 5000),
+    ),
+  ]);
+
+  const handleIndex = opts.handleIndex ?? (await loadActivePersonaIndex(storageDir)) ?? 0;
+  const seed        = await loadPersonaGroupRootSeed(storageDir, handleIndex);
+  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(nexusPubkey), "board:who-face");
+  const store       = await makeNodePublicHandleStore();
+
+  const record = await store.load(handleIndex);
+  if (!record) {
+    throw new Error(`[lares handle burn] no published face at persona h${handleIndex} — nothing to bury (publish one first).`);
+  }
+  const chain = resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
+  if (!chain || chain.length === 0) {
+    throw new Error(`[lares handle burn] no chain on the WHO board for ${record.nym.slice(0, 16)}… — the face was never announced here.`);
+  }
+  const headCid = boardHeadCid(board.doc() as LarDoc, record.nym)!;
+
+  // The seated handle key IS the persona's veiled key at this index — the same derivation `publish` uses.
+  const veiled = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
+  const signer = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
+
+  const result = await burnOwnHandle({
+    board, nym: record.nym, expectedHeadCid: headCid,
+    sign: signer,   // the self-burn: the seated key closes its own name
+    buildCard: (_event: HandleKelEvent, newChain: HandleKelEvent[]) => signHandleCard(
+      {
+        nym: record.nym, chain: newChain, glamour: record.glamour,
+        version: record.version + 1, prev: record.cardId,
+        expiry: (opts.now ?? Date.now()) + 86_400_000, standing: null, fleetProof: null,
+      },
+      signer,
+    ),
+  });
+  if (!result.ok) throw new Error(`[lares handle burn] ${result.reason}`);
+  await repo.flush();
+  return result.card;
 }

@@ -10,7 +10,7 @@
  * recovers through the persona; that owner-binding is why these verbs cannot fold into `persona`.
  */
 import type { ParsedArgs } from "../parse-args.js";
-import { runHandlePublish } from "@lararium/node";
+import { runHandlePublish, runHandleBurn } from "@lararium/node";
 
 /** A recognized-but-unwired verb reports its shape and where its ahu waits, then declines to act. */
 function declared(verb: string, willDo: string, mint: string): number {
@@ -41,8 +41,13 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
       return declared("rotate", "seat a fresh presentation key under the same name, the owner authorizing", "mintHandleRotation");
     case "graft":
       return declared("graft", "turn the presenting owner-set over (succession); TRUE k-of-n graft governance rides declared", "mintHandleGraft");
-    case "burn":
-      return declared("burn", "bury the name for good (terminal); either the seated key or a current owner (Option C)", "mintHandleBurn");
+    case "burn": {
+      const opts: Parameters<typeof runHandleBurn>[0] = {};
+      if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
+      const card = await runHandleBurn(opts);
+      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… is buried, terminal (readers refuse it)`);
+      return 0;
+    }
     case "attest":
       return declared("attest", "carry a signed claim ON the card (e.g. a domain), bound to the head event", "attestUnderHead");
     default:

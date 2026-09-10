@@ -102,6 +102,33 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     expect(boardHeadCid(board.doc(), inc.prefix)).toBe((res.card.chain[res.card.chain.length - 1] as HandleKelEvent).eventCid);
   });
 
+  test("★ the SELF-burn — the seated handle key closes its own name through the lease ★", async () => {
+    const HANDLE_SEED = new Uint8Array(32).fill(88);
+    const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(HANDLE_SEED).then(hex));
+    const inc = mintHandleInception(handleKeyDid, OWNER, sealKeySetHash([handleKeyDid], 1));
+    const board = makeFakeBoard();
+    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      sign: signerOf(HANDLE_SEED),   // the seated handle key signs its own ending
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[])).toBe(true);
+    expect(isBurned(res.card.chain as HandleKelEvent[]), "the seated key buried its own name").toBe(true);
+  });
+
+  test("★ a burn strikes with EXACTLY ONE hand — neither nor both refuses ★", async () => {
+    const { inc, board } = await foundedOnBoard();
+    const neither = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      buildCard: (_e, c) => card(inc.prefix, c, 2),
+    });
+    expect(neither.ok).toBe(false);
+    if (!neither.ok) expect(neither.reason).toMatch(/exactly one hand/i);
+  });
+
   test("★ a stale lease refuses the burn — no name burns from a head the board already moved past ★", async () => {
     const { inc, board, ownerKeyDid } = await foundedOnBoard();
     const res = await burnOwnHandle({

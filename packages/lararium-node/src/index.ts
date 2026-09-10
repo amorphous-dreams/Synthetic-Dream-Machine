@@ -190,8 +190,8 @@ export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from 
 
 export { runDeviceAdmit } from "./commands/device-admit.js";
 export type { DeviceAdmitOptions, DeviceAdmitPayload } from "./commands/device-admit.js";
-export { runHandlePublish } from "./commands/handle.js";
-export type { HandlePublishOptions } from "./commands/handle.js";
+export { runHandlePublish, runHandleBurn } from "./commands/handle.js";
+export type { HandlePublishOptions, HandleBurnOptions } from "./commands/handle.js";
 
 // The Kapae antigen RAISE side (#65) — the founding kahu writes a quorum-signed ban/lift onto the board.
 export { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
