@@ -12,11 +12,13 @@
  * Research rhyme: lar:///ha.ka.ba/lares/api/pono/field-collision (event-sourcing · git refs · KERI KERL)
  */
 import { describe, test, expect } from "vitest";
-import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle } from "../src/handle-orchestration.js";
-import { mintHandleInception, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
+import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle, burnOwnHandle } from "../src/handle-orchestration.js";
+import { mintHandleInception, verifyHandleKel, isBurned, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
 import { HANDLE_CARD_DOMAIN } from "../src/handle-card.js";
 import { writeHandleAnnounce } from "../src/handle-announce.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
+import { hex } from "../src/crypto.js";
+import * as ed from "@noble/ed25519";
 import type { LarDoc } from "../src/base-doc.js";
 import type { HandleCard } from "../src/handle-card.js";
 
@@ -70,5 +72,45 @@ describe("handle-orchestration — the board is truth, the extend is leased", ()
     expect(stale.ok).toBe(false);
     if (!stale.ok) expect(stale.reason).toMatch(/lease/i);
     expect(mintCalls, "a stale head never reaches the mint — it cannot fork the head").toBe(1);
+  });
+});
+
+describe("burnOwnHandle — the first verb over the leased-projection core (owner-burn, Option C)", () => {
+  const OWNER_SEED = new Uint8Array(32).fill(77);
+  const signerOf = (s: Uint8Array) => async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, s));
+
+  async function foundedOnBoard() {
+    const handleKeyDid = "0x" + "33".repeat(32);
+    const inc = mintHandleInception(handleKeyDid, OWNER, sealKeySetHash([handleKeyDid], 1));
+    const board = makeFakeBoard();
+    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    const ownerKeyDid = "0x" + (await ed.getPublicKeyAsync(OWNER_SEED).then(hex));
+    return { inc, board, ownerKeyDid };
+  }
+
+  test("★ the owner buries the name through the lease — the burned chain verifies TERMINAL ★", async () => {
+    const { inc, board, ownerKeyDid } = await foundedOnBoard();
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      ownerBurn: { ownerAuthMemberPrefix: OWNER, ownerAuthKeyDid: ownerKeyDid, sign: signerOf(OWNER_SEED) },
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the burned chain verifies").toBe(true);
+    expect(isBurned(res.card.chain as HandleKelEvent[]), "the name reads buried").toBe(true);
+    expect(boardHeadCid(board.doc(), inc.prefix)).toBe((res.card.chain[res.card.chain.length - 1] as HandleKelEvent).eventCid);
+  });
+
+  test("★ a stale lease refuses the burn — no name burns from a head the board already moved past ★", async () => {
+    const { inc, board, ownerKeyDid } = await foundedOnBoard();
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: "handle1-" + "00".repeat(32),
+      ownerBurn: { ownerAuthMemberPrefix: OWNER, ownerAuthKeyDid: ownerKeyDid, sign: signerOf(OWNER_SEED) },
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.reason).toMatch(/lease/i);
+    expect(isBurned(resolveOwnHandleChain(board.doc(), inc.prefix)!), "the name stands unburned").toBe(false);
   });
 });

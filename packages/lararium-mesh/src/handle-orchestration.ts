@@ -17,7 +17,7 @@
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import { readHandleAnnounces, writeHandleAnnounce } from "./handle-announce.js";
-import type { HandleKelEvent, HandleMintResult } from "./handle-kel.js";
+import { mintHandleBurn, type HandleKelEvent, type HandleMintResult } from "./handle-kel.js";
 import type { HandleCard } from "./handle-card.js";
 import type { LarDoc } from "./base-doc.js";
 
@@ -67,4 +67,27 @@ export async function extendOwnHandle(opts: {
   const card = opts.buildCard(minted.event, newChain);
   opts.board.change((d) => writeHandleAnnounce(d, card));
   return { ok: true, card };
+}
+
+/**
+ * BURN a Handle from above — the first verb specialized over the leased-projection core, and the template
+ * the others (rotate · graft · attest) follow: supply only the verb's mint + card-build; the lease + resolve
+ * + announce stay shared. The owner (a current member — for a personal face, the owning persona) buries the
+ * name (Option C, path two), a burn a thief-of-the-face cannot forge. The mint runs over the board's CURRENT
+ * chain, never a stale local one, so a burn cannot land on a head the board already moved past.
+ */
+export async function burnOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  ownerBurn:       { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (bytes: Uint8Array) => Promise<string> };
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  return extendOwnHandle({
+    board:           opts.board,
+    nym:             opts.nym,
+    expectedHeadCid: opts.expectedHeadCid,
+    mintNext:        (chain) => mintHandleBurn({ head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn }),
+    buildCard:       opts.buildCard,
+  });
 }
