@@ -84,11 +84,22 @@ Kept as the worked example of the test in motion:
 
 <<~/ahu>>
 
+<<~ ahu #/graves-in-the-wild>>
+
+!! Graves in the wild ~ the federated field proves the law by breaking it (2026-09-09)
+
+Two deployed systems compile the registry this law forbids, and their measured pain confirms it from outside.
+
+* ''FARCASTER — the compiled-global-registry, running.'' Every `fid` is a `uint256` minted by a SINGLE `IdRegistry` contract whose monotonic counter is the global uniqueness authority, recovery an onchain power. This is per-CONTRACT naming — the canonical counter-model to per-collective carriage, and the exact shape the test rejects: a place that compiles all holders into one enumerable table.
+* ''MASTODON SHARED BLOCKLISTS — the AUTOIMMUNE proof.'' A shared blocklist that becomes a DEFAULT recommendation IS a compiled-about-subjects registry, and the field measured its harm: a single-source flag (The Bad Space, Sept-2023) nearly severed thousands of connections on one curator's error; "unified-max" (blocked if any two sources blocked) was WITHDRAWN as too dangerous; the ActivityPub co-author's verdict — the blocklist path ''"always converges on centralization."'' The cure is CO-STIMULATION (never sever on a single signal — K independent corroborations + a damage signal, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> #/the-mesh-field), which is carriage-shaped: each reader aggregates local suspicions, no compiled list becomes the truth.
+
+<<~/ahu>>
+
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
 
-<<^ code="&#x0003;">>ni:///sha-256;z5J-GoUsh4Bk8oGQuPKgF6l936XYF2B8wTXZ4KGDNMc
+<<^ code="&#x0003;">>ni:///sha-256;fj7phEz5IDtmI70e3cJnRUnhL628YliN6fyK4bPAPK8
 
 <<^ code="&#x0004;" -> to="?">>
