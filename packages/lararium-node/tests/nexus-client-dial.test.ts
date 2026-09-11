@@ -29,6 +29,7 @@ import { WebSocketServer } from "ws";
 import { verifyAuthProof, ed25519SignerFromSeed } from "@lararium/mesh";
 import type { AuthVerifierShore, LeafIdentity } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
+import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { DaemonAuthGate } from "../src/daemon-auth-gate.js";
@@ -144,6 +145,30 @@ function awaitPeer(gate: DaemonAuthGate, ms: number): Promise<void> {
   });
 }
 
+/** Resolve `url`'s handle once its query reaches `ready`, tolerating a TRANSIENT `unavailable`; reject on
+ *  `ms` timeout. This is the OBSERVATION POINT: `repo.find()` rejects the instant every source settles
+ *  `unavailable` (Repo.find → DocumentQuery.whenReady raises `Document … is unavailable`, DocumentQuery.ts:199),
+ *  and on a just-mounted dial that condition is a LIE — storage has the doc on no disk and the automerge-sync
+ *  source sees zero peers in the window before the crossed peer ANNOUNCES it (DocSynchronizer#updateAvailability,
+ *  `peers.size === 0` → sourceUnavailable), so the query blinks `unavailable` and `find` reports the doc GONE
+ *  while it is still arriving. The reactive `findWithProgress` subscription rides the SAME query as the peer's
+ *  announce re-enters it into `loading` → `ready` (DocSynchronizer calls sourcePending on peer/announce), so it
+ *  resolves on the true `ready` and never on the transient blink — the shape automerge-repo v2.6 itself points
+ *  to (`RepoFindOptions.allowableStates` is deprecated and IGNORED in this alpha, Repo.ts:923-928, which is why
+ *  passing it to `find` changed nothing). */
+function findWhenReady<T>(repo: Repo, url: AutomergeUrl, ms: number): Promise<DocHandle<T>> {
+  return new Promise<DocHandle<T>>((resolve, reject) => {
+    const progress = repo.findWithProgress<T>(url);
+    let unsub: () => void = () => { /* set below */ };
+    const timer = setTimeout(() => { unsub(); reject(new Error(`timeout: ${url} never became ready`)); }, ms);
+    const settle = (state: ReturnType<typeof progress.peek>): void => {
+      if (state.state === "ready") { clearTimeout(timer); unsub(); resolve(state.handle); }
+    };
+    unsub = progress.subscribe(settle);
+    settle(progress.peek());
+  });
+}
+
 /** Resolve once `handle`'s doc carries `key`, or reject after `ms`. */
 function awaitKey(handle: { doc: () => GreetDoc | undefined; on: (e: "change", cb: () => void) => void }, key: string, ms: number, label: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
@@ -202,23 +227,13 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
 
     // B → A: the dialing node finds + syncs B's doc.
     //
-    // A CROSSED SOCKET IS NOT AN ANNOUNCED DOC. `awaitPeer` proves the dial reached the gate; the sync
-    // protocol still has to tell A that B holds this document. `allowableStates` states the intent the
-    // repo already holds elsewhere (`waitHandle`, D2): the claim rides `awaitKey` + the expect below,
-    // never the arrival order.
-    //
-    // TWO CURES TRIED, BOTH REFUTED — do not spend a third attempt on either:
-    //   · `allowableStates` on THIS call (below). No change in failure rate, same error.
-    //   · Awaiting the repo's `document` event before finding. STRICTLY WORSE — the event never fires for
-    //     this url, so every run deadlocked to the timeout. Discovery here does not announce; the find IS
-    //     what asks, which is why no pre-find gate can exist.
-    //
-    // IT DOES NOT CURE THE KNOWN FLAKE, and trying it again will not. This file fails roughly one run in
-    // several with `Error: Document … is unavailable` raised from `StorageSource`/`DocumentQuery` with NO
-    // frame in this file — an UNHANDLED REJECTION from a query nothing here awaits. No option passed to
-    // THIS call can catch a rejection thrown by a different one; the fix belongs where that query is
-    // made, which is not yet found. Measured before and after: still red intermittently, same error.
-    const foundOnA = await nodeA.repo.find<GreetDoc>(docB.url, { allowableStates: ["unavailable", "ready"] });
+    // A CROSSED SOCKET IS NOT AN ANNOUNCED DOC. `awaitPeer` proves the dial reached B's gate (the SERVER
+    // side); the sync protocol still has to tell A that B holds this document, and A's own client-side
+    // DocSynchronizer for it has to gain the peer. In the window between the two, a `repo.find()` here
+    // settles to `unavailable` and REJECTS — the instrument-lie the operator named: the doc reads GONE
+    // while it is still arriving. `findWhenReady` observes that transient blink and waits out the true
+    // `ready` instead (see its doc-comment for the mechanism + the two refuted cures it supersedes).
+    const foundOnA = await findWhenReady<GreetDoc>(nodeA.repo, docB.url as AutomergeUrl, 8_000);
     await awaitKey(foundOnA, GREETING_KEY, 5_000, "node A never synced node B's doc");
     expect(foundOnA.doc()?.tiddlers?.[GREETING_KEY]?.text).toBe("the DreamNet breathes");
 
