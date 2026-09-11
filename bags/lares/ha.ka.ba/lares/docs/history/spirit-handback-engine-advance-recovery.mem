@@ -1,0 +1,102 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery">>
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery.mem"
+l-space       = "adjacent"
+mana          = 16
+manao         = 16
+manaoio       = 15
+render-target = "docs"
+retain        = true
+role          = "VERBATIM research-recovery handback (2026-09-11) — mined ~/.claude for the July-Aug engine-advance / nexus-shard-epoch research the operator recalled. Verdict: the coexistence-span was never DESIGNED, only SET UP — July built engine-watch.ts (offer/adopt), August ruled the slow/fast rejim + REFUTED per-node engine pinning + proved advancing the engine on a live mesh STRANDS every vessel (re-admission-only today). kahuli is the verb that fills that hole; the research says it must (a) reuse engine-watch.ts, (b) mint FORWARD-bindings not strand-and-re-admit, (c) never be a unilateral reset (the fleet-reset lever is unbuilt on purpose), (d) lift non-renewal from the lease axis onto the engine. The fuzzy-span-over-MANY-ratchets is NEW synthesis still owed (prior work has only the two-way slow/fast rejim). Captured word-for-word (MD transliterated to wikitext); releases the kahuli mu for settled parts."
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Engine-advance research recovery — the no-flag-day / nexus-shard-epoch mining
+
+Verbatim final message of the research-recovery spirit (task `a4266132e8b31bf08`, 2026-09-11) that mined `~/.claude` for the July–August engine-advance research, captured word-for-word with only Markdown transliterated to memetic-wikitext. It edited no files. This handback releases the `kāhuli` design `mu` for the parts the prior research settled.
+
+<<~/ahu>>
+
+<<~ ahu #/verdict>>
+
+!! Verdict up front
+
+The research the operator remembers is ''real and substantially recoverable'', but it was never one dedicated "coexistence-span" conversation — it was worked in ''pieces across three July–August sessions'', and its most important product is an ''unresolved tension'', not a settled span design. Critically: the prior work ''built a live coexistence primitive (July) and then proved, against the code (25 Aug), that no engine-migration path actually exists'' — advancing the engine on a founded mesh strands every vessel. That gap is exactly what `kāhuli` must close, and the current design is at risk of re-deriving conclusions the prior research already settled or refuted. The "500-year / proof-against-empire" material is Elyncia worldbuilding that //inspired// two canon memes but is not itself an engine mechanism.
+
+<<~/ahu>>
+
+<<~ ahu #/where>>
+
+!! (1) WHERE the research lives
+
+Transcript files under `~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/`:
+
+* ''`19ce8b31-86d1-4889-807b-68fdb0f4adfb.jsonl`'' (10–11 Jul 2026) — ''BUILT the nascent coexistence mechanism.'' Line ~3895/5253: authored `packages/lararium-tw5/src/engine-watch.ts` (still live in tree), the island-side engine-epoch drift detector.
+* ''`60b5a3fe-6314-472a-8f27-94a1cde2a2f2.jsonl`'' (7–20 Aug 2026) — ''the epoch ontology substrate.'' L2606–2634 the "one mechanism / two carriers" collapse (commit `9990a9e52`, `lar:///the-frontier.rolls.one-way`); L9930–10267 the `(vessel × hearthTrueName)` binding + fleet-reset lever; L9774/L11008 the hearth-agnostic `""` edge; L1721/L3265/L7424/L8338 the `shelter-against-empire` brief.
+* ''`42b3e868-8c19-4626-8c89-02ab9b8822f4.jsonl`'' (25 Aug 2026, 221 MB — the hottest) — ''the richest engine-advance passages.'' L39756–39870 the slow/fast "rejim" ruling + refutation; L47898–47948 the honest "no migration path exists" correction; L30160 the latent RE-KEY verb; L7274–7693 the 500-year-infra / CAS answer.
+
+False positives ruled out by the sweep: `fbcf0358` (19 Aug) is an Elyncia RPG session ("Neo-Thracian Empire," in-fiction 500-year maelstrom); `94966e31` (29 Aug) is a founding/build session; the `500-year`/`empire` hits in both are fiction or a "500-year code-longevity audit," not the model.
+
+Already-captured canon that carries fragments of this research: `bags/lararium/…/mesh/epoch-binding-surfaces.mem`, `bags/lararium/…/mesh/siege-resilience.mem` (PROPOSED design), `bags/lares/…/pono/shelter-against-empire.mem`, `bags/lararium/…/mesh/founding-runbook.mem` (the "500-year GPA"), and the 9/11 handback `spirit-handback-field-collision-ii.mem`.
+
+<<~/ahu>>
+
+<<~ ahu #/models>>
+
+!! (2) The RECOVERED MODEL(S), faithfully
+
+''MODEL A — the "engine-waiting" OFFER mechanism (July, BUILT, `engine-watch.ts`).'' When a newer genesis merges into a running island, the engine core-blob moves under it; the watch writes an "engine waiting" alert into the island's own `@temp` — ''alert-only, never auto-reboot''. The operator's own design comment: //"the update arrives as an offer; the operator holds the reboot capability, and reboot re-verifies the new engine from genesis the same way the first booted."// Three hazard rulings are baked in: ''rollback'' — a backward pointer is named as such, //"never silently presented as an upgrade"//; ''ethics'' — Service-Worker "waiting" vocabulary, //"readiness, not coercion"//; ''authority'' — //"deliberately ABSENT (held open until the wiki-mesh lives)."// The alert self-clears on the reboot that adopts the epoch. This is old-engine/new-engine coexistence //in nascent, running form//: the running engine keeps serving; the new one waits as an offer; each vessel adopts on its own schedule by an operator-held act.
+
+''MODEL B — the slow/fast "rejim" ruling (25 Aug, L39756–39870).'' A real TW5 submodule bump fired the ratchet: `engineCid` moved while `pluginsCid` held. The agent proposed a runbook line "the engine you found on is the engine you keep" (pin each node's engine at founding). ''The operator REFUTED it'' (verbatim, his spelling): //"the engine CID ratchet in our models effects the 'slow rejim' (wheras the mutable wikitext grammar dhows the 'fast rejim') → not re-name each node as it udpates."// The settled model:
+* ''Public face = engine CID'' — a content-addressed //petname// for "which grammar/lineage this place speaks," shared DreamNet-wide, ratcheting by engine-epoch, holding no secret. The ''slow rejim''. When it advances, //"every place speaking that grammar advances **together**"// and //"nobody gets re-named."//
+* ''Private face'' = a per-founding secret root, gitignored, ''never derived'' from public content — //an engine change touches no key//.
+* ''Fast rejim'' = wikitext grammar + plugin composition, per-operator; //"a plugin change must never perturb the public face."//
+* ''CAS is epoch-keyed'': each engine epoch writes new blob names; old bytes stand; spent-epoch bodies can be swept.
+
+''MODEL C — the honest correction: there is NO migration path (25 Aug, L47898–47948).'' A later pass grepped `hearthTrueName` for any rebind/rotate/epoch/migration path and found //"none exists… the truth is worse rather than milder."// An edge reads "Operator delegates to Device ''at place P''"; move the engine and //"every signed edge names a P this place no longer answers to. The edges remain valid signatures over a name that stopped being true. The Binding Gate refuses them. **A fleet returns only by re-admission.**"// So advancing the engine on a live mesh is //"an epoch act, not an upgrade"// that ''strands every joined vessel''. The operator left the TW5 pointer uncommitted deliberately: //"Committing that pointer is the epoch act, and it's yours to make, not mine to slip into a sweep."// It is cheap only because the tree is pre-alpha with "no second hearth standing."
+
+''MODEL D — migrate-by-non-renewal, but on the LEASE axis, not the engine (25 Aug L30160; 60b5a3fe).'' The one migrate-by-non-renewal primitive that exists is `epoch-lease.ts`, a pure max-register //"staling grants by non-renewal, per-writer slots"// — governing `boundEpoch`, ''not'' `hearthTrueName`. //"The epoch is a LEASE, never a targeted revoker."// Rolling a group's lease epoch //"invalidates every device edge at once — that's not revocation, that's re-admit the whole fleet"// (the ''"fleet-reset lever": gate-enforceable but unbuilt, no command rolls it''). A graceful touch exists in the fiction spec: at ⅞ of a lease a vessel ''rebinds to any sufficient PersonaGroup member'', not only its grantor. The RE-KEY (epoch-roll) verb is classified ''LATENT — model-only, no verb wired.''
+
+''MODEL E — the 500-year / proof-against-empire framing = threat model + CAS answer.'' The "500-year," "isolated nexus attacked in isolation," "necrospire/Maelstrom" material is ''Elyncia worldbuilding used as spec'' ("the myth is the spec"). Its engineering distillates are captured:
+* `siege-resilience.mem` (PROPOSED): survive a persistent 500-year adversary by ''resetting the clock the adversary races'' — Proactive Secret Sharing, so //"the 500-year clock collapses to the length of one window"//; TWO CLOCKS (authority refresh ⊥ flow self-heal); delegate verbs re-key/re-share/evict/heal-partition/recover-from-fork/re-genesis; Dijkstra self-stabilization; @daemon on every Herm so no node depends on a distant operator.
+* `shelter-against-empire.mem`: //"What buys safety is having no seizable object, no nameable category, and no list that holds still"//; every historical register-failure ran //legal/administrative, not cryptographic//.
+* The design answer to 500-year-old infra is ''content-address, not fetch'': //"a blob written five centuries ago still hashes to the same CID,"// `@oracle` is read-open by content-address, ancient and modern lararia interoperate with ''no handshake, no migration, no protocol upgrade'' — //"She doesn't repair them. She introduces them."// This is the deepest recovered rationale for why the engine must be a content-addressed petname and why coexistence (not flag-day) is mandatory.
+
+<<~/ahu>>
+
+<<~ ahu #/relation>>
+
+!! (3) Relation to the CURRENT model
+
+* ''Current `epoch-binding-surfaces.mem` (8–10 Aug)'' — the "five surfaces / one monotone frontier in two carriers / window-death refutation / non-renewal" — is the ''crystallized product of MODEL B + the 60b5a3fe collapse''. It CONFIRMS the recovered work; nothing contradicts it. But it measures the //binding surfaces// and refuses the rolling-window; it does ''not'' contain the coexistence-span mechanism.
+* ''Current 9/11 handback (`field-collision-ii.mem`, RANK 3)'' — "the no-flag-day engine roll is a tagging discipline," proposing the Veilid `CryptoKind` model (engine CID = tag; route by tag; //reads accept both engine epochs during the span//; write forward; graft edge carries a Matrix-style `predecessor` pointer to the prior `hearthTrueName`; span ends by non-renewal) — is a ''field-vindicated extension'' of the recovered models, and it is exactly the mechanism MODEL C proved missing. Its "reads accept both epochs during the span" is the field-name for what MODEL A already built in `engine-watch.ts`. Its "span ends by non-renewal" is MODEL D lifted from the lease axis onto the engine axis.
+* ''The `kāhuli` verb (new this week)'' is the ''wiring of the RE-KEY/epoch-roll verb that MODEL D flagged LATENT'' — the command that "rolls" the engine epoch that no command currently rolls.
+
+<<~/ahu>>
+
+<<~ ahu #/settled>>
+
+!! (4) What the prior research SETTLED that the current design has forgotten or is about to re-derive
+
+# ''The `engine-watch.ts` OFFER/adopt mechanism is already BUILT and live'' (July). The current "reads accept both engine epochs during the span" should build //on// it, not re-derive it — and should honor its settled hazard rulings: rollback is named never disguised, "waiting" is readiness not coercion, and enforcement authority was ''deliberately left absent until the wiki-mesh lives''. `kāhuli` now brings the wiki-mesh, so //this is the moment that "authority = ABSENT" placeholder must be filled// — the prior research flagged the seat, it just wasn't time yet.
+# ''"Pin the engine at founding" was explicitly REFUTED'' (25 Aug). The current tagging-discipline phrasing "a vessel routes by the engine tag it carries" risks smuggling that refuted per-node pinning back in. The operator's ruling: a node must ''not'' be frozen at its founding engine; the regime //"carries the mesh forward together."// The tag is a coexistence read-window, not a frozen binding.
+# ''The hard, unreconciled tension'' is the single most valuable recovery: the operator's INTENT ("advance together, nobody gets re-named," MODEL B) versus the code REALITY ("stranding + re-admission-only," MODEL C) were ''never reconciled''. `kāhuli` is precisely the missing reconciliation. The prior research narrows the decision to one question the current design must answer explicitly: ''does `kāhuli` re-sign every delegation edge forward onto the new `hearthTrueName` (a true rebind), or does it lean on re-admission?'' MODEL C says re-admission is today's only behavior; MODEL B says re-admission violates "nobody gets re-named." A predecessor-pointer + reads-accept-both span is the shape that dissolves it — but only if `kāhuli` actually mints forward-bindings, which nothing does yet.
+# ''"Recovery-Is-Re-Admission-Only" is a civic invariant'' (25 Aug, L16937) and //"a unilateral reset path is the honeypot."// `kāhuli` must not become a unilateral fleet-reset — the fleet-reset lever was left unbuilt ''on purpose''.
+# ''Non-renewal currently governs `boundEpoch`, not `hearthTrueName`'' — the prior research named this exact gap. Lifting the lease-axis non-renewal onto the engine axis (as the 9/11 handback proposes) is the un-done step, and MODEL D's ⅞-lease "rebind to any sufficient member" is a ready-made graceful-rebind pattern to reuse.
+# ''What the prior research did NOT settle, so the current `mu` is correct to hold it:'' there is ''no worked design anywhere in the mined transcripts for "the epoch of the nexus-shard as a fuzzy span over multiple rhythms (engine, grammar, plugin, other ratchets)."'' The only multi-ratchet vocabulary present is the ''two-way'' slow/fast rejim (engine vs grammar+plugins). The five //binding surfaces// exist (in `epoch-binding-surfaces.mem`) but as separate surfaces, never fused into one fuzzy-span epoch. So the "fuzzy span over multiple rhythms" is a ''genuinely new synthesis'' the operator is reaching for — the prior research supplies its ingredients (five surfaces, slow/fast rejim, CAS-epoch-keying, non-renewal) but not the fusion. That is real design still owed, not forgotten prior work.
+
+''One-line takeaway for the operator:'' the coexistence-span was never designed — but it was //set up//: July built the offer/adopt watcher, August ruled the slow/fast rejim and refuted per-node pinning, and August also proved the migration path is a hole (stranding + re-admission). `kāhuli` is the verb that fills that hole; the prior research already tells you it must (a) reuse `engine-watch.ts`, (b) mint forward-bindings rather than strand-and-re-admit, (c) never become a unilateral reset, and (d) lift non-renewal from the lease axis onto the engine — and it tells you the "fuzzy span over many ratchets" is new work, not a recovery.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Pb22MpU5DLmetPx6I-jxGz1WlRea-HBJFKQNvkaw50A
+
+<<^ code="&#x0004;" -> to="?">>
