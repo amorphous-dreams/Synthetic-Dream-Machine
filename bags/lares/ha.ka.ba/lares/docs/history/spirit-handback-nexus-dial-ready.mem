@@ -1,0 +1,105 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready">>
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready.mem"
+l-space       = "adjacent"
+mana          = 14
+manao         = 14
+manaoio       = 13
+render-target = "docs"
+retain        = true
+role          = "VERBATIM spirit handback (2026-09-11) — the nexus-client-dial flake diagnosed and cured: the early awaited find's instrument-lie corrected at the observation point with findWhenReady; allowableStates is deprecated-and-ignored in automerge-repo 2.6.0-alpha.3. Measured 6/60 red -> 0/80 green under load. Captured word-for-word (MD transliterated to wikitext); corrects project-nexus-client-dial-flake's prior misdiagnosis. Landed 0b022f98a."
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Spirit Handback — the dial awaits a ready doc
+
+Verbatim final message of the tasked spirit that cured the `nexus-client-dial` flake (task `aacccacadd1f044c4`, 2026-09-11), captured word-for-word with only Markdown transliterated to memetic-wikitext. Landed as commit `0b022f98a`.
+
+The fix is complete and proven. Here is the aftermath report.
+
+<<~/ahu>>
+
+<<~ ahu #/files-changed>>
+
+!! (1) Files changed
+
+* `packages/lararium-node/tests/nexus-client-dial.test.ts` — my ONLY authored change (+32/−17). Nothing else. (Many other files went dirty during the run from the operator's parallel sweep — archive-passphrase, identity-anchors, lararium-tw5/*, etc. — I did not touch or revert any.)
+
+<<~/ahu>>
+
+<<~ ahu #/flake-rate>>
+
+!! (2) Flake rate BEFORE and AFTER
+
+The flake did ''not'' reproduce unloaded (0/40). Under 6 background `yes` processes on a 12-core box (the timing perturbation that opens the race), it reproduced reliably:
+
+* ''BEFORE (loaded):'' 4/30, then 2/30 -> ''6/60 ~ 10%'', exact error `Error: Document … is unavailable`, stack purely inside automerge-repo (StorageSource.ts:65 -> DocumentQuery #recompute/#transition -> DocumentQuery.ts:199), no test-file frame.
+* ''AFTER (loaded, identical load):'' 0/30, then 0/50 -> ''0/80''. All runs "Tests 3 passed (3)".
+
+<<~/ahu>>
+
+<<~ ahu #/diagnosis>>
+
+!! (3) Diagnosis and why the fix sits at the observation point
+
+An `unhandledRejection` probe settled the mechanism decisively: the failure fires `PROBE_FIND_AWAIT_REJECTED` and ''never'' `PROBE_UNHANDLED_REJECTION`. So it is the test's ''own awaited `find`'' that rejects — the memory's "different query nothing awaits" was a misdiagnosis.
+
+The real reason refuted-cure-1 (`allowableStates`) changed nothing: in `@automerge/automerge-repo@2.6.0-alpha.3`, `RepoFindOptions.allowableStates` is ''deprecated and ignored'' — Repo.ts:923-928 literally says "This no longer has any effect." So passing it was a silent no-op, not a wrong option.
+
+The lie itself: `awaitPeer` waits on `nodeB.gate.clients` — the ''server-side'' gate crossing. It does not prove that nodeA's ''client-side'' DocSynchronizer for docB has registered the peer and received B's announce. In that window, `find(docB.url)` builds a query whose storage source settles `unavailable` (doc on no disk) and whose automerge-sync source settles `unavailable` (`DocSynchronizer#updateAvailability`, `peers.size === 0`). Both settled -> `DocumentQuery` -> `unavailable` -> `whenReady` rejects `Document … is unavailable`. The doc reads GONE while it is still arriving.
+
+The fix replaces the rejecting `find` with `findWhenReady`, a reactive `findWithProgress().subscribe` that resolves only on the true `ready` and rides the SAME query as the peer's announce re-enters it `loading -> ready` (DocSynchronizer calls `sourcePending` on the peer/announce), tolerating the transient `unavailable` blink. This is the observation point — where the query's failure is observed — and it is exactly the shape automerge-repo v2.6 points to now that `allowableStates` is dead. It does not re-attempt either refuted cure (no `allowableStates`; no pre-find `document`-event gate). A bounded 8s timeout guards a genuinely-absent doc; `awaitKey`'s own 5s assertion still proves arrival.
+
+<<~/ahu>>
+
+<<~ ahu #/typecheck>>
+
+!! (4) Typecheck
+
+`bash tools/typecheck-witness.sh` -> "typecheck-witness: every package clean" (lararium-node ok, and all others including lararium-keyhive — the sibling's lane — clean).
+
+<<~/ahu>>
+
+<<~ ahu #/commit-message>>
+
+!! (5) Proposed commit message
+
+```
+lar:///the-dial.awaits.a-ready-doc — the early find's instrument-lie corrected at the observation point
+
+nexus-client-dial.test's flaky Error Document is unavailable was the test's OWN awaited find
+rejecting, not an unhandled sibling query. On a just-mounted dial, find fires after the server-side
+gate crossing but before A's client DocSynchronizer gains the peer; storage and automerge-sync both
+blink unavailable and DocumentQuery.whenReady rejects while the doc is still arriving. Replace the
+rejecting find with findWhenReady, a reactive findWithProgress subscription that waits out the
+transient unavailable for the true ready. allowableStates is deprecated and ignored in
+automerge-repo 2.6.0-alpha.3 which is why refuted-cure-1 changed nothing.
+
+Measured under CPU load: before 6/60 red, after 0/80 green. Typecheck clean.
+```
+
+(Note: no backticks in the body per the commit-message backtick hazard.)
+
+<<~/ahu>>
+
+<<~ ahu #/upstream>>
+
+!! (6) Upstream automerge-repo defect?
+
+''No'' — this is not an upstream defect; it is our test asking too early. `find` rejecting when all sources settle `unavailable` is correct, documented behavior. The one upstream-adjacent wart is that `RepoFindOptions.allowableStates` is retained but silently ignored in this alpha — that misled the prior diagnosis but is already flagged deprecated in their own source, so it does not warrant a report.
+
+One latent product note (not the flake, out of scope to change): the ''production'' dial-out find at `packages/lararium-node/src/nexus-client-dial.ts:82` (`void repo.find(docUrl).then(ok, err)`) is subject to the same transient `unavailable` — it already catches the rejection so it never crashes, but on this race it would log "could not resolve peer doc" and not confirm the pull, even though the live query stays subscribed and sync would still deliver the doc into the repo. If a vessel ever needs a ''confirmed'' pull, that call would want the same `findWhenReady` treatment. I left it untouched to keep the fix scoped to the named flake.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;KXQwZaEgj_t29Nic-nXt8sVlBn-MrI9RdOhp658azVE
+
+<<^ code="&#x0004;" -> to="?">>

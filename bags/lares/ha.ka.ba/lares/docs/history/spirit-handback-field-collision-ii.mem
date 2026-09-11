@@ -1,0 +1,166 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii">>
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii.mem"
+l-space       = "adjacent"
+mana          = 17
+manao         = 17
+manaoio       = 16
+render-target = "docs"
+retain        = true
+role          = "VERBATIM research handback (2026-09-11) — FIELD COLLISION II: the magical-mesh field (Frazee/ATProto, KERI, Ink&Switch, did:webvh, Veilid, Willow, UCAN, Nostr, Farcaster, Matrix, DXOS) collided against our five load-bearing stances. Consolidates two breadth sub-agents. Ranked vindication/exposure/negentropy/anti-pattern with a proposed fold-map. Captured word-for-word (MD transliterated to wikitext); a research spirit edited no canon — the operator decides what folds. Feeds field-collision.mem, live-equivocation.mem #owed, epoch-binding-surfaces.mem, nexus-topology.mem, recovery-ruling."
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! FIELD COLLISION II — the magical-mesh field vs our five load-bearing stances
+
+Verbatim final message of the tasked research-collision spirit (task `ac9435f9ec764fa4d`, 2026-09-11), captured word-for-word with only Markdown transliterated to memetic-wikitext. It consolidates two breadth sub-agents and edited no files — the operator decides what folds into the memegraph.
+
+Collided 2026-09-11. Builds on `field-collision.mem` (do not repeat its SPKI/SDSI+KERI vindications, CONIKS dissolution, KYC-at-the-bridge); this pass answers its two OWED items (watchers · bounded φ-silence) and feeds `live-equivocation.mem`'s #owed queue directly. Primary sources cited throughout. Ranked by load-bearing impact on our decisions.
+
+<<~/ahu>>
+
+<<~ ahu #/rank-1-live-equivocation>>
+
+!! RANK 1 — The live-equivocation recovery gap (the hardest open exposure)
+
+The field's verdict is unanimous and it CONFIRMS our honesty: ''no deployed or researched system recovers from a fully live key capture using key material alone.'' Every real mechanism does one of four things, and the residual — an attacker holding current + successor material simultaneously (or a full threshold within one epoch) who ''acts inside the window'' — is unsolved everywhere.
+
+''VINDICATION (our exposure is real, universal, and correctly framed).''
+
+* KERI states it outright: ''"there is no recovery mechanism once the keys for the root control authority have been fully captured"'' (https://trustoverip.github.io/kswg-keri-specification/). Pre-rotation defends only the ''next'' rotation, exactly as our `nextHandleKeyDigest` does — it cannot touch a simultaneous current+next seizure. KERI superseding-rule A1 (''a non-delegated rotation cannot supersede another rotation'') makes a root-level live capture terminal.
+* Social-recovery wallets confirm our own canon (`civic-recovery` keel: "recovery quorum IS the impersonation quorum"). Buterin, verbatim: ''"a majority [of guardians] can cooperate to change the signing key of the account"'' (https://vitalik.eth.limo/general/2021/01/11/recovery.html). Argent, Safe, Buterin all fall back to the same non-cryptographic levers — guardian diversity/anonymity + a time-lock+veto window.
+
+''EXPOSURE (what the field ships that we have ruled but not shaped).'' The ''time-lock + veto window is the ONLY lever that touches a genuinely live key'', and it is a first-class, ''deployed'' primitive everywhere our layered recovery only names it:
+
+* did:plc: priority-ordered rotation keys + a ''72-hour window'' in which a ''higher-authority'' (colder, socially/offline-held) rotation key ''rewrites history, clobbering any operations signed by a lower-authority key'' (https://web.plc.directory/spec/v0.1/did-plc). This is our Fork-C (threshold + time-lock + veto) made concrete and running at Bluesky scale: a defector rotates with the seized lower-authority key; the victim's cold high-authority key clobbers within the window.
+* Argent `recoveryPeriod` 36h; Safe 28-day default; Buterin's 1-week time-locked vault (owner can cancel during the week).
+* Nostr NIP-41 (draft): pre-committed successor key, OpenTimestamp-anchored, with a ''30-day public contest window'' (https://raw.githubusercontent.com/nostr-protocol/nips/nip41/41.md) — a rosterless witness (OpenTimestamps) + a challenge window, solving exactly what SSB gave up.
+
+''NEGENTROPY TO ADOPT.''
+
+# A ''priority/authority ladder of rotation keys + a bounded rewrite window'', landing in `recovery-registration` and the handle-KEL rotate verb: the armed self-recovery digest we already incept (`deriveSelfRecoveryKey`) becomes a ''higher-authority'' key that can supersede a live-key rotation inside a window the sensorium opens on detection. This is precisely the operator's standing lean — ''pull recovery-quorum forward beside the sensorium'' — given a shape.
+# ''Proactive Secret Sharing folded into the HandleGlamour graft.'' FROST (RFC 9591) is signing-only — ''"Key generation for FROST signing is out of scope"'' (https://www.rfc-editor.org/rfc/rfc9591) — but PSS (Herzberg et al., CRYPTO '95) and its deployments (Zcash Foundation `frost` #245; Fireblocks refreshing shares at ''minute intervals'', https://eprint.iacr.org/2020/492; CHURP for dynamic committees) refresh shares at an epoch boundary so a defector's captured share ''expires next epoch, public key unchanged''. Map: our "rolling current set / graft" already rotates membership; make the graft ''also'' a share-refresh so a turned cabal-member's share dies at the next roll. This binds our epoch-as-monotone-frontier (RANK 3) directly to the live-defector case.
+
+''ANTI-PATTERN.'' Duress schemes teach the trap by contrast: GrapheneOS duress-wipe, LUKS-nuke, VeraCrypt hidden volumes, Canarytokens all ''destroy or signal'' — none rotate an ''already-copied'' key, and all fall to the observation/suppression problem (coercer images first, watches the signal, blocks the channel). Do NOT build a "duress key" believing it recovers you; it only denies future access or raises an alarm. The residual is inherent, not a shortfall to engineer away.
+
+''Folds into:'' `live-equivocation.mem` #owed (the whole recovery-field survey answers questions 1); `recovery-ruling-layered` + `recovery-registration` (the window + authority-ladder shape); a note in `field-collision.mem` #standing-tensions that the field CONFIRMS the residual is universal.
+
+<<~/ahu>>
+
+<<~ ahu #/rank-2-watchers>>
+
+!! RANK 2 — The OWED watcher layer (equivocation detection is carriage) — and its near-twin exists
+
+`field-collision.mem` left watchers OWED: a per-reader view catches a lying Handle only if readers can COMPARE views. Two systems have built exactly this, ledger-free, and one is almost our design.
+
+''VINDICATION + the strongest single find: did:webvh.'' It is the ONLY system in the survey that pairs ''ledger-free pre-rotation'' (`nextKeyHashes` — commit the ''hash'' of your next authorized key, so a stolen current key cannot seize succession — identical in spirit to our `nextHandleKeyDigest`) ''WITH an in-protocol witness+watcher layer'': ''witnesses'' threshold-gate updates (`did-witness.json`); ''watchers'' are non-voting monitors that cache the DID Log and ''detect equivocation'' (https://identity.foundation/didwebvh/v1.0/). It also gives credible exit via `portable: true` + `alsoKnownAs` while the SCID (self-certifying id) survives a full host move. This is a near-twin of our handle-KEL + Meshpalace-watcher + severability design, arrived at independently — strong negentropy that we are on a real attractor.
+
+''KERI supplies the role vocabulary, fully specified.'' Watcher (keeps a KEL it is not a designated witness of) -> ''Juror'' (performs duplicity detection, keeps mutually-inconsistent versions) -> ''Jury'' (fault-tolerant juror pool) -> ''Judge'' (evaluates on juror evidence), under ''"first seen, always seen, never unseen"'', and watchers ''"should share notes with each other"'' = gossip (https://rufftimo.medium.com/keri-101-witnesses-watchers-detectability-fb604cae7a26). This is a deployed-spec blueprint for our unbuilt Meshpalace sensorium (`field-collision.mem` #the-coniks-resolution names its home but says the palace is unbuilt).
+
+''SSB gives the free intrinsic detector:'' each message hashes `previous`+`sequence`, so a fork is cryptographically self-incriminating — a witness-free equivocation detector baked into the log shape (https://ssbc.github.io/scuttlebutt-protocol-guide/). Our KEL already has this shape.
+
+''EXPOSURE.'' The newer local-first stacks we rhyme with — ''Willow, Iroh, Veilid, DXOS, UCAN — all LACK a witness/equivocation layer'' and push it up to the application. So our owed watcher is genuinely under-provided by the field; we cannot pull it from Keyhive/Iroh/Willow. Only did:webvh + KERI + CONIKS solve it. did:plc admits its central directory can still misorder a fork and is ''moving toward an append-only transparency log "similar to certificate transparency"'' (https://github.com/did-method-plc/did-method-plc) — i.e. the field is converging on exactly the CONIKS/watcher layer we owe.
+
+''NEGENTROPY TO ADOPT.'' Adopt did:webvh's ''witness-threshold-gates-an-update ⊥ non-voting-watcher-archives-and-alarms'' split as the Meshpalace sensorium's two roles, named with KERI's juror/jury/judge + first-seen-always-seen. Adopt ''RIBLT/range-based set reconciliation'' (Keyhive's Beelay uses Rateless IBLT; Willow uses fingerprint-then-subdivide) as the head-sighting gossip transport — it catches a forked KEL head far cheaper than naive head-gossip on drifted stores (the extension `field-collision.mem` #the-mesh-field already flagged for Willow RBSR, now doubly confirmed).
+
+''ANTI-PATTERN.'' UCAN ships ''eventually-consistent revocation with no witness layer'' — an agent holding an ''alternate'' valid proof chain keeps access despite revocation, and the burden lands on every verifier's cache freshness (https://github.com/ucan-wg/revocation). Do not let our capability revocation (kapae/antigen) rely on cache-freshness without the watcher gossiping the contradiction.
+
+''Folds into:'' `field-collision.mem` #the-coniks-resolution (did:webvh as the shipped twin; KERI juror/jury/judge vocabulary; the field-wide gap confirming the watcher is load-bearing); the Meshpalace/`dreamnet-architecture` design.
+
+<<~/ahu>>
+
+<<~ ahu #/rank-3-epoch-frontier>>
+
+!! RANK 3 — The epoch as a monotone forward frontier / the no-flag-day engine roll
+
+We are about to design the coexistence span for rolling the engine on a live mesh. The field proves this is a ''tagging discipline'', six independent ways.
+
+''VINDICATION.''
+
+* ''Veilid `CryptoKind`'' typed keys (fourcc-tagged: VLD0=Ed25519, VLD1=ML-DSA): ''"every new version is supported alongside the old ones,"'' separate routing table per cryptosystem, reads auto-select, ''writes default to newest (lazy migration / best-crypto write-back)'' (https://veilid.com/how-it-works/cryptography/). This is the closest field analog to our engine-CID slow ratchet: version each unit, route by its tag, write forward, both coexist.
+* ''UCAN'' per-subspec versioned envelope tags (`ucan/dlg@1.0.0`) ''"enable future protocol evolution without flag-days"'' (https://github.com/ucan-wg/spec).
+* ''ATProto Lexicon'': backward-compatible changes only (new fields optional, types can't change), and ''"if larger breaking changes are necessary, a new Lexicon name must be used,"'' with ''fail-open permissive readers'' (ignore unexpected fields) giving coexistence (https://atproto.com/specs/lexicon). This is our "breaking = a new object (new engine CID), never mutate the old meaning" + our graceful-parsing stance, deployed.
+* ''Matrix room-version upgrade'': a breaking version spawns a NEW room id, linked by `m.room.tombstone` (`replacement_room`) + the new room's `predecessor` — clients ''follow the chain forward'' on their own schedule, no flag day (MSC1501). This is our `sealLineage` hash-linked chain head (each link names its parent) as a migration mechanic.
+* ''DXOS epochs'': peers cooperatively agree to a new epoch that collapses history into a compact baseline without breaking the running stream (https://blog.dxos.org/decentralized-schema-changes-and-data-migrations/) — vindicates our borrowed "compaction epoch" (bounds state-history growth, never who-may-act) for `bag-compact`.
+* ''BeeKEM (Keyhive — we depend on it)'' vindicates `epoch-binding-surfaces.mem` at primary source: concurrent CGKA rolls ''blank-and-merge rather than pick a winner'', and the security parameter ''κ trades forward secrecy for concurrent-secret access'' — exactly our ruling that "carrying our max-register fence onto a CGKA epoch costs forward secrecy" (https://www.inkandswitch.com/keyhive/notebook/).
+
+''EXPOSURE / where the field is honest about the cost.'' Iroh chose a deliberate ''pre-1.0 flag-day'' for breaking wire changes (ALPN gives per-protocol coexistence only afterward); Farcaster's ''Snapchain migration was a genuine network-wide flag-day''. Both are the cliff we are trying to avoid — and both are the systems with the most central coordination, which is how they ''could'' schedule a flag day. Our refusal of a global roster is what forces (and permits) the coexistence span.
+
+''NEGENTROPY TO ADOPT.'' Formalize the engine roll as ''Veilid's model'': the engine CID is a `CryptoKind`-style tag; a vessel routes by the engine tag it carries, reads accept both engine epochs during the span, writes forward to the new engine, and the graft edge (`device-delegation` preimage) carries a Matrix-style `predecessor` pointer to the prior `hearthTrueName`. The span ends by non-renewal, per the meme's own law.
+
+''ANTI-PATTERN.'' ''Willow's prefix-pruning + hostile-clock'': a newer short-path entry silently tombstones a whole subtree, and a skewed/hostile clock weaponizes "newer" (https://willowprotocol.org/specs/data-model/). This is a live, measured instance of exactly why `epoch-binding-surfaces.mem` KILLED the rolling-window shape ("a set answers ''is this listed'', never ''is this newer''") and why we hold "correct even if all timestamps were zero." Do not let any migration marker resolve on a self-asserted time.
+
+''Folds into:'' `epoch-binding-surfaces.mem` (the tagging-discipline vindications; BeeKEM κ at source; Willow hostile-clock as the anti-pattern that confirms the window-death ruling); the coexistence-span design.
+
+<<~/ahu>>
+
+<<~ ahu #/rank-4-rendezvous>>
+
+!! RANK 4 — Rendezvous ≠ identity (the severability law)
+
+`nexus-topology.mem`: a Nexus name grants rendezvous, never identity. The field vindicates this overwhelmingly, and hands us one beautiful mechanism.
+
+''VINDICATION.''
+
+* Iroh: ''"dial the key, not the address"'' — `EndpointId` is a stable pubkey; addresses are ephemeral, relays E2E-blind (https://docs.iroh.computer/concepts/endpoints).
+* Veilid: NodeId (identity) ⊥ RouteId (reachability) are separate, and ''targeting a raw NodeId is gated behind a `footgun-nodeid-target` feature flag'' — anonymized routing is the DEFAULT.
+* Nostr: ''"Clients must always follow public keys, not NIP-05 addresses"'' — DNS is a pointer, not a registry (https://raw.githubusercontent.com/nostr-protocol/nips/master/05.md).
+* ATProto: the handle ''"is not authoritative for identity"''; it resolves to the DID; the ''Relay is non-authoritative and reconstructible from upstream PDSes'' (https://atproto.com/guides/identity, https://atproto.com/guides/overview) — carriage, not registry.
+* did:webvh: the SCID survives a full domain move.
+
+''NEGENTROPY TO ADOPT.'' Veilid's ''`footgun-` flag pattern'': make the anonymized/veiled route the ''default'' API and gate raw-identity targeting behind an explicit footgun flag. This maps cleanly onto our veil ladder (`the-veil-ladder`, face-only-outward-door) — the atom never presents by default; presenting the raw identity is the opt-in, named as the hazard it is.
+
+''ANTI-PATTERN (running in the wild — our registry filter forbids it).'' ''Farcaster mints every id from a single onchain IdRegistry contract + a global KeyRegistry roster + a centralized, revocable Fname registry'' (https://docs.farcaster.xyz/reference/contracts/reference/id-registry). This is the compiled-global-registry the registry filter rejects, plus rent-non-payment = network-wide data loss. Credible exit holds for the ''account'' but not the human ''name'' unless you pay for ENS. Also: ''NIP-26 shipped delegation with no revocation path'' — do not ship a delegation verb without its burn.
+
+''Folds into:'' `nexus-topology.mem` #the-severability-law (the five vindications; Veilid footgun-default negentropy; Farcaster fname-centralization as the live anti-pattern).
+
+<<~/ahu>>
+
+<<~ ahu #/rank-5-contradictions>>
+
+!! RANK 5 — Where the field CONTRADICTS us (a collision that flatters is useless)
+
+# ''Frazee / ATProto chose credible-exit OVER the mesh, on purpose.'' Frazee, verbatim: ''"We sacrificed properties of the magical mesh to hit the performance needs, and we broke from the history of federation to get the guarantees we wanted"'' (https://www.pfrazee.com/blog/practical-decentralization). "Credible exit" = ''if the provider dies or loses trust, others step in with the same dataset and protocols; users switch without changing username or losing the graph.'' The field's most successful decentralized deployment concluded the full causal-island mesh is too slow for social-scale UX and kept a ''non-authoritative-but-real global relay'' as a middle path. This is a genuine challenge to our "no global now, no aggregated index" absolutism: we should be able to say plainly what UX/latency tax we accept by refusing even a reconstructible relay, and whether a ''reconstructible, non-authoritative'' aggregator (their relay, our Herm carrying head-sightings) is the same shape we already permit or a line we hold. PACELC (PA/EL, already canon) names the tax; ATProto is the existence proof that a market punishes it.
+# ''The rosterless time-witness is still unproven.'' Roughtime gives cryptographic ''proof of malfeasance'' and cross-server equivocation detection (https://datatracker.ietf.org/doc/html/draft-ietf-ntp-roughtime-19) — the right shape for our clockless WITNESS — but its ecosystem needs ''"lists of trusted servers,"'' i.e. a roster. did:plc still needs ''"trustworthy timestamps"'' from its directory. Our Θ-ratio / ITC ambient claims to replace this with no roster; the field VINDICATES the ambition (proof-of-malfeasance-over-time is real) but offers ''no deployment of a rosterless time-witness at scale''. The clockless-verdict fork (`field-collision.mem` #standing-tensions, `:206` vs the Θ-escape) stays genuinely open; nothing deployed settles it.
+
+''Folds into:'' `field-collision.mem` #standing-tensions (the credible-exit-vs-mesh contradiction as a named tension; Roughtime roster caution beside the Θ-fork).
+
+<<~/ahu>>
+
+<<~ ahu #/follow-up-threads>>
+
+!! Threads worth a follow-up spirit
+
+* ''did:webvh deep-read against our handle-KEL, line by line.'' It is close enough to be either strong corroboration or a source of a concrete mechanism we're missing (witness thresholds, `portable`-in-entry-1 exit foreclosure, per-entry version stepping). One spirit should diff its spec against `handle-kel.ts`.
+* ''CHURP / dynamic-committee proactive resharing'' (https://eprint.iacr.org/2019/017) for the k-of-n HandleGlamour graft-as-share-refresh — worth a dedicated crypto collision, since it directly bounds the live-defector window and I only surveyed it.
+* ''The credible-exit-vs-causal-island UX tax'' — a proper cost accounting: what does refusing ATProto's reconstructible relay actually cost at family-mesh and civic scale? Talk-story material, not a lookup.
+* ''Keyhive Beelay/Sedimentree compaction'' vs our `bag-compact` and DXOS epochs — a compaction-specific collision (I got the shape; the boundedness guarantees deserve depth).
+* ''David Buchanan's "malleable deputy" Bluesky identity hijack'' (https://www.da.vidbuchanan.co.uk/blog/hacking-bluesky.html) — a real confused-deputy attack on a deployed DID system; worth colliding against our carrier-head/quoted-canonical confused-deputy law.
+
+<<~/ahu>>
+
+<<~ ahu #/fold-map>>
+
+!! Fold-map (proposed — operator decides what enters the memegraph)
+
+* ''`live-equivocation.mem` #owed:'' the entire recovery-field survey (KERI no-live-recovery + superseding A1; FROST-is-signing-only + PSS/CHURP/Fireblocks minute-refresh; social-recovery quorum-equivalence + time-lock/veto as the only live lever; duress = destroy/signal-not-rotate); did:plc 72hr window; NIP-41 30-day contest; the universal-residual confirmation.
+* ''`field-collision.mem`:'' did:webvh as the shipped twin + KERI juror/jury/judge vocabulary (#the-coniks-resolution); the newer-stacks-lack-a-witness-layer finding; Frazee credible-exit-vs-mesh contradiction + Roughtime roster caution (#standing-tensions); Farcaster IdRegistry / NIP-26-no-revoke / UCAN-cache-revocation as fresh graves (#anti-patterns).
+* ''`epoch-binding-surfaces.mem`:'' Veilid CryptoKind + UCAN envelope tags + ATProto lexicon breaking=new-NSID + Matrix tombstone/predecessor + DXOS epochs as the no-flag-day tagging discipline; BeeKEM κ vindication at source; Willow prefix-pruning/hostile-clock as the anti-pattern confirming the rolling-window death.
+* ''`nexus-topology.mem` #the-severability-law:'' Iroh/Veilid/Nostr/ATProto/did:webvh rendezvous≠identity vindications; Veilid `footgun-`-default negentropy; Farcaster fname centralization.
+* ''`recovery-ruling-layered` / `recovery-registration`:'' did:plc priority-key + bounded-rewrite-window shape; did:webvh nextKeyHashes+witness pairing; PSS resharing folded into the HandleGlamour graft.
+
+''One-line takeaway:'' the field independently built our shapes (did:webvh ≈ our handle-KEL+watcher; KERI names our juror/judge roles; Veilid/UCAN/lexicon prove our no-flag-day roll is a tagging discipline; everyone separates rendezvous from key), CONFIRMS our hardest exposure is universal and unsolved (live current+next capture), hands us the one lever that touches it (a bounded time-lock+veto window with an authority ladder, to pull beside the sensorium), and CONTRADICTS us on exactly one axis worth arguing: Bluesky chose credible-exit over the mesh and the market rewarded it.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;qkzF5EjKwt8Ct_GrDhr645NLyxZttTeItSjbwDkQ8OY
+
+<<^ code="&#x0004;" -> to="?">>

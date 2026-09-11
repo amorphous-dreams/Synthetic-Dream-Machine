@@ -1,0 +1,119 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal">>
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal.mem"
+l-space       = "adjacent"
+mana          = 15
+manao         = 15
+manaoio       = 14
+render-target = "docs"
+retain        = true
+role          = "VERBATIM spirit handback (2026-09-11) — face-join re-grant of pre-seat bindings: a re-delegate is NECESSARY but NOT SUFFICIENT, keyhive reads forward-only so pre-seat content must be RE-SEALED (KeyhiveProvider.reSealBag). Measured on the real provider (DecryptError under re-delegate-only). Captured word-for-word (MD transliterated to wikitext); refines project-face-join-and-plane-law claim 2. Landed 024210396."
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Spirit Handback — the seat re-seals what stood before
+
+Verbatim final message of the tasked spirit that closed the face-join pre-seat-binding gap (task `a3d865befef4a4aa1`, 2026-09-11), captured word-for-word with only Markdown transliterated to memetic-wikitext. Landed as commit `024210396`.
+
+My work is complete. Here is the report.
+
+<<~/ahu>>
+
+<<~ ahu #/what-was-done>>
+
+!! What was done
+
+The hazard — ''"face-join never re-grants bindings minted vessel-only before the seat"'' — was real, but the measured root cause is deeper than the held canon recorded. I measured it against the ''real'' `KeyhiveProvider` (single booted provider reused — no second holder) and refined the ruling.
+
+!!! The measurement (RED)
+
+A probe against the real provider sealed a bag while the vessel stood ALONE, seated a member, then tried three strategies:
+
+* ''Strategy A'' (no re-grant): decrypt rejects — the gap.
+* ''Strategy B'' (re-delegate only — the ''currently committed'' `runFaceJoin` path): ''`DecryptError: Key not found`''. `regranted: 1` rides out, but the seated member reaches nothing.
+* ''Strategy C'' (re-delegate + re-encrypt): reachable.
+
+So the committed re-grant loop ''overclaimed'': `regranted` counted the re-pointed delegation, but keyhive reads FORWARD-ONLY — a re-delegate re-keys the bag forward and moves no already-sealed chunk. The codebase already knew this in `persona-crossing.ts` line 105: ''"route A owes a re-encrypt."'' face-join owed it and never paid it.
+
+!!! The fix (GREEN)
+
+# ''`keyhive-provider.ts`'' — the provider now tracks the latest ciphertext per (bag, contentRef) as it seals, and gains `reSealBag(bagUrl)`: decrypts each standing chunk with its own key and re-encrypts at the current epoch, returning the fresh ciphertext. Plaintext is transient — only ciphertext is ever held. (Also renamed the now-simpler `changeIdForContent` -> `contentRefBytes`.)
+# ''`face-join.ts`'' — the re-grant loop, after each `delegate`, calls the optional `provider.reSealBag`; the grant now carries a `reSealed` field (the fresh chunks, base64) so the joinee ingests reachable ciphertext. The `regranted` doc comment is corrected to state the invariant: a re-delegate confers FORWARD reach only; pre-seat chunks need `reSealed`.
+# ''`operator-daemon-behavior.ts`'' (face-join grant path only) — the daemon `joinProvider` wires `reSealBag` to the vessel provider (the holder that sealed the content and holds bag admin).
+
+<<~/ahu>>
+
+<<~ ahu #/tests>>
+
+!! Tests
+
+* ''`packages/lararium-keyhive/tests/pre-seat-reach.test.ts`'' (new, real provider):
+** pre-seat sealed bag -> seat via `runFaceJoin` with re-grant -> member reaches it through the grant's `reSealed` chunk (green); original pre-seat bytes still reject `/key not found/` (documents ''why'' re-seal is needed).
+** ''REGRESSION GUARD'': a pre-seat bag left OUT of the re-grant -> `reSealed: []`, member reads Key-not-found (the gap direction).
+** ''CONTROL'': content sealed AFTER the seat reaches the member with NO re-seal — proving the fix targets backward-propagation only, not a blanket re-grant.
+
+<<~/ahu>>
+
+<<~ ahu #/witnesses>>
+
+!! Witnesses
+
+* `tools/typecheck-witness.sh` -> `every package clean` (all 9 packages, incl. `lararium-node`).
+* `pnpm --filter @lararium/keyhive test` -> 11 files, 55 passed / 1 skipped.
+* `pnpm --filter @lararium/node exec vitest run tests/face-join-pair.test.ts` -> 5 passed.
+
+<<~/ahu>>
+
+<<~ ahu #/files>>
+
+!! Files
+
+* Changed: `packages/lararium-keyhive/src/{face-join.ts, keyhive-provider.ts, operator-daemon-behavior.ts}`
+* Added: `packages/lararium-keyhive/tests/pre-seat-reach.test.ts`
+
+The other dirty paths in `git status` (`nexus-client-dial.test.ts`, `identity-anchors*`, the `lararium-tw5/*` files, `tests/e2e/vessel-sealed.test.ts`, etc.) are the parallel siblings' and the operator's sweep moving under me — they were clean at my start and I did not touch them.
+
+<<~/ahu>>
+
+<<~ ahu #/commit-message>>
+
+!! Proposed commit message
+
+```
+lar:///the-seat.re-seals.what-stood-before — face-join re-encrypts pre-seat chunks, not just re-delegates
+
+A bag sealed while the vessel stood alone stayed Key-not-found for a member seated
+after it: keyhive reads forward-only, so the committed re-delegate re-keyed the bag
+forward and moved no already-sealed chunk while regranted rode out looking healthy.
+The provider now tracks its sealed chunks and re-seals them at the re-keyed epoch;
+runFaceJoin carries the fresh ciphertext out on the grant; the daemon join path wires
+the vessel as the re-seal holder. RED measured on the real provider (DecryptError:
+Key not found under re-delegate-only), green with the re-seal, control proves post-seat
+content still reaches with no re-seal.
+```
+
+<<~/ahu>>
+
+<<~ ahu #/deferred>>
+
+!! Deferred (and why)
+
+* ''Joinee-side ingestion of `reSealed` into the content plane'': the fix ships the re-sealed ciphertext on the grant and proves the member decrypts it, but the daemon face-join client's absorption of those chunks into the joinee's bag docs (Automerge/residency) is content-plane work outside the keyhive lane — not wired or asserted here.
+* ''Veil->group transitive reach in the daemon path'': my green proof uses the direct pattern (seat holds the group, as in leaf-fleet-admit). The daemon re-seals on the vessel whose bag membership is the veil; whether the veil->group->joinee chain propagates the re-sealed epoch is the same forward-only question one hop up, and I did not stand a daemon integration test for it. The wiring strictly improves on re-delegate-only and cannot corrupt ciphertext (it re-seals to the same audience the original sealing used), but its end-to-end reach is unproven here.
+* ''Canon refinement (worth a hoike/memory update)'': held canon says a pre-seat bag ''"needs a RE-DELEGATE."'' Measured: a re-delegate is necessary but NOT sufficient — the pre-seat CONTENT also needs a RE-SEAL. I did not edit memory files (dirty-tree discipline); flagging for the conductor.
+
+I did not commit.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;NpO9NvAh4jRwiU8tLm8FSvrQEaTDw-Yjl0pNh85riMI
+
+<<^ code="&#x0004;" -> to="?">>
