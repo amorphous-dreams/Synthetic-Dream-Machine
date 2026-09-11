@@ -53,7 +53,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "clean": "node ../../tools/clean-output.mjs dist dist-plugin",
-    "build": "tsx scripts/build-tw5-vendor.ts && tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
+    "build": "tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
