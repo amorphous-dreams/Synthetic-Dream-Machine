@@ -10,7 +10,7 @@ manao         = 17
 manaoio       = 16
 render-target = "docs"
 retain        = true
-role          = "VERBATIM research handback (2026-09-11) — FIELD COLLISION II: the magical-mesh field (Frazee/ATProto, KERI, Ink&Switch, did:webvh, Veilid, Willow, UCAN, Nostr, Farcaster, Matrix, DXOS) collided against our five load-bearing stances. Consolidates two breadth sub-agents. Ranked vindication/exposure/negentropy/anti-pattern with a proposed fold-map. Captured word-for-word (MD transliterated to wikitext); a research spirit edited no canon — the operator decides what folds. Feeds field-collision.mem, live-equivocation.mem #owed, epoch-binding-surfaces.mem, nexus-topology.mem, recovery-ruling."
+role          = "VERBATIM research handbacks (2026-09-11) — FIELD COLLISION II (two breadth sub-agents) + III (five threads gone deep) collide the magical-mesh field (Frazee/ATProto, KERI, Ink&Switch, did:webvh, Veilid, Willow, UCAN, Nostr, Farcaster, Matrix, DXOS, CHURP/PSS, Sedimentree, Buchanan's Bluesky hijack) against our load-bearing stances. Ranked vindication/exposure/negentropy/anti-pattern with a proposed fold-map. Wave III's live-bearing finds: CHURP makes the GRAFT a share-refresh (bounds the live-equivocation window on the FROST tier); did:webvh gates EVERY update by witness-threshold where we gate only the graft (a single turned member can rotate the signing key or burn the name); our binding discipline structurally closes Buchanan's replay; the credible-exit tax is real only on the SEALED plane; Sedimentree's trailing-zeros gives a clockless compaction boundary. Captured word-for-word (MD transliterated to wikitext); research spirits edited no canon — the operator decides what folds. Feeds field-collision.mem, live-equivocation.mem #owed, epoch-binding-surfaces.mem, nexus-topology.mem, recovery-ruling, carrier-head-shore."
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii"
 ```
@@ -161,6 +161,134 @@ We are about to design the coexistence span for rolling the engine on a live mes
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qkzF5EjKwt8Ct_GrDhr645NLyxZttTeItSjbwDkQ8OY
+<<~ ahu #/w3-head>>
+
+! FIELD COLLISION III — the five threads, gone deep
+
+Verbatim final message of the SECOND-WAVE research-collision spirit (task `a8b5dd69822c783da`, 2026-09-11), captured word-for-word with only Markdown transliterated to memetic-wikitext. It spawned no sub-agents (five primary sources fetched directly) and edited no files.
+
+Second-wave research-collision handback (2026-09-11). Extends the wave above; does not repeat its surveys. Each of the five follow-up threads that wave named is taken to primary source and collided against the built code (`packages/lararium-mesh/src/handle-kel.ts`, read line-by-line), `epoch-binding-surfaces.mem`, `dreamnet-architecture.mem`, and the `carrier-head-shore` quoting law. No files edited. Ranked by load-bearing impact on our open decisions.
+
+<<~/ahu>>
+
+<<~ ahu #/w3-rank-1-churp>>
+
+!! RANK 1 — CHURP makes the GRAFT a share-refresh: the live-equivocation window gets a real bound (thread 2)
+
+This is the highest-impact find because it touches wave-one's RANK 1 (the live-equivocation exposure `live-equivocation.mem` holds open) with a //constructive// answer, not another confirmation that the residual is universal.
+
+''VINDICATION.'' CHURP (Maram et al., eprint 2019/017, https://eprint.iacr.org/2019/017) is dynamic-committee proactive secret sharing: at each handoff the committee re-shares the secret so that ''shares from epoch //e// become useless in epoch //e+1//, while the secret and its public key are unchanged'', and it explicitly supports ''members joining/leaving and threshold //t// changing at the handoff'' (its bivariate-polynomial dimension-switch). That is our GRAFT, mechanism-for-mechanism: `mintHandleGraft` already turns the presenting owner-set over (members + threshold) under a prior-threshold quorum, `prefix`/`genesisOwnerSetHash`/`handleKeyDid` unchanged. The field independently built "rotate the committee, keep the public name" — our exact `ownerSetHash`-rolls-while-`prefix`-is-fixed shape.
+
+''EXPOSURE.'' Our k-of-n today is a ''multisig, not a threshold secret'': `graftSigs` gathers //t// ''distinct Ed25519 member signatures'' (`verifyHandleKel` counts DISTINCT prior-set authorizers ≥ `curThreshold`). A turned member's key stays a valid signer until the resolver reports it superseded — and nothing refreshes an underlying secret because there is no shared secret to refresh. The FROST path wave-one flagged (a private Circle signs as ONE invisible key) is where CHURP earns its keep: only there is there a secret to reshare so a defector's captured share ''dies at the next graft with the public handle key unchanged and no rotation visible on the wire''.
+
+''NEGENTROPY TO ADOPT.'' On the FROST/veiled-Circle branch (the-veil-ladder's "private Circle grafts invisible under FROST"), make the GRAFT carry a ''CHURP off-chain resharing'' (bivariate-polynomial, O(//n//) on the settled path / O(//n²//) off-chain optimistic, Pedersen/KZG-committed) so `mintHandleGraft` refreshes the FROST shares as it rolls the set. This binds the epoch-as-monotone-frontier (`epoch-binding-surfaces`) directly to the live-defector case: a scheduled graft cadence, paced by FfzClock to the adversary's measured creep, becomes a proactive-refresh interval that bounds how long a stolen share is live. Lands in `recovery-registration` + the handle-KEL graft verb, gated to the FROST tier.
+
+''ANTI-PATTERN.'' CHURP is blockchain-flavored — its dispute path resolves ''on-chain''. Do NOT import a chain. Take the off-chain construction and route its dispute/accusation to our own duplicity-proof + veto (`detectDuplicity`, `foldPersonaContests`), the rosterless witness we already hold. And PSS refreshes shares of a //standing// secret: it does nothing once an adversary holds ≥//t// shares ''within one epoch'' (they reconstruct), and it needs the honest committee live to run the handoff. It shrinks the window; it does not close the simultaneous-quorum seizure — the residual `live-equivocation.mem` already names stays inherent.
+
+//Folds into://  `live-equivocation.mem` #owed (the constructive share-refresh answer to the living-thief); `recovery-registration` + the handle-KEL graft-as-refresh; `epoch-binding-surfaces` (graft cadence = proactive-refresh interval).
+
+<<~/ahu>>
+
+<<~ ahu #/w3-rank-2-webvh>>
+
+!! RANK 2 — did:webvh line-by-line: they gate EVERY update by witness-threshold; we gate only the GRAFT (thread 1)
+
+Diffing did:webvh v1.0 (https://identity.foundation/didwebvh/v1.0/) against `handle-kel.ts` surfaces one concrete mechanism we lack, one place we catch a latent bug in theirs, and a clean structural vindication.
+
+''VINDICATION (mechanism-for-mechanism).''
+
+* //Self-certification.// Their SCID = `base58btc(multihash(JCS(initial log entry with {SCID} placeholders)))`, verified by re-substituting the placeholder and recomputing; "the SCID segment is immutable for the life of the DID." Ours: `handlePrefixOf = handle-${sha256(key + genesisOwnerSetHash + recoverySetHash)}`, checked at `verifyHandleKel` seq-0. Same self-certifying-genesis shape — ''and ours is strictly better on portability'': their SCID survives a host move but the DID still //carries a web host//; our prefix contains ''no host at all'' (content-addressed over key+owner+recovery), so it is did:webvh's SCID with the `did:web` baggage already removed. Their `portable:true`-only-in-entry-1 + `alsoKnownAs`-on-move is the exit mechanism we get for free.
+* //Hash-linking.// Their `versionId = N-<entryHash>` with the entryHash computed over the entry with the ''previous'' versionId substituted = our `prevEventCid` hash-chain exactly.
+
+''EXPOSURE (the concrete gap).'' did:webvh's ''witness threshold'' (`did-witness.json`: `{threshold, witnesses:[{id,weight}]}`) requires the controller to "collect the threshold of proofs from the DID's witnesses" on ''every'' witnessed update. Our code gates ''only the GRAFT'' by threshold (`graftSigs` ≥ `curThreshold`); ''`mintHandleRotation` and `mintHandleBurn` are authorized by any ONE current member.'' So for a k-of-n cabal, a single turned member can (a) ''rotate the handle's own signing key'' — the key that signs attestations — and thereafter attest //as the handle//, or (b) ''owner-burn'' and destroy the shared name outright. The comment concedes this: true k-of-n graft governance "rides DECLARED, not built." did:webvh's witness layer is the shipped shape for closing it: a threshold on //presentation//, not only on //succession//. This is the same live-defector case as RANK 1, on the authorization side.
+* Second exposure: their pre-rotation is ''self-contained in the log'' (`nextKeyHashes`; "every multikey in the current updateKeys MUST have its hash in the previous entry's nextKeyHashes"). Ours pre-rotates the //handle key// (`nextHandleKeyDigest`) but authorization rides the ''injected `OwnerHeadResolver`'' — a verification-time board lookup. A stale or lax resolver passes a superseded member key; their in-log witness proof has no such availability dependency. The module honestly //names// the dependency rather than hiding it, but it is a dependency they don't carry.
+
+''Where we catch a bug in THEIRS.'' did:webvh makes log validity depend on wall clock: "the versionTime of every entry MUST be strictly greater than the immediately preceding entry's. Equal timestamps MUST be rejected." That is a ''self-asserted-time ordering dependency'' — precisely the class `epoch-binding-surfaces` KILLED and Willow's hostile-clock demonstrates ("a skewed clock weaponizes newer"). Our signed `handleEventBytes` carries ''no time field''; ordering is pure `seq` + `prevEventCid`. We are immune to the hostile-clock class did:webvh built in. Strong vindication of "correct even if all timestamps were zero."
+
+''NEGENTROPY TO ADOPT.'' (1) Build the ''witness-threshold on rotation and owner-burn'', not just graft — reuse the `graftSigs`/DISTINCT-authorizer counter already in `verifyHandleKel` so presentation answers to //k//-of-//n//, closing the single-turned-member vector. (2) Carry ''watcher/witness pointers on the handle CARD'' (did:webvh publishes `watchers:[url]` and fires webhooks //in the log//): keep the KEL minimal, but let the card name the Meshpalace watchers that sighted this head, giving readers a starting set to compare against — the CONIKS per-reader compare, with a discovery hint.
+
+''ANTI-PATTERN.'' did:webvh's `portable:true`-later-''MUST-be-rejected'' rule is the lesson: an exit/mobility capability is only safe if ''armed at inception'', never grantable after the fact (a later grant is an attacker's move). Mirror it — any handle-level portability/exit affordance must be seated at `mintHandleInceptionSet` or refused, exactly as we already refuse an unarmed recovery digest.
+
+//Folds into://  `field-collision.mem` #the-coniks-resolution (did:webvh as the line-by-line twin; watcher-URLs-in-log); `recovery-ruling-layered` / handle-KEL (per-rotation witness threshold — the DECLARED-not-built gap given a shape); `epoch-binding-surfaces` (their versionTime rule as a fresh instance of the killed clock-dependency).
+
+<<~/ahu>>
+
+<<~ ahu #/w3-rank-3-buchanan>>
+
+!! RANK 3 — Buchanan's Bluesky hijack: our binding discipline closes his attack class; two analogs remain (thread 5)
+
+''The exact mechanism'' (https://www.da.vidbuchanan.co.uk/blog/hacking-bluesky.html): did:plc ''identifier malleability'' — the id length wasn't pinned, so an attacker re-submitted a victim's genesis operation under a ''longer identifier'', minting a distinct DID with an ''identical genesis op and identical rotation keys''. The confused deputy was the ''PDS holding shared rotation keys'', which signed a legitimate PLC update for the attacker's clone — and because the signed operation ''carried no binding to which DID it targeted'', "a signed update to one is //also// a valid signed update to the other," replayable onto the victim. Fix: reject identifiers longer than 24 chars.
+
+''VINDICATION — the carrier-head-shore law is this defense at the crypto layer.'' His attack is a ''signature bound to a phantom/unbound target slot'' — the crypto-layer twin of "a bare positional binds a PHANTOM param, slot EMPTY." Our `handleEventBytes` binds, into the signed bytes with explicit keys (a CALL binds with `=`), ''all of'': `domain`, `seq`, `kind`, `prefix`, `handleKeyDid`, `genesisOwnerSetHash`, `ownerSetHash`, `recoverySetHash`, `nextRecoverySetHash`, `nextHandleKeyDigest`, `prevEventCid`, `ownerAuthMemberPrefix`, `ownerAuthKeyDid`. The doc line states the exact property Buchanan violated: "a signature never replays onto another head, key, set-epoch, owner, or fork." A sig for handle-A ''cannot'' verify for handle-B because `prefix` differs → different bytes → refuse. And the malleability root is closed by construction: `handlePrefixOf` is a ''full, fixed-length, domain-tagged sha256'' with no truncation — two handles cannot share a prefix the way two did:plc DIDs shared a genesis. This is the strongest single vindication of the quoted-canonical law: the thing that makes our sigils unambiguous is the thing that makes our signatures un-replayable.
+
+''EXPOSURE — two analogs we ARE exposed to.''
+# ''Attestation claim-semantics.'' `handleAttestationBytes` binds `prefix + headEventCid + claim`, but `claim` is ''free text'' the reader verifies "against the claimed surface." The crypto binding is tight; the ''meaning'' of the claim→resource mapping is unspecified and reader-local — exactly where homograph/phishing lives (`field-collision.mem` pattern-integrity: "fuse local names and global identifiers and you get phishing"). A handle attesting `controls exαmple.net` binds its bytes perfectly and still deceives. The confused deputy re-enters at the //reader's// interpretation, not the signature.
+# ''The lax `OwnerHeadResolver`.'' A resolver wired to answer `true` liberally is our Buchanan-PDS: `verifyHandleKelFull` would pass a presentation from a superseded/non-member key. This is the same shape as the `OpenIdentitySlot` `sharePolicy`-returns-`true` stub MEMORY flags as the most-urgent crypto hole — a deputy that says yes too easily.
+
+''NEGENTROPY TO ADOPT.'' Give the attestation `claim` a ''typed/quoted binding to its target surface'' (a structured `{surface-kind, canonical-value}` the reader checks mechanically), not a free string — carry the quoting law into the attestation payload so the claim's //target// is a bound field, never a positional the reader fills by guessing. And make the reference `OwnerHeadResolver` ''fail-closed'' (walk to a verified head, `false` on any doubt), never a permissive default.
+
+''ANTI-PATTERN.'' Buchanan's root was ''variable-length / malleable identifiers''. Never introduce a handle or card encoding where two distinct byte-strings can canonicalize to one identifier (truncation, case-folding, optional fields, non-canonical JSON) — the JCS/`canonicalJson` discipline is load-bearing, and every new signed surface must go through it or it re-opens his class.
+
+//Folds into://  `carrier-head-shore` (the quoting law's crypto-layer proof — signatures bind their target); `field-collision.mem` #anti-patterns (Buchanan as a deployed confused-deputy grave: malleable-id + shared-genesis + no-target-binding); `next-vectors` (the lax-resolver analog beside the `sharePolicy` stub).
+
+<<~/ahu>>
+
+<<~ ahu #/w3-rank-4-credible-exit>>
+
+!! RANK 4 — the credible-exit tax, costed: half the wave-one contradiction dissolves at the public-card line (thread 3)
+
+''The numbers'' (jazco.dev/2024/09/24/jetstream, docs.bsky.app relay-ops, atproto.com/blog/jetstream): full ATProto firehose ~''24 GB/day'' baseline, ''232 GB/day'' peak (~3.16 TB/mo); Jetstream all-events ~''13 GB/day'', posts-only zstd ~''25.5 GB/mo'' — ">99% reduction." The full firehose is heavy because it ships ''Merkle-Search-Tree inclusion proofs'' ("like cloning a git repo vs grabbing the latest files without the `.git`"); Jetstream drops them ("doesn't contain content that needs API verification"). The relay is ''reconstructible from upstream PDSes and non-authoritative''; it ''shards by account DID'' for "near-indefinite" scaling; funded consumers "run their own Relay." Frazee, verbatim: "We sacrificed properties of the magical mesh to hit the performance needs."
+
+''VINDICATION.'' Our relay-floor ''self-elects by capacity'' (reachability · bandwidth · uptime; `dreamnet-architecture` #the-relay-floor). ATProto's operational model — pay for bandwidth, shard by DID, funded parties run relays — is the same capacity-graded carriage, arrived at in production. And their relay is //reconstructible + non-authoritative//, which on the ''authority axis is the exact shape we already permit in the Herm''.
+
+''EXPOSURE + the line that actually holds.'' The task's core question: is our read-blind relay-floor the //same// shape as ATProto's relay? ''Same on authority, different on read.'' ATProto's relay reads ''plaintext'' and AppViews build ''global indexes'' (search, counts, "who is here") over it; our relay-floor is `#has-NOT {read, decrypt}`. So:
+* At ''family scale (2-10 vessels)'' the tax of refusing an aggregator is ''~zero'': direct dial + a Herm for NAT traversal, "who is here" is a handful of gossiped heads (O(//peers//)). Our floor is exactly right; no negentropy owed.
+* At ''civic scale (thousands)'' the tax is ''real and specific'': global discovery / search / "who is here" freshness / cold-start are precisely what an AppView provides and a pure causal-island mesh cannot answer locally (it degrades to gossip-diameter latency or O(//n//) flood).
+* ''But the tax lands only on the SEALED plane.'' Handle cards are ''PUBLIC BY DESIGN'' (`handle-kel.ts`: "a handle-KEL diffuses wherever the card announces"). A ''reconstructible, non-authoritative index of public handle cards'' is //carriage// — announced-by, as-of-last-sync — which the registry filter's own carve-out ''already permits'' ("Carriage passes; a compiled who-is-who at a scope is rejected"). So an ATProto-relay-shaped discovery AppView over the ''public card layer'' is ''not a line we hold against'' — we simply haven't built it. The line we actually hold is narrow: ''no index over the SEALED read-set'' (that would require decryption = breaks FLOW⊥WHO). That tax is a consequence of //seal-by-default//, not of anti-aggregator dogma, and PACELC (PA/EL, already canon) is its honest name.
+
+This ''partly dissolves wave-one's RANK 5 contradiction'': Bluesky's "credible-exit over the mesh" win is one we can largely take //on the public plane// without abandoning the causal-island stance — the aggregator we'd permit is a reconstructible pointer, not an authority.
+
+''NEGENTROPY TO ADOPT.'' Permit a ''capacity-elected, reconstructible card-index AppView'' blind to the sealed plane — a Herm-carried discovery surface over public handle cards + attestations, verified reader-locally against each handle-KEL. Shard by handle prefix (their DID-sharding analog). This closes the civic-scale discovery tax without touching the sovereign read-set.
+
+''ANTI-PATTERN.'' Jetstream is the trap made visible: the cheap stream ''drops the verification proofs''. If we build a card-index, it MUST stay a ''reconstructible pointer readers verify against the KEL themselves'' (CONIKS compare-per-reader), never a trusted authority — the moment discovery becomes the source of truth, it is the compiled registry the filter forbids. And the full-firehose "git-clone-with-`.git`" cost is why the watcher transport should be ''RIBLT head-sighting gossip'' (wave-one RANK 2), not shipping full proofs to everyone.
+
+//Folds into://  `field-collision.mem` #standing-tensions (the credible-exit tax costed; the contradiction narrowed to the sealed plane; PACELC as its name); `dreamnet-architecture` (the reconstructible public-card AppView as a permitted, capacity-elected surface); `nexus-topology` #the-severability-law (discovery over public cards ≠ identity registry).
+
+<<~/ahu>>
+
+<<~ ahu #/w3-rank-5-sedimentree>>
+
+!! RANK 5 — Sedimentree vindicates the compaction-epoch split and hands us a clockless boundary rule (thread 4)
+
+''VINDICATION'' (https://www.inkandswitch.com/keyhive/notebook/). Sedimentree compacts the Automerge commit graph by ''recursive content-addressed chunking'', with chunk boundaries set by ''the number of trailing zeros in a commit's hash'' so "peers with different sets of changes still agree on what should go into each chunk" — ''no wall clock, no coordination''; metadata overhead ~10% over the underlying data. This is a direct vindication of two of our rulings at once: (a) `epoch-binding-surfaces`'s test — "does the fold pick a WINNER or blank both paths?" — Sedimentree compaction ''picks nothing; it is not a fold at all'' ("a cut, not a fence"), exactly as the meme classes compaction; and (b) the clockless stance — its snapshot cadence is //implicit in the hash rule//, never a timestamp.
+
+Crucially, Sedimentree states the forward-secrecy interaction plainly: because "CRDTs like Automerge require access to the entire causal history," it ''"sacrifices forward secrecy … but retains secrecy of concurrent and future chunks,"'' and ''member revocation depends on BeeKEM key rotation, NOT compaction'' — compaction is "a flexibility feature rather than a security mechanism." That is verbatim our ruling: the compaction epoch ''bounds state-history growth, never who-may-act.'' RIBLT confirms the watcher transport numbers again: a billion items differing in five reconcile in ~''240 bytes''.
+
+''EXPOSURE.'' Our `bag-compact` names the compaction-epoch abstractly but does not specify ''how peers agree on a boundary without coordination''. Sedimentree gives the concrete, content-addressed rule (trailing-zeros-in-hash) we lack.
+
+''NEGENTROPY TO ADOPT.'' Adopt the ''trailing-zeros-in-commit-hash boundary'' for `bag-compact` so all peers derive identical chunk boundaries with zero coordination and zero clock — a compaction schedule that is content-addressed the way our identifiers already are. Keep BeeKEM (κ, blank-and-merge) as the //sole// who-may-act authority beneath it, unchanged.
+
+''ANTI-PATTERN.'' Do NOT sell compaction as any kind of read-revocation. Sedimentree is explicit: a reader holding an old chunk's keys still reads compacted history; forward secrecy is //sacrificed// by the CRDT's need for full causal history. Conflating "compacted old history" with "revoked old readers" is the trap — revocation is BeeKEM's job, compaction bounds growth only.
+
+//Folds into://  `epoch-binding-surfaces` #the-five (Sedimentree as the primary-source confirmation that compaction "picks nothing"; trailing-zeros as the clockless boundary rule); `bag-compact` / `compaction-handlers` (the concrete boundary mechanism); `cabal-realm` #the-tie-break (compaction ⊥ BeeKEM revocation, restated at source).
+
+<<~/ahu>>
+
+<<~ ahu #/w3-fold-map>>
+
+!! FIELD COLLISION III — Fold-map (proposed — operator decides what enters the memegraph)
+
+* ''`live-equivocation.mem` #owed:'' CHURP as the constructive share-refresh (GRAFT-as-proactive-resharing on the FROST tier) that bounds the living-thief window; the residual (≥//t// shares in one epoch) stays inherent.
+* ''`recovery-registration` / `recovery-ruling-layered`:'' the CHURP graft-refresh construction; ''the per-rotation/owner-burn witness threshold'' (did:webvh's every-update gating — the DECLARED-not-built gap in `handle-kel.ts` given a shape).
+* ''`field-collision.mem`:'' did:webvh as the line-by-line twin + watcher-URLs-in-log (#the-coniks-resolution); Buchanan (malleable-id + shared-genesis + no-target-binding) as a deployed confused-deputy grave (#anti-patterns); the credible-exit tax ''costed and narrowed to the sealed plane'', PACELC named (#standing-tensions).
+* ''`epoch-binding-surfaces.mem`:'' Sedimentree confirms "compaction picks nothing / not a fold" and the FS sacrifice at source; ''trailing-zeros-in-hash'' as the clockless boundary rule; did:webvh's `versionTime`-strictly-increasing as a fresh instance of the killed clock-dependency; the CHURP graft cadence = proactive-refresh interval.
+* ''`carrier-head-shore` (memory):'' Buchanan as the crypto-layer proof of the quoting law — a signature that binds every field with `=` cannot replay onto a phantom target; the residual analogs (free-text attestation `claim`; the lax `OwnerHeadResolver` as our Buchanan-PDS, beside the `sharePolicy` stub in `next-vectors`).
+* ''`dreamnet-architecture` / `nexus-topology`:'' a capacity-elected, reconstructible ''public-card discovery AppView'' blind to the sealed plane — permitted carriage, not a registry; RIBLT head-sighting as its verification-cheap transport.
+
+''One-line takeaway:'' the field hands us one //constructive// answer to our hardest exposure (CHURP makes the graft refresh the shares, bounding the live-defector window on the FROST tier); one //concrete gap// in our own code (we threshold-gate the graft but let a single member rotate the signing key or burn the name — did:webvh gates every update); one //clean vindication with two live residuals// (our binding discipline structurally closes Buchanan's replay, but the attestation claim's meaning and a lax resolver remain confused-deputy surfaces); a //narrowing// of the ATProto contradiction (a reconstructible index of PUBLIC cards is carriage we already permit — the tax we truly pay is only on the sealed plane, and it is a seal-by-default choice, not anti-aggregator dogma); and a //concrete clockless mechanism// for compaction (Sedimentree's trailing-zeros boundary, with the compaction⊥revocation split confirmed verbatim). No sub-agents spawned; five primary sources fetched and collided directly.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;c-PRPbpfKxK4UxN6IfxoDIddS-8IlM7rFPEJyoBkR5k
 
 <<^ code="&#x0004;" -> to="?">>
