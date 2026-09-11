@@ -1,0 +1,174 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/outbound-bridge.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 13
+manao             = 14
+manaoio           = 12
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+revised-on        = "2026-09-11"
+role              = "outbound-bridge — the scout of the one wire the island never got: a live `$tw.wiki` change → `IslandAdaptor.saveTiddler`/`deleteTiddler`. TW5's own outbound law (syncer · syncadaptor contract · SyncFilter · throttle · the changeCount echo law), what the island holds in its place, the seam file:line, the ONE contract both must satisfy, the two roads (ride the stock syncer · keep the direct listener) costed and unruled, the daemon wiki's disk mirror and the residency MOVE measured, and the reds that wait on each seam."
+status            = "standing"
+status-why        = "scouted whole and measured red-first: six reds stand for the bridge (`packages/lararium-tw5/tests/outbound-bridge.test.ts` · B1 in `tests/e2e/outbound-bridge.e2e.test.ts`), each named for its seam; the daemon mirror and the crossroads designation stand WIRED and witnessed live (B2 · the MOVE step in `tests/e2e/meme-live-contact.test.ts`); the bridge itself belongs to the parallel re-founding session — nothing of it is built here"
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ground>>
+
+! Outbound Bridge ~ a scout of the one unwired subscription
+
+''Register: Model-Standing.'' Every claim below names a file and a line; a claim without one names itself as inference. The operator's words, verbatim (quote license): "(1) we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there. (2) Write red-tests for this, we still work on cleaning up the architecture and re-founding in the parallel session. (3) daemon wiki projects to disk as `wikis/daemon`, and if it holds bags (it does have 'public system bags') can use residency verbs to move data to `bags/*`."
+
+The finding this scout stands on, from `recipe-layer-model#/one-model` (`bags/lares/ha.ka.ba/lares/docs/pono/recipe-layer-model.mem`): //no outbound bridge — nothing carries a live wiki change to `IslandAdaptor.saveTiddler`/`deleteTiddler` on any island; the anchor `meme put` stands in `$tw.wiki` alone.// Measured again here against the tree as it stands 2026-09-11: the finding holds.
+
+<<~/ahu>>
+
+<<~ ahu #/tw5-outbound-law>>
+
+!! How TiddlyWiki carries a live edit outward
+
+The fork's own loop, `TiddlyWiki5/core/modules/syncer.js`, laid flat:
+
+| leg | file:line | what it does |
+|---|---|---|
+| the subscription | `syncer.js:80-101` | `wiki.addEventListener("change", …)`: filters the changed titles through the sync filter; a non-empty result → `processTaskQueue()`; an empty result still queues when a `deleted` change names a title in `tiddlerInfo` (a known tiddler left) |
+| the dispatch | `core/modules/wiki.js:144-170` (`enqueueTiddlerEvent`) | every `addTiddler`/`deleteTiddler` bumps `changeCount[title]` and schedules ONE `dispatchEvent("change", changes)` on `$tw.utils.nextTick` (`core/modules/utils/utils.js:706` → `process.nextTick` on node, `setTimeout 0` in a browser). The event fires AFTER the synchronous caller returns — never inside it |
+| the filter of what leaves | `syncer.js:19`, `:67`, `:165`; `core/wiki/config/SyncFilter.tid` | `$:/config/SyncFilter` compiles once: `[is[tiddler]] -[[$:/core]] -[[$:/library/sjcl.js]] -[prefix[$:/boot/]] -[prefix[$:/HistoryList]] -[status[pending]plugin-type[import]] -[[$:/isEncrypted]] -[prefix[$:/status/]] -[prefix[$:/state/]] -[prefix[$:/temp/]]` — TOTAL minus a NAMED exclusion list |
+| the dirty set | `syncer.js:181-199` (`readTiddlerInfo`), `:204-238` (`isDirty`) | `tiddlerInfo[title] = { revision, changeCount, adaptorInfo, timestampLastSaved }`; dirty = a synced title whose `wiki.getChangeCount(title)` exceeds its recorded `changeCount`, or unknown to the adaptor, or known and now absent (a pending delete) |
+| the throttle | `syncer.js:23-27`, `:478-521` (`chooseNextTask`) | `throttleInterval` 1 s (`$:/config/SyncThrottleInterval`): a title saved within the last second waits; `taskTimerInterval` 250 ms re-polls; `errorRetryInterval` 5 s; one task in flight at a time (`numTasksInProgress`, `:425`). Order: saves · a server sync · deletes · lazy loads |
+| the save task | `syncer.js:535-561` | `syncadaptor.saveTiddler(tiddler, cb, { tiddlerInfo })`; on success records `{ changeCount, adaptorInfo, revision, timestampLastSaved }` |
+| the delete task | `syncer.js:573-588` | `syncadaptor.deleteTiddler(title, cb, { tiddlerInfo })`; on success deletes `tiddlerInfo[title]`. The adaptor receives the LAST-KNOWN `adaptorInfo` — the tiddler itself has gone |
+| the echo law | `syncer.js:254-264` (`storeTiddler`) | an INBOUND tiddler lands through `wiki.addTiddler` and stamps `tiddlerInfo[title].changeCount = wiki.getChangeCount(title)` in the same synchronous stretch — so the `change` that fires next tick reads no delta and queues no save. The guard rides the COUNT, never a flag |
+| the adaptor contract | `startup.js:104-118`; `filesystemadaptor.js:25-140`; `tiddlywebadaptor.js:26-275` | `module-type: syncadaptor`, `exports.adaptorClass`; `name` · `supportsLazyLoading` · `isReady()` · `getTiddlerInfo(tiddler)` · `saveTiddler(tiddler, cb, opts)` · `loadTiddler(title, cb)` · `deleteTiddler(title, cb, opts)`; optional `getStatus`/`login`/`logout`/`getUpdatedTiddlers`/`getSkinnyTiddlers`/`getTiddlerRevision`. The FIRST module of the type wins; `$tw.syncer` stands only when one registers (`:112`) |
+| `$:/status/IsLoggedIn` | `syncer.js:15`, `:269-283` | written by `getStatus`; `tm-login`/`tm-logout` ride the root widget (`:115-128`, browser only) |
+| the hooks | `core/modules/widgets/navigator.js:248`, `:255`, `:332` | `th-deleting-tiddler` and `th-saving-tiddler` fire in the NAVIGATOR on a UI save/delete — they gate the widget's act, never the syncer's; a programmatic `addTiddler` never passes them |
+
+Two facts the stock adaptors carry that the island's shape already mirrors: the filesystem adaptor keeps `$tw.boot.files[title]` as its siting memory and reads it on delete (`filesystemadaptor.js:128-131`); the tiddlyweb adaptor reads `options.tiddlerInfo.adaptorInfo.bag` on delete and skips a title the server never saw (`tiddlywebadaptor.js:264-268`) — the syncer's `tiddlerInfo` IS a last-known-bag map, the same office the island's `_slotOf` holds.
+
+<<~/ahu>>
+
+<<~ ahu #/island-holds>>
+
+!! What the island holds in the syncer's place, and where the seam sits
+
+| leg | file:line | what stands |
+|---|---|---|
+| the outbound save | `packages/lararium-tw5/src/island-adaptor.ts` `saveTiddler` (`:246-270`) → `_flushPending` → `_writeMeme` (`:341-380`) | echo guard first (`_isApplying`), the cascade pre-check (`_destination`), a 400 ms per-title capture debounce (`DEBOUNCE_MS`, `:79`), then `store.put(record, {kind:"tw-local"}, { bag })` with `$origin-bag` stripped (`:361`) and the ahu children split and tombstoned (`:365-379`); the verdict feeds `_slotOf` (`:359`) |
+| the outbound delete | `island-adaptor.ts` `deleteTiddler` (`:284-306`) | echo guard, then the LAST-KNOWN-SLOT map (`_slotOf`) before the cascade; `tombstoneInBag(slot, …)` where the store offers it |
+| the filter of what leaves | `packages/lararium-tw5/tiddlers/lar-bag-paths.tid` walked by `_routeBag` (`island-adaptor.ts:107-137`) | the cascade takes `SyncFilter`'s SHAPE (total, named exclusions) and adds a ROUTE per kind; a withholding stops a write only from a rule that names it; a gap lands at `current-wiki-bag` and warns (`:146-159`) |
+| the echo guard | `packages/lararium-tw5/src/modules/nalu-engine.ts:194-196` (`isApplyingNalu`), `:113-144` (`_drain`) | a module-level flag raised for the synchronous stretch of one drain and lowered in `finally` |
+| the map fed inbound | `island-adaptor.ts:175-178` (`onUriChanged`), `:326` (`_resolveCrossBagTombstone`) | every inbound live record stamps `_slotOf[title] = change.bag` |
+| the inbound half | `onUriChanged` → `enqueueNalu` → `_drain` → `wiki.addTiddler`/`deleteTiddler` (`nalu-engine.ts:126-134`), `$origin-bag` stamped from the envelope (`:99-105`) | complete and witnessed |
+| who calls the outbound methods today | `packages/lararium-tw5/src/wiki-sync.ts:63-66` (`openVmCarrierSyncSession` — the disk→VM ingest leg) and the tests (`island-adaptor.test.ts`, `routing-totality.test.ts`, `lar-kind.test.ts`, `bag-is-user-space.test.ts`) | NO live path. `grep -rn "\.saveTiddler(\|\.deleteTiddler(" packages/*/src` reaches nothing else |
+
+''The seam, exactly.'' `packages/lararium-tw5/src/sovereign-kernel.ts:405-410` calls `buildIslandRecipe({ tw5, composite, recipe, ready })` and DISCARDS its return `{ adaptor, stores }` (`island-recipe.ts:130`). `packages/lararium-tw5/src/tw5-vm.ts:151-163` subscribes the wiki to `tm-verse-event` alone. `packages/lararium-tw5/src/island-kernel.ts:87-105` wires verse events and nothing else. No `module-type: syncadaptor` ships in the plugin (`plugins/lares-memetic-wikitext.json` carries `nalu-engine` and `bag-paths`, no adaptor), so `startup.js:106` finds none and `$tw.syncer` never stands (`tw5-vm.ts:5` names the syncer as discarded on purpose). The wire missing reads as ONE subscription: `$tw.wiki.addEventListener("change", changes → for each title: deleted ? adaptor.deleteTiddler(title) : adaptor.saveTiddler(wiki.getTiddler(title)))`, held by the kernel's live handles and cancelled at teardown.
+
+''The trap under that wire, MEASURED'' (`tests/outbound-bridge.test.ts` "CONTROL (5b)"): `change` dispatches on `nextTick` (`wiki.js:161`), AFTER `_drain`'s `finally` lowered `_applying`. Inside a `change` listener `isApplyingNalu()` reads `false` for every inbound apply. The guard as it stands gates a SYNCHRONOUS caller only; a `change`-riding bridge needs an echo law of its own — the syncer's `changeCount` stamp (`syncer.js:254-264`), or a set of titles the drain applied, consumed by the next `change` dispatch. Without one, every fleet-arrived record echoes back out as a `tw-local` put (the adaptor's own `onUriChanged` filters its own `tw-local` echoes on the way IN, `island-adaptor.ts:171`, so the loop would not spin, but every inbound record would re-write once).
+
+''The anchor `meme put`.'' `packages/lararium-tw5/src/meme-verbs.ts:185-189` (`anchorBagOf`) names the cap seat from `current-wiki-bag`; `:204` sinks through `wikiMemeSink(opts.tw5.$tw.wiki)` — a wiki write, which the same missing subscription would carry outward. Measured through the daemon's own door (`tests/e2e/outbound-bridge.e2e.test.ts` B1): after `lares meme put <uri>` with no target, `meme get <uri> --bag lar:///ha.ka.ba/wikis/daemon/working` answers `{"code":"not-found","message":"no meme at lar:///t/bridge/anchor"}` — the working layer stands mounted and reachable, and holds nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/back-parity>>
+
+!! Back-parity ~ the ONE contract, and the two roads
+
+''The contract both a stock `syncadaptor` and the island's adaptor MUST satisfy:''
+
+# ''Save.'' A changed tiddler the filter admits reaches `saveTiddler(tiddler)` once per settled burst, with the tiddler as the wiki holds it now. Stock: the 1 s throttle + `changeCount` delta. Island: the 400 ms capture debounce + the cascade pre-check. Both coalesce; neither drops.
+# ''Delete.'' A gone tiddler reaches `deleteTiddler(title, lastKnown)` with what the adaptor knew LAST — the tiddler cannot be read then. Stock: `options.tiddlerInfo.adaptorInfo` (`syncer.js:586`). Island: `_slotOf` (`island-adaptor.ts:293`).
+# ''The dirty/echo law.'' An inbound apply MUST NOT re-save. Stock: the `changeCount` stamp at `storeTiddler`. Island: `isApplyingNalu()` — which a `change` listener cannot read raised (#/island-holds). Parity here needs a COUNT or a SET, never a flag.
+# ''The filter of what leaves the wiki.'' Total minus named exclusions. Stock: `$:/config/SyncFilter`. Island: the cascade's withholding rules (`lar-bag-paths.tid:5-6`) — plus a ROUTE, which the stock filter never carries.
+
+''Road A — register the island's adaptor as `module-type: syncadaptor` and let TW5's own syncer drive it.''
+
+* Gains: the subscription, the throttle, the dirty set, `isDirty()`/`tc-dirty`, the beforeunload warning, the `tm-server-refresh` hook, and the `changeCount` echo law arrive as the fork's own code — parity by RIDING the loop, tested upstream. `$:/config/SyncFilter` and `$:/config/SyncThrottleInterval` become operator dials. The adaptor gains `getTiddlerInfo` (`{ bag }` — the slot the cascade named) and `deleteTiddler` reads it from `options.tiddlerInfo.adaptorInfo.bag`, retiring `_slotOf` in favour of the syncer's map.
+* Costs: the adaptor must ship INSIDE the plugin as a TW5 module — a packed CJS module reaching `@lararium/mesh` by subpath (`nalu-engine.ts:44-49` names the law) with NO access to the composite it writes to unless the kernel hands it through `$tw.lares` (the way `enqueueNalu` rides). The syncer's callback shape `(err, adaptorInfo, revision)` wraps the promise. The syncer polls `SyncFromServerTask` every 60 s (`pollTimerInterval`) — a no-op without `getUpdatedTiddlers`, but a timer that runs. `SyncFilter` excludes `$:/state/`, `$:/temp/`, `$:/status/` OUTRIGHT, where the cascade ROUTES them to the temp store — so the temp slot goes unfed unless the filter is overridden per island. The syncer applies the same law to the daemon island and the wiki island alike (one plugin), and `$tw.syncer` stands as a global the browser vessel inherits. Two loops (nalu inbound, syncer outbound) hold two dirty/echo laws.
+* Where it lands: `plugins/` (a new packed module) · `sovereign-kernel.ts` (hand the composite to `$tw.lares`) · `island-adaptor.ts` (the callback shore).
+
+''Road B — keep the direct listener; parity by shape.''
+
+* Gains: one subscription in the kernel (`sovereign-kernel.ts` after `buildIslandRecipe`, held in `_liveHandles`), the adaptor unchanged, the cascade's temp route kept, no packed module, no syncer global, no poll timer. The echo law lands in the nalu engine where the apply happens: `_drain` records the titles it applied and the bridge skips them at the next `change` (a SET consumed once), or stamps `wiki.getChangeCount(title)` per applied title and the bridge compares (the syncer's own law, re-spelled).
+* Costs: the throttle, the dirty set, `isDirty()`, the unload warning and `tc-dirty` stay OWED to the island (the browser vessel shows no dirty state today either way). Every upstream change to `syncer.js` must be read and re-spelled by hand — parity by shape drifts the way every hand-derived enumeration drifts. The `SyncFilter` dial stays absent; the cascade alone says what leaves.
+* Where it lands: `sovereign-kernel.ts` (the subscription + teardown) · `nalu-engine.ts` (the applied-set or the count stamp) · `island-adaptor.ts` (read it).
+
+No ruling here. The reds in #/reds pass under either road; (5) and (5b) name what either road MUST carry.
+
+<<~/ahu>>
+
+<<~ ahu #/daemon-mirror>>
+
+!! The daemon wiki projects to `wikis/daemon/` ~ the grant, the seam, the residency door
+
+''What stands.'' `packages/lararium-node/src/disk-projector.ts` carries NO exclusion by name — a bag absent from `mirrors` never writes (`:12-17`, `:294-295`); the "daemon exclusion" reads as an ABSENCE: the daemon island's manifest carries no `diskMirrors` (`packages/lararium-tw5/src/daemon-vm-core.ts:560-564` builds it from recipe · grants · storage · daemonAuth · pluginCids alone) and `packages/lararium-node/src/node-daemon-island.ts` composes `makeOperatorDaemonBehavior` with no `onBoot` — the hook `daemon-behavior.ts:62` already offers, the one `island-behaviors.ts:27-72` fills for a wiki island with a `LarDiskProjector` over `manifest.diskMirrors`.
+
+''The grant shape, minted and witnessed'' (`packages/lararium-node/src/bag-paths.ts` `daemonWorkingMirror(rootDir)` → `{ bagId: lar:///ha.ka.ba/wikis/daemon/working, mirrorRoot: <root>/wikis/daemon }`): the shape `resolveDiskMirrors` (`packages/lararium-mesh/src/vessel-island-pool-core.ts:82-107`) fills for every wiki's `wikiSlot: "working"` grant from the slug at mount; the daemon mounts outside the pool, so the mint stands by name. Witness `packages/lararium-node/tests/daemon-working-mirror.test.ts`: the shape · a record in `wikis/daemon/working` projects to `<root>/wikis/daemon/<uri-path>.mem` · CONTROL: `bags/daemon` projects NOWHERE · the MOVE's unlink leg: a carrier that LEFT the working layer unlinks from `wikis/daemon/` and one still held there stays (`disk-projector.ts` `_scheduleUnlinkByTitle`, `bagsHolding`).
+
+''The seam, WIRED'' (the same shift): `open-daemon-vm.ts` mints the daemon's mirrors under the vessel root — `daemonWorkingMirror(rootDir)` beside `bags/crossroads` (the public system bag the daemon holds, by the operator's word) — and hands them to `openDaemonVmCore` → `mkManifest(…, { diskMirrors })`; `node-daemon-island.ts` passes `onBoot: (ctx) => mountDiskProjection(manifest, ctx)` as the `makeOperatorDaemonBehavior` OPTION (the seat that also lights the projection cap — an `onBoot` on the returned behavior object mounts nothing), and `island-behaviors.ts` lifts the wiki island's mount into that ONE `mountDiskProjection` both entries call. Measured live (`tests/e2e/outbound-bridge.e2e.test.ts` B2, a standing test now): a DIRECT `meme put --bag lar:///ha.ka.ba/wikis/daemon/working` projects to `<root>/wikis/daemon/<uri-path>.mem`. One instrument-lie fell on the way: the witness's first fixture named `lar:///t/bridge/direct`, a one-term root the siting law never sites (`carrierBaseRelPath` sites `lar:///w.w.w/…` alone) — the address moved to `ha.ka.ba/t/bridge/…` and the mirror answered.
+
+''The residency door, MEASURED'' (`tests/e2e/meme-live-contact.test.ts` "act MOVE --from wikis/daemon/working --to bags/crossroads"): `lares act MOVE --title <uri> --from lar:///ha.ka.ba/wikis/daemon/working --to lar:///ha.ka.ba/bags/crossroads --yes` answers `ok`; the cap gate refused NOTHING — `attachDaemonWorking` registers the working slot with keyhive and delegates it to the seated face (`operator-daemon-behavior.ts:154-157`); after the MOVE `meme get --bag wikis/daemon/working` answers `not-found` and `meme get --bag bags/crossroads` answers the carrier. The CRDT leg stands whole.
+
+''The disk leg of that MOVE, MEASURED red then green'' (the same suite): `bags/crossroads/` stood as a GRANT on the node's mirror list (`open-node-vessel.ts:1638`, authority) with NO designation — `packages/lararium-tw5/src/vessel-steps.ts:130` `PRIMARY_MIRROR_BAGS = [lares, lararium]` names every wiki's mirrors and never crossroads. The daemon holds the public system bags, so the DAEMON designates crossroads in its own mirror set (`open-daemon-vm.ts`); the MOVE now publishes under `<root>/bags/crossroads/ha.ka.ba/t/witness/move.mem` and unlinks `<root>/wikis/daemon/…` — a standing test.
+
+<<~/ahu>>
+
+<<~ ahu #/reds>>
+
+!! The reds, and the seam each waits on
+
+All `test.fails` — green means "still red for the named reason"; the day a seam closes, the vector flips LOUD and its title says which wire landed. Each red was lowered to a plain `test` once and its failure quoted here, so a red for the wrong reason cannot hide behind it.
+
+| # | suite · vector | seam | the red line, quoted |
+|---|---|---|---|
+| 1 | `packages/lararium-tw5/tests/outbound-bridge.test.ts` "(1) SEAM `change`→saveTiddler: `$tw.wiki.addTiddler` of a plain title → `store.put` in working, `$origin-bag` stripped" | the `change` subscription | `no put reached the store — nothing carries the wiki's change event to saveTiddler: expected undefined to be defined` |
+| 2 | "(2) … a tiddler whose `draft.of` stands → `store.put` in the draft slot" | the same | `the draft never reached the store: expected undefined to be defined` |
+| 3 | "(3) SEAM `change`(deleted)→deleteTiddler: … → `tombstoneInBag` in the slot the map recorded" | the same, delete branch | `the delete never reached the store — the record resurrects on the next boot: expected undefined to be defined` |
+| 4 | "(4) … `$:/temp/*` → the temp store, never a CRDT put" | the same (Road A would ALSO need a `SyncFilter` override to reach this) | `the volatile write never reached the composite: expected undefined to be defined` |
+| 5 | "CONTROL (5): a nalu-applied inbound change fires NO outbound put" — plain `test`, GREEN | the echo law | stands; MUST stay green under either road |
+| 5b | "CONTROL (5b) MEASURED: `change` dispatches after the drain lowered `isApplyingNalu`" — plain `test`, GREEN | the echo law's evidence | stands; retire it the day the guard reads raised inside `change` |
+| 6 | "(6) SEAM anchor→store: `$tw.lares.meme.place` (the anchor `meme put`, no target) → its records reach the working store" | the same subscription, through `wikiMemeSink` | `the anchor placement stands in $tw.wiki alone — no record reached the working store: expected [] to include 'lar:///t/bridge/anchor'` |
+| B1 | `tests/e2e/outbound-bridge.e2e.test.ts` "B1 SEAM `change`→saveTiddler: the anchor put reaches the daemon's working store — `meme get --bag wikis/daemon/working` answers" | the same, through the daemon's door | `{"ok":false,…,"error":{"code":"not-found","message":"no meme at lar:///t/bridge/anchor"}}` |
+| B2 | `tests/e2e/outbound-bridge.e2e.test.ts` "the daemon wiki projects: a record in wikis/daemon/working lands at <root>/wikis/daemon/<uri-path>.mem" | CLOSED — the daemon mirror wired | stood red as `nothing projected at <root>/wikis/daemon/…`; a standing test now |
+| M | `tests/e2e/meme-live-contact.test.ts` "the daemon designates crossroads: the MOVE publishes under bags/crossroads/ and leaves wikis/daemon/" | CLOSED — the daemon designates crossroads | stood red as `the MOVE never published under <root>/bags/crossroads/…`; a standing test now |
+
+CONTROLS standing green beside them: the anchor put lands in the daemon's wiki and reads back with no target · a DIRECT put into `wikis/daemon/working` lands and reads back through the same bag · `bags/daemon/` never appears under the root · the MOVE out of the daemon wiki answers `ok` and the carrier reads back from crossroads.
+
+<<~/ahu>>
+
+<<~ ahu #/remains>>
+
+!! What remains, named
+
+* ''The bridge'' — one subscription (#/island-holds) plus an echo law that rides a COUNT or a SET (#/back-parity). The road stays unruled; the reds pass under either.
+* ''`isDirty` · the unload warning · `tc-dirty`'' — the syncer's UI legs, absent on both roads today.
+* ''`wiki.transact`'' — the nalu engine guards for it (`nalu-engine.ts:136`); the fork ships none (`grep transact TiddlyWiki5/core` reaches nothing), so every drain applies tiddler by tiddler and `change` coalesces them by `nextTick` alone.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;vkoLhdmmmFTdttZ3f2TeGGMedlmgBgLfv8RJ_GYbJso
+
+<<^ code="&#x0004;" -> to="?">>

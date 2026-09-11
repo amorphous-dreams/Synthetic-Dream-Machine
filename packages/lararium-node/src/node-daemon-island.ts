@@ -7,6 +7,8 @@
 
 import { runSovereignWorker } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
+import { mountDiskProjection } from "./island-behaviors.js";
+import type { IslandContext } from "@lararium/tw5";
 import { persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
@@ -26,6 +28,10 @@ runSovereignWorker((manifest) => {
   // plus the Ui/Persona/Circle seeds, from the single site. This entry no longer re-seeds (the two-site
   // wart is gone). The seeded flow-set IS this vessel's advertised enactable-list a personagroup peer reads.
   const base = makeOperatorDaemonBehavior(manifest, {
+    // The daemon wiki projects to `<root>/wikis/daemon/` through the same projector a wiki island mounts
+    // (its working layer's carriers reach disk; the control-plane bag beneath holds no mirror); the
+    // option also lights the daemon's projection cap.
+    onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
     persistArchive: (bytes) => persistIdentityArchive(bytes),
     persistVeilArchive: (bytes) => persistVeilArchive(bytes),
     vault:          (verb, args) => runVaultVerb(verb, args),

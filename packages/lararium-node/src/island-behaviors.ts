@@ -23,46 +23,54 @@ import { resolve as resolvePath, join } from "path";
  * Primary wiki island behavior for the node vessel: the shared wiki behavior
  * plus disk write-back as the node-held onBoot capability.
  */
+/**
+ * Mount the disk projection an island's manifest grants: one `LarDiskProjector` over
+ * `manifest.diskMirrors`, the ONE render shore, the shadow-aware unlink gate and the disk-ward.
+ * A wiki island and the daemon island call the same function — the daemon wiki projects to
+ * `<root>/wikis/daemon/` exactly as a wiki's working layer projects to `<root>/wikis/<slug>/`.
+ */
+export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandContext): (() => void) | undefined {
+  const mirrorDefs = manifest.diskMirrors;
+  if (!mirrorDefs?.length) return undefined;
+  const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope }) =>
+    namedBagMirror(bagId, scope, mirrorRoot),
+  );
+  // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
+  // holding bags/) under .lararium-projection/ — observation state,
+  // never a meme surface, never inside bags/; the ingest gate reads the
+  // same file. mirrorRoot shape under the full-path-inside-bag ruling:
+  // <root>/bags/<scope> → up two.
+  const syncedTree = new SyncedTree(join(larProjectionDir(), "synced-tree.json"));   // runtime → ~/.lares
+  const projector = new LarDiskProjector({
+  mirrors,
+  // The ONE render shore: a carrier projects back to ITS OWN filetype
+  // (memetic → `.mem`; `.tid`/`.json`/`.md`/content-type → its native file
+  // + a `.meta` sidecar). The VM registry decides type + bytes; the
+  // projector only sites them.
+  carrierFileFn: (uri) => { try { return Promise.resolve(exportCarrierFile(ctx.tw5, uri)); } catch { return Promise.resolve(null); } },
+  // Every bag holding a carrier — the shadow-aware stale-unlink gate. A
+  // working edit shadowing its canon copy keeps BOTH files; the canon mirror
+  // (bags/slug) never loses its file just because the carrier surfaced in a
+  // working layer above it (the boot-seed-deletion cure).
+  bagsHolding: (uri) => ctx.composite.listBagsHolding(uri),
+  // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
+  // bridge routes any event whose payload carries `verb`). The daemon audits
+  // it durably and injects a $:/tags/Alert into the operator's pinned VM.
+  onRefusal: (info) => ctx.post({
+    schema_version: 1,
+    type: "event",
+    wikiUri: ctx.wikiUri,
+    listenable: "disk-ward:refused",
+    payload: { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason },
+  }),
+  syncedTree,
+  });
+  return projector.start(ctx.tw5);
+}
+
 export function makeWikiPrimaryBehavior(manifest: IslandMsg_Manifest): IslandBehavior {
   return makeWikiBehavior({
-    onBoot: (ctx: IslandContext): (() => void) | undefined => {
-      const mirrorDefs = manifest.diskMirrors;
-      if (!mirrorDefs?.length) return undefined;
-      const mirrors = mirrorDefs.map(({ bagId, mirrorRoot, scope }) =>
-        namedBagMirror(bagId, scope, mirrorRoot),
-      );
-      // The Synced tree (Confluence merge base) sits at the INSTANCE ROOT (the dir
-      // holding bags/) under .lararium-projection/ — observation state,
-      // never a meme surface, never inside bags/; the ingest gate reads the
-      // same file. mirrorRoot shape under the full-path-inside-bag ruling:
-      // <root>/bags/<scope> → up two.
-      const syncedTree = new SyncedTree(join(larProjectionDir(), "synced-tree.json"));   // runtime → ~/.lares
-      const projector = new LarDiskProjector({
-        mirrors,
-        // The ONE render shore: a carrier projects back to ITS OWN filetype
-        // (memetic → `.mem`; `.tid`/`.json`/`.md`/content-type → its native file
-        // + a `.meta` sidecar). The VM registry decides type + bytes; the
-        // projector only sites them.
-        carrierFileFn: (uri) => { try { return Promise.resolve(exportCarrierFile(ctx.tw5, uri)); } catch { return Promise.resolve(null); } },
-        // Every bag holding a carrier — the shadow-aware stale-unlink gate. A
-        // working edit shadowing its canon copy keeps BOTH files; the canon mirror
-        // (bags/slug) never loses its file just because the carrier surfaced in a
-        // working layer above it (the boot-seed-deletion cure).
-        bagsHolding: (uri) => ctx.composite.listBagsHolding(uri),
-        // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
-        // bridge routes any event whose payload carries `verb`). The daemon audits
-        // it durably and injects a $:/tags/Alert into the operator's pinned VM.
-        onRefusal: (info) => ctx.post({
-          schema_version: 1,
-          type: "event",
-          wikiUri: ctx.wikiUri,
-          listenable: "disk-ward:refused",
-          payload: { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason },
-        }),
-        syncedTree,
-      });
-      return projector.start(ctx.tw5);
-    },
+    onBoot: (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
     // caps = the wiki-sensorium perceiver cap — the wiki island answers the daemon's supervision reads
     // (sensorium:cohere/recall in, SENSORIUM_FRAME back). Platform-blind hull; same cap as browser.
     caps: [hasWikiSensorium()],

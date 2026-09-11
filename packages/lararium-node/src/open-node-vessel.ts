@@ -1070,6 +1070,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       },
       daemonAuth,
       storageDir,
+      rootDir: rootDirOpt ?? repoRoot,
     });
 
     // ── NESTED verb-plane compose (composable-keel idiom) ─────────────────────────────────────────

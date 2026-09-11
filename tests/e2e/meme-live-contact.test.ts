@@ -46,6 +46,8 @@ const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
  * The two red-contract vectors below hold the anchor's gap: they flip loud the day it closes.
  */
 const WIKI = ["--recipe", "lares"] as const;
+const DAEMON_WORKING = "lar:///ha.ka.ba/wikis/daemon/working";
+const CROSSROADS_URI = "lar:///ha.ka.ba/bags/crossroads";
 
 const PATH = "t/witness/npc";
 const URI  = `lar:///${PATH}`;
@@ -68,6 +70,16 @@ function missing(): string[] {
 
 /** What a call answered, both streams — `--json` carries the refusal on stdout. */
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
+
+/** Poll a path until it reaches the wanted existence state (or timeout). */
+async function awaitFileState(path: string, want: boolean, timeoutMs = 30_000): Promise<boolean> {
+  const start = Date.now();
+  for (;;) {
+    if (existsSync(path) === want) return true;
+    if (Date.now() - start > timeoutMs) return false;
+    await new Promise((r) => setTimeout(r, 500));
+  }
+}
 
 /** What the shared tree reads as, over the paths a staged boot must never touch — tracked and untracked alike. */
 const sharedTree = (): string =>
@@ -195,6 +207,39 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(r.stdout.trimStart().toLowerCase().startsWith("<!doctype html")).toBe(true);
     expect(r.stdout).toContain("tc-story-river");
     expect(r.stdout).toMatch(/<h1[^>]*>a<\/h1>/);
+  });
+
+  /**
+   * THE RESIDENCY DOOR OUT OF THE DAEMON WIKI. The daemon holds `wikis/daemon/working` by ruling
+   * (working layers for all wikis); a carrier placed there leaves for a public system bag by the
+   * shore-law MOVE, the same verb every promotion rides. `crossroads` is the public plane the daemon
+   * splices in as a library (`daemon-vm-core.ts`), so it names the destination.
+   */
+  test("★ act MOVE --from wikis/daemon/working --to bags/crossroads — the residency verb carries a daemon-wiki carrier out ★", async () => {
+    const MOVE_PATH = "ha.ka.ba/t/witness/move";
+    const MOVE_URI  = `lar:///${MOVE_PATH}`;
+    writeFileSync(join(scratch, "move.mem"), meme(["a"]).replaceAll(URI, MOVE_URI).replaceAll(PATH, MOVE_PATH));
+    const put = await lar.cli(["meme", "put", MOVE_URI, "--bag", DAEMON_WORKING, "--file", join(scratch, "move.mem"), "--json"]);
+    expect(put.json?.["ok"], said(put)).toBe(true);
+    const r = await lar.cli(["act", "MOVE", "--title", MOVE_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
+    expect(r.json?.["ok"], `the MOVE out of the daemon wiki refused — ${said(r)}`).toBe(true);
+    const gone = await lar.cli(["meme", "get", MOVE_URI, "--bag", DAEMON_WORKING, "--json"]);
+    expect((gone.json?.["error"] as Record<string, unknown>)?.["code"], `the carrier still stands in the daemon's working layer — ${said(gone)}`).toBe("not-found");
+    const there = await lar.cli(["meme", "get", MOVE_URI, "--bag", CROSSROADS_URI, "--json"]);
+    expect(there.json?.["ok"], `the carrier never reached crossroads — ${said(there)}`).toBe(true);
+  });
+
+  /**
+   * The disk leg of that MOVE. `bags/crossroads/` stands as a GRANT on the node's disk-mirror list
+   * (authority) but no recipe DESIGNATES it (`vessel-steps.ts` PRIMARY_MIRROR_BAGS names lares and
+   * lararium alone), so `resolveDiskMirrors` yields no crossroads mirror on any island, and the daemon
+   * island mounts no projector at all. The carrier moves in the CRDT and publishes nowhere.
+   */
+  test("★ the daemon designates crossroads: the MOVE publishes under bags/crossroads/ and leaves wikis/daemon/ ★", async () => {
+    const MOVE_PATH = "ha.ka.ba/t/witness/move";
+    const landed = join(lar.root, "bags", "crossroads", `${MOVE_PATH}.mem`);
+    expect(await awaitFileState(landed, true, 15_000), `the MOVE never published under ${landed}`).toBe(true);
+    expect(existsSync(join(lar.root, "wikis", "daemon", `${MOVE_PATH}.mem`))).toBe(false);
   });
 
   test("★ the staged boot wrote nothing into the shared tree — its genesis baked into its own root ★", () => {

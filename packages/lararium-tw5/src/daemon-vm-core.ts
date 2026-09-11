@@ -159,6 +159,10 @@ export interface DaemonVmCoreOptions {
   daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
   /** Storage config delivered in the manifest (node nodefs; browser omits). */
   storage?:        IslandStorageConfig;
+  /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/daemon/`); a node host mints
+   *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can
+   *  mount the same projector a wiki island mounts. */
+  diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string }[];
   /** Compiled daemon-island Worker script URL. */
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
@@ -293,7 +297,7 @@ export interface DaemonVmCore {
 }
 
 export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions): DaemonVmCore {
-  const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, workerScriptUrl } = opts;
+  const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, diskMirrors, workerScriptUrl } = opts;
 
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
@@ -561,6 +565,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     ...(storage   ? { storage }   : {}),
     ...(daemonAuthWithCrossroads ? { daemonAuth: daemonAuthWithCrossroads } : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
+    ...(diskMirrors?.length ? { diskMirrors } : {}),
   });
   void new Promise<void>((resolve) => {
     let settled = false;

@@ -18,6 +18,8 @@
  * Meme: lar:///ha.ka.ba/lararium/node/open-daemon-vm
  */
 
+import { daemonWorkingMirror } from "./bag-paths.js";
+import { CROSSROADS_DOC_URI } from "@lararium/mesh";
 import { join }                                          from "path";
 import {
   type Repo, type AutomergeUrl, type LarDoc,
@@ -66,12 +68,14 @@ export interface DaemonVmOptions {
   daemonAuth?:        IslandMsg_Manifest["daemonAuth"];
   /** Optional storage dir for the daemon island's NodeFS Repo. */
   storageDir?:       string;
+  /** The vessel root (`<root>/wikis/daemon/` receives the daemon wiki's working layer). */
+  rootDir?:          string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, workerScriptUrl } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, rootDir, workerScriptUrl } = opts;
 
   // ── Daemon doc handle (node strategy: merge-on-late-arrival) ────────────────
   const daemonHandle = await resolveBootDoc<LarDoc>(
@@ -112,6 +116,13 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     ...(pluginCids?.length ? { pluginCids } : {}),
     ...(daemonAuth ? { daemonAuth } : {}),
     ...(storage   ? { storage }   : {}),
+    // The daemon wiki projects to `<root>/wikis/daemon/` — the grant every wiki's working slot gets —
+    // and designates the public system bag it holds, so a residency MOVE out of its working layer
+    // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).
+    ...(rootDir ? { diskMirrors: [
+      { ...daemonWorkingMirror(rootDir), scope: "daemon" },
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(rootDir, "bags", "crossroads"), scope: "crossroads" },
+    ] } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

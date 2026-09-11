@@ -7,7 +7,7 @@
  */
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
-import { stripMemeExt } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -112,6 +112,16 @@ export function carrierBaseRelPath(uri: string): string | null {
 export function namedBagMirror(bagId: string, scope: string, mirrorRoot: string): BagMirrorConfig {
   void scope;
   return { bagId, mirrorRoot };
+}
+
+/**
+ * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/daemon/`, the same
+ * shape `resolveDiskMirrors` fills for every wiki's `wikiSlot: "working"` grant from the slug at
+ * mount. The daemon island mounts outside the pool, so this mints the grant once, by name. The
+ * daemon bag beneath (the control plane) holds no mirror.
+ */
+export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
+  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "daemon") };
 }
 
 // ── Loci reverse-derivation (the ingest gesture's scan leg) ─────────────────
