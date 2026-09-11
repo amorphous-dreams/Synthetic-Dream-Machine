@@ -1,0 +1,72 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/live-equivocation">>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/api/pono/live-equivocation.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 15
+manao             = 15
+manaoio           = 14
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+role              = "live-equivocation — the exposure the federated-mesh collision named (Fork C, 2026-09-09): detection catches a live-key equivocator but cannot PREVENT it, and KERI has no admin recovery for a live current+next capture, so that case falls only to recovery-quorum — which the roadmap built last. Recovery and detection are each other's blind spot; pull recovery FORWARD beside the sensorium. This meme LOGS the exposure for later research spirits to resolve with outside negentropy + load-bearing fiction user stories, and frames Elyncia's DreamNet as the first QA world."
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/api/pono/live-equivocation"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Live Equivocation ~ the one attack detection cannot fix, built last
+
+The federated-mesh collision (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> #the-mesh-field) named the roadmap's biggest exposure. This meme holds it OPEN for later work — the outside negentropy to gather, the fiction stories to run, and the ruling the operator leans toward (pull recovery-quorum FORWARD beside the sensorium).
+
+<<~/ahu>>
+
+<<~ ahu #/the-two-thieves>>
+
+!! Two thieves, and they are not the same
+
+* ''The DEAD-key thief'' breaks a drawer and finds a key you STOPPED using. ''KERI pre-rotation already defeats them'' — the key they hold cannot authorize its own succession; you rotated past it. The FACE rung handles this.
+* ''The LIVING-key thief'' captures your key WHILE YOU ARE STILL SIGNING WITH IT — a compromised phone, a coerced signature, a shared cabal-name one member turns. Now there are ''two of you presenting one name in real time,'' and both hold a valid key. KERI states plainly: a live current+next capture has ''NO administrative recovery from keys alone.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-blind-spot>>
+
+!! Detection and recovery are each other's blind spot
+
+The sensorium ''DETECTS'' the equivocation — it sees two of you. But ''seeing it does not RESTORE you'': you are now a name with two valid claimants and no key-only way to prove which is true. Only ''recovery'' — a trusted quorum re-keying you under a fresh root — puts you back. And worse: a living thief who ALSO controls enough carriage can make the ambient itself lie (the diffusion-sensing fool — a well-connected corner reads as "the whole mesh moved"), so ''abstain fires and detection goes blind EXACTLY when the attack is live.'' Detection cannot fix what it sees; recovery cannot act on what it cannot see. ''Built apart, the living hijack has neither in time.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-human-stakes>>
+
+!! Who this is for (the irl tension)
+
+The journalist whose source-protecting identity is seized under duress. The activist whose shared movement-name a defector turns. The family cabal one compromised device betrays. For all of them, ''detection that only says "there are two of you" is a diagnosis with no cure.'' Recovery beside detection — a quorum that re-keys the moment the equivocation is seen — is the cure, and it must be ''already standing when the attack lands,'' not built two milestones later.
+
+<<~/ahu>>
+
+<<~ ahu #/elyncia-as-qa>>
+
+!! Elyncia is the first QA world (fiction as the harness)
+
+Real cabals with real stakes do not exist yet, so abstract unit tests cannot feel the tension the mechanics must survive. ''The fiction is the first QA environment.'' Telarus the wild-mage lit Elyncia's DreamNet ~500 years before modern day (<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/telarus">>), and 500 years of rise · dormancy · revival · betrayal · inheritance are a scenario library the mechanics can be RUN against. A cabal name grafted across generations; a wild-mage's DreamNet identity live-hijacked mid-working; a shrine-realm slept a century then woken for a rite; a Dread-Pirate-Roberts-style name presented by a rotating crew — each is a load-bearing user story for the ahi-kā reading, the handle-KEL, the recovery-quorum, and this exposure. The `AHI_KA_500YR` defaults (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ahi-ka">>) are calibrated to this world; tune them by running its events. ''irl tension + fiction series = the QA env.''
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed to later spirits (the research queue)
+
+# ''Outside negentropy'' — collide the live-equivocation case against the field: KERI/vLEI live-key recovery ceremonies, threshold re-keying (FROST resharing), social-recovery wallets (Argent, safe-guardians), duress/coercion-resistant schemes (deniable keys, canaries), MPC custody rotation. What does anyone deployed do when a key is stolen WHILE ALIVE?
+# ''Fiction user stories'' — mine the Elyncia canon for concrete hijack/inheritance/dormancy scenarios and render each as a QA vector against the mechanics.
+# ''The ruling'' — the operator leans PULL RECOVERY-QUORUM FORWARD beside the sensorium (co-design detection + recovery). A later pass confirms the sequence and the recovery-rotation ⊥ equivocation-fork distinction a watcher must draw. See <<~ loulou "lar:///ha.ka.ba/lares/api/pono/recovery-registration">> and <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>.
+
+<<~/ahu>>
