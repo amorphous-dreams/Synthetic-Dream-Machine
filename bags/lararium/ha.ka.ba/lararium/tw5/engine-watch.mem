@@ -102,6 +102,20 @@ auto-merged genesis on CID divergence (`reconcileIslandFromGenesis` inside
 `loadGenesis`); that auto-fold relocates to the rite, leaving boot to warn
 only. The running engine still swaps only on reboot (EW-2).
 
+''EW-7 — kāhuli ACTS the EW-5 authority at MESH scale.'' `lares nexus kahuli`
+is the verb that rolls `hearthTrueName` forward across the mesh — it ACTS the
+engine-update grant EW-5 already seated (operator(admin) at the Lararium, the
+kahu quorum at DreamNet), never a fresh authority, and re-opens no shore EW-5
+closed. The roll is a ''FORWARD-REBIND'': it re-admits every vessel gracefully
+onto the new engine epoch, carries a `predecessor` pointer to the prior
+`engineCid` (the `sealLineage` shape — epoch-binding-surfaces), and holds a span
+where reads accept BOTH epochs, ending by ''NON-RENEWAL'' of the old like every
+other grant. It is NOT a unilateral fleet-reset — no vessel is evicted, and a
+peer that misses the roll loses nothing (EW-1/5) — and NOT a key-loss recovery:
+kāhuli re-binds the VESSEL onto a new place, it never re-keys a person
+(identity-classes #/the-two-relations). The per-vessel RECONCILE (EW-5/6) is how
+each island adopts the roll in; kāhuli is the mesh-scale act that offers it.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -116,6 +130,6 @@ only. The running engine still swaps only on reboot (EW-2).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0bc4e3l3NfRsa96IFbBydkKO2om8xdtdTFcDH7Vp1lY
+<<^ code="&#x0003;">>ni:///sha-256;x4XGvOT9PITGk8jq6VPnB_by5_XVhCcNaE4VFo_hhaI
 
 <<^ code="&#x0004;" -> to="?">>

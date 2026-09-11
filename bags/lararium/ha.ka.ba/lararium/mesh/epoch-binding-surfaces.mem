@@ -60,6 +60,7 @@ a wrong answer here reads identically to a right one until a founding breaks.
 | the word | owner | what it names there | our rule |
 | ''epoch'' (bare) | ''ours'' | the monotone fencing frontier — `epoch-lease`, bound by `boundEpoch` | RESERVED. Bare //epoch// names this and nothing else (the rule `epoch-handlers` already set) |
 | ''seal epoch'' | ''ours'', shape from KERI/TUF | the charter's hash-linked lineage, head = `sealEpochCid` | always QUALIFIED. Same law as the fence, at a grain where the writer-set itself rotates |
+| ''engine epoch'' / ''kāhuli epoch'' | ''ours'' | the `hearthTrueName` = `engineCid` roll — a forward-rebind of the mesh onto a new engine content-CID (the kāhuli motion) | always QUALIFIED. It names the PLACE half rolling forward, NEVER the bare //epoch// (the lease frontier); a grep for the fence reads past it |
 | ''CGKA epoch'' | ''Keyhive / BeeKEM'', upstream MLS RFC 9420 | a group-key generation; concurrent rolls ''merge by BLANKING'' and hold NO root secret until a later non-concurrent commit | NEVER ours to rule. Keeps its upstream spelling, always qualified. A max-register picks a winner and this does not — carrying our fence onto it costs FORWARD SECRECY (cabal-realm#the-tie-break) |
 | ''compaction epoch'' | ''DXOS'', borrowed for `bag-compact` | a snapshot-restart that cuts history behind | always QUALIFIED. It bounds //state-history growth//, never //who may act// — a cut, not a fence |
 | ''epoch (ms)'' | ''POSIX'' | a time ORIGIN — 1970, and a wall-clock offset from it | NOT SPENT HERE. Our wall-clock fields read `POSIX ms`, because a reader meeting both spellings in one file has to guess which authority a number carries — and one of them is the global now this house refuses |
@@ -179,11 +180,22 @@ against another's.
 > compose ''per-operator'' (DreamNet-offered) and ride their own fast ratchet, so a plugin change ''MUST
 > NEVER perturb the true-name.''
 
-''So the epoch rides the genesis ENGINE, and the served-plugin layer composes
-freely beneath it.'' A commit that re-packs the plugin moves a local integrity witness and touches no
-lineage: the seal stands, every delegation edge still verifies, and no confederation shifts. The
-''slow ratchet'' (engine) carries the binding; the ''fast ratchet'' (plugins) carries composition, and
-keeping them apart is what lets operators differ without schisming.
+''So the epoch rides the genesis ENGINE, and beneath it THREE tiers stand named, each on its own
+ratchet'' — the standing cut //the engine is universal; the corpus is content// (`bag-wiki-uri-split`):
+
+* ''ENGINE'' (`engineCid` = `hearthTrueName`) — the SLOW ratchet. Signed into every
+  device-delegation edge, it BINDS MEMBERSHIP, and it advances by ACT (a TW5-submodule roll, never
+  an upgrade — #/the-rule).
+* ''GRAMMAR'' (`pluginsCid`, the memetic-wikitext parser) — FROZEN-BY-HASH like the engine, with NO
+  edit surface. It advances by ACT too — an operator promotes a new CID — but that act is a
+  per-operator CHOICE and NEVER perturbs the true-name; its ratchet binds LOCAL integrity, never
+  membership. It runs "faster" than the engine only in binding nobody, never in being editable.
+* ''CORPUS'' (the content bags) — the genuinely FAST layer: mutable, live-edited, composed freely.
+
+A commit that re-packs the plugin moves a local integrity witness and touches no lineage: the seal
+stands, every delegation edge still verifies, and no confederation shifts. Keeping the three tiers
+apart is what lets operators differ without schisming — a grammar each promotes on their own choice,
+a corpus each edits live, an engine all share by hash.
 
 ''THE SHAPE OF THE ERROR, kept as the useful part.'' Two CIDs sat side by side in one manifest, so the meme
 read adjacency as conjunction and promoted a local witness to a federation criterion. ''A field's PRESENCE
@@ -212,7 +224,7 @@ are acts, never upgrades''.
 
 <<~ has Rule Runtime-deps "when/before-founding cost/a-rebuild-if-skipped surface/serde-only ~ automerge · noble · ws · vite">>
 <<~ has Rule TW5-submodule "when/an-ACT-never-an-upgrade cost/every-delegation-edge surface/hearthTrueName ~ moves the PLACE half of the atom">>
-<<~ has Rule Our-own-source "when/every-commit cost/a-proposed-Nexus surface/pluginsCid ~ the kahu clock ratifies, or the mesh shards">>
+<<~ has Rule Our-own-source "when/a-per-operator-ACT cost/LOCAL-integrity-only surface/pluginsCid ~ a grammar advance promotes a new CID and composes per-operator, NEVER perturbs the true-name, NEVER a membership criterion (#/the-real-mover)">>
 
 <<~/ahu>>
 
@@ -224,6 +236,6 @@ are acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JlKM0zyN3AJSfqL7UoEnGxjufvttRYyunbadonL0uF0
+<<^ code="&#x0003;">>ni:///sha-256;Nj1Tm8iOfa4UZROEGnsoPEPAGgDamoc888xeDvpH5ew
 
 <<^ code="&#x0004;" -> to="?">>

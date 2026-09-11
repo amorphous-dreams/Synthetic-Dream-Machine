@@ -376,6 +376,26 @@ binding a raw key: the antigen's ban-nym and the handle-card's face-nym (#/the-h
 
 <<~/ahu>>
 
+<<~ ahu #/the-two-relations>>
+
+!! Two relations join at the acting entity ~ why a rebind and a recovery never collide
+
+''A principal that acts inside a Nexus stands on TWO separate relations, joined.'' The
+''vessel-relation'' is the device-delegation edge binding a vessel × its PLACE — `hearthTrueName`
+(the engine epoch) rides INSIDE the signed edge preimage (epoch-binding-surfaces
+#the-one-most-easily-missed). The ''human-relation'' is the persona/handle KEL — the key lineage
+under a fixed identifier prefix (#/the-continuity-anchor). Neither relation alone is the actor: the
+ENTITY that acts is the JOIN, ''vessel-relation ⋈ human-relation''.
+
+''The split is WHY the two recovery-shaped motions never collide — each lands on a relation the
+other never reads.'' A ''FORWARD-REBIND'' (the kāhuli engine roll — engine-watch) re-binds the
+VESSEL-relation onto a new engine epoch, leaving every persona-KEL head untouched. A ''KEY-LOSS
+RECOVERY'' (Reading-B, #/reading-b-recovery) rotates the HUMAN-relation's op-key beneath its fixed
+prefix, leaving every vessel×place edge's `hearthTrueName` untouched. One moves the place, the other
+re-keys the person; the join survives both, because they touch different relations.
+
+<<~/ahu>>
+
 <<~ ahu #/the-two-forks>>
 
 !! The custody fork ~ reconstruct-then-sign ⊥ threshold-attest
@@ -624,6 +644,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;noQsFwy6rVr--ngiD6BwB9z05GOzGMCLQOITh3kf4Do
+<<^ code="&#x0003;">>ni:///sha-256;I8YiDKVnMRQpcj9fTIkxRickkfgldjNcakkmTroc1b8
 
 <<^ code="&#x0004;" -> to="?">>
