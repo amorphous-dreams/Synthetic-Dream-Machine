@@ -92,7 +92,7 @@ type     = "text/memetic-wikitext+tiddlywiki"
 
 <<^ code="${"&#x0002;"}">>
 
-<<~ ahu #lesson>>
+<<~ ahu #/lesson>>
 
 A fenced carrier close MUST NOT close this body:
 
@@ -117,7 +117,7 @@ mana = 99
 
 After the fence, the carrier still runs.
 
-<<^ code="${"&#x0003;"}">>ni:///sha-256;tMMdV3CCGe9jeSsyEY1PSMeub9as1KTqhSd8cdqtvbE
+<<^ code="${"&#x0003;"}">>ni:///sha-256;MoC-Ppi6r8eWUzSDUSukM9IOHAqx--HbHXVHiVtlb5Y
 
 <<^ code="${"&#x0004;"}" -> to="?">>
 `;

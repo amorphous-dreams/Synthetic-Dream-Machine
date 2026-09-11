@@ -14,8 +14,8 @@ import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, statSync
 import { join } from "node:path";
 import { larIdentityDir } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import { readIdentityAnchors, type AnchorStore, type IdentityAnchors, identityHomeClosure } from "@lararium/mesh";
-import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret, ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
+import { readIdentityAnchors, isSealedEnvelope, type AnchorStore, type IdentityAnchors, identityHomeClosure } from "@lararium/mesh";
+import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret, ARCHIVE_PASSPHRASE_ENV, type SealPolicy } from "./archive-seal.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
 // adapter implements the fs shore. Re-exported so existing importers keep their spelling.
@@ -119,10 +119,30 @@ let _warnedCleartext = false;
  * never hides. The recovery keel is device RE-ADMISSION, not this at-rest seal — sealing is
  * hygiene / defense-in-depth.
  */
+/**
+ * Refuse a CLEARTEXT write over a SEALED carrier. A vessel at the waking floor boots without its archive
+ * (no key source), and the M3 floor still exports the keyhive it booted — a fresh, empty identity. Landing
+ * that over the sealed bytes replaces the sovereign identity with nothing and reads "cleartext" to every
+ * later boot; the seal exists so a disk without the key yields ciphertext, and a boot without the key must
+ * yield the same. The write throws (the exporter warns and carries on) and the sealed bytes stand.
+ */
+function refuseCleartextOverSealed(path: string, policy: SealPolicy): void {
+  if (policy.mode !== "cleartext" || !existsSync(path)) return;
+  let stored: Uint8Array;
+  try { stored = readFileSync(path); } catch { return; }
+  if (isSealedEnvelope(stored)) {
+    throw new Error(
+      `archive-seal: refusing to write a cleartext archive over the sealed one at ${path} — ` +
+      `set ${ARCHIVE_PASSPHRASE_ENV} to the passphrase that sealed it`,
+    );
+  }
+}
+
 export function persistIdentityArchive(bytes: Uint8Array): void {
   mkdirSync(larIdentityDir(), { recursive: true });
   const path = archivePath();
   const policy = resolveSealPolicy();
+  refuseCleartextOverSealed(path, policy);
   // Self-Only Secret Surface: these bytes ARE the daemon's own sovereign identity — brand them
   // self so the type-guarded sealer accepts them. A held/citizen principal's secret never reaches
   // here (a civic node holds their ciphertext + public edges, never their secret).
@@ -143,7 +163,7 @@ export function persistIdentityArchive(bytes: Uint8Array): void {
  * empty identity over the sealed one). A bare read failure (file vanished) still reads null.
  */
 /** The veil identity's archive path — beside the vessel's, same seal policy, same custody. */
-function veilArchivePath(): string {
+export function veilArchivePath(): string {
   return join(larIdentityDir(), "veil-archive.bin");
 }
 
@@ -152,6 +172,7 @@ function veilArchivePath(): string {
 export function persistVeilArchive(bytes: Uint8Array): void {
   mkdirSync(larIdentityDir(), { recursive: true });
   const policy = resolveSealPolicy();
+  refuseCleartextOverSealed(veilArchivePath(), policy);
   atomicWriteFileSync(veilArchivePath(), sealArchiveBytes(asSelfSovereignSecret(bytes), policy));
   try { chmodSync(veilArchivePath(), 0o600); } catch { /* best-effort on a non-POSIX fs */ }
 }

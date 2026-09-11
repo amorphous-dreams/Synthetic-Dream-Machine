@@ -210,7 +210,7 @@ describe("meme-get — the read half", () => {
     const put = await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx());
     const got = (await makeMemeGetReactor(r.opts)({ uri: URI }, ctx()))["meme"] as { text: string; canonicalHash: string };
     expect(got.canonicalHash).toBe(put["canonicalHash"]);
-    expect(got.text).toContain("<<~ ahu #a>>");
+    expect(got.text).toContain("<<~ ahu #/a>>");
   });
 
   test("reads a named bag back, and a bag's absence reads null", async () => {
@@ -257,7 +257,7 @@ describe("meme-project — the daemon skin of the projection", () => {
     const project = makeMemeProjectReactor(r.opts);
     const mem = await project({ bag: "sdm", uri: URI, to: "mem" }, ctx());
     expect(mem["contentType"]).toBe("text/memetic-wikitext+tiddlywiki");
-    expect(mem["text"]).toContain("<<~ ahu #a>>");
+    expect(mem["text"]).toContain("<<~ ahu #/a>>");
     const get = await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
     expect(mem["text"]).toBe((get["meme"] as { text: string }).text);
     const md = await project({ bag: "sdm", uri: URI, to: "md" }, ctx());

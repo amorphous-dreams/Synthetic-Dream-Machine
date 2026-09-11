@@ -101,8 +101,9 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
 export function collectAhuSlots(text: string): Set<string> {
   const mask = fencedSpans(text);
   const slots = new Set<string>();
+  // Spelled as the address mints it, so a disk `#a` and a render `#/a` compare as one slot.
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
-    slots.add(m[1] ?? "#");
+    slots.add(composeSlotPath("", m[1] ?? "#"));
   }
   return slots;
 }

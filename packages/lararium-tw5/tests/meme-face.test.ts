@@ -38,7 +38,7 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     expect(receipt.decision).toBe("ingest");
     expect(engine.wiki.getTiddler(`${URI}#/b`)).toBeTruthy();
     const back = await face.read(URI);
-    expect(back?.text).toContain("<<~ ahu #b>>");
+    expect(back?.text).toContain("<<~ ahu #/b>>");
     expect(back?.canonicalHash).toMatch(/^sha256:/);
     expect(await face.read("lar:///t/absent")).toBeNull();
   });

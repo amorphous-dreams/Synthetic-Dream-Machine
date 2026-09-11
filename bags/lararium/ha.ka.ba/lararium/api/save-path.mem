@@ -81,22 +81,26 @@ TW5 startup module.
 
 !!! SP-3 — Draft Routing
 
-`"Draft of …"` tiddlers from TW5 editing UX MUST route to `this.targetBag`
-(the wiki's top draft bag) and MUST NOT be silently dropped.
-
-Current state: the `isDraft` guard in `saveTiddler` silently drops drafts.
-''Target:'' remove the isDraft guard; let drafts write to `this.targetBag`
-like any other live edit. The per-wiki draft bag at the top of the recipe
-stack absorbs them naturally.
-
-This change deferred until the wiki-init flow ensures `this.targetBag`
-always carries a real per-wiki draft bag URI (not a placeholder). Until then,
-the silent-drop behavior SHOULD remain to prevent drafts polluting the wrong bag.
+`"Draft of …"` tiddlers from TW5 editing UX MUST route to the wiki's per-wiki
+draft slot (`wikis/{slug}/draft`, a CRDT layer that follows the operator's fleet)
+and MUST NOT be silently dropped. The in-wiki bag-paths cascade carries the rule
+(`[prefix[Draft of ]then{…/current-wiki-draft}]`), read against the TITLE so the
+matching delete routes to the same slot; no guard in `saveTiddler` withholds a
+draft. The cascade names its withholdings (`$:/core`, `$:/library/sjcl.js`) and
+ends in a catch-all — a title no rule reaches lands at the write layer and says
+so (wiki-layer-ontology#/totality-law). The measured routing table rides
+recipe-layer-model#/as-routed.
 
 !!! SP-4 — Ceremony Routing
 
-If `fields["bag"]` carries an explicit bag URI, `saveTiddler` MUST use it
-instead of `this.targetBag`. This is the MOVE-ceremony (canon residency) path.
+No persisted field names a bag. Residency rides the ENVELOPE: the store fires
+each change with its own bag, the nalu stamps `$origin-bag` on the wiki side for
+the projector, and the outbound save strips that stamp before the put. `bag`
+stays the author's own field and never routes. A ceremony that targets one
+specific bag (MOVE, promotion, `meme put --bag`) carries the bag on the put
+OPTION (`store.put(record, origin, { bag })`) — never on the record — and a
+bag with no writable layer refuses loud rather than falling through to the
+default writable (wiki-layer-ontology#/write-law).
 
 Live TW5 edits without an explicit bag field route to `this.targetBag`.
 
@@ -114,7 +118,7 @@ site.
 
 ```
 saveTiddler(tiddler, callback)
-  → guards (echo, temp, system, draft-hold, meme-uri)
+  → guards (echo · the cascade's named withholdings)
   → cancel pending timer for title
   → store { fields, callback } in _pending map
   → set new timer(400ms) → _flush(title)
@@ -151,6 +155,6 @@ No callbacks fire after `stop()`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7903YzW3UqmnyR2iIcS1Ia5GnsktgaKxJdGTWQYGnPo
+<<^ code="&#x0003;">>ni:///sha-256;HpwCpdAc4-51LsEEMW4ca3PBmcOScqD4kNVcaTzn_08
 
 <<^ code="&#x0004;" -> to="?">>

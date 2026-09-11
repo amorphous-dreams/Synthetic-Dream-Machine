@@ -138,8 +138,8 @@ A future debug-only disk projection MAY be added behind an explicit flag; it MUS
 Write-back routes by ''type'', in three rules:
 
 # ''Group rule.'' `type: text/memetic-wikitext` records form a ''tiddler-group'' keyed by the carrier parent (a fragment URI belongs to its parent's group). A group MUST write back as ''ONE markdown-meme `.md`'' — the whole carrier (#/granularity). A child's change re-flushes its group, never its own file.
-# ''Default rule.'' Every other tiddler follows the ''standard TW5 path'' — `$tw.utils.generateTiddlerFileInfo` semantics, run inside the island's own TW5 VM: `.tid` for tw5-wikitext, content-file + `.meta` sidecar for foreign types, `.json` for unsafe fields. One tiddler, one file, TW5's own format law.
-# ''Cascade rule.'' Siting and format overrides ride ''composable cascade tiddlers inside the wiki'' — `lar:///ha.ka.ba/lararium/config/disk-paths` and `…/config/disk-extensions`, first non-empty filter result wins, per-wiki overlays compose through the recipe (the proven `config/bag-paths` pattern; the lar-native mirror of TW5's `$:/config/FileSystemPaths` / `FileSystemExtensions`).
+# ''Default rule.'' Every other tiddler follows the ''standard TW5 path'' — `$tw.utils.generateTiddlerFileInfo` semantics, run inside the island's own TW5 VM: `.tid` for tw5-wikitext, content-file + `.meta` sidecar for foreign types, `.json` for unsafe fields. One tiddler, one file, TW5's own format law — for a record whose title sites (a `lar:///w.w.w/…` loci name; `carrierBaseRelPath` returns null for any other title). A foreign-titled record (a `.json` / `.multids` / `.tid` pack member) owns no file of its own: its membership rides `$:/config/OriginalTiddlerPaths` and its pack re-renders whole by REPACK (wiki-layer-ontology#/pack-refinements).
+# ''Cascade rule.'' Siting and format overrides ride ''composable cascade tiddlers inside the wiki'' — `lar:///ha.ka.ba/lararium/config/disk-paths` and `…/config/disk-extensions`, first non-empty filter result wins, per-wiki overlays compose through the recipe (the proven `config/bag-paths` pattern; the lar-native mirror of TW5's `$:/config/FileSystemPaths` / `FileSystemExtensions`). ''OWED:'' `makeTw5FileInfo` accepts the two cascades as `pathFilters` / `extFilters` and the render shore (`exportCarrierFile`) passes neither yet — the siting override stands designed and unwired (recipe-layer-model#/as-written).
 
 ''One siting fn.'' `carrierBaseRelPath` (bag-paths.ts) sites every carrier extension-less by its lar-URI and returns null for a fragment (`#slot`), an unstable root, or a non-lar URI — so a fragment owns no disk file by construction (the grain-leak guard, #granularity). `meme-write.ts` recomposes the whole carrier through `expandMemeRefs`; no per-node template renders a record to its own file. The kupono vectors live in `tests/e2e/carrier-roundtrip.test.ts` (V3/V4).
 
@@ -203,6 +203,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TCXmufBDH2LimUaFJPTK4w630tg9EMBpAYWD3MJXojM
+<<^ code="&#x0003;">>ni:///sha-256;z-6t4vHEpseSbH_ueJHl88k-814J2FqkZJHkAQouDkk
 
 <<^ code="&#x0004;" -> to="?">>

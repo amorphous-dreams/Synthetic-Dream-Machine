@@ -14,14 +14,20 @@ import type { CarrierShape } from "../carrier-shape.js";
 import type { CarrierEdge } from "../carrier-edges.js";
 import type { MemeProjection } from "../meme-project.js";
 import type { GrammarRules, ParseMemeResult } from "../meme-ast/index.js";
+import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
 
-/** What `check(text)` reads off a carrier: its shape, the block-check verdict, the computed check, its edges. */
+/**
+ * What `check(text)` reads off a carrier: its shape, the block-check verdict, the computed check, its
+ * edges, and the grade `place` lands over the same text with the diagnostics behind it.
+ */
 export interface MemeCheck {
   readonly shape: CarrierShape;
   readonly check: "ok" | "mismatch" | "unchecked" | "torn";
   /** The check the framed body should carry, or null where no framed body stands. */
   readonly bcc: string | null;
   readonly edges: readonly CarrierEdge[];
+  readonly grade: PlaceMemeReceipt["grade"];
+  readonly diagnostics: readonly MemeDiagnostic[];
 }
 
 /**

@@ -4,8 +4,14 @@
  * `archive-seal` frames the crypto atoms (scrypt KEK, AES-256-GCM seal/unseal, the envelope). This file
  * adds NO new crypto — it composes those atoms into the operator's four lifecycle gestures over the two
  * secret carriers the vessel holds at rest:
- *   · keyhive-archive.bin        — the sovereign identity floor; the daemon RE-SEALS it every boot (M3).
- *   · recovery-device-share.bin  — the device recovery share; written ONCE at founding.
+ *   · keyhive-archive.bin           — the sovereign identity floor; the daemon RE-SEALS it every boot (M3).
+ *   · veil-archive.bin              — the veil identity's archive; re-sealed beside the vessel's every boot.
+ *   · recovery-device-share.bin     — the device recovery share; written ONCE at founding.
+ *   · seal-reserve-mine-share.bin   — the vessel's one share of the Nexus reserve seed; written at the seal rite.
+ *
+ * ONE RULE NAMES THE SET: every file a boot opens through `openArchiveBytes` under the resolved seal policy
+ * rides this lifecycle. A carrier sealed under the policy and left out of a rotate stays under the OLD
+ * passphrase, and the next boot faults at its GCM tag under the new one — a split no status named.
  *
  * TWO-CARRIER ATOMICITY (FORK-2, RATIFY — the collapse was blocked). The two carriers hold GENUINELY
  * INDEPENDENT write lifecycles: the archive re-seals on every boot (a frequent write the M3 path owns,
@@ -30,7 +36,8 @@ import { dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 import { isSealedEnvelope, decodeEnvelope } from "@lararium/mesh";
 import { scryptKek, sealBytes, unsealBytes, openArchiveBytes, ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
-import { archivePath } from "./identity-anchors.js";
+import { archivePath, veilArchivePath } from "./identity-anchors.js";
+import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { deviceSharePath } from "./recovery-share-store.js";
 import { setSealExpected, sealExpected as readSealExpected, type LaresConfig } from "./lares-config.js";
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
@@ -51,7 +58,7 @@ export function weakPassphraseWarning(passphrase: string): string | null {
   return null;
 }
 
-export type CarrierName = "archive" | "device-share";
+export type CarrierName = "archive" | "veil" | "device-share" | "reserve-share";
 
 interface Carrier {
   readonly name: CarrierName;
@@ -61,8 +68,10 @@ interface Carrier {
 /** The two at-rest secret carriers, in a FIXED order (the rename sequence the ratify flow commits in). */
 function carriers(): readonly Carrier[] {
   return [
-    { name: "archive",      path: archivePath() },
-    { name: "device-share", path: deviceSharePath() },
+    { name: "archive",       path: archivePath() },
+    { name: "veil",          path: veilArchivePath() },
+    { name: "device-share",  path: deviceSharePath() },
+    { name: "reserve-share", path: reserveMineSharePath() },
   ];
 }
 

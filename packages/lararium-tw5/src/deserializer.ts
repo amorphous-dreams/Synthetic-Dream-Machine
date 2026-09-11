@@ -552,6 +552,10 @@ function splitRecursive(
     rewritten += text.slice(cursor, block.openStart);
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
     const childUri      = rootUri + childSlotPath;
+    // ONE SLOT, ONE ADDRESS. The opener admits `#a` and `#/a`; the record stands at `#/a`. The ref the
+    // parent keeps and the `$slot` the child carries spell the slot the way the address does, so a
+    // reader pairing them by name — the live render's link above all — needs no second spelling.
+    const slot          = composeSlotPath("", block.slot);
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
     const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings);
     const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
@@ -571,14 +575,14 @@ function splitRecursive(
       text:              childStructure.text,
       "uri-path":        childUriPath,
       "$fragment-parent": enclosingUri,
-      "$slot":            block.slot,
+      "$slot":            slot,
     });
     allChildren.push(
       ...carriageRecord(childUri, "preamble",  childStructure.preamble  ?? ""),
       ...carriageRecord(childUri, "postamble", childStructure.postamble ?? ""),
     );
     allChildren.push(...inner.children);
-    rewritten += `<<~ kahea ahu ${block.slot}>>`;
+    rewritten += `<<~ kahea ahu ${slot}>>`;
     cursor = block.closeEnd;
   }
   rewritten += text.slice(cursor);
@@ -1016,9 +1020,12 @@ function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: strin
       // the single blank line; a filled one opens on the sigil-then-blank spacing.
       opened = rest ? `\n\n${rest}` : "";
     }
+    // The opener spells the slot as the address does, whatever spelling the ref record still carries —
+    // so the canonical render reaches its fixed point in one fold from any record state.
+    const spelt = composeSlotPath("", slot);
     return dialect === "fragment"
-      ? `<<fragment ${slot}>>${opened}\n\n<</fragment>>`
-      : `<<~ ahu ${slot}>>${opened}\n\n<<~/ahu>>`;
+      ? `<<fragment ${spelt}>>${opened}\n\n<</fragment>>`
+      : `<<~ ahu ${spelt}>>${opened}\n\n<<~/ahu>>`;
   });
 }
 

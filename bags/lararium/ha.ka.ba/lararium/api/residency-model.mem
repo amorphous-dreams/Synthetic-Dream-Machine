@@ -205,8 +205,8 @@ RECONCILE folds //forward//; ''COMPACT'' cuts //behind// (bounds the op-log; com
 The recipe carries a Tai Chi symmetry around the wiki's canon (`bags/{slug}`) (see also [[personal-slot|lar:///ha.ka.ba/lararium/api/personal-slot]] §yang-yin-chao). The coordinate-space framing preserves this structure exactly:
 
 ```
-              wikis/{slug}/temp     ┐
-              wikis/{slug}/draft    │  YIN / Podge — coordinates ABOVE the canon
+              wikis/{slug}/temp     ─  YIN / Podge — in-memory, this device, no key
+              wikis/{slug}/draft    ┐  YIN / Podge — CRDT coordinates ABOVE the canon
               wikis/{slug}/personal │  carry operator-private scope; keyed by
               wikis/{slug}/working  ┘  (PersonaGroup × recipe-fingerprint)
         ┌───  bags/{slug}  ── CHAO / spin / Taiji ──────────────────────────┐
@@ -306,6 +306,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SL5aEn6zbZX6YMIQj69v-xa66VYme6m0y2fvMBkqDI0
+<<^ code="&#x0003;">>ni:///sha-256;XWNDap8QSQ7oeidTduBNCo2UMRKnWIdgNZVHWgU_31A
 
 <<^ code="&#x0004;" -> to="?">>

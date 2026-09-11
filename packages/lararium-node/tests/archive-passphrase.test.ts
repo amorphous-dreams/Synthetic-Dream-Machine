@@ -18,7 +18,8 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { isSealedEnvelope, decodeEnvelope } from "@lararium/mesh";
 import { scryptKek, unsealBytes, ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { archivePath } from "../src/identity-anchors.js";
+import { archivePath, veilArchivePath } from "../src/identity-anchors.js";
+import { reserveMineSharePath } from "../src/seal-reserve-store.js";
 import { deviceSharePath } from "../src/recovery-share-store.js";
 import { sealExpected } from "../src/lares-config.js";
 import {
@@ -90,7 +91,7 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     const before = readFileSync(archivePath());
     const r2 = sealArchiveWithPassphrase(PASS_A);
     expect(r2.sealed).toEqual([]);                   // nothing re-sealed
-    expect(r2.skipped.sort()).toEqual(["archive", "device-share"]);
+    expect(r2.skipped.sort()).toEqual(["archive", "device-share", "reserve-share", "veil"]);   // absent carriers skip too
     expect([...readFileSync(archivePath())]).toEqual([...before]);   // untouched
   });
 
@@ -214,5 +215,34 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     expect(() => sealArchiveWithPassphrase("")).toThrow();
     expect(weakPassphraseWarning("short")).toMatch(/floor/);
     expect(weakPassphraseWarning(PASS_A)).toBeNull();
+  });
+
+  // EVERY carrier the boot opens under the seal policy rides the lifecycle. The veil archive
+  // (`persistVeilArchive`) and the reserve mine-share (`sealReserveMineShare`) seal under the same policy
+  // the vessel archive does; a rotate that moved the archive alone left them under the OLD passphrase,
+  // and the next boot faulted at the veil's GCM tag under the new one — a split the status never named.
+  test("rotate carries the veil archive and the reserve share with the archive — no carrier stays behind", { timeout: 120_000 }, () => {
+    writeCleartextCarriers();
+    const VEIL_PLAIN = Uint8Array.from([0xd1, 0xd2, 0xd3, 0xd4, 0xd5]);
+    const MINE_PLAIN = Uint8Array.from([0xe1, 0xe2, 0xe3]);
+    writeFileSync(veilArchivePath(), Buffer.from(VEIL_PLAIN));
+    writeFileSync(reserveMineSharePath(), Buffer.from(MINE_PLAIN));
+
+    const sealed = sealArchiveWithPassphrase(PASS_A);
+    expect(sealed.sealed.sort()).toEqual(["archive", "device-share", "reserve-share", "veil"]);
+    expect(isSealedEnvelope(readFileSync(veilArchivePath()))).toBe(true);
+    expect(isSealedEnvelope(readFileSync(reserveMineSharePath()))).toBe(true);
+
+    const rotated = rotateArchivePassphrase(PASS_A, PASS_B);
+    expect(rotated.rotated.sort()).toEqual(["archive", "device-share", "reserve-share", "veil"]);
+    expect(opensUnder(readFileSync(veilArchivePath()), PASS_B)).toBe(true);
+    expect(opensUnder(readFileSync(veilArchivePath()), PASS_A)).toBe(false);
+    expect(Array.from(plainUnder(readFileSync(veilArchivePath()), PASS_B))).toEqual(Array.from(VEIL_PLAIN));
+    expect(Array.from(plainUnder(readFileSync(reserveMineSharePath()), PASS_B))).toEqual(Array.from(MINE_PLAIN));
+
+    const status = archiveSealStatus({ probe: PASS_B });
+    expect(status.carriers.veil).toMatchObject({ state: "sealed", opensUnderProbe: true });
+    expect(status.carriers["reserve-share"]).toMatchObject({ state: "sealed", opensUnderProbe: true });
+    expect(status.split).toBe(false);
   });
 });

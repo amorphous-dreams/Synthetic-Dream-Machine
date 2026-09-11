@@ -95,4 +95,32 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
     }
     expect(offenders, "a mirror still wears the pragma punctuation it was ruled out of").toEqual([]);
   });
+
+  /**
+   * ── THE `ahu` OPENER ADMITS ONE SLOT GRAMMAR ON BOTH SIDES ────────────────────────────────────
+   * The grammar tiddler's `lar-open-pattern` hydrates the in-VM scan; the bootstrap scan reads where no
+   * grammar stands. Measured: the tiddler spelled `#[\w-]+` and refused `#/a` — the spelling the minter
+   * blesses and the tiddler's own `lar-example` shows — so a witness carrier graded `clean` outside the VM
+   * and `warning` (`partial-form:ahu` · `orphan-close:ahu`) inside it. One text, two grades.
+   */
+  test("★ the grammar tiddler's ahu opener admits what the bootstrap scan admits ★", async () => {
+    const { readFileSync } = await import("node:fs");
+    const tid = readFileSync(new URL("../tiddlers/sigil-ahu.tid", import.meta.url).pathname, "utf8");
+    const declared = /^lar-open-pattern: (.+)$/m.exec(tid)?.[1];
+    const scanner = readFileSync(new URL("../src/meme-ast/scanner.ts", import.meta.url).pathname, "utf8");
+    const bootstrap = /sigilName: "ahu", regex: \/(.+)\/g, eventType: "open"/.exec(scanner)?.[1];
+    expect(declared, "sigil-ahu.tid carries no lar-open-pattern").toBeTruthy();
+    expect(bootstrap, "the scanner carries no ahu open scan").toBeTruthy();
+    const tidRe = new RegExp(declared!), bootRe = new RegExp(bootstrap!);
+    const cases: ReadonlyArray<readonly [string, boolean]> = [
+      ["<<~ ahu #/a>>", true], ["<<~ ahu #a>>", true], ["<<~ ahu #/a/b>>", true], ["<<~ ahu #a/b>>", true],
+      ["<<~ ahu #/a -> lar:///t/elsewhere>>", true],
+      ["<<~ ahu #>>", false], ["<<~ ahu # a>>", false], ["<<~ ahu>>", false],
+    ];
+    for (const [opener, admits] of cases) {
+      expect(tidRe.test(opener), `tiddler on ${opener}`).toBe(admits);
+      expect(bootRe.test(opener), `bootstrap on ${opener}`).toBe(admits);
+      if (admits) expect(tidRe.exec(opener)?.[1], `slot group on ${opener}`).toBe(bootRe.exec(opener)?.[1]);
+    }
+  });
 });

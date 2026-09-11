@@ -2,14 +2,16 @@
  * M2 — the veiled-Handle anchors round-trip through the sovereign identity home, so a
  * substrate rebirth can re-read the SAME PersonaGroup/MeshCabal ids + agentId.
  */
-import { mkdtempSync, rmSync, existsSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { persistIdentityAnchors, loadIdentityAnchors, persistIdentityArchive, loadIdentityArchive, type IdentityAnchors } from "../src/identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../src/identity-anchors.js";
+import { isSealedEnvelope } from "@lararium/mesh";
+import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 
 const saved: Record<string, string | undefined> = {};
 function setEnv(k: string, v: string | undefined): void {
@@ -55,5 +57,30 @@ describe("identity anchors (M2)", () => {
     persistIdentityArchive(bytes);
     expect(existsSync(join(larIdentityDir(), "keyhive-archive.bin"))).toBe(true);
     expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(bytes));
+  });
+
+  // A vessel standing at the WAKING FLOOR boots WITHOUT its archive (no passphrase) and the M3 floor still
+  // exports the keyhive it booted — a fresh, empty identity. Written over the sealed archive as cleartext,
+  // that would replace the sovereign identity with nothing and read as "unsealed" to every later boot.
+  test("a cleartext write REFUSES to replace a sealed archive (the floor writes no identity)", () => {
+    const sovereign = Uint8Array.from([0x85, 0x6f, 0x4a, 0x83, 0x01, 0x02, 0x03]);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-anchors");
+    persistIdentityArchive(sovereign);
+    persistVeilArchive(sovereign);
+    const sealed = readFileSync(join(larIdentityDir(), "keyhive-archive.bin"));
+    expect(isSealedEnvelope(sealed)).toBe(true);
+
+    setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
+    const fresh = Uint8Array.from([0x00, 0x01]);
+    expect(() => persistIdentityArchive(fresh)).toThrow(/sealed/);
+    expect(() => persistVeilArchive(fresh)).toThrow(/sealed/);
+    expect(readFileSync(join(larIdentityDir(), "keyhive-archive.bin")).equals(sealed), "bytes untouched").toBe(true);
+    expect(isSealedEnvelope(readFileSync(join(larIdentityDir(), "veil-archive.bin")))).toBe(true);
+
+    // CONTROL: under the passphrase the same write lands (a re-seal, fresh salt), and reads back.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-anchors");
+    persistIdentityArchive(sovereign);
+    expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
+    expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
   });
 });

@@ -1,0 +1,117 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/seal-and-seat-handoff.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 14
+manao      = 15
+manaoio    = 13
+namespace  = "&#x2299;"
+retain     = true
+revised-on = "2026-09-11"
+role       = "seal-and-seat-handoff — a talk-story floor handed to the founding session: two seal defects measured and cured (a floor stand clobbered a sealed archive; rotate left the veil under the old passphrase), one absence measured (device-share never persists), and two plans awaiting a hand (face-join re-grants bindings minted vessel-only; a relation that carries a bag across operators). Ground, telling, bearings, forks — the exit stays the operator's."
+status     = "draft"
+tags       = ["docs/pono/handoff"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/seal-and-seat-handoff"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ground>>
+
+! Ground — what the witnesses touched
+
+A sealed vessel walked end to end for the first time on 2026-09-11, in `tests/e2e/vessel-sealed.test.ts` (Seal-Keeper, a tasked spirit, 7/7): stand fresh → `vault status` reads cleartext → `vault seal` under `LARES_ARCHIVE_PASSPHRASE_NEW` → sealed → stop → stand without the passphrase → stand with it → the socket answers a `meme get` → `vault rotate` → restart under the new passphrase answers → `vault export` writes a sealed backup and `vault status --check` reports the split truthfully.
+
+The operator's own vessel carries the same posture: `archive: sealed (passphrase)` · `veil: sealed (passphrase)` · `device-share: absent` · `reserve-share: absent`; the keychain leg reads dark on WSL2 ("nothing owns org.freedesktop.secrets"), so the passphrase enters the standing process from the operator's hand alone — no CLI can set it in a parent shell (`packages/lares-cli/src/commands/vault.ts:130`).
+
+The parallel context this floor hands to: the founding session, which stands and re-stands the house vessel while the meme surface (put · get · project over four skins) lands beside it.
+
+<<~/ahu>>
+
+<<~ ahu #/telling>>
+
+!! The telling — two defects fell out of the seal, one absence stood measured
+
+''A floor stand clobbered the sealed archive.'' A `vessel stand` with no passphrase does NOT fault: it stands at the waking floor, serving the public shelf, and the `archive-seal: found a sealed archive` line reaches only the log (`packages/lararium-node/src/open-node-vessel.ts:1021` — `archiveOpens()` gates the load, never the stand). The M3 re-seal then exported the fresh, empty keyhive it had booted and wrote it CLEARTEXT over the sealed carrier. The operator's archive survived one such stand tonight because the stand faulted at a later step. Cured at source: `refuseCleartextOverSealed()` (`packages/lararium-node/src/identity-anchors.ts:129`), applied to both archive writes (`:145`, `:175`) — a cleartext write over a sealed carrier throws; the exporter warns and carries on. Unit red then green in `packages/lararium-node/tests/identity-anchors.test.ts`.
+
+''`vault rotate` left the veil archive under the old passphrase.'' `carriers()` named two carriers; the boot opens four under one policy (`open-node-vessel.ts:1021-1022` loads the identity archive AND the veil archive). After a rotate the next boot failed under BOTH passphrases (`Unsupported state or unable to authenticate data`). Cured: `CarrierName = "archive" | "veil" | "device-share" | "reserve-share"` (`packages/lararium-node/src/archive-passphrase.ts:61`), the veil at `:72`, the reserve share at `:74`. Unit red then green in `packages/lararium-node/tests/archive-passphrase.test.ts`.
+
+''`device-share` reads absent on every founding.'' `persistRecoveryDeviceShare` (`packages/lararium-node/src/recovery-share-store.ts:42`) holds no caller outside its own store. The witness pins the absence as a fact, so a founding that mints the share turns the test red on purpose. Measured, not cured — a recovery share the founding never mints reads as the recovery keel's own seam, beside <<~ loulou "lar:///ha.ka.ba/lares/api/pono/live-equivocation">>.
+
+Two smaller facts the walk carried: `vault seal --yes` reads the NEW passphrase from `LARES_ARCHIVE_PASSPHRASE_NEW`, never from `LARES_ARCHIVE_PASSPHRASE` (a CONTROL step records the usage refusal); the daemon re-reads the archive at boot only, while `seal` and `rotate` update the running daemon's in-memory policy in the same act (`runVaultVerb`).
+
+The cures and the witness stand committed beside this carrier.
+
+<<~/ahu>>
+
+<<~ ahu #/bearings>>
+
+!! Bearings
+
+''Where we stand.'' The seal survives a floor stand and a rotate; a sealed vessel proves itself end to end under a harness that founds unsealed and seals in-test. The house vessel stands sealed and the passphrase rides an operator-side injection script.
+
+''Where we want to go.'' A joinee that joins a PersonaGroup AFTER founding holds bindings minted on its vessel key (`face-reach = "vessel-only"`, `packages/lararium-keyhive/src/resolve-binding.ts:156`) and keeps them forever; a later face-join should re-seat them. And two OPERATORS should share one bag through a relation, where today each founds its own `lar:///ha.ka.ba/bags/lares` doc and a `nexus contract` writes the members board, never a bag.
+
+''How we get there.'' Two plans, each with a red already named, neither started.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-face-join>>
+
+!! Plan — `face-join` re-grants the bindings minted before the seat
+
+''Measured.'' A pinned-but-unseated face mints its wiki binding on the vessel's own key: `KeyhiveProvider.knowsAgent()` (`packages/lararium-keyhive/src/keyhive-provider.ts:599`) + `faceSeated` route the mint, the record carries `face-reach = "vessel-only"` (`resolve-binding.ts:156`), the daemon logs `face … pinned, not yet seated — bindings mint vessel-only until a face-join lands`. Witness: `packages/lararium-keyhive/tests/face-pinned-not-seated.test.ts`. A later `runFaceJoin` (`packages/lararium-keyhive/src/face-join.ts:197`) re-grants `daemonAuth.registerBags` and never re-delegates those earlier bindings. The joinee-side gap reads wider: no CLI verb, no daemon verb and no doc-relay path lands a later face-join grant ON THE JOINEE — the grant returns to the founder's caller; `capEvents` ingest at founding alone, through `vessel found --admit`.
+
+''The plan.''
+# Keyhive unit red in `face-pinned-not-seated.test.ts`: reuse-on-present with a record reading `face-reach = "vessel-only"` and `faceSeated()` true → re-delegate through `delegateToFace` and rewrite the record to `face-reach = "face"` (the spelling the records already carry — invent none).
+# Implement in the `resolve-binding.ts` reuse path. The vessel stands admin of a doc it minted, so the re-delegation itself needs no founder signature.
+# The two-vessel e2e (`tests/e2e/meme-two-vessel-bag.test.ts`, 11/11) gains one step, held as a loud `test.fails` until a joinee-side ingestion door exists: after B's face-join, B's wiki binding reads `face-reach = "face"` and a `meme put --recipe lares` on B lands under the face, not the vessel key.
+
+''The fork this plan cannot close alone.'' A door that carries a later grant to the joinee — a daemon verb the founder's caller invokes, or a doc the joinee watches. Which one reads pono against <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">> stands as the founding session's call.
+
+<<~/ahu>>
+
+<<~ ahu #/plan-relation-bag>>
+
+!! Plan — a relation that carries a bag across operators (a brief, not a build)
+
+''Measured'' (`tools/mesh-scenarios.sh meme`, over the docker mesh): two operators each found their own `lar:///ha.ka.ba/bags/lares` doc (`automerge:2Zme…` on A, `automerge:Curf…` on B); `nexus contract` writes the members board and B's kept consent, never a bag; B's `meme get --bag lares` answers `not-found`. The crossing that passed (11/11) rode a FLEET dial — one operator's bag on two devices. B-edit and PARTITION steps stand written in the scenario, gated behind this seam.
+
+''What the brief must lay flat'' (file:line for every claim; owed, not yet written):
+# What a relation-carried bag needs — one doc id both sides name; WHERE it registers (each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads`); which cap-tier gates the read and the write (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>); how `meme get --bag <x>` on B resolves it (`compositeMemeSink` / `writableStoreForBag` vs reach-by-access).
+# Which of these the realm layer ALREADY holds (the realm's shared CRDT + resources — the `realm-standing` / `realm-feed` / `realm-clock` verbs; `packages/lararium-tw5/src/cabal-realm-verbs.ts`) and which stands unbuilt; the topology reads at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>.
+# The smallest red e2e step proving a realm-carried bag crossing — `tests/e2e/meme-realm-bag.test.ts` as a gated `test.fails`, so the seam holds a witness waiting.
+
+''The law the brief rides.'' A cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware. Fusing cabal and realm once made feeding a realm stale its own invites — the bag the relation carries belongs to the realm plane, never to the cabal.
+
+<<~/ahu>>
+
+<<~ ahu #/forks>>
+
+!! Forks the founding session holds
+
+# ''The joinee's grant door'' — a daemon verb the founder's caller invokes on the joinee, or a doc the joinee watches for grants. Decides the whole face-join plan's third step.
+# ''Where a relation-carried bag registers'' — `@catalog` (private, per vessel) · the realm's shared CRDT · `@crossroads` (public). Decides who may name the doc and who reads it.
+# ''`device-share` at founding'' — mint the recovery device share at `vessel found` (and turn the witness red on purpose), or hold it for the recovery-keel pass. Decides whether a sealed vessel carries a recovery leg from day one.
+# ''Which stand reads the seal'' — keep the waking-floor stand (a public shelf with no sovereign acts) as the honest answer to a missing passphrase, or refuse the stand outright. Today the floor stands and the cure only forbids the clobber.
+
+<<~/ahu>>
+
+<<~ ahu #/exit>>
+
+!! Exit — open
+
+No moʻolelo closes here. The cures stand green under their witnesses and uncommitted; the two plans stand named with their reds; the four forks stand at the operator's hand. The shift hand-off at <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> carries the wider ground.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>
+
+<<^ code="&#x0004;" -> to="?">>

@@ -2,12 +2,16 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: child-slot
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/ahu
-lar-open-pattern: <<~[^>]*\bahu\s+(#[\w-]+)\s*>>
+lar-open-pattern: <<~[^>]*\bahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)"?)?\s*>>
 lar-close-pattern: <<~\/ahu\s*>>
 lar-example: <<~ ahu #/head>>\nbody\n<<~/ahu>>
 type: text/vnd.tiddlywiki
 
-<!-- ahu — worksite scope boundary; addressable child-slot tiddler at parentUri+slot.
+<!-- ahu — worksite scope boundary; addressable child-slot tiddler at parentUri#/slot.
+
+     One slot, one address: a slot spelled `#a` or `#/a` resolves to `#/a` under the meme root, and
+     to `#/a/c` under the child `#/a` — the fragment never repeats its `#`. The same law the
+     deserializer mints the record's title by (composeSlotPath).
 
      ~kahea~ahu → AhuTemplate cascade (live child-slot transclusion).
      ~aka~ahu   → AkaTemplate cascade (frozen/projection read of child slot).
@@ -18,11 +22,13 @@ type: text/vnd.tiddlywiki
 
 \widget ~ahu(slot:"" uri:"" p1:"")
 <$let _ahu-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
-<$let _ahu-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_ahu-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_ahu-slot>] }}}
+<$let _ahu-leaf={{{ [<_ahu-slot>removeprefix[#/]] ~[<_ahu-slot>removeprefix[#]] ~[<_ahu-slot>] }}}>
+<$let _ahu-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_ahu-slot>regexp[^lar:]] ~[<currentTiddler>regexp[#/]addsuffix[/]addsuffix<_ahu-leaf>] ~[<currentTiddler>addsuffix[#/]addsuffix<_ahu-leaf>] }}}
       _ahu-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/ahu-template]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/ahu/html]] }}}>
 <$tiddler tiddler=<<_ahu-uri>>>
 <$transclude $tiddler=<<_ahu-template>>/>
 </$tiddler>
+</$let>
 </$let>
 </$let>
 \end
@@ -33,11 +39,13 @@ type: text/vnd.tiddlywiki
 
 \procedure ~aka~ahu(slot:"" uri:"" p1:"")
 <$let _a-slot={{{ [<slot>!match[]] ~[<p1>] }}}>
-<$let _a-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_a-slot>regexp[^lar:]] ~[<currentTiddler>addsuffix<_a-slot>] }}}
+<$let _a-leaf={{{ [<_a-slot>removeprefix[#/]] ~[<_a-slot>removeprefix[#]] ~[<_a-slot>] }}}>
+<$let _a-uri={{{ [<uri>!match[]!regexp[^lar:///unknown]] ~[<_a-slot>regexp[^lar:]] ~[<currentTiddler>regexp[#/]addsuffix[/]addsuffix<_a-leaf>] ~[<currentTiddler>addsuffix[#/]addsuffix<_a-leaf>] }}}
       _a-template={{{ [all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/aka-template]!is[draft]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/aka/html]] }}}>
 <$tiddler tiddler=<<_a-uri>>>
 <$transclude $tiddler=<<_a-template>>/>
 </$tiddler>
+</$let>
 </$let>
 </$let>
 \end

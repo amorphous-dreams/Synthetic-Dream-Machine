@@ -26,6 +26,7 @@ import type {
   ParseFailure,
 } from "./types.js";
 import type { ParseEvent } from "./scanner.js";
+import { composeSlotPath } from "./ahu-scan.js";
 
 // ---------------------------------------------------------------------------
 // Internal builder frame (scope stack entry)
@@ -37,7 +38,15 @@ interface Frame {
   raw:       string;
   groups:    (string | undefined)[];
   children:  MemeAstNode[];
+  /** The rooted slot path of the enclosing ahu (`#/a`), or "" at the meme root. */
+  enclosing: string;
+  /** An ahu frame's rooted slot path under its enclosing slot (`#/a/c`); the address the record stands at. */
+  slotPath?: string;
 }
+
+/** The address a slot spelled `#a` · `#/a` · `#a/b` stands at under its enclosing slot — one spelling, the record's. */
+const slotUriOf = (memeUri: string, enclosing: string, slot: string): string =>
+  memeUri + composeSlotPath(enclosing, slot);
 
 // ---------------------------------------------------------------------------
 // Names that produce SigilNode (not DynamicNode).
@@ -114,15 +123,16 @@ function attrOf(tail: string, name: string): string | null {
 }
 
 function kaheaInvokeNode(
-  type:     string,
-  args:     string,
-  base:     { pos: number; raw: string },
-  memeUri:  string,
-  children: MemeAstNode[],
+  type:      string,
+  args:      string,
+  base:      { pos: number; raw: string },
+  memeUri:   string,
+  enclosing: string,
+  children:  MemeAstNode[],
 ): MemeAstNode {
   if (type === "ahu") {
     const slot = args.trim();
-    return { kind: "Ahu", ...base, slot, uri: memeUri + slot, delegate: null, body: children, invocation: true } as AhuNode;
+    return { kind: "Ahu", ...base, slot, uri: slotUriOf(memeUri, enclosing, slot), delegate: null, body: children, invocation: true } as AhuNode;
   }
   return { kind: "Sigil", ...base, sigilName: type, attrs: { summon: "true", args }, body: children } as SigilNode;
 }
@@ -137,10 +147,12 @@ function closeFrame(frame: Frame, memeUri: string, grammar?: GrammarRules): Meme
   const g    = (i: number) => (groups[i] ?? "").trim();
 
   if (sigilName === "ahu") {
-    return { kind: "Ahu", ...base, slot: g(1), uri: memeUri + g(1), delegate: g(2) || null, body: children } as AhuNode;
+    // The address the record stands at: the slot composed under its enclosing slot, rooted.
+    const uri = frame.slotPath !== undefined ? memeUri + frame.slotPath : slotUriOf(memeUri, frame.enclosing, g(1));
+    return { kind: "Ahu", ...base, slot: g(1), uri, delegate: g(2) || null, body: children } as AhuNode;
   }
   if (sigilName === "kahea-invoke") {
-    return kaheaInvokeNode(g(1), g(2), base, memeUri, children);
+    return kaheaInvokeNode(g(1), g(2), base, memeUri, frame.enclosing, children);
   }
   if (sigilName === "pranala") {
     const tail   = groups[4] ?? "";
@@ -169,6 +181,7 @@ function makeLeaf(
   ahuStack:  string[],
   grammar?:  GrammarRules,
 ): MemeAstNode {
+  const enclosing = ahuStack.length > 0 ? ahuStack[ahuStack.length - 1]!.slice(memeUri.length) : "";
   const base = { pos, raw };
   const g    = (i: number) => (groups[i] ?? "").trim();
 
@@ -193,13 +206,13 @@ function makeLeaf(
       // when group 2 is absent).
       const akaSlot = g(2);
       if (akaSlot.startsWith("#")) {
-        return { kind: "Ahu", ...base, slot: akaSlot, uri: memeUri + akaSlot, delegate: null, body: [], projection: true } as AhuNode;
+        return { kind: "Ahu", ...base, slot: akaSlot, uri: slotUriOf(memeUri, enclosing, akaSlot), delegate: null, body: [], projection: true } as AhuNode;
       }
       return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: g(1), family: "observe", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
     }
 
     case "kahea-invoke":
-      return kaheaInvokeNode(g(1), g(2), base, memeUri, []);
+      return kaheaInvokeNode(g(1), g(2), base, memeUri, enclosing, []);
 
     case "kahea":
       return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
@@ -301,8 +314,14 @@ export function buildMemeAst(
     emitTextGap(pos);
 
     if (eventType === "open") {
-      stack.push({ sigilName, pos, raw, groups, children: [] });
-      if (sigilName === "ahu") ahuStack.push(memeUri + (groups[1] ?? "").trim());
+      const enclosing = ahuStack.length > 0 ? ahuStack[ahuStack.length - 1]!.slice(memeUri.length) : "";
+      const frame: Frame = { sigilName, pos, raw, groups, children: [], enclosing };
+      if (sigilName === "ahu") {
+        // Composed under the enclosing slot, so a nested `#c` inside `#/a` addresses `#/a/c`.
+        frame.slotPath = composeSlotPath(enclosing, (groups[1] ?? "").trim());
+        ahuStack.push(memeUri + frame.slotPath);
+      }
+      stack.push(frame);
       cursor = end;
       continue;
     }
