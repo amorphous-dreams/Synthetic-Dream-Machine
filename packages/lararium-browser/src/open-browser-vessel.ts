@@ -28,7 +28,7 @@ import {
   carriageStack, deriveMeshLeaf,
   materializeGenesisIsland,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
-  personaKelBoardDocUrl, personaKelChainForPrefix,
+  personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
@@ -67,6 +67,8 @@ import {
 }                                            from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
 import { BrowserVesselIslandPool }           from "./browser-vessel-island-pool.js";
+import { publishHandleBrowser }              from "./browser-handle-publish.js";
+import { burnFaceBrowser, attestFaceBrowser } from "./browser-handle-verbs.js";
 
 /** Browser advertises the MINIMAL grant (constrained vessel): a small live-wiki set
  *  (the daemon bag always + a couple more on reference) and ONE rotatable pin besides the daemon bag.
@@ -916,6 +918,70 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         await wearBrowserPersona(idbName, index);   // custody-gated — throws when no root held
         void pushPersonaState();
         return { verb: "persona-wear", index, rebootRequired: true };
+      });
+
+      // ── The FACE surface (the public "here I am" door) ──────────────────────────
+      // The browser twins of the node `handle` adapters (publish · burn · attest), surfaced as DELIBERATE
+      // holder acts — a face NEVER federates as a boot side-effect; only an explicit invocation here posts a
+      // glamour. Each resolves the per-Nexus WHO board off the crossroads address the who-plane already reads,
+      // seats the persona index (the arg, else the worn persona, else the founding index), and calls the
+      // shared act. WITHHELD boots hold no public board, so a face verb fails closed with an honest reason.
+      const resolveFaceIndex = async (args: Record<string, unknown>): Promise<number> => {
+        if (args["persona"] !== undefined) return Number(args["persona"]);
+        return (await loadBrowserActivePersona(idbName)) ?? FOUNDING_PERSONA_INDEX;
+      };
+      const resolveWhoBoard = async (verb: string): Promise<DocHandle<LarDoc>> => {
+        if (!relayGatePubKey || !admittedToNexus) {
+          throw new Error(`[face-${verb}] this vessel holds no public WHO board — it withheld the Nexus crossing, so it has no board to name a face on.`);
+        }
+        return materializeSharedLarDoc(repo, crossroadsDocUrl(relayGatePubKey), "board:crossroads");
+      };
+      // The daemon doc the publish core reads for the owner prefix — the persona-KEL prefix IS the only field
+      // it consults, and `social` carries it authoritatively; a faceless boot has none, so publish fails closed.
+      const ownerDaemonDoc = (): LarDoc => {
+        const d: LarDoc = { tiddlers: {} } as LarDoc;
+        if (social.personaKelPrefix) {
+          (d.tiddlers as Record<string, unknown>)[PERSONA_KEL_PREFIX_TIDDLER] =
+            { tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: social.personaKelPrefix, kind: "persona-kel-prefix" } };
+        }
+        return d;
+      };
+
+      // face-publish — announce a persona-anchored glamour onto the WHO board (fail-closed on absent prefix,
+      // in the shared core). Returns the announced card for the UI to reflect.
+      registry.register("face-publish", async (args) => {
+        const glamour = String(args["glamour"] ?? "").trim();
+        if (!glamour) throw new Error("face-publish: a `glamour` (display name) is required");
+        const handleIndex = await resolveFaceIndex(args);
+        const board = await resolveWhoBoard("publish");
+        const card = await publishHandleBrowser({ daemonDoc: ownerDaemonDoc(), board, handleIndex, glamour, idbName });
+        return { verb: "face-publish", nym: card.nym, glamour: card.glamour, version: card.version };
+      });
+
+      // face-burn — bury the name. SELF-burn by default (the seated handle key); `from-persona` buries it from
+      // ABOVE (the owning persona's head op-key), resolving the owner head off the per-Nexus persona-KEL board.
+      registry.register("face-burn", async (args) => {
+        const handleIndex = await resolveFaceIndex(args);
+        const board = await resolveWhoBoard("burn");
+        const fromPersona = args["from-persona"] === true || args["from-persona"] === "true";
+        const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName };
+        if (fromPersona) {
+          burnOpts.fromPersona = true;
+          burnOpts.daemonDoc   = ownerDaemonDoc();
+          burnOpts.kelBoard    = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(relayGatePubKey!), "board:persona-kel");
+        }
+        const card = await burnFaceBrowser(burnOpts);
+        return { verb: "face-burn", nym: card.nym, version: card.version, burned: true, hand: fromPersona ? "owner" : "self" };
+      });
+
+      // face-attest — sign a claim under the face's head, carried ON the card, verified reader-locally. Not a
+      // chain event; writes nothing to the board.
+      registry.register("face-attest", async (args) => {
+        const claim = String(args["claim"] ?? "");
+        const handleIndex = await resolveFaceIndex(args);
+        const board = await resolveWhoBoard("attest");
+        const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName });
+        return { verb: "face-attest", prefix: statement.prefix, headEventCid: statement.headEventCid, claim: statement.claim, sig: statement.sig };
       });
 
       // ── The FOLLOW surface (the IoC social-graph door) ──────────────────────────

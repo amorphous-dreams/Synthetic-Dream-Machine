@@ -14,6 +14,7 @@ export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-poo
 
 export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { publishHandleBrowser } from "./browser-handle-publish.js";
+export { burnFaceBrowser, attestFaceBrowser, resolveOwnerBurnHandBrowser } from "./browser-handle-verbs.js";
 export { composeBrowser } from "./browser-caps.js";
 export type { BrowserVesselOptions, BrowserVesselResult } from "./open-browser-vessel.js";
 
