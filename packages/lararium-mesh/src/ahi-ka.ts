@@ -35,6 +35,24 @@ export interface AhiKaParams {
 }
 
 /**
+ * THE 500-YEAR TEST RUN — the initial params, calibrated against Elyncia's DreamNet as the first QA world
+ * (Telarus the wild-mage lit it ~500 years before modern day, and realms have risen · slept a century ·
+ * revived · lapsed across that span). Because the reading measures a realm's pace against its OWN baseline,
+ * these tolerate a realm being SLOW without punishing it, and only judge silence RELATIVE to itself:
+ *   · warmRatio 0.30 — a realm keeping even a third of its own cadence stays KEPT (a dormant shrine woken for
+ *     a centennial rite is not a dying one; long ebbs are the fiction's normal, not a fault);
+ *   · coldRatio 0.05 — a realm reads COLD only when NEARLY silent against what its own history expects, so a
+ *     centuries-old realm goes cold by true abandonment, never by a quiet generation;
+ *   · ambientFloor 8 — the reader needs a meaningful stretch of INDEPENDENT motion before it dares a verdict,
+ *     so a freshly-synced or thinly-connected observer abstains rather than mis-cold a realm it barely saw.
+ * These are a STARTING POINT for fiction-QA, not a proven law — run Elyncia's 500-year events through the
+ * estimator and tune. The hysteresis gap (revival cost scaling with cold-depth) and the commons-vs-hearth
+ * exemption (a private single-steward hearth never colds) join these when the full estimator lands; recorded
+ * for that pass in `[[field-collision]]` #the-mesh-field.
+ */
+export const AHI_KA_500YR: AhiKaParams = { ambientFloor: 8, warmRatio: 0.30, coldRatio: 0.05 };
+
+/**
  * Read a realm's ahi kā for THIS observer, as-of its last sync. `realmRolls` is the realm's verified progress
  * in the window (seal-proven rolls — a forged roll cannot count); `yardstickAdvance` is the INDEPENDENT
  * reference's advance over the same window (the caller supplies the ambient — carriage-liveness or cross-realm

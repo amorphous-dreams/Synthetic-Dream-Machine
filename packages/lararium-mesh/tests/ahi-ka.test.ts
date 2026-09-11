@@ -23,7 +23,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/field-collision · lar:///ha.ka.ba/lararium/mesh/identity-classes
  */
 import { describe, test, expect } from "vitest";
-import { readAhiKa, type AhiKaState } from "../src/ahi-ka.js";
+import { readAhiKa, AHI_KA_500YR, type AhiKaState } from "../src/ahi-ka.js";
 
 const PARAMS = { ambientFloor: 5, warmRatio: 0.5, coldRatio: 0.1 };
 const BASELINE = 1; // the realm historically rolls ~once per yardstick step
@@ -54,5 +54,25 @@ describe("ahi kā discrimination probe — the yardstick is the whole ballgame",
     expect(read(80, 100), "keeping pace → kept fire").toBe("ahi-ka");
     expect(read(30, 100), "guttering — a ratio of stillness to independent motion, no clock").toBe("ahi-tere");
     expect(read(0, 100),  "fully still while the world moved → cold").toBe("ahi-mataotao");
+  });
+});
+
+describe("the 500-year test-run defaults (AHI_KA_500YR — Elyncia as the first QA world)", () => {
+  const baselineRate = 1; // the realm's own history: ~one roll per ambient step
+  const read500 = (realmRolls: number, yardstickAdvance: number): AhiKaState =>
+    readAhiKa({ realmRolls, yardstickAdvance, baselineRate, params: AHI_KA_500YR });
+
+  test("★ the bands are ordered and tolerant of long ebbs ★", () => {
+    // A realm keeping even a THIRD of its own cadence stays kept — a dormant shrine woken for a rite is alive.
+    expect(read500(40, 100), "a third of pace still reads KEPT (tolerant of ebbs)").toBe("ahi-ka");
+    expect(read500(25, 100), "below a third but present → guttering").toBe("ahi-tere");
+    expect(read500(10, 100), "well below → still guttering, not yet cold").toBe("ahi-tere");
+    expect(read500(4, 100),  "under a twentieth of expected → cold (near-abandonment)").toBe("ahi-mataotao");
+  });
+
+  test("★ the partition floor abstains a thinly-synced observer ★", () => {
+    // Below the ambient floor, the reader has seen too little independent motion to judge — patience, not cold.
+    expect(read500(0, 4), "the world I saw barely moved → abstain, never cold").toBe("abstain");
+    expect(read500(0, 100), "the world clearly moved while the realm stood still → cold").toBe("ahi-mataotao");
   });
 });
