@@ -11,13 +11,16 @@
  *
  *   - `parseDigest`   — a bare 64-char hex reads as implicit `sha256` (back-compat
  *                       with every stored value); `algo:hex` OR the legacy
- *                       `algo-hex` (SRI/`sourceCidOf` form) reads TAGGED.
+ *                       `algo-hex` (SRI/`sourceCidOf` form) reads TAGGED; the RFC 9530
+ *                       `Repr-Digest` field value `sha-256=:<base64>:` reads as the
+ *                       same `sha256` digest — one digest, three spellings.
  *   - `digestsEqual`  — normalizes BOTH sides to `(algo, hex)` and compares, so a
  *                       stored bare `ab…` equals a freshly-computed `sha256:ab…`.
  *                       THIS is the dual-read shore: readers route their
  *                       `stored === computed` checks through it and stay correct
  *                       across the tag boundary.
  *   - `formatDigest`  — emits the canonical tagged form `algo:hex`.
+ *   - `reprDigestOf`  — emits the RFC 9530 `Repr-Digest` field value for the HTTP skins.
  *
  * The Confluence ingest gate needs ZERO change — it compares opaque strings and
  * never computes; a caller that wants tag-agnostic comparison passes
@@ -45,6 +48,49 @@ const BARE_SHA256_HEX = /^[0-9a-fA-F]{64}$/;
 const BARE_HEX = /^(?:[0-9a-fA-F]{2})+$/;
 /** A valid algorithm tag: lowercase alnum + dashes (blake3, sha512, sha2-256…). */
 const ALGO_TAG = /^[a-z0-9][a-z0-9-]*$/;
+/** The RFC 9530 `Repr-Digest` field value: `sha-256=:<base64>:` (one member, the sf-binary item). */
+const REPR_DIGEST = /^(sha-256)=:([A-Za-z0-9+/]+={0,2}):$/;
+
+const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/** The lowercase hex of a base64 byte string, or null where the base64 reads torn. Hand-rolled so
+ *  the law runs the same in a browser, a plugin VM and node — no `Buffer`, no `atob`. */
+function hexOfBase64(b64: string): string | null {
+  const body = b64.replace(/=+$/, "");
+  if (body.length % 4 === 1) return null;
+  let bits = 0;
+  let acc = 0;
+  let hex = "";
+  for (const ch of body) {
+    const v = B64.indexOf(ch);
+    if (v < 0) return null;
+    acc = (acc << 6) | v;
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      hex += ((acc >> bits) & 0xff).toString(16).padStart(2, "0");
+    }
+  }
+  return hex;
+}
+
+/** The base64 of a lowercase hex byte string. */
+function base64OfHex(hex: string): string {
+  let out = "";
+  let acc = 0;
+  let bits = 0;
+  for (let i = 0; i < hex.length; i += 2) {
+    acc = (acc << 8) | parseInt(hex.slice(i, i + 2), 16);
+    bits += 8;
+    while (bits >= 6) {
+      bits -= 6;
+      out += B64[(acc >> bits) & 0x3f];
+    }
+  }
+  if (bits > 0) out += B64[(acc << (6 - bits)) & 0x3f];
+  while (out.length % 4 !== 0) out += "=";
+  return out;
+}
 
 /**
  * Parse a digest string into `(algo, hex)`.
@@ -66,6 +112,16 @@ const ALGO_TAG = /^[a-z0-9][a-z0-9-]*$/;
 export function parseDigest(digest: string): ParsedDigest {
   if (typeof digest !== "string" || digest.length === 0) {
     throw new TypeError(`parseDigest: empty or non-string digest`);
+  }
+
+  // RFC 9530 form: `sha-256=:<base64>:` — the `Repr-Digest` field value an HTTP skin emits.
+  const repr = REPR_DIGEST.exec(digest);
+  if (repr) {
+    const hex = hexOfBase64(repr[2]!);
+    if (hex === null || !BARE_SHA256_HEX.test(hex)) {
+      throw new TypeError(`parseDigest: malformed tagged digest "${digest}"`);
+    }
+    return { algo: IMPLICIT_ALGO, hex };
   }
 
   // Tagged form: split on the FIRST `:` or `-`, but only accept the split when the
@@ -108,6 +164,18 @@ export function formatDigest(algo: string, hex: string): string {
   if (!ALGO_TAG.test(a)) throw new TypeError(`formatDigest: bad algorithm tag "${algo}"`);
   if (!BARE_HEX.test(h)) throw new TypeError(`formatDigest: bad hex "${hex}"`);
   return `${a}:${h}`;
+}
+
+/**
+ * The RFC 9530 `Repr-Digest` field value for a sha256 digest in any of its spellings —
+ * `sha-256=:<base64>:`. An HTTP skin emits it beside the `ETag`, so a client that speaks the
+ * standard field verifies the body without learning the house's tag grammar. Only sha256 carries a
+ * registered RFC 9530 algorithm key here; another algorithm refuses loud.
+ */
+export function reprDigestOf(digest: string): string {
+  const { algo, hex } = parseDigest(digest);
+  if (algo !== IMPLICIT_ALGO) throw new TypeError(`reprDigestOf: only sha-256 carries a Repr-Digest key here (got "${algo}")`);
+  return `sha-256=:${base64OfHex(hex)}:`;
 }
 
 /** Re-tag a possibly-bare digest into canonical `algo:hex` form (idempotent for an

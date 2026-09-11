@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, CARRIER_VERBS, VAULT_VERBS, SENSE_LIFECYCLE_VERBS,
+from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, VAULT_VERBS, SENSE_LIFECYCLE_VERBS,
                        MEME_VERBS,
                        VERB_SEATS, DaemonCoordinator,
                        LaresCoordinator, build_mcp, guard_hitl, seat_of)
@@ -227,7 +227,7 @@ def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
     # vault seal-lifecycle, the DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair —
     # name-for-name (the growth floor).
     assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
-                                         | set(CARRIER_VERBS) | set(VAULT_VERBS) | set(SENSE_LIFECYCLE_VERBS)
+                                         | set(VAULT_VERBS) | set(SENSE_LIFECYCLE_VERBS)
                                          | set(MEME_VERBS))
 
 
@@ -284,6 +284,15 @@ def test_parity_inventory_three_way(tmp_path):
     # (d) COVERAGE partition (the surface GROWS): every CLI top-level verb is a mirror-host XOR awaits.
     assert mirror_hosts | not_yet == verbs
     assert mirror_hosts.isdisjoint(not_yet)
+    # (e) THE LOCAL-SEAT ALLOWANCE: a CLI sub-verb that runs over a file with no daemon holds NO MCP seat
+    # by law — the MCP mirrors the daemon-seated verbs only. The fixture names each one, its head lands on a
+    # real host, and no MCP tool spells it (an `meme_normalize` tool would be a mirror of nothing).
+    local_seat = set(inv["local_seat"])
+    assert local_seat == {"meme normalize", "meme check"}
+    for form in local_seat:
+        assert form.split()[0] in verbs
+        assert form not in cli_forms.values()
+        assert form.replace(" ", "_") not in mcp_tools
 
 
 def test_flow_verb_mirrors_end_to_end(tmp_path):
@@ -298,6 +307,18 @@ def test_flow_verb_mirrors_end_to_end(tmp_path):
         inv = json.load(f)
     assert "flow" in inv["verbs"]                        # a real top-level CLI command
     assert inv["cli_forms"].get("flow") == "flow"        # hosts its own mirror (top-level, no sub-verb)
+
+
+def test_meme_project_mirrors_meme_project(tmp_path):
+    """The projection verb: `meme_project` ⇄ `meme project` — the TARGET rides as a parameter (`to`), never
+    a suffix on the verb, so ONE tool mirrors every rendered target the island serves. The `carrier`
+    door stands retired: no host, no `project_md`, no allowance."""
+    with open(_CLI_VERBS, encoding="utf-8") as f:
+        inv = json.load(f)
+    assert inv["cli_forms"].get("meme_project") == "meme project"
+    assert "project_md" not in inv["cli_forms"] and "project_md" not in inv["mirrored"]
+    assert "carrier" not in inv["verbs"] and "carrier" not in inv["mirror_hosts"]
+    assert "meme_project" in MEME_VERBS and seat_of("meme_project") == "HOTL"
     assert "flow" in inv["mirror_hosts"]                 # the coverage partition names it a host
     assert "flow" not in inv["not_yet_mirrored"]         # mirrored today, not awaiting
 

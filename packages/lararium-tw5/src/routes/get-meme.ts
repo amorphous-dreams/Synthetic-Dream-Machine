@@ -9,14 +9,15 @@ module-type: route
  *
  * The read half of the PUT contract: the `ETag` carries the canonical hash of what the records
  * render now, and a writer hands it back as `If-Match` so the gate can tell an edit over a stale
- * read from a clean one. 404 when the wiki holds no record under the URI.
+ * read from a clean one; `Repr-Digest` (RFC 9530) carries the same hash in the standard field.
+ * 404 when the wiki holds no record under the URI.
  *
  * `:bag` names a container the server resolves. `default` names THE HOST'S ANCHOR — the one wiki on a
  * plain server; @daemon on a lares island. Any other recipe or bag answers 404 with a one-line body.
  */
 
 import { readMeme, wikiMemeSink, MEME_PATH, memeUriOfParams } from "../place-meme.js";
-import { containerRefusal, refuseContainer } from "./plain-server.js";
+import { containerRefusal, digestHeaders, refuseContainer } from "./plain-server.js";
 import type { TW5Wiki } from "../types/tiddlywiki.js";
 
 interface RouteState {
@@ -55,7 +56,7 @@ export function handler(_request: unknown, response: RouteResponse, state: Route
     }
     response.writeHead(200, {
       "Content-Type": "text/memetic-wikitext+tiddlywiki; charset=utf-8",
-      "ETag": `"${meme.canonicalHash}"`,
+      ...digestHeaders(meme.canonicalHash),
     });
     response.end(meme.text);
   }, (err: unknown) => {

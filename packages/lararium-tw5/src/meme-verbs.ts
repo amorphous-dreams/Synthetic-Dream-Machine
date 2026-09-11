@@ -1,10 +1,17 @@
 /**
- * meme-verbs — `meme-put` / `meme-get`, the daemon island's skins of the one placement function.
+ * meme-verbs — `meme-put` / `meme-get` / `meme-project`, the daemon island's skins of the meme laws.
  *
  * The contract every skin (this, the HTTP route, the MCP tool) carries verbatim:
  *
- *   meme-put  { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
- *   meme-get  { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
+ *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
+ *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
+ *   meme-project  { recipe?, bag?, uri, to }            → { uri, to, text, contentType, meta? }
+ *
+ * `to` names a target — mem · md · html · tid · json (`meme-project.ts`); `meta` rides on `md` alone,
+ * the `.md.meta` sidecar. The anchor projects through the in-VM face (`$tw.lares.meme.project`), so
+ * every target renders through the wiki that holds the records; a recipe or bag target holds records
+ * in a store, never a wiki, so it projects the TEXT targets (mem · md) and refuses the wiki renders
+ * loud. An unknown target refuses naming the targets; an absent meme refuses naming the URI.
  *
  * At most one of `recipe` / `bag`; neither names `recipe: "default"`. Three targets follow:
  *
@@ -37,7 +44,9 @@ import { makeCatalogAccessor } from "./catalog-accessor.js";
 import type { IslandContext } from "./island-context.js";
 import { placeMeme, readMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
+import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 
@@ -146,22 +155,38 @@ interface Resolved {
   /** The bag the cap gate checks against. */
   readonly bag: string;
   readonly sink: MemeSink;
+  /** True on the anchor — the daemon's own live wiki, where the in-VM face renders. */
+  readonly anchor: boolean;
+}
+
+/** The cascade's config tiddler naming where a `lar:` save lands in this wiki (island-adaptor reads it). */
+const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
+
+/**
+ * The bag the anchor's cap gate checks: the one the in-wiki cascade routes a `lar:` title to — the same
+ * bag the placement will land in through `wikiMemeSink`. A live island registers its volatile temp
+ * layer LAST, so "the last-registered writable layer" names a bag no cap was ever granted on.
+ */
+function anchorBagOf(opts: MemeVerbOptions): string {
+  const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
+  const configured = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
+  return configured || DAEMON_BAG_ID;
 }
 
 async function resolveSink(opts: MemeVerbOptions, target: MemeArgs, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
   if (target.bag) {
     const bag = bagUriOf(target.bag);
-    if (mode === "put") return { bag, sink: compositeMemeSink(opts.composite, bag, origin) };
+    if (mode === "put") return { bag, sink: compositeMemeSink(opts.composite, bag, origin), anchor: false };
     const store = opts.composite.storeForBag(bag) ?? (await opts.reach?.(bag, bag)) ?? null;
     if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access`);
-    return { bag, sink: storeMemeSink(store, bag, origin) };
+    return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
   }
   if (target.recipe && target.recipe !== "default") {
     const { bag, store } = await reachRecipeBag(opts, target.recipe, mode);
-    return { bag, sink: storeMemeSink(store, bag, origin) };
+    return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
   }
   // The anchor: the daemon's own wiki, its cascade routing the records to the top bag.
-  return { bag: opts.composite.defaultWritableBagId() ?? DAEMON_BAG_ID, sink: wikiMemeSink(opts.tw5.$tw.wiki) };
+  return { bag: anchorBagOf(opts), sink: wikiMemeSink(opts.tw5.$tw.wiki), anchor: true };
 }
 
 export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
@@ -187,5 +212,29 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
     return { uri: target.uri, meme: await readMeme(target.uri, sink) };
+  };
+}
+
+export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
+  return async (args, ctx) => {
+    const target = readTarget(args, "meme-project");
+    const to = stringArg(args, "to");
+    if (!to) throw new Error("meme-project: args.to is required (mem · md · html · tid · json)");
+    const projectTarget = projectTargetOf(to);
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const { bag, sink, anchor } = await resolveSink(opts, target, origin, "get");
+    const proof = await ctx.cap("read", bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    if (anchor) {
+      const face = (opts.tw5.$tw as LaresTw5Extension).lares?.meme;
+      if (!face) throw new Error("meme-project: the anchor wiki publishes no $tw.lares.meme (the meme-face startup module is absent)");
+      return { ...face.project(target.uri, projectTarget) };
+    }
+    if (projectTarget !== "mem" && projectTarget !== "md") {
+      throw new Error(`meme-project: "${projectTarget}" renders through a wiki and projects from the anchor only; a recipe or bag target projects mem · md`);
+    }
+    const meme = await readMeme(target.uri, sink);
+    if (!meme) throw new Error(`meme-project: no meme stands under ${target.uri} in ${bag}`);
+    return { ...projectCarrierText(meme.text, target.uri, projectTarget) };
   };
 }

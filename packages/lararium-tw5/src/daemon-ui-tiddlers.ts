@@ -46,6 +46,16 @@ const PAGECTRL_TITLE  = "$:/lares/ui/PageControls/daemon";
 // structured payload. Kept as a literal here so the wikitext can build titles inline.
 const VERB_PREFIX = "lar:///lararium.local.vm/verb/";
 
+/** The LOCAL projection state: `uri` names the carrier root; `markdown` + `meta` hold the pair the
+ *  button last projected. Matches no bag-paths cascade rule → in-memory, never synced. */
+export const PROJECT_STATE_TITLE = "$:/lares/state/meme-project";
+
+/** The button's action: the submission pair projected IN this wiki VM through the `meme-project`
+ *  filter — the operator the face's `md` template renders through — so no verb leaves the VM. A uri
+ *  that stands as no carrier root projects empty, and the fields read empty. */
+export const PROJECT_ACTION =
+  `<$action-setfield $tiddler="${PROJECT_STATE_TITLE}" markdown={{{ [{${PROJECT_STATE_TITLE}!!uri}meme-project[md]] }}} meta={{{ [{${PROJECT_STATE_TITLE}!!uri}meme-project[md.meta]] }}}/>`;
+
 // ── The four CODE tiddlers ───────────────────────────────────────────────────
 
 /** 1. The parallel-cap wrapper switch — shows the surface tiddler $:/lares/surface
@@ -90,13 +100,16 @@ const WORKING_BODY = `\\whitespace trim
 
 <h2 class="lares-project-title">Project a submission</h2>
 <div class="lares-project" data-lares-project>
-<p class="lares-project-label">Render one carrier to its markdown + meta pair (the PROJECT-MD read verb; the pair rides the outcome record):</p>
-<div class="lares-project-row">bag: <$edit-text tiddler="$:/lares/state/project-md" field="bag" tag="input" placeholder="lar:///… bag url"/></div>
-<div class="lares-project-row">title: <$edit-text tiddler="$:/lares/state/project-md" field="title" tag="input" placeholder="lar:///… carrier address"/></div>
+<p class="lares-project-label">Render one carrier the daemon's wiki holds to its markdown + meta pair — the in-VM projection, the same law <code>$tw.lares.meme.project(uri, "md")</code> carries; the pair lands on the projection state tiddler:</p>
+<div class="lares-project-row">uri: <$edit-text tiddler="${PROJECT_STATE_TITLE}" field="uri" tag="input" placeholder="lar:///… carrier address"/></div>
 <$button class="lares-project-btn" data-lares-project-btn>
-<$action-setfield $tiddler="${VERB_PREFIX}project-md" verb="project-md" ${LARES_DISPATCH_FIELD}="1" ${LARES_VERB_ARG_PREFIX}bag={{$:/lares/state/project-md!!bag}} ${LARES_VERB_ARG_PREFIX}title={{$:/lares/state/project-md!!title}}/>
+${PROJECT_ACTION}
 project
 </$button>
+<$list filter="[[${PROJECT_STATE_TITLE}]has[markdown]]" variable="_">
+<pre class="lares-project-markdown" data-lares-project-markdown><$text text={{${PROJECT_STATE_TITLE}!!markdown}}/></pre>
+<pre class="lares-project-meta" data-lares-project-meta><$text text={{${PROJECT_STATE_TITLE}!!meta}}/></pre>
+</$list>
 </div>
 
 </div>`;

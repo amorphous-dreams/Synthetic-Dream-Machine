@@ -9,9 +9,12 @@
  * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, recipeUri, wikiDraftBagUri, wikiDraftDocKey, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+import { CompositeStore, bagUri, recipeUri, wikiDraftBagUri, wikiDraftDocKey, didFromVerifyingKey, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
+
+/** The vessel DID, minted through the one spelling every host walks. */
+const VESSEL_DID = didFromVerifyingKey("cd".repeat(32));
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const URI = "lar:///t/x";
@@ -28,6 +31,7 @@ function fakeWiki() {
     store,
     allTitles: () => [...store.keys()],
     getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t) } : undefined),
+    getTiddlerText: (t: string, d = ""): string => (typeof store.get(t)?.["text"] === "string" ? String(store.get(t)!["text"]) : d),
     addTiddler: (f: Record<string, unknown>) => { store.set(String(f["title"]), f); },
     deleteTiddler: (t: string) => { store.delete(t); },
   };
@@ -60,7 +64,7 @@ function rig(): Rig {
     tw5: { $tw: { wiki } } as unknown as MemeVerbOptions["tw5"],
     recipeOf: async (slug) => recipes.get(recipeUri("catalog", slug)) ?? null,
     reach: async (key): Promise<LarTiddlerStore | null> => reached.get(key) ?? null,
-    vesselDid: () => "0xdid",
+    vesselDid: () => VESSEL_DID,
   };
   return { opts, wiki, composite, reached, recipes };
 }
@@ -74,6 +78,24 @@ describe("meme-put — the anchor (recipes/default)", () => {
     expect(r.wiki.store.has(URI)).toBe(true);
     expect(r.wiki.store.has(`${URI}#/a`)).toBe(true);
     expect(await r.composite.storeForBag(bagUri("daemon"))!.listVisible()).toEqual([]);
+  });
+
+  test("★ the anchor's cap seat is the bag the CASCADE lands in, never the last-registered writable layer ★", async () => {
+    const r = rig();
+    // A live island registers its volatile temp layer LAST — the cap gate holds no registration for it.
+    r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
+    r.wiki.store.set("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { title: "lar:///ha.ka.ba/lararium/config/current-wiki-bag", text: bagUri("daemon") });
+    capCalls.length = 0;
+    await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx());
+    expect(capCalls[0]).toEqual({ access: "admin", bag: bagUri("daemon") });
+  });
+
+  test("CONTROL: with no cascade config the anchor's cap seat falls to the daemon bag", async () => {
+    const r = rig();
+    r.composite.addLayer({ bagId: "lar:///ha.ka.ba/wikis/daemon/temp", store: new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/daemon/temp"), writable: true });
+    capCalls.length = 0;
+    await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a"]) }, ctx());
+    expect(capCalls[0]?.bag).toBe(bagUri("daemon"));
   });
 
   test("`recipe: \"default\"` reads the same as no target", async () => {
@@ -135,7 +157,7 @@ describe("meme-put — a named recipe (an edit AS that wiki)", () => {
     });
     // The wiki's draft doc keys per DID in the registry — the reach answers under that key.
     const store = new MemoryTiddlerStore(draft);
-    r.reached.set(wikiDraftDocKey("elyncia", "0xdid"), store);
+    r.reached.set(wikiDraftDocKey("elyncia", VESSEL_DID), store);
     const receipt = await makeMemePutReactor(r.opts)({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
     expect(receipt["decision"]).toBe("ingest");
     expect(await store.listVisible()).toContain(URI);
@@ -204,5 +226,54 @@ describe("meme-get — the read half", () => {
     capCalls.length = 0;
     await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
     expect(capCalls).toEqual([{ access: "read", bag: bagUri("sdm") }]);
+  });
+});
+
+describe("meme-project — the daemon skin of the projection", () => {
+  const projectCalls: Array<[string, string]> = [];
+  const rigWithFace = (): Rig => {
+    const r = rig();
+    // The anchor's in-VM face (meme-face startup), as the daemon's live wiki would publish it.
+    (r.opts.tw5.$tw as unknown as { lares: unknown }).lares = {
+      meme: { project: (uri: string, to: string) => { projectCalls.push([uri, to]); return { uri, to, text: `<face:${to}>`, contentType: "x/face" }; } },
+    };
+    return r;
+  };
+
+  test("★ the anchor path calls $tw.lares.meme.project — the same in-VM law the wiki side gets ★", async () => {
+    const r = rigWithFace();
+    projectCalls.length = 0;
+    capCalls.length = 0;
+    const out = await makeMemeProjectReactor(r.opts)({ uri: URI, to: "html" }, ctx());
+    expect(out).toEqual({ uri: URI, to: "html", text: "<face:html>", contentType: "x/face" });
+    expect(projectCalls).toEqual([[URI, "html"]]);
+    expect(capCalls).toEqual([{ access: "read", bag: bagUri("daemon") }]);
+  });
+
+  test("a named bag projects mem and md over that bag's records, through the text laws", async () => {
+    const r = rigWithFace();
+    projectCalls.length = 0;
+    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
+    const project = makeMemeProjectReactor(r.opts);
+    const mem = await project({ bag: "sdm", uri: URI, to: "mem" }, ctx());
+    expect(mem["contentType"]).toBe("text/memetic-wikitext+tiddlywiki");
+    expect(mem["text"]).toContain("<<~ ahu #a>>");
+    const get = await makeMemeGetReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
+    expect(mem["text"]).toBe((get["meme"] as { text: string }).text);
+    const md = await project({ bag: "sdm", uri: URI, to: "md" }, ctx());
+    expect(md["contentType"]).toBe("text/markdown");
+    expect(md["text"]).toContain("# a");
+    expect(typeof md["meta"]).toBe("string");
+    // A store-backed target never reaches the anchor's face.
+    expect(projectCalls).toEqual([]);
+  });
+
+  test("★ refusals are loud: an unknown target names the targets; a wiki render on a bag names the anchor; an absent meme names the URI ★", async () => {
+    const r = rigWithFace();
+    const project = makeMemeProjectReactor(r.opts);
+    await expect(project({ uri: URI, to: "docx" }, ctx())).rejects.toThrow(/docx.*mem · md · html · tid · json/);
+    await expect(project({ bag: "sdm", uri: URI, to: "html" }, ctx())).rejects.toThrow(/anchor/);
+    await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(URI);
+    await expect(project({ uri: URI }, ctx())).rejects.toThrow(/args\.to/);
   });
 });

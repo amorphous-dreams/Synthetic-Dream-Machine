@@ -181,7 +181,7 @@ function main(): void {
 
   if (!existsSync(coreJsPath)) {
     throw new Error(
-      `[genesis] TW5 core not found: ${coreJsPath}\n  → run pnpm --filter @lararium/tw5 build:vendor first`,
+      `[genesis] TW5 core not found: ${coreJsPath}\n  → the engine epoch moves by an ACT: run pnpm --filter @lararium/tw5 build:tw5-vendor, then bake again`,
     );
   }
 

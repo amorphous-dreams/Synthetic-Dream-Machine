@@ -15,13 +15,17 @@
  * Set `LARES_E2E_TMP` to place the wiki folder; the OS temp dir stands otherwise.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync, copyFileSync, rmSync } from "node:fs";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync, copyFileSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { memePathOf } from "../src/place-meme.js";
+import { projectSubmission } from "../src/meme-markdown.js";
+import { memeticWikitextDeserializer } from "../src/deserializer.js";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { digestsEqual, reprDigestOf } from "@lararium/mesh/agile-digest";
 
 const PKG = fileURLToPath(new URL("..", import.meta.url));
 const REPO = path.resolve(PKG, "../..");
@@ -140,6 +144,36 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(await titles()).toEqual([URI, `${URI}#/a`, `${URI}#/z`]);
   });
 
+  test("★ `If-None-Match: *` on a standing uri → 412 and nothing moves; on a fresh uri → 200 ingest ★", async () => {
+    const before = await titles();
+    const standing = (await http("GET", memePath())).headers.get("etag")!;
+    const r = await http("PUT", memePath(), { body: meme(["a", "q"]), headers: { "if-none-match": "*" } });
+    expect(r.status, r.body).toBe(412);
+    expect(JSON.parse(r.body).decision).toBe("conflict");
+    expect(await titles()).toEqual(before);
+    expect((await http("GET", memePath())).headers.get("etag")).toBe(standing);
+    // A uri nothing stands under founds.
+    const fresh = memePathOf("lar:///t/founded", { kind: "bags", name: "default" })!;
+    const born = await http("PUT", fresh, {
+      body: meme(["a"]).replaceAll(URI, "lar:///t/founded").replace('uri-path = "t/x"', 'uri-path = "t/founded"'),
+      headers: { "if-none-match": "*" },
+    });
+    expect(born.status, born.body).toBe(200);
+    expect(JSON.parse(born.body).decision).toBe("ingest");
+  });
+
+  test("★ both skins carry `Repr-Digest` (RFC 9530) beside the ETag — one digest, two spellings ★", async () => {
+    const get = await http("GET", memePath());
+    const etag = get.headers.get("etag")!.replace(/^"|"$/g, "");
+    const repr = get.headers.get("repr-digest")!;
+    expect(repr).toMatch(/^sha-256=:[A-Za-z0-9+/]+=*:$/);
+    expect(repr).toBe(reprDigestOf(etag));
+    expect(digestsEqual(repr, etag)).toBe(true);
+    const put = await http("PUT", memePath(), { body: get.body, headers: { "if-match": get.headers.get("etag")! } });
+    expect(put.status, put.body).toBe(200);
+    expect(put.headers.get("repr-digest")).toBe(repr);
+  });
+
   test("PUT a meme with content stranded past ETX → 422, records untouched", async () => {
     const before = await titles();
     const stranded = meme(["a"]).replace("<<^ code=\"&#x0003;\">>\n", "<<^ code=\"&#x0003;\">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n");
@@ -186,4 +220,50 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(routed.status, routed.body).toBe(200);
     expect((await titles()).filter((t) => t.startsWith(title))).toEqual([title, `${title}#/a`, `${title}#/b`]);
   });
+
+  test("★ THE RENDER DOOR: `tiddlywiki --render` on a stock server writes the meme through the house templates ★", async () => {
+    // The records the live server holds, text included, land in a fresh wiki folder as native JSON —
+    // the door a stock `--render` reads. (A `.mem` file in a wiki folder does not split at boot: the
+    // plugin's deserializer registers after the folder loads; the PUT route is the door that splits.)
+    const group = (await titles()).filter((t) => t.startsWith(URI));
+    expect(group).toEqual([URI, `${URI}#/a`, `${URI}#/z`]);
+    // The TiddlyWeb shape nests the non-standard fields under `fields`; flatten it back to a record.
+    const records = await Promise.all(group.map(async (title) => {
+      const { revision: _rev, bag: _bag, fields, ...known } = JSON.parse((await http("GET", `/recipes/default/tiddlers/${encodeURIComponent(title)}`)).body) as Record<string, string> & { fields?: Record<string, string> };
+      return { ...known, ...(fields ?? {}) };
+    }));
+    const renderWiki = path.join(root, "render");
+    mkdirSync(path.join(renderWiki, "tiddlers"), { recursive: true });
+    writeFileSync(path.join(renderWiki, "tiddlywiki.info"), JSON.stringify({ description: "render door", plugins: [], themes: [], build: {} }));
+    copyFileSync(PLUGIN_TID, path.join(renderWiki, "tiddlers/lares-memetic-wikitext.tid"));
+    writeFileSync(path.join(renderWiki, "tiddlers/records.json"), JSON.stringify(records));
+
+    const T = "lar:///ha.ka.ba/lararium/templates/meme";
+    const ran = spawnSync(process.execPath, [
+      TW5_JS, renderWiki, "--output", path.join(renderWiki, "out"),
+      "--render", `[[${URI}]]`, "x.mem", "text/plain", `${T}/mem`,
+      "--render", `[[${URI}]]`, "x.md", "text/plain", `${T}/md`,
+      "--render", `[[${URI}]]`, "x.md.meta", "text/plain", `${T}/md.meta`,
+      "--render", "lar:///ha.ka.ba/lararium/exporters/memetic-wikitext", "export.mem", "text/plain", "", "exportFilter", `[[${URI}#/a]]`,
+      "--render", `[[${URI}]]`, "x.html", "text/plain", "$:/core/templates/static.tiddler.html",
+    ], { encoding: "utf8" });
+    expect(ran.status, ran.stderr).toBe(0);
+    const out = (name: string): string => readFileSync(path.join(renderWiki, "out", name), "utf8");
+
+    // mem: the recomposed carrier the GET route serves, byte for byte; it deserializes back to the records.
+    const served = (await http("GET", memePath())).body;
+    expect(out("x.mem")).toBe(served);
+    const back = memeticWikitextDeserializer.call({ wiki: {} } as never, out("x.mem"), { title: URI }, CARRIER_TYPE) as Array<{ title: string }>;
+    expect(back.map((t) => t.title).filter((t) => !t.includes("#/$")).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/z`]);
+    // The Export dropdown's template, rendered the way the plugin build packs itself: the same bytes.
+    expect(out("export.mem")).toBe(served);
+    // md: the submission pair the CLI emits.
+    const pair = projectSubmission(served, { uri: URI });
+    expect(out("x.md")).toBe(pair.markdown);
+    expect(out("x.md.meta")).toBe(pair.meta);
+    expect(out("x.md")).toContain("# a");
+    // html: TiddlyWiki's own static render of the root.
+    expect(out("x.html")).toMatch(/^<!doctype html>/);
+    expect(out("x.html")).toContain("tc-story-river");
+  }, 60_000);
 });

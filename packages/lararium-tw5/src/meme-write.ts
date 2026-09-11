@@ -13,7 +13,7 @@
  *   No per-node markdown-meme template renders each record to its own file;
  *   the HTML templates serve the live story river, and the projection-snapshot
  *   mode gets built fresh when a consumer exists. The carrier definition form
- *   recomposes in the shore (expandMemeRefs, also on $tw.lares), where
+ *   recomposes in the shore (expandMemeRefs, on the face as `$tw.lares.meme.recompose`), where
  *   the round-trip harness proves parse∘render ≡ records. Wikifying the
  *   text field cannot carry byte-fidelity: `\rules` does not propagate
  *   through `<$transclude>` (memetic-parser.ts, Jermolene #6712), and the
@@ -26,8 +26,8 @@
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/meme-write
  */
 
-import { expandMemeRefs } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
+import { recomposeMeme } from "./meme-project.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
@@ -45,10 +45,8 @@ import { CARRIER_TYPE as MEMETIC_TYPE, isCarrierType } from "@lararium/mesh/carr
  */
 export function exportMemeText(tw5: TW5Engine, memeUri: string): string {
   const wiki = tw5.$tw.wiki;
-  const reader = (title: string): TiddlerFields | undefined =>
-    (wiki.getTiddler?.(title) as { fields?: TiddlerFields } | undefined)?.fields;
   try {
-    const carrier = expandMemeRefs(reader, memeUri);
+    const carrier = recomposeMeme(wiki, memeUri);
     if (carrier !== null) return carrier;
   } catch { /* fall through to raw text */ }
   return wiki.getTiddlerText?.(memeUri, "") ?? "";

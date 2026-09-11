@@ -40,6 +40,7 @@ import { sealKeySetHash } from "./wax-stamp.js";
 import type { DelegationEdge } from "./delegation-edge.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
 import { hexToBytes } from "./crypto.js";
+import { didFromVerifyingKey } from "./lar-did.js";
 import { announceToWhoFace } from "./who-face.js";
 import type { LarDoc } from "./base-doc.js";
 import type { OwnPublicHandleView } from "./persona-petname.js";
@@ -136,7 +137,7 @@ export async function mintPersonaGlamour(opts: {
   // handle key + the (persona-owner) genesis digest + the recovery pre-commit, all stable inputs, so a
   // re-mint reproduces the SAME identifier — the card holds its name across lease renewals. A k-of-n
   // HandleGlamour supplies an owner SET here instead; that quorum founding rides its own path.
-  const handleKeyDid    = `0x${veiled.verifyingKey}`;
+  const handleKeyDid    = didFromVerifyingKey(veiled.verifyingKey);
   const recoverySetHash = sealKeySetHash([handleKeyDid], 1);
   const chain: HandleKelEvent[] = [mintHandleInception(handleKeyDid, opts.ownerPersonaKelPrefix, recoverySetHash)];
   const nym = chain[0]!.prefix;

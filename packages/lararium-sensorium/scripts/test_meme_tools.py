@@ -1,10 +1,12 @@
-"""Witness — the `meme_put` / `meme_get` MCP tools: the MCP skin of the one placement function.
+"""Witness — the `meme_put` / `meme_get` / `meme_project` MCP tools: the MCP skin of the meme family's
+DAEMON-seated verbs.
 
-Each tool rides `lares_uds.call("meme-put" | "meme-get", args)` to the @daemon, never a store. The
-witness spawns a FAKE daemon on a temp unix socket (it records every request line and answers a canned
-receipt), so each assertion reads the EXACT `{verb, args}` the tool put on the wire — the contract the
-daemon side builds to: at most one of `recipe`/`bag`; neither → the daemon reads `recipe: "default"`
-(the host's ANCHOR); `base` carries the canonical hash the writer read (absent → adopt).
+Each tool rides `lares_uds.call("meme-put" | "meme-get" | "meme-project", args)` to the @daemon, never a
+store. The witness spawns a FAKE daemon on a temp unix socket (it records every request line and answers a
+canned receipt), so each assertion reads the EXACT `{verb, args}` the tool put on the wire — the contract
+the daemon side builds to: at most one of `recipe`/`bag`; neither → the daemon reads `recipe: "default"`
+(the host's ANCHOR); `base` carries the canonical hash the writer read (absent → adopt); `to` names the
+projection target the island renders.
 
     ~/.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_meme_tools.py -q
 """
@@ -30,6 +32,7 @@ _PUT_OUTPUT = {"uri": _URI, "decision": "ingest", "grade": "ok", "landed": [_URI
 _GET_MEME = {"text": "the body", "canonicalHash": "sha256-get"}
 # The daemon's outcome envelope — a reactor never answers bare null, so the meme rides under `meme`.
 _GET_OUTPUT = {"uri": "lar:///ha.ka.ba/lares/api/pono/meme", "meme": _GET_MEME}
+_PROJECT_OUTPUT = {"uri": _URI, "to": "html", "text": "<p>the body</p>", "contentType": "text/html"}
 
 
 class _FakeDaemon:
@@ -100,12 +103,19 @@ def _get(**kw):
     return _tools()["meme_get"](**kw)
 
 
+def _project(**kw):
+    return _tools()["meme_project"](**kw)
+
+
 def test_meme_tools_register_and_seat_hotl(daemon):
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(MEME_VERBS) == {"meme_put", "meme_get"} <= names
+    assert set(MEME_VERBS) == {"meme_put", "meme_get", "meme_project"} <= names
     for v in MEME_VERBS:
         assert v in VERB_SEATS and seat_of(v) == "HOTL"
+    # The LOCAL seats (`meme normalize` · `meme check`) hold no MCP tool: the MCP mirrors the CLI's
+    # daemon-seated verbs only. The retired `project_md` spelling answers nowhere.
+    assert names.isdisjoint({"meme_normalize", "meme_check", "project_md"})
 
 
 def test_meme_put_default_recipe_sends_no_container(daemon):
@@ -176,3 +186,25 @@ def test_meme_get_refuses_recipe_and_bag_together(daemon):
     with pytest.raises(ValueError, match="at most one of"):
         _get(uri=_URI, recipe="sdm", bag="lares")
     assert daemon.lines == []
+
+
+def test_meme_project_wire_uri_to_and_container(daemon):
+    # `meme_project` rides `meme-project` with {uri, to} + the container law — neither → no container
+    # key (the daemon reads the anchor); `recipe`/`bag` ride through as bare slugs.
+    daemon.output = _PROJECT_OUTPUT
+    out = _project(uri=_URI, to="html")
+    assert daemon.wire() == {"verb": "meme-project", "args": {"uri": _URI, "to": "html"}}
+    assert out == _PROJECT_OUTPUT
+    _project(uri=_URI, to="tid", recipe="sdm")
+    assert daemon.wire() == {"verb": "meme-project", "args": {"recipe": "sdm", "uri": _URI, "to": "tid"}}
+    _project(uri=_URI, to="json", bag="lares")
+    assert daemon.wire() == {"verb": "meme-project", "args": {"bag": "lares", "uri": _URI, "to": "json"}}
+
+
+def test_meme_project_refuses_a_target_off_the_list(daemon):
+    daemon.output = _PROJECT_OUTPUT
+    with pytest.raises(ValueError, match="`to`"):
+        _project(uri=_URI, to="pdf")
+    with pytest.raises(ValueError, match="at most one of"):
+        _project(uri=_URI, to="html", recipe="sdm", bag="lares")
+    assert daemon.lines == []                                       # nothing reached the wire

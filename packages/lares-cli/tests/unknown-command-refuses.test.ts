@@ -15,10 +15,14 @@
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { dispatch } from "../src/bin/lares.js";
 
-/** Every spelling the vessel collapse retired, plus a name that never existed. */
+/**
+ * Every spelling the vessel collapse retired, the `carrier` door the meme collapse retired (its verbs
+ * answer at `lares meme` and `lares act REPACK` now), plus a name that never existed.
+ */
 const RETIRED = [
   "init", "wake", "serve", "dev", "reset", "fresh", "reconcile",
   "refresh", "rebuild", "build-genesis", "regenesis", "status", "node",
+  "carrier",
 ] as const;
 const CONTROL = "zzz-not-a-verb";
 
@@ -41,6 +45,13 @@ describe("the unknown-command refusal", () => {
     quiet();
     for (const name of RETIRED) {
       expect(await dispatch([name, "--help"]), `${name} --help answered`).toBe(2);
+    }
+  });
+
+  test("★ the carrier door's three verbs refuse under their old spelling ★", async () => {
+    quiet();
+    for (const verb of ["normalize", "project-md", "repack"]) {
+      expect(await dispatch(["carrier", verb, "x.mem"]), `carrier ${verb} answered`).toBe(2);
     }
   });
 

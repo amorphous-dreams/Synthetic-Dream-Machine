@@ -1,23 +1,26 @@
 import { describe, test, expect } from "vitest";
-import { recipeHostFacets, expandRecipe, wikiSlotUri, wikiBagUri, wikiUri } from "@lararium/mesh";
+import { recipeHostFacets, expandRecipe, wikiSlotUri, wikiBagUri, wikiUri, didFromVerifyingKey } from "@lararium/mesh";
+
+// The vessel DID carries one spelling — "0x" + the bare verifying-key hex — on every host.
+const DID = didFromVerifyingKey("ab".repeat(32));
 
 // The isomorphic core: one recipe/slug, one set of slot minters, projected two
 // ways — recipeHostFacets (VM-free host) and expandRecipe (island cascade) — must
 // name identical bags. The bespoke planActiveWikiSlot/ActiveWikiLayerSlot are gone.
 describe("wiki host facets ⋈ recipe expansion", () => {
   test("recipeHostFacets splits IDENTITY (wikis/) from CANON (bags/)", () => {
-    expect(recipeHostFacets("test-wiki", "did:key:test")).toEqual({
+    expect(recipeHostFacets("test-wiki", DID)).toEqual({
       wikiSlug:         "test-wiki",
       wikiKey:          "lar:///ha.ka.ba/wikis/test-wiki",
       wikiBagId:        "lar:///ha.ka.ba/bags/test-wiki",
       draftBagId:       "lar:///ha.ka.ba/wikis/test-wiki/draft",
-      draftOracleTitle: "lar:///ha.ka.ba/wikis/test-wiki/drafts/did%3Akey%3Atest",
+      draftOracleTitle: `lar:///ha.ka.ba/wikis/test-wiki/drafts/${DID}`,
     });
   });
 
   test("host facets name the SAME bags the island cascade lays", () => {
     const slug = "test-wiki";
-    const facets = recipeHostFacets(slug, "did:key:test");
+    const facets = recipeHostFacets(slug, DID);
     const slots = expandRecipe({ wikiSlug: slug });
     // The canon the host resolves == the canon slot in the island stack.
     expect(slots).toContain(facets.wikiBagId);

@@ -67,6 +67,32 @@ seated, the operator-mint oracle on the invariant plane, carrier-borne `LOAD`
 (boot meme → 17 records), carrier-less refusal, `wiki init`/`add-bag` registry
 composition, and one live-safe `status` read.
 
+**Staging beside a live hearth.** `LAR_STAGE_DIR=<dir>` sites every staged root under a directory of
+the run's own (else `os.tmpdir()`); the rendezvous still derives per root under `/tmp/lares-<uid>/`, so
+two roots never meet. `openStaged({ tag, root, port, found, daemonEnv })` stands ONE vessel with a
+rite of the suite's choosing — a joiner performs admit-then-found in `found`, and hands the daemon its
+dial in `daemonEnv` — and `cliFor(env)` opens the CLI against a root before it stands.
+
+### The house register — what each witness proves, and what it skips on
+
+| Witness | Proves | Skips on |
+|---|---|---|
+| `e2e/meme-live-contact.test.ts` | `lares meme` over ONE vessel's rendezvous, every seat: `get` absent → `not-found`; `put` framed → `ingest` with root + `#/a` landed; `get` → the canonical carrier whose sha256 IS the `base`; `put --base` fresh → `ingest` + a tombstone; `put --base` stale → `conflict`, nothing moved (CONTROL); `put --bag lares` → refuses, a placement never shadows up (CONTROL); `project --to md` → the pair beside `--out`; `project --to mem` byte-equal to `get`. Every call names `--recipe lares`. | no built CLI / node dist; `LAR_TARGET=live`. Two RED CONTRACTS (`test.fails`) hold the anchor seat: no container resolves to `lar:///ha.ka.ba/wikis/daemon/temp`, which the cap gate holds no registration for, so anchor calls (and `--to html`, anchor-only) refuse `cap-denied`. They flip loud when the temp layer registers. |
+| `e2e/meme-two-vessel-bag.test.ts` | Two vessels on their own roots, ports and keys: A founds; B mints its key first; A `device-admit`s it naming A's dial; B `vessel found --admit`; A puts a meme whose meta carries `bag = "backpack: rope, lantern"`; A's `get` hands the line back byte-whole with no `$origin-bag`; `wiki which` shows the recipe seat landed it in the wiki's per-DID draft bag. | no built CLI / node dist; `LAR_TARGET=live`. The sync vectors (⑦: B `get`s the line whole; B edits on B's base and A gets it back) SKIP LOUDLY on B's own boot line while `vessel found --admit` mints and never persists the joiner's ContactCard — the dial-out reports "leaf identity unavailable", the founder-synced `@persona` never resolves, the boot exits 1. Past that gate a second one stands, measured: `--recipe` lands in a per-DID draft, `--bag lares` refuses, the daemon bag is per vessel — no `meme put` seat writes a bag BOTH mount; `act LOAD --to lar:///ha.ka.ba/bags/lares` is the one door that does. |
+
+Run either alone: `cd tests && LAR_STAGE_DIR=<scratch> npx vitest run e2e/meme-live-contact.test.ts`.
+
+### The pre-commit gate over carriers
+
+`tools/meme-check-staged.sh` runs `lares meme check` over the `.mem` blobs STAGED in a commit (the
+index, never the working tree — the scratch tree mirrors their paths so every line names the real
+file) and refuses the commit on a stale block check, naming the file and the re-stamp. Fail closed: no
+built CLI refuses too, naming the build; `--no-verify` stays the override. `.githooks/pre-commit`
+execs it; enable once per clone with `git config core.hooksPath .githooks`. Its own witness,
+`tools/meme-check-hook-witness.sh`, drives it in a throwaway repo — stale refuses by name, canonical
+passes, index-vs-tree reads the index, no `.mem` staged passes without the binary, a carrier staged
+with no binary refuses — and enrols in `witness-all` by its name.
+
 ## The shape (held from the pre-decision)
 
 - **Exercise the live model, not fixtures.** Drive the residency **ACTION verbs**

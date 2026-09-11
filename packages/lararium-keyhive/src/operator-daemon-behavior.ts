@@ -19,7 +19,7 @@ import {
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
-  makeMemePutReactor, makeMemeGetReactor, memeVerbOptions, VERB_SURFACE,
+  makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWardAlertReactor,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor,
   makeSwitcherStateReactor,
@@ -29,7 +29,7 @@ import {
   makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { DAEMON_BAG_ID, personaBagIdFor, personaSiblingBagIds, leaseEpochPrefix, effectiveLeaseEpoch } from "@lararium/mesh";
+import { DAEMON_BAG_ID, personaBagIdFor, personaSiblingBagIds, leaseEpochPrefix, effectiveLeaseEpoch, didFromVerifyingKey } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
 
@@ -178,9 +178,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // meme-put / meme-get — the daemon skins of the one placement function (`placeMeme`): the anchor
       // rides the daemon's own $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
-      const memeOpts = memeVerbOptions(ctx, async () => "0x" + daemonAuth.vesselVerifyingKey);
+      const memeOpts = memeVerbOptions(ctx, async () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey));
       registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-project", makeMemeProjectReactor(memeOpts), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher
@@ -433,7 +434,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // Every other daemon verb reaches USER registry data in the catalog plane (wiki oracles,
       // recipes) via the accessor over ctx.repo/ctx.catalogUrl — access≠load. The daemon
       // recipe NEVER loads the catalog registry as tiddlers. All ride the verify-then-delegate gate.
-      // vesselDid reads "0x"+vesselVerifyingKey wherever a draft key derives, so those keys never drift —
+      // vesselDid mints through `didFromVerifyingKey` wherever a draft key derives, so those keys never drift —
       // the PLACE is what asks, never the persona root.
       if (ctx.catalogUrl) {
         const catalog = makeCatalogAccessor(ctx.repo, ctx.catalogUrl);
@@ -445,7 +446,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           repo:        ctx.repo,
           catalog,
           rootDir:     "",
-          vesselDid: async () => "0x" + daemonAuth.vesselVerifyingKey,
+          vesselDid: async () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
           registerBag: registerBagCap,
         };
         registry.register("init-wiki",   makeInitWikiReactor(wikiMintOpts));

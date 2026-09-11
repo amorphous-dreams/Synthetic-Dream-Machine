@@ -213,7 +213,7 @@ converts its last italic (the Law-of-5s Canon quote).
 rendered to markdown spoke three grammars at once — markdown headings over
 memetic-wikitext sigils over a TiddlyWiki procedure layer — and served no
 reader. The carrier holds the seat alone and every harness adapter points at
-it. The submission projection (`lares carrier project-md`) is a different door
+it. The submission projection (`lares meme project --to md`) is a different door
 and stands: it renders a SPEC carrier for a standards reviewer taught no
 grammar, which is a reader a seed never had.
 

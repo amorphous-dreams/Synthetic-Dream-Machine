@@ -35,7 +35,6 @@ import type {
 import {
   makeDurableMailbox,
   type DurableMailbox,
-  OpenIdentitySlot,
   emptyLarDoc, mutableLarRecord, tiddlerText,
   ORACLE_DOC_URI, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
@@ -77,7 +76,7 @@ import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
-import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
+import { vesselDyads, DYAD_VEIL_TAG_TIDDLER, didFromVerifyingKey } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -908,8 +907,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const sel = selectActiveWikiSlug(wikiId, (await readDaemonDoc()).doc()?.tiddlers?.[ACTIVE_WIKI_URI] ?? null);
     activeWikiSource = sel.source;
     slotActiveWikiId = sel.slug;
-    const identity = new OpenIdentitySlot(`${hostId}:${sel.slug}`);
-    const facets = recipeHostFacets(slugFromUri(sel.slug), identity.did);
+    // The draft doc keys under the vessel DID — the one spelling every writer mints from the
+    // verifying key — so the mount and the daemon's draft writers walk one key.
+    const facets = recipeHostFacets(slugFromUri(sel.slug), didFromVerifyingKey(vesselIdentity.verifyingKey));
     return {
       activeWikiId:     sel.slug,
       wikiSlug:         facets.wikiSlug,
@@ -1443,15 +1443,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // where working + canon both live — the island owns its composition; the
     // daemon commands, never reaches the per-fingerprint working binding). The
     // inner verb (MOVE/LOAD/…) routes to the island's own action reactors.
-    // project-md: the submission projection as a first-class wire verb — routes to the island's
-    // PROJECT-MD QUERY reactor (read-cap, no mutation; returns the markdown + meta pair bytes).
-    // Same mouth as `lares carrier project-md` (files) and the wiki UI gesture: meme-markdown.
-    registry.register("project-md", async (args, ctx) => {
-      await wikiActivation.ensureActive(slotActiveWikiId);
-      return vmManager.placeWikiVerb(slotActiveWikiId, {
-        verb: "PROJECT-MD", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy,
-      });
-    });
     registry.register("wiki-act", async (args, ctx) => {
       await wikiActivation.ensureActive(slotActiveWikiId);
       return vmManager.placeWikiVerb(slotActiveWikiId, {

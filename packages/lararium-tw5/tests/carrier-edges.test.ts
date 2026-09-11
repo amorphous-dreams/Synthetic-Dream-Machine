@@ -65,7 +65,7 @@ describe("carrier-edges — every address a carrier points at", () => {
    * THE CORPUS, AS A CEILING RATHER THAN A FLOOR. Some edges here name no carrier — a corpus writes
    * toward addresses before it stands them, and an aspirational pointer is not a fault. The number
    * below is the count that stands today, held as a ceiling so a rename that breaks edges raises it.
-   * `lares carrier normalize --edges` takes the reading either side of a move.
+   * `lares meme check --edges` takes the reading either side of a move.
    *
    * ''Lower this whenever it can go lower.'' A ceiling left slack absorbs the next break in silence.
    *
@@ -96,6 +96,6 @@ describe("carrier-edges — every address a carrier points at", () => {
     const dangling = texts.flatMap(readCarrierEdges)
       .filter((e) => e.address !== null && !held.has(e.address));
     expect(files.length).toBeGreaterThan(500);
-    expect(dangling.length, "an edge broke — run `lares carrier normalize --edges` to name it").toBeLessThanOrEqual(198);
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(198);
   });
 });

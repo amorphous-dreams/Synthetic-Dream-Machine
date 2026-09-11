@@ -9,6 +9,7 @@ import * as put from "../src/routes/put-meme.js";
 import * as get from "../src/routes/get-meme.js";
 import { memePathOf } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
+import { digestsEqual, reprDigestOf } from "@lararium/mesh/agile-digest";
 
 const URI = "lar:///t/x";
 const meme = (slots: readonly string[]): string =>
@@ -33,7 +34,7 @@ interface Reply { status: number; headers: Record<string, string>; body: string 
 function fire(
   route: { handler: (req: never, res: never, state: never) => void },
   w: ReturnType<typeof wiki>,
-  opts: { uri?: string; data?: string; ifMatch?: string },
+  opts: { uri?: string; data?: string; ifMatch?: string; ifNoneMatch?: string },
 ): Promise<Reply> {
   return new Promise((resolve) => {
     const reply: Reply = { status: 0, headers: {}, body: "" };
@@ -41,7 +42,10 @@ function fire(
       writeHead: (status: number, headers: Record<string, string>) => { reply.status = status; reply.headers = headers; },
       end: (body?: string) => { reply.body = body ?? ""; resolve(reply); },
     };
-    const request = { headers: opts.ifMatch ? { "if-match": opts.ifMatch } : {} };
+    const request = { headers: {
+      ...(opts.ifMatch ? { "if-match": opts.ifMatch } : {}),
+      ...(opts.ifNoneMatch ? { "if-none-match": opts.ifNoneMatch } : {}),
+    } };
     const state = { wiki: w, params: ["bags", "default", "lar", opts.uri ?? "t/x"], data: opts.data ?? "" };
     route.handler(request as never, response as never, state as never);
   });
@@ -103,6 +107,33 @@ describe("★ PUT /bags/:bag/memes/:scheme/:path ★", () => {
 
   test("GET on a uri the wiki never held answers 404", async () => {
     expect((await fire(get, wiki(), {})).status).toBe(404);
+  });
+
+  test("★ `If-None-Match: *` — create-only: a fresh URI lands, a standing record answers 412 and nothing moves ★", async () => {
+    const w = wiki();
+    const born = await fire(put, w, { data: meme(["a"]), ifNoneMatch: "*" });
+    expect(born.status).toBe(200);
+    expect(JSON.parse(born.body).decision).toBe("ingest");
+    const before = [...w.store.entries()].map(([t, f]) => [t, f["text"]]);
+    const refused = await fire(put, w, { data: meme(["a", "b"]), ifNoneMatch: "*" });
+    expect(refused.status).toBe(412);
+    expect(JSON.parse(refused.body)).toMatchObject({ uri: URI, decision: "conflict" });
+    expect([...w.store.entries()].map(([t, f]) => [t, f["text"]])).toEqual(before);
+    // CONTROL: the same text with no precondition lands.
+    expect((await fire(put, w, { data: meme(["a", "b"]) })).status).toBe(200);
+    expect(w.store.has(`${URI}#/b`)).toBe(true);
+  });
+
+  test("★ both skins emit `Repr-Digest` (RFC 9530) beside the `ETag`, one digest in two spellings ★", async () => {
+    const w = wiki();
+    const written = await fire(put, w, { data: meme(["a"]) });
+    const etag = written.headers["ETag"]!.replace(/^"|"$/g, "");
+    expect(written.headers["Repr-Digest"]).toMatch(/^sha-256=:[A-Za-z0-9+/]+=*:$/);
+    expect(written.headers["Repr-Digest"]).toBe(reprDigestOf(etag));
+    expect(digestsEqual(written.headers["Repr-Digest"]!, etag)).toBe(true);
+    const read = await fire(get, w, {});
+    expect(read.headers["Repr-Digest"]).toBe(written.headers["Repr-Digest"]);
+    expect(read.headers["ETag"]).toBe(written.headers["ETag"]);
   });
 });
 

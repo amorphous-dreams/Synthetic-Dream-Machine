@@ -54,7 +54,8 @@ import { sha256HexSync, canonicalJson } from "./crypto.js";
 import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
-import type { DeviceDelegationTiddler, LarDid } from "./device-delegation.js";
+import type { DeviceDelegationTiddler } from "./device-delegation.js";
+import type { LarDid } from "./lar-did.js";
 
 /** The domain a dyad id hashes under — so an id never collides with another content-address in the tree. */
 export { DYAD_ID_DOMAIN } from "./domains.js";

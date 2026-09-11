@@ -49,8 +49,6 @@ import type { TW5Instance, TW5Wiki } from "../types/tiddlywiki.js";
 // by inlining. Reach for the module that holds what you need.
 import type { LarTiddlerChange, TW5TiddlerInputFieldsWithTitle } from "@lararium/mesh/tiddler-store";
 import type { LaresTw5Extension } from "../types/lares-globals.js";
-import { expandMemeRefs } from "../deserializer.js";
-import type { TiddlerFields } from "../deserializer.js";
 
 // ---------------------------------------------------------------------------
 // TW5 startup lifecycle
@@ -217,13 +215,5 @@ export function startup(): void {
   lares["naluPending"]     = naluPending;
   lares["beginHydration"]  = beginHydration;
   lares["whenSeedDrained"] = whenSeedDrained;
-  // The recompose inverse, first-class on the VM surface (island law: if it
-  // CAN happen in the TW5 Wiki VM causal island, it MUST happen there).
-  // Reads the VM's own wiki; one carrier whole, children spliced full-depth.
-  lares["expandMemeRefs"] = (memeUri: string): string | null =>
-    expandMemeRefs(
-      (title: string) => (wiki.getTiddler?.(title) as { fields?: TiddlerFields } | undefined)?.fields,
-      memeUri,
-    );
   ($tw as { lares?: Record<string, unknown> }).lares = lares;
 }

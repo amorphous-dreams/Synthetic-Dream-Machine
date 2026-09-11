@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# pre-commit — the staged `.mem` carriers must carry a block check that covers their body.
+# Enable once per clone:  git config core.hooksPath .githooks
+exec "$(git rev-parse --show-toplevel)/tools/meme-check-staged.sh"

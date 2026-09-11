@@ -203,8 +203,12 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
 export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
-export { makeMemePutReactor, makeMemeGetReactor, memeVerbOptions } from "./meme-verbs.js";
+export { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
+// The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
+export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
+export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
+export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
 export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
 export type {
@@ -279,6 +283,6 @@ export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js
 export type { CarrierShape, CarrierKind, CarrierMarks } from "./carrier-shape.js";
 export { readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
-// The check a carrier carries, and the span it covers. `carrier normalize` re-stamps with these, so a
+// The check a carrier carries, and the span it covers. `meme normalize` re-stamps with these, so a
 // carrier whose framing it rewrites leaves the door holding a check that matches the body it follows.
 export { bccOf, verifyBcc, checkSpan } from "./carrier-check.js";

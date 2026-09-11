@@ -28,6 +28,7 @@
 import { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { hex, hexToBytes } from "./crypto.js";
+import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type LarDid } from "./lar-did.js";
 
 export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
 /** Clock drift tolerance for the freshness window (matches the V3 auth-proof posture / UCAN ±60s). */
@@ -43,15 +44,11 @@ export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
  */
 const DELEGATION_CLOCK_DRIFT_MS = 60_000;
 
-const DID_RE  = /^0x[0-9a-f]{64}$/;       // "0x" + raw 32-byte Ed25519 verifying-key hex, lowercase
 const VK_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
 const SIG_RE  = /^[0-9a-f]{128}$/;         // 64-byte Ed25519 signature hex, lowercase
 const ISO_RE  = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const TRUE_NAME_RE = /^[A-Za-z0-9._:/@-]*$/;   // CID / lar:-name safe; no `|`, no whitespace; "" allowed (place-agnostic)
 const EPOCH_RE = /^\d{1,15}$/;             // decimal lease epoch; 1-15 digits, bounded < Number.MAX_SAFE_INTEGER
-
-/** "0x" + raw 32-byte Ed25519 verifying-key hex (lowercase). */
-export type LarDid = string;
 
 export interface DeviceDelegationTiddler {
   readonly kind:                "device-delegation";
@@ -76,9 +73,6 @@ export interface DeviceDelegationTiddler {
   readonly signature:           string;
 }
 
-/** The one DID spelling: 0x + bare 32-byte hex. Exported so a mint never hand-builds the prefix. */
-export const didFromVerifyingKey = (vkHex: string): LarDid => `0x${vkHex}`;
-const verifyingKeyFromDid = (did: string): string => (did.startsWith("0x") ? did.slice(2) : did);
 
 type ProofFields = Pick<
   DeviceDelegationTiddler,

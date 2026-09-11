@@ -34,6 +34,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { Heads } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
+import { requireLarDid, type LarDid } from "./lar-did.js";
 
 /** A slot URI in the lar:///ha.ka.ba/{bags,wikis}/@<name> namespace. */
 export type SlotUri = string;
@@ -81,11 +82,13 @@ export function wikiDraftBagUri(slug: string): SlotUri {
   return wikiSlotUri(slug, "draft");
 }
 
-/** The catalog registry key for a per-DID draft doc (`wikis/{slug}/drafts/{did}`) — the
+/** The catalog registry key for a per-vessel draft doc (`wikis/{slug}/drafts/{did}`) — the
  *  per-operator draft-doc pointer, above the fold. ONE source for the host reader
- *  (recipeHostFacets) and the mint/draft writers, so the round-trip never drifts. */
-export function wikiDraftDocKey(slug: string, identityDid: string): SlotUri {
-  return `${wikiUri(slug)}/drafts/${encodeURIComponent(identityDid)}`;
+ *  (recipeHostFacets) and the mint/draft writers, so the round-trip never drifts. The DID carries
+ *  the one spelling (`didFromVerifyingKey`); any other refuses loud, so no host keys a draft under a
+ *  name the others cannot find. */
+export function wikiDraftDocKey(slug: string, vesselDid: LarDid): SlotUri {
+  return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(vesselDid, "wikiDraftDocKey"))}`;
 }
 
 /**
@@ -107,14 +110,14 @@ export interface WikiHostFacets {
   readonly draftOracleTitle: string;
 }
 
-/** Project a wiki's host-side facets from its slug + the operator's DID. */
-export function recipeHostFacets(wikiSlug: string, identityDid: string): WikiHostFacets {
+/** Project a wiki's host-side facets from its slug + the vessel's DID (the one spelling). */
+export function recipeHostFacets(wikiSlug: string, vesselDid: LarDid): WikiHostFacets {
   return {
     wikiSlug,
     wikiKey:          wikiUri(wikiSlug),
     wikiBagId:        wikiBagUri(wikiSlug),
     draftBagId:       wikiSlotUri(wikiSlug, "draft"),
-    draftOracleTitle: wikiDraftDocKey(wikiSlug, identityDid),
+    draftOracleTitle: wikiDraftDocKey(wikiSlug, vesselDid),
   };
 }
 

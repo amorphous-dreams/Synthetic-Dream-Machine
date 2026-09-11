@@ -45,22 +45,23 @@ PLANE_VERBS = ("plane_record",)
 # uniformly low-trust · reversible · LOCAL residency ops (one conservative VERB_SEATS seat covers them).
 WIKI_VERBS = ("wiki",)
 
-# The CARRIER namespace — a carrier is a FILE a meme travels as, with no island beneath it, so these
-# verbs answer at `lares carrier` rather than at any sensorium door. `project_md` renders a spec carrier
-# to its submission pair (<name>.md + <name>.md.meta), deterministic and clock-free, which is what lets a
-# witness prove a pair current by re-projecting it. A PROPER CLI mirror — the host `carrier` is a real
-# top-level command — so it rides `mirrored`/`cli_forms`, never an ahead-of-CLI allowance.
-CARRIER_VERBS = ("project_md",)
+# The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs: `meme_put` lands a meme's
+# text at a `lar:` uri through the island's Confluence gate (the ONE placement function); `meme_get` reads
+# the text + its canonical hash back; `meme_project` renders the meme the island holds to a target
+# (`mem` · `md` · `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb.
+# Each mirrors `lares meme put|get|project` (the host `meme` is a real top-level command, so `mirrored`/
+# `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
+# over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
+# the fixture names that allowance as `local_seat`. THE CONTAINER LAW: at most one of `recipe`/`bag` names
+# where the meme lands — neither → the daemon reads `recipe: "default"`, the host's ANCHOR (@daemon's own
+# wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a
+# residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the
+# `@` spelling stands retired. All three ride `lares_uds.call` to the @daemon — never a store (the
+# single-writer law).
+MEME_VERBS = ("meme_put", "meme_get", "meme_project")
 
-# The MEME namespace — the MCP skin of the ONE placement function: `meme_put` lands a meme's text at
-# a `lar:` uri through the island's Confluence gate; `meme_get` reads the text + its canonical hash back.
-# Each mirrors `lares meme put|get` (the host `meme` is a real top-level command, so `mirrored`/`cli_forms`
-# carry it). THE CONTAINER LAW: at most one of `recipe`/`bag` names where the meme lands — neither → the
-# daemon reads `recipe: "default"`, the host's ANCHOR (@daemon's own wiki; never "the active wiki");
-# `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a residency placement (fails loud
-# if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the `@` spelling stands retired. Both
-# ride `lares_uds.call` to the @daemon — never a store (the single-writer law).
-MEME_VERBS = ("meme_put", "meme_get")
+# The targets `meme_project` renders — the same list `lares meme project --to` takes.
+PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
 
 # The VAULT namespace — the at-rest seal LIFECYCLE the operator drives (status/seal/rotate/export the two
 # sovereign secret carriers: the keyhive archive + the recovery share). Each MCP tool rides the @daemon
@@ -98,7 +99,6 @@ VERB_SEATS = {
     "kapae": (True, False),      # move-not-delete mute — reversible, trusted
     "un_kapae": (True, False),   # restore — reversible, trusted
     "plane_record": (True, False),      # cross-plane read — reversible, trusted (structure/form fold onto recall --lens)
-    "project_md": (True, False),        # renders a carrier to its submission pair — deterministic, writes beside the source, trusted
     "rejim": (True, False),             # read the landed rhythm/geology (repour rides the reversible refresh) — trusted
     "analyze": (True, False),           # DETECT-ONLY change-point compute — read-only, mutates nothing → HOTL
     "ki": (True, False),                # the Ki coupling verdict — routed read (the TS hull's H¹ fuse) → HOTL
@@ -113,6 +113,7 @@ VERB_SEATS = {
     # delete) and a get reads; both stay on the operator's own island → HOTL.
     "meme_put": (True, False),          # place a meme's text at a lar: uri through the Confluence gate — reversible, trusted → HOTL
     "meme_get": (True, False),          # read a meme's text + canonical hash — reversible, trusted → HOTL
+    "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
     # The vault seal-lifecycle tools — a status READ rides HOTL; every MUTATION of the sovereign at-rest
     # seal crosses a trust boundary (it touches identity secret material), so it seats HITL.
     "vault_status": (True, False),      # read the per-carrier seal STATE — reversible, trusted → HOTL
@@ -850,16 +851,6 @@ def build_mcp(coordinator: LaresCoordinator):
         return _call("plane_record", sensorium, cid)
 
     @mcp.tool()
-    def project_md(bag: str, title: str) -> dict:
-        """Render one carrier to its SUBMISSION PAIR — markdown body + .meta sidecar — via the
-        PROJECT-MD QUERY verb in the active wiki island (read-cap only, no mutation). One mouth,
-        every door: `lares project-md` projects files, the wiki UI gesture and this tool project
-        live records. Deterministic and clockless — currency is proven by re-projecting, never by
-        a stamp. `bag` names the holding bag, `title` the carrier's lar: address; returns
-        {uri, check, markdown, meta}."""
-        return uds.output("project-md", {"bag": bag, "title": title})
-
-    @mcp.tool()
     def wiki(verb: str, slug: "str | None" = None) -> dict:
         """The wiki-SWITCHER — mirrors `lares wiki <verb>` over the @daemon activation cap:
         `switch <slug>` LIVE-activates a wiki (no reboot — the true swap; wakes it cold from its
@@ -928,6 +919,19 @@ def build_mcp(coordinator: LaresCoordinator):
         # back the meme alone, as the contract spells it.
         out = _meme_wire("meme-get", args) or {}
         return out.get("meme")
+
+    @mcp.tool()
+    def meme_project(uri: str, to: str, recipe: "str | None" = None, bag: "str | None" = None) -> dict:
+        """RENDER the meme the island holds at its `lar:` `uri` to a target — mirrors `lares meme project
+        <uri> --to <target>`. `to` names the target: `mem` (the canonical carrier text) · `md` (the
+        submission markdown) · `html` · `tid` · `json`; the target rides as a parameter, never a suffix on
+        the verb. CONTAINER LAW: at most one of `recipe` / `bag` names where to read; neither → the host's
+        ANCHOR, the @daemon's own wiki. Slugs ride bare. Returns {uri, to, text, contentType}. Deterministic
+        and clock-free — currency proves by re-projecting, never by a stamp. Rides the @daemon wire."""
+        if to not in PROJECT_TARGETS:
+            raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
+        args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
+        return _meme_wire("meme-project", args)
 
     @mcp.tool()
     def vault_status(probe: "str | None" = None) -> dict:

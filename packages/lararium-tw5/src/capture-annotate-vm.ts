@@ -103,8 +103,6 @@ export function startup(): void {
   // content-address), NOT a wall-time stamp — so the live wrapper feeds no clock.
   t.lares.captureAnnotateVm = (turnText: string, sourceFile?: string, branch?: BranchContext) =>
     captureAnnotate(turnText, sourceFile, branch);
-  // Also expose the gradient parser itself — callable from a LIVE WIKI (a widget, filter, or module) to
-  // parse gradient text in-realm with the full grammar. The native text/memetic-wikitext+tiddlywiki path + tooling
-  // reach it here; one parser, one runtime.
-  (t.lares as Record<string, unknown>)["parseMemeText"] = parseMemeText;
+  // The parser itself publishes on the face — `$tw.lares.meme.parse` (meme-face startup); one parser,
+  // one runtime, one name.
 }

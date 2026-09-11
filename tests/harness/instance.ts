@@ -21,7 +21,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../packages/lararium-mesh/src/rendezvous-path.js";
-import { mkdtempSync, rmSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -55,6 +55,11 @@ export interface LarInstance {
   readonly stopDaemonOnly: () => Promise<void>;
 }
 
+/** The real lares CLI under ONE instance's env pair — the same door `LarInstance.cli` opens. */
+export function cliFor(env: Record<string, string>): (args: readonly string[]) => Promise<CliResult> {
+  return (args) => runCli(env, args);
+}
+
 function runCli(env: Record<string, string>, args: readonly string[]): Promise<CliResult> {
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [CLI_BIN, ...args], {
@@ -78,7 +83,7 @@ function runCli(env: Record<string, string>, args: readonly string[]): Promise<C
 /** An OS-assigned free port (bind :0 → read the assigned port → close). Collision-
  *  FREE at that instant — strictly better than the old PID-stride guess (which only
  *  reduced collisions). Tiny TOCTOU before the daemon binds; acceptable for tests. */
-function freePort(): Promise<number> {
+export function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const srv = createServer();
     srv.unref();
@@ -91,19 +96,39 @@ function freePort(): Promise<number> {
   });
 }
 
-async function openStaged(): Promise<LarInstance> {
-  const root = mkdtempSync(join(tmpdir(), "lares-staged-"));
-  // OS-assigned free port — each staged island its own port, collision-free
-  // (causal-island isolation; was a PID-stride guess that only reduced collisions).
-  const port = await freePort();
-  const env  = { LAR_ROOT: root, LAR_PORT: String(port) };
+/**
+ * Where a staged root is minted. `LAR_STAGE_DIR` names it; else the OS temp dir. A run beside an
+ * operator's live hearth stages under its own directory so nothing it mints sits next to the hearth's.
+ */
+export function stageDir(): string {
+  const named = process.env["LAR_STAGE_DIR"];
+  if (named) { mkdirSync(named, { recursive: true }); return named; }
+  return tmpdir();
+}
 
+/** How a staged vessel is founded and stood — the defaults are the hearth every suite inherits. */
+export interface StageOptions {
+  /** A name for the root, so two vessels in one run read apart on disk (`lares-staged-<tag>-`). */
+  readonly tag?: string;
+  /** A root already minted — for a vessel whose rite ran before it stands. Deleted at `stop` like any other. */
+  readonly root?: string;
+  /** A port already chosen — so a rite that names this vessel's dial (`--sync-url`) can run before it stands. */
+  readonly port?: number;
+  /**
+   * The founding rite, run before the daemon stands. Defaults to `vessel clear --force` (a place) and
+   * `persona new 0` (a face). A suite standing a JOINER performs its own rite here — admit, re-found —
+   * against the same root and env the daemon will then read.
+   */
+  readonly found?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
+  /** Extra environment the DAEMON stands with (a peer to dial, a gate to bind to). The CLI env stays the pair. */
+  readonly daemonEnv?: Record<string, string>;
+}
+
+/** The default rite: a place, then a face. */
+async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
   // Genesis — `lares vessel clear --force` seeds the root (init runs inside).
-  const reset = await runCli(env, ["vessel", "clear", "--root", root, "--force"]);
-  if (reset.code !== 0) {
-    rmSync(root, { recursive: true, force: true });
-    throw new Error(`staged reset failed (${reset.code}):\n${reset.stderr.slice(-800)}`);
-  }
+  const reset = await cli(["vessel", "clear", "--root", root, "--force"]);
+  if (reset.code !== 0) throw new Error(`staged reset failed (${reset.code}):\n${reset.stderr.slice(-800)}`);
 
   // ── THE RITE RUNS IN TWO STEPS, SO THE HARNESS PERFORMS BOTH ───────────────────────────────
   // `vessel clear` re-founds a PLACE: the daemon bag, the vessel's own Keyhive individual, the hearth
@@ -111,17 +136,31 @@ async function openStaged(): Promise<LarInstance> {
   // NOT what these suites test. They exercise a hearth: personas, wiki, catalog, the pairing the
   // boot path derives. So the staged instance lights its face here, and a suite that wants the
   // FLOOR asks for it deliberately rather than inheriting it from a founding that stopped early.
-  const face = await runCli(env, ["persona", "new", "0", "--name", "staged"]);
-  if (face.code !== 0) {
+  const face = await cli(["persona", "new", "0", "--name", "staged"]);
+  if (face.code !== 0) throw new Error(`staged face-founding failed (${face.code}):\n${face.stderr.slice(-800)}`);
+}
+
+/** Stand ONE staged vessel under its own root and port. `targetInstance` calls this with the defaults. */
+export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> {
+  const root = opts.root ?? mkdtempSync(join(stageDir(), `lares-staged-${opts.tag ? `${opts.tag}-` : ""}`));
+  // OS-assigned free port — each staged island its own port, collision-free
+  // (causal-island isolation; was a PID-stride guess that only reduced collisions).
+  const port = opts.port ?? await freePort();
+  const env  = { LAR_ROOT: root, LAR_PORT: String(port) };
+  const cli  = (args: readonly string[]) => runCli(env, args);
+
+  try {
+    await (opts.found ?? foundHearth)(cli, root);
+  } catch (err) {
     rmSync(root, { recursive: true, force: true });
-    throw new Error(`staged face-founding failed (${face.code}):\n${face.stderr.slice(-800)}`);
+    throw err;
   }
 
   // Boot the daemon from dist; capture its log; await `phase → live`.
   let log = "";
   const daemon: ChildProcess = spawn(process.execPath, [NODE_MAIN, "--root", root, "--port", String(port)], {
     cwd: NODE_CWD,
-    env: { ...process.env, ...env },
+    env: { ...process.env, ...env, ...(opts.daemonEnv ?? {}) },
   });
   daemon.stdout?.on("data", (d) => { log += String(d); });
   daemon.stderr?.on("data", (d) => { log += String(d); });
@@ -130,7 +169,7 @@ async function openStaged(): Promise<LarInstance> {
   await new Promise<void>((resolve, reject) => {
     const poll = setInterval(() => {
       if (log.includes("phase → live")) { clearInterval(poll); resolve(); }
-      else if (daemon.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${daemon.exitCode} before live:\n${log.slice(-800)}`)); }
+      else if (daemon.exitCode !== null) { clearInterval(poll); reject(new Error(`staged daemon exited ${daemon.exitCode} before live:\n${log.slice(-6000)}`)); }
       else if (Date.now() - liveAt > 120_000) { clearInterval(poll); reject(new Error(`staged daemon never reached live (120s):\n${log.slice(-800)}`)); }
     }, 250);
   });
@@ -140,7 +179,7 @@ async function openStaged(): Promise<LarInstance> {
     root,
     port,
     bootLog: () => log,
-    cli: (args) => runCli(env, args),
+    cli,
     stop: async () => {
       daemon.kill();
       await new Promise((r) => setTimeout(r, 500));

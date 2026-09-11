@@ -18,7 +18,7 @@
     "test": "vitest run",
     "dev": "tsx src/main.ts",
     "start": "node dist/src/main.js",
-    "build:genesis": "pnpm --filter @lararium/tw5 build:tw5-vendor && pnpm --filter @lararium/tw5 build:plugin && tsx scripts/build-genesis-island.ts",
+    "build:genesis": "pnpm --filter @lararium/tw5 build:plugin && tsx scripts/build-genesis-island.ts",
     "test:quine": "tsx scripts/test-quine.ts"
   },
   "dependencies": {

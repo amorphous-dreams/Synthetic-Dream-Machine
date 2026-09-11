@@ -1,0 +1,5 @@
+title: lar:///ha.ka.ba/lararium/templates/meme/mem
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$text text={{{ [<currentTiddler>meme-project[mem]] }}}/>

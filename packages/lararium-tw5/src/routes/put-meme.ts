@@ -14,7 +14,9 @@ module-type: route
  * layer), as the island's INGEST verb does.
  *
  * The body carries the whole meme; the `If-Match` header carries the canonical hash the writer read
- * (the merge base — see GET). The server's own writer authorization and CSRF check
+ * (the merge base — see GET). `If-None-Match: *` makes the PUT create-only (RFC 9110 §13.1.2): a URI
+ * any record already stands under answers 412 before the gate runs, so a writer who means to found a
+ * meme never overwrites one. The server's own writer authorization and CSRF check
  * (`x-requested-with: TiddlyWiki`, or `csrf-disable`) stand in front of this route unchanged.
  *
  * `:bag` names a container the server resolves. `default` names THE HOST'S ANCHOR — the one wiki on a
@@ -24,14 +26,19 @@ module-type: route
  * Responses, by the gate's decision — the receipt rides as JSON on every one:
  *   200 ingest   · records landed, stale children tombstoned; `ETag` = the new canonical hash
  *   200 noop     · the records already carry this text; `ETag` = the standing hash
- *   412 conflict · the records moved past the writer's base (a failed `If-Match`, RFC 9110); nothing landed
+ *   412 conflict · the records moved past the writer's base (a failed `If-Match`, RFC 9110), or a
+ *                  record stands where `If-None-Match: *` asked for none; nothing landed
  *   422 refuse   · the meme grades `error` (a carrier that stopped round-tripping); nothing landed
  *   404          · no such bag or recipe; nothing landed
  *   400          · a malformed path segment
+ *
+ * Beside the `ETag`, every response carrying a canonical hash carries it again as `Repr-Digest`
+ * (RFC 9530, `sha-256=:<base64>:`) — one digest in the standard field, so a client verifies the
+ * body without learning the house's tag grammar.
  */
 
-import { placeMeme, wikiMemeSink, MEME_PATH, memeUriOfParams } from "../place-meme.js";
-import { containerRefusal, refuseContainer } from "./plain-server.js";
+import { placeMeme, readMeme, wikiMemeSink, MEME_PATH, memeUriOfParams } from "../place-meme.js";
+import { containerRefusal, digestHeaders, refuseContainer } from "./plain-server.js";
 import type { TW5Wiki } from "../types/tiddlywiki.js";
 
 interface RouteState {
@@ -67,6 +74,12 @@ function baseHashOf(header: string | string[] | undefined): string | null {
   return bare === "" || bare === "*" ? null : bare;
 }
 
+/** `If-None-Match: *` — the one form this route honours; a tag list reads as no precondition. */
+function createOnly(header: string | string[] | undefined): boolean {
+  const raw = Array.isArray(header) ? header[0] : header;
+  return raw?.trim() === "*";
+}
+
 export function handler(request: RouteRequest, response: RouteResponse, state: RouteState): void {
   const refusal = containerRefusal(state.params);
   if (refusal !== null) {
@@ -80,10 +93,21 @@ export function handler(request: RouteRequest, response: RouteResponse, state: R
     return;
   }
   const baseHash = baseHashOf(request.headers["if-match"]);
-  placeMeme({ uri, text: state.data, baseHash }, wikiMemeSink(state.wiki)).then((receipt) => {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (receipt.canonicalHash) headers["ETag"] = `"${receipt.canonicalHash}"`;
-    response.writeHead(STATUS[receipt.decision], headers);
+  const sink = wikiMemeSink(state.wiki);
+  const place = async () => {
+    if (createOnly(request.headers["if-none-match"])) {
+      const standing = await readMeme(uri, sink);
+      if (standing) {
+        return {
+          uri, decision: "conflict" as const, grade: "clean" as const, landed: [], tombstoned: [], warnings: [],
+          reason: "If-None-Match: * — a record already stands under this uri", canonicalHash: standing.canonicalHash,
+        };
+      }
+    }
+    return placeMeme({ uri, text: state.data, baseHash }, sink);
+  };
+  place().then((receipt) => {
+    response.writeHead(STATUS[receipt.decision], { "Content-Type": "application/json", ...digestHeaders(receipt.canonicalHash) });
     response.end(JSON.stringify(receipt));
   }, (err: unknown) => {
     response.writeHead(500, { "Content-Type": "application/json" });

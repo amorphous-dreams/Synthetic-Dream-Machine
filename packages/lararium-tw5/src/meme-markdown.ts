@@ -34,8 +34,8 @@ module-type: library
  *   tables                                   markdown tables; `!` header cells shed the mark and
  *                                            the separator row follows the first row
  *
- * The wiki door and the CLI door share this one mouth: the PROJECT-MD verb (action-handler) and
- * `lares carrier project-md` both call {@link projectSubmission}.
+ * Every door shares this one mouth: the in-VM face (`$tw.lares.meme.project(uri, "md")`), the daemon's
+ * `meme-project` verb and `lares meme project --to md` all call {@link projectSubmission}.
  */
 
 import { matchCarrierHeadLine } from "./carrier-head.js";
@@ -212,7 +212,7 @@ export function projectSubmission(text: string, opts?: { uri?: string; title?: s
     `type: text/markdown`,
     `source: ${uri}`,
     `source-check: ${check}`,
-    `projected-by: meme-markdown (lares carrier project-md · PROJECT-MD)`,
+    `projected-by: meme-markdown (lares meme project --to md · meme-project)`,
     `law: projected artifact — hand edits do not survive re-projection`,
   ].join("\n") + "\n";
   return { markdown: t.markdown, meta, uri, check };

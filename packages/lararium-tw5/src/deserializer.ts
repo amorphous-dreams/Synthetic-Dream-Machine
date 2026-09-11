@@ -23,10 +23,10 @@ module-type: tiddlerdeserializer
  *   Parent text model: ahu definition blocks → kahea references (children authoritative).
  *
  * Outgoing (wiki → disk):
- *   expandMemeRefs — registered on $tw.lares by the nalu-engine startup
- *   module (island law: if it CAN happen in the TW5 Wiki VM causal island,
- *   it MUST happen there). Inverts the incoming transform: reads child
- *   bodies, reconstructs the whole definition-form carrier.
+ *   expandMemeRefs — published on the face as `$tw.lares.meme.recompose` by the
+ *   meme-face startup module (island law: if it CAN happen in the TW5 Wiki VM
+ *   causal island, it MUST happen there). Inverts the incoming transform: reads
+ *   child bodies, reconstructs the whole definition-form carrier.
  */
 
 import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";

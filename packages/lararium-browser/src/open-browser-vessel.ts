@@ -54,7 +54,7 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, VesselCoreResult, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
-import { vesselDyads } from "@lararium/mesh";
+import { vesselDyads, didFromVerifyingKey } from "@lararium/mesh";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
 import {
@@ -727,7 +727,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       const sel = selectActiveWikiSlug(wikiId, undefined);
       slotActiveWikiId = sel.slug;
       activeSurfaceId  = sel.slug;   // the pinned wiki owns #projection at boot; summon flips it live
-      const facets = recipeHostFacets(slugFromUri(sel.slug), vesselVerifyingKey);
+      const facets = recipeHostFacets(slugFromUri(sel.slug), didFromVerifyingKey(vesselVerifyingKey));
       return {
         activeWikiId: sel.slug, wikiSlug: facets.wikiSlug,
         wikiKey: facets.wikiKey, wikiBagId: facets.wikiBagId,

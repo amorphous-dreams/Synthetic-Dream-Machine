@@ -29,7 +29,7 @@ import {
   DAEMON_SURFACE_ID,
 } from "@lararium/browser";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { pullAndVerifyOracle, DOM_INPUT_MAX_CHARS, type GenesisCasManifest, type GenesisSeed } from "@lararium/mesh";
+import { pullAndVerifyOracle, DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisCasManifest, type GenesisSeed } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (island.genesis.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
@@ -267,7 +267,7 @@ async function bootVessel(): Promise<void> {
   let did = "—";
   try {
     const id = await generateOrLoadBrowserVesselIdentity(IDB);
-    did = "0x" + id.verifyingKey;
+    did = didFromVerifyingKey(id.verifyingKey);
     // The vessel states its own key ON THE PAGE, before the boot that may or may not reach a relay. A key
     // readable only from a devtools console reaches an operator at a laptop and nobody at a phone.
     mountAdmitSurface(id.verifyingKey);

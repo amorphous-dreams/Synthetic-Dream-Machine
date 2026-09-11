@@ -131,12 +131,14 @@ export function collectAhuSlots(text: string): Set<string> {
  * have taken the `#a#b` shape.
  *
  * Slot identifiers carrying their own `/`-paths (operator-authored pre-flattened) get appended
- * verbatim under the prefix.
+ * under the prefix; a leading `/` on the slot names the root of ITS parent, so it joins with the
+ * one slash the path already has.
  */
 export function composeSlotPath(prefix: string, slot: string): string {
-  const tail = slot.startsWith("#") ? slot.slice(1) : slot;
-  if (!prefix) return `#/${tail.replace(/^\//, "")}`;         // a root child is a path too
-  const slotTail = slot.startsWith("#") ? slot.slice(1) : slot;
-  const rooted   = prefix.startsWith("#/") ? prefix : `#/${prefix.slice(1)}`;
-  return `${rooted}/${slotTail}`;
+  // A rooted slot resolves against its parent as `href="/child"` resolves under a base: the path
+  // carries one `/` between segments, never an empty one.
+  const tail = (slot.startsWith("#") ? slot.slice(1) : slot).replace(/^\//, "");
+  if (!prefix) return `#/${tail}`;                             // a root child is a path too
+  const rooted = prefix.startsWith("#/") ? prefix : `#/${prefix.slice(1)}`;
+  return `${rooted}/${tail}`;
 }

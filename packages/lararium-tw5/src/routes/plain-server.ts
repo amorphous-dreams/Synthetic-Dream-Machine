@@ -9,7 +9,13 @@
  * server cannot name MUST NOT swallow a write, so the skins answer 404 with a one-line body before
  * the path is read.
  *
+ * THE DIGEST PAIR. A response that carries a canonical hash carries it twice: `ETag` (the house's
+ * `sha256:hex`, the merge base a writer hands back as `If-Match`) and `Repr-Digest` (RFC 9530,
+ * `sha-256=:<base64>:`, the standard field a client verifies the body against). One digest, two
+ * spellings; `digestsEqual` reads either.
  */
+
+import { reprDigestOf } from "@lararium/mesh/agile-digest";
 
 /** The one container name a plain server resolves. */
 export const HOST_ANCHOR = "default";
@@ -27,3 +33,9 @@ export function refuseContainer(response: { writeHead(status: number, headers: R
   response.end(body);
 }
 
+
+/** The `ETag` + `Repr-Digest` pair for a canonical hash; empty where no hash stands (a refusal). */
+export function digestHeaders(canonicalHash: string | undefined): Record<string, string> {
+  if (!canonicalHash) return {};
+  return { "ETag": `"${canonicalHash}"`, "Repr-Digest": reprDigestOf(canonicalHash) };
+}

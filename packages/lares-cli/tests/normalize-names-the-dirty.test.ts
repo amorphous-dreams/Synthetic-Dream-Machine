@@ -57,24 +57,25 @@ describe.skipIf(skip)(`normalize names the dirty it did not stamp${note}`, () =>
     }
   });
 
-  const run = (...args: string[]) => {
+  /** `check` reads alone; `normalize` stamps — the guard names the unread dirty under both seats. */
+  const run = (sub: "check" | "normalize", ...files: string[]) => {
     try {
-      return execFileSync("node", [BIN, "carrier", "normalize", ...args], { cwd: tree, encoding: "utf8" });
+      return execFileSync("node", [BIN, "meme", sub, ...files], { cwd: tree, encoding: "utf8" });
     } catch (e) { return (e as { stdout?: string }).stdout ?? ""; }
   };
 
   test("CONTROL — the door still stamps the carrier it was given", () => {
-    const out = run(named);
+    const out = run("normalize", named);
     expect(out).toContain("normalized:");
   });
 
   test("★ it names the dirty carrier nobody asked it about ★", () => {
-    const out = run("--check", named);
+    const out = run("check", named);
     expect(out, "a carrier stood dirty and unnamed and the door said nothing").toContain("unnamed.mem");
   });
 
   test("★ and says nothing when every dirty carrier was named ★", () => {
-    const out = run("--check", named, unnamed);
+    const out = run("check", named, unnamed);
     expect(out).not.toMatch(/dirty and NOT named/);
   });
 });

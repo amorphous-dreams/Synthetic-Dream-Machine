@@ -205,6 +205,9 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
       ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
                       payload.personaGroupDocIdHex, payload.meshCabalDocIdHex),
     }), null, 2), "utf8");
+    // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
+    // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.
+    await persistVesselCard(storageDir, contactCardJson);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
     persistIdentityAnchors({

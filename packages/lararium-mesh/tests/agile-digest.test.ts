@@ -10,6 +10,7 @@ import {
   formatDigest,
   tagDigest,
   digestsEqual,
+  reprDigestOf,
   IMPLICIT_ALGO,
 } from "../src/agile-digest.js";
 import { sha256HexSync, sha256HexBytesSync, utf8Bytes } from "../src/crypto.js";
@@ -134,5 +135,34 @@ describe("R3 PIN — the two SHA-256 implementations must stay byte-equal", () =
     const text = "lar:///ha.ka.ba/lararium/mesh/agile-digest";
     expect(sha256HexBytesSync(utf8Bytes(text))).toBe(nodeContentHash(text));
     expect(sha256HexSync(text)).toBe(sha256HexBytesSync(utf8Bytes(text)));
+  });
+});
+
+describe("★ RFC 9530 `Repr-Digest` — the third form of one digest ★", () => {
+  const hex = createHash("sha256").update("the one meme").digest("hex");
+  const b64 = Buffer.from(hex, "hex").toString("base64");
+
+  test("`sha-256=:<base64>:` parses to the same (algo, hex) the tagged and bare forms carry", () => {
+    expect(parseDigest(`sha-256=:${b64}:`)).toEqual({ algo: "sha256", hex });
+    expect(digestsEqual(`sha-256=:${b64}:`, `sha256:${hex}`)).toBe(true);
+    expect(digestsEqual(`sha-256=:${b64}:`, hex)).toBe(true);
+    expect(digestsEqual(`sha-256=:${b64}:`, `sha256-${hex}`)).toBe(true);
+  });
+
+  test("reprDigestOf emits the header value from any of the three forms; it round-trips through parseDigest", () => {
+    const want = `sha-256=:${b64}:`;
+    expect(reprDigestOf(`sha256:${hex}`)).toBe(want);
+    expect(reprDigestOf(hex)).toBe(want);
+    expect(reprDigestOf(want)).toBe(want);
+    expect(parseDigest(reprDigestOf(hex))).toEqual({ algo: "sha256", hex });
+  });
+
+  test("CONTROL: a different body's Repr-Digest never reads equal; a torn header refuses", () => {
+    const other = Buffer.from(createHash("sha256").update("another meme").digest("hex"), "hex").toString("base64");
+    expect(digestsEqual(`sha-256=:${other}:`, hex)).toBe(false);
+    expect(digestsEqual(`sha-256=:${b64.slice(1)}:`, hex)).toBe(false);
+    expect(() => parseDigest(`sha-256=:${b64}`)).toThrow(/malformed/);
+    expect(() => parseDigest(`sha-256=::`)).toThrow(/malformed/);
+    expect(() => reprDigestOf(`blake3:${hex}`)).toThrow(/sha-256/);
   });
 });

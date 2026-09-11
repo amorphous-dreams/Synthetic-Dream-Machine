@@ -170,7 +170,7 @@ describe("the tooth stands at one dispatch position", () => {
 });
 
 describe("the projector reads a framing opener that names its ends", () => {
-  // One spelling reads. A carrier holding any earlier spelling arrives through `carrier normalize`, which
+  // One spelling reads. A carrier holding any earlier spelling arrives through `meme normalize`, which
   // homes it — so the projector answers to the current form alone and keeps no second branch.
   const URI = "lar:///a.b.c/x";
   const body = (ends: string) =>

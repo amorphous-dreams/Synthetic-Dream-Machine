@@ -54,6 +54,7 @@ export * from "./text-stream-adapter.js";
 export * from "./sensorium-pc.js";
 export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
+export * from "./lar-did.js";
 export * from "./device-delegation.js";
 export * from "./oracle-substrate.js";
 export * from "./oracle-read-client.js";

@@ -1,9 +1,15 @@
 /**
  * `lares act <VERB> [flags...]` — Residency Model ACTION verb operator surface.
  *
- * VERB ∈ { ADD, COPY, MOVE, CLEAR, DROP, LOAD }
+ * VERB ∈ { ADD, COPY, MOVE, CLEAR, DROP, LOAD, CREATE } ∪ { REPACK }
  *
  * Args per verb (kebab-case CLI flags):
+ *
+ *   REPACK
+ *     --source <file>   the disk bundle (.json / .multids) whose pack the island collects
+ *     --from <bag>      the bag holding the pack's members (their aside provenance)
+ *     --out <file>      (optional) where the re-rendered bundle lands; defaults to --source
+ *     --in-wiki         render through the active wiki island's composite layer stack
  *
  *   ADD / COPY / MOVE
  *     --title <t>       tiddler title (Work-level identity)
@@ -32,9 +38,9 @@
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { join, extname, resolve, relative, sep } from "node:path";
-import { statSync, readdirSync, readFileSync, existsSync } from "node:fs";
-import { vesselDid } from "../env.js";
-import { readCarrierText } from "../ingest-core.js";
+import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
+import { larRoot, vesselDid } from "../env.js";
+import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged } from "../cas-stage.js";
 import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { summaryOutput } from "../verb-result.js";
@@ -70,21 +76,103 @@ function lociTitleForLoad(source: string, file: string, toBag: string): string {
 function printUsage(): void {
   console.error("usage: lares act <VERB> [flags...]");
   console.error("");
-  console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")} }`);
+  console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
   console.error("  CLEAR / DROP       --bag <bag>");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
+  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>] [--in-wiki]");
   console.error("");
   console.error("  --yes              skip confirmation prompt");
+}
+
+/**
+ * REPACK — the collect-the-residency EXPORT, seated with the rail.
+ *
+ * A multi-tiddler bundle (a `.json` array of tiddlers, or a `.multids`) rides as a PACK — one file,
+ * many tiddlers — whose membership rides ASIDE in the bag's `$:/config/OriginalTiddlerPaths` (never on
+ * the tiddlers). REPACK asks the island to collect the pack's members from that aside map and re-render
+ * the bundle via TW5's OWN serializer, then writes the bytes back to disk — the deliberate round-trip a
+ * foreign bundle takes before the operator opens an upstream TW5 PR (the `.mem` path auto-recomposes; a
+ * foreign pack re-renders only on this verb).
+ *
+ * The island registers it as a QUERY verb (read cap, no residency mutation, no effect record), so it
+ * rides beside `ACTION_VERBS` here rather than inside them: the rail's confirm prompt and content-
+ * addressed request id guard a MUTATION, and a read that re-renders bytes the operator already holds
+ * owes neither.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/api/pack-model
+ */
+async function actRepack(args: ParsedArgs): Promise<number> {
+  const source  = args.options["source"];
+  const fromBag = args.options["from"];
+  if (!source || !fromBag) { printUsage(); return 2; }
+  const out = args.options["out"] ?? source;
+
+  const root = larRoot();
+  // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
+  // aside provenance: the loci URI's path + the file's extension.
+  const uri = fileToUriForSource(root, source)(root, source);
+  if (!uri || !uri.startsWith("lar:///")) {
+    emit(args, { ok: false, error: { code: "usage", message: `no loci derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no loci derivation for "${source}"`) });
+    return exitFor("usage");
+  }
+  const packPath = uri.slice("lar:///".length) + extname(source);
+
+  let did: string;
+  try { did = await vesselDid(); } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares act REPACK: ${msg}`) });
+    return exitFor("not-found");
+  }
+
+  // --in-wiki: run REPACK IN the active wiki island, so the members render through THAT wiki's
+  // composite layer stack — the SAME bundle of titles renders distinctly per wiki (shadowing edits
+  // above the canon), on purpose. The default path resolves daemon-side (canon bags, no working-layer
+  // shadow).
+  const inWiki     = Boolean(args.flags["in-wiki"]);
+  const repackArgs = { bag: fromBag, "pack-path": packPath };
+  const submitName = inWiki ? "wiki-act" : "REPACK";
+  const submitArgs = inWiki ? { verb: "REPACK", args: repackArgs } : repackArgs;
+
+  let result;
+  try {
+    result = await runVerb(submitName, submitArgs, did);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
+    return exitFor("daemon-unreachable");
+  }
+  if (result.status === "error") {
+    const msg = result.errorMessage ?? "unknown";
+    const code = /^cap-denied/.test(msg) ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: msg }, human: () => console.error(`REPACK failed: ${msg}`) });
+    return exitFor(code);
+  }
+
+  const summary = summaryOutput(result) ?? {};
+  const text    = typeof summary["text"] === "string" ? (summary["text"] as string) : "";
+  const count   = summary["count"] ?? 0;
+  const missing = summary["missing"];
+  writeFileSync(out, text, "utf-8");
+  emit(args, {
+    ok: true, requestId: result.requestId,
+    data: { verb: "REPACK", pack: packPath, out, count, ...(missing ? { missing } : {}) },
+    human: () => {
+      console.log(`REPACK ✓ ${count} member(s) → ${out}`);
+      if (Array.isArray(missing) && missing.length > 0) console.error(`  ⚠ ${missing.length} member(s) missing (tombstoned): ${(missing as string[]).join(", ")}`);
+    },
+  });
+  return 0;
 }
 
 export async function cmdAct(args: ParsedArgs): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
+  if (verbRaw === "REPACK") return await actRepack(args);
   if (!isActionVerb(verbRaw)) {
     console.error(`lares act: "${verbRaw}" is not an ACTION verb`);
-    console.error(`  ACTION verbs: ${ACTION_VERBS.join(", ")}`);
+    console.error(`  ACTION verbs: ${ACTION_VERBS.join(", ")}, REPACK`);
     return 2;
   }
   if (verbRaw === "INGEST") {
