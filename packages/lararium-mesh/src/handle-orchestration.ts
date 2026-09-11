@@ -17,7 +17,12 @@
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import { readHandleAnnounces, writeHandleAnnounce } from "./handle-announce.js";
-import { mintHandleBurn, type HandleKelEvent, type HandleMintResult } from "./handle-kel.js";
+import { mintHandleBurn, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult } from "./handle-kel.js";
+import { deriveVeiledUserKey } from "./persona-identity.js";
+import { didFromVerifyingKey } from "./lar-did.js";
+import { ed25519SignerFromSeed } from "./auth-wire.js";
+import { hexToBytes } from "./crypto.js";
+import { PERSONA_GLAMOUR_CONTEXT } from "./persona-glamour.js";
 import type { HandleCard } from "./handle-card.js";
 import type { LarDoc } from "./base-doc.js";
 
@@ -102,5 +107,66 @@ export async function burnOwnHandle(opts: {
         : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn! },   // the one-hand guard above proved it set
     ),
     buildCard:       opts.buildCard,
+  });
+}
+
+/** Count the rotations already in a chain — the context-ladder rung the NEXT rotation seats a key at. */
+function rotationCount(chain: readonly HandleKelEvent[]): number {
+  return chain.reduce((n, e) => (e.kind === "rotation" ? n + 1 : n), 0);
+}
+
+/**
+ * ROTATE a Handle over the leased-projection core — a current holder seats a FRESH presentation key under the
+ * same name, the owning persona authorizing (rotate · Option A: the CONTEXT-LADDER). The fresh key derives at
+ * `deriveVeiledUserKey(seed, handleIndex, contextBase + rotationCountAfter)`, where `contextBase` is the face's
+ * inception context and `rotationCountAfter` counts this rotation — so the seated key is ALWAYS re-derivable
+ * from (seed, handleIndex, chain-rotation-count), reproducible and seed-rooted. The rotation itself commits the
+ * NEXT rung's digest (KERI pre-rotation), so a chain a thief cannot advance stays advanceable by the seed-holder.
+ *
+ * The mint is authorized by the OWNING PERSONA's head op-key — a lost handle key recovers THROUGH the persona.
+ * The card re-signs under the FRESH head handle key (a rotated head certifies the card the recogniser accepts);
+ * the mint hands that fresh signer to `buildCard`. The mint runs over the board's CURRENT chain, so a stale
+ * lease cannot rotate a name off a head the board already moved past.
+ */
+export async function rotateOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  /** The persona master-seed the face derives from — the fresh key rides its context ladder. */
+  seed:            Uint8Array;
+  handleIndex:     number;
+  /** The face's inception context (default PERSONA_GLAMOUR_CONTEXT) — the ladder's base rung. */
+  contextBase?:    number;
+  /** The owning persona (a current owner-set member) and its head op-key + signer — the rotation authority. */
+  ownerAuthMemberPrefix: string;
+  ownerHeadOpKeyDid:     string;
+  sign:                  (bytes: Uint8Array) => Promise<string>;
+  /** Build the renewed card; the mint yields the FRESH head handle key's signer to sign it under. */
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[], freshHandleSign: (bytes: Uint8Array) => Promise<string>) => HandleCard | Promise<HandleCard>;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  const base = opts.contextBase ?? PERSONA_GLAMOUR_CONTEXT;
+  let freshSign: ((bytes: Uint8Array) => Promise<string>) | null = null;
+  return extendOwnHandle({
+    board:           opts.board,
+    nym:             opts.nym,
+    expectedHeadCid: opts.expectedHeadCid,
+    mintNext:        async (chain): Promise<HandleMintResult> => {
+      const head        = chain[chain.length - 1]!;
+      const nextContext = base + rotationCount(chain) + 1;   // rotation N (this one) rides context base + N
+      const fresh       = await deriveVeiledUserKey(opts.seed, opts.handleIndex, nextContext);
+      const freshHandleKeyDid = didFromVerifyingKey(fresh.verifyingKey);
+      freshSign = ed25519SignerFromSeed(hexToBytes(fresh.signingKey));
+      // Pre-commit the rung AFTER this one — the seated key here revealed the prior commitment; this commits the next.
+      const after              = await deriveVeiledUserKey(opts.seed, opts.handleIndex, nextContext + 1);
+      const nextHandleKeyDigest = handleKeyDigestOf(didFromVerifyingKey(after.verifyingKey));
+      return mintHandleRotation({
+        head, freshHandleKeyDid,
+        ownerAuthMemberPrefix: opts.ownerAuthMemberPrefix,
+        ownerHeadOpKeyDid:     opts.ownerHeadOpKeyDid,
+        sign:                  opts.sign,
+        nextHandleKeyDigest,
+      });
+    },
+    buildCard:       (event, newChain) => opts.buildCard(event, newChain, freshSign!),
   });
 }

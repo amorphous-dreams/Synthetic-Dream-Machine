@@ -35,7 +35,7 @@ import { assertHandleIndex } from "./persona-vault.js";
 import {
   signHandleCard, handleCardId, type HandleCard,
 } from "./handle-card.js";
-import { mintHandleInception, type HandleKelEvent } from "./handle-kel.js";
+import { mintHandleInception, handleKeyDigestOf, type HandleKelEvent } from "./handle-kel.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import type { DelegationEdge } from "./delegation-edge.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
@@ -139,7 +139,13 @@ export async function mintPersonaGlamour(opts: {
   // HandleGlamour supplies an owner SET here instead; that quorum founding rides its own path.
   const handleKeyDid    = didFromVerifyingKey(veiled.verifyingKey);
   const recoverySetHash = sealKeySetHash([handleKeyDid], 1);
-  const chain: HandleKelEvent[] = [mintHandleInception(handleKeyDid, opts.ownerPersonaKelPrefix, recoverySetHash)];
+  // KERI pre-rotation: commit H(the NEXT presentation key) at inception — the context-ladder's next rung
+  // (`contextIndex + 1`), derived from the (seed, handleIndex) held HERE. A rotation reveals that context-1
+  // key to satisfy this commitment; a thief of the seated key lacks the preimage. The digest rides the event
+  // core (the cid), never the prefix, so the identifier stays fixed while the rolling commitment advances.
+  const nextVeiled          = await deriveVeiledUserKey(opts.seed, opts.handleIndex, contextIndex + 1);
+  const nextHandleKeyDigest = handleKeyDigestOf(didFromVerifyingKey(nextVeiled.verifyingKey));
+  const chain: HandleKelEvent[] = [mintHandleInception(handleKeyDid, opts.ownerPersonaKelPrefix, recoverySetHash, nextHandleKeyDigest)];
   const nym = chain[0]!.prefix;
 
   const prior = await opts.store.load(opts.handleIndex);

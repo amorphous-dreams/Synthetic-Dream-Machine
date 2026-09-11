@@ -17,7 +17,7 @@ import { readFileSync, existsSync } from "node:fs";
 import {
   DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, materializeSharedLarDoc, whoBoardDocUrl,
   publishHandleFromDaemonDoc,
-  resolveOwnHandleChain, boardHeadCid, burnOwnHandle, signHandleCard,
+  resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle, signHandleCard, handleCardId,
   attestUnderHead, headOpKey, personaKelBoardDocUrl, personaKelChainForPrefix,
   deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
   type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation,
@@ -144,36 +144,51 @@ async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?
   return { repo, daemonDoc, board, storageDir, handleIndex, seed, record, chain, headCid, veiledSigner };
 }
 
+/** The owning persona's authorizing hand — the member prefix, its head op-key, and a signer for that key. The
+ *  shape owner-burn AND rotation share: both answer to the owning persona's CURRENT head op-key. */
+export interface OwnerAuthHand {
+  readonly ownerAuthMemberPrefix: string;
+  readonly ownerAuthKeyDid:       string;
+  readonly sign:                  (b: Uint8Array) => Promise<string>;
+}
+
 /**
- * Resolve the OWNER-burn hand — the owning persona buries the face from above (a thief-of-the-face cannot
- * forge it). Pure over the resolved persona-KEL head: for a self-stood never-rotated persona the head op-key
- * IS the persona root DID (ceremony seats the founding op-key == root), so the root seed signs. FAILS CLOSED
- * on a ROTATED persona (the head advanced past the root), whose current op-key rides opt-in self-custody this
- * adapter does not yet reach — the operator falls back to `--self` there.
+ * Resolve the OWNING PERSONA's authorizing hand — the persona proves ownership from above (owner-burn: a
+ * thief-of-the-face cannot forge it; rotation: a lost handle key recovers THROUGH the persona). Pure over the
+ * resolved persona-KEL head:
+ *   · a self-stood never-rotated persona seats head op-key == root DID (ceremony seats the founding op-key ==
+ *     root), so the ROOT seed signs.
+ *   · a ROTATED persona (head advanced past the root) needs its CURRENT op-key seed. When `opKeyCustody`
+ *     yields a signer for the head op-key this replica holds, that key signs; otherwise FAILS CLOSED toward
+ *     `--self` (the current op-key seed is genuinely unreachable here — never guess a signer).
  */
 export async function resolveOwnerBurnHand(opts: {
   personaKelPrefix: string;
   headOpKeyDid:     string | null;
   rootSeed:         Uint8Array;
-}): Promise<
-  | { ok: true; ownerBurn: { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (b: Uint8Array) => Promise<string> } }
-  | { ok: false; reason: string }
-> {
+  /** Optional op-key custody — given the persona prefix + its CURRENT head op-key did, yields a signer for
+   *  that key when this replica holds the seed (a rotated persona's current op-key), else null. */
+  opKeyCustody?:    (personaKelPrefix: string, headOpKeyDid: string) => Promise<((b: Uint8Array) => Promise<string>) | null>;
+}): Promise<{ ok: true; ownerBurn: OwnerAuthHand } | { ok: false; reason: string }> {
   if (!opts.headOpKeyDid) {
     return { ok: false, reason: "the persona-KEL head is unreachable on this replica (fail-closed) — the owner cannot be proven; use `--self`" };
   }
   const rootDid = `0x${hex(await ed25519.getPublicKeyAsync(opts.rootSeed))}`;
-  if (opts.headOpKeyDid.toLowerCase() !== rootDid.toLowerCase()) {
-    return { ok: false, reason: "owner-burn on a ROTATED persona wants the current op-key's custody (not wired) — use `lares handle burn --self`" };
+  if (opts.headOpKeyDid.toLowerCase() === rootDid.toLowerCase()) {
+    return {
+      ok: true,
+      ownerBurn: { ownerAuthMemberPrefix: opts.personaKelPrefix, ownerAuthKeyDid: rootDid, sign: ed25519SignerFromSeed(opts.rootSeed) },
+    };
   }
-  return {
-    ok: true,
-    ownerBurn: {
-      ownerAuthMemberPrefix: opts.personaKelPrefix,
-      ownerAuthKeyDid:       rootDid,
-      sign:                  ed25519SignerFromSeed(opts.rootSeed),
-    },
-  };
+  // ROTATED — the head is not the root. Consult custody for the current op-key seed; sign only if it holds it.
+  const custodied = opts.opKeyCustody ? await opts.opKeyCustody(opts.personaKelPrefix, opts.headOpKeyDid) : null;
+  if (custodied) {
+    return {
+      ok: true,
+      ownerBurn: { ownerAuthMemberPrefix: opts.personaKelPrefix, ownerAuthKeyDid: opts.headOpKeyDid, sign: custodied },
+    };
+  }
+  return { ok: false, reason: "owner-burn on a ROTATED persona wants the current op-key's custody (unreachable on this replica) — use `lares handle burn --self`" };
 }
 
 export interface HandleBurnOptions {
@@ -228,6 +243,68 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
 
   const result = await burnOwnHandle(hand);
   if (!result.ok) throw new Error(`[lares handle burn] ${result.reason}`);
+  await face.repo.flush();
+  return result.card;
+}
+
+export interface HandleRotateOptions {
+  /** Which persona's face to rotate; defaults to the worn persona, then 0. */
+  readonly handleIndex?: number;
+  readonly storageDir?: string;
+  readonly now?: number;
+}
+
+/**
+ * runHandleRotate — the disk adapter for `lares handle rotate` (Option A: the context-ladder). Seat a FRESH
+ * presentation key under the same name, the OWNING PERSONA authorizing (a lost handle key recovers through the
+ * persona). Resolve the owning persona's verified head op-key off the per-Nexus persona-KEL board, resolve the
+ * authorizing hand (the root seed signs a never-rotated persona; a rotated one wants its current op-key custody,
+ * unreachable here → fail-closed toward re-founding the face), then rotate over the board's CURRENT chain under
+ * the lease and re-announce the renewed card signed by the FRESH head handle key. The advanced record keeps the
+ * monotone lineage a peer's HandleBook holds to.
+ */
+export async function runHandleRotate(opts: HandleRotateOptions): Promise<HandleCard> {
+  const face = await openOwnFace("rotate", opts.storageDir, opts.handleIndex);
+
+  // The OWNING PERSONA authorizes rotation. Resolve its verified head op-key off the per-Nexus persona-KEL board.
+  const prefixEntry = (face.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as { tiddler?: { text?: string } } | undefined;
+  const personaKelPrefix = prefixEntry?.tiddler?.text ?? null;
+  if (!personaKelPrefix) throw new Error("[lares handle rotate] no persona-KEL prefix on the daemon doc — a face is owned by its persona; cannot authorize a rotation.");
+  const nexusPubkey  = await loadVesselVerifyingKey(face.storageDir);
+  const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+  const personaChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
+  const headOpKeyDid = personaChain ? await headOpKey(personaChain, { verifyQuorums: true }) : null;
+  const resolved     = await resolveOwnerBurnHand({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
+  if (!resolved.ok) throw new Error(`[lares handle rotate] ${resolved.reason}`);
+
+  const store = await makeNodePublicHandleStore();
+  const now   = opts.now ?? Date.now();
+  const buildCard = async (_event: HandleKelEvent, newChain: HandleKelEvent[], freshSign: (b: Uint8Array) => Promise<string>): Promise<HandleCard> =>
+    signHandleCard(
+      {
+        nym: face.record.nym, chain: newChain, glamour: face.record.glamour,
+        version: face.record.version + 1, prev: face.record.cardId,
+        expiry: now + 30 * 24 * 60 * 60 * 1000, standing: null, fleetProof: null,
+      },
+      freshSign,   // the FRESH head handle key certifies the renewed card
+    );
+
+  const result = await rotateOwnHandle({
+    board: face.board, nym: face.record.nym, expectedHeadCid: face.headCid,
+    seed: face.seed, handleIndex: face.handleIndex, contextBase: face.record.contextIndex,
+    ownerAuthMemberPrefix: resolved.ownerBurn.ownerAuthMemberPrefix,
+    ownerHeadOpKeyDid:     resolved.ownerBurn.ownerAuthKeyDid,
+    sign:                  resolved.ownerBurn.sign,
+    buildCard,
+  });
+  if (!result.ok) throw new Error(`[lares handle rotate] ${result.reason}`);
+
+  // Advance the vessel's own published-face record so the next publish/rotate links a fresh prev (anti-rollback).
+  const { sig: _sig, ...unsigned } = result.card;
+  await store.save({
+    handleIndex: face.handleIndex, contextIndex: face.record.contextIndex, nym: face.record.nym,
+    glamour: face.record.glamour, version: face.record.version + 1, cardId: await handleCardId(unsigned),
+  });
   await face.repo.flush();
   return result.card;
 }

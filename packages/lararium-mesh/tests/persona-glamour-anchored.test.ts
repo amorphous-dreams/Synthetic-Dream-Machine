@@ -11,9 +11,11 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
-import { mintPersonaGlamour, type OwnPublicHandleStore, type PersonaPublicHandleRecord } from "../src/index.js";
+import { mintPersonaGlamour, PERSONA_GLAMOUR_CONTEXT, type OwnPublicHandleStore, type PersonaPublicHandleRecord } from "../src/index.js";
+import { deriveVeiledUserKey } from "../src/persona-identity.js";
+import { didFromVerifyingKey } from "../src/lar-did.js";
 import {
-  currentOwnerSet, verifyHandleKel, verifyHandleKelFull, mintHandleRotation,
+  currentOwnerSet, verifyHandleKel, verifyHandleKelFull, mintHandleRotation, handleKeyDigestOf,
   type OwnerHeadResolver, type HandleKelEvent,
 } from "../src/handle-kel.js";
 
@@ -62,13 +64,16 @@ describe("the personal face is persona-anchored", () => {
     });
     const chain = card.chain as HandleKelEvent[];
     const personaHead = await didOf(PERSONA_OP_SEED);
-    const freshHandleKeyDid = await didOf(new Uint8Array(32).fill(92));
+    // KERI pre-rotation: the inception pre-committed the context-1 key, so the rotation REVEALS that ladder
+    // key (the seed-holder's next rung) and commits the context-2 digest — a thief's arbitrary key would miss.
+    const freshHandleKeyDid  = didFromVerifyingKey((await deriveVeiledUserKey(SEED, 3, PERSONA_GLAMOUR_CONTEXT + 1)).verifyingKey);
+    const nextHandleKeyDigest = handleKeyDigestOf(didFromVerifyingKey((await deriveVeiledUserKey(SEED, 3, PERSONA_GLAMOUR_CONTEXT + 2)).verifyingKey));
 
     // The persona (owner), not the handle key, rotates the face to a fresh presentation key.
     const rot = await mintHandleRotation({
       head: chain[0]!, freshHandleKeyDid,
       ownerAuthMemberPrefix: PERSONA_PREFIX, ownerHeadOpKeyDid: personaHead,
-      sign: signerOf(PERSONA_OP_SEED),
+      sign: signerOf(PERSONA_OP_SEED), nextHandleKeyDigest,
     });
     expect(rot.ok, rot.ok ? "" : rot.reason).toBe(true);
     if (!rot.ok) return;

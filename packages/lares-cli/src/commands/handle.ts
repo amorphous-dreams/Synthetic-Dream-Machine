@@ -3,14 +3,14 @@
  *
  * A Handle names a persona's public "here I am" note: a self-certifying card announced onto the Nexus WHO
  * board. Its lifecycle rides the handle-KEL (a sibling grammar to the persona-KEL): publish · rotate · graft ·
- * burn · attest. `publish` stands live; the other four scaffold their ahu — the KEL MINT primitives already
- * live in @lararium/mesh (mintHandleRotation · mintHandleGraft · mintHandleBurn · attestUnderHead), and each
- * stub names the vessel-side orchestration a later pass wires (read the chain, gather authorization, mint,
- * write back). A Handle anchors to its persona (the persona-KEL prefix owns it), so a lost presentation key
- * recovers through the persona; that owner-binding is why these verbs cannot fold into `persona`.
+ * burn · attest. `publish` · `rotate` · `burn` · `attest` stand live; `graft` scaffolds its ahu — its KEL MINT
+ * primitive lives in @lararium/mesh (mintHandleGraft) and the stub names the vessel-side orchestration a later
+ * pass wires (gather the presenting owner-set's authorization, mint, write back). A Handle anchors to its
+ * persona (the persona-KEL prefix owns it), so a lost presentation key recovers through the persona; that
+ * owner-binding authorizes rotation and is why these verbs cannot fold into `persona`.
  */
 import type { ParsedArgs } from "../parse-args.js";
-import { runHandlePublish, runHandleBurn, runHandleAttest } from "@lararium/node";
+import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "@lararium/node";
 
 /** A recognized-but-unwired verb reports its shape and where its ahu waits, then declines to act. */
 function declared(verb: string, willDo: string, mint: string): number {
@@ -37,8 +37,13 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   switch (sub) {
     case "publish": return await handlePublish(args);
-    case "rotate":
-      return declared("rotate", "seat a fresh presentation key under the same name, the owner authorizing", "mintHandleRotation");
+    case "rotate": {
+      const opts: Parameters<typeof runHandleRotate>[0] = {};
+      if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
+      const card = await runHandleRotate(opts);
+      console.log(`[lares handle] rotated "${card.glamour}" — nym ${card.nym.slice(0, 24)}… seats a fresh key (v${card.version})`);
+      return 0;
+    }
     case "graft":
       return declared("graft", "turn the presenting owner-set over (succession); TRUE k-of-n graft governance rides declared", "mintHandleGraft");
     case "burn": {
@@ -64,8 +69,8 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
       return 0;
     }
     default:
-      console.error('[lares handle] usage: lares handle <publish "<glamour>" | burn [--from-persona] | attest "<claim>"> [--persona <index>]');
-      console.error('  live: publish · burn (self · --from-persona) · attest    declared: rotate · graft (KEL mints stand, orchestration awaits)');
+      console.error('[lares handle] usage: lares handle <publish "<glamour>" | rotate | burn [--from-persona] | attest "<claim>"> [--persona <index>]');
+      console.error('  live: publish · rotate · burn (self · --from-persona) · attest    declared: graft (KEL mint stands, orchestration awaits)');
       return 2;
   }
 }

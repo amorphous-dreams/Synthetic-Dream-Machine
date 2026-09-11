@@ -28,11 +28,39 @@ describe("resolveOwnerBurnHand", () => {
       "the resolved signer verifies as the persona root").toBe(true);
   });
 
-  test("★ ROTATED (head != root) → REFUSES, fail-closed toward --self ★", async () => {
+  test("★ ROTATED (head != root) with NO custody → REFUSES, fail-closed toward --self ★", async () => {
     const otherDid = "0x" + hexOf(await ed.getPublicKeyAsync(new Uint8Array(32).fill(7)));
     const r = await resolveOwnerBurnHand({ personaKelPrefix: PREFIX, headOpKeyDid: otherDid, rootSeed: ROOT });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/rotated|--self/i);
+  });
+
+  test("★ ROTATED (head != root) with custody REACHABLE → the current op-key seed signs ★", async () => {
+    // A persona rotated its op-key past the root; this replica HOLDS the current op-key seed.
+    const CURRENT = new Uint8Array(32).fill(7);
+    const currentDid = "0x" + hexOf(await ed.getPublicKeyAsync(CURRENT));
+    // The custody resolver yields a signer for the head op-key it holds; null for anything it does not.
+    const opKeyCustody = async (_prefix: string, headOpKeyDid: string) =>
+      headOpKeyDid.toLowerCase() === currentDid.toLowerCase()
+        ? async (b: Uint8Array) => hexOf(await ed.signAsync(b, CURRENT))
+        : null;
+    const r = await resolveOwnerBurnHand({ personaKelPrefix: PREFIX, headOpKeyDid: currentDid, rootSeed: ROOT, opKeyCustody });
+    expect(r.ok, r.ok ? "" : r.reason).toBe(true);
+    if (!r.ok) return;
+    expect(r.ownerBurn.ownerAuthMemberPrefix).toBe(PREFIX);
+    expect(r.ownerBurn.ownerAuthKeyDid.toLowerCase()).toBe(currentDid.toLowerCase());
+    const msg = Uint8Array.from([5, 6, 7, 8]);
+    const sig = await r.ownerBurn.sign(msg);
+    expect(await ed.verifyAsync(Uint8Array.from(Buffer.from(sig, "hex")), msg, await ed.getPublicKeyAsync(CURRENT)),
+      "the resolved signer verifies as the rotated CURRENT op-key, not the root").toBe(true);
+  });
+
+  test("★ ROTATED with custody that does NOT hold the head key → REFUSES (fail-closed) ★", async () => {
+    const otherDid = "0x" + hexOf(await ed.getPublicKeyAsync(new Uint8Array(32).fill(7)));
+    const opKeyCustody = async () => null;   // custody exists but holds nothing for this head
+    const r = await resolveOwnerBurnHand({ personaKelPrefix: PREFIX, headOpKeyDid: otherDid, rootSeed: ROOT, opKeyCustody });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toMatch(/rotated|--self|custody|unreachable/i);
   });
 
   test("★ unreachable head (null) → REFUSES, fail-closed ★", async () => {

@@ -93,6 +93,7 @@ export interface HandleKelEvent {
   readonly ownerSetThreshold:   number;              // the graft threshold of the current set — REVEALED with the members; 0 on presentation
   readonly recoverySetHash:     string;              // the GENESIS recovery digest — folded into the prefix, fixed (anti-swap)
   readonly nextRecoverySetHash: string;              // the ROLLING recovery commitment — armed at inception like every prefix now is
+  readonly nextHandleKeyDigest: string;              // the ROLLING next-HANDLE-KEY pre-commitment (KERI pre-rotation) — bound per-event, NOT in the prefix; "" = unarmed
   readonly prevEventCid:        string | null;       // hash-link to the predecessor (null at inception)
   readonly ownerAuthMemberPrefix: string | null;     // presentation/graft: WHICH member presents; null at inception
   readonly ownerAuthKeyDid:     string | null;       // presentation/graft: that member's head op-key; null at inception + self-burn
@@ -106,8 +107,18 @@ export interface HandleKelEvent {
 type HandleEventCore = Pick<
   HandleKelEvent,
   | "seq" | "kind" | "prefix" | "handleKeyDid" | "genesisOwnerSetHash" | "ownerSetHash"
-  | "recoverySetHash" | "nextRecoverySetHash" | "prevEventCid" | "ownerAuthMemberPrefix" | "ownerAuthKeyDid"
+  | "recoverySetHash" | "nextRecoverySetHash" | "nextHandleKeyDigest" | "prevEventCid" | "ownerAuthMemberPrefix" | "ownerAuthKeyDid"
 >;
+
+/**
+ * The digest a chain pre-commits for its NEXT handle key (KERI pre-rotation). A rotation must REVEAL a
+ * handleKeyDid hashing to the prior event's `nextHandleKeyDigest` — a thief of the current key lacks the
+ * next preimage (it lives behind the seed), so a rotation they mint reveals a wrong key and REFUSES.
+ * Domain-tagged apart from event + attestation bytes by its `kind`.
+ */
+export function handleKeyDigestOf(handleKeyDid: string): string {
+  return `hkeynext-${sha256HexSync(canonicalJson({ domain: HANDLE_KEL_DOMAIN, kind: "next-handle-key", key: handleKeyDid }))}`;
+}
 
 /** The canonical bytes an event's cid commits AND the authorizing key signs over. Binding the seq +
  *  kind + prefix + the seated Handle key + the genesis-owner wall + the CURRENT owner digest + the
@@ -124,6 +135,7 @@ export function handleEventBytes(core: HandleEventCore): Uint8Array {
     ownerSetHash:          core.ownerSetHash,
     recoverySetHash:       core.recoverySetHash,
     nextRecoverySetHash:   core.nextRecoverySetHash,
+    nextHandleKeyDigest:   core.nextHandleKeyDigest,
     prevEventCid:          core.prevEventCid,
     ownerAuthMemberPrefix: core.ownerAuthMemberPrefix,
     ownerAuthKeyDid:       core.ownerAuthKeyDid,
@@ -143,6 +155,7 @@ export function handleEventCidOf(core: HandleEventCore): string {
     ownerSetHash:          core.ownerSetHash,
     recoverySetHash:       core.recoverySetHash,
     nextRecoverySetHash:   core.nextRecoverySetHash,
+    nextHandleKeyDigest:   core.nextHandleKeyDigest,
     prevEventCid:          core.prevEventCid,
     ownerAuthMemberPrefix: core.ownerAuthMemberPrefix,
     ownerAuthKeyDid:       core.ownerAuthKeyDid,
@@ -176,6 +189,9 @@ export function handlePrefixOf(inceptionHandleKeyDid: string, genesisOwnerSetHas
  */
 export function mintHandleInceptionSet(
   handleKeyDid: string, ownerSetMembers: readonly string[], ownerSetThreshold: number, recoverySetHash: string,
+  /** The KERI pre-rotation commitment — H(the next handle key). "" (default) incepts UNARMED for handle-key
+   *  pre-rotation; a face founding path (mintPersonaGlamour) arms it from its own (seed, handleIndex). */
+  nextHandleKeyDigest: string = "",
 ): HandleKelEvent {
   if (recoverySetHash.length === 0) {
     throw new Error("handle inception unarmed — an empty recovery pre-commitment mints no prefix");
@@ -193,6 +209,7 @@ export function mintHandleInceptionSet(
     genesisOwnerSetHash,
     ownerSetHash: genesisOwnerSetHash,       // the genesis set fills BOTH slots, the persona shape
     recoverySetHash, nextRecoverySetHash: recoverySetHash,
+    nextHandleKeyDigest,
     prevEventCid: null, ownerAuthMemberPrefix: null, ownerAuthKeyDid: null,
   };
   return {
@@ -206,11 +223,13 @@ export function mintHandleInceptionSet(
  * `mintHandleInceptionSet` for a single owning persona: the founding quorum is the one hand, the graft
  * threshold is 1. The common single-owner path stays ergonomic and unchanged in shape.
  */
-export function mintHandleInception(handleKeyDid: string, ownerPrefix: string, recoverySetHash: string): HandleKelEvent {
+export function mintHandleInception(
+  handleKeyDid: string, ownerPrefix: string, recoverySetHash: string, nextHandleKeyDigest: string = "",
+): HandleKelEvent {
   if (ownerPrefix.length === 0) {
     throw new Error("handle inception unowned — the owner-set binding is the identifier's whole proof");
   }
-  return mintHandleInceptionSet(handleKeyDid, [ownerPrefix], 1, recoverySetHash);
+  return mintHandleInceptionSet(handleKeyDid, [ownerPrefix], 1, recoverySetHash, nextHandleKeyDigest);
 }
 
 /**
@@ -223,6 +242,7 @@ export function handleRotationSigningBytes(
   head: HandleKelEvent, freshHandleKeyDid: string,
   ownerAuthMemberPrefix: string, ownerHeadOpKeyDid: string,
   nextRecoverySetHash: string = head.nextRecoverySetHash,
+  nextHandleKeyDigest: string = head.nextHandleKeyDigest,
 ): Uint8Array {
   return handleEventBytes({
     seq:                   head.seq + 1,
@@ -233,6 +253,7 @@ export function handleRotationSigningBytes(
     ownerSetHash:          head.ownerSetHash,          // the current presenting-set, unchanged by a rotation
     recoverySetHash:       head.recoverySetHash,       // the genesis recovery wall, carried unchanged
     nextRecoverySetHash,                               // the recovery graft rides INSIDE the signed bytes
+    nextHandleKeyDigest,                               // the NEXT-key pre-commitment this rotation itself commits
     prevEventCid:          head.eventCid,
     ownerAuthMemberPrefix,
     ownerAuthKeyDid:       ownerHeadOpKeyDid,
@@ -262,12 +283,21 @@ export async function mintHandleRotation(input: {
   /** The NEXT recovery-set digest this rotation commits. Absent, the standing commitment carries
    *  forward: a set change is always an explicit act, never a silent drop. */
   readonly nextRecoverySetHash?: string;
+  /** The NEXT handle-key digest this rotation commits (KERI pre-rotation). Absent, the standing commitment
+   *  carries forward. When the HEAD armed a commitment, `freshHandleKeyDid` MUST reveal a key matching it. */
+  readonly nextHandleKeyDigest?: string;
 }): Promise<HandleMintResult> {
   const { head, freshHandleKeyDid, ownerAuthMemberPrefix, ownerHeadOpKeyDid } = input;
   if (head.kind === "burn") {
     return { ok: false, reason: "the Handle is burned — a burn is terminal; no successor, forever" };
   }
+  // KERI pre-rotation: when the head armed a commitment, the fresh key MUST reveal the pre-committed preimage.
+  // A thief of the current key seats a key the seed never pre-committed, so its digest misses and the mint refuses.
+  if (head.nextHandleKeyDigest.length > 0 && handleKeyDigestOf(freshHandleKeyDid) !== head.nextHandleKeyDigest) {
+    return { ok: false, reason: "rotation reveal does not match the prior next-handle-key pre-commitment — a dead key cannot rotate the name" };
+  }
   const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
+  const nextHandleKeyDigest = input.nextHandleKeyDigest ?? head.nextHandleKeyDigest;
   const core: HandleEventCore = {
     seq:                   head.seq + 1,
     kind:                  "rotation",
@@ -277,6 +307,7 @@ export async function mintHandleRotation(input: {
     ownerSetHash:          head.ownerSetHash,         // a rotation changes no set
     recoverySetHash:       head.recoverySetHash,      // the genesis recovery wall
     nextRecoverySetHash,
+    nextHandleKeyDigest,                              // this rotation's own next-key pre-commitment
     prevEventCid:          head.eventCid,
     ownerAuthMemberPrefix,
     ownerAuthKeyDid:       ownerHeadOpKeyDid,
@@ -333,6 +364,7 @@ export async function mintHandleGraft(input: {
     ownerSetHash:          newOwnerSetHash,           // the NEW current presenting-set digest
     recoverySetHash:       head.recoverySetHash,
     nextRecoverySetHash,
+    nextHandleKeyDigest:   head.nextHandleKeyDigest,  // a graft seats no fresh handle key — the commitment carries forward
     prevEventCid:          head.eventCid,
     ownerAuthMemberPrefix,
     ownerAuthKeyDid:       ownerHeadOpKeyDid,
@@ -395,6 +427,7 @@ export async function mintHandleBurn(input: {
     ownerSetHash:          head.ownerSetHash,      // a burn changes no set
     recoverySetHash:       head.recoverySetHash,
     nextRecoverySetHash:   head.nextRecoverySetHash,
+    nextHandleKeyDigest:   head.nextHandleKeyDigest,   // a burn seats no fresh handle key — the commitment carries forward
     prevEventCid:          head.eventCid,
     ownerAuthMemberPrefix: input.ownerBurn ? input.ownerBurn.ownerAuthMemberPrefix : null,   // the record says WHICH hand
     ownerAuthKeyDid:       input.ownerBurn ? input.ownerBurn.ownerAuthKeyDid       : null,
@@ -448,9 +481,13 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       if (e.ownerSetMembers.length !== 0 || e.ownerSetThreshold !== 0) return false;   // presentation reveals no set
       if (e.ownerSetHash !== curOwnerSetHash)             return false;   // bound to the current set-epoch
       if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // ★ a CURRENT member presents (non-member refuses)
+      // ★ KERI pre-rotation: an ARMED predecessor pins WHICH key rotates next — the reveal must match the
+      // pre-commitment. A thief holding only the dead current key seats a key the seed never committed → refuse.
+      if (prev.nextHandleKeyDigest.length > 0 && handleKeyDigestOf(e.handleKeyDid) !== prev.nextHandleKeyDigest) return false;
     } else if (e.kind === "graft") {
       if (e.ownerAuthMemberPrefix === null || e.ownerAuthKeyDid === null || !e.authSig) return false;
       if (e.handleKeyDid !== prev.handleKeyDid)           return false;   // a graft seats no fresh Handle key
+      if (e.nextHandleKeyDigest !== prev.nextHandleKeyDigest) return false;   // no fresh key → the next-key commitment carries forward unchanged
       if (e.ownerSetMembers.length === 0)                 return false;   // reveals a NEW set
       if (e.ownerSetThreshold < 1 || e.ownerSetThreshold > e.ownerSetMembers.length) return false;
       if (e.ownerSetHash !== sealKeySetHash(e.ownerSetMembers, e.ownerSetThreshold))  return false;   // the reveal hashes to the new rolling digest
@@ -468,6 +505,7 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       curThreshold    = e.ownerSetThreshold;   // the new set carries its own threshold forward
     } else if (e.kind === "burn") {
       if (e.handleKeyDid !== prev.handleKeyDid)           return false;   // a burn seats no fresh key, either hand
+      if (e.nextHandleKeyDigest !== prev.nextHandleKeyDigest) return false;   // no fresh key → the next-key commitment carries forward unchanged
       if (!e.authSig)                                     return false;   // a burn is always signed (self OR member)
       if (e.ownerSetMembers.length !== 0 || e.ownerSetThreshold !== 0) return false;
       if (e.ownerSetHash !== curOwnerSetHash)             return false;
@@ -517,7 +555,7 @@ export async function verifyHandleKelFull(
     const core: HandleEventCore = {
       seq: e.seq, kind: e.kind, prefix: e.prefix, handleKeyDid: e.handleKeyDid,
       genesisOwnerSetHash: e.genesisOwnerSetHash, ownerSetHash: e.ownerSetHash,
-      recoverySetHash: e.recoverySetHash, nextRecoverySetHash: e.nextRecoverySetHash,
+      recoverySetHash: e.recoverySetHash, nextRecoverySetHash: e.nextRecoverySetHash, nextHandleKeyDigest: e.nextHandleKeyDigest,
       prevEventCid: e.prevEventCid, ownerAuthMemberPrefix: e.ownerAuthMemberPrefix, ownerAuthKeyDid: e.ownerAuthKeyDid,
     };
     if (e.kind === "rotation" || e.kind === "graft") {
