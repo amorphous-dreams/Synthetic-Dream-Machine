@@ -500,30 +500,96 @@ negative for the flagship set, never a proof of global absence.
 
 ! II — WHAT THIS HOUSE MEASURED
 
-!! The paint, against 65 bundled themes
+!! THE RULER, SETTLED 2026-09-11 — and every figure below re-derived on it
 
-* ''A construct's opening glyph paints at ΔE 0.0 from the prose beside it in 40 of 65 themes.''
-Themes rule on `punctuation` in order to say LEAVE IT ALONE — which Bringhurst §3.5.2 ratifies.
-''The frame does not land. There stands no frame to lose.''
-* ''Peak ΔE inside a construct runs 45 to 63'' — near the far side of perceptual space. What a reader
-meets reads as ''invisible walls around a colour riot'', never as a loud frame.
-* ''A code span lands in 53 of 65 themes where every neighbour lands in 25.'' It reaches a real theme
-rule at its FIRST character, and stands as the only construct in the grammar that does.
-* ''In the 16 themes standing for the common families, a construct lands 4 times in 16'' — and the
-code span 13 in 16. ''Popularity sharpens the gap rather than softening it.''
-* ''Folding a delimiter into its content's family gives a construct an edge it never had'' — filtered
-transclusion 25/65 -> 56/65, call -> 39/65, transclusion -> 37/65 — ''and costs three constructs
-theirs'': pretty link 26 -> 5, code span 53 -> 38, image ''25 -> 0''. The image collapses because
-`markup.other.image` paints 2/65. ''Per construct, against a seated floor. Never a blanket.''
-* ''Two pairs collapse where it matters most.'' A called thing against its argument reads as ONE
-colour in 39 of 65 themes and in 7 of the common 16; a widget against its attribute in 20 of 65.
-The interior spends three to five colours and none of them on ''what you called against what you
-passed it''.
-* ''TiddlyWiki reads as loud as HTML and no louder'' — `<div class="box" id="top">` and
-`<<greeting name="world">>` both meet a reader at 4 colours, max 6.
-* ''Host punctuation share 45.8% of tokens and 5.7% of CHARACTERS'' — between html's 45.4% and
-markdown's 49.7%. The test corpus reads 53.1% because it exercises constructs on purpose.
-''A corpus is not a page.''
+''Every paint number this shelf carried rested on `tools/theme-model.js#winner()`, and nothing had
+ever collided it against the engine that paints.'' It ranked a selector's DEPTH above its POSITION in
+the scope stack. `vscode-textmate` does the opposite: a grammar pushes a token's scopes outermost
+first and the theme answers at every push, so the INNERMOST scope any rule reaches decides the colour
+outright and depth breaks a tie only among rules reaching the SAME scope. Each property resolves on
+its own, and a token no rule reaches falls through to `colors['editor.foreground']` — never to a
+scopeless `tokenColors` entry, which VS Code drops: ''"the default rule (scope empty) is always the
+first rule. Ignore all other default rules."''
+
+''MEASURED, both models against `tokenizeLine2` metadata over 36 corpus specimens and 65 themes.''
+The old model parted from the engine in ''6.6%'' of token-readings, concentrated in exactly the shape
+the inversion predicts — it handed `markup.underline.link` on a link's CONTAINER where the engine
+hands `string` on the caption INSIDE it. Weld-Ward's `catppuccin-frappe` case reproduces byte for
+byte: engine `#A6D189`, old model `#8CAAEE`. The settled model parts in ''0 of 199 615
+token-readings''. The instrument stands in `tools/theme-collision.js`, with a one-rule control that
+settles the foreground bit-field at `(metadata >>> 15) & 0x1FF` and at no other offset, and a
+`--must-fail` arm that paints theme N while answering for theme N+1 and reads ''89.4%'' divergence —
+so a comparison of one reading against itself cannot pass here.
+
+!! The paint, against 65 bundled themes — RE-DERIVED
+
+''Read the old figure beside the new one. A figure that MOVED moved because the ruler got more
+truthful, never because the grammar lost anything.''
+
+|!reading |!old |!settled |
+|A bracketed construct's opening glyph at ΔE 0.0 from the prose beside it |40/65 |''35–36/65'' |
+|Peak ΔE inside a construct, median per construct |45–63 |''29–86'' |
+|A code span lands, against every neighbour |53/65 vs 25/65 |''58/65 vs 34/65'' |
+|`markup.other.image` |2/65 |''0/65'' |
+|`markup.link` |8/65 |''5/65'' |
+|`markup.underline.link` |48/65 |''29/65'' |
+|A called thing against its argument, apart |57/65 |''57/65 — HOLDS'' |
+|A widget against its attribute, apart |59/65 |''45/65'' |
+|gruvbox-dark-medium, rank · peak ΔE |16/65 · 78.8 |''13/65 · 76.4'' |
+|vitesse-dark, peak ΔE |44.2 |''43.9'' |
+|the ayu family, constructs landed |0/7 |''0/10 — HOLDS'' |
+|Punctuation names reached deeper than the bare root |142/145 |''128/131'' |
+|`punctuation.definition.tag.begin.html.tiddlywiki5`, deeper vs through the root |44 vs 8 |''43 vs 4'' |
+
+* ''THE FRAME STILL DOES NOT LAND, and lands slightly less than the shelf claimed.'' Thirty-five to
+thirty-six themes of sixty-five paint a bracketed construct's opening glyph the exact colour of the
+prose beside it. A widget's `<$` reads apart in far more — 18/65 at ΔE 0.0 — and a code span's
+backtick in 12/65, which names those two as the exceptions rather than the rule.
+* ''THE COLOUR RIOT RUNS WIDER THAN 45–63.'' Per construct medians run 29.2 for a multi-value display
+to 85.9 for a call. A code span reads 0.0 — every token inside it takes one colour — which stands as
+the one construct in the grammar that spends nothing on its own interior.
+* ''THE POPULARITY CLAIM FALLS.'' The shelf read a construct at 4/16 and a code span at 13/16 in "the
+16 themes standing for the common families" and concluded popularity sharpens the gap. ''No record
+names which 16.'' Derived instead — every theme belonging to a family the set ships two or more of,
+which gives 50 themes across ayu, catppuccin, dracula, everforest, github, gruvbox, horizon,
+kanagawa, material, min, night, one, rose, slack, solarized and vitesse — a construct lands 26/50 and
+a code span 45/50. ''52% and 90%, against 52% and 89% over the whole set. Popularity neither sharpens
+the gap nor softens it.''
+* ''THE TWO WEAK CONTAINERS READ WEAKER THAN THE SHELF SAID.'' `markup.other.image` reaches ''no theme
+at all'' — the 2/65 came from a reading that let a descendant selector match a lone scope carrying no
+ancestor to match. `markup.underline.link` reaches 29/65 rather than 48/65. ''Binding 1 stands
+strengthened, and its stated before-figure of 8/65 for the image pair wants re-derivation with it.''
+* ''EIGHTEEN CONSTRUCTS THE HOUSE BELIEVED PAINTED DO NOT.'' The old reading counted a theme rule as
+reaching a stack when its last element covered ANY scope there — ignoring whether the rule set a
+foreground and whether its ancestors stood anywhere. Under the settled reading `dark-construct` names
+eighteen constructs standing dark and undeclared, among them `markup.other.table` at 15/65 over 170
+spans, `markup.subscript` and `markup.superscript` at 15/65, `markup.other.image`, `markup.other.style`
+and `meta.transclusion.text-reference`. ''One theme's whole contribution to a TiddlyWiki table came
+from `one-light`'s `source.gfm markup` rule, whose ancestor stands nowhere in this grammar and whose
+settings paint nothing.'' This wants a naming ruling rather than a declaration written to close a
+gate.
+
+!! WARE'S CEILING, TAKEN PER SCREEN
+
+''The reading nobody had taken.'' Ware's limit acts across a screen through contrast effects and
+colour-category confusion, and every measurement this house made read one construct at a time.
+
+''MEASURED — `tools/page-palette.js`, distinct foregrounds over a whole page, 65 themes.''
+
+|!pages |!median colours a page |!readings past 12 |
+|the corpus, 36 files |''5'' |1 of 2340 |
+|the host's own tiddlers, 40 files |''6'' |6 of 2600 |
+
+''A page of wikitext sits at the LOW end of Ware's six-to-twelve band and essentially never crosses
+it.'' The loudest theme in the set — aurora-x, the gruvbox family, night-owl — spends a median of
+''7'' colours on a page; the quietest — monokai, solarized-light, vesper — spends ''4''. The widest
+single page reads 14 in two themes of sixty-five.
+
+''So the loudness question has no page-level evidence behind it.'' "Invisible walls around a colour
+riot" names what a reader meets INSIDE one bracket pair, at a peak ΔE of 29 to 86. It does not name
+what a reader meets on a screen, where this grammar asks the eye for five or six distinctions and
+Ware's floor sits at six. ''Reported, never ratcheted: a colour count belongs to the theme at least as
+much as to the grammar, and this house declines gauges that re-seat on every honest change.''
 
 !! The grammar, healed and measured
 
@@ -533,7 +599,7 @@ read as one unquoted macro parameter. Two host carriers ran end to end inside it
 invention proof: 546 host carriers holding a triple quote read under both grammars — ''543
 byte-identical, exactly 3 moved''. Host divergences 11 964 -> 11 953.
 * ''The guard that looked useless held a case nobody had written down.'' Removing the lookarounds
-outright breaks `<<m a:"""">>`. ''A guard whose reason nobody recorded still holds a case, and
+outright breaks `<<m a="""">>`. ''A guard whose reason nobody recorded still holds a case, and
 finding it costs one sandbox.''
 * ''A second swallow shape stands unnamed until now'': `"""value""""`, content CLOSING on a quote,
 opens correctly and then fails to close.
@@ -631,8 +697,8 @@ marker at a measured nineteen points. ''Position three stands ruled twice and wr
 
 ''Ordered by the ratio of payoff to risk. Each names what must go red first.''
 
-# ''Rename the two weak containers.'' `markup.other.image` paints 2/65 and drags its whole construct
-under with it; measured 8/65 -> 48/65, brackets reading the caption in 29 themes rather than 5.
+# ''Rename the two weak containers.'' `markup.other.image` paints 0/65 — re-derived 2026-09-11 under
+the settled ruler, from 2/65 — and drags its whole construct under with it; measured 8/65 -> 48/65, brackets reading the caption in 29 themes rather than 5.
 Touches ''no punctuation name at all'' and dissolves the image trap the fold measurement found.
 RED FIRST: a `construct-legibility` floor for the image pair, failing at today's reading.
 # ''Fuse `[[` and `]]` into one token each.'' Both halves paint identically in all 65 themes, and no
@@ -667,6 +733,6 @@ decisions this shelf settles for the base first.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rHF8KWuSRhJbwyTJJxPdqJMzjo2PV0xQwJEp-H3yjsY
+<<^ code="&#x0003;">>ni:///sha-256;uMTxGDG3hykPX3UWkuZn--Sz-uZcUkUmUhwHqvux9h8
 
 <<^ code="&#x0004;" -> to="?">>
