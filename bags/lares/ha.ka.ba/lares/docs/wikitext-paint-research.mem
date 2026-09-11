@@ -1,0 +1,672 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/wikitext-paint-research">>
+```toml meta
+file-path = "bags/lares/ha.ka.ba/lares/docs/wikitext-paint-research.mem"
+l-space   = "stable"
+retain    = true
+role      = "the grammar research shelf: how a TextMate grammar PAINTS, measured against canon by a research swarm 2026-09-10/11 — scope naming, delimiter treatment, vocabulary size, token share, the loudness dial, typography and perception. Binds as kupono intent: the base tiddlywiki wikitext grammar aligns to THIS before any memetic-wikitext refactor stands on top of it"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/wikitext-paint-research"
+written   = "2026-09-11"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/shelf>>
+
+! Wikitext paint — the grammar research shelf
+
+''OPERATOR RULING, 2026-09-11.'' The base `tiddlywiki` wikitext grammar aligns to this research
+BEFORE any `memetic-wikitext` refactor stands on top of it. Current integrations open to radical
+rethinking as the base heals to this spec. Builds implement THESE findings, never improvisation.
+
+''WHY THIS SHELF EXISTS.'' A research swarm ran four spirits, and those spirits ran four
+sub-spirits of their own. Each synthesis compressed its critics out: primary evidence reached the
+parent as a verdict, and the verdict reached the house without the measurement under it. The
+sub-spirits' findings stand here in their own words — quotes, URLs, counts, and every
+NOT-VERIFIED flag they raised. ''A synthesis keeps what it agrees with; a shelf keeps what it
+measured.''
+
+!! What the swarm answered
+
+|!# |!question |!verdict |
+|1 |Does canon split a multi-character delimiter into two named tokens? |NO GRAMMAR DOES |
+|2 |How does a delimiter take its content's colour? |MULTI-SCOPE STACKING, never a compound root |
+|3 |Which family names a call's argument, and its `=`? |SURFACE decides, and they part correctly |
+|4 |Does `meta.*` bless an unbounded interpolated vocabulary? |MEASURED PRACTICE, html does it 79 times |
+|5 |Do 453 names and 46% punctuation tokens read large? |ORDINARY — C++ carries 471 and 31.8% |
+|6 |How do wiki grammars treat their brackets? |FOUR ANSWERS across seven grammars, no convergence |
+|7 |May an extension ship a calm default? |LEGAL, 450 precedents, and NOT YOURS TO HAVE |
+|8 |Does "one unit, one colour" carry a named principle? |BRINGHURST 3.5.1, verbatim |
+
+---
+
+! I — THE CANON, with its evidence kept
+
+!! 1 · Per-glyph delimiter tokens
+
+''MEASURED over 13 fetched grammars: NO grammar splits a multi-character delimiter into two
+separately-named sequential tokens.'' The universal idiom gives one capture to the whole
+delimiter, however many characters it holds.
+
+|!grammar |!delimiter |!how scoped |!split? |
+|markdown |`**` |capture 1 -> `punctuation.definition.bold.markdown` |one token |
+|markdown |```` ``` ```` |capture 3 -> `punctuation.definition.markdown` |one token, any length |
+|html |`</` |`"end": "(?i)(</)(\2)\s*(>)"`, cap 1 -> `punctuation.definition.tag.begin.html` |''ONE token'' |
+|Vue |`{{` / `}}` |cap 1 -> `punctuation.definition.interpolation.begin.html.vue` |one token each |
+|TypeScript |`${` |capture 0 -> `punctuation.definition.template-expression.begin.ts` |one token |
+|wikitext |`[[` |cap 2 -> `punctuation.definition.tag.link.internal.begin.wikitext` |one token |
+|Twig |`{{` |cap 0 -> `punctuation.section.tag.twig` |one token, incl. the `-`/`~` modifier |
+|Liquid |`{%-` |cap 1 -> `punctuation.definition.tag.begin.liquid` |''one token, 3 chars'' |
+|Handlebars |`{{~{>` |cap 1 -> `support.constant.handlebars` |''one token, arbitrary length'' |
+|Rust |`println!` |the `!` sits INSIDE the name capture |not split |
+|LaTeX |`\usepackage` |cap 1 spans `\usepackage`, cap 2 spans the bare `\` |''nested, not sequential'' |
+
+''The TextMate 1.x manual's own example FUSES a two-character delimiter'':
+
+```
+{ match = '(@selector\()(.*?)(\))'; captures = { 1 = { name = 'storage.type.objc'; }; 3 = …; }; };
+```
+> "In that example we match text like `@selector(windowWillClose:)` but the `storage.type.objc`
+> name will only be assigned to `@selector(` and `)`."
+
+''Sublime names delimiters as PAIRED begin/end, never per-character'':
+> "Punctuation at the beginning and end of strings should use: `punctuation.definition.string.begin`
+> / `punctuation.definition.string.end`"
+
+''The VS Code syntax-highlight guide carries NO scope-naming guidance at all.'' MEASURED:
+`grep -ic "naming"` -> ''0''; `grep -ic "convention"` -> ''0''. It defers to TextMate 25 times.
+
+''The manual's 11 root groups: `comment, constant, entity, invalid, keyword, markup, meta, storage,
+string, support, variable`.'' `punctuation` stands NOWHERE among them — a later Sublime and
+community addition.
+
+!! 2 · How a delimiter takes its content's colour — THE DEVICE
+
+''A literal `string.punctuation.*` — a punctuation path under a content root — returns ZERO across
+13 grammars.''
+
+```
+grep -o 'string\.punctuation[^"]*'  *.json *.yaml *.plist   -> 0
+grep -o 'markup\.punctuation[^"]*'  *.json *.yaml *.plist   -> 0
+grep -o 'keyword\.punctuation[^"]*' *.json *.yaml *.plist   -> 0
+```
+
+Sublime rules against it directly:
+> "Avoid `entity.name.type.class` and `entity.name.type.struct` which unnecessarily nest scope
+> labels under `type`."
+
+The one grammar that DOES nest a delimiter under a content root — Jinja — stands as evidence of the
+anti-pattern, not of canon: it invents `variable.entity.other.jinja.delimiter` and
+`variable.meta.scope.jinja`, and gives `captures` as a JSON ARRAY instead of a capture-keyed object,
+which makes those captures ''inert''.
+
+''THE ANSWER THE SYNTHESIS DROPPED. Respected grammars give a delimiter the content's colour by
+STACKING two space-separated scopes on ONE token.''
+
+```
+grep -ohE '"name": "[a-z][a-z0-9._$-]+ [^"]*"' *.json | wc -l   -> 181 total
+per file: python 77 · ts 42 · tsx 42 · rust 9 · latex 6 · handlebars 5
+```
+
+''MagicPython'' — VS Code's own bundled Python grammar, 12 occurrences:
+```json
+"beginCaptures": {
+  "2": { "name": "string.interpolated.python string.quoted.single.python storage.type.string.python" },
+  "3": { "name": "punctuation.definition.string.begin.python string.quoted.single.python" }
+}
+```
+The quote character carries ''both'' `punctuation.definition.string.begin.python` ''and''
+`string.quoted.single.python`.
+
+''VS Code TypeScript'' — the same device for backticks, and it says why:
+```json
+"contentName": "string.template.ts",
+"beginCaptures": {
+  "2": { "name": "string.template.ts punctuation.definition.string.template.begin.ts" }
+}
+```
+Because `contentName` covers only the interior, the backtick would otherwise LOSE the string
+colour — so they stack it explicitly. Also present in ts/tsx:
+`"meta.block.ts punctuation.definition.block.ts"`,
+`"meta.object-literal.key.ts punctuation.separator.key-value.ts"`.
+''Handlebars'': `"support.constant.handlebars keyword.control"`.
+
+A second, non-name mechanism appears in html.json — ''overlapping captures'', where capture 0 and
+capture 1 cover the same closing quote:
+```json
+"end": "(\")",
+"endCaptures": { "0": { "name": "punctuation.definition.string.end.html" },
+                 "1": { "name": "source.css" } }
+```
+
+''THIS HOUSE ALREADY WRITES MULTI-SCOPE NAMES.'' The call-side widening put `meta.variable.call.*`
+before the published names in one `name` string, and `vscode-textmate` returns every
+space-separated scope. The device stands native here. ''The fold is reachable canonically.''
+
+!! 3 · A call's argument name, and its separator
+
+''Sublime, verbatim'':
+> ''`variable.parameter`'' — "Parameters to a function or methods should use the following scope.
+> This may also be used for other parameter-like variables, such as receivers or named return
+> values in Go."
+> ''`entity.other.attribute-name`'' — "HTML, CSS and XML use the following for tag attribute names"
+> — and from the `entity.` preamble: "The notable exceptions are `entity.name.tag` and
+> `entity.other.attribute-name`, which are used in HTML and XML tags."
+> ''`keyword.operator.assignment`'' — "Operators are typically symbols, so the term `keyword` can
+> seem somewhat contradictory."
+> ''`punctuation.separator`'' — "Separators such as commas and colons should use:
+> `punctuation.separator`"
+
+TextMate 1.x on `variable.parameter`: "when the variable is declared as the parameter" —
+''declaration-side only.'' The manual says nothing about call-site named arguments.
+
+Both names sit in Sublime's ''Minimal Scope Coverage'' set, so any decent theme colours both.
+
+|!grammar |!argument name |!separator |
+|Python `f(x=1)` |`variable.parameter.function-call.python` |`keyword.operator.assignment.python` |
+|''wikitext'' `{{T\|name=v}}` |`entity.other.attribute-name.local-name.wikitext` |`keyword.operator.equal.wikitext` |
+|Handlebars |`variable.parameter.handlebars` STACKED inside `entity.other.attribute-name.handlebars` |none separate |
+|TSX (JSX) |`entity.other.attribute-name.tsx` |`keyword.operator.assignment.tsx` |
+|VS Code html |`entity.other.attribute-name.html` |`punctuation.separator.key-value.html` |
+|Vue |`entity.other.attribute-name.html.vue` |`punctuation.separator.key-value.html.vue` |
+|Liquid |`entity.other.attribute-name.liquid`, colon FUSED into the token |none |
+|Twig |`variable.other.twig` |`:` -> `punctuation.separator.key-value`; `=` -> `keyword.operator.assignment` |
+|Jinja |no named-arg scope at all |`keyword.operator.assignment.jinja` |
+
+''MediaWiki's template call — the closest analogue this grammar has'':
+```yaml
+- match: (?<=\|)\s*(?:([-\w.]+)(:))?([-\w\s\.:]+)\s*(=)
+  captures:
+    3: { name: entity.other.attribute-name.local-name.wikitext }
+    4: { name: keyword.operator.equal.wikitext }
+```
+
+''THE SPLIT IS BY LANGUAGE SURFACE, never by call-versus-definition.'' Tag, template and markup
+surfaces — html, Vue, JSX, Liquid, Handlebars, ''wikitext templates'' — take
+`entity.other.attribute-name.*`. Programming-language call surfaces — Python kwargs — take
+`variable.parameter.function-call.*`. For the `=`: `keyword.operator.assignment` holds the majority
+in code-flavoured grammars AND in wikitext itself; `punctuation.separator.key-value` holds the
+majority for a `:`. ''Only Handlebars stacks both'', which stands as the hedge where both colours
+matter.
+
+''And TiddlyWiki's own parser marks the distinction this house nearly erased.''
+`core/modules/parsers/parseutils.js:339-352`, `parseMacroParameterAsAttribute`:
+```js
+separatorToken = nameToken && $tw.utils.parseTokenRegExp(source,namePos,/=|:/y),
+node.assignmentOperator = separatorToken.match[0];
+isNewStyleSeparator = (node.assignmentOperator === "=");
+```
+The `=` SELECTS A VALUE GRAMMAR — it admits filtered, indirect and substituted values that a `:`
+refuses. A widget attribute's `=` carries no such choice. ''The call's `=` and the widget's `=` part
+correctly. The argument NAME is what wrongly parts.''
+
+!! 4 · `meta.*`, and an unbounded interpolated vocabulary
+
+''TextMate 1.x manual'':
+> "A minimal theme will only assign styles to 10 of the 11 root groups below (''`meta` does not get
+> a visual style'')…"
+> "`meta` — the meta scope is generally used to markup larger parts of the document… and ''only the
+> latter would be styled''. …most of the time meta scopes are however used in scope selectors for
+> activation of bundle items."
+
+''Sublime'':
+> "Meta scopes are used to scope larger sections of code or markup… ''These are not intended to be
+> styled by a color scheme, but used by preferences and plugins.''"
+> "''When styling scopes, resist the urge to directly style `meta` scopes.''"
+
+''The one `meta` prohibition that could bite is about STACKING, not interpolation'':
+> "Each variant should be applied to a specific part, and not stacked. For example,
+> `meta.function.php meta.function.parameters.php` should never occur, but instead the scopes
+> should alternate between `meta.function.php` then `meta.function.parameters.php` and back."
+
+''On capture interpolation the docs stand SILENT.'' The TM manual documents `captures` and states
+"Currently `name` is the only attribute supported"; the only `$`-substitution it documents anywhere
+is `include = "$self"`. Sublime's "interpolation" hits are about string interpolation in source
+code. The VS Code guide has zero. ''Neither blesses it and neither forbids it'' — `$n` in a `name`
+stands as a vscode-textmate extension over the 1.x spec.
+
+''MEASURED — real grammars do it'':
+```
+"name" values carrying $n          TOTAL / UNIQUE
+  html.json      79 / 53
+  vue.json       56 /  4
+  latex.json      1 /  1
+  md.json         1 /  1
+  ts, tsx, python, rust, handlebars, jinja, liquid, wikitext, twig   0
+```
+
+VS Code html, 52 of 53 unique interpolated names under `meta.`, and one DEMONSTRABLY UNBOUNDED —
+`$1` here is any attribute name, matched by a pure exclusion class:
+```json
+"begin": "([^\\x{0020}\"'<>/=\\x{0000}-\\x{001F}…]+)",
+"name": "meta.attribute.unrecognized.$1.html"
+```
+
+''Interpolation is NOT confined to `meta.`'' — Vue interpolates under a STYLED root with an
+unbounded capture: `"name": "entity.name.tag.$1.html.vue"`, `[a-zA-Z0-9:-]+`.
+
+''So `meta.tag.widget.$3` and `meta.variable.call.parameter.tw-$1` sit squarely inside measured
+practice.'' An unrecognised name under `meta.` cannot mis-colour anything; one under `entity.` can.
+The 186 `meta` names painting 0/65 read as ''the contract holding'', never as bloat.
+
+!! 5 · Vocabulary size and token share
+
+|!grammar |!bytes |!distinct scopes |!`punctuation.*` |!`meta.*` |!punct. share |!interpolated |
+|VS Code markdown |79 877 |135 |27 |74 |20.0% |1 |
+|VS Code html |84 416 |62 |14 |22 |22.6% |''53'' |
+|VS Code TypeScript |231 555 |261 |44 |60 |16.9% |0 |
+|''VS Code C++'' |677 832 |''471'' |''150'' |103 |''31.8%'' |54 |
+|VS Code LaTeX |108 756 |142 |33 |43 |23.2% |1 |
+|AsciiDoc (base) |57 091 |103 |11 |1 |10.7% |0 |
+|Vue |33 119 |59 |14 |10 |23.7% |4 |
+|MediaWiki wikitext |— |125 |18 |65 |14.4% |0 |
+|Org mode |— |121 |3 |100 |2.5% |— |
+|reStructuredText |— |25 |''0'' |''0'' |0.0% |— |
+|DokuWiki |— |44 |17 |8 |38.6% |— |
+|Creole |— |31 |9 |9 |29.0% |— |
+
+''Real token shares, tokenized rather than guessed'' — a token counts as punctuation when ANY scope
+in its stack starts with `punctuation.`:
+
+|!corpus |!grammar |!tokens |!punct. share |!non-whitespace |
+|vscode `README.md`, link-dense |markdown |459 |''49.7%'' |''57.1%'' |
+|CommonMark `spec.txt`, code-heavy |markdown |15 548 |23.0% |30.4% |
+|`html.spec.whatwg.org` introduction |html |16 537 |''45.4%'' |''51.8%'' |
+
+> In HTML, `punctuation.definition.tag.begin`/`end` each fire ''2 957 times — exactly as often as
+> `entity.name.tag`''. Every tag name costs two extra punctuation tokens.
+
+''A ~20% share of VOCABULARY becomes a 30–57% share of EMITTED TOKENS. Punctuation scopes cost
+little to declare and much to emit.''
+
+!! 6 · The wiki and markup lineage — four answers, no convergence
+
+|!grammar |!delimiter one token? |!delimiter scope |!separator |!prose |
+|wikitext |yes |`punctuation.*`, one shared name, no begin/end |`\|` -> ''`keyword.operator`'' |unscoped |
+|Markdown |`](` = ''two'' tokens |`punctuation.*`, begin/end split, ''3 families in one rule'' |— |`meta.paragraph` |
+|Org |yes |`punctuation.definition.string.*` — ''borrowed family''; emphasis markers UNSCOPED |— |unscoped |
+|AsciiDoc |macro `[` `]` ''not captured'' |inherits the content family; bold `*` = flat `punctuation.definition.asciidoc` |— |unscoped |
+|reStructuredText |''no — swallows the first content char'' |''none — zero `punctuation.*` in the file'' |— |unscoped |
+|DokuWiki |yes |`punctuation.*`, one shared name |''not tokenized at all'' |unscoped |
+|Creole |yes |`punctuation.*`, ''and the pipe too'' |`punctuation.definition.link.creole` |unscoped |
+
+''reStructuredText ships the SWALLOW defect.'' Measured on `**bold**`:
+```
+"**b"  markup.bold      <- delimiter and first letter are ONE token
+"old"  markup.bold
+"**"   markup.bold
+```
+No consumer can recover the delimiter boundary from that token stream.
+
+''Creole gives the most complete treatment of the six'' — `[[`, `|`, `]]` each their own token, each
+`punctuation.*` — and then names its bare-URL error `invalid.illegal.punctuation.link.creole`,
+putting `punctuation` in the THIRD segment where no theme rule will ever reach it.
+
+!! 7 · The loudness dial a grammar cannot carry
+
+''VERDICT: shipping `editor.tokenColorCustomizations` in `contributes.configurationDefaults` is
+LEGAL, it WORKS, 450 shipped manifests do it — and the VS Code themes owner has ruled the opinion
+is not the extension's to hold.''
+
+''The docs carry NO restriction language.'' The whole `configurationDefaults` section runs 30 lines
+and names no forbidden setting. The restriction lives only in source:
+
+```ts
+// configurationExtensionPoint.ts:212-231
+const allowedScopes = [ConfigurationScope.MACHINE_OVERRIDABLE, ConfigurationScope.WINDOW,
+                       ConfigurationScope.RESOURCE, ConfigurationScope.LANGUAGE_OVERRIDABLE];
+if (registeredPropertyScheme?.disallowConfigurationDefault) { … delete overrides[key]; continue; }
+```
+
+`editor.tokenColorCustomizations` carries ''no `scope`'' and ''no `disallowConfigurationDefault`'',
+so it defaults to WINDOW, which sits in `allowedScopes`. ''It passes both gates, registers, warns
+nothing, takes effect.''
+
+''THREE COSTS, in order.''
+
+''(a) It can NEVER be language-scoped.'' Only `LANGUAGE_OVERRIDABLE` settings enter the per-language
+schema. aeschli, VS Code themes owner, closing exactly this request:
+> "''We don't support defining tokenColors by language, neither in themes nor in settings. ->
+> `editor.tokenColorCustomizations` can not be scoped by language.''"
+> "Instead you have to write language specific rules"
+
+''The only containment mechanism available is a language-suffixed TextMate scope name.''
+
+''(b) It is STICKY against the reader.'' `configurationModels.ts:219` DEEP-MERGES defaults into user
+settings for object settings. A user writing their own `editor.tokenColorCustomizations` with only
+a `comments` key does NOT clear the extension's `textMateRules` — to remove them they must write
+`"textMateRules": []`, which destroys their own. ''The colour opinion sits INSIDE the user, never
+under them.''
+
+''(c) No hardcoded colour survives contact with an arbitrary theme.'' aeschli:
+> "I understand the desire for a grammar author… to add colors and styles for new and non-standard
+> tokens/scopes. ''But its impossible to pick colors and styles that work in all themes. Theming
+> has to be the responsibility of the theme or the user.''"
+
+''Marketplace policy: NOTHING FOUND.'' The extension-guidelines and settings-UX pages carry no rule
+about colours or overriding user configuration. There stands no policy to violate.
+
+''The strongest evidence is a measured SILENCE.'' VS Code ships 24 built-in extensions using
+`configurationDefaults`. Four fetched. ''Zero set any colour.'' All behavioural, all
+`[language]`-scoped. 450 third-party extensions depart from that; the vendor does not.
+
+''WHAT AUTHORS SHIP INSTEAD — three real shapes.''
+
+''(1) A README snippet the reader pastes'' — `sveltejs/language-tools`:
+```json
+"editor.tokenColorCustomizations": {
+    "[<Name of your theme>]": {
+        "textMateRules": [ { "settings": { "foreground": "#569CD6" },
+                             "scope": "support.class.component.svelte" } ] } }
+```
+The `"[<theme name>]"` wrapper is ''theme-scoped'', so it degrades gracefully on a theme switch —
+exactly what an extension-shipped default cannot responsibly use, since it does not know the theme.
+
+''(2) Semantic tokens with a scope-map fallback and zero colour opinion'' — `rust-analyzer` declares
+38 custom semantic token types and 17 modifiers, 15 of them subtypes of `punctuation`/`operator`:
+```json
+{ "id": "brace", "description": "Style for { or }", "superType": "punctuation" },
+{ "id": "attributeBracket", "description": "Style for attribute invocation brackets…",
+  "superType": "punctuation" }
+```
+plus `contributes.semanticTokenScopes` so unaware themes still work. ''It names the constructs and
+hands the colour decision to the theme.''
+
+''(3) Behavioural defaults only'' — `calva` ships a `[clojure]` block of pure behaviour, not one
+colour.
+
+''AND THE DIAL ITSELF, shipped and load-bearing.'' rust-analyzer's `contributes.configuration`:
+
+|!setting |!default |
+|`semanticHighlighting.punctuation.enable` |''false'' |
+|`semanticHighlighting.punctuation.specialization.enable` |''false'' |
+|`semanticHighlighting.punctuation.separate.macro.bang` |''false'' |
+|`semanticHighlighting.operator.specialization.enable` |''false'' |
+|`semanticHighlighting.operator.enable` |true |
+|`semanticHighlighting.strings.enable` |true |
+
+''Capability maximal, default quiet, the reader holds the switch.'' TextMate offers none of this —
+a grammar stands static, its scopes always emit, and the only control is a settings edit.
+
+''LSP semantic tokens — what exists and what does not.'' 23 standard token types
+(`namespace type class enum interface struct typeParameter parameter variable property enumMember
+event function method macro keyword modifier comment string number regexp operator decorator`) and
+10 modifiers (`declaration definition readonly static deprecated abstract async modification
+documentation defaultLibrary`).
+''`operator` exists. `punctuation` does NOT'' — which is why rust-analyzer had to invent it.
+''No modifier is a rendering-intensity axis. A loudness dial must be BUILT, never found.''
+`onDidChangeSemanticTokens` and `workspace/semanticTokens/refresh` make it flippable with no reload.
+
+''tree-sitter's capture split, and what colorschemes do with it.''
+```
+@punctuation.delimiter  delimiters (e.g. `;`, `.`, `,`)
+@punctuation.bracket    brackets (e.g. `()`, `{}`, `[]`)
+@punctuation.special    special symbols (e.g. `{}` in string interpolation)
+```
+|!scheme |!`@punctuation.bracket` |!`@punctuation.delimiter` |!same? |
+|tokyonight (moon) |`fg_dark` #828bb8 |`blue5` #89ddff |DIFFERENT |
+|catppuccin (mocha) |`overlay2` #9399b2 |`overlay2` #9399b2 |''SAME'' |
+|nightfox |`syn.bracket` |`syn.bracket` |''SAME'' |
+
+And every one paints punctuation ''dimmer than body text'': tokyonight #828bb8 against body
+#c8d3f5; catppuccin #9399b2 against #cdd6f4. ''Where the grammar offers the distinction, two of
+three shipped colorschemes decline it — and collapse it DOWNWARD, into one muted grey.''
+
+!! 8 · Typography, perception, and what the HCI record actually says
+
+''Bringhurst, The Elements of Typographic Style, §3.5 CONTRAST — the keystone, verbatim from the
+book's own text'':
+> ''3.5.1 Change one parameter at a time.''
+> When your text is set in a 12 pt medium roman, it should not be necessary to set the heads or
+> titles in 24 pt bold italic capitals… For a balanced page, the weight should decrease slightly,
+> not increase, as the size increases.
+
+> ''3.5.2 Don't clutter the foreground.''
+> When boldface is used to emphasize words, ''it is usually best to leave the punctuation in the
+> background, which is to say, in the basic text font.''
+
+''Butterick, Practical Typography'' — "One or the other, as little as possible":
+> "Bold ''or'' italic—think of them as mutually exclusive. That is rule #1."
+> "Rule #2: use bold and italic as little as possible… ''But if everything is emphasized, then
+> nothing is emphasized.''"
+> "It also gives you nowhere to go when you need to emphasize a word."
+
+and on headings — "Fewer levels, subtler emphasis":
+> "writers often use too many levels of headings. This leads to ''increasingly desperate attempts
+> to make them visually distinct'', usually with injudicious combinations of bold or italic,
+> underlining, point size, all caps, and first-line indents."
+
+''Colin Ware, Information Visualization: Perception for Design'':
+> "''We can only use between six and twelve color codes reliably.'' This results partly from
+> contrast effects that can alter the appearance of colors."
+
+with the mechanism named — unique hues and the opponent process — and an empirical note that
+confusion rises ''within'' a colour category (Kawai et al. 1995).
+
+''ColorBrewer's shipped qualitative maxima'', from the canonical JSON: Dark2/Set2/Accent/Pastel2 cap
+at ''8''; Set1/Pastel1 at ''9''; Set3/Paired at ''12'' — and `Paired` is 6 light/dark pairs, not 12
+independent categories. ''Two independent traditions converge on 6–12.''
+
+''Sarkar, PPIG 2015 (n=10, eye-tracked, within-subjects)'':
+> "The presence of syntax highlighting significantly reduces task completion time, but the magnitude
+> of this effect decreases as programming experience increases. ''We did not detect an effect of the
+> presence of highlighting on the durations of individual fixations, nor… on the total number of
+> fixations''."
+> "In some cases, the eye-tracking data suggested that the participants were able to ''ignore
+> highlighted keywords entirely'', as though perceiving them peripherally was enough."
+
+and its two prior-work results, which cut closest to this house's question:
+> Gilmore and Green (1988)… "''the added information is only effective if it relates to the task''."
+> "colouring tokens in text has no effect on the speed of visual search ''when the colour of the
+> target is unknown''; but when the colour of the target is known, search times are considerably
+> smaller."
+
+''An unpredictable colour scheme buys a reader nothing.''
+
+''Gestalt — NN/g, verbatim'':
+> ''Similarity'': "Items which share a visual characteristic are perceived as more related than
+> items that are dissimilar."
+> ''Common region'': "items within a boundary are perceived as a group and assumed to share some
+> common characteristic or functionality."
+
+The similarity law gives the CONVERSE rigorously: splitting one conceptual unit across several
+colours does not merely fail to group it — ''it asserts a relationship with whatever else carries
+each of those colours.''
+
+!!! What the swarm REFUSED to claim
+
+''These flags are the first thing a synthesis drops, and the reason this shelf exists.''
+
+* ''Lupton, Thinking with Type'' — the "one or more cues, applied consistently" sentence surfaced in
+search and stood ''UNVERIFIED against any primary source. Do not cite it.''
+* ''Miller 7±2'' — NOT FETCHED, and Ware's 6–12 limit rests on ''contrast effects and colour-category
+confusion, never working-memory span''. Citing Miller for a colour cap would mislead.
+* ''Tufte'' — NOT SEARCHED. No data-ink or chartjunk quote stands sourced here.
+* ''Hannebauer, Hesenius & Gruhn 2018'' (EMSE 23:2795–2828, DOI 10.1007/s10664-017-9579-0) —
+bibliographic facts solid; ''the abstract stands publisher-elided''; the "390 novices, no evidence
+of benefit" reading came from search summarisation and stands UNVERIFIED.
+* ''Gestalt applied to syntax highlighting'' — NO published work found. The chain
+"similarity + common region => one token class reads as one colour" stands INFERRED, never sourced.
+* ''"Make the common case quiet" as an API principle'' — SUGGESTIVE ONLY. Butterick carries the idea
+better than any software source found.
+* ''A study manipulating the NUMBER of highlighting colours'' — NOTHING FOUND. No such experiment
+surfaced.
+* ''`string.punctuation` global absence'' — the zero is scoped to 13 fetched grammars, a strong
+negative for the flagship set, never a proof of global absence.
+
+---
+
+! II — WHAT THIS HOUSE MEASURED
+
+!! The paint, against 65 bundled themes
+
+* ''A construct's opening glyph paints at ΔE 0.0 from the prose beside it in 40 of 65 themes.''
+Themes rule on `punctuation` in order to say LEAVE IT ALONE — which Bringhurst §3.5.2 ratifies.
+''The frame does not land. There stands no frame to lose.''
+* ''Peak ΔE inside a construct runs 45 to 63'' — near the far side of perceptual space. What a reader
+meets reads as ''invisible walls around a colour riot'', never as a loud frame.
+* ''A code span lands in 53 of 65 themes where every neighbour lands in 25.'' It reaches a real theme
+rule at its FIRST character, and stands as the only construct in the grammar that does.
+* ''In the 16 themes standing for the common families, a construct lands 4 times in 16'' — and the
+code span 13 in 16. ''Popularity sharpens the gap rather than softening it.''
+* ''Folding a delimiter into its content's family gives a construct an edge it never had'' — filtered
+transclusion 25/65 -> 56/65, call -> 39/65, transclusion -> 37/65 — ''and costs three constructs
+theirs'': pretty link 26 -> 5, code span 53 -> 38, image ''25 -> 0''. The image collapses because
+`markup.other.image` paints 2/65. ''Per construct, against a seated floor. Never a blanket.''
+* ''Two pairs collapse where it matters most.'' A called thing against its argument reads as ONE
+colour in 39 of 65 themes and in 7 of the common 16; a widget against its attribute in 20 of 65.
+The interior spends three to five colours and none of them on ''what you called against what you
+passed it''.
+* ''TiddlyWiki reads as loud as HTML and no louder'' — `<div class="box" id="top">` and
+`<<greeting name="world">>` both meet a reader at 4 colours, max 6.
+* ''Host punctuation share 45.8% of tokens and 5.7% of CHARACTERS'' — between html's 45.4% and
+markdown's 49.7%. The test corpus reads 53.1% because it exercises constructs on purpose.
+''A corpus is not a page.''
+
+!! The grammar, healed and measured
+
+* ''A triple-quoted value opening on its own quote SWALLOWED whole tiddlers.'' `(?<!")"""(?!")`
+matches at no offset in `""""value"""`, so the region never opened and everything past the `\end`
+read as one unquoted macro parameter. Two host carriers ran end to end inside it. Healed, with the
+invention proof: 546 host carriers holding a triple quote read under both grammars — ''543
+byte-identical, exactly 3 moved''. Host divergences 11 964 -> 11 953.
+* ''The guard that looked useless held a case nobody had written down.'' Removing the lookarounds
+outright breaks `<<m a:"""">>`. ''A guard whose reason nobody recorded still holds a case, and
+finding it costs one sandbox.''
+* ''A second swallow shape stands unnamed until now'': `"""value""""`, content CLOSING on a quote,
+opens correctly and then fails to close.
+* ''`<style>` content parses as WIKITEXT'' — TiddlyWiki carries no notion of `scoped` anywhere in its
+source. False-positive cost of an injection measured at ZERO, and declined anyway, because
+`macrocallinline` carries no line bound and would run past `</style>`. ''A measured decline.''
+* ''Forty-nine percent of the published vocabulary moved in one unreleased version'' — 460 names at
+`v2.2.1`, 497 at `2.3.0`, 94 gone and 131 added. Thirty-nine of the ninety-four share one shape:
+''root-inverted'', a qualifier standing in front of the family root, which no theme selector could
+reach. ''This house had already begun the work this research describes, for 39 scopes, without
+naming the principle.''
+* ''A coverage gate measures the corpus, never the world.'' `memetic-coverage` reads green while the
+bearing arrow the house writes on every aim and yield line stands broken — because the prose
+specimen reaches the scope and the in-sigil form does not. ''Reach answered a question the corpus
+chose.''
+
+---
+
+! III — THE COUNCIL'S COMMENTARY
+
+!! Lares (Artificer) — the root decides the colour
+
+A theme paints through its most specific matching rule, and almost every rule in the wild names a
+one- or two-segment root. ''The grammar's leaf names decide nothing. The root decides everything.''
+Which sets the whole lever: ''a name deleted costs three constituencies to serve one; a root changed
+costs none of them and serves the one.'' Themes reach the root, instruments read the full name, the
+future reads the full name.
+
+!! Lares (Advocate) — three constituencies, one with eyes
+
+Themes reach the root and ignore the leaf. The house's own instruments key on the full names — and
+`colour-witness` derives its TOGETHER relation FROM the names, so a construct added later joins the
+check without anybody remembering it. The LSP, the tree-sitter port and the sensorium grammar each
+want the finest distinction the grammar can carry. ''Only one of the three has eyes.''
+
+!! Tide-Caller (Hierophant) — the precedent was already in the tree
+
+A filter's operand brackets carry `punctuation.definition…` under a `string.` prefix, so they paint
+WITH the operand rather than with the frame around it. ''The house discovered the cure and applied
+it in one place.'' The canon answers that the ''name'' was wrong and the ''instinct'' was right: the
+device is multi-scope stacking, and this grammar already writes multi-scope names.
+
+!! Lares (Diplomat) — one size too small
+
+`semanticTokenScopes` maps a semantic token type onto a TextMate scope, so whatever settles here
+propagates into the LSP, and from there into the tree-sitter port, and from there into the
+sensorium. ''We stand deciding what looks like a colour question and functions as an interface for
+three unbuilt subsystems.''
+
+!! Lares (Artificer) — the division of labour
+
+> ''The grammar carries the shape. The LSP carries the meaning. A grammar that tries to carry
+> meaning spends names it cannot honour.''
+
+And that division already stands measured: the eight entries in `TextMateCeiling` name precisely
+where shape cannot reach meaning, and each `answeredBy` mandate names what would resolve it.
+''Every ceiling is a line item for the LSP, written before the LSP existed.''
+
+!! Lares (Stranger) — the question nobody asked
+
+If the LSP will carry meaning and the ceilings already name the handoff, ''does the base grammar
+want to get QUIETER rather than richer from here?'' Every name added now is a name the semantic
+layer must honour or contradict. 415 of 454 names stand exercised — but ''exercised'' and
+''load-bearing after an LSP lands'' name two different properties, and only the first stands
+measured.
+
+!! Mischief-Muse (Muse) — the objection that fell, and why it matters that it fell
+
+I argued the frame helps a reader's eye land on `{{` in a wall of prose. ''Measured: no frame stands
+there to lose.'' I defended a thing that does not exist, and defended it twice, and it went two
+rounds only because nobody measured it — ''including me, who named it.''
+
+!! Breach-Watch (Triage) — the trap the whole council walked past
+
+Forty of sixty-five themes DO carry a `punctuation` rule. The council read that as forty themes
+marking punctuation. ''Measured: most of those rules set punctuation to the editor's own
+foreground.'' A theme rules on `punctuation` in order to say leave it alone.
+
+!! Lares (Pedagogue) — the sentence that generalises past this grammar
+
+> ''A coverage gate measures the corpus, never the world.'' Coverage rises by adding specimens that
+> exercise what already works. Nothing in the shape of a coverage number ever asks whether the
+> specimens resemble what people write.
+
+!! Lares (Gatekeeper) — a scope name has no stated policy, and three precedents already decided one
+
+Three positions stand available: a scope name reads as ''public API'', as ''implementation'', or as
+''a promise about MEANING''. This house already declined `keyword.control.list` at 100% reach
+because it names a bullet a keyword, and already declined borrowing markdown's name for a list
+marker at a measured nineteen points. ''Position three stands ruled twice and written nowhere.''
+
+---
+
+! IV — WHAT BINDS
+
+''Ordered by the ratio of payoff to risk. Each names what must go red first.''
+
+# ''Rename the two weak containers.'' `markup.other.image` paints 2/65 and drags its whole construct
+under with it; measured 8/65 -> 48/65, brackets reading the caption in 29 themes rather than 5.
+Touches ''no punctuation name at all'' and dissolves the image trap the fold measurement found.
+RED FIRST: a `construct-legibility` floor for the image pair, failing at today's reading.
+# ''Fuse `[[` and `]]` into one token each.'' Both halves paint identically in all 65 themes, and no
+grammar among twenty splits a multi-character delimiter. Keep the split where an outer and an inner
+bracket genuinely differ — `[img[`, `[ext[`. RED FIRST: a specimen asserting `[[` arrives as ONE
+token, failing today at two.
+# ''Unify the argument name; keep the `=` families apart.'' `entity.other.attribute-name` matches
+the closest analogue this grammar has — MediaWiki's `{{T|name=v}}` — and TiddlyWiki's own
+`assignmentOperator` field proves the `=` distinction real. RED FIRST: a `ReaderRelations` APART
+entry for a called thing against its argument, failing at 26/65.
+# ''Where a delimiter should take its content's colour, STACK, never nest.'' Multi-scope names
+carry it — `"punctuation.definition.X.begin.tiddlywiki5 <content scope>"` — the device MagicPython
+and TypeScript both ship and this house already writes. Per construct, against a seated floor.
+RED FIRST: a floor per construct, and a control proving no OTHER construct moved.
+# ''Ship the calm as a theme-scoped README snippet, never as a contributed default.'' `svelte`'s
+shape. A contributed `foreground` sits INSIDE the reader by deep merge, cannot be language-scoped,
+and survives no arbitrary theme.
+# ''Build the loudness dial in the semantic layer, and default it OFF.'' rust-analyzer's precedent,
+three shipped positions, all false. LSP carries no `punctuation` type and no intensity modifier, so
+the subtypes want declaring with `semanticTokenScopes` fallback. ''This wants an operator ruling
+first: `tools/invariants/ships-no-runtime.test.js` forbids the `main` and `activationEvents` such a
+dial requires.''
+# ''Write the scope-name policy.'' Three precedents already decided it and no page records it.
+
+''AND THE STANDING ORDER.'' The base wikitext grammar aligns to the seven above ''before'' any
+memetic-wikitext refactor stands on it. The dialect carries 10 patterns against the base's 414, does
+not name its own verb, and splits its bearing arrow in two — and every one of those cures rides on
+decisions this shelf settles for the base first.
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;rHF8KWuSRhJbwyTJJxPdqJMzjo2PV0xQwJEp-H3yjsY
+
+<<^ code="&#x0004;" -> to="?">>
