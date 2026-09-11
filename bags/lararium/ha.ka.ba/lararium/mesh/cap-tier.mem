@@ -2,22 +2,22 @@
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/cap-tier">>
 ```toml meta
-cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem"
-hydrate   = true
-l-space   = "lararium"
-mana      = 16
-manao     = 16
-manaoio   = 15
-namespace = "&#x2695;"
-retain    = true
-role      = "the bag's sealing-posture as SELF-DESCRIBING TIGHTEN-ONLY data: WHO holds the read-cap, named as a chain by set-inclusion VEIL{vessel}⊂PERSONAGROUP{fleet}⊂CONTRACT{fleet∪cabal}⊂PUBLIC{world}. The SAFETY KEYSTONE — the datum only DECLARES, the gate ENFORCES declared∧structural-floor (the taint-meet toward more-restrictive), so a self-describing quine can only ever self-TIGHTEN, mechanically never self-loosen. PERSONAGROUP & CONTRACT ride ONE mechanism (keyring-delivery to a recipient set); the member read-cap delivers AUTHENTICATED (bound into the persona-signed grant). Declassification = an operator-root robust-declassification one-way ratchet. Isomorphic to FederationPosture by composition. Operator-ruled 2026-07-21; built 66594fae + 30cdd087; the floor wired live, the declared-source a defined-but-unlit shore."
-status    = "standing"
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem"
+hydrate    = true
+l-space    = "lararium"
+mana       = 16
+manao      = 16
+manaoio    = 15
+namespace  = "&#x2695;"
+retain     = true
+role       = "the bag's sealing-posture as SELF-DESCRIBING TIGHTEN-ONLY data: WHO holds the read-cap, named as a chain by set-inclusion VEIL{vessel}⊂PERSONAGROUP{fleet}⊂CONTRACT{fleet∪cabal}⊂PUBLIC{world}. The SAFETY KEYSTONE — the datum only DECLARES, the gate ENFORCES declared∧structural-floor (the taint-meet toward more-restrictive), so a self-describing quine can only ever self-TIGHTEN, mechanically never self-loosen. PERSONAGROUP & CONTRACT ride ONE mechanism (keyring-delivery to a recipient set); the member read-cap delivers AUTHENTICATED (bound into the persona-signed grant). Declassification = an operator-root robust-declassification one-way ratchet. Isomorphic to FederationPosture by composition. Operator-ruled 2026-07-21; built 66594fae + 30cdd087; the floor wired live, the declared-source a defined-but-unlit shore."
+status     = "standing"
 status-why = "the CORE built and revert-verified; the declared-source shore unlit"
-tags      = ["mesh/carry-contract", "mesh/content-resolution", "mesh/membership-doctrine", "mesh/secure-context", "api/pono/lararium-identity", "api/pono/orichalcum-capabilities", "api/pono/causal-islands"]
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/mesh/cap-tier"
-written   = "2026-07-23"
+tags       = ["mesh/carry-contract", "mesh/content-resolution", "mesh/membership-doctrine", "mesh/secure-context", "api/pono/lararium-identity", "api/pono/orichalcum-capabilities", "api/pono/causal-islands"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/cap-tier"
+written    = "2026-07-23"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>

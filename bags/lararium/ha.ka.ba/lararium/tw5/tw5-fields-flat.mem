@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat">>
 ```toml meta
-cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-fields-flat.mem"
-heleuma   = "ka"
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-fields-flat.mem"
+heleuma    = "ka"
+mana       = 17
+manao      = 17
+manaoio    = 16
 module-ref = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
-mana      = 17
-manao     = 17
-manaoio   = 16
-retain    = true
-role      = "heleuma: TW5TiddlerFields → Record<string,string> normaliser"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/tw5/tw5-fields-flat"
+retain     = true
+role       = "heleuma: TW5TiddlerFields → Record<string,string> normaliser"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/tw5/tw5-fields-flat"
 ```
 
 <<^ code="&#x0002;">>

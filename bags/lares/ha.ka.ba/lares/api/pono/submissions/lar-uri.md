@@ -71,7 +71,7 @@ lar://lares:agent@enyalios/~schema.flow.documented/
 **Step 3 — Open the turn with the `aim` vector.**
 
 ```
-<<~ lares aim from=lar:///operator.intent.reads -> to=lar:///lares.role.acts>>
+<<~ lares aim from="lar:///operator.intent.reads" -> to="lar:///lares.role.acts">>
 ```
 
 > **Canonical URI Rule** — every `lar:` URI in the stream stays canonical ASCII record form, directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
@@ -369,7 +369,7 @@ A spanSpan record is **consistent** when:
 A complete exchange opening, annotated by scan order. The `aim` URI carries bearing; the sigil panel beside it carries the rest.
 
 ```text
-<<~ lares aim from=lar:///operator.threshold.opens -> to=lar:///scryer.parse.models>>
+<<~ lares aim from="lar:///operator.threshold.opens" -> to="lar:///scryer.parse.models">>
 <<~ set hud="aim" focus="10/measure" feedback="7/declare-glyphs" drift-ward="* · <the pull this island carries>">>
 <<~ stance "🏛️/*!">>
 ```

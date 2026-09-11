@@ -2,8 +2,8 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research">>
 ```toml meta
-type = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research"
 ```
 
 <<^ code="&#x0002;">>

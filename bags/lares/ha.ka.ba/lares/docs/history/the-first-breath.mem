@@ -2,18 +2,18 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-first-breath">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/history/the-first-breath.mem"
-l-space    = "adjacent"
-mana       = 14
-manao      = 13
-manaoio    = 13
-narrator   = "@lares@~crossroads"
-retain     = true
-role       = "history / the live-breathing genesis — the morning the Lar first breathed through its own CLI surface, witnessed end-to-end by hand (2026-06-21). Loaded into @lares THROUGH `lares act LOAD` — the tool's first commemoration of itself. Narrator @lares@~crossroads."
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/docs/history/the-first-breath"
-written    = "2026-06-21"
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-first-breath.mem"
+l-space   = "adjacent"
+mana      = 14
+manao     = 13
+manaoio   = 13
+narrator  = "@lares@~crossroads"
+retain    = true
+role      = "history / the live-breathing genesis — the morning the Lar first breathed through its own CLI surface, witnessed end-to-end by hand (2026-06-21). Loaded into @lares THROUGH `lares act LOAD` — the tool's first commemoration of itself. Narrator @lares@~crossroads."
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/history/the-first-breath"
+written   = "2026-06-21"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine">>

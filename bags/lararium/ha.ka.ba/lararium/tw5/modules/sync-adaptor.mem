@@ -4,10 +4,10 @@
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/sync-adaptor.mem"
 heleuma       = "ha"
-module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 mana          = 18
 manao         = 17
 manaoio       = 17
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 role          = "canonical source copy: LarariumCrdtSyncAdaptor — CRDT↔TW5 echo-loop gate and apply-change protocol"
 source-symbol = "_applyChange"
 status-date   = "2026-04-30"

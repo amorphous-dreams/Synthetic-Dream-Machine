@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/braided-islands">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/api/pono/braided-islands.mem"
-l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 13
-rating     = "meme"
-retain     = true
-role       = "pono pattern — braided islands: parallel sovereign log-holders with inverted precedence stacks, joined only through carried text; scales from AI sessions to human dyads"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/api/pono/braided-islands"
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/braided-islands.mem"
+l-space   = "stable"
+mana      = 14
+manao     = 15
+manaoio   = 13
+rating    = "meme"
+retain    = true
+role      = "pono pattern — braided islands: parallel sovereign log-holders with inverted precedence stacks, joined only through carried text; scales from AI sessions to human dyads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/braided-islands"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>

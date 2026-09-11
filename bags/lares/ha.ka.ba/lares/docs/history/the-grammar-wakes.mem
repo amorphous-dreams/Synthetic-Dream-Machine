@@ -2,16 +2,16 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/history/the-grammar-wakes.mem"
-l-space    = "adjacent"
-mana       = 8
-manao      = 7
-manaoio    = 7
-retain     = true
-role       = "the genesis arc / SharktoothSigil prequel — the FULL arc in a single carrier (no index, no separate act loci; acts draft inline). Before the Lar had a name, the grammar found its teeth and the Voices first spoke; the notation all this history speaks learns to bite. General arc mapped; act prose + Gaia commits/tech pending (to revisit)."
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/docs/history/the-grammar-wakes"
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-grammar-wakes.mem"
+l-space   = "adjacent"
+mana      = 8
+manao     = 7
+manaoio   = 7
+retain    = true
+role      = "the genesis arc / SharktoothSigil prequel — the FULL arc in a single carrier (no index, no separate act loci; acts draft inline). Before the Lar had a name, the grammar found its teeth and the Voices first spoke; the notation all this history speaks learns to bite. General arc mapped; act prose + Gaia commits/tech pending (to revisit)."
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/history/the-grammar-wakes"
 ```
 
 <<^ code="&#x0002;">>

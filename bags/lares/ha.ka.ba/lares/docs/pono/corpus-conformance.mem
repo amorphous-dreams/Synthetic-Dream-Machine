@@ -12,8 +12,8 @@ manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 retain            = true
-role              = "corpus-conformance — the design for a run that answers whether a corpus obeys the grammar a NAMED seed-state declares. Ten shell witnesses and nine corpus-walking predicates already stand; nothing binds them to a seed-state, nothing emits one verdict, and nothing keeps a record. Names the five law classes, the drift reading the record makes possible, the failure discipline a run inherits from tonight's four instrument-lies, and what a conformance claim MUST NOT say."
 revised-on        = "2026-09-06"
+role              = "corpus-conformance — the design for a run that answers whether a corpus obeys the grammar a NAMED seed-state declares. Ten shell witnesses and nine corpus-walking predicates already stand; nothing binds them to a seed-state, nothing emits one verdict, and nothing keeps a record. Names the five law classes, the drift reading the record makes possible, the failure discipline a run inherits from tonight's four instrument-lies, and what a conformance claim MUST NOT say."
 tags              = ["api/pono/meme"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
@@ -84,7 +84,7 @@ corpus lags the seed. Those want different hands.
 !!! C ~ Round-trip laws — the reader and the writer agree
 
 # `render(parse(disk))` returns the body handed to it.
-# A carrier normalizes to itself: `normalize --check` reads canonical.
+# A carrier normalizes to itself: `lares meme check` reads canonical.
 # One closer, idempotent, content-whole.
 
 !!! D ~ Projection laws — what leaves the house
@@ -208,6 +208,6 @@ moved.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
-<<^ code="&#x0003;">>ni:///sha-256;3b03VRdllGKgSV_19EvMNjZUb8q8tNFbvzil8-OCs4A
+<<^ code="&#x0003;">>ni:///sha-256;Q05Vr-D_Nz8J-4VL3zCWG2gXlkPHP_ajWITcWu-jd-o
 
 <<^ code="&#x0004;" -> to="?">>

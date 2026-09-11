@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/dreamnet-rhizome">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/dreamnet-rhizome.mem"
-l-space    = "stable"
-mana       = 15
-manao      = 15
-manaoio    = 14
-retain     = true
-role       = "the integrating read: the DreamNet as a rhizome grown UP from the anon floor (must-fall-back) through additive overlays (known-user · operator · cabal · nexus), launched at TWO surfaces that run one stack at two admission dials — amorphousdreams.net (closed beta, the Amorphous Dreams Cabal) and elyncia.app (open beta, the public mesh)"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/docs/dreamnet-rhizome"
-written    = "2026-07-14"
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/dreamnet-rhizome.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+retain    = true
+role      = "the integrating read: the DreamNet as a rhizome grown UP from the anon floor (must-fall-back) through additive overlays (known-user · operator · cabal · nexus), launched at TWO surfaces that run one stack at two admission dials — amorphousdreams.net (closed beta, the Amorphous Dreams Cabal) and elyncia.app (open beta, the public mesh)"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/dreamnet-rhizome"
+written   = "2026-07-14"
 ```
 
 <<^ code="&#x0002;">>

@@ -2,21 +2,21 @@
 
 <<^ code="&#x0001;" namespace="◉" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/oracle-governance">>
 ```toml meta
-cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/oracle-governance.mem"
-l-space   = "lararium"
-mana      = 14
-manao     = 14
-manaoio   = 12
-namespace = "&#x25C9;"
-retain    = true
-role      = "oracle-governance: a per-nexus @oracle board (ownership+scale grounds, NOT no-global-now — a shared docId names a rendezvous, each peer materializes its own causal island); a well-known root/index docId fanning to per-topic islands (Beelay's global-address/local-state); steward-SOURCE → public verify-only READ projection (NOT one cap-tiered doc); three couplings — origin, governance, liveness; PROPOSED, mostly unbuilt"
-status    = "designed"
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/oracle-governance.mem"
+l-space    = "lararium"
+mana       = 14
+manao      = 14
+manaoio    = 12
+namespace  = "&#x25C9;"
+retain     = true
+role       = "oracle-governance: a per-nexus @oracle board (ownership+scale grounds, NOT no-global-now — a shared docId names a rendezvous, each peer materializes its own causal island); a well-known root/index docId fanning to per-topic islands (Beelay's global-address/local-state); steward-SOURCE → public verify-only READ projection (NOT one cap-tiered doc); three couplings — origin, governance, liveness; PROPOSED, mostly unbuilt"
+status     = "designed"
 status-why = "design intent, mostly unbuilt"
-tags      = ["mesh/dreamnet-architecture", "api/pono/group-as-closure", "api/pono/causal-islands"]
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/mesh/oracle-governance"
-written   = "2026-06-29"
+tags       = ["mesh/dreamnet-architecture", "api/pono/group-as-closure", "api/pono/causal-islands"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/oracle-governance"
+written    = "2026-06-29"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>

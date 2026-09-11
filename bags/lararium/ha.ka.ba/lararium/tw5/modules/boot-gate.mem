@@ -4,10 +4,10 @@
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/boot-gate.mem"
 heleuma       = "ha"
-module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate"
 mana          = 17
 manao         = 17
 manaoio       = 16
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate"
 role          = "canonical source copy: TW5 boot gate — 3-layer trust check for corpus-promoted JS modules"
 source-symbol = "_bootModules"
 status-date   = "2026-04-30"

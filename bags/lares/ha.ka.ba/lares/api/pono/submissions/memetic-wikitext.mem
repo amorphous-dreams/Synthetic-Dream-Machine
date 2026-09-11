@@ -1,4 +1,11 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
 
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext">>
+```toml meta
+type = "text/memetic-wikitext+tiddlywiki"
+```
+
+<<^ code="&#x0002;">>
 
 - `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
@@ -638,3 +645,7 @@ A canvas reaction wire (flow surface):
 - `"lar:///ha.ka.ba/lares/api/mu/the-four-tools"`
 - `"lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"`
 - `"lar:///ha.ka.ba/lares/api/pono/attention-scale"`
+
+<<^ code="&#x0003;">>ni:///sha-256;xUTgjx4I0WhV4_wing3kxT87RO807okvQ3SAhuat8pI
+
+<<^ code="&#x0004;" -> to="?">>

@@ -2,16 +2,16 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/index">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/index.mem"
-l-space    = "archive"
-mana       = 16
-manao      = 16
-manaoio    = 16
-retain     = true
-role       = "index and reading map for the Lindwyrm story arc — mythologized dev narrative of the Lararium's first self-naming"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/docs/history/lindwyrm/index"
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/index.mem"
+l-space   = "archive"
+mana      = 16
+manao     = 16
+manaoio   = 16
+retain    = true
+role      = "index and reading map for the Lindwyrm story arc — mythologized dev narrative of the Lararium's first self-naming"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/history/lindwyrm/index"
 ```
 
 <<^ code="&#x0002;">>
