@@ -29,10 +29,11 @@
 import type { TiddlerFields } from "./deserializer.js";
 import { recomposeMeme } from "./meme-project.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { makeTw5FileInfo } from "./tw5-file-info.js";
+import { makeTw5FileInfo, readSitingCascades, ruledBasePath, type Tw5FileInfo } from "./tw5-file-info.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
 import { CARRIER_TYPE as MEMETIC_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
+import { MEME_EXT, stripMemeExt } from "@lararium/mesh/mirror-paths";
 
 /**
  * Return the canonical memetic-wikitext for a meme URI — the whole carrier,
@@ -62,6 +63,11 @@ export interface CarrierFile {
   /** "base64" when the body is base64 text the projector must decode to raw
    *  bytes (a binary filetype — image/PDF); "utf8"/absent for a text carrier. */
   readonly encoding?: string;
+  /** The mirror-relative path a `$:/config/FileSystemPaths` rule sited this carrier at, extension
+   *  included — present ONLY when a rule reached the title. Absent, the projector sites by the loci
+   *  law (`carrierBaseRelPath`), which is where a stock server with no such rule and an island
+   *  part ways: the server flattens the title, the island reads the uri-path. */
+  readonly relPath?:  string;
 }
 
 /**
@@ -81,6 +87,10 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
   const tiddler = wiki.getTiddler?.(memeUri) as { fields?: TiddlerFields } | undefined;
   const fields = tiddler?.fields;
   if (!fields) return null;
+  const $tw = tw5.$tw as unknown as TW5Instance;
+  // The siting cascades, read as the stock filesystem adaptor reads them — a real
+  // `$:/config/FileSystemPaths` / `FileSystemExtensions` tiddler in this wiki, and nothing else.
+  const cascades = readSitingCascades($tw);
 
   // Skinny-handle rule (T3, disk-projection#granularity + content-resolution.mem): a carrier
   // whose body left the CRDT for the `cid/` CAS tier projects as its HANDLE ALONE. The bytes
@@ -93,12 +103,8 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
   const isSkinny = fields["_is_skinny"] === "yes" || typeof fields["textCid"] === "string";
   if (isSkinny) {
     const { text: _body, ...handleFields } = fields as Record<string, unknown>;
-    const info = makeTw5FileInfo(tw5.$tw as unknown as TW5Instance, memeUri, handleFields);
-    return {
-      ext:  info.ext,
-      body: info.body,
-      ...(info.hasMetaFile && info.metaBody !== undefined ? { metaBody: info.metaBody } : {}),
-    };
+    const info = makeTw5FileInfo($tw, memeUri, handleFields, cascades);
+    return nativeCarrierFile(info);
   }
 
   const type = typeof fields["type"] === "string" ? (fields["type"] as string) : "";
@@ -110,13 +116,20 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
   // ROUTING READS WIDE; MINTING WRITES NARROW. This asks "is this a carrier", never "does it spell the
   // type the way I would" — a record stored under the earlier spelling still recomposes to `.mem`.
   if (isCarrierType(type)) {
-    return { ext: ".mem", body: exportMemeText(tw5, memeUri) };
+    // A siting rule reaches a memetic carrier too — the same rule, the same path, `.mem` kept.
+    const ruled = ruledBasePath($tw, memeUri, cascades);
+    return { ext: MEME_EXT, body: exportMemeText(tw5, memeUri), ...(ruled !== undefined ? { relPath: stripMemeExt(ruled) + MEME_EXT } : {}) };
   }
-  const info = makeTw5FileInfo(tw5.$tw as unknown as TW5Instance, memeUri, fields as Record<string, unknown>);
+  return nativeCarrierFile(makeTw5FileInfo($tw, memeUri, fields as Record<string, unknown>, cascades));
+}
+
+/** The projector's view of a native file-info: extension, bytes, sidecar, encoding, and a ruled path. */
+function nativeCarrierFile(info: Tw5FileInfo): CarrierFile {
   return {
     ext:  info.ext,
     body: info.body,
     ...(info.hasMetaFile && info.metaBody !== undefined ? { metaBody: info.metaBody } : {}),
     ...(info.encoding === "base64" ? { encoding: "base64" } : {}),
+    ...(info.pathRuled ? { relPath: info.relPath } : {}),
   };
 }

@@ -565,6 +565,8 @@ export interface DaemonMsg_ResolveBindingRequest {
   requestId: string;
   fingerprint: string;
   recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] };
+  /** The wiki's slug — the draft floor doc keys under `wikis/{slug}/drafts/{did}` when no seat stands. */
+  wikiSlug: string;
 }
 
 /** Island → vessel: the resolved binding doc URLs (or an error). */
@@ -1229,6 +1231,7 @@ export function mkDaemonResolveBindingRequest(opts: {
   requestId:   string;
   fingerprint: string;
   recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] };
+  wikiSlug:    string;
 }): DaemonMsg_ResolveBindingRequest {
   return {
     schema_version: ISLAND_PROTOCOL_VERSION,
@@ -1236,6 +1239,7 @@ export function mkDaemonResolveBindingRequest(opts: {
     requestId:   opts.requestId,
     fingerprint: opts.fingerprint,
     recipeTrace: opts.recipeTrace,
+    wikiSlug:    opts.wikiSlug,
   };
 }
 

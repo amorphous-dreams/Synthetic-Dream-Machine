@@ -24,10 +24,13 @@
  *   minted under B's root (`harness/vessel-key.ts`) — the identity dir resolves from `LAR_ROOT`, never from
  *   a path argument, so an in-process mint would have admitted the operator's home key instead.
  *
- *   THE SHARED-BAG WRITE DOOR. `--recipe lares` designates the per-vessel draft (`wikis/lares/drafts/<did>`,
- *   `wiki which` says so below), a bag ONE vessel mounts; `--bag lares` refuses a put (the daemon mounts
- *   `lares` read-only). The residency ACTION verbs reach `lares` by access, so `act MOVE` from the draft
- *   into `lar:///ha.ka.ba/bags/lares` is the door a promotion rides — on each side, each direction.
+ *   THE SHARED-BAG WRITE DOOR. `--recipe lares` writes the recipe's designated bag — the wiki's WORKING
+ *   layer (`wikis/lares/working`, `wiki which` says so below), the doc the running wiki island mounts as
+ *   its default writable, so the placement SURFACES in that wiki (its working layer projects to
+ *   `wikis/lares/` on disk); `--recipe lares` READS the whole stack top-down (working shadows canon, canon
+ *   answers when working holds nothing). `--bag lares` refuses a put (the daemon mounts `lares`
+ *   read-only). The residency ACTION verbs reach `lares` by access, so a promotion into
+ *   `lar:///ha.ka.ba/bags/lares` is the door — on each side, each direction.
  *
  * Nothing here fakes the sync. B's `get` carries the `bag = …` line byte-whole and no `$origin-bag`; B's
  * disk projection sites the carrier under `bags/lares/` — which only a wiki tiddler stamped
@@ -53,6 +56,7 @@ const PATH = "t.witness.npc/inventory";
 const URI  = `lar:///${PATH}`;
 const WIKI = ["--recipe", "lares"] as const;
 const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
+const WORKING_LARES = "lar:///ha.ka.ba/wikis/lares/working";
 const BAG  = ["--bag", "lares"] as const;
 /** The author's line as the canonical carrier aligns it — the VALUE is what must read back byte-whole. */
 const BAG_LINE = new RegExp(`^bag\\s+= "${INVENTORY}"$`, "m");
@@ -162,11 +166,45 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(text).not.toContain("$origin-bag");
   });
 
-  test("⑤ on A: the recipe seat lands the meme in the wiki's per-DID draft bag — a bag ONE vessel mounts", async () => {
+  test("⑤ on A: the recipe seat lands the meme in the wiki's WORKING layer — the live write layer its island mounts", async () => {
     const r = await A!.cli(["wiki", "which", URI, "--no-json"]);
     expect(r.code, said(r)).toBe(0);
     draftA = /primary:\s+(\S+)/.exec(r.stdout)?.[1] ?? "";
-    expect(draftA).toMatch(/^lar:\/\/\/ha\.ka\.ba\/wikis\/lares\/drafts\/0x[0-9a-f]{64}$/);
+    expect(draftA).toBe(WORKING_LARES);
+  });
+
+  test("★ ⑤ on A: the placement SURFACES in A's running wiki — the working layer projects it to wikis/lares/ ★", async () => {
+    // The wiki island mounts the SAME working doc the recipe seat wrote (the ONE slot-doc resolver), and
+    // its disk mirror sites the working layer under wikis/{slug}/ — a file here is the running wiki's own
+    // projection of the placement, never the daemon's.
+    const f = join(A!.root, "wikis/lares", `${PATH}.mem`);
+    const deadline = Date.now() + 60_000;
+    while (!existsSync(f)) {
+      if (Date.now() > deadline) throw new Error(`A's running wiki never surfaced the placement at ${f}`);
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    const text = readFileSync(f, "utf8");
+    expect(text).toContain("<<~ ahu #/a>>");
+    expect(text).toMatch(BAG_LINE);
+  });
+
+  test("★ ⑤ on A: the daemon wiki holds its own WORKING layer above its bag ★ — and MEASURE where the anchor lands", async () => {
+    // Operator ruling: working layers for ALL wikis — the daemon reads as a wiki. Its working doc
+    // resolves through the same resolver under the same binding law, late-attached above the daemon
+    // bag as the default writable, and the cascade's `current-wiki-bag` re-seeds to it.
+    expect(A!.bootLog()).toContain("[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working");
+    // MEASURED, not ruled: the anchor `meme put` places through the live `$tw.wiki`, and nothing in the
+    // tree carries a live wiki change OUT to `IslandAdaptor.saveTiddler` (only `wiki-sync` sessions and
+    // tests call it; `$tw.syncer` does not run) — so the placement stands in the wiki alone and `wiki
+    // which` reads no bag for it. The cascade's seat is right; the outbound bridge is owed.
+    const anchorUri = "lar:///t.witness.npc/anchor";
+    const f = join(A!.root, "anchor.mem");
+    writeFileSync(f, meme(["a"]).replaceAll(URI, anchorUri).replace(`uri-path = "${PATH}"`, `uri-path = "t.witness.npc/anchor"`));
+    const put = await A!.cli(["meme", "put", anchorUri, "--file", f, "--json"]);
+    expect(put.json?.["ok"], said(put)).toBe(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    const which = await A!.cli(["wiki", "which", anchorUri, "--no-json"]);
+    console.error(`meme-two-vessel-bag MEASURE A: anchor meme put → wiki which ${anchorUri}\n${which.stdout.trim()}`);
   });
 
   test("⑥ B stands, dialing A — the founder's persona doc resolved over the crossing", () => {
@@ -176,9 +214,9 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
   });
 
   test("⑥ MEASURE: what each vessel mounts writable, and where the recipe seat writes", async () => {
-    // Laid flat for the operator, never ruled here: the recipe record designates `wikis/lares/draft`
-    // (genesis-doc.ts `systemRecipe`); `wiki which` reads the per-DID draft it resolves to; the daemon's
-    // `bag stats` names what each vessel holds resident.
+    // Laid flat for the operator, never ruled here: the recipe record designates `wikis/lares/working`
+    // (genesis-doc.ts `systemRecipe`); `wiki which` reads the working doc the ONE resolver names; the
+    // daemon's `bag stats` names what each vessel holds resident.
     for (const [tag, v] of [["A", A!], ["B", B!]] as const) {
       const stats = await v.cli(["bag", "stats", "--no-json"]);
       const which = await v.cli(["wiki", "which", URI, "--no-json"]);
@@ -191,11 +229,11 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(refused.json?.["ok"]).toBe(false);
   });
 
-  test("⑦ MEASURE: `act MOVE` out of the per-DID draft refuses — the draft is no registered cap bag", async () => {
-    const mv = await A!.cli(["act", "MOVE", "--title", URI, "--from", draftA, "--to", LARES_BAG, "--yes", "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE A: act MOVE ${draftA} → lares → ${said(mv).trim().slice(0, 400)}`);
-    expect(mv.json?.["ok"]).toBe(false);
-    expect(JSON.stringify(mv.json)).toContain("bag not registered");
+  test("⑦ MEASURE: `act MOVE` out of the working layer — the promotion door, laid flat", async () => {
+    // Dry-run: the MOVE's verdict is measured, never taken here — ⑦ below promotes through `act LOAD`
+    // so the working copy still shadows the recipe read on A.
+    const mv = await A!.cli(["act", "MOVE", "--title", URI, "--from", draftA, "--to", LARES_BAG, "--dry-run", "--json"]);
+    console.error(`meme-two-vessel-bag MEASURE A: act MOVE --dry-run ${draftA} → lares → ${said(mv).trim().slice(0, 400)}`);
   });
 
   test("⑦ A promotes through the one door: `act LOAD` the carrier into lar:///ha.ka.ba/bags/lares", async () => {
@@ -203,16 +241,16 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(ld.json?.["ok"], said(ld)).toBe(true);
     const which = await A!.cli(["wiki", "which", URI, "--no-json"]);
     expect(which.stdout).toContain(`  ${LARES_BAG}`);
-    // A's own draft still shadows the recipe read; the bag read names the promoted copy.
+    // A's own working layer still shadows the recipe read; the bag read names the promoted copy.
     const r = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(String((r.json?.["data"] as Record<string, unknown>)["text"])).toMatch(BAG_LINE);
   });
 
-  test("⑦ MEASURE on B: the recipe seat's `get` reads its designated bag alone, never the recipe's stack", async () => {
-    const r = await B!.cli(["meme", "get", URI, ...WIKI, "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE B: meme get --recipe lares → ${said(r).trim().slice(0, 300)}`);
-    expect(r.json?.["ok"]).toBe(false);
+  test("★ ⑦ on B: the recipe seat's `get` reads the STACK — canon answers through --recipe while B's working holds nothing ★", async () => {
+    const r = await awaitMeme(B!, WIKI, (t) => t.includes("<<~ ahu #/a>>"));
+    expect(r.text).toMatch(BAG_LINE);
+    expect(r.canonicalHash).toBe(baseA);
   });
 
   test("⑦ on B: `get` carries the `bag` line byte-whole and no `$origin-bag`", async () => {
@@ -244,7 +282,7 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     const f = join(B!.root, "npc-b.mem");
     writeFileSync(f, meme(["a", "b"]));
     // The base B read names the shared bag's render; the recipe seat gates a put against ITS bag (B's
-    // empty draft), so the base licenses nothing there — measured, not ruled. The shared bag refuses a
+    // empty working layer), so the base licenses nothing there — measured, not ruled. The shared bag refuses a
     // put outright. The edit rides the same door the promotion rode.
     const put = await B!.cli(["meme", "put", URI, ...WIKI, "--base", baseB, "--file", f, "--json"]);
     console.error(`meme-two-vessel-bag MEASURE B: meme put --recipe lares --base <lares render> → ${said(put).trim().slice(0, 300)}`);
@@ -252,7 +290,7 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(bagPut.json?.["ok"]).toBe(false);
     const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", LARES_BAG, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
-    // A's draft shadows A's recipe read (measured above); the shared bag carries B's slot back to A.
+    // A's working layer shadows A's recipe read (measured above); the shared bag carries B's slot back to A.
     const back = await awaitMeme(A!, BAG, (t) => t.includes("<<~ ahu #/b>>"));
     expect(back.text).toMatch(BAG_LINE);
     expect(back.text).not.toContain("$origin-bag");

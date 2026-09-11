@@ -30,12 +30,12 @@
 import {
   BagStowage,
   makeWikiActivationCap,
-  slugFromUri, wikiBagUri, tiddlerText,
+  slugFromUri, wikiBagUri, tiddlerText, recipeUri, recipeFromRecord,
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
 } from "@lararium/mesh";
 import type {
   ActivationPool, WikiActivationCap, ResolveWikiSpec,
-  LarDoc, DocHandle,
+  LarDoc, DocHandle, LarTiddlerRecord,
 } from "@lararium/mesh";
 import { buildWikiMountSpec } from "./vessel-steps.js";
 import type { DaemonVmCore } from "./daemon-vm-core.js";
@@ -155,6 +155,9 @@ export function makeVesselResidency(
       const slug    = slugFromUri(wikiId);
       const wikiUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[wikiBagUri(slug)]) ?? null;
       if (!wikiUrl || !wikiUrl.startsWith("automerge:")) return null;   // unknown → park/drop
+      // The libraries the wiki's recipe record names lay at boot (`recipeFromRecord`).
+      const rec = catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)] as LarTiddlerRecord | undefined;
+      const libraryBags = rec ? recipeFromRecord(rec, slug).libraryBags : undefined;
       const { spec } = await buildWikiMountSpec(daemon, {
         activeWikiId: wikiId,
         wikiSlug:     slug,
@@ -162,6 +165,7 @@ export function makeVesselResidency(
         islandUrl,
         wikiUrl,
         catalogUrl:   catalogHandle.url,
+        ...(libraryBags ? { libraryBags } : {}),
       });
       return spec;
     };

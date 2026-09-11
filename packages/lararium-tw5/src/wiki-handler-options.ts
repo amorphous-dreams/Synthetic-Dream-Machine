@@ -6,7 +6,7 @@
  * the re-export hub it grew from collapsed (YIN).
  */
 
-import type { Repo, CompositeStore } from "@lararium/mesh";
+import type { Repo, CompositeStore, SlotReach } from "@lararium/mesh";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 import type { ResidencyOpPost } from "./worker-data-verbs.js";
 
@@ -37,6 +37,13 @@ export interface WikiMintHandlerOptions {
    * lar: BAG URL (the cap-gate's verify key), never the automerge doc url.
    */
   readonly registerBag?: (bagUrl: string) => Promise<void>;
+  /**
+   * THE ONE DRAFT RESOLVER (`resolveSlotDoc`, seated in the keyhive-holding daemon): the wiki's draft
+   * doc — the PersonaGroup × fingerprint binding when the vessel holds a seat, else the device floor
+   * keyed by the vessel DID — and which of the two it reached. Every site that names the draft doc
+   * (wiki init, prune-stale, meme put --recipe, the mounts) reads through it; none keys its own.
+   */
+  readonly resolveDraftDoc: (slug: string) => Promise<{ readonly url: string; readonly reach: SlotReach }>;
 }
 
 /** prune-stale additionally reads the operator's draft oracle off the daemon

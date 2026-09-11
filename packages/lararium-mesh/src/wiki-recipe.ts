@@ -34,6 +34,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { Heads } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
+import { bagStackFromRec } from "./bag-stack-from-rec.js";
 import { requireLarDid, type LarDid } from "./lar-did.js";
 
 /** A slot URI in the lar:///ha.ka.ba/{bags,wikis}/@<name> namespace. */
@@ -68,6 +69,11 @@ export const ORACLE_BAG   = ORACLE_DOC_URI;
 /** crossroads — the public oracle plane; a recipe library bag whose pointer the oracle plane serves (public infra). */
 export const CROSSROADS_BAG = CROSSROADS_DOC_URI;
 
+/** The SYSTEM bags — their doc pointers ride the oracle plane's well-known tiddlers, never the catalog
+ *  registry. Every other bag resolves from the catalog. The one spelling the island kernel, recipe-watch
+ *  and the slot-doc resolver read. */
+export const SYSTEM_BAGS: ReadonlySet<string> = new Set([ORACLE_BAG, LARARIUM_BAG, LARES_BAG]);
+
 /** Build a wiki's CANON BAG URI from a slug (`bags/{slug}`) — the published,
  *  promotion-target content plane, read-only from the wiki. MUST agree with the
  *  doc consts (DAEMON_BAG_ID etc), which the daemon's composite mount and its
@@ -82,13 +88,46 @@ export function wikiDraftBagUri(slug: string): SlotUri {
   return wikiSlotUri(slug, "draft");
 }
 
-/** The catalog registry key for a per-vessel draft doc (`wikis/{slug}/drafts/{did}`) — the
- *  per-operator draft-doc pointer, above the fold. ONE source for the host reader
- *  (recipeHostFacets) and the mint/draft writers, so the round-trip never drifts. The DID carries
- *  the one spelling (`didFromVerifyingKey`); any other refuses loud, so no host keys a draft under a
- *  name the others cannot find. */
+/** The catalog registry key of a wiki's draft FLOOR doc (`wikis/{slug}/drafts/{did}`) — the doc the
+ *  draft slot binds to while this vessel holds no seat in a PersonaGroup ("a private device so far",
+ *  `resolveSlotDoc`). ONE spelling for the resolver and every reader. The DID carries the one
+ *  spelling (`didFromVerifyingKey`); any other refuses loud, so no host keys a floor under a name the
+ *  others cannot find. */
 export function wikiDraftDocKey(slug: string, vesselDid: LarDid): SlotUri {
   return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(vesselDid, "wikiDraftDocKey"))}`;
+}
+
+/** Who reaches a slot's doc — the `face-reach` field every binding record carries: `face` when the
+ *  doc delegates to the PersonaGroup (fleet-synced), `vessel-only` when it rides the vessel's own
+ *  key alone (the floor — a private device so far). */
+export type SlotReach = "face" | "vessel-only";
+
+/** The ports the ONE slot-doc law resolves through. Each site supplies what it holds; the law stays. */
+export interface SlotDocPorts {
+  /** Whether the face this vessel pins holds a SEAT the vessel can delegate to. */
+  readonly seated: () => Promise<boolean>;
+  /** The PersonaGroup × recipe-fingerprint binding — minted and delegated on absent. */
+  readonly faceDoc: () => Promise<string>;
+  /** The device floor — the doc keyed by this vessel's DID; minted on absent, delegated to nobody. */
+  readonly floorDoc: () => Promise<string>;
+}
+
+/**
+ * THE ONE SLOT-DOC LAW. One doc reaches the fleet WHEN the vessel holds a seated PersonaGroup cap;
+ * ELSE the slot falls to the device floor — and says so. It never refuses for want of a group: the
+ * cap-stack falls to the floor, never reds. A seat that lands later resolves the face doc from then
+ * on; the floor stays what it was, a private device's own.
+ */
+export async function resolveSlotDoc(ports: SlotDocPorts): Promise<{ url: string; reach: SlotReach }> {
+  const seated = await ports.seated().catch(() => false);
+  if (seated) return { url: await ports.faceDoc(), reach: "face" };
+  return { url: await ports.floorDoc(), reach: "vessel-only" };
+}
+
+/** The instance-slot kind a URI names for `slug`, or null when it names none (a canon or library bag). */
+export function wikiSlotKindOf(slug: string, uri: string): WikiSlotKind | null {
+  for (const kind of WIKI_SLOT_KINDS) if (uri === wikiSlotUri(slug, kind)) return kind;
+  return null;
 }
 
 /**
@@ -97,6 +136,8 @@ export function wikiDraftDocKey(slug: string, vesselDid: LarDid): SlotUri {
  * identical bags. This REPLACES the bespoke `planActiveWikiSlot`: one slug, one
  * set of slot minters, every context (node vessel, browser vessel, future) flows
  * through it (the isomorphic core — a wiki recipe is a nameless-entity #has-cap-stack).
+ * The draft slot's DOC is no facet of the slug: the daemon's slot-doc resolver names it
+ * (`resolveSlotDoc`), and the host mount reads through that resolver.
  */
 export interface WikiHostFacets {
   readonly wikiSlug: string;
@@ -106,18 +147,18 @@ export interface WikiHostFacets {
   readonly wikiBagId: string;
   /** The per-wiki draft layer bagId (`wikis/{slug}/draft`). */
   readonly draftBagId: string;
-  /** The catalog registry key for THIS operator's per-DID draft doc (`wikis/{slug}/drafts/{did}`). */
-  readonly draftOracleTitle: string;
+  /** The per-wiki working layer bagId (`wikis/{slug}/working`) — the default writable. */
+  readonly workingBagId: string;
 }
 
-/** Project a wiki's host-side facets from its slug + the vessel's DID (the one spelling). */
-export function recipeHostFacets(wikiSlug: string, vesselDid: LarDid): WikiHostFacets {
+/** Project a wiki's host-side facets from its slug. */
+export function recipeHostFacets(wikiSlug: string): WikiHostFacets {
   return {
     wikiSlug,
-    wikiKey:          wikiUri(wikiSlug),
-    wikiBagId:        wikiBagUri(wikiSlug),
-    draftBagId:       wikiSlotUri(wikiSlug, "draft"),
-    draftOracleTitle: wikiDraftDocKey(wikiSlug, vesselDid),
+    wikiKey:      wikiUri(wikiSlug),
+    wikiBagId:    wikiBagUri(wikiSlug),
+    draftBagId:   wikiSlotUri(wikiSlug, "draft"),
+    workingBagId: wikiSlotUri(wikiSlug, "working"),
   };
 }
 
@@ -295,6 +336,62 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     // wiki-recipe = oracle floor + lararium bag + lares bag).
     ORACLE_BAG,
   ])];
+}
+
+/**
+ * The ONE default writable of a wiki: the working slot when its handle stands, else the wiki's canon
+ * bag (the floor — a grant-less mount still lands a bagless write somewhere, never a red). The
+ * volatile temp slot NEVER holds the office: a tombstone falling into temp hides the lower record
+ * for one session and the tiddler resurrects at the next boot.
+ */
+export function defaultWritableSlot(slug: string, workingMounted: boolean): SlotUri {
+  return workingMounted ? wikiSlotUri(slug, "working") : wikiBagUri(slug);
+}
+
+/**
+ * The layer flags a slot registers with. Every slot is writable — the in-wiki cascade decides
+ * routing, the composite refuses nothing. `defaultWritable` marks `defaultWritableSlot` alone; every
+ * other layer registers `false` so the last-registered temp store never takes the office.
+ */
+export function slotLayerFlags(slot: SlotUri, slug: string, workingMounted: boolean): { writable: true; defaultWritable: boolean } {
+  return { writable: true, defaultWritable: slot === defaultWritableSlot(slug, workingMounted) };
+}
+
+/** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded
+ *  through the manifest as grants, never named in a recipe record. */
+export const WIKI_SLOT_KINDS: readonly WikiSlotKind[] = ["temp", "draft", "personal", "working"];
+
+/**
+ * The slots the recipe model owns STRUCTURALLY for a wiki — the four instance slots, the wiki's own
+ * canon bag, and the oracle floor. Everything else in a cascade counts as a LIBRARY bag: the set a
+ * recipe record's `bag-stack` names and a live reconcile diffs. The one spelling `recipeFromRecord`,
+ * `recipeRecordFields` and recipe-watch all read.
+ */
+export function structuralSlots(slug: string): ReadonlySet<SlotUri> {
+  return new Set<SlotUri>([...WIKI_SLOT_KINDS.map((k) => wikiSlotUri(slug, k)), wikiBagUri(slug), ORACLE_BAG]);
+}
+
+/**
+ * The mount struct a recipe RECORD describes: its `bag-stack` (bottom→top) minus the structural
+ * slots, read top-first as `libraryBags`. `expandRecipe(recipeFromRecord(rec, slug))` lays exactly
+ * the bags the record names, in the record's order, with the instance slots above.
+ */
+export function recipeFromRecord(rec: LarTiddlerRecord, slug: string): WikiRecipe {
+  const structural = structuralSlots(slug);
+  const libraryBags = bagStackFromRec(rec).filter((uri) => !structural.has(uri)).reverse();
+  return { wikiSlug: slug, ...(libraryBags.length > 0 ? { libraryBags } : {}) };
+}
+
+/**
+ * The record fields a minter writes for a recipe — the inverse of `recipeFromRecord`. `bag-stack`
+ * is the expanded cascade bottom-up minus the instance slots (the oracle floor, the libraries, the
+ * wiki's own canon); `writable-bag` names the working slot, the ONE default writable the mount lays.
+ * The catalog registry never rides a bag-stack: it is an ACCESS grant, never a layer.
+ */
+export function recipeRecordFields(r: WikiRecipe): { label: string; "bag-stack": string; "writable-bag": string } {
+  const instance = new Set<SlotUri>(WIKI_SLOT_KINDS.map((k) => wikiSlotUri(r.wikiSlug, k)));
+  const stack = [...expandRecipe(r)].reverse().filter((uri) => !instance.has(uri));
+  return { label: r.wikiSlug, "bag-stack": stack.join(" "), "writable-bag": wikiSlotUri(r.wikiSlug, "working") };
 }
 
 // Write routing happens via the in-wiki `lar:///ha.ka.ba/lararium/config/bag-paths` cascade

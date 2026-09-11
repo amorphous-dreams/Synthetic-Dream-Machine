@@ -76,7 +76,7 @@ import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, 
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
-import { vesselDyads, DYAD_VEIL_TAG_TIDDLER, didFromVerifyingKey } from "@lararium/mesh";
+import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -907,16 +907,15 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const sel = selectActiveWikiSlug(wikiId, (await readDaemonDoc()).doc()?.tiddlers?.[ACTIVE_WIKI_URI] ?? null);
     activeWikiSource = sel.source;
     slotActiveWikiId = sel.slug;
-    // The draft doc keys under the vessel DID — the one spelling every writer mints from the
-    // verifying key — so the mount and the daemon's draft writers walk one key.
-    const facets = recipeHostFacets(slugFromUri(sel.slug), didFromVerifyingKey(vesselIdentity.verifyingKey));
+    // The draft DOC is no facet of the slug — the daemon's slot-doc resolver names it at mount.
+    const facets = recipeHostFacets(slugFromUri(sel.slug));
     return {
-      activeWikiId:     sel.slug,
-      wikiSlug:         facets.wikiSlug,
-      wikiKey:          facets.wikiKey,
-      wikiBagId:        facets.wikiBagId,
-      draftOracleTitle: facets.draftOracleTitle,
-      draftBagId:       facets.draftBagId,
+      activeWikiId: sel.slug,
+      wikiSlug:     facets.wikiSlug,
+      wikiKey:      facets.wikiKey,
+      wikiBagId:    facets.wikiBagId,
+      draftBagId:   facets.draftBagId,
+      workingBagId: facets.workingBagId,
     };
   };
 
@@ -1040,7 +1039,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           personaGroupId: p.personaGroupId,
           catalogNamed: p.personaGroupId === personaGroupDocIdHex ? catalogNamedBags(assembly.catalogHandle.doc()) : [],
         })),
-        ...(slot ? { wikiBags: [slot.wikiBagId, slot.draftBagId] } : {}),
+        ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
       }),
       ...(signerDid ? { signerDid } : {}),
       ...(personaKelPrefix && personaKelChain

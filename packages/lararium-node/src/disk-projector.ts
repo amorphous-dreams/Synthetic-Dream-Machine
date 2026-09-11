@@ -125,6 +125,11 @@ export function carrierDiskFiles(absBase: string): string[] {
   } catch { return []; }
 }
 
+/** The per-mirror siting memory's key. */
+function sitedKey(bagId: string, uri: string): string {
+  return `${bagId}\n${uri}`;
+}
+
 export class LarDiskProjector {
   /**
    * URIs currently being written to disk.
@@ -138,6 +143,15 @@ export class LarDiskProjector {
   private _firstFlushDone = false;
 
   private _tw5: TW5Engine | null = null;
+
+  /**
+   * Where each carrier LAST sited, per mirror (`bagId\nuri` → extension-less mirror-relative base).
+   * The stock filesystem adaptor keeps the same memory as `$tw.boot.files`: a delete runs after
+   * the tiddler has gone, so the path a `$:/config/FileSystemPaths` rule named can no longer be
+   * recomputed — the last siting answers, and a title never flushed this session falls back to
+   * the loci law. A rule that moves a carrier unlinks its previous files (`cleanupTiddlerFiles`).
+   */
+  private readonly sited = new Map<string, string>();
 
   private readonly mirrors: readonly BagMirrorConfig[];
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
@@ -291,7 +305,7 @@ export class LarDiskProjector {
    * an empty array means the name resolved but no file sits on disk.
    */
   private mirrorCarrierFiles(mirror: BagMirrorConfig, uri: string): string[] | null {
-    const base = carrierBaseRelPath(uri);
+    const base = this.sited.get(sitedKey(mirror.bagId, uri)) ?? carrierBaseRelPath(uri);
     if (!base) return null;
     const gate = confineMirrorWrite(mirror.mirrorRoot, base, mirror.allowBagsRootFiles);
     if (!gate.ok) {
@@ -300,6 +314,15 @@ export class LarDiskProjector {
       return null;
     }
     return carrierDiskFiles(gate.path);
+  }
+
+  /** Unlink the files a carrier left at a base it no longer sites at (a siting rule moved it). */
+  private async _unlinkSited(mirror: BagMirrorConfig, base: string): Promise<void> {
+    const gate = confineMirrorWrite(mirror.mirrorRoot, base, mirror.allowBagsRootFiles);
+    if (!gate.ok) return;
+    for (const f of carrierDiskFiles(gate.path)) {
+      try { if (existsSync(f)) unlinkSync(f); } catch { /* best-effort — operator can clean up manually */ }
+    }
   }
 
   /** Unlink by trying all mirrors whose path strategy resolves the URI — but a
@@ -320,6 +343,7 @@ export class LarDiskProjector {
           }
         }
         this.syncedTree?.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
+        this.sited.delete(sitedKey(mirror.bagId, title));
       } catch { /* best-effort — operator can clean up manually */ }
     }
   }
@@ -349,10 +373,20 @@ export class LarDiskProjector {
     // hands back the chosen extension + bytes + any `.meta` sidecar, so a
     // memetic carrier sites `.mem` and a `.tid`/`.json`/`.md` record projects
     // back as its OWN file. The VM decides the type; the projector only sites.
-    const base = carrierBaseRelPath(tiddlerUri);
-    if (!base) return;
     const file = await this.carrierFileFn(tiddlerUri);
     if (file === null) return;
+    // A `$:/config/FileSystemPaths` rule in the island wiki names the path first — the same
+    // tiddler names it for a stock server's filesystem adaptor, so both doors site one file.
+    // No rule: the loci law sites `lar:///w.w.w/…` at its uri-path and a foreign title nowhere
+    // (a pack member's home is its pack — disk-projection#/projection-routing rule 2).
+    const base = file.relPath !== undefined && file.relPath.endsWith(file.ext)
+      ? file.relPath.slice(0, file.relPath.length - file.ext.length)
+      : carrierBaseRelPath(tiddlerUri);
+    if (!base) return;
+    const key = sitedKey(bagId, tiddlerUri);
+    const previous = this.sited.get(key);
+    if (previous !== undefined && previous !== base) await this._unlinkSited(mirror, previous);
+    this.sited.set(key, base);
     const relPath  = base + file.ext;
     const output   = file.body;
     const metaBody = file.metaBody;

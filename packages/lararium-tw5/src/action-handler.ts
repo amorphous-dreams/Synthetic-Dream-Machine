@@ -38,9 +38,10 @@ import type {
   Verb,
   Repo,
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
+  WikiSlotKind,
 } from "@lararium/mesh";
 import {
-  ACTION_VERBS, type ActionVerb,
+  ACTION_VERBS, type ActionVerb, AutomergeDocStore,
   parseResidencyAction, withEffectRecord, sha256HexSync, sha256HexBytesSync, tagDigest, digestsEqual,
   emptyLarDoc, mutableLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
   ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
@@ -50,7 +51,7 @@ import {
 } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
-import { makeCatalogAccessor } from "./catalog-accessor.js";
+import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
@@ -195,7 +196,13 @@ export interface ActionHandlerOptions {
    * explicit, audited, access-scoped events, never a floor re-seated. Absent =
    * composite-only (the wiki island, which holds its own write layer).
    */
-  readonly reach?: { repo: Repo; catalogUrl: string | null; oracleUrl: string | null };
+  readonly reach?: {
+    repo: Repo; catalogUrl: string | null; oracleUrl: string | null;
+    /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
+     *  resolver — the door a promotion MOVE out of `wikis/<slug>/working` rides. Absent = the
+     *  registry planes alone. */
+    slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
+  };
   /**
    * Register a freshly-minted bag's Keyhive Document + delegate admin to the
    * operator — called by CREATE in the SAME act as the mint, so a new bag is
@@ -258,6 +265,16 @@ function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
         for (const accessor of planes) {
           store = await accessor.storeOf(bag).catch(() => null);
           if (store) break;
+        }
+      }
+      // A wiki's instance slot (`wikis/<slug>/<kind>`) — the doc THE ONE resolver names, the same
+      // doc its island mounts; reached by access, never mounted here.
+      if (!store && reach.slotDocUrl) {
+        const m = /^lar:\/\/\/ha\.ka\.ba\/wikis\/([^/]+)\/(draft|working|personal)$/.exec(bag);
+        if (m) {
+          const url = await reach.slotDocUrl(m[1]!, m[2] as WikiSlotKind, { mint: false }).catch(() => null);
+          const handle = url ? await findOrThrow(reach.repo, url, bag).catch(() => null) : null;
+          store = handle ? new AutomergeDocStore(handle, bag) : null;
         }
       }
       cache.set(bag, store);
@@ -683,14 +700,18 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (!tw5 || CARRIER_SOH.test(carrierText)) {
       fieldsList = memeticWikitextDeserializer(carrierText, { title: carrier.title ?? "" });
     } else {
-      // The `.meta` sidecar seeds fields FIRST (TW5's own parser), so a content
-      // carrier keeps its type/tags/custom fields; the carrier title (when named)
-      // holds authority. Then the extension routes to TW5's registry — it resolves
-      // the content-type + the right deserializer, or falls back to text/plain.
-      const baseFields: Record<string, unknown> = {};
-      if (carrier.meta) Object.assign(baseFields, tw5.parseFields(carrier.meta));
-      if (carrier.title) baseFields["title"] = carrier.title;
+      // The extension routes to TW5's registry — it resolves the content-type + the right
+      // deserializer, or falls back to text/plain; the carrier title (when named) holds authority.
+      // The `.meta` sidecar merges OVER the first record AFTER the deserialize — TW5's own
+      // folder-loader law (`loadTiddlersFromFile`) — so the sidecar's `type` wins over the
+      // extension's and a content carrier keeps its type/tags/custom fields.
+      const baseFields: Record<string, unknown> = carrier.title ? { title: carrier.title } : {};
       fieldsList = tw5.deserialize(carrier.ext || "text/plain", carrierText, baseFields);
+      if (carrier.meta && fieldsList.length > 0) {
+        const metaFields = { ...tw5.parseFields(carrier.meta) };
+        if (carrier.title) delete metaFields["title"];
+        fieldsList[0] = { ...fieldsList[0], ...metaFields };
+      }
     }
     for (const fields of fieldsList) {
       const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
@@ -860,16 +881,17 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         results.push({ uri, decision: "noop", reason: "disk-matches-synced" });
         continue;
       }
-      // The `.meta` sidecar seeds the fields FIRST (TW5's own field parser), so a
-      // content carrier keeps its type/tags/custom fields across a body-only edit.
-      // A base `title` is NEVER passed to the deserialize: a DICTIONARY bundle
-      // (`.multids`) takes the base title as a member-title PREFIX (boot.js:1719),
-      // which would corrupt every member. Titles come from the content; a
-      // title-less SINGLE carrier falls back to the loci URI below.
-      const baseFields: Record<string, unknown> = {};
-      if (carrier.meta) Object.assign(baseFields, tw5!.parseFields(carrier.meta));
-      delete baseFields["title"];
-      const fieldsList = tw5!.deserialize(carrier.ext || "text/plain", carrierText, baseFields);
+      // The `.meta` sidecar merges OVER the deserialized record AFTER the deserialize — TW5's own
+      // folder-loader law (`loadTiddlersFromFile`: `extend({}, tiddlers[0], metadata)`), so the
+      // sidecar's `type` wins over the extension's registered type and a content carrier keeps its
+      // type/tags/custom fields across a body-only edit. No base `title` is ever passed to the
+      // deserialize: a DICTIONARY bundle (`.multids`) takes the base title as a member-title PREFIX
+      // (boot.js:1719), which would corrupt every member. Titles come from the content; a title-less
+      // SINGLE carrier falls back to the loci URI below.
+      const metaFields: Record<string, unknown> = carrier.meta ? { ...tw5!.parseFields(carrier.meta) } : {};
+      delete metaFields["title"];
+      const fieldsList = tw5!.deserialize(carrier.ext || "text/plain", carrierText, {});
+      if (carrier.meta && fieldsList.length > 0) fieldsList[0] = { ...fieldsList[0], ...metaFields };
       freshRecords = fieldsList.map((fields) => {
         const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
         return { ...fields, title: own || uri };

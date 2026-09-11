@@ -14,6 +14,14 @@ module-type: route
  *
  * `:bag` names a container the server resolves. `default` names THE HOST'S ANCHOR — the one wiki on a
  * plain server; @daemon on a lares island. Any other recipe or bag answers 404 with a one-line body.
+ *
+ * ── A RECIPE READS ITS STACK ────────────────────────────────────────────────────────────────────
+ * On a plain server the wiki IS the stack: `recipes/default` reads the one wiki, top to bottom, and
+ * that is the whole recipe. On an island a recipe is a stack of bags (canon ← working ← draft ←
+ * temp), and `meme get --recipe <slug>` reads it the same way — top-down, the first live record
+ * wins — while `meme put --recipe <slug>` writes the recipe's designated writable bag. The two doors
+ * answer the same bytes and the same `canonicalHash` for the same recipe; `tests/e2e/recipe-parity`
+ * witnesses it over a live fork server and a staged island.
  */
 
 import { readMeme, wikiMemeSink, MEME_PATH, memeUriOfParams } from "../place-meme.js";

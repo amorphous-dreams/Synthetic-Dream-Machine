@@ -90,6 +90,16 @@ export class IslandAdaptor implements MemeProjection {
 
   private _unsubscribe: (() => void) | null = null;
 
+  /**
+   * THE LAST-KNOWN-SLOT MAP (`lar:///ha.ka.ba/lararium/config/slot-of`) — the slot each title last
+   * landed in this session: fed at every outbound save with the cascade's verdict, and at every
+   * inbound apply with the envelope's bag (the value the nalu stamps as `$origin-bag`), so a draft
+   * loaded from the CRDT at boot and deleted before any save still resolves. A delete reads it before
+   * the cascade, because the tiddler is gone by then and no field can be read. Volatile: one adaptor,
+   * one session.
+   */
+  private readonly _slotOf = new Map<string, SlotUri>();
+
   constructor(
     private readonly tw5:   TW5Engine,
     private readonly store: LarTiddlerStore,
@@ -186,6 +196,11 @@ export class IslandAdaptor implements MemeProjection {
    */
   onUriChanged(change: LarTiddlerChange): void {
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) return;
+
+    // The envelope names the bag a live record arrived from — the last-known slot for its delete.
+    if (change.bag !== undefined && change.record !== null && !change.record.meta?.deleted) {
+      this._slotOf.set(change.title, change.bag as SlotUri);
+    }
 
     if (change.record === null || change.record.meta?.deleted) {
       const store = this.store as { resolveTopmost?: (t: string) => Promise<{ bagId: string; record: LarTiddlerRecord } | null> };
@@ -284,13 +299,21 @@ export class IslandAdaptor implements MemeProjection {
   deleteTiddler(title: string): Promise<void> {
     if (this._isApplying()) return Promise.resolve();
     // A DELETE ROUTES LIKE A SAVE, and the tiddler is already gone from the wiki when this runs — so
-    // any rule keyed on a tiddler's EXISTENCE would route its creation and drop its deletion, leaving
-    // a record that resurrects on the next boot. The cascade keys on titles for exactly this reason.
-    if (this._destination(title) === null) return Promise.resolve();
+    // a rule reading a FIELD (`draft.of`) would route its creation and drop its deletion, leaving a
+    // record that resurrects on the next boot. The last-known-slot map answers first; a title never
+    // seen this session falls back to the cascade's title read. The tombstone lands in THAT bag — a
+    // bagless tombstone falls into the composite's default writable, a bag the cascade never named.
+    const slot = this._slotOf.get(title) ?? this._destination(title);
+    if (slot === null) return Promise.resolve();
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
+    const store = this.store as LarTiddlerStore & { tombstoneInBag?: (bag: string, title: string, origin: ChangeOrigin) => Promise<void> };
+    const landed = typeof store.tombstoneInBag === "function"
+      ? store.tombstoneInBag(slot, title, origin)
+      : store.tombstone(title, origin);
 
-    return this.store.tombstone(title, origin).then(() => {
+    return landed.then(() => {
+      this._slotOf.delete(title);
       this._removeSlotChildren(title);
     });
   }
@@ -321,8 +344,10 @@ export class IslandAdaptor implements MemeProjection {
       // the projector targeting the stale source mirror (byte-identical → silent
       // hash-skip) and never publishing the destination. resolveTopmost carries
       // the origin-bag the read path needs (residency-model anti-pattern #4).
+      this._slotOf.set(change.title, survivor.bagId as SlotUri);
       this._enqueue({ title: change.title, record: survivor.record, origin: change.origin, bag: survivor.bagId });
     } else {
+      this._slotOf.delete(change.title);
       this._enqueue(change);
     }
   }
@@ -348,6 +373,7 @@ export class IslandAdaptor implements MemeProjection {
     // null when no rule matches or an explicit-skip rule fires (e.g. $:/* system tiddlers).
     const targetBag = this._destination(title) ?? undefined;
     if (!targetBag) return;
+    this._slotOf.set(title, targetBag);
     // `$origin-bag` is the host's stamp on the wiki tiddler (nalu-engine), never a persisted field;
     // `bag` is the author's and rides through whole.
     const { "$origin-bag": _origin, ...persistedParent } = parent;

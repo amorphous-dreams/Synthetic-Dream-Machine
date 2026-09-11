@@ -26,6 +26,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
+import { isPersonalTitle }  from "../src/filters/lar-kind.js";
 import { wikiSlotUri, type LarTiddlerChange, type ChangeOrigin } from "@lararium/mesh";
 
 const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
@@ -66,12 +67,9 @@ class FakeTW5Engine {
         "[prefix[$:/status/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]",
         "[prefix[$:/boot/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]",
         "[prefix[$:/HistoryList]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]",
-        "[prefix[$:/StoryList]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]",
-        "[prefix[$:/state/folded/]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]",
-        "[prefix[$:/state/tab-]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]",
-        "[prefix[$:/palette]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]",
+        "[lar-kind[]match[personal]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]",
         "[prefix[$:/state/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]",
-        "[prefix[Draft of ]then{lar:///ha.ka.ba/lararium/config/current-wiki-draft}]",
+        "[is[draft]then{lar:///ha.ka.ba/lararium/config/current-wiki-draft}]",
         "[prefix[lar:]then{lar:///ha.ka.ba/lararium/config/current-wiki-bag}]",
         "[regexp[.]then{lar:///ha.ka.ba/lararium/config/current-wiki-bag}]",
       ].join("\n"),
@@ -94,11 +92,13 @@ class FakeTW5Engine {
     getTiddlerText:  (title: string, fallback?: string): string =>
       this.tiddlerTexts.get(title) ?? fallback ?? "",
     filterTiddlers:  (filter: string, _widget: unknown, source: unknown): string[] => {
-      // Minimal cascade-rule parser: `<op>[X]then[Y]` or `<op>[X]then{Z}`, for the three operators
-      // the shipped cascade uses. ⚠ Each MUST read the SOURCE: TW5's `[[X]]` and `[title[X]]` are
-      // CONSTRUCTORS that yield X whatever the source holds, so an exclusion written that way
-      // withholds every write in the vessel. Measured against the real engine before it shipped.
-      const re = /^\[(prefix|match|regexp)\[([^\]]*)\]then(?:\[([^\]]*)\]|\{([^}]+)\})\]$/;
+      // Minimal cascade-rule parser: `<op>[X]then[Y]` or `<op>[X]then{Z}`, for the operators the
+      // shipped cascade uses — `prefix` · `match` · `regexp` on the title, `is[draft]` on the
+      // tiddler's `draft.of` field, and `lar-kind[]match[personal]` on the house's personal set.
+      // ⚠ Each MUST read the SOURCE: TW5's `[[X]]` and `[title[X]]` are CONSTRUCTORS that yield X
+      // whatever the source holds, so an exclusion written that way withholds every write in the
+      // vessel. Measured against the real engine before it shipped.
+      const re = /^\[(prefix|match|regexp|is|lar-kind\[\]match)\[([^\]]*)\]then(?:\[([^\]]*)\]|\{([^}]+)\})\]$/;
       const m  = re.exec(filter);
       if (!m) return [];
       const op          = m[1] ?? "";
@@ -106,9 +106,13 @@ class FakeTW5Engine {
       const literalThen = m[3];
       const refThen     = m[4];
       let title = "";
-      (source as (fn: (t: unknown, ti: string) => void) => void)((_t, ti) => { title = ti; });
+      let tiddler: unknown;
+      (source as (fn: (t: unknown, ti: string) => void) => void)((t, ti) => { tiddler = t; title = ti; });
+      const fields = (tiddler as { fields?: Record<string, unknown> } | undefined)?.fields;
       const hit = op === "prefix" ? title.startsWith(operand)
                 : op === "match"  ? title === operand
+                : op === "is"     ? operand === "draft" && fields !== undefined && "draft.of" in fields
+                : op === "lar-kind[]match" ? operand === "personal" && isPersonalTitle(title)
                 :                   new RegExp(operand).test(title);
       if (!hit) return [];
       if (literalThen !== undefined) return [literalThen]; // empty string = explicit skip

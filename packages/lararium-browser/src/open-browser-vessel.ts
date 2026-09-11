@@ -54,7 +54,7 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, VesselCoreResult, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
-import { vesselDyads, didFromVerifyingKey } from "@lararium/mesh";
+import { vesselDyads } from "@lararium/mesh";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
 import {
@@ -729,11 +729,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       const sel = selectActiveWikiSlug(wikiId, undefined);
       slotActiveWikiId = sel.slug;
       activeSurfaceId  = sel.slug;   // the pinned wiki owns #projection at boot; summon flips it live
-      const facets = recipeHostFacets(slugFromUri(sel.slug), didFromVerifyingKey(vesselVerifyingKey));
+      const facets = recipeHostFacets(slugFromUri(sel.slug));
       return {
         activeWikiId: sel.slug, wikiSlug: facets.wikiSlug,
         wikiKey: facets.wikiKey, wikiBagId: facets.wikiBagId,
-        draftOracleTitle: facets.draftOracleTitle, draftBagId: facets.draftBagId,
+        draftBagId: facets.draftBagId, workingBagId: facets.workingBagId,
       };
     },
 
@@ -784,7 +784,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
             personaGroupId: pl.personaGroupId,
             catalogNamed: pl.personaGroupId === social.personaGroupDocIdHex ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
-          wikiBags: [slot.wikiBagId, slot.draftBagId],
+          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId],
         }),
         // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
         // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.

@@ -84,6 +84,12 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     mkdirSync(path.join(wiki, "tiddlers"), { recursive: true });
     writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "meme-routes e2e", plugins: [], themes: [], build: {} }));
     copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
+    // The kind-parity witness asks the server's own filter engine over HTTP; the fork gates external
+    // filters behind this switch (get-tiddlers-json.js), so the suite's wiki folder opens it.
+    writeFileSync(path.join(wiki, "tiddlers/allow-filters.tid"), "title: $:/config/Server/AllowAllExternalFilters\n\nyes");
+    // The same route strips `$:/` titles from every answer unless this reads yes — and a partition
+    // compared over stripped answers agrees vacuously.
+    writeFileSync(path.join(wiki, "tiddlers/sync-system.tid"), "title: $:/config/SyncSystemTiddlersFromServer\n\nyes");
     const port = await freePort();
     base = `http://127.0.0.1:${port}`;
     child = spawn(process.execPath, [TW5_JS, wiki, "--listen", `port=${port}`, "host=127.0.0.1"], { stdio: ["ignore", "pipe", "pipe"] });
@@ -219,6 +225,42 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     const routed = await http("PUT", memePath("default", "bags", title), { body: text });
     expect(routed.status, routed.body).toBe(200);
     expect((await titles()).filter((t) => t.startsWith(title))).toEqual([title, `${title}#/a`, `${title}#/b`]);
+  });
+
+  /**
+   * THE KIND PARITY — `[lar-kind[]]` on the LIVE fork server answers the same partition TiddlyWiki's
+   * own predicates answer (`is[draft]` · `is[system]` · the `$:/temp/` prefixes), over tiddlers that
+   * entered by the native PUT door. The draft carries a user-attributed title and a `draft.of` field;
+   * the CONTROL carries the prefix and no field.
+   */
+  test("★ KIND PARITY: `lar-kind[]` on the live server agrees with `is[draft]`-family answers ★", async () => {
+    const put = async (fields: Record<string, string>): Promise<void> => {
+      const r = await http("PUT", `/recipes/default/tiddlers/${encodeURIComponent(fields["title"]!)}`, { body: JSON.stringify(fields) });
+      expect(r.status, r.body).toBe(204);
+    };
+    await put({ title: "Draft of 'Kind' by Alice", "draft.of": "Kind", "draft.title": "Kind", text: "drafting" });
+    await put({ title: "Draft of Beer", text: "a recipe, not a draft" });
+    await put({ title: "$:/temp/volatile/kind", text: "" });
+    await put({ title: "$:/temp/kind", text: "" });
+    await put({ title: "$:/state/folded/kind", text: "hide" });
+    await put({ title: "$:/kind/system", text: "" });
+    const ask = async (filter: string): Promise<string[]> => {
+      const r = await http("GET", `/recipes/default/tiddlers.json?filter=${encodeURIComponent(filter)}`);
+      expect(r.status, `${filter}: ${r.body}`).toBe(200);
+      return (JSON.parse(r.body) as { title: string }[]).map((t) => t.title).sort();
+    };
+    const ofKind = (kind: string): Promise<string[]> => ask(`[all[tiddlers]] :filter[lar-kind[]match[${kind}]] +[sort[]]`);
+    expect(await ofKind("draft")).toEqual(await ask("[all[tiddlers]is[draft]sort[]]"));
+    expect(await ofKind("draft")).toContain("Draft of 'Kind' by Alice");
+    expect(await ofKind("content")).toContain("Draft of Beer");
+    expect(await ofKind("volatile")).toEqual(await ask("[all[tiddlers]prefix[$:/temp/volatile/]sort[]]"));
+    expect(await ofKind("temporary")).toEqual(await ask("[all[tiddlers]prefix[$:/temp/]!prefix[$:/temp/volatile/]sort[]]"));
+    expect(await ofKind("personal")).toEqual(await ask("[all[tiddlers]is[system]] :filter[lar-kind[]match[personal]] +[sort[]]"));
+    expect(await ofKind("personal")).toContain("$:/state/folded/kind");
+    const nonSystemKinds = [...await ofKind("draft"), ...await ofKind("content")].sort();
+    expect(nonSystemKinds).toEqual(await ask("[all[tiddlers]!is[system]sort[]]"));
+    const systemKinds = [...await ofKind("volatile"), ...await ofKind("temporary"), ...await ofKind("personal"), ...await ofKind("system")].sort();
+    expect(systemKinds).toEqual(await ask("[all[tiddlers]is[system]sort[]]"));
   });
 
   test("★ THE RENDER DOOR: `tiddlywiki --render` on a stock server writes the meme through the house templates ★", async () => {

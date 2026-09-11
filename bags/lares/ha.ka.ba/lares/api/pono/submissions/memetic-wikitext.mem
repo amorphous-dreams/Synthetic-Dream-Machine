@@ -3,6 +3,7 @@
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext">>
 ```toml meta
 type = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/pono/submissions/memetic-wikitext"
 ```
 
 <<^ code="&#x0002;">>

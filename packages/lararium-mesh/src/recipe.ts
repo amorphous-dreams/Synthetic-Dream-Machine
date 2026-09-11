@@ -1,5 +1,5 @@
 /**
- * recipe — RecipeTiddler schema + URI helpers for Lares recipe tiddlers.
+ * recipe — recipe-record helpers + URI helpers for Lares recipe tiddlers.
  *
  * Canonical home: @lararium/mesh.
  * Public face: @lararium/tw5 re-exports this module as the operator-facing surface.
@@ -14,7 +14,7 @@
  *   recipeUri("catalog",  "elyncia")  → "lar:///ha.ka.ba/bags/catalog/recipes/elyncia"
  *
  * Bag stack order: lowest-priority first → highest-priority last (TW5 convention).
- * Each entry in `bagStack` is a well-known lar: bag ID (a root doc URI or corpusLarUri).
+ * Each entry in `bag-stack` is a well-known lar: bag ID (a root doc URI or corpusLarUri).
  *
  * Genesis seeds NO recipes — user recipes live in the user's catalog registry,
  * minted per-wiki by init-wiki. The lararium bag stays pure protocol substrate.
@@ -69,37 +69,8 @@ export interface BagTiddler {
 
 export { bagDescriptorUri } from "./lar-uris.js";
 
-// ---------------------------------------------------------------------------
-// RecipeTiddler — stored shape
-// ---------------------------------------------------------------------------
-
-export interface RecipeTiddler {
-  /** Stable lar: URI of this recipe tiddler (its own address). */
-  readonly title:      string;
-  /** Human-readable name shown in recipe picker UI. */
-  readonly label:      string;
-  /** Ordered bag IDs: lowest priority → highest priority (TW5 convention). */
-  readonly bagStack:   readonly string[];
-  /**
-   * Optional: the single writable bag ID for writes routed through this recipe.
-   * When absent, writes fall through to the CompositeStore's default writable layer.
-   * Set to the highest-priority bag in the stack for typical recipe use.
-   */
-  readonly writableBag?: string;
-  /**
-   * Optional: vendored TW5 community plugin blob IDs to preload for this Recipe's vm.
-   * Each entry is the blob's id (e.g. "$:/plugins/sq/streams").
-   * When absent or empty, no vendored plugins are preloaded (minimal vm).
-   * Opt-in per Recipe — plugins are never forced into all vms.
-   */
-  readonly plugins?: readonly string[];
-  /** ISO 8601 creation / last-update timestamp. */
-  readonly updatedAt:  string;
-  /** Authority that wrote this recipe tiddler. */
-  readonly authority:  string;
-  /** Owning bag (root doc URI where this tiddler lives). */
-  readonly bag:        string;
-}
+import type { LarTiddlerRecord } from "./tiddler-store.js";
+import { bagStackFromRec } from "./bag-stack-from-rec.js";
 
 // ---------------------------------------------------------------------------
 // URI helpers
@@ -107,37 +78,18 @@ export interface RecipeTiddler {
 
 export { recipeUri } from "./lar-uris.js";
 
-// ---------------------------------------------------------------------------
-// parseBagStack — isomorphic helper
-// ---------------------------------------------------------------------------
+export { parseBagStack } from "./bag-stack-from-rec.js";
 
 /**
- * Parse a bagStack value from a tiddler field into a string array.
- *
- * Handles two storage formats:
- *   - TW5 list string: `"lar:///a lar:///b lar:///c"` (space-separated; no spaces
- *     appear in lar: URIs so no [[...]] quoting required).
- *   - JS/JSON array: `["lar:///a", "lar:///b"]` (Automerge-stored or deserialized).
- *
- * Returns [] for null / undefined / unrecognised types.
- *
- * Meme: lar:///ha.ka.ba/lararium/mesh/recipe
+ * The designated writable bag a recipe record names: `writable-bag`, else the top of its
+ * `bag-stack`. Throws when the record names neither — a recipe with no bag to write is a torn record,
+ * never a default.
  */
-/**
- * Parse a plugins value from a recipe tiddler field into a string array.
- * Same format as bagStack: space-separated blob IDs or JS array.
- * Returns [] when absent — callers treat empty list as "no vendored plugins".
- */
-export function parsePlugins(raw: unknown): string[] {
-  return parseBagStack(raw);
-}
-
-export function parseBagStack(raw: unknown): string[] {
-  if (Array.isArray(raw)) {
-    return (raw as unknown[]).filter((x): x is string => typeof x === "string");
-  }
-  if (typeof raw === "string") {
-    return raw.trim().split(/\s+/).filter(Boolean);
-  }
-  return [];
+export function designatedBagOf(rec: LarTiddlerRecord, label = rec.tiddler.title): string {
+  const declared = rec.tiddler["writable-bag"];
+  if (typeof declared === "string" && declared) return declared;
+  const stack = bagStackFromRec(rec);
+  const top = stack[stack.length - 1];
+  if (!top) throw new Error(`recipe "${label}" names no writable bag and an empty bag-stack`);
+  return top;
 }

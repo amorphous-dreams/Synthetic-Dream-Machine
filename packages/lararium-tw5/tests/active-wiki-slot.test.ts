@@ -1,26 +1,23 @@
 import { describe, test, expect } from "vitest";
-import { recipeHostFacets, expandRecipe, wikiSlotUri, wikiBagUri, wikiUri, didFromVerifyingKey } from "@lararium/mesh";
-
-// The vessel DID carries one spelling — "0x" + the bare verifying-key hex — on every host.
-const DID = didFromVerifyingKey("ab".repeat(32));
+import { recipeHostFacets, expandRecipe, wikiSlotUri, wikiBagUri, wikiUri } from "@lararium/mesh";
 
 // The isomorphic core: one recipe/slug, one set of slot minters, projected two
 // ways — recipeHostFacets (VM-free host) and expandRecipe (island cascade) — must
 // name identical bags. The bespoke planActiveWikiSlot/ActiveWikiLayerSlot are gone.
 describe("wiki host facets ⋈ recipe expansion", () => {
   test("recipeHostFacets splits IDENTITY (wikis/) from CANON (bags/)", () => {
-    expect(recipeHostFacets("test-wiki", DID)).toEqual({
-      wikiSlug:         "test-wiki",
-      wikiKey:          "lar:///ha.ka.ba/wikis/test-wiki",
-      wikiBagId:        "lar:///ha.ka.ba/bags/test-wiki",
-      draftBagId:       "lar:///ha.ka.ba/wikis/test-wiki/draft",
-      draftOracleTitle: `lar:///ha.ka.ba/wikis/test-wiki/drafts/${DID}`,
+    expect(recipeHostFacets("test-wiki")).toEqual({
+      wikiSlug:     "test-wiki",
+      wikiKey:      "lar:///ha.ka.ba/wikis/test-wiki",
+      wikiBagId:    "lar:///ha.ka.ba/bags/test-wiki",
+      draftBagId:   "lar:///ha.ka.ba/wikis/test-wiki/draft",
+      workingBagId: "lar:///ha.ka.ba/wikis/test-wiki/working",
     });
   });
 
   test("host facets name the SAME bags the island cascade lays", () => {
     const slug = "test-wiki";
-    const facets = recipeHostFacets(slug, DID);
+    const facets = recipeHostFacets(slug);
     const slots = expandRecipe({ wikiSlug: slug });
     // The canon the host resolves == the canon slot in the island stack.
     expect(slots).toContain(facets.wikiBagId);
@@ -28,6 +25,9 @@ describe("wiki host facets ⋈ recipe expansion", () => {
     // The draft layer the host registers == the island's per-wiki draft slot.
     expect(slots).toContain(facets.draftBagId);
     expect(facets.draftBagId).toBe(wikiSlotUri(slug, "draft"));
+    // The working layer the host names == the island's default writable.
+    expect(slots).toContain(facets.workingBagId);
+    expect(facets.workingBagId).toBe(wikiSlotUri(slug, "working"));
     // Identity is wikis/, never bags/.
     expect(facets.wikiKey).toBe(wikiUri(slug));
   });

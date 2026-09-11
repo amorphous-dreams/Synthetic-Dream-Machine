@@ -141,9 +141,9 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
-export type { BagTiddler, RecipeTiddler } from "@lararium/mesh";
+export type { BagTiddler } from "@lararium/mesh";
 export { bagDescriptorUri, recipeUri } from "@lararium/mesh/lar-uris";
-export { parseBagStack, parsePlugins } from "@lararium/mesh";
+export { parseBagStack } from "@lararium/mesh";
 
 export { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "@lararium/mesh";
 export type { CeremonyTiddler } from "@lararium/mesh";
@@ -218,7 +218,7 @@ export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-han
 export type { EpochHandlerOptions, RotateRecipeOptions } from "./compaction-handlers.js";
 export { makeResidencyStatsReactor } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
-export { makeCatalogAccessor } from "./catalog-accessor.js";
+export { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
 export type { CatalogAccessor } from "./catalog-accessor.js";
 export {
   composeCoreVessel,

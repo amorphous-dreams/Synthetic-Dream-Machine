@@ -50,7 +50,9 @@ function harness(opts: { stack: string[]; libMounted?: boolean; libTiddlers?: Ti
   const wikiDoc = fakeHandle("automerge:wiki-1");
   const libDoc  = fakeHandle("automerge:lib-1", opts.libTiddlers ?? { "lib-note": rec("lib-note", { text: "from lib" }) });
   const catalog = fakeHandle("automerge:catalog", {
-    [RECIPE]:   rec(RECIPE, { "bag-stack": opts.stack.join(" ") }),
+    // The lares bag is a LIBRARY the record names (the minters write it beneath the canon), never a
+    // structural slot — a stack that dropped it would unmount it live.
+    [RECIPE]:   rec(RECIPE, { "bag-stack": [LARES_BAG, ...opts.stack].join(" ") }),
     [WIKI_BAG]: rec(WIKI_BAG, { text: "automerge:wiki-1" }),
     [LIB_BAG]:  rec(LIB_BAG,  { text: "automerge:lib-1" }),
   });
@@ -104,7 +106,7 @@ describe("recipe-watch", () => {
   test("bag added to the recipe mounts live, above lares", async () => {
     const h = harness({ stack: [WIKI_BAG] });
     const stop = await startRecipeWatch(h.ctx);
-    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${WIKI_BAG} ${LIB_BAG}` }));
+    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${LARES_BAG} ${WIKI_BAG} ${LIB_BAG}` }));
     await vi.waitFor(() => expect(h.composite.hasBag(LIB_BAG)).toBe(true));
     expect(h.composite.layerIndexOf(LIB_BAG)).toBe(h.composite.layerIndexOf(LARES_BAG) + 1);
     expect(h.composite.layerIndexOf(LIB_BAG)).toBeLessThan(h.composite.layerIndexOf(WIKI_BAG));
@@ -119,7 +121,7 @@ describe("recipe-watch", () => {
     const seen: LarTiddlerChange[] = [];
     h.composite.addProjection({ onUriChanged: (c: LarTiddlerChange) => { seen.push(c); } } as never);
     const stop = await startRecipeWatch(h.ctx);
-    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": WIKI_BAG }));
+    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${LARES_BAG} ${WIKI_BAG}` }));
     await vi.waitFor(() => expect(h.composite.hasBag(LIB_BAG)).toBe(false));
     expect(h.ctx.handles.has(LIB_BAG)).toBe(false);
     const departed = seen.find((c) => c.title === "lib-note" && c.record === null);
@@ -145,7 +147,7 @@ describe("recipe-watch", () => {
     const h = harness({ stack: [WIKI_BAG] });
     await h.tempStore.put(rec(REBOOT_ALERT_TITLE, { text: "Bag added — reboot to mount it." }), { kind: "canon-hydrate", receipt: "test" });
     const stop = await startRecipeWatch(h.ctx);
-    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${WIKI_BAG} ${LIB_BAG}` }));
+    h.catalog.set(RECIPE, rec(RECIPE, { "bag-stack": `${LARES_BAG} ${WIKI_BAG} ${LIB_BAG}` }));
     await vi.waitFor(async () => {
       const alert = await h.composite.get(REBOOT_ALERT_TITLE);
       expect(alert === null || alert.meta?.deleted === true).toBe(true);

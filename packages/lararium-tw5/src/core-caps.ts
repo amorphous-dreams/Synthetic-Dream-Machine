@@ -19,8 +19,8 @@
  */
 
 import type { Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
-import { assembleVessel, mountWikiSlot, LARES_DOC_URI, composeVessel, type CapModule } from "@lararium/mesh";
-import { mountPrimaryWiki, type PrimaryMountPool, type BindingResolver } from "./vessel-steps.js";
+import { assembleVessel, mountWikiSlot, LARES_DOC_URI, composeVessel, recipeFromRecord, type CapModule } from "@lararium/mesh";
+import { mountPrimaryWiki, recipeRecordOf, resolveSlotDocs, type PrimaryMountPool, type BindingResolver } from "./vessel-steps.js";
 import { VerbTable } from "./verb-dispatcher.js";
 
 // ── core surface types (what a platform supplies + the result it hands back) ─────────────────────
@@ -35,12 +35,12 @@ export interface VesselDaemonVm {
 /** The active-wiki slot identity the opener resolves (projected from the wiki's
  *  slug via `recipeHostFacets` — the isomorphic core, one minter set host + island). */
 export interface VesselWikiSlot {
-  activeWikiId:     string;
-  wikiSlug:         string;
-  wikiKey:          string;
-  wikiBagId:        string;
-  draftOracleTitle: string;
-  draftBagId:       string;
+  activeWikiId: string;
+  wikiSlug:     string;
+  wikiKey:      string;
+  wikiBagId:    string;
+  draftBagId:   string;
+  workingBagId: string;
 }
 
 /**
@@ -142,17 +142,23 @@ export function wikiSlotCap<TPool extends PrimaryMountPool>(o: VesselOrchestrati
 }
 
 /** wiki — mount the wiki-slot layers. The lares-as-wiki quine: when the active slug opens the
- *  invariant bag itself, seat the operator-minted doc as the write layer. Requires substrate +
- *  wikislot. Emits wiki-ready/vessel-ready. */
+ *  invariant bag itself, seat the operator-minted doc as the write layer. The draft doc resolves
+ *  through the daemon's slot-doc resolver (the ONE draft resolver — a face binding when seated, the
+ *  device floor when not), so the cap waits on the daemon's ea. Requires substrate + wikislot +
+ *  daemon. Emits wiki-ready/vessel-ready. */
 export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<TPool>): CapModule {
   return {
-    id: CORE_CAP.wiki, requires: [CORE_CAP.substrate, CORE_CAP.wikislot],
+    id: CORE_CAP.wiki, requires: [CORE_CAP.substrate, CORE_CAP.wikislot, CORE_CAP.daemon],
     build: async (resolve): Promise<WikiSlotComponent> => {
       const emit     = (p: LarOpenPhase) => o.keel.onPhase?.(p);
       const assembly = resolve<VesselCoreAssembly>(CORE_CAP.substrate);
       const slot     = resolve<VesselWikiSlot>(CORE_CAP.wikislot);
+      const daemon   = resolve<VesselDaemonVm>(CORE_CAP.daemon);
       const presetWiki = slot.wikiBagId === LARES_DOC_URI ? assembly.laresHandle ?? undefined : undefined;
-      const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, presetWiki);
+      await daemon.workerEa;
+      const resolveDraft = async (wikiUrl: string): Promise<string> =>
+        (await resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl })).draftUrl;
+      const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, presetWiki);
       emit("wiki-ready");
       emit("vessel-ready");
       return { wikiHandle, draftHandle };
@@ -191,6 +197,10 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
 
       // ── daemon-first sovereignty gate → primary-wiki mount ──
       await daemon.workerEa;
+      // The libraries the wiki's recipe RECORD names lay at boot — the record and the mount struct
+      // spell one stack (`recipeFromRecord`); recipe-watch keeps the same stack live.
+      const rec = recipeRecordOf(assembly, slot.wikiSlug);
+      const libraryBags = rec ? recipeFromRecord(rec, slot.wikiSlug).libraryBags : undefined;
       await mountPrimaryWiki(pool, daemon.resolveBinding, {
         activeWikiId: slot.activeWikiId,
         wikiSlug:     slot.wikiSlug,
@@ -198,6 +208,7 @@ export function mountCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<
         islandUrl:    assembly.islandHandle.url,
         wikiUrl:      wikiHandle.url,
         catalogUrl:   assembly.catalogHandle.url,
+        ...(libraryBags ? { libraryBags } : {}),
       });
       emit("tw5-booted");
       emit("live");

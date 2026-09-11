@@ -6,7 +6,9 @@ const root = new URL(".", import.meta.url).pathname;
 export default defineConfig({
   resolve: {
     alias: [
-      { find: "@lararium/mesh", replacement: path.resolve(root, "../lararium-mesh/src/index.ts") },
+      // Anchored: a mesh SUBPATH (`@lararium/mesh/sensorium-consistency`, reached through the built tw5)
+      // resolves through the package, never under `index.ts/…`.
+      { find: /^@lararium\/mesh$/, replacement: path.resolve(root, "../lararium-mesh/src/index.ts") },
     ],
   },
   test: {

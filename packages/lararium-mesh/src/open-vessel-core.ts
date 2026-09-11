@@ -26,7 +26,7 @@ import { emptyLarDoc, mutableLarRecord, tiddlerText, resolveOracleDoc, type LarD
 import { personaSiblingBagIds } from "./persona-scope.js";
 import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI } from "./lar-uris.js";
 import type { PersonaPlaneRef } from "./persona-planes.js";
-import { wikiSlotUri } from "./wiki-recipe.js";
+import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 
@@ -290,11 +290,16 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
 /**
  * Mount the wiki-slot composite layers (D5: every vessel carries wiki + draft +
  * temp; the island still owns live VM state). Returns the handles for the mount.
+ * The draft doc resolves through the daemon's slot-doc resolver (`resolveSlotDoc` —
+ * the face binding when a seat stands, the device floor when none does), so the host
+ * and the island mount ONE draft doc for one slug.
  */
 export async function mountWikiSlot(
   keel: VesselKeel,
   composite: CompositeStore,
-  slot: { wikiSlug: string; wikiKey: string; wikiBagId: string; draftOracleTitle: string; draftBagId: string },
+  slot: { wikiSlug: string; wikiKey: string; wikiBagId: string; draftBagId: string },
+  /** The draft doc url for this wiki, given its canon doc url — the daemon's resolver. */
+  resolveDraft: (wikiUrl: string) => Promise<string>,
   /** Pre-resolved wiki doc — the lares-as-wiki quine seats the operator-minted
    *  invariant doc as the write layer (its oracle lives on the lararium doc,
    *  never in the catalog registry — no cross-plane resolution, no second mint). */
@@ -312,16 +317,16 @@ export async function mountWikiSlot(
   // When the wiki's own bag coincides with an already-mounted substrate layer
   // (the quine), the read-only substrate layer yields to the writable one.
   if (composite.hasBag(slot.wikiBagId)) composite.removeLayer(slot.wikiBagId);
-  composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), writable: true, defaultWritable: true });
+  // The host mounts no working layer, so the canon bag holds the default writable — the ONE law
+  // `slotLayerFlags` spells for this mount and the island alike; temp never takes the office.
+  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, false);
+  composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
 
-  const draftHandle = await resolveOracleDoc(
-    catalogHandle, slot.draftOracleTitle,
-    (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo)) : blankDoc(repo),
-    "vessel-boot",
-  );
-  composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), writable: true, defaultWritable: false });
+  const draftHandle = await waitHandle<LarDoc>(await resolveDraft(wikiHandle.url) as AutomergeUrl, () => blankDoc(repo));
+  composite.addLayer({ bagId: slot.draftBagId, store: new AutomergeDocStore(draftHandle, slot.draftBagId), ...flags(slot.draftBagId) });
 
-  composite.addLayer({ bagId: wikiSlotUri(slot.wikiSlug, "temp"), store: keel.tempStore(), writable: true, defaultWritable: true });
+  const tempSlot = wikiSlotUri(slot.wikiSlug, "temp");
+  composite.addLayer({ bagId: tempSlot, store: keel.tempStore(), ...flags(tempSlot) });
 
   return { wikiHandle, draftHandle };
 }

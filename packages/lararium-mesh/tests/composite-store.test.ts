@@ -254,145 +254,6 @@ describe("CompositeStore — subscribe fan-out", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Recipe helpers (Loop 4 — topology-derived VM)
-// ---------------------------------------------------------------------------
-
-describe("CompositeStore — getRecipe + buildLayersFromRecipe", () => {
-  const RECIPE_URI = "lar:///ha.ka.ba/lararium/recipes/default";
-
-  test("getRecipe returns null when tiddler absent", async () => {
-    const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.lararium, store: new MemoryTiddlerStore(), writable: false });
-    expect(await store.getRecipe(RECIPE_URI)).toBeNull();
-  });
-
-  test("getRecipe parses space-separated bagStack string", async () => {
-    const ha = new MemoryTiddlerStore();
-    await ha.put(
-      {
-        tiddler: {
-          title:    RECIPE_URI,
-          bag:      BAG_IDS.lararium,
-          label:    "Default",
-          bagStack: `${LARARIUM_DOC_URI} ${CATALOG_DOC_URI} ${LARES_DOC_URI}`,
-          updatedAt: "2026-05-03T00:00:00Z",
-        },
-        meta: { authority: "test" },
-      },
-      systemOrigin(),
-    );
-    const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
-
-    const recipe = await store.getRecipe(RECIPE_URI);
-    expect(recipe).not.toBeNull();
-    expect(recipe!.bagStack).toEqual([LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI]);
-    expect(recipe!.label).toBe("Default");
-  });
-
-  test("buildLayersFromRecipe returns layers in bagStack order, skipping unregistered", async () => {
-    const ha = new MemoryTiddlerStore();
-    const ka = new MemoryTiddlerStore();
-    const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
-    store.addLayer({ bagId: BAG_IDS.catalog,  store: ka, writable: false });
-    // Note: LARES_DOC_URI layer NOT registered — should be omitted silently.
-
-    const layers = store.buildLayersFromRecipe({
-      title:     RECIPE_URI,
-      label:     "Default",
-      bagStack:  [LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI],
-      updatedAt: "2026-05-03T00:00:00Z",
-      authority: "test",
-      bag:       BAG_IDS.lararium,
-    });
-
-    expect(layers.map((l) => l.bagId)).toEqual([LARARIUM_DOC_URI, CATALOG_DOC_URI]);
-  });
-
-  test("getRecipe returns null for tombstoned tiddler", async () => {
-    const ha = new MemoryTiddlerStore();
-    const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
-    await ha.put({ tiddler: { title: RECIPE_URI, bag: BAG_IDS.lararium, bagStack: "", text: "" } }, systemOrigin());
-    await ha.tombstone(RECIPE_URI, systemOrigin());
-
-    expect(await store.getRecipe(RECIPE_URI)).toBeNull();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// putViaRecipe (TW5 Bags/Recipes law: writes route to writableBag)
-// ---------------------------------------------------------------------------
-
-describe("CompositeStore — putViaRecipe", () => {
-  test("routes write to declared writableBag layer", async () => {
-    const ha   = new MemoryTiddlerStore();
-    const wiki = new MemoryTiddlerStore();
-    const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.lararium, store: ha,   writable: false });
-    store.addLayer({ bagId: TEST_WIKI_URI,     store: wiki, writable: true  });
-
-    const recipe = {
-      title:       "lar:///ha.ka.ba/lararium/recipes/default",
-      label:       "Default",
-      bagStack:    [LARARIUM_DOC_URI, TEST_WIKI_URI],
-      writableBag: TEST_WIKI_URI,
-      updatedAt:   "2026-05-03T00:00:00Z",
-      authority:   "test",
-      bag:         BAG_IDS.lararium,
-    };
-
-    await store.putViaRecipe(recipe, { tiddler: { title: "test-tiddler", bag: TEST_WIKI_URI, text: "hello" } }, systemOrigin());
-
-    const rec = await wiki.get("test-tiddler");
-    expect(rec).not.toBeNull();
-    expect(rec!.tiddler.text).toBe("hello");
-
-    // Should NOT appear in ha
-    expect(await ha.get("test-tiddler")).toBeNull();
-  });
-
-  test("falls back to default writable store when writableBag absent", async () => {
-    const wiki = new MemoryTiddlerStore();
-    const store = new CompositeStore();
-    store.addLayer({ bagId: TEST_WIKI_URI, store: wiki, writable: true });
-
-    const recipe = {
-      title:     "lar:///ha.ka.ba/lararium/recipes/default",
-      label:     "Default",
-      bagStack:  [TEST_WIKI_URI],
-      updatedAt: "2026-05-03T00:00:00Z",
-      authority: "test",
-      bag:       BAG_IDS.lararium,
-    };
-
-    await store.putViaRecipe(recipe, { tiddler: { title: "t", text: "x" } }, systemOrigin());
-    expect(await wiki.get("t")).not.toBeNull();
-  });
-
-  test("throws when writableBag is not registered as writable", async () => {
-    const ha    = new MemoryTiddlerStore();
-    const store = new CompositeStore();
-    store.addLayer({ bagId: BAG_IDS.lararium, store: ha, writable: false });
-
-    const recipe = {
-      title:       "lar:///ha.ka.ba/lararium/recipes/default",
-      label:       "Default",
-      bagStack:    [LARARIUM_DOC_URI],
-      writableBag: TEST_WIKI_URI, // not registered
-      updatedAt:   "2026-05-03T00:00:00Z",
-      authority:   "test",
-      bag:         BAG_IDS.lararium,
-    };
-
-    await expect(
-      store.putViaRecipe(recipe, { tiddler: { title: "t", text: "x" } }, systemOrigin()),
-    ).rejects.toThrow("writableBag");
-  });
-});
-
-// ---------------------------------------------------------------------------
 // CompositeLayer readPolicy / writePolicy (TW5 Bags access controls model)
 // ---------------------------------------------------------------------------
 
@@ -639,5 +500,41 @@ describe("CompositeStore live layer surgery", () => {
   test("removeLayerLive on an absent bag stays a no-op", async () => {
     const composite = new CompositeStore();
     await expect(composite.removeLayerLive("lar:///ghost")).resolves.toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The default writable — working when mounted, canon when not, temp NEVER
+// ---------------------------------------------------------------------------
+
+import { expandRecipe, slotLayerFlags, wikiSlotUri } from "../src/wiki-recipe.js";
+
+describe("CompositeStore — the default writable under the recipe layer model", () => {
+  /** Lay every slot `expandRecipe` names, bottom-up, with the flags the mounters register. */
+  const lay = (slug: string, workingMounted: boolean): CompositeStore => {
+    const composite = new CompositeStore();
+    const slots = expandRecipe({ wikiSlug: slug });
+    for (let i = slots.length - 1; i >= 0; i--) {
+      const slot = slots[i]!;
+      if (slot === wikiSlotUri(slug, "working") && !workingMounted) continue;
+      composite.addLayer({ bagId: slot, store: new MemoryTiddlerStore(slot), ...slotLayerFlags(slot, slug, workingMounted) });
+    }
+    return composite;
+  };
+
+  test("★ working holds the default when its handle stands ★", () => {
+    expect(lay("w", true).defaultWritableBagId()).toBe(wikiSlotUri("w", "working"));
+  });
+
+  test("the canon bag holds the default while no working layer stands (the floor, never a red)", () => {
+    expect(lay("w", false).defaultWritableBagId()).toBe(wikiBagUri("w"));
+  });
+
+  test("temp NEVER holds the default — it registers last, and a bagless tombstone there resurrects at boot", () => {
+    for (const mounted of [true, false]) {
+      const composite = lay("w", mounted);
+      expect(composite.layerIds[composite.layerIds.length - 1]).toBe(wikiSlotUri("w", "temp"));
+      expect(composite.defaultWritableBagId()).not.toBe(wikiSlotUri("w", "temp"));
+    }
   });
 });

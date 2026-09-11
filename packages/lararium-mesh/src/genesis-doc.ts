@@ -31,7 +31,7 @@ import {
   bagDescriptorUri,
   recipeUri,
 } from "./lar-uris.js";
-import { wikiDraftBagUri } from "./wiki-recipe.js";
+import { recipeRecordFields, type WikiRecipe } from "./wiki-recipe.js";
 import type { LarDoc, LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID, blobDescriptorUri } from "./base-doc.js";
 
@@ -369,23 +369,17 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
 
   // SYSTEM wiki-recipes — the lares + lararium quine
   // wikis ride the oracle system plane, never the catalog registry (USER recipes mint into it).
-  const systemRecipe = (slug: string, bagStack: string, writableBag: string) => {
-    const title = recipeUri("oracle", slug);
+  // The record spells the SAME cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`):
+  // the lares wiki = oracle floor + lararium library + its own canon; `writable-bag` = working.
+  const systemRecipe = (recipe: WikiRecipe) => {
+    const title = recipeUri("oracle", recipe.wikiSlug);
     tiddlers[title] = {
-      tiddler: { title, label: slug, "bag-stack": bagStack, "writable-bag": writableBag },
+      tiddler: { title, ...recipeRecordFields(recipe) },
       meta: { authority: "genesis" },
     };
   };
-  systemRecipe(
-    "lares",
-    `${ORACLE_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiDraftBagUri("lares")}`,
-    wikiDraftBagUri("lares"),
-  );
-  systemRecipe(
-    "lararium",
-    `${ORACLE_DOC_URI} ${LARARIUM_DOC_URI} ${wikiDraftBagUri("lararium")}`,
-    wikiDraftBagUri("lararium"),
-  );
+  systemRecipe({ wikiSlug: "lares", libraryBags: [LARARIUM_DOC_URI] });
+  systemRecipe({ wikiSlug: "lararium" });
 
   // Blob descriptor tiddlers (sorted by blob id — deterministic).
   for (const blobId of Object.keys(blobs).sort()) {

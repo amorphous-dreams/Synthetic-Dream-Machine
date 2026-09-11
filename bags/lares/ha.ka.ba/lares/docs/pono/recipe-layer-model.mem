@@ -13,8 +13,9 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 retain            = true
 revised-on        = "2026-09-11"
-role              = "recipe-layer-model — a scout of the recipe layer stack against the operator's ruling (canon bags ← named wiki bag ← drafts ← volatile): the layers EXACTLY as three composites mount them today, the cascade that routes a tiddler by KIND, what fleet-syncs and what stays on the device, the disk legs for meme and non-meme files, every place a canon carrier contradicts the code, the named blur, ONE proposed model with the fewest changes, and the questions only the operator answers. Read whole; every claim carries a file:line."
-status            = "draft"
+role              = "recipe-layer-model — the recipe layer stack under the operator's rulings (canon bags ← named wiki bag ← drafts ← volatile): the layers EXACTLY as three composites mount them, the cascade that routes a tiddler by KIND, what fleet-syncs and what stays on the device, the disk legs for meme and non-meme files, the ONE slot-doc resolver and its floor, the two meme-verb laws, the record ↔ mount convergence, and what remains open. Read whole; every claim carries a file:line."
+status            = "standing"
+status-why        = "enacted under five operator rulings, red-first, each move witnessed (mesh · tw5 · keyhive · the two-vessel e2e); what remains stands named under #/one-model"
 tags              = ["api/pono/meme"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
@@ -28,13 +29,21 @@ uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
 
 ! Recipe Layer Model ~ a scout against the ruling
 
-''Register: Scout-Handoff.'' A tasked spirit read the mount code, the routing cascade, the sync gate, the disk legs, the TW5 fork and the standing canon, whole, and hands back what it found. Every claim below names a file and a line; a claim without one names itself as inference. Nothing here changes code.
+''Register: Model-Standing.'' A scout read the mount code, the routing cascade, the sync gate, the disk legs, the TW5 fork and the standing canon, whole; the operator ruled; two spirits enacted the model in the mounts, the cascade and the verbs. Every claim below names a file and a line; a claim without one names itself as inference. The #/as-mounted and #/as-routed sections describe the code AS IT STANDS; #/the-blur names what the enactment dissolved and what remains open.
 
 ''The operator's ruling, verbatim (quote license):''
 
 > "For each recipe, the 'top bag' gets determined by the kind of raw tiddler. Most go to the 'named wiki bag' (disk projects into the base `/wikis/*` dir for the recipe), BUT `Draft of '...'` and similar tiddlers (#has `draft-of` field, etc) goes to a 'drafts' layer above that (fleet synced just as the wiki's main wiki-bag and the underlying canon-bags). Then there's volatile tiddlers on top of that (most don't sync, I think all here don't, Presence, local-only state, THIS is the per-device layer). Under the `wikis/` layers we have the 'canon bags' from `bags/` (disk ingest/projection-on-move). We need to deeply scout this blur and resolve the code and memes to one 'model architecture'. … Now that we have 'api surface' for memes and not just tiddlers this becomes important to clarify for all incoming files (other files would get ingested as typed tiddlers and round trip to disk with `*.meta` files, etc, so we may need to stub out or find the TW5 api surfaces for those non-tiddler/non-meme workflows)."
 
-The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'' ← ''drafts'' ← ''volatile'' — and one routing key: ''the kind of raw tiddler''. The code today mounts FIVE per-wiki slots plus a canon and a library floor, and routes by ''title prefix''. The rest of this carrier measures the distance.
+The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'' ← ''drafts'' ← ''volatile'' — and one routing key: ''the kind of raw tiddler''. The code mounts FIVE per-wiki slots plus a canon and a library floor — `personal` stands as its own layer by a later ruling — and routes drafts by the `draft.of` FIELD, volatile and view-state by kind.
+
+''Five later rulings, verbatim (quote license):''
+
+# Draft doc — "One doc -> fleet IF a PersonaGroup sync-fleet cap available, ELSE this is a 'private device so far'. Pono? Our caps stack 'falls back to the floor' never fails/reds in production."
+# `personal` — "Keep as its own layer, as we iterate on what 'needs fleet sync' vs what doesn't after the browser UX stands up."
+# `meme get --recipe` — "The stack."
+# The daemon wiki — "Approve `working` layers for all wikis (Daemon reads as a wiki with specific caps to the vessel, instead of 'user content')."
+# The draft switch — "Approve moving to `draft.of` as the switch".
 
 <<~/ahu>>
 
@@ -42,55 +51,56 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 
 !! The layers exactly as three composites mount them today
 
-Three `CompositeStore` instances stand in a running node, and one shape serves the browser. Bottom row first (lowest priority); the top row wins a read. ''`default`'' marks the layer the composite's UNBAGGED writes fall into — `addLayer` re-points `writableStore` at every layer registered with `writable:true` and `defaultWritable !== false` (`packages/lararium-mesh/src/composite-store.ts:123`), so the LAST such layer holds the office (`composite-store.ts:304-310`).
+Three `CompositeStore` instances stand in a running node, and one shape serves the browser. Bottom row first (lowest priority); the top row wins a read. ''`default`'' marks the layer the composite's UNBAGGED writes fall into — `addLayer` re-points `writableStore` at every layer registered with `writable:true` and `defaultWritable !== false` (`packages/lararium-mesh/src/composite-store.ts:123`), so the LAST such layer holds the office. ONE law names that layer for every mounter: `slotLayerFlags` / `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) — the working slot when its handle stands, else the wiki's canon bag (the floor, never a red); the volatile temp slot NEVER holds the office. Witness: `packages/lararium-mesh/tests/composite-store.test.ts` "the default writable under the recipe layer model".
 
 ''Sync class'' reads off the node `sharePolicy`: every Automerge doc full-syncs to an in-process island peer and to a `same-operator` WS peer (the device fleet); a cross-operator peer reaches only the deterministically-federatable planes (`packages/lararium-node/src/self-slot-share.ts:70-95`, `packages/lararium-node/src/open-node-vessel.ts:434-462`). So ''fleet'' below means //any Automerge doc//; ''device'' means //a `MemoryTiddlerStore` that never enters a Repo//. The browser gate carries the same split (`packages/lararium-browser/src/open-browser-vessel.ts:370`, `:523`).
 
 !!! A. The wiki ISLAND composite (node and browser — one kernel)
 
-Laid by `expandRecipe` (`packages/lararium-mesh/src/wiki-recipe.ts:265-286`) walked bottom-up in `buildIslandRecipe` (`packages/lararium-tw5/src/island-recipe.ts:66-82`); slot docs resolve from typed grants in `sovereign-kernel.ts:306-334`.
+Laid by `expandRecipe` (`packages/lararium-mesh/src/wiki-recipe.ts`) walked bottom-up in `buildIslandRecipe` (`packages/lararium-tw5/src/island-recipe.ts`); slot docs resolve from typed grants in `sovereign-kernel.ts` `slotUrl`. The library bags a recipe RECORD names lay at boot (`recipeFromRecord`, read in `core-caps.ts` `mountCap` and `vessel-residency-wiring.ts` `resolveWikiSpec`), and recipe-watch keeps the same stack live.
 
 | layer (top wins) | store | writable | default | sync class | doc keyed by | disk mirror (node) |
 |---|---|---|---|---|---|---|
-| `wikis/{slug}/temp` | `MemoryTiddlerStore` | yes | ''YES'' (`island-recipe.ts:70`) | device | none — fresh per boot | none |
-| `wikis/{slug}/draft` | `AutomergeDocStore` | yes | no (`:80`) | fleet | `daemon/draft-bindings/{fingerprint}`, PersonaGroup × recipe-fingerprint (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:661-664`; `resolve-binding.ts:108-125`) | none |
-| `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | fleet | `daemon/personal-bindings/{fingerprint}` (same) | none |
-| `wikis/{slug}/working` | `AutomergeDocStore` | yes | no | fleet | `daemon/working-bindings/{fingerprint}` (same) | `wikis/{slug}/` via the `wikiSlot:"working"` grant (`open-node-vessel.ts:1650`, `vessel-island-pool-core.ts:84-107`) |
-| `bags/{slug}` (canon) | `AutomergeDocStore` | yes | no | fleet | `grants.wikiUrl` = the catalog's `bags/{slug}` oracle | `bags/{slug}/` via the `selfCanon` grant (`:1655`) |
-| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | catalog registry, reconciled live (`packages/lararium-tw5/src/recipe-watch.ts:130-148`) | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants (`:1632-1639`) |
+| `wikis/{slug}/temp` | `MemoryTiddlerStore` | yes | ''never'' (`slotLayerFlags`) | device | none — fresh per boot | none |
+| `wikis/{slug}/draft` | `AutomergeDocStore` | yes | no | fleet when seated · device when not | THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`): `daemon/draft-bindings/{fingerprint}` (PersonaGroup × recipe-fingerprint) when the vessel holds a SEAT; else the floor doc `wikis/{slug}/drafts/{did}` in the catalog registry, `face-reach: vessel-only` | none |
+| `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | fleet | `daemon/personal-bindings/{fingerprint}` — its own layer by ruling | none |
+| `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | fleet | `daemon/working-bindings/{fingerprint}` (the vessel key binds; a seated face composes on top) | `wikis/{slug}/` via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
+| `bags/{slug}` (canon) | `AutomergeDocStore` | yes | only while no working handle stands (the floor) | fleet | `grants.wikiUrl` = the catalog's `bags/{slug}` oracle | `bags/{slug}/` via the `selfCanon` grant |
+| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares bag is a library like the lararium bag), laid at boot and reconciled live (`recipe-watch.ts`) | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
 | `bags/oracle` (floor) | `AutomergeDocStore` | yes | no | fleet · federatable | `grants.islandUrl` | none |
 
-Two facts the table hides. (1) ''Every CRDT slot registers `writable:true`'' — the island refuses nothing at the store; the cascade alone decides where a save lands (`island-recipe.ts:76-80`). (2) ''The composite's default writable reads `wikis/{slug}/temp`'' — the volatile store, registered last. Consequence measured by reading, not by running: an in-wiki DELETE calls `store.tombstone(title, origin)` with no bag (`packages/lararium-tw5/src/island-adaptor.ts:293`) → `composite.tombstone` → `this.writableStore` (`composite-store.ts:250-253`) → the temp store. The kāpae hides the lower record for this session and the record ''returns at the next boot''. The routing-totality test asserts only that `tombstone` fires, never which bag (`packages/lararium-tw5/tests/routing-totality.test.ts:203-209`). ''A red test owes this before any fix.''
+Two facts the table hides. (1) ''Every CRDT slot registers `writable:true`'' — the island refuses nothing at the store; the cascade alone decides where a save lands. (2) ''A DELETE lands where the save landed.'' `island-adaptor.ts` keeps the LAST-KNOWN-SLOT map (`lar:///ha.ka.ba/lararium/config/slot-of`, a session `Map<title, SlotUri>`): fed at every outbound save with the cascade's verdict and at every inbound apply with the envelope's bag; `deleteTiddler` reads it before the cascade, falls back to the cascade's title read for a title never seen this session, and tombstones through `tombstoneInBag(slot, …)`. Witnesses: `packages/lararium-tw5/tests/routing-totality.test.ts` "a delete lands where the save landed" (+ the `$:/temp/*` CONTROL) and `tests/lar-kind.test.ts` (a draft's delete lands in the draft slot).''
 
 !!! B. The daemon ISLAND composite (`recipe: { wikiSlug: "daemon" }`)
 
-Same kernel (`packages/lararium-node/src/open-daemon-vm.ts:94`; browser `open-browser-vessel.ts:807`). The grants carry `islandUrl`, `wikiUrl` (= the daemon bag) and `catalogUrl` only (`open-node-vessel.ts:1065-1071`), so `slotUrl` returns null for draft/working/personal and those slots ''prune for want of a handle'' (`sovereign-kernel.ts:327-334`); `crossroads` splices in as a library (`packages/lararium-tw5/src/daemon-vm-core.ts:553-554`).
+Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-browser-vessel.ts`). The grants carry `islandUrl`, `wikiUrl` (= the daemon bag) and `catalogUrl` only, so at open `slotUrl` returns null for draft/working/personal and those slots ''prune for want of a handle''; `crossroads` splices in as a library (`packages/lararium-tw5/src/daemon-vm-core.ts`). Then — the daemon reads as a wiki (ruling) — its own behavior LATE-ATTACHES a working layer: `attachDaemonWorking` (`packages/lararium-keyhive/src/operator-daemon-behavior.ts`) resolves `wikis/daemon/working` through THE ONE slot-doc resolver under the same binding law as every wiki, splices it above the daemon bag `defaultWritable: true`, registers the slot URI with keyhive (delegated to a seated face), and re-seeds `current-wiki-bag` to it. The attach runs after the keyhive and the veil stand, inside the fail-closed boot window; a failed attach leaves the floor (the daemon bag), never a red.
 
 | layer (top wins) | writable | default | sync class | disk mirror |
 |---|---|---|---|---|
-| `wikis/daemon/temp` | yes | ''YES'' | device | none |
-| `bags/daemon` (the daemon bag, as its own "canon") | yes | no | fleet (private plane) | none — excluded by design |
+| `wikis/daemon/temp` | yes | never | device | none |
+| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | none — `disk-projector` excludes `daemon` (owed) |
+| `bags/daemon` (the daemon bag: verbs, outcomes, bindings — the control plane) | yes | only until the attach | fleet (private plane) | none — excluded by design |
 | `bags/crossroads` | yes | no | fleet · federatable | `bags/crossroads/` on the wiki-island grant, none here |
 | `bags/lares` · `bags/lararium` | yes | no | fleet | none here |
 | `bags/oracle` | yes | no | fleet · federatable | none |
 
-`current-wiki-bag` seeds to the daemon bag itself because no `working` handle exists (`island-recipe.ts:97`). A `Draft of ` title in the daemon wiki routes to `wikis/daemon/draft` (`packages/lararium-tw5/tiddlers/lar-bag-paths.tid:16`) — a bag with NO layer — and `composite.put` refuses loud (`composite-store.ts:236-244`). Read from the code; unmeasured live.
+The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki still routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon gained `working` by ruling, not draft or personal.
 
 !!! C. The HOST composite (VM-free, one per vessel)
 
-`assembleVessel` + `mountWikiSlot` (`packages/lararium-mesh/src/open-vessel-core.ts:159-291`, `:294-327`), invoked by `wikiCap` (`packages/lararium-tw5/src/core-caps.ts:155`).
+`assembleVessel` + `mountWikiSlot` (`packages/lararium-mesh/src/open-vessel-core.ts`), invoked by `wikiCap` (`packages/lararium-tw5/src/core-caps.ts`) — which now requires the daemon cap and awaits its `workerEa`, because the draft doc resolves through the daemon's slot-doc resolver (`resolveSlotDocs`, `vessel-steps.ts`) — the SAME call the island mount makes, so host and island mount ONE draft doc for one slug.
 
 | layer (top wins) | writable | default | sync class | doc keyed by |
 |---|---|---|---|---|
-| `wikis/{slug}/temp` | yes | ''YES'' (`:324`) | device | fresh `MemoryTiddlerStore` |
-| `wikis/{slug}/draft` | yes | no (`:322`) | fleet | catalog `wikis/{slug}/drafts/{vessel-DID}` (`:317-321`; `wiki-recipe.ts:96-99`) |
-| `bags/{slug}` | yes | ''yes'' (`:315`) | fleet | catalog `bags/{slug}` |
-| PersonaGroup · circles · identities · sessions · `bags/daemon` | yes | ''yes'' (`:258`, no `defaultWritable` given → true) | fleet (private) | bootstrap |
-| `bags/lares` · `bags/lararium` | yes | no (`:150`) | fleet | oracle well-known tiddlers |
+| `wikis/{slug}/temp` | yes | never | device | fresh `MemoryTiddlerStore` |
+| `wikis/{slug}/draft` | yes | no | fleet when seated · device when not | THE ONE slot-doc resolver, by the daemon proxy |
+| `bags/{slug}` | yes | ''yes'' — the host mounts no working layer, so the canon bag holds the floor | fleet | catalog `bags/{slug}` |
+| PersonaGroup · circles · identities · sessions · `bags/daemon` | yes | yes (no `defaultWritable` given → true; registered BELOW the wiki, so the wiki's canon shadows them) | fleet (private) | bootstrap |
+| `bags/lares` · `bags/lararium` | yes | no | fleet | oracle well-known tiddlers |
 | `bags/oracle` | yes | no | fleet · federatable | genesis |
-| `bags/catalog` | ''no'' (`:154`) | — | fleet (private) | catalog-url file |
+| `bags/catalog` | ''no'' | — | fleet (private) | catalog-url file |
 
-Three layers here carry `defaultWritable: true`; the temp store wins by registering last. The host mounts NO `working` and NO `personal` layer, and its draft doc keys per ''vessel DID'', not per PersonaGroup × fingerprint — the same slot name `wikis/{slug}/draft` names ''two different documents'' on the host and in the island (the #/the-blur names this).
+The host mounts NO `working` and NO `personal` layer. A role cap composed alongside the core (the meshpalace FLOW-map layer, `defaultWritable: true`) may register AFTER the wiki cap in topo order and take the host composite's office — unmeasured; nothing writes bagless through the host composite today.
 
 <<~/ahu>>
 
@@ -104,13 +114,13 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 |---|---|---|---|
 | `$:/core`, `$:/library/sjcl.js` | `:5-6` withhold | nowhere (engine bytes ride CAS) | — |
 | `$:/temp/*`, `$:/status/*`, `$:/boot/*`, `$:/HistoryList*` | `:7-10` | `wikis/{slug}/temp` | device |
-| `$:/StoryList*`, `$:/state/folded/*`, `$:/state/tab-*`, `$:/palette*` | `:11-14` | `wikis/{slug}/personal` | fleet |
+| `$:/StoryList*`, `$:/state/folded/*`, `$:/state/tab-*`, `$:/palette*` — the set `lar-kind[]` names `personal` (`filters/lar-kind.ts`, ONE spelling; the cascade reads `[lar-kind[]match[personal]…]`) | `:11` | `wikis/{slug}/personal` | fleet |
 | every other `$:/state/*` | `:15` | `wikis/{slug}/temp` | device |
-| `Draft of *` (title prefix, English default only) | `:16` | `wikis/{slug}/draft` | fleet |
+| a tiddler whose `draft.of` FIELD stands (`[is[draft]…]`, TW5's own predicate) | `:13` | `wikis/{slug}/draft` | fleet |
 | `lar:*` | `:17` | `current-wiki-bag` = `wikis/{slug}/working` (daemon: `bags/daemon`) | fleet |
 | anything else, including a foreign-titled pack member (`HelloThere`) and every other `$:/` system tiddler | `:18` catch-all | `current-wiki-bag` | fleet |
 
-''`draft-of` reads nowhere.'' TW5 itself decides draft-ness by the `draft.of` FIELD (`TiddlyWiki5/core/modules/tiddler.js:20-22`), and it mints the title through a LOCALIZED language string — `Draft/Title`, or `Draft/Attribution` when `$:/status/UserName` stands, yielding `Draft of 'X' by <user>` (`TiddlyWiki5/core/modules/wiki.js:1725-1735`). The prefix rule holds for the English default with no user name and breaks for a ja-JP edition or a named user. The ruling's spelling `draft-of` (hyphen) names no TW5 field; TW5 spells it `draft.of`.
+''The `draft.of` FIELD is the switch'' (operator ruling 2026-09-11, quote license: "Approve moving to `draft.of` as the switch (pono w/ TW5 server/client setups)"). TW5 decides draft-ness by that field (`TiddlyWiki5/core/modules/tiddler.js:20-22`) and mints the title through a LOCALIZED language string — `Draft/Title`, or `Draft/Attribution` when `$:/status/UserName` stands, yielding `Draft of 'X' by <user>` (`TiddlyWiki5/core/modules/wiki.js:1725-1735`) — so the title decides nothing: the cascade's draft rule reads `[is[draft]…]` and `lar-kind[]` reads `Tiddler.isDraft`, on a stock server and an island alike (`tests/lar-kind.test.ts`; the live-server witness in `tests/meme-routes.e2e.test.ts`). The ruling's spelling `draft-of` (hyphen) names no TW5 field; TW5 spells it `draft.of`. ''The delete path:'' a delete runs after the tiddler has gone, so the field cannot be read then — the adaptor owes a LAST-KNOWN-SLOT map (fed at every outbound save with the cascade's verdict and at every inbound apply with the envelope's `$origin-bag`; read by `deleteTiddler` before the cascade; a title never seen this session falls back to the cascade's title read). The red stands in `tests/lar-kind.test.ts` until `island-adaptor.ts` lands it.
 
 ''What the nalu stamps.'' Every inbound record gains `$origin-bag` from the ENVELOPE (`packages/lararium-tw5/src/modules/nalu-engine.ts:112-116`); the projector routes a flush by that stamp (`packages/lararium-node/src/disk-projector.ts:280-283`), and the outbound save strips it before the put (`island-adaptor.ts:352-355`). No persisted field names a bag.
 
@@ -118,18 +128,19 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 | seat | resolves the bag how | lands in | file:line |
 |---|---|---|---|
-| in-wiki edit / save | the cascade, by title | per the table above | `island-adaptor.ts:340-371` |
-| in-wiki delete | NO bag — `composite.tombstone` | the default writable = ''temp'' | `island-adaptor.ts:284-296`, `composite-store.ts:250` |
-| `meme put` (no target) | the daemon's own `$tw.wiki` → its cascade → `current-wiki-bag` | `bags/daemon` | `packages/lararium-tw5/src/meme-verbs.ts:170-173`, `:189-190` |
-| `meme put --recipe <slug>` | the recipe RECORD's `writable-bag`, else the top of its `bag-stack` (`designatedBagOf`, `:121-129`) → a mounted writable layer of the DAEMON island, else reach by catalog under `wikis/<slug>/drafts/<DID>` | the per-DID draft doc the HOST mounts — a doc the wiki island never lays | `meme-verbs.ts:131-153` |
-| `meme get --recipe <slug>` | same designated bag, `storeForBag` else reach | reads ONE bag, never the stack | `meme-verbs.ts:136-137`, `:185-188` |
+| in-wiki edit / save | the cascade, by kind — `IslandAdaptor.saveTiddler` | per the table above | `island-adaptor.ts` `saveTiddler` / `_writeMeme` — ⚠ MEASURED: nothing in the tree carries a LIVE wiki change out to `saveTiddler`/`deleteTiddler` (only `wiki-sync` sessions and tests call them; `$tw.syncer` does not run). The seat is right; the outbound bridge is OWED |
+| in-wiki delete | the last-known-slot map, else the cascade's title read → `tombstoneInBag` | the bag the save landed in | `island-adaptor.ts` `deleteTiddler` |
+| `meme put` (no target) | the daemon's own `$tw.wiki` → its cascade → `current-wiki-bag` | `wikis/daemon/working` once the late-attach re-seeds the cascade (the daemon bag until then) — and stands in `$tw.wiki` alone until the outbound bridge lands (the row above) | `packages/lararium-tw5/src/meme-verbs.ts` `anchorBagOf` |
+| `meme put --recipe <slug>` | THE PUT LAW: the recipe RECORD's `writable-bag` = `wikis/<slug>/working`, else the top of its `bag-stack` (`designatedBagOf`, `@lararium/mesh` recipe.ts) → a mounted writable layer of the DAEMON island, else the instance slot's doc through THE ONE slot-doc resolver, else reach by catalog | the SAME working doc the wiki island mounts — the placement surfaces in the running wiki (two-vessel e2e ⑤ ★) | `meme-verbs.ts` `reachRecipeBag` / `storeOfBag` |
+| `meme get --recipe <slug>` | THE GET LAW: the whole cascade top-down (`expandRecipe(recipeFromRecord(rec))`), the first bag holding the meme LIVE; the designated bag's store when none does (a null read, never a refusal) | the stack — draft shadows canon; canon answers through `--recipe` when the drafts hold nothing | `meme-verbs.ts` `reachRecipeBag`; `tests/meme-verbs.test.ts` "READS THE STACK" |
 | `meme put --bag <slug>` | `compositeMemeSink` → `composite.put({bag})` on the daemon island | that bag's writable layer, else refuses (no shadow-up) | `meme-verbs.ts:177-179`, `composite-store.ts:218-244` |
 | `act ADD / COPY / MOVE / LOAD / INGEST --to <bag>` | `BagAccess`: a mounted writable layer, else the catalog/oracle accessor's own store (write-then-sync) | the named bag exactly | `packages/lararium-tw5/src/action-handler.ts:243-270`, `:1170-1186` |
 | `lares ingest --source <dir> --to <bag>` | the caller names `--to`; a `wikis/` source only changes the URI derivation | the named bag | `packages/lares-cli/src/commands/ingest.ts:27-33`, `packages/lares-cli/src/ingest-core.ts:118-131` |
-| `draft` verb (`makeDraftReactor`) | `toBag` else `defaultWritableBagId()` | ''temp'' by default | `packages/lararium-tw5/src/wiki-draft-handlers.ts:14-19` |
-| recipe-watch library mount | `bag-stack` minus the structural set | inserted above `bags/lares`, `writable:true, defaultWritable:false` | `recipe-watch.ts:81-89`, `:105-115` |
+| `draft` verb (`makeDraftReactor`) | `toBag` else `defaultWritableBagId()` | the daemon's working layer by default | `packages/lararium-tw5/src/wiki-draft-handlers.ts` |
+| `where` / `wiki which` | the mounted composite, every registered bag by access, AND every registered wiki's instance slots through THE ONE resolver (a floor doc answers under its slot name, never its registry key) | membership | `packages/lararium-tw5/src/worker-data-verbs.ts` `makeWhereReactor` |
+| recipe-watch library mount | `bag-stack` minus `structuralSlots(slug)` | inserted above `bags/lares`, `writable:true, defaultWritable:false` | `recipe-watch.ts` |
 
-`CompositeStore.getRecipe` / `putViaRecipe` (`composite-store.ts:544-562`, `:597-611`) read `fields["bagStack"]` / `writableBag` in camelCase; every writer spells `bag-stack` / `writable-bag` (`packages/lararium-mesh/src/genesis-doc.ts:372-388`, `packages/lararium-tw5/src/wiki-mint-handlers.ts:84-85`). No production caller reaches either method (only `packages/lararium-mesh/tests/composite-store.test.ts`). Dead surface, reading a field nothing writes.
+''The recipe record and the mount struct spell ONE shape.'' `recipeRecordFields(recipe)` (`@lararium/mesh` wiki-recipe.ts) writes `bag-stack` = the expanded cascade bottom-up minus the four instance slots (the oracle floor, the libraries, the wiki's own canon) and `writable-bag` = `wikis/{slug}/working`; `recipeFromRecord(rec, slug)` reads it back; both minters call it (`genesis-doc.ts` `systemRecipe`; `wiki-mint-handlers.ts` init). The catalog registry never rides a bag-stack (access ≠ load). `CompositeStore.getRecipe` / `putViaRecipe` / `buildLayersFromRecipe` and the camelCase `RecipeTiddler` are retired. Witness: `packages/lararium-mesh/tests/recipe-record.test.ts`.
 
 <<~/ahu>>
 
@@ -140,18 +151,18 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | carrier | says | the code | verdict |
 |---|---|---|---|
 | `wiki-layer-ontology#/write-law` (`bags/lares/ha.ka.ba/lares/docs/pono/wiki-layer-ontology.mem:181`) | "a draft/volatile tiddler → `@temp`" | `Draft of ` routes to the CRDT `draft` slot (`lar-bag-paths.tid:16`) | contradicted the code AND the ruling — HEALED by the aftermath spiral (the law now reads `@draft` for drafts, `@temp` for volatile) |
-| `wiki-layer-ontology#/naming-law` (`:151-157`) | instance mounts "MUST NOT enter `@catalog`" | the host draft doc registers in the catalog as `wikis/{slug}/drafts/{DID}` (`wiki-mint-handlers.ts:48-66`, `open-vessel-core.ts:317`) | contradicts the code |
+| `wiki-layer-ontology#/naming-law` | instance mounts "MUST NOT enter `@catalog`" | the draft FLOOR doc (`wikis/{slug}/drafts/{DID}`) registers in the catalog; a face binding never does | RE-TRUED — the law now carves the floor out: a per-DID device doc is a registry entry the vessel holds by access, not an instance MOUNT of a group |
 | `personal-slot#/problem` (`bags/lararium/ha.ka.ba/lararium/api/personal-slot.mem:38-48`) | "Two federation scopes only — device-local (temp) and mesh-shared (the rest)" | matches the gate (`self-slot-share.ts:70-95`) | agrees; the ruling wants a THIRD reading (drafts fleet, volatile device) and the gate already gives it |
-| `personal-slot#/scoping-mechanism` (`:137-146`) | draft binds per (PersonaGroup × fingerprint) | island: yes (`operator-daemon-behavior.ts:662`); host: per DID (`wiki-recipe.ts:96-99`) | half the code agrees |
+| `personal-slot#/scoping-mechanism` | draft binds per (PersonaGroup × fingerprint) | ONE resolver: the binding when the vessel holds a SEAT, the DID floor when not (`slot-doc-resolver.ts`) | agrees where a seat stands; the floor is the ruled fallback |
 | `save-path#/invariants` SP-3 (`bags/lararium/ha.ka.ba/lararium/api/save-path.mem:82-94`) | "Current state: the `isDraft` guard in `saveTiddler` silently drops drafts" | no `isDraft` guard stands; the cascade routes | stale — HEALED (SP-3 now states the cascade rule) |
 | `save-path` SP-4 (`:96-99`) | "If `fields["bag"]` carries an explicit bag URI, `saveTiddler` MUST use it" | "no field names a bag" (`island-adaptor.ts:254`); `bag` rides as the author's field, ignored for routing | contradicted the code — HEALED (SP-4 now states the envelope law) |
 | `disk-projection#/bag-roles` (`bags/lararium/ha.ka.ba/lararium/api/disk-projection.mem:54-60`) | `@draft` "none — runtime", `@personal` "none — mesh-synced", `@working` → `wikis/{slug}/`, canon → `bags/` | matches the grants (`open-node-vessel.ts:1631-1656`) | agrees |
 | `disk-projection#/projection-routing` rule 2 (`:141`) | "Every other tiddler follows the standard TW5 path … One tiddler, one file" | `carrierBaseRelPath` returns null for any non-`lar:///w.w.w/` title (`packages/lararium-node/src/bag-paths.ts:84-99`); a foreign-titled `.tid` never reaches disk; a pack rides `OriginalTiddlerPaths` + REPACK instead | contradicted the code for foreign titles — HEALED (rule 2 now names the siting requirement + REPACK) |
 | `disk-projection#/projection-routing` rule 3 (`:142`) | siting overrides ride `config/disk-paths` and `config/disk-extensions` | `makeTw5FileInfo` accepts `pathFilters`/`extFilters` (`packages/lararium-tw5/src/tw5-file-info.ts:46-48`) and `exportCarrierFile` passes neither (`packages/lararium-tw5/src/meme-write.ts:57`, `:76`); the only mention sits in a comment (`bag-paths.ts:30`) | designed, unwired — MARKED OWED on the carrier |
-| `bag-wiki-uri-split#/live-vs-canon` (`bag-wiki-uri-split.mem:39-43`) | `wikis/{slug}` = the live wiki; the `@working`/`@draft`/`@personal` binding per (PersonaGroup × fingerprint) | island agrees; host draft per DID | half agrees; its meta now reads `standing` with the half-enactment named |
+| `bag-wiki-uri-split#/live-vs-canon` (`bag-wiki-uri-split.mem`) | `wikis/{slug}` = the live wiki; the `@working`/`@draft`/`@personal` binding per (PersonaGroup × fingerprint) | host and island read ONE resolver; the draft floor stands when no seat does | agrees |
 | `residency-model#/tai-chi` (`residency-model.mem:208-211`) | temp among the coordinates "keyed by (PersonaGroup × recipe-fingerprint)" | temp holds no key; a fresh `MemoryTiddlerStore` per boot (`island-recipe.ts:67-70`) | overstated — HEALED (temp drawn outside the keyed set) |
-| `wiki-layer-ontology#/the-daemon-wiki` (`:213-235`) | the daemon's write layer falls back to its own bag; a late-attach working layer owed | matches (`island-recipe.ts:97`) | agrees; the owed attach stands unbuilt |
-| genesis system recipes (`genesis-doc.ts:379-388`) and the user recipe (`wiki-mint-handlers.ts:84-85`) | `writable-bag` = `wikis/{slug}/draft`; the `bag-stack` names catalog · oracle · lararium · lares · canon · draft | `expandRecipe` never reads the record; it lays temp · draft · personal · working · canon · libraries · oracle from the slug alone (`wiki-recipe.ts:265-286`; `vessel-steps.ts:148-151` builds the recipe with NO `libraryBags`) | two recipe shapes, one name |
+| `wiki-layer-ontology#/the-daemon-wiki` | the daemon's write layer falls back to its own bag; a late-attach working layer owed | the late attach STANDS (`attachDaemonWorking`); the disk mirror for `daemon` remains excluded | agrees; the attach is built, the mirror owed |
+| genesis system recipes (`genesis-doc.ts` `systemRecipe`) and the user recipe (`wiki-mint-handlers.ts` init) | `writable-bag` = `wikis/{slug}/working`; the `bag-stack` = the expanded cascade minus the instance slots | both minters write `recipeRecordFields`; the mount reads `recipeFromRecord` | ONE shape — CONVERGED (`tests/recipe-record.test.ts`) |
 
 <<~/ahu>>
 
@@ -159,15 +170,15 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 !! The blur, named
 
-# ''`writable-bag` (draft) vs the mount's default (canon on the host, temp in the island).'' The recipe record designates `wikis/{slug}/draft`; the host composite's LAST default-writable layer reads temp (`open-vessel-core.ts:324`), the canon bag holds the flag beneath it (`:315`), and the island's reads temp too (`island-recipe.ts:70`). `meme put --recipe` obeys the record; an in-wiki save obeys the cascade (`working`); a bagless put obeys the composite (temp). Three writers, three answers to "the top bag".
-# ''Two draft documents wear one slot name.'' The island's `wikis/{slug}/draft` binds per (PersonaGroup × fingerprint) through the daemon doc (`resolve-binding.ts:108-125`), delegated to the PersonaGroup, so it ''fleet-syncs today'' — a `Draft of` typed on one device reaches the operator's other devices, as the ruling wants. The host's `wikis/{slug}/draft` binds per vessel DID in the catalog (`wikiDraftDocKey`, `wiki-recipe.ts:96-99`), and `meme put --recipe` lands there (`meme-verbs.ts:144-147`). The wiki island never mounts the per-DID doc; a meme placed by `--recipe` never surfaces in the running wiki until something else moves it. `prune-stale` reads the per-DID doc (`wiki-draft-handlers.ts:70-76`).
-# ''Per-DID or per-PersonaGroup — the code holds both, the canon says one.'' `personal-slot#/scoping-mechanism` rules (PersonaGroup × fingerprint); `wiki init` mints per DID. Which one the ruling means by "fleet synced" decides which doc survives.
+# ''`writable-bag` vs the mount's default'' — DISSOLVED. The record designates `wikis/{slug}/working`; the mount's ONE default writable is the working slot (`slotLayerFlags`), the canon bag only while no working handle stands; temp never. Three writers, one answer: the working layer.
+# ''Two draft documents wear one slot name'' — DISSOLVED. THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`, the law `resolveSlotDoc` in `@lararium/mesh`): the PersonaGroup × fingerprint binding WHEN the vessel holds a seated PersonaGroup cap, ELSE the device floor `wikis/{slug}/drafts/{did}` — and the record says which (`face-reach`). Every site reads through it: the island's slot grants, the host mount (by the daemon proxy), `wiki init`, `prune-stale`, `meme put --recipe`, `where`, the ACTION verbs. Weld witness: `packages/lararium-keyhive/tests/slot-doc-resolver.test.ts` S3 (five sites, one doc, seated and unseated). ⚠ THE MOUNT'S TRACE IS THE TRACE: a wiki the vessel mounted this session fingerprinted the canon doc it holds; a verb re-deriving the url from a registry pointer read a DIFFERENT doc when a peer's founding rewrote the shared oracle plane's `bags/lares` pointer mid-session (measured in the two-vessel e2e) — the resolver keeps the mount's trace per slug and reuses it.
+# ''Per-DID or per-PersonaGroup'' — RULED: both, by seat. Fleet when a PersonaGroup sync-fleet cap stands; the DID floor when not — a private device so far. A seat landing later resolves the face doc from then on; the floor stays the device's own (no migration).
 # ''What "volatile / per-device" holds today: temp ALONE.'' Presence stands unbuilt — no `presence` slot, no `$:/status/` beyond what TW5 writes; `$:/status/*` and `$:/boot/*` and most `$:/state/*` route to temp (`lar-bag-paths.tid:8-10`, `:15`). `personal` fleet-syncs by design (view state), so the ruling's "all here don't [sync]" holds for temp and not for personal. Per-device state that MUST survive a reboot (a device's own window layout, a local-only bag pin) has no home: temp forgets at boot, personal follows the fleet.
-# ''`Draft of` routes by TITLE PREFIX alone.'' Field-based routing cannot ride the cascade as built: a delete runs after the tiddler has gone, so any rule reading `draft.of` would route the creation and drop the deletion (`island-adaptor.ts:284-289`). The ruling's "#has `draft-of` field" therefore asks for a second read path — the field on SAVE, the last-known slot on DELETE — or for the title rule to stay and the field to stay advisory.
+# ''A draft routes by its `draft.of` FIELD on SAVE; the DELETE owes a last-known-slot map.'' RULED 2026-09-11 (the field is the switch). The cascade's `[is[draft]…]` reads the tiddler the save carries; a delete runs after the tiddler has gone (`island-adaptor.ts:284-289`), so the adaptor records the slot each title last routed to (outbound: the cascade verdict; inbound: the envelope's `$origin-bag`) and tombstones there, falling back to the cascade's title read for a title never seen this session. Owed to `island-adaptor.ts`; the red stands in `tests/lar-kind.test.ts`.
 # ''A non-meme file enters by three doors and leaves by one, and foreign titles leave by none.'' Enter: (a) `lares ingest --source --to` scans `.mem` and any extension, pairs a `.meta` sidecar, derives the URI by the loci law (`ingest-core.ts:83-88`, `:111-113`, `:171-181`); the island runs `tw5.parseFields(meta)` then `tw5.deserialize(ext, text, base)` (`action-handler.ts:863-873`) and packs foreign-titled members into `$:/config/OriginalTiddlerPaths` (`:815-833`). (b) `act LOAD --to` takes carriers with the verb, same registry route (`:641-707`). (c) the in-wiki drag-drop / `$:/Import` ride TW5's own DOM deserializer and then the cascade — no house code touches it. Leave: the ONE render shore `exportCarrierFile` (`meme-write.ts:40-77`) → `makeTw5FileInfo` (`tw5-file-info.ts:88-176`) picks `.tid` / content + `.meta` / `.json` exactly as `generateTiddlerFileInfo` does, base64 for a binary type (`:140`), and the projector sites it at `<uri-path><ext>` (`disk-projector.ts:352-360`). But `carrierBaseRelPath` sites only `lar:///w.w.w/…` names (`bag-paths.ts:84-99`): a `.png` ingested under a loci URI round-trips; a `HelloThere.tid` pack member reaches disk only through REPACK of its pack (`action-handler.ts:352-370`).
-# ''`meme get --recipe` reads the designated bag, not the stack'' (`meme-verbs.ts:136-137`, `:185`). A meme living in canon under a recipe whose `writable-bag` names draft reads as absent. The in-wiki face reads the stack. The two verbs disagree by construction.
-# ''Two recipe shapes, one name.'' The recipe RECORD (`bag-stack` + `writable-bag`) drives `meme put --recipe`, recipe-watch's library membership, and nothing else. The `WikiRecipe` struct (`{ wikiSlug, libraryBags?, mirrorBags? }`) drives the mount. `catalog` sits in the user `bag-stack` (`wiki-mint-handlers.ts:84`) and recipe-watch treats it as a library to mount (`recipe-watch.ts:134-146`; `urlOfBag(catalog)` resolves null, so it skips — by accident, not by law).
-# ''`working` and `personal` stand outside the ruling's four strata.'' The ruling names canon ← named wiki bag ← drafts ← volatile. The code lays canon ← ''working'' ← ''personal'' ← draft ← temp. Either "named wiki bag" means `working` (the saved live layer, projecting to `wikis/{slug}/`) and canon means `bags/{slug}` — which matches the ruling's disk sentence exactly — or the ruling collapses working into the canon bag and the shore-law promotion MOVE goes. The disk sentence decides it: "disk projects into the base `/wikis/*` dir" names `working`.
+# ''`meme get --recipe` reads the designated bag, not the stack'' — DISSOLVED by ruling ("The stack."). GET walks the whole cascade top-down and answers from the first bag holding the meme live; PUT writes the designated bag alone. Witness: `tests/meme-verbs.test.ts` "READS THE STACK"; two-vessel e2e ⑦ ★ (canon answers through `--recipe` on B).
+# ''Two recipe shapes, one name'' — DISSOLVED. `recipeRecordFields` ⇆ `recipeFromRecord` (`@lararium/mesh` wiki-recipe.ts); `catalog` leaves the user stack; the lares bag is a library like the lararium bag (a record that names it mounts it). The libraries a record names lay at boot AND reconcile live.
+# ''`working` and `personal` against the four strata'' — RULED. "named wiki bag" = `working` (the disk sentence decides it; the shore-law MOVE stays the promotion door); `personal` keeps its own layer while the browser UX stands up. The daemon reads as a wiki and holds `working` too (late-attached).
 
 <<~/ahu>>
 
@@ -184,32 +195,30 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | drafts | `wikis/{slug}/draft` (absorbs `personal` as a KIND, see below) | CRDT | fleet | none | the cascade's draft rule | no |
 | volatile | `wikis/{slug}/temp` | memory | device | none | the cascade's temp rules | no |
 
-''Changes this asks of code:''
+''What stands'' (each red-first, each witnessed): the default writable moved to `working` (mesh `slotLayerFlags`; witnesses in `composite-store.test.ts`); the delete routes like the save through the last-known-slot map (`routing-totality.test.ts`, `lar-kind.test.ts`); ONE slot-doc resolver, floor-falling (`slot-doc-resolver.test.ts`); `meme get --recipe` reads the stack, `meme put --recipe` writes the designated bag (`meme-verbs.test.ts`); the recipe record and the mount struct converge (`recipe-record.test.ts`); the daemon holds a late-attached `working` layer (two-vessel e2e); `wiki init` registers `wikis/{slug}/working` and the vessel's `registerBags` carries it, so the cap gate knows the working slot; the `.meta` sidecar merges OVER the deserialized record as TW5's loader rules (`action-handler.ts`, both doors).
 
-* ''The default writable moves to `working`'' — `island-recipe.ts:70` sets temp `defaultWritable:false`; `:80` sets the working slot `defaultWritable:true` when its handle stands (else the canon bag, the daemon's case); `open-vessel-core.ts:315-324` mirrors it (working absent on the host today → the canon bag keeps the flag; temp drops it). This alone cures the delete-to-temp resurrection and gives the `draft` verb a durable fallback.
-* ''The delete routes like the save'' — `island-adaptor.ts:293` becomes `tombstoneInBag(destination, title)` through the cascade verdict it already computed at `:289`. Red test first in `routing-totality.test.ts`.
-* ''One draft document.'' Retire the per-DID `wikis/{slug}/drafts/{DID}` key: `wiki init` stops minting it (`wiki-mint-handlers.ts:36`, `:48-66`), `mountWikiSlot` stops resolving it (`open-vessel-core.ts:317-322`), `meme-verbs.ts:144-147` and `wiki-draft-handlers.ts:70-76` read the PersonaGroup × fingerprint binding through the daemon composite instead (`DRAFT_BINDINGS_PREFIX`, `lar-uris.ts:539`). `wiki-recipe.ts:96-99` (`wikiDraftDocKey`) goes. A weld test on the four sites before the rename.
-* ''The routing KEY reads the kind of raw tiddler, in this order'', all on the title so the delete path survives: `$:/temp/*` · `$:/status/*` · `$:/boot/*` · `$:/HistoryList*` → volatile; the TW5 draft title (the `Draft/Title` AND `Draft/Attribution` shapes — read the language strings at boot into a `current-wiki-draft-prefix` config tiddler rather than hardcoding English; `island-recipe.ts:95-104` already seeds config) → drafts; `$:/StoryList*` · `$:/state/*` · `$:/palette*` → drafts-as-view-state (see the fork below); everything else → working. The `draft.of` FIELD stays advisory: a save whose fields carry `draft.of` and whose title misses the prefix logs a router warning (`island-adaptor.ts:148-160` already owns the voice), never a second route.
-* ''`meme get --recipe` reads the STACK; `meme put --recipe` writes the record's `writable-bag`.'' `reachRecipeBag(…, "get")` (`meme-verbs.ts:131-153`) resolves the whole `bag-stack` top-down through `storeForBag`/reach and returns the first live record; put keeps the designated bag. Two verbs, two laws, stated in `meme-verbs.ts:1-30`.
-* ''The recipe record and the mount struct converge on one spelling.'' `expandRecipe` reads `libraryBags` off the record's `bag-stack` (minus the structural set recipe-watch already names, `recipe-watch.ts:87-89`) at mount (`vessel-steps.ts:148-151`), and `writable-bag` names `wikis/{slug}/working` in both minters (`genesis-doc.ts:379-388`, `wiki-mint-handlers.ts:84-85`); `catalog` leaves the user `bag-stack`. `getRecipe`/`putViaRecipe` (`composite-store.ts:544-611`) retire or read the hyphenated fields.
-* ''Disk legs for non-meme files:'' wire `pathFilters`/`extFilters` from `config/disk-paths` · `config/disk-extensions` into `exportCarrierFile` (`meme-write.ts:57`, `:76`) so rule 3 of `disk-projection#/projection-routing` stands; a foreign-titled record keeps its pack (REPACK) — the ruling's "round trip to disk with `*.meta` files" already holds for loci-titled content files (`tw5-file-info.ts:118-121`, `:162-165`; `disk-projector.ts:352-360`). No new TW5 surface needed; the house already rides `deserializeTiddlers`, `parseFields`, `contentTypeInfo`, `getFileExtensionInfo` and a pure re-implementation of `generateTiddlerFileInfo`.
+''What remains'' (owed, named):
 
-''Verb-seat mapping under the model:'' in-wiki save/delete → cascade by kind; `meme put` (anchor) → the daemon's working layer once the late-attach lands (`wiki-layer-ontology#/the-daemon-wiki`), its own bag until then; `meme put --recipe` → that wiki's `working`; `meme put --bag` · `act ADD/COPY/MOVE/LOAD/INGEST --to` · `lares ingest --to` → the named bag exactly, canon included, effect-record audited; promotion `working → bags/{slug}` stays a MOVE.
+* ''The outbound bridge.'' No live wiki change reaches `IslandAdaptor.saveTiddler` / `deleteTiddler` on any island — only `wiki-sync` sessions and tests call them, and `$tw.syncer` does not run. In-wiki edits and the anchor `meme put` stand in `$tw.wiki` alone. The cascade, the map and the seats are right; the wire from the wiki's change event to the adaptor is the act missing.
+* ''The daemon's disk mirror.'' `disk-projector` excludes `daemon`; `wikis/daemon/working` reaches no disk.
+* ''The shared oracle plane moves.'' A joiner's founding rewrote the founder's oracle-plane `bags/lares` pointer (measured: `automerge:ZqADt…` mounted, `automerge:2St9f…` after B stood). A reboot of A would mount B's lares doc. Not this carrier's to rule; named.
+* ''Disk legs for non-meme files:'' the siting cascades ride (#/tw5-surfaces); binaries under `bags/` read OPEN (talk-story).
+* ''The host composite's office.'' A role cap's `defaultWritable: true` layer (meshpalace) may register after the wiki cap; nothing writes bagless through the host composite today.
 
 <<~/ahu>>
 
 <<~ ahu #/questions>>
 
-!! Questions only the operator answers
+!! Questions the operator answered, and the one still open
 
-# ''Does a `Draft of` tiddler fleet-sync, or stay on the device that drafted it?'' The ruling says fleet; the island already does fleet; the host's per-DID doc says device. Fork: keep the PersonaGroup × fingerprint binding (retire `wikiDraftDocKey`) — or keep per-DID and re-key the island's binding to the DID.
-# ''Does `personal` survive as a layer, or fold into `drafts` as a KIND of draft (view state)?'' The ruling names four strata and `personal` sits in none. Fork: five slots with `personal` between draft and working as today — or four slots, `$:/StoryList` · `$:/state/*` routed to `draft` with a `kind` marker, one binding fewer per fingerprint.
-# ''Which per-device state MUST survive a reboot?'' Temp forgets; personal follows the fleet. If a device's own layout or a local pin needs to persist, the volatile stratum splits into `temp` (memory) and a per-device CRDT doc that never enters the fleet share set — a fourth sync class the gate does not carry today (`self-slot-share.ts:70-95` knows same-operator, cross-operator, in-process).
-# ''Does "named wiki bag" mean `working` (saved live, `wikis/{slug}/`) with canon reached by promotion MOVE — or does the wiki write straight into `bags/{slug}`?'' The ruling's disk sentence says `working`; `wiki-layer-ontology#/quine` rules the same; the recipe records say draft. Fork: keep the shore-law MOVE — or retire `working` and let the canon bag take saves (which puts every edit on the tracked `bags/` tree).
-# ''Does `meme get --recipe` read the stack or the top bag?'' The scout proposes the stack; the current code reads the designated bag.
-# ''Does the `draft.of` FIELD ever decide routing, or only the title?'' A field-read costs a last-known-slot map for deletes.
-# ''Which non-meme file types enter through `lares ingest` today, versus drag-drop only?'' `ingest` scans every extension and hands them to TW5's registry (`ingest-core.ts:111-113`, `action-handler.ts:872`); the operator decides whether a `.png` under `bags/` counts as canon (it lands, base64, and projects back as bytes) or whether binaries ride the CAS shelf only (`action-handler.ts:653-659`, the skinny handle).
-# ''Does the daemon wiki gain its `working` layer now?'' The late-attach stands designed (`wiki-layer-ontology#/the-daemon-wiki`); until it lands `meme put` without a target writes the daemon bag and a `Draft of` in the daemon wiki refuses loud.
+# ''Does a draft fleet-sync, or stay on the device?'' RULED: fleet when a PersonaGroup sync-fleet cap stands, else the device floor; the cap-stack falls to the floor, never reds.
+# ''Does `personal` survive as a layer?'' RULED: its own layer, while the browser UX stands up.
+# ''Which per-device state MUST survive a reboot?'' OPEN. Temp forgets; personal follows the fleet; the draft floor of an unseated vessel is the one per-device CRDT doc today.
+# ''Does "named wiki bag" mean `working`?'' RULED by the disk sentence: `working`; the shore-law MOVE stays the promotion door.
+# ''Does `meme get --recipe` read the stack?'' RULED: "The stack."
+# ''Does the `draft.of` FIELD decide routing?'' RULED: the field is the switch; the delete rides the last-known-slot map.
+# ''Which non-meme file types enter through `lares ingest`?'' Every extension, through TW5's registry; binaries under `bags/` read OPEN (talk-story).
+# ''Does the daemon wiki gain its `working` layer?'' RULED: working layers for all wikis; the late attach stands.
 
 <<~/ahu>>
 
@@ -226,14 +235,16 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | `$tw.loadTiddlersFromFile` · `$tw.loadMetadataForFile` · `$tw.loadTiddlersFromPath` · `$tw.loadTiddlersFromSpecification` (`tiddlywiki.files`) · `$tw.loadPluginFolder` · `$tw.loadWikiTiddlers` | `boot.js:1941-1964`, `:1969-1976`, `:1988-2013`, `:2017`, `:2168`, `:2293` | node-only disk walkers; `.meta` sidecar merged onto the first tiddler; `maxEditFileSize` guard; `excludeRegExp` skips `*.meta` (`:1983`) | ''does not ride'' — the house walks disk in `ingest-core.ts` (`git ls-files`-shaped, declaration-read) and hands bytes to the registry; `tiddlywiki.files` specifications and `plugin.info` folders stay unread |
 | `$:/config/OriginalTiddlerPaths` | `boot.js:2369` | the file-path ↔ title map the folder loader keeps | rides the same title for pack provenance (`action-handler.ts:833`) |
 | `generateTiddlerFileInfo` · `generateTiddlerFilepath` · `saveTiddlerToFile(Sync)` · `deleteTiddlerFile` · `cleanupTiddlerFiles` | `TiddlyWiki5/core-server/filesystem.js:213`, `:322`, `:445`, `:487`, `:508`, `:549` | type selection (.tid / content+.meta / .json), path sanitizing, the write | ''re-implemented pure'' in `tw5-file-info.ts:88-176` (no `fs`); the projector writes (`disk-projector.ts:352-400`) |
-| `$:/config/FileSystemPaths` · `$:/config/FileSystemExtensions` | `plugins/tiddlywiki/filesystem/filesystemadaptor.js:59-65` | the siting and extension cascades | mirrored as `config/disk-paths` · `config/disk-extensions` in canon; ''unwired'' (`meme-write.ts:57`, `:76` pass no filters) |
+| `$:/config/FileSystemPaths` · `$:/config/FileSystemExtensions` | `plugins/tiddlywiki/filesystem/filesystemadaptor.js:59-65` | the siting and extension cascades | ''rides, one spelling'' — `exportCarrierFile` reads the two `$:/` tiddlers EXACTLY as the adaptor does (a REAL tiddler, `tiddlerExists`; `tw5-file-info.ts` `readSitingCascades`) and the projector sites a ruled path first, the loci law otherwise (`disk-projector.ts` `flush`, the `sited` memory = `$tw.boot.files`); no `lar:` twin — a spelling honoured by one door only is the disagreement. Parity against the fork's own `generateTiddlerFileInfo`: `tests/tw5-file-info-parity.test.ts` |
 | the `filesystem` syncadaptor · `syncer.js` · `$:/config/SyncFilter` | `filesystemadaptor.js:86`; `core/modules/syncer.js:19`, `:67`; `core/wiki/config/SyncFilter.tid` | TW5's own save-to-disk loop and its total-minus-exclusions filter | ''does not ride'' the adaptor; the cascade takes SyncFilter's SHAPE (`island-adaptor.ts:107-111`) |
-| `isSystemTiddler` · `isTemporaryTiddler` · `isVolatileTiddler` · `Tiddler.isDraft` · `generateDraftTitle` | `core/modules/wiki.js:222-232`, `:1725`; `core/modules/tiddler.js:20-22` | the kind predicates TW5 itself uses (`$:/` · `$:/temp/` · `$:/temp/volatile/` · the `draft.of` field · the localized draft title) | rides none directly; the cascade re-spells three of them as prefix rules (`lar-bag-paths.tid:7`, `:15`, `:16`) |
+| `isSystemTiddler` · `isTemporaryTiddler` · `isVolatileTiddler` · `Tiddler.isDraft` · `generateDraftTitle` | `core/modules/wiki.js:222-232`, `:1725`; `core/modules/tiddler.js:20-22` | the kind predicates TW5 itself uses (`$:/` · `$:/temp/` · `$:/temp/volatile/` · the `draft.of` field · the localized draft title) | ''rides'' — `[lar-kind[]]` (`filters/lar-kind.ts`) answers `volatile` · `temporary` · `draft` · `personal` · `system` · `content` by calling these predicates plus the house's personal set; the cascade routes drafts by `[is[draft]…]` and personal by `[lar-kind[]match[personal]…]` (`lar-bag-paths.tid:11`, `:13`) |
 | `--load` · `--save` · `--savetiddlers` · `--savewikifolder` · `--render` · `--import` · `--unpackplugin` | `TiddlyWiki5/core-server/commands/` | the CLI legs for a folder wiki | `--render`'s law rides in `meme-project.ts:104`; the rest stay stubs the house never calls |
 | `$:/Import` · dropzone · `th-importing-tiddler` | `core/modules/widgets/` (dropzone, navigator) | in-browser file drop → DOM deserializer → the wiki | rides untouched; a dropped file then saves through the cascade like any edit |
 | MWS (multi-wiki server) | absent from this fork (`plugins/tiddlywiki/` holds `filesystem` and `tiddlyweb` only) | — | nothing to ride |
 
-''Reading.'' The house already stands on the registry and the deserializer chain, and re-implements the filesystem module's pure half. What it lacks names itself: the siting cascades (designed, unwired), the disk walker's `tiddlywiki.files` and plugin-folder legs (never needed while `ingest` reads declarations), and a kind predicate that reads TW5's own `draft.of` and language strings instead of an English prefix.
+''Reading.'' The house stands on the registry and the deserializer chain, re-implements the filesystem module's pure half (parity-witnessed against the fork's own module), reads the siting cascades as the adaptor reads them, and answers the kind of a raw tiddler by TW5's own predicates. What it lacks names itself: the disk walker's `tiddlywiki.files` and plugin-folder legs (never needed while `ingest` reads declarations).
+
+''The non-meme round trip, measured'' (`tests/e2e/nonmeme-parity.test.ts`, both doors real): `note.md` + `.meta` — bytes identical, fields identical; `pack.json` — both doors keep the membership in `$:/config/OriginalTiddlerPaths` (the server only under `retain-original-tiddler-path`), and the server's `--savewikifolder` explodes the pack into per-member `.tid` files where the island keeps it packed (REPACK) — named, on purpose. Two strays: (1) the island seeds the `.meta` BEFORE the deserialize (`action-handler.ts:870-873`) where TW5 merges it AFTER (`boot.js:1961`), so `type: text/markdown` in a sidecar lands as `text/x-markdown` on the island — a red held in the witness, owed to `action-handler.ts`; (2) `$origin-bag` reached the sidecar — cured in `tw5-file-info.ts` (`UNPERSISTED_FIELDS`). MEASURED, OPEN: a `.png` under bags/ enters the island as a skinny handle `photo.tid` on the `cid/` tier and the `.png` sweeps; the server keeps `photo.png` + `.meta` whole.
 
 <<~/ahu>>
 
@@ -243,13 +254,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 The spiral walked every carrier the #/as-written table names and evergreened the ones whose text described retired code: `wiki-layer-ontology#/write-law` (drafts → `@draft`, volatile → `@temp`, title-read), `save-path` SP-3/SP-4 (the cascade rule; the envelope law, no `bag` field routes), `disk-projection#/projection-routing` (the siting requirement for rule 2; rule 3 marked OWED), `residency-model#/tai-chi` (temp outside the keyed set), `bag-wiki-uri-split` meta (`standing`, half-enactment named). The `lares-history` tree stays untouched (history, never canon).
 
-''Tensions the spiral did NOT resolve — surfaced, not rewritten'' (a law vs the code, and only the operator rules which one yields):
-
-# `wiki-layer-ontology#/naming-law` — "instance mounts MUST NOT enter `@catalog`" — against the per-DID draft key `wiki init` registers there. The law stands; the code violates it; #/one-model proposes retiring the key.
-# `personal-slot#/scoping-mechanism` — draft per (PersonaGroup × fingerprint) — against the host's per-DID draft doc. Same fork as above, read from the other carrier.
-# The ruling's FOUR strata against the code's FIVE slots (`working` + `personal` unnamed by the ruling) — #/questions 2 and 4.
-# The ruling's `draft-of` FIELD against the cascade's title-only law — #/questions 6.
-# The composite default writable = temp (the delete-to-temp resurrection) — a code defect read, not measured; owed a red test before any fix.
+''Tensions the first spiral surfaced, and how they closed:'' `wiki-layer-ontology#/naming-law` — re-trued to carve the draft FLOOR out (a per-DID device doc, a registry entry, never an instance mount of a group); `personal-slot#/scoping-mechanism` — the seat decides (binding when seated, floor when not); the four strata against five slots — ruled (`working` is the named wiki bag, `personal` stays); the `draft.of` field — ruled (the switch, with the delete map); the default writable = temp — cured red-first. What remains stands under #/one-model "What remains".
 
 <<~/ahu>>
 
@@ -268,6 +273,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C-qx6PyzTTsmXzh_UQL8qo9aQ-nuwhM3fhy4AnD2aRs
+<<^ code="&#x0003;">>ni:///sha-256;6pAmDJvhgybiDMlcb6qdy8y2IpG-n_38EPnxCPCQQuw
 
 <<^ code="&#x0004;" -> to="?">>

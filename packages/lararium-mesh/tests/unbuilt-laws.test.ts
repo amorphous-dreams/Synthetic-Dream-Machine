@@ -315,23 +315,18 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
 // looking untidy — the one place two minds are meant to leave things for each other is the one place
 // nothing lands on disk.
 //
-// WHAT STANDS TODAY, measured: `open-node-vessel` grants the daemon VM `{islandUrl, wikiUrl,
-// catalogUrl}` and no `workingUrl`/`personalUrl`/`draftUrl`, so `expandRecipe`'s three instance slots
-// prune for want of a handle; `island-recipe` falls the write layer back to the daemon's own bag; and
-// `disk-projector` excludes `daemon` from every mirror. Three layers, no working↔canon shore, no disk.
+// WHAT STANDS, measured: the daemon VM's grants carry `{islandUrl, wikiUrl, catalogUrl}` and no
+// instance slots, so at open `expandRecipe`'s instance slots prune for want of a handle and the
+// write layer falls to the daemon's own bag — the floor. Then the daemon island's own behavior
+// (`@lararium/keyhive` operator-daemon-behavior, `attachDaemonWorking`) resolves its working doc
+// through THE ONE slot-doc resolver under the same binding law as every wiki's — the VESSEL key
+// binds, a seated face composes on top — and LATE-ATTACHES it above the daemon bag as the default
+// writable, re-seeding the cascade's `current-wiki-bag`. The two-vessel e2e witnesses the attach
+// (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`).
 //
-// WHAT NO LONGER BLOCKS IT. The instance slots once bound only where a FACE stood, so the daemon
-// could not be a client of the resolver it supplies and a faceless floor got no layers at all. That
-// gate was what remained of Herm and Lararium having been separate CLASSES; operator ruling made the
-// VESSEL KEY the binder, and the mint already confers it — `registerBag` generates the document and
-// its generator is admin by construction, so a faceless binding is a doc the VESSEL holds, with a
-// face composing on top where one stands. A Herm now resolves its own bindings and can stand a
-// `@daemon` wiki for a lamplighter to reach.
-//
-// WHAT REMAINS IS WIRING, not authority: the daemon VM's grants are built before the VM that hosts
-// the resolver exists, so its own working layer arrives by a LATE ATTACH rather than at open.
-// `CompositeStore.addLayer(layer, at)` already splices into a live cascade and fans projections to
-// the arriving layer — the act is missing, never the machinery, and it needs no face to run.
+// WHAT REMAINS: `disk-projector` excludes `daemon` from every mirror, so the working layer reaches
+// no disk yet; and no live wiki change reaches `IslandAdaptor.saveTiddler` on ANY island (only
+// `wiki-sync` sessions and tests call it), so an anchor placement stands in `$tw.wiki` alone.
 describe("⑦ the daemon wiki, held to the laws every other wiki obeys", () => {
   test("the recipe already NAMES the slots the daemon is not granted", () => {
     // Not a gap in the model — `expandRecipe` mints the same five slots for every slug, daemon
@@ -343,16 +338,17 @@ describe("⑦ the daemon wiki, held to the laws every other wiki obeys", () => {
     expect(slots).toContain(mesh.wikiBagUri("daemon"));
   });
 
-  test.skip("THE DAEMON WIKI HOLDS A WRITE LAYER ABOVE ITS OWN BAG — DEFERRED: the vessel grants no workingUrl, so `island-recipe` falls the write layer back to the daemon bag and an operator edit lands in the control plane rather than in a saved working layer. Every other wiki keeps write layer and canon as distinct coordinates (wiki-layer-ontology#quine); the daemon is the sole exemption, and it is the surface the operator and the AI share", () => {
-    expect(Object.keys(mesh)).toContain("daemonWorkingGrant");
+  test("the default writable of a wiki is its working slot when mounted, its canon bag until then — temp never", () => {
+    // The ONE law both mounters read (`slotLayerFlags`); the daemon's late attach registers its
+    // working layer `defaultWritable: true` above its bag, taking the office from the floor.
+    expect(mesh.defaultWritableSlot("daemon", true)).toBe(mesh.wikiSlotUri("daemon", "working"));
+    expect(mesh.defaultWritableSlot("daemon", false)).toBe(mesh.wikiBagUri("daemon"));
+    expect(mesh.slotLayerFlags(mesh.wikiSlotUri("daemon", "temp"), "daemon", true).defaultWritable).toBe(false);
+    expect(mesh.slotLayerFlags(mesh.wikiSlotUri("daemon", "temp"), "daemon", false).defaultWritable).toBe(false);
   });
 
   test.skip("A DAEMON EDIT REACHES DISK — DEFERRED: `disk-projector` excludes daemon from every mirror, so nothing written through the daemon surface appears in wikis/ or bags/. The working-memory stage is the one surface where an operator and an agent leave work for each other, and it is the one with no on-disk form to read, diff or commit", () => {
-    expect(Object.keys(mesh)).toContain("daemonWorkingGrant");
-  });
-
-  test.skip("THE DAEMON'S WORKING LAYER ATTACHES AFTER ITS OWN BOOT — DEFERRED: the daemon VM's grants are built before the VM that hosts the binding resolver exists, so its working layer can only arrive by a late attach. `addLayer(layer, at)` splices live and fans projections already, and since the binder is the VESSEL key this needs no face to run — a Herm gains the layer too. Nothing calls it for the daemon, and no vector proves a booted vessel gains the layer rather than needing a reboot", () => {
-    expect(Object.keys(mesh)).toContain("attachWorkingLayerLive");
+    expect(Object.keys(mesh)).toContain("daemonWorkingMirror");
   });
 
   // THE MIRROR CAN ALREADY TELL THEM APART, which a first reading of this section denied.

@@ -27,7 +27,7 @@ export interface BagMirrorConfig {
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────
 //
-// Cascade tiddlers (config/disk-paths overlays) compose through the RECIPE —
+// Cascade tiddlers (`$:/config/FileSystemPaths` overlays) compose through the RECIPE —
 // a library bag can overlay them — so every relative path reaching the
 // projector counts as UNTRUSTED input. Policy lives in the cascade; this gate
 // (the mechanism) holds at the write choke-point regardless of what the

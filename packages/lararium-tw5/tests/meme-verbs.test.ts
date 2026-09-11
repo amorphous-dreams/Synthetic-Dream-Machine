@@ -9,12 +9,11 @@
  * cannot write fails loud, naming the bag. `base` carries the writer's merge base; stale reads CONFLICT.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri, recipeUri, wikiDraftBagUri, wikiDraftDocKey, didFromVerifyingKey, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
-
-/** The vessel DID, minted through the one spelling every host walks. */
-const VESSEL_DID = didFromVerifyingKey("cd".repeat(32));
+import { CompositeStore, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { placeMeme } from "../src/place-meme.js";
+import { storeMemeSink } from "../src/meme-sinks.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const URI = "lar:///t/x";
@@ -49,6 +48,8 @@ interface Rig {
   readonly wiki: ReturnType<typeof fakeWiki>;
   readonly composite: CompositeStore;
   readonly reached: Map<string, MemoryTiddlerStore>;
+  /** The instance-slot stores THE ONE resolver would hand back, keyed `${slug}/${kind}`. */
+  readonly slots: Map<string, MemoryTiddlerStore>;
   readonly recipes: Map<string, LarTiddlerRecord>;
 }
 
@@ -58,15 +59,16 @@ function rig(): Rig {
   composite.addLayer({ bagId: bagUri("sdm"), store: new MemoryTiddlerStore(bagUri("sdm")), writable: true, defaultWritable: false });
   composite.addLayer({ bagId: bagUri("daemon"), store: new MemoryTiddlerStore(bagUri("daemon")), writable: true });
   const reached = new Map<string, MemoryTiddlerStore>();
+  const slots = new Map<string, MemoryTiddlerStore>();
   const recipes = new Map<string, LarTiddlerRecord>();
   const opts: MemeVerbOptions = {
     composite,
     tw5: { $tw: { wiki } } as unknown as MemeVerbOptions["tw5"],
     recipeOf: async (slug) => recipes.get(recipeUri("catalog", slug)) ?? null,
     reach: async (key): Promise<LarTiddlerStore | null> => reached.get(key) ?? null,
-    vesselDid: () => VESSEL_DID,
+    slotStore: async (slug, kind): Promise<LarTiddlerStore | null> => slots.get(`${slug}/${kind}`) ?? null,
   };
-  return { opts, wiki, composite, reached, recipes };
+  return { opts, wiki, composite, reached, slots, recipes };
 }
 
 describe("meme-put — the anchor (recipes/default)", () => {
@@ -149,15 +151,15 @@ describe("meme-put — a named bag (residency)", () => {
 });
 
 describe("meme-put — a named recipe (an edit AS that wiki)", () => {
-  test("★ resolves slug → recipe → its designated writable bag → that bag's own store, by access ★", async () => {
+  test("★ resolves slug → recipe → its designated writable bag → that bag's own store, through the ONE slot resolver ★", async () => {
     const r = rig();
-    const draft = wikiDraftBagUri("elyncia");
+    const working = wikiSlotUri("elyncia", "working");
     r.recipes.set(recipeUri("catalog", "elyncia"), {
-      tiddler: { title: recipeUri("catalog", "elyncia"), "bag-stack": `${bagUri("lares")} ${bagUri("elyncia")} ${draft}`, "writable-bag": draft },
+      tiddler: { title: recipeUri("catalog", "elyncia"), "bag-stack": `${bagUri("lares")} ${bagUri("elyncia")}`, "writable-bag": working },
     });
-    // The wiki's draft doc keys per DID in the registry — the reach answers under that key.
-    const store = new MemoryTiddlerStore(draft);
-    r.reached.set(wikiDraftDocKey("elyncia", VESSEL_DID), store);
+    // The wiki's working doc is the one THE resolver names — the doc the wiki island mounts.
+    const store = new MemoryTiddlerStore(working);
+    r.slots.set("elyncia/working", store);
     const receipt = await makeMemePutReactor(r.opts)({ recipe: "elyncia", uri: URI, text: meme(["a"]) }, ctx());
     expect(receipt["decision"]).toBe("ingest");
     expect(await store.listVisible()).toContain(URI);
@@ -184,10 +186,65 @@ describe("meme-put — a named recipe (an edit AS that wiki)", () => {
 
   test("a recipe whose designated bag nothing reaches fails loud, naming slug and bag", async () => {
     const r = rig();
-    const draft = wikiDraftBagUri("far");
+    const draft = wikiSlotUri("far", "draft");
     r.recipes.set(recipeUri("catalog", "far"), { tiddler: { title: recipeUri("catalog", "far"), "writable-bag": draft } });
     await expect(makeMemePutReactor(r.opts)({ recipe: "far", uri: URI, text: meme(["a"]) }, ctx()))
       .rejects.toThrow(draft);
+  });
+});
+
+describe("meme-get — a named recipe READS THE STACK", () => {
+  /** A wiki whose recipe names lares as a library; its working slot the resolver hands back. */
+  const stacked = (r: Rig) => {
+    const working = wikiSlotUri("garden", "working");
+    r.recipes.set(recipeUri("catalog", "garden"), {
+      tiddler: { title: recipeUri("catalog", "garden"), "bag-stack": `${bagUri("lares")} ${bagUri("garden")}`, "writable-bag": working },
+    });
+    const canon = new MemoryTiddlerStore(bagUri("garden"));
+    r.reached.set(bagUri("garden"), canon);
+    const draft = new MemoryTiddlerStore(wikiSlotUri("garden", "draft"));
+    r.slots.set("garden/draft", draft);
+    r.slots.set("garden/working", new MemoryTiddlerStore(working));
+    return { canon, draft };
+  };
+
+  /** Place a meme into one store the way every placement lands — root + slot records. */
+  const land = (store: MemoryTiddlerStore, bag: string, slots: readonly string[]) =>
+    placeMeme({ uri: URI, text: meme(slots) }, storeMemeSink(store, bag, { kind: "canon-hydrate", receipt: "t" }));
+
+  test("★ a meme in canon reads through --recipe when the draft holds nothing ★", async () => {
+    const r = rig();
+    const { canon } = stacked(r);
+    await land(canon, bagUri("garden"), ["a"]);
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect(got["meme"], "the read stopped at the designated bag and never walked the stack").not.toBeNull();
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/a>>");
+  });
+
+  test("★ the draft shadows canon when both hold it ★", async () => {
+    const r = rig();
+    const { canon, draft } = stacked(r);
+    await land(canon, bagUri("garden"), ["a"]);
+    await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/b>>");
+    expect((got["meme"] as { text: string }).text).not.toContain("<<~ ahu #/a>>");
+  });
+
+  test("CONTROL: an absent meme reads null through the stack, never a refusal", async () => {
+    const r = rig();
+    stacked(r);
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect(got["meme"]).toBeNull();
+  });
+
+  test("CONTROL: put still writes the designated bag alone, never the stack", async () => {
+    const r = rig();
+    const { canon, draft } = stacked(r);
+    await makeMemePutReactor(r.opts)({ recipe: "garden", uri: URI, text: meme(["a"]) }, ctx());
+    expect(await r.slots.get("garden/working")!.get(URI)).not.toBeNull();
+    expect(await canon.get(URI)).toBeNull();
+    expect(await draft.get(URI)).toBeNull();
   });
 });
 

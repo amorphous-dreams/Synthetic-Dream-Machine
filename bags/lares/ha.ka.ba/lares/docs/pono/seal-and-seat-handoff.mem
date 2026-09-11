@@ -13,7 +13,8 @@ namespace  = "&#x2299;"
 retain     = true
 revised-on = "2026-09-11"
 role       = "seal-and-seat-handoff — a talk-story floor handed to the founding session: two seal defects measured and cured (a floor stand clobbered a sealed archive; rotate left the veil under the old passphrase), one absence measured (device-share never persists), and two plans awaiting a hand (face-join re-grants bindings minted vessel-only; a relation that carries a bag across operators). Ground, telling, bearings, forks — the exit stays the operator's."
-status     = "draft"
+status     = "standing"
+status-why = "a talk-story floor handed to the founding session: the seal cures it describes stand committed with their witnesses; the two plans and four forks stand open at the operator's hand"
 tags       = ["docs/pono/handoff"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/seal-and-seat-handoff"
@@ -112,6 +113,6 @@ No moʻolelo closes here. The cures stand green under their witnesses and uncomm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>
+<<^ code="&#x0003;">>ni:///sha-256;8q7JeOF_ARJG9sBu8AaHkfxIm5geH3rYe7_sKH0hoKg
 
 <<^ code="&#x0004;" -> to="?">>

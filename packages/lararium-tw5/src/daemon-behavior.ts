@@ -89,6 +89,7 @@ export interface DaemonBehaviorOptions {
     ctx: IslandContext,
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
+    wikiSlug: string,
   ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
   /**
    * Sovereign-worker data-plane: register the residency / wiki / where / resolve
@@ -339,7 +340,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         if (!opts.resolveBinding) {
           post(mkDaemonResolveBindingResult({ requestId: msg.requestId, error: "no resolveBinding configured" }));
         } else {
-          opts.resolveBinding(ctx, msg.fingerprint, msg.recipeTrace)
+          opts.resolveBinding(ctx, msg.fingerprint, msg.recipeTrace, msg.wikiSlug)
             .then((r) => post(mkDaemonResolveBindingResult({
               requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, workingUrl: r.workingUrl,
             })))

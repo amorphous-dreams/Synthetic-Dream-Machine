@@ -26,9 +26,9 @@
 import {
   AutomergeDocStore,
   LARES_BAG,
-  LARARIUM_BAG,
   ORACLE_BAG,
-  wikiBagUri,
+  SYSTEM_BAGS,
+  structuralSlots,
   wikiSlotUri,
   recipeUri,
   bagStackFromRec,
@@ -64,7 +64,6 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   const userRecipeTitle = recipeUri("catalog", slug);
 
   // System bags resolve from the oracle plane; everything else from the catalog registry.
-  const SYSTEM_BAGS = new Set<string>([ORACLE_BAG, LARARIUM_BAG, LARES_BAG]);
   const urlOfBag = async (bagId: string): Promise<string | null> =>
     (SYSTEM_BAGS.has(bagId) && sysPlane) ? sysPlane.urlOf(bagId) : (catalog ? catalog.urlOf(bagId) : null);
 
@@ -74,19 +73,15 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
     (sysHandle?.doc()?.tiddlers?.[sysRecipeTitle] as LarTiddlerRecord | undefined)
     ?? (catHandle?.doc()?.tiddlers?.[userRecipeTitle] as LarTiddlerRecord | undefined);
 
-  // Slots the recipe model owns structurally — everything else in the cascade
-  // counts as a library bag for membership reconcile. working is a per-
-  // (PersonaGroup×fingerprint) GRANT slot (peer to personal/draft) threaded
-  // through the manifest, never named in a recipe's bag-stack — so it MUST be
-  // exempt, else this reconcile evicts the live write layer buildIslandRecipe
-  // just mounted (the OCI writable-upper-layer law: keep the scratch layer out
-  // of the membership diff, never a member of it). The wiki's OWN canon
-  // (wikiBagUri(slug) = `@{slug}`) is structural too — the mint registers it
-  // under that one name now, so the bag-stack names no duplicate to re-mount.
-  const structural = new Set<string>([
-    wikiSlotUri(slug, "temp"), wikiSlotUri(slug, "draft"), wikiSlotUri(slug, "working"),
-    wikiSlotUri(slug, "personal"), wikiBagUri(slug), LARES_BAG, ORACLE_BAG,
-  ]);
+  // Slots the recipe model owns structurally (`structuralSlots` — the ONE spelling the record
+  // minters and `recipeFromRecord` read too) — everything else in the cascade counts as a library
+  // bag for membership reconcile. The four instance slots are per-(PersonaGroup×fingerprint) GRANT
+  // slots threaded through the manifest, never named in a recipe's bag-stack — exempt, else this
+  // reconcile evicts the live write layer buildIslandRecipe just mounted (the OCI
+  // writable-upper-layer law: keep the scratch layer out of the membership diff). The wiki's OWN
+  // canon and the oracle floor are structural too. The lares bag is a LIBRARY like the lararium
+  // bag: a record that names it mounts it, one that does not, does not.
+  const structural = structuralSlots(slug);
 
   const origin = (): ChangeOrigin =>
     ({ kind: "canon-hydrate", receipt: `recipe-watch:${slug}` });

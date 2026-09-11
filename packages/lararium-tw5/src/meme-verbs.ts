@@ -18,13 +18,19 @@
  *   · `recipes/default` — the host's ANCHOR, the daemon's own wiki (never "the active wiki"). The
  *     placement goes through the live `$tw.wiki`, so the in-wiki cascade
  *     (`lar:///ha.ka.ba/lararium/config/bag-paths`) routes it to the top bag exactly as an in-wiki
- *     edit would.
- *   · `recipe: <slug>` — an edit AS THAT WIKI. The slug names its recipe record (the user's catalog
- *     plane first, the oracle system plane after); the record's `writable-bag` (else the top of its
- *     `bag-stack`) names the designated bag; the placement lands in THAT BAG's own store — a layer the
- *     island mounts writable, else the bag's doc reached by access across the registry planes. A
- *     wiki's draft bag keys its doc per vessel DID (`wikis/<slug>/drafts/<did>`), the same key the
- *     host walks at mount. WRITE-THEN-SYNC: the daemon never reaches into that wiki's mounted island.
+ *     edit would — the daemon's own working layer once its late-attach lands, its own bag until then.
+ *   · `recipe: <slug>` — an edit AS THAT WIKI, under TWO LAWS:
+ *       PUT WRITES THE DESIGNATED BAG. The slug names its recipe record (the user's catalog plane
+ *       first, the oracle system plane after); the record's `writable-bag` (else the top of its
+ *       `bag-stack`) names the bag; the placement lands in THAT BAG's own store — a layer the island
+ *       mounts writable, else an instance slot's doc through THE ONE slot-doc resolver (draft ·
+ *       working · personal — the same doc the wiki island mounts, so the placement surfaces in the
+ *       running wiki), else the bag's doc reached by access across the registry planes.
+ *       GET READS THE STACK. The read walks the wiki's whole cascade top-down — the instance slots
+ *       above, the canon and libraries beneath, the oracle floor — exactly as the wiki's own face
+ *       reads it, and answers from the first bag holding the meme live. The draft shadows canon when
+ *       both hold it; a meme living in canon reads through `--recipe` when the draft holds nothing.
+ *     WRITE-THEN-SYNC: the daemon never reaches into that wiki's mounted island.
  *   · `bag: <slug>` — a residency placement through the island's writable layer for that bag. A bag
  *     the island cannot write fails loud, naming the bag; a placement never shadows up.
  *
@@ -37,10 +43,10 @@
  */
 
 import {
-  AutomergeDocStore, DAEMON_BAG_ID, bagStackFromRec, bagUri, recipeUri, wikiDraftBagUri, wikiDraftDocKey,
-  type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore,
+  AutomergeDocStore, DAEMON_BAG_ID, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, recipeUri, wikiSlotKindOf,
+  type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
-import { makeCatalogAccessor } from "./catalog-accessor.js";
+import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import type { IslandContext } from "./island-context.js";
 import { placeMeme, readMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
@@ -58,14 +64,17 @@ export interface MemeVerbOptions {
   readonly recipeOf?: (slug: string) => Promise<LarTiddlerRecord | null>;
   /** A registered bag's own store by its registry KEY, presented as `bag`; null = unregistered. */
   readonly reach?: (key: string, bag: string) => Promise<LarTiddlerStore | null>;
-  /** The vessel DID a wiki's draft doc keys under. Absent = draft bags resolve by their bare key only. */
-  readonly vesselDid?: () => string | Promise<string>;
+  /** A wiki's INSTANCE slot (draft · working · personal) as a store over the doc THE ONE slot-doc
+   *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
+   *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
+  readonly slotStore?: (slug: string, kind: WikiSlotKind, bag: string, opts: { mint: boolean }) => Promise<LarTiddlerStore | null>;
 }
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
 export function memeVerbOptions(
   ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "oracleUrl">,
-  vesselDid: () => string | Promise<string>,
+  /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
+  slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
 ): MemeVerbOptions {
   const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
   const oracle  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
@@ -79,7 +88,12 @@ export function memeVerbOptions(
   return {
     composite: ctx.composite,
     tw5: ctx.tw5,
-    vesselDid,
+    slotStore: async (slug, kind, bag, opts) => {
+      const url = await slotDocUrl(slug, kind, opts);
+      if (!url) return null;
+      const handle = await findOrThrow(ctx.repo, url, `${bag} (${kind} slot of ${slug})`);
+      return new AutomergeDocStore(handle, bag);
+    },
     recipeOf: async (slug) => {
       for (const { accessor, root } of recipePlanes) {
         const rec = await accessor.recordOf(recipeUri(root, slug)).catch(() => null);
@@ -117,38 +131,39 @@ function readTarget(args: Readonly<Record<string, unknown>>, verb: string): Meme
   return { uri, recipe: recipe ?? (bag ? null : "default"), bag };
 }
 
-/** The designated writable bag a wiki's recipe names: `writable-bag`, else the top of its stack. */
-function designatedBagOf(rec: LarTiddlerRecord, slug: string): string {
-  const declared = rec.tiddler["writable-bag"];
-  if (typeof declared === "string" && declared) return declared;
-  const stack = bagStackFromRec(rec);
-  const top = stack[stack.length - 1];
-  if (!top) throw new Error(`meme: recipe "${slug}" names no writable bag and an empty bag-stack`);
-  return top;
+/** A bag's own store, by the three reaches in order: a mounted layer (writable for a put), an
+ *  instance slot's doc through THE ONE resolver, a registered bag by access. Null when none reaches. */
+async function storeOfBag(opts: MemeVerbOptions, slug: string, bag: string, mode: "put" | "get"): Promise<LarTiddlerStore | null> {
+  const mounted = mode === "put" ? opts.composite.writableStoreForBag(bag) : opts.composite.storeForBag(bag);
+  if (mounted) return mounted;
+  const kind = wikiSlotKindOf(slug, bag);
+  if (kind === "temp") return null;   // volatile — lives in the wiki island alone, never reached
+  if (kind && opts.slotStore) return opts.slotStore(slug, kind, bag, { mint: mode === "put" });
+  return (await opts.reach?.(bag, bag)) ?? null;
 }
 
-/** Resolve a named wiki's designated bag to its own store — mounted writable layer, else by access. */
+/**
+ * Resolve a named wiki's bag + store for a verb. PUT: the recipe record's designated bag, its own
+ * store. GET: the whole cascade top-down, the first bag holding the meme LIVE; when none does, the
+ * designated bag's store (the read answers null there, never a refusal for an absent meme).
+ */
 async function reachRecipeBag(
-  opts: MemeVerbOptions, slug: string, mode: "put" | "get",
+  opts: MemeVerbOptions, slug: string, mode: "put" | "get", uri?: string,
 ): Promise<{ bag: string; store: LarTiddlerStore }> {
   const rec = await opts.recipeOf?.(slug);
   if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
-  const bag = designatedBagOf(rec, slug);
-  const mounted = mode === "put" ? opts.composite.writableStoreForBag(bag) : opts.composite.storeForBag(bag);
-  if (mounted) return { bag, store: mounted };
-  const tried: string[] = [];
-  if (opts.reach) {
-    if (bag === wikiDraftBagUri(slug) && opts.vesselDid) {
-      const key = wikiDraftDocKey(slug, await opts.vesselDid());
-      tried.push(key);
-      const store = await opts.reach(key, bag);
-      if (store) return { bag, store };
+  const designated = designatedBagOf(rec, slug);
+  if (mode === "get" && uri) {
+    for (const bag of expandRecipe(recipeFromRecord(rec, slug))) {
+      const store = await storeOfBag(opts, slug, bag, "get");
+      if (!store) continue;
+      const held = await store.get(uri);
+      if (held && !held.meta?.deleted) return { bag, store };
     }
-    tried.push(bag);
-    const store = await opts.reach(bag, bag);
-    if (store) return { bag, store };
   }
-  throw new Error(`meme: recipe "${slug}" designates bag "${bag}", which this island neither mounts writable nor reaches by access (tried: ${tried.join(", ") || "no reach"})`);
+  const store = await storeOfBag(opts, slug, designated, mode);
+  if (store) return { bag: designated, store };
+  throw new Error(`meme: recipe "${slug}" designates bag "${designated}", which this island neither mounts${mode === "put" ? " writable" : ""} nor reaches by access`);
 }
 
 interface Resolved {
@@ -164,8 +179,8 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
 /**
  * The bag the anchor's cap gate checks: the one the in-wiki cascade routes a `lar:` title to — the same
- * bag the placement will land in through `wikiMemeSink`. A live island registers its volatile temp
- * layer LAST, so "the last-registered writable layer" names a bag no cap was ever granted on.
+ * bag the placement will land in through `wikiMemeSink`: the daemon's working layer once its
+ * late-attach re-seeds the cascade, the daemon bag until then.
  */
 function anchorBagOf(opts: MemeVerbOptions): string {
   const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
@@ -182,7 +197,7 @@ async function resolveSink(opts: MemeVerbOptions, target: MemeArgs, origin: Chan
     return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
   }
   if (target.recipe && target.recipe !== "default") {
-    const { bag, store } = await reachRecipeBag(opts, target.recipe, mode);
+    const { bag, store } = await reachRecipeBag(opts, target.recipe, mode, target.uri);
     return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
   }
   // The anchor: the daemon's own wiki, its cascade routing the records to the top bag.

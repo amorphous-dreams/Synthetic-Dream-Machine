@@ -17,7 +17,7 @@ import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor, registerActionReactors, makeTw5Deserializer,
   makeWikiPinReactor, makeWikiUnpinReactor,
-  makeCatalogAccessor,
+  makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
   makeWardAlertReactor,
@@ -29,7 +29,7 @@ import {
   makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
-import { DAEMON_BAG_ID, personaBagIdFor, personaSiblingBagIds, leaseEpochPrefix, effectiveLeaseEpoch, didFromVerifyingKey } from "@lararium/mesh";
+import { DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, leaseEpochPrefix, effectiveLeaseEpoch, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor } from "@lararium/tw5";
 import type { IslandMsg_Manifest, AuthProofWire, DeviceDelegationTiddler } from "@lararium/mesh";
 
@@ -58,11 +58,11 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  the gate fail-closes every bag to VEIL and prices every transfer lateral, as before. */
   bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
 };
-import { PERSONAL_BINDINGS_PREFIX, DRAFT_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX, verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
+import { verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { deriveDyadVeil, hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore } from "./daemon-event-store.js";
-import { resolveOrMintBinding } from "./resolve-binding.js";
+import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 
@@ -99,6 +99,70 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
 
+  // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
+  // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
+  // `meme put --recipe`, the daemon's own working layer). Built once the keyhive stands, over the
+  // live context; the face-seat read rides the veil's own registry (a pin is standing, a seat is
+  // capability), so a binding never delegates to an agent the veil cannot name.
+  let slotDocs: SlotDocResolver | null = null;
+  const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
+    if (slotDocs) return slotDocs;
+    if (!kh) throw new Error("keyhive not booted");
+    slotDocs = makeSlotDocResolver({
+      repo: ctx.repo, daemonStore: ctx.composite, keyhive: kh,
+      catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null,
+      oracle:  ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null,
+      vesselDid: () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
+      mintedByHex: () => mintedByHex,
+      ...(daemonAuth.personaGroupAgentIdHex ? { personaGroupAgentIdHex: daemonAuth.personaGroupAgentIdHex } : {}),
+      ...(veilKh ? { delegateToFace: (bagUrl: string, access: "read" | "admin") => delegateToFaceViaVeil(bagUrl, access) } : {}),
+      faceSeated: async () => {
+        const agent = daemonAuth.personaGroupAgentIdHex;
+        if (!agent) return false;
+        const seated = await (veilKh ?? kh!).knowsAgent(agent);
+        if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
+        return seated;
+      },
+    });
+    return slotDocs;
+  };
+
+  // THE DAEMON WIKI HOLDS A WORKING LAYER ABOVE ITS OWN BAG (operator ruling: "working layers for
+  // all wikis"). The vessel builds the daemon's grants before the VM hosting this resolver exists, so
+  // the layer arrives by a LATE ATTACH: the working doc resolves through the same resolver under the
+  // same binding law as every wiki's, splices above the daemon bag as the default writable, and the
+  // cascade's `current-wiki-bag` re-seeds to it — a `lar:` save and the `meme put` anchor land there
+  // from then on. The daemon bag beneath keeps the control plane (verbs, outcomes, bindings).
+  const attachDaemonWorking = async (ctx: IslandContext): Promise<void> => {
+    const slug = ctx.recipe.wikiSlug;
+    const working = wikiSlotUri(slug, "working");
+    if (ctx.composite.hasBag(working)) return;
+    const daemonUrl = ctx.handles.get(wikiBagUri(slug))?.url;
+    if (!daemonUrl) return;
+    const recipeTrace = { wikiDocId: daemonUrl, libraryBagDocIds: [] as readonly string[] };
+    const fingerprint = await computeRecipeFingerprint(recipeTrace);
+    const { workingUrl } = await slotDocsOf(ctx).bindings(fingerprint, recipeTrace, slug);
+    const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`);
+    const store = new AutomergeDocStore(handle, working);
+    const at = ctx.composite.layerIndexOf(wikiBagUri(slug)) + 1;
+    ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, at);
+    ctx.handles.set(working, handle);
+    store.emitInitialReplay();
+    store.markSyncComplete();
+    // The cap gate keys on the slot's lar: URI — register it the way the vessel registers every wiki
+    // bag it grants, delegated to the face where one is seated.
+    await kh!.registerBag(working);
+    if (daemonAuth.personaGroupAgentIdHex && veilKh && await (veilKh ?? kh!).knowsAgent(daemonAuth.personaGroupAgentIdHex)) {
+      await delegateToFaceViaVeil(working, "admin");
+    }
+    const temp = wikiSlotUri(slug, "temp");
+    if (ctx.composite.hasWritableBag(temp)) {
+      const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: "daemon-working-attach" };
+      await ctx.composite.put(mutableLarRecord("lar:///ha.ka.ba/lararium/config/current-wiki-bag", { text: working }, "daemon-working-attach"), origin, { bag: temp });
+    }
+    console.log(`[daemon] working layer attached: ${working}`);
+  };
+
   // ── PERSONA-SCOPED ACTS NEED A FACE, AND SAY SO ────────────────────────────────────────────────
   // A vessel at the WAKING FLOOR carries and serves; it holds no persona plane, no bindings, nobody to
   // delegate a bag TO. Reaching for the face here refuses LOUDLY rather than resolving `undefined` into
@@ -123,7 +187,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // `where` reaches every registered bag across both oracle planes by ACCESS
       // (access≠load) — the daemon queries all bags, mounts none. resolve stays
       // cascade-scoped.
-      registry.register("where",      makeWhereReactor(ctx.composite, { repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl }));
+      registry.register("where",      makeWhereReactor(ctx.composite, {
+        repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+        slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+      }));
       registry.register("resolve",    makeResolveReactor(ctx.composite));
       // Residency ACTION verbs (ADD/COPY/MOVE/CLEAR/DROP/LOAD) — verify-then-delegate
       // gated, the `lares act` front door. The daemon reaches a deep target bag by
@@ -155,7 +222,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       };
       registerActionReactors(registry, {
         composite: ctx.composite,
-        reach: { repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl },
+        reach: {
+          repo: ctx.repo, catalogUrl: ctx.catalogUrl, oracleUrl: ctx.oracleUrl,
+          slotDocUrl: async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null,
+        },
         registerBag: registerBagCap,
         // LOAD lands every legal TW5 filetype via TW5's own deserializer registry,
         // resolved lazily through the daemon island's live $tw at action time.
@@ -178,7 +248,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // meme-put / meme-get — the daemon skins of the one placement function (`placeMeme`): the anchor
       // rides the daemon's own $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
-      const memeOpts = memeVerbOptions(ctx, async () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey));
+      const memeOpts = memeVerbOptions(ctx, async (slug, kind, opts) => (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null);
       registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-project", makeMemeProjectReactor(memeOpts), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
@@ -452,6 +522,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           rootDir:     "",
           vesselDid: async () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
           registerBag: registerBagCap,
+          resolveDraftDoc: (slug: string) => slotDocsOf(ctx).draft(slug),
         };
         registry.register("init-wiki",   makeInitWikiReactor(wikiMintOpts));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
@@ -510,6 +581,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         try { await persistArchive(await keyhive.exportArchive()); }
         catch (err) { console.warn(`[daemon] keyhive archive export skipped: ${(err as Error)?.message ?? err}`); }
       }
+      // The daemon's own working layer — after the keyhive and the veil stand, inside the fail-closed
+      // boot window (never earlier). A failed attach leaves the write layer on the daemon bag, the
+      // floor; it never takes the boot down.
+      try { await attachDaemonWorking(ctx); }
+      catch (err) { console.warn(`[daemon] working layer attach skipped — saves land in the daemon bag: ${(err as Error)?.message ?? err}`); }
       return keyhive;
     },
 
@@ -630,39 +706,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
     // A VESSEL BINDS ON ITS OWN KEY, AND A FACE COMPOSES ONTO THAT.
     //
-    // These name a wiki's personal/draft/working layers. Gating them behind a face read as
-    // "a Herm resolves no persona-sealed bindings" — which is what was left of Herm and Lararium
-    // having once been separate CLASSES rather than one capability stack. The MINT is what confers
-    // authority (`registerBag` generates the document; its generator is admin by construction), so a
-    // faceless vessel's binding is a doc the VESSEL holds — the posture its daemon bag has always
-    // stood in. Where a face stands, `resolveOrMintBinding` delegates the same doc to the
-    // PersonaGroup on top, so operator and vessel compose over every critical doc.
-    //
-    // ⚠ And the callback no longer reaches for a face, which is what made the gate necessary: it
+    // These name a wiki's personal/draft/working layers, through THE ONE slot-doc resolver. The MINT
+    // is what confers authority (`registerBag` generates the document; its generator is admin by
+    // construction), so a faceless vessel's binding is a doc the VESSEL holds — the posture its
+    // daemon bag has always stood in. Where a face is SEATED the same doc delegates to the
+    // PersonaGroup on top, so operator and vessel compose over every critical doc; the draft slot
+    // of an unseated vessel falls to the device floor and says so (`resolveSlotDoc`). The callback
     // reads `daemonAuth.personaGroupAgentIdHex` directly rather than through `faceAgent()`, so a
     // floor offering it cannot throw during boot and take its own standing with it.
-    resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }) => {
-      if (!kh) throw new Error("keyhive not booted");
-      const common = {
-        fingerprint, repo: ctx.repo, daemonStore: ctx.composite, keyhive: kh,
-        ...(daemonAuth.personaGroupAgentIdHex ? { personaGroupAgentIdHex: daemonAuth.personaGroupAgentIdHex } : {}),
-        ...(veilKh ? { delegateToFace: (bagUrl: string, access: "read" | "admin") => delegateToFaceViaVeil(bagUrl, access) } : {}),
-        // The veil seats the face; an edge-only admit pins the agent id the veil has never met. Read the seat
-        // off the veil's own registry so a binding never delegates to an agent it cannot name.
-        faceSeated: async () => {
-          const agent = daemonAuth.personaGroupAgentIdHex;
-          if (!agent) return false;
-          const seated = await (veilKh ?? kh!).knowsAgent(agent);
-          if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
-          return seated;
-        },
-        mintedByHex, recipeTrace,
-      } as const;
-      const personal = await resolveOrMintBinding({ ...common, kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX });
-      const draft    = await resolveOrMintBinding({ ...common, kind: "draft-binding",    prefix: DRAFT_BINDINGS_PREFIX });
-      const working  = await resolveOrMintBinding({ ...common, kind: "working-binding",  prefix: WORKING_BINDINGS_PREFIX });
-      return { personalUrl: personal.url, draftUrl: draft.url, workingUrl: working.url };
-    },
+    resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }, wikiSlug: string) =>
+      slotDocsOf(ctx).bindings(fingerprint, recipeTrace, wikiSlug),
 
   };
 }

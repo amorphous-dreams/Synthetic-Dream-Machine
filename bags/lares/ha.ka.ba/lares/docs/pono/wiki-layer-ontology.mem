@@ -158,6 +158,8 @@ Shareability reads off //where a name lives//, not off a flag:
 
 ''Instance mounts MUST NOT enter `@catalog`.'' Minting a registry stub for a private slot makes the private addressable — a capability leak waiting for a confused deputy. A display string for HUD/admin projections derives at render time (`{slug}/draft`) and never stores as a resolvable name. Petname doctrine grounds this: the AutomergeUrl holds the global unguessable key, `@catalog` holds the human edge-names, and an instance mount needs no edge-name because nobody else ever addresses it.
 
+''The draft FLOOR is not an instance mount, and it registers.'' Where a vessel holds no seat in a PersonaGroup, the draft slot binds to the device floor doc, keyed by the vessel's own DID (`wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`) — a doc the VESSEL holds, delegated to nobody, reached by access across its own restarts. It MUST register in `@catalog` because the catalog is the vessel's registry of the docs it holds by access, and the floor belongs to no group binding the daemon doc could carry (a binding record names a PersonaGroup × fingerprint; the floor names a device). The key names the device, never a person; it federates nothing an unseated vessel does not already hold; and `where` presents it under its slot name (`wikis/{slug}/draft`), never its key. The instance mount of a SEATED vessel — the PersonaGroup × fingerprint binding — stays where this law puts it: in the daemon doc, never the catalog. One resolver reads both (`resolveSlotDoc`, recipe-layer-model#/as-mounted).
+
 > Same law Docker operators carry in their hands without naming it: images get repository names; a container's writable layer never does. — Map-Wisp
 
 <<~/ahu>>
@@ -294,6 +296,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w8WGzqZUOB2HF9wtfDlVYfOJq8gDvwMkCievsXIyX7Y
+<<^ code="&#x0003;">>ni:///sha-256;XLJurrEI9VRHr7y9JT7GpSk861bf-BfS1LHox5CAs5g
 
 <<^ code="&#x0004;" -> to="?">>

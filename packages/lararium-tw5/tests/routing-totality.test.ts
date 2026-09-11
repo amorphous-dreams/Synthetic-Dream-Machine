@@ -31,6 +31,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { bootTestWiki, wikiSkip, skipNote, REPO } from "./test-wiki.js";
+import { CompositeStore } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -119,8 +120,29 @@ describe.skipIf(wikiSkip)(`routing totality — the cascade routes, it does not 
     expect(route("$:/temp/x")).toBe("SLOT/temp");
     expect(route("$:/state/y")).toBe("SLOT/temp");
     expect(route("$:/StoryList")).toBe("SLOT/personal");
-    expect(route("Draft of 'X'")).toBe("SLOT/draft");
+    expect(route("$:/state/folded/x")).toBe("SLOT/personal");
     expect(route("lar:///ha.ka.ba/x/y")).toBe("SLOT/working");
+  });
+
+  /**
+   * THE `draft.of` FIELD IS THE SWITCH (operator ruling, 2026-09-11) — the same predicate TiddlyWiki's
+   * `Tiddler.isDraft` reads, so a stock server and an island agree. The title carries a LOCALIZED,
+   * user-attributed string (`Draft of 'X' by Alice`, or a ja-JP edition's own) and decides nothing.
+   */
+  test("★ a draft routes by its `draft.of` field, whatever its title says ★", () => {
+    const wiki = engine.$tw.wiki as never as { addTiddler(t: unknown): void };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
+    wiki.addTiddler(new Tiddler({ title: "Draft of 'X' by Alice", "draft.of": "X", "draft.title": "X", text: "" }));
+    wiki.addTiddler(new Tiddler({ title: "下書き 'X'", "draft.of": "X", "draft.title": "X", text: "" }));
+    expect(route("Draft of 'X' by Alice")).toBe("SLOT/draft");
+    expect(route("下書き 'X'")).toBe("SLOT/draft");
+  });
+
+  test("CONTROL: a tiddler titled `Draft of Beer` with no `draft.of` field is content, and routes to working", () => {
+    const wiki = engine.$tw.wiki as never as { addTiddler(t: unknown): void };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
+    wiki.addTiddler(new Tiddler({ title: "Draft of Beer", text: "a recipe, not a draft" }));
+    expect(route("Draft of Beer")).toBe("SLOT/working");
   });
 });
 
@@ -208,5 +230,71 @@ describe.skipIf(wikiSkip)(`routing totality — the adaptor persists what it rou
     store.tombstone = async (t, o) => { seen.push(t); return orig(t, o); };
     await adaptor.deleteTiddler("Shopping List");
     expect(seen, "the delete was dropped — the tiddler resurrects on the next boot").toContain("Shopping List");
+  });
+});
+
+/**
+ * A DELETE TOMBSTONES IN THE BAG THE CASCADE NAMES. The island composite registers the volatile temp
+ * store last; a bagless tombstone falls into the composite's default writable, and a kāpae in temp
+ * hides the lower record for one session only — the tiddler RESURRECTS at the next boot.
+ */
+describe.skipIf(wikiSkip)(`routing totality — a delete lands where the save landed${skipNote}`, () => {
+  let engine: TW5Engine;
+
+  beforeAll(async () => { engine = await bootTestWiki(); }, 120_000);
+
+  const SLOTS = {
+    temp:     "lar:///ha.ka.ba/wikis/test/temp",
+    draft:    "lar:///ha.ka.ba/wikis/test/draft",
+    personal: "lar:///ha.ka.ba/wikis/test/personal",
+    working:  SLOT_WORKING,
+  } as const;
+
+  /** The island's own layering: working default-writable, temp registered LAST and never the default. */
+  const rig = () => {
+    const wiki = engine.$tw.wiki as never as { addTiddler(t: unknown): void };
+    const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
+    for (const [title, text] of [
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-bag",      SLOTS.working],
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-temp",     SLOTS.temp],
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-draft",    SLOTS.draft],
+      ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", SLOTS.personal],
+    ] as const) wiki.addTiddler(new Tiddler({ title, text }));
+    const composite = new CompositeStore();
+    const stores = {
+      working:  new MemoryTiddlerStore(SLOTS.working),
+      personal: new MemoryTiddlerStore(SLOTS.personal),
+      draft:    new MemoryTiddlerStore(SLOTS.draft),
+      temp:     new MemoryTiddlerStore(SLOTS.temp),
+    };
+    composite.addLayer({ bagId: SLOTS.working,  store: stores.working,  writable: true, defaultWritable: true });
+    composite.addLayer({ bagId: SLOTS.personal, store: stores.personal, writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: SLOTS.draft,    store: stores.draft,    writable: true, defaultWritable: false });
+    composite.addLayer({ bagId: SLOTS.temp,     store: stores.temp,     writable: true, defaultWritable: false });
+    const adaptor = new IslandAdaptor(engine, composite, "routing-totality");
+    return { adaptor, composite, stores };
+  };
+
+  const tombstoned = async (store: MemoryTiddlerStore, title: string): Promise<boolean> =>
+    (await store.get(title))?.meta?.deleted === true;
+
+  test("★ deleting a plain-titled tiddler tombstones it in WORKING, never in temp ★", async () => {
+    const { adaptor, stores } = rig();
+    await adaptor.saveTiddler({ fields: { title: "Shopping List", text: "kalo" } });
+    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 50));
+    expect(await stores.working.get("Shopping List"), "the save missed working").not.toBeNull();
+    await adaptor.deleteTiddler("Shopping List");
+    expect(await tombstoned(stores.working, "Shopping List"), "the tombstone missed the bag the save landed in — it resurrects at the next boot").toBe(true);
+    expect(await tombstoned(stores.temp, "Shopping List"), "the tombstone fell into the volatile temp store").toBe(false);
+  });
+
+  test("CONTROL: a $:/temp/* delete still lands in temp", async () => {
+    const { adaptor, stores } = rig();
+    await adaptor.saveTiddler({ fields: { title: "$:/temp/scratch", text: "x" } });
+    await new Promise((r) => setTimeout(r, IslandAdaptor.DEBOUNCE_MS + 50));
+    expect(await stores.temp.get("$:/temp/scratch"), "the volatile save missed temp").not.toBeNull();
+    await adaptor.deleteTiddler("$:/temp/scratch");
+    expect(await tombstoned(stores.temp, "$:/temp/scratch")).toBe(true);
+    expect(await tombstoned(stores.working, "$:/temp/scratch")).toBe(false);
   });
 });

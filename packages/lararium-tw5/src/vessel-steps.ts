@@ -20,12 +20,15 @@ import {
   BAG_IDS,
   computeRecipeFingerprint,
   LARES_DOC_URI, LARARIUM_DOC_URI,
+  recipeUri,
   wikiBagUri, wikiSlotUri,
   type Repo,
   type DocHandle,
   type AutomergeUrl,
   type LarDoc,
+  type LarTiddlerRecord,
   type CompositeStore,
+  type SlotUri,
   type WikiRecipe,
   type WikiMountSpec,
   type IslandGrants,
@@ -90,6 +93,7 @@ export interface BindingResolver {
   resolveBinding(
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
+    wikiSlug: string,
   ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
 }
 
@@ -104,6 +108,20 @@ export interface PrimaryMountInputs {
   /** catalog registry doc url — the island's ACCESS grant (recipe-watch + library
    *  resolution live island-side; without this the island cannot watch its recipe). */
   catalogUrl:   string;
+  /** The library bags the wiki's recipe RECORD names (`recipeFromRecord`), top-first — laid at boot
+   *  exactly where recipe-watch keeps them live, so the boot path and the live path name one stack. */
+  libraryBags?: readonly SlotUri[];
+}
+
+/** The recipe record a wiki stands on: a system wiki's from the oracle plane, a user wiki's from the
+ *  catalog registry — the SAME two planes recipe-watch reads, in the same order. */
+export function recipeRecordOf(
+  planes: { islandHandle: DocHandle<LarDoc>; catalogHandle: DocHandle<LarDoc> },
+  slug: string,
+): LarTiddlerRecord | null {
+  return (planes.islandHandle.doc()?.tiddlers?.[recipeUri("oracle", slug)] as LarTiddlerRecord | undefined)
+    ?? (planes.catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)] as LarTiddlerRecord | undefined)
+    ?? null;
 }
 
 /** Canonical disk-mirror DESIGNATION (system canon). A pool's held grant decides
@@ -119,16 +137,27 @@ const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI]
  * the true multi-wiki swap). No side effects (no mount, no catalog write) — a pure
  * resolve; the caller mounts (boot pins; a reference activates unpinned).
  */
+/**
+ * Resolve a wiki's three instance-slot docs through the daemon's resolver — the ONE call every
+ * site makes (the host wiki mount, the island mount spec), so host and island bind one doc per slot.
+ * personal + draft + working bind TOGETHER per recipe-fingerprint (Q11). The fingerprint covers
+ * wikiDocId + libraryBags only (the lares and lararium bags excluded per Q4); the live wiki carries
+ * no libraryBags in its trace, so it keys on the wiki doc url alone.
+ */
+export async function resolveSlotDocs(
+  binding: BindingResolver,
+  wiki: { wikiSlug: string; wikiUrl: string },
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+  const recipeTrace = { wikiDocId: wiki.wikiUrl, libraryBagDocIds: [] as readonly string[] };
+  const fingerprint = await computeRecipeFingerprint(recipeTrace);
+  return binding.resolveBinding(fingerprint, recipeTrace, wiki.wikiSlug);
+}
+
 export async function buildWikiMountSpec(
   binding: BindingResolver,
   inputs:  PrimaryMountInputs,
 ): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string }> {
-  // personal + draft + working bind TOGETHER per recipe-fingerprint (Q11).
-  // Fingerprint covers wikiDocId + libraryBags only (the lares and lararium bags excluded
-  // per Q4); the live wiki carries no libraryBags, so it keys on the wiki doc url alone.
-  const recipeTrace = { wikiDocId: inputs.wikiUrl, libraryBagDocIds: [] as readonly string[] };
-  const fingerprint = await computeRecipeFingerprint(recipeTrace);
-  const { personalUrl, draftUrl, workingUrl } = await binding.resolveBinding(fingerprint, recipeTrace);
+  const { personalUrl, draftUrl, workingUrl } = await resolveSlotDocs(binding, inputs);
 
   // Typed structural grants — no slot dictionary. Library bags never ride the
   // mount: the island resolves them from the catalog registry itself (boot = first reconcile),
@@ -147,6 +176,7 @@ export async function buildWikiMountSpec(
   // sits in PRIMARY via a literal grant, so resolveDiskMirrors skips the dup.
   const recipe: WikiRecipe = {
     wikiSlug: inputs.wikiSlug,
+    ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
     mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
   };
 

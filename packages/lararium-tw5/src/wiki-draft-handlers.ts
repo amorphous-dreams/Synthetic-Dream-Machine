@@ -1,6 +1,6 @@
 import type { AutomergeUrl } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
-import { type LarDoc, wikiDraftBagUri, wikiDraftDocKey } from "@lararium/mesh";
+import { type LarDoc, wikiSlotUri } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { numberArg, stringArg } from "./handler-args.js";
 import type { DraftHandlerOptions, PruneStaleOptions } from "./wiki-handler-options.js";
@@ -67,15 +67,11 @@ export function makePruneStaleReactor(opts: PruneStaleOptions): VerbReactor {
     if (!slug) throw new Error("args.slug is required");
     const daysThreshold = numberArg(args, "daysThreshold", 7);
 
-    const draftBagId = wikiDraftBagUri(slug);
-    const did = await opts.vesselDid();
-    const draftKey = wikiDraftDocKey(slug, did);
-    const draftOracle = await opts.composite.get(draftKey);
-    if (!draftOracle || typeof draftOracle.tiddler.text !== "string") {
-      throw new Error(`draft bag oracle missing for "${slug}" — run \`lares wiki init ${slug}\` first`);
-    }
+    const draftBagId = wikiSlotUri(slug, "draft");
+    // The draft doc through THE ONE resolver — the same doc the mounts and `meme put --recipe` reach.
+    const draft = await opts.resolveDraftDoc(slug);
 
-    const handle = await opts.repo.find<LarDoc>(draftOracle.tiddler.text as AutomergeUrl);
+    const handle = await opts.repo.find<LarDoc>(draft.url as AutomergeUrl);
     await handle.whenReady();
     const docState = handle.doc();
     const tiddlers = (docState?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
@@ -103,6 +99,8 @@ export function makePruneStaleReactor(opts: PruneStaleOptions): VerbReactor {
     return {
       slug,
       draftBagId,
+      draftDocUrl: draft.url,
+      draftReach: draft.reach,
       daysThreshold,
       scanned,
       stale,

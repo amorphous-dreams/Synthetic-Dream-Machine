@@ -14,10 +14,21 @@
  * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
  */
 
-import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, wikiBagUri, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo } from "@lararium/mesh";
+import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, wikiBagUri, wikiSlotUri, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
-import { makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
+import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
+
+/** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
+function isDraftFloorKey(key: string): boolean {
+  return /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/drafts\//.test(key);
+}
+
+/** The slug a registry key names when it is a wiki's CANON bag (`bags/<slug>`), else null. */
+function wikiSlugOfBagUri(bagUri: string): string | null {
+  const m = /^lar:\/\/\/ha\.ka\.ba\/bags\/([^/]+)$/.exec(bagUri);
+  return m ? m[1]! : null;
+}
 
 /** Registry options for access-based reads: the daemon reaches ANY registered bag
  *  across both oracle planes (catalog user + oracle system) without mounting it. */
@@ -25,6 +36,9 @@ export interface RegistryReach {
   repo:       Repo;
   catalogUrl: string | null;
   oracleUrl:  string | null;
+  /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
+   *  resolver — null when none stands. Absent = `where` reaches the registry planes alone. */
+  slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
 }
 
 /** Titles in a registry doc that point at a resolvable doc (an `automerge:` URL) —
@@ -84,9 +98,22 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
       const regDoc   = (await accessor.handle().catch(() => null))?.doc();
       for (const bagUri of listRegisteredDocUris(regDoc)) {
         if (holding.has(bagUri) || composite.hasBag(bagUri)) continue;
+        // A draft FLOOR doc (`wikis/<slug>/drafts/<did>`) answers under its slot name below, never its key.
+        if (isDraftFloorKey(bagUri)) continue;
         const h   = await accessor.find(bagUri).catch(() => null);
         const rec = h?.doc()?.tiddlers?.[tiddler] as LarTiddlerRecord | undefined;
         if (rec && !rec.meta?.deleted) holding.add(bagUri);
+        // A registered WIKI's live instance slots — the docs THE ONE slot-doc resolver names (the
+        // same docs its island mounts), reached by access, never mounted here.
+        const slug = wikiSlugOfBagUri(bagUri);
+        if (!slug || !reach.slotDocUrl) continue;
+        for (const kind of ["draft", "working", "personal"] as const) {
+          const url = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
+          if (!url) continue;
+          const sh  = await findOrThrow(reach.repo, url, `${wikiSlotUri(slug, kind)}`).catch(() => null);
+          const sr  = sh?.doc()?.tiddlers?.[tiddler] as LarTiddlerRecord | undefined;
+          if (sr && !sr.meta?.deleted) holding.add(wikiSlotUri(slug, kind));
+        }
       }
     }
     const bags = [...holding];

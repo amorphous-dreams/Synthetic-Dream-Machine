@@ -225,6 +225,7 @@ export interface DaemonVmCore {
   resolveBinding: (
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
+    wikiSlug: string,
   ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
   /**
    * GRACEFUL shutdown — post a teardown to the daemon island and AWAIT its
@@ -584,8 +585,8 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
           ...(edge ? { edge } : {}),
         })),
     },
-    resolveBinding: (fingerprint, recipeTrace) =>
-      askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace })),
+    resolveBinding: (fingerprint, recipeTrace, wikiSlug) =>
+      askIsland("binding", (requestId) => mkDaemonResolveBindingRequest({ requestId, fingerprint, recipeTrace, wikiSlug })),
     placeVerb: (o: VesselPlaceVerbRequest) => {
       worker.post(mkDaemonPlaceVerb({
         verb:        o.verb,

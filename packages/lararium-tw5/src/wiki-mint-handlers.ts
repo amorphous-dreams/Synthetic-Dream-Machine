@@ -3,17 +3,15 @@ import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI, buildActiveWikiRecord, readActiveWikiSlug } from "./active-wiki.js";
 import {
   DAEMON_BAG_ID,
-  CATALOG_DOC_URI,
   LARES_DOC_URI,
   LARARIUM_DOC_URI,
-  ORACLE_DOC_URI,
   emptyLarDoc,
   mutableLarRecord,
   mkDaemonWikiAlert,
+  recipeRecordFields,
   recipeUri,
   wikiBagUri,
-  wikiDraftBagUri,
-  wikiDraftDocKey,
+  wikiSlotUri,
 } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { makeRequestId, stringArg } from "./handler-args.js";
@@ -30,79 +28,69 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
       throw new Error(`invalid slug: "${slug}" (no slashes or spaces)`);
     }
 
-    const did = await opts.vesselDid();
     const wikiKey = wikiBagUri(slug);            // canon (bags/{slug}); identity rides wikis/{slug}
-    const draftBagId = wikiDraftBagUri(slug);
-    const draftKey = wikiDraftDocKey(slug, did);
+    const draftBagId = wikiSlotUri(slug, "draft");
+    const workingBagId = wikiSlotUri(slug, "working");
     // The user's wiki recipe is REGISTRY data (the user's composition choice) —
     // it lives in the user's catalog registry, NOT the lararium bag (protocol substrate). Read
-    // it through the accessor (access≠load), like the wiki/draft oracles.
+    // it through the accessor (access≠load), like the wiki oracle. The record spells the SAME
+    // cascade the mount lays (`recipeRecordFields` ⇆ `recipeFromRecord`): a user wiki = the oracle
+    // floor + the lararium and lares libraries + its own canon; `writable-bag` = working.
     const recipeTitle = recipeUri("catalog", slug);
 
     const existingWikiUrl = await opts.catalog.urlOf(wikiKey);
-    const existingDraftUrl = await opts.catalog.urlOf(draftKey);
     const existingRecipeRec = await opts.catalog.recordOf(recipeTitle);
-    if (existingWikiUrl && existingDraftUrl && existingRecipeRec) {
-      return {
-        slug,
-        status: "already-exists",
-        wikiUri: wikiKey,
-        wikiDocUrl: existingWikiUrl,
-        draftBagId,
-        draftDocUrl: existingDraftUrl,
-        recipeUri: recipeTitle,
-      };
-    }
 
     const wikiHandle = existingWikiUrl
       ? await opts.repo.find(existingWikiUrl as AutomergeUrl)
       : opts.repo.create(emptyLarDoc());
-    const draftHandle = existingDraftUrl
-      ? await opts.repo.find(existingDraftUrl as AutomergeUrl)
-      : opts.repo.create(emptyLarDoc());
-
     if (!existingWikiUrl) await wikiHandle.whenReady();
-    if (!existingDraftUrl) await draftHandle.whenReady();
 
-    // Oracles AND the user recipe all land in catalog (registry) — one write.
-    const catalogHandle = await opts.catalog.handle();
-    const updatedAt = new Date().toISOString();
-    catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
-      tiddlers[wikiKey] = mutableLarRecord(wikiKey, {
-        text: wikiHandle.url,
-        kind: "oracle",
-        "path-filter": "lar-bag-path[wiki-shadow]",
-        "mirror-root": `wikis/${slug}`,
-      }, "lares-cli:wiki-init");
-      tiddlers[draftKey] = mutableLarRecord(draftKey, {
-        text: draftHandle.url,
-        kind: "oracle",
-      }, "lares-cli:wiki-init");
-      tiddlers[recipeTitle] = mutableLarRecord(recipeTitle, {
-        label: slug,
-        "bag-stack": `${CATALOG_DOC_URI} ${ORACLE_DOC_URI} ${LARARIUM_DOC_URI} ${LARES_DOC_URI} ${wikiKey} ${draftBagId}`,
-        "writable-bag": draftBagId,
-        "updated-at": updatedAt,
-      }, "lares-cli:wiki-init");
-    });
+    if (!existingWikiUrl || !existingRecipeRec) {
+      // The oracle AND the user recipe land in catalog (registry) — one write.
+      const catalogHandle = await opts.catalog.handle();
+      const updatedAt = new Date().toISOString();
+      catalogHandle.change((doc) => {
+        const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
+        tiddlers[wikiKey] = mutableLarRecord(wikiKey, {
+          text: wikiHandle.url,
+          kind: "oracle",
+          "path-filter": "lar-bag-path[wiki-shadow]",
+          "mirror-root": `wikis/${slug}`,
+        }, "lares-cli:wiki-init");
+        if (!existingRecipeRec) {
+          tiddlers[recipeTitle] = mutableLarRecord(recipeTitle, {
+            ...recipeRecordFields({ wikiSlug: slug, libraryBags: [LARES_DOC_URI, LARARIUM_DOC_URI] }),
+            "updated-at": updatedAt,
+          }, "lares-cli:wiki-init");
+        }
+      });
+    }
+
+    // The draft doc resolves through THE ONE resolver — a face binding when the vessel holds a seat,
+    // the device floor when not — the same doc the mounts and `meme put --recipe` reach.
+    const draft = await opts.resolveDraftDoc(slug);
 
     // Born-with-its-cap: register each freshly-minted wiki bag's Keyhive Document
-    // + delegate admin in the same act as the mint, so the new wiki's canon and
+    // + delegate admin in the same act as the mint, so the new wiki's canon, working and
     // draft bags hold their cap immediately — no cap-denied window (the elyncia-bag
-    // friction's sibling for wiki init). Key on the lar: bag URLs (wikiKey /
-    // draftBagId) — the strings the cap-gate verifies against; the automerge
-    // handle.url names each bag's CONTENT doc, a different object.
-    if (!existingWikiUrl)  await opts.registerBag?.(wikiKey);
-    if (!existingDraftUrl) await opts.registerBag?.(draftBagId);
+    // friction's sibling for wiki init). Key on the lar: bag URLs — the strings the
+    // cap-gate verifies against; an automerge handle.url names a CONTENT doc, a different object.
+    if (!existingWikiUrl) {
+      await opts.registerBag?.(wikiKey);
+      await opts.registerBag?.(workingBagId);
+      await opts.registerBag?.(draftBagId);
+    }
 
     return {
       slug,
-      status: existingWikiUrl ? "completed-partial" : "minted",
+      status: existingWikiUrl && existingRecipeRec ? "already-exists" : existingWikiUrl ? "completed-partial" : "minted",
       wikiUri: wikiKey,
       wikiDocUrl: wikiHandle.url,
+      writableBag: workingBagId,
       draftBagId,
-      draftDocUrl: draftHandle.url,
+      draftDocUrl: draft.url,
+      draftReach: draft.reach,
       recipeUri: recipeTitle,
     };
   };

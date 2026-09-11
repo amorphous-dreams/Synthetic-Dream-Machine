@@ -1,6 +1,6 @@
 {
   "format": "lararium-genesis-seed/v1",
-  "actorSeed": "6f70ad9bbc1f1007ea43f6fb686df053b70afc45138d56e08de8c567d6fc194d",
+  "actorSeed": "c157e8572ef0af832f347286a1735dec8918e1e80cf5ec08820147d8c1dc9317",
   "schemaVersion": "0.1",
   "blobs": {
     "tiddlywikicore": {
@@ -22,7 +22,7 @@
     "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext": {
       "id": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
       "version": "0.1.0",
-      "sha256": "9046054734bc480b53f29ceccf2afc1a9f9f753f05db5e47723a19be6f9dcfc1",
+      "sha256": "dca38ce28129b3c0c62973d3d1477003c051624444e17e46b1f594a40afb971d",
       "mimeType": "application/json",
       "license": "MIT",
       "author": "lares"
@@ -90,8 +90,8 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/recipes/lares",
         "label": "lares",
-        "bag-stack": "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium lar:///ha.ka.ba/bags/lares lar:///ha.ka.ba/wikis/lares/draft",
-        "writable-bag": "lar:///ha.ka.ba/wikis/lares/draft"
+        "bag-stack": "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium lar:///ha.ka.ba/bags/lares",
+        "writable-bag": "lar:///ha.ka.ba/wikis/lares/working"
       },
       "meta": {
         "authority": "genesis"
@@ -101,8 +101,8 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/recipes/lararium",
         "label": "lararium",
-        "bag-stack": "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium lar:///ha.ka.ba/wikis/lararium/draft",
-        "writable-bag": "lar:///ha.ka.ba/wikis/lararium/draft"
+        "bag-stack": "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium",
+        "writable-bag": "lar:///ha.ka.ba/wikis/lararium/working"
       },
       "meta": {
         "authority": "genesis"
@@ -131,7 +131,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/blobs/lar_///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
         "text": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
-        "sha256": "9046054734bc480b53f29ceccf2afc1a9f9f753f05db5e47723a19be6f9dcfc1",
+        "sha256": "dca38ce28129b3c0c62973d3d1477003c051624444e17e46b1f594a40afb971d",
         "version": "0.1.0",
         "mimeType": "application/json",
         "author": "lares",
@@ -140,14 +140,14 @@
         "canonicalTitle": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
         "compatibilityTitle": "$:/plugins/lares/memetic-wikitext",
         "moduleManifestPath": "dist-plugin/module-manifest.json",
-        "moduleManifestSha256": "26d4a84f476e3404f44fbd213786626ca49b77b8be4a76c13447df3424d9a8c4",
+        "moduleManifestSha256": "3c7ed8cf4e8239a01aa363dadabb186d05e63ba71cefe511a18e54b0e4ce0887",
         "sourceManifestPath": "dist-plugin/plugin-source-manifest.json",
-        "sourceManifestSha256": "062f519357d58882f7406d70a769097b1df727cdaa3ed7838f356afc40fcff0e",
+        "sourceManifestSha256": "7b55e0249c81b2036e24136c17ed5bc855031579e9bebf85ca4a1ce2f38a245e",
         "packTranscriptPath": "dist-plugin/pack-transcript.json",
-        "packTranscriptSha256": "5aee852aa7e0733df5f03ccb5732e72da99a9d04cc2bcab0d95d848d15d2a213",
-        "moduleCount": "33",
-        "packedTiddlerCount": "154",
-        "pluginJsonSha256": "9046054734bc480b53f29ceccf2afc1a9f9f753f05db5e47723a19be6f9dcfc1",
+        "packTranscriptSha256": "702ee90721eb633fc9f746892deced2b32f5c6a679752c930ddcfa1488b18722",
+        "moduleCount": "34",
+        "packedTiddlerCount": "157",
+        "pluginJsonSha256": "dca38ce28129b3c0c62973d3d1477003c051624444e17e46b1f594a40afb971d",
         "tags": "blob-descriptor",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
@@ -203,7 +203,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins",
         "text": "",
-        "cid": "bafkreiffnhsra6ihs3xokmi5e5kme2wycd6ahnrrhfbjohpx7w75gjeke4",
+        "cid": "bafkreienda2r53li2aishaetukvjqimkwuj7wzqgllin4ovcl6t6fix7ga",
         "note": "plugins content-CID (sorted plugin id/version/sha256) — fast ratchet",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
