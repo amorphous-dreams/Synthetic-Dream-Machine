@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-# mesh-scenarios — the three readings the mesh harness owes, each standing on its own.
+# mesh-scenarios — the readings the mesh harness owes, each standing on its own.
 #
-# ── WHY THREE AND NOT ONE ───────────────────────────────────────────────────────────────────────
+# ── WHY MANY AND NOT ONE ────────────────────────────────────────────────────────────────────────
 # A mesh that only ever runs whole cannot say which half broke. Two of these stand ONE operator with
 # nothing to carry from — a sovereign hearth and its browser vessel, alone — so a fault there belongs
-# to that operator's own boot rather than to the federation. The third stands everything and is the
-# only reading that can speak about carriage at all.
+# to that operator's own boot rather than to the federation. The rest each walk ONE axis of the
+# membership grid (posture · phase · realm standing) or one crossing of two, and name the cells they
+# cover in a `# COVERS:` line above their function.
 #
 #   operator-a   lararium-a + browser-a, PEERLESS      the founder's own setup, standing alone
 #   operator-b   lararium-b + browser-b, PEERLESS      the joiner's own setup, standing alone
 #   nexus        every class, wired                    hearths + herms + browsers, carrying
+#   quorum · relation · realm · open · open-relation · leaf · crossing · realm-crossing · quorum-realm
+#   meme         two contracted operators + browser-a  an author's `bag` crossing; the island's face
 #
 # ── HOW A LONE OPERATOR STANDS ──────────────────────────────────────────────────────────────────
 # `--no-deps` withholds the herms `depends_on` would otherwise drag in, and `LAR_x_PEERS=` blanks the
@@ -18,7 +21,8 @@
 #
 # The browser vessel shares its operator's network namespace, so both names ride together, always.
 #
-# Usage:  tools/mesh-scenarios.sh [operator-a | operator-b | nexus | all]
+# Usage:  tools/mesh-scenarios.sh [operator-a | operator-b | nexus | quorum | relation | realm | open |
+#                                  crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | all]
 # Green:  every named scenario's browser vessel exits 0 and its hearth answers.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -51,9 +55,20 @@ clear_all() {
 
 # The browser vessel is the verdict: it refuses at the floor unless the origin can actually mint, so a
 # zero here means a real engine held a real secure context against that operator's own namespace.
+#
+# A RUNNING CONTAINER'S ExitCode READS 0. `docker inspect` reports the LAST exit, and a probe still
+# driving Chromium reports 0 before it has decided anything — measured: a step read "ok" and printed no
+# evidence, because the log it then read was still being written. So this answers EMPTY until the
+# container has actually exited, and every poll on it waits for a verdict rather than a heartbeat.
 browser_verdict() {
-  local svc="$1"
-  docker inspect -f '{{.State.ExitCode}}' "dreamnet-mesh-${svc}-1" 2>/dev/null || echo "absent"
+  # Two `local` lines, not one: bash expands every word of a `local` before it assigns any, so a name
+  # built from `$svc` on the same line reads an unbound variable under `set -u` — and the function's
+  # empty answer read exactly like a probe that never exited.
+  local svc="$1" status
+  local name="dreamnet-mesh-${svc}-1"
+  status=$(docker inspect -f '{{.State.Status}}' "$name" 2>/dev/null) || { echo "absent"; return; }
+  [ "$status" = "exited" ] || { echo ""; return; }
+  docker inspect -f '{{.State.ExitCode}}' "$name" 2>/dev/null || echo "absent"
 }
 
 # DOES A SERVICE'S LOG CARRY THIS LINE — and why this is never a bare `grep -q`.
@@ -114,6 +129,38 @@ up_and_answering() {
 
 # whether a hearth has stood — the boot line every lararium prints.
 stood() { logs_have "[lararium]" "$1"; }
+
+# ── THE CONTRACT, FACTORED ONCE ─────────────────────────────────────────────────────────────────
+# Six scenarios walk the same four doors — `seal export` on A, `seal import` on B, B's `accept-carriage`,
+# A's `contract` — and a copy in each let one drift from the others unnoticed. This helper carries the two
+# steps every relation begins with and hands the caller B's nym in `NYM`. It returns non-zero when a door
+# refused, having printed its evidence; the caller tears down and returns.
+#
+# The charter travels by its own doors rather than by `cp` — `seal export` hands A's public material over,
+# `seal import` places it on B, refusing to land on a founding. That is the handoff the runbook instructs
+# ("B cannot consent to a charter it has never seen"), performed rather than simulated.
+NYM=""
+contract_ab() {
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local CHARTER ACC SIG
+  NYM=""
+  step "A's charter travels to B by its own doors"
+  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
+  if [ -z "$CHARTER" ]; then bad "A exported no charter"; return 1; fi
+  if printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a-charter.mem' \
+     && $COMPOSE exec -T lararium-b $LARES nexus seal import /tmp/a-charter.mem >/dev/null 2>&1; then ok
+  else bad "B could not take A's charter"; return 1; fi
+
+  step "B signs her contract-in, A's quorum admits her"
+  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>/dev/null)
+  NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
+  SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
+  if [ -z "$NYM" ] || [ -z "$SIG" ]; then
+    bad "B minted no contract-in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; return 1
+  fi
+  if $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1; then ok
+  else bad "A's quorum refused the admit"; return 1; fi
+}
 
 # COVERS: private/seed/unfed
 run_operator() {          # $1 = a|b
@@ -302,16 +349,8 @@ run_open_relation() {
   if up_and_answering lararium-a && up_and_answering lararium-b; then ok; else
     bad "a hearth never answered"; clear_all; return; fi
 
-  step "B contracts in — a relation stands"
-  local CHARTER ACC NYM SIG
-  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
-  printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a.mem'
-  $COMPOSE exec -T lararium-b $LARES nexus seal import /tmp/a.mem >/dev/null 2>&1
-  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>/dev/null)
-  NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
-  SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
-  if [ -z "$NYM" ] || [ -z "$SIG" ]; then bad "B minted no contract-in"; clear_all; return; fi
-  $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1
+  if ! contract_ab; then clear_all; return; fi
+  step "a relation stands"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
   else bad "the relation never stood"; clear_all; return; fi
 
@@ -385,16 +424,8 @@ run_crossing() {
      && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "feeding a realm moved the phase, or did not register"; fi
 
-  step "B contracts in — the phase moves, the realm does NOT"
-  local CHARTER ACC NYM SIG
-  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
-  printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a.mem'
-  $COMPOSE exec -T lararium-b $LARES nexus seal import /tmp/a.mem >/dev/null 2>&1
-  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>/dev/null)
-  NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
-  SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
-  if [ -z "$NYM" ] || [ -z "$SIG" ]; then bad "B minted no contract-in"; clear_all; return; fi
-  $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1
+  if ! contract_ab; then clear_all; return; fi
+  step "the phase moves, the realm does NOT"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true' \
      && $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"'; then ok
   else bad "the contract moved the realm, or the phase never moved"; fi
@@ -550,24 +581,7 @@ run_relation() {
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "A did not read as a seed"; fi
 
-  step "A's charter travels to B by its own doors"
-  local CHARTER
-  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
-  if [ -z "$CHARTER" ]; then bad "A exported no charter"; clear_all; return; fi
-  if printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a-charter.mem' \
-     && $COMPOSE exec -T lararium-b $LARES nexus seal import /tmp/a-charter.mem >/dev/null 2>&1; then ok
-  else bad "B could not take A's charter"; fi
-
-  step "B signs her contract-in, A's quorum admits her"
-  local NYM SIG ACC
-  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>/dev/null)
-  NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
-  SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
-  if [ -z "$NYM" ] || [ -z "$SIG" ]; then
-    bad "B minted no contract-in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; clear_all; return
-  fi
-  if $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1; then ok
-  else bad "A's quorum refused the admit"; fi
+  if ! contract_ab; then clear_all; return; fi
 
   # THE READING THE SCENARIO EXISTS FOR. A relation stands, so the phase leaves SEED — and the
   # members board folds a key A has never held.
@@ -676,18 +690,7 @@ run_realm_crossing() {
      && $COMPOSE exec -T lararium-b $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"'; then ok
   else bad "an unfed realm did not read unfed on both sides"; fi
 
-  step "A's charter travels to B, and B contracts in"
-  local CHARTER NYM SIG ACC
-  CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
-  if [ -z "$CHARTER" ]; then bad "A exported no charter"; clear_all; return; fi
-  printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a-charter.mem'
-  $COMPOSE exec -T lararium-b $LARES nexus seal import /tmp/a-charter.mem >/dev/null 2>&1
-  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>/dev/null)
-  NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
-  SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
-  if [ -n "$NYM" ] && [ -n "$SIG" ] \
-     && $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1; then ok
-  else bad "B never contracted in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; clear_all; return; fi
+  if ! contract_ab; then clear_all; return; fi
 
   step "the phase leaves SEED — a Nexus stands over BOTH operators"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
@@ -871,6 +874,182 @@ run_quorum_realm() {
   clear_all
 }
 
+# ── THE MEME CROSSING: AN AUTHOR'S `bag` BETWEEN TWO OPERATORS ──────────────────────────────────
+# `meme-two-vessel-bag` proves the law over ONE operator's fleet — a founder and a same-key joiner that
+# dials it, on one host. This reading stands the pair the mesh is for: two SOVEREIGN operators, own
+# roots and own keys, contracted into a relation, peered only through the relay. What must hold on
+# whichever side reads: `bag = "backpack: rope, lantern"` is the AUTHOR's line and crosses byte-whole;
+# `$origin-bag` is the host's stamp on the wiki tiddler alone and never rides the carrier; residency
+# rides the envelope. The canonical hash names the same bytes on both sides, or the crossing lied.
+#
+# THE ONE SHARED DOOR: `meme put --bag lares` refuses (the daemon mounts `lares` read-only) and
+# `--recipe lares` lands in a per-DID draft nobody else mounts, so a promotion rides `act LOAD --to
+# lar:///ha.ka.ba/bags/lares` — the residency verbs reach the bag by access. Measured in the two-vessel
+# witness; walked here across real vessels.
+#
+# The browser leg rides `browser-a`: its probe boots a REAL island in Chromium and calls the in-VM face
+# (`$tw.lares.meme`) inside the island's own worker — place · read · check · project — and its exit
+# code is the verdict (0: the floor AND the face; 1: no floor; 3: the face refused).
+# COVERS: private/multisig/unfed
+run_meme() {
+  say "MEME — an author's bag crosses two contracted operators, and the browser island speaks the laws"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local URI="lar:///t.witness.npc/inventory" LARES_BAG="lar:///ha.ka.ba/bags/lares"
+  # The author's line as WRITTEN, and as the canonical render ALIGNS it (`bag      = "…"`): the VALUE is what
+  # must read back byte-whole; the key column is the carrier's own alignment. Two-vessel-bag reads the same.
+  local BAG_LINE='bag = "backpack: rope, lantern"' BAG_RE='^bag +=  *"backpack: rope, lantern"$'
+  # The witness meme, slots named by the caller: `meme_text a` · `meme_text a b`.
+  meme_text() {
+    printf '<<^ code="&#x0001;" from=? -> to=%s>>\n```toml meta\nuri-path = "t.witness.npc/inventory"\n%s\n```\n\n<<^ code="&#x0002;">>\n\n' "$URI" "$BAG_LINE"
+    local s; for s in "$@"; do printf '<<~ ahu #/%s>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
+    printf '<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n'
+  }
+  # One `meme get --bag lares --json` on a hearth — the whole JSON, for the caller to read fields off.
+  meme_get() { $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --json 2>&1; }
+  json_text() { printf '%s' "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.data?.text??""))}catch{}})'; }
+  json_hash() { printf '%s' "$1" | grep -oE '"canonicalHash":"[^"]+"' | head -1 | cut -d'"' -f4; }
+  # Poll a hearth's `get` until its text carries `$2` (a slot marker) or the budget ends; echoes the JSON.
+  await_meme() {
+    local svc="$1" marker="$2" until=$((SECONDS + ${3:-90})) out=""
+    while [ "$SECONDS" -lt "$until" ]; do
+      out=$(meme_get "$svc")
+      if printf '%s' "$out" | grep -q '"ok":true' && json_text "$out" | grep -qF "$marker"; then printf '%s' "$out"; return 0; fi
+      sleep 3
+    done
+    printf '%s' "$out"; return 1
+  }
+
+  # THE RELAY STANDS FIRST, THEN ONE HEARTH AT A TIME — the boot lottery `realm-crossing` measured. Both
+  # hearths take the compose default (herm-source) and peer through it: the only reading in this file
+  # where two OPERATORS hold a transport between them, which a crossing needs before it can be measured.
+  step "the relay stands FIRST — the hearths must not race a cold peer"
+  if $COMPOSE up -d herm-source >/dev/null 2>&1 && up_and_answering herm-source; then ok
+  else bad "the relay never answered"; clear_all; return; fi
+  for svc in lararium-a lararium-b; do
+    step "$svc stands, alone against a mesh already up"
+    if $COMPOSE up -d --no-deps "$svc" >/dev/null 2>&1 && up_and_answering "$svc"; then ok
+    else bad "$svc never stood"; dump_boot_failure "$svc"; clear_all; return; fi
+  done
+
+  if ! contract_ab; then clear_all; return; fi
+  step "the phase leaves SEED — a Nexus stands over both"
+  if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"isNexus":true'; then ok
+  else bad "the relation never stood"; clear_all; return; fi
+
+  step "A puts the witness meme — the author's bag rides its meta"
+  local PUT HASH_A
+  meme_text a | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/npc.mem'
+  PUT=$($COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/npc.mem --json 2>&1)
+  HASH_A=$(json_hash "$PUT")
+  if printf '%s' "$PUT" | grep -q '"ok":true' && [ -n "$HASH_A" ]; then ok
+  else bad "A's put refused"; printf '%s\n' "$PUT" | tail -3 | sed 's/^/      /'; clear_all; return; fi
+
+  step "A promotes through the one shared door: act LOAD into bags/lares"
+  local LD
+  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/npc.mem --to "$LARES_BAG" --yes --json 2>&1)
+  if printf '%s' "$LD" | grep -q '"ok":true'; then ok
+  else bad "the LOAD refused"; printf '%s\n' "$LD" | tail -3 | sed 's/^/      /'; clear_all; return; fi
+
+  # A CONTROL ON A'S OWN SIDE: the bag read carries the author's line, and its hash is the put's. A
+  # crossing that failed past this step failed in the carriage; one that failed here never left A.
+  step "A's own bag read carries the line byte-whole, hash = the put's"
+  local GA
+  GA=$(await_meme lararium-a "<<~ ahu #/a>>" 30)
+  if json_text "$GA" | grep -qE "$BAG_RE" && [ "$(json_hash "$GA")" = "$HASH_A" ] \
+     && ! json_text "$GA" | grep -q '\$origin-bag'; then ok
+  else bad "A's bag read disagrees with A's put"; printf '%s\n' "$GA" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
+
+  # THE READING THE SCENARIO EXISTS FOR. B mounts `lares` too — her OWN registration of it. Whether A's
+  # promotion reaches her names whether two operators' `lares` bags are ONE bag or two.
+  # MEASURED 2026-09-11, and the finding is the seam: B answers `not-found`, and `wiki which` on B names
+  # NO bag for the URI. `lar:///ha.ka.ba/bags/lares` names a doc EACH vessel founded for itself; the
+  # contract writes A's members board and B's kept consent, never a bag. Two contracted operators hold
+  # two `lares` bags with one name, and nothing in the relation carries one into the other. The lone
+  # proven crossing (`meme-two-vessel-bag`) is a FLEET: the joiner dials the founder holding the
+  # founder's own doc url (`LAR_JOIN_DOC`), which is one operator's bag on two devices — reach, never a
+  # second operator. So the walk succeeds, the system's answer is no, and the step reports a GAP rather
+  # than a red; the doc urls print beside it so a reading that ever shows ONE url on both sides wakes
+  # the steps below.
+  step "★ B gets it — the line byte-whole, canonicalHash = A's ★"
+  local GB crossed=0
+  if GB=$(await_meme lararium-b "<<~ ahu #/a>>" 90) \
+     && json_text "$GB" | grep -qE "$BAG_RE" && [ "$(json_hash "$GB")" = "$HASH_A" ] \
+     && ! json_text "$GB" | grep -q '\$origin-bag'; then ok; crossed=1
+  else
+    gap "B reads no meme — the relation carries no bag; each operator's \`lares\` is its own doc"
+    printf '      B reads: %s\n' "$(printf '%s' "$GB" | tail -1 | cut -c1-200)"
+    printf '      B which: %s\n' "$($COMPOSE exec -T lararium-b $LARES wiki which "$URI" --no-json 2>&1 | tr '\n' ' ' | tr -s ' ' | cut -c1-200)"
+    for s in lararium-a lararium-b; do
+      printf '      %s lares doc: %s\n' "$s" "$($COMPOSE exec -T "$s" $LARES wiki list 2>&1 \
+        | grep -A1 '^  lares ' | grep -oE 'automerge:[A-Za-z0-9]+' | head -1)"
+    done
+    printf '      wakes when both sides name ONE doc: a bag the relation carries, not a fleet dial\n'
+  fi
+  if [ "$crossed" -eq 0 ]; then
+    step "B projects · B edits and A gets it · PARTITION"
+    gap "unwalkable until the crossing stands — nothing on B to project, edit, or cut"
+    run_meme_browser
+    clear_all; return
+  fi
+
+  step "B projects it to md — the pair renders"
+  local PJ
+  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" --to md --bag lares --json 2>&1)
+  if printf '%s' "$PJ" | grep -q '"ok":true' && printf '%s' "$PJ" | grep -q '"meta"'; then ok
+  else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
+
+  step "B edits on the base she read, promotes; A gets the new slot"
+  local HASH_B GB2 GA2
+  HASH_B=$(json_hash "$GB")
+  meme_text a b | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-b.mem'
+  # The shared bag refuses a put outright (CONTROL); the edit rides the promotion door.
+  if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
+    bad "B's put --bag lares LANDED — the shared bag must refuse a placement"; clear_all; return; fi
+  LD=$($COMPOSE exec -T lararium-b $LARES act LOAD --source-uri /tmp/npc-b.mem --to "$LARES_BAG" --yes --json 2>&1)
+  if ! printf '%s' "$LD" | grep -q '"ok":true'; then
+    bad "B's LOAD refused"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'; clear_all; return; fi
+  if GA2=$(await_meme lararium-a "<<~ ahu #/b>>" 90) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
+  else bad "A never read B's edit"; printf '%s\n' "$GA2" | tail -1 | cut -c1-300 | sed 's/^/      /'; fi
+
+  # UNDER PARTITION. B leaves the mesh network — the idiom `herm-mesh-partition.mjs` uses on the relay,
+  # applied to the operator — edits while cut, returns, and A reads the edit once the seam heals.
+  step "PARTITION: B is cut, edits while cut, returns — A gets the edit"
+  local NET="dreamnet-mesh_mesh" CB="dreamnet-mesh-lararium-b-1"
+  if ! docker network disconnect "$NET" "$CB" >/dev/null 2>&1; then bad "could not cut B off the mesh"; clear_all; return; fi
+  meme_text a b c | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-c.mem'
+  LD=$($COMPOSE exec -T lararium-b $LARES act LOAD --source-uri /tmp/npc-c.mem --to "$LARES_BAG" --yes --json 2>&1)
+  local cut_ok=1; printf '%s' "$LD" | grep -q '"ok":true' || cut_ok=0
+  # A MUST NOT see it while B is cut — a slot that crosses a partition names a channel that is not the mesh.
+  local leaked=0; GA2=$(meme_get lararium-a); json_text "$GA2" | grep -qF "<<~ ahu #/c>>" && leaked=1
+  docker network connect "$NET" "$CB" >/dev/null 2>&1 || { bad "could not return B to the mesh"; clear_all; return; }
+  if [ "$cut_ok" -eq 0 ]; then bad "B's LOAD refused while cut — a sovereign vessel writes offline"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'
+  elif [ "$leaked" -eq 1 ]; then bad "A read B's edit WHILE B was cut — the partition did not partition"
+  elif GA2=$(await_meme lararium-a "<<~ ahu #/c>>" 180) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
+  else
+    gap "B's offline edit never reached A after the return — the seam is the RECONNECT, not the write"
+    printf '      A reads: %s\n' "$(printf '%s' "$GA2" | tail -1 | cut -c1-200)"
+    $COMPOSE logs --since 4m lararium-b 2>&1 | grep -iE "reconnect|disconnect|peer|socket" | tail -3 | sed 's/^/      /'
+  fi
+
+  run_meme_browser
+  clear_all
+}
+
+# THE BROWSER LEG. `browser-a` shares A's namespace and runs the probe; its exit code is the verdict, and
+# the face lines print beside it so the reading carries what the island actually answered.
+run_meme_browser() {
+  step "browser-a: the island speaks the laws in Chromium's worker"
+  if ! $COMPOSE up -d --no-deps browser-a >/dev/null 2>&1; then bad "browser-a would not start"; return; fi
+  # The island boots cold in the container — genesis over the probe's own server, TW5, keyhive WASM — and
+  # only then does the face answer; the budget carries the boot AND the probe's budgeted close.
+  local code deadline=$((SECONDS + 420))
+  while [ "$(browser_verdict browser-a)" = "" ] && [ "$SECONDS" -lt "$deadline" ]; do sleep 3; done
+  code=$(browser_verdict browser-a)
+  if [ "$code" = "0" ]; then ok; else bad "browser exit ${code:-timeout}"; fi
+  $COMPOSE logs browser-a 2>&1 | grep -E "meme-face|REFUSED|speaks the laws|page:" | sed 's/^[^|]*| //' | sed 's/^/      /'
+}
+
 case "$WANT" in
   operator-a) run_operator a ;;
   operator-b) run_operator b ;;
@@ -884,8 +1063,9 @@ case "$WANT" in
   crossing)   run_crossing ;;
   open-relation) run_open_relation ;;
   leaf)       run_leaf ;;
-  all)        run_operator a; run_operator b; run_quorum; run_relation; run_realm; run_open; run_open_relation; run_leaf; run_crossing; run_nexus; run_realm_crossing; run_quorum_realm ;;
-  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | all)" >&2; exit 2 ;;
+  meme)       run_meme ;;
+  all)        run_operator a; run_operator b; run_quorum; run_relation; run_realm; run_open; run_open_relation; run_leaf; run_crossing; run_nexus; run_realm_crossing; run_quorum_realm; run_meme ;;
+  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | all)" >&2; exit 2 ;;
 esac
 
 say "═══ RESULT ═══"

@@ -82,6 +82,18 @@ dial in `daemonEnv` — and `cliFor(env)` opens the CLI against a root before it
 
 Run either alone: `cd tests && LAR_STAGE_DIR=<scratch> npx vitest run e2e/meme-live-contact.test.ts`.
 
+### The mesh scenarios — the register over real vessels
+
+`tools/mesh-scenarios.sh <scenario>` stands containers from `docker-compose.mesh.yml` and drives the built
+CLI inside them. Every scenario needs docker (29 stands here) and a HOST-BUILT dist — the containers mount
+the repo and trust it (`tools/lararium-container-boot.sh --skip-build`), so `pnpm -r build` precedes `up`.
+Held out of `witness-all` for that reason, never for weight. A `GAP` is a measured absence the walk reached
+and the system answered no to, printed with its wake condition; only `FAILED` is a red.
+
+| Scenario | Proves | Needs / measured gaps |
+|---|---|---|
+| `meme` | Two SOVEREIGN operators (own roots, own keys) peered through `herm-source` and contracted (`contract_ab`: `seal export` → `seal import` → `accept-carriage` → `contract`); A `meme put --recipe lares` a meme whose meta carries `bag = "backpack: rope, lantern"` → `act LOAD --to lar:///ha.ka.ba/bags/lares` (the one shared door) → A's own `meme get --bag lares` hands the value back byte-whole under the canonical alignment (`bag      = "…"`), `canonicalHash` = the put's, no `$origin-bag` (CONTROL). Then `browser-a`: a real Chromium island boots on A's namespace and the probe calls the in-VM face `$tw.lares.meme` INSIDE the daemon worker (`Worker.evaluate` — the page holds no handle to it): `place` → ingest, 2 landed; `read` → the same hash, the bag value whole; `check` → `ok`; `project md` → the `.md` + `.md.meta` pair. Exit 3 names a face that refused. | docker + built dist (tw5 · keyhive · node · cli · app). **GAP, measured 2026-09-11:** B `meme get --bag lares` answers `not-found`, `wiki which` on B names no bag — `lar:///ha.ka.ba/bags/lares` is a doc each vessel founded for ITSELF, and the contract writes the members board + B's kept consent, never a bag; the doc urls print on both sides. The proven crossing (`meme-two-vessel-bag`) is a FLEET dial (`LAR_JOIN_DOC`), one operator's bag on two devices. B's projection, B's edit-and-promote, and the PARTITION reading (`docker network disconnect` on B, edit while cut, reconnect) are written and wake when both sides name ONE doc. |
+
 ### The pre-commit gate over carriers
 
 `tools/meme-check-staged.sh` runs `lares meme check` over the `.mem` blobs STAGED in a commit (the

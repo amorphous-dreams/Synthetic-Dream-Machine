@@ -20,17 +20,27 @@ declare -A HELD_OUT=(
   [civic-witness]="stands containerized vessels — run it directly"
   [crossing-witness]="stands a docker-compose crossing matrix"
   [herm-mesh-witness]="stands the docker-compose relay mesh"
+  [mesh-scenarios]="stands the docker-compose mesh, scenario by scenario — needs docker + a host-built dist"
   [browser-weld-witness]="drives a real browser against a standing app"
   [witness-all]="this script"
 )
 
 status=0
 held=()
+declare -A seen=()
 for path in tools/*witness*.sh; do
   w="$(basename "$path" .sh)"
+  seen[$w]=1
   if [ -n "${HELD_OUT[$w]:-}" ]; then held+=("$w — ${HELD_OUT[$w]}"); continue; fi
   echo "── $w ──"
   if ! "$path"; then status=1; fi
+done
+# AN ENTRY POINT OUTSIDE THE GLOB IS STILL NAMED. `mesh-scenarios` carries no "witness" in its name, so
+# the glob never sees it; a held-out declared here but never listed would be a silent omission wearing
+# a declaration. Every declared hold-out that stands as a file is reported, glob or no glob.
+for w in "${!HELD_OUT[@]}"; do
+  [ -n "${seen[$w]:-}" ] && continue
+  [ -f "tools/$w.sh" ] && held+=("$w — ${HELD_OUT[$w]}")
 done
 
 if [ "${#held[@]}" -gt 0 ]; then
