@@ -174,6 +174,10 @@ The two-name design carries its own answer to the concentration it creates: ''ea
 
 ''The seizure record settles what philosophy only suggests.'' Twenty-three domains seized in one 2014 action took over five million subdomains dark against roughly eighteen thousand malicious nodes — 99.6% overbroad, ex parte, no notice; a 2011 action put a wrongful federal child-exploitation banner on eighty-four thousand subdomains for three days; one 2023 lawsuit ended a registrar carrying some twelve million names. ''Public-suffix listing buys cookie isolation and certificate-bucket separation and NOTHING against seizure'', which supplied every catastrophic case. The bidirectional key-to-name binding reads as the only property that survives a court order aimed at somebody else entirely.
 
+''The field vindicates rendezvous≠identity five ways.'' Iroh: "dial the key, not the address" — `EndpointId` is a stable pubkey, addresses ephemeral, relays E2E-blind. Veilid: NodeId (identity) ⊥ RouteId (reachability) are separate, and raw-NodeId targeting sits behind a `footgun-nodeid-target` flag so anonymized routing is the DEFAULT. Nostr: "clients must always follow public keys, not NIP-05 addresses" — DNS is a pointer, never a registry. ATProto: the handle "is not authoritative for identity" — it resolves to the DID, and the relay is non-authoritative + reconstructible from upstream PDSes (carriage, not registry). did:webvh: the SCID survives a full domain move. Each is the severability law arrived at in production.
+
+''THE LIVE ANTI-PATTERN runs at Farcaster.'' Every id mints from a SINGLE onchain IdRegistry contract + a global KeyRegistry roster + a centralized, revocable Fname registry — the compiled-global-registry the registry filter rejects, running in the wild, where rent-non-payment means network-wide data loss and credible exit holds for the account but NOT the human name (unless you pay for ENS). It is the concrete shape a Nexus name must never take.
+
 <<~/ahu>>
 
 <<~ ahu #/what-stays-open>>
@@ -212,6 +216,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DOsZHrHdBlq5mYL-3rK5Ei0mpE9udGXAmLGk94rZckQ
+<<^ code="&#x0003;">>ni:///sha-256;shthSZXlmUnuwJA_Qu79KkIw7QgZDvHTs4Tt9Bb92Sg
 
 <<^ code="&#x0004;" -> to="?">>

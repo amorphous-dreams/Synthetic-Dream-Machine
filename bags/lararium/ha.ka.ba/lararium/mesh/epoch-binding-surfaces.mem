@@ -78,6 +78,21 @@ A raise is an ordinary capability grant that ends by ''NON-RENEWAL'', which the 
 
 The receiver-side per-peer window (IPsec-shaped, evaluated locally, `undefined` at the edge) stays available for ''anti-replay on a wire'' — packet sequence numbers, where a set is the right instrument. It never governs standing.
 
+!!!! Prior art ~ the field built this discipline, and named the grave
+
+''A monotone forward frontier is a TAGGING DISCIPLINE the deployed field arrives at independently'' — recorded here as evergreen prior-art, never as an advance owed: the engine-advance shape stays `mu`, pending its own recovery.
+
+* ''Veilid `CryptoKind`'' fourcc-tagged keys (VLD0=Ed25519, VLD1=ML-DSA): "every new version is supported alongside the old ones," a separate routing table per cryptosystem, reads auto-select, writes default to newest (veilid.com/how-it-works/cryptography). Version each unit, route by its tag, both coexist.
+* ''UCAN'' per-subspec versioned envelope tags (`ucan/dlg@1.0.0`) "enable future protocol evolution without flag-days."
+* ''ATProto Lexicon'': backward-compatible changes only (new fields optional, types cannot change), and "if larger breaking changes are necessary, a new Lexicon name must be used," read by fail-open permissive readers — breaking = a NEW object, never a mutated meaning.
+* ''Matrix room-version upgrade'': a breaking version spawns a NEW room id, linked by `m.room.tombstone` (`replacement_room`) + the new room's `predecessor`; clients follow the chain forward on their own schedule — a hash-linked lineage as a migration mechanic, the `sealLineage` shape in the wild.
+* ''DXOS epochs'': peers cooperatively agree a new epoch that collapses history into a compact baseline without breaking the running stream — the borrowed compaction epoch, at source.
+* ''BeeKEM (Keyhive)'' at primary source (inkandswitch.com/keyhive/notebook): concurrent CGKA rolls ''blank-and-merge rather than pick a winner'', and κ trades forward secrecy for concurrent-secret access — exactly the ruling that carrying a max-register fence onto a CGKA epoch costs forward secrecy (`cabal-realm#the-tie-break`).
+
+''Sedimentree confirms the compaction split at source'' (inkandswitch.com/keyhive/notebook). It compacts the Automerge commit graph by recursive content-addressed chunking, with chunk boundaries set by ''the number of trailing zeros in a commit's hash'' so peers with different change-sets agree what goes in each chunk — ''no wall clock, no coordination.'' That answers the test above (does the fold pick a WINNER or blank both paths?): compaction ''picks nothing; it is a cut, not a fold.'' And it states the interaction plainly — because CRDTs need the entire causal history it "sacrifices forward secrecy … but retains secrecy of concurrent and future chunks," and ''member revocation depends on BeeKEM key rotation, NOT compaction'' — verbatim the ruling that a compaction epoch bounds state-history growth, never who-may-act. The trailing-zeros-in-hash rule is the clockless boundary the field supplies for that cut; BeeKEM (κ, blank-and-merge) stays the sole who-may-act authority beneath it.
+
+''ANTI-PATTERN — the killed clock-dependency, running in the wild.'' Willow's prefix-pruning lets a newer short-path entry silently tombstone a whole subtree, and a skewed/hostile clock weaponizes "newer" (willowprotocol.org/specs/data-model) — a live instance of exactly why the rolling-window shape died here (a set answers //is this listed//, never //is this newer//). did:webvh builds the same dependency: it requires "the versionTime of every entry MUST be strictly greater than the immediately preceding entry's" and rejects equal timestamps — a self-asserted-time ordering the signed `handleEventBytes` refuses by carrying NO time field (ordering is pure `seq` + `prevEventCid`). Both confirm "correct even if all timestamps were zero"; no migration marker may resolve on a self-asserted time.
+
 !!!! Where each claimant already stands — the sweep map
 
 ''Sited so the next reader corrects nothing that already reads true.'' A sweep that re-derives these will
@@ -209,6 +224,6 @@ are acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5WEjYiUsu2sUL34l8_fE1d5GijE7mUsQ8_Pa_ehu6tg
+<<^ code="&#x0003;">>ni:///sha-256;JlKM0zyN3AJSfqL7UoEnGxjufvttRYyunbadonL0uF0
 
 <<^ code="&#x0004;" -> to="?">>
