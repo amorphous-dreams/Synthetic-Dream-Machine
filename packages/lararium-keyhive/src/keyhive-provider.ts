@@ -157,7 +157,11 @@ export class KeyhiveProvider implements CapabilityProvider {
     this.eventStore = opts.eventStore;
 
     const signer = KH.Signer.memorySignerFromBytes(opts.seed);
-    const store  = KH.CiphertextStore.newInMemory();
+    let   store  = KH.CiphertextStore.newInMemory();
+    // The identity a boot stands is the SEED's — an Individual's Identifier IS its signer's verifying key
+    // (`whoami.bytes` === `signer.verifyingKey`). An archive that restores a DIFFERENT identity is a cache
+    // of some other founding, never this seed's identity.
+    const seedIdentity = bytesToHex(signer.verifyingKey);
 
     const handler = (event: unknown): void => {
       // Fire-and-forget persistence. Errors get swallowed at this shore —
@@ -201,6 +205,23 @@ export class KeyhiveProvider implements CapabilityProvider {
           `[keyhive] the at-rest archive is UNREADABLE under this build (${String((err as Error)?.message ?? err).slice(0, 80)}) — ` +
           `standing a FRESH keyhive identity; the prior identity is unrecoverable across this format skew`,
         );
+        this.kh = await KH.Keyhive.init(signer, store, handler);
+      }
+      // A READABLE archive whose identity DISAGREES with the seed is an ORPHAN — a cache of a superseded
+      // founding, not this seed's identity. It reaches here after a preserving re-pave: the founder-veil key
+      // derives from a per-founding tag, so re-lighting the face mints a fresh tag while the prior veil's
+      // archive still loads. Restoring it splits the provider — `whoami` reads the archive's key while
+      // `contactCard` presents the seed's signer — so a peer that receives the card never knows the delegate
+      // audience (`audience not known to this provider`). The seed decides the identity: discard the orphan and
+      // stand fresh, exactly as `rm -rf identity` would, and let the caller's hydrateFromEventStore re-establish
+      // the live membership. A fresh store — the discarded archive's ciphertext must not ride into the new one.
+      if (this.kh && bytesToHex(this.kh.whoami.bytes) !== seedIdentity) {
+        console.warn(
+          `[keyhive] the at-rest archive restores a DIFFERENT identity than the seed derives ` +
+          `(${bytesToHex(this.kh.whoami.bytes).slice(0, 20)}… vs ${seedIdentity.slice(0, 20)}…) — ` +
+          `an orphaned archive from a superseded founding; standing fresh from the seed and re-hydrating`,
+        );
+        store = KH.CiphertextStore.newInMemory();
         this.kh = await KH.Keyhive.init(signer, store, handler);
       }
     } else {
