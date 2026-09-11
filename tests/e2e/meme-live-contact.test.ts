@@ -242,6 +242,47 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(existsSync(join(lar.root, "wikis", "daemon", `${MOVE_PATH}.mem`))).toBe(false);
   });
 
+  /**
+   * RESIDENCY MOVES A BINARY BETWEEN STORE STYLES (blob-carriage.mem, RULED). A `.png` + `.meta`
+   * LOADed into the daemon's working layer lands a POINTER (bytes in cid/, hashed RAW). `act MOVE`
+   * carries the pointer WHOLE — the CID stays, `_integrity` stays, the bytes stay in cid/ — and the
+   * destination mirror projects `photo.png` + `photo.png.meta` from them while the source unlinks.
+   */
+  test("★ act MOVE of a png POINTER from wikis/daemon/working to bags/crossroads — photo.png + .meta appear there, wikis/daemon/ unlinks ★", async () => {
+    const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+    const CID = createHash("sha256").update(PNG).digest("hex");
+    const NI  = `ni:///sha-256;${Buffer.from(CID, "hex").toString("base64url")}`;
+    const BLOB_PATH = "ha.ka.ba/t/witness/photo";
+    const BLOB_URI  = `lar:///${BLOB_PATH}`;
+    // Laid under the daemon's working mirror so LOAD derives the loci title from the path.
+    const srcDir = join(lar.root, "wikis", "daemon", "ha.ka.ba/t/witness");
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(join(srcDir, "photo.png"), PNG);
+    writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\ntags: witness\n");
+    const ld = await lar.cli(["act", "LOAD", "--source-uri", srcDir, "--to", DAEMON_WORKING, "--yes", "--json"]);
+    expect(ld.json?.["ok"], `the LOAD refused — ${said(ld)}`).toBe(true);
+    // the pointer landed: the CID over the RAW bytes, the projected sidecar carries it
+    const srcMeta = join(srcDir, "photo.png.meta");
+    const deadline = Date.now() + 30_000;
+    while (Date.now() < deadline && !readFileSync(srcMeta, "utf8").includes("_is_skinny")) await new Promise((r) => setTimeout(r, 500));
+    expect(readFileSync(srcMeta, "utf8")).toContain(`textCid: ${CID}`);
+
+    const mv = await lar.cli(["act", "MOVE", "--title", BLOB_URI, "--from", DAEMON_WORKING, "--to", CROSSROADS_URI, "--yes", "--json"]);
+    expect(mv.json?.["ok"], `the MOVE of the pointer refused — ${said(mv)}`).toBe(true);
+    const landedPng  = join(lar.root, "bags", "crossroads", `${BLOB_PATH}.png`);
+    const landedMeta = `${landedPng}.meta`;
+    expect(await awaitFileState(landedPng, true, 30_000), `the MOVE never published the bytes under ${landedPng}`).toBe(true);
+    expect(await awaitFileState(landedMeta, true, 15_000)).toBe(true);
+    expect(readFileSync(landedPng).equals(PNG)).toBe(true);
+    const meta = readFileSync(landedMeta, "utf8");
+    expect(meta).toContain(`textCid: ${CID}`);
+    expect(meta).toContain(`_integrity: ${NI}`);
+    expect(meta).toContain("tags: witness");
+    expect(meta).not.toContain("_canonical_uri");
+    expect(await awaitFileState(join(srcDir, "photo.png"), false, 30_000), "wikis/daemon/ kept the moved photo.png").toBe(true);
+    expect(existsSync(srcMeta)).toBe(false);
+  }, 120_000);
+
   test("★ the staged boot wrote nothing into the shared tree — its genesis baked into its own root ★", () => {
     expect(existsSync(join(lar.root, "genesis", "island.genesis.json"))).toBe(true);
     expect(sharedTree()).toBe(treeBefore);

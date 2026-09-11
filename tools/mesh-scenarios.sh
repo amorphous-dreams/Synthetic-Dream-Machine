@@ -986,9 +986,36 @@ run_meme() {
     done
     printf '      wakes when both sides name ONE doc: a bag the relation carries, not a fleet dial\n'
   fi
+  # THE BYTES BEHIND A PUBLIC POINTER (tiddler-carriage #/measured, step 2). The law: a public pointer's
+  # RECORD federates and its BYTES ride the public CAS — a peer holding the pointer fetches them by cid
+  # over the public read-face and verifies `sha256(bytes) == cid` before it trusts a byte. This step
+  # LOADs a `.png` on A (bytes into A's `cid/`, a pointer into A's bag) and asks the one content-addressed
+  # public read-face the mesh stands — the Herm's bulb, `GET /bulb/<cid>.bin` — for that cid.
+  # MEASURED 2026-09-11 (`bulb-serves-boot-cas-alone.test.ts`): the bulb answers the GENESIS manifest's
+  # blobs alone (`bulb-read-face.ts` builds `blobByCid` off `buildBulb(bulb)`), so a hearth's staged blob
+  # draws 404 — and no hearth ever hands its `cid/` to a Herm. The bytes-door this needs: a public-floor
+  # `GET /cas/<cid>.bin` served off the holder's `cid/` tier (verify-on-pull like the bulb), reached by
+  # the peer's resolver on a local miss (`makeCidResolver`, cas-transit.ts). Gated behind the bag seam:
+  # until B reads A's bag, B holds no pointer to fetch for.
+  step "★ a PUBLIC pointer's bytes: the Herm's read-face serves A's staged blob ★"
+  local PNG_CID BULB_CODE
+  $COMPOSE exec -T lararium-a sh -c 'mkdir -p /tmp/blob/bags/lares/t.witness.blob && printf "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > /tmp/blob/bags/lares/t.witness.blob/photo.png && printf "type: image/png\n" > /tmp/blob/bags/lares/t.witness.blob/photo.png.meta' 2>/dev/null
+  LD=$($COMPOSE exec -T lararium-a $LARES act LOAD --source-uri /tmp/blob/bags/lares/t.witness.blob --to "$LARES_BAG" --yes --json 2>&1)
+  PNG_CID=$($COMPOSE exec -T lararium-a sh -c 'sha256sum /tmp/blob/bags/lares/t.witness.blob/photo.png' 2>/dev/null | cut -c1-64)
+  BULB_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:18092/bulb/${PNG_CID}.bin" 2>/dev/null || printf 000)
+  if printf '%s' "$LD" | grep -q '"ok":true' && [ "$BULB_CODE" = "200" ]; then ok
+  elif printf '%s' "$LD" | grep -q '"ok":true'; then
+    gap "the bulb serves the boot CAS alone — A's blob draws ${BULB_CODE}; no public-floor cid door stands"
+    printf '      A staged: %s\n' "$($COMPOSE exec -T lararium-a $LARES bag cas --no-json 2>&1 | sed -n 2p | sed 's/^ *//')"
+    printf '      herm-source GET /bulb/%s.bin → %s\n' "${PNG_CID:0:16}…" "$BULB_CODE"
+    printf '      wakes when a holder serves GET /cas/<cid>.bin off its cid/ tier, verify-on-pull\n'
+  else bad "A's pointer LOAD refused"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
+
   if [ "$crossed" -eq 0 ]; then
     step "B projects · B edits and A gets it · PARTITION"
     gap "unwalkable until the crossing stands — nothing on B to project, edit, or cut"
+    step "★ B fetches the pointer's BYTES from A's public CAS ★"
+    gap "unwalkable until the crossing stands — B holds no pointer to fetch for"
     run_meme_browser
     clear_all; return
   fi

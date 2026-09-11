@@ -32,6 +32,8 @@ import type { TW5Engine } from "./tw5-vm.js";
 import { makeTw5FileInfo, readSitingCascades, ruledBasePath, type Tw5FileInfo } from "./tw5-file-info.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
+import { skinnyCid } from "./lazy-resolver.js";
+
 import { CARRIER_TYPE as MEMETIC_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
 import { MEME_EXT, stripMemeExt } from "@lararium/mesh/mirror-paths";
 
@@ -63,6 +65,11 @@ export interface CarrierFile {
   /** "base64" when the body is base64 text the projector must decode to raw
    *  bytes (a binary filetype — image/PDF); "utf8"/absent for a text carrier. */
   readonly encoding?: string;
+  /** A POINTER's content-address (hex sha256 of the RAW bytes): `body` is empty and the projector
+   *  writes the bytes it resolves from the local cid/ tier beside `metaBody` — the whole file
+   *  beside its `.meta` (THE BLOB LAW). Where the tier lacks the bytes the projector writes the
+   *  `.meta` alone. Absent for every carrier whose bytes ride in `body`. */
+  readonly pointerCid?: string;
   /** The mirror-relative path a `$:/config/FileSystemPaths` rule sited this carrier at, extension
    *  included — present ONLY when a rule reached the title. Absent, the projector sites by the loci
    *  law (`carrierBaseRelPath`), which is where a stock server with no such rule and an island
@@ -92,19 +99,24 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
   // `$:/config/FileSystemPaths` / `FileSystemExtensions` tiddler in this wiki, and nothing else.
   const cascades = readSitingCascades($tw);
 
-  // Skinny-handle rule (T3, disk-projection#granularity + content-resolution.mem): a carrier
-  // whose body left the CRDT for the `cid/` CAS tier projects as its HANDLE ALONE. The bytes
-  // stay content-addressed; disk keeps only the small pointer (`_canonical_uri`/`_integrity`/
-  // `textCid` + metadata). The `text` field is STRIPPED before serialization — so even after the
-  // read-side lazyLoad resolver rehydrates the body INTO the VM tiddler (for render), the disk
-  // projection never writes the whole body and never re-opens the #51 overflow on re-ingest. The
-  // handle rides TW5's own native file-info (a `.tid` for the typeless handle). This wins over the
-  // memetic recompose below — a skinny carrier is a pointer, never a body to recompose.
+  // THE POINTER (THE BLOB LAW, content-handle.ts): a carrier whose body left the CRDT for the
+  // `cid/` tier. The `text` field is STRIPPED before serialization — even after the read-side
+  // lazyLoad resolver rehydrates the body INTO the VM tiddler (for render), the projection never
+  // writes a body from the VM and never re-opens the #51 overflow on re-ingest. Two shapes:
+  //   · a base64-family pointer (a `type` the registry writes as content + `.meta`, no
+  //     `_canonical_uri`) projects as the WHOLE FILE beside its `.meta` — `photo.png` +
+  //     `photo.png.meta`, the stock server's own shape; the bytes come from the cid/ tier
+  //     (`pointerCid`), the projector resolves + verifies + writes them.
+  //   · a `text/*` pointer (the `_lar_cas` override, a `lar:` `_canonical_uri`) rides TW5's own
+  //     law for a `_canonical_uri` tiddler: a bodyless `.tid` handle.
+  // This wins over the memetic recompose below — a pointer is never a body to recompose.
   const isSkinny = fields["_is_skinny"] === "yes" || typeof fields["textCid"] === "string";
   if (isSkinny) {
     const { text: _body, ...handleFields } = fields as Record<string, unknown>;
     const info = makeTw5FileInfo($tw, memeUri, handleFields, cascades);
-    return nativeCarrierFile(info);
+    const file = nativeCarrierFile(info);
+    const cid = info.hasMetaFile ? skinnyCid(handleFields) : null;
+    return cid ? { ...file, body: "", pointerCid: cid } : file;
   }
 
   const type = typeof fields["type"] === "string" ? (fields["type"] as string) : "";

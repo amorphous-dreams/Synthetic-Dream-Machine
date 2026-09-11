@@ -13,6 +13,7 @@
  */
 
 import { ENGINE_CORE_ID } from "./base-doc.js";
+import { cidFromUri } from "./lar-uris.js";
 
 /** A blob entry shape the CAS reads — id + sha256 (the CID) + the raw bytes. */
 export interface CasBlobLike {
@@ -97,4 +98,73 @@ export function* casBlobEntries(
     const bytes = e.blob instanceof Uint8Array ? e.blob : new Uint8Array(e.blob as ArrayBufferLike);
     yield { cid: e.sha256, bytes };
   }
+}
+
+// ── The derived reference count (tiddler-carriage #/pin-and-release) ──────────
+//
+// A blob is RETAINED while any tiddler in any locally-held bag references its CID. No field
+// stores that count — it DERIVES from the records, so it can never drift from them: a record
+// carrying `textCid` (the skinny handle's CAS key), else a `lar:///…/cid/<hash>` `_canonical_uri`
+// (the same scheme discrimination the lazy resolver reads), references exactly one blob.
+
+/** One locally-held record the reference reader walks — a CompositeEntry's title · bag · record. */
+export interface CasReferenceEntry {
+  readonly title:  string;
+  /** The holding bag — a record held by two bags counts twice, so DROP of one leaves the other. */
+  readonly bagId?: string;
+  readonly record: { readonly tiddler: Record<string, unknown> };
+}
+
+/** Read the CAS key a record references, or null when it carries a body inline / a web2 src. */
+export function casCidOfRecord(fields: Record<string, unknown>): string | null {
+  const textCid = fields["textCid"];
+  if (typeof textCid === "string" && textCid.length > 0) return textCid;
+  const canonical = fields["_canonical_uri"];
+  if (typeof canonical === "string") return cidFromUri(canonical);
+  return null;
+}
+
+/**
+ * Derive `cid → the addresses ({bag} {title}) that reference it` over every locally-held record.
+ * A cid absent from the map is UNREFERENCED — sweepable once its grace passes and no PIN names it.
+ */
+export function casReferences(entries: Iterable<CasReferenceEntry>): Map<string, Set<string>> {
+  const refs = new Map<string, Set<string>>();
+  for (const e of entries) {
+    const cid = casCidOfRecord(e.record.tiddler);
+    if (!cid) continue;
+    const address = e.bagId ? `${e.bagId} ${e.title}` : e.title;
+    const set = refs.get(cid) ?? new Set<string>();
+    set.add(address);
+    refs.set(cid, set);
+  }
+  return refs;
+}
+
+/** The store-level read a `cas` inspection reports: blobs · referenced · unreferenced · pending · bytes. */
+export interface CasSummary {
+  readonly blobs:        number;
+  readonly referenced:   number;
+  readonly unreferenced: number;
+  /** Referenced cids the store LACKS — a pointer whose bytes have not arrived (the fleet peer after a record crossed). */
+  readonly pending:      number;
+  readonly bytes:        number;
+}
+
+/** Fold a store's `{cid, size}` listing against the derived references. */
+export function summarizeCas(
+  blobs: Iterable<{ readonly cid: string; readonly size: number }>,
+  refs:  ReadonlyMap<string, ReadonlySet<string>>,
+): CasSummary {
+  let count = 0, referenced = 0, bytes = 0;
+  const held = new Set<string>();
+  for (const b of blobs) {
+    count += 1;
+    bytes += b.size;
+    held.add(b.cid);
+    if ((refs.get(b.cid)?.size ?? 0) > 0) referenced += 1;
+  }
+  let pending = 0;
+  for (const [cid, set] of refs) if (set.size > 0 && !held.has(cid)) pending += 1;
+  return { blobs: count, referenced, unreferenced: count - referenced, pending, bytes };
 }

@@ -108,8 +108,8 @@ And ''even public keeps the gate'' —
 "public" reads as a ''generous anonymous grant'', `pull` ≠ `read`; the three gates
 (#/resolve-by-cid) stay intact, publicity only sets how generous gate-2 grows.
 
-''Tier-general mechanics'' (every plane carries these): big-on-fs, small-inline (~16KiB,
-Iroh); the blob carries a ''BLAKE3 outboard'' for range-verify; a ''self-describing''
+''Tier-general mechanics'' (every plane carries these): big-on-fs by KIND (a pointer for every
+base64 family, the record inline for text), ~16KiB (Iroh) governing `@cad` CHUNKING alone; the blob carries a ''BLAKE3 outboard'' for range-verify; a ''self-describing''
 ''multihash'' `(algo, len, digest)` (multiformats / `ni://`) carries the address AND the
 in-band migration path (sha256→BLAKE3→future, old ids stay parseable). Retention rides two
 tags — a cap-lifetime-bound tag ''PINs'', an untagged body ''CACHEs'' under LRU; GC runs
@@ -169,7 +169,10 @@ differing ''only in the extraction boundary'':
   `cid/` store and the ahu ''becomes a handle'' (`_canonical_uri`/cid + `_integrity`
   multihash); `resolveByCid` pulls it on render (the `lazyLoad` path this house owns). This
   IS the ''pack model at ahu grain'' — a meme reads as a pack whose blob-worthy ahu stands
-  a CAS member. Blob-worthiness = the `#source-text` convention + a size threshold.
+  a CAS member. Blob-worthiness reads off the KIND the declared `type` names (TW5's own
+  `encoding: "base64"` registry, the image·audio·video·font families) — never a size; the `_lar_cas`
+  flag pushes a text ahu out on purpose (the `#source-text` case), and 1 MiB stands as the utf8
+  FAULT wall alone (the blob law: lar:///ha.ka.ba/lares/docs/pono/blob-carriage#/proposed-law).
 * ''B — a raw other-data shard.'' Raw bytes, no memetic-wikitext wrapper (image, audio,
   binary, data). ''Whole-carrier:'' the entire shard rests as a `cid/` CAS blob, referenced
   by a skinny handle (the TW5 External Image/Audio/Text pattern).
@@ -295,6 +298,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zdeE-WaH99Mp0Ibl_mkE_RRei7g43XsyYsw6qyhZlKU
+<<^ code="&#x0003;">>ni:///sha-256;6b8-uYfrNisvKjt-WmqnTZ3NMh4_r1n6b-bs_MSZHsE
 
 <<^ code="&#x0004;" -> to="?">>

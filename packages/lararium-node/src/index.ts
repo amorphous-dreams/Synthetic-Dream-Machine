@@ -390,3 +390,8 @@ export type {
 // daemon spawn's optional workerData.telemetry) or leaves the cap inert. The capture core stays
 // composable + isomorphic: @lararium/mesh capture-engine + the tw5 `hasCapture` cap; node shores via
 // makeNodeCaptureEngine.
+
+// ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
+export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep } from "./node-cas.js";
+export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
+export { readGenesisManifest, genesisCasDir } from "./genesis-artifact.js";

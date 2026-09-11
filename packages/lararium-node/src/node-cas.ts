@@ -11,7 +11,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/node-cas
  */
 
-import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { type GenesisCasManifest } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
@@ -91,4 +91,61 @@ export function readCasBlobFromFs(cid: string, casDir: string): Uint8Array | nul
   } catch {
     return null;
   }
+}
+
+// ── PIN and RELEASE (tiddler-carriage #/pin-and-release) ─────────────────────
+//
+// A blob is RETAINED while any locally-held record references its cid (`casReferences`, derived —
+// never stored) or the genesis CAS names it (the engine + plugins the bulb ships); an unreferenced,
+// unprotected blob MAY sweep once older than the grace. `DROP <bag>` releases by taking the bag's
+// records out of the derived count — the sweep reads the count, it never reads the verb.
+
+/** A cleartext CAS file name — hex sha256. Anything else in the dir (a sidecar) is never a blob. */
+const CAS_CID_RE = /^[0-9a-f]{64}$/;
+
+/** List the blobs a CAS dir holds — cid + byte size, sorted by cid. An absent dir lists nothing. */
+export function listCasBlobs(casDir: string): { cid: string; size: number }[] {
+  let names: string[];
+  try { names = readdirSync(casDir); } catch { return []; }
+  return names
+    .filter((n) => CAS_CID_RE.test(n))
+    .sort()
+    .map((cid) => ({ cid, size: statSync(join(casDir, cid)).size }));
+}
+
+export interface CasSweepOptions {
+  readonly casDir:     string;
+  /** The derived reference count — `casReferences(composite.entries())`. */
+  readonly references: ReadonlyMap<string, ReadonlySet<string>>;
+  /** The cids the genesis CAS holds (the manifest's blobs) — never swept, referenced or not. */
+  readonly protect:    ReadonlySet<string>;
+  /** An unreferenced blob younger than this stays (a staged body its verb has not landed yet). */
+  readonly graceMs:    number;
+  /** Name what would sweep; delete nothing. */
+  readonly dryRun?:    boolean;
+  readonly now?:       number;
+}
+
+export interface CasSweepResult {
+  /** Deleted (or, dry, would delete) — unreferenced · unprotected · older than the grace. */
+  readonly swept:     string[];
+  /** Held by a reference or the grace. */
+  readonly kept:      string[];
+  /** Held by the genesis manifest. */
+  readonly protected: string[];
+}
+
+/** Mark-and-sweep the cleartext CAS from the derived references + the genesis protect set. */
+export function casSweep(opts: CasSweepOptions): CasSweepResult {
+  const now = opts.now ?? Date.now();
+  const swept: string[] = [], kept: string[] = [], protectedCids: string[] = [];
+  for (const { cid } of listCasBlobs(opts.casDir)) {
+    if (opts.protect.has(cid)) { protectedCids.push(cid); continue; }
+    if ((opts.references.get(cid)?.size ?? 0) > 0) { kept.push(cid); continue; }
+    const path = join(opts.casDir, cid);
+    if (now - statSync(path).mtimeMs < opts.graceMs) { kept.push(cid); continue; }
+    if (!opts.dryRun) unlinkSync(path);
+    swept.push(cid);
+  }
+  return { swept, kept, protected: protectedCids };
 }

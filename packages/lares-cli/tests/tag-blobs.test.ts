@@ -1,8 +1,8 @@
 /**
  * tag-blobs.test.ts — the `lares ingest --tag-blobs` writer proof.
  *
- * The shore stamps the CAS opt-in flag for carriers that would hit the ungated-large-inline
- * wall at regenesis: a `<file>.meta` sidecar for a standalone file, `_lar_cas = "yes"` on
+ * The shore stamps the CAS opt-in flag for utf8 carriers that would hit the fault wall at
+ * regenesis (a pointer-kind carrier needs none — kind picks its shape): a `<file>.meta` sidecar for a standalone file, `_lar_cas = "yes"` on
  * the dominant blob-ahu's meta fence for a meme. A mind-bundle meme (body across many small
  * ahus), an ambiguous split (>1 large ahu), a blob-ahu with no meta fence, and an
  * already-flagged carrier all REPORT rather than mutate. Here we prove the detection reuse,
@@ -16,8 +16,8 @@ import { tmpdir } from "node:os";
 import { carrierNeedsTag, tagMemeText, tagCarrier, tagBlobs, type TagCarrier } from "../src/tag-blobs.js";
 import { carrierCasFlagged } from "../src/cas-stage.js";
 
-const BIG = "x".repeat(70 * 1024);   // over the 64 KiB CAS backstop floor
-const HUGE = "y".repeat(1100 * 1024); // over the 1 MiB oversized-inline wall
+const BIG = "x".repeat(1100 * 1024);  // over the 1 MiB fault wall — the ONE size the house reads
+const HUGE = "y".repeat(1100 * 1024); // over the 1 MiB fault wall
 
 const smallAhu = (slot: string) => `<<~ ahu #${slot}>>\n\nshort prose in ${slot}.\n\n<<~/ahu>>\n`;
 const metaAhu = (slot: string, body: string) =>
@@ -34,8 +34,11 @@ describe("carrierNeedsTag — reuses the in-tree readiness law", () => {
   test("an oversized (>1 MiB) text carrier WOULD fault — needs a tag", () => {
     expect(carrierNeedsTag({ file: "big.txt", text: HUGE, ext: ".txt" })).toBe(true);
   });
-  test("a binary/image carrier rides the backstop at any size — needs a tag", () => {
-    expect(carrierNeedsTag({ file: "p.png", text: "AAAA", ext: ".png", binary: true })).toBe(true);
+  test("a binary/image carrier rides a pointer BY KIND at any size — needs NO tag (THE BLOB LAW)", () => {
+    expect(carrierNeedsTag({ file: "p.png", text: "AAAA", ext: ".png", binary: true })).toBe(false);
+  });
+  test("a 70 KiB text carrier needs NO tag — no size floor under the wall", () => {
+    expect(carrierNeedsTag({ file: "m.md", text: "x".repeat(70 * 1024), ext: ".md" })).toBe(false);
   });
   test("an already-flagged carrier (meta) needs NO tag — idempotent", () => {
     expect(carrierNeedsTag({ file: "big.txt", text: HUGE, ext: ".txt", meta: "_lar_cas: yes\ntype: text/plain\n" })).toBe(false);

@@ -19,8 +19,9 @@ const cidOf = (s: string) => createHash("sha256").update(Buffer.from(s, "utf8"))
 const bytesOf = (s: string) => new TextEncoder().encode(s);
 const flush = () => new Promise<void>((r) => setImmediate(r));
 
-/** A minimal wiki + $tw.lares stand-in — enough surface for the resolver, no TW5 boot. */
-function makeFakeEngine() {
+/** A minimal wiki + $tw.lares stand-in — enough surface for the resolver, no TW5 boot. `config`
+ *  carries TW5's registry rows a suite needs (the base64 re-encode reads `contentTypeInfo`). */
+function makeFakeEngine(config: { contentTypeInfo?: Record<string, { encoding?: string }> } = {}) {
   const tiddlers = new Map<string, { fields: Record<string, unknown> }>();
   let lazyHandler: ((t: string) => void) | null = null;
   const enqueued: LarTiddlerChange[] = [];
@@ -38,7 +39,7 @@ function makeFakeEngine() {
       if (rec) tiddlers.set(change.title, { fields: { ...rec.tiddler } });
     },
   };
-  const engine = { $tw: { wiki, lares } } as never;
+  const engine = { $tw: { wiki, lares, config } } as never;
 
   return {
     engine,
@@ -146,6 +147,56 @@ describe("installLazyResolver — rehydrate on lazyLoad", () => {
     await flush();
     expect(enqueued).toHaveLength(1);   // the re-fire resolves it
     expect(enqueued[0]!.record?.tiddler.text).toBe(body);
+  });
+
+  test("★ a base64-family pointer splices the RAW bytes re-encoded as base64 — TW5's own `text` for the type ★", async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0xff, 0x00]);
+    const cid = createHash("sha256").update(png).digest("hex");
+    const { engine, enqueued, setTiddler, fireLazyLoad } = makeFakeEngine({ contentTypeInfo: { "image/png": { encoding: "base64" } } });
+    setTiddler({ title: "lar:///t/photo", _is_skinny: "yes", textCid: cid, type: "image/png", size: String(png.length) });
+
+    installLazyResolver(engine, async (c) => (c === cid ? new Uint8Array(png) : null));
+    fireLazyLoad("lar:///t/photo");
+    await flush();
+
+    expect(enqueued).toHaveLength(1);
+    expect(enqueued[0]!.record?.tiddler.text).toBe(png.toString("base64"));
+    // no lar: pointer reaches the VM copy — nothing for the image widget to emit as a dead src
+    expect(enqueued[0]!.record?.tiddler._canonical_uri).toBeUndefined();
+  });
+
+  test("★ on a BROWSER island a base64-family pointer mints a per-session blob: URL into the VM copy's _canonical_uri — VM only ★", async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0xff, 0x00]);
+    const cid = createHash("sha256").update(png).digest("hex");
+    const { engine, enqueued, setTiddler, fireLazyLoad } = makeFakeEngine({ contentTypeInfo: { "image/png": { encoding: "base64" } } });
+    setTiddler({ title: "lar:///t/browser-photo", _is_skinny: "yes", textCid: cid, type: "image/png" });
+
+    const minted: Array<{ type: string; size: number }> = [];
+    installLazyResolver(engine, async () => new Uint8Array(png), {
+      objectUrl: (bytes, type) => { minted.push({ type, size: bytes.length }); return "blob:https://vessel/0000-1111"; },
+    });
+    fireLazyLoad("lar:///t/browser-photo");
+    await flush();
+
+    expect(minted).toEqual([{ type: "image/png", size: png.length }]);
+    expect(enqueued).toHaveLength(1);
+    const vm = enqueued[0]!.record?.tiddler as Record<string, string>;
+    expect(vm._canonical_uri).toMatch(/^blob:/);
+    expect(vm.text).toBe(png.toString("base64"));
+    // the splice rides the guarded rail — never the CRDT (the blob: URL dies with the session)
+    expect(enqueued[0]!.origin).toEqual({ kind: "crdt-remote", edgeIsland: "cas-rehydrate" });
+  });
+
+  test("a utf8 pointer (a text/* body under the _lar_cas override) never mints a blob: URL", async () => {
+    const body = "plain prose";
+    const cid = cidOf(body);
+    const { engine, enqueued, setTiddler, fireLazyLoad } = makeFakeEngine({ contentTypeInfo: { "text/plain": { encoding: "utf8" } } });
+    setTiddler({ title: "lar:///t/prose", _is_skinny: "yes", textCid: cid, type: "text/plain", _canonical_uri: cidUri(cid) });
+    installLazyResolver(engine, async () => bytesOf(body), { objectUrl: () => "blob:never" });
+    fireLazyLoad("lar:///t/prose");
+    await flush();
+    expect(enqueued[0]!.record?.tiddler.text).toBe(body);
+    expect(enqueued[0]!.record?.tiddler._canonical_uri).toBe(cidUri(cid));
   });
 
   test("an already-hydrated tiddler never re-pulls", async () => {

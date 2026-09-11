@@ -60,7 +60,36 @@ describe.skipIf(wikiSkip)(
       size:           "18000000",
       text:           "THE ENTIRE 18MB BOOK BODY THAT MUST NOT REACH DISK ".repeat(4),
     });
+    // A POINTER for a base64 family (THE BLOB LAW): `type` set, NO `_canonical_uri`, NO text —
+    // the bytes rest in cid/; the projector writes `photo.png` + `photo.png.meta` from them.
+    engine.setTiddler({
+      title:       "lar:///ha.ka.ba/lares/api/native/photo",
+      _is_skinny:  "yes",
+      _integrity:  "ni:///sha-256;abad1dea",
+      textCid:     "abad1dea",
+      size:        "3072",
+      type:        "image/png",
+      _source_ext: ".png",
+      tags:        "gallery",
+    });
   }, 60_000);
+
+  test("★ a base64-family POINTER projects as `<stem>.png` + `.meta` with the bytes to come from cid/ ★", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/photo");
+    expect(file).not.toBeNull();
+    expect(file!.ext).toBe(".png");
+    expect(file!.encoding).toBe("base64");
+    expect(file!.pointerCid).toBe("abad1dea");
+    expect(file!.body).toBe("");
+    // the `.meta` carries every field but text — the pointer fields ride as ordinary fields
+    const meta = file!.metaBody ?? "";
+    expect(meta).toContain("_is_skinny: yes");
+    expect(meta).toContain("textCid: abad1dea");
+    expect(meta).toContain("_integrity: ni:///sha-256;abad1dea");
+    expect(meta).toContain("type: image/png");
+    expect(meta).toContain("tags: gallery");
+    expect(meta).not.toContain("_canonical_uri");
+  });
 
   test("a content filetype projects to its native file + a .meta sidecar", () => {
     const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/note");
@@ -99,6 +128,7 @@ describe.skipIf(wikiSkip)(
     // the bytes stay in the cid/ CAS — the size metadata rides, the 18MB body does NOT
     expect(file!.body.length).toBeLessThan(2000);
     expect(file!.encoding).toBeUndefined();
+    expect(file!.pointerCid).toBeUndefined();   // a `.tid` handle carries its own bytes
   });
 
   test("a rehydrated skinny handle STRIPS the body — no re-overflow to disk", () => {

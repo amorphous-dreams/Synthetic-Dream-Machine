@@ -16,6 +16,19 @@
  * under the `_applying` echo-guard, so the rehydrated body NEVER echoes back out to the CRDT —
  * that would re-inline the body and re-open the #51 overflow the skinny handle exists to close.
  *
+ * THE CID HASHES THE RAW BYTES (THE BLOB LAW, content-handle.ts): the CAS holds `photo.png` as
+ * its file bytes. The VM's `text` for a type TW5 registers `base64` (`$tw.config.contentTypeInfo`)
+ * is the base64 of those bytes — TW5's own expectation, the form its image widget emits as a
+ * `data:` URI — so the resolver re-encodes; a utf8 type splices the bytes decoded as utf8.
+ *
+ * THE BROWSER MAY MINT A `blob:` URL. On a browser island the resolver hands a base64-family body
+ * to `URL.createObjectURL` and sets the per-session `blob:` URL as the VM copy's `_canonical_uri`
+ * — MWS's own move (mint outbound, strip inbound): the URL lives in the VM alone, under the echo
+ * guard, never in the CRDT or on disk (it dies with the session). On node the base64 `text`
+ * suffices (no DOM fetches anything). The persisted pointer for a base64 family carries NO
+ * `lar:` `_canonical_uri` at all — TW5's image widget would emit it as a dead `src` before the
+ * lazy branch ever fired (image.js:61-90).
+ *
  * Source discrimination (`skinnyCid`): a `textCid` names the CAS key directly; a media
  * `_canonical_uri` scheme-discriminates — a `lar:///…/cid/<hash>` resolves by CID, a web2
  * `http(s)://`/`data:` src is left to the native/DOM path (inert in Node) and never resolved
@@ -32,6 +45,39 @@ import type { LaresTw5Extension } from "./types/lares-globals.js";
 /** A carrier body resolver over the corpus CAS — the fs-less worker's shore onto the
  *  process-shared byte plane (the kernel's `host.resolveByCid`). */
 export type CarrierResolver = (cid: string) => Promise<Uint8Array | null>;
+
+export interface LazyResolverOptions {
+  /** Mint a per-session object URL for a base64-family body — the browser's `URL.createObjectURL`
+   *  over a `Blob` of the raw bytes. Defaults to the browser's own where a DOM (or a browser
+   *  worker) stands; absent on node, where no `blob:` URL is minted. Returns null to mint nothing. */
+  readonly objectUrl?: (bytes: Uint8Array, type: string) => string | null;
+}
+
+/** A browser holds a DOM (`document`) or a worker scope (`importScripts`); node holds neither. */
+function inBrowser(): boolean {
+  const g = globalThis as { document?: unknown; importScripts?: unknown };
+  return typeof g.document !== "undefined" || typeof g.importScripts === "function";
+}
+
+/** The browser's own object-URL minter; null where `URL.createObjectURL` or `Blob` is absent. */
+function browserObjectUrl(bytes: Uint8Array, type: string): string | null {
+  const U = globalThis.URL as unknown as { createObjectURL?: (b: Blob) => string } | undefined;
+  if (typeof Blob !== "function" || typeof U?.createObjectURL !== "function") return null;
+  return U.createObjectURL(new Blob([bytes as BlobPart], { type }));
+}
+
+/** Base64 of raw bytes — pure, engine-agnostic (no Buffer on a browser island). */
+function base64Of(bytes: Uint8Array): string {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/** Does the VM's registry register this type `base64`? Reads `$tw.config.contentTypeInfo`. */
+function registersBase64(tw5: TW5Engine, type: unknown): boolean {
+  const cfg = (tw5.$tw as unknown as { config?: { contentTypeInfo?: Record<string, { encoding?: string }> } }).config;
+  return typeof type === "string" && cfg?.contentTypeInfo?.[type]?.encoding === "base64";
+}
 
 /**
  * Read the CAS content-address a skinny handle points its body at, or null when this record
@@ -51,7 +97,8 @@ export function skinnyCid(fields: Record<string, unknown>): string | null {
  * Install the read-side `lazyLoad` resolver on a booted island's wiki. Returns an unsubscribe fn.
  * A no-op (returns a no-op unsubscribe) when the wiki exposes no event surface.
  */
-export function installLazyResolver(tw5: TW5Engine, resolveByCid: CarrierResolver): () => void {
+export function installLazyResolver(tw5: TW5Engine, resolveByCid: CarrierResolver, opts: LazyResolverOptions = {}): () => void {
+  const objectUrl = opts.objectUrl ?? (inBrowser() ? browserObjectUrl : undefined);
   const wiki = tw5.$tw.wiki as {
     getTiddler?: (t: string) => { fields?: Record<string, unknown> } | undefined;
     addEventListener?: (name: string, fn: (t: string) => void) => void;
@@ -82,15 +129,21 @@ export function installLazyResolver(tw5: TW5Engine, resolveByCid: CarrierResolve
         console.error(`[lazy-resolver] CAS integrity fault for ${title}: textCid ${cid} != hash(bytes) ${got}`);
         return;
       }
-      const text = new TextDecoder().decode(bytes);
+      // The VM's `text` takes the form TW5's registry expects for the type: base64 of the raw
+      // bytes for a base64 type (the image widget emits it as a `data:` URI), else the utf8 decode.
+      const base64 = registersBase64(tw5, fields["type"]);
+      const text = base64 ? base64Of(bytes) : new TextDecoder().decode(bytes);
+      // A base64-family body on a browser island also gains a per-session `blob:` URL — VM only.
+      const blobUrl = base64 && objectUrl ? objectUrl(bytes, fields["type"] as string) : null;
       const { lares } = tw5.$tw as unknown as LaresTw5Extension;
       if (typeof lares?.enqueueNalu !== "function") return;
       // Splice `text` in through the GUARDED rail — applied under `_applying`, so the
       // IslandAdaptor echo-guard suppresses the outbound CRDT save. Every skinny field stays
-      // (so the projector still reads the handle at rest, T3); only `text` is added.
+      // (so the projector still reads the handle at rest, T3); only `text` (and, on a browser,
+      // the session's `blob:` `_canonical_uri`) is added.
       lares.enqueueNalu({
         title,
-        record: { tiddler: { ...(fields as Record<string, string>), title, text } },
+        record: { tiddler: { ...(fields as Record<string, string>), title, text, ...(blobUrl ? { _canonical_uri: blobUrl } : {}) } },
         origin: { kind: "crdt-remote", edgeIsland: "cas-rehydrate" },
       });
       enqueued.add(title);

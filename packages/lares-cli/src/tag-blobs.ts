@@ -1,11 +1,12 @@
 /**
  * tag-blobs — the CAS opt-in writer behind `lares ingest --tag-blobs`.
  *
- * `lares ingest` already scans a bag and weighs every carrier's size + media
- * family (exactly the knowledge a blob-readiness verdict needs). This shore turns
- * that verdict into a WRITE: for each carrier that would hit the ungated-large-inline
- * wall at rebirth (a verb rides a reference, never a body), it stamps the opt-in
- * `_lar_cas` flag so the body externalizes to CAS on the next INGEST.
+ * `lares ingest` already scans a bag and weighs every carrier's size + type (exactly
+ * the knowledge a blob-readiness verdict needs). This shore turns that verdict into a
+ * WRITE: for each utf8 carrier that would hit the fault wall at rebirth (a verb rides a
+ * reference, never a body), it stamps the opt-in `_lar_cas` flag so the body
+ * externalizes to CAS on the next INGEST. A pointer-kind carrier (an image, a pdf —
+ * THE BLOB LAW, content-handle.ts) rides a pointer by kind and needs no tag.
  *
  * Two carrier shapes carry the flag differently (mirror Tagwright's verified shape,
  * commit 32e087c5):
@@ -20,18 +21,18 @@
  * ambiguous the shore reports and leaves the canon untouched, never guess-and-mutate.
  *
  * Detection reuses the in-tree readiness law verbatim (never re-derives it):
- * `carrierCasFlagged` (already opted in?), `casBackstopFires` + `isOversizedBody` +
- * `mediaTypeFromExt` (would it fault or backstop?), `CAS_BACKSTOP_SIZE` (the per-ahu
- * blob floor). It writes ONLY under the explicit `--tag-blobs` gesture — a normal
- * ingest mutates no source.
+ * `carrierCasFlagged` (already opted in?), `ridesAsPointer` + `mediaTypeFromExt` (a
+ * pointer by kind — no tag), `isOversizedBody` (would it fault?), and the same wall as
+ * the per-ahu blob floor. It writes ONLY under the explicit `--tag-blobs` gesture — a
+ * normal ingest mutates no source.
  *
  * Meme: lar:///ha.ka.ba/lares/api/cas-stage
  */
 
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
-import { utf8Bytes, casBackstopFires, isOversizedBody, mediaTypeFromExt, CAS_BACKSTOP_SIZE } from "@lararium/mesh";
+import { utf8Bytes, ridesAsPointer, isOversizedBody, mediaTypeFromExt, SKINNY_CARRIER_THRESHOLD } from "@lararium/mesh";
 import { findTopLevelAhuBlocks } from "@lararium/tw5/meme-ast";
-import { carrierCasFlagged } from "./cas-stage.js";
+import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 /** The minimal carrier view the writer reads — a subset of `ScanRow`. */
 export interface TagCarrier {
@@ -59,17 +60,16 @@ export interface TagOutcome {
 }
 
 /**
- * Would this carrier hit the ungated-large-inline wall (or ride the un-flagged
- * backstop) at rebirth, and NOT already carry the opt-in flag? Reuses the exact
- * in-tree readiness law — the flag decides first (already opted in → no tag), then
- * the backstop-non-text family OR the oversized-text fault elects it. A small
- * un-flagged text body inlines pono and needs no tag.
+ * Would this carrier hit the utf8 fault wall at rebirth, and NOT already carry the
+ * opt-in flag? Reuses the exact in-tree law — the flag decides first (already opted
+ * in → no tag), a pointer-kind type needs none (kind picks its shape), and only an
+ * oversized utf8 body elects a tag. A small un-flagged text body inlines pono.
  */
 export function carrierNeedsTag(c: TagCarrier): boolean {
   if (carrierCasFlagged(c.text, c.meta)) return false;
-  const size = utf8Bytes(c.text).length;
-  const mediaType = mediaTypeFromExt(c.ext, c.binary ?? false);
-  return casBackstopFires(size, mediaType) || isOversizedBody(size);
+  const mediaType = declaredType(c.meta) ?? mediaTypeFromExt(c.ext, c.binary ?? false);
+  if (ridesAsPointer(mediaType)) return false;
+  return isOversizedBody(utf8Bytes(c.text).length);
 }
 
 /** Find the `toml meta` fence inside an absolute `[start, end)` span; returns the
@@ -84,8 +84,8 @@ function metaFenceCloseOffset(text: string, start: number, end: number): number 
 }
 
 /**
- * Stamp a meme body: locate the single dominant blob-worthy ahu (its body over the
- * CAS backstop floor) and insert `_lar_cas = "yes"` into that ahu's meta fence.
+ * Stamp a meme body: locate the single dominant blob-worthy ahu (its body alone past
+ * the fault wall) and insert `_lar_cas = "yes"` into that ahu's meta fence.
  * Reports (mutates nothing) for a mind-bundle (zero large ahus), an ambiguous split
  * (more than one), or a blob-ahu with no meta fence.
  */
@@ -93,7 +93,7 @@ export function tagMemeText(text: string): { text: string; kind: TagKind; detail
   const blocks = findTopLevelAhuBlocks(text);
   const large = blocks
     .map((b) => ({ b, size: utf8Bytes(text.slice(b.bodyStart, b.bodyEnd)).length }))
-    .filter((x) => x.size > CAS_BACKSTOP_SIZE);
+    .filter((x) => x.size > SKINNY_CARRIER_THRESHOLD);
   if (large.length === 0) {
     return { text, kind: "mind-bundle", detail: "no single blob-ahu, left inline — tag manually if intended" };
   }

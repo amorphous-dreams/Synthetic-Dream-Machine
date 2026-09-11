@@ -21,7 +21,7 @@ import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FIL
 import { SyncedTree, syncedTreeKey, bagsFileToUri, wikisFileToUri, larProjectionDir } from "@lararium/node";
 import type { SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
-import { stageBodyToCas, carrierCasFlagged } from "./cas-stage.js";
+import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 export type ScanStatus = "new" | "unchanged" | "changed" | "non-nfc" | "deleted" | "renamed";
 
@@ -42,8 +42,8 @@ export interface ScanRow {
   /** The file's extension (".mem" / ".tid" / ".json" / ".md" …); rides the
    *  INGEST carrier so the island routes by TW5's own filetype registry. */
   readonly ext:        string;
-  /** The body failed the utf8 round-trip (a raw binary shard rides base64) — feeds the
-   *  opt-in-CAD backstop, which externalizes a binary body even absent the `_lar_cas` flag. */
+  /** The body failed the utf8 round-trip (a raw binary shard rides base64) — the CAS stager
+   *  decodes it back to raw bytes before hashing a pointer-kind carrier. */
   readonly binary?:    boolean;
   /** Raw `<file>.meta` sidecar text when one sits beside a content file — rides
    *  the carrier so the island keeps the sidecar's fields across a body edit.
@@ -73,12 +73,13 @@ export function openSyncedTree(): SyncedTree {
 }
 
 /**
- * Read a carrier's bytes as the string form the tiddler `text` field holds — utf8
- * for a text filetype, base64 for a binary one (image/PDF). The detection needs no
- * registry and no extension list: bytes that survive a utf8 round-trip ARE text;
- * bytes that do not ARE binary, and ride as base64 (the island stores the base64
- * as-is, the projector decodes it back to raw bytes). A base64 body carries no
- * SOH heading, so it routes to the native filetype path exactly as it should.
+ * Read a carrier's bytes as the string form the gesture carries — utf8 for a text
+ * file, base64 for a binary one (image/PDF). The detection needs no registry and no
+ * extension list: bytes that survive a utf8 round-trip ARE text; bytes that do not
+ * ARE binary, and ride as base64. THE BLOB LAW then reads the TYPE: a pointer-kind
+ * carrier's base64 decodes back to raw bytes at the CAS stager (`stageBodyToCas`) and
+ * rides a pointer; a utf8 body rides inline. A base64 body carries no SOH heading, so
+ * it never routes to the memetic path.
  */
 export function readCarrierText(file: string): { text: string; binary: boolean } {
   const buf  = readFileSync(file);
@@ -345,15 +346,16 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
     "source-uri": opts.source,
     "to-bag":     opts.toBag,
     "change-id":  changeId,
-    // Opt-in CAD (content-resolution.mem): a small un-flagged body rides INLINE `text` — a meme
-    // is an inline-by-nature tiddler bundle, no persistent CAS blob. Only a flagged (`_lar_cas`)
-    // or backstop-caught (binary / oversized-non-text) body stages to the corpus CAS and rides a
-    // skinny `textCid` — keeping the giant out of the CRDT (the automerge scalar-string wall). An
-    // oversized un-flagged text stages for transport but rides no `skinny`, so the island faults
-    // it (a verb rides a reference, never a body) rather than materializing it — bag-agnostic.
+    // THE BLOB LAW (cas-stage.ts): a pointer-kind `type` (the `.meta` declaration first, else TW5's
+    // registry by extension) or the `_lar_cas` flag stages the body to the corpus CAS and rides a
+    // skinny `textCid` — the island lands a POINTER. A utf8 body under the wall rides INLINE `text`
+    // (a meme is an inline-by-nature tiddler bundle, no persistent CAS blob). An oversized un-flagged
+    // utf8 body stages for transport but rides no `skinny`, so the island faults it (a verb rides a
+    // reference, never a body) rather than materializing it — bag-agnostic.
     carriers: opts.candidates.map((r) => {
       const flagged = carrierCasFlagged(r.text, r.meta);
-      const staged = stageBodyToCas(r.text, { ext: r.ext, flagged, binary: r.binary ?? false });
+      const type = declaredType(r.meta);
+      const staged = stageBodyToCas(r.text, { ext: r.ext, flagged, binary: r.binary ?? false, ...(type ? { type } : {}) });
       return {
         uri: r.uri, size: staged.size, diskHash: r.diskHash, syncedHash: r.syncedHash, ext: r.ext,
         ...(staged.staged ? { textCid: staged.cid } : { text: r.text }),

@@ -2,8 +2,10 @@
  * nonmeme-parity — a non-meme file round-trips through BOTH doors under the same `.meta` law.
  *
  *   note.md + note.md.meta    a lar: title, `type: text/markdown`
- *   photo.png + photo.png.meta a binary, `type: image/png`        (MEASURED only — where binaries
- *                                                                  belong under bags/ reads OPEN)
+ *   photo.png + photo.png.meta a binary, `type: image/png` — THE BLOB LAW: the island lands a POINTER
+ *                              (bytes in cid/, hashed RAW) and projects the WHOLE FILE beside a `.meta`
+ *                              carrying the pointer fields as ordinary fields; a stock server reads the
+ *                              same two files as a base64 typed tiddler and saves them back identically
  *   pack.json                  two foreign-titled tiddlers
  *
  *   ENTER   server: the wiki folder's `tiddlers/` (`$tw.loadTiddlersFromPath` reads them at boot)
@@ -22,6 +24,7 @@
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, relative } from "node:path";
 import { targetInstance, stageDir, type LarInstance } from "../harness/instance.js";
 import { bootForkServer, forkMissing, layWikiFolder, runFork, REPO_ROOT, type ForkServer } from "./parity-fork-server.js";
@@ -39,6 +42,9 @@ const PACK_MEMBERS = ["HelloParity", "SecondParity"] as const;
 const LOCI_PATH_RULE = "[prefix[lar:///]regexp[^lar:///\\w+\\.\\w+\\.\\w+/(?:(?!#).)*$]removeprefix[lar:///]]";
 
 const PNG_BYTES = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+/** The RAW-bytes content-address THE BLOB LAW names — `sha256(readFileSync("photo.png"))`. */
+const PNG_CID = createHash("sha256").update(PNG_BYTES).digest("hex");
+const PNG_NI  = `ni:///sha-256;${Buffer.from(PNG_CID, "hex").toString("base64url")}`;
 
 /** The source files, byte-identical for both doors. The `.meta` fields ride UNSORTED on purpose: TW5's
  *  field serializer sorts them, so a sorted sidecar on disk afterwards proves the door WROTE it. */
@@ -121,7 +127,8 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
     const deadline = Date.now() + 90_000;
     while (Date.now() < deadline) {
       const meta = existsSync(join(islandDir, "note.md.meta")) ? readFileSync(join(islandDir, "note.md.meta"), "utf8") : "";
-      if (meta && !meta.startsWith("type:")) break;
+      const photoMeta = existsSync(join(islandDir, "photo.png.meta")) ? readFileSync(join(islandDir, "photo.png.meta"), "utf8") : "";
+      if (meta && !meta.startsWith("type:") && photoMeta.includes("_is_skinny")) break;
       await sleep(500);
     }
     await sleep(3_000);
@@ -175,19 +182,71 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
   });
 
   /**
-   * MEASURED, not cured — where a binary belongs under bags/ reads OPEN (the operator wants
-   * talk-story first). The server keeps `photo.png` + `photo.png.meta` whole; the island's ingest
-   * moves the bytes to the `cid/` CAS tier and projects a SKINNY HANDLE `photo.tid`
-   * (`_canonical_uri` + `_integrity`, no body), then sweeps the `.png` as a straggler.
+   * THE BLOB LAW (blob-carriage.mem #/proposed-law, RULED): a `.png` under bags/ with a `.meta` reads
+   * CANON. The island lands a POINTER (bytes in cid/, the CID over the RAW bytes) and the projector
+   * writes the WHOLE FILE back beside a `.meta` that carries the pointer fields as ordinary fields —
+   * git-LFS's smudge. The server keeps the same two files whole (it never made a pointer).
    */
-  test("MEASURED (OPEN): the server keeps photo.png whole; the island projects a skinny handle photo.tid", () => {
+  test("★ photo.png: the island projects the WHOLE FILE beside its .meta — byte-identical to the source and to the server ★", () => {
     expect(readFileSync(join(serverOut, "photo.png")).equals(PNG_BYTES)).toBe(true);
     expect(fieldsOf(readFileSync(join(serverOut, "photo.png.meta"), "utf8"))["type"]).toBe("image/png");
-    const handle = fieldsOf(readFileSync(join(islandDir, "photo.tid"), "utf8"));
-    expect(handle["_canonical_uri"]).toMatch(/^lar:\/\/\/ha\.ka\.ba\/cid\//);
-    expect(handle["_integrity"]).toMatch(/^ni:\/\/\/sha-256;/);
-    expect(existsSync(join(islandDir, "photo.png"))).toBe(false);
+    expect(existsSync(join(islandDir, "photo.tid")), "a bodyless photo.tid handle is the shape the law retired").toBe(false);
+    expect(readFileSync(join(islandDir, "photo.png")).equals(PNG_BYTES)).toBe(true);
+    expect(readFileSync(join(islandDir, "photo.png")).equals(readFileSync(join(serverOut, "photo.png")))).toBe(true);
   });
+
+  test("★ photo.png.meta: the pointer fields ride as ordinary fields, the CID hashes the RAW bytes, _integrity verifies the file ★", () => {
+    const island = fieldsOf(readFileSync(join(islandDir, "photo.png.meta"), "utf8"));
+    expect(island["title"]).toBe(PHOTO_URI);
+    expect(island["type"]).toBe("image/png");
+    expect(island["_is_skinny"]).toBe("yes");
+    expect(island["textCid"], "the CID keys the base64 STRING, not the file — the law retired that").toBe(PNG_CID);
+    expect(island["_integrity"]).toBe(PNG_NI);
+    expect(island["size"]).toBe(String(PNG_BYTES.length));
+    expect(island["_canonical_uri"], "a lar: _canonical_uri on an image is a dead <img src>").toBeUndefined();
+    // the sidecar is TW5's own serialization — sorted fields, the projector wrote it
+    const keys = Object.keys(island);
+    expect(keys).toEqual([...keys].sort());
+  });
+
+  /**
+   * STOCK-SERVER PARITY FOR BINARIES (clause 6): the island's two files, laid under a stock
+   * `tiddlywiki --listen` with the plugin, load as a base64 TYPED tiddler — the `_is_skinny` /
+   * `textCid` / `_integrity` fields ride through INERT (a stock `_is_skinny` tiddler WITH text reads
+   * its text; only a bodyless one lazy-loads) — and `--savewikifolder` writes them back byte-identical.
+   */
+  test("★ the island's photo.png + .meta pass through a stock server and come back byte-identical; `_is_skinny` rides inert ★", async () => {
+    const forkRoot = mkdtempSync(join(stageDir(), "nonmeme-parity-stock-"));
+    const wiki = layWikiFolder(forkRoot, {
+      "filesystem-paths.tid": `title: $:/config/FileSystemPaths\n\n${LOCI_PATH_RULE}`,
+    });
+    const dir = join(wiki, "tiddlers", REL_DIR);
+    mkdirSync(dir, { recursive: true });
+    const islandPng  = readFileSync(join(islandDir, "photo.png"));
+    const islandMeta = readFileSync(join(islandDir, "photo.png.meta"));
+    writeFileSync(join(dir, "photo.png"), islandPng);
+    writeFileSync(join(dir, "photo.png.meta"), islandMeta);
+    const server = await bootForkServer(forkRoot, wiki);
+    try {
+      const r = await server.http("GET", `/recipes/default/tiddlers/${encodeURIComponent(PHOTO_URI)}`);
+      expect(r.status).toBe(200);
+      const t = JSON.parse(r.body) as Record<string, string> & { fields?: Record<string, string> };
+      const fields = { ...t, ...(t.fields ?? {}) };
+      // the stock server read the bytes WHOLE as base64 text — `_is_skinny` did not make it lazy
+      expect(fields["text"], "a stock server with `_is_skinny` + text present dropped the text").toBe(PNG_BYTES.toString("base64"));
+      expect(fields["type"]).toBe("image/png");
+      expect(fields["_is_skinny"]).toBe("yes");
+      expect(fields["textCid"]).toBe(PNG_CID);
+      expect(fields["_integrity"]).toBe(PNG_NI);
+    } finally {
+      await server.stop();
+    }
+    const out = join(forkRoot, "out");
+    runFork(wiki, ["--savewikifolder", out, `filter=[[${PHOTO_URI}]]`, "explodePlugins=no"]);
+    const stockDir = join(out, "tiddlers", REL_DIR);
+    expect(readFileSync(join(stockDir, "photo.png")).equals(islandPng)).toBe(true);
+    expect(readFileSync(join(stockDir, "photo.png.meta")).equals(islandMeta)).toBe(true);
+  }, 120_000);
 
   test("the pack: both doors keep the membership aside in $:/config/OriginalTiddlerPaths", () => {
     for (const t of PACK_MEMBERS) expect(serverPaths[t], `server: ${t}`).toMatch(/pack\.json$/);
@@ -213,10 +272,10 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
     expect(existsSync(join(islandDir, "pack.json"))).toBe(true);
   });
 
-  test("file-for-file: under the loci path the trees agree, minus the two named divergences", () => {
+  test("file-for-file: under the loci path the trees agree, minus the one named divergence (the pack)", () => {
     const serverFiles = walk(serverOut).map((f) => relative(serverOut, f)).sort();
     const islandFiles = walk(islandDir).map((f) => relative(islandDir, f)).sort();
     expect(serverFiles).toEqual(["note.md", "note.md.meta", "photo.png", "photo.png.meta"]);
-    expect(islandFiles).toEqual(["note.md", "note.md.meta", "pack.json", "photo.tid"]);
+    expect(islandFiles).toEqual(["note.md", "note.md.meta", "pack.json", "photo.png", "photo.png.meta"]);
   });
 });

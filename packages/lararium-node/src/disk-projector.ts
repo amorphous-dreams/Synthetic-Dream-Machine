@@ -44,7 +44,7 @@ import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdir
 import { dirname, basename } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
-import { isEffectRecordUri, KeyedCoalesceGate, carrierHash } from "@lararium/mesh";
+import { isEffectRecordUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, WindowServo } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -61,6 +61,14 @@ export interface LarDiskProjectorOptions {
    * only sites at `<uri-path><ext>` and writes the sidecar. Null skips the write.
    */
   readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
+  /**
+   * Resolve a POINTER's raw bytes from the local cid/ tier (the island's `resolveByCid`). A
+   * pointer carrier (`CarrierFile.pointerCid`) projects as the WHOLE FILE beside its `.meta`
+   * (THE BLOB LAW): the projector pulls the bytes here, verifies `sha256(bytes) == cid`, and
+   * writes them. Absent, or a tier miss, or a verify fault → the `.meta` lands alone and no
+   * content file is written or swept.
+   */
+  readonly resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
   /**
    * Report every bag that currently HOLDS a carrier (`composite.listBagsHolding`).
    * Gates the cross-mirror stale-unlink: a carrier still living in a bag — a
@@ -155,6 +163,7 @@ export class LarDiskProjector {
 
   private readonly mirrors: readonly BagMirrorConfig[];
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
+  private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
   private readonly debounceMs: number;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
@@ -166,6 +175,7 @@ export class LarDiskProjector {
   constructor(opts: LarDiskProjectorOptions) {
     this.mirrors      = opts.mirrors;
     this.carrierFileFn = opts.carrierFileFn;
+    this.resolveByCid = opts.resolveByCid;
     this.bagsHolding  = opts.bagsHolding;
     this.debounceMs   = opts.debounceMs ?? 1000;
     this.onRefusal    = opts.onRefusal;
@@ -388,14 +398,24 @@ export class LarDiskProjector {
     if (previous !== undefined && previous !== base) await this._unlinkSited(mirror, previous);
     this.sited.set(key, base);
     const relPath  = base + file.ext;
-    const output   = file.body;
     const metaBody = file.metaBody;
-    // A binary filetype (image/PDF) carries base64 text in `body`; the raw bytes
-    // land on disk. The Synced-tree observation + the ingest gesture BOTH hash the
-    // base64 string form (the carrier text), so the echo gate compares like with
-    // like; only the physical file holds decoded bytes.
     const isBinary  = file.encoding === "base64";
-    const writeBytes: string | Buffer = isBinary ? Buffer.from(output, "base64") : output;
+    // A POINTER carries no body: its raw bytes come from the local cid/ tier, verified by hash.
+    // The whole file lands beside the `.meta`; a miss or a fault lands the `.meta` alone (the
+    // content file neither written nor swept — a file the projector did not write is not its own).
+    let pointerBytes: Buffer | null = null;
+    if (file.pointerCid !== undefined) {
+      const got = this.resolveByCid ? await this.resolveByCid(file.pointerCid) : null;
+      if (got && sha256HexBytesSync(got) === file.pointerCid) pointerBytes = Buffer.from(got);
+      else if (got) console.error(`[disk-projector] pointer ${tiddlerUri}: cid/ bytes fail sha256 == ${file.pointerCid} — writing the .meta alone`);
+    }
+    const bodyPending = file.pointerCid !== undefined && pointerBytes === null;
+    // A binary filetype (image/PDF) carries base64 text in `body` (a pointer's bytes re-encode to
+    // it); the raw bytes land on disk. The Synced-tree observation + the ingest gesture BOTH hash
+    // the base64 string form (the carrier text), so the echo gate compares like with like; only
+    // the physical file holds decoded bytes.
+    const output   = pointerBytes ? (isBinary ? pointerBytes.toString("base64") : pointerBytes.toString("utf-8")) : file.body;
+    const writeBytes: string | Buffer = pointerBytes ?? (isBinary ? Buffer.from(output, "base64") : output);
 
     // The disk ward — sovereign-island write confinement (bag-paths). Cascade
     // output counts as untrusted; refusals surface LOUDLY, never silently.
@@ -419,13 +439,15 @@ export class LarDiskProjector {
     try {
       // The body-skip reads BYTES for a binary file (a utf8 read would mangle the
       // raw bytes and never match), else hashes the utf8 text against the carrier.
-      const bodyInSync = existsSync(candidate) && (isBinary
+      // A pending pointer body never compares — nothing to write, nothing to skip.
+      const bodyInSync = !bodyPending && existsSync(candidate) && (isBinary
         ? readFileSync(candidate).equals(writeBytes as Buffer)
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
         this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
         return;
       }
+      if (bodyPending && metaInSync) return;
     } catch { /* unreadable existing file — fall through to the write */ }
 
     this.writing.add(tiddlerUri);
@@ -433,12 +455,14 @@ export class LarDiskProjector {
       mkdirSync(dirname(candidate), { recursive: true });
       // Atomic write (§2 law): temp in the SAME dir + rename — no watcher or
       // editor ever observes a torn carrier; a crash leaves only a temp file.
-      this.atomicWrite(candidate, writeBytes);
+      // A pointer whose bytes the tier lacks writes no content file at all.
+      if (!bodyPending) this.atomicWrite(candidate, writeBytes);
       // The `.meta` sidecar carries the tiddler's fields for a content filetype;
       // it lands beside the body, atomic too, so a reader never pairs a fresh
       // body with a stale sidecar.
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
-      this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+      // The observation names the WHOLE carrier — a pending body leaves no observation to name.
+      if (!bodyPending) this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
       if (this.debugJson && this._tw5) {
         const jsonStr = (this._tw5.$tw.wiki as { getTiddlerAsJson?: (t: string) => string })
           .getTiddlerAsJson?.(tiddlerUri);

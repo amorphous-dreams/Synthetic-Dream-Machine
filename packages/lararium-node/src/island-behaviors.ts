@@ -48,6 +48,9 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // + a `.meta` sidecar). The VM registry decides type + bytes; the
   // projector only sites them.
   carrierFileFn: (uri) => { try { return Promise.resolve(exportCarrierFile(ctx.tw5, uri)); } catch { return Promise.resolve(null); } },
+  // A POINTER projects as the whole file beside its `.meta`: the bytes come from the same
+  // cid/ tier the lazy resolver reads (THE BLOB LAW, content-handle.ts).
+  ...(ctx.resolveByCid ? { resolveByCid: ctx.resolveByCid } : {}),
   // Every bag holding a carrier — the shadow-aware stale-unlink gate. A
   // working edit shadowing its canon copy keeps BOTH files; the canon mirror
   // (bags/slug) never loses its file just because the carrier surfaced in a

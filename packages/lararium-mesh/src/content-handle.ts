@@ -1,21 +1,32 @@
 /**
  * content-handle — the whole-carrier skinny handle (content-resolution.mem Scenario B).
  *
- * A body large enough to burst the CRDT MUST leave it. A CRDT carries convergence and causal
- * order well; it carries megabytes badly — a 16MB scalar-string field OOMs automerge on
- * sync-apply, and every peer that syncs the doc pays the whole weight. So an oversized RAW
- * shard (image/audio/text/binary — no memetic-wikitext wrapper) rests as a `cid/` CAS blob,
- * and the tiddler that stands in the CRDT becomes a SKINNY HANDLE: it names the body by
- * content-address + integrity, marks itself `_is_skinny`, and carries NO `text`. The read-side
- * `lazyLoad` resolver (TW5 `getTiddlerText` shore) rehydrates it on render — a later leg.
+ * THE BLOB LAW (blob-carriage.mem #/proposed-law, RULED 2026-09-11): a tiddler's `type` DECIDES
+ * its carriage; size DECIDES only the fault line.
+ *
+ *   1. KIND picks the shape. A body whose `type` registers `encoding: "base64"` in TW5's own
+ *      file-type registry — or carries the registry's `image` flag (a picture the wiki shows;
+ *      `image/svg+xml` rides here, and an author who wants an inline editable SVG declares
+ *      `text/xml`) — MUST ride as a POINTER: the bytes rest in the `cid/` tier, the tiddler in
+ *      the CRDT carries the reference and NO `text`. A utf8 body MUST ride INLINE.
+ *   2. SIZE stays a wall. A utf8 body past `SKINNY_CARRIER_THRESHOLD` faults at the island —
+ *      never a switch that skins it. No size floor reads on a binary.
+ *   3. ONE override. `_lar_cas: yes` (the operator's flag) pushes a text body to the `cid/`
+ *      tier on purpose (Scenario A's `#source-text` case); nothing else elects a pointer.
+ *   4. The CID hashes the RAW bytes (the gesture decodes a base64 carrier before it hashes), so
+ *      `_integrity` verifies the file on disk and a foreign verifier agrees.
+ *   5. The pointer for a base64 family carries NO `lar:` `_canonical_uri` — TW5's image widget
+ *      emits `_canonical_uri` as `src` before it lazy-loads, and `lar:` fetches nothing by law.
+ *      A `text/*` pointer keeps the `lar:` cid URI (the lazy path reads it).
+ *
+ * A CRDT carries convergence and causal order well; it carries megabytes badly — a 16MB
+ * scalar-string field OOMs automerge on sync-apply, and every peer that syncs the doc pays the
+ * whole weight. The read-side `lazyLoad` resolver (TW5 `getTiddlerText` shore) rehydrates a
+ * pointer on render.
  *
  * Publicity-plane addressing: the public plane (crossroads) rides a foreign-verifiable
  * `ni://` multihash (RFC-6920) — a stranger fetches AND verifies with no local context. The
- * private plane (catalog) would ride a ciphertext cid; the plane sets the mode. Only the
- * public leg travels this module today (the moved library lands in the crossroads bag).
- *
- * Scenario A (a blob-worthy `#source-text` ahu extracted from WITHIN a pono meme) shares the
- * SAME cid/ store + resolver; it differs only in the extraction boundary and is a later leg.
+ * private plane (catalog) rides a ciphertext cid; the plane sets the mode.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution
  */
@@ -25,77 +36,133 @@ import { cidUri, CROSSROADS_DOC_URI, CATALOG_DOC_URI } from "./lar-uris.js";
 import { niUriSha256FromHex } from "./crypto.js";
 
 /**
- * The whole-carrier skinny-handle threshold. Above it a raw body leaves the CRDT for the
- * cid/ tier; below it the body inlines (backward-compat, unchanged). Set well UNDER the
- * automerge scalar-string OOM wall (~16MB, the #51/Stage-2 birth) and well ABOVE any normal
- * carrier — a book goes skinny, a meme stays whole. Canon names the ~16KiB Iroh cutoff as the
- * north; held generous (1 MiB) until the read-side lazyLoad resolver lands, so only genuine
- * blobs go skinny while everything renderable stays inline.
+ * The utf8 FAULT wall. A utf8 body past it MUST leave the CRDT (the `_lar_cas` override) or the
+ * ingest faults, never materializing as an automerge scalar-string. Set well UNDER the automerge
+ * scalar-string OOM wall (~16MB, the #51/Stage-2 birth) and well ABOVE any normal carrier. The
+ * wall is the ONE size the house reads; a binary never reads it (kind already picked its shape).
  */
 export const SKINNY_CARRIER_THRESHOLD = 1024 * 1024; // 1 MiB
 
-/** Is a carrier body (its byte length) oversized for the CRDT? Names the hard inline
- *  wall — a body past it MUST leave the CRDT (a handle) or the ingest faults, never
- *  materializing as an automerge scalar-string. The opt-in-CAD backstop below sits far
- *  under this; this wall stays the last line against the OOM. */
+/** Is a utf8 carrier body (its byte length) past the fault wall? */
 export function isOversizedBody(byteLength: number): boolean {
   return byteLength > SKINNY_CARRIER_THRESHOLD;
 }
 
+/** One row of TW5's file-type registry: the byte encoding, the extensions, and the `image` flag. */
+export interface Tw5FileTypeRow {
+  readonly encoding:   "utf8" | "utf16le" | "base64";
+  readonly extensions: readonly string[];
+  readonly image?:     true;
+}
+
 /**
- * The opt-in-CAD BACKSTOP size floor (64 KiB). CAS-ing a body goes opt-in (the operator
- * flags `_lar_cas`); this floor only feeds the forgot-to-flag safety net below. Flag-primary:
- * the flag decides first, the backstop only catches an un-flagged shard.
+ * TW5's own file-type registry, transcribed row for row from `boot.js` `registerFileType` (the
+ * declaration the island's `$tw.config.contentTypeInfo` holds at runtime). The send side holds no
+ * `$tw`, so the table stands here, pure; the mesh test `content-handle-blob-law` reads the fork's
+ * `boot.js` and pins every row against it.
  */
-export const CAS_BACKSTOP_SIZE = 64 * 1024; // 64 KiB
+export const TW5_FILE_TYPES: Readonly<Record<string, Tw5FileTypeRow>> = {
+  "text/vnd.tiddlywiki":                { encoding: "utf8",    extensions: [".tid"] },
+  "application/x-tiddler":              { encoding: "utf8",    extensions: [".tid"] },
+  "application/x-tiddlers":             { encoding: "utf8",    extensions: [".multids"] },
+  "application/x-tiddler-html-div":     { encoding: "utf8",    extensions: [".tiddler"] },
+  "text/vnd.tiddlywiki2-recipe":        { encoding: "utf8",    extensions: [".recipe"] },
+  "text/plain":                         { encoding: "utf8",    extensions: [".txt"] },
+  "text/css":                           { encoding: "utf8",    extensions: [".css"] },
+  "text/html":                          { encoding: "utf8",    extensions: [".html", ".htm"] },
+  "application/hta":                    { encoding: "utf16le", extensions: [".hta"] },
+  "application/javascript":             { encoding: "utf8",    extensions: [".js"] },
+  "application/json":                   { encoding: "utf8",    extensions: [".json"] },
+  "application/pdf":                    { encoding: "base64",  extensions: [".pdf"], image: true },
+  "application/zip":                    { encoding: "base64",  extensions: [".zip"] },
+  "application/x-zip-compressed":       { encoding: "base64",  extensions: [".zip"] },
+  "image/jpeg":                         { encoding: "base64",  extensions: [".jpg", ".jpeg"], image: true },
+  "image/jpg":                          { encoding: "base64",  extensions: [".jpg", ".jpeg"], image: true },
+  "image/png":                          { encoding: "base64",  extensions: [".png"], image: true },
+  "image/gif":                          { encoding: "base64",  extensions: [".gif"], image: true },
+  "image/webp":                         { encoding: "base64",  extensions: [".webp"], image: true },
+  "image/heic":                         { encoding: "base64",  extensions: [".heic"], image: true },
+  "image/heif":                         { encoding: "base64",  extensions: [".heif"], image: true },
+  "image/avif":                         { encoding: "base64",  extensions: [".avif"], image: true },
+  "image/svg+xml":                      { encoding: "utf8",    extensions: [".svg"], image: true },
+  "image/vnd.microsoft.icon":           { encoding: "base64",  extensions: [".ico"], image: true },
+  "image/x-icon":                       { encoding: "base64",  extensions: [".ico"], image: true },
+  "application/wasm":                   { encoding: "base64",  extensions: [".wasm"] },
+  "font/woff":                          { encoding: "base64",  extensions: [".woff"] },
+  "font/woff2":                         { encoding: "base64",  extensions: [".woff2"] },
+  "font/ttf":                           { encoding: "base64",  extensions: [".ttf"] },
+  "font/otf":                           { encoding: "base64",  extensions: [".otf"] },
+  "audio/ogg":                          { encoding: "base64",  extensions: [".ogg"] },
+  "audio/mp4":                          { encoding: "base64",  extensions: [".mp4", ".m4a"] },
+  "video/ogg":                          { encoding: "base64",  extensions: [".ogm", ".ogv", ".ogg"] },
+  "video/webm":                         { encoding: "base64",  extensions: [".webm"] },
+  "video/mp4":                          { encoding: "base64",  extensions: [".mp4"] },
+  "audio/mp3":                          { encoding: "base64",  extensions: [".mp3"] },
+  "audio/mpeg":                         { encoding: "base64",  extensions: [".mp3", ".m2a", ".mp2", ".mpa", ".mpg", ".mpga"] },
+  "text/markdown":                      { encoding: "utf8",    extensions: [".md", ".markdown"] },
+  "text/x-markdown":                    { encoding: "utf8",    extensions: [".md", ".markdown"] },
+  "application/enex+xml":               { encoding: "utf8",    extensions: [".enex"] },
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { encoding: "base64", extensions: [".docx"] },
+  "application/msword":                 { encoding: "base64",  extensions: [".doc"] },
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { encoding: "base64", extensions: [".xlsx"] },
+  "application/excel":                  { encoding: "base64",  extensions: [".xls"] },
+  "application/vnd.ms-excel":           { encoding: "base64",  extensions: [".xls"] },
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": { encoding: "base64", extensions: [".pptx"] },
+  "application/mspowerpoint":           { encoding: "base64",  extensions: [".ppt"] },
+  "text/x-bibtex":                      { encoding: "utf8",    extensions: [".bib"] },
+  "application/x-bibtex":               { encoding: "utf8",    extensions: [".bib"] },
+  "application/epub+zip":               { encoding: "base64",  extensions: [".epub"] },
+  "application/octet-stream":           { encoding: "base64",  extensions: [".octet-stream"] },
+};
 
-const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".bmp", ".tif", ".tiff", ".avif"]);
-const AUDIO_EXT = new Set([".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".opus"]);
-const VIDEO_EXT = new Set([".mp4", ".webm", ".mov", ".mkv", ".avi", ".m4v"]);
+/** Extension → the LAST type registering it, in registry order — `registerFileType` assigns
+ *  `fileExtensionInfo[extension]` on every call (boot.js:553-563), so the later row owns the
+ *  extension (`.md` → `text/x-markdown`, `.mp4` → `video/mp4`, `.ogg` → `video/ogg`). */
+const EXT_TO_TYPE: ReadonlyMap<string, string> = (() => {
+  const m = new Map<string, string>();
+  for (const [type, row] of Object.entries(TW5_FILE_TYPES)) {
+    for (const ext of row.extensions) m.set(ext, type);
+  }
+  return m;
+})();
 
 /**
- * Classify a file extension to the media-type FAMILY the opt-in-CAD backstop reads. The
- * send side holds no `$tw`, so this stands a small dependency-free classifier: the known
- * binary media families map to `image/` · `audio/` · `video/`, and everything else reads
- * by byte-nature — a body that failed the utf8 round-trip rides `application/octet-stream`,
- * a utf8-clean body rides `text/plain`. TW5's structured text dialects (`.mem`/`.tid`/`.json`/
- * `.multids`) stay utf8-clean → `text/` → INLINE, so a meme or a pack still decomposes in the
- * CRDT (a bundle is inline by nature). The receive side re-reads `$tw.config` for the handle's
- * own `type`; both agree on the external families. A family-representative type suffices — the
- * backstop reads the family, never the exact subtype.
+ * Resolve a file extension to its TW5-registered media type — the send side's reading of the same
+ * registry the island's `$tw.config.fileExtensionInfo` holds. `.mem` reads the carrier type. An
+ * extension the registry lacks reads by byte-nature: a body that failed the utf8 round-trip rides
+ * `application/octet-stream` (a pointer), a utf8-clean body rides `text/plain` (inline).
  */
 export function mediaTypeFromExt(ext: string, binary = false): string {
   const e = ext.toLowerCase();
   if (e === ".mem") return CARRIER_TYPE;
-  if (IMAGE_EXT.has(e)) return "image/" + (e === ".jpg" ? "jpeg" : e === ".tif" ? "tiff" : e.slice(1));
-  if (AUDIO_EXT.has(e)) return "audio/" + e.slice(1);
-  if (VIDEO_EXT.has(e)) return "video/" + e.slice(1);
+  const registered = EXT_TO_TYPE.get(e);
+  if (registered) return registered;
   return binary ? "application/octet-stream" : "text/plain";
 }
 
+/** The media families that read as a pointer even where the registry lacks the subtype. */
+const POINTER_FAMILIES = ["image/", "audio/", "video/", "font/"] as const;
+
 /**
- * The un-flagged CAS backstop (content-resolution.mem, opt-in CAD). A body rides a persistent
- * handle WITHOUT the operator's `_lar_cas` flag only when it lands in an inherently-external
- * media family (image/audio/video/octet-stream — a binary shard never inlines pono), OR it runs
- * oversized-and-not-text. All text families (a meme, a pack, markdown) stay inline by preference.
+ * THE BLOB LAW's one question: does a body of this `type` ride as a POINTER? Yes when TW5's registry
+ * registers the type `base64` or flags it `image`; yes by family (`image/` · `audio/` · `video/` ·
+ * `font/`) for a subtype the registry lacks; no for every utf8 type — a meme, a pack, markdown, a
+ * `text/xml` SVG all inline. Size never enters.
  */
-export function casBackstopFires(byteLength: number, mediaType: string): boolean {
-  if (
-    mediaType.startsWith("image/") ||
-    mediaType.startsWith("audio/") ||
-    mediaType.startsWith("video/") ||
-    mediaType === "application/octet-stream"
-  ) {
-    return true;
-  }
-  return byteLength > CAS_BACKSTOP_SIZE && !mediaType.startsWith("text/");
+export function ridesAsPointer(mediaType: string): boolean {
+  const row = TW5_FILE_TYPES[mediaType];
+  if (row) return row.encoding === "base64" || row.image === true;
+  return POINTER_FAMILIES.some((f) => mediaType.startsWith(f));
 }
 
 /**
- * Build a whole-carrier skinny handle tiddler. The bytes rest in the cid/ tier (staged
- * send-side, keyed by `cid` = hex sha256); this record NEVER carries the body. Fields:
+ * Build a whole-carrier skinny handle tiddler — the POINTER. The bytes rest in the cid/ tier
+ * (staged send-side, keyed by `cid` = hex sha256 of the RAW bytes); this record NEVER carries
+ * the body. Fields:
  *   - `_is_skinny`     marks the lazyLoad boundary for the read-side resolver.
- *   - `_canonical_uri` the lar: content-address the media-src / resolver path reads.
+ *   - `_canonical_uri` the lar: content-address the lazy path reads — a `text/*` pointer ONLY.
+ *                      A base64-family pointer omits it: TW5's image widget would emit it as a
+ *                      dead `src` before the lazy branch fires (image.js:61-90).
  *   - `_integrity`     the RFC-6920 ni:// multihash — foreign-verifiable, algorithm-agile.
  *   - `textCid`        the CAS key the daemon `resolveByCid` reads (hex sha256).
  *   - `size`           the body's byte length (metadata; the body is elsewhere).
@@ -154,7 +221,7 @@ export function skinnyHandleTiddler(
   return {
     title,
     _is_skinny:     "yes",
-    _canonical_uri: cidUri(cid),
+    ...(mediaType && ridesAsPointer(mediaType) ? {} : { _canonical_uri: cidUri(cid) }),
     _integrity:     niUriSha256FromHex(cid),
     textCid:        cid,
     size:           String(size),

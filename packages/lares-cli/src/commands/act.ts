@@ -41,7 +41,7 @@ import { join, extname, resolve, relative, sep } from "node:path";
 import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { larRoot, vesselDid } from "../env.js";
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
-import { stageBodyToCas, carrierCasFlagged } from "../cas-stage.js";
+import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
 import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
@@ -254,8 +254,8 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       // TW5's own deserializer registry, keyed by extension). Only an empty /
       // whitespace-only file is skipped — it holds no carrier and would reject the
       // whole batch (the validator forbids an empty-text carrier). A binary
-      // filetype (image/PDF) rides base64 — the island stores it, the projector
-      // decodes it back to raw bytes; a text filetype rides utf8.
+      // filetype (image/PDF) rides base64 to the CAS stager, which decodes it and
+      // stages the raw bytes as a POINTER; a text filetype rides utf8.
       const carriers = paths
         .map((f) => { const r = readCarrierText(f); return { f, text: r.text, binary: r.binary }; })
         .filter(({ f, text }) => {
@@ -269,12 +269,14 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
           // Pair a `.meta` sidecar so a content filetype keeps its fields at the shore.
           let meta: string | undefined;
           try { if (existsSync(f + ".meta")) meta = readFileSync(f + ".meta", "utf8"); } catch { /* none */ }
-          // Opt-in CAD (content-resolution.mem): a small un-flagged body rides INLINE; a flagged
-          // (`_lar_cas`) or backstop-caught (binary / oversized-non-text) body stages to the corpus
-          // CAS and rides a skinny `textCid`, landing island-side as a handle (body stays in CAS).
+          // THE BLOB LAW (cas-stage.ts): a pointer-kind `type` (the `.meta` declaration first, else
+          // TW5's registry by extension) or the `_lar_cas` flag stages the body to the corpus CAS and
+          // rides a skinny `textCid`, landing island-side as a POINTER (body stays in CAS); a utf8 body
+          // under the wall rides INLINE.
           const ext = extname(f);
           const flagged = carrierCasFlagged(text, meta);
-          const staged = stageBodyToCas(text, { ext, flagged, binary });
+          const type = declaredType(meta);
+          const staged = stageBodyToCas(text, { ext, flagged, binary, ...(type ? { type } : {}) });
           return {
             size: staged.size, title: lociTitleForLoad(sourceUri, f, toBag), ext,
             ...(staged.staged ? { textCid: staged.cid } : { text }),

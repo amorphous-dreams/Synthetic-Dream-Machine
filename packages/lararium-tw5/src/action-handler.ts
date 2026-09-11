@@ -46,7 +46,7 @@ import {
   emptyLarDoc, mutableLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
   ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
-  skinnyHandleTiddler, isOversizedBody,
+  skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
 } from "@lararium/mesh";
 import type { VerbReactor, VerbTable } from "./verb-dispatcher.js";
@@ -551,9 +551,10 @@ export type CarrierResolver = (cid: string) => Promise<Uint8Array | null>;
  * Resolve a carrier's body to its `text` string. An inline `text` rides straight through
  * A `textCid` resolves from the corpus CAS via `resolveByCid`, then
  * re-verifies `cid == hash(bytes)` — the worker trusts CONTENT, never the host (Island
- * Sovereignty). The body round-trips byte-exact: the gesture staged `utf8Bytes(text)`,
- * so utf8-decoding the resolved bytes reproduces the same string (utf8 text or base64
- * body alike). Faults loud on an absent resolver, an absent blob, or a hash mismatch.
+ * Sovereignty). Only a NON-pointer carrier reaches here (a pointer lands by reference, never
+ * resolved), and such a carrier staged its `text` string as utf8 — so utf8-decoding the
+ * resolved bytes reproduces the same string. Faults loud on an absent resolver, an absent
+ * blob, or a hash mismatch.
  */
 async function resolveCarrierText(
   carrier: { readonly uri?: string; readonly title?: string; readonly text?: string; readonly textCid?: string },
@@ -641,17 +642,45 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
 const CARRIER_SOH = /<<\^[^&\n]*&#x(?:0001|0011);/;
 
 /**
- * Land a whole-carrier SKINNY HANDLE — the body stays in the cid/ tier; the CRDT keeps only
- * the reference (cid + integrity + metadata, NEVER the body). This is what keeps an oversized
+ * THE BLOB LAW's island-side wall: a standalone content carrier whose declared type (the `.meta`
+ * sidecar first, else TW5's registry by extension) rides as a POINTER never lands INLINE — its
+ * bytes belong in the cid/ tier and the gesture stages them. An island holds no CAS write, so an
+ * inline base64 body for a base64 family faults loud rather than materialize in the CRDT.
+ */
+function refuseInlinePointerKind(label: string, ext: string | undefined, meta: string | undefined, tw5: Tw5Deserializer): void {
+  const declared = meta ? tw5.parseFields(meta)["type"] : undefined;
+  const type = typeof declared === "string" && declared ? declared : tw5.contentTypeFromExt(ext ?? "");
+  if (type && ridesAsPointer(type)) {
+    throw new Error(`carrier ${label}: a ${type} body rides a POINTER, never inline — stage it to the cid/ tier (the gesture's cas-stage) and ride textCid + skinny`);
+  }
+}
+
+/**
+ * Land a POINTER — the whole-carrier skinny handle. The body stays in the cid/ tier; the CRDT
+ * keeps only the reference (cid + integrity + metadata, NEVER the body). This is what keeps a
  * body from materializing as a CRDT scalar-string and OOMing automerge on sync-apply. Never
- * resolves the bytes (the handle points; the read-side resolver rehydrates on render — a later
- * leg). content-resolution.mem Scenario B.
+ * resolves the bytes (the handle points; the read-side resolver rehydrates on render).
+ *
+ * The `.meta` sidecar's fields ride UNDER the pointer's own — TW5's folder-loader law (the
+ * sidecar merges over the deserialized record) read for a pointer: `type` from the sidecar wins
+ * over the extension's (a `.svg` declared `text/xml`, a `.bin` declared `image/png`), tags and
+ * custom fields survive, and the computed `textCid` · `_integrity` · `size` · `_is_skinny` win
+ * over any stale copy the sidecar carries (a projected `.meta` carries them as ordinary fields).
+ * THE BLOB LAW, content-handle.ts.
  */
 async function landSkinnyHandle(
   access: BagAccess, toBag: string, title: string, cid: string, size: number,
-  ext: string | undefined, changeId: string, o: ChangeOrigin, mediaType?: string,
+  ext: string | undefined, changeId: string, o: ChangeOrigin, tw5?: Tw5Deserializer, meta?: string,
 ): Promise<void> {
-  const tiddler = { ...skinnyHandleTiddler(title, cid, size, ext, mediaType), bag: toBag } as unknown as LarTiddlerRecord["tiddler"];
+  const metaFields: Record<string, unknown> = meta && tw5 ? { ...tw5.parseFields(meta) } : {};
+  delete metaFields["title"];
+  delete metaFields["text"];
+  const declared = typeof metaFields["type"] === "string" && metaFields["type"] ? (metaFields["type"] as string) : undefined;
+  const mediaType = declared ?? tw5?.contentTypeFromExt(ext ?? "");
+  const handle = skinnyHandleTiddler(title, cid, size, ext, mediaType);
+  // A sidecar's `_canonical_uri` never survives onto a base64-family pointer (the handle omits it by law).
+  if (!("_canonical_uri" in handle)) delete metaFields["_canonical_uri"];
+  const tiddler = { ...metaFields, ...handle, bag: toBag } as unknown as LarTiddlerRecord["tiddler"];
   await writeIn(access, toBag, { tiddler, meta: { changeId } }, o);
 }
 
@@ -671,7 +700,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (carrier.skinny && carrier.textCid) {
       const title = carrier.title;
       if (!title) throw new Error("LOAD: a skinny carrier needs a title (its loci URI) — the handle names the body");
-      await landSkinnyHandle(access, action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5?.contentTypeFromExt(carrier.ext ?? ""));
+      await landSkinnyHandle(access, action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
       titles.push(title);
       continue;
     }
@@ -681,7 +710,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // Defense in depth: an un-flagged body that STILL resolves oversized leaves the CRDT
     // (never OOM the doc), provided it names a cid to point at and carries no memetic wrapper.
     if (carrier.textCid && !CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length) && carrier.title) {
-      await landSkinnyHandle(access, action.toBag, carrier.title, carrier.textCid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5?.contentTypeFromExt(carrier.ext ?? ""));
+      await landSkinnyHandle(access, action.toBag, carrier.title, carrier.textCid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
       titles.push(carrier.title);
       continue;
     }
@@ -705,6 +734,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       // The `.meta` sidecar merges OVER the first record AFTER the deserialize — TW5's own
       // folder-loader law (`loadTiddlersFromFile`) — so the sidecar's `type` wins over the
       // extension's and a content carrier keeps its type/tags/custom fields.
+      refuseInlinePointerKind(carrier.title ?? "(carrier)", carrier.ext, carrier.meta, tw5);
       const baseFields: Record<string, unknown> = carrier.title ? { title: carrier.title } : {};
       fieldsList = tw5.deserialize(carrier.ext || "text/plain", carrierText, baseFields);
       if (carrier.meta && fieldsList.length > 0) {
@@ -804,7 +834,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         results.push({ uri, decision: "noop", reason: "cid-matches-current" });
         continue;
       }
-      await landSkinnyHandle(access, action.toBag, uri, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5?.contentTypeFromExt(carrier.ext ?? ""));
+      await landSkinnyHandle(access, action.toBag, uri, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
       results.push({ uri, decision: "ingest", grade: "clean", skinny: true });
       continue;
     }
@@ -822,7 +852,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         results.push({ uri, decision: "noop", reason: "cid-matches-current" });
         continue;
       }
-      await landSkinnyHandle(access, action.toBag, uri, carrier.textCid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5?.contentTypeFromExt(carrier.ext ?? ""));
+      await landSkinnyHandle(access, action.toBag, uri, carrier.textCid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
       results.push({ uri, decision: "ingest", grade: "clean", skinny: true });
       continue;
     }
@@ -888,6 +918,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // deserialize: a DICTIONARY bundle (`.multids`) takes the base title as a member-title PREFIX
       // (boot.js:1719), which would corrupt every member. Titles come from the content; a title-less
       // SINGLE carrier falls back to the loci URI below.
+      refuseInlinePointerKind(uri, carrier.ext, carrier.meta, tw5!);
       const metaFields: Record<string, unknown> = carrier.meta ? { ...tw5!.parseFields(carrier.meta) } : {};
       delete metaFields["title"];
       const fieldsList = tw5!.deserialize(carrier.ext || "text/plain", carrierText, {});
