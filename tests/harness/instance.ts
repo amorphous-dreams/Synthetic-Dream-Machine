@@ -127,7 +127,14 @@ export interface StageOptions {
 /** The default rite: a place, then a face. */
 async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
   // Genesis — `lares vessel clear --force` seeds the root (init runs inside).
-  const reset = await cli(["vessel", "clear", "--root", root, "--force"]);
+  //
+  // ── A WITNESS BUILDS NOTHING ──────────────────────────────────────────────────────────────────
+  // `vessel` doors carry a freshness gate that rebuilds the whole workspace (`pnpm -r build`) when any
+  // source under `packages/` moved since the last stamp — re-emitting every dist, re-rendering the
+  // engine, and writing into the shared tree beside whoever else is building there. A staged boot
+  // measures the dist that STANDS: the suite names the missing dist on stderr and skips; it never
+  // rebuilds. `--skip-build` is the gate's own sentinel for "already fresh — run the handler".
+  const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
   if (reset.code !== 0) throw new Error(`staged reset failed (${reset.code}):\n${reset.stderr.slice(-800)}`);
 
   // ── THE RITE RUNS IN TWO STEPS, SO THE HARNESS PERFORMS BOTH ───────────────────────────────

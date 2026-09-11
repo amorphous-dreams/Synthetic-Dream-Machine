@@ -64,6 +64,9 @@ export interface ResolveBindingArgs {
   /** The face-delegation road. Under a veil-born founding the vessel never knows the group agent, so
    *  the caller injects the veil road (vessel→veil→group); absent, the direct delegate runs. */
   readonly delegateToFace?: (bagUrl: string, access: "read" | "admin") => Promise<void>;
+  /** Whether the face the vessel pins holds a SEAT the delegating identity can name. Absent → seated. A
+   *  joinee admitted by edge alone answers false until a face-join lands its membership events. */
+  readonly faceSeated?: () => Promise<boolean>;
   /**
    * PersonaGroup AGENT Identifier hex (getAgent-resolvable) — the delegation
    * audience. NOT the group's DocumentId (that is the membership-check target).
@@ -123,7 +126,12 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   // gate exposes only read | admin, so edit-intent rounds UP to admin as documented interim debt
   // (marginal authority ≈ 0; every PersonaGroup device already holds admin on the daemon bag).
   // Adopt "edit" the moment the gate accepts it. Debt: causal-islands.md.
-  if (args.personaGroupAgentIdHex) {
+  // A PIN IS STANDING; A SEAT IS CAPABILITY. A vessel admitted by edge alone pins the group's agent id and
+  // holds no seat in the group yet — its veil cannot name that agent, and a delegation to it throws. The
+  // binding then stays on the vessel's own key, the same posture a faceless vessel holds, and the record
+  // says so; a seat landing later re-grants the vessel's registered bags, never a binding minted before it.
+  const seated = args.personaGroupAgentIdHex ? await (args.faceSeated?.() ?? Promise.resolve(true)) : false;
+  if (args.personaGroupAgentIdHex && seated) {
     if (args.delegateToFace) {
       await args.delegateToFace(handle.url, "admin");
     } else {
@@ -145,6 +153,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     "recipe-trace": canonicalJson(args.recipeTrace),
     "minted-on":   new Date().toISOString(),
     "minted-by":   args.mintedByHex,
+    "face-reach":  seated ? "face" : "vessel-only",
   }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 
   return { url: handle.url, minted: true };

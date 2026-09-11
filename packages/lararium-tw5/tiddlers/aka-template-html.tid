@@ -7,6 +7,6 @@ type: text/vnd.tiddlywiki
     <$list filter="[<_aka-has-thumb>match[yes]]" variable="_t"><img class="lar-aka-thumb" src={{!!thumbnail}} alt=""/></$list>
     <$link to=<<currentTiddler>>><$text text=<<currentTiddler>>/></$link>
   </summary>
-  <div class="lar-aka-body"><$transclude $tiddler=<<currentTiddler>> mode="block"><$fill $name="ts-missing"><span class="lar-aka-empty"/></$fill></$transclude></div>
+  <div class="lar-aka-body"><$transclude $tiddler=<<currentTiddler>> $mode="block"><$fill $name="ts-missing"><span class="lar-aka-empty"/></$fill></$transclude></div>
 </details>
 </$set>

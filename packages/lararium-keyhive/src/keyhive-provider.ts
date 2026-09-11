@@ -558,6 +558,16 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * Whether this provider can name an agent (by Identifier hex) — a delegation to an unknown audience
+   * throws, so a caller deciding WHETHER to delegate reads this first. A group agent reads known only
+   * once its membership events reached this provider (the seat), never from the pinned id alone.
+   */
+  async knowsAgent(agentIdentifierHex: string): Promise<boolean> {
+    const agent = await this.requireKh().getAgent(new KH.Identifier(hexToBytes(agentIdentifierHex)));
+    return agent !== undefined && agent !== null;
+  }
+
+  /**
    * Return the operator vessel's IndividualId as a hex Identifier string.
    * Used during init to wire the founding vessel into the PersonaGroup sentinel.
    */

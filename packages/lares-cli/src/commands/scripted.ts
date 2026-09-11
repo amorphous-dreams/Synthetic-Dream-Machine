@@ -13,11 +13,28 @@ import type { ParsedArgs } from "../parse-args.js";
 
 const NODE_PKG = join(REPO_ROOT, "packages", "lararium-node");
 
-export async function cmdBake(args: ParsedArgs): Promise<number> {
+/** What a bake runs: the genesis script, and the dir it writes into. */
+export interface BakePlan {
+  readonly script: string;
+  readonly env: Readonly<Record<string, string>>;
+}
+
+/**
+ * The bake reads the PLUGIN THAT STANDS. `build-genesis-island.ts` packs the engine and the packed
+ * plugin in `packages/lararium-tw5/plugins/` into the genesis island and fails loud when the blob is
+ * absent; building that blob belongs to the build (`pnpm build`, `vessel rite refresh`), never to a
+ * founding. A bake that rebuilt the plugin would write into the shared tree on every staged boot,
+ * beside whoever else is building there.
+ */
+export function bakePlan(args: ParsedArgs): BakePlan {
   // Genesis is corpus-relative — larRoot() (LAR_ROOT ?? repoRoot), NOT the vessel home.
   const genesisDir = args.options["genesis"] ?? join(larRoot(), "genesis");
-  const env = { ...process.env, LAR_GENESIS: genesisDir };
-  return runCommand("pnpm", ["--filter", "@lararium/node", "build:genesis"], REPO_ROOT, env);
+  return { script: join(NODE_PKG, "scripts", "build-genesis-island.ts"), env: { LAR_GENESIS: genesisDir } };
+}
+
+export async function cmdBake(args: ParsedArgs): Promise<number> {
+  const plan = bakePlan(args);
+  return runTsxScript(plan.script, [], { ...process.env, ...plan.env });
 }
 
 export async function cmdTestQuine(_args: ParsedArgs): Promise<number> {

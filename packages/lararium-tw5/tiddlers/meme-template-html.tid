@@ -1,0 +1,24 @@
+title: lar:///ha.ka.ba/lararium/templates/meme/html
+type: text/vnd.tiddlywiki
+
+\define tv-wikilink-template() $uri_doubleencoded$.html
+\define tv-config-static() yes
+\define tv-config-toolbar-icons() no
+\define tv-config-toolbar-text() no
+\define tv-config-toolbar-class() tc-btn-invisible
+\import [subfilter{$:/core/config/GlobalImportFilter}]
+`<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="generator" content="TiddlyWiki" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>`<$view field="caption"><$view field="title"/></$view>`</title>
+</head>
+<body class="tc-body">
+<section class="tc-story-river tc-static-story-river">
+`<$view tiddler="lar:///ha.ka.ba/lararium/templates/meme/html/root" format="htmlwikified"/>`
+</section>
+</body>
+</html>
+`

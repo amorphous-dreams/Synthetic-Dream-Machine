@@ -13,7 +13,11 @@
  *   put --base (stale)   → conflict; nothing moves  (the CONTROL — a door only shown saying yes is no door)
  *   project --to md      → the submission pair beside `--out`
  *   project --to mem     → the canonical carrier, byte-equal to `get`
- *   project --to html    → RED CONTRACT: the core static template reaches `window` inside the island VM
+ *   project --to html    → a document, rendered from the anchor through the house html template
+ *
+ * THE SHARED TREE STAYS STILL. A staged boot bakes its genesis INTO ITS ROOT from the plugin that
+ * stands; it never rebuilds the plugin beside a parallel writer. The suite snapshots `git status` over
+ * the plugin package and the sealed `genesis/` before the vessel stands and reads it back after.
  *
  * SKIPS LOUDLY: a witness that cannot spawn its vessel names what is missing on stderr and skips. It
  * never passes on silence. Staged only — a live hearth is never written to by a test.
@@ -22,6 +26,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { targetInstance, awaitRendezvous, type LarInstance } from "../harness/instance.js";
 
@@ -64,11 +69,16 @@ function missing(): string[] {
 /** What a call answered, both streams — `--json` carries the refusal on stdout. */
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 
+/** What the shared tree reads as, over the paths a staged boot must never touch — tracked and untracked alike. */
+const sharedTree = (): string =>
+  execFileSync("git", ["status", "--short", "--untracked-files=all", "--", "packages/lararium-tw5", "genesis"], { cwd: REPO_ROOT, encoding: "utf8" });
+
 const gaps = missing();
 if (gaps.length > 0) console.error(`meme-live-contact: SKIPPED — missing ${gaps.join("; ")}`);
 
 let lar: LarInstance;
 let scratch = "";
+const treeBefore = gaps.length > 0 ? "" : sharedTree();
 
 describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", () => {
   beforeAll(async () => {
@@ -176,12 +186,19 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(r.stdout).toBe(got.stdout);
   });
 
-  test.fails("RED CONTRACT: project --to html from the anchor — TW5's static.tiddler.html template reaches `window` inside the island VM (renders on a plain server; needs a fake-DOM-safe house template in the island)", async () => {
+  test("project --to html from the anchor → a document through the house template, inside the island", async () => {
     // html renders from the anchor alone, so the meme lands there first — the anchor's own put.
     const put = await lar.cli(["meme", "put", URI, "--file", join(scratch, "ab.mem"), "--json"]);
     expect(put.code, said(put)).toBe(0);
     const r = await lar.cli(["meme", "project", URI, "--to", "html", "--no-json"]);
     expect(r.code, said(r)).toBe(0);
     expect(r.stdout.trimStart().toLowerCase().startsWith("<!doctype html")).toBe(true);
+    expect(r.stdout).toContain("tc-story-river");
+    expect(r.stdout).toMatch(/<h1[^>]*>a<\/h1>/);
+  });
+
+  test("★ the staged boot wrote nothing into the shared tree — its genesis baked into its own root ★", () => {
+    expect(existsSync(join(lar.root, "genesis", "island.genesis.json"))).toBe(true);
+    expect(sharedTree()).toBe(treeBefore);
   });
 });

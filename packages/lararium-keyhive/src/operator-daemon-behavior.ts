@@ -643,6 +643,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         fingerprint, repo: ctx.repo, daemonStore: ctx.composite, keyhive: kh,
         ...(daemonAuth.personaGroupAgentIdHex ? { personaGroupAgentIdHex: daemonAuth.personaGroupAgentIdHex } : {}),
         ...(veilKh ? { delegateToFace: (bagUrl: string, access: "read" | "admin") => delegateToFaceViaVeil(bagUrl, access) } : {}),
+        // The veil seats the face; an edge-only admit pins the agent id the veil has never met. Read the seat
+        // off the veil's own registry so a binding never delegates to an agent it cannot name.
+        faceSeated: async () => {
+          const agent = daemonAuth.personaGroupAgentIdHex;
+          if (!agent) return false;
+          const seated = await (veilKh ?? kh!).knowsAgent(agent);
+          if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
+          return seated;
+        },
         mintedByHex, recipeTrace,
       } as const;
       const personal = await resolveOrMintBinding({ ...common, kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX });

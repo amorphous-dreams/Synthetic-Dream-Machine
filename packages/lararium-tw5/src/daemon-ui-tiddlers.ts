@@ -60,7 +60,7 @@ export const PROJECT_ACTION =
 
 /** 1. The parallel-cap wrapper switch — shows the surface tiddler $:/lares/surface
  *  names, defaulting to the Working Surface. Driven by state, not by $:/tags/Layout. */
-const WRAPPER_BODY = `<$transclude $tiddler={{{ [{${LARES_SURFACE_STATE}}has[text]] ~[[${WORKING_TITLE}]] }}} mode="block"/>`;
+const WRAPPER_BODY = `<$transclude $tiddler={{{ [{${LARES_SURFACE_STATE}}has[text]] ~[[${WORKING_TITLE}]] }}} $mode="block"/>`;
 
 /** 2. The Working Surface — composes the wiki-switcher (live list + pin flags +
  *  on-select) TOGETHER WITH the recipe view/edit surface. */

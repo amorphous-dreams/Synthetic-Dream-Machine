@@ -35,7 +35,7 @@ const PLUGIN_TID = path.join(PKG, "dist-plugin/lares-memetic-wikitext.tid");
 const URI = "lar:///t/x";
 const meme = (slots: readonly string[]): string =>
   `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
-  slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
 
 /** A port the OS hands out free right now. */
@@ -123,7 +123,7 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(get.status).toBe(200);
     expect(get.headers.get("content-type")).toMatch(/memetic-wikitext/);
     expect(get.headers.get("etag")).toBe(put.headers.get("etag"));
-    expect(get.body).toContain("<<~ ahu #b>>");
+    expect(get.body).toContain("<<~ ahu #/b>>");
   });
 
   test("★ PUT over a STALE If-Match → 412 and nothing changed ★", async () => {
@@ -245,7 +245,7 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
       "--render", `[[${URI}]]`, "x.md", "text/plain", `${T}/md`,
       "--render", `[[${URI}]]`, "x.md.meta", "text/plain", `${T}/md.meta`,
       "--render", "lar:///ha.ka.ba/lararium/exporters/memetic-wikitext", "export.mem", "text/plain", "", "exportFilter", `[[${URI}#/a]]`,
-      "--render", `[[${URI}]]`, "x.html", "text/plain", "$:/core/templates/static.tiddler.html",
+      "--render", `[[${URI}]]`, "x.html", "text/plain", `${T}/html`,
     ], { encoding: "utf8" });
     expect(ran.status, ran.stderr).toBe(0);
     const out = (name: string): string => readFileSync(path.join(renderWiki, "out", name), "utf8");
@@ -262,8 +262,9 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(out("x.md")).toBe(pair.markdown);
     expect(out("x.md.meta")).toBe(pair.meta);
     expect(out("x.md")).toContain("# a");
-    // html: TiddlyWiki's own static render of the root.
+    // html: the house static render of the root — the same template the island renders through.
     expect(out("x.html")).toMatch(/^<!doctype html>/);
     expect(out("x.html")).toContain("tc-story-river");
+    expect(out("x.html")).toMatch(/<h1[^>]*>a<\/h1>/);
   }, 60_000);
 });

@@ -15,13 +15,19 @@ module-type: library
  * ── THE TARGETS ─────────────────────────────────────────────────────────────────────────────────
  *   mem   the recomposed carrier (`expandMemeRefs`) — children spliced whole, the block check adjacent
  *   md    the submission pair (`projectSubmission`) — a markdown body and its `.md.meta` sidecar
- *   html  TiddlyWiki's own static render of the root (`$:/core/templates/static.tiddler.html`)
+ *   html  the house static render of the root (`lar:///ha.ka.ba/lararium/templates/meme/html`) — the
+ *         core's static frame around the root's title and body ALONE. The core's own
+ *         `static.tiddler.html` renders the `$:/tags/ViewTemplate` cascade, and a vended view template
+ *         (the streams plugin's) reaches `window` through a browser-platform library, which no worker
+ *         holds. A meme projects itself, never the wiki's UI cascade, so one template renders the same
+ *         in the island, the browser and a plain server.
  *   tid   TiddlyWiki's own `.tid` serializer over the root record (`$:/core/templates/tid-tiddler`)
  *   json  TiddlyWiki's own JSON serializer over the root record (`$:/core/templates/json-tiddler`)
  *
  * `mem` and `md` are laws over the carrier TEXT, so `projectCarrierText` answers them with no wiki —
  * a store-backed sink (a named bag, a recipe's designated bag) projects through it. `html`, `tid` and
- * `json` render through the wiki that holds the records and reach only a live `$tw.wiki`.
+ * `json` render through the wiki that holds the records and reach only a live `$tw.wiki`; `tid` and
+ * `json` stay on TiddlyWiki's own serializers.
  *
  * An unknown target throws, naming the targets: a filter that answered empty would read exactly like
  * a meme that projected to nothing.
@@ -42,6 +48,7 @@ export const MEME_TEMPLATE = {
   mem:      "lar:///ha.ka.ba/lararium/templates/meme/mem",
   md:       "lar:///ha.ka.ba/lararium/templates/meme/md",
   "md.meta": "lar:///ha.ka.ba/lararium/templates/meme/md.meta",
+  html:     "lar:///ha.ka.ba/lararium/templates/meme/html",
 } as const;
 
 export interface ProjectRoute {
@@ -56,7 +63,7 @@ export interface ProjectRoute {
 export const PROJECT_TARGETS: Readonly<Record<ProjectTarget, ProjectRoute>> = {
   mem:  { template: MEME_TEMPLATE.mem, contentType: CARRIER_TYPE },
   md:   { template: MEME_TEMPLATE.md, contentType: "text/markdown", sidecar: MEME_TEMPLATE["md.meta"] },
-  html: { template: "$:/core/templates/static.tiddler.html", contentType: "text/html" },
+  html: { template: MEME_TEMPLATE.html, contentType: "text/html" },
   tid:  { template: "$:/core/templates/tid-tiddler", contentType: "application/x-tiddler" },
   json: { template: "$:/core/templates/json-tiddler", contentType: "application/json" },
 };
