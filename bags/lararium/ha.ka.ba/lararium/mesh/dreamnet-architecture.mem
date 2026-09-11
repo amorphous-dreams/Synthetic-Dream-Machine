@@ -128,6 +128,8 @@ The Amorphous Dreams Cabal holds ''kahu'' at this layer: guardian of the protoco
 
 ''The engine epoch adopts on a HYBRID authority.'' Rolling `hearthTrueName` forward (the kāhuli roll) advances the engine TOGETHER across the mesh, yet RATIFY and ADOPT part hands. ''Infrastructure operators'' — those who pull the packages or build the engine from raw — ratify and adopt the epoch, the kahu quorum ratifying the mesh-wide roll. ''Device users'' — vessels seeded from another node, running devices rather than infrastructure — ADOPT what their seeding node offers and NEVER ratify. A device takes the epoch downstream from its seeding node's offer; an infra-operator's ratification is the act that seats it (the seated engine-update authority, <<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>).
 
+''Grammar drift alone does not separate Nexuses — the engine epoch binds who-can-talk.'' Membership rides `hearthTrueName` = `engineCid`, signed into every device-delegation edge, so two operators on one engine differ in grammar without schisming; only a DIFFERENT engine reaches the disjoint-station-set break (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-real-mover">>).
+
 <<~/ahu>>
 
 <<~ ahu #/the-nexus-parse>>
@@ -481,6 +483,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xZaczKfqn8uwVL-Mk374HZNGIqdqQBU6Rrqb4AiHEQk
+<<^ code="&#x0003;">>ni:///sha-256;hjj3RlDA1QmT4i5ag0BV65tlmEH2Nu0bxfuB4V_WDDY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -168,6 +168,8 @@ Let's Encrypt ended expiration notices in 2025 and ''deleted the stored subscrib
 * A person's standing NEVER rides a name under these zones. Carry a host-scoped address as ''identity'' rather than as ''address'' and the arrangement repeats the failure the field has already measured — the domain owner comes to hold every identity on it.
 * Withholding a name withholds a signpost. Every key, byte, and peer relation survives it, so ''no delegation makes a landlord''.
 
+''A SEALED NEXUS IS ISOLATED ON TWO ORTHOGONAL CUTS, and severable on both.'' INFRA/carriage — no signed PEER/TRANSIT leyline to any other Nexus (carriage is deliberately signed, never auto-proposed). Content/read — a private membership plane with no public @crossroads face. It loses no self by having neither, because rendezvous ≠ identity: no seizable object stands. ''Interop comes later cheaply'' — opening a leyline signs one carriage contract and `#has-NOT {read}` survives it; across a DIFFERENT engine two Nexuses interoperate only at the content-address floor, since a blob still hashes to its CID whatever its age (the disjoint-station-set floor, #dreamnet-architecture, epoch-binding-surfaces#/the-real-mover).
+
 The two-name design carries its own answer to the concentration it creates: ''each Nexus can resolve for the other's attestations''. That costs nothing to arrange now and stops being arrangeable once either name carries load alone.
 
 ''AND THE UNDER-OUR-NAME / THEIR-OWN-NAME FORK DISSOLVES.'' Seat identity in the ''node key'' and bind it bidirectionally to whatever name an operator presents, and the two roads stop competing: an operator takes a name under a Nexus as a zero-friction on-ramp and swaps to their own domain later ''losing nothing''. Every surviving system built exactly that, and every system that skipped it has resisted retrofit for years — a host-scoped identity proposal open since 2018 and still draft, a migration path that carries followers and loses posts, media, blocks and bookmarks.
@@ -216,6 +218,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;shthSZXlmUnuwJA_Qu79KkIw7QgZDvHTs4Tt9Bb92Sg
+<<^ code="&#x0003;">>ni:///sha-256;R_Gz7TWLMfFCplBZ-bsDYvK7Cfbw4JC5-ibqJBuT8Z4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -197,6 +197,13 @@ stands, every delegation edge still verifies, and no confederation shifts. Keepi
 apart is what lets operators differ without schisming — a grammar each promotes on their own choice,
 a corpus each edits live, an engine all share by hash.
 
+''INVARIANT: grammar drift alone does not separate Nexuses — the ENGINE epoch binds who-can-talk.''
+Two operators on the SAME engine and DIFFERENT grammars still interoperate, because the grammar
+composes per-operator and never touches the `hearthTrueName` each device-delegation edge signed. Only
+a DIFFERENT engine reaches the disjoint-station-set break below (no transformation, only translation by
+assertion). The engine epoch is the slow ratchet that binds membership; the grammar rejim never
+determines who-can-talk.
+
 ''THE SHAPE OF THE ERROR, kept as the useful part.'' Two CIDs sat side by side in one manifest, so the meme
 read adjacency as conjunction and promoted a local witness to a federation criterion. ''A field's PRESENCE
 in a structure never names its ROLE'' — only a reader that follows it to a comparison learns that, and this
@@ -236,6 +243,6 @@ are acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Nj1Tm8iOfa4UZROEGnsoPEPAGgDamoc888xeDvpH5ew
+<<^ code="&#x0003;">>ni:///sha-256;6umb6iwm_H9TS0YrOxCua4AFJjArehfiir-wV5x3W3w
 
 <<^ code="&#x0004;" -> to="?">>
