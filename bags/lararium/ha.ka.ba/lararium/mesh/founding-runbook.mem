@@ -1140,7 +1140,7 @@ lares vessel read                                         # read the vessel veri
 ''② On the standing hearth'' — sign an edge over the key the joinee showed:
 
 ```
-lares device-admit --as 0 --joinee-key <hex>         # signs a device-delegation edge; writes the payload
+lares device-admit --joinee-key <hex>                # signs a device-delegation edge under the bootstrap's founder root; writes the payload
 ```
 
 ''③ On the joining vessel'' — apply the signed payload:
@@ -1442,6 +1442,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CaOE103nZkmcN2vI2HnvwrXjxJr6GSPj-cVLTvOcE2w
+<<^ code="&#x0003;">>ni:///sha-256;HLCxcTWToTW4GZ3xeBWb-OHicBiYQq4G62GKh5xHWdM
 
 <<^ code="&#x0004;" -> to="?">>
