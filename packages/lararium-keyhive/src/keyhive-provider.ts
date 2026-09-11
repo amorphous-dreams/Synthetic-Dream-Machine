@@ -184,9 +184,24 @@ export class KeyhiveProvider implements CapabilityProvider {
     // sealed to its earlier prekeys) MUST restore from its Archive — which carries the prekey SECRETS and the
     // stable card — or a fresh init orphans them and the shared content reads "Key not found". Absent an
     // archive, mint a fresh identity (the founding path, and every not-yet-admitted vessel).
-    this.kh = opts.archiveBytes
-      ? await new KH.Archive(opts.archiveBytes).tryToKeyhive(store, signer, handler)
-      : await KH.Keyhive.init(signer, store, handler);
+    if (opts.archiveBytes) {
+      try {
+        this.kh = await new KH.Archive(opts.archiveBytes).tryToKeyhive(store, signer, handler);
+      } catch (err) {
+        // The seal already validated these bytes on unseal (a wrong/absent key throws earlier, at the GCM
+        // tag), so a decode failure HERE is a keyhive-version FORMAT skew — the prior identity is unrecoverable
+        // under this build regardless. Re-mint fresh rather than brick a lit vessel WHEN the caller opts in;
+        // otherwise keep the fail-loud default.
+        if (!opts.reMintOnUnreadableArchive) throw err;
+        console.warn(
+          `[keyhive] the at-rest archive is UNREADABLE under this build (${String((err as Error)?.message ?? err).slice(0, 80)}) — ` +
+          `standing a FRESH keyhive identity; the prior identity is unrecoverable across this format skew`,
+        );
+        this.kh = await KH.Keyhive.init(signer, store, handler);
+      }
+    } else {
+      this.kh = await KH.Keyhive.init(signer, store, handler);
+    }
   }
 
   /**

@@ -49,6 +49,14 @@ export interface CapabilityProviderInitOpts {
    * the caller persists it ENCRYPTED-AT-REST.
    */
   readonly archiveBytes?: Uint8Array;
+  /**
+   * When `archiveBytes` decode as an UNREADABLE format (a keyhive-version skew — `new Archive(bytes)` throws),
+   * stand a FRESH identity instead of throwing. Safe ONLY because the caller has already integrity-validated
+   * the bytes upstream (the at-rest GCM seal unsealed cleanly), so a decode failure here is format-incompatible,
+   * never corrupt or wrong-key. The daemon boot opts in so a keyhive bump cannot brick a lit vessel; the default
+   * stays fail-loud (never boot fresh over a sealed archive on a wrong/absent key — that guard lives at unseal).
+   */
+  readonly reMintOnUnreadableArchive?: boolean;
 }
 
 /** Lightweight reference shape so this file doesn't depend on event-store.ts.

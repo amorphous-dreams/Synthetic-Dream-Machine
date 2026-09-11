@@ -77,6 +77,10 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   const keyhive = new KeyhiveProvider();
   await keyhive.init({
     seed: input.seed, eventStore: input.eventStore,
+    // A stale archive (written by an older keyhive, kept across a `clear` that preserves identity) must not
+    // brick a lit boot: a format skew re-mints fresh rather than fataling. Safe — the caller already unsealed
+    // (GCM-validated) these bytes, so an unreadable decode here is version-incompatible, never a wrong key.
+    reMintOnUnreadableArchive: true,
     ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}),
   });
 
