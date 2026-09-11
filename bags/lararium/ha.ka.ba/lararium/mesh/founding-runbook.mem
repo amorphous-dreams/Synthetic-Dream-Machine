@@ -566,16 +566,20 @@ root sits behind it on purpose. The Nexus SEAL sits behind it too, in its own ho
 against a lineage already past genesis (//advance it with rotate, never re-seat//), and the operator holds a
 fresh vessel that cannot seal.
 
-''⚠ A RE-PAVE MUST CUT IDENTITY, not merely `clear`.'' A plain `lares vessel clear --force` ALONE — the
-`rm -rf identity` skipped, so the keyhive identity + archive are PRESERVED — stands the faceless floor
-fine but ''FATALS THE LIT BOOT'': `audience not known to this provider — exchange contact cards first`, at
-the veil delegate, because a fresh persona set minted against a PRESERVED keyhive identity leaves the
-vessel↔veil grant un-established across the pave. The founder's own seat re-hydrates correctly through
-every reboot shape (`veil-founder-seat-survives-reboot`), so this is NOT a seat-hydration gap — it is the
-identity-preserving pave itself. ''So the fresh-from-void `rm -rf identity` cut above is MANDATORY on a
-re-pave'', never merely the way to "discard the prior identity": it is what keeps the vessel lit-bootable.
-A first founding meets an empty identity home and crosses it for nothing; a RE-pave that skips the cut
-crosses into a faceless floor it cannot lift.
+''⚠ A PRESERVING RE-PAVE ORPHANS THE VEIL ARCHIVE — now self-healed.'' A plain `lares vessel clear --force`
+ALONE — the `rm -rf identity` skipped, so the keyhive identity + `veil-archive.bin` are PRESERVED — wipes the
+daemon store but keeps the veil archive. The founder-veil key derives from a per-founding tag that lived only
+in the wiped store, so re-lighting the face mints a FRESH tag: the next lit boot loads the prior veil's
+ORPHANED archive under the new seed. This once SPLIT the provider — `whoami` read the archive's key while
+`contactCard` presented the seed's signer — and ''FATALLED the lit boot'' with `audience not known to this
+provider — exchange contact cards first` at the veil delegate. ''NOW it SELF-HEALS'': `KeyhiveProvider.init`
+compares the restored archive's `whoami` to the seed-derived identity and, on mismatch, discards the orphan
+and stands fresh from the seed (a loud log), re-hydrating membership — exactly what the `rm -rf identity` cut
+does, done automatically (`the-seed.decides.the-identity`). The founder's own seat re-hydrates through every
+reboot shape regardless (`veil-founder-seat-survives-reboot`). ''So the fresh-from-void `rm -rf identity` cut
+above stays the clean explicit keeper act'' — cutting the orphan by hand and re-minting the veil from a fresh
+founding — but it is ''no longer REQUIRED to avoid a fatal'': a plain re-pave stands lit, re-minting the veil
+under the same seed-derived personas.
 
 ''WHY THE SEAL HOMES THERE and not in the corpus.'' It reads as a FILE by ruling — an operator backs it up,
 hands it to a peer, reads it with their own eyes — and a file sited in the bags tree ''inherited that tree's
@@ -1453,6 +1457,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JLsBEgCF0C55fcNc-qsppyT_8BMquXCOLjDBXl8mbvs
+<<^ code="&#x0003;">>ni:///sha-256;S9DGxcG41UDUiRrz7GcELaSlNIv6Xd39waSuMTM8qbI
 
 <<^ code="&#x0004;" -> to="?">>
