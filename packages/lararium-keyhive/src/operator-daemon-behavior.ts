@@ -388,6 +388,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               addSentinelMember:        (a: string, d: string) => veil.addSentinelMember(a, d),
               delegate:                 async (args: { bagUrl: string; audience: string; access: "read" | "admin" }) =>
                 delegateToFaceViaVeil(args.bagUrl, args.access),
+              // The re-delegate re-keys the bag FORWARD only; the vessel holds the standing chunks it sealed and
+              // re-seals them at the re-keyed epoch, so a fresh seat reaches what the group held before it. The
+              // vessel is the holder because the vessel sealed the content — the same key that delegated the bag.
+              reSealBag:                (bagUrl: string) => vessel.reSealBag(bagUrl),
               eventsForPeer:            async (peer: string) => [
                 ...(await veil.eventsForPeer(peer)),
                 ...(await vessel.eventsForPeer(peer)),

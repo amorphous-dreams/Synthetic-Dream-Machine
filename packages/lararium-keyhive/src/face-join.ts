@@ -69,8 +69,22 @@ export interface FaceJoinGrant {
    * seat and opens nothing the group already carried. That shape looks identical to a healthy join from
    * every other angle, so the count rides out where a caller and a test can both see it rather than being
    * inferred from an event tally.
+   *
+   * A re-delegate confers reach onto FUTURE content only — it re-keys the bag forward. The chunks the group
+   * held BEFORE this seat need `reSealed` below; `regranted > 0` with those chunks left un-re-sealed is reach
+   * to nothing that already stood.
    */
   readonly regranted: number;
+  /**
+   * The pre-seat chunks RE-SEALED to the re-keyed group — the reach a re-delegate cannot confer on its own.
+   *
+   * keyhive reads FORWARD-ONLY: a re-delegate re-keys a bag forward, but a chunk sealed before this seat stays
+   * keyed to an epoch the new member stands outside of and reads `Key not found`. The holder therefore
+   * re-encrypts each standing chunk at the current epoch here; the joinee ingests these to reach what the group
+   * held before it arrived. Empty when nothing stood sealed on the re-granted bags (a freshly minted bag), or
+   * when the provider tracks no content.
+   */
+  readonly reSealed: readonly { bagUrl: string; contentRefB64: string; ciphertextB64: string }[];
 }
 
 export type FaceJoinRefusal = { readonly ok: false; readonly reason: string };
@@ -82,6 +96,10 @@ export interface FaceJoinProvider {
   verifySentinelMembership(agentIdHex: string, sentinelDocIdHex: string): Promise<{ ok: boolean; reason?: string }>;
   addSentinelMember(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<void>;
   delegate(args: { bagUrl: string; audience: string; access: "read" | "admin" }): Promise<unknown>;
+  /** Re-seal a bag's standing chunks to the re-keyed group, returning the fresh ciphertext per chunk — the
+   *  step a re-delegate cannot do, because keyhive reads FORWARD-ONLY and a chunk sealed before the seat stays
+   *  keyed to an epoch the new member stands outside of. Absent when the holder tracks no bag content. */
+  reSealBag?(bagUrl: string): Promise<{ contentRef: Uint8Array; ciphertext: Uint8Array }[]>;
   eventsForPeer(peerAgentIdHex: string): Promise<Uint8Array[]>;
   contactCard(): Promise<Uint8Array>;
 }
@@ -211,6 +229,7 @@ export async function runFaceJoin(
   const seated = await provider.verifySentinelMembership(joineeAgentIdHex, ctx.personaGroupDocIdHex);
   const mustAdd = summons.force === true || !seated.ok;
   let regranted = 0;
+  const reSealed: { bagUrl: string; contentRefB64: string; ciphertextB64: string }[] = [];
   if (mustAdd) {
     await provider.addSentinelMember(joineeAgentIdHex, ctx.personaGroupDocIdHex);
     // Re-point the group's existing bags at the re-keyed group, so the new seat reaches what the group already
@@ -218,11 +237,22 @@ export async function runFaceJoin(
     for (const bag of ctx.regrant ?? []) {
       await provider.delegate({ bagUrl: bag.bagUrl, audience: ctx.personaGroupAgentIdHex, access: bag.access });
       regranted++;
+      // The re-delegate re-keys the bag FORWARD only. A chunk the group held before this seat stays keyed to an
+      // epoch the member stands outside of (forward-only read), so RE-SEAL each standing chunk to the re-keyed
+      // group — the reach a re-delegate cannot confer alone. Absent a re-seal capability, or an empty bag, this
+      // adds nothing and the pre-seat chunks stay unreached, visibly (an empty `reSealed`).
+      for (const chunk of (await provider.reSealBag?.(bag.bagUrl)) ?? []) {
+        reSealed.push({
+          bagUrl:        bag.bagUrl,
+          contentRefB64: bytesToBase64(chunk.contentRef),
+          ciphertextB64: bytesToBase64(chunk.ciphertext),
+        });
+      }
     }
   }
 
-  // CAPTURE LAST — the events must carry the add AND every re-grant above, or the joinee ingests a membership
-  // that reaches nothing (the add→re-grant→capture order `packPersonaCrossing` also keeps).
+  // CAPTURE LAST — the events must carry the add AND every re-grant/re-seal above, or the joinee ingests a
+  // membership that reaches nothing (the add→re-grant→encrypt→capture order `packPersonaCrossing` also keeps).
   const events = await provider.eventsForPeer(joineeAgentIdHex);
   const founderCard = new TextDecoder().decode(await provider.contactCard());
 
@@ -235,6 +265,7 @@ export async function runFaceJoin(
       capEvents: events.map(bytesToBase64),
       reKeyed: mustAdd,
       regranted,
+      reSealed,
     },
   };
 }

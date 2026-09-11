@@ -110,11 +110,10 @@ async function changeIdForBag(bagUrl: string): Promise<KH.ChangeId> {
   return new KH.ChangeId(new Uint8Array(hashBuf));
 }
 
-/** Content-addressed ChangeId — names one encrypted chunk by its own bytes. A real Automerge integration
+/** Content-address a chunk by its own bytes — names one encrypted chunk stably. A real Automerge integration
  *  passes the change's actual hash; absent one, the content hash keeps the ref stable and unique per chunk. */
-async function changeIdForContent(content: Uint8Array): Promise<KH.ChangeId> {
-  const hashBuf = await crypto.subtle.digest("SHA-256", content.slice());
-  return new KH.ChangeId(new Uint8Array(hashBuf));
+async function contentRefBytes(content: Uint8Array): Promise<Uint8Array> {
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", content.slice()));
 }
 
 export class KeyhiveProvider implements CapabilityProvider {
@@ -137,6 +136,11 @@ export class KeyhiveProvider implements CapabilityProvider {
   private readonly delegationAudience = new Map<string, string>();
   /** delegationId → bag URL (so revoke knows which Document.toMembered() to use). */
   private readonly delegationBag = new Map<string, string>();
+  /** bagUrl → (contentRef hex → its latest ciphertext). A re-key re-seals these to the current membership:
+   *  keyhive reads FORWARD-ONLY, so a member seated after a chunk was sealed reaches it only once the holder
+   *  re-encrypts it at the member's epoch (`reSealBag`). Only ciphertext is held — this holder already decrypts
+   *  its own chunks, so plaintext never rests here. */
+  private readonly bagChunks = new Map<string, Map<string, Uint8Array>>();
   /** CIV-2b — islands whose events already sit in keyhive memory: the self slice seeded eagerly at boot,
    *  every island this vessel minted/adopted live, plus any foreign island a first-access materialized.
    *  A resident island's lazy-load noops. */
@@ -338,11 +342,41 @@ export class KeyhiveProvider implements CapabilityProvider {
     readonly contentRef?: Uint8Array; readonly predRefs?: readonly Uint8Array[];
   }): Promise<Uint8Array> {
     const doc = await this.requireDoc(bagUrl);
-    const cid = opts?.contentRef ? new KH.ChangeId(opts.contentRef) : await changeIdForContent(content);
+    const refBytes = opts?.contentRef ?? await contentRefBytes(content);
+    const cid = new KH.ChangeId(refBytes);
     const preds = (opts?.predRefs ?? []).map((r) => new KH.ChangeId(r));
     const docIdHex = this.bagToDocId.get(bagUrl)!; // requireDoc guaranteed it (throws when absent)
     const result = await this.withActiveIsland(docIdHex, () => this.requireKh().tryEncrypt(doc, cid, preds, content));
-    return result.encrypted_content().serialize();
+    const ciphertext = result.encrypted_content().serialize();
+    // Remember the chunk by its ref so a later re-key can RE-SEAL it — the pre-seat chunk a re-delegate cannot
+    // reach on its own (forward-only read). A re-seal overwrites this same entry with the fresh ciphertext.
+    let chunks = this.bagChunks.get(bagUrl);
+    if (!chunks) { chunks = new Map(); this.bagChunks.set(bagUrl, chunks); }
+    chunks.set(bytesToHex(refBytes), ciphertext);
+    return ciphertext;
+  }
+
+  /**
+   * RE-SEAL a bag's standing chunks to the CURRENT membership, returning the fresh ciphertext per chunk.
+   *
+   * keyhive reads FORWARD-ONLY: a member seated after a chunk was sealed reads `Key not found` on it, and a
+   * re-delegate re-keys the bag FORWARD without moving any already-sealed chunk. This decrypts each tracked
+   * chunk with this holder's own key and re-encrypts it at the current epoch, so a just-seated member reaches
+   * it. Run it AFTER the seat + re-delegate. Plaintext is transient — never held, never returned; the caller
+   * persists and ships the fresh ciphertext. Empty when this holder tracks no chunk for the bag.
+   */
+  async reSealBag(bagUrl: string): Promise<{ contentRef: Uint8Array; ciphertext: Uint8Array }[]> {
+    const chunks = this.bagChunks.get(bagUrl);
+    if (!chunks || chunks.size === 0) return [];
+    const out: { contentRef: Uint8Array; ciphertext: Uint8Array }[] = [];
+    // Snapshot the entries — encryptContent overwrites this same map as it re-seals each chunk.
+    for (const [refHex, ct] of [...chunks.entries()]) {
+      const plaintext = await this.decryptContent(bagUrl, ct);
+      const refBytes = hexToBytes(refHex);
+      const fresh = await this.encryptContent(bagUrl, plaintext, { contentRef: refBytes });
+      out.push({ contentRef: refBytes, ciphertext: fresh });
+    }
+    return out;
   }
 
   /**
@@ -661,5 +695,6 @@ export class KeyhiveProvider implements CapabilityProvider {
     this.delegations.clear();
     this.delegationAudience.clear();
     this.delegationBag.clear();
+    this.bagChunks.clear();
   }
 }
