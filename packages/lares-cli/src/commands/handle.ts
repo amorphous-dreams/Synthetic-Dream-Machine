@@ -10,7 +10,7 @@
  * recovers through the persona; that owner-binding is why these verbs cannot fold into `persona`.
  */
 import type { ParsedArgs } from "../parse-args.js";
-import { runHandlePublish, runHandleBurn } from "@lararium/node";
+import { runHandlePublish, runHandleBurn, runHandleAttest } from "@lararium/node";
 
 /** A recognized-but-unwired verb reports its shape and where its ahu waits, then declines to act. */
 function declared(verb: string, willDo: string, mint: string): number {
@@ -44,15 +44,28 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
     case "burn": {
       const opts: Parameters<typeof runHandleBurn>[0] = {};
       if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
+      if (args.flags["from-persona"] === true) Object.assign(opts, { fromPersona: true });   // owner-burn (from above)
       const card = await runHandleBurn(opts);
-      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… is buried, terminal (readers refuse it)`);
+      const hand = args.flags["from-persona"] === true ? "the persona buried it from above" : "the seated key buried it";
+      console.log(`[lares handle] burned "${card.glamour}" — nym ${card.nym.slice(0, 24)}… is terminal, readers refuse it (${hand})`);
       return 0;
     }
-    case "attest":
-      return declared("attest", "carry a signed claim ON the card (e.g. a domain), bound to the head event", "attestUnderHead");
+    case "attest": {
+      const claim = args.positional[1] ?? args.options["claim"];
+      if (!claim) {
+        console.error('[lares handle attest] a claim is required: lares handle attest "controls example.net" [--persona <index>]');
+        return 2;
+      }
+      const opts: Parameters<typeof runHandleAttest>[0] = { claim };
+      if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
+      const statement = await runHandleAttest(opts);
+      // A standalone signed statement the operator carries out-of-band; a reader verifies it against the surface.
+      console.log(JSON.stringify(statement));
+      return 0;
+    }
     default:
-      console.error('[lares handle] usage: lares handle publish "<glamour>" [--persona <index>]');
-      console.error('  verb family: publish (live) · rotate · graft · burn · attest (declared — the KEL mints stand, orchestration awaits)');
+      console.error('[lares handle] usage: lares handle <publish "<glamour>" | burn [--from-persona] | attest "<claim>"> [--persona <index>]');
+      console.error('  live: publish · burn (self · --from-persona) · attest    declared: rotate · graft (KEL mints stand, orchestration awaits)');
       return 2;
   }
 }
