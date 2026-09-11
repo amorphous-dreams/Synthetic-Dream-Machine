@@ -1,0 +1,141 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-canon-collision">>
+```toml meta
+cacheable     = false
+file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-canon-collision.mem"
+l-space       = "adjacent"
+mana          = 16
+manao         = 16
+manaoio       = 15
+render-target = "docs"
+retain        = true
+role          = "VERBATIM canon-collision handback (2026-09-11) — the corrected three-tier + kahuli-forward-rebind model collided against the OWN memegraph. Verdict: already substantially canon (grammar frozen-by-hash, engineCid=hearthTrueName slow, pluginsCid-never-perturbs, predecessor-shape as prior-art). Forces only TWO edits (C1 the stale authority-absent premise — EW-5 seated it 2026-06-15; C2 a stale Our-own-source Rule row) + rulings R1-R5. Holds the meme#section:line citations for every Phase-0 edit. Captured word-for-word (MD transliterated to wikitext)."
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-canon-collision"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Canon-collision — the corrected three-tier + kāhuli forward-rebind vs the OWN memegraph
+
+Verbatim final message of the canon-collision spirit (task `a3fe0724d3cc8bd07`, 2026-09-11), captured word-for-word with only Markdown transliterated to memetic-wikitext. It edited no files. It holds the `meme#section:line` citations that guide the Phase-0 weave.
+
+Read fully: both handback captures; `epoch-binding-surfaces`, `bag-wiki-uri-split`, `dreamnet-architecture`, `siege-resilience`, `shelter-against-empire`, `engine-watch`, `membership-doctrine`, `cabal-realm`, `content-resolution` (#open-forks), `persona-kel` (#armed-inception/#contest). Grepped all `bags/**/*.mem` for the collision terms. Read by summary/grep only: `nexus-topology` (role line), `identity-classes`, `handle-card`, `genesis-doc`, `founding-runbook`, `disk-projection`. `handle-kel` is CODE (`packages/lararium-mesh/src/handle-kel.ts`), not a meme — no meme by that name exists.
+
+<<~/ahu>>
+
+<<~ ahu #/agreements>>
+
+!! AGREEMENTS — where canon already states the corrected model
+
+''A1 — Grammar is by-hash / frozen / no-edit-surface. Canon states this OUTRIGHT, and it VINDICATES the model's correction of MODEL B.'' `bag-wiki-uri-split#the-two-layer-model` (lines 54–65): //"THE DAEMON HOLDS THE ENGINE… every device reaches THE SAME ENGINE by hash… the engine has no edit surface at all — it answers to a hash, and a hash answers to nobody."// And line 67: //"The engine is universal; the corpus is content."// This is the exact line the corrected model cites, and it stands as canon. The model's claim (b) + (the "fast part is the CORPUS not the grammar") is ''already canonical here'' — MODEL B's loose "mutable wikitext grammar" is corrected in-tree, not owed.
+
+''A2 — engineCid = hearthTrueName = the slow ratchet, signed into every delegation edge, binds membership, no edit surface, advances by ACT.'' `epoch-binding-surfaces#the-one-most-easily-missed` (lines 118–128): `hearthTrueName` IS `engineCid`, rides inside the signed `lar-device-delegation/v2` preimage (line 122), //"the binding IS (vessel × hearthTrueName)."// And `#the-rule` Rule `TW5-submodule` (line 214): //"when/an-ACT-never-an-upgrade… surface/hearthTrueName."// Model claim (1a) is ''canon, verbatim''.
+
+''A3 — pluginsCid = the plugin/parser layer, its own ratchet, per-operator, never perturbs the true-name.'' `epoch-binding-surfaces#the-real-mover` (lines 176–186), quoting `genesis-artifact#hearthTrueName`: //"The PUBLIC face = the engine content-CID ALONE… NOT the plugins. Plugins compose per-operator… so a plugin change MUST NEVER perturb the true-name."// Model claim (1b)'s "never perturbs the membership engine" is ''canon''.
+
+''A4 — No-flag-day coexistence = a tagging discipline; the CryptoKind/predecessor shape is already recorded as prior-art.'' `epoch-binding-surfaces#prior-art` (lines 85–88): Veilid CryptoKind coexistence, and Matrix //"a breaking version spawns a NEW room id, linked by m.room.tombstone (replacement_room) + the new room's predecessor; clients follow the chain forward on their own schedule."// The model's predecessor-pointer + accept-both span is ''already sited in canon as prior-art'' (though the meme flags the engine-advance itself as still `mu`, line 83).
+
+''A5 — Nexus identity founded/severable, rendezvous ≠ identity.'' `nexus-topology` role: //"a Nexus name grants RENDEZVOUS, never IDENTITY, so every layer stays severable."// `dreamnet-architecture#the-nexus-parse` (lines 133–174): a Nexus is a conformance-vector SET, membership derives, //"the kahu stop deciding who belongs."// Model claim (4, Nexus severable) is ''canon''.
+
+''A6 — Lamplighter carriage ⊥ kahu; discovery = no global roster; content-address-not-fetch.'' `dreamnet-architecture#node-addressing` (`lar:` //"names but never fetches,"// the Signal Law) and `#grammar-as-shared-structure`; `membership-doctrine#the-invariant` (track contracts, never identities). Model's "other integrated claims" bundle is ''broadly canon'' and needs no edit.
+
+''A7 — A forward-rebind SHAPE already exists in canon — on the KEL axis — ready to reuse.'' `persona-kel#armed-inception` (lines 52–56): hash-linked chain, `seq 0 no predecessor`, forward key-rotation, `nextRecoverySetHash` //"grafted per event,"// continuity //"rides the LOG, never the key."// This is precisely the predecessor + graft + forward motion the model wants for kāhuli — ''but it operates on identity keys, not on `hearthTrueName`'' (see BLUR B3).
+
+<<~/ahu>>
+
+<<~ ahu #/contradictions>>
+
+!! CONTRADICTIONS — where a meme says the opposite and would need editing
+
+''C1 — (LOAD-BEARING) The authority seat kāhuli "must fill" is NOT absent in canon; `engine-watch` EW-5 SEATED it in 2026-06-15.'' Model claim #3 asserts kāhuli must fill the seat `engine-watch.ts` left //"DELIBERATELY ABSENT until the wiki-mesh lives."// That premise is drawn from the July source comment (MODEL A). But the CANON meme `engine-watch#invariants` ''EW-5'' (lines 82–93): //"Authority seated (operator ruling, 2026-06-15)… Only an operator(admin) grant MAY update the engine genesis… the operator's engine-fold rides the RECONCILE rite… This closes the shore this invariant once held open (and engine-epoch hazard 4)."// And EW-6 (lines 95–103): the fold is a rite, not a boot reflex.
+
+They cannot both stand as stated: the model treats the seat as empty; canon records it filled. ''Judgment:'' this is a //partial// contradiction resolved by scope. EW-5's authority governs //who adopts a newer engine into `@oracle`// (a local, per-vessel/per-operator RECONCILE, kahu at DreamNet). It does ''not'' govern //rolling `hearthTrueName` forward across a live mesh and re-signing every delegation edge// — which genuinely has no seat. So claim #3 needs re-wording from "fill the absent seat" to "kāhuli's mesh-wide-roll authority is a DISTINCT seat beside the already-seated EW-5 adoption authority." As written, claim #3 would drive an edit to `engine-watch` that re-opens a shore canon already closed — ''reject the edit; reconcile the wording instead.''
+
+''C2 — A residual WITHIN `epoch-binding-surfaces` still frames a pluginsCid change as membership-affecting.'' The corrected model says a grammar/pluginsCid advance //"never perturbs the membership engine"// (agrees with A3, the meme body). But the meme's own Rule table survived the correction with the OLD framing: `#the-rule` Rule `Our-own-source` (line 215): //"when/every-commit cost/a-proposed-Nexus surface/pluginsCid ~ the kahu clock ratifies, or the mesh shards."// That "proposed-Nexus / mesh shards" reads pluginsCid as membership-affecting — the exact claim `#the-real-mover` (lines 163–191) spent a whole section retracting (//"that claim does not stand… Integrity, never membership"//). The body and the Rule row contradict each other; adopting the corrected model ''forces the Rule row to be brought into line'' with `#the-real-mover`. This is an internal canon inconsistency the model surfaces, not one it creates.
+
+''No other hard contradiction found.'' In particular, the sweep hunted for a line calling the grammar "mutable/fast/live-edit" as an INVARIANT and found ''none'' in canon — that framing lives only in the recovered MODEL B capture (`spirit-handback-engine-advance-recovery` line 61), a verbatim research handback, not ruled canon. Canon (A1) already says the opposite.
+
+<<~/ahu>>
+
+<<~ ahu #/re-admission-judged>>
+
+!! The re-admission question, judged
+
+''The "recovery-is-re-admission-only" invariant and kāhuli's forward-rebind are DISTINCT motions that co-exist — NOT a conflict.'' The recovered MODEL C fused two different sentences:
+
+* ''Recovery re-admits'' — scoped to KEY-LOSS / impersonation. `the-veil-ladder` (line 132): //"recovery re-admits, never escrows a secret at rest (device re-admission, the G-recovery keel)"//; `persona-circle` (line 65) //"never resurrected… the cure is re-admission minting a fresh atom"//; `shelter-against-empire#the-honest-limit` (line 152) recovery relocates trust to a social layer. This invariant is about a ''lost/compromised key'', and it is real, ruled canon.
+* ''"A fleet returns only by re-admission"'' — MODEL C's phrasing about an ENGINE MOVE. In canon this appears only as the //fact// that moving `hearthTrueName` strands edges: `epoch-binding-surfaces#the-one-most-easily-missed` (lines 125–128): //"the Binding Gate refuses, and the refusal reads as a fleet-wide eviction nobody performed."// Canon states the stranding as a ''measured consequence'', NOT as an enshrined invariant that forbids a forward-rebind. There is no canon line reading "an engine advance may ONLY be handled by re-admission."
+
+''Therefore:'' kāhuli's forward-rebind is a //governed engine advance// on a ''third axis'' (the `hearthTrueName`/engine epoch), distinct from both key-loss recovery (the re-admission invariant) and the lease/authority PSS-refresh (MODEL D / siege). It does not violate the recovery invariant. The model's claim #2 stands clean against canon ''provided'' it is not spelled as a recovery mechanism.
+
+''One real mechanical tension inside claim #2:'' the delegation-edge preimage (`epoch-binding-surfaces` line 122) is signed by the //delegator's own key//. Only that key can re-sign an edge onto the new `hearthTrueName`. So "re-sign every delegation edge forward" is not something kāhuli performs unilaterally (the model agrees — "never a unilateral reset") — it requires each operator to act during the accept-both span. Mechanically that is re-admission-with-a-predecessor-pointer + a graceful window (MODEL D's ⅞-lease //"rebind to any sufficient PersonaGroup member"// is the ready pattern). Whether "forward-rebind" is //mechanically distinct// from "graceful re-admission," or just its gentler dress, is a BLUR (B2).
+
+<<~/ahu>>
+
+<<~ ahu #/siege-vs-churp>>
+
+!! siege-resilience / shelter-against-empire vs CHURP-refresh / kāhuli
+
+''No contradiction; a word-overload risk.'' `siege-resilience#reset-the-clock` (lines 42–56) PSS re-randomization is explicitly the ''AUTHORITY/liveness LEASE'' epoch, and the meme already disambiguates it from the compaction epoch and binds it to `epoch-binding-surfaces`' one-mechanism/two-carrier frontier. CHURP graft-refresh is on the ''FROST/handle-key'' axis. kāhuli is on the ''engine/`hearthTrueName`'' axis. All three are separate; none of siege's PSS/reset-the-clock claims are touched by kāhuli. The hazard is purely nominal: canon now carries at least three "epoch/refresh" senses and `epoch-binding-surfaces`' word-owner table (lines 60–66) does ''not yet list an "engine epoch / hearthTrueName roll"'' sense (see RULING R4).
+
+<<~/ahu>>
+
+<<~ ahu #/blurs>>
+
+!! BLURS — where canon is ambiguous/silent and the model forces a choice
+
+''B1 — (SHARPEST) Two vs three tiers: is the grammar (pluginsCid) the FAST ratchet or the FROZEN-by-hash tier?'' The model asserts THREE tiers (engine=slow / grammar=frozen-by-hash-advance-by-act / corpus=fast). But canon carries the grammar/plugin layer in ''two incompatible dresses'':
+* `epoch-binding-surfaces` lines 179–186 calls pluginsCid the ''"fast ratchet"'' that //"composes freely,"// per-operator — the SAME bucket as the recovered two-way slow/fast rejim.
+* `bag-wiki-uri-split` lines 54–69 makes the parser/grammar plugin ''universal, resolved by hash, no edit surface'' — a FROZEN control surface, explicitly //not// fast/mutable.
+So canon simultaneously calls the grammar layer "fast" (composition ratchet) and "frozen-by-hash" (idempotent control surface). The model's three-tier cut RESOLVES this — grammar is frozen-advance-by-act, corpus is the fast layer — but canon has not chosen, and the two memes read against each other. ''The model forces the choice the memegraph has been carrying unresolved.''
+
+''B2 — Is forward-rebind mechanically distinct from graceful re-admission?'' (see re-admission section). Canon has the graceful pattern (MODEL D ⅞-lease rebind) but no ruling on whether kāhuli's motion is a new primitive or re-admission + predecessor-pointer + accept-both window. Silent.
+
+''B3 — The forward-rebind SHAPE exists on the KEL axis; may it be lifted to the engine axis?'' `persona-kel#armed-inception` graft + predecessor + forward-roll is exactly the shape kāhuli wants, but it rotates identity keys, and continuity there //"rides the LOG, never the key."// The engine axis has no such log — `hearthTrueName` is a single CID baked into every edge preimage. Whether kāhuli introduces a `hearthTrueName` ''KEL-shaped lineage'' (each engine epoch names its predecessor, edges accept an epoch-span) is unspecified. Canon's `sealLineage` hash-chain (`epoch-binding-surfaces` line 52) is the nearest carrier but governs the CHARTER writer-set, not the engine. Silent.
+
+''B4 — The "fuzzy span over many ratchets" fusion.'' The recovery capture (line 94) already flagged this as NEW synthesis. Canon has FIVE separate binding surfaces (`epoch-binding-surfaces#the-five`) and the two-carrier collapse, never fused into one span. The corrected model's three-tier (engine/grammar/corpus) is a THIRD decomposition that maps only loosely onto the five surfaces (corpus/content-bags is not even one of the five). Reconciling three-tier ⟷ five-surfaces ⟷ two-carrier is unsettled.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings-owed>>
+
+!! RULINGS OWED (ranked by load-bearing impact) — decide BEFORE any meme edit
+
+''R1 — Is kāhuli's mesh-roll authority the SAME seat as `engine-watch` EW-5, or a DISTINCT one?''
+* //Branch A (same seat):// kāhuli rides EW-5's operator(admin)-on-`@oracle` + RECONCILE + kahu-at-DreamNet. Commits: no new authority meme; kāhuli is the verb that ACTS the already-seated authority; claim #3 is re-worded, `engine-watch` untouched.
+* //Branch B (distinct seat):// rolling `hearthTrueName` fleet-wide is a new authority beside EW-5's local-adoption authority. Commits: a new invariant (EW-7?) in `engine-watch`, and a statement of how it composes with EW-5.
+* Touches: `engine-watch`, the kāhuli meme (unwritten), possibly `residency-model`. ''Highest impact — it decides whether claim #3 edits or reconciles.''
+
+''R2 — Three tiers or two ratchets? (resolves B1.)'' Rule whether the grammar/pluginsCid layer is FROZEN-by-hash-advance-by-act (the model) or the FAST ratchet (`epoch-binding-surfaces` line 185).
+* //Branch A (frozen-advance-by-act):// corpus is the sole fast/mutable layer. Commits: edit `epoch-binding-surfaces` lines 179–186 to stop calling pluginsCid "fast," align with `bag-wiki-uri-split`.
+* //Branch B (keep pluginsCid fast):// the model's three-tier collapses back toward the two-way rejim. Commits: reword the model.
+* Touches: `epoch-binding-surfaces`, `bag-wiki-uri-split`, `dreamnet-architecture#the-nexus-parse`. ''Second — the tier count is the model's spine.''
+
+''R3 — Is forward-rebind a distinct primitive, or graceful re-admission? (resolves B2/B3.)''
+* //Branch A (distinct primitive):// introduce a `hearthTrueName` epoch-lineage (KEL-shaped, predecessor + accept-both span), reusing the `persona-kel` graft shape. Commits: a new engine-lineage carrier; edges verify against an epoch-span, not a single CID — touches the `lar-device-delegation/v2` preimage semantics.
+* //Branch B (graceful re-admission):// keep re-admission, add predecessor-pointer + accept-both window (MODEL D ⅞-lease). Commits: no new signed-edge semantics; smaller.
+* Touches: `epoch-binding-surfaces#the-one-most-easily-missed`, device-delegation, kāhuli meme, possibly `persona-kel` (shape reuse). ''Third.''
+
+''R4 — Add the engine-epoch sense to the `epoch` word-owner table.'' `epoch-binding-surfaces` lines 60–66 owns bare-epoch, seal-epoch, CGKA-epoch, compaction-epoch, POSIX, L4-band — but not "engine epoch / `hearthTrueName` roll." kāhuli mints a new sense. Rule its name and qualification so it does not collide with the reserved bare-`epoch`. Touches: `epoch-binding-surfaces` word-table, `siege-resilience#reset-the-clock` disambiguation. ''Fourth — cheap, prevents a term-collision downstream.''
+
+''R5 — Fix the stale Rule row (resolves C2).'' Bring `epoch-binding-surfaces` Rule `Our-own-source` (line 215) into line with `#the-real-mover` (pluginsCid = local integrity, never membership). A within-meme inconsistency regardless of the model; the model just makes it act. Touches: `epoch-binding-surfaces` only. ''Lowest — janitorial, but do it in the same pass.''
+
+<<~/ahu>>
+
+<<~ ahu #/could-not-read>>
+
+!! Could-not-read within budget
+
+Read by role-line/grep only, not in full: `nexus-topology` (body — severability confirmed via role line only), `genesis-doc` (only the `engineCid ⊥ pluginsCid` grep hits), `disk-projection`, `recipe`, `founding-runbook`, `handle-card`, `identity-classes` (grep hits at lines 479/541/591 show a graft/predecessor rotation shape on the identity axis, consistent with `persona-kel`). None showed a contradicting "mutable grammar" or "re-admission-only-as-engine-invariant" line in the greps. `handle-kel` is source code, not a meme — the graft-as-forward-rebind mechanism for R3 lives in `packages/lararium-mesh/src/handle-kel.ts`.
+
+''One-line takeaway:'' the corrected model is //already substantially canon// (grammar frozen-by-hash A1, engineCid=hearthTrueName slow-ratchet A2, pluginsCid-never-perturbs A3, predecessor-shape as prior-art A4) — the collision surfaces exactly TWO edits it forces (C1: the "authority absent" premise is stale, EW-5 filled it 2026-06-15; C2: a stale Rule row inside `epoch-binding-surfaces`) and FOUR genuine unsettled choices (two-vs-three tiers B1, forward-rebind-vs-re-admission B2/B3, the fuzzy-span fusion B4, the engine-epoch word-sense R4) to rule before any meme is touched. The re-admission invariant and kāhuli's forward-rebind are DISTINCT motions and co-exist; only the //mechanism// of the rebind is unsettled.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;zFabIy8amXGiIkVkLQJ5i8hPeM3tMZudZl6RkDM7zmA
+
+<<^ code="&#x0004;" -> to="?">>
