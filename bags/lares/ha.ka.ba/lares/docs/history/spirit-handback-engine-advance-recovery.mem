@@ -97,6 +97,20 @@ Already-captured canon that carries fragments of this research: `bags/lararium/�
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Pb22MpU5DLmetPx6I-jxGz1WlRea-HBJFKQNvkaw50A
+<<~ ahu #/second-scout>>
+
+!! Second scout — verified, + the grammar-tier-move in the operator's own words, + the scale NULL
+
+A later engine+grammar scout (2026-09-11) verified this recovery's claims against the raw transcripts (they hold) and added three confirmations:
+
+''The grammar MOVED tiers, verified at two dates in the operator's own words.'' On 25 Aug (`42b3e868` L39799) the operator ruled the grammar into the FAST rejim, verbatim: //"the engine CID ratchet in our mpodels effects the 'slow rejim' (wheras the mutable wikitext grammar dhows the 'fast rejim') → not re-name each node as it udpates"// — mutable grammar + plugin composition, per-operator. On 2026-09-11 the standing `bag-wiki-uri-split.mem` ruling ''"THE DAEMON HOLDS THE ENGINE"'' contradicts the mutable half: //"every device reaches THE SAME ENGINE by hash… the engine has no edit surface at all… the engine is universal; the corpus is content."// So the grammar (`pluginsCid` parser) moved from Aug's fast/mutable to Sept's ''frozen-by-hash / advance-by-act'' — the three-tier correction is the operator's own evolution, not an outside imposition. The genuinely fast/mutable layer is the CORPUS.
+
+''The fast-layer-at-scale is a NULL — genuinely new design, like the fuzzy span.'' No prior thread works the arithmetic of ''thousands of operators/users each holding their own personal docs as the fast layer, across many private + interopped Nexuses.'' The ingredients stand in canon — carriage-not-registry (the registry filter), rendezvous≠identity (`nexus-topology`), and the composability guarantee (`bag-wiki-uri-split`: "a wiki gains no parser by mounting a bag and loses none by dropping one," the mechanism that lets the corpus scale without touching the engine) — but the thousands-of-personal-docs-across-many-Nexuses model is unwritten. It sits beside D (the fuzzy-span fusion) as design still owed, not forgotten work.
+
+''The 500-year test-story is worldbuilding, not an engine mechanism'' — confirmed independently (`7af0a478`, `fbcf0358` are Elyncia RPG fiction). Its only engineering distillates are `siege-resilience.mem` (PSS "collapses the 500-year clock to one window") and the CAS rationale (a five-century-old blob still hashes to its CID → no handshake, no migration) — the deepest recovered REASON the engine must be a content-addressed petname and coexistence, not flag-day, is mandatory.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;vMSE_jwmlFdyYT-YhKWjlgZeBsAyv4AmGK9IVUiDXSM
 
 <<^ code="&#x0004;" -> to="?">>
