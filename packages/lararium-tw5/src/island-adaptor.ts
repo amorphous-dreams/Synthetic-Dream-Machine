@@ -249,13 +249,10 @@ export class IslandAdaptor implements MemeProjection {
     const fields = extractFields(this.tw5, tiddler);
     const title  = fields["title"] ?? "";
 
-    // Cascade pre-check: skip if no rule routes this title AND no explicit
-    // `bag` override (ceremony). Routing filters live in the in-wiki bag-paths
-    // cascade — operator-editable, per-wiki overlayable.
-    // A ceremony write names its own bag and bypasses the cascade. Otherwise the cascade answers,
-    // and only a NAMED withholding stops the write (`_destination` fills a router gap and says so).
-    const explicitBag = fields["bag"];
-    if (!explicitBag && this._destination(title) === null) return Promise.resolve();
+    // Cascade pre-check: the in-wiki bag-paths cascade — operator-editable, per-wiki overlayable —
+    // answers where this title lands, and only a NAMED withholding stops the write (`_destination`
+    // fills a router gap and says so). Residency rides the envelope; no field names a bag.
+    if (this._destination(title) === null) return Promise.resolve();
 
     const origin: ChangeOrigin = { kind: "tw-local", instanceId: this.instanceId };
 
@@ -347,15 +344,13 @@ export class IslandAdaptor implements MemeProjection {
   ): Promise<void> {
     const bodyText = fields["text"] ?? "";
     const { parent, children } = splitBodyTiddler(title, bodyText, fields);
-    // Ceremony writes carry an explicit `bag` field to route to a canonical slot;
-    // live edits route by walking the in-wiki cascade (lar:///ha.ka.ba/lararium/config/bag-paths).
-    // The cascade returns null when no rule matches or an explicit-skip rule fires
-    // (e.g. $:/* system tiddlers).
-    // Explicit `bag` field (ceremony writes) short-circuits the cascade; only
-    // walk the in-wiki cascade when no override is present.
-    const targetBag = (fields["bag"] as SlotUri | undefined) ?? this._destination(title) ?? undefined;
+    // The in-wiki cascade (lar:///ha.ka.ba/lararium/config/bag-paths) names the bag a save lands in;
+    // null when no rule matches or an explicit-skip rule fires (e.g. $:/* system tiddlers).
+    const targetBag = this._destination(title) ?? undefined;
     if (!targetBag) return;
-    const { bag: _bag, ...persistedParent } = parent;
+    // `$origin-bag` is the host's stamp on the wiki tiddler (nalu-engine), never a persisted field;
+    // `bag` is the author's and rides through whole.
+    const { "$origin-bag": _origin, ...persistedParent } = parent;
 
     await this.store.put(toLarTiddlerRecord({ ...persistedParent, title }), origin, { bag: targetBag });
 
@@ -367,7 +362,7 @@ export class IslandAdaptor implements MemeProjection {
         const childTitle = String(child["title"] ?? "");
         if (!childTitle.startsWith("lar:")) continue;
         newChildren.add(childTitle);
-        const { bag: _childBag, ...persistedChild } = child;
+        const { "$origin-bag": _childOrigin, ...persistedChild } = child;
         await this.store.put(toLarTiddlerRecord({ ...persistedChild, title: childTitle }), origin, { bag: targetBag });
       }
 

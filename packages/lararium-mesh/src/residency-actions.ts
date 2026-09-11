@@ -188,7 +188,13 @@ export interface IngestCarrier {
   readonly textCid?:   string;
   /** Hash of text, computed gesture-side. */
   readonly diskHash:   string;
-  /** Last-projected hash from the Synced tree; null = never projected. */
+  /** The MERGE BASE — the hash the writer last read, whichever door it wrote
+   *  through: a disk gesture carries the Synced tree's last-projected hash; a
+   *  text-writer (`meme put`) carries the `canonicalHash` it read back from
+   *  `meme get`. One slot, one truth: the Confluence gate reads it as the base
+   *  a writer stood on, so a stale base surfaces as a conflict rather than a
+   *  silent overwrite. null = the writer read nothing (never projected / never
+   *  read) → the gate adopts. */
   readonly syncedHash: string | null;
   /** The carrier's file extension (".mem" / ".tid" / ".json" / ".md" …) as the
    *  gesture read it from disk. The island routes by it: a memetic carrier (SOH

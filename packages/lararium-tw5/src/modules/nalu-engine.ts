@@ -102,21 +102,21 @@ function _scheduleFrame(): void {
 // Drain — one wiki.transact() per frame, regardless of bag count
 // ---------------------------------------------------------------------------
 
-function _toFields(change: LarTiddlerChange): TW5TiddlerInputFieldsWithTitle {
-  // CRDT records store the title as the doc key, not nested in `tiddler` —
-  // restore it from `change.title` so the wiki tiddler carries its identity.
-  //
-  // Residency Model — every inbound write annotates `$origin-bag` so the
-  // operator can answer "which bag does this come from?" at every read
-  // (Anti-pattern #4 defense). The `bag` field stays for outbound
-  // write-target override; `$origin-bag` carries inbound provenance. The pair splits by DIRECTION,
-  // and only the authored half wears a name an author may collide with.
-  const fields: TW5TiddlerInputFieldsWithTitle = {
+/**
+ * The wiki fields an inbound change lands as. CRDT records store the title as the doc key, not nested
+ * in `tiddler` — restore it from `change.title` so the wiki tiddler carries its identity.
+ *
+ * Residency Model — every inbound write annotates `$origin-bag` from the ENVELOPE so the operator
+ * can answer "which bag does this come from?" at every read (Anti-pattern #4 defense). `bag` is
+ * user space: an author's own field rides through untouched, as TiddlyWeb's stamp would ride under
+ * theirs — the host's provenance wears a name no author collides with.
+ */
+export function toWikiFields(change: LarTiddlerChange): TW5TiddlerInputFieldsWithTitle {
+  return {
     ...change.record!.tiddler,
     title: change.title,
-    ...(change.bag !== undefined ? { bag: change.bag, "$origin-bag": change.bag } : {}),
+    ...(change.bag !== undefined ? { "$origin-bag": change.bag } : {}),
   };
-  return fields;
 }
 
 function _drain(budget: number): void {
@@ -133,7 +133,7 @@ function _drain(budget: number): void {
         if (change.record === null || change.record.meta?.deleted) {
           _wiki!.deleteTiddler(change.title);
         } else {
-          _wiki!.addTiddler(new Tiddler(_toFields(change)));
+          _wiki!.addTiddler(new Tiddler(toWikiFields(change)));
         }
       }
     };

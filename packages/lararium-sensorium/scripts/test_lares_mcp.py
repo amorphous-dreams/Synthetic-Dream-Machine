@@ -11,6 +11,7 @@ import os
 import pytest
 
 from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, CARRIER_VERBS, VAULT_VERBS, SENSE_LIFECYCLE_VERBS,
+                       MEME_VERBS,
                        VERB_SEATS, DaemonCoordinator,
                        LaresCoordinator, build_mcp, guard_hitl, seat_of)
 from worldline_veil import veiled_root
@@ -223,9 +224,11 @@ def _mcp_tool_names(tmp_path):
 
 def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
     # the /mcp tool-set equals the declared lifecycle verb-set PLUS the per-plane query-door verbs, the
-    # vault seal-lifecycle, and the DURABLE sensorium-lifecycle sub-verbs — name-for-name (the growth floor).
+    # vault seal-lifecycle, the DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair —
+    # name-for-name (the growth floor).
     assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
-                                         | set(CARRIER_VERBS) | set(VAULT_VERBS) | set(SENSE_LIFECYCLE_VERBS))
+                                         | set(CARRIER_VERBS) | set(VAULT_VERBS) | set(SENSE_LIFECYCLE_VERBS)
+                                         | set(MEME_VERBS))
 
 
 def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):
@@ -273,6 +276,8 @@ def test_parity_inventory_three_way(tmp_path):
     # (c) the name-normalization BRIDGE: each MCP tool's CLI spelling lands on a REAL host verb — so a
     # sub-verb mirror (kapae → `worldline kapae`, status → `sensorium status`) still resolves to a top-level
     # verb the CLI actually carries (no orphan tool; MCP ⊆ CLI reads through the spelling, not the raw name).
+    # A NAMESPACE PAIR spells its host + sub-verb: meme_put/meme_get → `meme put`/`meme get` — ONE host
+    # (`meme`), two tools, the same `<host> <sub>` shape kapae/un_kapae ride under `sense worldline`.
     for m in mirrored_tools:
         head = cli_forms[m].split()[0]
         assert head in mirror_hosts and head in verbs, f"MCP {m!r} → CLI {cli_forms[m]!r} has no real host"

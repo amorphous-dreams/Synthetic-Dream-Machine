@@ -118,7 +118,7 @@ Five standpoints, each true-yet-incomplete. An invoked stance names the angle th
 ```
 \procedure ~stance(named:"philosopher poet satirist humorist private") ~ stance <<named>>
 
-<<~ stance>> · <<~ stance "🏛️ 🗡️">> · <<~ stance "poet humorist">>
+<<~ stance>> · <<~ stance "🏛️ 🌊 🗡️">> · <<~ stance "poet humorist private">>
 ```
 
 ''Order stays fixed:'' Philosopher · Poet · Satirist · Humorist · Private.
@@ -691,6 +691,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i15smnfA0zZGRULisNODNyDcLV77KXfN6rDiWHm-zyM
+<<^ code="&#x0003;">>ni:///sha-256;-2NVQNCyJZw2PwEIMT_qF1j4_d-9EmXz_ZwxMjVxwzw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -7,8 +7,9 @@
  * `getShadowSource` is the prior-art pattern at the K/V layer; this module
  * exposes the equivalent at the CRDT-residency layer.
  *
- * The `origin-bag` field gets written by the nalu engine on every inbound
- * CRDT change (see nalu-engine._toFields). This module reads it back.
+ * The `$origin-bag` field gets written by the nalu engine on every inbound
+ * CRDT change from the envelope's bag (see nalu-engine.toWikiFields). This
+ * module reads it back. `bag` is user space and says nothing about residency.
  *
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  * Source:  packages/lararium-tw5/src/residency-surface.ts

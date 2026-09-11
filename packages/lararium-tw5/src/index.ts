@@ -203,6 +203,9 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
 export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
+export { makeMemePutReactor, makeMemeGetReactor, memeVerbOptions } from "./meme-verbs.js";
+export type { MemeVerbOptions } from "./meme-verbs.js";
+export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
 export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
 export type {
   WikiHandlerOptions, WikiMintHandlerOptions, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,

@@ -19,6 +19,7 @@ import {
   makeWikiPinReactor, makeWikiUnpinReactor,
   makeCatalogAccessor,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
+  makeMemePutReactor, makeMemeGetReactor, memeVerbOptions, VERB_SURFACE,
   makeWardAlertReactor,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor,
   makeSwitcherStateReactor,
@@ -174,6 +175,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
 
       // draft needs no catalog — register it regardless of slot.
       registry.register("draft", makeDraftReactor({ composite: ctx.composite }));
+
+      // meme-put / meme-get — the daemon skins of the one placement function (`placeMeme`): the anchor
+      // rides the daemon's own $tw.wiki; a named recipe or bag reaches its store by access (access≠load).
+      const memeOpts = memeVerbOptions(ctx, async () => "0x" + daemonAuth.vesselVerifyingKey);
+      registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("meme-get", makeMemeGetReactor(memeOpts), { summary: "Read a meme back as text + the canonical hash a writer hands back as its base.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher

@@ -75,8 +75,8 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
     const store = new AutomergeDocStore(handle, slot);
     // All CRDT slots accept writes; the in-wiki bag-paths cascade decides routing
-    // (lar:///ha.ka.ba/lararium/config/bag-paths). Ceremony writes pass an explicit `bag` field
-    // to override the cascade and write to canonical slots.
+    // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
+    // slot's store directly, carrying the bag on the put option — never a field on the record.
     composite.addLayer({ bagId: slot, store, writable: true, defaultWritable: false });
     stores.push({ slot, store });
   }

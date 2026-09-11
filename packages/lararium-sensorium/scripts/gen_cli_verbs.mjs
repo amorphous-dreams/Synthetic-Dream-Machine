@@ -67,6 +67,12 @@ const CLI_FORMS = {
   // submission pair (<name>.md + <name>.md.meta) deterministically and clock-free — which is what lets
   // a witness prove a pair current by re-projecting rather than by trusting a timestamp.
   project_md: "carrier project-md",
+  // The MEME door — the MCP skin of the one placement function. `meme_put` lands a meme's text at a
+  // `lar:` uri through the island's Confluence gate; `meme_get` reads the text + canonical hash back.
+  // The host `meme` is a real top-level CLI command (`lares meme put|get`), so the pair mirrors as
+  // `<host> <sub>` — ONE host, two tools, the shape kapae/un_kapae ride under `sense worldline`.
+  meme_put:  "meme put",
+  meme_get:  "meme get",
   // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
   // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;
   // promote·retire·purge carry HITL (the operator-approval capability, the twin of the CLI's `--approve`).

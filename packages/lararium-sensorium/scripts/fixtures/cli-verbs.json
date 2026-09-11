@@ -8,6 +8,7 @@
     "ingest",
     "watch",
     "draft",
+    "meme",
     "bag",
     "wiki",
     "cleanup-days",
@@ -27,7 +28,8 @@
     "edge",
     "raise",
     "nexus",
-    "device-admit"
+    "device-admit",
+    "handle"
   ],
   "mirrored": [
     "pour",
@@ -48,6 +50,8 @@
     "flow",
     "wiki",
     "project_md",
+    "meme_put",
+    "meme_get",
     "roster",
     "inspect",
     "build",
@@ -76,6 +80,8 @@
     "flow": "flow",
     "wiki": "wiki switch",
     "project_md": "carrier project-md",
+    "meme_put": "meme put",
+    "meme_get": "meme get",
     "roster": "sense roster",
     "inspect": "sense inspect",
     "build": "sense build",
@@ -88,6 +94,7 @@
   "mirror_hosts": [
     "carrier",
     "flow",
+    "meme",
     "sense",
     "wiki"
   ],
@@ -114,6 +121,7 @@
     "edge",
     "raise",
     "nexus",
-    "device-admit"
+    "device-admit",
+    "handle"
   ]
 }

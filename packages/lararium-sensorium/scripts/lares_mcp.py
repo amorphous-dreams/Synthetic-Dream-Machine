@@ -52,6 +52,16 @@ WIKI_VERBS = ("wiki",)
 # top-level command — so it rides `mirrored`/`cli_forms`, never an ahead-of-CLI allowance.
 CARRIER_VERBS = ("project_md",)
 
+# The MEME namespace — the MCP skin of the ONE placement function: `meme_put` lands a meme's text at
+# a `lar:` uri through the island's Confluence gate; `meme_get` reads the text + its canonical hash back.
+# Each mirrors `lares meme put|get` (the host `meme` is a real top-level command, so `mirrored`/`cli_forms`
+# carry it). THE CONTAINER LAW: at most one of `recipe`/`bag` names where the meme lands — neither → the
+# daemon reads `recipe: "default"`, the host's ANCHOR (@daemon's own wiki; never "the active wiki");
+# `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a residency placement (fails loud
+# if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the `@` spelling stands retired. Both
+# ride `lares_uds.call` to the @daemon — never a store (the single-writer law).
+MEME_VERBS = ("meme_put", "meme_get")
+
 # The VAULT namespace — the at-rest seal LIFECYCLE the operator drives (status/seal/rotate/export the two
 # sovereign secret carriers: the keyhive archive + the recovery share). Each MCP tool rides the @daemon
 # vault verb over the owner-only 0600 UDS, so the passphrase crosses the SAME trust boundary a CLI arg
@@ -99,6 +109,10 @@ VERB_SEATS = {
     "mismatch": (True, False),          # the ki↔R coupling comparator — read-only, TS-hull ⋈ R diff → HOTL
     "flow": (True, False),              # the pet-named composed cap-stack runner — read-only compute, routed → HOTL
     "wiki": (True, False),              # switcher (switch/hold/release/active) — reversible, low-trust, LOCAL residency → HOTL
+    # The meme placement pair — a put lands through the gate (a re-put restores; tombstones move, never
+    # delete) and a get reads; both stay on the operator's own island → HOTL.
+    "meme_put": (True, False),          # place a meme's text at a lar: uri through the Confluence gate — reversible, trusted → HOTL
+    "meme_get": (True, False),          # read a meme's text + canonical hash — reversible, trusted → HOTL
     # The vault seal-lifecycle tools — a status READ rides HOTL; every MUTATION of the sovereign at-rest
     # seal crosses a trust boundary (it touches identity secret material), so it seats HITL.
     "vault_status": (True, False),      # read the per-carrier seal STATE — reversible, trusted → HOTL
@@ -858,6 +872,62 @@ def build_mcp(coordinator: LaresCoordinator):
             raise ValueError(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
         args: dict = {"slug": slug} if slug else {}
         return uds.output(f"wiki-{verb}", args)
+
+    # ── the MEME namespace — `meme_put` / `meme_get`, the MCP skin of the one placement function ──
+
+    def _meme_container(verb: str, recipe: "str | None", bag: "str | None") -> dict:
+        """The container args, validated CLIENT-SIDE: at most one of `recipe`/`bag`; a bare slug only
+        (the `@` spelling stands retired — refused, never stripped). Neither → an EMPTY dict, so the
+        daemon reads `recipe: "default"` itself (one truth, held daemon-side; the client never spells it)."""
+        if recipe is not None and bag is not None:
+            raise ValueError(f"{verb}: name at most one of `recipe`/`bag` (got recipe={recipe!r}, bag={bag!r}); "
+                             "neither → the host's anchor wiki (recipe \"default\")")
+        for key, slug in (("recipe", recipe), ("bag", bag)):
+            if slug is not None and (not slug or slug.startswith("@")):
+                raise ValueError(f"{verb}: `{key}` takes a bare slug (`sdm`, `lares`), got {slug!r} — "
+                                 "the `@` spelling stands retired")
+        if recipe is not None:
+            return {"recipe": recipe}
+        if bag is not None:
+            return {"bag": bag}
+        return {}
+
+    def _meme_wire(verb: str, args: dict):
+        """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
+        `None` (an absent meme reads null, never the receipt envelope `uds.output` would hand back)."""
+        out = uds.call(verb, args)
+        summary = ((out.get("results") or {}).get("summary")) or {}
+        if summary.get("ok") is False:
+            raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
+        return summary.get("output")
+
+    @mcp.tool()
+    def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,
+                 base: "str | None" = None) -> dict:
+        """PLACE a meme's `text` at its `lar:` `uri` through the island's Confluence gate — mirrors
+        `lares meme put`. CONTAINER LAW: at most one of `recipe` (an edit AS that wiki; lands in its top
+        bag) / `bag` (a residency placement; fails loud if the island cannot write it); neither → the
+        host's ANCHOR, the @daemon's own wiki. Slugs ride bare (`sdm`, `lares`). `base` carries the
+        canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
+        `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
+        tombstoned, canonicalHash, warnings, diagnostics}. Rides the @daemon wire, never a store."""
+        args: dict = {**_meme_container("meme_put", recipe, bag), "uri": uri, "text": text}
+        if base is not None:
+            args["base"] = base
+        return _meme_wire("meme-put", args)
+
+    @mcp.tool()
+    def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None) -> "dict | None":
+        """READ a meme's text + canonical hash at its `lar:` `uri` — mirrors `lares meme get`. CONTAINER
+        LAW: at most one of `recipe` / `bag` names where to read; neither → the host's ANCHOR, the
+        @daemon's own wiki. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash} — carry the
+        `canonicalHash` into `meme_put`'s `base` to write against what you read — or null when the meme
+        stands absent. Rides the @daemon wire, never a store."""
+        args: dict = {**_meme_container("meme_get", recipe, bag), "uri": uri}
+        # A reactor outcome never rides bare null, so the daemon answers `{uri, meme}`; the tool hands
+        # back the meme alone, as the contract spells it.
+        out = _meme_wire("meme-get", args) or {}
+        return out.get("meme")
 
     @mcp.tool()
     def vault_status(probe: "str | None" = None) -> dict:

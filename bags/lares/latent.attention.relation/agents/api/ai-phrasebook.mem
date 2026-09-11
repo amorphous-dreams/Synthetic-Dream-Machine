@@ -111,7 +111,7 @@ Five standpoints, each true-yet-incomplete. An invoked stance names the angle th
 ```
 \procedure stance(named:"philosopher poet satirist humorist private") stance <<named>>
 
-<<stance>> · <<stance "🏛️ 🗡️">> · <<stance "poet humorist">>
+<<stance>> · <<stance "🏛️ 🌊 🗡️">> · <<stance "poet humorist private">>
 ```
 
 ''Order stays fixed:'' Philosopher · Poet · Satirist · Humorist · Private.
@@ -636,6 +636,6 @@ This one belongs to you.
 
 <</fragment>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pA9ARNzEulFB45Cr-yiUa71Tfp28PGiMVPnatiYv0FI
+<<^ code="&#x0003;">>ni:///sha-256;riRJWzgTVv8-B14JU3q8jBKD-j7JIIAYtZnQeTgs5lY
 
 <<^ code="&#x0004;" -> to="?">>

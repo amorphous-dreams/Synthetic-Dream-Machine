@@ -56,6 +56,8 @@ import type { TiddlerFields } from "./deserializer.js";
 import { projectSubmission } from "./meme-markdown.js";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { decideIngest } from "./ingest-gate.js";
+import { placeMeme } from "./place-meme.js";
+import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
 import { gradeOf } from "./meme-ast/diagnostics.js";
 import { decideDeletions } from "./delete-gate.js";
@@ -864,37 +866,19 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // rides ASIDE in `$:/config/OriginalTiddlerPaths`, never on the tiddlers.
     let packInfo: { packPath: string; members: string[] } | null = null;
     if (memetic) {
-      const current = new Map<string, Record<string, unknown>>();
-      for (const t of groupTitles) {
-        const rec = await readFromBag(access, action.toBag, t);
-        if (rec) current.set(t, rec.tiddler as unknown as Record<string, unknown>);
-      }
-      const currentText = expandMemeRefs((t) => current.get(t) as never, uri) ?? "";
-      const decision = decideIngest({
-        uri,
-        diskText:          carrierText,
-        diskHash:          carrier.diskHash,
-        syncedHash:        carrier.syncedHash,
-        currentRenderHash: renderHash(currentText),
-        hash:              renderHash,
-      });
-      if (decision.kind === "noop") {
-        results.push({ uri, decision: "noop", reason: decision.reason });
-        continue;
-      }
-      // The gate grades what it recovered, so the operator hears about a carrier that landed degraded
-      // rather than only about one that got turned away.
-      const grade = gradeOf(decision.diagnostics);
-      if (decision.kind === "refuse") {
-        results.push({ uri, decision: "refuse", grade, warnings: [...decision.warnings] });
-        continue;
-      }
-      if (decision.kind === "conflict") {
-        results.push({ uri, decision: "conflict", grade });
-        continue;
-      }
-      freshRecords = decision.records as Array<Record<string, unknown>>;
-      receipt = { uri, decision: "ingest", grade };
+      // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
+      // The gesture's Synced-tree hash rides as the base the gate merges against.
+      const placed = await placeMeme(
+        { uri, text: carrierText, baseHash: carrier.syncedHash, hash: renderHash },
+        bagMemeSink(access, action.toBag, action.changeId, o),
+      );
+      results.push(
+        placed.decision === "ingest"  ? { uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned } :
+        placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason } :
+        placed.decision === "refuse"  ? { uri, decision: "refuse", grade: placed.grade, warnings: [...placed.warnings] } :
+                                        { uri, decision: "conflict", grade: placed.grade },
+      );
+      continue;
     } else {
       // Native filetype: the echo gate (disk == last-projected) short-circuits
       // an unchanged carrier BEFORE any deserialize (the "zero deserialize" echo),
@@ -1205,6 +1189,17 @@ async function removeIn(access: BagAccess, bag: string, title: string, o: Change
 }
 
 /** Copy a record into the target bag preserving change-id (Anti-pattern #1 defense). */
+/** The bag skin of `MemeSink` — `placeMeme` over one bag's store, stamping the change origin. `bag`
+ *  is user space: a read hands the record's fields back whole. */
+function bagMemeSink(access: BagAccess, bag: string, changeId: string, o: ChangeOrigin): MemeSink {
+  return {
+    titles:    () => listLiveTitlesInBag(access, bag),
+    read:      async (title) => ((await readFromBag(access, bag, title))?.tiddler as unknown as TiddlerFields | undefined),
+    land:      (fields) => landInBag(access, bag, { tiddler: fields as LarTiddlerRecord["tiddler"], meta: {} }, changeId, o),
+    tombstone: (title) => tombstoneIn(access, bag, title, o),
+  };
+}
+
 async function landInBag(
   access: BagAccess,
   toBag: string,
@@ -1213,12 +1208,11 @@ async function landInBag(
   o: ChangeOrigin,
 ): Promise<void> {
   const record: LarTiddlerRecord = {
-    // Stamp the DESTINATION residency: the disk projector routes a record to its
-    // mirror by the `bag` field (disk-projector reads fields["bag"]), so a moved
-    // or copied record MUST carry its new bag — else it never projects under the
-    // destination mirror (it kept the source's bag). Cross-bag = cross-doc, so
-    // the spread clones into a foreign doc cleanly (no same-doc aliasing).
-    tiddler: { ...source.tiddler, bag: toBag },
+    // Residency rides the destination doc itself: the store fires every change with its own bag on
+    // the ENVELOPE, and the nalu stamps `$origin-bag` on the wiki side for the projector. `bag` is the
+    // author's field and travels whole. Cross-bag = cross-doc, so the spread clones into a foreign
+    // doc cleanly (no same-doc aliasing).
+    tiddler: { ...source.tiddler },
     meta: { ...(source.meta ?? {}), changeId },
   };
   await writeIn(access, toBag, record, o);

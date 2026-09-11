@@ -25,6 +25,7 @@ import { realpathSync }  from "node:fs";
 import { parseArgs, type ParsedArgs } from "../parse-args.js";
 import { cmdHerm }                    from "../commands/herm.js";
 import { cmdDraft }                   from "../commands/draft.js";
+import { cmdMeme }                    from "../commands/meme.js";
 import { cmdBag }                     from "../commands/bag.js";
 import { cmdWiki }                    from "../commands/wiki.js";
 import { cmdAct }                     from "../commands/act.js";
@@ -109,6 +110,7 @@ const COMMANDS: readonly Command[] = [
   { name: "ingest",        summary: "Disk→records through the Confluence gate: scan + diff (preview) or --apply through the island's INGEST verb. --tag-blobs stamps the CAS opt-in flag (`.meta` sidecar / meme ahu meta) for the large un-flagged carriers that would fault at rebirth (preview names the count).", handler: cmdIngest       },
   { name: "watch",         summary: "Watch a source dir and fire the ingest gesture per settle — one wave per quiet window. Preview by default; --apply submits.", handler: cmdWatch        },
   { name: "draft",         summary: "Pull a tiddler from a lower bag into a writable draft (no tombstone). The operator may later land it through a residency ACTION verb (`lares act`).", handler: cmdDraft        },
+  { name: "meme",          summary: "THE MEME DOOR — one meme, as text, through the Confluence gate (the same `placeMeme` the HTTP route and the MCP tool call). `put <uri> [--recipe <slug> | --bag <slug>] [--base <hash>] [--file <path>]` lands a framed meme: no target = the ANCHOR (the daemon's own wiki, its cascade routing the records to the top bag as an in-wiki edit would); `--recipe` = an edit AS that wiki (its designated writable bag, write-then-sync); `--bag` = a residency placement, refused when this island cannot write the bag. `--base` carries the canonical hash last read — records that moved past it CONFLICT and nothing lands. `get <uri> [--recipe | --bag]` reads the meme back (text on stdout, the base on stderr). Slugs ride bare. Bare `lares meme` prints usage.", handler: cmdMeme },
   { name: "bag",           summary: "Operate on individual bags: pin / unpin / stats / register-cold. Run `lares bag help`.",      handler: cmdBag          },
   { name: "wiki",          summary: "Operate on whole wikis: init/open/sync/pin/unpin/add-bag/remove-bag/list/which. Run `lares wiki help`.", handler: cmdWiki },
   { name: "cleanup-days",  summary: "Read or set Claude Code's `cleanupPeriodDays` in ~/.claude/settings.json — how many days a session file survives before Claude deletes it at startup. Those files carry the mempalace's verbatim harvest source, so a short window evaporates raw memory before it's mined. `lares cleanup-days` shows the current value; `lares cleanup-days <N>` (or `max`) sets it. Claude rejects 0; the floor 99999 (~274 yrs) names the keep-forever idiom. Any wiring RAISES a value below the floor — memory recovers from those files, so retention is the one setting this house does not leave short. This command reads it, or sets any value the operator wants.", handler: cmdCleanupDays },

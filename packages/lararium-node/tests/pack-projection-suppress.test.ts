@@ -69,11 +69,11 @@ describe("pack projection-suppress — a pack member never self-projects", () =>
     // provenance map naming each member's home file.
     const prov = serializeProvenance({ [PACK_URI_A]: PACK_PATH, [PACK_URI_B]: PACK_PATH, [PACK_URI_C]: PACK_PATH });
     const engine = fakeEngine({
-      [PACK_URI_A]: { title: PACK_URI_A, text: "a", bag: BAG },
-      [PACK_URI_B]: { title: PACK_URI_B, text: "b", bag: BAG },
-      [PACK_URI_C]: { title: PACK_URI_C, text: "g", bag: BAG },
-      [LONER_URI]:  { title: LONER_URI,  text: "l", bag: BAG },
-      [ORIGINAL_TIDDLER_PATHS]: { title: ORIGINAL_TIDDLER_PATHS, text: prov, bag: BAG },
+      [PACK_URI_A]: { title: PACK_URI_A, text: "a", "$origin-bag": BAG },
+      [PACK_URI_B]: { title: PACK_URI_B, text: "b", "$origin-bag": BAG },
+      [PACK_URI_C]: { title: PACK_URI_C, text: "g", "$origin-bag": BAG },
+      [LONER_URI]:  { title: LONER_URI,  text: "l", "$origin-bag": BAG },
+      [ORIGINAL_TIDDLER_PATHS]: { title: ORIGINAL_TIDDLER_PATHS, text: prov, "$origin-bag": BAG },
     });
 
     // Every carrier sites as a `.tid` — so absent the suppress, each member WOULD
@@ -119,7 +119,7 @@ describe("pack projection-suppress — a pack member never self-projects", () =>
     root = mkdtempSync(join(tmpdir(), "lar-packsup-none-"));
     // No $:/config/OriginalTiddlerPaths → parseProvenance reads empty → nothing suppressed.
     const engine = fakeEngine({
-      [PACK_URI_A]: { title: PACK_URI_A, text: "a", bag: BAG },
+      [PACK_URI_A]: { title: PACK_URI_A, text: "a", "$origin-bag": BAG },
     });
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: BAG, mirrorRoot: root }],

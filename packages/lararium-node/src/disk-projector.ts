@@ -171,8 +171,9 @@ export class LarDiskProjector {
    * Architecture law (TW5 VM Primacy): only the IslandAdaptor subscribes
    * to Automerge stores. The disk projector subscribes to TW5 wiki change
    * events — the same surface that drives in-browser render. Bag provenance
-   * reaches TW5 via the `bag` field that IslandAdaptor stamps on each
-   * tiddler it loads; the projector reads it from the TW5 tiddler directly.
+   * reaches TW5 as the `$origin-bag` the nalu engine stamps from each change's
+   * envelope; the projector reads it from the TW5 tiddler directly. `bag` is the
+   * author's field and names nothing here.
    *
    * Returns an unsubscribe fn.
    */
@@ -231,7 +232,7 @@ export class LarDiskProjector {
 
   /**
    * Level-triggered reconcile of ONE carrier root against the settled VM state
-   * (the projector's authoritative view, per VM-Primacy). Live (a `bag` field
+   * (the projector's authoritative view, per VM-Primacy). Live (a `$origin-bag`
    * naming a mirror) → flush that owner (render + write + cross-mirror cleanup).
    * Gone from the resolved view → unlink from every mirror whose bag no longer
    * holds it (a true delete; a bag still holding the carrier keeps its file). A
@@ -275,7 +276,8 @@ export class LarDiskProjector {
     }
     const fields = tiddler.fields as Record<string, string | string[] | undefined>;
     if (fields["disk-projection"] === "no") return;
-    const bagId = typeof fields["bag"] === "string" ? fields["bag"] : undefined;
+    // The host's provenance stamp (nalu-engine) names the mirror; `bag` is the author's field.
+    const bagId = typeof fields["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
     if (!bagId || !this.mirrors.some((m) => m.bagId === bagId)) return;
     await this.flush(bagId, rootUri);
   }

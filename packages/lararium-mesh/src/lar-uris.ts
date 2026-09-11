@@ -359,7 +359,7 @@ export function bagDescriptorUri(bagId: string): string {
 // (`{bags,wikis}/@name` — the only place `@` stands), and the INNER PATH. These build the third.
 //
 // A title carries NO `@` and NO entity. The bag a record lands in is the face's own `@…-<tag>`, and the
-// caller already names it in the record's `bag` field — so a title that repeated it would say the entity
+// doc the caller writes already names it — so a title that repeated it would say the entity
 // twice and fuse two slots into one string. Keeping the inner path free of the entity is also what lets
 // one internal shape serve every face: a record written on one persona's plane reads identically on the
 // next, because nothing in its title knows which plane it sits in.

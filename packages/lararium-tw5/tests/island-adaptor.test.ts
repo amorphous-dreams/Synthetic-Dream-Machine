@@ -370,16 +370,17 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     expect(texts).toEqual(["v3"]);
   });
 
-  test("explicit bag field routes ceremony write to canonical bag (MOVE path)", async () => {
-    const bags: string[] = [];
+  test("★ an author's `bag` field routes nothing — the cascade decides, and the field rides through whole ★", async () => {
+    const puts: Array<{ bag: string | undefined; field: unknown }> = [];
     const orig = store.put.bind(store);
-    store.put = async (rec, origin, options) => { bags.push(options?.bag ?? ""); return orig(rec, origin, options); };
+    store.put = async (rec, origin, options) => { puts.push({ bag: options?.bag, field: rec.tiddler["bag"] }); return orig(rec, origin, options); };
 
     const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "saved", bag: "lar:///ha.ka.ba/bags/lares" } });
     await flush();
     await done;
 
-    expect(bags).toContain("lar:///ha.ka.ba/bags/lares");
+    expect(puts[0]?.bag).toBe(wikiSlotUri("test-wiki", "working"));
+    expect(puts[0]?.field).toBe("lar:///ha.ka.ba/bags/lares");
   });
 
   // The working/canon split (shore-law): a LIVE edit (no explicit bag) routes

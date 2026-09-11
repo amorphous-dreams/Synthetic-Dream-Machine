@@ -40,7 +40,8 @@
  *      Unison's law; the CRDT diff-splice path refines this later)
  */
 
-import { digestsEqual } from "@lararium/mesh";
+// PURE subpath (no Automerge) — the barrel drags wasm the plugin build cannot bundle.
+import { digestsEqual } from "@lararium/mesh/agile-digest";
 import { deserializeCarrier, expandMemeRefs } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { collectAhuSlots } from "./meme-ast/ahu-scan.js";

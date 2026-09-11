@@ -82,7 +82,7 @@ export function didKeyFromVerifyingKey(verifyingKeyHex: string): string {
 
 // INNER PATHS — a title names its own record and never the entity holding it. An address carries three
 // slots, each named once: the HOME, the ENTITY (`{bags,wikis}/@name`, the only place `@` stands) and the
-// INNER PATH. These build the third, so a title carries no `@` and no bag: the record's `bag` field already
+// INNER PATH. These build the third, so a title carries no `@` and no bag: the doc a record lands in already
 // names the face's `@…-<tag>`, and a title repeating it would say the entity twice. Keeping the inner path
 // free of the entity is also what lets ONE internal shape serve every face — a record written on one
 // persona's plane reads identically on the next, because nothing in its title knows which plane holds it.
@@ -95,7 +95,7 @@ const SOCIAL_HOST         = "ha.ka.ba";
 const IDENTITIES_INNER     = `lar:///${SOCIAL_HOST}/identities`;
 const CIRCLES_INNER        = `lar:///${SOCIAL_HOST}/circles`;
 // The ENTITY a record lands in — `bags/name`, the one slot `@` stands in. Mirrors mesh's
-// `IDENTITIES_NAMESPACE`/`CIRCLES_NAMESPACE`, and a record's `bag` field carries THIS, never the stem
+// `IDENTITIES_NAMESPACE`/`CIRCLES_NAMESPACE`, and the doc a record lands in IS this, never the stem
 // above: one constant serving both slots would fuse the two and route a record by the wrong string.
 const IDENTITIES_NAMESPACE = `lar:///${SOCIAL_HOST}/bags/identities`;
 const CIRCLES_NAMESPACE    = `lar:///${SOCIAL_HOST}/bags/circles`;

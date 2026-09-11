@@ -1,0 +1,137 @@
+/**
+ * THE ROUTE SKINS — driven through TW5's route contract (request · response · state) with nothing
+ * beneath them but a Map. PUT lands, GET hands back the base, a stale base answers 412, an error-
+ * graded meme answers 422, a malformed uri answers 400. The server's auth and CSRF gate stand in
+ * front of these and get no exercise here.
+ */
+import { describe, test, expect } from "vitest";
+import * as put from "../src/routes/put-meme.js";
+import * as get from "../src/routes/get-meme.js";
+import { memePathOf } from "../src/place-meme.js";
+import type { TiddlerFields } from "../src/deserializer.js";
+
+const URI = "lar:///t/x";
+const meme = (slots: readonly string[]): string =>
+  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
+  slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+
+function wiki() {
+  const store = new Map<string, TiddlerFields>();
+  return {
+    store,
+    allTitles: () => [...store.keys()],
+    getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t)! } : undefined),
+    addTiddler: (f: TiddlerFields) => { store.set(String(f.title), f); },
+    deleteTiddler: (t: string) => { store.delete(t); },
+  };
+}
+
+interface Reply { status: number; headers: Record<string, string>; body: string }
+
+/** Fire one route handler the way TW5's server does and await its reply. */
+function fire(
+  route: { handler: (req: never, res: never, state: never) => void },
+  w: ReturnType<typeof wiki>,
+  opts: { uri?: string; data?: string; ifMatch?: string },
+): Promise<Reply> {
+  return new Promise((resolve) => {
+    const reply: Reply = { status: 0, headers: {}, body: "" };
+    const response = {
+      writeHead: (status: number, headers: Record<string, string>) => { reply.status = status; reply.headers = headers; },
+      end: (body?: string) => { reply.body = body ?? ""; resolve(reply); },
+    };
+    const request = { headers: opts.ifMatch ? { "if-match": opts.ifMatch } : {} };
+    const state = { wiki: w, params: ["bags", "default", "lar", opts.uri ?? "t/x"], data: opts.data ?? "" };
+    route.handler(request as never, response as never, state as never);
+  });
+}
+
+describe("★ PUT /bags/:bag/memes/:scheme/:path ★", () => {
+  test("★ the URI projects onto the path with no percent-encoding: scheme segment, then uri-path ★", () => {
+    expect(put.methods).toEqual(["PUT"]);
+    expect(memePathOf("lar:///ha.ka.ba/lares/api/noosphere-boot", { kind: "bags", name: "default" }))
+      .toBe("/bags/default/memes/lar/ha.ka.ba/lares/api/noosphere-boot");
+    expect(put.path.exec("/bags/default/memes/lar/ha.ka.ba/lares/api/noosphere-boot")?.slice(1))
+      .toEqual(["bags", "default", "lar", "ha.ka.ba/lares/api/noosphere-boot"]);
+    // The native read/write pair: recipes read the same path.
+    expect(get.path.test("/recipes/default/memes/lar/t/x")).toBe(true);
+    // A session-form URI carries an authority and never projects.
+    expect(memePathOf("lar://mara:operator@host/t/x", { kind: "bags", name: "default" })).toBeNull();
+  });
+
+  test("a fresh meme lands as its records; the ETag carries the base for the next writer", async () => {
+    const w = wiki();
+    const r = await fire(put, w, { data: meme(["a", "b"]) });
+    expect(r.status).toBe(200);
+    expect(JSON.parse(r.body).decision).toBe("ingest");
+    expect(r.headers["ETag"]).toMatch(/^"sha256:/);
+    expect([...w.store.keys()].sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
+  });
+
+  test("★ GET hands back the base; a PUT over a STALE base answers 412 and lands nothing ★", async () => {
+    const w = wiki();
+    await fire(put, w, { data: meme(["a"]) });
+    const read = await fire(get, w, {});
+    expect(read.status).toBe(200);
+    expect(read.headers["Content-Type"]).toMatch(/memetic-wikitext/);
+    // Another writer moves the records past the base this writer read.
+    await fire(put, w, { data: meme(["a", "b"]) });
+    const stale = await fire(put, w, { data: meme(["a", "z"]), ifMatch: read.headers["ETag"] });
+    expect(stale.status).toBe(412);
+    expect(w.store.has(`${URI}#/z`)).toBe(false);
+    // The current base lets the same edit through.
+    const fresh = await fire(get, w, {});
+    const ok = await fire(put, w, { data: meme(["a", "z"]), ifMatch: fresh.headers["ETag"] });
+    expect(ok.status).toBe(200);
+    expect(w.store.has(`${URI}#/z`)).toBe(true);
+  });
+
+  test("CONTROL: an error-graded meme answers 422 and the wiki stays untouched", async () => {
+    const w = wiki();
+    const stranded = meme(["a"]).replace("<<^ code=\"&#x0003;\">>\n", "<<^ code=\"&#x0003;\">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n");
+    const r = await fire(put, w, { data: stranded });
+    expect(r.status).toBe(422);
+    expect(w.store.size).toBe(0);
+  });
+
+  test("a malformed :path answers 400 on both skins, never an uncaught throw", async () => {
+    const w = wiki();
+    expect((await fire(put, w, { uri: "t/%E0%A4%A", data: meme(["a"]) })).status).toBe(400);
+    expect((await fire(get, w, { uri: "t/%E0%A4%A" })).status).toBe(400);
+  });
+
+  test("GET on a uri the wiki never held answers 404", async () => {
+    expect((await fire(get, wiki(), {})).status).toBe(404);
+  });
+});
+
+describe("★ THE PLAIN CONTAINER LAW — `default` is the host's anchor; any other name answers 404 ★", () => {
+  const fireAt = (route: Parameters<typeof fire>[0], w: ReturnType<typeof wiki>, kind: string, name: string, data?: string) =>
+    new Promise<Reply>((resolve) => {
+      const reply: Reply = { status: 0, headers: {}, body: "" };
+      const response = {
+        writeHead: (status: number, headers: Record<string, string>) => { reply.status = status; reply.headers = headers; },
+        end: (body?: string) => { reply.body = body ?? ""; resolve(reply); },
+      };
+      route.handler({ headers: {} } as never, response as never, { wiki: w, params: [kind, name, "lar", "t/x"], data: data ?? "" } as never);
+    });
+
+  test("a bag or recipe the server cannot name answers 404 with a one-line body and swallows nothing", async () => {
+    const w = wiki();
+    for (const [kind, name] of [["bags", "other"], ["recipes", "other"], ["bags", "Default"], ["recipes", ""]] as const) {
+      const r = await fireAt(put, w, kind, name, meme(["a"]));
+      expect(r.status, `${kind}/${name}`).toBe(404);
+      expect(r.body.trim().split("\n")).toHaveLength(1);
+      expect((await fireAt(get, w, kind, name)).status, `${kind}/${name}`).toBe(404);
+    }
+    expect(w.store.size).toBe(0);
+  });
+
+  test("CONTROL: `recipes/default` and `bags/default` both name the one wiki", async () => {
+    const w = wiki();
+    expect((await fireAt(put, w, "recipes", "default", meme(["a"]))).status).toBe(200);
+    expect((await fireAt(get, w, "bags", "default")).status).toBe(200);
+    expect((await fireAt(get, w, "recipes", "default")).status).toBe(200);
+  });
+});

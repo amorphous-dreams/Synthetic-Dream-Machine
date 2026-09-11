@@ -42,6 +42,8 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
             // meme-ast ships ONCE as its own library tiddler (modules/meme-ast) — the same trio:
             // every consumer module requires it by URI instead of inlining its own copy.
             if (id === "lararium-meme-ast") return true;
+            // place-meme ships ONCE as its own library tiddler; the route skins require it by URI.
+            if (id === "lararium-place-meme") return true;
             return false;
           },
           output: {
@@ -53,6 +55,8 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
                 ? "lar:///ha.ka.ba/lararium/tw5/lib/wiki-sense-fold"
                 : id === "lararium-meme-ast"
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-ast"
+                : id === "lararium-place-meme"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/place-meme"
                   : id === "smol-toml"
                     ? "lar:///ha.ka.ba/lararium/tw5/lib/smol-toml"
                     : id,
@@ -76,6 +80,10 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
                 find: /^(\.\.?\/)+meme-ast\/(index|parse|fence-mask|ahu-scan)(\.js)?$/,
                 replacement: "lararium-meme-ast",
               }]
+            : []),
+          // place-meme rides the same law: one library tiddler, required by URI from every skin.
+          ...(mod.name !== "place-meme"
+            ? [{ find: /^(\.\.?\/)+place-meme(\.js)?$/, replacement: "lararium-place-meme" }]
             : []),
           {
             find: /^@lararium\/mesh\/(.+)$/,
