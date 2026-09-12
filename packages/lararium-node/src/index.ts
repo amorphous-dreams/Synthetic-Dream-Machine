@@ -396,4 +396,6 @@ export { KEY_CLASSES, isKeyClass, vesselKeyCensus } from "./key-class.js";
 export type { KeyClass, KeyCensusEntry } from "./key-class.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
-export { readGenesisManifest, genesisCasDir } from "./genesis-artifact.js";
+export { readGenesisManifest, genesisCasDir,
+  readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
+  GENESIS_ENGINE_CID, GENESIS_GRAMMAR_CID, GENESIS_PLUGINS_CID } from "./genesis-artifact.js";

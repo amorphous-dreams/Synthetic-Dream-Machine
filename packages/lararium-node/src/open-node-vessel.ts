@@ -461,7 +461,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     //
     // ONE VERDICT, BOTH HOOKS. A legacy `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
     // ACCESS wide open, so a peer that REQUESTS a doc by id pulls it whatever the verdict said — and every
-    // `bags/*` id derives from the shared genesis (node-share-config.ts, measured in
+    // `bags/*` id derives from the shared genesis (mesh `shareConfigOf`, measured in
     // share-policy-is-access.test.ts). The verdict below is an ACCESS verdict; mesh's `shareConfigOf` seats it on both.
     shareConfig: shareConfigOf(async (peerId, documentId) => {
       // THE ADMISSION LANDS FIRST. The WS adapter emits `peer-candidate` BEFORE it keys the socket into

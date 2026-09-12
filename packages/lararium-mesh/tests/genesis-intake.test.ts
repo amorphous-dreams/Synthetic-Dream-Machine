@@ -23,6 +23,7 @@ import {
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   GENESIS_CID_ENGINE_TIDDLER,
   GENESIS_CID_PLUGINS_TIDDLER,
+  GENESIS_CID_GRAMMAR_TIDDLER,
   cidV1Sha256,
   type LarDoc,
 } from "../src/index.js";
@@ -121,4 +122,36 @@ describe("genesis-intake — the one intake core", () => {
     expect(second.previousEngineCid).toBe(engineCid);
     expect(second.previousPluginsCid).toBe(pluginsCid);
   });
+
+  test("★ a GRAMMAR-only overturn RECONCILES — kāhuli's fast ratchet is not invisible to intake ★", async () => {
+    // The grammar region folds the required grammar ALONE and the plugins region now EXCLUDES it, so a
+    // pure grammar overturn moves grammarCid and NOTHING else. A reconcile that reads only engine+plugins
+    // sees two stable regions and declines the merge — the fast ratchet would advance and never land.
+    const engineCid  = cidV1Sha256(new TextEncoder().encode("engine-region"));
+    const pluginsCid = cidV1Sha256(new TextEncoder().encode("plugins-region"));
+    const grammarWas = cidV1Sha256(new TextEncoder().encode("grammar-region-v1"));
+    const grammarNow = cidV1Sha256(new TextEncoder().encode("grammar-region-v2"));
+    const withRegions = (grammarCid: string) => (d: LarDoc) => {
+      const t = (d as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[GENESIS_CID_ENGINE_TIDDLER]  = { tiddler: { title: GENESIS_CID_ENGINE_TIDDLER,  cid: engineCid  }, meta: { authority: "genesis" } };
+      t[GENESIS_CID_GRAMMAR_TIDDLER] = { tiddler: { title: GENESIS_CID_GRAMMAR_TIDDLER, cid: grammarCid }, meta: { authority: "genesis" } };
+      t[GENESIS_CID_PLUGINS_TIDDLER] = { tiddler: { title: GENESIS_CID_PLUGINS_TIDDLER, cid: pluginsCid }, meta: { authority: "genesis" } };
+    };
+
+    const repo = newRepo();
+    const live = repo.create<LarDoc>(emptyLarDoc());
+    const before = await importGenesisIsland(repo, await genesisBytes(withRegions(grammarWas)), "grammar-was");
+    expect(reconcileGenesisCid(live, before).updated, "the first intake records all three regions").toBe(true);
+    expect(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER]?.tiddler?.["cid"]).toBe(grammarWas);
+
+    // THE OVERTURN: the grammar moves, the engine true-name and this operator's collection stand.
+    const after = await importGenesisIsland(repo, await genesisBytes(withRegions(grammarNow)), "grammar-now");
+    const moved = reconcileGenesisCid(live, after);
+    expect(moved.updated, "a grammar-only overturn must land").toBe(true);
+    expect(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER]?.tiddler?.["cid"], "the new grammar epoch is recorded").toBe(grammarNow);
+
+    // CONTROL — with every region stable the reconcile still no-ops (the guard is not simply disabled).
+    expect(reconcileGenesisCid(live, after).updated).toBe(false);
+  });
+
 });

@@ -21,7 +21,7 @@ import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, ENGINE_CORE_ID } from "./base-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import {
-  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
+  GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   materializeGenesisDoc, oracleGenesisDocUrl, type GenesisSeed,
 } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
@@ -148,14 +148,18 @@ export async function materializeGenesisIsland(
 }
 
 export interface GenesisReconcileResult {
-  /** True when either region CID differed from the live doc — the genesis merged. */
+  /** True when ANY region CID differed from the live doc — the genesis merged. */
   updated: boolean;
   /** Incoming engine content-CID (the hearth true-name; slow ratchet), or null. */
   incomingEngineCid:  string | null;
-  /** Incoming plugins content-CID (fast ratchet), or null. */
+  /** Incoming grammar content-CID (kāhuli's fast ratchet — the required grammar alone), or null. */
+  incomingGrammarCid: string | null;
+  /** Incoming plugins content-CID (this operator's own collection), or null. */
   incomingPluginsCid: string | null;
   /** Engine CID recorded in the live doc before reconcile, or null when absent. */
   previousEngineCid:  string | null;
+  /** Grammar CID recorded in the live doc before reconcile, or null when absent. */
+  previousGrammarCid: string | null;
   /** Plugins CID recorded in the live doc before reconcile, or null when absent. */
   previousPluginsCid: string | null;
 }
@@ -173,6 +177,7 @@ export function reconcileGenesisCid(
   incomingHandle: DocHandle<LarDoc>,
 ): GenesisReconcileResult {
   const incomingEngineCid  = regionCid(incomingHandle, GENESIS_CID_ENGINE_TIDDLER);
+  const incomingGrammarCid = regionCid(incomingHandle, GENESIS_CID_GRAMMAR_TIDDLER);
   const incomingPluginsCid = regionCid(incomingHandle, GENESIS_CID_PLUGINS_TIDDLER);
 
   // Self-merge guard: a fresh boot falls the island back to the genesis handle
@@ -182,18 +187,24 @@ export function reconcileGenesisCid(
   // When the live doc IS the genesis doc there is nothing to reconcile.
   if (liveHandle.url === incomingHandle.url) {
     return {
-      updated: false, incomingEngineCid, incomingPluginsCid,
-      previousEngineCid: incomingEngineCid, previousPluginsCid: incomingPluginsCid,
+      updated: false, incomingEngineCid, incomingGrammarCid, incomingPluginsCid,
+      previousEngineCid: incomingEngineCid, previousGrammarCid: incomingGrammarCid, previousPluginsCid: incomingPluginsCid,
     };
   }
 
   const previousEngineCid  = regionCid(liveHandle, GENESIS_CID_ENGINE_TIDDLER);
+  const previousGrammarCid = regionCid(liveHandle, GENESIS_CID_GRAMMAR_TIDDLER);
   const previousPluginsCid = regionCid(liveHandle, GENESIS_CID_PLUGINS_TIDDLER);
 
+  // EVERY region is asked. The grammar folds the required grammar ALONE and the plugins region excludes
+  // it, so a pure kāhuli grammar overturn moves grammarCid and nothing else — a reconcile that asked only
+  // engine+plugins would read two stable regions and decline the merge, and the fast ratchet would advance
+  // on the wire and never land. A region added later must be asked here in the same act it is minted.
   const engineMoved  = previousEngineCid  !== incomingEngineCid;
+  const grammarMoved = previousGrammarCid !== incomingGrammarCid;
   const pluginsMoved = previousPluginsCid !== incomingPluginsCid;
-  if (!engineMoved && !pluginsMoved) {
-    return { updated: false, incomingEngineCid, incomingPluginsCid, previousEngineCid, previousPluginsCid };
+  if (!engineMoved && !grammarMoved && !pluginsMoved) {
+    return { updated: false, incomingEngineCid, incomingGrammarCid, incomingPluginsCid, previousEngineCid, previousGrammarCid, previousPluginsCid };
   }
 
   liveHandle.merge(incomingHandle);
@@ -201,6 +212,10 @@ export function reconcileGenesisCid(
     if (incomingEngineCid !== null) {
       doc.tiddlers[GENESIS_CID_ENGINE_TIDDLER] = mutableLarRecord(
         GENESIS_CID_ENGINE_TIDDLER, { cid: incomingEngineCid }, "genesis-reconcile");
+    }
+    if (incomingGrammarCid !== null) {
+      doc.tiddlers[GENESIS_CID_GRAMMAR_TIDDLER] = mutableLarRecord(
+        GENESIS_CID_GRAMMAR_TIDDLER, { cid: incomingGrammarCid }, "genesis-reconcile");
     }
     if (incomingPluginsCid !== null) {
       doc.tiddlers[GENESIS_CID_PLUGINS_TIDDLER] = mutableLarRecord(
@@ -211,8 +226,9 @@ export function reconcileGenesisCid(
   console.log(
     `[genesis-intake] genesis merged  ` +
     `engine ${engineMoved ? `${short(previousEngineCid)}→${short(incomingEngineCid)} (slow)` : "stable"}  ` +
-    `plugins ${pluginsMoved ? `${short(previousPluginsCid)}→${short(incomingPluginsCid)} (fast)` : "stable"}`,
+    `grammar ${grammarMoved ? `${short(previousGrammarCid)}→${short(incomingGrammarCid)} (fast)` : "stable"}  ` +
+    `plugins ${pluginsMoved ? `${short(previousPluginsCid)}→${short(incomingPluginsCid)} (operator)` : "stable"}`,
   );
 
-  return { updated: true, incomingEngineCid, incomingPluginsCid, previousEngineCid, previousPluginsCid };
+  return { updated: true, incomingEngineCid, incomingGrammarCid, incomingPluginsCid, previousEngineCid, previousGrammarCid, previousPluginsCid };
 }

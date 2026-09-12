@@ -73,7 +73,7 @@ import {
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "@lararium/mesh";
 import type { QuorumSignature } from "@lararium/mesh";
-import { loadPersonaGroupRootSeed } from "@lararium/node";
+import { loadPersonaGroupRootSeed, readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -326,12 +326,11 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
 // An operator's OWN plugin collection (pluginsCid) is NOT a kāhuli tier: it layers on the required base,
 // overturns nobody else's reading, and moves with no ratchet act at all.
 
-/** Where this vessel's baked epoch sidecars live — LAR_ROOT-relative, so an isolated root reads its own. */
-function genesisSidecar(name: string): string | undefined {
-  const p = join(larRoot(), "genesis", name);
-  if (!existsSync(p)) return undefined;
-  try { return readFileSync(p, "utf8").trim() || undefined; } catch { return undefined; }
-}
+// The epochs read through the SAME composable genesis cap the vessel boots from (`LAR_GENESIS` →
+// `~/.lares/config.json` → repo-relative `<corpus>/genesis`). A hand-rolled `larRoot()/genesis` read
+// honoured neither, so with the cap pointed elsewhere this verb reported the epochs of an island the
+// vessel does not boot — and the epoch it prints is the hearth true-name, the value an operator reads
+// before deciding whether an overturn strands a fleet. A silent wrong answer is the worst shape here.
 
 function kahuliUsage(): void {
   console.error("usage: lares nexus kahuli <engine | grammar>");
@@ -351,7 +350,7 @@ function kahuliUsage(): void {
  * tier is real and its advance is withheld on purpose, because moving engineCid re-binds every device edge.
  */
 function kahuliEngineHeld(): number {
-  const engineCid = genesisSidecar("island.cid-engine");
+  const engineCid = readGenesisEngineCid();
   console.error("nexus kahuli engine — HELD.");
   console.error(`  current engine epoch (true-name): ${engineCid ?? "(no island baked in this root yet)"}`);
   console.error("  advancing the engine re-binds MEMBERSHIP mesh-wide — every device delegation edge signs it.");
@@ -367,9 +366,9 @@ function kahuliEngineHeld(): number {
  * (`vessel bake` re-derives the island at the freshly-packed plugin) and the mesh-push — both wired next.
  */
 function kahuliGrammar(args: ParsedArgs): number {
-  const grammarCid = genesisSidecar("island.cid-grammar");
-  const pluginsCid = genesisSidecar("island.cid-plugins");
-  const engineCid  = genesisSidecar("island.cid-engine");
+  const grammarCid = readGenesisGrammarCid();
+  const pluginsCid = readGenesisPluginsCid();
+  const engineCid  = readGenesisEngineCid();
 
   if (args.flags["apply"]) {
     console.error("nexus kahuli grammar --apply — HELD (the overturn's payload is wired next).");

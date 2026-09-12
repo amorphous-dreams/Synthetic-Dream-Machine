@@ -162,6 +162,7 @@ export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
 }
 
 const _engineCid  = new Map<string, string | undefined>();
+const _grammarCid = new Map<string, string | undefined>();
 const _pluginsCid = new Map<string, string | undefined>();
 
 /** The engine content-CID (slow ratchet) — the hearth's stable true-name (G-D3). */
@@ -170,7 +171,13 @@ export function GENESIS_ENGINE_CID(genesisDir?: string): string | undefined {
   if (!_engineCid.has(key)) _engineCid.set(key, readGenesisEngineCid(genesisDir));
   return _engineCid.get(key);
 }
-/** The plugins content-CID (fast ratchet) — a per-operator composition, never the true-name. */
+/** The grammar content-CID — kāhuli's fast ratchet, the REQUIRED grammar alone. */
+export function GENESIS_GRAMMAR_CID(genesisDir?: string): string | undefined {
+  const key = genesisDir ?? defaultGenesisDir();
+  if (!_grammarCid.has(key)) _grammarCid.set(key, readGenesisGrammarCid(genesisDir));
+  return _grammarCid.get(key);
+}
+/** The plugins content-CID — THIS operator's own collection, never the true-name and never a kāhuli tier. */
 export function GENESIS_PLUGINS_CID(genesisDir?: string): string | undefined {
   const key = genesisDir ?? defaultGenesisDir();
   if (!_pluginsCid.has(key)) _pluginsCid.set(key, readGenesisPluginsCid(genesisDir));
