@@ -310,11 +310,16 @@ export interface StagedFleet {
 /** Stand the fleet. Throws (and tears down what stood) when any of the three never reaches live. */
 export async function openStagedFleet(opts: { readonly tag?: string } = {}): Promise<StagedFleet> {
   const tag = opts.tag ? `${opts.tag}-` : "";
-  const [portHerm, portRelay, portA, portC] = await Promise.all([freePort(), freePort(), freePort(), freePort()]);
+  const [portHerm, portRelay] = await Promise.all([freePort(), freePort()]);
   const relayUrl  = `ws://127.0.0.1:${portRelay}`;
   const hermShore = `http://127.0.0.1:${portHerm}`;
   const stood: LarInstance[] = [];
-  const teardown = async (): Promise<void> => { for (const v of stood.reverse()) await v.stop(); };
+  let pairRef: StagedJoinee | null = null;
+  // C · A (through the pair's own stop, which also deletes C's staged root) · then the Herm.
+  const teardown = async (): Promise<void> => {
+    if (pairRef) { await pairRef.stop(); pairRef = null; }
+    for (const v of stood.reverse()) await v.stop();
+  };
   try {
     // The Herm: a place, no face; the crossroads relay on its own port; the read-face on `portHerm`.
     const herm = await openStaged({
@@ -327,48 +332,125 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
     });
     stood.push(herm);
 
-    // A founds; C mints under its own root; A signs the edge naming its dial; C founds by that payload.
-    const rootC = mkdtempSync(join(stageDir(), `lares-staged-${tag}C-`));
-    const cliC  = cliFor({ LAR_ROOT: rootC, LAR_PORT: String(portC) });
-    const admit = join(rootC, "admit.json");
-    let admitted: CliResult | null = null;
-    const A = await openStaged({
-      tag: `${tag}A`, port: portA,
+    // A founds; C mints under its own root; A signs the edge naming its dial; C founds by that payload —
+    // the joinee rite, one door, with both hearths dialing the Herm's crossroads and shore.
+    const pair = await openStagedJoinee({
+      tag: `${tag}fleet`,
       daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
+    });
+    pairRef = pair;
+    if (!pair.B) throw new Error(`C never stood: ${pair.joinGate ?? "(no line)"}`);
+    const A = pair.A, C = pair.B, admitted = pair.admitted;
+    return { herm, A, C, relayUrl, hermShore, admitted, stop: teardown };
+  } catch (err) {
+    await teardown();
+    throw err;
+  }
+}
+
+// ── THE JOINEE RITE — one door, four suites ─────────────────────────────────────────────────────
+/**
+ * A founds and signs; B mints under its own root and founds by the payload; B boots dialing A (by env,
+ * or by the PIN its edge carries). Four suites wrote this rite by hand, 67–158 lines each, and drifted
+ * one at a time (a retired `vessel bake` door broke two of them a day apart). One spelling, here.
+ */
+export interface JoineeOptions {
+  /** Tag prefix for the two roots (`<tag>A-` · `<tag>B-`). */
+  readonly tag?: string;
+  /** Env both daemons carry (a carriage relay, a Herm shore). */
+  readonly daemonEnv?: Record<string, string>;
+  /** Env A alone carries (e.g. `LAR_HERM_RELAY_PORT`). */
+  readonly daemonEnvA?: Record<string, string>;
+  /** How B learns A's dial: `"env"` (LAR_JOIN_SYNC/GATE/DOC off A's log and registry) or `"pin"`
+   *  (nothing — B boots by the hearth its signed edge names). Default `"env"`. */
+  readonly dial?: "env" | "pin";
+  /** Runs once A stands live and before B boots — the place a suite lands a record on A first. */
+  readonly beforeB?: (A: LarInstance) => Promise<void>;
+  /** Boot B at all? A suite measuring a founding alone passes false. Default true. */
+  readonly bootB?: boolean;
+}
+export interface StagedJoinee {
+  readonly A: LarInstance;
+  /** null when B never reached live (its boot line rides in `joinGate`) or `bootB: false`. */
+  readonly B: LarInstance | null;
+  readonly rootB: string;
+  readonly portA: number;
+  readonly portB: number;
+  /** What B's `vessel found --admit` said. */
+  readonly admitted: CliResult;
+  /** The line B's daemon died on, when it did. */
+  readonly joinGate: string | null;
+  /** A's gate key and lares doc url, as B's env dial reads them. */
+  readonly gateA: string;
+  readonly laresA: string;
+  readonly stop: () => Promise<void>;
+}
+
+export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<StagedJoinee> {
+  const tag = opts.tag ? `${opts.tag}-` : "";
+  const [portA, portB] = await Promise.all([freePort(), freePort()]);
+  const rootB = mkdtempSync(join(stageDir(), `lares-staged-${tag}B-`));
+  const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
+  const admit = join(rootB, "admit.json");
+  let admitted: CliResult | null = null;
+  const stood: LarInstance[] = [];
+  const stop = async (): Promise<void> => {
+    for (const v of stood.reverse()) await v.stop();
+    if (existsSync(rootB)) rmSync(rootB, { recursive: true, force: true });
+  };
+  try {
+    // ①–④ run while NO daemon stands: `device-admit` opens A's store directly, and a store has one owner.
+    const A = await openStaged({
+      tag: `${tag}A`, port: portA, daemonEnv: { ...(opts.daemonEnv ?? {}), ...(opts.daemonEnvA ?? {}) },
       found: async (cliA, rootA) => {
         const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
         if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
         const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
         if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-        // C founds by A's genesis, copied whole (`vessel found --admit` reads the hearth true-name off `<root>/genesis`).
-        cpSync(join(rootA, "genesis"), join(rootC, "genesis"), { recursive: true });
+        // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
+        // `<root>/genesis`, and A's `clear` just derived it (the re-derive is an internal rite step).
+        cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
+        // The joinee mints FIRST, under its own root: admission signs a key the joiner already holds.
         const { mintVesselKey } = await import("./vessel-key.js");
-        const keyC = await mintVesselKey(rootC);
-        const edge = await cliA(["device-admit", "--joinee-key", keyC, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
+        const keyB = await mintVesselKey(rootB);
+        const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
         if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);
-        admitted = await cliC(["vessel", "found", "--admit", admit]);
-        if (admitted.code !== 0) throw new Error(`C: found --admit failed (${admitted.code})\n${admitted.stderr.slice(-800)}`);
+        admitted = await cliB(["vessel", "found", "--admit", admit]);
       },
     });
     stood.push(A);
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
+    await opts.beforeB?.(A);
 
-    // C stands dialing A: A's gate key off A's own log, A's lares doc off A's registry.
+    // A's gate key off A's own log, A's lares doc off A's registry — B's env dial, or a suite's own read.
     const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
     const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
     const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A) }) as
       { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
     const laresA = wl.results?.summary?.output?.wikis?.find((w) => w.slug === "lares")?.automergeUrl ?? "";
-    const C = await openStaged({
-      tag: `${tag}C`, root: rootC, port: portC, found: async () => { /* founded by A's edge above */ },
-      daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA, LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
-    });
-    stood.push(C);
-    if (!(await awaitRendezvous(C))) throw new Error(`C reached live but bound no rendezvous:\n${C.bootLog().slice(-800)}`);
 
-    return { herm, A, C, relayUrl, hermShore, admitted: admitted!, stop: teardown };
+    let B: LarInstance | null = null, joinGate: string | null = null;
+    if (opts.bootB !== false) {
+      const dial = (opts.dial ?? "env") === "env"
+        ? { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA }
+        : {};
+      try {
+        B = await openStaged({
+          tag: `${tag}B`, root: rootB, port: portB, found: async () => { /* founded by A's edge above */ },
+          daemonEnv: { ...(opts.daemonEnv ?? {}), ...dial },
+        });
+        stood.push(B);
+        if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);
+      } catch (err) {
+        const text = err instanceof Error ? err.message : String(err);
+        joinGate = (text.split("\n").find((l) => /nexus-join|fatal|ANERGIZED/.test(l)) ?? text.slice(-300)).trim();
+        if (B) { await B.stop(); stood.pop(); }
+        B = null;
+      }
+    }
+    return { A, B, rootB, portA, portB, admitted: admitted!, joinGate, gateA, laresA, stop };
   } catch (err) {
-    await teardown();
+    await stop();
     throw err;
   }
 }

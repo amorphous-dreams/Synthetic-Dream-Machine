@@ -39,12 +39,9 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  openStaged, cliFor, freePort, stageDir, awaitRendezvous, vesselStorageDir, type LarInstance, type CliResult,
-} from "../harness/instance.js";
-import { mintVesselKey } from "../harness/vessel-key.js";
+import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -82,6 +79,7 @@ const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${
 const gaps = missing();
 if (gaps.length > 0) console.error(`meme-two-vessel-bag: SKIPPED — missing ${gaps.join("; ")}`);
 
+let pair: StagedJoinee | null = null;
 let A: LarInstance | null = null;
 let B: LarInstance | null = null;
 let rootB = "";
@@ -93,67 +91,20 @@ let draftA = "";
 
 describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★", () => {
   beforeAll(async () => {
-    rootB = mkdtempSync(join(stageDir(), "lares-staged-B-"));
-    const portA = await freePort();
-    const portB = await freePort();
-    const admit = join(rootB, "admit.json");
-    const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
-
-    // ①–④ run while NO daemon stands: `device-admit` opens A's store directly, and a store has one owner.
-    A = await openStaged({ tag: "A", port: portA, found: async (cliA, rootA) => {
-      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
-      const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
-      if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-
-      // THE JOINEE MINTS FIRST, UNDER ITS OWN ROOT. Admission signs a key the joiner already holds; the
-      // CLI offers no door that mints a vessel key short of a founding, so the mint rides the same
-      // function a founding calls — in a subprocess carrying B's `LAR_ROOT`, since the identity dir
-      // resolves from the env alone.
-      // THE GENESIS UNDER B'S ROOT. `vessel found --admit` reads the hearth true-name off `<root>/genesis`; the
-      // re-derive is an internal rite step now (no `vessel bake` door), and A's `clear` just derived it under
-      // A's root — the same bytes B founds by, copied whole.
-      cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
-      const keyB = await mintVesselKey(rootB);
-
-      const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
-      if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);
-      admitted = await cliB(["vessel", "found", "--admit", admit]);
+    // The joinee rite — one door in the harness (A founds · B mints under its own root · A signs · B founds
+    // by the payload · B dials A by env). ⑤ lands the meme on A before B stands.
+    pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
+      const f = join(a.root, "npc.mem");
+      writeFileSync(f, meme(["a"]));
+      const put = await a.cli(["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+      if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
+      baseA = String((put.json["data"] as Record<string, unknown>)["canonicalHash"]);
     } });
-    if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
-
-    // ⑤ the meme lands on A's wiki.
-    const f = join(A.root, "npc.mem");
-    writeFileSync(f, meme(["a"]));
-    const put = await A.cli(["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
-    if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
-    baseA = String((put.json["data"] as Record<string, unknown>)["canonicalHash"]);
-
-    // ⑥ B stands dialing A: A's gate key off A's own log, A's lares doc off A's registry.
-    const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
-    const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A) }) as
-      { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
-    const laresA = wl.results?.summary?.output?.wikis?.find((w) => w.slug === "lares")?.automergeUrl ?? "";
-    try {
-      B = await openStaged({
-        tag: "B", root: rootB, port: portB, found: async () => { /* ④ founded B already */ },
-        daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA },
-      });
-      if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);
-    } catch (err) {
-      const text = err instanceof Error ? err.message : String(err);
-      const line = text.split("\n").find((l) => /nexus-join|fatal/.test(l)) ?? text.slice(-300);
-      joinGate = line.trim();
-      console.error(`meme-two-vessel-bag: B never stood — the sync vectors SKIP. The daemon said:\n  ${joinGate}\nFULL:\n${text.split("\n").filter((l) => !/^(TRACE|DEBUG|INFO|WARN) |^\t|^\s+at /.test(l)).join("\n").slice(-12000)}`);
-      B = null;
-    }
+    A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
+    if (!B) console.error(`meme-two-vessel-bag: B never stood — the sync vectors SKIP. The daemon said:\n  ${joinGate}`);
   }, 400_000);
 
-  afterAll(async () => {
-    if (B) await B.stop();
-    if (A) await A.stop();
-    if (rootB && existsSync(rootB)) rmSync(rootB, { recursive: true, force: true });
-  });
+  afterAll(async () => { await pair?.stop(); });
 
   test("④ the admit ceremony crosses: B founds by A's signed edge, holding its own key", () => {
     expect(admitted?.code, said(admitted ?? { stdout: "", stderr: "no founding ran" })).toBe(0);

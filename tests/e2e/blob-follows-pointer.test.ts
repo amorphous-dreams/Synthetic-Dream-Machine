@@ -22,14 +22,10 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import {
-  openStaged, cliFor, freePort, stageDir, awaitRendezvous, vesselStorageDir, type LarInstance, type CliResult,
-} from "../harness/instance.js";
-import { mintVesselKey } from "../harness/vessel-key.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { openStagedJoinee, freePort, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -108,6 +104,7 @@ function missing(): string[] {
 const gaps = missing();
 if (gaps.length > 0) console.error(`blob-follows-pointer: SKIPPED — missing ${gaps.join("; ")}`);
 
+let pair: StagedJoinee | null = null;
 let A: LarInstance | null = null;
 let B: LarInstance | null = null;
 let rootB = "";
@@ -118,68 +115,29 @@ let cid = "";
 
 describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYTES follow? ★", () => {
   beforeAll(async () => {
-    rootB = mkdtempSync(join(stageDir(), "lares-staged-B-"));
-    const portA = await freePort();
-    const portB = await freePort();
-    const admit = join(rootB, "admit.json");
-    const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
-    // The carriage crossroads (Socket B) A stands and both vessels dial — the fetch door's transport.
+    // The joinee rite — one door in the harness. The carriage crossroads (Socket B) A stands and both dial —
+    // the fetch door's transport; the early LOAD lands on A before B stands.
     const portRelay = await freePort();
     const carriageRelay = `ws://127.0.0.1:${portRelay}`;
-
-    // ①–④ the same rite `meme-two-vessel-bag` performs: A founds; B mints under its own root; A signs
-    // the edge naming its dial; B founds by that payload — all before any daemon stands.
-    A = await openStaged({ tag: "A", port: portA, daemonEnv: { LAR_HERM_RELAY_PORT: String(portRelay), LAR_CARRIAGE_RELAY: carriageRelay }, found: async (cliA, rootA) => {
-      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
-      if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
-      const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
-      if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      // THE GENESIS UNDER B'S ROOT. `vessel found --admit` reads the hearth true-name off `<root>/genesis`; the
-      // re-derive is an internal rite step (no `vessel bake` door), and A's `clear` just derived it under
-      // A's root — the same bytes B founds by, copied whole.
-      cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
-      const keyB = await mintVesselKey(rootB);
-      const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
-      if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);
-      admitted = await cliB(["vessel", "found", "--admit", admit]);
-    } });
-    if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
-
-    // A CONTROL laid BEFORE B stands — MEASURED 2026-09-11: a pointer LOADed into bags/lares before the
-    // joiner dials reads `(not found)` on A itself once B has stood (three runs); the same LOAD after B
-    // stands lands and crosses. Reported, never ruled here — it names a seat for the two-vessel suite.
-    const earlyDir = join(A.root, "blob-stage/bags/lares", LOCI_EARLY);
-    mkdirSync(earlyDir, { recursive: true });
-    writeFileSync(join(earlyDir, "photo.png"), PNG_BYTES);
-    writeFileSync(join(earlyDir, "photo.png.meta"), "type: image/png\n");
-    const early = await A.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", LARES_BAG, "--yes", "--json"]);
-    const earlyWhich = await A.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
-    console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
-
-    // ⑥ B stands dialing A: A's gate key off A's own log, A's lares doc off A's registry.
-    const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
-    const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A) }) as
-      { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
-    const laresA = wl.results?.summary?.output?.wikis?.find((w) => w.slug === "lares")?.automergeUrl ?? "";
-    try {
-      B = await openStaged({
-        tag: "B", root: rootB, port: portB, found: async () => { /* ④ founded B already */ },
-        daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA, LAR_CARRIAGE_RELAY: carriageRelay },
-      });
-      if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);
-    } catch (err) {
-      const text = err instanceof Error ? err.message : String(err);
-      joinGate = (text.split("\n").find((l) => /nexus-join|fatal/.test(l)) ?? text.slice(-300)).trim();
-      console.error(`blob-follows-pointer: B never stood — the sync vectors SKIP. The daemon said:\n  ${joinGate}`);
-      B = null;
-    }
+    pair = await openStagedJoinee({
+      tag: "blob",
+      daemonEnv:  { LAR_CARRIAGE_RELAY: carriageRelay },
+      daemonEnvA: { LAR_HERM_RELAY_PORT: String(portRelay) },
+      beforeB: async (a) => {
+        const earlyDir = join(a.root, "blob-stage/bags/lares", LOCI_EARLY);
+        mkdirSync(earlyDir, { recursive: true });
+        writeFileSync(join(earlyDir, "photo.png"), PNG_BYTES);
+        writeFileSync(join(earlyDir, "photo.png.meta"), "type: image/png\n");
+        const early = await a.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", LARES_BAG, "--yes", "--json"]);
+        const earlyWhich = await a.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
+        console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
+      },
+    });
+    A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
+    if (!B) console.error(`blob-follows-pointer: B never stood — the sync vectors SKIP. The daemon said:\n  ${joinGate}`);
   }, 400_000);
 
-  afterAll(async () => {
-    if (B) await B.stop();
-    if (A) await A.stop();
-    if (rootB && existsSync(rootB)) rmSync(rootB, { recursive: true, force: true });
-  });
+  afterAll(async () => { await pair?.stop(); });
 
   test("④ the admit ceremony crosses: B founds by A's signed edge", () => {
     expect(admitted?.code, said(admitted ?? { stdout: "", stderr: "no founding ran" })).toBe(0);
