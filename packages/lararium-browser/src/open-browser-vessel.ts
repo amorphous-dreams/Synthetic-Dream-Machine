@@ -22,7 +22,7 @@ import {
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID, pluginCidsFromIslandBlobs,
   personaMultitudeView, renameOwnPersona,
-  DeterministicFederationGate, identityShareDecision, type FederationGate, type IdentityRing,
+  DeterministicFederationGate, identityShareDecision, shareConfigOf, type FederationGate, type IdentityRing,
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf,
@@ -392,7 +392,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   const identityRing: IdentityRing | null = null;
   const repo = new Repo({
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
-    sharePolicy: (peerId, documentId) => identityShareDecision(relayPeers, fedGate, identityRing, peerId, documentId),
+    // The verdict seats on announce AND access (the announce-only lie the node measured in
+    // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
+    shareConfig: browserShareConfig(relayPeers, fedGate, identityRing),
   });
   emit("repo-open");
 
@@ -1211,4 +1213,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       if (surfaceId === DAEMON_SURFACE_ID) { pushSwitcherState(); void pushPersonaState(); void pushCircleState(); }
     },
   };
+}
+
+/** The browser's share verdict on both hooks — one decision, announce and access alike. */
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGate: FederationGate | null, identityRing: IdentityRing | null) {
+  return shareConfigOf((peerId, documentId) => identityShareDecision(relayPeers, fedGate, identityRing, peerId, documentId));
 }

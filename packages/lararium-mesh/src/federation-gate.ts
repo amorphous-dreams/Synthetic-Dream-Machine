@@ -504,3 +504,23 @@ export async function capTierShareDecision(
   const holdsCarriage = membership ? membership.holdsCarriagePeer(peerId) : false;
   return tierPermitsRelayPeer(resolved, holdsCarriage);   // can only DENY where the base said allow
 }
+
+// ── ONE VERDICT, BOTH HOOKS ─────────────────────────────────────────────────────────────────────
+/** A share verdict: may this peer hear of, and hold, this doc. */
+export type SharePolicyFn = (peerId: PeerId, documentId?: DocumentId) => Promise<boolean>;
+
+/** automerge-repo's `shareConfig` shape — `announce` (advertise) and `access` (hand over on request). */
+export interface ShareConfigOf {
+  readonly announce: SharePolicyFn;
+  readonly access:   SharePolicyFn;
+}
+
+/**
+ * THE VERDICT SEATS ON BOTH HOOKS. A legacy `sharePolicy` fills `announce` alone and leaves
+ * `access: () => true`, so a peer that asks for a doc by id pulls it past a denying policy. Every vessel
+ * composes its share decision through this one function; the node's `nodeShareConfig` and the browser's
+ * `browserShareConfig` both read it.
+ */
+export function shareConfigOf(policy: SharePolicyFn): ShareConfigOf {
+  return { announce: policy, access: policy };
+}

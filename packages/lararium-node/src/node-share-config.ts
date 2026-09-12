@@ -15,6 +15,7 @@
  */
 
 import type { DocumentId, PeerId } from "@automerge/automerge-repo";
+import { shareConfigOf } from "@lararium/mesh";
 
 export type NodeSharePolicy = (peerId: PeerId, documentId?: DocumentId) => Promise<boolean>;
 
@@ -23,7 +24,7 @@ export interface NodeShareConfig {
   readonly access:   NodeSharePolicy;
 }
 
-/** The one verdict, on both hooks. */
+/** The one verdict, on both hooks — the law lives in mesh (`shareConfigOf`); this keeps the node's name. */
 export function nodeShareConfig(policy: NodeSharePolicy): NodeShareConfig {
-  return { announce: policy, access: policy };
+  return shareConfigOf(policy);
 }
