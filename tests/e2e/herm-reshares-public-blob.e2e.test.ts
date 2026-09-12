@@ -13,11 +13,16 @@
  *   ★ ⑦ C reads the cid through its fetch door with A dark: the fleet leg misses, the Herm leg (`hermCasTransit`,
  *       0449d1bab's `GET /cas/<cid>`) answers, the sha256 verifies, the bytes land in C's `cid/`
  *
- * MEASURED 2026-09-12 — the vector stands as `test.fails` naming its seam: the Herm's shore reads its OWN
- * crossroads board (`crossroadsDocUrl(<herm key>)`) for the public pointers, and a pointer A lands in a
- * public bag never reaches that board — A's crossroads doc is keyed by A's key, and the federation gate
- * carries a vessel's own deterministic planes alone. So the Herm holds neither the pointer nor the bytes,
- * `/cas/<cid>` draws 404 with A up or dark, and C reads PENDING (`held:false`). The road from C to the Herm
+ * MEASURED 2026-09-12, then RE-MEASURED against the realm lane — the vector still stands as `test.fails`,
+ * and its seam narrowed. The shore no longer reads the Herm's OWN crossroads alone: `publicCasShore` follows,
+ * for each realm the vessel serves, the pointers that realm's PUBLIC-tier registrations name (unit-proven,
+ * `packages/lararium-node/tests/herm-follows-realm-public.test.ts`). THIS fleet names no realm — the Herm
+ * seats no charter (`openStagedFleet` runs no `nexus rite cabal` and imports none), so it stands in none, the
+ * realm lane folds empty, and A's public bag registers nowhere. So the Herm still holds neither the pointer
+ * nor the bytes, `/cas/<cid>` draws 404 with A up or dark, and C reads PENDING (`held:false`).
+ * WHAT THE FLIP NOW WAITS ON: a FLEET-shaped lane — either this fleet's hearth and its Herm come to stand in
+ * ONE realm (a charter seated, exported, imported, and `lares nexus realm-bag lares --tier public` registering
+ * the book), or the ruling names how a Herm follows a fleet it relays for without one. The road from C to the Herm
  * stands and is unit-proven (`herm-cas-transit.test.ts`); the road from A's public bag TO the Herm's board
  * belongs to the founding session's dial and gate. CONTROLS: a ghost cid draws the Herm's 404 byte-identical
  * with A dark; the boot CAS still serves at `/bulb/<cid>.bin`; C's fetch of a ghost reads `held:false` and
