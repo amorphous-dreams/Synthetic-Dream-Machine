@@ -80,3 +80,66 @@ describe("the provable-member floor — a seated-kahu peer reads MEMBER, all els
     expect(holder.membership.holdsCarriagePeer("peer-kahu")).toBe(true);    // seated → MEMBER
   });
 });
+
+// ── THE WIRE KEY BINDS TO THE NYM THROUGH THE CONTRACT EDGE ──────────────────────────────────────────────
+// A contracted operator authenticates at the wire by its VESSEL key while the board names its PERSONA-ROOT
+// nym. The persona root signs a device edge naming the vessel key (the contract credential the face carries);
+// the gate proves it and keeps the nym beside the identifier; the consult reads that nym ahead of the raw key.
+import { buildDeviceDelegation } from "@lararium/mesh";
+import { contractNymOf } from "../src/nexus-carriage.js";
+
+describe("the membership consult binds the wire key to the nym through the contract edge", () => {
+  let bags: string;
+  beforeEach(() => { bags = mkdtempSync(join(tmpdir(), "lares-nexus-contract-edge-")); });
+  afterEach(() => { rmSync(bags, { recursive: true, force: true }); });
+
+  const VESSEL_SEED = new Uint8Array(32).fill(11);
+  const OTHER_VESSEL_SEED = new Uint8Array(32).fill(12);
+  const NOW = Date.parse("2026-09-12T12:00:00Z");
+  const edgeFor = async (rootSeed: Uint8Array, vesselKey: string) => buildDeviceDelegation({
+    personaRootSeed: rootSeed, deviceVerifyingKey: vesselKey, hearthTrueName: "",
+    issuedAt: "2026-09-12T11:00:00Z", expiresAt: "2026-09-13T11:00:00Z", boundEpoch: 0,
+  });
+
+  test("contractNymOf — the edge the contracted root signed over THIS vessel key answers the nym", async () => {
+    const keys      = await Promise.all(SEEDS.map(pubOf));
+    const vesselKey = await pubOf(VESSEL_SEED);
+    const edge      = await edgeFor(SEEDS[0]!, vesselKey);
+    expect(await contractNymOf(edge, `prefix:${vesselKey}`, NOW)).toBe(keys[0]);
+  });
+
+  test("CONTROL — an edge naming ANOTHER vessel key, a tampered signature, an expired edge: no nym", async () => {
+    const vesselKey = await pubOf(VESSEL_SEED);
+    const otherKey  = await pubOf(OTHER_VESSEL_SEED);
+    const edge      = await edgeFor(SEEDS[0]!, vesselKey);
+    expect(await contractNymOf(edge, `prefix:${otherKey}`, NOW)).toBeNull();                       // names another vessel
+    const flipped   = edge.signature.slice(0, -2) + (edge.signature.endsWith("00") ? "01" : "00");
+    expect(edge.signature).not.toBe(flipped);                                                        // the bytes MOVED
+    expect(await contractNymOf({ ...edge, signature: flipped }, `prefix:${vesselKey}`, NOW)).toBeNull();
+    expect(await contractNymOf(edge, `prefix:${vesselKey}`, Date.parse("2027-01-01T00:00:00Z"))).toBeNull();
+  });
+
+  test("a peer whose vessel key the contracted nym's edge names reads MEMBER; an unbound vessel key reads STRANGER; a kahu peer unchanged", async () => {
+    const keys      = await Promise.all(SEEDS.map(pubOf));
+    const vesselKey = await pubOf(VESSEL_SEED);
+    const otherKey  = await pubOf(OTHER_VESSEL_SEED);
+    writeNexusDoc(bags, await seatedCharter(keys));   // the seated kahu ARE contracted members (the strict subset)
+    const edge = await edgeFor(SEEDS[0]!, vesselKey);
+    const nym  = await contractNymOf(edge, `prefix:${vesselKey}`, NOW);
+    expect(nym).toBe(keys[0]);
+
+    const peerMap = new Map<string, string>([
+      ["peer-contract", `prefix:${vesselKey}`],   // the wire key — a vessel, not the nym
+      ["peer-unbound",  `prefix:${otherKey}`],    // a vessel key no contracted edge names
+      ["peer-kahu",     `prefix:${keys[1]!}`],    // the nym itself at the wire (today's path)
+    ]);
+    const contractNyms = new Map<string, string>([["peer-contract", nym!]]);
+    const { membership } = makeNexusMembership({ sealHome: bags, peerIdentifierMap: peerMap, peerContractNymMap: contractNyms });
+    expect(membership.holdsCarriagePeer("peer-contract")).toBe(true);    // THE RED
+    expect(membership.holdsCarriagePeer("peer-unbound")).toBe(false);    // CONTROL: byte-identical to today
+    expect(membership.holdsCarriagePeer("peer-kahu")).toBe(true);        // CONTROL: the raw-nym path unchanged
+    // CONTROL: the same peer map with NO contract nym keyed reads exactly as today.
+    const today = makeNexusMembership({ sealHome: bags, peerIdentifierMap: peerMap });
+    expect(today.membership.holdsCarriagePeer("peer-contract")).toBe(false);
+  });
+});

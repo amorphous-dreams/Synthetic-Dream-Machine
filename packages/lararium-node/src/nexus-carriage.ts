@@ -26,6 +26,16 @@
  * Identifier hex into `peerIdentifierMap` (this holder SURFACES that nym, never re-authenticates). An
  * unresolved / unauthenticated peer → NOT a member (fail-closed: a node never assumes a peer is Nexus-pono).
  *
+ * THE WIRE KEY BINDS TO THE NYM THROUGH THE CONTRACT EDGE. A contracted operator authenticates at the wire by
+ * its VESSEL key while the board names its PERSONA-ROOT nym (`accept-carriage` signs as the root). The board keeps
+ * the floor and nothing above it (membership-doctrine: no device rides it), so the binding is a capability the
+ * FACE CARRIES (#/the-carried-cap): the persona root signs a device edge naming the vessel key, the vessel presents
+ * it in the wire's CONTRACT slot (never the fleet slot — that one chains to THIS hearth's KEL), the gate proves it
+ * offline (`contractNymOf`) and keeps the nym it proves beside the identifier (`peerContractNymMap`), and the consult
+ * reads that nym AHEAD of the raw wire key. The pin is the member set itself: a proven edge names a root, and the
+ * root must stand CONTRACTED on this vessel's own board or the peer stays a STRANGER — "someone signed" alone
+ * seats nobody. A peer presenting no contract edge resolves exactly as before (byte-identical).
+ *
  * FAILS CLOSED, every way:
  *   · an absent / unseated charter → empty roster → the members fold ignores every entry AND the kahu floor is
  *     empty → NOBODY reads member (every cross-operator STRANGER). No quorum, no members.
@@ -49,10 +59,32 @@ import {
   carriageDocUrl,
   materializeSharedLarDoc,
 } from "@lararium/mesh";
+import { verifyDeviceDelegation, verifyingKeyFromDid, type DeviceDelegationTiddler } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
 
 /** A verifying-key nym reads clean only at the exact ed25519 length — a stray value never seats a member. */
 const NYM_RE = /^[0-9a-f]{64}$/;
+
+/**
+ * The persona-root nym a CONTRACT edge proves for the vessel key at the wire — or null. The edge must name the
+ * presented vessel key (`deviceVerifyingKey` = the Identifier's raw-key tail), verify under the root that signed
+ * it, and stand fresh at `now`. No hearth binding and no lease here: the contract names the RELATION (the charter
+ * epoch on the board) and the edge names the VESSEL; the hearth × lease binding belongs to the fleet credential.
+ * The root this answers is NOT yet trusted — the consult pins it against the contracted member set.
+ */
+export async function contractNymOf(
+  edge: DeviceDelegationTiddler, presentedIdentHex: string, now: number,
+): Promise<string | null> {
+  const vesselKey = presentedIdentHex.slice(-64).toLowerCase();
+  if (!NYM_RE.test(vesselKey)) return null;
+  if (typeof edge?.deviceVerifyingKey !== "string" || edge.deviceVerifyingKey.toLowerCase() !== vesselKey) return null;
+  if (typeof edge.personaRootDid !== "string") return null;
+  const r = await verifyDeviceDelegation(edge, edge.personaRootDid, { now });
+  if (!r.ok) return null;
+  let nym: string;
+  try { nym = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return null; }
+  return NYM_RE.test(nym) ? nym : null;
+}
 
 export interface NexusMembershipHolder {
   /** The live consult the node sharePolicy passes to `carrierShareDecision`. */
@@ -81,12 +113,15 @@ export interface NexusMembershipHolder {
 export function makeNexusMembership(opts: {
   sealHome:           string;
   peerIdentifierMap: ReadonlyMap<string, string>;
+  /** peerId → the persona-root nym the peer's CONTRACT edge proved at the gate (`contractNymOf`). Read AHEAD of
+   *  the raw wire key; absent for a peer that presented none (that peer resolves exactly as before). */
+  peerContractNymMap?: ReadonlyMap<string, string>;
   /** The Automerge repo — supply to fold the members board; omit for the kahu-floor-only holder. */
   repo?:             Repo;
   /** The node's own gate key (its Nexus key) — the members board's deterministic address seed. Required with `repo`. */
   nexusPubkey?:      string;
 }): NexusMembershipHolder {
-  const { sealHome, peerIdentifierMap, repo, nexusPubkey } = opts;
+  const { sealHome, peerIdentifierMap, peerContractNymMap, repo, nexusPubkey } = opts;
 
   // The member nym set — swapped whole on each refresh/refold (no partial-set window a lookup could read).
   let members: ReadonlySet<string> = new Set<string>();
@@ -157,6 +192,9 @@ export function makeNexusMembership(opts: {
   const memberNym = (peerId: string): string | null => {
     const identHex = peerIdentifierMap.get(peerId);
     if (identHex === undefined) return null;               // unauthenticated / unknown peer → not named → STRANGER
+    // The contract edge's proven root reads AHEAD of the wire key — the vessel key names a device, the nym an operator.
+    const contractNym = peerContractNymMap?.get(peerId);
+    if (contractNym !== undefined) return NYM_RE.test(contractNym) ? contractNym.toLowerCase() : null;
     const nym = identHex.slice(-64).toLowerCase();         // the raw ed25519 verifying key (the nym)
     return NYM_RE.test(nym) ? nym : null;                  // a malformed identifier resolves to no nym
   };
