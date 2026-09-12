@@ -51,7 +51,7 @@
 
 import {
   AutomergeDocStore, DAEMON_BAG_ID, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, recipeUri, wikiSlotKindOf,
-  REALM_DOC_URI, REALM_ID_TIDDLER, foldRealmBags, tiddlerText,
+  REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, foldRealmBags, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
@@ -72,6 +72,10 @@ export interface MemeVerbOptions {
   readonly recipeOf?: (slug: string) => Promise<LarTiddlerRecord | null>;
   /** A registered bag's own store by its registry KEY, presented as `bag`; null = unregistered. */
   readonly reach?: (key: string, bag: string) => Promise<LarTiddlerStore | null>;
+  /** THE STEWARD WRITE PATH. A bag the REALM carries, as a WRITABLE store, when this vessel's own steward
+   *  nym stands in the standing registration's `keptBy`. Null for every other hand and every other bag, so
+   *  the put falls through to the path it walked before the realm carried anything. */
+  readonly realmWritable?: (bag: string) => Promise<LarTiddlerStore | null>;
   /** A wiki's INSTANCE slot (draft · working · personal) as a store over the doc THE ONE slot-doc
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
@@ -122,17 +126,33 @@ export function memeVerbOptions(
       }
       return null;
     },
+    // The realm's WRITE answer: the standing registration's doc as a writable store, for a steward alone.
+    realmWritable: async (bag) => {
+      const standing = await realmStanding();
+      if (!standing) return null;
+      const nym = tiddlerText(await oracle!.recordOf(REALM_STEWARD_TIDDLER).catch(() => null));
+      if (!mayWriteRealmBag(standing.bags, bag, nym)) return null;
+      const rec = standing.bags.get(bag)!;
+      const handle = await findOrThrow(ctx.repo, rec.docUrl, `${bag} (realm bag)`).catch(() => null);
+      return handle ? new AutomergeDocStore(handle, bag) : null;
+    },
   };
 
-  /** The realm plane's answer for a bag: the STANDING registration's doc, by access. Null when this vessel
-   *  stands in no realm, the realm doc has not arrived, or no counted registration names the bag. */
-  async function realmReach(key: string, bag: string): Promise<LarTiddlerStore | null> {
+  /** The realm this vessel stands in, and the registrations its doc carries as of the last sync. Null when
+   *  no oracle plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
+  async function realmStanding(): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh").RealmBagRegistration> } | null> {
     if (!oracle) return null;
     const realmId = tiddlerText(await oracle.recordOf(REALM_ID_TIDDLER).catch(() => null));
     if (!realmId) return null;
     const realmHandle = await oracle.find(REALM_DOC_URI).catch(() => null);
     if (!realmHandle) return null;
-    const standing = (await foldRealmBags(realmHandle.doc(), realmId)).get(key);
+    return { realmId, bags: await foldRealmBags(realmHandle.doc(), realmId) };
+  }
+
+  /** The realm plane's answer for a bag: the STANDING registration's doc, by access. Null when this vessel
+   *  stands in no realm, the realm doc has not arrived, or no counted registration names the bag. */
+  async function realmReach(key: string, bag: string): Promise<LarTiddlerStore | null> {
+    const standing = (await realmStanding())?.bags.get(key);
     if (!standing) return null;
     const handle = await findOrThrow(ctx.repo, standing.docUrl, `${bag} (realm bag)`).catch(() => null);
     return handle ? new AutomergeDocStore(handle, bag) : null;
@@ -207,6 +227,9 @@ interface Resolved {
   readonly anchor: boolean;
 }
 
+/** A wiki's instance slot addressed as a bag — `lar:///ha.ka.ba/wikis/<slug>/<draft|working|personal|temp>`. */
+const WIKI_SLOT_BAG_RE = /^lar:\/\/\/ha\.ka\.ba\/wikis\/([^/]+)\/(temp|draft|working|personal)$/;
+
 /** The cascade's config tiddler naming where a `lar:` save lands in this wiki (island-adaptor reads it). */
 const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
@@ -224,7 +247,25 @@ function anchorBagOf(opts: MemeVerbOptions): string {
 async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
   if (target.bag) {
     const bag = bagUriOf(target.bag);
-    if (mode === "put") return { bag, sink: compositeMemeSink(opts.composite, bag, origin), anchor: false };
+    // A NAMED WIKI'S INSTANCE SLOT, addressed as a bag. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the
+    // doc THE ONE slot-doc resolver mints — the same doc `--recipe <slug>` walks and a `LOAD --to` that bag
+    // lands in. The three reaches answer it (`storeOfBag`), and `temp` refuses there: it lives in the wiki
+    // island alone and no door reaches it.
+    const slot = WIKI_SLOT_BAG_RE.exec(bag);
+    if (slot) {
+      const store = await storeOfBag(opts, slot[1]!, bag, mode);
+      if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access`);
+      return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+    }
+    if (mode === "put") {
+      // THE REALM FIRST, as the read walks it first. A bag the relation carries is ONE book: a steward's
+      // placement lands on the realm doc the registration names, never in this vessel's own layer of the
+      // same name (that is the two-chests drift the ruling forbids). A hand outside `keptBy` reads null
+      // here and draws exactly the refusal it drew before.
+      const steward = await opts.realmWritable?.(bag);
+      if (steward) return { bag, sink: storeMemeSink(steward, bag, origin), anchor: false };
+      return { bag, sink: compositeMemeSink(opts.composite, bag, origin), anchor: false };
+    }
     const store = opts.composite.storeForBag(bag) ?? (await opts.reach?.(bag, bag)) ?? null;
     if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access`);
     return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };

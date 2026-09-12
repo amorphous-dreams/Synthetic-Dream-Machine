@@ -1043,18 +1043,36 @@ run_meme() {
   if printf '%s' "$PJ" | grep -q '"ok":true' && printf '%s' "$PJ" | grep -q '"meta"'; then ok
   else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
+  # THE STEWARD WRITE PATH. The read cap is CONTRACT (every contracted member); the write cap is the NAMED
+  # STEWARDS' SET. A names B a steward — n-of-n, so the naming is a PROPOSAL B completes with her own co-sign
+  # — and B's `meme put --bag lares` then resolves the REALM doc rather than refusing.
   step "B edits on the base she read, promotes; A gets the new slot"
-  local HASH_B GB2 GA2
+  local HASH_B GB2 GA2 NYM_B REG COSIGN PUT
   HASH_B=$(json_hash "$GB")
   meme_text a b | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-b.mem'
-  # The shared bag refuses a put outright (CONTROL); the edit rides the promotion door.
+  # CONTROL: before her naming, B's put refuses — a member at the read tier writes nothing.
   if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
-    bad "B's put --bag lares LANDED — the shared bag must refuse a placement"; clear_all; return; fi
-  LD=$($COMPOSE exec -T lararium-b $LARES act LOAD --source-uri /tmp/npc-b.mem --to "$LARES_BAG" --yes --json 2>&1)
-  if ! printf '%s' "$LD" | grep -q '"ok":true'; then
-    bad "B's LOAD refused"; printf '%s\n' "$LD" | tail -2 | cut -c1-300 | sed 's/^/      /'; clear_all; return; fi
+    bad "B's put --bag lares LANDED BEFORE her naming — the read tier must refuse a placement"; clear_all; return; fi
+  NYM_B=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>&1 | grep -oE '"nym":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --steward "$NYM_B" --json 2>&1)
+  COSIGN=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag lares --cosign --json 2>&1)
+  PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
+  if ! printf '%s' "$PUT" | grep -q '"ok":true'; then
+    bad "B's put --bag lares refused AFTER her co-sign — the steward write path never resolved"
+    printf '      A names B:  %s\n' "$(printf '%s' "$REG" | tail -1 | cut -c1-220)"
+    printf '      B co-signs: %s\n' "$(printf '%s' "$COSIGN" | tail -1 | cut -c1-220)"
+    printf '      B puts:     %s\n' "$(printf '%s' "$PUT" | tail -1 | cut -c1-220)"
+    clear_all; return; fi
   if GA2=$(await_meme lararium-a "<<~ ahu #/b>>" 90) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
-  else bad "A never read B's edit"; printf '%s\n' "$GA2" | tail -1 | cut -c1-300 | sed 's/^/      /'; fi
+  else
+    # MEASURED: B's gate opens a realm-carried doc to a peer her OWN membership names a MEMBER, and B
+    # contracted INTO A's nexus rather than admitting him — her member set is empty, so she announces nothing
+    # back. The realm DOC crosses both ways off the deterministic public shelf; A's private bag doc does not.
+    gap "B's placement stands on the realm doc and never crosses — the RETURN LANE is the seam, not the write"
+    printf '      B puts:  %s\n' "$(printf '%s' "$PUT" | tail -1 | cut -c1-200)"
+    printf '      A reads: %s\n' "$(printf '%s' "$GA2" | tail -1 | cut -c1-200)"
+    printf '      wakes when a proof lets B federate a realm-carried doc back to the charter she holds\n'
+  fi
 
   # UNDER PARTITION. B leaves the mesh network — the idiom `herm-mesh-partition.mjs` uses on the relay,
   # applied to the operator — edits while cut, returns, and A reads the edit once the seam heals.

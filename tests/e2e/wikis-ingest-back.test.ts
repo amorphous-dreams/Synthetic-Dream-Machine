@@ -68,7 +68,9 @@ function ingest(extra: string[]): ReturnType<LarInstance["cli"]> {
 beforeAll(async () => {
   lar = await targetInstance();
   if (lar.mode !== "staged") return;
-  wikisDir = join(lar.root, "wikis");
+  // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `wikis/daemon/`), so the
+  // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
+  wikisDir = join(lar.root, "wikis", "lares");
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD --to working failed: ${JSON.stringify(r.json)}`);
   projected = await awaitWikisCarrier();
@@ -83,7 +85,7 @@ describe("wikis ingest-back — the working write-layer round-trips", () => {
     const d = r.json?.["data"] as Record<string, unknown>;
     // the wikis/ carrier derived a URI off the working plane — NOT skipped
     expect(Number(d["scanned"])).toBeGreaterThanOrEqual(1);
-    expect((d["skipped"] as string[]) ?? []).toHaveLength(0);
+    expect((d["skipped"] as string[]) ?? [], `skipped: ${JSON.stringify(d["skipped"])}`).toHaveLength(0);
     expect(d["new"]).toBe(0);
     expect(d["changed"]).toBe(0);
   }, 60_000);

@@ -20,8 +20,9 @@ import type { NexusDoc } from "./nexus-seal-seed.js";
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import {
-  REALM_DOC_URI, REALM_ID_TIDDLER, realmIdOfCharter, realmDocUrl, RealmBagGate,
-  signRealmBagRegistration, realmBagRegistrationCounts, writeRealmBagRegistration, foldRealmBags,
+  REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, realmIdOfCharter, realmDocUrl, RealmBagGate,
+  signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
+  realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   writeRealmBagAnnounce, type RealmBagRegistration,
 } from "./realm-bag.js";
 
@@ -36,12 +37,23 @@ export interface RealmPlaneHolder {
   refresh(charter: NexusDoc | null): Promise<void>;
   /** The standing registrations (counted, folded) keyed by bag URI. */
   standing(): Promise<ReadonlyMap<string, RealmBagRegistration>>;
-  /** Register a bag this vessel's steward keeps: sign, land on the realm doc, announce on @crossroads. */
+  /** Register a bag this vessel's steward keeps: sign, land on the realm doc, announce on @crossroads.
+   *  `propose` names stewards whose hands have NOT signed — the record accretes their names and stands
+   *  UNREGISTERED until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). */
   register(input: {
     readonly bagUri: string;
     readonly docUrl: string;
     readonly readTier?: CapTier;
     readonly signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>;
+    readonly propose?: readonly string[];
+  }): Promise<RealmBagRegistration>;
+  /** CO-SIGN a standing proposal that names this vessel's steward: complete the proposer's exact bytes and
+   *  land the completed record under this hand's OWN key. Refuses when no proposal on the realm doc names
+   *  the signer for that bag — a steward is named by another hand and consents by her own, never alone. */
+  coSign(input: {
+    readonly bagUri: string;
+    readonly signer: string;
+    readonly sign: (bytes: Uint8Array) => Promise<string>;
   }): Promise<RealmBagRegistration>;
   /** Detach the realm doc change listener. */
   dispose(): void;
@@ -68,6 +80,14 @@ export function makeRealmPlane(opts: {
   const refold = async (): Promise<void> => {
     if (!realmGate || !realmHandle || !realmId) return;
     await realmGate.refold(realmHandle.doc(), realmId);
+  };
+
+  /** Pin THIS vessel's own steward nym on its OWN oracle plane — the write path reads stewardship from here.
+   *  Written the moment this hand signs (a registration or a co-sign), never from a name another hand wrote. */
+  const pinSteward = (nym: string): void => {
+    const doc = oracleHandle.doc();
+    if (tiddlerText(doc?.tiddlers?.[REALM_STEWARD_TIDDLER]) === nym) return;
+    oracleHandle.change((d) => { d.tiddlers[REALM_STEWARD_TIDDLER] = mutableLarRecord(REALM_STEWARD_TIDDLER, { text: nym }, "realm-bag"); });
   };
 
   const detach = (): void => {
@@ -115,14 +135,39 @@ export function makeRealmPlane(opts: {
       if (!realmHandle || !realmId) return new Map();
       return foldRealmBags(realmHandle.doc(), realmId);
     },
-    async register({ bagUri, docUrl, readTier, signers }) {
+    async register({ bagUri, docUrl, readTier, signers, propose }) {
       if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — seat a charter (`lares nexus rite cabal`) or import one (`lares nexus seal import`) and `lares nexus refresh`");
       if (signers.length === 0) throw new Error("realm-bag: a bag is kept by a named steward — no signer supplied");
-      const rec = await signRealmBagRegistration({ realmId, bagUri, docUrl, readTier: readTier ?? "contract" }, signers);
-      // Self-verify before the write: a record the fold would ignore reads as registered while carrying nothing.
-      if (!(await realmBagRegistrationCounts(rec, realmId))) throw new Error("realm-bag: refusing to write a registration that does not count");
-      realmHandle.change((d) => writeRealmBagRegistration(d, rec));
+      const parts = { realmId, bagUri, docUrl, readTier: readTier ?? "contract" as CapTier };
+      const proposed = (propose ?? []).map((n) => n.toLowerCase()).filter((n) => !signers.some((s) => s.signer.toLowerCase() === n));
+      const rec = proposed.length > 0
+        ? await proposeRealmBagRegistration(parts, signers, proposed)
+        : await signRealmBagRegistration(parts, signers);
+      const counts = await realmBagRegistrationCounts(rec, realmId);
+      // A record with NO proposed hand must count before it lands — one that the fold would ignore reads as
+      // registered while carrying nothing. A PROPOSAL is expected not to count: it waits on the second hand.
+      if (proposed.length === 0 && !counts) throw new Error("realm-bag: refusing to write a registration that does not count");
+      const by = signers[0]!.signer.toLowerCase();
+      realmHandle.change((d) => writeRealmBagRegistration(d, rec, by));
+      // The announce carries the ford's existence — and only once the record actually counts, so a proposal
+      // never tells the crossroads a ford stands that no fold has seated.
+      if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+      pinSteward(by);
+      await refold();
+      return rec;
+    },
+    async coSign({ bagUri, signer, sign }) {
+      if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — import the charter (`lares nexus seal import`) and `lares nexus refresh`");
+      const nym = signer.toLowerCase();
+      const proposal = realmBagRegistrationsFromDoc(realmHandle.doc())
+        .find((r) => r.realmId === realmId && r.bagUri === bagUri && r.keptBy.some((k) => k.toLowerCase() === nym)
+                     && !r.signatures.some((s) => s.signer.toLowerCase() === nym));
+      if (!proposal) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — the keeping hand names the second steward first (\`lares nexus realm-bag <bag> --steward <did>\`)`);
+      const rec = await coSignRealmBagRegistration(proposal, { signer: nym, sign });
+      if (!(await realmBagRegistrationCounts(rec, realmId))) throw new Error("realm-bag: the co-signed record still does not count — the proposal names a hand that never signed");
+      realmHandle.change((d) => writeRealmBagRegistration(d, rec, nym));
       crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+      pinSteward(nym);
       await refold();
       return rec;
     },

@@ -405,3 +405,37 @@ describe("meme-delete — the daemon skin of removeMeme", () => {
     expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toEqual([]);
   });
 });
+
+/**
+ * A NAMED WIKI'S LAYER BY `--bag`. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the doc THE ONE resolver
+ * mints for that wiki's working layer — the same doc `--recipe <slug>` walks. The `--bag` door reached the
+ * composite and the planes alone, so a wiki's own working layer read "holds no layer in this island" while a
+ * LOAD --to that very bag had landed the records (measured: `tests/e2e/wikis-ingest-back.test.ts` WB1, a
+ * settled mirror scanning as all-new). The daemon's own `wikis/daemon/working` rides the composite (attached
+ * at boot) and never hit it — the one control that hid the gap.
+ */
+describe("meme-get/put --bag names a wiki's instance slot", () => {
+  const WBAG = "lar:///ha.ka.ba/wikis/garden/working";
+  test("get --bag wikis/garden/working reads the working slot's doc", async () => {
+    const r = rig();
+    const working = new MemoryTiddlerStore(WBAG);
+    r.slots.set("garden/working", working);
+    await placeMeme({ uri: URI, text: meme(["a"]) }, storeMemeSink(working, WBAG, { kind: "canon-hydrate", receipt: "t" }));
+    const got = await makeMemeGetReactor(r.opts)({ bag: WBAG, uri: URI }, ctx());
+    expect(got["meme"], "the working slot never reached by --bag").not.toBeNull();
+  });
+  test("put --bag wikis/garden/working lands in the working slot's doc", async () => {
+    const r = rig();
+    const working = new MemoryTiddlerStore(WBAG);
+    r.slots.set("garden/working", working);
+    const receipt = await makeMemePutReactor(r.opts)({ bag: WBAG, uri: URI, text: meme(["a"]) }, ctx());
+    expect(receipt["decision"]).toBe("ingest");
+    expect(await working.get(URI)).not.toBeNull();
+  });
+  /** CONTROL: `temp` lives in the island alone — never reached by any door. */
+  test("get --bag wikis/garden/temp still refuses", async () => {
+    const r = rig();
+    r.slots.set("garden/temp", new MemoryTiddlerStore("lar:///ha.ka.ba/wikis/garden/temp"));
+    await expect(makeMemeGetReactor(r.opts)({ bag: "lar:///ha.ka.ba/wikis/garden/temp", uri: URI }, ctx())).rejects.toThrow(/holds no layer/);
+  });
+});

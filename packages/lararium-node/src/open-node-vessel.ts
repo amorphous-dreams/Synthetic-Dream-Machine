@@ -1656,14 +1656,24 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       const handleIndex = Number.isFinite(args["index"]) ? Number(args["index"]) : 0;
       const oracleDoc = assembly.islandHandle.doc();
       const catalogDoc = assembly.catalogHandle.doc();
-      const docUrl = tiddlerText(oracleDoc?.tiddlers?.[bagUri]) ?? tiddlerText(catalogDoc?.tiddlers?.[bagUri]) ?? null;
-      if (!docUrl) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
+      // A CO-SIGN consents to the PROPOSER's bytes — the doc it names, never this vessel's own doc of that
+      // name (that substitution would be the two-chests equivocation the fold refuses).
+      const docUrl = tiddlerText(oracleDoc?.tiddlers?.[bagUri]) ?? tiddlerText(catalogDoc?.tiddlers?.[bagUri]) ?? "";
+      if (!docUrl && args["cosign"] !== true) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
       const nym = await loadPersonaGroupRootVerifyingKey(storageDir, handleIndex);
       if (!nym) throw new Error(`realm-bag: no persona root at index ${handleIndex} — a bag is kept by a named steward`);
       const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, handleIndex));
-      const rec = await realmPlane.register({ bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }] });
+      // NAMING A SECOND STEWARD takes two hands (n-of-n): `stewards` proposes them, and the record stands
+      // unregistered until each proposed hand co-signs with its own `cosign`.
+      const propose = Array.isArray(args["stewards"]) ? (args["stewards"] as unknown[]).filter((v): v is string => typeof v === "string") : [];
+      const rec = args["cosign"] === true
+        ? await realmPlane.coSign({ bagUri, signer: nym.toLowerCase(), sign })
+        : await realmPlane.register({ bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }], propose });
       reverdict();   // the realm gate's standing set grew — a member peer's cached verdict on that bag's doc moves
-      return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy, readTier: rec.readTier };
+      const counts = rec.keptBy.every((k) => rec.signatures.some((sg) => sg.signer.toLowerCase() === k.toLowerCase()));
+      return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy,
+               readTier: rec.readTier, signedBy: rec.signatures.map((sg) => sg.signer), counts,
+               awaiting: rec.keptBy.filter((k) => !rec.signatures.some((sg) => sg.signer.toLowerCase() === k.toLowerCase())) };
     });
     // realm-bags — the STANDING registrations this vessel's realm carries (counted and folded; an equivocal
     // bag never lists). Verdict-free: it reads the realm doc as-of-last-sync.

@@ -95,7 +95,7 @@ function usage(): void {
   console.error("  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition");
   console.error("  refresh                                   re-read the charter and re-fold the boards it names");
   console.error("  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)");
-  console.error("            [--steward <did>…]              also NAME those stewards — the record waits on each one's own co-sign");
+  console.error("            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign");
   console.error("            [--cosign]                      consent as a named steward to a standing proposal");
   console.error("  realm-bags                                the bags the realm carries, and who keeps each");
 }
@@ -249,10 +249,9 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const index = args.options["index"] !== undefined ? Number(args.options["index"]) : 0;
   // `--steward` names a SECOND keeping hand. The record is n-of-n, so naming is a proposal: it stands
   // unregistered until that hand runs `lares nexus realm-bag <bag> --cosign` on her own vessel.
-  const raw: unknown = args.options["steward"];
-  const stewards = (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw])
-    .map((v) => String(v).trim().replace(/^0x/i, "").toLowerCase()).filter((v) => v.length > 0);
-  const cosign = args.options["cosign"] !== undefined && args.options["cosign"] !== "false";
+  const stewards = (args.options["steward"] ?? "").split(",")
+    .map((v) => v.trim().replace(/^0x/i, "").toLowerCase()).filter((v) => v.length > 0);
+  const cosign = args.flags["cosign"] === true;
   try {
     const r = await runVerb("realm-bag", { bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index, stewards, cosign }, await vesselDid());
     if (r.status === "error") {

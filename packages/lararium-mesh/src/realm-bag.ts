@@ -53,6 +53,11 @@ export const REALM_DOC_URI = bagUri("realm");
  *  never off the realm doc (a member who could rewrite the id there could make a foreign record count). */
 export const REALM_ID_TIDDLER = `${REALM_DOC_URI}/realm-id`;
 
+/** The oracle-plane tiddler carrying THIS vessel's own steward nym — pinned the moment its own hand signs a
+ *  registration (a proposal, or a co-sign of one). The write path reads stewardship off this pin, never off
+ *  the realm doc's `keptBy` alone: a member who could rewrite a nym there could route a foreign put. */
+export const REALM_STEWARD_TIDDLER = `${REALM_DOC_URI}/steward-nym`;
+
 /** The signing / content domain of a realm-bag registration. */
 export const REALM_BAG_DOMAIN = "lar-realm-bag/v1" as const;
 
@@ -131,6 +136,42 @@ export async function signRealmBagRegistration(
 }
 
 /**
+ * PROPOSE a registration that names a steward whose hand has not signed yet. The proposal carries the FULL
+ * `keptBy` (the signers plus the proposed) and only the signers' signatures, so it does NOT count — naming a
+ * second steward is n-of-n and takes two hands. It lands on the realm doc under the PROPOSER's own key,
+ * where the proposed steward reads it and completes it with `coSignRealmBagRegistration` on her own next
+ * present. The bytes never move between the two hands: `realmBagBytes` reads the sorted `keptBy` alone.
+ */
+export async function proposeRealmBagRegistration(
+  parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier">,
+  signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
+  proposed: readonly string[],
+): Promise<RealmBagRegistration> {
+  const keptBy = [...new Set([...signers.map((s) => s.signer), ...proposed].map((n) => n.toLowerCase()))].sort();
+  const unsigned = { kind: REALM_BAG_DOMAIN, ...parts, keptBy } as Omit<RealmBagRegistration, "signatures">;
+  const bytes = realmBagBytes(unsigned);
+  const signatures: QuorumSignature[] = [];
+  for (const s of signers) signatures.push({ signer: s.signer.toLowerCase(), sig: await s.sign(bytes) });
+  return { ...unsigned, signatures };
+}
+
+/**
+ * ACCRETE one more steward's consent onto a standing proposal — the co-sign that rhymes with `HandleCoSig`:
+ * the proposer names the message, the named hand consents to the EXACT bytes. A signer the record never
+ * named adds a signature that verifies over nothing the fold counts, so the completed record still fails
+ * closed. Returns a new record; the input never moves.
+ */
+export async function coSignRealmBagRegistration(
+  rec: RealmBagRegistration,
+  cosigner: { readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> },
+): Promise<RealmBagRegistration> {
+  const nym = cosigner.signer.toLowerCase();
+  const bytes = realmBagBytes(rec);
+  const signatures = [...rec.signatures.filter((s) => s.signer.toLowerCase() !== nym), { signer: nym, sig: await cosigner.sign(bytes) }];
+  return { ...rec, signatures };
+}
+
+/**
  * Does this registration COUNT for `realmId`? Fail-closed at every shore: a foreign realm, an empty steward
  * set, a malformed nym, a tier wider than CONTRACT, a steward with no verifying signature — each reads false.
  * n-of-n: every named steward signed, so the record conscripts nobody.
@@ -162,9 +203,11 @@ export function realmBagKey(bagUri: string, steward: string): string {
   return `${REALM_BAG_PREFIX}${encodeURIComponent(bagUri)}/${steward.toLowerCase()}`;
 }
 
-/** Land a signed registration on the realm doc draft. Call INSIDE a `handle.change()` callback. */
-export function writeRealmBagRegistration(draft: LarDoc, rec: RealmBagRegistration): void {
-  const key = realmBagKey(rec.bagUri, rec.keptBy[0] ?? "");
+/** Land a signed registration on the realm doc draft under the WRITING hand's key (`by`; the first named
+ *  steward when a caller names none). A co-signer's completed record accretes beside the proposal it
+ *  completes rather than over it — the fold, never a write, adjudicates. Call INSIDE `handle.change()`. */
+export function writeRealmBagRegistration(draft: LarDoc, rec: RealmBagRegistration, by?: string): void {
+  const key = realmBagKey(rec.bagUri, by ?? rec.keptBy[0] ?? "");
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(rec) }, rec.realmId);
 }
 
@@ -233,6 +276,22 @@ export async function foldRealmBags(
   return standing;
 }
 
+/**
+ * THE WRITE CAP, read off the STANDING fold: exactly the stewards the counted registration names keep the
+ * bag. Narrower than the read (CONTRACT reaches the whole contracted cabal) and never wider than the ruling:
+ * an unregistered bag, an equivocal one, and a hand outside `keptBy` each answer false, so a caller that
+ * draws false falls through to the path it walked before the realm carried anything.
+ */
+export function mayWriteRealmBag(
+  standing: ReadonlyMap<string, RealmBagRegistration>, bagUri: string, nym: string | null | undefined,
+): boolean {
+  if (!nym) return false;
+  const rec = standing.get(bagUri);
+  if (!rec) return false;
+  const want = nym.toLowerCase();
+  return rec.keptBy.some((s) => s.toLowerCase() === want);
+}
+
 // ── THE @CROSSROADS ANNOUNCE ─────────────────────────────────────────────────────────────────────
 
 /** What the public plane carries about a realm bag — that it exists and who keeps it. NEVER the doc. */
@@ -267,6 +326,7 @@ export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration):
  */
 export class RealmBagGate implements FederationGate {
   #standing: ReadonlySet<DocumentId> = new Set<DocumentId>();
+  #registrations: ReadonlyMap<string, RealmBagRegistration> = new Map<string, RealmBagRegistration>();
   readonly #realmDocId: DocumentId;
 
   constructor(
@@ -280,10 +340,22 @@ export class RealmBagGate implements FederationGate {
   /** Re-fold the standing registrations off a realm doc snapshot — the docs the member lane opens for. */
   async refold(doc: LarDoc | undefined | null, realmId: string): Promise<void> {
     const next = new Set<DocumentId>();
-    for (const rec of (await foldRealmBags(doc, realmId)).values()) {
+    this.#registrations = await foldRealmBags(doc, realmId);
+    for (const rec of this.#registrations.values()) {
       try { next.add(interpretAsDocumentId(rec.docUrl as AutomergeUrl) as DocumentId); } catch { /* a malformed url registers nothing */ }
     }
     this.#standing = next;
+  }
+
+  /** THE WRITE CAP at the holder: does this nym stand in the bag's counted `keptBy`? The read lane above
+   *  answers CONTRACT (every member); this answers the stewards' set alone. */
+  mayWrite(bagUri: string, nym: string | null | undefined): boolean {
+    return mayWriteRealmBag(this.#registrations, bagUri, nym);
+  }
+
+  /** The standing registrations this gate folded, keyed by bag URI. */
+  registrations(): ReadonlyMap<string, RealmBagRegistration> {
+    return this.#registrations;
   }
 
   /** The realm doc id plus the docs of standing registrations — for a caller that lists what the lane opens. */

@@ -41,6 +41,10 @@ const URI  = `lar:///${PATH}`;
 const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 
+/** The ledger with a second slot — B's edit, the one A must read back through the ford. */
+const memeWithSlot = (slot = "/b"): string =>
+  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<~ ahu #${slot}>>\n\n! the highland tally\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+
 const meme = (): string =>
   `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "salt: 12 · barley: 40"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n<<~ ahu #/count>>\n\n! the count\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
 
@@ -66,6 +70,13 @@ let doors = "";
 /** B's answer BEFORE any registration — the byte-identical "today" a non-member keeps drawing. */
 let beforeB = "";
 let contractNym = "";
+/** B's refusal at the read tier — the bytes ⑩ pins while her naming still waits on her own hand. */
+let refusalB = "";
+let named = false;
+let bPut = false;
+/** The error object alone, past the per-call requestId — the byte-identity a CONTROL compares. */
+const errorOf = (text: string): string =>
+  JSON.stringify((JSON.parse(text.split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>)["error"] ?? null);
 
 describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relation ★", () => {
   beforeAll(async () => {
@@ -209,6 +220,17 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     return r;
   };
 
+  /** B's co-sign, bounded: A's proposal crosses by WS-sync, so the first attempt may find nothing yet. */
+  const pollCoSign = async (ms: number) => {
+    let r = await B!.cli(["nexus", "realm-bag", "lares", "--cosign", "--json"]);
+    const until = Date.now() + ms;
+    while (r.json?.["ok"] !== true && Date.now() < until) {
+      await new Promise((res) => setTimeout(res, 4_000));
+      r = await B!.cli(["nexus", "realm-bag", "lares", "--cosign", "--json"]);
+    }
+    return r;
+  };
+
   // THE VECTOR. B's `meme get --bag lares` walks the realm plane first (reach-by-access) and reads A's doc,
   // which A's wire gate federates to a contracted MEMBER. Gated on the contract: a refusal at a door above
   // reads at ③, never here.
@@ -252,7 +274,6 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     console.error(`meme-realm-bag MEASURE C: ${said(r).trim().slice(0, 200)}`);
     expect(r.json?.["ok"]).toBe(false);
     // Byte-identical past the per-call requestId — the error object itself.
-    const errorOf = (text: string): string => JSON.stringify((JSON.parse(text.split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>)["error"] ?? null);
     expect(errorOf(said(r))).toBe(errorOf(beforeB));
     const list = await C!.cli(["nexus", "realm-bags", "--json"]);
     expect((list.json?.["data"] as Record<string, unknown> | undefined)?.["realm"] ?? null).toBeNull();
@@ -264,5 +285,87 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const r = await B!.cli(["meme", "put", URI, "--bag", "lares", "--file", file, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(said(r)).toMatch(/no writable layer|cannot write|refus/i);
+    refusalB = said(r);
   }, 60_000);
+
+  // ── THE STEWARD WRITE PATH ──────────────────────────────────────────────────────────────────────
+  // The read cap is CONTRACT; the write cap is the NAMED STEWARDS' SET. A names B a steward; the record is
+  // n-of-n, so the naming is a PROPOSAL that stands unregistered until B's own hand co-signs it. Then B's
+  // `meme put --bag lares` resolves the REALM doc — the ford's one book — and A reads the new slot.
+
+  test("⑨ A names B a steward — the record ACCRETES her name and waits on her own hand", async () => {
+    const reg = await A!.cli(["nexus", "realm-bag", "lares", "--steward", contractNym, "--json"]);
+    console.error(`meme-realm-bag MEASURE A names B: ${said(reg).trim().slice(0, 300)}`);
+    expect(reg.json?.["ok"], said(reg)).toBe(true);
+    const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
+    expect((data["keptBy"] as string[]).map((n) => n.toLowerCase())).toContain(contractNym.toLowerCase());
+    // n-of-n: A alone cannot seat B — the proposal names B and counts nothing until B signs.
+    expect(data["counts"]).toBe(false);
+    expect((data["awaiting"] as string[]).map((n) => n.toLowerCase())).toContain(contractNym.toLowerCase());
+    named = true;
+  }, 60_000);
+
+  test("⑩ CONTROL: while the proposal waits, B's put still draws the SAME refusal", async (ctx) => {
+    if (!named) ctx.skip();
+    const file = join(rootB, "b-edit.mem");
+    const r = await B!.cli(["meme", "put", URI, "--bag", "lares", "--file", file, "--json"]);
+    expect(r.json?.["ok"], said(r)).toBe(false);
+    expect(errorOf(said(r))).toBe(errorOf(refusalB));
+  }, 60_000);
+
+  test("★ B co-signs, then her `meme put --bag lares` lands on the REALM doc ★", async (ctx) => {
+    if (!named) ctx.skip();
+    const co = await pollCoSign(120_000);
+    console.error(`meme-realm-bag MEASURE B co-sign: ${said(co).trim().slice(0, 300)}`);
+    expect(co.json?.["ok"], said(co)).toBe(true);
+    expect(((co.json?.["data"] ?? {}) as Record<string, unknown>)["counts"]).toBe(true);
+
+    const base = String(((await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"])).json?.["data"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
+    const file = join(rootB, "b-slot.mem");
+    writeFileSync(file, memeWithSlot());
+    const put = await B!.cli(["meme", "put", URI, "--bag", "lares", "--base", base, "--file", file, "--json"]);
+    console.error(`meme-realm-bag MEASURE B put: ${said(put).trim().slice(0, 300)}`);
+    expect(put.json?.["ok"], said(put)).toBe(true);
+    bPut = true;
+  }, 240_000);
+
+  // GATED RED. B's placement lands on the realm doc (★ above) and stays there: the RETURN LANE is closed.
+  // MEASURED here — B's gate opens the realm's registered bag docs to a peer her OWN membership consult names
+  // a MEMBER (`RealmBagGate.mayFederate` → `NexusMembership.holdsCarriagePeer`), and B contracted INTO A's
+  // nexus rather than admitting him, so her member set is empty (`nexus refresh` → `memberEntries: 0`) and she
+  // announces nothing back. The realm DOC itself crosses both ways because it sits on the deterministic public
+  // shelf the base gate already federates; A's private bag doc does not. THE SEAM: what proof lets B federate
+  // a realm-carried doc back to the operator whose charter she holds — the charter itself, the standing
+  // registration's `keptBy`, or an admit B writes of her own. The day it stands, this reads "expected to fail".
+  test.fails("⑪ A's `meme get` reads B's new slot — the write crossed the ford, not a second chest", async (ctx) => {
+    if (!bPut) ctx.skip();
+    const until = Date.now() + 90_000;
+    let text = "";
+    while (Date.now() < until) {
+      const r = await A!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+      text = String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+      if (text.includes("#/b")) break;
+      await new Promise((res) => setTimeout(res, 3_000));
+    }
+    // B holds her own write whatever A reads — the placement landed, the lane did not open.
+    const bGet = await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    expect(String((bGet.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? ""), said(bGet)).toContain("#/b");
+    expect(text, `A never read B's slot`).toContain("#/b");
+  }, 150_000);
+
+  test("⑫ CONTROL: C — never named a steward — still cannot put; and B's STALE base moves nothing", async (ctx) => {
+    if (!bPut) ctx.skip();
+    const file = join(rootC, "c-edit.mem");
+    writeFileSync(file, meme());
+    const c = await C!.cli(["meme", "put", URI, "--bag", "lares", "--file", file, "--json"]);
+    expect(c.json?.["ok"], said(c)).toBe(false);
+
+    const stale = join(rootB, "b-stale.mem");
+    writeFileSync(stale, memeWithSlot("/stale"));
+    const r = await B!.cli(["meme", "put", URI, "--bag", "lares", "--base", "0".repeat(64), "--file", stale, "--json"]);
+    const decision = String(((r.json?.["data"] ?? {}) as Record<string, unknown>)["decision"] ?? said(r));
+    expect(decision, said(r)).toMatch(/conflict/i);
+    const after = await A!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    expect(String((after.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("#/stale");
+  }, 150_000);
 });
