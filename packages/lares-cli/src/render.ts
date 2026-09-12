@@ -67,6 +67,27 @@ export function exitFor(code: string): number {
   return EXIT_FOR[code] ?? 1;
 }
 
+/**
+ * REFUSE with a usage reading — the one refusal that used to skip the choke point.
+ *
+ * Every hand-rolled `usage()` printed prose to stderr and returned a bare code, so under `--json` — the
+ * mode that exists for agents and pipes — the caller received ZERO parseable bytes and an exit status.
+ * Measured on the built binary: `lares library bogus-verb --json` wrote nothing at all to stdout, while
+ * every ORDINARY error on the same door emitted `{ok:false,error:{…}}`. The exit vocabulary was never the
+ * gap (`EXIT_FOR.usage` is 2 and the refusals returned it); the PAYLOAD was.
+ *
+ * A human still reads the same prose, line for line. An agent reads the refusal every other error already
+ * speaks, so "unknown sub-verb" stops being the one failure it cannot see.
+ */
+export function refuseUsage(args: ParsedArgs, door: string, lines: readonly string[], detail?: string): number {
+  emit(args, {
+    ok:    false,
+    error: { code: "usage", message: `lares ${door}: ${detail ?? "unknown sub-verb"}` },
+    human: () => { for (const line of lines) console.error(line); },
+  });
+  return exitFor("usage");
+}
+
 export interface Emission {
   /** The `ok | error` union — the machine-facing verdict. */
   readonly ok:         boolean;

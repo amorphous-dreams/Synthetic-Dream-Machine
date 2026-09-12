@@ -35,25 +35,25 @@ import {
 } from "@lararium/node";
 import { libraryRef } from "@lararium/mesh";
 import { existsSync } from "node:fs";
-import { emit, exitFor } from "../render.js";
+import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class LibraryUsageError extends Error {}
 
-function usage(): number {
-  console.error("usage: lares library <list | show | acquire | verify | index | path>");
-  console.error("");
-  console.error("  list                            the collections, and what each holds");
-  console.error("  show <collection>               one collection's bodies, with their anchors");
-  console.error("  acquire <file> --to <coll>      take a body in — MOVES by default (--keep copies)");
-  console.error("       [--origin <url>] [--licence <terms>] [--note <text>]");
-  console.error("  verify [<collection>]           re-digest the BYTES against each directory name");
-  console.error("  index <collection> --out <path> write the tracked index — the part that travels");
-  console.error("  path <collection>               resolve library:<collection> to a directory");
-  console.error("");
-  console.error(`  the shelf stands at ${larLibraryHome()} — the shrine that abides, outside every tracked tree and every wipe.`);
-  return 2;
-}
+const USAGE_LINES: readonly string[] = [
+  "usage: lares library <list | show | acquire | verify | index | path>",
+  "",
+  "  list                            the collections, and what each holds",
+  "  show <collection>               one collection's bodies, with their anchors",
+  "  acquire <file> --to <coll>      take a body in — MOVES by default (--keep copies)",
+  "       [--origin <url>] [--licence <terms>] [--note <text>]",
+  "  verify [<collection>]           re-digest the BYTES against each directory name",
+  "  index <collection> --out <path> write the tracked index — the part that travels",
+  "  path <collection>               resolve library:<collection> to a directory",
+  "",
+  `  the shelf stands at ${larLibraryHome()} — the shrine that abides, outside every tracked tree and every wipe.`,
+];
+function usage(args: ParsedArgs): number { return refuseUsage(args, "library", USAGE_LINES); }
 
 export async function cmdLibrary(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
@@ -65,7 +65,7 @@ export async function cmdLibrary(args: ParsedArgs): Promise<number> {
       case "verify":  return libraryVerify(args);
       case "index":   return libraryIndex(args);
       case "path":    return libraryPath(args);
-      default:        return usage();
+      default:        return usage(args);
     }
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
