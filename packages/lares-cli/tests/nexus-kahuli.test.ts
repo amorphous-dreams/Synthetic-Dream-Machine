@@ -63,10 +63,29 @@ describe("lares nexus kahuli — the tier-parameterized overturn", () => {
     expect([...errs, ...logs].join("\n")).toMatch(/held|bake|push/i);
   });
 
-  test("no tier / an unknown tier prints usage and refuses", async () => {
+  test("no tier / an unknown tier refuses — through the emit choke point, not past it", async () => {
+    // The refusal is an EMISSION now. Off-TTY (every pipe, and every test runner) `emit` renders the
+    // machine payload, so the usage prose reaches a HUMAN and the verdict reaches an AGENT — the reading
+    // this door used to withhold under --json.
+    const out: string[] = [];
+    const w = vi.spyOn(process.stdout, "write").mockImplementation((c: unknown) => { out.push(String(c)); return true; });
     expect(await cmdNexus(args(["kahuli"]))).toBe(2);
     expect(await cmdNexus(args(["kahuli", "corpus"]))).toBe(2);
-    expect(errs.join("\n")).toMatch(/engine.*grammar|grammar.*engine/is);
+    const payloads = out.join("").trim().split("\n").map((l) => JSON.parse(l) as { ok: boolean; error?: { code?: string; message?: string } });
+    expect(payloads.every((p) => p.ok === false && p.error?.code === "usage")).toBe(true);
+    expect(payloads[1]?.error?.message, "the refusal names the tier it refused").toContain("corpus");
+    w.mockRestore();
+
+    // CONTROL — at a terminal the same refusal prints the tier menu as prose and emits no payload.
+    const wasTty = process.stdout.isTTY;
+    Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
+    try {
+      errs.length = 0;
+      expect(await cmdNexus(args(["kahuli"]))).toBe(2);
+      expect(errs.join("\n")).toMatch(/engine.*grammar|grammar.*engine/is);
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: wasTty, configurable: true });
+    }
   });
 
   test("★ the rite table lists `kahuli` — the composed front door is registered ★", async () => {

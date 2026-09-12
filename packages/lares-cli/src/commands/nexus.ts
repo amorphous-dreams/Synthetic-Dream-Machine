@@ -74,53 +74,53 @@ import {
 } from "@lararium/mesh";
 import type { QuorumSignature } from "@lararium/mesh";
 import { loadPersonaGroupRootSeed, readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid } from "@lararium/node";
-import { emit, exitFor } from "../render.js";
+import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
 
-function usage(): void {
-  console.error("usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>");
-  console.error("");
-  console.error("  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony");
-  console.error("  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym");
-  console.error("  kapae --list                              read the currently-Kapae'd set (the fold)");
-  console.error("  un_kapae <nym>                            mint a quorum-signed lift at a higher version");
-  console.error("  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)");
-  console.error("  revoke <operator-pubkey>                  revoke a member (quorum-only)");
-  console.error("  members --list                            read the currently-admitted member set (the fold)");
-  console.error("  accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in");
-  console.error("  posture [private | open]                  read / flip the cross-Nexus federation posture");
-  console.error("  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier");
-  console.error("  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition");
-  console.error("  refresh                                   re-read the charter and re-fold the boards it names");
-  console.error("  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)");
-  console.error("            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign");
-  console.error("            [--cosign]                      consent as a named steward to a standing proposal");
-  console.error("  realm-bags                                the bags the realm carries, and who keeps each");
-}
+const NEXUS_USAGE: readonly string[] = [
+  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>",
+  "",
+  "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
+  "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
+  "  kapae --list                              read the currently-Kapae'd set (the fold)",
+  "  un_kapae <nym>                            mint a quorum-signed lift at a higher version",
+  "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)",
+  "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
+  "  members --list                            read the currently-admitted member set (the fold)",
+  "  accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in",
+  "  posture [private | open]                  read / flip the cross-Nexus federation posture",
+  "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
+  "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
+  "  refresh                                   re-read the charter and re-fold the boards it names",
+  "  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)",
+  "            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign",
+  "            [--cosign]                      consent as a named steward to a standing proposal",
+  "  realm-bags                                the bags the realm carries, and who keeps each",
+];
 
-function sealUsage(): void {
-  console.error("usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>");
-  console.error("");
-  console.error("  seat    form the roster from the personas that DECLARED a Handle + STOOD for a chair, then");
-  console.error("          establish the GENESIS epoch over their verifying keys:");
-  console.error("          --next-key-commit <digest>   the pre-rotation commitment");
-  console.error("          [--threshold <k>]            the quorum rule (default: majority of those that stood)");
-  console.error("  rotate  reveal the pre-committed next key-set (now in the vault) + advance the chain.");
-  console.error("          The roster becomes exactly what STANDS — the succession door: a kahu steps down by");
-  console.error("          no longer standing, a new one takes a chair by standing. Either way the reveal must");
-  console.error("          match the prior epoch's pre-commitment, so no seat moves without notice.");
-  console.error("          --next-key-commit <digest-of-the-FOLLOWING-key-set>");
-  console.error("          [--threshold <k>]  the quorum rule for the new roster (default: majority)");
-  console.error("  commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>");
-  console.error("  show    read the current founding-kahu roster + chain head + quorum verdict");
-  console.error("  reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:");
-  console.error("          reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the");
-  console.error("                          --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]");
-  console.error("          reserve refresh re-seed + re-derive + re-issue the cards + print a NEW commit");
-  console.error("          reserve show    the reserve state (commit present, guardians, share sealed)");
-}
+const SEAL_USAGE: readonly string[] = [
+  "usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>",
+  "",
+  "  seat    form the roster from the personas that DECLARED a Handle + STOOD for a chair, then",
+  "          establish the GENESIS epoch over their verifying keys:",
+  "          --next-key-commit <digest>   the pre-rotation commitment",
+  "          [--threshold <k>]            the quorum rule (default: majority of those that stood)",
+  "  rotate  reveal the pre-committed next key-set (now in the vault) + advance the chain.",
+  "          The roster becomes exactly what STANDS — the succession door: a kahu steps down by",
+  "          no longer standing, a new one takes a chair by standing. Either way the reveal must",
+  "          match the prior epoch's pre-commitment, so no seat moves without notice.",
+  "          --next-key-commit <digest-of-the-FOLLOWING-key-set>",
+  "          [--threshold <k>]  the quorum rule for the new roster (default: majority)",
+  "  commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>",
+  "  show    read the current founding-kahu roster + chain head + quorum verdict",
+  "  reserve [refresh|show]                     custody the pre-rotation's NEXT key-set:",
+  "          reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the",
+  "                          --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]",
+  "          reserve refresh re-seed + re-derive + re-issue the cards + print a NEW commit",
+  "          reserve show    the reserve state (commit present, guardians, share sealed)",
+];
 
 export async function cmdNexus(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
@@ -139,9 +139,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "realm-bag":       return await cmdRealmBag(args);
     case "realm-bags":      return await cmdRealmBags(args);
     default:
-      if (verb) console.error(`lares nexus: unknown verb "${verb}"`);
-      usage();
-      return 2;
+      return refuseUsage(args, "nexus", NEXUS_USAGE, verb ? `unknown verb "${verb}"` : undefined);
   }
 }
 
@@ -345,18 +343,18 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
 // vessel does not boot — and the epoch it prints is the hearth true-name, the value an operator reads
 // before deciding whether an overturn strands a fleet. A silent wrong answer is the worst shape here.
 
-function kahuliUsage(): void {
-  console.error("usage: lares nexus kahuli <engine | grammar>");
-  console.error("");
-  console.error("  the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:");
-  console.error("    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device");
-  console.error("             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;");
-  console.error("             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.");
-  console.error("    grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —");
-  console.error("             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).");
-  console.error("");
-  console.error("  a read NEVER builds — the deliberate build+push lives behind --apply and in `nexus rite kahuli`.");
-}
+const KAHULI_USAGE: readonly string[] = [
+  "usage: lares nexus kahuli <engine | grammar>",
+  "",
+  "  the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:",
+  "    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device",
+  "             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;",
+  "             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.",
+  "    grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —",
+  "             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).",
+  "",
+  "  a read NEVER builds — the deliberate build+push lives behind --apply and in `nexus rite kahuli`.",
+];
 
 /**
  * `lares nexus kahuli engine` — the SLOW ratchet, HELD. A deliberate not-yet, never an unknown verb: the
@@ -424,9 +422,7 @@ async function cmdKahuli(args: ParsedArgs): Promise<number> {
     case "engine":  return kahuliEngineHeld();
     case "grammar": return await Promise.resolve(kahuliGrammar(args));
     default:
-      if (tier) console.error(`lares nexus kahuli: unknown tier "${tier}"\n`);
-      kahuliUsage();
-      return 2;
+      return refuseUsage(args, "nexus kahuli", KAHULI_USAGE, tier ? `unknown tier "${tier}"` : undefined);
   }
 }
 
@@ -607,9 +603,7 @@ async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "reserve": return await cmdCharterReserve(args);
       case "grow":    return await sealGrow(args);
       default:
-        if (sub) console.error(`lares nexus seal: unknown sub-verb "${sub}"`);
-        sealUsage();
-        return 2;
+        return refuseUsage(args, "nexus seal", SEAL_USAGE, sub ? `unknown sub-verb "${sub}"` : undefined);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
