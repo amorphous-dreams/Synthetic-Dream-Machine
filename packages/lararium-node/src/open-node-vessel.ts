@@ -48,7 +48,7 @@ import {
   coupleMesh, crystallize, guardHitl,
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
-import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
+import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -820,9 +820,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // verb stays observable, never nowhere — the Akka /deadLetters lesson; browser has no mailbox,
   // so it warns + drops best-effort). getPool reads vmManager lazily (the forward-ref pattern);
   // the alert hook reads the forward-declared mailbox at delivery time (long after boot).
+  // The stowage cools by the realm's rolls — the same reading the CAS sweep ticks on, held in one cell.
+  const realmPaceCell = makeRealmPaceCell();
   const residencyWiring: VesselResidency = makeVesselResidency(
     () => vmManager,
-    { wikiActivationCap: NODE_WIKI_ACTIVATION_CAP, wikiPinBudget: NODE_WIKI_PIN_BUDGET },
+    { wikiActivationCap: NODE_WIKI_ACTIVATION_CAP, wikiPinBudget: NODE_WIKI_PIN_BUDGET, clock: realmPaceCell.read },
     {
       onWikiCooled: (id) => console.log(`[residency] cooled wiki ${id} (island unmounted)`),
       onBagCooled:  (id) => console.log(`[residency] cooled bag ${id} (compact-then-drop reserved for repo#358)`),
@@ -1676,7 +1678,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
 
     // cas-sweep + the sweep TICK — the ONE production caller of `casSweep` (node-cas): the reference count derives
     // off this composite, the cadence off the realm's OWN pace (the mesh-cabal feed on the daemon board), never a calendar.
-    installCasSweep({ registry, casDir: cidDir, references: () => assembly.composite.entries(), protect: new Set((readGenesisManifest(genesisDir)?.blobs ?? []).map((b) => b.cid)), pins: () => readCasPins(cidDir), realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+    installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: new Set((readGenesisManifest(genesisDir)?.blobs ?? []).map((b) => b.cid)), pins: () => readCasPins(cidDir), realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
 
     // cas-fetch — the fetch door's explicit READ: resolve a cid through the vessel's door (local `cid/` first,
     // then the fleet holders over Socket B, verified, write-through). The verb IS a read, so fetch-on-read holds

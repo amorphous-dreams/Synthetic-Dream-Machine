@@ -79,8 +79,13 @@ export interface VesselResidencyConfig {
   wikiPinBudget: number;
   /** Bag hot-cap override (default DEFAULT_HOT_CAP). */
   hotCap?: number;
-  /** Idle-cool threshold override (default DEFAULT_IDLE_MS). */
+  /** Idle-cool threshold override on the wall floor (default DEFAULT_IDLE_MS). Read only without `clock`. */
   idleMs?: number;
+  /** THE REALM'S OWN CLOCK — a monotonic roll count; with it the stowage cools by rolls (`idle`, default
+   *  DEFAULT_IDLE_ROLLS) and a day of wall-silence ages nothing. Absent, the wall floor stands, named. */
+  clock?: () => number;
+  /** Idle threshold in rolls, read with `clock`. */
+  idle?: number;
   /** Sweeper tick override (default DEFAULT_SWEEP_INTERVAL_MS). */
   sweepIntervalMs?: number;
 }
@@ -130,6 +135,7 @@ export function makeVesselResidency(
     hotCap:          config.hotCap ?? DEFAULT_HOT_CAP,
     typeCaps:        { wiki: config.wikiActivationCap },
     idleMs:          config.idleMs ?? DEFAULT_IDLE_MS,
+    ...(config.clock ? { clock: config.clock, ...(config.idle !== undefined ? { idle: config.idle } : {}) } : {}),
     sweepIntervalMs: config.sweepIntervalMs ?? DEFAULT_SWEEP_INTERVAL_MS,
     onHydrate: async (id, grainType) => {
       if (grainType === "wiki") await getPool().ensureWiki(id);

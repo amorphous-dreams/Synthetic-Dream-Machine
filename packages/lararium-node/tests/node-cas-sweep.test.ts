@@ -283,3 +283,18 @@ describe("the sweep tick and the cas-sweep verb", () => {
     } finally { sweep.stop(); }
   });
 });
+
+/**
+ * ONE CLOCK FOR EVERY COOLING. The stowage's idle clock reads sync; the realm reading rides async through the
+ * sweep tick. The pace cell carries the tick's reading to the stowage, so a bag cools by the same rolls a
+ * blob ages by — and reads 0 (ages nothing) until the realm rolls.
+ */
+import { makeRealmPaceCell } from "../src/node-cas.js";
+test("the pace cell reads 0 before any reading, then the last pace, and ignores a null", () => {
+  const cell = makeRealmPaceCell();
+  expect(cell.read()).toBe(0);
+  cell.note(7);
+  expect(cell.read()).toBe(7);
+  cell.note(null);
+  expect(cell.read()).toBe(7);
+});

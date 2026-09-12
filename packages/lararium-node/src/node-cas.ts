@@ -310,6 +310,9 @@ export interface InstallCasSweepOptions {
   readonly log:        (line: string) => void;
   /** Observes each tick's result (a witness hook; the verb's caller reads the result directly). */
   readonly onSweep?:   (r: CasSweepVerbResult) => void;
+  /** A cell the tick fills with the realm's pace, so a SYNC reader (the stowage's idle clock) rides the same
+   *  reading the sweep does — one clock for every cooling on the vessel. */
+  readonly paceCell?:  RealmPaceCell;
   /** The wall-clock a PIN's expiry compares against. */
   readonly now?:       () => number;
 }
@@ -328,6 +331,21 @@ export interface CasSweepInstalled {
  * of rolls past the last sweep — so the daemon never walks the dir more often than the realm's own pace
  * warrants, and a still realm never triggers a walk. The interval is unref'd: it never holds the process open.
  */
+/**
+ * THE PACE CELL — the last realm pace the sweep tick read, held for sync readers. `read()` answers 0 before
+ * the first reading and while the vessel stands outside every realm: a stowage clocked on it ages nothing
+ * until the realm rolls, which reads as the lamplighters' law (a realm nobody feeds never cools a bag), while
+ * the hot-cap still bounds residency by LRU order. Never a wall clock.
+ */
+export interface RealmPaceCell {
+  readonly read: () => number;
+  readonly note: (pace: number | null) => void;
+}
+export function makeRealmPaceCell(): RealmPaceCell {
+  let last = 0;
+  return { read: () => last, note: (pace) => { if (pace !== null) last = pace; } };
+}
+
 export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled {
   const now = opts.now ?? (() => Date.now());
   const probeMs = 60_000;
@@ -338,6 +356,7 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
 
   const sweep = async (dryRun: boolean): Promise<CasSweepVerbResult> => {
     const pace = realmPace(await opts.realmClock());
+    opts.paceCell?.note(pace);
     const references = casReferences([...(await opts.references())]);
     // Fold the ledger: a referenced blob leaves it; an unreferenced one enters at this roll (age 0) if unseen.
     for (const { cid } of listCasBlobs(opts.casDir)) {
