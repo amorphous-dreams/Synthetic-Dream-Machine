@@ -301,3 +301,35 @@ describe("lares meme project — the daemon seat rides meme-project", () => {
     expect(existsSync(out)).toBe(false);
   });
 });
+
+/**
+ * THE SIDECAR RIDES THE JSON REPLY. The daemon's `meme-project` answers `{ text, meta }` for md — a carrier in
+ * two files — and the CLI's `--json` reply carried `text` alone unless `--out` wrote the `.meta` to disk, so a
+ * JSON consumer (the MCP twin, the docker check, an AI at the QA lab) read half the pair. Measured on the docker
+ * meme scenario: "B projects it to md — the check wants a `meta` key the projection never answers".
+ */
+describe("project --to md over the daemon — the pair in the reply", () => {
+  test("`meta` reaches the JSON data beside `text`", async () => {
+    h.calls.length = 0; h.refuse = "";
+    h.reply = { uri: "lar:///t/x", to: "md", text: "# a\n", meta: "type: text/markdown\n", contentType: "text/markdown" };
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { lines.push(String(l)); return true; }) as never);
+    const code = await cmdMeme(memeArgs(["project", "lar:///t/x"], { to: "md", bag: "sdm" }, { json: true }));
+    spy.mockRestore();
+    expect(code).toBe(0);
+    const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { data?: Record<string, unknown> };
+    expect(reply.data?.["text"]).toBe("# a\n");
+    expect(reply.data?.["meta"], "the sidecar half of the pair").toBe("type: text/markdown\n");
+  });
+
+  /** CONTROL: a target with no sidecar (html) carries no `meta` key — nothing invented. */
+  test("an html projection carries no meta", async () => {
+    h.reply = { uri: "lar:///t/x", to: "html", text: "<!doctype html>", contentType: "text/html" };
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { lines.push(String(l)); return true; }) as never);
+    await cmdMeme(memeArgs(["project", "lar:///t/x"], { to: "html" }, { json: true }));
+    spy.mockRestore();
+    const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { data?: Record<string, unknown> };
+    expect("meta" in (reply.data ?? {})).toBe(false);
+  });
+});

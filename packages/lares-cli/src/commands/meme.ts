@@ -580,7 +580,13 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { uri, to: plan.to, contentType: outcome.output["contentType"], ...(out ? { out } : { text }) },
+    // The pair rides the reply whole: `text` (or the `out` path it landed at) AND the `.meta` sidecar when
+    // the target carries one — a JSON consumer reads both halves without a disk beside it.
+    data: {
+      uri, to: plan.to, contentType: outcome.output["contentType"],
+      ...(out ? { out, ...(typeof meta === "string" ? { outMeta: `${out}.meta` } : {}) } : { text }),
+      ...(typeof meta === "string" ? { meta } : {}),
+    },
     // The rendered text alone reaches stdout, so `lares meme project <uri> --to html > file` carries it.
     human: () => { if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text); },
   });
