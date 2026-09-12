@@ -17,7 +17,10 @@ import { join } from "path";
 const REPO = process.env["REPO"] ?? process.cwd();
 const SPEC_URI = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext";
 const ROOT = "memetic-wikitext+tiddlywiki";
-const DECLARATION = `<<!DOCTYPE ${ROOT} ${SPEC_URI}>>`;
+// QUOTED, because a bare positional binds a PHANTOM parameter and leaves the slot EMPTY — the carrier-head
+// ruling, and the cure the corpus already took when 738 carriers and their minters converted. This witness
+// was the one reader left on the retired spelling, so it called 725 canonical carriers "the wrong form".
+const DECLARATION = `<<!DOCTYPE "${ROOT}" "${SPEC_URI}">>`;
 // THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
 // DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
 const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
@@ -64,7 +67,11 @@ for (const f of carriers) {
   const live = (i) => !inMask(spans, starts[i]);
   const findLive = (p) => lines.findIndex((l, i) => live(i) && p(l.trim()));
   const at = findLive((l) => l.startsWith("<<!DOCTYPE"));
-  const sohAt = findLive((l) => l.startsWith("<<^ code:"));
+  // A CALL binds with `=`; `:` is definition-side. Reading only the colon form matched 5 stragglers and
+  // missed 2961 real heads, so the "nothing stands between the declaration and the head" check below never
+  // fired — a gate that reads green because it never runs. Both spellings are admitted; the colon form is
+  // the retired one and still worth catching where it stands.
+  const sohAt = findLive((l) => l.startsWith("<<^ code=") || l.startsWith("<<^ code:"));
   const commented = lines.some((l, i) => live(i) && COMMENTED.test(l.trim()));
   if (showsItsSource(f)) {
     // A markdown carrier declares in the comment form, and a BARE declaration there is the fault:
