@@ -76,3 +76,37 @@ describe("the 500-year test-run defaults (AHI_KA_500YR — Elyncia as the first 
     expect(read500(0, 100), "the world clearly moved while the realm stood still → cold").toBe("ahi-mataotao");
   });
 });
+
+// ── THE REALM'S OWN PACE — `realmPace(reading)` over what `realm-clock` answers ─────────────────────────────
+// The sweep's grace reads in the realm's OWN unit: one roll of its feed (the max-register epoch the clock
+// folds). An OBSERVED rate (elapsed wall-ms over rolls seen) is co-driven by the observer's sync — a healed
+// partition delivers a season of rolls in one second and the "pace" reads a thousandfold faster, collapsing
+// every grace — so the realm's clock outranks it. Abstains under two rolls (one offering is a visit, no beat);
+// a torn reading answers ONE unit, never zero (a zero grace sweeps a staged body before its verb lands).
+import { realmPace } from "../src/ahi-ka.js";
+import { cabalRealmMaintenanceProvenance, realmFeedSlotValue } from "../src/cabal-realm-clock.js";
+import { realmFeedSlotUri } from "../src/cabal-realm.js";
+
+describe("realmPace — the realm's own clock, in rolls", () => {
+  const REALM = "ab".repeat(32);
+  const fed = (epochs: Record<string, number>) =>
+    cabalRealmMaintenanceProvenance(REALM, new Map(Object.entries(epochs).map(([w, e]) => [realmFeedSlotUri(REALM, w), realmFeedSlotValue({ epoch: e })])));
+
+  test("★ a fed realm's pace reads its effective epoch — the rolls its own feed stands at, never a wall-clock ★", () => {
+    expect(realmPace(fed({ alpha: 7, beta: 4 }))).toBe(7);
+    // The same reading whether the rolls arrived over a season or in one burst after a partition healed.
+    expect(realmPace(fed({ alpha: 7, beta: 4 }))).toBe(realmPace(fed({ alpha: 7 })));
+  });
+
+  test("CONTROL: abstains under two rolls — one offering is a visit, no beat yet", () => {
+    expect(realmPace(fed({}))).toBeNull();
+    expect(realmPace(fed({ alpha: 1 }))).toBeNull();
+    expect(realmPace(null)).toBeNull();
+  });
+
+  test("CONTROL: a torn clock answers ONE unit, never zero", () => {
+    expect(realmPace({ effectiveEpoch: Number.NaN })).toBe(1);
+    expect(realmPace({ effectiveEpoch: -3 })).toBe(1);
+    expect(realmPace({ effectiveEpoch: Number.POSITIVE_INFINITY })).toBe(1);
+  });
+});

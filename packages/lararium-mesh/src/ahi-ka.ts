@@ -77,3 +77,32 @@ export function readAhiKa(opts: {
   if (paceFraction >= params.coldRatio) return "ahi-tere";
   return "ahi-mataotao";
 }
+
+// ── THE REALM'S OWN PACE — the unit every grace reads in ───────────────────────────────────────────────────
+
+/**
+ * The realm's own NOW, in ROLLS of its maintenance feed — `realmPace(reading)` over the SAME reading the
+ * `realm-clock` verb answers (`cabalRealmMaintenanceProvenance`: the max-register epoch this replica folds).
+ *
+ * WHY THE REALM'S CLOCK OUTRANKS AN OBSERVED ROLL RATE. A reader that samples the epoch twice on its own
+ * wall-clock and answers `elapsed / rolls` measures the realm against ITS OWN advancement — the co-driven
+ * yardstick the module header refuses. Under a partition the rolls stop arriving and the "pace" stretches
+ * (harmless: a longer grace); when the partition HEALS a season of rolls lands in one second and the pace
+ * reads a thousandfold faster — every grace collapses toward zero and the sweep eats bodies that stood
+ * unreferenced for one honest roll. The realm's clock cannot be driven that way: its epoch advances only by
+ * an offering, one per roll, however the rolls reach this replica. So the grace counts ROLLS, and the sweep's
+ * cadence counts rolls, and "a day of silence" ages nothing — exactly the lamplighters ban ("a logical epoch
+ * cannot accrue silence") read from the sweep's side.
+ *
+ * The reading: null while the realm has not said two rolls (one offering constitutes a VISIT — no beat stands
+ * yet — and a hearth outside every realm passes null); a torn reading (non-finite / negative) answers ONE
+ * unit, never zero, so a grace derived from it never reads zero (a zero grace sweeps a staged body before its
+ * verb lands). Pure: no clock, no sample, no state — a reboot re-reads the same value off the same board.
+ */
+export function realmPace(reading: { readonly effectiveEpoch: number } | null | undefined): number | null {
+  if (!reading) return null;
+  const epoch = reading.effectiveEpoch;
+  if (!Number.isFinite(epoch) || epoch < 0) return 1;
+  if (epoch < 2) return null;
+  return epoch;
+}

@@ -14,8 +14,8 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import {
-  pinnedCids, casReferences, graceForTier, tiersByGraceDescending,
-  type GenesisCasManifest, type PinCap, type CasReferenceEntry,
+  pinnedCids, casReferences, graceForTier, tiersByGraceDescending, realmPace,
+  type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
 
@@ -123,17 +123,22 @@ export interface CasSweepOptions {
   /** The cids the genesis CAS holds (the manifest's blobs) — never swept, referenced or not. */
   readonly protect:    ReadonlySet<string>;
   /** An unreferenced blob younger than this stays (a staged body its verb has not landed yet). The floor
-   *  every blob gets; `graceMsFor` reads a longer one per tier. */
-  readonly graceMs:    number;
+   *  every blob gets; `graceFor` reads a longer one per tier. IN THE UNIT `ageOf` SPEAKS — rolls of the realm's
+   *  clock under the tick, ms of mtime for a caller that passes no `ageOf`. */
+  readonly grace:      number;
   /** GRACE PER TIER (basket-one #/grace-and-pin): the grace for THIS cid, read off the tier of the bag whose
-   *  pointer named it against the realm's own baseline — `graceForTier(tier, baselineMs)` (@lararium/mesh).
-   *  Absent → `graceMs` for every blob. A reading below `graceMs` never shortens the floor. */
-  readonly graceMsFor?: (cid: string) => number;
+   *  pointer named it — `graceForTier(tier, unit)` (@lararium/mesh). Absent → `grace` for every blob. A reading
+   *  below `grace` never shortens the floor. */
+  readonly graceFor?:  (cid: string) => number;
+  /** A blob's AGE in the grace's unit. Absent → the file's mtime age in ms (a local read with no realm). The
+   *  tick passes rolls-since-first-seen-unreferenced off the realm's own clock. */
+  readonly ageOf?:     (cid: string) => number;
   /** PIN at cid grain: the pins beside the bag's caps. A standing pin (now < expiry) holds its blob past any
    *  grace; an expired pin holds nothing and the blob rides the ordinary grace. */
   readonly pins?:      readonly PinCap[];
   /** Name what would sweep; delete nothing. */
   readonly dryRun?:    boolean;
+  /** The wall-clock reading a PIN's expiry compares against. */
   readonly now?:       number;
 }
 
@@ -158,8 +163,9 @@ export function casSweep(opts: CasSweepOptions): CasSweepResult {
     if (standing.has(cid)) { pinned.push(cid); continue; }
     if ((opts.references.get(cid)?.size ?? 0) > 0) { kept.push(cid); continue; }
     const path = join(opts.casDir, cid);
-    const grace = Math.max(opts.graceMs, opts.graceMsFor?.(cid) ?? opts.graceMs);
-    if (now - statSync(path).mtimeMs < grace) { kept.push(cid); continue; }
+    const grace = Math.max(opts.grace, opts.graceFor?.(cid) ?? opts.grace);
+    const age = opts.ageOf ? opts.ageOf(cid) : now - statSync(path).mtimeMs;
+    if (age < grace) { kept.push(cid); continue; }
     if (!opts.dryRun) unlinkSync(path);
     swept.push(cid);
   }
@@ -206,20 +212,27 @@ export function releaseCas(casDir: string, cid: string): PinCap[] {
 
 // ── THE SWEEP TICK — the production caller (basket-one #/grace-and-pin) ─────────────────────────────
 //
-// "A clock sweeps by the calendar; a grace sweeps by the realm's own pace." The tick's cadence therefore
-// reads off the realm's baseline, never a wall-clock constant: the SHORTEST tier's grace over four, so a
-// blob past its grace waits at most a quarter of that grace for the sweep while the daemon never walks
-// the dir more often than the pace warrants. A realm that has not said its pace (no baseline) fires no
-// sweep at all — a quiet hearth keeps every blob, exactly as a centuries-old realm goes cold only by
-// true abandonment. The floor grace for a blob whose tier no pointer names any more reads the LONGEST
-// tier (an unreferenced blob's tier is unknowable; the fail-safe reads private).
+// "A clock sweeps by the calendar; a grace sweeps by the realm's own pace." The tick reads THE REALM'S OWN
+// CLOCK — `realmPace` (@lararium/mesh) over the reading the `realm-clock` verb answers — and counts everything
+// in ROLLS of that clock: the cadence is the SHORTEST tier's grace over four (never under one roll), each
+// tier's grace is `graceForTier(tier, 1)` rolls, and a blob's age is the rolls since this daemon first saw it
+// unreferenced. Why the realm's clock and never an observed rate: `realmPace`'s own comment carries it — an
+// elapsed-over-rolls sample is co-driven by the observer's sync, and a healed partition collapses every grace.
+// A realm that has not said two rolls (or a hearth outside every realm) fires no sweep at all — a quiet hearth
+// keeps every blob, exactly as a centuries-old realm goes cold only by true abandonment. The floor grace for a
+// blob whose tier no pointer names any more reads the LONGEST tier (an unreferenced blob's tier is unknowable;
+// the fail-safe reads private).
+//
+// THE LEDGER. "First seen unreferenced" lives in memory, per daemon: a reboot forgets it and every orphan's
+// grace starts over — the fail-safe direction (a blob is only ever kept LONGER), and the price of never writing
+// a sidecar the sweep itself would have to read. A blob that regains a reference leaves the ledger; unreferenced
+// again, its grace starts over.
 
-/** The tick cadence in ms for a realm baseline — the shortest tier's grace / 4; null without a baseline. */
-export function sweepCadenceMs(baselineMs: number | null): number | null {
-  if (baselineMs === null || !Number.isFinite(baselineMs) || baselineMs <= 0) return null;
+/** The tick cadence in ROLLS of the realm's clock — the shortest tier's grace / 4, never under one roll. */
+export function sweepCadenceRolls(): number {
   const tiers = tiersByGraceDescending();
   const shortest = tiers[tiers.length - 1]!;
-  return graceForTier(shortest, baselineMs) / 4;
+  return Math.max(1, Math.ceil(graceForTier(shortest, 1) / 4));
 }
 
 /** What `cas-sweep` answers: the cids swept (or, dry, that would sweep), the cids a standing pin held, and
@@ -230,65 +243,74 @@ export interface CasSweepVerbResult {
   readonly swept:    string[];
   readonly pinned:   string[];
   readonly retained: string[];
-  /** The baseline the sweep read (null → the floor grace alone, never a shorter one). */
-  readonly baselineMs: number | null;
+  /** The realm's own now the sweep read, in rolls (null → no pace: nothing aged, nothing swept). */
+  readonly pace:     number | null;
 }
 
 export interface InstallCasSweepOptions {
   readonly registry:   { register(name: string, handler: (args: Record<string, unknown>) => Promise<Record<string, unknown>>): void };
   readonly casDir:     string;
   /** The live records the composite holds — `composite.entries()`; the reference count derives from them. */
-  readonly references: () => Promise<Iterable<CasReferenceEntry>>;
+  readonly references: () => Promise<Iterable<CasReferenceEntry>> | Iterable<CasReferenceEntry>;
   /** The genesis manifest's cids — never swept. */
   readonly protect:    ReadonlySet<string>;
   /** The standing pins beside the CAS (`readCasPins`) — read at each sweep, never cached. */
   readonly pins:       () => readonly PinCap[];
-  /** The realm's own pace: the ms one expected roll takes, or null while the realm has not said it
-   *  (`realmPaceReader` observes it off the realm's feed). */
-  readonly baselineMs: () => number | null | Promise<number | null>;
+  /** The realm's own clock — the reading `realm-clock` answers (`realmMaintenanceFromBoard`), or null on a
+   *  hearth outside every realm. Read at each probe; `realmPace` turns it into rolls. */
+  readonly realmClock: () => CabalRealmMaintenanceProvenance | null | Promise<CabalRealmMaintenanceProvenance | null>;
   readonly log:        (line: string) => void;
   /** Observes each tick's result (a witness hook; the verb's caller reads the result directly). */
   readonly onSweep?:   (r: CasSweepVerbResult) => void;
+  /** The wall-clock a PIN's expiry compares against. */
   readonly now?:       () => number;
 }
 
 export interface CasSweepInstalled {
   /** Run one sweep now (the verb's own body). */
   readonly sweep: (dryRun: boolean) => Promise<CasSweepVerbResult>;
-  /** How often the tick re-reads the baseline to learn whether a cadence stands yet. */
+  /** How often the tick re-reads the realm's clock. */
   readonly probeMs: number;
   readonly stop: () => void;
 }
 
 /**
  * Install the sweep: register the `cas-sweep` verb (`{ dryRun?: boolean }`) and start the tick. The tick
- * probes the baseline once a minute (a cheap read); the FIRST sweep after a cadence stands runs one cadence
- * later, and every later sweep one cadence after the last — so a baseline that lengthens slows the tick
- * and one that shortens quickens it, without a restart. The interval is unref'd: it never holds the
- * process open.
+ * probes the realm's clock once a minute (a cheap board read) and sweeps once the clock has advanced a cadence
+ * of rolls past the last sweep — so the daemon never walks the dir more often than the realm's own pace
+ * warrants, and a still realm never triggers a walk. The interval is unref'd: it never holds the process open.
  */
 export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled {
   const now = opts.now ?? (() => Date.now());
   const probeMs = 60_000;
+  const tiers = tiersByGraceDescending();
+  const longest = tiers[0]!;
+  /** cid → the roll this daemon first saw it unreferenced (the ledger; see the section comment). */
+  const firstSeen = new Map<string, number>();
+
   const sweep = async (dryRun: boolean): Promise<CasSweepVerbResult> => {
-    const baselineMs = await opts.baselineMs();
-    const tiers = tiersByGraceDescending();
-    const longest = tiers[0]!;
-    // The floor: the longest tier's grace under the baseline; without a baseline, ONE unit (graceForTier's
-    // own reading) — the tick never reaches here without a baseline, and the verb says which it read.
-    const graceMs = graceForTier(longest, baselineMs ?? Number.NaN);
+    const pace = realmPace(await opts.realmClock());
+    const references = casReferences([...(await opts.references())]);
+    // Fold the ledger: a referenced blob leaves it; an unreferenced one enters at this roll (age 0) if unseen.
+    for (const { cid } of listCasBlobs(opts.casDir)) {
+      if ((references.get(cid)?.size ?? 0) > 0) { firstSeen.delete(cid); continue; }
+      if (pace !== null && !firstSeen.has(cid)) firstSeen.set(cid, pace);
+    }
     const r = casSweep({
       casDir: opts.casDir,
-      references: casReferences(await opts.references()),
+      references,
       protect: opts.protect,
       pins: opts.pins(),
-      graceMs,
+      // The floor: the longest tier's grace in rolls. No pace → no age (every blob reads 0) → nothing sweeps.
+      grace: graceForTier(longest, 1),
+      ageOf: (cid) => (pace === null ? 0 : pace - (firstSeen.get(cid) ?? pace)),
       dryRun,
       now: now(),
     });
+    if (!dryRun) for (const cid of r.swept) firstSeen.delete(cid);
     const out: CasSweepVerbResult = {
       verb: "cas-sweep", dryRun, swept: r.swept, pinned: r.pinned,
-      retained: [...r.kept, ...r.protected], baselineMs,
+      retained: [...r.kept, ...r.protected], pace,
     };
     opts.onSweep?.(out);
     return out;
@@ -298,19 +320,20 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
     return r as unknown as Record<string, unknown>;
   });
 
-  let lastSweepAt = now();
+  const cadence = sweepCadenceRolls();
+  let lastSweepRoll: number | null = null;
   let stopped = false;
   let inFlight = false;
   const probe = async (): Promise<void> => {
     if (stopped || inFlight) return;
     inFlight = true;
     try {
-      const cadence = sweepCadenceMs(await opts.baselineMs());
-      if (cadence === null) { lastSweepAt = now(); return; }   // no pace yet — the clock does not run
-      if (now() - lastSweepAt < cadence) return;
-      lastSweepAt = now();
+      const pace = realmPace(await opts.realmClock());
+      if (pace === null) return;                                   // no pace yet — the clock does not run
+      if (lastSweepRoll !== null && pace - lastSweepRoll < cadence) return;
+      lastSweepRoll = pace;
       const r = await sweep(false);
-      if (r.swept.length > 0) opts.log(`[cas-sweep] swept ${r.swept.length} blob(s) past the grace · pinned ${r.pinned.length} · retained ${r.retained.length}`);
+      if (r.swept.length > 0) opts.log(`[cas-sweep] roll ${pace}: swept ${r.swept.length} blob(s) past the grace · pinned ${r.pinned.length} · retained ${r.retained.length}`);
     } catch (err) {
       opts.log(`[cas-sweep] tick faulted: ${(err as Error)?.message ?? err}`);
     } finally { inFlight = false; }
@@ -318,31 +341,4 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
   const timer = setInterval(() => { void probe(); }, probeMs);
   timer.unref?.();
   return { sweep, probeMs, stop: () => { stopped = true; clearInterval(timer); } };
-}
-
-/**
- * THE REALM'S OWN PACE, observed: the ms one roll of the realm's maintenance feed takes, read off the
- * max-register epoch this vessel's board folds (`realmMaintenanceFromBoard(...).effectiveEpoch`). The reader
- * samples the epoch at first ask and answers `(elapsed) / (rolls since)` once at least `minRolls` rolls
- * stand behind it — one roll yields no interval, so it abstains (null) until then, and a realm nobody feeds
- * abstains forever: the sweep never runs against a calendar. The sample never persists; a reboot re-learns
- * the pace from the rolls it sees.
- */
-export function realmPaceReader(opts: {
-  readonly epoch:    () => number | Promise<number>;
-  readonly now?:     () => number;
-  readonly minRolls?: number;
-}): () => Promise<number | null> {
-  const now = opts.now ?? (() => Date.now());
-  const minRolls = opts.minRolls ?? 2;
-  let first: { at: number; epoch: number } | null = null;
-  return async () => {
-    const epoch = await opts.epoch();
-    if (!Number.isFinite(epoch)) return null;
-    if (!first) { first = { at: now(), epoch }; return null; }
-    const rolls = epoch - first.epoch;
-    if (rolls < minRolls) return null;
-    const elapsed = now() - first.at;
-    return elapsed > 0 ? elapsed / rolls : null;
-  };
 }

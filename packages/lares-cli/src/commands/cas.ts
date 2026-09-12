@@ -142,8 +142,8 @@ async function cmdCasFetch(args: ParsedArgs, cid: string): Promise<number> {
 /**
  * `lares bag cas --sweep [--dry-run]` — THE SWEEP, run where the composite stands (basket-one #/grace-and-pin):
  * the daemon derives the live reference count, reads its standing pins and the genesis protect set, and
- * sweeps the unreferenced blobs past their grace. The grace reads off the realm's own pace; a realm that
- * has not said its pace sweeps under the floor alone. `--dry-run` names what would sweep and moves nothing.
+ * sweeps the unreferenced blobs past their grace. The grace counts ROLLS of the realm's own clock; a realm
+ * that has not said two rolls ages nothing, so nothing sweeps. `--dry-run` names what would sweep and moves nothing.
  */
 async function cmdCasSweep(args: ParsedArgs): Promise<number> {
   const dryRun = args.flags["dry-run"] === true;
@@ -158,10 +158,10 @@ async function cmdCasSweep(args: ParsedArgs): Promise<number> {
   const pinned = (out["pinned"] as string[] | undefined) ?? [];
   const retained = (out["retained"] as string[] | undefined) ?? [];
   emit(args, {
-    ok: true, data: { dryRun, swept, pinned, retained, baselineMs: out["baselineMs"] ?? null },
+    ok: true, data: { dryRun, swept, pinned, retained, pace: out["pace"] ?? null },
     human: () => {
       console.log(`lares bag cas --sweep${dryRun ? " --dry-run" : ""} — swept ${swept.length} · pinned ${pinned.length} · retained ${retained.length}` +
-                  (out["baselineMs"] ? ` · realm pace ${String(out["baselineMs"])}ms/roll` : " · realm pace unread (floor grace alone)"));
+                  (typeof out["pace"] === "number" ? ` · realm clock at roll ${String(out["pace"])}` : " · realm clock unread (no pace: nothing aged)"));
       for (const cid of swept) console.log(`  ${dryRun ? "would sweep" : "swept     "} ${cid.slice(0, 16)}…`);
     },
   });

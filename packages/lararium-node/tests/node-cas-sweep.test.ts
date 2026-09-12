@@ -42,11 +42,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     const photo = blob("png bytes");
     writeCasEntriesFs([photo], casDir);
     age(photo.cid);
-    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), graceMs: 0 });
+    const held = casSweep({ casDir, references: casReferences([pointer("lares", "lar:///t.w.b/photo", photo.cid)]), protect: new Set(), grace: 0 });
     expect(held.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
     // DROP <bag> — the bag's records leave the composite, so the derived count reads zero.
-    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), graceMs: 0 });
+    const dropped = casSweep({ casDir, references: casReferences([]), protect: new Set(), grace: 0 });
     expect(dropped.swept).toEqual([photo.cid]);
     expect(existsSync(join(casDir, photo.cid))).toBe(false);
   });
@@ -55,7 +55,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     const core = blob("the engine core");
     writeCasEntriesFs([core], casDir);
     age(core.cid);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), graceMs: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(genesis.blobs.map((b) => b.cid)), grace: 0 });
     expect(r.swept).toEqual([]);
     expect(r.protected).toEqual([core.cid]);
     expect(existsSync(join(casDir, core.cid))).toBe(true);
@@ -68,7 +68,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     const two = [pointer("lares", "lar:///t.w.b/photo", photo.cid), pointer("crossroads", "lar:///t.w.b/photo", photo.cid)];
     expect(casReferences(two).get(photo.cid)?.size).toBe(2);
     const afterDrop = two.filter((e) => e.bagId !== "lares");
-    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), graceMs: 0 });
+    const r = casSweep({ casDir, references: casReferences(afterDrop), protect: new Set(), grace: 0 });
     expect(r.swept).toEqual([]);
     expect(existsSync(join(casDir, photo.cid))).toBe(true);
   });
@@ -76,11 +76,11 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   test("the grace holds a young unreferenced blob; a dry run deletes nothing", () => {
     const fresh = blob("just staged, not yet landed");
     writeCasEntriesFs([fresh], casDir);
-    const young = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 60_000 });
+    const young = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 60_000 });
     expect(young.swept).toEqual([]);
     expect(young.kept).toContain(fresh.cid);
     age(fresh.cid);
-    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0, dryRun: true });
+    const dry = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, dryRun: true });
     expect(dry.swept).toEqual([fresh.cid]);
     expect(existsSync(join(casDir, fresh.cid))).toBe(true);
   });
@@ -90,7 +90,7 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     const b = blob("x");
     writeCasEntriesFs([b], casDir);
     age(b.cid);
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0 });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0 });
     expect(r.swept).toEqual([b.cid]);
     expect(existsSync(join(casDir, "bulb-pointer-state.json"))).toBe(true);
     writeCasEntriesFs([b], casDir);
@@ -110,7 +110,7 @@ describe("casSweep — PIN at cid grain, grace per tier", () => {
     writeCasEntriesFs([b], casDir);
     age(b.cid);
     const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() + 86_400_000 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0, pins });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, pins });
     expect(r.swept).toEqual([]);
     expect(r.pinned).toEqual([b.cid]);
     expect(existsSync(join(casDir, b.cid))).toBe(true);
@@ -121,7 +121,7 @@ describe("casSweep — PIN at cid grain, grace per tier", () => {
     writeCasEntriesFs([b], casDir);
     age(b.cid);
     const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() - 1 }];
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0, pins });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0, pins });
     expect(r.pinned).toEqual([]);
     expect(r.swept).toEqual([b.cid]);
   });
@@ -136,52 +136,58 @@ describe("casSweep — PIN at cid grain, grace per tier", () => {
     utimesSync(join(casDir, veil.cid), hourAgo, hourAgo);
     const baselineMs = 30 * 60_000;
     const tierOf = (cid: string) => (cid === veil.cid ? "veil" : "public") as const;
-    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0,
-                         graceMsFor: (cid) => graceForTier(tierOf(cid), baselineMs) });
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0,
+                         graceFor: (cid) => graceForTier(tierOf(cid), baselineMs) });
     expect(r.swept).toEqual([pub.cid]);
     expect(r.kept).toContain(veil.cid);
   });
 });
 
 // ── THE PRODUCTION CALLER — a sweep TICK on the daemon + the `cas-sweep` verb ─────────────────────────────
-// `casSweep` had no caller. The tick's cadence reads off the realm's own baseline: the SHORTEST tier's grace
-// over four (a blob past its grace waits at most a quarter-grace for the sweep), never a wall-clock constant;
-// no baseline (the realm has not said its pace) → no tick fires, ever. The verb reports {swept, pinned,
-// retained}; `dryRun` moves nothing; the genesis protect set and standing pins hold as before (CONTROL).
+// `casSweep` had no caller. The tick reads THE REALM'S OWN CLOCK (`realmPace` over what `realm-clock`
+// answers): the cadence and every grace count in ROLLS of the realm's feed, never wall-ms. An OBSERVED
+// ms-per-roll is co-driven by the observer's sync — a healed partition lands a season of rolls in a second
+// and the grace collapses — so the realm's clock outranks it. No pace (the realm has not said two rolls) →
+// no tick fires, ever. The verb reports {swept, pinned, retained, pace}; `dryRun` moves nothing; the genesis
+// protect set and standing pins hold as before (CONTROL).
 import { vi } from "vitest";
-import { sweepCadenceMs, installCasSweep, realmPaceReader, type CasSweepVerbResult } from "../src/node-cas.js";
+import { sweepCadenceRolls, installCasSweep, type CasSweepVerbResult } from "../src/node-cas.js";
 
 type Handler = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
 function fakeRegistry(): { register(name: string, h: Handler): void; verbs: Map<string, Handler> } {
   const verbs = new Map<string, Handler>();
   return { verbs, register: (name, h) => { verbs.set(name, h); } };
 }
+/** A fake realm clock — what `realm-clock` answers, at a known beat. */
+const clockAt = (effectiveEpoch: number) => ({ maintainers: [], maintainerCount: 0, effectiveEpoch, trailingEpoch: 0, spread: 0, leadingCount: 0 });
 
 describe("the sweep tick and the cas-sweep verb", () => {
-  test("the cadence = the shortest tier's grace / 4 against the realm baseline; no baseline → null", () => {
-    const baselineMs = 40 * 60_000;
-    expect(sweepCadenceMs(baselineMs)).toBe(graceForTier("public", baselineMs) / 4);
-    expect(sweepCadenceMs(null)).toBeNull();
-    expect(sweepCadenceMs(0)).toBeNull();
-    expect(sweepCadenceMs(Number.NaN)).toBeNull();
+  test("the cadence = the shortest tier's grace / 4 in ROLLS, never under one roll", () => {
+    expect(sweepCadenceRolls()).toBe(Math.max(1, Math.ceil(graceForTier("public", 1) / 4)));
   });
 
-  test("`cas-sweep` sweeps an aged orphan, keeps the genesis and the pinned, reports {swept, pinned, retained}", async () => {
+  test("`cas-sweep` sweeps an orphan past its grace IN ROLLS, keeps the genesis and the pinned, reports {swept, pinned, retained, pace}", async () => {
     const orphan = blob("an orphan past its grace");
     const core   = blob("the engine core");
     const kept   = blob("a pinned working");
     writeCasEntriesFs([orphan, core, kept], casDir);
     for (const b of [orphan, core, kept]) age(b.cid);
     const registry = fakeRegistry();
+    let epoch = 2;
     const sweep = installCasSweep({
       registry, casDir,
       references: async () => [],
       protect: new Set(genesis.blobs.map((b) => b.cid)),
       pins: () => [{ cid: kept.cid, tier: "veil", holder: "operator", expiry: Date.now() + 86_400_000 }],
-      baselineMs: () => 60_000,   // one-minute rolls: public grace 1m, an hour-old orphan is past it
+      realmClock: () => clockAt(epoch),
       log: () => {},
     });
     try {
+      // The first sweep SEES the orphan at roll 2 — age 0 rolls; the floor grace reads the LONGEST tier (8 rolls).
+      const seen = (await registry.verbs.get("cas-sweep")!({})) as unknown as CasSweepVerbResult;
+      expect(seen.swept).toEqual([]);
+      expect(seen.pace).toBe(2);
+      epoch = 10;   // eight rolls later on the realm's own clock — a day of wall-time, or one second: the same reading
       // CONTROL: a dry run names the orphan and moves nothing.
       const dry = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
       expect(dry.dryRun).toBe(true);
@@ -191,46 +197,89 @@ describe("the sweep tick and the cas-sweep verb", () => {
       expect(live.swept).toEqual([orphan.cid]);
       expect(live.pinned).toEqual([kept.cid]);
       expect(live.retained).toEqual(expect.arrayContaining([core.cid]));
+      expect(live.pace).toBe(10);
       expect(existsSync(join(casDir, orphan.cid))).toBe(false);
       expect(existsSync(join(casDir, core.cid))).toBe(true);      // CONTROL: genesis never sweeps
       expect(existsSync(join(casDir, kept.cid))).toBe(true);      // CONTROL: pinned never sweeps
     } finally { sweep.stop(); }
   });
 
-  test("the TICK fires at the cadence under a baseline, and never without one (CONTROL)", async () => {
+  test("★ the grace reads the REALM'S clock, not the observed roll rate: a burst of rolls in one second ages a blob by rolls; a day of silence ages it by nothing ★", async () => {
     vi.useFakeTimers();
     try {
       const orphan = blob("an orphan the tick finds");
       writeCasEntriesFs([orphan], casDir);
       age(orphan.cid);
       const registry = fakeRegistry();
-      let baseline: number | null = null;
+      let epoch = 2;
       const swept: string[][] = [];
       const sweep = installCasSweep({
         registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
-        baselineMs: () => baseline, log: () => {}, onSweep: (r) => { swept.push(r.swept); },
+        realmClock: () => clockAt(epoch), log: () => {}, onSweep: (r) => { swept.push(r.swept); },
       });
       try {
-        await vi.advanceTimersByTimeAsync(24 * 3_600_000);
-        expect(swept, "no baseline → no sweep, however long the wall-clock runs").toEqual([]);
+        await vi.advanceTimersByTimeAsync(sweep.probeMs + 1);                 // the orphan is SEEN at roll 2
+        await vi.advanceTimersByTimeAsync(24 * 3_600_000);                    // a day of wall-clock, the realm still
+        expect(swept.flat(), "a still realm ages nothing, however long the wall-clock runs").toEqual([]);
         expect(existsSync(join(casDir, orphan.cid))).toBe(true);
-        baseline = 60_000;                       // the realm now says its pace: one roll a minute
-        await vi.advanceTimersByTimeAsync(sweepCadenceMs(baseline)! + sweep.probeMs + 1);
+        epoch = 9;                                                             // seven rolls land in one second (a healed partition)
+        await vi.advanceTimersByTimeAsync(sweep.probeMs + 1);
+        expect(swept.flat(), "seven rolls < the eight-roll floor — kept").toEqual([]);
+        epoch = 10;
+        await vi.advanceTimersByTimeAsync(sweep.probeMs + 1);
         expect(swept.flat()).toEqual([orphan.cid]);
         expect(existsSync(join(casDir, orphan.cid))).toBe(false);
       } finally { sweep.stop(); }
     } finally { vi.useRealTimers(); }
   });
 
-  test("realmPaceReader abstains until two rolls stand, then answers ms-per-roll off the feed (never a calendar)", async () => {
-    let t = 1_000_000; let epoch = 5;
-    const pace = realmPaceReader({ epoch: () => epoch, now: () => t });
-    expect(await pace()).toBeNull();                 // first sample — no interval yet
-    t += 3_600_000;
-    expect(await pace(), "no roll → no pace, however long the clock runs").toBeNull();
-    epoch = 6; t += 60_000;
-    expect(await pace(), "one roll → no interval").toBeNull();
-    epoch = 7; t += 60_000;
-    expect(await pace()).toBe((3_600_000 + 120_000) / 2);
+  test("CONTROL: no pace (under two rolls, or no realm) → no tick fires, however long the clock runs", async () => {
+    vi.useFakeTimers();
+    try {
+      const orphan = blob("an orphan on a realm-less hearth");
+      writeCasEntriesFs([orphan], casDir);
+      age(orphan.cid);
+      const registry = fakeRegistry();
+      let clock: ReturnType<typeof clockAt> | null = null;
+      const swept: string[][] = [];
+      const sweep = installCasSweep({
+        registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
+        realmClock: () => clock, log: () => {}, onSweep: (r) => { swept.push(r.swept); },
+      });
+      try {
+        await vi.advanceTimersByTimeAsync(24 * 3_600_000);
+        clock = clockAt(1);                                                    // one offering — a visit, no beat
+        await vi.advanceTimersByTimeAsync(24 * 3_600_000);
+        expect(swept).toEqual([]);
+        expect(existsSync(join(casDir, orphan.cid))).toBe(true);
+        // The verb by hand, with no pace: nothing has aged, nothing sweeps, and the result says which it read.
+        const r = (await registry.verbs.get("cas-sweep")!({})) as unknown as CasSweepVerbResult;
+        expect(r.swept).toEqual([]);
+        expect(r.pace).toBeNull();
+      } finally { sweep.stop(); }
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("CONTROL: a blob that gains a reference leaves the ledger; unreferenced again, its grace starts over", async () => {
+    const photo = blob("a png whose pointer came and went");
+    writeCasEntriesFs([photo], casDir);
+    const registry = fakeRegistry();
+    let epoch = 2;
+    let refs: CasReferenceEntry[] = [];
+    const sweep = installCasSweep({
+      registry, casDir, references: async () => refs, protect: new Set(), pins: () => [],
+      realmClock: () => clockAt(epoch), log: () => {},
+    });
+    try {
+      const verb = registry.verbs.get("cas-sweep")!;
+      await verb({});                                    // seen unreferenced at roll 2
+      epoch = 6; refs = [pointer("lares", "lar:///t.w.b/photo", photo.cid)];
+      await verb({});                                    // referenced — the ledger forgets it
+      epoch = 12; refs = [];
+      const again = (await verb({})) as unknown as CasSweepVerbResult;
+      expect(again.swept, "unreferenced again at roll 12 — age 0, not 10").toEqual([]);
+      epoch = 20;
+      expect(((await verb({})) as unknown as CasSweepVerbResult).swept).toEqual([photo.cid]);
+    } finally { sweep.stop(); }
   });
 });

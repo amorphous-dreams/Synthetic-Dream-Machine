@@ -1,7 +1,7 @@
 /**
  * cas-caps — the two RETENTION caps a bag holds beside its read caps: PIN (keep these bytes) and PREFETCH (pull
  * pointers' bytes as they cross). Both name a holder and an expiry; both read the expiry against the realm's own
- * baseline (`graceForTier`), never a wall-clock alone.
+ * clock (`graceForTier` in rolls of `realmPace`), never a wall-clock alone.
  *
  * PIN at CID grain: `{ cid, tier, holder, expiry }` — a pinned blob never sweeps while the pin stands; an EXPIRED
  * pin releases the blob to the ordinary grace. The tier binds to the bag whose pointer the pin protects.
@@ -10,7 +10,7 @@
  * default (the road stays light, the absence stays honest); a prefetch cap opens only for the ONE peer it names
  * (a phone leaving the house), only before its expiry. Absent cap → nothing prefetches.
  *
- * GRACE per tier: `graceForTier(tier, baseline)` — ratios over the realm's own ahi-kā baseline, never a constant.
+ * GRACE per tier: `graceForTier(tier, unit)` — ratios over the realm's own clock (one roll), never a constant.
  * VEIL / PERSONAGROUP hold LONGER than CONTRACT / PUBLIC: a private tier's bytes have exactly one holder-set that
  * can ever re-fetch them (this vessel, this fleet) — sweeping early there loses the only copy; a CONTRACT or PUBLIC
  * blob stands with other holders (the cabal, the world, the Herm re-share), so a shorter local grace costs a
@@ -59,8 +59,8 @@ export function prefetchAllows(cap: PrefetchCap | undefined, peer: string, now: 
 }
 
 /**
- * The per-tier grace ratios over the realm's baseline unit. The unit itself comes from the realm's ahi-kā
- * reading (the yardstick span one "expected roll" takes); the ratios say how many of those a blob rests
+ * The per-tier grace ratios over the realm's own unit — one roll of its clock (`realmPace`, the ahi-kā
+ * reading); the ratios say how many rolls a blob rests
  * unreferenced before it may sweep. Private tiers (one holder-set, no re-fetch road) hold longest.
  */
 export const GRACE_RATIO_BY_TIER: Readonly<Record<CapTier, number>> = {
@@ -71,13 +71,13 @@ export const GRACE_RATIO_BY_TIER: Readonly<Record<CapTier, number>> = {
 };
 
 /**
- * The grace for a tier, in the unit the baseline names — `baselineMs` = the ms one expected realm roll takes
- * (the realm's OWN pace, from `readAhiKa`'s `baselineRate`). A non-finite / non-positive baseline reads as
- * ONE unit so a torn reading never yields a zero grace (a zero grace sweeps a staged body before its verb lands).
+ * The grace for a tier, in the unit the caller names — `unit` = one ROLL of the realm's own clock (`realmPace`,
+ * ahi-ka: the sweep passes 1 and counts rolls), never a wall-clock span. A non-finite / non-positive unit reads
+ * as ONE so a torn reading never yields a zero grace (a zero grace sweeps a staged body before its verb lands).
  */
-export function graceForTier(tier: CapTier, baselineMs: number): number {
-  const unit = Number.isFinite(baselineMs) && baselineMs > 0 ? baselineMs : 1;
-  return GRACE_RATIO_BY_TIER[tier] * unit;
+export function graceForTier(tier: CapTier, unit: number): number {
+  const u = Number.isFinite(unit) && unit > 0 ? unit : 1;
+  return GRACE_RATIO_BY_TIER[tier] * u;
 }
 
 /** The tiers ordered by their grace, longest first — the doc comment's claim, checkable. */
