@@ -129,9 +129,11 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
       "tiddlers/sync-system.tid": "title: $:/config/SyncSystemTiddlersFromServer\n\nyes",
     });
     base = fork.base;
-    // Name the engine under contact, so a pristine run reads as one in the log.
+    // Name the engine under contact, so a pristine run reads as one in the log. Written to the stream
+    // itself: the runner shows a `console.error` from a green file on a red alone, and a CI job greps
+    // this line to prove WHICH engine the contact ran against.
     const status = JSON.parse(await (await fetch(`${base}/status`)).text()) as { tiddlywiki_version?: string };
-    console.error(`meme-routes.e2e: contact with TiddlyWiki ${status.tiddlywiki_version ?? "?"} at ${TW5_JS}`);
+    process.stderr.write(`meme-routes.e2e: contact with TiddlyWiki ${status.tiddlywiki_version ?? "?"} at ${TW5_JS}\n`);
   }, 60_000);
 
   afterAll(async () => {
@@ -151,6 +153,21 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(get.headers.get("content-type")).toMatch(/memetic-wikitext/);
     expect(get.headers.get("etag")).toBe(put.headers.get("etag"));
     expect(get.body).toContain("<<~ ahu #/b>>");
+  });
+
+  test("★ memes.json lists the roots with the base a writer hands back; ?tree=1 nests the slots; CONTROL: a plain tiddler never lists ★", async () => {
+    await http("PUT", `/recipes/default/tiddlers/${encodeURIComponent("lar:///t/prose")}`, { body: JSON.stringify({ title: "lar:///t/prose", text: "plain" }) });
+    const r = await http("GET", "/recipes/default/memes.json");
+    expect(r.status, r.body).toBe(200);
+    expect(r.headers.get("content-type")).toMatch(/application\/json/);
+    const etag = (await http("GET", memePath())).headers.get("etag")!.replace(/^"|"$/g, "");
+    expect(JSON.parse(r.body)).toEqual([{ uri: URI, canonicalHash: etag }]);
+    const tree = JSON.parse((await http("GET", "/bags/default/memes.json?tree=1")).body) as Array<{ uri: string; slots: unknown[] }>;
+    expect(tree).toEqual([{ uri: URI, canonicalHash: etag, slots: [{ slot: "#/a", uri: `${URI}#/a`, slots: [] }, { slot: "#/b", uri: `${URI}#/b`, slots: [] }] }]);
+    // The container law rides the listing too.
+    expect((await http("GET", "/bags/other/memes.json")).status).toBe(404);
+    // The CONTROL leaves through stock's own door, so the shelf reads as the next test expects it.
+    expect((await http("DELETE", `/bags/default/tiddlers/${encodeURIComponent("lar:///t/prose")}`)).status).toBe(204);
   });
 
   test("★ PUT over a STALE If-Match → 412 and nothing changed ★", async () => {

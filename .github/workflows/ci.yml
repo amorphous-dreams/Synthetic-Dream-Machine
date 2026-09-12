@@ -11,6 +11,8 @@ name: CI
 #                     (meme-corpus-roundtrip) and the plugin-artifact parity gate
 #   e2e             — the residency/ingest witnesses through the real CLI + vessels
 #   boot-budget     — the cache-stable boot stays under its char ceiling
+#   pristine-upstream — the meme routes meet a PUBLISHED tiddlywiki (npm), not only the fork:
+#                     the plugin drops into stock, and the log names the version it met
 #
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
@@ -29,6 +31,9 @@ concurrency:
 env:
   NODE_VERSION: "24"
   PNPM_VERSION: "11"
+  # The published tiddlywiki the plugin proves it drops into (the `pristine-upstream` job). ONE
+  # version, one place: the job's name, its cache key, its pack and its log-line check all read it.
+  TW5_PRISTINE: "5.4.1"
 
 jobs:
   # ─── typecheck ────────────────────────────────────────────────────────────
@@ -216,6 +221,69 @@ jobs:
               process.exit(1);
             }
           '
+
+  # ─── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──────
+  # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole
+  # contact — PUT · GET · DELETE · memes.json · the native door · the readers/writers case · the
+  # `--render` door — against any `tiddlywiki.js`. The `test` job runs it against the FORK
+  # (the submodule); nothing ran it against the published line, so "the plugin drops into stock"
+  # stood as an operator's local measurement. This job is its invoker, and it stands ALONE so the
+  # verdict reads on the PR under its own name rather than inside a job that measures the fork.
+  #
+  # THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A SKIP READS GREEN. So the job greps the
+  # contact line for the pinned version: a run that met no engine, or met the wrong one, fails here
+  # even though vitest exited 0.
+  pristine-upstream:
+    name: Pristine upstream (tiddlywiki@${{ env.TW5_PRISTINE }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The packed plugin builds from the vendored core; the contact itself runs against npm's.
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build (the packed plugin is what drops into stock)
+        run: pnpm -r build
+      # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
+      - name: Cache the published tiddlywiki
+        id: pristine-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/lares-pristine/tiddlywiki-${{ env.TW5_PRISTINE }}
+          key: pristine-tiddlywiki-${{ env.TW5_PRISTINE }}
+      - name: Pack tiddlywiki@${{ env.TW5_PRISTINE }} from npm
+        if: steps.pristine-cache.outputs.cache-hit != 'true'
+        run: |
+          dir=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE
+          mkdir -p "$dir" && cd "$dir"
+          npm pack "tiddlywiki@$TW5_PRISTINE" --silent
+          tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
+      - name: Witness the engine is the one pinned
+        run: |
+          pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
+          test -f "$pkg/tiddlywiki.js"
+          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
+      - name: meme-routes contact against the pristine engine
+        run: |
+          export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
+          export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
+          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          test "${PIPESTATUS[0]}" -eq 0
+      - name: The log names the engine it met
+        run: |
+          line=$(grep -a "meme-routes.e2e: contact with TiddlyWiki" "$RUNNER_TEMP/pristine.log" || true)
+          echo "$line"
+          if ! grep -aq "contact with TiddlyWiki $TW5_PRISTINE " "$RUNNER_TEMP/pristine.log"; then
+            echo "::error::the contact never named tiddlywiki@$TW5_PRISTINE — the suite skipped or met another engine"
+            exit 1
+          fi
 
   # ─── grammar artifact (ship step 0: the quad-pinned carrier stays truth) ───
   grammar-artifact:
