@@ -1,7 +1,8 @@
-"""Witness — the `meme_put` / `meme_get` / `meme_project` MCP tools: the MCP skin of the meme family's
-DAEMON-seated verbs.
+"""Witness — the `meme_put` / `meme_get` / `meme_list` / `meme_delete` / `meme_project` MCP tools: the MCP
+skin of the meme family's DAEMON-seated verbs.
 
-Each tool rides `lares_uds.call("meme-put" | "meme-get" | "meme-project", args)` to the @daemon, never a
+Each tool rides `lares_uds.call("meme-put" | "meme-get" | "meme-list" | "meme-delete" | "meme-project",
+args)` to the @daemon, never a
 store. The witness spawns a FAKE daemon on a temp unix socket (it records every request line and answers a
 canned receipt), so each assertion reads the EXACT `{verb, args}` the tool put on the wire — the contract
 the daemon side builds to: at most one of `recipe`/`bag`; neither → the daemon reads `recipe: "default"`
@@ -33,6 +34,8 @@ _GET_MEME = {"text": "the body", "canonicalHash": "sha256-get"}
 # The daemon's outcome envelope — a reactor never answers bare null, so the meme rides under `meme`.
 _GET_OUTPUT = {"uri": "lar:///ha.ka.ba/lares/api/pono/meme", "meme": _GET_MEME}
 _PROJECT_OUTPUT = {"uri": _URI, "to": "html", "text": "<p>the body</p>", "contentType": "text/html"}
+_LIST_OUTPUT = {"bag": "lar:///ha.ka.ba/bags/daemon", "roots": [{"uri": _URI, "canonicalHash": "sha256-get"}]}
+_DELETE_OUTPUT = {"uri": _URI, "decision": "removed", "tombstoned": [_URI], "canonicalHash": "sha256-get"}
 
 
 class _FakeDaemon:
@@ -107,10 +110,18 @@ def _project(**kw):
     return _tools()["meme_project"](**kw)
 
 
+def _list(**kw):
+    return _tools()["meme_list"](**kw)
+
+
+def _delete(**kw):
+    return _tools()["meme_delete"](**kw)
+
+
 def test_meme_tools_register_and_seat_hotl(daemon):
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(MEME_VERBS) == {"meme_put", "meme_get", "meme_project"} <= names
+    assert set(MEME_VERBS) == {"meme_put", "meme_get", "meme_list", "meme_delete", "meme_project"} <= names
     for v in MEME_VERBS:
         assert v in VERB_SEATS and seat_of(v) == "HOTL"
     # The LOCAL seats (`meme normalize` · `meme check`) hold no MCP tool: the MCP mirrors the CLI's
@@ -208,3 +219,38 @@ def test_meme_project_refuses_a_target_off_the_list(daemon):
     with pytest.raises(ValueError, match="at most one of"):
         _project(uri=_URI, to="html", recipe="sdm", bag="lares")
     assert daemon.lines == []                                       # nothing reached the wire
+
+
+def test_meme_list_wire_container_and_tree(daemon):
+    # `meme_list` addresses the SEAT, never one meme: the container alone rides; `tree` rides only when asked.
+    daemon.output = _LIST_OUTPUT
+    out = _list()
+    assert daemon.wire() == {"verb": "meme-list", "args": {}}
+    assert out == _LIST_OUTPUT
+    _list(recipe="sdm", tree=True)
+    assert daemon.wire() == {"verb": "meme-list", "args": {"recipe": "sdm", "tree": True}}
+    _list(bag="lares")
+    assert daemon.wire() == {"verb": "meme-list", "args": {"bag": "lares"}}
+    with pytest.raises(ValueError, match="at most one of"):
+        _list(recipe="sdm", bag="lares")
+
+
+def test_meme_delete_wire_uri_container_and_base(daemon):
+    # `meme_delete` rides `meme-delete` with {uri} + the container law; `base` = the hash the writer read.
+    daemon.output = _DELETE_OUTPUT
+    out = _delete(uri=_URI)
+    assert daemon.wire() == {"verb": "meme-delete", "args": {"uri": _URI}}
+    assert out == _DELETE_OUTPUT
+    _delete(uri=_URI, bag="lares", base="sha256-get")
+    assert daemon.wire() == {"verb": "meme-delete", "args": {"bag": "lares", "uri": _URI, "base": "sha256-get"}}
+
+
+def test_meme_delete_stale_base_reads_conflict_and_moves_nothing(daemon):
+    # CONTROL: the daemon's 412-shaped answer rides back as the receipt — `decision: conflict`, nothing
+    # tombstoned — never an exception, so the caller reads the live hash and decides.
+    daemon.output = {"uri": _URI, "decision": "conflict", "tombstoned": [], "canonicalHash": "sha256-live"}
+    out = _delete(uri=_URI, base="sha256-stale")
+    assert out["decision"] == "conflict" and out["tombstoned"] == [] and out["canonicalHash"] == "sha256-live"
+    with pytest.raises(ValueError, match="at most one of"):
+        _delete(uri=_URI, recipe="sdm", bag="lares")
+    assert len(daemon.lines) == 1                                    # the refused call never reached the wire

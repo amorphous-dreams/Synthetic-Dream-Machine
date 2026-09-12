@@ -102,6 +102,46 @@ describe("lares meme get", () => {
   });
 });
 
+describe("lares meme list — roots by default, --tree nests the slots", () => {
+  test("★ dispatches meme-list with the container alone; --tree rides as `tree: true` ★", async () => {
+    h.reply = { bag: "lar:///ha.ka.ba/bags/sdm", roots: [{ uri: "lar:///t/x", canonicalHash: "sha256:1" }] };
+    expect(await cmdMeme(memeArgs(["list"], { bag: "sdm" }))).toBe(0);
+    expect(h.calls).toEqual([{ verb: "meme-list", args: { bag: "sdm" } }]);
+    h.calls.length = 0;
+    expect(await cmdMeme(memeArgs(["list"], {}, { tree: true }))).toBe(0);
+    expect(h.calls).toEqual([{ verb: "meme-list", args: { tree: true } }]);
+  });
+  test("★ --recipe AND --bag together refuse; nothing reaches the wire ★", async () => {
+    expect(await cmdMeme(memeArgs(["list"], { recipe: "sdm", bag: "sdm" }))).toBe(2);
+    expect(h.calls).toEqual([]);
+  });
+  test("the human form prints one line per root: hash then uri, slots indented under --tree", async () => {
+    h.reply = { bag: "b", roots: [{ uri: "lar:///t/x", canonicalHash: "sha256:1", slots: [{ slot: "#/a", uri: "lar:///t/x#/a", slots: [{ slot: "#/b", uri: "lar:///t/x#/a/b", slots: [] }] }] }] };
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
+    await cmdMeme(memeArgs(["list"], {}, { json: false, tree: true }));
+    spy.mockRestore();
+    expect(lines).toEqual(["sha256:1  lar:///t/x", "  #/a", "    #/b"]);
+  });
+});
+
+describe("lares meme delete — the removal, over the daemon verb", () => {
+  test("★ dispatches meme-delete with uri · target · --if-match as `base` ★", async () => {
+    h.reply = { uri: "lar:///t/x", decision: "removed", tombstoned: ["lar:///t/x", "lar:///t/x#/a"], canonicalHash: "sha256:1" };
+    expect(await cmdMeme(memeArgs(["delete", "lar:///t/x"], { recipe: "sdm", "if-match": "sha256:1" }))).toBe(0);
+    expect(h.calls).toEqual([{ verb: "meme-delete", args: { uri: "lar:///t/x", recipe: "sdm", base: "sha256:1" } }]);
+  });
+  test("★ CONTROL: a stale --if-match answers conflict — exit class conflict, nothing moved ★", async () => {
+    h.reply = { uri: "lar:///t/x", decision: "conflict", tombstoned: [], canonicalHash: "sha256:2" };
+    expect(await cmdMeme(memeArgs(["delete", "lar:///t/x"], { "if-match": "sha256:1" }))).toBe(4);
+  });
+  test("an absent root exits not-found; a missing uri refuses as usage", async () => {
+    h.reply = { uri: "lar:///t/x", decision: "absent", tombstoned: [] };
+    expect(await cmdMeme(memeArgs(["delete", "lar:///t/x"]))).toBe(3);
+    expect(await cmdMeme(memeArgs(["delete"]))).toBe(2);
+  });
+});
+
 describe("lares meme (bare)", () => {
   test("prints usage and returns 2; an unknown sub-verb the same", async () => {
     expect(await cmdMeme(memeArgs([]))).toBe(2);
@@ -114,7 +154,7 @@ describe("lares meme (bare)", () => {
     await cmdMeme(memeArgs([]));
     spy.mockRestore();
     const usage = lines.join("\n");
-    for (const sub of ["put", "get", "normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
+    for (const sub of ["put", "get", "list", "delete", "normalize", "check", "project"]) expect(usage).toMatch(new RegExp(`lares meme ${sub} `));
     expect(usage).toMatch(/--to <mem\|md\|html\|tid\|json>/);
   });
 });

@@ -203,7 +203,7 @@ export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-ve
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
 export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
 export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
-export { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
+export { makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
 export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";

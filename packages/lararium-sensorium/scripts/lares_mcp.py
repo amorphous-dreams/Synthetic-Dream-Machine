@@ -47,9 +47,11 @@ WIKI_VERBS = ("wiki",)
 
 # The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs: `meme_put` lands a meme's
 # text at a `lar:` uri through the island's Confluence gate (the ONE placement function); `meme_get` reads
-# the text + its canonical hash back; `meme_project` renders the meme the island holds to a target
+# the text + its canonical hash back; `meme_list` names every ROOT a seat holds with its canonical hash
+# (`tree` nests the slot tree); `meme_delete` removes the whole group through the one removal law (a stale
+# `base` reads `conflict` and moves nothing); `meme_project` renders the meme the island holds to a target
 # (`mem` · `md` · `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb.
-# Each mirrors `lares meme put|get|project` (the host `meme` is a real top-level command, so `mirrored`/
+# Each mirrors `lares meme put|get|list|delete|project` (the host `meme` is a real top-level command, so `mirrored`/
 # `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
 # over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
 # the fixture names that allowance as `local_seat`. THE CONTAINER LAW: at most one of `recipe`/`bag` names
@@ -58,7 +60,7 @@ WIKI_VERBS = ("wiki",)
 # residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the
 # `@` spelling stands retired. All three ride `lares_uds.call` to the @daemon — never a store (the
 # single-writer law).
-MEME_VERBS = ("meme_put", "meme_get", "meme_project")
+MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes.
 PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
@@ -113,6 +115,8 @@ VERB_SEATS = {
     # delete) and a get reads; both stay on the operator's own island → HOTL.
     "meme_put": (True, False),          # place a meme's text at a lar: uri through the Confluence gate — reversible, trusted → HOTL
     "meme_get": (True, False),          # read a meme's text + canonical hash — reversible, trusted → HOTL
+    "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
+    "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
     "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
     # The vault seal-lifecycle tools — a status READ rides HOTL; every MUTATION of the sovereign at-rest
     # seal crosses a trust boundary (it touches identity secret material), so it seats HITL.
@@ -919,6 +923,33 @@ def build_mcp(coordinator: LaresCoordinator):
         # back the meme alone, as the contract spells it.
         out = _meme_wire("meme-get", args) or {}
         return out.get("meme")
+
+    @mcp.tool()
+    def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False) -> dict:
+        """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
+        mirrors `lares meme list`. CONTAINER LAW: at most one of `recipe` / `bag` names the seat; neither →
+        the host's ANCHOR, the @daemon's own wiki. Slugs ride bare. `tree` nests each root's slot tree
+        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. Returns {bag, roots}. A plain
+        tiddler never lists. Rides the @daemon wire, never a store."""
+        args: dict = _meme_container("meme_list", recipe, bag)
+        if tree:
+            args["tree"] = True
+        return _meme_wire("meme-list", args)
+
+    @mcp.tool()
+    def meme_delete(uri: str, recipe: "str | None" = None, bag: "str | None" = None,
+                    base: "str | None" = None) -> dict:
+        """REMOVE the whole meme at its `lar:` `uri` — the root, its `#slot` fragments, its `/path`
+        children — through the one removal law; mirrors `lares meme delete`. CONTAINER LAW: at most one
+        of `recipe` / `bag`; neither → the host's ANCHOR. Slugs ride bare. `base` carries the canonical
+        hash the writer read (the CLI's `--if-match`, the route's `If-Match`): stale → the receipt's
+        `decision` reads "conflict" and NOTHING moves; absent → the removal proceeds. Returns {uri,
+        decision: removed|absent|conflict, tombstoned, canonicalHash}. A tombstone hides (kāpae) — a
+        re-put restores. Rides the @daemon wire, never a store."""
+        args: dict = {**_meme_container("meme_delete", recipe, bag), "uri": uri}
+        if base is not None:
+            args["base"] = base
+        return _meme_wire("meme-delete", args)
 
     @mcp.tool()
     def meme_project(uri: str, to: str, recipe: "str | None" = None, bag: "str | None" = None) -> dict:

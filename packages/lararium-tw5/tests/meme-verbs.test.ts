@@ -11,7 +11,7 @@
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { placeMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -332,5 +332,76 @@ describe("meme-project — the daemon skin of the projection", () => {
     await expect(project({ bag: "sdm", uri: URI, to: "html" }, ctx())).rejects.toThrow(/anchor/);
     await expect(project({ bag: "sdm", uri: URI, to: "mem" }, ctx())).rejects.toThrow(URI);
     await expect(project({ uri: URI }, ctx())).rejects.toThrow(/args\.to/);
+  });
+});
+
+/**
+ * THE LISTING VERB — `meme-list { recipe?, bag?, tree? }` → `{ bag, roots }`: every root the seat holds,
+ * with its canonical hash; `tree` nests the slot tree. The same container law as `meme-get`; gates read.
+ */
+describe("meme-list — roots by default, the slot tree on request", () => {
+  test("★ the anchor lists every root with the hash the put reported; CONTROL: a plain tiddler never lists ★", async () => {
+    const r = rig();
+    const put = makeMemePutReactor(r.opts);
+    const a = await put({ uri: URI, text: meme(["a", "b"]) }, ctx());
+    r.wiki.store.set("plain", { title: "plain", text: "prose" });
+    capCalls.length = 0;
+    const out = await makeMemeListReactor(r.opts)({}, ctx());
+    expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: a["canonicalHash"] }]);
+    expect(capCalls[0]?.access).toBe("read");
+  });
+
+  test("★ `tree` nests `uri#/slot` under its own root; a named bag lists that bag's records alone ★", async () => {
+    const r = rig();
+    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
+    await makeMemePutReactor(r.opts)({ uri: "lar:///t/anchor", text: meme(["z"]).replaceAll("t/x", "t/anchor") }, ctx());
+    const out = await makeMemeListReactor(r.opts)({ bag: "sdm", tree: true }, ctx());
+    expect(out["bag"]).toBe(bagUri("sdm"));
+    expect(out["roots"]).toEqual([{ uri: URI, canonicalHash: expect.stringMatching(/^sha256:/), slots: [{ slot: "#/a", uri: `${URI}#/a`, slots: [] }] }]);
+  });
+
+  test("recipe AND bag together refuse", async () => {
+    const r = rig();
+    await expect(makeMemeListReactor(r.opts)({ recipe: "sdm", bag: "sdm" }, ctx())).rejects.toThrow(/at most one/);
+  });
+});
+
+/**
+ * THE DELETE VERB — `meme-delete { recipe?, bag?, uri, base? }` over `removeMeme`: the whole group leaves;
+ * a stale base answers `conflict` and moves nothing; an absent root answers `absent`. Gates admin.
+ */
+describe("meme-delete — the daemon skin of removeMeme", () => {
+  test("★ removes the whole group from the anchor; gates admin on the bag the cascade lands in ★", async () => {
+    const r = rig();
+    await makeMemePutReactor(r.opts)({ uri: URI, text: meme(["a", "b"]) }, ctx());
+    r.wiki.store.set("lar:///t/x-not", { title: "lar:///t/x-not", text: "a neighbour under the prefix, never a child" });
+    capCalls.length = 0;
+    const out = await makeMemeDeleteReactor(r.opts)({ uri: URI }, ctx());
+    expect(out["decision"]).toBe("removed");
+    expect((out["tombstoned"] as string[]).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
+    expect([...r.wiki.store.keys()]).toEqual(["lar:///t/x-not"]);
+    expect(capCalls[0]?.access).toBe("admin");
+  });
+
+  test("★ CONTROL: a stale base answers conflict and moves nothing; the receipt carries the live base ★", async () => {
+    const r = rig();
+    const put = makeMemePutReactor(r.opts);
+    const first = await put({ uri: URI, text: meme(["a"]) }, ctx());
+    const moved = await put({ uri: URI, text: meme(["a", "b"]) }, ctx());
+    const out = await makeMemeDeleteReactor(r.opts)({ uri: URI, base: first["canonicalHash"] }, ctx());
+    expect(out["decision"]).toBe("conflict");
+    expect(out["canonicalHash"]).toBe(moved["canonicalHash"]);
+    expect(r.wiki.store.has(`${URI}#/b`)).toBe(true);
+    // The live base lets the removal through.
+    expect((await makeMemeDeleteReactor(r.opts)({ uri: URI, base: moved["canonicalHash"] }, ctx()))["decision"]).toBe("removed");
+  });
+
+  test("an absent root answers absent; a named bag removes from that bag's writable layer", async () => {
+    const r = rig();
+    expect((await makeMemeDeleteReactor(r.opts)({ uri: URI }, ctx()))["decision"]).toBe("absent");
+    await makeMemePutReactor(r.opts)({ bag: "sdm", uri: URI, text: meme(["a"]) }, ctx());
+    const out = await makeMemeDeleteReactor(r.opts)({ bag: "sdm", uri: URI }, ctx());
+    expect(out["decision"]).toBe("removed");
+    expect(await r.composite.storeForBag(bagUri("sdm"))!.listVisible()).toEqual([]);
   });
 });

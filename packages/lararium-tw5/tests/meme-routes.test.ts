@@ -8,6 +8,7 @@ import { describe, test, expect } from "vitest";
 import * as put from "../src/routes/put-meme.js";
 import * as get from "../src/routes/get-meme.js";
 import * as del from "../src/routes/delete-meme.js";
+import * as list from "../src/routes/list-memes.js";
 import { memePathOf } from "../src/place-meme.js";
 import { nativeDoorGate } from "../src/native-door-gate.js";
 import type { TiddlerFields } from "../src/deserializer.js";
@@ -256,5 +257,72 @@ describe("★ THE TWO DOORS (a): a framed meme root at the native door refuses, 
     expect(gate({ title: `${URI}#/a`, type: CARRIER, text: "! a", fields: { "$slot": "#/a" } }).kind).toBe("pass");
     // A head SHOWN inside a fence opens nothing.
     expect(gate({ title: URI, type: CARRIER, text: "```\n" + meme(["a"]) + "```\n" }).kind).toBe("pass");
+  });
+});
+
+/**
+ * THE LISTING SKIN — `GET /{recipes|bags}/default/memes.json`, the route skin of `listMemes`, a sibling
+ * of stock's `tiddlers.json`: roots + the canonical hash by default, `?tree=1` nests the slot tree. It
+ * carries stock's `$:/` posture — a system-titled root rides only while `SyncSystemTiddlersFromServer`
+ * reads `yes`.
+ */
+describe("★ GET /{recipes|bags}/default/memes.json ★", () => {
+  const fireList = (w: ReturnType<typeof wiki>, opts: { kind?: string; name?: string; query?: Record<string, string> } = {}): Promise<Reply> =>
+    new Promise((resolve) => {
+      const reply: Reply = { status: 0, headers: {}, body: "" };
+      const response = {
+        writeHead: (status: number, headers: Record<string, string>) => { reply.status = status; reply.headers = headers; },
+        end: (body?: string) => { reply.body = body ?? ""; resolve(reply); },
+      };
+      const state = { wiki: w, params: [opts.kind ?? "recipes", opts.name ?? "default"], queryParameters: opts.query ?? {} };
+      list.handler({ headers: {} } as never, response as never, state as never);
+    });
+
+  test("the path stands beside `tiddlers.json` under both container kinds, and never under `/memes/<scheme>/`", () => {
+    expect(list.methods).toEqual(["GET"]);
+    expect(list.path.exec("/recipes/default/memes.json")?.slice(1)).toEqual(["recipes", "default"]);
+    expect(list.path.exec("/bags/default/memes.json")?.slice(1)).toEqual(["bags", "default"]);
+    expect(list.path.test("/bags/default/memes/lar/t/x")).toBe(false);
+    expect(get.path.test("/bags/default/memes.json")).toBe(false);
+  });
+
+  test("★ roots + canonical hash by default; `?tree=1` nests `uri#/slot` under its own root; CONTROL: a plain tiddler never lists ★", async () => {
+    const w = wiki();
+    const a = await fire(put, w, { data: meme(["a", "b"]) });
+    await fire(put, w, { uri: "t/y", data: meme(["c"]).replaceAll("t/x", "t/y") });
+    w.store.set("plain", { title: "plain", text: "prose" });
+    const r = await fireList(w);
+    expect(r.status).toBe(200);
+    expect(r.headers["Content-Type"]).toBe("application/json");
+    expect(JSON.parse(r.body)).toEqual([
+      { uri: URI, canonicalHash: JSON.parse(a.body).canonicalHash },
+      { uri: "lar:///t/y", canonicalHash: expect.stringMatching(/^sha256:/) },
+    ]);
+    const tree = JSON.parse((await fireList(w, { query: { tree: "1" } })).body) as Array<{ uri: string; slots: unknown[] }>;
+    expect(tree.map((m) => m.slots)).toEqual([
+      [{ slot: "#/a", uri: `${URI}#/a`, slots: [] }, { slot: "#/b", uri: `${URI}#/b`, slots: [] }],
+      [{ slot: "#/c", uri: "lar:///t/y#/c", slots: [] }],
+    ]);
+  });
+
+  test("★ THE CONTAINER LAW: a bag or recipe the server cannot name answers 404 with the one-line body ★", async () => {
+    const w = wiki();
+    await fire(put, w, { data: meme(["a"]) });
+    const other = await fireList(w, { name: "other" });
+    expect(other.status).toBe(404);
+    expect(other.body).toContain("other");
+    const kind = await fireList(w, { kind: "shelves" });
+    expect(kind.status).toBe(404);
+  });
+
+  test("the `$:/` posture rides stock's switch: a system-titled root lists only while SyncSystemTiddlersFromServer reads yes", async () => {
+    const w = wiki();
+    await fire(put, w, { data: meme(["a"]) });
+    // A `$:/` root reaches the shelf by a native door alone — `/memes/<scheme>/` always carries a scheme.
+    const sys = "$:/lar/sys";
+    w.store.set(sys, { title: sys, type: "text/memetic-wikitext+tiddlywiki", text: "! s" });
+    expect((JSON.parse((await fireList(w)).body) as { uri: string }[]).map((m) => m.uri)).toEqual([URI]);
+    w.store.set("$:/config/SyncSystemTiddlersFromServer", { title: "$:/config/SyncSystemTiddlersFromServer", text: "yes" });
+    expect((JSON.parse((await fireList(w)).body) as { uri: string }[]).map((m) => m.uri)).toEqual([sys, URI]);
   });
 });

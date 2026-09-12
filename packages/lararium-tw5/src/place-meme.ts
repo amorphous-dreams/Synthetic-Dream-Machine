@@ -214,6 +214,53 @@ export async function removeMeme(
   return { decision: "removed", tombstoned: group, canonicalHash };
 }
 
+/** One slot of a listed meme's tree: the slot name, the record's title, the slots it holds. */
+export interface MemeSlotNode {
+  readonly slot: string;
+  readonly uri: string;
+  readonly slots: readonly MemeSlotNode[];
+}
+
+/** One listed meme: its root URI, the hash a writer hands back as its base, the slot tree on request. */
+export interface MemeListing {
+  readonly uri: string;
+  readonly canonicalHash: string;
+  readonly slots?: readonly MemeSlotNode[];
+}
+
+/**
+ * THE LISTING — every meme ROOT the sink holds, with the canonical hash a writer hands back as its base;
+ * `tree` nests each root's `uri#/slot` children beneath it, at their own depth.
+ *
+ * A root reads as a record of the carrier type with no `$fragment-parent` and no `#` in its title. A
+ * slot child carries `$fragment-parent`; a carriage part (`$preamble` · `$postamble`) carries a `$slot`
+ * that opens with `$`; a plain tiddler carries neither the type nor the parent. None of those lists as a
+ * root, and a slot nests under the parent its own record names — never under a neighbour whose title it
+ * merely extends. Roots answer in title order.
+ */
+export async function listMemes(
+  sink: Pick<MemeSink, "titles" | "read">, opts: { readonly tree?: boolean } = {}, hash: (text: string) => string = defaultHash,
+): Promise<MemeListing[]> {
+  const titles = [...await sink.titles()].sort();
+  const fields = new Map<string, TiddlerFields>();
+  for (const title of titles) {
+    const f = await sink.read(title);
+    if (f && f["type"] === CARRIER_TYPE) fields.set(title, f);
+  }
+  const roots = [...fields.keys()].filter((t) => !t.includes("#") && fields.get(t)!["$fragment-parent"] === undefined);
+  const childrenOf = (parent: string): MemeSlotNode[] =>
+    [...fields.entries()]
+      .filter(([, f]) => f["$fragment-parent"] === parent && typeof f["$slot"] === "string" && !String(f["$slot"]).startsWith("$"))
+      .map(([title, f]) => ({ slot: String(f["$slot"]), uri: title, slots: childrenOf(title) }));
+  const out: MemeListing[] = [];
+  for (const uri of roots) {
+    const meme = await readMeme(uri, sink, hash);
+    if (!meme) continue;
+    out.push({ uri, canonicalHash: meme.canonicalHash, ...(opts.tree ? { slots: childrenOf(uri) } : {}) });
+  }
+  return out;
+}
+
 /** The `$tw.wiki` skin — a live wiki, on the plain server or inside the island. */
 export function wikiMemeSink(wiki: Pick<TW5Wiki, "allTitles" | "getTiddler" | "addTiddler" | "deleteTiddler">): MemeSink {
   return {

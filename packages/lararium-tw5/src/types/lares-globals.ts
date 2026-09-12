@@ -8,7 +8,7 @@
  */
 
 import type { LarTiddlerChange } from "@lararium/mesh";
-import type { PlaceMemeReceipt } from "../place-meme.js";
+import type { MemeListing, PlaceMemeReceipt } from "../place-meme.js";
 import type { NormalizeResult } from "../meme-normalize.js";
 import type { CarrierShape } from "../carrier-shape.js";
 import type { CarrierEdge } from "../carrier-edges.js";
@@ -39,6 +39,10 @@ export interface LaresMemeFace {
   place(uri: string, text: string, base?: string | null): Promise<PlaceMemeReceipt>;
   /** The whole meme recomposed + the canonical hash a writer hands back; null under no record. */
   read(uri: string): Promise<{ text: string; canonicalHash: string } | null>;
+  /** Every meme root the wiki holds with its canonical hash; `tree` nests each root's slot tree. */
+  list(opts?: { readonly tree?: boolean }): Promise<MemeListing[]>;
+  /** Remove the whole group (root · `#slot` · `/path`); a stale `base` answers `conflict` and moves nothing. */
+  remove(uri: string, base?: string | null): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string }>;
   normalize(text: string): NormalizeResult;
   check(text: string): MemeCheck;
   /** The root rendered through its target's template: mem · md · html · tid · json. Throws on an

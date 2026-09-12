@@ -11,6 +11,8 @@ module-type: startup
  *
  *   place(uri, text, base?)   the placement through the Confluence gate, over `wikiMemeSink($tw.wiki)`
  *   read(uri)                 the whole meme recomposed + the canonical hash a writer hands back
+ *   list({ tree? })           every root with its canonical hash; `tree` nests each root's slot tree
+ *   remove(uri, base?)        the whole group leaves; a stale base answers `conflict` and moves nothing
  *   normalize(text)           the framing canonicalization (pure)
  *   check(text)               the carrier's shape · block-check verdict · computed check · edges · the
  *                             grade and diagnostics `place` lands (one reading, the gate's own)
@@ -25,7 +27,7 @@ module-type: startup
 
 import type { LaresMemeFace, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
-import { placeMeme, readMeme, wikiMemeSink } from "../place-meme.js";
+import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink } from "../place-meme.js";
 import { bccOf, headUriOf, normalizeMemeSource, readCarrierEdges, readCarrierShape, verifyBcc } from "../meme-laws.js";
 import { projectMeme, recomposeMeme } from "../meme-project.js";
 import { parseMemeText } from "../meme-ast/index.js";
@@ -46,6 +48,8 @@ export function memeFaceOf(wiki: TW5Instance["wiki"]): LaresMemeFace {
   return {
     place: (uri, text, base) => placeMeme({ uri, text, baseHash: base ?? null }, sink),
     read: (uri) => readMeme(uri, sink),
+    list: (opts) => listMemes(sink, opts),
+    remove: (uri, base) => removeMeme({ uri, baseHash: base ?? null }, sink),
     normalize: (text) => normalizeMemeSource(text),
     // ONE TEXT, ONE GRADE. The grade rides the gate's own deserialize — the parse under the wiki's
     // grammar plus the shore's faults — so `check` and `place` never read one carrier two ways.

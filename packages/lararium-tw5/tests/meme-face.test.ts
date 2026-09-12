@@ -29,8 +29,22 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
   });
 
-  test("the face stands with its seven verbs", () => {
-    for (const v of ["place", "read", "normalize", "check", "project", "recompose", "parse"] as const) expect(typeof face[v], v).toBe("function");
+  test("the face stands with its nine verbs", () => {
+    for (const v of ["place", "read", "list", "remove", "normalize", "check", "project", "recompose", "parse"] as const) expect(typeof face[v], v).toBe("function");
+  });
+
+  test("★ list answers the roots with their base; remove takes the group and refuses a stale base ★", async () => {
+    const receipt = await face.place("lar:///t/face-listed", meme(["a"]).replaceAll("t/face", "t/face-listed"));
+    const listed = await face.list();
+    expect(listed.find((r) => r.uri === "lar:///t/face-listed")?.canonicalHash).toBe(receipt.canonicalHash);
+    const tree = await face.list({ tree: true });
+    expect(tree.find((r) => r.uri === "lar:///t/face-listed")?.slots).toEqual([{ slot: "#/a", uri: "lar:///t/face-listed#/a", slots: [] }]);
+    // CONTROL: a stale base moves nothing.
+    expect((await face.remove("lar:///t/face-listed", "sha256:stale")).decision).toBe("conflict");
+    expect(engine.wiki.getTiddler("lar:///t/face-listed#/a")).toBeTruthy();
+    expect((await face.remove("lar:///t/face-listed", receipt.canonicalHash)).decision).toBe("removed");
+    expect(engine.wiki.getTiddler("lar:///t/face-listed#/a")).toBeFalsy();
+    expect((await face.list()).some((r) => r.uri === "lar:///t/face-listed")).toBe(false);
   });
 
   test("place lands the records; read hands the meme back whole", async () => {

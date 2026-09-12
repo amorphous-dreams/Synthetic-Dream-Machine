@@ -64,12 +64,16 @@ const CLI_FORMS = {
   wiki:      "wiki switch",
   // The MEME door — the MCP skin of the meme family's DAEMON-seated verbs. `meme_put` lands a meme's
   // text at a `lar:` uri through the island's Confluence gate; `meme_get` reads the text + canonical
-  // hash back; `meme_project` renders the meme the island holds to a target (`--to` on the CLI, `to` on
-  // the tool — the target rides as a parameter, never a suffix on the verb). The host `meme` is a real
-  // top-level CLI command, so each mirrors as `<host> <sub>` — ONE host, three tools, the shape
-  // kapae/un_kapae ride under `sense worldline`. The family's LOCAL seats ride LOCAL_SEAT below.
+  // hash back; `meme_list` names every root a seat holds (`--tree` on the CLI, `tree` on the tool);
+  // `meme_delete` removes the whole group (`--if-match` on the CLI, `base` on the tool); `meme_project`
+  // renders the meme the island holds to a target (`--to` on the CLI, `to` on the tool — the target
+  // rides as a parameter, never a suffix on the verb). The host `meme` is a real top-level CLI command,
+  // so each mirrors as `<host> <sub>` — ONE host, five tools, the shape kapae/un_kapae ride under
+  // `sense worldline`. The family's LOCAL seats ride LOCAL_SEAT below.
   meme_put:     "meme put",
   meme_get:     "meme get",
+  meme_list:    "meme list",
+  meme_delete:  "meme delete",
   meme_project: "meme project",
   // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
   // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;

@@ -3,6 +3,8 @@
  *
  *   put <uri> [--recipe <slug> | --bag <slug>] [--base <hash>] [--file <path>]
  *   get <uri> [--recipe <slug> | --bag <slug>]
+ *   list [--recipe <slug> | --bag <slug>] [--tree]
+ *   delete <uri> [--recipe <slug> | --bag <slug>] [--if-match <hash>]
  *   normalize <file.mem ...>
  *   check <file.mem ...> [--gradient | --edges]
  *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
@@ -10,8 +12,9 @@
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
  * effect record. The offline re-stamp of a stale block check keeps working with no socket. `put` · `get`
- * · `project` over a `lar:` uri or to any rendered target ride the daemon verb (`meme-put` · `meme-get` ·
- * `meme-project`) — the one placement function and the island's own renderers, reached from a terminal.
+ * · `list` · `delete` · `project` over a `lar:` uri or to any rendered target ride the daemon verb
+ * (`meme-put` · `meme-get` · `meme-list` · `meme-delete` · `meme-project`) — the one placement function,
+ * the one removal, the one listing and the island's own renderers, reached from a terminal.
  *
  * THE CONTAINER LAW (every daemon seat):
  *   · no target        — the ANCHOR: the daemon's own wiki (`recipes/default`), its cascade routing
@@ -20,6 +23,8 @@
  *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
  *   · --base <hash>    — (put) the canonical hash the writer read (`meme get` reports it); records that
  *                        moved past it read as a CONFLICT and nothing lands.
+ *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.
+ *   · --tree           — (list) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
  * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; a refusal `verb-error`;
  * an absent meme on `get` exits `not-found`; drift under `check` exits 1 for a CI gate.
@@ -67,7 +72,7 @@ import type { ParsedArgs } from "../parse-args.js";
 class UsageError extends Error {}
 
 export interface MemePlan {
-  readonly verb: "meme-put" | "meme-get";
+  readonly verb: "meme-put" | "meme-get" | "meme-list" | "meme-delete";
   /** The verb args as the daemon receives them — `text` joins on put once the body is read. */
   readonly args: Record<string, string>;
 }
@@ -87,24 +92,28 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "normalize", "check", "project"] as const;
+const SUBS = ["put", "get", "list", "delete", "normalize", "check", "project"] as const;
 type Sub = typeof SUBS[number];
 
 const USAGE = [
   "usage: lares meme put <uri> [--recipe <slug> | --bag <slug>] [--base <hash>] [--file <path>]",
   "       lares meme get <uri> [--recipe <slug> | --bag <slug>]",
+  "       lares meme list [--recipe <slug> | --bag <slug>] [--tree]",
+  "       lares meme delete <uri> [--recipe <slug> | --bag <slug>] [--if-match <hash>]",
   "       lares meme normalize <file.mem ...>",
   "       lares meme check <file.mem ...> [--gradient | --edges]",
   "       lares meme project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]",
   "",
   "  a verb declares its seat: normalize · check · project --to md (over a file) run LOCAL, no daemon;",
-  "  put · get · project to any other target, or from a lar: uri, ride the daemon verb.",
+  "  put · get · list · delete · project to any other target, or from a lar: uri, ride the daemon verb.",
   "",
   "  no target       the anchor — the daemon's own wiki (recipes/default)",
   "  --recipe <slug> an edit AS that wiki: its designated writable bag, write-then-sync",
   "  --bag <slug>    a residency placement into that bag (refuses when this island cannot write it)",
   "  --base <hash>   the canonical hash last read; stale → conflict, nothing lands",
   "  --file <path>   the meme text for put (stdin when absent)",
+  "  --if-match <hash> (delete) the canonical hash last read; stale → conflict, nothing moves",
+  "  --tree          (list) nest each root's slot tree; roots + canonical hash alone otherwise",
   "",
   "  normalize       canonicalize a carrier's framing and re-stamp its block check over the body it follows",
   "  check           report carriers that would change; write nothing (exit 1 if any) — for CI / pre-commit",
@@ -129,7 +138,7 @@ function container(args: ParsedArgs): Record<string, string> {
 }
 
 /** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
-export function memePlan(sub: "put" | "get", args: ParsedArgs): MemePlan {
+export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
   const uri = args.positional[1];
   if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/...\`)`);
   const out: Record<string, string> = { uri, ...container(args) };
@@ -138,7 +147,20 @@ export function memePlan(sub: "put" | "get", args: ParsedArgs): MemePlan {
     if (base) out["base"] = base;
     return { verb: "meme-put", args: out };
   }
+  if (sub === "delete") {
+    // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
+    const base = typeof args.options["if-match"] === "string" ? args.options["if-match"].trim() : "";
+    if (base) out["base"] = base;
+    return { verb: "meme-delete", args: out };
+  }
   return { verb: "meme-get", args: out };
+}
+
+/** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
+export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
+  const out: Record<string, string | boolean> = { ...container(args) };
+  if (args.flags["tree"]) out["tree"] = true;
+  return { verb: "meme-list", args: out };
 }
 
 /** The meme body: `--file`, else the whole of stdin. */
@@ -184,6 +206,8 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     switch (sub as Sub) {
       case "put":       return await memePut(args);
       case "get":       return await memeGet(args);
+      case "list":      return await memeList(args);
+      case "delete":    return await memeDelete(args);
       case "normalize": return normalizeFiles(args, true);
       case "check":     return checkFiles(args);
       case "project":   return await memeProject(args);
@@ -251,6 +275,63 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); },
   });
   return 0;
+}
+
+/** One listed root, as the verb answers it. */
+interface ListedRoot { uri: string; canonicalHash: string; slots?: ListedSlot[] }
+interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
+
+async function memeList(args: ParsedArgs): Promise<number> {
+  const plan = listPlan(args);
+  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme list: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const roots = Array.isArray(outcome.output["roots"]) ? (outcome.output["roots"] as ListedRoot[]) : [];
+  const slotLines = (slots: ListedSlot[] | undefined, depth: number): void => {
+    for (const s of slots ?? []) { console.log(`${"  ".repeat(depth)}${s.slot}`); slotLines(s.slots, depth + 1); }
+  };
+  emit(args, {
+    ok: true,
+    requestId: result.requestId,
+    data: { bag: outcome.output["bag"], roots },
+    // One root per line — the base first so a shell reads it, the uri after; slots indent beneath.
+    human: () => { for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); } },
+  });
+  return 0;
+}
+
+async function memeDelete(args: ParsedArgs): Promise<number> {
+  const plan = memePlan("delete", args);
+  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme delete: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const receipt = outcome.output;
+  const decision = String(receipt["decision"] ?? "");
+  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
+  const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  const message = decision === "conflict" ? `conflict: the records moved past ${plan.args["base"] ?? "the base"} — read again and hand back the live hash`
+                : decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${plan.args["uri"]}`;
+  emit(args, {
+    ok: code === "ok",
+    requestId: result.requestId,
+    data: receipt,
+    ...(code === "ok" ? {} : { error: { code, message } }),
+    human: () => {
+      if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
+      console.log(`removed: ${plan.args["uri"]}`);
+      console.log(`  tombstoned ${tombstoned.length}`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
+    },
+  });
+  return exitFor(code);
 }
 
 // ── the local laws: normalize · check ──────────────────────────────────────────────────────────

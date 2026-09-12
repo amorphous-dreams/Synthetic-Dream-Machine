@@ -1,11 +1,18 @@
 /**
- * meme-verbs — `meme-put` / `meme-get` / `meme-project`, the daemon island's skins of the meme laws.
+ * meme-verbs — `meme-put` / `meme-get` / `meme-list` / `meme-delete` / `meme-project`, the daemon
+ * island's skins of the meme laws.
  *
  * The contract every skin (this, the HTTP route, the MCP tool) carries verbatim:
  *
  *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
+ *   meme-list     { recipe?, bag?, tree? }              → { bag, roots: MemeListing[] }
+ *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash? }
  *   meme-project  { recipe?, bag?, uri, to }            → { uri, to, text, contentType, meta? }
+ *
+ * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base;
+ * `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
+ * stale `base` answers `conflict` and moves nothing; an absent root answers `absent`.
  *
  * `to` names a target — mem · md · html · tid · json (`meme-project.ts`); `meta` rides on `md` alone,
  * the `.md.meta` sidecar. The anchor projects through the in-VM face (`$tw.lares.meme.project`), so
@@ -44,11 +51,12 @@
 
 import {
   AutomergeDocStore, DAEMON_BAG_ID, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, recipeUri, wikiSlotKindOf,
+  REALM_DOC_URI, REALM_ID_TIDDLER, foldRealmBags, tiddlerText,
   type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import type { IslandContext } from "./island-context.js";
-import { placeMeme, readMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
+import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import type { TW5Engine } from "./tw5-vm.js";
@@ -102,6 +110,12 @@ export function memeVerbOptions(
       return null;
     },
     reach: async (key, bag) => {
+      // THE REALM PLANE FIRST. A bag the relation carries (registered on the realm's shared CRDT by its
+      // stewards' own signatures) shadows this vessel's own bag of the same name: the ford's one book,
+      // never the two chests. Absent a realm, or a registration that fails to count, the walk falls
+      // through unchanged.
+      const realm = await realmReach(key, bag);
+      if (realm) return realm;
       for (const accessor of planes) {
         const handle = await accessor.find(key).catch(() => null);
         if (handle) return new AutomergeDocStore(handle, bag);
@@ -109,6 +123,20 @@ export function memeVerbOptions(
       return null;
     },
   };
+
+  /** The realm plane's answer for a bag: the STANDING registration's doc, by access. Null when this vessel
+   *  stands in no realm, the realm doc has not arrived, or no counted registration names the bag. */
+  async function realmReach(key: string, bag: string): Promise<LarTiddlerStore | null> {
+    if (!oracle) return null;
+    const realmId = tiddlerText(await oracle.recordOf(REALM_ID_TIDDLER).catch(() => null));
+    if (!realmId) return null;
+    const realmHandle = await oracle.find(REALM_DOC_URI).catch(() => null);
+    if (!realmHandle) return null;
+    const standing = (await foldRealmBags(realmHandle.doc(), realmId)).get(key);
+    if (!standing) return null;
+    const handle = await findOrThrow(ctx.repo, standing.docUrl, `${bag} (realm bag)`).catch(() => null);
+    return handle ? new AutomergeDocStore(handle, bag) : null;
+  }
 }
 
 /** A bare slug becomes its bag URI; a full `lar:` URI passes through. */
@@ -125,10 +153,15 @@ interface MemeArgs {
 function readTarget(args: Readonly<Record<string, unknown>>, verb: string): MemeArgs {
   const uri = stringArg(args, "uri");
   if (!uri) throw new Error(`${verb}: args.uri is required (the meme's root lar: URI)`);
+  return { uri, ...readContainer(args, verb) };
+}
+
+/** The container law alone — for a verb that addresses the seat, never one meme (`meme-list`). */
+function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
   const recipe = optionalStringArg(args, "recipe");
   const bag = optionalStringArg(args, "bag");
   if (recipe && bag) throw new Error(`${verb}: at most one of args.recipe / args.bag`);
-  return { uri, recipe: recipe ?? (bag ? null : "default"), bag };
+  return { recipe: recipe ?? (bag ? null : "default"), bag };
 }
 
 /** A bag's own store, by the three reaches in order: a mounted layer (writable for a put), an
@@ -188,7 +221,7 @@ function anchorBagOf(opts: MemeVerbOptions): string {
   return configured || DAEMON_BAG_ID;
 }
 
-async function resolveSink(opts: MemeVerbOptions, target: MemeArgs, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
+async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
   if (target.bag) {
     const bag = bagUriOf(target.bag);
     if (mode === "put") return { bag, sink: compositeMemeSink(opts.composite, bag, origin), anchor: false };
@@ -227,6 +260,31 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
     return { uri: target.uri, meme: await readMeme(target.uri, sink) };
+  };
+}
+
+export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
+  return async (args, ctx) => {
+    const target = readContainer(args, "meme-list");
+    const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const { bag, sink } = await resolveSink(opts, target, origin, "get");
+    const proof = await ctx.cap("read", bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    return { bag, roots: await listMemes(sink, { tree }) };
+  };
+}
+
+export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
+  return async (args, ctx) => {
+    const target = readTarget(args, "meme-delete");
+    const base = optionalStringArg(args, "base");
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const { bag, sink } = await resolveSink(opts, target, origin, "put");
+    const proof = await ctx.cap("admin", bag);
+    if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
+    const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);
+    return { uri: target.uri, ...receipt };
   };
 }
 
