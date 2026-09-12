@@ -72,11 +72,13 @@ export type HandleKelKind = "inception" | "rotation" | "burn" | "graft";
  * inception, `ownerSetHash` at a graft), and stay EMPTY on presentation events (rotation · burn), which
  * change no set.
  */
-/** One co-signer's consent to a GRAFT — a distinct current member's head key signing the graft bytes.
- *  Rides OUTSIDE the cid (the sig-outside-the-cid pattern), beside the presenter's own `authSig`, so
- *  succession gathers a THRESHOLD of the prior set (the persona-KEL QuorumSignature shape). */
-export interface HandleGraftSig {
-  readonly memberPrefix: string;   // a prior-set member's persona prefix
+/** One co-signer's consent to a MEMBER-AUTHORIZED THRESHOLD act — a distinct current member's head key
+ *  signing the event bytes, beside the presenter's own `authSig`. Rides OUTSIDE the cid (the
+ *  sig-outside-the-cid pattern), so a rotation, a graft, or an owner-burn gathers a WITNESS THRESHOLD of
+ *  the current owner-set (the persona-KEL QuorumSignature shape): a shared name is seized (rotation),
+ *  succeeded (graft), or buried (owner-burn) only by a quorum, never a lone hand. */
+export interface HandleCoSig {
+  readonly memberPrefix: string;   // a current owner-set member's persona prefix
   readonly keyDid:       string;   // that member's head op-key that signed
   readonly sig:          string;   // its signature over handleEventBytes(core), the SAME bytes the presenter signed
 }
@@ -98,7 +100,7 @@ export interface HandleKelEvent {
   readonly ownerAuthMemberPrefix: string | null;     // presentation/graft: WHICH member presents; null at inception
   readonly ownerAuthKeyDid:     string | null;       // presentation/graft: that member's head op-key; null at inception + self-burn
   readonly authSig:             string | null;       // rotation/graft: the member key's sig · burn: self-key OR member sig · null at inception (outside the cid)
-  readonly graftSigs?:          readonly HandleGraftSig[];   // GRAFT only: co-signers BEYOND the presenter — succession gathers ≥ prior-threshold DISTINCT current-member sigs (outside the cid)
+  readonly coSigs?:             readonly HandleCoSig[];   // rotation/graft/owner-burn: co-signers BEYOND the presenter — the member-authorized act gathers ≥ current-threshold DISTINCT current-member sigs (outside the cid); absent on a lone-hand or self-burn event
 }
 
 /** The authority fields an event's content-address binds AND the authorizing signature signs over.
@@ -265,14 +267,59 @@ export type HandleMintResult =
   | { readonly ok: true;  readonly event: HandleKelEvent }
   | { readonly ok: false; readonly reason: string };
 
+/** A co-signer a mint gathers toward the witness threshold — a distinct current member + its head key +
+ *  its signer over the SAME event bytes the presenter signs. */
+export interface HandleCoSigner {
+  readonly memberPrefix: string;
+  readonly keyDid:       string;
+  readonly sign:         (bytes: Uint8Array) => Promise<string>;
+}
+
+/** Gather each co-signer's consent over the presenter's exact `bytes` — the presenter names the message,
+ *  the quorum consents to it. Each signature verifies here against its claimed key (WHETHER each signer
+ *  stands in the current set and REACHES the threshold is verify's structural question). Fails closed on
+ *  the first co-signature that does not verify. */
+async function gatherCoSigs(
+  bytes: Uint8Array, coSigners: readonly HandleCoSigner[] | undefined,
+): Promise<{ ok: true; coSigs: HandleCoSig[] } | { ok: false; reason: string }> {
+  const coSigs: HandleCoSig[] = [];
+  for (const c of coSigners ?? []) {
+    const cSig = await c.sign(bytes);
+    if (!(await verifySig(cSig, bytes, c.keyDid))) {
+      return { ok: false, reason: `co-signature for ${c.memberPrefix.slice(0, 16)}… does not verify against its claimed key` };
+    }
+    coSigs.push({ memberPrefix: c.memberPrefix, keyDid: c.keyDid, sig: cSig });
+  }
+  return { ok: true, coSigs };
+}
+
+/** THE WITNESS-THRESHOLD COUNTER — count DISTINCT current-member authorizers of a member-authorized act
+ *  (the presenter plus each co-signer that stands in the current set; a co-sig from a non-member never
+ *  counts) and answer whether it REACHES `threshold`. The one structural gate a rotation, graft, and
+ *  owner-burn share: a shared name is seized, succeeded, or buried only by a quorum. */
+function reachesWitnessThreshold(
+  presenterPrefix: string, coSigs: readonly HandleCoSig[] | undefined,
+  curMembers: ReadonlySet<string>, threshold: number,
+): boolean {
+  const authorizers = new Set<string>([presenterPrefix.toLowerCase()]);
+  for (const s of coSigs ?? []) {
+    const m = s.memberPrefix.toLowerCase();
+    if (curMembers.has(m)) authorizers.add(m);
+  }
+  return authorizers.size >= threshold;
+}
+
 /**
- * ROTATE: seat a fresh Handle key under a CURRENT member's authority — a current holder renews the
- * name. The signature verifies here against the injected `ownerHeadOpKeyDid` (a signer whose bytes do
- * not verify against the key it claims rotates nothing). WHETHER `ownerAuthMemberPrefix` stands in the
- * CURRENT owner set is `verifyHandleKel`'s structural question, and WHETHER `ownerHeadOpKeyDid` is that
- * member's authoritative head is the full walk's (`verifyHandleKelFull` + the resolver) — a rotation
- * minted under a superseded key or a non-member passes this gate and falls at those. FAILS CLOSED on a
- * burned head.
+ * ROTATE: seat a fresh Handle key — the key that speaks AS the handle (its head signs attestations) —
+ * under a CURRENT member's authority. A rotation is a WITNESS-THRESHOLD act: it gathers the presenter
+ * plus `coSigners` (each a distinct current member signing the SAME rotation bytes) so that seizing a
+ * shared name's signing key takes ≥ the current owner-set's threshold of distinct members — a single
+ * turned member cannot rotate a k-of-n name's key and thereafter attest as the name. A 1-of-1 personal
+ * face (threshold 1) rotates by one signature, unchanged. Each signature verifies here against its
+ * claimed key (a signer whose bytes do not verify rotates nothing); WHETHER the signers stand in the
+ * CURRENT set and REACH its threshold is `verifyHandleKel`'s structural question, and whether each key is
+ * that member's authoritative head is the full walk's (`verifyHandleKelFull` + the resolver). FAILS
+ * CLOSED on a burned head.
  */
 export async function mintHandleRotation(input: {
   readonly head:                  HandleKelEvent;
@@ -280,6 +327,9 @@ export async function mintHandleRotation(input: {
   readonly ownerAuthMemberPrefix: string;                     // WHICH current member presents (their persona AID)
   readonly ownerHeadOpKeyDid:     string;                     // that member's CURRENT head op-key (injected — no persona import)
   readonly sign:                  (bytes: Uint8Array) => Promise<string>;   // that member's head op-key signer
+  /** DISTINCT current members BEYOND the presenter, gathered toward the current set's WITNESS THRESHOLD.
+   *  A 2-of-2 shared name passes one co-signer here; a 1-of-1 personal face passes none. */
+  readonly coSigners?:           readonly HandleCoSigner[];
   /** The NEXT recovery-set digest this rotation commits. Absent, the standing commitment carries
    *  forward: a set change is always an explicit act, never a silent drop. */
   readonly nextRecoverySetHash?: string;
@@ -317,7 +367,16 @@ export async function mintHandleRotation(input: {
   if (!(await verifySig(sig, bytes, ownerHeadOpKeyDid))) {
     return { ok: false, reason: "rotation signature does not verify against the claimed member head op-key" };
   }
-  return { ok: true, event: { ...core, ownerSetMembers: [], ownerSetThreshold: 0, eventCid: handleEventCidOf(core), authSig: sig } };
+  // Gather the witness quorum's co-signatures over the SAME bytes — a shared name's key rotates only by a threshold.
+  const gathered = await gatherCoSigs(bytes, input.coSigners);
+  if (!gathered.ok) return { ok: false, reason: `rotation ${gathered.reason}` };
+  return {
+    ok: true,
+    event: {
+      ...core, ownerSetMembers: [], ownerSetThreshold: 0, eventCid: handleEventCidOf(core), authSig: sig,
+      ...(gathered.coSigs.length > 0 ? { coSigs: gathered.coSigs } : {}),
+    },
+  };
 }
 
 /**
@@ -340,7 +399,7 @@ export async function mintHandleGraft(input: {
   readonly sign:                  (bytes: Uint8Array) => Promise<string>;
   /** DISTINCT prior-set members BEYOND the presenter, gathered toward the prior set's threshold. A 2-of-2
    *  guild passes one co-signer here; a 1-of-1 passes none. */
-  readonly coSigners?:            readonly { readonly memberPrefix: string; readonly keyDid: string; readonly sign: (bytes: Uint8Array) => Promise<string> }[];
+  readonly coSigners?:            readonly HandleCoSigner[];
   readonly nextRecoverySetHash?:  string;
 }): Promise<HandleMintResult> {
   const { head, newOwnerSetMembers, newOwnerSetThreshold, ownerAuthMemberPrefix, ownerHeadOpKeyDid } = input;
@@ -375,19 +434,14 @@ export async function mintHandleGraft(input: {
     return { ok: false, reason: "graft signature does not verify against the claimed presenting member key" };
   }
   // Gather each co-signer over the SAME bytes — the presenter names the message, the quorum consents to it.
-  const graftSigs: HandleGraftSig[] = [];
-  for (const c of input.coSigners ?? []) {
-    const cSig = await c.sign(bytes);
-    if (!(await verifySig(cSig, bytes, c.keyDid))) {
-      return { ok: false, reason: `graft co-signature for ${c.memberPrefix.slice(0, 16)}… does not verify against its claimed key` };
-    }
-    graftSigs.push({ memberPrefix: c.memberPrefix, keyDid: c.keyDid, sig: cSig });
-  }
+  const gathered = await gatherCoSigs(bytes, input.coSigners);
+  if (!gathered.ok) return { ok: false, reason: `graft ${gathered.reason}` };
   return {
     ok: true,
     event: {
       ...core, ownerSetMembers: newOwnerSetMembers, ownerSetThreshold: newOwnerSetThreshold,
-      eventCid: handleEventCidOf(core), authSig: sig, graftSigs,
+      eventCid: handleEventCidOf(core), authSig: sig,
+      ...(gathered.coSigs.length > 0 ? { coSigs: gathered.coSigs } : {}),
     },
   };
 }
@@ -395,21 +449,30 @@ export async function mintHandleGraft(input: {
 /**
  * BURN: the TERMINAL event — the Shadowtalk ending made structural. EITHER HAND may strike it
  * (operator ruling, Option C, 2026-09-08): the SEATED Handle key closes its own name (a panic burn,
- * local, card-self-verifiable), OR ANY CURRENT MEMBER buries it from above (a burn a thief-of-the-face
- * cannot forge — the presenting quorum buries its own name). The core's `ownerAuthMemberPrefix` records
- * WHICH member's hand (null on a self-burn). After a burn `verifyHandleKel` REFUSES any successor
- * forever, `headHandleKey` seats nothing, and `attestUnderHead` throws. FAILS CLOSED on an already
- * burned head.
+ * local, card-self-verifiable), OR the CURRENT OWNER-SET buries it from above (a burn a
+ * thief-of-the-face cannot forge — the presenting quorum buries its own name). The core's
+ * `ownerAuthMemberPrefix` records WHICH member presents the owner-burn (null on a self-burn).
+ *
+ * The OWNER-BURN is a WITNESS-THRESHOLD act: burying a SHARED name takes the presenter plus `coSigners`
+ * (each a distinct current member) reaching ≥ the current owner-set's threshold, so a single turned
+ * member cannot silence a k-of-n name. The SELF-BURN stays SINGLE-HAND — the seated key's own panic is a
+ * different hand from the members and is not threshold-gated; a 1-of-1 personal face (threshold 1)
+ * owner-burns by one signature, unchanged. After a burn `verifyHandleKel` REFUSES any successor forever,
+ * `headHandleKey` seats nothing, and `attestUnderHead` throws. FAILS CLOSED on an already burned head.
  */
 export async function mintHandleBurn(input: {
   readonly head: HandleKelEvent;
   /** THE SELF-BURN (Option C, path one): the seated Handle head key closes its own name — fast,
-   *  local, card-self-verifiable, no owner lookup. The panic burn a compromised face strikes now. */
+   *  local, card-self-verifiable, no owner lookup, single-hand. The panic burn a compromised face strikes now. */
   readonly sign?: (bytes: Uint8Array) => Promise<string>;
   /** THE OWNER-BURN (Option C, path two): a CURRENT member of the presenting set strikes the name from
    *  above, a burn a thief-of-the-face cannot forge. Names the member + its head key in the core;
-   *  `verifyHandleKel` checks membership and `verifyHandleKelFull` checks the head against the resolver. */
+   *  `verifyHandleKel` checks membership + the witness threshold and `verifyHandleKelFull` checks the heads. */
   readonly ownerBurn?: { readonly ownerAuthMemberPrefix: string; readonly ownerAuthKeyDid: string; readonly sign: (bytes: Uint8Array) => Promise<string> };
+  /** OWNER-BURN co-signers: DISTINCT current members BEYOND the presenter, gathered toward the current
+   *  set's witness threshold. A shared name is buried only by its quorum. Meaningless on a self-burn (the
+   *  seated key's single-hand panic) — passing them there refuses. */
+  readonly coSigners?: readonly HandleCoSigner[];
 }): Promise<HandleMintResult> {
   const { head } = input;
   if (head.kind === "burn") {
@@ -417,6 +480,9 @@ export async function mintHandleBurn(input: {
   }
   if ((input.sign && input.ownerBurn) || (!input.sign && !input.ownerBurn)) {
     return { ok: false, reason: "a burn is struck by EXACTLY one hand — the seated key (`sign`) OR a current member (`ownerBurn`), never both, never neither" };
+  }
+  if (input.sign && input.coSigners && input.coSigners.length > 0) {
+    return { ok: false, reason: "a self-burn is the seated key's single-hand panic — co-signers accompany an owner-burn, never a self-burn" };
   }
   const core: HandleEventCore = {
     seq:                   head.seq + 1,
@@ -432,9 +498,19 @@ export async function mintHandleBurn(input: {
     ownerAuthMemberPrefix: input.ownerBurn ? input.ownerBurn.ownerAuthMemberPrefix : null,   // the record says WHICH hand
     ownerAuthKeyDid:       input.ownerBurn ? input.ownerBurn.ownerAuthKeyDid       : null,
   };
+  const bytes  = handleEventBytes(core);
   const signer = input.ownerBurn ? input.ownerBurn.sign : input.sign!;
-  const sig = await signer(handleEventBytes(core));
-  return { ok: true, event: { ...core, ownerSetMembers: [], ownerSetThreshold: 0, eventCid: handleEventCidOf(core), authSig: sig } };
+  const sig    = await signer(bytes);
+  // An OWNER-burn gathers the witness quorum over the SAME bytes; a self-burn gathers nothing (single-hand).
+  const gathered = await gatherCoSigs(bytes, input.ownerBurn ? input.coSigners : undefined);
+  if (!gathered.ok) return { ok: false, reason: `owner-burn ${gathered.reason}` };
+  return {
+    ok: true,
+    event: {
+      ...core, ownerSetMembers: [], ownerSetThreshold: 0, eventCid: handleEventCidOf(core), authSig: sig,
+      ...(gathered.coSigs.length > 0 ? { coSigs: gathered.coSigs } : {}),
+    },
+  };
 }
 
 /**
@@ -481,6 +557,10 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       if (e.ownerSetMembers.length !== 0 || e.ownerSetThreshold !== 0) return false;   // presentation reveals no set
       if (e.ownerSetHash !== curOwnerSetHash)             return false;   // bound to the current set-epoch
       if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // ★ a CURRENT member presents (non-member refuses)
+      // ★ THE WITNESS THRESHOLD: seating a fresh signing key on a SHARED name is a quorum act — count
+      // DISTINCT current members (presenter + co-signers) and refuse below the current threshold. A single
+      // turned member cannot rotate a k-of-n name's key; a 1-of-1 (threshold 1) passes on the presenter alone.
+      if (!reachesWitnessThreshold(e.ownerAuthMemberPrefix, e.coSigs, curMembers, curThreshold)) return false;
       // ★ KERI pre-rotation: an ARMED predecessor pins WHICH key rotates next — the reveal must match the
       // pre-commitment. A thief holding only the dead current key seats a key the seed never committed → refuse.
       if (prev.nextHandleKeyDigest.length > 0 && handleKeyDigestOf(e.handleKeyDid) !== prev.nextHandleKeyDigest) return false;
@@ -492,14 +572,9 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       if (e.ownerSetThreshold < 1 || e.ownerSetThreshold > e.ownerSetMembers.length) return false;
       if (e.ownerSetHash !== sealKeySetHash(e.ownerSetMembers, e.ownerSetThreshold))  return false;   // the reveal hashes to the new rolling digest
       if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // the presenter stood in the PRIOR set
-      // ★ SUCCESSION reaches the PRIOR set's THRESHOLD — count DISTINCT prior-set members consenting (the
-      // presenter plus each co-signer that stood in the prior set); a co-sig from a non-member never counts.
-      const authorizers = new Set<string>([e.ownerAuthMemberPrefix.toLowerCase()]);
-      for (const s of e.graftSigs ?? []) {
-        const m = s.memberPrefix.toLowerCase();
-        if (curMembers.has(m)) authorizers.add(m);
-      }
-      if (authorizers.size < curThreshold)               return false;   // below the prior threshold — no succession
+      // ★ SUCCESSION reaches the PRIOR set's THRESHOLD — the same witness-threshold count a rotation and an
+      // owner-burn use, here over the prior set: DISTINCT prior members (presenter + co-signers), non-members never count.
+      if (!reachesWitnessThreshold(e.ownerAuthMemberPrefix, e.coSigs, curMembers, curThreshold)) return false;   // below the prior threshold — no succession
       curMembers = new Set(e.ownerSetMembers.map((m) => m.toLowerCase()));   // the presenting set turns over AFTER the threshold check
       curOwnerSetHash = e.ownerSetHash;
       curThreshold    = e.ownerSetThreshold;   // the new set carries its own threshold forward
@@ -512,8 +587,12 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       if (e.ownerAuthMemberPrefix !== null) {
         if (e.ownerAuthKeyDid === null)                   return false;   // owner-burn names a member key
         if (!curMembers.has(e.ownerAuthMemberPrefix.toLowerCase())) return false;   // ★ a CURRENT member buries it
+        // ★ THE WITNESS THRESHOLD: burying a SHARED name from above is a quorum act — a single turned member
+        // cannot silence a k-of-n name. A 1-of-1 (threshold 1) buries on the presenter alone, unchanged.
+        if (!reachesWitnessThreshold(e.ownerAuthMemberPrefix, e.coSigs, curMembers, curThreshold)) return false;
       } else {
         if (e.ownerAuthKeyDid !== null)                   return false;   // self-burn names no member
+        if (e.coSigs && e.coSigs.length > 0)              return false;   // ★ a self-burn is single-hand — no co-signers ride it
       }
     } else {
       return false;
@@ -534,14 +613,34 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
  */
 export type OwnerHeadResolver = (memberPersonaPrefix: string, authKeyDid: string) => Promise<boolean>;
 
+/** Verify every co-signer's consent on a member-authorized threshold act: each signature verifies against
+ *  its named key AND that key stands as the member's head per the resolver — the witness-threshold COUNT
+ *  held structurally, here every gathered signature proves genuine and unsuperseded. Fails closed on the
+ *  first break. */
+async function verifyCoSigsFull(
+  kind: HandleKelKind, seq: number, coSigs: readonly HandleCoSig[] | undefined,
+  bytes: Uint8Array, ownerHeadResolver: OwnerHeadResolver,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  for (const s of coSigs ?? []) {
+    if (!(await verifySig(s.sig, bytes, s.keyDid))) {
+      return { ok: false, reason: `${kind} seq ${seq}: a co-signature does not verify against its named member key` };
+    }
+    if (!(await ownerHeadResolver(s.memberPrefix, s.keyDid))) {
+      return { ok: false, reason: `${kind} seq ${seq}: a co-signer's key does not stand as that member's head (superseded or unrecognized)` };
+    }
+  }
+  return { ok: true };
+}
+
 /**
  * Verify the chain structurally AND verify every signature + presentation authority — the full assurance
  * a reader needs before trusting the head Handle key. Each ROTATION and GRAFT `authSig` MUST verify over
  * the event bytes against its named `ownerAuthKeyDid`, and that key MUST stand as the named member's head
  * per the injected resolver — a presentation signed by a SUPERSEDED member key refuses HERE (the
- * settlement's rule: presentation authority walks the presenting member's persona-KEL head). Each
- * OWNER-BURN checks the same; each SELF-BURN `authSig` MUST verify against the seated Handle key (no
- * resolver). FAILS CLOSED on the first break.
+ * settlement's rule: presentation authority walks the presenting member's persona-KEL head). Each gathered
+ * co-signature (rotation · graft · owner-burn) verifies the same. Each OWNER-BURN checks the presenter +
+ * its co-signers; each SELF-BURN `authSig` MUST verify against the seated Handle key (no resolver). FAILS
+ * CLOSED on the first break.
  */
 export async function verifyHandleKelFull(
   chain: readonly HandleKelEvent[],
@@ -568,18 +667,9 @@ export async function verifyHandleKelFull(
       if (!(await ownerHeadResolver(e.ownerAuthMemberPrefix, e.ownerAuthKeyDid))) {
         return { ok: false, reason: `${e.kind} seq ${e.seq}: its member key does not stand as that member's head (superseded or unrecognized)` };
       }
-      if (e.kind === "graft") {
-        // Each co-signer's consent verifies against its named key AND stands as that member's head — the
-        // threshold COUNT held structurally, here every gathered signature proves genuine and unsuperseded.
-        for (const s of e.graftSigs ?? []) {
-          if (!(await verifySig(s.sig, handleEventBytes(core), s.keyDid))) {
-            return { ok: false, reason: `graft seq ${e.seq}: a co-signature does not verify against its named member key` };
-          }
-          if (!(await ownerHeadResolver(s.memberPrefix, s.keyDid))) {
-            return { ok: false, reason: `graft seq ${e.seq}: a co-signer's key does not stand as that member's head (superseded or unrecognized)` };
-          }
-        }
-      }
+      // Each gathered co-signer (a rotation's or a graft's witness quorum) proves genuine + unsuperseded.
+      const co = await verifyCoSigsFull(e.kind, e.seq, e.coSigs, handleEventBytes(core), ownerHeadResolver);
+      if (!co.ok) return co;
     } else if (e.kind === "burn") {
       if (!e.authSig) return { ok: false, reason: `burn seq ${e.seq}: unsigned` };
       if (e.ownerAuthMemberPrefix === null) {
@@ -596,6 +686,9 @@ export async function verifyHandleKelFull(
         if (!(await ownerHeadResolver(e.ownerAuthMemberPrefix, e.ownerAuthKeyDid))) {
           return { ok: false, reason: `burn seq ${e.seq}: its member key does not stand as that member's head (a superseded key cannot bury the name)` };
         }
+        // The owner-burn's witness quorum — burying a shared name gathers ≥ threshold genuine, unsuperseded members.
+        const co = await verifyCoSigsFull(e.kind, e.seq, e.coSigs, handleEventBytes(core), ownerHeadResolver);
+        if (!co.ok) return co;
       }
     }
   }

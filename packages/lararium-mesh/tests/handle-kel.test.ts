@@ -465,3 +465,122 @@ describe("handle-kel — TRUE k-of-n graft governance (a guild's membership chan
     expect(verifyHandleKel([inception, graft.event])).toBe(true);
   });
 });
+
+describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QUORUM acts on a shared name", () => {
+  // A movement's shared handle (the Luther-Blissett improper name) sets a WITNESS THRESHOLD on the two
+  // MEMBER-authorized acts that seize or bury the name: a ROTATION seats a fresh signing key (the key that
+  // speaks AS the handle), and an OWNER-BURN buries the shared name from above. Both must gather ≥ the
+  // current owner-set's threshold of DISTINCT current-member signatures — the same distinct-authorizer
+  // count the graft already reaches. A single turned member can no longer (a) rotate the signing key and
+  // attest as the movement (a call to a trap issued in the movement's name) nor (b) bury the name alone.
+  // 1-of-1 (the personal face, threshold 1) is UNCHANGED — one signature is the whole quorum.
+  async function found2of2Movement() {
+    const handleKeyDid    = await didOf(SEEDS.hA);
+    const recoverySetHash = sealKeySetHash([await pubOf(SEEDS.g1)], 1);
+    const mAKey = await didOf(SEEDS.westley), mBKey = await didOf(SEEDS.memberY);
+    const mA = mintPersonaInception(mAKey, recoverySetHash).prefix;
+    const mB = mintPersonaInception(mBKey, recoverySetHash).prefix;
+    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 2, recoverySetHash);
+    return { inception, mA, mB, mAKey, mBKey, recoverySetHash };
+  }
+
+  test("★ RED — ONE turned member cannot rotate the shared signing key of a 2-of-2 movement (seizing the name) ★", async () => {
+    const { inception, mA, mB, mAKey, mBKey } = await found2of2Movement();
+    // A single defector rotates the handle's own signing key — thereafter it would attest AS the movement.
+    const solo = await mintHandleRotation({
+      head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
+      ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
+    });
+    expect(solo.ok, solo.ok ? "" : solo.reason).toBe(true);   // the mint signs against A's claimed key…
+    if (!solo.ok) return;
+    // …but ONE of TWO members is below the witness threshold — a lone hand seizes no shared signing key.
+    expect(verifyHandleKel([inception, solo.event])).toBe(false);
+
+    // CONTROL — both members co-sign the SAME rotation bytes → the quorum consents, the rotation stands.
+    const quorum = await mintHandleRotation({
+      head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
+      ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
+      coSigners: [{ memberPrefix: mB, keyDid: mBKey, sign: signerOf(SEEDS.memberY) }],
+    });
+    expect(quorum.ok, quorum.ok ? "" : quorum.reason).toBe(true);
+    if (!quorum.ok) return;
+    const chain: HandleKelEvent[] = [inception, quorum.event];
+    expect(verifyHandleKel(chain)).toBe(true);
+    expect(headHandleKey(chain)).toBe(await didOf(SEEDS.hB));
+    const resolver = headsAre({ [mA]: mAKey, [mB]: mBKey });
+    expect((await verifyHandleKelFull(chain, resolver)).ok).toBe(true);
+  });
+
+  test("★ RED — ONE turned member cannot owner-burn a 2-of-2 movement's shared name (silencing it) ★", async () => {
+    const { inception, mA, mB, mAKey, mBKey } = await found2of2Movement();
+    // A single defector buries the shared name from above.
+    const solo = await mintHandleBurn({
+      head: inception,
+      ownerBurn: { ownerAuthMemberPrefix: mA, ownerAuthKeyDid: mAKey, sign: signerOf(SEEDS.westley) },
+    });
+    expect(solo.ok, solo.ok ? "" : solo.reason).toBe(true);   // the mint signs against A's key…
+    if (!solo.ok) return;
+    // …but a shared name is buried only by its quorum — one of two refuses.
+    expect(verifyHandleKel([inception, solo.event])).toBe(false);
+
+    // CONTROL — both members co-sign the burn → the quorum buries its own name.
+    const quorum = await mintHandleBurn({
+      head: inception,
+      ownerBurn: { ownerAuthMemberPrefix: mA, ownerAuthKeyDid: mAKey, sign: signerOf(SEEDS.westley) },
+      coSigners: [{ memberPrefix: mB, keyDid: mBKey, sign: signerOf(SEEDS.memberY) }],
+    });
+    expect(quorum.ok, quorum.ok ? "" : quorum.reason).toBe(true);
+    if (!quorum.ok) return;
+    const buried: HandleKelEvent[] = [inception, quorum.event];
+    expect(verifyHandleKel(buried)).toBe(true);
+    expect(isBurned(buried)).toBe(true);
+    const resolver = headsAre({ [mA]: mAKey, [mB]: mBKey });
+    expect((await verifyHandleKelFull(buried, resolver)).ok).toBe(true);
+  });
+
+  test("CONTROL — a 2-of-2 rotation co-signed by a NON-member cannot reach the witness threshold", async () => {
+    const { inception, mA, mAKey } = await found2of2Movement();
+    const outsiderPrefix = mintPersonaInception(await didOf(SEEDS.outside), inception.recoverySetHash).prefix;
+    const rot = await mintHandleRotation({
+      head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
+      ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
+      coSigners: [{ memberPrefix: outsiderPrefix, keyDid: await didOf(SEEDS.outside), sign: signerOf(SEEDS.outside) }],
+    });
+    expect(rot.ok, rot.ok ? "" : rot.reason).toBe(true);
+    if (!rot.ok) return;
+    // One member + one outsider = one member of two — below the threshold, the rotation refuses.
+    expect(verifyHandleKel([inception, rot.event])).toBe(false);
+  });
+
+  test("CONTROL — the 1-of-1 personal face rotates AND self-burns with one signature, byte-unchanged", async () => {
+    const { inception, westleyPrefix, westleyOpKeyA } = await foundedHandle();
+    // threshold 1 → the sole owner presents alone, exactly as before the witness threshold.
+    const rot = await mintHandleRotation({
+      head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
+      ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
+    });
+    expect(rot.ok, rot.ok ? "" : rot.reason).toBe(true);
+    if (!rot.ok) return;
+    expect(verifyHandleKel([inception, rot.event])).toBe(true);
+    expect((await verifyHandleKelFull([inception, rot.event], headsAre({ [westleyPrefix]: westleyOpKeyA }))).ok).toBe(true);
+    // The seated key's own panic self-burn stays single-hand — a different hand from the members, never gated.
+    const selfBurn = await mintHandleBurn({ head: rot.event, sign: signerOf(SEEDS.hB) });
+    expect(selfBurn.ok).toBe(true);
+    if (!selfBurn.ok) return;
+    expect(verifyHandleKel([inception, rot.event, selfBurn.event])).toBe(true);
+  });
+
+  test("★ the SELF-BURN stays single-hand even on a k-of-n shared name — the seated key's own panic ★", async () => {
+    const { inception } = await found2of2Movement();
+    // The SEATED handle key (not a member) closes its own name — the terminal Shadowtalk panic burn.
+    // A self-burn is a DIFFERENT hand from the member-authorized acts; the witness threshold does not gate it.
+    const selfBurn = await mintHandleBurn({ head: inception, sign: signerOf(SEEDS.hA) });
+    expect(selfBurn.ok, selfBurn.ok ? "" : selfBurn.reason).toBe(true);
+    if (!selfBurn.ok) return;
+    const chain: HandleKelEvent[] = [inception, selfBurn.event];
+    expect(selfBurn.event.ownerAuthMemberPrefix).toBeNull();   // a self-burn names no member
+    expect(verifyHandleKel(chain)).toBe(true);
+    // the resolver is never consulted for a self-burn (no member head to walk).
+    expect((await verifyHandleKelFull(chain, async () => false)).ok).toBe(true);
+  });
+});
