@@ -516,6 +516,12 @@ async function flushCapEvents(
             tags:        CAP_EVENT_TAG,
             variant:     evt.variant,
             hash,
+            // CIV-3 — the causal island travels WITH the record. `inSelfSlice` reads an absent island as
+            // cross-cutting, so a record that loses it here co-loads with EVERY slice forever after: the
+            // flatness cut degrades to "load everything" for exactly the events a ceremony wrote. The
+            // provider stamps it at mint (DELEGATED/REVOKED off their own bytes, CGKA off the active
+            // doc-op) and this round-trip was throwing it away with the value in hand.
+            ...(evt.island !== undefined ? { island: evt.island } : {}),
             "bytes-len": String(evt.bytes.length),
           },
           meta: { authority: "lares-init" },
@@ -540,6 +546,9 @@ export async function replayCapEvents(
       bytes:   base64ToBytes(fields["text"]),
       variant: fields["variant"] as never,
       hash:    fields["hash"],
+      // Absent stays ABSENT — a fabricated island would put a record in a slice it does not belong to,
+      // which is worse than the eager co-load an honest absence costs.
+      ...(fields["island"] ? { island: fields["island"] } : {}),
     });
   }
   return store;
