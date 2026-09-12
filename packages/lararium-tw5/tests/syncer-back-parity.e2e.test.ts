@@ -314,7 +314,7 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
   }, 60_000);
 
   // ── (d) `syncFromServer` pulling a meme a second client changed ──────────────────────────────────
-  test.fails("SEAM (d′) the poll lands a meme's group ONE AT A TIME — the root stands fat while its children are still skinny", async () => {
+  test("(d′) the poll lands a meme's group WHOLE — no dispatch stands with a fat root over a skinny child", async () => {
     if (!page) return;
     // Arm a recorder on the wiki's own change bus BEFORE the second client writes.
     await page.evaluate(() => {
@@ -340,12 +340,22 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
     }
     await settle(2500);
     const arrivals = await page.evaluate(() => (globalThis as unknown as { __arrivals: [string, string][][] }).__arrivals);
-    // MEASURED: `getSkinnyTiddlers` stores all four SKINNY in one batch, then `LoadTiddlerTask` fattens
-    // them one at a time — root, then `#/p`, then `#/q`, then `#/r`. A render taken in between reads a
-    // root whose every `kahea` points at a record with no text.
+    // The skinny answer now carries each SLOT CHILD's text, so `storeTiddler` lands the children fat
+    // inside the one synchronous stretch the syncer walks — one `change` dispatch, the whole group.
+    // The per-title `LoadTiddlerTask` still queues and still runs (`syncer.js:682` sits outside that
+    // branch); it re-stores an identical record, which costs traffic and no render.
     const halfCut = arrivals.filter((g) => g.length === 4 && g[0]![1] === "fat" && g.some(([, s]) => s === "skinny"));
     expect(halfCut).toEqual([]);
-  }, 90_000);
+    // CONTROL: the skinny sync keeps its reason for existing — a plain tiddler still arrives with no
+    // text, so this narrows the answer for memes and for nothing else.
+    const skinny = await fetch(`${fork!.base}/recipes/default/tiddlers.json`);
+    const rows = JSON.parse(await skinny.text()) as Record<string, unknown>[];
+    const row = (t: string) => rows.find((r) => r["title"] === t);
+    expect(row("lar:///t/d#/p")?.["text"]).toBe("! p");
+    expect(row("lar:///t/d")?.["text"]).toBeUndefined();
+    expect(row("lar:///t/a-plain")?.["text"]).toBeUndefined();
+    await laterSaveLands();
+  }, 120_000);
 
   // ── (f) `$:/StoryList` and `$:/config/SyncFilter` ────────────────────────────────────────────────
   test("(f) the plugin creates NO `$:/lares/…` in a stock client, so the syncer never offers one; `$:/StoryList` rides to the server as stock's filter admits", async () => {
