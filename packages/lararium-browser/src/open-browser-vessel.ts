@@ -89,7 +89,8 @@ import {
 import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
-import { holdVesselLock } from "./vessel-lock.js";
+import { holdVesselLock, ambientLocks } from "./vessel-lock.js";
+import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
@@ -208,6 +209,13 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   inviteNexusPubkey?: string;
   /** URL of the compiled browser daemon island Worker script. */
   daemonWorkerUrl?: URL;
+  /**
+   * URL of the compiled shared-holder SharedWorker script (shared-holder.worker.ts). PRESENT and the engine offers
+   * `SharedWorker` → the daemon island stands ONCE per origin inside the holder and this tab ATTACHES over a
+   * MessagePort; the holder holds the Web Lock, so a second tab attaches rather than refusing. ABSENT, or an
+   * engine without SharedWorker → the floor: the dedicated-worker path exactly as before.
+   */
+  sharedHolderUrl?: URL;
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
   /** Projection-nalu sink: a `projection:frame` (rendered HTML+CSS) from the hot wiki island.
@@ -322,7 +330,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     idbName = "lares:vessel", displayName, onPhase,
     genesisSeed,
     genesisCasManifest, genesisCasBaseUrl,
-    daemonWorkerUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
+    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
     meshLeaf, admit,
     bootInvite, bootInvitePolicy, inviteNexusPubkey,
   } = opts;
@@ -335,7 +343,16 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // IndexedDB store and ONE OPFS CAS. The Web Lock refuses that open LOUD, naming the holder; it stays
   // held for this page's life and the browser lets go when the page does. An engine without Web Locks
   // reads as a floor and opens as before. `steal` never passes.
-  await holdVesselLock(idbName);
+  //
+  // THE HOUSE BEHIND THE LOCK (opt-in): with a shared holder configured and `SharedWorker` on the engine, the
+  // holder owns the one daemon island and the lock; this tab attaches. The one refusal that opens is a lock
+  // held by THAT holder — any other client still refuses loud.
+  const holder = (sharedHolderUrl && daemonWorkerUrl)
+    ? await attachSharedHolder({ holderUrl: sharedHolderUrl })
+    : null;
+  if (holder?.kind === "floor") console.log(`[vessel] shared holder floor: ${holder.why}`);
+  const lockHold = await holdVesselLock(idbName, ambientLocks(), { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null });
+  if (lockHold.attached) console.log(`[vessel] attached to the shared holder (${lockHold.holder}); island boots ${holder?.kind === "attached" ? holder.hello.islandBoots : "?"}, tabs ${holder?.kind === "attached" ? holder.hello.tabs : "?"}`);
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
   // The federation ring split. This vessel's own islands (daemon + wiki workers) sync over
@@ -812,6 +829,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         ...(social.personaBagId ? { personaBagId: social.personaBagId } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
         workerScriptUrl: daemonWorkerUrl,
+        // The holder path: the island already stands once per origin; this tab's handle IS its port.
+        ...(holder?.kind === "attached" ? { spawnWorker: () => holderWorkerHandle(holder.port) } : {}),
         recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
         grants: {
           islandUrl: assembly.islandHandle.url,

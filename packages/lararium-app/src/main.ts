@@ -26,7 +26,7 @@
 import {
   openBrowserVessel, generateOrLoadBrowserVesselIdentity,
   parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona,
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
@@ -46,9 +46,21 @@ import genesisCasManifest from "../../../genesis/island.manifest.json";
 // (keyhive-WASM-first, then the chain) cannot resolve — the daemon/wiki boot's silent death.
 import daemonWorkerUrlStr from "./workers/daemon.worker.ts?worker&url";
 import wikiWorkerUrlStr  from "./workers/wiki.worker.ts?worker&url";
+import sharedHolderUrlStr from "./workers/shared-holder.worker.ts?sharedworker&url";
 
 const daemonWorkerUrl  = new URL(daemonWorkerUrlStr, import.meta.url);
 const workerScriptUrl = new URL(wikiWorkerUrlStr,  import.meta.url);
+// THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per origin inside a SharedWorker, a port per
+// tab. The holder's own URL carries the island script and the store's lock name. Absent the flag the vessel
+// boots its dedicated worker exactly as before — the holder's lifetime past the last tab stays measured, not
+// assumed, before it becomes the default.
+const sharedHolderUrl = (() => {
+  if (!new URL(location.href).searchParams.has("holder")) return undefined;
+  const u = new URL(sharedHolderUrlStr, import.meta.url);
+  u.searchParams.set("island", daemonWorkerUrl.href);
+  u.searchParams.set("lock", vesselLockName("lares:vessel"));
+  return u;
+})();
 
 const IDB = "lares:vessel";
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
@@ -335,6 +347,7 @@ async function bootVessel(): Promise<void> {
       genesisCasManifest: genesisCasManifest as GenesisCasManifest,
       genesisCasBaseUrl,
       daemonWorkerUrl,
+      ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
       workerScriptUrl,
       onPhase: paint,
       onProjection: applyProjection,

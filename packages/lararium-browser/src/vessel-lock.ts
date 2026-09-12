@@ -53,10 +53,14 @@ export function vesselLockName(idbName: string): string {
 
 export interface VesselLockHold {
   readonly name: string;
-  /** True when the platform granted the lock; false on the floor (no Web Locks here). */
+  /** True when the platform granted the lock; false on the floor (no Web Locks here) or when ATTACHED. */
   readonly held: boolean;
   /** Names the floor when `held` reads false. */
   readonly floor?: string;
+  /** True when the lock is held by the shared holder this tab attaches to — the one refusal that opens. */
+  readonly attached?: boolean;
+  /** The holder the platform named, when attached. */
+  readonly holder?: string;
   /** Give the lock back; resolves once the platform has let go. The browser also releases it when the
    *  holder's page goes away. */
   release(): Promise<void>;
@@ -69,7 +73,15 @@ export interface VesselLockHold {
  * The callback's promise stays pending until `release()`, which is what keeps the lock held — the
  * platform releases a lock the moment its callback settles.
  */
-export async function holdVesselLock(idbName: string, host: LockHost | null = ambientLocks()): Promise<VesselLockHold> {
+export async function holdVesselLock(
+  idbName: string,
+  host: LockHost | null = ambientLocks(),
+  opts: {
+    /** The shared holder's lock client id (shared-holder.ts `hello.lockClientId`). A refusal by THAT client reads as
+     *  ATTACH — the house behind the lock — rather than as the collision; any other client still refuses loud. */
+    readonly attachToHolder?: string | null;
+  } = {},
+): Promise<VesselLockHold> {
   const name = vesselLockName(idbName);
   if (!host || typeof host.request !== "function") {
     return { name, held: false, floor: "this engine offers no Web Locks; the store opens unguarded", release: async () => {} };
@@ -91,11 +103,21 @@ export async function holdVesselLock(idbName: string, host: LockHost | null = am
     return { name, held: true, release: async () => { endLife(); await settled; } };
   }
 
+  const holderClient = await holderClientId(host, name);
+  if (opts.attachToHolder && holderClient === opts.attachToHolder) {
+    return { name, held: false, attached: true, holder: `client ${holderClient} (the shared holder)`, release: async () => {} };
+  }
   const holder = await describeHolder(host, name);
   throw new Error(
     `[vessel] the store "${idbName}" is already held — lock "${name}" held by ${holder}. One holder per vessel ` +
     `store on this origin; close the other tab (or worker) before opening this vessel here.`,
   );
+}
+
+/** The client id the platform reports holding the lock, or null when it cannot say. */
+async function holderClientId(host: LockHost, name: string): Promise<string | null> {
+  if (typeof host.query !== "function") return null;
+  try { return ((await host.query()).held ?? []).find((h) => h.name === name)?.clientId ?? null; } catch { return null; }
 }
 
 /** Name the client the platform reports holding the lock; "another client on this origin" when it cannot. */

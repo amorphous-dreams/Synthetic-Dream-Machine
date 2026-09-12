@@ -13,6 +13,9 @@
     },
     "./browser-daemon-island": {
       "import": "./dist/browser-daemon-island.js"
+    },
+    "./shared-holder-worker": {
+      "import": "./dist/shared-holder.worker.js"
     }
   },
   "main": "./dist/index.js",

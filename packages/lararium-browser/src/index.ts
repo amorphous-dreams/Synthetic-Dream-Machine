@@ -15,6 +15,11 @@ export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-poo
 export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
+// The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.
+export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle } from "./shared-holder.js";
+export type { SharedWorkerHost, SharedHolderAttach } from "./shared-holder.js";
+export { makeSharedHolderCore } from "./shared-holder-core.js";
+export type { SharedHolderCore, SharedHolderCoreOptions, HolderHello, HolderIsland, HolderPort } from "./shared-holder-core.js";
 export { publishHandleBrowser } from "./browser-handle-publish.js";
 export { burnFaceBrowser, attestFaceBrowser, resolveOwnerBurnHandBrowser } from "./browser-handle-verbs.js";
 export { composeBrowser } from "./browser-caps.js";

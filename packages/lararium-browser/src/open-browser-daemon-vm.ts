@@ -23,6 +23,7 @@ import {
   type WikiRecipe,
   type IslandMsg_Manifest,
   type IslandGrants,
+  type VesselWorkerHandle,
 } from "@lararium/mesh";
 import {
   openDaemonVmCore,
@@ -55,6 +56,10 @@ export interface BrowserDaemonVmOptions {
   daemonAuth?:       IslandMsg_Manifest["daemonAuth"];
   /** URL of the compiled browser daemon island Worker script. */
   workerScriptUrl:  URL;
+  /** The spawn seam. ABSENT → a dedicated module Worker at `workerScriptUrl` (today's path). PRESENT → the
+   *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per origin and
+   *  this tab attaches to it; no worker spawns here. */
+  spawnWorker?:     (url: URL) => VesselWorkerHandle;
 }
 
 export { VerbTable };
@@ -73,7 +78,7 @@ export interface BrowserVerbPlacementRequest {
 export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, workerScriptUrl } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, workerScriptUrl, spawnWorker } = opts;
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -95,7 +100,7 @@ export async function openBrowserDaemonVm(
 
   const host: DaemonVmHost = {
     newSyncChannel: browserNewSyncChannel,
-    spawnWorker:    browserSpawnWorker,
+    spawnWorker:    spawnWorker ?? browserSpawnWorker,
   };
 
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the
