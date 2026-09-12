@@ -39,6 +39,7 @@ export const heavy = [
   "tests/bulb-kindle.test.ts",
   "tests/bulb-serves-boot-cas-alone.test.ts",
   "tests/herm-reshares-public-blob.test.ts",
+  "tests/herm-cas-transit.test.ts",
   // nested worker_threads islands booting the full TW5 kernel off dist
   "tests/blob-sovereignty.test.ts",
   "tests/event-routing.test.ts",
