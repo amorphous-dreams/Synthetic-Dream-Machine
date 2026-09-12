@@ -198,6 +198,26 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     expect(r.stdout).toBe(got.stdout);
   });
 
+  test("list → the root stands with its canonical hash; --tree nests its slots (the daemon registers meme-list)", async () => {
+    const r = await lar.cli(["meme", "list", ...WIKI, "--tree", "--json"]);
+    expect(r.code, said(r)).toBe(0);
+    const roots = (r.json?.["data"] as { roots: { uri: string; canonicalHash: string; slots?: { slot: string }[] }[] }).roots;
+    const mine = roots.find((x) => x.uri === URI);
+    expect(mine, `the root never listed — ${said(r)}`).toBeDefined();
+    expect(mine!.canonicalHash).toMatch(/^sha256:/);
+    expect(mine!.slots?.map((x) => x.slot)).toContain("#/a");
+  });
+
+  test("delete → 0 and the group leaves; get answers not-found (the daemon registers meme-delete)", async () => {
+    const r = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
+    expect(r.code, said(r)).toBe(0);
+    const got = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
+    expect(got.json?.["error"]?.["code"] ?? got.json?.["code"], said(got)).toBe("not-found");
+    // CONTROL: a delete of what no longer stands answers not-found, never a second removal.
+    const again = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
+    expect(again.code, said(again)).not.toBe(0);
+  });
+
   test("project --to html from the anchor → a document through the house template, inside the island", async () => {
     // html renders from the anchor alone, so the meme lands there first — the anchor's own put.
     const put = await lar.cli(["meme", "put", URI, "--file", join(scratch, "ab.mem"), "--json"]);
