@@ -8,7 +8,7 @@
  *
  * THE RITE, every step through the built CLI:
  *   ① A founds (a place, a face)                          `vessel clear --force` · `persona new 0`
- *   ② B mints its OWN key first, under its OWN root       `vessel bake` · the vessel-identity mint
+ *   ② B mints its OWN key first, under its OWN root       the vessel-identity mint (the genesis island stands repo-wide off A's founding)
  *   ③ A signs the edge over B's key, naming A's dial      `device-admit --joinee-key … --sync-url …`
  *   ④ B founds BY that payload                            `vessel found --admit`
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
@@ -39,7 +39,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   openStaged, cliFor, freePort, stageDir, awaitRendezvous, vesselStorageDir, type LarInstance, type CliResult,
@@ -110,8 +110,10 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
       // CLI offers no door that mints a vessel key short of a founding, so the mint rides the same
       // function a founding calls — in a subprocess carrying B's `LAR_ROOT`, since the identity dir
       // resolves from the env alone.
-      const bake = await cliB(["vessel", "bake"]);
-      if (bake.code !== 0) throw new Error(`B: bake failed (${bake.code})\n${bake.stderr.slice(-800)}`);
+      // THE GENESIS UNDER B'S ROOT. `vessel found --admit` reads the hearth true-name off `<root>/genesis`; the
+      // re-derive is an internal rite step now (no `vessel bake` door), and A's `clear` just derived it under
+      // A's root — the same bytes B founds by, copied whole.
+      cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
       const keyB = await mintVesselKey(rootB);
 
       const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
