@@ -62,7 +62,7 @@ import { verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmi
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
-import { DaemonEventStore } from "./daemon-event-store.js";
+import { DaemonEventStore, CAP_EVENT_VARIANT_UNKNOWN } from "./daemon-event-store.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
 import { faceGrantTitle, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
@@ -150,7 +150,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const events = rec.capEvents.map(base64ToBytes);
       const eventStore = new DaemonEventStore({ daemon: ctx.composite });
       for (const bytes of events) {
-        try { await eventStore.put({ bytes, variant: "cap-membership", hash: "" }); } catch { /* a persisted duplicate reads fine */ }
+        try { await eventStore.put({ bytes, variant: CAP_EVENT_VARIANT_UNKNOWN, hash: "" }); } catch { /* a persisted duplicate reads fine */ }
       }
       try { await kh.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: vessel ingest faulted: ${(err as Error)?.message ?? err}`); }
       try { await veilKh?.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: veil ingest faulted: ${(err as Error)?.message ?? err}`); }

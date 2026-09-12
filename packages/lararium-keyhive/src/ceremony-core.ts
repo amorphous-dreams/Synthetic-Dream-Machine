@@ -68,7 +68,7 @@ import { buildCeremonyTiddlers } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { InMemoryEventStore } from "./event-store.js";
-import { capEventTitle } from "./daemon-event-store.js";
+import { capEventTitle, CAP_EVENT_VARIANT_UNKNOWN } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
 
 // ---------------------------------------------------------------------------
@@ -827,7 +827,7 @@ export async function runApplyAdmitPayload(
     daemonHandle.change((doc) => {
       if (!doc.tiddlers[title]) {
         doc.tiddlers[title] = {
-          tiddler: { title, text: capEventB64, tags: CAP_EVENT_TAG, variant: "cap-membership", hash, "bytes-len": String(bytes.length) },
+          tiddler: { title, text: capEventB64, tags: CAP_EVENT_TAG, variant: CAP_EVENT_VARIANT_UNKNOWN, hash, "bytes-len": String(bytes.length) },
           meta: { authority: "lares-init-admit" },
         };
       }

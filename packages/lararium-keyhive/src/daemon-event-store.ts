@@ -32,6 +32,17 @@ import { inIslandSlice } from "./event-store.js";
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 
 /** Map a Keyhive event variant to its lar sub-tag URI. */
+/**
+ * The variant a CEREMONY writes when the true one did not survive the crossing.
+ *
+ * `eventsForPeer` hands a peer bare bytes (`Uint8Array[]`), so an admitted vessel's cap events arrive with
+ * their variant already discarded — the value is not unknown to this writer by oversight, it is unknown by
+ * construction. Deliberately OUTSIDE the vocabulary below: `subTagFor` falls to `null` for it, and no
+ * reader can mistake it for a real event class. The field still stands because the store reads a record
+ * back by its PRESENCE; the crypto rides the bytes, never this word.
+ */
+export const CAP_EVENT_VARIANT_UNKNOWN = "UNTYPED";
+
 function subTagFor(variant: string): string | null {
   switch (variant) {
     case "PREKEY_ROTATED":  return CAP_EVENT_PREKEY_TAG;
