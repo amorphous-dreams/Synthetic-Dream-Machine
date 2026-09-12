@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 13
-rating     = "kapu"
-retain     = true
-role       = "referee NPC (Freyja's authorship) — L7 Combat-Rogue/Artificer, the Dragoness's intelligence-mistress; Menzoberranzan fall, blight-hardened prosthetics, Neo-Thracian network"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf"
+cacheable = true
+file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 13
+rating    = "kapu"
+retain    = true
+role      = "referee NPC (Freyja's authorship) — L7 Combat-Rogue/Artificer, the Dragoness's intelligence-mistress; Menzoberranzan fall, blight-hardened prosthetics, Neo-Thracian network"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf"
 ```
 
 <<^ code="&#x0002;">>

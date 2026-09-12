@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "place, below — the Low Delos megadungeon mouth where Rinia rose; three stabilized town-levels, names open"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "place, below — the Low Delos megadungeon mouth where Rinia rose; three stabilized town-levels, names open"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
 ```
 
 <<^ code="&#x0002;">>

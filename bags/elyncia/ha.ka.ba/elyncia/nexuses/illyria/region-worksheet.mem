@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/nexuses/illyria/region-worksheet.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "region worksheet — the Illyrian Regions: the sinking realm, the Accursed Mountains and the caldera, the drowned coast, the deep strata; grown by play"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/nexuses/illyria/region-worksheet"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/illyria/region-worksheet.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "region worksheet — the Illyrian Regions: the sinking realm, the Accursed Mountains and the caldera, the drowned coast, the deep strata; grown by play"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/illyria/region-worksheet"
 ```
 
 <<^ code="&#x0002;">>

@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "region worksheet — the New Delos Nexus in four strata: High Delos, Low Delos, the Underdark, and the outer seas/islands/shores; seeded from gazetteer canon, grown by play"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "region worksheet — the New Delos Nexus in four strata: High Delos, Low Delos, the Underdark, and the outer seas/islands/shores; seeded from gazetteer canon, grown by play"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet"
 ```
 
 <<^ code="&#x0002;">>

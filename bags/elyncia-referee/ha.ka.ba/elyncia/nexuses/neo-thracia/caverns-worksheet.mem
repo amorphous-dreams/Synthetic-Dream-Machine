@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 13
-rating     = "kapu"
-retain     = true
-role       = "referee worksheet — the Caverns of Neo-Thracia: geography canon, water-road law, watershed villages, guide Burdens"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
+cacheable = true
+file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 13
+rating    = "kapu"
+retain    = true
+role      = "referee worksheet — the Caverns of Neo-Thracia: geography canon, water-road law, watershed villages, guide Burdens"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
 ```
 
 <<^ code="&#x0002;">>

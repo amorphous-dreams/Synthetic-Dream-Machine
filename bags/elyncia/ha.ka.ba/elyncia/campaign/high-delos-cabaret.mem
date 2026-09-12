@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
 ```toml meta
-cacheable  = false
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/campaign/high-delos-cabaret.mem"
-l-space    = "adjacent"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "actual-play locus for Session 0.1 — the High Delos cabaret scene; venue, cast, and lifepath-flow scaffold now, the played record as it lands; player-safe by construction, nothing kapu ever drafts here"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/campaign/high-delos-cabaret"
+cacheable = false
+file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/high-delos-cabaret.mem"
+l-space   = "adjacent"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "actual-play locus for Session 0.1 — the High Delos cabaret scene; venue, cast, and lifepath-flow scaffold now, the played record as it lands; player-safe by construction, nothing kapu ever drafts here"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/campaign/high-delos-cabaret"
 ```
 
 <<^ code="&#x0002;">>

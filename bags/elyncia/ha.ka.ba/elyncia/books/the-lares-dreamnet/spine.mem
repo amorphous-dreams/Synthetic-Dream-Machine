@@ -2,18 +2,18 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/books/the-lares-dreamnet/spine.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "spine — Elyncia 02, the Lares DreamNet: the founding, the shrine practice, the spirits; the pilot book of the spine-and-chunk migration"
-tags       = ["ha.ka.ba/elyncia/books/index"]
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/books/the-lares-dreamnet/spine"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/books/the-lares-dreamnet/spine.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "spine — Elyncia 02, the Lares DreamNet: the founding, the shrine practice, the spirits; the pilot book of the spine-and-chunk migration"
+tags      = ["ha.ka.ba/elyncia/books/index"]
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/books/the-lares-dreamnet/spine"
 ```
 
 <<^ code="&#x0002;">>

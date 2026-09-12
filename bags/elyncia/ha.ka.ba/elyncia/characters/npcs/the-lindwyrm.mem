@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm.mem"
-l-space    = "stable"
-mana       = 15
-manao      = 15
-manaoio    = 14
-rating     = "ano"
-retain     = true
-role       = "NPC, public view — the Lindwyrm of New Delos: Patroness, embodied immortal, founder of the League of Free Cities, reluctant infrastructure matriarch"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+rating    = "ano"
+retain    = true
+role      = "NPC, public view — the Lindwyrm of New Delos: Patroness, embodied immortal, founder of the League of Free Cities, reluctant infrastructure matriarch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
 ```
 
 <<^ code="&#x0002;">>

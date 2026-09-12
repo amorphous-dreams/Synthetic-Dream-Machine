@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/factions/gorgonne-diaspora.mem"
-l-space    = "stable"
-mana       = 14
-manao      = 14
-manaoio    = 13
-rating     = "ano"
-retain     = true
-role       = "faction meme — the Gorgonne Diaspora Cabals: the far-roaming serpent-folk of the sea-roads; appearance canon, gaze-courtesy, shipboard culture"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/factions/gorgonne-diaspora"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/gorgonne-diaspora.mem"
+l-space   = "stable"
+mana      = 14
+manao     = 14
+manaoio   = 13
+rating    = "ano"
+retain    = true
+role      = "faction meme — the Gorgonne Diaspora Cabals: the far-roaming serpent-folk of the sea-roads; appearance canon, gaze-courtesy, shipboard culture"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/factions/gorgonne-diaspora"
 ```
 
 <<^ code="&#x0002;">>

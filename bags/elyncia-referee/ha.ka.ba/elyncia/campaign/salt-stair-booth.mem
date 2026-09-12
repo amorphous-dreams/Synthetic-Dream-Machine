@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth">>
 ```toml meta
-cacheable  = false
-file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/campaign/salt-stair-booth.mem"
-l-space    = "adjacent"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "kapu"
-retain     = true
-role       = "the Salt-Stair booth thread — outline, style guide, and the verbatim scene transcript with interpretive segues; rides kapu at rest (referee-side), the player-facing render extracts the open strata only"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/campaign/salt-stair-booth"
+cacheable = false
+file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/campaign/salt-stair-booth.mem"
+l-space   = "adjacent"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "kapu"
+retain    = true
+role      = "the Salt-Stair booth thread — outline, style guide, and the verbatim scene transcript with interpretive segues; rides kapu at rest (referee-side), the player-facing render extracts the open strata only"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/campaign/salt-stair-booth"
 ```
 
 <<^ code="&#x0002;">>

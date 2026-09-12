@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/index">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/books/index.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "landing page — the Elyncia books as a TW5 ToC over the spine memes; each spine walks its chapter's chunks through the graph"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/books/index"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/books/index.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "landing page — the Elyncia books as a TW5 ToC over the spine memes; each spine walks its chapter's chunks through the graph"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/books/index"
 ```
 
 <<^ code="&#x0002;">>

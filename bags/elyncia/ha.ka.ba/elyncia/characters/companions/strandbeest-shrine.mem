@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 13
-rating     = "ano"
-retain     = true
-role       = "companion sheet — the Faerie-Ring Strandbeest Shrine: walking hokora, mycelium sails, Mother Spore ring"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 13
+rating    = "ano"
+retain    = true
+role      = "companion sheet — the Faerie-Ring Strandbeest Shrine: walking hokora, mycelium sails, Mother Spore ring"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"
 ```
 
 <<^ code="&#x0002;">>

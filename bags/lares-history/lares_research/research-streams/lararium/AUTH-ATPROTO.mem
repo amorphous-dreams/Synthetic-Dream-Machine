@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///lares_research/research-streams/lararium/AUTH-ATPROTO">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares-history/lares_research/research-streams/lararium/AUTH-ATPROTO.mem"
-hydrate    = true
-l-space    = "adjacent"
-mana       = 18
-manao      = 18
-manaoio    = 17
-retain     = true
-role       = "ATProto / Bluesky login architecture doctrine — BFF, identity layers, DPoP boundary"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "lares_research/research-streams/lararium/AUTH-ATPROTO"
+cacheable = true
+file-path = "bags/lares-history/lares_research/research-streams/lararium/AUTH-ATPROTO.mem"
+hydrate   = true
+l-space   = "adjacent"
+mana      = 18
+manao     = 18
+manaoio   = 17
+retain    = true
+role      = "ATProto / Bluesky login architecture doctrine — BFF, identity layers, DPoP boundary"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "lares_research/research-streams/lararium/AUTH-ATPROTO"
 ```
 
 <<^ code="&#x0002;">>

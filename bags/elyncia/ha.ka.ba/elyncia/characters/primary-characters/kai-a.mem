@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
 ```toml meta
-cacheable  = false
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/kai-a.mem"
-l-space    = "adjacent"
-mana       = 12
-manao      = 12
-manaoio    = 11
-rating     = "ano"
-retain     = true
-role       = "primary character — Kai ʻĀ, the prismatic elf warrior-ranger kaiju-stalker (Kai's PC); build approved, lifepath open for Session 0.1 talk-story"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/primary-characters/kai-a"
+cacheable = false
+file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/kai-a.mem"
+l-space   = "adjacent"
+mana      = 12
+manao     = 12
+manaoio   = 11
+rating    = "ano"
+retain    = true
+role      = "primary character — Kai ʻĀ, the prismatic elf warrior-ranger kaiju-stalker (Kai's PC); build approved, lifepath open for Session 0.1 talk-story"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/kai-a"
 ```
 
 <<^ code="&#x0002;">>

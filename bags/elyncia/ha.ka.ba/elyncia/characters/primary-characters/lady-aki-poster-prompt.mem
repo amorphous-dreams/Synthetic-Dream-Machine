@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 13
-rating     = "ano"
-retain     = true
-role       = "Lady Aki poster-sheet render prompt — palette and mood lines for image generation"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 13
+rating    = "ano"
+retain    = true
+role      = "Lady Aki poster-sheet render prompt — palette and mood lines for image generation"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt"
 ```
 
 <<^ code="&#x0002;">>

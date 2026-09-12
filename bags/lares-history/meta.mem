@@ -2,11 +2,11 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/bags/lares-history">>
 ```toml meta
-bag       = "lares-history"
-cap-tier  = "personagroup"
-home      = "repository"
+bag        = "lares-history"
+cap-tier   = "personagroup"
+home       = "repository"
 repository = "synthetic-dream-machine"
-type      = "text/memetic-wikitext+tiddlywiki"
+type       = "text/memetic-wikitext+tiddlywiki"
 ```
 
 ! @lares-history

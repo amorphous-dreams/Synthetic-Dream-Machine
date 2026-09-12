@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/melantha-vex">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/melantha-vex.mem"
-l-space    = "stable"
-mana       = 13
-manao      = 13
-manaoio    = 13
-rating     = "kapu"
-retain     = true
-role       = "referee NPC — Guild-Captain of the Third Oar; Lindwyrm cut-out behind respectable paperwork; full dossier with private truth"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/npcs/melantha-vex"
+cacheable = true
+file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/melantha-vex.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 13
+rating    = "kapu"
+retain    = true
+role      = "referee NPC — Guild-Captain of the Third Oar; Lindwyrm cut-out behind respectable paperwork; full dossier with private truth"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/npcs/melantha-vex"
 ```
 
 <<^ code="&#x0002;">>

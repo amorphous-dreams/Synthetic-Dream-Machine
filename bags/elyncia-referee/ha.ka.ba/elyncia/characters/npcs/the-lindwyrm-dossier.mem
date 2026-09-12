@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier.mem"
-l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 13
-rating     = "kapu"
-retain     = true
-role       = "NPC dossier, referee view — the Lindwyrm behind the public face: the summit as recruitment engine, the intelligence apparatus, the long game of the mesh; the deepest seals stay in the operator's own seats, pointed at and never carried here"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"
+cacheable = true
+file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier.mem"
+l-space   = "stable"
+mana      = 14
+manao     = 15
+manaoio   = 13
+rating    = "kapu"
+retain    = true
+role      = "NPC dossier, referee view — the Lindwyrm behind the public face: the summit as recruitment engine, the intelligence apparatus, the long game of the mesh; the deepest seals stay in the operator's own seats, pointed at and never carried here"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"
 ```
 
 <<^ code="&#x0002;">>

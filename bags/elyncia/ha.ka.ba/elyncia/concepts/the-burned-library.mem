@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-burned-library.mem"
-l-space    = "stable"
-mana       = 14
-manao      = 15
-manaoio    = 13
-rating     = "ano"
-retain     = true
-role       = "concept canon — the Burned Library: the Librarians' 500-year grammar, the Library of Alexander's l-space fire, the locked records, and the kahu kuleana of restoration"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/concepts/the-burned-library"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-burned-library.mem"
+l-space   = "stable"
+mana      = 14
+manao     = 15
+manaoio   = 13
+rating    = "ano"
+retain    = true
+role      = "concept canon — the Burned Library: the Librarians' 500-year grammar, the Library of Alexander's l-space fire, the locked records, and the kahu kuleana of restoration"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/concepts/the-burned-library"
 ```
 
 <<^ code="&#x0002;">>

@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///lares_research/research-streams/lararium/PRINCIPLES">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/lares-history/lares_research/research-streams/lararium/PRINCIPLES.mem"
-mana       = 19
-manao      = 19
-manaoio    = 18
-retain     = true
-role       = "foundational operating principles for the quine-like self-replicating wiki-agentic-HUD"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "lares_research/research-streams/lararium/PRINCIPLES"
+cacheable = true
+file-path = "bags/lares-history/lares_research/research-streams/lararium/PRINCIPLES.mem"
+mana      = 19
+manao     = 19
+manaoio   = 18
+retain    = true
+role      = "foundational operating principles for the quine-like self-replicating wiki-agentic-HUD"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "lares_research/research-streams/lararium/PRINCIPLES"
 ```
 
 <<^ code="&#x0002;">>

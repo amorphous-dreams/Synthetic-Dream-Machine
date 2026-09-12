@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/region-worksheet">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/sdm/ha.ka.ba/sdm/templates/region-worksheet.mem"
-l-space    = "adjacent"
-mana       = 12
-manao      = 13
-manaoio    = 11
-rating     = "meme"
-retain     = true
-role       = "spine/skeleton holder — the region-worksheet practice: scale ladder, map-kinds, hex-entry law, travel loop; slots for verbatim SDM-06 and FTLS-04 chapter text land in #source before uplift"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/sdm/templates/region-worksheet"
+cacheable = true
+file-path = "bags/sdm/ha.ka.ba/sdm/templates/region-worksheet.mem"
+l-space   = "adjacent"
+mana      = 12
+manao     = 13
+manaoio   = 11
+rating    = "meme"
+retain    = true
+role      = "spine/skeleton holder — the region-worksheet practice: scale ladder, map-kinds, hex-entry law, travel loop; slots for verbatim SDM-06 and FTLS-04 chapter text land in #source before uplift"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/sdm/templates/region-worksheet"
 ```
 
 <<^ code="&#x0002;">>

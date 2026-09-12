@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///lares_research/research-streams/lararium/ROADMAP">>
 ```toml meta
-cacheable  = false
-file-path  = "bags/lares-history/lares_research/research-streams/lararium/ROADMAP.mem"
-mana       = 18
-manao      = 17
-manaoio    = 16
-retain     = true
-role       = "work journey log — migration roadmap and milestone log for Lararium Node; M20 COMPLETE: bag ID = lar: URI everywhere, LarariumDocStore generic, corpusBagId=corpusLarUri, catalog bag in both peers, fields:{bag} dup stripped, room bag = roomLarUri, MemeSyncAdaptor uses room URI; M21 OPEN: draft lar: URI, room self-ref tiddler, catalog.corpora retire, connect screen, TW5 recipe from CompositeStore topology"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "lares_research/research-streams/lararium/ROADMAP"
+cacheable = false
+file-path = "bags/lares-history/lares_research/research-streams/lararium/ROADMAP.mem"
+mana      = 18
+manao     = 17
+manaoio   = 16
+retain    = true
+role      = "work journey log — migration roadmap and milestone log for Lararium Node; M20 COMPLETE: bag ID = lar: URI everywhere, LarariumDocStore generic, corpusBagId=corpusLarUri, catalog bag in both peers, fields:{bag} dup stripped, room bag = roomLarUri, MemeSyncAdaptor uses room URI; M21 OPEN: draft lar: URI, room self-ref tiddler, catalog.corpora retire, connect screen, TW5 recipe from CompositeStore topology"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "lares_research/research-streams/lararium/ROADMAP"
 ```
 
 <<^ code="&#x0002;">>

@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
 ```toml meta
-cacheable  = false
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem"
-l-space    = "adjacent"
-mana       = 13
-manao      = 13
-manaoio    = 12
-rating     = "ano"
-retain     = true
-role       = "the handoff reds for Session 0.1's three islands — A the Actual-Play Lares (in-world first) and B the Referee's Second (provisional-first) here; C the Painter of Words and Light rides in session-0-1-render-research; all sessions co-work one graph and one universe (plurality pono · mutuality · kuleana)"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts"
+cacheable = false
+file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts.mem"
+l-space   = "adjacent"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+retain    = true
+role      = "the handoff reds for Session 0.1's three islands — A the Actual-Play Lares (in-world first) and B the Referee's Second (provisional-first) here; C the Painter of Words and Light rides in session-0-1-render-research; all sessions co-work one graph and one universe (plurality pono · mutuality · kuleana)"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts"
 ```
 
 <<^ code="&#x0002;">>

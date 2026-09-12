@@ -2,17 +2,17 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-fae-clans.mem"
-l-space    = "stable"
-mana       = 15
-manao      = 15
-manaoio    = 14
-rating     = "ano"
-retain     = true
-role       = "concept canon — the fae clans of Elyncia, humans among them: the staged portal arrivals of the post-First-Breaking age, the clan taxonomy, and the Neo-Thracian conceit"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/elyncia/concepts/the-fae-clans"
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-fae-clans.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+rating    = "ano"
+retain    = true
+role      = "concept canon — the fae clans of Elyncia, humans among them: the staged portal arrivals of the post-First-Breaking age, the clan taxonomy, and the Neo-Thracian conceit"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/concepts/the-fae-clans"
 ```
 
 <<^ code="&#x0002;">>
