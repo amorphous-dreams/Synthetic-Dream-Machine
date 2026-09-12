@@ -281,6 +281,11 @@ export {
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierKind, CarrierMarks } from "./carrier-shape.js";
+// THE ONE OPENER of a `toml meta` block. Seven spellings stood before it, differing on the separator,
+// the trailing run, the line anchor and the close — so a carrier written with two spaces deserialized
+// with its fields and read `meta:false` everywhere else. Recognition is permissive so no carrier goes
+// invisible over whitespace; the canon is one space, and `readCarrierShape` faults the difference.
+export { META_OPEN_RE, META_OPEN_LINE_RE, PLAIN_OPEN_RE, META_OPEN_CANON, isCanonicalMetaOpen } from "./meta-fence.js";
 export { readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
 // The check a carrier carries, and the span it covers. `meme normalize` re-stamps with these, so a

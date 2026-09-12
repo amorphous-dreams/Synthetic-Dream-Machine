@@ -78,6 +78,46 @@ describe("tagMemeText — stamp the single dominant blob-ahu", () => {
     expect(kind).toBe("meme-no-meta");
     expect(text).toBe(meme);
   });
+
+  /**
+   * THIS DOOR IS A WRITER, so a false positive does not misread a file — it MUTATES one. The fence
+   * reader here admitted `\s+` between the label and the word, and `\s` crosses a newline: a PLAIN
+   * ```toml fence whose first body line happened to read `meta` matched, and `_lar_cas = "yes"` went
+   * into operator content. It also took `[^\n]*` after the word, so any trailing prose on the opener
+   * line counted as a labelled fence.
+   *
+   * The shared opener admits `[ \t]+` and `[ \t]*` — wide enough that no real carrier goes unread,
+   * narrow enough that neither of these is a fence.
+   */
+  test("a plain ```toml fence whose body opens with the word `meta` is NOT a meta fence", () => {
+    const content = `<<~ ahu #source-text>>\n\`\`\`toml\nmeta = "this is operator content"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
+    const meme = smallAhu("meme-header") + content;
+    const { text, kind } = tagMemeText(meme);
+    expect(kind, "a plain toml fence was stamped as a meta fence").toBe("meme-no-meta");
+    expect(text, "operator content was mutated").toBe(meme);
+  });
+
+  test("an opener carrying trailing prose is NOT a meta fence", () => {
+    const content =
+      `<<~ ahu #source-text>>\n\`\`\`toml meta and a note the author left\nrole = "x"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
+    const meme = smallAhu("meme-header") + content;
+    const { text, kind } = tagMemeText(meme);
+    expect(kind).toBe("meme-no-meta");
+    expect(text).toBe(meme);
+  });
+
+  /** CONTROL — the spellings the opener DOES admit still stamp, or the fix is just a refusal. */
+  test.each([
+    ["one space",  "```toml meta"],
+    ["two spaces", "```toml  meta"],
+    ["a tab",      "```toml\tmeta"],
+  ])("a meta fence spelled with %s still stamps the blob-ahu", (_label, open) => {
+    const content = `<<~ ahu #source-text>>\n${open}\nrole = "source-text interior"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
+    const meme = smallAhu("meme-header") + content;
+    const { text, kind } = tagMemeText(meme);
+    expect(kind).toBe("ahu-tagged");
+    expect(text).toContain('_lar_cas = "yes"');
+  });
 });
 
 describe("tagCarrier — the write shapes on disk", () => {
