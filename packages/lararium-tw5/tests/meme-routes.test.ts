@@ -8,6 +8,7 @@ import { describe, test, expect } from "vitest";
 import * as put from "../src/routes/put-meme.js";
 import * as get from "../src/routes/get-meme.js";
 import { memePathOf } from "../src/place-meme.js";
+import { nativeDoorGate } from "../src/native-door-gate.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 import { digestsEqual, reprDigestOf } from "@lararium/mesh/agile-digest";
 
@@ -164,5 +165,26 @@ describe("★ THE PLAIN CONTAINER LAW — `default` is the host's anchor; any ot
     expect((await fireAt(put, w, "recipes", "default", meme(["a"]))).status).toBe(200);
     expect((await fireAt(get, w, "bags", "default")).status).toBe(200);
     expect((await fireAt(get, w, "recipes", "default")).status).toBe(200);
+  });
+});
+
+describe("★ THE NATIVE DOOR — `bag` is user space; the container's name is the envelope ★", () => {
+  const gate = (body: unknown, standing?: Record<string, unknown>) => nativeDoorGate(JSON.stringify(body), standing, "default");
+  const landed = (r: ReturnType<typeof nativeDoorGate>): Record<string, unknown> =>
+    r.kind === "pass" ? (JSON.parse(r.data) as Record<string, unknown>) : { refused: r.status };
+
+  test("a top-level `bag: \"default\"` never lands; the standing record's own `bag` rides through", () => {
+    expect(landed(gate({ title: "t", text: "x", bag: "default", revision: "3" }, { title: "t", bag: "mine" })))
+      .toEqual({ title: "t", text: "x", revision: "3", bag: "mine" });
+    // No standing `bag` → none appears.
+    expect(landed(gate({ title: "t", text: "x", bag: "default" }, { title: "t" }))).toEqual({ title: "t", text: "x" });
+    expect(landed(gate({ title: "t", text: "x", bag: "default" }, undefined))).toEqual({ title: "t", text: "x" });
+  });
+
+  test("CONTROL: an author's `bag` of any other value lands as written; a nested `fields.bag` is the author's; a non-JSON body passes untouched", () => {
+    expect(landed(gate({ title: "t", bag: "mine" }, { title: "t", bag: "theirs" }))["bag"]).toBe("mine");
+    expect(landed(gate({ title: "t", fields: { bag: "default" } }, { title: "t", bag: "mine" }))).toEqual({ title: "t", fields: { bag: "default" } });
+    expect(nativeDoorGate("not json", undefined, "default")).toEqual({ kind: "pass", data: "not json" });
+    expect(nativeDoorGate("[1]", undefined, "default")).toEqual({ kind: "pass", data: "[1]" });
   });
 });

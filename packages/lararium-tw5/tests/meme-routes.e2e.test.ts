@@ -228,6 +228,41 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
   });
 
   /**
+   * `bag` IS USER SPACE — the native round trip. Stock's `get-tiddler.js` stamps `bag: "default"` OVER
+   * the JSON (the TiddlyWeb envelope) and `put-tiddler.js` deletes `revision` alone, so a stock client
+   * that loads and saves a record hands the envelope back as a field. The shelf must keep the author's
+   * own `bag` and never persist the container's name; `tiddlers.json` reads the shelf unstamped.
+   */
+  test("★ BAG-STAMP ROUND TRIP: a user `bag` survives stock GET → stock PUT; `default` never lands ★", async () => {
+    const title = "lar:///t/npc";
+    const native = `/recipes/default/tiddlers/${encodeURIComponent(title)}`;
+    const shelf = async (): Promise<Record<string, string> | undefined> => {
+      const r = await http("GET", `/recipes/default/tiddlers.json?filter=${encodeURIComponent(`[[${title}]]`)}&exclude=none`);
+      return (JSON.parse(r.body) as Record<string, string>[])[0];
+    };
+    expect((await http("PUT", native, { body: JSON.stringify({ title, text: "an NPC", bag: "mine" }) })).status).toBe(204);
+    expect((await shelf())?.["bag"]).toBe("mine");
+    // MEASURED (stock): the GET JSON carries the envelope, not the field.
+    const loaded = JSON.parse((await http("GET", native)).body) as Record<string, unknown>;
+    expect(loaded["bag"]).toBe("default");
+    expect(loaded["revision"]).toBeDefined();
+    // The stock client saves what it loaded, text edited.
+    const saved = await http("PUT", native, { body: JSON.stringify({ ...loaded, text: "an NPC, edited" }) });
+    expect(saved.status, saved.body).toBe(204);
+    const after = await shelf();
+    expect(after?.["text"]).toBe("an NPC, edited");
+    expect(after?.["bag"]).toBe("mine");
+    // CONTROL: a record that never carried a `bag` gains none from the round trip.
+    const bare = "lar:///t/bare";
+    const bareNative = `/recipes/default/tiddlers/${encodeURIComponent(bare)}`;
+    await http("PUT", bareNative, { body: JSON.stringify({ title: bare, text: "no bag" }) });
+    const bareLoaded = JSON.parse((await http("GET", bareNative)).body) as Record<string, unknown>;
+    await http("PUT", bareNative, { body: JSON.stringify({ ...bareLoaded, text: "no bag, edited" }) });
+    const r = await http("GET", `/recipes/default/tiddlers.json?filter=${encodeURIComponent(`[[${bare}]]`)}&exclude=none`);
+    expect((JSON.parse(r.body) as Record<string, string>[])[0]?.["bag"]).toBeUndefined();
+  });
+
+  /**
    * THE KIND PARITY — `[lar-kind[]]` on the LIVE fork server answers the same partition TiddlyWiki's
    * own predicates answer (`is[draft]` · `is[system]` · the `$:/temp/` prefixes), over tiddlers that
    * entered by the native PUT door. The draft carries a user-attributed title and a `draft.of` field;
