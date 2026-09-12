@@ -71,6 +71,7 @@ import { IslandKernel } from "./island-kernel.js";
 import { buildIslandRecipe } from "./island-recipe.js";
 import { makeCatalogAccessor } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
+import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 
 // ── The host shore — platform divergence as composition ──────────────────────
@@ -123,6 +124,7 @@ export function runSovereignKernel(
   let _composite: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
+  let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
   let _activeWikiUri                    = "";
 
   // Live CRDT patches flow through AutomergeDocStore.handle.on("change") →
@@ -402,12 +404,16 @@ export function runSovereignKernel(
     // unbounded flush). The seed then drains frame-by-frame off the critical
     // path, so this thread keeps breathing while the corpus streams in.
     tick("recipe");
-    buildIslandRecipe({
+    const { adaptor } = buildIslandRecipe({
       tw5,
       composite: _composite,
       recipe: msg.recipe,
       ready,
     });
+    // THE OUTBOUND BRIDGE — ROAD B (basket-one #/the-bridge): ONE direct listener carries a live `$tw.wiki`
+    // change to the adaptor's saveTiddler / deleteTiddler; the echo law reads the adaptor's inbound SET.
+    // Held here, cancelled at teardown. No syncadaptor module, no `$tw.syncer`, no poll timer.
+    _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
     // Await the hydration checkpoint before arming behavior — onEa still observes a
     // fully-resident seed (the invariant), but the drain paced the loop instead of
     // blocking it. Resolves at once on a wiki-less path (no hydration begun).
@@ -436,6 +442,8 @@ export function runSovereignKernel(
   // ── Teardown / Demote (OTP terminate) ──────────────────────────────────────
 
   async function _handleTeardown(): Promise<void> {
+    _bridgeUnsub?.();
+    _bridgeUnsub = null;
     _lazyUnsub?.();
     _lazyUnsub = null;
     if (_ctx && behavior) await behavior.onHooAnu(_ctx);

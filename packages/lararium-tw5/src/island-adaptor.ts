@@ -183,6 +183,35 @@ export class IslandAdaptor implements MemeProjection {
   }
 
   // ---------------------------------------------------------------------------
+  // THE ECHO LAW'S SET (outbound-bridge, clause 3) — titles the inbound drain was handed
+  // ---------------------------------------------------------------------------
+  //
+  // `change` dispatches on nextTick, AFTER the drain lowered `isApplyingNalu` (MEASURED), so a flag cannot
+  // tell an inbound apply from a local edit inside a `change` listener. A SET can: every title handed to the
+  // drain is named here BEFORE it applies (the bridge wraps `enqueueNalu`, so the lazy resolver's splice and
+  // any other direct caller name theirs too), the bridge consumes a named title on sight and leaves nothing,
+  // and a stale entry (an apply that raised no change) falls out at a later burst end, past the grace.
+
+  private readonly _inbound = new Map<string, number>();
+  /** How long a named-but-unseen inbound title stays named before a burst end drops it. */
+  static readonly INBOUND_GRACE_MS = 5_000;
+
+  /** Name a title the inbound drain is about to apply. */
+  noteInbound(title: string, now = Date.now()): void { this._inbound.set(title, now); }
+
+  /** The bridge asks: did the inbound drain apply this title? Answering yes CONSUMES the entry (once). */
+  consumeInbound(title: string): boolean {
+    if (!this._inbound.has(title)) return false;
+    this._inbound.delete(title);
+    return true;
+  }
+
+  /** A `change` burst ended: drop entries older than the grace — an inbound apply that raised no change. */
+  endInboundBurst(now = Date.now()): void {
+    for (const [title, at] of this._inbound) if (now - at > IslandAdaptor.INBOUND_GRACE_MS) this._inbound.delete(title);
+  }
+
+  // ---------------------------------------------------------------------------
   // MemeProjection — inbound CRDT→wiki via the nalu engine
   // ---------------------------------------------------------------------------
 
@@ -250,6 +279,7 @@ export class IslandAdaptor implements MemeProjection {
     for (const t of this._debounce.values()) clearTimeout(t);
     this._debounce.clear();
     this._pending.clear();
+    this._inbound.clear();
     this._unsubscribe?.();
     this._unsubscribe = null;
   }

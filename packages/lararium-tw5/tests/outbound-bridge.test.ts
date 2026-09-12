@@ -11,7 +11,8 @@
  * anchor `meme put`, land in `$tw.wiki` and go no further.
  *
  * Every vector below drives the REAL wiki and a recording store with NO wire of its own — each reads
- * red for exactly the seam it names, and flips loud the day the bridge lands (`test.fails`). The
+ * red for exactly the seam it named until the bridge landed (Road B, basket-one #/the-bridge); each now
+ * stands as one clause of the five-clause contract both roads must pass. The
  * CONTROLS stand green today and MUST stay green under the bridge.
  *
  * ── THE ECHO TRAP THE CONTROLS MEASURE ──────────────────────────────────────────────────────────
@@ -27,6 +28,7 @@
 import { describe, test, expect, beforeAll, afterEach } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
+import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
@@ -84,13 +86,16 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     ] as const) wiki.addTiddler(new Tiddler({ title, text }));
     store   = new RecordingStore();
     adaptor = new IslandAdaptor(engine, store, "outbound-bridge");
-    // The projection registers — the INBOUND half. No outbound subscription exists to register: that is the seam.
+    // The projection registers — the INBOUND half — and the OUTBOUND BRIDGE (Road B) stands over it, the SAME
+    // call the kernel makes after `buildIslandRecipe`: one `change` listener, the echo law read off the
+    // adaptor's inbound set.
     adaptor.start();
+    bridgeWikiToAdaptor(engine, adaptor);
   }, 120_000);
 
   afterEach(() => { store.puts.length = 0; store.tombstones.length = 0; });
 
-  test.fails("(1) SEAM `change`→saveTiddler: `$tw.wiki.addTiddler` of a plain title → `store.put` in working, `$origin-bag` stripped", async () => {
+  test("(1) SEAM `change`→saveTiddler: `$tw.wiki.addTiddler` of a plain title → `store.put` in working, `$origin-bag` stripped", async () => {
     wiki.addTiddler(new Tiddler({ title: "Shopping List", text: "kalo, poi", "$origin-bag": SLOTS.working }));
     await settle();
     const put = store.puts.find((p) => p.title === "Shopping List");
@@ -99,7 +104,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     expect(put!.fields["$origin-bag"], "the host's provenance stamp persisted as a field").toBeUndefined();
   });
 
-  test.fails("(2) SEAM `change`→saveTiddler: a tiddler whose `draft.of` stands → `store.put` in the draft slot", async () => {
+  test("(2) SEAM `change`→saveTiddler: a tiddler whose `draft.of` stands → `store.put` in the draft slot", async () => {
     wiki.addTiddler(new Tiddler({ title: "Draft of 'Shopping List'", "draft.of": "Shopping List", "draft.title": "Shopping List", text: "" }));
     await settle();
     const put = store.puts.find((p) => p.title === "Draft of 'Shopping List'");
@@ -107,7 +112,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     expect(put!.bag).toBe(SLOTS.draft);
   });
 
-  test.fails("(3) SEAM `change`(deleted)→deleteTiddler: `$tw.wiki.deleteTiddler` → `tombstoneInBag` in the slot the map recorded", async () => {
+  test("(3) SEAM `change`(deleted)→deleteTiddler: `$tw.wiki.deleteTiddler` → `tombstoneInBag` in the slot the map recorded", async () => {
     wiki.addTiddler(new Tiddler({ title: "Draft of 'Gone'", "draft.of": "Gone", "draft.title": "Gone", text: "" }));
     await settle();
     wiki.deleteTiddler("Draft of 'Gone'");
@@ -118,7 +123,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     expect(gone!.bag).toBe(SLOTS.draft);
   });
 
-  test.fails("(4) SEAM `change`→saveTiddler: `$:/temp/*` → the temp store, never a CRDT put", async () => {
+  test("(4) SEAM `change`→saveTiddler: `$:/temp/*` → the temp store, never a CRDT put", async () => {
     wiki.addTiddler(new Tiddler({ title: "$:/temp/scratch", text: "volatile" }));
     await settle();
     const put = store.puts.find((p) => p.title === "$:/temp/scratch");
@@ -158,7 +163,7 @@ describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the ad
     expect(seen.every((v) => v === false), "the guard read raised inside `change` — the trap closed; retire this measurement").toBe(true);
   });
 
-  test.fails("(6) SEAM anchor→store: `$tw.lares.meme.place` (the anchor `meme put`, no target) → its records reach the working store, not `$tw.wiki` alone", async () => {
+  test("(6) SEAM anchor→store: `$tw.lares.meme.place` (the anchor `meme put`, no target) → its records reach the working store, not `$tw.wiki` alone", async () => {
     const receipt = await lares.meme.place(URI, meme(["/a", "/b"]));
     expect(receipt.decision).toBe("ingest");
     expect(wiki.getTiddler(`${URI}#/a`), "the placement never reached the wiki").toBeTruthy();

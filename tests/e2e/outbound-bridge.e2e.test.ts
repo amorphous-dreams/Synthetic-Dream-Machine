@@ -82,8 +82,14 @@ describe.skipIf(gaps.length > 0)("★ the outbound bridge and the daemon mirror,
     expect(got.json?.["ok"], said(got)).toBe(true);
   });
 
-  test.fails("B1 SEAM `change`→saveTiddler: the anchor put reaches the daemon's working store — `meme get --bag wikis/daemon/working` answers", async () => {
-    const got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);
+  test("B1 the bridge (Road B): the anchor put reaches the daemon's working store — `meme get --bag wikis/daemon/working` answers", async () => {
+    // The adaptor's capture debounce (400 ms) then the store put — poll to a deadline, never a fixed nap.
+    const deadline = Date.now() + 20_000;
+    let got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);
+    while (got.json?.["ok"] !== true && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 1000));
+      got = await lar.cli(["meme", "get", uriOf(PATH_A), "--bag", DAEMON_WORKING, "--json"]);
+    }
     expect(got.json?.["ok"], `the anchor placement stands in $tw.wiki alone — ${said(got)}`).toBe(true);
     expect(String((got.json?.["data"] as Record<string, unknown>)["text"])).toContain(`uri-path = "${PATH_A}"`);
   });
