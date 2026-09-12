@@ -182,7 +182,10 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
       await sleep(2_200);                        // past the grace deadline
       expect(existsSync(path), "the recreated carrier survives").toBe(true);
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-trans/);
-      expect(w.log()).not.toMatch(/deletion\(s\) submitted/);
+      // THE COUNT IS THE CLAIM, so the pattern names a NON-ZERO one: `deletion(s) submitted`
+      // alone also matches the `0 deletion(s) submitted` a wave carrying only changes prints,
+      // and a slack assertion holds green over a watcher that tombstones nothing at all.
+      expect(w.log()).not.toMatch(/[1-9]\d* deletion\(s\) submitted/);
     } finally {
       await w.stop();
     }
