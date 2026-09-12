@@ -83,7 +83,13 @@ export function refuseUsage(args: ParsedArgs, door: string, lines: readonly stri
   emit(args, {
     ok:    false,
     error: { code: "usage", message: `lares ${door}: ${detail ?? "unknown sub-verb"}` },
-    human: () => { for (const line of lines) console.error(line); },
+    // BOTH HALVES, BOTH READERS. The hand-rolled refusals printed the reason and THEN the menu; routing
+    // them through the choke point moved the reason onto the machine channel alone, so a person at a
+    // terminal saw what IS valid and never what they typed. A refusal that withholds the cause is a menu.
+    human: () => {
+      if (detail) console.error(`lares ${door}: ${detail}`);
+      for (const line of lines) console.error(line);
+    },
   });
   return exitFor("usage");
 }

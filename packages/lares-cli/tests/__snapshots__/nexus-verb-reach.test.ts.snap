@@ -1,7 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > kahuli usage 1`] = `
-"usage: lares nexus kahuli <engine | grammar>
+"lares nexus kahuli: unknown tier "not-a-tier"
+usage: lares nexus kahuli <engine | grammar>
 
   the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:
     engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device
@@ -14,7 +15,8 @@ exports[`lares nexus — every verb reaches its door > the three usage surfaces 
 `;
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
-"usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>
+"lares nexus: unknown verb "definitely-not-a-verb"
+usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>
 
   seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony
   kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
@@ -38,7 +40,8 @@ exports[`lares nexus — every verb reaches its door > the three usage surfaces 
 `;
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `
-"usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>
+"lares nexus seal: unknown sub-verb "not-a-subverb"
+usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>
 
   seat    form the roster from the personas that DECLARED a Handle + STOOD for a chair, then
           establish the GENESIS epoch over their verifying keys:

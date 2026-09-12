@@ -53,7 +53,9 @@ const USAGE_LINES: readonly string[] = [
   "",
   `  the shelf stands at ${larLibraryHome()} — the shrine that abides, outside every tracked tree and every wipe.`,
 ];
-function usage(args: ParsedArgs): number { return refuseUsage(args, "library", USAGE_LINES); }
+function usage(args: ParsedArgs, typed?: string): number {
+  return refuseUsage(args, "library", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+}
 
 export async function cmdLibrary(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
@@ -65,7 +67,7 @@ export async function cmdLibrary(args: ParsedArgs): Promise<number> {
       case "verify":  return libraryVerify(args);
       case "index":   return libraryIndex(args);
       case "path":    return libraryPath(args);
-      default:        return usage(args);
+      default:        return usage(args, verb);
     }
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);

@@ -61,7 +61,9 @@ const USAGE_LINES: readonly string[] = [
   "    lares persona new 2 --name '<label>' --handle '<declared Handle>' --seat",
   "    lares nexus seal seat",
 ];
-function usage(args: ParsedArgs): number { return refuseUsage(args, "persona", USAGE_LINES); }
+function usage(args: ParsedArgs, typed?: string): number {
+  return refuseUsage(args, "persona", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+}
 
 /**
  * This vessel's persona-slot ceiling. A hearth or leaf carries an operator dial; a Herm carries none and
@@ -110,8 +112,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "admit": return await cmdPersonaAdmit(args);
       default:
         console.error(`lares persona: unknown sub-verb "${sub}"`);
-        usage(args);
-        return 2;
+        return usage(args, sub);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

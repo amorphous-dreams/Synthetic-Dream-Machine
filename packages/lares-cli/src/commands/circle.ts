@@ -58,7 +58,9 @@ const USAGE_LINES: readonly string[] = [
   "  an unmet nym needs its self-certifying HandleCard admitted first — either `circle card <paste>`",
   "  (ahead of time) or `add … --card <file.json>` (inline).",
 ];
-function usage(args: ParsedArgs): number { return refuseUsage(args, "circle", USAGE_LINES); }
+function usage(args: ParsedArgs, typed?: string): number {
+  return refuseUsage(args, "circle", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+}
 
 /** Read the `--to <circle>` option, defaulting to the primary follow circle. */
 function circleOf(args: ParsedArgs): string {
@@ -86,8 +88,7 @@ export async function cmdCircle(args: ParsedArgs): Promise<number> {
       case "list":   return await circleList(args);
       default:
         console.error(`lares circle: unknown sub-verb "${sub}"`);
-        usage(args);
-        return 2;
+        return usage(args, sub);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

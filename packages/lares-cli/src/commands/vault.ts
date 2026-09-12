@@ -47,7 +47,9 @@ const USAGE_LINES: readonly string[] = [
   "",
   `  non-interactive: ${ARCHIVE_PASSPHRASE_ENV} (current) · ${NEW_PASS_ENV} (new) + --yes`,
 ];
-function usage(args: ParsedArgs): number { return refuseUsage(args, "vault", USAGE_LINES); }
+function usage(args: ParsedArgs, typed?: string): number {
+  return refuseUsage(args, "vault", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+}
 
 /** The CURRENT passphrase — env first, else a no-echo prompt. Non-interactive without the env → usage error. */
 async function currentPass(args: ParsedArgs, label: string): Promise<string> {
@@ -173,8 +175,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "repair":  return await vaultRepair(args, daemonUp);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
-        usage(args);
-        return 2;
+        return usage(args, sub);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

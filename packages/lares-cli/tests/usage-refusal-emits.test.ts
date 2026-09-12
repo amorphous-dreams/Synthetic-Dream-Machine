@@ -58,4 +58,24 @@ describe("★ a usage refusal reaches the agent surface ★", () => {
       Object.defineProperty(process.stdout, "isTTY", { value: wasTty, configurable: true });
     }
   });
+
+  test("★ the human is told WHAT THEY TYPED, not only what is valid ★", async () => {
+    // The hand-rolled refusals printed the reason AND the menu; routing them through the choke point
+    // moved the reason onto the JSON channel alone, so a person at a terminal saw what IS valid and never
+    // what they typed. Both readers get both halves.
+    const wasTty = process.stdout.isTTY;
+    Object.defineProperty(process.stdout, "isTTY", { value: true, configurable: true });
+    try {
+      const errs: string[] = [];
+      vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
+      vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+      expect(await dispatch(["library", "zzz-not-a-sub-verb"])).toBe(2);
+      const prose = errs.join("\n");
+      expect(prose, "the reason the refusal happened").toContain("zzz-not-a-sub-verb");
+      expect(prose, "and the menu of what IS valid").toMatch(/usage: lares library/);
+    } finally {
+      Object.defineProperty(process.stdout, "isTTY", { value: wasTty, configurable: true });
+    }
+  });
+
 });
