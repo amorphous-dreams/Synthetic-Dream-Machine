@@ -13,11 +13,22 @@
  * (temp + rename, same dir) so a crash never leaves a torn tree; a
  * missing or corrupt tree degrades to "never projected" (fresh-adoption
  * ingest decisions), which converges, never corrupts.
+ *
+ * ONE FILE, MANY WRITERS. Every projector in the vessel shares this tree: the
+ * daemon island mirrors wikis/daemon + bags/crossroads, each wiki island mirrors
+ * its recipe's bags, and the CLI's ingest gate records packs and confirmed renames.
+ * They live in separate workers and separate processes, so each holds its own map
+ * loaded at open. Persistence is therefore a MERGE, never a whole-map overwrite:
+ * a write re-reads the file and lays only THIS instance's changes over it. A
+ * whole-map write would erase every observation a sibling recorded after our load,
+ * and a bag whose observations vanish reads `new` forever — the echo gate re-lands
+ * it and no deletion is detectable at all (the ingest gate needs a synced hash to
+ * call a vanished path a deletion).
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from "fs";
 import { dirname, join } from "path";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { tagDigest } from "@lararium/mesh";
 
 export function contentHash(text: string): string {
@@ -35,6 +46,11 @@ export function syncedTreeKey(bagId: string, uri: string): string {
 export class SyncedTree {
   private map = new Map<string, string>();   // `${bagId}\0${carrier-root URI}` → sha256 of last-projected bytes (a carrier may project to multiple mirrors)
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** THIS instance's changes since its last persist — the merge delta laid over the
+   *  file's current contents. A hash records an observation, `null` records a removal
+   *  (so a delete lands instead of resurrecting from the sibling-written file). */
+  private journal = new Map<string, string | null>();
 
   /**
    * R2 rename-index — the CONTENT-addressed reverse view: `${bagId}\0${canonical-hash}`
@@ -87,6 +103,7 @@ export class SyncedTree {
     if (prev !== undefined) this.indexRemove(uri, prev);   // the prior value leaves the reverse view
     this.map.set(uri, hash);
     this.indexAdd(uri, hash);                              // the new content enters it
+    this.journal.set(uri, hash);
     this.schedulePersist();
   }
 
@@ -94,6 +111,7 @@ export class SyncedTree {
     const prev = this.map.get(uri);
     if (this.map.delete(uri)) {
       if (prev !== undefined) this.indexRemove(uri, prev);
+      this.journal.set(uri, null);
       this.schedulePersist();
     }
   }
@@ -201,11 +219,33 @@ export class SyncedTree {
     (this.persistTimer as { unref?: () => void }).unref?.();
   }
 
+  /**
+   * Read-merge-write: the file's current contents take our journal on top, so a
+   * sibling writer's observations survive our write and our own removals still land.
+   * The merged result becomes our map (the shared state IS the truth), and the
+   * rename-index rebuilds over it. A torn or absent file merges onto nothing —
+   * the same fresh-adoption degradation the constructor already allows.
+   */
   private persist(): void {
     const dir = dirname(this.filePath);
     mkdirSync(dir, { recursive: true });
-    const tmp = join(dir, `.synced-tree.${process.pid}.tmp`);
-    writeFileSync(tmp, JSON.stringify(Object.fromEntries(this.map), null, 1), "utf-8");
+    const merged = new Map<string, string>();
+    try {
+      const raw = JSON.parse(readFileSync(this.filePath, "utf8")) as Record<string, string>;
+      for (const [k, v] of Object.entries(raw)) merged.set(k, v);
+    } catch { /* absent or torn — merge onto nothing */ }
+    for (const [k, v] of this.journal) { if (v === null) merged.delete(k); else merged.set(k, v); }
+    this.journal.clear();
+    this.map = merged;
+    this.rebuildIndex();
+    // The temp name carries a per-write nonce, not just the pid: island projectors are
+    // worker THREADS of ONE process, so a pid-keyed name is the same name twice and one
+    // rename could carry the other's half-written bytes.
+    const tmp = join(dir, `.synced-tree.${process.pid}.${++SyncedTree.writeSeq}.${randomBytes(4).toString("hex")}.tmp`);
+    writeFileSync(tmp, JSON.stringify(Object.fromEntries(merged), null, 1), "utf-8");
     renameSync(tmp, this.filePath);
   }
+
+  /** Per-process write counter — one half of the temp file's unique name. */
+  private static writeSeq = 0;
 }

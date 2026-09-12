@@ -181,3 +181,61 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     expect(t.get(syncedTreeKey(BAG, "lar:///new.name"))).toBe(h);
   });
 });
+
+describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worker law)", () => {
+  // ONE tree file serves EVERY projector in the vessel: the daemon island mirrors
+  // wikis/daemon + bags/crossroads, each wiki island mirrors its recipe's bags, and
+  // the CLI's ingest gate records packs and renames. They live in SEPARATE workers and
+  // SEPARATE processes, so each holds its own in-memory map loaded at open. A persist
+  // that writes the WHOLE map erases every observation a sibling recorded after that
+  // load — and a bag whose observations vanish reads `new` forever, so the echo gate
+  // re-lands it and NO deletion is ever detectable (deletionsOf needs a syncedHash).
+  const A = "lar:///ha.ka.ba/bags/lares";
+  const B = "lar:///ha.ka.ba/wikis/daemon/working";
+
+  test("a sibling's observation survives another writer's persist", () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    const p = join(dir, "synced-tree.json");
+    const wiki   = new SyncedTree(p, 0);        // the wiki island's projector
+    const daemon = new SyncedTree(p, 0);        // the daemon island's projector, same file
+
+    wiki.set(syncedTreeKey(A, "lar:///a.b.c"), "h-wiki");
+    daemon.set(syncedTreeKey(B, "lar:///verbs/x"), "h-daemon");   // opened BEFORE the wiki wrote
+
+    const onDisk = new SyncedTree(p, 0);
+    expect(onDisk.get(syncedTreeKey(A, "lar:///a.b.c"))).toBe("h-wiki");
+    expect(onDisk.get(syncedTreeKey(B, "lar:///verbs/x"))).toBe("h-daemon");
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a delete still lands across writers — it never resurrects from the file", () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    const p = join(dir, "synced-tree.json");
+    const seed = new SyncedTree(p, 0);
+    seed.set(syncedTreeKey(A, "lar:///gone"), "h1");
+
+    const other = new SyncedTree(p, 0);          // sees lar:///gone at open
+    seed.delete(syncedTreeKey(A, "lar:///gone"));
+    other.set(syncedTreeKey(B, "lar:///kept"), "h2");   // must not resurrect the deleted key
+
+    const onDisk = new SyncedTree(p, 0);
+    expect(onDisk.get(syncedTreeKey(A, "lar:///gone"))).toBeNull();
+    expect(onDisk.get(syncedTreeKey(B, "lar:///kept"))).toBe("h2");
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("two writers persisting in the SAME process never collide on the temp file", () => {
+    // Islands are worker THREADS — one pid, two SyncedTrees. A pid-keyed temp name is
+    // the same name twice; the rename of one can carry the other's half-written bytes.
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    const p = join(dir, "synced-tree.json");
+    const a = new SyncedTree(p, 0);
+    const b = new SyncedTree(p, 0);
+    for (let i = 0; i < 40; i++) { a.set(syncedTreeKey(A, `lar:///a${i}`), `ha${i}`); b.set(syncedTreeKey(B, `lar:///b${i}`), `hb${i}`); }
+    const onDisk = new SyncedTree(p, 0);
+    expect(onDisk.get(syncedTreeKey(A, "lar:///a39"))).toBe("ha39");
+    expect(onDisk.get(syncedTreeKey(B, "lar:///b39"))).toBe("hb39");
+    expect(onDisk.size).toBe(80);
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
