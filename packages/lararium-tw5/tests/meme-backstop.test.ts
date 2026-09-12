@@ -7,7 +7,7 @@
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { startup, name, after } from "../src/modules/meme-backstop.js";
-import { placeMeme, wikiMemeSink } from "../src/place-meme.js";
+import { placeMeme, readMeme, wikiMemeSink } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 
 const URI = "lar:///t/x";
@@ -88,5 +88,78 @@ describe("★ THE TWO DOORS (c): the backstop re-stamps a framed root that lande
     expect(wiki.store.get(URI)?.["text"]).toBe(stranded);
     expect(lines).toHaveLength(1);
     expect(lines[0]).toMatch(/^\[memetic-wikitext\] refused to re-stamp lar:\/\/\/t\/x \(landed via a native write\): /);
+  });
+});
+
+/**
+ * PHASE 5 · THE LEAN COLLIDED — a root re-placed from its own records grades NOTHING.
+ *
+ * The syncer-seams roundtable planned to close the ungated child (seam (b)) by widening this listener:
+ * a slot child that moved re-places its ROOT, and the whole carrier grades as one. The mechanism the
+ * plan named is `placeMeme(root, readMeme(root))`, and it cannot work — not for some inputs, for ANY.
+ *
+ * `readMeme` IS `render(records)`. Handing it back to `placeMeme` computes `render(parse(render(r)))`
+ * and compares it to `render(r)` — the canonical form's own fixed point, reached by construction. The
+ * Confluence gate's equivalence reading therefore answers NOOP whatever the child holds, and the
+ * gradient gate above it sees only bytes the renderer just produced, so it grades `clean` with zero
+ * diagnostics. A tautology cannot report a fault.
+ *
+ * MEASURED over seven child edits, each re-placed through its root: a clean edit, a stray ETX, a
+ * nested `ahu` block, a whole pasted carrier frame, an unclosed `ahu`, a stray closer, and a malformed
+ * meta fence. Seven of seven: `decision=noop`, `grade=clean`, `0 diagnostics`, `0 records landed`,
+ * the record set unmoved.
+ *
+ * So seam (b) stands open and its cure is not this one. A child's save can only be graded against the
+ * CHILD'S OWN AUTHORED TEXT — the bytes that never passed through the renderer — and this package has
+ * no congruence that reads a fragment body as a gradeable unit. That is the operator's call, not this
+ * hand's, and the probe below is the measurement it should be made against.
+ */
+describe("★ PHASE 5 REFUTED: re-placing a root from its records is a fixed point, so it grades nothing ★", () => {
+  const sinkOf = (store: Map<string, TiddlerFields>) => ({
+    allTitles: () => [...store.keys()],
+    getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t)! } : undefined),
+    addTiddler: (f: TiddlerFields) => { store.set(String(f.title), f); },
+    deleteTiddler: (t: string) => { store.delete(t); },
+  });
+
+  /** Every shape a child's text can take that the widening was meant to catch. */
+  const CHILD_EDITS: Record<string, string> = {
+    "a clean edit":            "! a EDITED",
+    "a stray ETX mark":        `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n`,
+    "a nested ahu block":      "! a\n\n<<~ ahu #/z>>\n\n! z\n\n<<~/ahu>>\n",
+    "a whole pasted frame":    meme(["z"]),
+    "an unclosed ahu":         "! a\n\n<<~ ahu #/z>>\n\nno closer\n",
+    "a stray block closer":    "! a\n\n<<~/ahu>>\n\nafter\n",
+    "a malformed meta fence":  "! a\n\n```toml meta\nbogus = [\n```\n",
+  };
+
+  for (const [what, text] of Object.entries(CHILD_EDITS)) {
+    test(`the re-place reads NOOP over ${what} — nothing grades, nothing lands`, async () => {
+      const store = new Map<string, TiddlerFields>();
+      const sink = wikiMemeSink(sinkOf(store) as never);
+      await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
+      const before = [...store.keys()].sort();
+      store.set(`${URI}#/a`, { ...store.get(`${URI}#/a`)!, text });
+
+      const render = await readMeme(URI, sink);
+      const receipt = await placeMeme({ uri: URI, text: render!.text }, sink);
+
+      expect(receipt.decision).toBe("noop");
+      expect(receipt.grade).toBe("clean");
+      expect(receipt.diagnostics).toEqual([]);
+      expect(receipt.landed).toEqual([]);
+      expect([...store.keys()].sort()).toEqual(before);
+      // And the author's bytes stand exactly as written — the one thing the plan got right.
+      expect(String(store.get(`${URI}#/a`)!["text"])).toBe(text);
+    });
+  }
+
+  test("CONTROL · the SAME gate refuses that text at the ROOT's own door, so the gate works and the INPUT is the lie", async () => {
+    const store = new Map<string, TiddlerFields>();
+    const sink = wikiMemeSink(sinkOf(store) as never);
+    const stranded = meme(["a"]).replace(`<<^ code="&#x0003;">>\n`, `<<^ code="&#x0003;">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n`);
+    const receipt = await placeMeme({ uri: URI, text: stranded }, sink);
+    expect(receipt.decision).toBe("refuse");
+    expect(receipt.grade).toBe("error");
   });
 });
