@@ -1,4 +1,17 @@
 title: lar:///ha.ka.ba/lararium/templates/ahu/html
 type: text/vnd.tiddlywiki
 
-<section class="lar-ahu" data-uri=<<currentTiddler>>><header class="lar-ahu-slot"><$link to=<<currentTiddler>>>{{!!slot}}</$link></header><div class="lar-ahu-body"><$transclude $tiddler=<<currentTiddler>> $mode="block"/></div></section>
+<!-- A SECTION WITH NOTHING UNDER IT SAYS THE SAME NOTHING FOR THREE DIFFERENT FACTS.
+
+     unresolved — no record stands at the child's address. A member left alone and the root's call
+                  stayed: the house keeps the pointer and marks it dead (never invented bytes).
+     arriving   — a record stands and holds no `text` field. The poll lands a group skinny in one
+                  batch and fattens it one title at a time; this is that window, named.
+     empty      — a record stands with an empty text. The author wrote nothing, which is a fact too.
+
+     An arriving child HAS a record and a dead one does not, so one reading tells them apart. -->
+<$let _ahu-state={{{ [<currentTiddler>is[missing]then[unresolved]] ~[<currentTiddler>!has:field[text]then[arriving]] ~[<currentTiddler>!has[text]then[empty]] ~[[filled]] }}}>
+<$let _ahu-class={{{ [<_ahu-state>addprefix[lar-ahu lar-ahu-]] }}}>
+<section class=<<_ahu-class>> data-uri=<<currentTiddler>> data-slot-state=<<_ahu-state>>><header class="lar-ahu-slot"><$link to=<<currentTiddler>>>{{!!slot}}</$link></header><div class="lar-ahu-body"><$transclude $tiddler=<<currentTiddler>> $mode="block"/></div></section>
+</$let>
+</$let>

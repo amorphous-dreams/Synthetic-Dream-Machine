@@ -266,17 +266,34 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
   }, 90_000);
 
   // ── (c) a DELETE from the browser ────────────────────────────────────────────────────────────────
-  test.fails("SEAM (c′) deleting a slot child leaves the root's `kahea` DANGLING — the parent never re-cuts", async () => {
+  test("(c′) deleting a slot child leaves the root's `kahea` standing — the SCAR, MARKED", async () => {
     if (!page) return;
     wire = [];
     await drop("lar:///t/a#/b");
     await settle();
     expect(wire).toContain("DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fb -> 204");
     expect(await under("lar:///t/a#/b")).toEqual([]);
-    // MEASURED: the root's shelf text still calls `<<~ kahea ahu #/b>>`, and `GET /memes/` renders that
-    // call UNEXPANDED — the meme carries a call to a record that left.
-    expect((await memeGet("lar/t/a")).body).not.toContain("<<~ kahea ahu #/b>>");
-  }, 60_000);
+    // THE POINTER STAYS. The root never re-cuts — `deserializer.ts:1013` keeps a missing child's marker
+    // (never invented bytes), and a re-cut would move the ROOT's canonical hash and 412 every unrelated
+    // in-flight edit of the same carrier. So the served meme carries the call to the record that left.
+    expect((await memeGet("lar/t/a")).body).toContain("<<~ kahea ahu #/b>>");
+    // AND THE RENDER MARKS IT DEAD. An arriving child HAS a record; a dead one does not, so the slot's
+    // own template reads which nothing it holds — this is the half a reader sees.
+    const html = await page.evaluate(() => {
+      const tw = (globalThis as unknown as { $tw: { wiki: {
+        getTiddler(t: string): { fields: Record<string, string> } | undefined;
+        renderText(o: string, i: string, t: string, opts: unknown): string;
+      } } }).$tw;
+      const text = tw.wiki.getTiddler("lar:///t/a")?.fields["text"] ?? "";
+      return tw.wiki.renderText("text/html", "text/vnd.tiddlywiki",
+        "\\import [all[shadows+tiddlers]tag[$:/tags/Global]!is[draft]]\n" + text,
+        { variables: { currentTiddler: "lar:///t/a" } });
+    });
+    expect(html).toContain("lar-ahu-unresolved");
+    // CONTROL: the sibling that still stands reads as FILLED in the same render.
+    expect(html).toContain("lar-ahu-filled");
+    await laterSaveLands();
+  }, 90_000);
 
   test("(c) deleting a meme root in the browser takes the GROUP with it — `removeMeme`'s law rides the native delete door", async () => {
     if (!page) return;
