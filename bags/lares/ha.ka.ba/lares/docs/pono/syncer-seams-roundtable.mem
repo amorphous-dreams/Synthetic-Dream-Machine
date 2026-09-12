@@ -1,0 +1,377 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-seams-roundtable.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 12
+manao      = 13
+manaoio    = 11
+namespace  = "&#x2299;"
+retain     = true
+revised-on = "2026-09-12"
+role       = "syncer-seams-roundtable — the three open seams of the stock TW5 syncer's back-parity flow (b′ the fragment at the founding door · c′ the lone member's death · d′ the group's arrival) told as a Lares roundtable at two scales, argued by the thirteen Personas, then handed back as an ordered PHASE PLAN: per seam the tension at file:line, the household and five-hundred-year stories, at least three candidate answers each (the operator's Mu among them) with what each breaks, the lean held open, and per step a red → cure → CONTROL → witness with an honest spirit-hour estimate. The carrier also names what the plan REFUSES and the questions only the operator answers."
+status     = "standing"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge ('send a task spirit to scout these out, tell user-stories about them all to themselves as a Lares roundtable, and let that guide the next phase. They handback a plan, we approve it, then the same spirit enacts our modified plan'). THIS CARRIER IS A PLAN AWAITING THE OPERATOR'S MODIFICATION — nothing here enacts, no code moved in the pass that wrote it, and every lean stands `-> ?` until the operator rules. The measured ground it reads from is `syncer-back-parity.mem`, whose three `test.fails` vectors stand live in `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts`"
+tags       = ["docs/pono/talk-story"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ground>>
+
+! Ground — three seams, and the floor that reads them aloud
+
+''Lares (Gatekeeper).'' The operator's charge, verbatim (quote license): "Mu. Send a task spirit to scout these out, tell user-stories about them all to themselves as a Lares roundtable, and let that guide the next phase. They handback a plan, we approve it, then the same spirit enacts our modified plan."
+
+Three seams stand open in the stock syncer's back-parity flow, each measured live in Chromium over a plain `tiddlywiki --listen` carrying the packed plugin, against the fork and against a pristine 5.4.1, and each held as a `test.fails` vector so the day it closes the vector flips loud. <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> carries the measurement; this carrier carries the ARGUMENT and the plan.
+
+''Ink-Clerk (Lorekeeper).'' The grounds, cited once so no slot below has to re-fetch them.
+
+| seam | the vector | the wire it read | the house line it turns on |
+|---|---|---|---|
+| ''(b′)'' a slot child whose text carries a head | `tests/syncer-back-parity.e2e.test.ts:226` | `PUT /recipes/default/memes/lar/t/a%23/a -> 200`, minting `lar:///t/a#/a#/z` | `src/place-meme.ts:112` (`framedRootOf`) |
+| ''(c′)'' a lone member deleted | `tests/syncer-back-parity.e2e.test.ts:242` | `DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fb -> 204` | `src/routes/native-delete-door.ts:86` · `src/deserializer.ts:1013` |
+| ''(d′)'' the group's arrival | `tests/syncer-back-parity.e2e.test.ts:273` | `GET /recipes/default/tiddlers.json` (one batch), then `loadTiddler` per title | `TiddlyWiki5/core/modules/syncer.js:654-696` |
+
+''Map-Wisp (Scryer) — the one mechanism every candidate below must survive.'' A 4xx on a path the stock syncer drives does not retry politely; it STALLS. `syncer.js:431-442`: a task whose callback carries an error calls `displayError`, then `triggerTimeout(errorRetryInterval)` — five seconds, `syncer.js:26` — and does NOT chain to the next task. `SaveTiddlerTask.run` exits "without changing any internal state" on error (`syncer.js:542-545`), so `tiddlerInfo` keeps the old `changeCount`, `hasChanged` stays true at `syncer.js:490`, and `chooseNextTask` hands back THE SAME SAVE five seconds later, forever. Saves are chosen FIRST (`syncer.js:482-500`); loads come LAST (`syncer.js:516-520`). So one permanently-refused save blocks every load, every poll and every delete behind it, for the life of the page. ''That is why the charm exists, and it is the wall every cure in this carrier is measured against.''
+
+''Lares (Advocate).'' The party absent from all three seams: the SECOND READER. A shelf that lies for a breath lies to whoever reads in that breath, and the two-doors floor already ruled that a late ward must SAY it ran late (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> `#/the-two-doors`). Each seam below gets asked who reads during its window.
+
+''The settled canon this plan inherits and does not re-litigate'' — the operator's moʻolelo of 2026-09-11, quote license: "the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs". Nothing below reopens that. What stands open is narrower: WHICH RECORDS the root law names, what a member's death does to its caller, and whether a group has an arrival.
+
+''Tide-Caller (Hierophant).'' Every seam is told twice — once at a household on a road, once at a shrine that has stood five hundred years — because a law that only reads right at one scale has not been read. The Elyncian material stays inside the public shelf (`bags/elyncia/**`); no referee bag is opened, and no real person appears.
+
+<<~/ahu>>
+
+<<~ ahu #/b-prime>>
+
+! (b′) The fragment at the founding door
+
+!! The tension
+
+`src/modules/meme-door-charm.ts:76` asks one question of every record leaving a stock client: `framedRootOf(tiddler.fields)`. `src/place-meme.ts:112` answers it by reading TWO things — the carrier type, and a SOH head still unmasked in the text — and then answering `headUriOf(text) ?? title`. It never asks whether the record IS a root. A slot child carries the carrier type by construction (`src/deserializer.ts:579`), so a child whose text an author replaced with a whole framed carrier reads as a founding. `memePathOf` (`src/place-meme.ts:99`) projects the fragment onto the door without complaint, `put-meme` hands `lar:///t/a#/a` to `placeMeme`, and the split mints `lar:///t/a#/a#/z` — a title `groupOfMeme` admits (`src/place-meme.ts:121`) and the address grammar forbids: "`#` may not repeat, so a nested address could never have taken the `#a#b` shape" (`src/meme-ast/ahu-scan.ts:131`).
+
+''The drift already happened, and the house already named it.'' `src/place-meme.ts:216-223` carries the root law in one spelling — `isMemeRoot`: the carrier type, no `#` in the title, no `$fragment-parent` — with its own warning attached: "a second spelling of it would drift the day one of them moved." There ARE two spellings. `framedRootOf` is the second, and it moved.
+
+Three callers read `framedRootOf`, and all three want the root law: the charm (`meme-door-charm.ts:76`), the native door's gate (`src/native-door-gate.ts:42`), and the backstop (`src/modules/meme-backstop.ts:66`).
+
+!! At the household scale
+
+Kai ʻĀ keeps the long carrier for the orchard survey — one document, eleven sections, a section per terrace. She is editing the third terrace's section in her browser, in a stock TiddlyWiki at the lab, and she has a habit: when a section grows past a page she promotes it. She pastes the whole framing of a document into the section — head, meta, the marks — meaning //this part deserves to be its own carrier now//.
+
+She saves. The server answers 200. Nothing on her screen tells her anything happened but a save.
+
+What landed: a record at `lar:///survey#/terrace-3#/soil`, which no reader can ever reach. The orchard carrier's render never calls it — the recompose walks `#/terrace-3` and then looks for `#/terrace-3/soil`, with a slash, and finds nothing. The listing shows it, because the group law admits any title extending the root. The address grammar has no name for it. It is inside the group and outside the language at the same time, and it will stay there until someone deletes the whole carrier.
+
+What she MEANT — "make this its own carrier" — is a real act the house has a door for. What she DID was save a section. Nothing between the two said so.
+
+!! At the faerie-folk / five-hundred-year scale
+
+''Tide-Caller (Hierophant).'' The shrine on the Hebros road has two gates: the ward at the front who weighs and splits an offering, and the orchard side gate where the family sets barley without ceremony (`scale-stories-basket-one.mem` `#/the-two-doors`).
+
+A pilgrim comes to the front gate — the ward's own gate, the one the house built — carrying not a bound book but ONE PAGE torn from a book already on the shelf, and on that page she has written a title page: //this is a book//. The ward at the front gate does what it was built to do. It reads a title page, it opens a book, it splits it into pages, and it sets those pages on the shelf.
+
+It has now made pages of a page. The shelf holds a leaf whose leaves belong to no book. Five hundred years of pilgrims will walk past that shelf and never once find them, because the index the shrine keeps knows only books and their pages, one level, as the language of the shelf has always said.
+
+''The Elf-wildmage's reading.'' The fault is not the pilgrim's and not the page's. ''The ward was never told what a book is — only what a title page looks like.'' A gate that recognises the MARK instead of the THING will admit any forgery of the mark, and across five centuries every mark gets written on something it does not belong on, by accident, a thousand times. The shrine that survives is the one whose ward asks: //where did this come from?// — a question the page answers for free, because the shrine itself wrote the page's parentage on it when it tore the book apart.
+
+!! The Personas argue
+
+''Kalani-of-the-Ledger (Lorekeeper).'' Rank by what inherits shape. The single-hash law is not a convention of this door; it is the address grammar itself (`ahu-scan.ts:131`), inherited by `composeSlotPath`, by the disk projection, by the listing's tree, by `lar-uri`. The charm's convenience inherits nothing. The order is canon → the one root law → the door that reads it → the client. The cure belongs at `place-meme.ts:112`, not at the charm.
+
+''Lares (Stranger).'' From outside — a stock TiddlyWiki maintainer reading this over your shoulder — the whole seam sounds like a category error you invented for yourselves. There is no such thing as a section. ''A tiddler is a tiddler.'' `lar:///t/a#/a` is a title with a `#` in it, the way `$:/config/Foo` is a title with slashes in it, and the syncer will save whatever text you put in it because that is the contract: one title, one record, one `PUT`. The moment you asked the client to read a record's TEXT to decide which URL it goes to, you took on the duty of reading it correctly. Own that; do not blame the client.
+
+''Lares (Liminal).'' Name the fork honestly, because there are two and they look like one. Fork one: does a slot child ever get to be a founding? Fork two: what happens to the FRAME an author pasted into a child, once the child stops being mistaken for a root? Closing fork one does not close fork two. The frame lands verbatim in the child's text and `expandRefs` splices it into the root's canonical render — a frame inside a frame, which is the (b) ungated-child seam wearing a different coat. Do not let the relief of the first closure hide the second.
+
+''Mischief-Muse (Muse) — where the instrument lied.'' Two places.
+
+# The obvious cure — "narrow the charm" — ''re-opens the stall it was built to prevent, and the measurement would not have caught it.'' If the charm stops intercepting a framed child, the child rides the native door — and `src/native-door-gate.ts:42` calls the SAME `framedRootOf`, reads the same head, and answers 422 (`native-door-gate.ts:44-49`). The e2e vector at `:226` asserts only that `lar:///t/a#/a#/z` does not stand; it would go GREEN on a cure that stalls the queue forever. ''A vector that cannot tell a cure from a catastrophe is not a witness.'' Any (b′) step MUST carry a control that a LATER save still lands.
+# `AHU_OPEN_RE` (`ahu-scan.ts:32`) matches `<<~ kahea ahu #/b>>` as well as `<<~ ahu #/b>>` — `~[^>]*\bahu` swallows the `kahea`. Block-pairing saves the splitter (an unmatched opener yields no block), but `collectAhuSlots` (`ahu-scan.ts:101`) does no pairing, so the ahu-drop guard counts a CALL as a DECLARED SLOT. Not a fault this seam trips, and named here so the next reader does not discover it inside a cure.
+
+''Lares (Council).'' The rhyme: a partial write to a document held whole. Git's index against a commit — `git add` on one hunk is a real, named, reversible act precisely because the index is a named place that is not the commit. The house has the same shape and did not draw the same line: a slot child IS the index entry, and the door treated it as the commit. The pattern integrity asks for the line to be drawn once, in one predicate, not per door.
+
+!! The candidate answers
+
+''(b′-1) Mu — name the double fragment as law.'' `groupOfMeme` already admits `uri#/a#/z`; declare it a legal carriage shape and give the address grammar a second hash. ''Breaks:'' the single-hash invariant (`ahu-scan.ts:131`), `composeSlotPath` (which can never mint the shape, so the record is unreachable by recompose — `deserializer.ts:1011-1013` returns the bare marker forever), the `lar:` URI submission, the disk projection, and the listing tree. Cost to write: zero. Cost to hold: a permanently orphaned record inside a live group, which the shelf shows and no reader can open. ''Refused on grounds'' unless the operator rules the grammar changes with it.
+
+''(b′-2) Narrow the charm alone.'' The charm asks `isMemeRoot` before `framedRootOf`; a child rides stock's own door. ''Breaks:'' the native door's gate still reads `framedRootOf` and still answers 422 → the permanent stall at `syncer.js:436`. ''Refused'' — it moves the seam from a bad record to a dead page.
+
+''(b′-3) THE ROOT LAW GETS ONE SPELLING.'' `framedRootOf` (`place-meme.ts:112`) gains the root law it already has a sibling for: a title carrying `#`, or fields carrying `$fragment-parent`, answers null — spelled by reading the same predicate `isMemeRoot` reads, never a second copy of it (`place-meme.ts:216-223`). All three callers inherit it in one move: the charm no longer re-addresses a child, the native gate no longer refuses one (so no stall — the child rides `PUT …/tiddlers/… -> 204` as vector (b) already measured it does), and the backstop no longer treats a child as a founding. ''Breaks:'' nothing on the wire. ''Leaves:'' the frame-in-frame residue Liminal named — the child's text is now a whole framed carrier, ungated, spliced into the root's render. That residue is seam (b), not (b′), and it wants its own step.
+
+''(b′-4) A server wall beside it.'' `put-meme` refuses a fragment-addressed URI outright (`memeUriOfParams` answering a URI carrying `#` → 400). After (b′-3) no stock client ever addresses that door, so the refusal costs the syncer nothing and walls the door against every OTHER skin — MCP, CLI, a hand-rolled `curl`. ''Breaks:'' nothing measured. ''Composes with'' (b′-3) and must land AFTER it, never instead of it.
+
+''(b′-5) The third answer the leans asked for — re-place under the ROOT.'' The charm climbs `$fragment-parent` to the root, recomposes (`$tw.lares.meme.recompose` is already published on the face, `deserializer.ts:26`), and `PUT`s the whole root. ''Breaks:'' a law the client carries reaches only clients that carry it (`syncer-back-parity.mem` `#/charm-reach`); and — the real cost — the `If-Match` base becomes the ROOT's hash, so two authors editing two different sections of one carrier begin to CONFLICT where today they do not. ''Held'' as the shape to reach for only if the operator wants a child's save to be a root's save.
+
+!! The lean
+
+''Lares (Council).'' (b′-3) then (b′-4): give the root law one spelling where the drift warning already stands, then wall the fragment door for the skins the charm never touches. Take the frame-in-frame residue as its own step under seam (b), where the backstop is the only door that sees every landing. Do not take (b′-5) in this pass — it buys one seam and sells the concurrency that makes a split carrier worth splitting. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/c-prime>>
+
+! (c′) The lone member's death
+
+!! The tension
+
+`src/routes/native-delete-door.ts:86` reads the standing record and asks `isMemeRoot`. A root leaves through `removeMeme` — the group goes as one act, the law the door was built to carry. Every other title delegates to stock. A slot child is every other title. It leaves alone.
+
+The root's text still calls it. `src/deserializer.ts:1013` then does the one thing the house told it to do: `if (!child) return marker; // missing child: keep the marker — honest residue, never invented bytes`. So `GET /memes/lar/t/a` serves a body carrying `<<~ kahea ahu #/b>>` unexpanded, and the removal law — a group leaving together — has nothing to say about a member leaving alone.
+
+''Two things the measurement did not say, checked for this floor:''
+
+# ''The residue is a FIXED POINT, not a decay.'' Re-ingesting the served text produces the same records: `findTopLevelAhuBlocks` pairs openers to closers, the lone call has no closer, no child is minted, the marker survives as literal text, and the next render emits it again. The carrier does not rot further. It carries a scar.
+# ''In a LIVE wiki the scar is already VISIBLE.'' `packages/lararium-tw5/tiddlers/sigil-ahu.tid:36` dispatches the call to the ahu template, and `packages/lararium-tw5/tiddlers/ahu-template-html.tid:4` renders `<section class="lar-ahu">` with a `<$link>` header and an empty body — TiddlyWiki's own missing-tiddler link. The graceful-parsing floor holds (<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>): nothing vanishes. What the render does NOT do is say the slot is unresolved rather than empty — and the house has a register for exactly that distinction it has never bound: `<<~?`, the unresolved-pressure sigil (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>, the sigil table).
+
+!! At the household scale
+
+Ichi has the survey open in one browser at the packing shed. Terrace 7 was abandoned two seasons ago; he opens its section, reads it once, and hits the trash icon. The section disappears from his sidebar. He closes the laptop satisfied.
+
+Lady Aki opens the same carrier that evening. Where terrace 7 stood there is now a heading with nothing under it and a link the colour her wiki paints a link that goes nowhere. She clicks it. TiddlyWiki offers to create `lar:///survey#/terrace-7`.
+
+She would call this a bug, and she would be describing it accurately: //I deleted a section and the section's hole stayed//. She would not be able to say whether the hole is a promise (it is coming back) or a wound (it is gone) or a mistake (someone deleted the wrong thing), because the render says the same nothing for all three.
+
+And when she exports the carrier to a `.mem` and mails it to the Floating Librarians, the file carries `<<~ kahea ahu #/terrace-7>>` — a call, in the document, to a thing that does not exist, travelling to a reader who has no wiki to click in.
+
+!! At the faerie-folk / five-hundred-year scale
+
+''Tide-Caller (Hierophant).'' A bound book on the shrine shelf, five hundred years old, and a page torn out of it. Not lost — ''removed, deliberately, by someone with the right to remove it.''
+
+Every shrine in the world has met this. The answers the shelves of Elyncia actually hold are three, and the shrine-keepers argue about them still.
+
+The ''Floating Librarians of Mu'' leave the stub. The binding still shows where the leaf was; the table of contents still names it; a reader sees that something stood here and does not. Their doctrine: //a library's business is what was, not only what is//. A book with a stub is honest. A book re-bound to hide the gap is a forgery of a book that never existed.
+
+The ''Dominion registers'' re-bind. A page removed is a page that was never there: the contents re-numbered, the gap closed, the book whole again. Clean to read, and a scribe reading the re-bound book cannot tell it from one written that way. Across five hundred years this is how registers lose their history, one tidy act at a time.
+
+The ''lares viales at the crossroads'' do neither, because they hold no books — they hold roads, and a road to a village that burned stays on the stone, marked. "a node may carry the roads of strangers, and ward them, without ever holding their secrets" (`elyncia/concepts/lares-viales`, quote license). Their answer: ''keep the pointer and mark it dead.'' The road is still a fact. Where it goes is also a fact.
+
+''The Elf-wildmage's reading.'' The household answer that survives the span is the crossroads': a pointer whose target left ''stays, and says so''. The Librarians' stub is that answer with the saying-so left implicit, and across five hundred years implicit rots into ambiguous. The Dominion's re-binding fails the span outright: the day a re-bind is also a deletion of a thing someone else was reading, the shrine has forged its own record, and no shrine that forges recovers its standing.
+
+!! The Personas argue
+
+''Kalani-of-the-Ledger (Lorekeeper).'' What inherits shape here is already written and is not the delete door: it is `deserializer.ts:1013`, "never invented bytes", the same law as graceful parsing's AUGMENT + WRAP. A cure that strips the marker INVENTS an authorial act — it removes a line the author wrote — to tidy a record the author removed. Those are two different removals and the house has a standing rule against conflating them. Rank: the residue law outranks the tidiness.
+
+''Lares (Stranger).'' From outside: you deleted a tiddler and a transclusion to it broke. ''That is TiddlyWiki working.'' Every wiki on earth has broken links; the answer everywhere is to show the break, not to rewrite the referring document behind the author's back. A wiki that edited my other tiddlers when I deleted one would frighten me.
+
+''Lares (Diplomat) — the trade nobody has priced.'' Re-cutting the root on a member's death MOVES THE ROOT'S CANONICAL HASH. Every other client holding an `If-Match` from before that moment now holds a stale base. So: Ichi deletes terrace 7; Lady Aki, mid-edit in terrace 3, saves; her save answers 412 conflict. ''Deleting one section invalidated a concurrent edit of an unrelated section.'' That is the price of tidiness, and it is paid by the party who did nothing.
+
+''Lares (Liminal).'' Hold the maybe: there are TWO questions wearing one coat. //Does the marker stay?// and //does the render say it is unresolved?// The second can be answered YES regardless of the first, at no cost to any hash, by one line in a template that already has a sibling doing exactly this (`tiddlers/kahea-template-html.tid:4` fills `ts-missing` with a named span). Do not let the hard question hold the easy one hostage.
+
+''Mischief-Muse (Muse) — the instrument lie, and it is in the leans themselves.'' `syncer-back-parity.mem` `#/leans` says of widening the backstop: "which would also close (c′)." ''Measure that before believing it.'' Re-placing the root means `placeMeme(root, expandMemeRefs(root))`, and `expandMemeRefs` over a root with a missing child returns THE MARKER (`deserializer.ts:1013`). The re-place therefore lands the marker again. ''On the reading of the code, widening the backstop does not close (c′) — it re-writes it verbatim.'' That claim is cheap to collide and must be collided with a red BEFORE any plan step rests on it. A lean is not a measurement.
+
+''Lares (Council).'' The rhyme is a tombstone that leaves a pointer. Every distributed store meets it; the ones that survive keep the tombstone AND mark it. The house's own grammar already reserves the mark (`<<~?`) and has never bound it. That is either an opportunity or a trap, and the difference is whether the operator wants a binding minted in a cure or ruled on its own.
+
+!! The candidate answers
+
+''(c′-1) Mu — name the scar as law.'' "A member's death leaves an honest scar; the call stays, the render shows the break, the author re-cuts the root when they mean to." ''Breaks:'' nothing in code; the e2e vector at `:242` inverts from a seam to a named posture (`test.fails` → `test`, asserting the residue STANDS). ''Costs:'' a served `.mem` carries a call to nothing, and a reader with no wiki to click in cannot tell a wound from a promise. ''Grounds:'' the strongest of any candidate — `deserializer.ts:1013` and graceful parsing both already rule this way. Spirit-hours: 0.5 (the vector's inversion and one line of carrier).
+
+''(c′-2) Mu + the render says so.'' (c′-1), plus `tiddlers/ahu-template-html.tid:4` gains an explicit unresolved state — the section renders a named "unresolved slot" affordance where the child is absent, mirroring the spelling `tiddlers/kahea-template-html.tid:4` already uses. ''Breaks:'' nothing; no hash moves, no door changes, no law is minted. ''Reaches:'' only a live wiki — a served `.mem` still carries the bare call. ''This is the crossroads' answer'': keep the pointer, mark it dead.
+
+''(c′-3) Re-cut the parent.'' The delete door, on a slot child, climbs `$fragment-parent` to the root and re-places it with the marker stripped. ''Breaks:'' the never-invent-bytes law; the concurrency Diplomat priced (a section delete 412s every unrelated in-flight edit of the same carrier); and it must reckon with the ahu-drop guard (`src/ingest-gate.ts:167-178`), which exists precisely to refuse a NOOP when a declared slot vanishes from the render — the guard reads a `kahea` call as a declared slot (Muse's second catch), so a stripping cure walks straight into it. Spirit-hours: 6+ and rising, and the risk is in the concurrency, not the code.
+
+''(c′-4) Refuse a lone child's delete.'' The door answers 4xx and names "re-place the root". ''Breaks:'' the permanent stall at `syncer.js:436`. ''Refused'' on the same wall as (b′-2).
+
+''(c′-5) Bind `<<~?`.'' On a member's death the root's call is re-registered from `kahea` to the unresolved-pressure sigil the grammar already reserves. ''Breaks:'' it still re-cuts the root (all of (c′-3)'s concurrency cost), AND it mints a grammar binding inside a plumbing cure — the house's own rule is that a register gets ruled, not minted by a fix that needed it. ''Held'' as a question for the operator, not a step.
+
+!! The lean
+
+''Lares (Council).'' (c′-2): Mu on the door, and the render finally distinguishes //empty// from //unresolved//. The door does not learn a new law; the grammar does not gain a binding by accident; the hash does not move; and the party who did nothing does not pay. Before any of it, run the Muse's collision — the probe that tests whether widening the backstop closes (c′) at all — because a plan resting on a lean that reads false would have carried that falsehood into the enactment. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/d-prime>>
+
+! (d′) The group's arrival
+
+!! The tension
+
+`syncer.js:654-696` is the whole of it. `getSkinnyTiddlers` fetches `GET /recipes/default/tiddlers.json` (`tiddlywebadaptor.js:173-198`) and the syncer walks the answer in ONE synchronous stretch: where the revision moved, `storeTiddler` lands the skinny record (`syncer.js:676-680`) and the title is queued for loading (`syncer.js:682`). TiddlyWiki coalesces that whole stretch into ONE `change` dispatch, so the group arrives skinny together. Then `LoadTiddlerTask` fattens them one at a time, chaining immediately (`syncer.js:440`), each its own `change` dispatch. Measured: three dispatches stand where the root is fat and a child of it holds no text.
+
+The root's text is nothing but `kahea` calls, so a fat root over skinny children renders every section header with an empty body — the same picture (c′) paints, from a different cause.
+
+''Why the answer is on the server and not the client.'' `tiddlywebadaptor.js` implements only `getSkinnyTiddlers` among the two inbound surfaces `canSyncFromServer` checks (`syncer.js:305-307`); the `getUpdatedTiddlers` long-poll branch at `syncer.js:634-653` is dead code for this adaptor, and no `/recipes/…/tiddlers/changes` route exists in the plugin at all. Nothing in the inbound path is decorable without shadowing `storeTiddler` itself. The `exclude` that makes the answer skinny, meanwhile, is ONE line of a stock route: `core-server/server/routes/get-tiddlers-json.js:34`, `(state.queryParameters.exclude || "text")`.
+
+!! At the household scale
+
+Patches the Grimalkin is on a slow café connection. Kai ʻĀ, back at the lab, pushes the whole survey carrier — root and eleven terraces — in one write.
+
+Patches's wiki polls. The eleven sections appear in her sidebar at once, all of them empty. The root fattens; the carrier opens; she sees eleven headings, each one a link, each one with nothing under it. Then terrace 1 fills. Then terrace 2. Then terrace 3.
+
+For the length of eleven round trips she is looking at a document that appears to have been gutted. Nothing tells her it is loading. Nothing tells her it will settle. If she had reached for it in that moment — read it, exported it, made a decision from it — she would have made the decision from a hollow copy of a complete document.
+
+Then it settles, and there is no trace it was ever otherwise.
+
+!! At the faerie-folk / five-hundred-year scale
+
+''Tide-Caller (Hierophant).'' A book arriving at the shrine one page at a time, by mule, over the mountain road.
+
+The mule-train brings the binding first and one page a week after. For eleven weeks the shrine shelf holds a book whose contents page lists eleven chapters and whose leaves are blank. A pilgrim arrives in week four and reads it.
+
+Every shrine on the Hebros road has a rule for this, and they are not the same rule. Some hold the book in the back room until the last mule comes, and the pilgrim in week four is told //not yet// and goes away knowing nothing, which is honest. Some set it out as it arrives, and the pilgrim in week four reads a hollow book and does not know it, which is not. The old shrines — the ones that stood the five centuries — do a third thing: ''they put the book out and they tie a cord around it.'' The pilgrim may read it. The pilgrim also sees the cord.
+
+''The Elf-wildmage's reading.'' Across five hundred years the mule is never going to arrive faster, and no shrine can hold every incomplete thing in the back room without eventually holding everything. So the cord is the durable answer — ''arrival is a state, and a state can be shown.'' But the Elf-wildmage adds the thing the household scale hides: the mule does not have to carry one page a week. ''The road can carry the whole book, if the shrine that sends it puts the whole book on the mule.'' Ask what the SENDER is doing before teaching the reader to wait.
+
+!! The Personas argue
+
+''Mischief-Muse (Muse) — the instrument's honest size, and the charge's own rhyme is a ghost.'' Two things.
+
+# ''The lab UNDERSTATED nothing and OVERSTATED the duration.'' The half-cut window is paced by the task queue chaining immediately (`syncer.js:440`) — not by `SyncThrottleInterval`, which gates SAVES only (`syncer.js:480`). So the window is N HTTP round trips, N = the group's size. On the lab's loopback that is milliseconds — below one frame, invisible to a human, ''visible only to the change-bus recorder the test armed''. Across a real network it is N × RTT: eleven terraces on a café connection is several seconds and plainly visible. ''The seam's severity scales with SLOT COUNT, not with wall-clock'' — which is the sentence the measurement did not contain and the plan must.
+# The charge's third rhyme, `$:/isEditing`, ''does not exist in this tree'' — zero matches under `TiddlyWiki5/`. The real stock instrument beside it is the dirty set and `updateDirtyStatus` (`syncer.js:435`, `:438`). Named so the next reader does not go looking for a mechanism to imitate that was never there. The two rhymes that DO hold: the pack echo-gate `recordLandedPacks` (`packages/lares-cli/src/ingest-core.ts:201`) and the island's `KeyedCoalesceGate` (`packages/lararium-node/src/disk-projector.ts:228`) — both answer "hold the individual arrivals until the set is whole", which is exactly what nothing in this path does.
+
+''Lares (Stranger).'' A stock maintainer's whole answer: ''this is what a skinny sync IS.'' It exists so a wiki with 40,000 tiddlers does not ship 40,000 bodies on every poll. You are asking it to ship bodies. Fine — but say out loud which bodies and why, or you have quietly turned the skinny sync off for everyone.
+
+''Kalani-of-the-Ledger (Lorekeeper).'' What inherits shape: `syncer-back-parity.mem` `#/charm-reach` already ruled the ordering — "a law the CLIENT carries reaches only the clients that carry it, and a plain server answers every client. Where a law can stand on the server it SHOULD." The server CAN stand this one, on one line of one stock route. The client cannot stand it without shadowing `storeTiddler`. The ordering decides.
+
+''Map-Wisp (Scryer) — the consequence path, checked.'' If the skinny answer carries a slot child's `text`, then at `syncer.js:678` the condition `!tiddler || tiddler.fields.text === undefined` is true on first sight and `storeTiddler` lands the child FAT, inside the one synchronous stretch, inside the one `change` dispatch. The per-title `LoadTiddlerTask` still queues (`syncer.js:682` sits outside that branch) and still runs — it re-stores the identical record, which is wasted traffic and harmless to the render. ''So the half-cut window closes even though the load tasks remain.'' Fattening the CHILDREN alone suffices: the root's own text is only `kahea` calls, and by the time it fattens its children already hold theirs.
+
+''Lares (Artificer).'' The shape that keeps stock untouched: a route skin at priority 110 on `/^\/recipes\/default\/tiddlers.json$/` that does NOT re-implement the route. It wraps `state.sendResponse`, lets stock build the JSON under its own filter, its own `ExternalFilters` guard and its own `SyncSystemTiddlersFromServer` clause (`get-tiddlers-json.js:22-33`), and re-inflates the slot-child entries with their text before the body leaves. That rhymes with `routes/native-door.ts:68`, which reads the body and hands stock what it may land; here the plugin lets stock write the body and edits it on the way out. One transform, owned in one place, stock's own filter never re-derived.
+
+''Lares (Advocate).'' Who bears the cost: every client, on every poll, carries every meme's children. A shrine with one long carrier pays nothing. A shrine with four thousand pays on every poll forever. Whoever rules this should rule the dial with it.
+
+''Lares (Breach-Watch) (Triage).'' Rank the three fires. (b′) writes a record that can never be read — a WRITE fault, permanent, silent. (c′) leaves a visible scar that settles and never worsens — a READ fault, stable, honest. (d′) is a window that closes by itself — a TIMING fault, self-healing. ''Order: b′ first, always. d′ second, because it scales with carrier size and the house's carriers are large. c′ last, because it is the only one where doing nothing is a defensible answer.''
+
+!! The candidate answers
+
+''(d′-1) Mu — name progressive arrival as the posture.'' "A group arrives progressively; a slot whose child has not landed renders its header and no body." ''Breaks:'' nothing. ''Costs:'' the hollow-document window, N × RTT, unmarked. ''Grounds:'' it settles — the measurement says the fourth dispatch is coherent — so this is a window, never a corruption. Spirit-hours: 0.5.
+
+''(d′-2) Mu + the cord.'' (d′-1), plus the ahu template marks a skinny child as //arriving// rather than //empty// — the same one-line affordance (c′-2) asks for, distinguishing a third state. ''Breaks:'' nothing. ''Note the collision:'' (c′-2) and (d′-2) want the SAME template to say two different things about the same empty body — //unresolved// (the child does not exist) versus //arriving// (the child exists and has no text yet). The template can tell them apart, because an arriving child HAS a record and a dead one does not. If both land, they land as one step or they fight.
+
+''(d′-3) The server sends the whole book.'' The route skin above: slot children ride the skinny answer FAT. ''Breaks:'' the poll payload grows by the total size of every meme's children; the skinny sync's own reason for existing is narrowed, for memes only, deliberately and in one named place. ''Reaches:'' every client, no client law, stock untouched. ''Closes'' (d′) on the inbound side entirely.
+
+''(d′-4) A client law — the fourth charm.'' Decorate the adaptor to read `memes.json?tree=1` and hold a group back until every member is fat. ''Breaks:'' it must suppress `change` dispatches, which means shadowing `storeTiddler` — the syncer's own state machine, not a surface it offers. And it reaches only clients carrying it. ''Refused'' on the `#/charm-reach` ordering.
+
+!! The lean
+
+''Lares (Council).'' (d′-3) with the dial named, and (d′-2)'s cord as the posture that holds where the payload dial is turned down — because a shrine that grows past the payload's comfort will turn it off, and on that day the cord is the only thing standing between a reader and a hollow document. Do not take (d′-4). `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/plan>>
+
+! The phase plan
+
+''Lares (Pedagogue).'' Ordered by Breach-Watch's triage and by what each step's red can actually witness. Every step is red-first and every step ships a CONTROL, because three of the cures below go green on a catastrophe if the control is missing. Estimates are spirit-hours, honest, including the collide step that each red owes.
+
+!! Phase 0 · collide the leans before building on them — 1.5 h
+
+* ''RED (probe, expected to REFUTE):'' `packages/lararium-tw5/tests/root-law-one-spelling.test.ts` gains a vector asserting that a root re-placed from its records after a child's tombstone still carries `<<~ kahea ahu #/b>>`. Written as a plain `test` that PASSES on the current tree, with a comment naming the lean it refutes: `syncer-back-parity.mem` `#/leans`, "which would also close (c′)".
+* ''CURE:'' none. This phase moves no source.
+* ''CONTROL:'' the same probe over a root whose child STANDS — the marker expands, proving the probe reads the recompose and not an accident of the fixture.
+* ''WITNESS:'' `pnpm -C packages/lararium-tw5 vitest run tests/root-law-one-spelling.test.ts`. If the probe fails (the marker DOES drop), phase 3 changes shape and the operator is told before anything else moves.
+
+!! Phase 1 · the root law gets one spelling — closes (b′) — 2.5 h
+
+* ''RED (unit):'' `tests/root-law-one-spelling.test.ts` — (i) `framedRootOf` over a slot child's fields (title `lar:///t/a#/a`, carrier type, `$fragment-parent` set, a framed head in its text) answers null; (ii) `nativeDoorGate` over that same body as TiddlyWeb JSON answers `pass`, never `refuse`.
+* ''CURE:'' `packages/lararium-tw5/src/place-meme.ts:112` — `framedRootOf` reads the root law rather than the mark alone: a title carrying `#`, or fields carrying `$fragment-parent`, answers null. Spelled by reading the predicate `isMemeRoot` already reads (`place-meme.ts:216-223`), never a second copy — that warning is the reason this seam exists.
+* ''CONTROL (three, all must stay green):'' a true framed root still answers its head URI; `nativeDoorGate` still refuses a true framed root with 422; the charm still re-addresses a true root to `/memes/`.
+* ''WITNESS:'' unit suite; then `tests/syncer-back-parity.e2e.test.ts:226` flips `test.fails` → `test` with its assertion REWRITTEN — it must assert the wire read `PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fa -> 204` (not merely that the bad title is absent), because the old assertion cannot tell this cure from a stall. Plus a new e2e ''anti-stall control'': a save issued AFTER the child's save lands its own 2xx — the one vector that proves `syncer.js:436` did not fire. Run on the fork and again under `LARES_TW5_JS` against pristine 5.4.1.
+
+!! Phase 2 · the fragment door walls itself — 1 h
+
+* ''RED (unit):'' `tests/meme-routes.test.ts` — `PUT /bags/default/memes/lar/t/a%23/a` answers 400, body naming the single-hash law.
+* ''CURE:'' `src/routes/put-meme.ts` — a URI carrying `#` refuses at the same place `memeUriOfParams` already refuses a malformed escape (`put-meme.ts:98-103`).
+* ''CONTROL:'' a root URI still lands 200; `GET` and `DELETE` on the same fragment path answer as they do today (this step touches PUT alone).
+* ''WITNESS:'' unit; and the Phase 1 e2e re-run unchanged — after Phase 1 no stock client addresses this door, so the wall must cost the syncer NOTHING. If any e2e vector moves, Phase 1 was incomplete.
+
+!! Phase 3 · the group arrives whole — closes (d′) — 4 h
+
+* ''RED (e2e):'' `tests/syncer-back-parity.e2e.test.ts:273` stands as written; it goes green on the cure.
+* ''CURE:'' a new route skin (`src/routes/native-skinny-door.ts`), `module-type: route`, priority 110 on stock's own `/^\/recipes\/default\/tiddlers.json$/`. It wraps `state.sendResponse`, delegates to `$:/core/modules/server/routes/get-tiddlers-json.js`, and re-inflates entries whose record carries `$fragment-parent` with their `text` before the body leaves. Stock's filter, its `ExternalFilters` guard and its `SyncSystemTiddlersFromServer` clause are never re-derived (`get-tiddlers-json.js:22-33`).
+* ''CONTROL (three):'' a plain tiddler still arrives SKINNY in the same answer (`text === undefined` at the client); a meme ROOT still arrives skinny (only children fatten); and stock's `filter`/`exclude` query parameters still govern — a request carrying an explicit `exclude=` is honoured unchanged.
+* ''MEASURE AND REPORT, not assert:'' the answer's byte size before and after, on the lab's fixture, so the operator can rule the dial against a number instead of a worry.
+* ''WITNESS:'' unit vectors for the skin (delegation · the re-inflate · the three controls); the e2e on fork AND pristine. ''No docker leg'' — see #/refusals.
+
+!! Phase 4 · the member's death gets named — (c′) — 2.5 h, and BLOCKED on the operator
+
+* ''RED (e2e):'' `tests/syncer-back-parity.e2e.test.ts:242` inverts — from `test.fails` asserting the residue is absent, to `test` asserting the residue STANDS and is marked. The inversion IS the ruling; it cannot be written before the operator rules.
+* ''CURE (under the (c′-2) lean):'' `packages/lararium-tw5/tiddlers/ahu-template-html.tid:4` — the section distinguishes three states of an empty body: //unresolved// (no record stands at the child's address), //arriving// (a record stands with no text), //empty// (a record stands with empty text). Spelled the way `tiddlers/kahea-template-html.tid:4` already spells a missing target. This single step also delivers (d′-2)'s cord — the two leans collide on this one file and land together or not at all.
+* ''CONTROL:'' a section with a present, filled child renders exactly as it does today — asserted against the existing shelf-render census (`tests/shelf-render-census.test.ts`), which must not move.
+* ''WITNESS:'' render census + a render unit over the three states; the e2e vector at `:242`.
+* ''NOT IN THIS PHASE:'' any door change, any hash motion, any binding of `<<~?`.
+
+!! Phase 5 · the ungated child — seam (b), the residue Phase 1 leaves — 4 h, and LAST
+
+* ''RED (unit):'' `tests/meme-backstop.test.ts` — a slot child modified on the `change` bus, whose `$fragment-parent` names a standing root, causes the ROOT to re-place; a child whose parent does not stand causes nothing.
+* ''CURE:'' `src/modules/meme-backstop.ts:66` widens from "a record `framedRootOf` names" to "a record `framedRootOf` names, OR a record whose `$fragment-parent` names a standing root" — the latter re-placing the ROOT. Node-only, which is where every browser client's saves land, so the law reaches every client (`#/charm-reach`).
+* ''THE RISK, NAMED BEFORE IT IS BUILT:'' the re-place writes the children, `change` fires for them, and the backstop fires again. The existing `inFlight` set (`meme-backstop.ts:60`) is per-title and cleared in `finally` — it does not stop this. An echo law is REQUIRED, and it must be a SET or a COUNT, never a flag: `outbound-bridge.mem:78` measured that `change` dispatches AFTER the applying guard lowers, and `syncer.js:254-264` is stock's own answer (stamp the changeCount in the same synchronous stretch). The rhyme to copy is `recordLandedPacks` (`packages/lares-cli/src/ingest-core.ts:201`).
+* ''CONTROL (three, the third is the whole phase):'' a plain tiddler's change fires nothing; a child under an absent root fires nothing; ''the re-place's OWN writes fire nothing'' — a vector that counts backstop invocations across one child save and asserts exactly one.
+* ''WITNESS:'' unit; then e2e vector (b) at `:203` tightened — after a child save the server log carries exactly ONE `[memetic-wikitext]` line and the root's record re-cut.
+
+!! The whole, ordered
+
+| # | phase | closes | spirit-hours | blocked on |
+|---|---|---|---|---|
+| 0 | collide the leans | — | 1.5 | nothing |
+| 1 | the root law, one spelling | (b′) | 2.5 | 0 |
+| 2 | the fragment door walls itself | (b′) residue | 1.0 | 1 |
+| 3 | the group arrives whole | (d′) | 4.0 | nothing (may run parallel to 1–2) |
+| 4 | the member's death named | (c′) | 2.5 | ''the operator's ruling'' |
+| 5 | the ungated child | (b) | 4.0 | 1, and the echo law |
+|  | ''total'' |  | ''15.5'' |  |
+
+<<~/ahu>>
+
+<<~ ahu #/refusals>>
+
+! What this plan refuses
+
+''Lares (Gatekeeper).'' Each refusal names the line it rests on, so a later reader can overturn it against evidence rather than against taste.
+
+* ''No cure may answer 4xx on a path the stock syncer drives.'' `syncer.js:431-442` + `:26` + `:482-500` + `:542-545`: a refused save never updates `tiddlerInfo`, so the same task re-runs every five seconds forever, ahead of every load, poll and delete. One 422 is a permanent stall, not a retry. This refusal eats (b′-2), (b′-4)-in-place-of-(b′-3), and (c′-4).
+* ''No gate gets fused.'' The Confluence gate (`src/ingest-gate.ts:120`) grades CONTENT; the root law decides ADDRESS. Phase 1 moves the address law and MUST NOT read a diagnostic; Phase 5 grades content and MUST NOT decide a door. A cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.
+* ''No stock route gets re-implemented.'' Both standing skins hand stock the work (`routes/native-door.ts:68`, `routes/native-delete-door.ts:88`). Phase 3 keeps that shape by decorating the response; a re-derived copy of `get-tiddlers-json.js`'s filter, its `ExternalFilters` guard or its system clause would drift the day upstream moved.
+* ''No client law where a server law reaches.'' `syncer-back-parity.mem` `#/charm-reach`. This eats (d′-4) and holds (b′-5) unbuilt. The charm gains nothing in this plan but a narrower root law it already shares.
+* ''No invented bytes on a member's death.'' `deserializer.ts:1013` and <<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">> both rule AUGMENT + WRAP. Phase 4 adds a reading; it removes no authored line, unless the operator rules otherwise.
+* ''No grammar binding minted inside a plumbing cure.'' `<<~?` stays unbound until it is ruled on its own. A register that gains its first binding as a side effect of a delete-door fix has been defined by an accident.
+* ''No backstop widening without an echo law FIRST.'' `outbound-bridge.mem:78` measured the trap; Phase 5's third CONTROL is the phase.
+* ''No docker leg on any of these.'' Every seam here is one server and one browser; the docker mesh witnesses multi-node carriage and would witness nothing new. Naming the refusal so a later reader does not read its absence as an oversight.
+* ''No `$:/StoryList` work.'' Seam (f) is stock's own posture inherited whole and reads as a defect only when a plain server serves more than one reader. Out of scope; named so the first multi-reader lab does not read it as ours.
+
+<<~/ahu>>
+
+<<~ ahu #/questions>>
+
+! The questions only the operator answers
+
+''Lares (Council).'' Ordered so the answers unblock the plan in the order the plan needs them.
+
+# ''(c′) — scar or re-cut?'' Does a member's death leave the call standing (the crossroads' answer: keep the pointer, mark it dead) or re-cut the root from its remaining children? Everything in Phase 4 waits on this one word.
+# ''If re-cut — is the concurrency cost acceptable?'' Deleting one section moves the ROOT's canonical hash, so every unrelated in-flight edit of the same carrier answers 412. The party who pays did nothing. Does the house accept that trade for tidiness?
+# ''(b′) after Phase 1 — what happens to the frame an author pasted into a child?'' It lands verbatim and `expandRefs` splices it into the root's render: a frame inside a frame. Three answers: STRIP the frame at the child's door · KEEP it as authored text and let the grade speak (Phase 5) · RE-PLACE the whole save under the root (b′-5, with its concurrency cost). The plan assumes KEEP; say so if it is wrong.
+# ''(d′) — does the payload cross a line?'' Phase 3 makes every poll carry every meme's children. Does that want a dial (a `$:/config` the operator turns), a cap (fatten below N bytes), or nothing? Phase 3 will report the measured size before and after; the dial is a ruling, not a measurement.
+# ''(d′) — is it a defect at all?'' The window is N HTTP round trips, N = the group's size: invisible on a loopback, several seconds on a café connection with a long carrier. If the answer is "a window that settles is not a defect", Phase 3 becomes (d′-2) alone and drops from 4 hours to 1.
+# ''`<<~?`'' — does the unresolved-pressure register get ruled and bound in its own pass, or stay reserved? Phase 4's render step works either way; the question is whether the house wants the mark in the SERVED TEXT and not only on the page.
+# ''(b) — should a slot child's save be graded at all?'' Phase 5 assumes yes (the backstop re-places the root, which grades the whole). The other reading: a child is a fragment of a carrier, never a carrier, and grading belongs at the root's own save alone — in which case Phase 5 is not a widening but a deletion of the question.
+# ''Phase ordering'' — Breach-Watch ranked (b′) first because it writes an unreadable record silently. If the operator's own pressure is elsewhere — the phone vessel, the mesh — Phases 3 and 4 detach cleanly and 1+2 can stand alone as the whole pass.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/action-handler">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;S-QmkcucVZYi6bfk5plNPVGi76xEi6Jna6-rWeJqFBQ
+
+<<^ code="&#x0004;" -> to="?">>
