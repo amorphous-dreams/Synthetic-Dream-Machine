@@ -14,7 +14,7 @@ retain     = true
 revised-on = "2026-09-11"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
 status     = "standing"
-status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 and the moʻolelo stands inline at #/exit; the enactments ride their own commits"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits"
 tags       = ["docs/pono/talk-story"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
@@ -149,6 +149,20 @@ The Elf-wildmage reads it so. ''A ledger registered in a private chest outlives 
 !!! The lean the stories point at
 
 Registering in each vessel's `@catalog` keeps the copies sovereign and lets them drift, which reads as the pono lean for nothing shared. Registering at `@crossroads` lets the world name the doc, which reads as the pono lean for the ford's existence and never for its count. Registering in the realm's shared CRDT gives the bag a roof that outlives both stewards and a read-set exactly as wide as the two households, which reads as the pono lean the fiction chose. `-> ?`
+
+
+!!! Moʻolelo — the realm leg, ruled 2026-09-12
+
+<<~ moolelo held="the Nexus decides whether a SOCKET stands (the contract edge); the REALM's own registration decides which DOCUMENTS cross it — read to any CONTRACT-tier holder of that charter, write to keptBy, the PUBLIC tier carried by the Herm by hash; the cabal keeps no roster; 'admit' is a Nexus verb and never decides carriage. Upgrades approved: the realm leg of mayFederate · keptBy charter-aware from day one · registration expiry in realm rolls · the Herm follows the realm's public registrations (operator)">>enacted as the third leg of the one law the reads and writes already walk<<~/moolelo>>
+
+''The four sentences a great-grandchild inherits without the reasons'' — written here because the code will say //what// for five centuries and never //why//:
+
+# ''"Admit" is a Nexus verb.'' It puts a device on the wire. It never decides which of a cabal's documents travel; a house naming its friends is the wrong plane for a book naming its keepers.
+# ''The cabal has no name.'' A compact with a name becomes a thing a Court can summon; a roster of keepers becomes a phone book a Dominion can demand. The registration lives on the book's own realm doc, per book, readable only by charter-holders — there is no place a global list //could// live.
+# ''The Herm holds no cap.'' It carries the public tier by hash and never joins the read set, which is why anyone may run one, seize one, or replace one and the private tier never notices. The line the performance-minded heir will want to cross reads: //holds the HINT, never the read-cap//.
+# ''A book names its keepers.'' `keptBy` and the charter it keys on, never a house's list — so a succession changes nothing about the books, a partition reconnects per book with no reconciliation ceremony, and a book spanning two charters names two charters instead of fusing two realms.
+
+''Held beside it, not yet built'' — ''heraldry.'' A nameless thing on the DreamNet — a cabal, a piece of infra (a Herm, a hearth), a persona behind a veil — reads, from outside, exactly like every other nameless thing; and a True Name that passes between holders (the Dread Pirate Roberts shape: a //role// worn in turn, never a person) reads like an identity when it is a mantle. The operator holds that ''any of them MAY publish a Handle'' — a public Face, a heraldry — through the same quorum-presented name the persona already publishes (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>: k-of-n HandleGlamour, self-certifying card, the KEL chain). A Face is the only outward door (the veil ruling); a Face is not a roster (it names the mantle, never the hands beneath it); a Face may be worn in turn (the KEL's rotate carries the mantle to the next holder, the co-sign threshold keeps a single turned hand from stealing it). What it must never become: a registry of who wears what — the heraldry says //this is the ford-keepers' arms//, never //these are the ford-keepers//. Owed: the design read for a cabal's Handle (who signs its glamour — the `keptBy` set is the natural owner-set) and an infra Handle (a Herm's card, self-certifying, no KEL succession unless the Herm changes hands).
 
 <<~/ahu>>
 
@@ -370,6 +384,6 @@ The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pwxO9zRefl0I2DYcSjf2kA6qCTln8KH43KugbtqbmgU
+<<^ code="&#x0003;">>ni:///sha-256;At6CpDpmqYGH7w_RkA_ekaGDm1ZB3q6JNxPgbRPIWBg
 
 <<^ code="&#x0004;" -> to="?">>
