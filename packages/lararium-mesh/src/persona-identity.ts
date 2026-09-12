@@ -1,5 +1,6 @@
 /**
- * persona-identity — the persona master-seed lifecycle + the two-key atom.
+ * persona-identity — the persona TREE: the path convention, the veiled-user-key derivation, and the
+ * per-circle scope-pseudonym that extends it one level.
  *
  * Doctrine (canon: lar:///ha.ka.ba/lares/api/pono/persona-circle, #the-atom +
  * #composition):

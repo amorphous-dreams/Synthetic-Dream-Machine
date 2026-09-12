@@ -98,7 +98,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
 
   vessel: {
     synopsis:
-      "THE VESSEL DOOR — one namespace over the vessel's own causal island. Six primitives and one " +
+      "THE VESSEL DOOR — one namespace over the vessel's own causal island. Five primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
       "halts it on the port · `clear` wipes the store and re-founds (identity survives) · `seed` plants " +
       "every bags/* holding back into its doc · `read` inspects and starts nothing. Compositions ride " +

@@ -3,7 +3,8 @@
  *
  *   lares nexus kahuli engine    the SLOW ratchet (engineCid = the hearth true-name) — HELD: advancing it
  *                                re-binds membership mesh-wide; the graceful forward-rebind span awaits rulings.
- *   lares nexus kahuli grammar   the FAST ratchet (pluginsCid = the memetic-wikitext composition) — reads the
+ *   lares nexus kahuli grammar   the FAST ratchet (grammarCid = the REQUIRED memetic-wikitext grammar ALONE,
+ *                                held apart from pluginsCid, this operator's own collection) — reads the
  *                                current epoch; --apply composes the bake (held while the live re-bake settles).
  *   lares nexus rite kahuli      the composed overturn, diff-gated + idempotent, the deliberate build's home.
  *

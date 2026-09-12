@@ -14,17 +14,17 @@ import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 // @ts-expect-error — a plain .mjs tool, deliberately importable without a build
 import { sourceDigest as stampDigest } from "../../../tools/stamp-build.mjs";
-import { sourceDigestForTest } from "../src/build-freshness.js";
+import { sourceDigest } from "../src/build-freshness.js";
 
 describe("★ stamp-build and the gate compute ONE digest ★", () => {
   test("both read the same tree to the same hex", () => {
     const dir = join(repoRoot, "packages", "lares-cli", "src");
-    expect(sourceDigestForTest(dir)).toBe(stampDigest(dir));
+    expect(sourceDigest(dir)).toBe(stampDigest(dir));
   });
 
   test("a digest answers to CONTENT — the same bytes hash the same whatever the path order", () => {
     const dir = join(repoRoot, "tools");
-    expect(sourceDigestForTest(dir)).toBe(sourceDigestForTest(dir));
-    expect(sourceDigestForTest(dir)).toBe(stampDigest(dir));
+    expect(sourceDigest(dir)).toBe(sourceDigest(dir));
+    expect(sourceDigest(dir)).toBe(stampDigest(dir));
   });
 });

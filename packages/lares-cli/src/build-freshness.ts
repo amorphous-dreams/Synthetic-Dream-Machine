@@ -80,9 +80,7 @@ const BUILD_LOCK  = join(repoRoot, "node_modules", ".lares-build", "build.lock")
  *
  * Content answers both. Two trees with the same bytes ARE the same build, whatever their clocks say.
  */
-export function sourceDigestForTest(dir: string): string { return sourceDigest(dir); }
-
-function sourceDigest(dir: string): string {
+export function sourceDigest(dir: string): string {
   const h = createHash("sha256");
   const walk = (d: string): void => {
     let entries: Dirent[];

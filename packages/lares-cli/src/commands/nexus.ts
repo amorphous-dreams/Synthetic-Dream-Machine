@@ -95,6 +95,8 @@ function usage(): void {
   console.error("  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition");
   console.error("  refresh                                   re-read the charter and re-fold the boards it names");
   console.error("  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)");
+  console.error("            [--steward <did>…]              also NAME those stewards — the record waits on each one's own co-sign");
+  console.error("            [--cosign]                      consent as a named steward to a standing proposal");
   console.error("  realm-bags                                the bags the realm carries, and who keeps each");
 }
 
@@ -243,10 +245,16 @@ async function cmdNexusRefresh(args: ParsedArgs): Promise<number> {
  */
 async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const bag = args.positional[1];
-  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--index N]"); return 2; }
+  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--steward <did>…] [--cosign] [--index N]"); return 2; }
   const index = args.options["index"] !== undefined ? Number(args.options["index"]) : 0;
+  // `--steward` names a SECOND keeping hand. The record is n-of-n, so naming is a proposal: it stands
+  // unregistered until that hand runs `lares nexus realm-bag <bag> --cosign` on her own vessel.
+  const raw: unknown = args.options["steward"];
+  const stewards = (Array.isArray(raw) ? raw : raw === undefined ? [] : [raw])
+    .map((v) => String(v).trim().replace(/^0x/i, "").toLowerCase()).filter((v) => v.length > 0);
+  const cosign = args.options["cosign"] !== undefined && args.options["cosign"] !== "false";
   try {
-    const r = await runVerb("realm-bag", { bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index }, await vesselDid());
+    const r = await runVerb("realm-bag", { bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index, stewards, cosign }, await vesselDid());
     if (r.status === "error") {
       emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "realm-bag failed" },
                    human: () => console.error(`lares nexus realm-bag: ${r.errorMessage ?? "failed"}`) });
@@ -261,6 +269,12 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
         console.log(`  bag:       ${String(out["bag"] ?? "?")}`);
         console.log(`  kept by:   ${(Array.isArray(out["keptBy"]) ? (out["keptBy"] as string[]) : []).map((n) => `${n.slice(0, 16)}…`).join(", ")}`);
         console.log(`  read tier: ${String(out["readTier"] ?? "?")}  (the contracted cabal reads; the stewards write)`);
+        const awaiting = Array.isArray(out["awaiting"]) ? (out["awaiting"] as string[]) : [];
+        if (awaiting.length > 0) {
+          console.log(`  awaiting:  ${awaiting.map((n) => `${n.slice(0, 16)}…`).join(", ")}`);
+          console.log(`             the record is n-of-n — it stands unregistered until each named hand runs`);
+          console.log(`             \`lares nexus realm-bag ${bag} --cosign\` on her own vessel`);
+        }
       },
     });
     return 0;
@@ -374,9 +388,8 @@ function kahuliGrammar(args: ParsedArgs): number {
     console.error("nexus kahuli grammar --apply — HELD (the overturn's payload is wired next).");
     console.error("  --apply composes the diff-gate → the genesis re-derive (`bakePlan`/`build-genesis-island`,");
     console.error("  the internal primitive — never a `vessel` door) → the mesh-push, which advances the LIVE");
-    console.error("  Nexus's grammar epoch on the DreamNet. Two holds remain: the grammar tier must first narrow");
-    console.error("  to the memetic-wikitext grammar ALONE (other plugins ride separately as @cad caps), and the");
-    console.error("  push rides the same coexistence-span rulings as `kahuli engine`. Ledgered in the kāhuli memory.");
+    console.error("  Nexus's grammar epoch on the DreamNet. ONE hold remains: the push rides the same");
+    console.error("  coexistence-span rulings as `kahuli engine`. Ledgered in the kāhuli onboarding memory.");
     return 2;
   }
 

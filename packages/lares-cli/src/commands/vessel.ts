@@ -9,7 +9,7 @@
  * this door. A door absorbs new capability; a plane with no door has nowhere to put it but the top,
  * and that is how a top-level verb count grows back.
  *
- * ── SIX PRIMITIVES + ONE READ ───────────────────────────────────────────────────────────────────
+ * ── FIVE PRIMITIVES + ONE READ ──────────────────────────────────────────────────────────────────
  * A primitive names ONE motion and cannot be expressed as a sequence of the others. Everything else
  * composes, and a composition earns a pet-name rather than a top-level name:
  *
@@ -120,10 +120,10 @@ const RITES: Readonly<Record<string, { readonly composes: string; readonly run: 
   // expected a hearth reads a crossroads as a broken founding rather than an unlit one.
   founding: { composes: "found · stand · seed", run: runFoundingRite },
   refresh:  { composes: "build · stop · clear · stand", run: cmdRiteRefresh },
-  rebuild:  { composes: "bake · stand",                 run: cmdRiteRebuild },
-  // Rebirth of a STANDING vessel names a real motion, and stop-wipe-bake carries it. A fresh founding
+  rebuild:  { composes: "re-derive · stand",            run: cmdRiteRebuild },
+  // Rebirth of a STANDING vessel names a real motion, and stop-wipe-re-derive carries it. A fresh founding
   // never runs it — nothing stands there to tear down.
-  rebirth:  { composes: "stop · clear · bake · stand · seed", run: cmdRebirth },
+  rebirth:  { composes: "stop · clear · re-derive · stand · seed", run: cmdRebirth },
 };
 
 /**
