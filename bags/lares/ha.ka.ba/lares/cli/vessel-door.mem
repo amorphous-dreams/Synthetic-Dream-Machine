@@ -75,20 +75,25 @@ grows back wherever the law has not reached, and where to look when it does.
 
 <<~ ahu #/the-primitives>>
 
-!! What the door answers — SEVEN primitives
+!! What the door answers — SIX primitives
 
 Every substrate motion in this CLI composes from these, and no composition earns a primitive's seat.
 
 <<~ has Primitive stop "ends a running daemon by port, graceful then forced ~ never a restart in disguise">>
 <<~ has Primitive wipe "pares the vessel store + the projection watermark ~ identity, seal, library and registry stand outside it">>
 <<~ has Primitive build "compiles the workspace and STAMPS the source digest ~ a build that skips the stamp leaves the tree reading stale">>
-<<~ has Primitive bake "re-derives the genesis island from the engine + the packed plugin ~ moves NO identity">>
 <<~ has Primitive found "mints the vessel identity, the persona root, the social planes and the bootstrap ~ idempotent, skips what stands">>
 <<~ has Primitive stand "brings the daemon up, foreground or detached, and reports what it found ~ attach when one already answers">>
 <<~ has Primitive seed "plants every bags holding back into its doc, kind-routed, diff-gated ~ idempotent; a converged tree no-ops">>
 
-''An eighth reads, and belongs beside them'': `read` — the pure inspection that starts nothing (bootstrap
+''A seventh reads, and belongs beside them'': `read` — the pure inspection that starts nothing (bootstrap
 presence, storage size, port, seal state, personas, quorum).
+
+''RE-DERIVING THE GENESIS ISLAND IS NOT A DOOR.'' Advancing the composition (the engine, the memetic-wikitext
+grammar) is a MESH act that goes out past a single vessel — it rides `nexus kahuli`, the engine/grammar
+ratchet. The LOCAL re-derive survives only as an internal step of the rebuild/rebirth rites and the
+`build:genesis` build script; the single-vessel `bake` door retired (no alias), and other plugins ride
+separately as `@cad` caps rather than folding into the grammar ratchet.
 
 <<~/ahu>>
 
@@ -112,7 +117,7 @@ return 0 and print a full page, which reads exactly like a door that opened.
 | `reconcile` | stop · wipe? · stand | `vessel stand --restart [--clear]` |
 | `refresh` | build · stop · wipe · stand | `vessel rite refresh` |
 | `rebuild` | bake · stand | `vessel rite rebuild` |
-| `build-genesis` | bake | `vessel bake` |
+| `build-genesis` · `bake` | the internal re-derive, or the mesh overturn | `vessel rite rebuild` · `nexus kahuli` |
 | `regenesis` | stop · wipe · bake · stand · seed | `vessel rite rebirth` |
 | `seed` | seed | `vessel seed` |
 | `status` · `node status` | read | `vessel read` |
@@ -261,6 +266,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;30KSK7KeFb7r06wAsHM3fvt88vzz5X28wHNZ6SSIre4
+<<^ code="&#x0003;">>ni:///sha-256;-q1LVGnTNx3hpPZoxYf4gtLZVpe1Z0Im1Ca2A84RSqo
 
 <<^ code="&#x0004;" -> to="?">>
