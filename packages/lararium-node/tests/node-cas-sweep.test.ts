@@ -97,3 +97,48 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
     expect(listCasBlobs(casDir)).toEqual([{ cid: b.cid, size: 1 }]);
   });
 });
+
+// ── GRACE AND PIN (basket-one #/grace-and-pin, ruled 2026-09-11) ────────────────────────────────────────────
+// A PIN `{cid, tier, holder, expiry}` beside the bag's caps holds its blob past any grace; an EXPIRED pin
+// releases the blob to the ordinary grace; the grace itself reads PER TIER off the realm's baseline
+// (`graceForTier`), so two unreferenced blobs of different tiers sweep at different ages.
+import { graceForTier, type PinCap } from "@lararium/mesh";
+
+describe("casSweep — PIN at cid grain, grace per tier", () => {
+  test("a pinned unreferenced blob never sweeps while the pin stands", () => {
+    const b = blob("a working the Librarian will re-stand");
+    writeCasEntriesFs([b], casDir);
+    age(b.cid);
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() + 86_400_000 }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0, pins });
+    expect(r.swept).toEqual([]);
+    expect(r.pinned).toEqual([b.cid]);
+    expect(existsSync(join(casDir, b.cid))).toBe(true);
+  });
+
+  test("an EXPIRED pin releases the blob to the grace — aged past it, it sweeps", () => {
+    const b = blob("a pin whose lifetime ended");
+    writeCasEntriesFs([b], casDir);
+    age(b.cid);
+    const pins: PinCap[] = [{ cid: b.cid, tier: "veil", holder: "vessel-1", expiry: Date.now() - 1 }];
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0, pins });
+    expect(r.pinned).toEqual([]);
+    expect(r.swept).toEqual([b.cid]);
+  });
+
+  test("the grace reads PER TIER: a PUBLIC blob sweeps at an age a VEIL blob survives", () => {
+    const pub = blob("a public blob, other holders stand");
+    const veil = blob("a veil blob, this vessel alone holds it");
+    writeCasEntriesFs([pub, veil], casDir);
+    // Both aged ONE hour; the baseline unit reads 30 minutes: public (×1) = 30m → sweeps, veil (×8) = 4h → kept.
+    const hourAgo = (Date.now() - 3_600_000) / 1000;
+    utimesSync(join(casDir, pub.cid), hourAgo, hourAgo);
+    utimesSync(join(casDir, veil.cid), hourAgo, hourAgo);
+    const baselineMs = 30 * 60_000;
+    const tierOf = (cid: string) => (cid === veil.cid ? "veil" : "public") as const;
+    const r = casSweep({ casDir, references: new Map(), protect: new Set(), graceMs: 0,
+                         graceMsFor: (cid) => graceForTier(tierOf(cid), baselineMs) });
+    expect(r.swept).toEqual([pub.cid]);
+    expect(r.kept).toContain(veil.cid);
+  });
+});

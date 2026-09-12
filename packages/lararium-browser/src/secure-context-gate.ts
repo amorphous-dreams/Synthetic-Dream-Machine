@@ -195,6 +195,27 @@ async function readStorageCeiling(store: StorageHost | undefined): Promise<Pick<
   }
 }
 
+/**
+ * THE SEVEN-DAY CLOCK AS A REPORT LINE (basket-one #/grace-and-pin: "the seven-day clock a reported floor").
+ * A best-effort origin gets ONE line naming the floor and the bytes the platform reported; a persistent origin
+ * gets none (no floor stands); an unreadable class says it stays unread. Never a fault, never a demand — the
+ * house explains the shelf's clock and offers the exemption; it adopts no calendar as law.
+ */
+export function storageFloorReport(r: StorageReading): string | null {
+  if (r.persistence === "persistent") return null;
+  if (r.persistence === "unknown") return "[vessel] storage floor: eviction class stays unread on this browser — treat the shelf as best-effort";
+  const bytes = r.usage !== "unknown" && r.quota !== "unknown" ? ` (${humanBytes(r.usage)} of ${humanBytes(r.quota)})` : "";
+  return `[vessel] storage floor: best-effort — this origin may be evicted under pressure, and WebKit clears it after seven days without interaction${bytes}; a home-screen install exempts it`;
+}
+
+/** Bytes in the unit a person reads. */
+function humanBytes(n: number): string {
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)} GB`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)} MB`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1)} kB`;
+  return `${n} B`;
+}
+
 /** Append the ceiling to a reason, in units a person reads; silent when the platform reported none. */
 function describeCeiling(c: Pick<StorageReading, "usage" | "quota">): string {
   if (c.quota === "unknown") return "";

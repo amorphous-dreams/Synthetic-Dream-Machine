@@ -53,5 +53,5 @@ export type {
   SecureContextVerdict, SecureContextReading, SecureContextHost, StoragePersistence, StorageReading, StorageHost,
 } from "./secure-context-gate.js";
 export {
-  readSecureContext, assertCanMint, ambientHost, requestDurableStorage, ambientStorage,
+  readSecureContext, assertCanMint, ambientHost, requestDurableStorage, ambientStorage, storageFloorReport,
 } from "./secure-context-gate.js";

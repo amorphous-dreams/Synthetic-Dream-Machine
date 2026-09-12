@@ -82,7 +82,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "stats":         { handler: cmdResidency,    summary: "Print the daemon's bag residency snapshot. Needs `lares vessel stand --foreground`." },
   "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded — the oracle entry alone, no tiddlers loaded. Needs `lares vessel stand --foreground`." },
   "compact":       { handler: cmdBagCompact,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
-  "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B)." },
+  "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). --pin <cid> [--tier <t>] [--expiry <Nd|iso|ms>] holds a blob past the grace; --release <cid> frees it." },
   // ── The LIFECYCLE half. Everything above answers a RUNTIME question (is this doc in RAM); these answer
   // what a bag IS, who may read it, where it belongs, and how to move it — the questions a bag could not
   // answer about itself at all until it carried a declaration.

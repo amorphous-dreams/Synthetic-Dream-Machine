@@ -18,7 +18,8 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh";
-import { listCasBlobs, readGenesisManifest } from "@lararium/node";
+import { listCasBlobs, readGenesisManifest, readCasPins, pinCas, releaseCas } from "@lararium/node";
+import { parseCapTier, type PinCap } from "@lararium/mesh";
 import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
@@ -90,6 +91,8 @@ export interface CasRead {
   readonly bytes:        number;
   /** The genesis-manifest cids present in the CAS — never sweepable. */
   readonly protected:    string[];
+  /** The cids a STANDING pin holds (basket-one #/grace-and-pin) — never sweepable while the pin stands. */
+  readonly pinned:       string[];
   readonly entries:      CasReadEntry[];
 }
 
@@ -104,9 +107,11 @@ export function readCas(opts: CasReadOptions): CasRead {
     refs: [...(refs.get(b.cid) ?? [])].sort(),
     protected: genesis.has(b.cid),
   }));
+  const pins = readCasPins(opts.casDir);
   return {
     casDir: opts.casDir, ...summary,
     protected: entries.filter((e) => e.protected).map((e) => e.cid),
+    pinned: pins.filter((p) => Date.now() < p.expiry).map((p) => p.cid),
     entries,
   };
 }
@@ -134,17 +139,60 @@ async function cmdCasFetch(args: ParsedArgs, cid: string): Promise<number> {
   return out["held"] === true ? 0 : 2;
 }
 
-/** `lares bag cas [--all] [--fetch <cid>]` — the summary; `--all` lists every blob; `--fetch` reads one through the door. */
+/** A pin's expiry as the operator spells it: ms since the epoch, an ISO instant, or `<n>d` days from now. */
+function parseExpiry(raw: string, now: number): number {
+  const days = /^(\d+)d$/.exec(raw);
+  if (days) return now + Number(days[1]) * 86_400_000;
+  if (/^\d+$/.test(raw)) return Number(raw);
+  const iso = Date.parse(raw);
+  if (Number.isFinite(iso)) return iso;
+  throw new Error(`--expiry: "${raw}" reads as neither ms, an ISO instant, nor <n>d`);
+}
+
+/**
+ * `lares bag cas --pin <cid> [--tier <t>] [--expiry <ms|iso|Nd>] [--holder <name>]` / `--release <cid>` — PIN at
+ * cid grain (basket-one #/grace-and-pin): a pin beside the bag's caps holds its blob past any grace until its
+ * expiry; an expired pin releases it to the tier's grace. Pins live in the CAS dir's `.pins.json` sidecar (a
+ * non-hex name the sweep never reads as a blob). Local, no daemon.
+ */
+function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
+  const casDir = larCasDir();
+  const now = Date.now();
+  let pins: PinCap[];
+  if (release) {
+    pins = releaseCas(casDir, release);
+  } else {
+    const tier = parseCapTier(args.options["tier"] ?? "veil");
+    const expiry = parseExpiry(args.options["expiry"] ?? "30d", now);
+    const holder = args.options["holder"] ?? "operator";
+    pins = pinCas(casDir, { cid: pin, tier, holder, expiry });
+  }
+  emit(args, {
+    ok: true,
+    data: { casDir, pins, standing: pins.filter((p) => now < p.expiry).length },
+    human: () => {
+      console.log(`lares bag cas — pins in ${casDir}: ${pins.length} (${pins.filter((p) => now < p.expiry).length} standing)`);
+      for (const p of pins) console.log(`  ${now < p.expiry ? "pinned " : "expired"} ${p.cid.slice(0, 16)}… tier ${p.tier} · holder ${p.holder} · until ${new Date(p.expiry).toISOString()}`);
+    },
+  });
+  return 0;
+}
+
+/** `lares bag cas [--all] [--fetch <cid>] [--pin <cid> | --release <cid>]` — the summary; `--all` lists every blob;
+ *  `--fetch` reads one through the door; `--pin`/`--release` hold or free one past the grace. */
 export function cmdCas(args: ParsedArgs): number | Promise<number> {
   const fetchCid = typeof args.options["fetch"] === "string" ? args.options["fetch"] : "";
   if (fetchCid) return cmdCasFetch(args, fetchCid);
+  const pin = typeof args.options["pin"] === "string" ? args.options["pin"] : "";
+  const release = typeof args.options["release"] === "string" ? args.options["release"] : "";
+  if (pin || release) return cmdCasPin(args, pin, release);
   const r = readCas({ casDir: larCasDir(), bagsDir: larBagsDir(), wikisDir: larWikisDir(), genesisDir: larGenesisDir() });
   emit(args, {
     ok: true,
     data: r as unknown as Record<string, unknown>,
     human: () => {
       console.log(`lares bag cas — ${r.casDir}`);
-      console.log(`  blobs ${r.blobs} · referenced ${r.referenced} · unreferenced ${r.unreferenced} · pending ${r.pending} · bytes ${r.bytes} · protected (genesis) ${r.protected.length}`);
+      console.log(`  blobs ${r.blobs} · referenced ${r.referenced} · unreferenced ${r.unreferenced} · pending ${r.pending} · bytes ${r.bytes} · protected (genesis) ${r.protected.length} · pinned ${r.pinned.length}`);
       console.log("  references derive from the disk projection (bags/ + wikis/), as of its last write");
       if (args.flags["all"]) {
         for (const e of r.entries) {

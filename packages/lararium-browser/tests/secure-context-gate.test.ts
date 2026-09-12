@@ -148,3 +148,27 @@ describe("the storage probe reads the ceiling beside the class", () => {
   });
 });
 
+
+// ── THE SEVEN-DAY CLOCK IS A REPORTED FLOOR (basket-one #/grace-and-pin · #/the-phone-seat) ─────────────
+// A browser leaf reads its eviction class + `estimate()` and REPORTS the floor as one line — never a fault,
+// never a demand. A persistent origin reports nothing (no floor stands); an unreadable class reports that it
+// could not read, still no fault.
+import { storageFloorReport } from "../src/secure-context-gate.js";
+
+describe("storageFloorReport — the seven-day clock as a report line", () => {
+  test("best-effort → ONE line naming the seven-day floor and the usage/quota the platform reported", () => {
+    const line = storageFloorReport({ persistence: "best-effort", usage: 12_000_000, quota: 2_000_000_000, reason: "storage is best-effort" });
+    expect(line).toMatch(/best-effort/);
+    expect(line).toMatch(/seven days/);
+    expect(line).toMatch(/12\.0 MB of 2\.0 GB|12 MB/);
+    expect(line).not.toMatch(/error|fault|must/i);
+  });
+  test("CONTROL: a persistent origin reports NO floor line", () => {
+    expect(storageFloorReport({ persistence: "persistent", usage: 1, quota: 2, reason: "granted" })).toBeNull();
+  });
+  test("an unreadable class reports that it stays unread — a fact, not a fault; unknown bytes stay unsaid", () => {
+    const line = storageFloorReport({ persistence: "unknown", usage: "unknown", quota: "unknown", reason: "no API" });
+    expect(line).toMatch(/unread/);
+    expect(line).not.toMatch(/undefined|NaN|unknown of/);
+  });
+});
