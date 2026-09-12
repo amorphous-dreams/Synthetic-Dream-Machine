@@ -147,11 +147,19 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 <<~ ahu #/the-shared-model>>
 
-!! The two ratchets name the HEARTH, never the Nexus
+!! THREE REGIONS, TWO RATCHETS — and they name the HEARTH, never the Nexus
 
-''The grammar reads as the frame's realization for the semantic plane.'' Two parties holding identical bytes under different `pluginsCid` parse the same `lar:` URI, the same sigil, the same gradient position into ''different structures'' — so a comparison between them means nothing, exactly as a coordinate means nothing without its datum.
+''The grammar reads as the frame's realization for the semantic plane.'' Two parties holding identical bytes under a different `grammarCid` parse the same `lar:` URI, the same sigil, the same gradient position into ''different structures'' — so a comparison between them means nothing, exactly as a coordinate means nothing without its datum.
 
-That makes `engineCid` ⊥ `pluginsCid` the artifact a merge-time model agreement needs, and it already stands:
+''THE HAZARD BELONGS TO THE GRAMMAR ALONE, AND SAYING SO TOOK A THIRD REGION.'' While one `pluginsCid` folded the required grammar together with whatever plugins an operator happened to vendor, this warning had to be stated over the whole composition — and it was over-broad in exactly the way that matters: an operator offering `sq-streams` moved the digest and changed NOBODY's reading. Three regions now stand, and only two of them ratchet:
+
+* ''`engineCid`'' — the TW5 core; the hearth true-name, the SLOW ratchet, and the one that binds membership because it rides inside every signed delegation preimage.
+* ''`grammarCid`'' — the REQUIRED memetic-wikitext grammar ALONE; kāhuli's FAST ratchet, and the only region whose roll can make two readers parse one carrier differently.
+* ''`pluginsCid`'' — THIS operator's own collection, layered on the required base. A region, never a tier: it overturns nobody else's reading, so it moves with no ratchet act at all.
+
+The base seed (the lararium API/shadow tiddlers riding beside the lares + lararium bags) stands in NEITHER ratchet: it ships as a required blob attested by its manifest sha, and a change to it moves the ISLAND, never an epoch. Each region folds under its OWN domain, so two regions holding the same entries can never mint one digest, and the class a blob belongs to is DECLARED rather than read off the path it sits on.
+
+That makes `engineCid` ⊥ `grammarCid` the artifact a merge-time model agreement needs, and it already stands:
 
 * ''declared'' — the CAS manifest, format-tagged.
 * ''versioned by CONTENT'' — so //which version// answers by cid, with ''no wall clock anywhere''.
@@ -198,6 +206,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rz2MRvOwew60q1fsuxoA9p3kOHKcUdP7Zi3keVrv-fU
+<<^ code="&#x0003;">>ni:///sha-256;kDMg_1zylyG5eBZk33k_Jq3FQjKktMIhwyXCzc84HuI
 
 <<^ code="&#x0004;" -> to="?">>
