@@ -32,6 +32,21 @@ import { fencedSpans, maskedExecAll } from "./fence-mask.js";
 export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
+/**
+ * A DECLARATION OPENS A SLOT; A CALL NAMES ONE — and `AHU_OPEN_RE` matches both, because `~[^>]*\bahu`
+ * swallows the dispatch verb in `<<~ kahea ahu #/b>>` and `<<~ aka ahu #/b>>`. Every declaration in the
+ * corpus spells `<<~ ahu` with nothing between the namespace mark and the word; every call carries a verb
+ * there. So the test is the span between them: empty (or whitespace) declares, anything else calls.
+ *
+ * Both consumers read this one predicate. `findTopLevelAhuBlocks` must, or a call pushes onto the pairing
+ * stack and the real block beneath it emits at depth 1 and never as top-level; `collectAhuSlots` must, or
+ * the ahu-drop guard grades a call as structure the render owes it.
+ */
+export function isAhuDeclaration(opener: string): boolean {
+  const m = /^<<~([^>]*?)\bahu\b/.exec(opener);
+  return m === null || m[1]!.trim() === "";
+}
+
 export interface AhuBlock {
   /** Source position of the opening `<<~` */
   readonly openStart: number;
@@ -61,6 +76,7 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
   const mask = fencedSpans(text);
   const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
+    if (!isAhuDeclaration(m[0])) continue;
     events.push({ kind: "open", pos: m.index, end: m.index + m[0].length, slot: m[1] ?? "#" });
   }
   for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
@@ -103,6 +119,7 @@ export function collectAhuSlots(text: string): Set<string> {
   const slots = new Set<string>();
   // Spelled as the address mints it, so a disk `#a` and a render `#/a` compare as one slot.
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
+    if (!isAhuDeclaration(m[0])) continue;
     slots.add(composeSlotPath("", m[1] ?? "#"));
   }
   return slots;
