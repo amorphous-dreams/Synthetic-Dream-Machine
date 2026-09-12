@@ -1098,6 +1098,10 @@ run_meme() {
   clear_all
 }
 
+# COVERS: private/multisig/unfed
+# A LEG, NOT A SCENARIO OF ITS OWN. `run_meme` calls this on both its paths, so it walks that
+# scenario's cell and claims it by name — the coverage witness reads claims per `run_*()`, and a leg
+# that declares nothing reads as a walk nobody described.
 # THE BROWSER LEG. `browser-a` shares A's namespace and runs the probe; its exit code is the verdict, and
 # the face lines print beside it so the reading carries what the island actually answered.
 #

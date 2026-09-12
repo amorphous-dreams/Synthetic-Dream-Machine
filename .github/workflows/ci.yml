@@ -9,6 +9,9 @@ name: CI
 #                     catches a hand-edited / forgotten-regen generated file)
 #   test            — every package's suite, incl. the meme round-trip laws
 #                     (meme-corpus-roundtrip) and the plugin-artifact parity gate
+#   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own
+#                     name so a red suite cannot swallow it; the docker/browser hold-outs are
+#                     named with their reasons in the job's log
 #   e2e             — the residency/ingest witnesses through the real CLI + vessels
 #   boot-budget     — the cache-stable boot stays under its char ceiling
 #   pristine-upstream — the meme routes meet a PUBLISHED tiddlywiki (npm), not only the fork:
@@ -155,11 +158,65 @@ jobs:
       # are unreproducible by construction.
       - name: Run all package suites
         run: pnpm test
-      # THE WITNESS FLEET RAN NOWHERE IN CI. Twenty-five witnesses stand in `tools/`, and this
-      # workflow reached exactly one of them — so every carrier, coordinate, parity and rite gate
-      # was an operator's local habit rather than a branch's floor.
-      - name: Witness fleet
-        run: pnpm witness
+
+  # ─── witnesses (the whole fleet, under its own name) ───────────────────────
+  # THE FLEET RODE INSIDE `test`, WHICH IS A PLACE IT CAN BE HIDDEN. `witness-all` exists because
+  # chaining gates with `&&` lets the first red swallow every one after it; a step that runs AFTER
+  # `pnpm test` in the same job inherits exactly that failure — one red suite and the twenty-six
+  # witnesses never run, and the PR shows one red where there were two questions. Its own job asks
+  # the fleet's question whatever the suites answer.
+  #
+  # WHAT THIS JOB CAN HONESTLY RUN: the twenty-six witnesses `tools/*witness*.sh` globs minus the
+  # declared hold-outs. They need node, a pnpm install, python3 (domain-registry · exact-deps ·
+  # meme-coordinates · mesh-coverage · mirror-parity · rendezvous-parity · rite-commands ·
+  # surface-parity) and a BUILT tree — `frame-shape`, `surface-parity`, `rite-commands` and
+  # `meme-check-hook` all read dist/ and refuse (or skip) without it.
+  #
+  # WHAT IT MUST SKIP, AND WHY: the five hold-outs `witness-all.sh` declares in HELD_OUT — civic ·
+  # crossing · herm-mesh · mesh-scenarios stand docker-compose meshes this runner does not raise,
+  # and browser-weld drives a real browser against a standing app. The script prints each one with
+  # its reason under `── held out of this run ──`, so the skip is named IN THIS JOB'S LOG rather
+  # than in a comment nobody reads; the step below fails if that roll call is missing, because a
+  # skip that stops announcing itself is the silence these witnesses exist to break.
+  witnesses:
+    name: Witnesses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pnpm install --frozen-lockfile
+      # Four witnesses read dist/ and one founds a vessel from the built CLI. Unbuilt they refuse or
+      # skip, and a skip reads green — the exact shape this job exists to close.
+      - name: Build (the fleet measures the built tree)
+        run: pnpm -r build
+      - name: Run every witness (never short-circuits; the worst exit wins)
+        run: |
+          set -o pipefail
+          tools/witness-all.sh 2>&1 | tee "$RUNNER_TEMP/witnesses.log"
+      # THE ROLL CALL IS PART OF THE VERDICT. A held-out witness that stops naming itself has become
+      # an unmeasured gate wearing a green check.
+      - name: The held-out witnesses are named in this log
+        if: always()
+        run: |
+          if ! grep -q "held out of this run" "$RUNNER_TEMP/witnesses.log"; then
+            echo "::error::the run named no held-out witnesses — the fleet's own roll call went silent"
+            exit 1
+          fi
+          sed -n '/held out of this run/,$p' "$RUNNER_TEMP/witnesses.log"
 
   # ─── e2e (residency / ingest witnesses) ────────────────────────────────────
   e2e:
