@@ -413,6 +413,13 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     // The veil tag backstops the founder-veil across a preserving re-pave — beside the doc-ids, out of every
     // substrate wipe, so the next re-light re-derives the SAME veil rather than minting a fresh one.
     veilTag:                face.veilTag,
+    // THE WEAR-REBOOT MOUNT MATERIAL. A non-active persona (mount:false) pins NONE of these into the daemon
+    // doc, so a reboot could never mount-switch to it. Persisted here — all PUBLIC (a signer DID, a KEL
+    // prefix, a signed grant record; no secret) — a reboot re-pins its mount from its own anchors, and the
+    // boot re-verifies the edge's signature (the gate is a signature, never a list).
+    signerDid:              face.signerDid,
+    personaKelPrefix:       face.personaKelPrefix,
+    deviceEdge:             face.founderEdge,
   }, handleIndex);
   await repo.flush();
 

@@ -10,7 +10,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { persistIdentityAnchors, loadIdentityAnchors, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../src/identity-anchors.js";
-import { isSealedEnvelope } from "@lararium/mesh";
+import { isSealedEnvelope, type DeviceDelegationTiddler, type LarDid } from "@lararium/mesh";
 import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -48,6 +48,38 @@ describe("identity anchors (M2)", () => {
     persistIdentityAnchors(anchors);
     // Overwrite with a partial record.
     writeFileSync(join(larIdentityDir(), "anchors-h0.json"), JSON.stringify({ personaGroupDocIdHex: "aa11" }));
+    expect(loadIdentityAnchors()).toBeNull();
+  });
+
+  // The wear-reboot mount-switch: an added persona (N>0) founds mount:false and pins nothing into the daemon
+  // doc, so its mount material must persist HERE to survive a reboot. All three are PUBLIC (a signer DID, a
+  // KEL prefix, a signed grant record — no secret), so they belong beside the doc-ids.
+  const edge: DeviceDelegationTiddler = {
+    kind: "device-delegation",
+    personaRootDid: "0xaa11" as LarDid,
+    deviceDid: "0xbb22" as LarDid,
+    deviceVerifyingKey: "cc".repeat(32),
+    hearthTrueName: "",
+    issuedAt: "2026-01-01T00:00:00.000Z",
+    expiresAt: "2027-01-01T00:00:00.000Z",
+    boundEpoch: "1",
+    signature: "dd".repeat(64),
+  };
+
+  test("CONTROL — the mount material (signerDid · KEL prefix · signed device edge) round-trips at index N", () => {
+    const withMount: IdentityAnchors = {
+      ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: edge,
+    };
+    persistIdentityAnchors(withMount, 1);
+    expect(loadIdentityAnchors(1)).toEqual(withMount);
+  });
+
+  test("★ a malformed device edge reads as null — the re-pin never trusts a torn grant ★", () => {
+    persistIdentityAnchors(anchors);
+    // A well-formed anchor except the device edge is not an object (a torn/garbage write). The boot re-pin
+    // would hand this to verifyDeviceDelegation; fail closed at the READ instead of feeding it a non-record.
+    writeFileSync(join(larIdentityDir(), "anchors-h0.json"),
+      JSON.stringify({ ...anchors, signerDid: "0xaa11", personaKelPrefix: "EKELprefix000", deviceEdge: "not-an-object" }));
     expect(loadIdentityAnchors()).toBeNull();
   });
 

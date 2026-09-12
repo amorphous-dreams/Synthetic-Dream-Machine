@@ -16,12 +16,26 @@
  * Meme: lar:///ha.ka.ba/lararium/api/anchor-store
  */
 
+import type { DeviceDelegationTiddler } from "./device-delegation.js";
+
 /** The sentinel anchors that bind a vessel to ONE veiled Handle. Hex doc-ids + agentId — all public. */
 export interface IdentityAnchors {
   readonly personaGroupDocIdHex: string;
   readonly meshCabalDocIdHex: string;
   /** The PersonaGroup agentId — Gate-C membership reads it, and the bootstrap never carried it. */
   readonly personaGroupAgentIdHex: string;
+  /** The persona-root DID this face signs as. PUBLIC (a verifying-key identifier, never a secret). */
+  readonly signerDid?: string;
+  /** The prefix of this face's persona-KEL — its continuity anchor, walkable from the shared board. PUBLIC. */
+  readonly personaKelPrefix?: string;
+  /** The SIGNED device→persona delegation edge this face founds. PUBLIC (a signed grant record, no secret).
+   *  ── THE WEAR-REBOOT MOUNT-SWITCH ── The mounted face (h0) pins its signerDid/KEL-prefix/edge into the
+   *  daemon doc, but an added compartment (N>0) founds mount:false and pins NONE. Persisting the three here,
+   *  out of every substrate wipe, lets a reboot RE-PIN a switched-to persona's mount from its own anchors —
+   *  the boot re-verifies the edge's signature (the gate is a signature, never a list), so a stored edge
+   *  confers nothing a fresh signature-check would not. OPTIONAL: anchors written before this slot existed,
+   *  a joinee (no self-minted edge), and h0 (whose live pins already carry them) may hold none. */
+  readonly deviceEdge?: DeviceDelegationTiddler;
   /** The founder-veil tag — the per-founding namespace `deriveDyadVeil(vesselSeed, veilTag)` scopes the
    *  creator-veil leaf by. NOT a secret (the veil SEED derives from the vessel seed; the tag only names the
    *  leaf), and it lived ONLY in the wiped daemon doc, so a preserving re-pave re-minted it and stood a
@@ -55,7 +69,13 @@ export function readIdentityAnchors(parsed: Partial<IdentityAnchors> | null | un
     typeof parsed.personaGroupDocIdHex === "string" &&
     typeof parsed.meshCabalDocIdHex === "string" &&
     typeof parsed.personaGroupAgentIdHex === "string" &&
-    (parsed.veilTag === undefined || typeof parsed.veilTag === "string")
+    (parsed.veilTag === undefined || typeof parsed.veilTag === "string") &&
+    // The wear-reboot mount material is optional (old anchors, joinees, and h0 hold none), but a PRESENT
+    // one must be well-shaped — a torn signerDid/prefix (non-string) or a device edge that is not a record
+    // reads the WHOLE anchor as null, so the re-pin never hands verifyDeviceDelegation a half-grant.
+    (parsed.signerDid === undefined || typeof parsed.signerDid === "string") &&
+    (parsed.personaKelPrefix === undefined || typeof parsed.personaKelPrefix === "string") &&
+    (parsed.deviceEdge === undefined || (typeof parsed.deviceEdge === "object" && parsed.deviceEdge !== null))
   ) {
     return parsed as IdentityAnchors;
   }

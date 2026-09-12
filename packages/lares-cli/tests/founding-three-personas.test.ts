@@ -31,7 +31,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
-  listPersonaRoots, readNexusDoc,
+  listPersonaRoots, readNexusDoc, loadIdentityAnchors,
 } from "@lararium/node";
 import { ownPersonaPetname, declaredHandle, foundingQuorumSeated } from "@lararium/mesh";
 
@@ -92,6 +92,23 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
       expect(await ownPersonaPetname(petnames, i)).toBe(LABELS[i]);      // the compartment's own label
       expect(await declaredHandle(declarations, i)).toBe(KAHU[i]);        // what it answers to outward
       expect(LABELS[i]).not.toBe(KAHU[i]);                                // the two registers stay independent
+    }
+  });
+
+  test("★ each founded persona persists its wear-reboot mount material (signerDid · KEL prefix · signed edge) into anchors-hN ★", async () => {
+    // A non-active persona (N>0) founds mount:false and pins nothing into the daemon doc. For a reboot to
+    // mount-switch to it, its mount material must survive OUT of the substrate — in anchors-hN. All three
+    // are PUBLIC re-pin material (no secret), and the boot re-verifies the edge's signature.
+    for (let i = 0; i < KAHU.length; i++) {
+      expect(await cmdPersona(personaArgs(["new", String(i)], { name: LABELS[i]!, handle: KAHU[i]! }, { seat: true }))).toBe(0);
+    }
+    for (let i = 0; i < KAHU.length; i++) {
+      const a = loadIdentityAnchors(i);
+      expect(a, `h${i} anchors exist`).not.toBeNull();
+      expect(a?.signerDid, `h${i} anchors carry its signer DID`).toBeTruthy();
+      expect(a?.personaKelPrefix, `h${i} anchors carry its KEL prefix`).toBeTruthy();
+      expect(a?.deviceEdge, `h${i} anchors carry its signed device edge`).toBeTruthy();
+      expect(a?.deviceEdge?.kind, `the edge is a device-delegation record`).toBe("device-delegation");
     }
   });
 
