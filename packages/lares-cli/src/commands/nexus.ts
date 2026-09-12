@@ -300,10 +300,11 @@ function kahuliGrammar(args: ParsedArgs): number {
 
   if (args.flags["apply"]) {
     console.error("nexus kahuli grammar --apply — HELD (the overturn's payload is wired next).");
-    console.error("  --apply composes the diff-gate → `vessel bake` (re-derive the island at the newly packed");
-    console.error("  plugin) → the mesh-push. The bake writes the genesis island; the push advances the LIVE");
-    console.error("  Nexus's grammar epoch on the DreamNet — the production breath that rides the same");
-    console.error("  coexistence-span rulings as `kahuli engine`. Ledgered in the kāhuli onboarding memory.");
+    console.error("  --apply composes the diff-gate → the genesis re-derive (`bakePlan`/`build-genesis-island`,");
+    console.error("  the internal primitive — never a `vessel` door) → the mesh-push, which advances the LIVE");
+    console.error("  Nexus's grammar epoch on the DreamNet. Two holds remain: the grammar tier must first narrow");
+    console.error("  to the memetic-wikitext grammar ALONE (other plugins ride separately as @cad caps), and the");
+    console.error("  push rides the same coexistence-span rulings as `kahuli engine`. Ledgered in the kāhuli memory.");
     return 2;
   }
 
@@ -311,9 +312,9 @@ function kahuliGrammar(args: ParsedArgs): number {
   console.log(`  grammar (pluginsCid, fast ratchet): ${pluginsCid ?? "(no island baked in this root yet)"}`);
   console.log(`  engine  (engineCid, true-name):     ${engineCid ?? "(no island baked in this root yet)"}`);
   console.log("");
-  console.log("  to OVERTURN the grammar: pack the plugin, then compose the bake + push —");
-  console.log("    pnpm --filter @lararium/tw5 build:plugin   (pack the memetic-wikitext plugin)");
-  console.log("    lares nexus rite kahuli                    (diff-gate → bake → push; idempotent, skips-unchanged)");
+  console.log("  to OVERTURN the grammar: pack the plugin, then compose the re-derive + push —");
+  console.log("    pnpm --filter @lararium/tw5 build:plugin   (pack the memetic-wikitext grammar)");
+  console.log("    lares nexus rite kahuli                    (diff-gate → re-derive → push; idempotent, skips-unchanged)");
   console.log("  the diff-gate (candidate pluginsCid vs current) + --apply are wired next.");
   return 0;
 }

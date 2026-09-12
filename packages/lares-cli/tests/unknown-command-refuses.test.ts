@@ -14,6 +14,7 @@
  */
 import { describe, test, expect, vi, afterEach } from "vitest";
 import { dispatch } from "../src/bin/lares.js";
+import { VESSEL_SUBS } from "../src/commands/vessel.js";
 
 /**
  * Every spelling the vessel collapse retired, the `carrier` door the meme collapse retired (its verbs
@@ -53,6 +54,19 @@ describe("the unknown-command refusal", () => {
     for (const verb of ["normalize", "project-md", "repack"]) {
       expect(await dispatch(["carrier", verb, "x.mem"]), `carrier ${verb} answered`).toBe(2);
     }
+  });
+
+  test("★ `bake` is retired as a vessel sub-door — the genesis re-derive is an internal rite step, and the mesh-going act rides `nexus kahuli` ★", () => {
+    // The single-vessel `vessel bake` door retires (no alias): advancing the genesis composition is a MESH
+    // act (`nexus kahuli`), and the LOCAL re-derive survives only as an internal step of the rebuild/rebirth
+    // rites + the `build:genesis` build script. Asserted at the authoritative sub-set (cmdVessel dispatches
+    // exclusively through it, returning 2 for anything absent) — dispatching `vessel bake` live would run
+    // the build-genesis script against the repo genesis, so the set is the safe, exact instrument.
+    expect(VESSEL_SUBS).not.toContain("bake");
+    // CONTROL — the primitives that stay still answer, so the retirement is surgical, not a table wipe.
+    expect(VESSEL_SUBS).toContain("found");
+    expect(VESSEL_SUBS).toContain("seed");
+    expect(VESSEL_SUBS).toContain("read");
   });
 
   test("the control proves the refusal is real, not a binary that refuses everything", async () => {

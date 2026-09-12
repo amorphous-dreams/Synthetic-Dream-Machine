@@ -9,19 +9,22 @@
  * this door. A door absorbs new capability; a plane with no door has nowhere to put it but the top,
  * and that is how a top-level verb count grows back.
  *
- * ── SEVEN PRIMITIVES + ONE READ ─────────────────────────────────────────────────────────────────
+ * ── SIX PRIMITIVES + ONE READ ───────────────────────────────────────────────────────────────────
  * A primitive names ONE motion and cannot be expressed as a sequence of the others. Everything else
  * composes, and a composition earns a pet-name rather than a top-level name:
  *
  *   stop   ends a running daemon by port, graceful then forced — never a restart in disguise
  *   clear  pares the vessel store + the projection watermark — identity, seal, library and registry
  *          stand outside it
- *   bake   re-derives the genesis island from the engine + the packed plugin — moves NO identity
  *   found  mints the vessel identity, the persona root, the social planes and the bootstrap —
  *          idempotent, skips what stands
  *   stand  brings the daemon up, foreground or detached, and reports what it found
  *   seed   plants every bags holding back into its doc, kind-routed, diff-gated — idempotent
  *   read   the pure inspection that starts nothing
+ *
+ * Re-deriving the genesis island is NOT a standalone door: advancing the composition is a MESH act that
+ * rides `nexus kahuli` (the engine/grammar ratchet, past a single vessel), and the LOCAL re-derive lives
+ * only as an internal step of the rebuild/rebirth rites + the `build:genesis` build script.
  *
  * `build` — compile the workspace and stamp the source digest — rides inside `rite refresh` rather
  * than standing alone: it moves the TREE, not the vessel, and a door over one island should not hold
@@ -45,7 +48,7 @@ import { cmdRebirth } from "./rebirth.js";
 import { cmdWire } from "./wire.js";
 import { cmdVesselCard } from "./vessel-card.js";
 import {
-  cmdBake, cmdStandForeground, cmdStandWithApp, cmdClear, cmdRestart, cmdRiteRebuild, cmdRiteRefresh,
+  cmdStandForeground, cmdStandWithApp, cmdClear, cmdRestart, cmdRiteRebuild, cmdRiteRefresh,
 } from "./scripted.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
@@ -181,8 +184,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.
   wire:  { summary: "point every AI surface on this machine at this vessel — idempotent, re-aims drift",  run: (a) => cmdWire(under(a)) },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
-  clear: { summary: "wipe the store + projection watermark, re-bake and re-found (identity survives)",   run: (a) => cmdClear(under(a)) },
-  bake:  { summary: "re-derive the genesis island from the engine + packed plugin (moves no identity)",  run: (a) => cmdBake(under(a)) },
+  clear: { summary: "wipe the store + projection watermark, re-derive the island and re-found (identity survives)", run: (a) => cmdClear(under(a)) },
   seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
   rite:  { summary: "the pet-named procedures: founding · refresh · rebuild · rebirth",                 run: runRite },

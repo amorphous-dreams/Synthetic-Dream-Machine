@@ -98,12 +98,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
 
   vessel: {
     synopsis:
-      "THE VESSEL DOOR — one namespace over the vessel's own causal island. Seven primitives and one " +
+      "THE VESSEL DOOR — one namespace over the vessel's own causal island. Six primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
-      "halts it on the port · `clear` wipes the store and re-founds (identity survives) · `bake` " +
-      "re-derives the genesis island · `seed` plants every bags/* holding back into its doc · `read` " +
-      "inspects and starts nothing. Compositions ride `vessel rite <petname>`, so a new cap-stack " +
-      "arrives as a rite rather than another top-level verb.",
+      "halts it on the port · `clear` wipes the store and re-founds (identity survives) · `seed` plants " +
+      "every bags/* holding back into its doc · `read` inspects and starts nothing. Compositions ride " +
+      "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
+      "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
       "lares vessel wire                       # point every AI surface here (re-aims drift)",
