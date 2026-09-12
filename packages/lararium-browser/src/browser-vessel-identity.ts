@@ -35,6 +35,7 @@ import {
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
+import { mintDeviceMintedKey, type DeviceMintedKey } from "@lararium/keyhive";
 
 import { assertCanMint } from "./secure-context-gate.js";
 const KEY_RECORD = "vessel-key";
@@ -245,6 +246,15 @@ export async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<
     throw new Error("[browser-vessel-identity] no keypair in IDB — call generateOrLoadBrowserVesselIdentity first");
   }
   return signingSeedFromHex(existing.signingKey);
+}
+
+/**
+ * Load the vessel's device key AS ITS CLASS — the `DeviceMintedKey` brand the veil derivation takes (veil-key.ts).
+ * This store is where the browser vessel key mints, so this is the browser's one mint door; a persona root
+ * (`loadBrowserPersonaRootSeed`, class `seed`) never passes through it.
+ */
+export async function loadBrowserDeviceKey(idbName = "lares:vessel"): Promise<DeviceMintedKey> {
+  return mintDeviceMintedKey(await loadBrowserSigningSeed(idbName));
 }
 
 // ── PersonaGroup root custody — the IDB-backed PersonaVault (over @lararium/mesh) ────────────────

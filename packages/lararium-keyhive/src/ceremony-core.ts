@@ -52,7 +52,7 @@ import {
   buildDeviceDelegation, type DeviceDelegationTiddler,
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
   type PersonaKelEvent,
-  deriveDyadVeil, dyadId, signDyadBindingWithSeed, writeDyad, didFromVerifyingKey,
+  dyadId, signDyadBindingWithSeed, writeDyad, didFromVerifyingKey,
   mintVeilTag, DYAD_VEIL_TAG_TIDDLER, hexToBytes,
   DYAD_ID_DOMAIN, type DyadRecord, type DyadRef,
   deriveSelfRecoveryKey, provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard,
@@ -66,6 +66,7 @@ const EDGE_BACKSTOP_MS = 100 * 365 * 24 * 60 * 60 * 1000;
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 import { buildCeremonyTiddlers } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
+import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { InMemoryEventStore } from "./event-store.js";
 import { capEventTitle } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
@@ -309,8 +310,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // A persisted tag RE-DERIVES the SAME creator-veil across a preserving re-pave: the veil key is
   // deterministic in (vesselSeed, veilTag), so a re-light handed the tag its identity home backstopped
   // stands the same veilDid rather than minting a new one. Absent one, a genuine fresh founding mints.
+  //
+  // The derivation takes the DEVICE-MINTED brand only (veil-key.ts): `vesselSeed` IS the per-vessel device
+  // seed by this input's contract, so the ceremony stands as a mint door; a persona root or a PRF output
+  // never reaches this line, at the type or at runtime.
   const veilTag      = input.veilTag ?? mintVeilTag();
-  const dyadVeilKeys = await deriveDyadVeil(vesselSeed, veilTag);
+  const dyadVeilKeys = await deriveVeilFromDeviceKey(mintDeviceMintedKey(vesselSeed), veilTag);
   const veilKeyhive  = new KeyhiveProvider();
   await veilKeyhive.init({ seed: hexToBytes(dyadVeilKeys.signingKey), eventStore: store });
   await veilKeyhive.hydrateFromEventStore();
@@ -737,7 +742,7 @@ export async function runApplyAdmitPayload(
   // The joinee's DYAD: its veil derives off its OWN seed, scoped by the group it joins. No group
   // root stands on this vessel, so the slot lands binding:null — presented, not yet gathered — and
   // `fleetOfGroup` will not count it until a root signs the binding (the absence travels).
-  const joineeVeil = await deriveDyadVeil(vesselSeed, payload.personaGroupDocIdHex);
+  const joineeVeil = await deriveVeilFromDeviceKey(mintDeviceMintedKey(vesselSeed), payload.personaGroupDocIdHex);
   const joineeRef: DyadRef = { vesselDid: payload.deviceEdge.deviceDid, veilDid: didFromVerifyingKey(joineeVeil.verifyingKey) };
   const joineeDyad: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(joineeRef), ref: joineeRef, edge: payload.deviceEdge, binding: null };
 

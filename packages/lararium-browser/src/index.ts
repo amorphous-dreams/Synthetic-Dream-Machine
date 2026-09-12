@@ -24,7 +24,7 @@ export { mountCoherenceIndicator } from "./wiki-coherence-sink.js";
 export type { CoherenceIndicatorSink, CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
 
 export {
-  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
+  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, loadBrowserDeviceKey,
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
 } from "./browser-vessel-identity.js";
 export type { BrowserVesselIdentity } from "./browser-vessel-identity.js";

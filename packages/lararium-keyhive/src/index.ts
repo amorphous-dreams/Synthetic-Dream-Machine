@@ -53,6 +53,9 @@ export type {
   PlaceFoundingInput, PlaceFoundingResult, FaceFoundingInput, FaceFoundingResult,
 } from "./ceremony-core.js";
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
+// The veil's key-class door: the dyad veil derives from a DEVICE-MINTED key and refuses every other class.
+export { mintDeviceMintedKey, isDeviceMintedKey, deriveVeilFromDeviceKey, VeilKeyClassRefused } from "./veil-key.js";
+export type { DeviceMintedKey, ClassedKey, KeyClassName } from "./veil-key.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,
   DeviceAdmitEdgeInput,
