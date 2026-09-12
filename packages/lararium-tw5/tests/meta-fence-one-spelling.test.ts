@@ -28,9 +28,12 @@
  */
 
 import { describe, expect, test } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { readCarrierShape } from "../src/carrier-shape.js";
-import { declaresCarrier } from "../src/carrier-files.js";
+import { declaresCarrier, currentCarrierFiles } from "../src/carrier-files.js";
+import { REPO } from "./test-wiki.js";
 import { transposeMarkdown } from "../src/meme-markdown.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { META_OPEN_CANON } from "../src/meta-fence.js";
@@ -131,5 +134,49 @@ describe("the meta fence has ONE opener, and every reader reads it the same", ()
     expect(root, "the root record vanished").toBeDefined();
     expect(root!["type"]).toBe(CARRIER_TYPE);
     expect(recs.some((r) => String(r["text"] ?? "").includes("body"))).toBe(true);
+  });
+});
+
+/**
+ * ADMITTED, THEN FAULTED — the other half of the law.
+ *
+ * Permissive recognition alone would let a deviant spelling stand forever: it parses, so nothing ever
+ * says otherwise, and the corpus drifts one file at a time. The gradient names the canon instead, so
+ * `meme-normalize` has something to repair and a witness has something to report. Admission keeps the
+ * file visible; the fault keeps the corpus one-spaced.
+ */
+describe("a deviant spelling is ADMITTED and then FAULTED", () => {
+  test.each([
+    ["two spaces",       "```toml  meta"],
+    ["a tab",            "```toml\tmeta"],
+    ["a trailing space", "```toml meta "],
+  ])("a meta fence spelled with %s carries a canon fault", (_label, open) => {
+    const shape = readCarrierShape(carrier(open));
+    // ADMITTED — the file keeps its identity, or the fault is just a rejection wearing a nicer name.
+    expect(shape.marks.meta, "a deviant spelling must still be READ").toBe(true);
+    expect(shape.kind).toBe("carrier");
+    // FAULTED — and the fault states the canon, so a repair reads off the finding.
+    expect(shape.faults.join(" | ")).toMatch(/meta fence/i);
+    expect(shape.faults.join(" | ")).toContain(META_OPEN_CANON);
+  });
+
+  /** CONTROL — the canon carries no such fault, or the fault distinguishes nothing. */
+  test("the canonical spelling carries no fence fault", () => {
+    const shape = readCarrierShape(carrier(META_OPEN_CANON));
+    expect(shape.faults.filter((f) => /meta fence/i.test(f))).toEqual([]);
+  });
+
+  /**
+   * CONTROL — the whole live corpus stands in canon and gains NOT ONE fault from this reading. The
+   * fixtures above prove the fault fires; only the corpus proves it does not fire on the house.
+   */
+  test("no carrier in the corpus carries a fence fault", () => {
+    const files = currentCarrierFiles(REPO);
+    expect(files.length).toBeGreaterThan(500);
+    const faulted = files
+      .map((f) => [f, readCarrierShape(readFileSync(join(REPO, f), "utf8")).faults] as const)
+      .filter(([, faults]) => faults.some((x) => /meta fence/i.test(x)))
+      .map(([f]) => f);
+    expect(faulted).toEqual([]);
   });
 });

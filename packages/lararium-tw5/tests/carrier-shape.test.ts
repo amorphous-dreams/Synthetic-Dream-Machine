@@ -23,8 +23,9 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
 const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>";
-/** The head sigil as the CORPUS writes it — the far side is a named `to=` field, and 639 of 639
- *  carriers name it. A fixture in the bare form is legal grammar and measures a shape no file has. */
+/** The head sigil as the CORPUS writes it — the far side is a named `to=` field, and every carrier
+ *  names it (639 when measured, 724 now; the test below asks the corpus rather than this number).
+ *  A fixture in the bare form is legal grammar and measures a shape no file has. */
 const head = (uri: string, ns = "") =>
   `<<^ code="&#x0001;"${ns ? ` namespace="${ns}"` : ""} from=? -> to=${uri}>>`;
 

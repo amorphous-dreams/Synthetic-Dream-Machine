@@ -106,8 +106,10 @@ export function readCarrierShape(text: string): CarrierShape {
     uriPath: metaValue(text, spans, "uri-path"),
     bag:     metaValue(text, spans, "bag"),
     // THE ARROW'S FAR SIDE IS A NAMED FIELD, and reading the token after `->` takes the name with it.
-    // Every carrier in the corpus names that side, so an unnamed read returned `to=lar:///…` on 639 of
-    // 639 files while the only vector for it built its fixture without the name and stayed green. The
+    // Every carrier in the corpus names that side, so an unnamed read returned `to=lar:///…` on all of
+    // them — 639 when this was measured, 724 now — while the only vector for it built its fixture
+    // without the name and stayed green. A count in prose goes stale the week it is written; the
+    // reading it records does not, and the corpus test beside it is what actually holds the line. The
     // name stays OPTIONAL in the grammar — `? -> lar:///x` is the positional spelling normalize
     // converts — and it is stripped where present.
     // AND THE ADDRESS COMES FROM THE SHORE, which strips the quote pair and refuses a torn head.
@@ -129,6 +131,16 @@ export function readCarrierShape(text: string): CarrierShape {
   const faults: string[] = [];
   if (!marks.doctype) faults.push("no declaration — nothing names the grammar that reads it");
   if (!marks.head)    faults.push("no head sigil — the file states no bearing and no namespace");
+
+  // THE OPENER IS ADMITTED WIDE AND HELD NARROW. A reader takes `[ \t]+` between the label and the
+  // word so no carrier goes invisible over whitespace, and the canon is one space — how every emitter
+  // writes it and how 733 of 733 openers in the corpus stand. Without this fault the tolerance would
+  // BE the canon: a deviant spelling parses, so nothing would ever say otherwise, and the corpus would
+  // drift one file at a time until the strict readers this collapse retired were needed again.
+  const openLine = metaOpenLine(text, spans);
+  if (openLine !== null && !isCanonicalMetaOpen(openLine)) {
+    faults.push(`meta fence opens \`${openLine}\` — canon is \`${META_OPEN_CANON}\`, one space and nothing after`);
+  }
 
   if (kind === "descriptor" && marks.uriPath !== null) {
     faults.push("declares both `bag` and `uri-path` — a bag and a meme are different things");
