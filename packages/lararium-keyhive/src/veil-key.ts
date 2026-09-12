@@ -21,7 +21,9 @@
 import { deriveDyadVeil } from "@lararium/mesh";
 
 /** The closed key-class vocabulary — mirrors `key-class.ts` (node) without importing a node package. */
-export type KeyClassName = "device-minted" | "seed" | "cloud-synced";
+import type { KeyClass } from "@lararium/mesh";
+/** The one vocabulary (mesh `key-class`); keyhive keeps its local name for the brand below. */
+export type KeyClassName = KeyClass;
 
 /** A key that names its class. Only the `device-minted` member gains the veil brand. */
 export interface ClassedKey<C extends KeyClassName = KeyClassName> {

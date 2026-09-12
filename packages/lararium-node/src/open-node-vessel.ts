@@ -49,7 +49,7 @@ import {
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
-import { realmMaintenanceFromBoard } from "@lararium/mesh";
+import { realmMaintenanceFromBoard, shareConfigOf } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
   MemoryTiddlerStore,
@@ -82,7 +82,6 @@ import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
-import { nodeShareConfig } from "./node-share-config.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -463,8 +462,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // ONE VERDICT, BOTH HOOKS. A legacy `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
     // ACCESS wide open, so a peer that REQUESTS a doc by id pulls it whatever the verdict said — and every
     // `bags/*` id derives from the shared genesis (node-share-config.ts, measured in
-    // share-policy-is-access.test.ts). The verdict below is an ACCESS verdict; `nodeShareConfig` seats it on both.
-    shareConfig: nodeShareConfig(async (peerId, documentId) => {
+    // share-policy-is-access.test.ts). The verdict below is an ACCESS verdict; mesh's `shareConfigOf` seats it on both.
+    shareConfig: shareConfigOf(async (peerId, documentId) => {
       // THE ADMISSION LANDS FIRST. The WS adapter emits `peer-candidate` BEFORE it keys the socket into
       // `network.sockets`, and the Repo's listener resolves this verdict synchronously inside that emit — so a
       // read of `network.sockets[peerId]` here answered `undefined` and the peer read as an in-process house
@@ -894,13 +893,20 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
 
       // Bootstrap URLs: the vessel's own social bootstrap (init node — authoritative),
       // falling back to the island oracle (replica vessels).
-      let bootstrapPlugin: Record<string, unknown> | null = null;
+      // BOTH parses are guarded, and a tear reads {} — the same answer every other reader of this file
+      // gives (the hearth-dial pin, the bulb, the init packer). The OUTER parse was caught and the inner
+      // one was not, so a bootstrap whose outer JSON is valid while its packed `text` is truncated, absent
+      // or not a string threw an uncaught SyntaxError/TypeError and killed the boot — while the pin reader
+      // three hundred lines earlier answered `null` on that exact file. Two readers of one file must not
+      // disagree about whether it is fatal.
+      let bootstrapTiddlers: Record<string, { text?: string }> = {};
       if (existsSync(bootstrapPath)) {
-        try { bootstrapPlugin = JSON.parse(readFileSync(bootstrapPath, "utf8")) as Record<string, unknown>; } catch { /* malformed */ }
+        try {
+          const plugin = JSON.parse(readFileSync(bootstrapPath, "utf8")) as Record<string, unknown>;
+          const packed = JSON.parse(String(plugin["text"] ?? "{}")) as { tiddlers?: Record<string, { text?: string }> };
+          bootstrapTiddlers = packed.tiddlers ?? {};
+        } catch { /* a torn bootstrap reads as none — never a fatal boot */ }
       }
-      const bootstrapTiddlers: Record<string, { text?: string }> = bootstrapPlugin
-        ? (JSON.parse(bootstrapPlugin["text"] as string) as { tiddlers: Record<string, { text?: string }> }).tiddlers
-        : {};
       const id   = islandHandle.doc()?.tiddlers;
       const daemonUrl      = bootstrapTiddlers[DAEMON_BAG_ID]?.text       ?? tiddlerText(id?.[DAEMON_BAG_ID])       ?? null;
       // THE ONE RESOLUTION POINT on this platform. The vessel reads back the whole FAMILY of compartments

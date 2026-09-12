@@ -333,3 +333,5 @@ export { crossingDirection, type CrossingDirection, type CrossingCost } from "./
 export { sealImportVerdict, foreignSeats,
          type SealImportVerdict, type ForeignSeatVerdict, type CharterChair } from "./seal-import.js";
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";
+export { KEY_CLASSES, isKeyClass } from "./key-class.js";
+export type { KeyClass } from "./key-class.js";

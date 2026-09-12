@@ -9,13 +9,13 @@
  * hands the ONE verdict to BOTH hooks; the vessel's Repo takes it as `shareConfig`.
  *
  * RED (the lie): repo A's policy denies peer B on doc X; B `find(X)` still resolves ready under a legacy
- * `sharePolicy`. CURE: under `nodeShareConfig(policy)` the same find stays unavailable. CONTROL: a permitted
+ * `sharePolicy`. CURE: under `shareConfigOf(policy)` the same find stays unavailable. CONTROL: a permitted
  * doc crosses either way.
  */
 import { describe, test, expect } from "vitest";
 import { Repo, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { nodeShareConfig } from "../src/node-share-config.js";
+import { shareConfigOf } from "@lararium/mesh";
 
 type Doc = { text?: string };
 
@@ -25,7 +25,7 @@ async function pair(gate: "legacy" | "access", allow: (docId: DocumentId) => boo
   const A = new Repo({
     network: [new MessageChannelNetworkAdapter(port1)],
     peerId: "A" as PeerId,
-    ...(gate === "legacy" ? { sharePolicy: policy } : { shareConfig: nodeShareConfig(policy) }),
+    ...(gate === "legacy" ? { sharePolicy: policy } : { shareConfig: shareConfigOf(policy) }),
   });
   const B = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], peerId: "B" as PeerId });
   await Promise.all([A.networkSubsystem.whenReady(), B.networkSubsystem.whenReady()]);
