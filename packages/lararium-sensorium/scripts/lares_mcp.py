@@ -957,7 +957,7 @@ def build_mcp(coordinator: LaresCoordinator):
         <uri> --to <target>`. `to` names the target: `mem` (the canonical carrier text) · `md` (the
         submission markdown) · `html` · `tid` · `json`; the target rides as a parameter, never a suffix on
         the verb. CONTAINER LAW: at most one of `recipe` / `bag` names where to read; neither → the host's
-        ANCHOR, the @daemon's own wiki. Slugs ride bare. Returns {uri, to, text, contentType}. Deterministic
+        ANCHOR, the @daemon's own wiki. Slugs ride bare. Returns {uri, to, text, contentType, meta?} — `meta` rides beside `text` for `md` (the `.md.meta` sidecar; the pair is one carrier in two files). Deterministic
         and clock-free — currency proves by re-projecting, never by a stamp. Rides the @daemon wire."""
         if to not in PROJECT_TARGETS:
             raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
