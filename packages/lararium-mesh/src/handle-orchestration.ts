@@ -17,7 +17,7 @@
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import { readHandleAnnounces, writeHandleAnnounce } from "./handle-announce.js";
-import { mintHandleBurn, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult } from "./handle-kel.js";
+import { mintHandleBurn, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner } from "./handle-kel.js";
 import { deriveVeiledUserKey } from "./persona-identity.js";
 import { didFromVerifyingKey } from "./lar-did.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
@@ -92,6 +92,10 @@ export async function burnOwnHandle(opts: {
   sign?:           (bytes: Uint8Array) => Promise<string>;
   /** THE OWNER-BURN — a current member (a personal face's owning persona) buries the name from above. */
   ownerBurn?:      { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (bytes: Uint8Array) => Promise<string> };
+  /** OWNER-BURN co-signers — DISTINCT current members BEYOND the presenter, gathered toward the current
+   *  witness threshold: burying a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none; the self-burn
+   *  refuses them (a single-hand panic). Ignored on the self path. */
+  coSigners?:      readonly HandleCoSigner[];
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
   if ((opts.sign === undefined) === (opts.ownerBurn === undefined)) {
@@ -104,7 +108,7 @@ export async function burnOwnHandle(opts: {
     mintNext:        (chain) => mintHandleBurn(
       opts.sign !== undefined
         ? { head: chain[chain.length - 1]!, sign: opts.sign }
-        : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn! },   // the one-hand guard above proved it set
+        : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn!, ...(opts.coSigners ? { coSigners: opts.coSigners } : {}) },   // the one-hand guard above proved it set
     ),
     buildCard:       opts.buildCard,
   });
@@ -141,6 +145,9 @@ export async function rotateOwnHandle(opts: {
   ownerAuthMemberPrefix: string;
   ownerHeadOpKeyDid:     string;
   sign:                  (bytes: Uint8Array) => Promise<string>;
+  /** ROTATION co-signers — DISTINCT current members BEYOND the presenter, toward the current witness
+   *  threshold: seating a fresh key on a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none. */
+  coSigners?:            readonly HandleCoSigner[];
   /** Build the renewed card; the mint yields the FRESH head handle key's signer to sign it under. */
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[], freshHandleSign: (bytes: Uint8Array) => Promise<string>) => HandleCard | Promise<HandleCard>;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
@@ -164,6 +171,7 @@ export async function rotateOwnHandle(opts: {
         ownerAuthMemberPrefix: opts.ownerAuthMemberPrefix,
         ownerHeadOpKeyDid:     opts.ownerHeadOpKeyDid,
         sign:                  opts.sign,
+        ...(opts.coSigners ? { coSigners: opts.coSigners } : {}),
         nextHandleKeyDigest,
       });
     },

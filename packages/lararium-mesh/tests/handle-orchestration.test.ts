@@ -12,8 +12,8 @@
  * Research rhyme: lar:///ha.ka.ba/lares/api/pono/field-collision (event-sourcing · git refs · KERI KERL)
  */
 import { describe, test, expect } from "vitest";
-import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle, burnOwnHandle } from "../src/handle-orchestration.js";
-import { mintHandleInception, verifyHandleKel, isBurned, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
+import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle, burnOwnHandle, rotateOwnHandle } from "../src/handle-orchestration.js";
+import { mintHandleInception, mintHandleInceptionSet, verifyHandleKel, isBurned, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
 import { HANDLE_CARD_DOMAIN } from "../src/handle-card.js";
 import { writeHandleAnnounce } from "../src/handle-announce.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
@@ -139,5 +139,89 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.reason).toMatch(/lease/i);
     expect(isBurned(resolveOwnHandleChain(board.doc(), inc.prefix)!), "the name stands unburned").toBe(false);
+  });
+});
+
+/**
+ * THE WITNESS THRESHOLD RIDES THE ORCHESTRATOR. The kel builders count co-signatures, but the orchestrator
+ * has to CARRY them from the caller — a shared (k-of-n) name is rotated or buried only by a quorum, so a
+ * rotate/owner-burn through `rotateOwnHandle`/`burnOwnHandle` that dropped `coSigners` would mint a chain a
+ * lone member could seize, and `verifyHandleKel` would refuse it. Each pairing ships its own control: the
+ * SAME act without the co-signature must fail to verify, so a green "with" cannot pass against a threshold
+ * that never bit.
+ */
+describe("the witness threshold rides the orchestrator — a shared name moves only by quorum", () => {
+  const signerOf = (s: Uint8Array) => async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, s));
+  const A_SEED = new Uint8Array(32).fill(0xa1);
+  const B_SEED = new Uint8Array(32).fill(0xb2);
+  const HANDLE_SEED = new Uint8Array(32).fill(0xc3);
+
+  // A 2-of-2 SHARED name: the genesis owner set names two members, threshold 2. Member identity is by
+  // PREFIX; here each member's prefix IS its op-key did, so the presenter's authSig and a co-signer's
+  // signature both verify against the same did the set names. Incepted UNARMED (the first rotation seats
+  // any fresh key — no pre-commitment to match), which isolates this test to the threshold, not KERI pre-rotation.
+  async function sharedNameOnBoard() {
+    const aDid = "0x" + (await ed.getPublicKeyAsync(A_SEED).then(hex));
+    const bDid = "0x" + (await ed.getPublicKeyAsync(B_SEED).then(hex));
+    const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(HANDLE_SEED).then(hex));
+    const inc = mintHandleInceptionSet(handleKeyDid, [aDid, bDid], 2, sealKeySetHash([handleKeyDid], 1));
+    const board = makeFakeBoard();
+    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    return { inc, board, aDid, bDid };
+  }
+
+  test("★ a shared name ROTATES with a quorum co-signature — the chain verifies ★", async () => {
+    const { inc, board, aDid, bDid } = await sharedNameOnBoard();
+    const res = await rotateOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      seed: HANDLE_SEED, handleIndex: 0,
+      ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
+      coSigners: [{ memberPrefix: bDid, keyDid: bDid, sign: signerOf(B_SEED) }],
+      buildCard: (_e, newChain, _fresh) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the quorum-co-signed rotation verifies").toBe(true);
+  });
+
+  test("CONTROL — the SAME rotation WITHOUT the co-signature fails to verify (a lone member cannot seize a 2-of-2 name)", async () => {
+    const { inc, board, aDid } = await sharedNameOnBoard();
+    const res = await rotateOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      seed: HANDLE_SEED, handleIndex: 0,
+      ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
+      // no coSigners — only the presenter, below the 2-of-2 threshold
+      buildCard: (_e, newChain, _fresh) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);   // the mint runs; the threshold bites at VERIFY
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "a lone-member rotation of a shared name is unverifiable").toBe(false);
+  });
+
+  test("★ a shared name is BURIED with a quorum co-signature — the burned chain verifies terminal ★", async () => {
+    const { inc, board, aDid, bDid } = await sharedNameOnBoard();
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      ownerBurn: { ownerAuthMemberPrefix: aDid, ownerAuthKeyDid: aDid, sign: signerOf(A_SEED) },
+      coSigners: [{ memberPrefix: bDid, keyDid: bDid, sign: signerOf(B_SEED) }],
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the quorum owner-burn verifies").toBe(true);
+    expect(isBurned(res.card.chain as HandleKelEvent[]), "the name reads buried").toBe(true);
+  });
+
+  test("CONTROL — the SAME owner-burn WITHOUT the co-signature fails to verify (a lone member cannot silence a 2-of-2 name)", async () => {
+    const { inc, board, aDid } = await sharedNameOnBoard();
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      ownerBurn: { ownerAuthMemberPrefix: aDid, ownerAuthKeyDid: aDid, sign: signerOf(A_SEED) },
+      // no coSigners — below the 2-of-2 threshold
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "a lone-member owner-burn of a shared name is unverifiable").toBe(false);
   });
 });
