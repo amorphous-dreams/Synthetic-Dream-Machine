@@ -14,7 +14,7 @@ retain     = true
 revised-on = "2026-09-11"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
 status     = "standing"
-status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); no code, test, or existing carrier changed; every slot ends `-> ?` at the operator's hand"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 and the moʻolelo stands inline at #/exit; the enactments ride their own commits"
 tags       = ["docs/pono/talk-story"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
@@ -332,9 +332,11 @@ One bundle with the caps deciding what rings reads as the pono lean; two bundles
 
 <<~ ahu #/exit>>
 
-!! Exit — open
+!! Exit — moʻolelo
 
-No moʻolelo closes here. Eight slots stand told at two scales; each lean rides as a reading the stories point at and rules nothing. The operator rules. The seal-and-seat floor at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> carries the plans and forks these stories serve.
+The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA forwards"):
+
+<<~ moolelo held="the bridge rides Road B with the five-clause contract pinned as reds both roads must pass, the reach plane stays locked · the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm · the shared bag registers in the realm's shared CRDT, @crossroads names only that it exists, read at CONTRACT · the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts · grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor · the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x · the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs · one bundle, the caps decide what rings (operator)">>enacted from this floor by tasked spirits; the eight slots above stay as told<<~/moolelo>> The seal-and-seat floor at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> carries the plans and forks these stories serve.
 
 <<~/ahu>>
 
@@ -368,6 +370,6 @@ No moʻolelo closes here. Eight slots stand told at two scales; each lean rides 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;io7HSjUELQLBts5RJEy8XYBSVd2ErgYgOpKxZBtOaVY
+<<^ code="&#x0003;">>ni:///sha-256;pwxO9zRefl0I2DYcSjf2kA6qCTln8KH43KugbtqbmgU
 
 <<^ code="&#x0004;" -> to="?">>
