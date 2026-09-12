@@ -106,8 +106,12 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   const key = `${args.prefix}/${args.fingerprint}`;
 
   // Reuse-on-present — the binding tiddler already replicated to this device.
-  const existing = tiddlerText(await args.daemonStore.get(key));
-  if (existing) return { url: existing, minted: false };
+  const record = await args.daemonStore.get(key);
+  const existing = tiddlerText(record);
+  if (existing) {
+    await regrantOnSeat(args, key, existing, record?.tiddler as Record<string, unknown> | undefined);
+    return { url: existing, minted: false };
+  }
 
   // Mint-on-absent — Q7 idempotent sequence: create → registerBag → delegate → put.
   const handle = args.repo.create<LarDoc>(emptyLarDoc());
@@ -157,4 +161,39 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 
   return { url: handle.url, minted: true };
+}
+
+/**
+ * A SEAT LANDING AFTER THE MINT RE-GRANTS THE BINDING. A record reading `face-reach = "vessel-only"` names
+ * a binding minted while the face stood pinned and unseated; once the seat's events reach this vessel the
+ * face can be named, and the reuse path is the one moment every later boot passes through. The vessel
+ * stands admin of a doc it minted, so the re-delegation needs no founder signature. The record then
+ * takes the spelling a seated mint writes — `face` — and the next reuse re-grants nothing.
+ */
+async function regrantOnSeat(
+  args: ResolveBindingArgs,
+  key: string,
+  url: string,
+  fields: Record<string, unknown> | undefined,
+): Promise<void> {
+  if (fields?.["face-reach"] !== "vessel-only") return;
+  if (!args.personaGroupAgentIdHex) return;
+  const seated = await (args.faceSeated?.() ?? Promise.resolve(true));
+  if (!seated) return;
+  if (args.delegateToFace) {
+    await args.delegateToFace(url, "admin");
+  } else {
+    await args.keyhive.delegate({ bagUrl: url, audience: args.personaGroupAgentIdHex, access: "admin" });
+  }
+  // Every field the record carried rides through; only the posture moves.
+  const carried: Record<string, string> = {};
+  for (const [k, v] of Object.entries(fields ?? {})) {
+    if (k !== "title" && typeof v === "string") carried[k] = v;
+  }
+  const origin: ChangeOrigin = { kind: "lares-verb", requestId: `binding-regrant-${args.fingerprint.slice(0, 8)}` };
+  await args.daemonStore.put(mutableLarRecord(key, {
+    ...carried,
+    text:         url,
+    "face-reach": "face",
+  }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 }

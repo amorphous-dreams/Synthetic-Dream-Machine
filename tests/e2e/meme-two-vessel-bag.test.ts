@@ -15,6 +15,7 @@
  *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
  *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get`
  *   ⑧ B edits, promotes; A reads the edit back            `meme put --base` · `act MOVE` · `meme get`
+ *   ⑨ HELD (test.fails) — a face-join lands ON B; B's binding reads `face`; a put rides the face
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
  *
@@ -294,6 +295,22 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     const back = await awaitMeme(A!, BAG, (t) => t.includes("<<~ ahu #/b>>"));
     expect(back.text).toMatch(BAG_LINE);
     expect(back.text).not.toContain("$origin-bag");
+  });
+
+  // THE JOINEE-SIDE DOOR DOES NOT STAND. A's `face-join` verb seats a joinee and hands the grant back to A's
+  // caller; no CLI verb, no daemon verb and no doc-relay path carries that grant TO B, and `capEvents` ingest
+  // at founding alone (`vessel found --admit`). So B's face stays pinned-not-seated for its whole life, every
+  // binding B mints stays `vessel-only`, and the reuse-path re-grant (`resolve-binding.ts`, witnessed in
+  // keyhive `face-pinned-not-seated` V3) has no seat to fire on. Which door reads pono — a daemon verb the
+  // founder's caller invokes, or a doc the joinee watches — stands as the founding session's call
+  // (seal-and-seat-handoff#/plan-face-join). This step reads LOUD until that ruling lands: the day B's log
+  // stops naming the pinned posture, `test.fails` flips and the step gets written in full — B's wiki binding
+  // reads `face-reach = "face"`, and a `meme put --recipe lares` on B lands under the face, not B's key.
+  test.fails("⑨ HELD — a face-join lands ON B: B's face reads seated, its binding reads `face`, a put rides the face", () => {
+    const log = B!.bootLog();
+    const pinned = /pinned, not yet seated/.test(log);
+    if (!pinned) console.error("meme-two-vessel-bag ⑨: B's log no longer names the pinned posture — the door may stand; write this step in full");
+    expect(log, "no door carries A's later grant to B; B's face stays pinned, not seated").not.toMatch(/pinned, not yet seated/);
   });
 });
 
