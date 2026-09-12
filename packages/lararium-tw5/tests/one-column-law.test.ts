@@ -8,8 +8,11 @@
  * renderers disagreed on the same bytes, and the git diff showed a whole fence "changing" while no
  * value changed. One law, one module, both callers importing it.
  *
- * The fixture pins the committed form of `bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem`
- * (read via `git show HEAD:`), whose fence carried the wider column.
+ * The fixture pins the form `bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem` carried at
+ * `77d5c9f7e`, whose fence held the wider column. THE FIXTURE CARRIES NO DECLARATION: the corpus finder
+ * reads the DOCTYPE line and never the path, so a fixture that declared itself would enter every sweep
+ * and normalize away the very drift it pins — and the toml `type` line declares just as loudly. Both
+ * join at read time: the DOCTYPE line prepends, the `{CARRIER_TYPE}` placeholder resolves.
  */
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
@@ -30,7 +33,9 @@ function projectorRender(src: string, uri: string): string {
 }
 
 describe("the projector's render and normalize's render byte-agree", () => {
-  const src = readFileSync(join(FIXTURES, "doa-index.committed.mem"), "utf8");
+  const DECL = "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>\n";
+  const src = DECL + readFileSync(join(FIXTURES, "doa-index.committed.body"), "utf8")
+    .replace("{CARRIER_TYPE}", "text/memetic-wikitext+tiddlywiki");
 
   test("doa/index.mem (committed form): projector === normalize, byte for byte", () => {
     expect(normalizeMemeSource(src).text).toBe(projectorRender(src, URI));
