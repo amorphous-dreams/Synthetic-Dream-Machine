@@ -45,7 +45,6 @@
 import {
   readNexusDoc, writeNexusSeal, writeNexusKahu, writeNexusPractice, nexusCharterDocPath, nexusCharterDocRelPath,
   listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
-  runNexusKapae, runNexusKapaeList, NexusKapaeError,
   runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError,
   hasContractedInto,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState,
@@ -75,6 +74,7 @@ import type { QuorumSignature } from "@lararium/mesh";
 import { loadPersonaGroupRootSeed, readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
+import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
@@ -528,88 +528,6 @@ async function cmdSeal(args: ParsedArgs): Promise<number> {
     const code = err instanceof UsageError ? "usage" : "error";
     emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus seal ${sub ?? ""}: ${msg}`) });
     return exitFor(code);
-  }
-}
-
-/**
- * `lares nexus kapae <nym> [--reason]` raises a quorum-signed ban; `lares nexus kapae --list` folds the
- * current Kapae'd set. FAIL CLOSED: a REFUSAL (unseated charter, sub-quorum, malformed nym) renders as a
- * clean error and writes nothing — main gates every hunk, so the writer never lands a sub-quorum entry.
- */
-async function cmdKapae(args: ParsedArgs): Promise<number> {
-  if (args.flags["list"]) return await kapaeList(args);
-  const nym = args.positional[1];
-  if (!nym) {
-    console.error("usage: lares nexus kapae <nym> [--reason <text>]   |   lares nexus kapae --list");
-    return 2;
-  }
-  return await kapaeRaise(args, "kapae", nym);
-}
-
-async function cmdUnKapae(args: ParsedArgs): Promise<number> {
-  const nym = args.positional[1];
-  if (!nym) {
-    console.error("usage: lares nexus un_kapae <nym>");
-    return 2;
-  }
-  return await kapaeRaise(args, "un_kapae", nym);
-}
-
-async function kapaeRaise(args: ParsedArgs, action: "kapae" | "un_kapae", nym: string): Promise<number> {
-  const reason = args.options["reason"];
-  try {
-    const r = await runNexusKapae({ action, nym, ...(reason ? { reason } : {}), sealHome: larSealHome() });
-    emit(args, {
-      ok: true,
-      data: {
-        action: r.action, nym: r.nym, version: r.version, priorVersion: r.priorVersion,
-        sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
-        boardUrl: r.boardUrl, kapaedNow: r.kapaedNow,
-      },
-      human: () => {
-        const verb = action === "kapae" ? "BANNED" : "LIFTED";
-        console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (version ${r.version}${r.priorVersion !== null ? `, superseding ${r.priorVersion}` : ""})`);
-        console.log(`  signed by:  ${r.signers.length} of ${r.threshold} required founding-kahu roots`);
-        for (const s of r.signers) console.log(`    ${s.slice(0, 16)}…`);
-        console.log(`  epoch:      ${r.sealEpochCid}`);
-        console.log(`  board:      ${r.boardUrl}`);
-        console.log(`  enforced:   ${r.kapaedNow ? "Kapae'd (a presenter under this nym now draws Mu)" : "NOT Kapae'd (a standing lift or higher entry supersedes)"}`);
-      },
-    });
-    return 0;
-  } catch (err) {
-    const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusKapaeError ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus ${action}: ${msg}`) });
-    return exitFor("error");
-  }
-}
-
-async function kapaeList(args: ParsedArgs): Promise<number> {
-  try {
-    const r = await runNexusKapaeList({ sealHome: larSealHome() });
-    emit(args, {
-      ok: true,
-      data: {
-        sealEpochCid: r.sealEpochCid || null, threshold: r.threshold,
-        seatedKeys: r.seatedKeys, kapaed: r.kapaed, entries: r.entries,
-      },
-      human: () => {
-        console.log(`nexus kapae — the antigen board fold:`);
-        console.log(`  epoch:      ${r.sealEpochCid || "(unseated — the antigen stays inert)"}`);
-        console.log(`  quorum:     ${r.threshold}-of-N · seated keys: ${r.seatedKeys}`);
-        console.log(`  Kapae'd (${r.kapaed.length}):`);
-        for (const n of r.kapaed) console.log(`    ${n}`);
-        if (r.kapaed.length === 0) console.log(`    (none stand banned)`);
-        console.log(`  board entries (${r.entries.length}):`);
-        for (const e of r.entries) console.log(`    ${e.action.padEnd(8)} v${e.version}  ${e.nym.slice(0, 16)}…  (${e.signers} sig)`);
-      },
-    });
-    return 0;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus kapae --list: ${msg}`) });
-    return exitFor("error");
   }
 }
 
