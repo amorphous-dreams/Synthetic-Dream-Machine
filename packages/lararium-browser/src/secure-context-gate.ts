@@ -109,8 +109,16 @@ export function assertCanMint(host: SecureContextHost = ambientHost()): void {
 
 export type StoragePersistence = "persistent" | "best-effort" | "unknown";
 
+/** A byte count the platform reported, or "unknown" where it reports none. */
+export type StorageBytes = number | "unknown";
+
 export interface StorageReading {
   readonly persistence: StoragePersistence;
+  /** Bytes this origin holds, as `navigator.storage.estimate()` reports them. */
+  readonly usage: StorageBytes;
+  /** The ceiling — bytes this origin may hold before best-effort eviction fires. Safari answers ~77 GB,
+   *  Chrome 60 % of disk, Firefox 2 GB per eTLD+1; a browser without `estimate` answers "unknown". */
+  readonly quota: StorageBytes;
   readonly reason: string;
 }
 
@@ -118,6 +126,7 @@ export interface StorageReading {
 export interface StorageHost {
   persist?(): Promise<boolean>;
   persisted?(): Promise<boolean>;
+  estimate?(): Promise<{ usage?: number; quota?: number }>;
 }
 
 /** Read `navigator.storage`, or nothing where the browser offers none. */
@@ -137,6 +146,13 @@ export function ambientStorage(): StorageHost | undefined {
  * that never asked cannot.
  */
 export async function requestDurableStorage(store: StorageHost | undefined = ambientStorage()): Promise<StorageReading> {
+  const ceiling = await readStorageCeiling(store);
+  const reading = await readPersistence(store);
+  return { ...reading, ...ceiling, reason: `${reading.reason}${describeCeiling(ceiling)}` };
+}
+
+/** The eviction class alone — persistent, best-effort, or unreadable. */
+async function readPersistence(store: StorageHost | undefined): Promise<Pick<StorageReading, "persistence" | "reason">> {
   if (!store || typeof store.persisted !== "function") {
     return {
       persistence: "unknown",
@@ -159,4 +175,33 @@ export async function requestDurableStorage(store: StorageHost | undefined = amb
   } catch {
     return { persistence: "unknown", reason: "the storage-persistence probe threw; eviction class stays unread" };
   }
+}
+
+/**
+ * Read the ceiling — how many bytes fit before best-effort eviction fires. A browser without `estimate`
+ * (Safari before 26, a private window) reads "unknown" for both; a throw reads the same. The class the
+ * probe already read stands either way: the ceiling adds a number, never a failure.
+ */
+async function readStorageCeiling(store: StorageHost | undefined): Promise<Pick<StorageReading, "usage" | "quota">> {
+  if (!store || typeof store.estimate !== "function") return { usage: "unknown", quota: "unknown" };
+  try {
+    const e = await store.estimate();
+    return {
+      usage: typeof e?.usage === "number" ? e.usage : "unknown",
+      quota: typeof e?.quota === "number" ? e.quota : "unknown",
+    };
+  } catch {
+    return { usage: "unknown", quota: "unknown" };
+  }
+}
+
+/** Append the ceiling to a reason, in units a person reads; silent when the platform reported none. */
+function describeCeiling(c: Pick<StorageReading, "usage" | "quota">): string {
+  if (c.quota === "unknown") return "";
+  const used = c.usage === "unknown" ? "an unread amount" : gib(c.usage);
+  return ` Ceiling: ${used} of ${gib(c.quota)} used before best-effort eviction fires.`;
+}
+
+function gib(bytes: number): string {
+  return `${(bytes / 1_073_741_824).toFixed(1)} GiB`;
 }

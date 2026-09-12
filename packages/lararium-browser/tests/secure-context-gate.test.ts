@@ -109,3 +109,42 @@ describe("the storage probe reports what it was granted", () => {
     expect((await requestDurableStorage(throws)).persistence).toBe("unknown");
   });
 });
+
+describe("the storage probe reads the ceiling beside the class", () => {
+  const withEstimate: StorageHost = {
+    persisted: async () => false, persist: async () => false,
+    estimate:  async () => ({ usage: 4_096, quota: 2_147_483_648 }),
+  };
+  const estimateThrows: StorageHost = {
+    persisted: async () => true,
+    estimate:  async () => { throw new Error("private window"); },
+  };
+
+  test("usage and quota ride the reading, and the reason names the ceiling", async () => {
+    const r = await requestDurableStorage(withEstimate);
+    expect(r.usage).toBe(4_096);
+    expect(r.quota).toBe(2_147_483_648);
+    expect(r.reason).toMatch(/2\.0 GiB/);
+  });
+
+  test("CONTROL — a host with no estimate reads unknown for both, never throws", async () => {
+    const r = await requestDurableStorage({ persisted: async () => true });
+    expect(r.persistence).toBe("persistent");
+    expect(r.usage).toBe("unknown");
+    expect(r.quota).toBe("unknown");
+  });
+
+  test("a throwing estimate reads unknown and leaves the class it already read standing", async () => {
+    const r = await requestDurableStorage(estimateThrows);
+    expect(r.persistence).toBe("persistent");
+    expect(r.usage).toBe("unknown");
+    expect(r.quota).toBe("unknown");
+  });
+
+  test("against the LIVE browser the ceiling reads as a number or as unknown, never absent", async () => {
+    const r = await requestDurableStorage();
+    expect(typeof r.quota === "number" || r.quota === "unknown").toBe(true);
+    expect(typeof r.usage === "number" || r.usage === "unknown").toBe(true);
+  });
+});
+
