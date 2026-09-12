@@ -1,8 +1,9 @@
 /**
  * e2e/vessel-sealed — a SEALED vessel stands end to end, every step through the built CLI.
  *
- * The at-rest seal wraps two secret carriers (the keyhive archive, the device recovery share) in a
- * scrypt/AES-GCM envelope under an operator passphrase. This witness walks the whole lifecycle a sealed
+ * The at-rest seal wraps the secret carriers the founding leaves (the keyhive archive, the veil archive,
+ * the device recovery share the face founding mints) in a scrypt/AES-GCM envelope under an operator
+ * passphrase. This witness walks the whole lifecycle a sealed
  * hearth lives by, on a staged vessel it owns:
  *
  *   ① stand fresh                     `vault status` reads cleartext, `sealExpected` false
@@ -68,6 +69,9 @@ let carrierHash = "";
 /** The sealed archive's bytes as `vault seal` left them — the floor stand below must leave them alone. */
 let sealedArchive: Buffer = Buffer.alloc(0);
 const ARCHIVE = (): string => join(lar!.root, "data/lares/identity/keyhive-archive.bin");
+/** The device share as the seal left it — every stand below must leave it byte-identical (a re-stand never re-mints). */
+let sealedShare: Buffer = Buffer.alloc(0);
+const SHARE = (): string => join(lar!.root, "data/lares/identity/recovery-device-share-h0.bin");
 
 /** Poll the CLI until the UDS answers a read, or the deadline passes. */
 async function awaitAnswer(env: Record<string, string>, timeoutMs = 120_000): Promise<CliResult> {
@@ -109,6 +113,11 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     expect(r.json?.["ok"], said(r)).toBe(true);
     const carriers = carriersOf(r);
     expect(carriers["archive"]?.state).toBe("cleartext");
+    // The face founding ARMS recovery: the device share stands from day one (absent by omission and absent
+    // by choice read identical from outside — only the mint tells them apart). The reserve share belongs
+    // to the seal rite and stays absent here (CONTROL: one leg, not two).
+    expect(carriers["device-share"]?.state).toBe("cleartext");
+    expect(carriers["reserve-share"]?.state).toBe("absent");
     expect(dataOf(r)["sealExpected"]).toBe(false);
     expect(dataOf(r)["via"]).toBe("daemon");
   });
@@ -125,20 +134,20 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     const r = await cli({ ...NO_KEY, LARES_ARCHIVE_PASSPHRASE_NEW: PASS_1 }, ["vault", "seal", "--yes", "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(dataOf(r)["via"]).toBe("daemon");
-    // The vessel archive AND the veil archive — both persisted by the boot, both sealed in one act.
-    expect(dataOf(r)["sealed"]).toEqual(expect.arrayContaining(["archive", "veil"]));
+    // The vessel archive, the veil archive AND the device share — one policy, one act.
+    expect(dataOf(r)["sealed"]).toEqual(expect.arrayContaining(["archive", "veil", "device-share"]));
     const s = await cli(NO_KEY, ["vault", "status", "--json"]);
     const carriers = carriersOf(s);
     expect(carriers["archive"]).toMatchObject({ state: "sealed", mode: "passphrase" });
     expect(carriers["veil"]).toMatchObject({ state: "sealed", mode: "passphrase" });
-    // MEASURED 2026-09-11: no founding path writes the device recovery share (`persistRecoveryDeviceShare`
-    // has no caller outside its own store), so the second carrier reads ABSENT on every staged vessel and
-    // the seal covers the archive alone. A founding that mints the share turns this red — widen then.
-    expect(carriers["device-share"]).toMatchObject({ state: "absent" });
+    expect(carriers["device-share"]).toMatchObject({ state: "sealed", mode: "passphrase" });
+    expect(carriers["reserve-share"]).toMatchObject({ state: "absent" });
     expect(dataOf(s)["sealExpected"]).toBe(true);
     // The archive on disk wears the envelope — bare bytes would be the seal faked.
     sealedArchive = readFileSync(ARCHIVE());
     expect(isSealedEnvelope(sealedArchive)).toBe(true);
+    sealedShare = readFileSync(SHARE());
+    expect(isSealedEnvelope(sealedShare)).toBe(true);
   });
 
   test("③ CONTROL: stop, then stand WITHOUT the passphrase — the boot names the seal and stands at the WAKING FLOOR", async () => {
@@ -160,6 +169,7 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     const after = readFileSync(ARCHIVE());
     expect(isSealedEnvelope(after), "the sealed archive survives a floor stand").toBe(true);
     expect(after.equals(sealedArchive), "the floor stand rewrote the sealed archive").toBe(true);
+    expect(readFileSync(SHARE()).equals(sealedShare), "the floor stand re-minted the device share").toBe(true);
     const s = await cli(NO_KEY, ["vault", "status", "--json"]);
     expect(carriersOf(s)["archive"]).toMatchObject({ state: "sealed", mode: "passphrase" });
   }, 300_000);
@@ -178,6 +188,8 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     const s = await cli(KEY_1, ["vault", "status", "--json"]);
     expect(dataOf(s)["via"]).toBe("daemon");
     expect(dataOf(s)["passphraseEnvSet"]).toBe(true);
+    // CONTROL: a lit stand re-seals the archive (M3) and never touches the device share — same bytes.
+    expect(readFileSync(SHARE()).equals(sealedShare), "a lit stand re-minted the device share").toBe(true);
   }, 300_000);
 
   test("⑤ `vault rotate` old→new through the daemon; a restart under the NEW passphrase answers", async () => {
@@ -188,7 +200,11 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     expect(dataOf(r)["via"]).toBe("daemon");
     // Every present carrier moves in one act: a veil left under the old passphrase faults the next boot at
     // its GCM tag while the archive opens — a split the rotate itself would have made.
-    expect(dataOf(r)["rotated"]).toEqual(["archive", "veil"]);   // the device share stands absent — measured at ②
+    expect(dataOf(r)["rotated"]).toEqual(["archive", "veil", "device-share"]);   // the reserve share stands absent — one leg
+    // The share re-sealed under the NEW passphrase: fresh envelope bytes, opened by PASS_2 alone.
+    const rotatedShare = readFileSync(SHARE());
+    expect(rotatedShare.equals(sealedShare), "rotate left the device share under the old passphrase").toBe(false);
+    sealedShare = rotatedShare;
 
     const stop = await cli(NO_KEY, ["vessel", "stop", "--skip-build", "--json"]);
     expect(stop.code, said(stop)).toBe(0);
@@ -204,6 +220,7 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     const read = await awaitAnswer(KEY_2);
     expect(read.json?.["ok"], said(read)).toBe(true);
     expect(String((read.json?.["data"] as Record<string, unknown>)["canonicalHash"])).toBe(carrierHash);
+    expect(readFileSync(SHARE()).equals(sealedShare), "the stand after rotate re-minted the device share").toBe(true);
   }, 600_000);
 
   test("⑥ `vault export` writes a sealed backup; `vault status --check` reports the split truthfully", async () => {
@@ -225,13 +242,15 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     const rc = carriersOf(right);
     expect(rc["archive"]?.opensUnderProbe).toBe(true);
     expect(rc["veil"]?.opensUnderProbe).toBe(true);
-    expect(rc["device-share"]?.opensUnderProbe, "an absent carrier answers no probe").toBeUndefined();
+    expect(rc["device-share"]?.opensUnderProbe).toBe(true);
+    expect(rc["reserve-share"]?.opensUnderProbe, "an absent carrier answers no probe").toBeUndefined();
     expect(dataOf(right)["split"]).toBe(false);
     const wrong = await cli(KEY_1, ["vault", "status", "--check", "--json"]);
     const wc = carriersOf(wrong);
     expect(wc["archive"]?.opensUnderProbe).toBe(false);
     expect(wc["veil"]?.opensUnderProbe).toBe(false);
-    expect(wc["device-share"]?.opensUnderProbe).toBeUndefined();
+    expect(wc["device-share"]?.opensUnderProbe).toBe(false);
+    expect(wc["reserve-share"]?.opensUnderProbe).toBeUndefined();
     expect(dataOf(wrong)["split"]).toBe(false);
   }, 120_000);
 });
