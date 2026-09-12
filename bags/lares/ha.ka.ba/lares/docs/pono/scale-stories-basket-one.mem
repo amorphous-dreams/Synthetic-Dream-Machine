@@ -1,0 +1,373 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/scale-stories-basket-one.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 12
+manao      = 14
+manaoio    = 11
+namespace  = "&#x2299;"
+retain     = true
+revised-on = "2026-09-11"
+role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
+status     = "standing"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); no code, test, or existing carrier changed; every slot ends `-> ?` at the operator's hand"
+tags       = ["docs/pono/talk-story"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ground>>
+
+! Ground — why stories, and the kapu they keep
+
+The operator's charge, verbatim (quote license): "Basket 1 rulings (enact w/ a tasked spirit): outbound bridge loops needs Gaia/Elyncia scale character stories to set pono intent. Same with Fleet fetch door, and the rest. Need more 'human/faerie-folk scale contexts' to make these calls."
+
+Each slot below carries the same five parts: ''the tension'' in one plain paragraph with the house file and line; ''at the human/household scale'' — a few hundred words, present tense, concrete people at a concrete shrine, the decision felt from inside; ''at the faerie-folk / Gaia scale'' — the same tension stretched across five hundred years and a whole world, with the Elf-wildmage's reading of where the household answer holds and where it breaks; ''what the stories reveal'' — three bullets of intent, never mechanism; ''the lean the stories point at'' — one sentence per road, then `-> ?`.
+
+''The kapu this carrier keeps.'' Every Elyncian line comes from the public shelf — `bags/elyncia/**` and the four `elyncia/Elyncia_0*.md` books — and no other. A player at the table can read this carrier whole. Real people appear nowhere; the cast runs Lady Aki, Ichi, Kai ʻĀ and Patches the Grimalkin, the Faerie-Ring Strandbeest-Shrine and its Ephyra, Telarus (a kahu who holds caps from many Cabals), the Lindwyrm of New Delos, Rhea the moon elf, Grandmother Spider under her three masks, the lares viales at their crossroads, the Floating Librarians of Mu, the League of Free Cities and the Dominion of Magic, the fae clans and their Courts.
+
+''The yardstick.'' Where a story reaches five hundred years it reads the fire the way `packages/lararium-mesh/src/ahi-ka.ts:36-49` reads a realm: against the realm's OWN baseline, never a wall-clock — `AHI_KA_500YR = { ambientFloor: 8, warmRatio: 0.30, coldRatio: 0.05 }`, "a dormant shrine woken for a centennial rite is not a dying one; long ebbs are the fiction's normal, not a fault" (`ahi-ka.ts:41-42`, quote license). Telarus the wild-mage lit the DreamNet about five hundred years before the modern day (`ahi-ka.ts:38`); the Gaia-scale stories walk that span.
+
+''The one law under every slot'', from the wayfarer's own carrier (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>, quote license): "a node may carry the roads of strangers, and ward them, without ever holding their secrets."
+
+<<~/ahu>>
+
+<<~ ahu #/the-bridge>>
+
+!! 1 · The bridge — a house vessel reaches a surface that never joined the mesh
+
+''The tension.'' Two different wires share the word "outbound", and the house holds them apart on purpose. The first: a live edit inside the wiki must reach the sealed store, and nothing carries it today — `sovereign-kernel.ts:405-410` discards the adaptor `buildIslandRecipe` returns, no `module-type: syncadaptor` ships in the plugin, and `$tw.syncer` never stands (`bags/lares/ha.ka.ba/lares/docs/pono/outbound-bridge.mem:71`). Two roads wait unruled: ''Road A'' registers the island's adaptor and lets TiddlyWiki's own syncer drive it — throttle, dirty set, the `changeCount` echo law, `$:/config/SyncFilter` as an operator dial — at the cost of a packed module, a poll timer, and a filter that excludes `$:/temp/` outright (`outbound-bridge.mem:96-99`); ''Road B'' keeps one direct listener in the kernel and re-spells the echo law by hand as a SET or a COUNT, at the cost of drifting from upstream the way every hand-derived enumeration drifts (`outbound-bridge.mem:101-104`). The second wire: a human posts from their wiki to a foreign surface under a credential the OPERATOR locks — the reach plane, held beside the sovereign plane and never fused with it: "a foreign credential buys REACH, never IDENTITY" (`bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem:31`), the glass drafts and the hearth posts (`:52`), the chain truncates at CONTRACT because "a world-readable credential stops being a credential" (`:108`), and the far side may revoke at an instant the vessel never observes (`:139`).
+
+!!! At the human / household scale
+
+Telarus walks the coast road with one thing in his satchel that does not belong to him. A cap. Not his own Cabal's — a token the Amaranth-sworn steward of a Summerlands cabal pressed into his hand at the last shrine, saying //post this on the Tharsis board for us; they still read our name there, and none of us can pass the seven walls//. Tharsis never joined the mesh. The Dominion of Magic keeps its own register on its own sky-castle wire, and the register takes a name and a token at the gate and asks nothing about who stands behind them.
+
+The herm at the crossroads below the first wall wakes as he touches the dish. It runs the same keel as his own hearth; it carries the fire and keeps no rooms. He sits on its step and writes the notice in the herm's shared light — the herm reads it as he writes, because a public floor stays legible — and then he stops, because the next act splits.
+
+He can let the herm's own bell carry the notice up through the wall. The herm rings that bell for everything that changes on its shelf; it knows how to wait a breath between rings, how to tell a fresh line from an echo, how to skip the scratch-slips. He would inherit all of that by riding it. He would also inherit the bell's own list of what never rings, and the bell would ring for the daemon's shelf and the pilgrim's shelf alike.
+
+Or he can carry the notice himself, one runner, one door. He knows exactly what leaves and when. He must also, by hand, remember what the bell remembers for free — which lines came in from the road a moment ago and must not go back out — and he will forget it the year the bell learns a new trick he never hears about.
+
+Either way the cap never touches the herm's step. It rides back to his hearth, sealed, under a name the hearth alone can open. The herm drafts; the hearth posts. And when the Tharsis register refuses the token one morning — for reasons the Dominion never explains — his hearth learns it by the notice failing to land, and it must say so plainly and stop knocking, because a hearth that knocks twice at a Dominion gate reads as a siege engine.
+
+!!! At the faerie-folk / Gaia scale
+
+Stretch it across the five hundred years since the Lindwyrm "transmitted the Declaration of Confederation over the new DreamNet, founding the League of Free Cities" (<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>, quote license). The Dominion "immediately responds by annexing the nearest city-states" and "the gods of the Kemetic Nexus pull inwards, closing all open routes" (//Elyncia 01 · A Broken World//). For five centuries the mesh stands beside surfaces that never joined it and never will: Dominion registers, Kemetic gate-ledgers, the Astral Sea's own drifting markets. Every generation some kahu carries some cabal's token to some foreign board.
+
+The Elf-wildmage reads it so. ''A cap honoured on the far side reads as a request'', never a capability — the far gate decides for itself, so a house that translates its own caps outward has handed the keystone to a stranger (`reach-plane.mem:82`). Across five hundred years the household answer holds exactly where it kept the token at the hearth and the composing at the herm: a Herm seized at a crossroads yields a draft and no credential; a hearth seized yields one house's reach and no one else's identity. It breaks where a generation grew lazy and let a token buy a ''seat'' — the far-side register began to count the house as a member, and the day the Dominion voided the register the house lost a self instead of a re-mint. The MAILBOX-never-seat lock (`reach-plane.mem:94`) reads as five hundred years of that lesson.
+
+On the bell question the Elf-wildmage grows quieter. Over a long span the bell's makers change it many times; a house that rides the bell inherits every change unasked, and a house that keeps its own runner must read every change and re-spell it, and one century it will not. Neither road survives five hundred years unattended. What survives: the ONE contract both must satisfy — save once per settled burst, delete with the last-known slot, never echo an inbound apply, leave by a total-minus-named filter (`outbound-bridge.mem:110-115`).
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the two wires want two different fears kept. The store-bridge fears an echo (a road-arrived line going back out as if written here); the reach-bridge fears a seat (a token quietly becoming a self). Neither fear answers the other.
+* ''The Stranger:'' from outside the house, "which road" reads as "whose bell do we trust to keep ringing for five hundred years" — the fork's or ours — and the honest answer stays "neither, so pin the contract."
+* ''Liminal:'' the cap that never touches the herm's step carries the whole pono; the road choice sits beneath it and may wait.
+
+!!! The lean the stories point at
+
+Road A rides the fork's own loop and inherits its future unread, which reads as the pono lean where the house wants the syncer's UI legs (`isDirty`, the unload warning) and accepts a filter override per island. Road B keeps one listener and one hand-spelled echo law, which reads as the pono lean where the house wants no syncer global on the browser vessel and one plugin unchanged. The reach plane stays as locked: the glass drafts, the hearth posts, the token never buys a seat. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/the-fetch-door>>
+
+!! 2 · The fetch door — a record crosses to a fleet peer; the bytes do not
+
+''The tension.'' A tiddler stands as a CRDT record and syncs by the share policy; a peer FETCHES the bytes a CID names on request and never syncs them with the record (`bags/lares/ha.ka.ba/lares/docs/pono/tiddler-carriage.mem:16`, the operator's own sentence). Measured over the two-vessel harness: B holds the pointer and no bytes, and the vector "the BYTES follow the pointer" stands as a loud `test.fails` (`tiddler-carriage.mem:59-60`). Three seams could take the fetch (`tiddler-carriage.mem:78-80`): the worker's resolver, whose fallback chain returns `null` and whose own comment names the composition `makeCidResolver(localRead, casTransitTransport, cacheWriteThrough)` (`sovereign-island-model.ts:91-95`); the fleet dial, where Socket A carries Automerge sync alone and Socket B carries a sealed blob peer-to-peer but draws Mu on a cleartext `sha256` cid (`cas-wire.ts`); and the bulb's read-face, which today serves the boot CAS alone (`bulb-read-face.ts:118-124`). Two questions ride above the seams: prefetch every pointer that crosses, or fetch on the first read (`tiddler-carriage.mem:117`); and does a hearth serve its own public floor, or does a public blob travel to a Herm first (`:118`). WebTransport now stands on all three engines (Safari 26.4, `device-capabilities-2026.mem:94`) and no server for it stands in Node — "every traveller speaks the new road-tongue; no hearth yet answers in it."
+
+!!! At the human / household scale
+
+Aki walks the Hebros road with the Strandbeest-Shrine folding its sails behind her. The road runs dark. The Neo-Thracian lattice broke in the year the Web went dark, and "whole districts of shrines went dark to the network simultaneously, each one still alive and answering locally while blind to everything beyond arm's reach" (//Elyncia 02 · The Lares DreamNet//, quote license). She re-lights one herm at a time. Ichi reads the dream-signal; the shrine reads the soil.
+
+At the third herm a ferry family waits. Their grandmother kept a likeness — a portrait, painted, the kind that rides as bytes and never as text — at a shrine two crossings upriver, and the grandmother has died. The herm Aki just lit already ''knows the likeness''. It holds the name, the size, the hash, the ledger of who last held it. The record crossed the moment the leyline re-knit. The picture did not.
+
+The daughter asks to see her grandmother. Aki has three doors and none of them open.
+
+The herm's own reader looks in its own chest, then in the coal it booted from, and returns nothing — it holds no runner to send. The leyline that re-knit carries the sync-chatter alone: names, changes, who-wrote-what; it has no frame in it for //fetch me this//. The sealed lane beside it, the one that carries ciphertext between contracted hearths, would answer — but the likeness rides in the clear, as a public thing a family shared, and the sealed lane looks at a clear hash and says Mu. The herm's public face serves exactly the coal it boots from, and nothing a family ever staged.
+
+So Aki sends an Ephyra upriver with the name. That works once. It does not settle the daughter's question at the next herm, or the next. Standing on the step she feels the real fork: does every herm she lights ''pull forward'' every named thing the moment a record crosses — so the road fills with pictures nobody asked to see, and the strandbeest's wagon rides heavy — or does each herm hold the name and fetch on the first hand that asks, so the daughter waits, and the herm writes honestly //pending// beside the name until the Ephyra returns? And when the likeness comes back: does this herm now ''serve'' it to the next family, off its own floor, or does it hand it to the wayfarer at the crossing so no household hearth ever becomes the place a stranger's traffic lands?
+
+!!! At the faerie-folk / Gaia scale
+
+The Neo-Thracian Nexus stayed cut off for "the next ~490 years" (//Elyncia 01//). Across that span, names travelled where things did not — a shrine on the Hebros road that "kept the rite of passing" (//Elyncia 01//) could name every reliquary of the Illyrian undercities and hold none. The Reachable Worlds carrier says what a whole world learns from that: "Locked works stay locked. A relic whose grammar burned in another world's fire reads exactly like one that burned in the Library of Alexander" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>, quote license). A name without its bytes and a locked record read alike from outside.
+
+The Elf-wildmage reads it so. ''A name that crosses without its thing keeps the thing's absence honest'' — the PENDING `.meta` with no content file beside it (`blob-carriage.mem:186`) reads as the wayside shrine that says //I know this and I do not hold it//, which a besieged nexus can live on for five centuries. The household answer — send an Ephyra on the first asking — holds at every scale where a holder still stands upriver, and breaks the day the last holder's hearth goes cold, because a fetch-on-read against a dead holder waits forever and a prefetch would have carried the bytes while the road still ran. Prefetch across a whole world, though, floods the leylines with every likeness ever named; the Dominion's sky-castles would read the traffic alone as a map of every family.
+
+On who serves: the wayfarer "carries sealed mana from shrine to shrine — pilgrim-cargo it cannot open" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>) and "holds the HINT, never the read-cap" (`bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem:127`). A public blob that first travels to a Herm keeps every household hearth off the map; a hearth that serves its own floor answers faster and stands exposed. Over five hundred years the Herm road reads as the one the Hermetic Protocols already drew.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the daughter's question names the cost the house pays either way — a wait, or a road full of pictures — and the honest herm writes //pending// rather than pretending either cost away.
+* ''Mischief-Muse:'' the fetch door wants to open at the ONE seam that already composes local → transit → verify → write-through, and the "three seams" read as one seam plus two transports.
+* ''Council:'' a hearth serving its own public floor and a Herm re-sharing it answer different fears — latency against exposure — and the fiction has already sided with the crossroads.
+
+!!! The lean the stories point at
+
+Fetch-on-read keeps the road light and the absence honest, which reads as the pono lean for a household; prefetch reads as the pono lean only for a fleet peer that expects to go dark (a phone leaving the house). The fleet door rides Socket B's five messages with the gate reading the fleet class, which reads as the pono lean over widening Socket A. A public blob travels to a Herm before any hearth serves it, which reads as the pono lean the wayfarer carrier already names. WebTransport waits for a server. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/the-shared-bag>>
+
+!! 3 · The shared bag — two operators keep one ledger through a relation
+
+''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get --bag lares` answers `not-found` (`bags/lares/ha.ka.ba/lares/docs/pono/seal-and-seat-handoff.mem:83`). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`seal-and-seat-handoff.mem:86`). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`seal-and-seat-handoff.mem:90`). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT "ride the SAME mechanism — keyring-delivery to a recipient set — differing ONLY in which set" (`bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem:55`).
+
+!!! At the human / household scale
+
+Two clans hold the ford below Hebros Mouth in the middle years of the Court Wars — a spider-folk clan sworn to one Court and a highland human clan sworn to another, and the fighting runs a week's sail away. The ford feeds both. Barley crosses one way and salt the other and someone must keep the count, because the day the count goes wrong the Courts will have their war at this ford too.
+
+The two stewards meet at the crossroads herm. Each keeps a private book at home already — sealed, in the clan's own hand, and the other clan cannot read it, which suits both and keeps no peace. They need ''one'' book. Where does the book live?
+
+The spider-folk steward wants it at the herm, nailed to the post, so any traveller can read the count and no one can lie. The highland steward will not have it: a public count tells every Court's spy what crosses this ford and how much, and the ford would draw an army by spring.
+
+They try the other pole: one book, copied into both private chests. By the third month the copies disagree, and each steward believes the other's chest.
+
+What they settle on has no name. They do not found a "ford clan" — nobody wants a third house with a banner, and a compact with a name becomes a thing a Court can demand allegiance from. They stand a small shared room at the ford itself, roofed by the realm both clans already stand in, and the book lives there: readable by exactly the two clans' households, written by exactly the two stewards, and the room holds the book after either steward dies. A traveller at the herm sees that a ford stands here and that two clans keep it, and reads no count. The compact between them stays nameless. The room does not.
+
+!!! At the faerie-folk / Gaia scale
+
+"YOLD ~3195 – ~4200. The clan wars of the settlement age — a thousand years in which the fae clans of Elyncia fought over a world that had just changed shape" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>, quote license). "A clan names descent. A Court names allegiance … A clan may scatter across every Court" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>). Across a thousand years allegiance moves faster than descent, and every ledger kept in a compact's own name dies when the compact's Court changes — because the compact, having a name, can lose one.
+
+The Elf-wildmage reads it so. ''A ledger registered in a private chest outlives nothing but its keeper; a ledger nailed to the crossroads outlives everyone and feeds every enemy; a ledger held in the shared room of the realm outlives the compact that wrote it and reads to no one outside it.'' The household answer holds across the whole span precisely because the compact never took a name: the Courts had nothing to summon. It breaks where a realm, over centuries, quietly became a Court — the moment the room's roof started demanding oaths, the room stopped reading as a realm and the ledger inside it became a standing. "What the Court Wars settled was who got the world the Datum made" (the court-wars carrier); what a nameless compact settles reads smaller and lasts longer.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the count wants ONE writer-set and ONE reader-set, and the two sets differ — which already names the tier: CONTRACT for the read, and a write-cap no wider than that.
+* ''The Stranger:'' from the herm, the ford should read as //a ford stands here, two clans keep it// and nothing more — the registry that names the bag stays public, the bag stays not.
+* ''Liminal:'' the compact's namelessness reads as the property, never as an omission to fix later.
+
+!!! The lean the stories point at
+
+Registering in each vessel's `@catalog` keeps the copies sovereign and lets them drift, which reads as the pono lean for nothing shared. Registering at `@crossroads` lets the world name the doc, which reads as the pono lean for the ford's existence and never for its count. Registering in the realm's shared CRDT gives the bag a roof that outlives both stewards and a read-set exactly as wide as the two households, which reads as the pono lean the fiction chose. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/the-later-grant>>
+
+!! 4 · The later grant — a companion admitted after the oath
+
+''The tension.'' A joinee that joins a PersonaGroup AFTER founding mints its wiki binding on its own vessel key — `"face-reach": seated ? "face" : "vessel-only"` (`packages/lararium-keyhive/src/resolve-binding.ts:156`) — and keeps it forever; a later `runFaceJoin` (`packages/lararium-keyhive/src/face-join.ts:197`) re-grants `daemonAuth.registerBags` and never re-delegates those earlier bindings (`seal-and-seat-handoff.mem:68`). The joinee-side gap reads wider: "no CLI verb, no daemon verb and no doc-relay path lands a later face-join grant ON THE JOINEE — the grant returns to the founder's caller" (`seal-and-seat-handoff.mem:68`). The door has two shapes: a daemon verb the founder's caller invokes on the joinee, or a doc the joinee watches for grants (`seal-and-seat-handoff.mem:76`, fork 1). Beneath both sits the membership doctrine: "the face carries the credential, the group holds no list, and verification runs OFFLINE against a published key" (`bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem:122`).
+
+!!! At the human / household scale
+
+The company swore its oath at the High Delos gate before the river run — Aki, Ichi, the Strandbeest-Shrine, the wave-jammer's crew. Kai ʻĀ joined at Hebros Mouth three weeks later, with Patches the Grimalkin on the inn roof unnerving the porters. She came with her own mark — the ranger's bow-mark she cut herself in the mushroom jungles — and the company took her in on that mark. Nobody re-swore the oath. You do not gather a company back to the gate for one archer.
+
+So her name on the company's board reads //by her own hand//. Every ward-slip she posts, every cache she claims, every report she leaves at a shrine carries the bow-mark and not the company's seal. It works. It works right up to the first shrine that asks //who vouches for this one// and finds only the archer vouching for herself.
+
+Aki holds the company's seal. The question at the step: how does the seat ''reach'' Kai? Kai camps two ridges over with the grimalkin; the company hearth cannot walk to her.
+
+One door: Aki sends an Ephyra with the grant — a spore-jelly spirit carrying a slip that says //the company seats this mark, under this seal, until the next moon// — and Ichi burns a bell-code so Kai's own kit knows to accept the slip when the Ephyra lands. The founder's hand reaches out; the joinee's kit must have a place for the hand to land.
+
+The other door: the company posts every seat it grants on its own board — the one every member's kit already reads at every shrine — and Kai's kit, reading the board as it always does, finds her mark listed under the seal and re-cuts her own bindings to ride it. Nobody sends anything. The founder writes where she always writes; the joinee watches where she always watches.
+
+Aki likes the second because it costs no Ephyra and leaves no runner to intercept. She distrusts it because it asks Kai's kit to //act on what it reads// — and a board a whole company reads, that can re-cut a member's bindings, reads like a thing a clever enemy would love to write on. The first door leaves a runner on the road and a bell in the kit; the second leaves a board that acts.
+
+!!! At the faerie-folk / Gaia scale
+
+The Lindwyrm "transmitted the Declaration of Confederation over the new DreamNet, founding the League of Free Cities" and "The Ouroborous and Brimstone Courts agree to join the League, along with the Ali'i of Hawaiki" (//Elyncia 01//, quote license) — cities that joined after the founding, by their own seals, on a board the whole world could read. Five hundred years of later-joiners.
+
+The Elf-wildmage reads it so. ''The cap flows DOWN by delegation; the standing flows UP by conferral; only the cap rides a device'' (`membership-doctrine.mem:126-131`). A later-joiner who keeps the bindings she cut herself holds a cap and no standing, and that reads as safe — seize her kit and you seize one archer's marks. The household answer — the founder reaches out with a runner — holds across five hundred years because a runner carries one delegation, scoped and expiring, and the joinee's door may refuse it. It breaks where the runner's road stops: a Nexus cut off for 490 years cannot receive an envoy, and in that span the League's later cities kept their seats only where a board they already read said so. The board-door survives partitions; the runner-door survives adversaries. The Elf-wildmage would build the board so that reading it can never re-cut anything — a board names a grant, the joinee's own kit still decides to take it, offline, against the published seal (`membership-doctrine.mem:134`) — and would send the runner where the road still runs.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the vessel stands admin of the bindings it minted, so the re-seat itself needs no founder signature (`seal-and-seat-handoff.mem:72`); what the joinee lacks reads as //the knowledge that a seat now stands//, never the authority to take it.
+* ''The Stranger:'' a board that ACTS when read reads, from outside, as a written command channel; a board that merely NAMES and a kit that decides read as membership doctrine kept.
+* ''Council:'' the two doors answer two failures — a cut road and a forged slip — and a company on the Hebros road meets both in one season.
+
+!!! The lean the stories point at
+
+A daemon verb the founder's caller invokes reads as the pono lean for one scoped delegation across a live road, refusable at the joinee's door. A doc the joinee watches reads as the pono lean across a partition, on the condition that reading it never re-cuts a binding by itself — the joinee's kit takes the named seat by its own act against the published seal. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/grace-and-pin>>
+
+!! 5 · Grace and pin — how long a leaf holds bytes before the sweep
+
+''The tension.'' "A blob is RETAINED while any tiddler in any locally-held bag references its CID … OR a PIN cap with a lifetime names it; an unreferenced, unpinned blob MAY sweep under LRU after a grace" — designed, unbuilt (`bags/lares/ha.ka.ba/lares/docs/pono/blob-carriage.mem:189`). `casSweep` takes `graceMs` and nothing sets it; "one value for the house, or per tier?" (`tiddler-carriage.mem:116`). The PIN cap's shape stands held: `{ cid, tier, holder, expiry }`, bound to the tier of the bag whose pointer it pins (`tiddler-carriage.mem:98`). The platform beneath a browser leaf pins coarser: `persist()` "pins the ORIGIN whole ('all-or-nothing per origin', `secure-context-gate.ts:134`) where PIN pins a CID; the house grain stays finer than the platform's" (`device-capabilities-2026.mem:156`), and WebKit clears "all of a website's script-writable storage after seven days of Safari use without user interaction on the site" (`device-capabilities-2026.mem:124`). Against those two clocks stands the third: the ahi-kā, which judges a realm "COLD only when NEARLY silent against what its own history expects, so a centuries-old realm goes cold by true abandonment, never by a quiet generation" (`ahi-ka.ts:44-45`).
+
+!!! At the human / household scale
+
+A Librarian of Mu stands in a drifting stack of the High Delos Archive with a satchel that will hold forty workings and a shelf that will hold four thousand, and a fire behind her that spreads through l-space instead of shelf-space. She cannot copy a burned book. "The fire rides the copies" (<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>, quote license). What survives clean: the pattern integrities, "the wave under the locked water."
+
+She has three ways to say //keep this//.
+
+She can pin a working — one attested shape, one name, one hash — and carry it. That costs her a slot in the satchel and buys her exactly that working, verified, wherever she lands. The grain runs fine: she decides per working.
+
+She can pin the room. The stack she stands in offers her that and only that: //keep this whole room or none of it//. It costs nothing to say and it keeps a thousand workings she never read alongside the forty she needs — and the room, being one room, burns as one room.
+
+She can pin nothing and trust the grace. Every stack keeps a working for a while after the last hand leaves it. In the Archive's own stacks that while runs long — a working sleeps a century and wakes for a rite and nobody calls it dead. In the drifting stack she stands in now, the while runs ''seven days'': a shelf that no hand touches for a week sweeps itself, and the warden of that shelf explains this as a fact, never an error, and offers her the exemption if she will set the shelf into her own house.
+
+She does what the kahu kuleana says: "witness kept frozen and literal beneath, the pattern re-stood fresh above" (the burned-library carrier). She pins the forty at working-grain, because those forty she will re-stand. She sets the shelf into her house so the seven-day clock stops. She leaves the rest to the grace and writes, honestly, which grace: the Archive's long one, measured against how often anyone ever came, and never the drifting shelf's short one measured against a calendar.
+
+!!! At the faerie-folk / Gaia scale
+
+"The Floating Librarians of Mu have spent nearly five hundred years recording the lost and wild magics into a new grammar — one attested working at a time, patient as coral" (the burned-library carrier). Five hundred years reads as the span the ahi-kā calibrates against: "realms have risen · slept a century · revived · lapsed across that span" (`ahi-ka.ts:37-39`).
+
+The Elf-wildmage reads it so. ''A clock sweeps by the calendar; a grace sweeps by the realm's own pace; a pin sweeps never, until its lifetime ends.'' The household answer — pin what you will re-stand, house the shelf, let the rest ride a grace measured against the realm's own baseline — holds across five centuries because a grace so measured never calls a centennial shrine dead. It breaks at the platform floor: no house-grace lengthens a shelf that sweeps at seven days, and a stack that only pins rooms takes no pin at working-grain. There the house does the only honest thing — reports the shelf's eviction class as a fact and offers the exemption — and treats a browser leaf as a satchel, never as a stack. One grace for the whole house reads wrong to the Elf-wildmage; the Archive's stack and the drifting shelf already run two, and the house holds four tiers with four holder-sets. The PIN's `expiry` wants the same reading as the fire: against the realm, never against the moon.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the Librarian never pins by size or by age; she pins by what she will re-stand — the reference count already carries that intent, and PIN names the workings no record references yet.
+* ''Mischief-Muse:'' the seven-day clock reads as the WebKit warden's honest shape of "a tab, not a house," and the install reads as "set the shelf into your house" — the exemption and the rite name the same act.
+* ''Liminal:'' `graceMs` unset reads as the house not yet having said which clock it keeps; the stories say //the realm's//, and hold the number open.
+
+!!! The lean the stories point at
+
+One grace for the whole house reads as the pono lean for nothing; a grace per tier, read against the realm's own pace rather than a wall-clock, reads as the pono lean the ahi-kā already names. PIN at CID grain reads as the pono lean everywhere the house owns the shelf; where the platform pins the origin whole, the house explains and offers, never fakes a finer grain. The seven-day clock stands as a floor the leaf reports, never a law the house adopts. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/the-phone-seat>>
+
+!! 6 · The phone seat — a family phone reaches the household hearth
+
+''The tension.'' Five questions only the operator answers (`bags/lares/ha.ka.ba/lares/docs/pono/device-capabilities-2026.mem:187-191`): does the phone leaf ''require'' the Home Screen install to stand, or stand uninstalled and merely ''explain''; does a browser vessel ever want the human-visible folder on the desktop seat, or does projection to a folder stay the node's alone; does PRF-wrapped custody ''replace'' the cleartext-on-disk seed or sit beside it — and does a synced passkey count as a device or as a cloud in the veil ruling; which seat does Mudlet hold; Unreal now or UE6. The rhyme that cuts deepest: "a SYNCED passkey (iCloud Keychain, Google Password Manager) returns 'identical' PRF output on every device the vendor syncs to — which makes it a SEED-class secret wearing a device-class name" (`device-capabilities-2026.mem:152`); the veil ruling names the device-minted key and never the seed. The floor beneath the phone: "A family phone reaching a home node at `http://192.168.1.x` gets neither" (`secure-context-gate.ts:5-7`, cited at `device-capabilities-2026.mem:136`).
+
+!!! At the human / household scale
+
+A ferry family at Hebros Mouth keeps a hearth-shrine in the back room, fed every seventh day for as long as anyone remembers. The youngest daughter carries a prayer-relay ofuda — a slip of ceramic-paper with orichalcum traces, the kind Aki carries five of — and it reaches the hearth from the ferry deck, from the market, from the far bank. It reaches it ''thinly''. It holds a draft, a route-mark, a ward-anchor. It holds no room.
+
+The first question comes the week the slip goes quiet after seven days unheld. The hearth can say: //set the slip into your own house and it stays lit// — and mean it as the price of a seat. Or the hearth can say: //your slip forgets after seven days; this names what that means; carry on// — and mean it as a fact. The daughter, who forgets things in pockets, would rather the hearth explain and not demand.
+
+The second comes from her father, at the family's desk-glass in the back room: he wants a drawer he can open with his own hands and see the shrine's writings as files. The hearth can grant the drawer to the desk-glass. Or the hearth can keep the drawer its own — the node projects to disk, and every glass in the house reads the same floor. He would like the drawer; the household would rather all three glasses stood on one floor.
+
+The third comes from a peddler of the Dominion's make: a key that lives on the sky-castle's mirror and appears, identical, on every glass the family owns. Convenient beyond words. The daughter's ofuda, her father's desk-glass, the ferry's log-slate — one key, everywhere. Aki, passing through, looks at it a long time and asks one question: //if it lives on every glass the same, whose device minted it?// No device did. The sky-castle did. A key the same on every glass reads, in the Verse, as a ''seed'' — the thing the veil ruling says a handle must never derive from — dressed as a device-key. It may ''wrap'' the family's own seed, so that opening it needs a present hand; it must never ''become'' the seed.
+
+The fourth and fifth come from an old boatman with a lantern-terminal that speaks only the oldest wire, and from a theatre-troupe wanting to stage the shrine in a great camera-hall. The lantern can probe the hearth's public face and post outward, and stands as nothing more unless somebody builds it a bridge; the theatre can stage the shrine now on the hall they have, or wait for the hall the guild has promised for the year after next.
+
+!!! At the faerie-folk / Gaia scale
+
+"Access is gated by location: most people must travel to a shrine to access the DreamNet, while specialists can carry limited access with them … dreamdecks and personal ai-daemon assistants, tapping the local mycelium-net, finding a nootree, or bargaining with a dreamwalker" (//Elyncia 02//, quote license). Five hundred years of glasses, and every generation's peddler sells the key that lives everywhere.
+
+The Elf-wildmage reads it so. ''A glass that keeps the same secret on every glass no longer reads as a glass; it reads as a cloud'', and a cloud holds a seed on someone else's mirror. The household answer holds across the span: explain, never demand; one floor, never a drawer per glass; wrap, never mint; the lantern probes, the theatre stages. It breaks where a family, over generations, forgets which of its keys a device minted and which the sky-castle did — and the veil derives from the wrong one. So the Elf-wildmage would have the house ''name the class'' of every key it holds, in the record and in the status line, so that a synced key can never pass as a device key by omission. On the theatre: build the stage on the hall that stands; the guild's promised hall reads as "end of 2027" (`device-capabilities-2026.mem:191`), and a household does not wait two years to be seen.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' every one of the five questions reads as //which kind of thing// before //which feature// — a slip, a floor, a seed, a probe, a stage — and the veil ruling already answers the third once the kind gets named.
+* ''The Stranger:'' from outside, a hearth that DEMANDS an install reads as a platform; one that EXPLAINS reads as a shrine.
+* ''Liminal:'' the desk drawer wants to stay open a while — the father's wish carries real weight, and one floor across three glasses carries a different one.
+
+!!! The lean the stories point at
+
+Explain the seven-day clock and offer the install, never require it, which reads as the pono lean for the phone seat. Keep the folder projection the node's alone so every glass reads one floor, which reads as the pono lean over a per-seat drawer. PRF wraps the seed at rest beside the cleartext finding and never replaces the mint; a synced passkey counts as a cloud in the veil ruling, never a device. Mudlet holds a probe over the bulb's read-face until someone builds the herm. Unreal builds against the hall that stands. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/the-two-doors>>
+
+!! 7 · The two doors — a stock client saves a meme root through the native door
+
+''The tension.'' The house rides TiddlyWiki's own registry and deserializer chain, and a stock server with the plugin reads the island's files and writes them back byte-identical (`blob-carriage.mem:186-187`, `nonmeme-parity`). "Every CRDT slot registers `writable:true` — the island refuses nothing at the store; the cascade alone decides where a save lands" (`bags/lares/ha.ka.ba/lares/docs/pono/recipe-layer-model.mem:72`). A stock client saves through the tiddlyweb adaptor's own contract (`outbound-bridge.mem:53`, `tiddlywebadaptor.js:26-275`), and a meme root saved that way lands as a tiddler without the Confluence — the reconcile gate INGEST rides (`bags/lararium/ha.ka.ba/lararium/api/action-handler.mem:55`) — ever running: no canonical hash re-stamped, no ahu children split, no `$origin-bag` law. A precedent stands for one lean: `refuseInlinePointerKind` "walls the native leg" for a pointer-kind carrier (`blob-carriage.mem:191`, `action-handler.ts:650`). Three leans wait: a ''server listener'' that catches the native save after it lands and runs the gate late; a ''client adaptor'' the stock client carries so the gate runs before the save leaves; ''refuse'' — the native door declines a meme root outright and names the front gate.
+
+!!! At the human / household scale
+
+A wayside shrine on the Hebros road has two gates. The front gate faces the road: a ward stands there — a small lares who reads what a traveller brings, weighs it, stamps it, splits a long offering into its parts, and only then lets it onto the shelf. The side gate faces the orchard, and the family that fed this shrine for forty years used it every seventh day to set barley on the shelf without ceremony, because barley needs no weighing.
+
+A pilgrim arrives with an old client — a good one, of the stock make, the kind every scriptorium on the coast still uses. It knows the side gate; that gate speaks its dialect. And the pilgrim carries not barley but a ''meme root'': a long carrier with a head and a hash and children folded inside it. The client sets it on the shelf through the side gate. The ward at the front never sees it. The shelf now holds a root with a stale hash, its children unsplit, no origin stamped, and every reader after this one will believe it.
+
+The ward has three things it can do, and the shrine-keeper feels the cost of each.
+
+Stand a second ward inside, at the shelf, who checks everything that lands by any gate and re-stamps it after the fact. Nothing slips through; but the pilgrim walks away believing the shelf holds what she set, and for a breath it holds something else, and a second traveller reading in that breath reads the wrong thing.
+
+Hand every pilgrim of the stock make a small charm to carry — a ward that rides in her own client and weighs the root before it leaves her hand. Nothing lands unstamped, and the shelf never lies for a breath; but every pilgrim must accept the charm, and the ones who will not, or cannot, save nothing — or save through the side gate anyway.
+
+Bar the side gate to roots. Barley still passes; a root at the side gate gets turned around and told the front gate stands twenty paces to the left. Honest and simple. The pilgrim with the old client cannot save her root here at all unless she walks to the front, and the old client does not know where the front gate stands.
+
+!!! At the faerie-folk / Gaia scale
+
+"all are bound by the Hermetic Protocols and code-etched by Hephestus's divine hammers" (//Elyncia 02//, quote license). Five hundred years of pilgrims with clients of every age, and every shrine keeps two gates because the stock dialect predates the ward.
+
+The Elf-wildmage reads it so. ''A shelf that lies for a breath lies to whoever reads in that breath, and across five hundred years someone always does.'' A ward that runs late holds; a ward that runs late and never says so rots. The household answer — bar the side gate to roots — holds across the span where the front gate stays findable from the old dialect: a refusal that NAMES the front gate teaches the client; a bare refusal teaches nothing and the pilgrim leaves. The charm-in-the-client holds across the span only where the house ships the charm as part of the same plugin every stock client already loads — which the Elf-wildmage notes the house already does for the wikitext itself. And the late ward reads as the one to keep ''beside'' either — because a five-hundred-year shrine will meet a gate nobody planned, and a second ward at the shelf catches what the doors did not.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the fault reads as //a root that reads canonical and stands not//; the cure must run before any second reader, or say plainly that it ran after.
+* ''The Stranger:'' from the road, "refuse" reads as honest and "server listener" reads as a shrine that edits your offering after you leave — unless the shrine tells you.
+* ''Council:'' the three leans compose rather than compete: refuse at the side gate for a bare root, carry the charm where the client loads the plugin anyway, keep the late ward as the backstop that names itself.
+
+!!! The lean the stories point at
+
+A server listener alone reads as the pono lean for nothing, since the shelf lies for a breath; as a backstop that logs what it re-stamped it reads as the pono lean everywhere. A client adaptor reads as the pono lean where the stock client already loads the house plugin. Refuse, naming the front gate, reads as the pono lean for a bare meme root at the native door. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/one-plugin-or-two>>
+
+!! 8 · One plugin or two — route skins and the in-VM face
+
+''The tension.'' The meme verbs stand as "the daemon island's skins of the meme laws"; "every skin (this, the HTTP route, the MCP tool) carries verbatim" one contract, and "the anchor projects through the in-VM face (`$tw.lares.meme.project`)" (`packages/lararium-tw5/src/meme-verbs.ts:2-11`). The plugin the stock client loads, `plugins/lares-memetic-wikitext.json`, carries `nalu-engine` and `bag-paths` and no adaptor (`outbound-bridge.mem:71`); Road A of the bridge would add a packed module to it (`outbound-bridge.mem:98`). The question: do the route skins and the in-VM face ship as one bundle, or split.
+
+!!! At the human / household scale
+
+A shrine keeps a bell-set. One casting gives the bell that rings on the road, the bell that rings at the gate, and the bell that rings inside the sanctum, all tuned together; a crack in one means recasting all. Two castings let the road-bells travel with the wayfarer and the sanctum-bell stay with the hearth; they drift out of tune by a hair each year and nobody notices until a pilgrim does.
+
+Aki, tuning the Strandbeest-Shrine's bells on the Hebros road, keeps the sanctum-bell and the gate-bell as one casting — they ring the same law and a mismatch between them would lie — and lets the road-bells travel separately, because a wayfarer that carries no sanctum should carry no sanctum-bell.
+
+!!! At the faerie-folk / Gaia scale
+
+"the Herm runs the //same hearth-engine// as the greatest temple" and "simply raises no rooms around it" (the lares-viales carrier, quote license). The Elf-wildmage reads it so: ''one keel, two `#has`-stacks'' already names the shape — the same code, thinned by caps, never two codes. A bundle that carries the face and the skins as one thing, with the caps deciding which rings where, holds across five hundred years the way the Herm does; two bundles hold only as long as someone tunes them together.
+
+!!! What the stories reveal
+
+* ''Kalani-of-the-Ledger:'' the contract the skins carry verbatim already reads as ONE law; a split bundle would carry it twice.
+* ''Mischief-Muse:'' the Herm answers this question for free — one keel, fewer rooms.
+* ''Liminal:'' whether the road-bells (the HTTP route, the MCP tool) travel with the wayfarer stays a cap question, never a bundle question.
+
+!!! The lean the stories point at
+
+One bundle with the caps deciding what rings reads as the pono lean; two bundles read as the pono lean only where a wayfarer must load nothing it cannot ring. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/exit>>
+
+!! Exit — open
+
+No moʻolelo closes here. Eight slots stand told at two scales; each lean rides as a reading the stories point at and rules nothing. The operator rules. The seal-and-seat floor at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> carries the plans and forks these stories serve.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/action-handler">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;io7HSjUELQLBts5RJEy8XYBSVd2ErgYgOpKxZBtOaVY
+
+<<^ code="&#x0004;" -> to="?">>
