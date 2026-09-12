@@ -1,0 +1,187 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-back-parity.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 12
+manao             = 13
+manaoio           = 12
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+revised-on        = "2026-09-12"
+role              = "syncer-back-parity — the STOCK TW5 syncer's whole back-parity flow measured live against a plain server carrying the packed plugin. Six flows as a table (root save · slot-child save · delete · poll · the revision/bag stamps · the `$:/` filter), each with the wire exchange it issued, what the client charm reaches and the three things it cannot, the native delete door that carries the group-leaves-together law onto stock's own delete path, and the leans left open."
+status            = "standing"
+status-why        = "every row reads off a live contact: `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts` drives a real Chromium client over `tiddlywiki --listen` with the stock `tiddlyweb` + `filesystem` pair, 5 standing + 3 named seams against the fork (5.5.0-prerelease) and the same against a pristine `npm pack tiddlywiki@5.4.1`. The cure (`src/routes/native-delete-door`) landed red-first and carries six unit vectors in `tests/syncer-native-delete-door.test.ts`"
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/syncer-back-parity"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ground>>
+
+! Syncer Back-Parity ~ the stock loop against a plain server carrying the plugin
+
+''Register: Model-Standing.'' Every row below names the wire exchange it read — the request line the page issued and the status it got back. A row without one names itself as inference.
+
+The operator's words that opened this, verbatim: "we don't use the syncer in our `lararium` vessels, but I suppose we should scout the back-parity flow there." <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> scouts the ISLAND side — the wire that never got built, where `$tw.syncer` never stands at all. This carrier scouts the other side: the stock syncer standing WHOLE, driving a stock `tiddlyweb` syncadaptor, against a plain `tiddlywiki --listen` that carries the packed plugin. <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">> holds the doors; this holds the LOOP that knocks on them.
+
+''The lab.'' The `meme-api-surface` lab plus the client/server sync pair a stock wiki folder carries:
+
+```
+tiddlywiki.info:  { "plugins": ["tiddlywiki/tiddlyweb", "tiddlywiki/filesystem"] }
+tiddlers/:        lares-memetic-wikitext.tid
+                  $:/config/SyncPollingInterval = 1500      (60 s by default — a suite that waits measures nothing)
+                  $:/config/SyncThrottleInterval = 200      (1 s by default)
+                  $:/config/SyncSystemTiddlersFromServer = yes
+node TiddlyWiki5/tiddlywiki.js lab --listen port=… host=127.0.0.1
+```
+
+then a real Chromium loads `/` and the stock syncer runs its own loop over it. The whole contact stands as `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts`; `LARES_TW5_JS` re-runs it against a published engine.
+
+<<~/ahu>>
+
+<<~ ahu #/six-flows>>
+
+!! The six flows
+
+| flow | stock behavior | with the plugin | door | status | witness |
+|---|---|---|---|---|---|
+| a · a meme ROOT edited in the browser | `saveTiddler` → `PUT /recipes/default/tiddlers/<title>` | the charm reads `framedRootOf` and re-addresses; the root lands SPLIT | `/memes/` | ''stands'' | (a) |
+| b · a SLOT CHILD edited in the browser | the same native PUT | `framedRootOf` reads null on a child, so it rides the native door UNGATED; the meme's hash moves because the render reads children live; the root never re-cuts and the backstop never fires | `/recipes/…/tiddlers/` | ''stands, ungated'' | (b) |
+| b′ · a slot child whose TEXT carries a head | the same native PUT | the charm reads the child's OWN head and re-addresses a FRAGMENT — a double-fragment record lands | `/memes/…%23/…` | ''seam'' | (b′) |
+| c · a meme ROOT deleted in the browser | `deleteTiddler` → `DELETE /bags/<bag>/tiddlers/<title>`, ONE title | the native delete door reads `isMemeRoot` and the group leaves through `removeMeme` | `/bags/…/tiddlers/` | ''cured'' | (c) |
+| c′ · a SLOT CHILD deleted in the browser | the same, one title | the child leaves; the root's `<<~ kahea ahu #/b>>` stands DANGLING and `GET /memes/` renders the call unexpanded | the same | ''seam'' | (c′) |
+| d · `syncFromServer` pulls a meme a second client changed | `getSkinnyTiddlers` stores the whole answer skinny in ONE batch, then `LoadTiddlerTask` fattens ONE title at a time | nothing coalesces the group; the root stands fat while its children are still skinny | `GET /recipes/…/tiddlers.json`, then per-title | ''seam (settles)'' | (d′) |
+| e · the `revision`/`bag` stamps | `get-tiddler.js` stamps both onto the JSON it serves; the client hands them back; `put-tiddler.js` strips `revision` | the charm sends the TEXT alone, so neither can reach the canonical hash; the native gate strips a `bag` naming the anchor | both | ''stands'' | (e) |
+| f · `$:/StoryList` · `$:/config/SyncFilter` | the filter is TOTAL minus a named exclusion list; `$:/StoryList` rides, `$:/temp/` · `$:/state/` · `$:/status/` · `$:/boot/` leave | the plugin creates NO `$:/lares/…` or `$:/temp/lares/…` in a stock client, so the filter's shape never gets tested here | `/recipes/…/tiddlers/` | ''stands'' | (f) |
+
+<<~/ahu>>
+
+<<~ ahu #/wire>>
+
+!! The wire, quoted
+
+''(a) the root.'' `$tw.wiki.addTiddler` of a framed root, then the syncer's own queue:
+
+```
+PUT /recipes/default/memes/lar/t/a -> 200                              the charm
+PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa-plain -> 204        the CONTROL beside it
+GET /recipes/default/tiddlers.json                                     ["lar:///t/a","lar:///t/a#/a","lar:///t/a#/b","lar:///t/a-plain"]
+```
+
+and the root's own record on the shelf reads `<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>` — split, never whole.
+
+''(b) the slot child.'' Editing `lar:///t/a#/a` in the client:
+
+```
+PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fa -> 204       stock's own door, ungated
+GET /recipes/default/memes/lar/t/a -> 200   ETag MOVED, body carries the edit
+```
+
+The meme updates because `readMeme` recomposes from the children each read — never because the child passed a gate. The root's record does not move, the backstop's log stays empty (`framedRootOf` reads null on a child, `meme-backstop.ts:74`), and nothing grades the child's text. A child that stopped round-tripping lands anyway.
+
+''(b′) the seam under it.'' The same child, its text replaced with a WHOLE framed meme:
+
+```
+PUT /recipes/default/memes/lar/t/a%23/a -> 200
+GET /recipes/default/tiddlers.json      ["lar:///t/a","lar:///t/a#/a","lar:///t/a#/a#/z","lar:///t/a#/b"]
+```
+
+`framedRootOf` reads the child's own head, `memePathOf` projects a FRAGMENT onto the door, and the split mints `lar:///t/a#/a#/z` — a title `groupOfMeme` admits and the address grammar never names. A slot child is not a founding.
+
+''(c) the delete.'' Stock's adaptor deletes ONE title, by the bag its `tiddlerInfo` recorded:
+
+```
+DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa -> 204
+```
+
+MEASURED RED before the cure: `expected [ 'lar:///t/a#/a', 'lar:///t/a#/a#/z' ] to deeply equal []` — the root left and its whole split STOOD, unreachable through every meme door (`memes.json` stops listing it, `GET /memes/` answers 404) and standing on disk until a later founding at the same uri tombstones it. CURED by `src/routes/native-delete-door` (#/cure): the same wire exchange now takes the group.
+
+''(c′) the child's delete.'' `DELETE /bags/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fb -> 204` removes the child; the root's record still calls it, and `GET /memes/lar/t/a` renders `<<~ kahea ahu #/b>>` UNEXPANDED into the meme's own body. The removal law names a group leaving together and says nothing about a member leaving alone.
+
+''(d) the poll.'' A second client writes `PUT /bags/default/memes/lar/t/d -> 200` (root + three slots). The client's own `change` bus, recorded from before the write:
+
+```
+changed=[root,#/p,#/q,#/r]   group=[root SKINNY, #/p SKINNY, #/q SKINNY, #/r SKINNY]     getSkinnyTiddlers, one batch
+changed=[root]               group=[root FAT,    #/p SKINNY, #/q SKINNY, #/r SKINNY]     LoadTiddlerTask
+changed=[#/p]                group=[root FAT,    #/p FAT,    #/q SKINNY, #/r SKINNY]
+changed=[#/q]                group=[root FAT,    #/p FAT,    #/q FAT,    #/r SKINNY]
+changed=[#/r]                group=[root FAT,    #/p FAT,    #/q FAT,    #/r FAT]
+```
+
+Three dispatches stand where the root is fat and a child of it holds no text — a render taken there reads a root whose `kahea` calls point at records with nothing in them. It SETTLES (the fourth dispatch is coherent), so the defect is a window rather than a corruption; the seam is stock's per-title `loadTiddler`, and the group has no transactional arrival on either side.
+
+''(e) the stamps.'' After the round trip the client's root carries `{revision: "1", bag: "default"}` and the server's record reads
+
+```
+{"title":"lar:///t/a","fields":{"uri-path":"t/a"},"type":"text/…","text":"<<~ kahea ahu #/a>>…","revision":1,"bag":"default"}
+```
+
+— both stamps sit OUTSIDE `fields`, as TiddlyWeb's envelope, re-laid per answer. The `bag`-is-user-space ruling holds on this loop: the charm hands `/memes/` the text alone so no stamp can reach the canonical hash, `put-tiddler.js` deletes `revision` on the way in, and the native gate refuses a `bag` naming the host's anchor. The child's record after a native save carries exactly `$fragment-parent` · `$slot` · `uri-path`.
+
+''(f) the `$:/` posture.'' In a stock client the plugin creates NOTHING under `$:/lares/` or `$:/temp/lares/` — the house tiddlers an island holds have no counterpart here, so the sync filter's shape goes untested by this loop. What the syncer does carry: `$:/StoryList` (the filter's exclusion list names `$:/temp/` · `$:/state/` · `$:/status/` · `$:/boot/` · `$:/HistoryList` · `$:/core`, and not this), saved to the server as `$__StoryList.tid` in the wiki folder. One server wiki therefore holds ONE story list for every client that ever opened it — stock's own posture, inherited whole.
+
+<<~/ahu>>
+
+<<~ ahu #/charm-reach>>
+
+!! What the charm reaches, and the three things it cannot
+
+`packages/lararium-tw5/src/modules/meme-door-charm.ts` decorates the live adaptor's `saveTiddler` and nothing else. That is ONE of the syncadaptor's five verbs, so its reach ends exactly where the table above turns:
+
+* ''a slot child's save'' — `framedRootOf` reads the ROOT law (the carrier type plus a SOH head), and a split child carries neither a head nor a claim to be a founding. The child rides stock's door with no grading, no receipt and no re-cut of its parent.
+* ''a delete'' — the adaptor's `deleteTiddler` is a second verb the charm never decorates, and stock's shape is ONE title. The group-leaves-together law had to land on the SERVER instead (#/cure), where every door reaches it and no client needs teaching.
+* ''a poll'' — `getSkinnyTiddlers` and `loadTiddler` are inbound verbs; a charm on the outbound save cannot make an inbound group arrive at once.
+
+The shape that rules here: a law the CLIENT carries reaches only the clients that carry it, and a plain server answers every client. Where a law can stand on the server it SHOULD — the charm exists for the one case the server cannot fix alone (a stock adaptor addressing the wrong door), and the backstop for the doors neither sees.
+
+<<~/ahu>>
+
+<<~ ahu #/cure>>
+
+!! The cure ~ the native delete door
+
+`packages/lararium-tw5/src/routes/native-delete-door.ts`, `module-type: route`, priority 110 on stock's own path `/^\/bags\/default\/tiddlers\/(.+)$/` — the twin of `routes/native-door` on the write side. It reads the STANDING record: a meme ROOT leaves through `removeMeme`, and every other title reaches `$:/core/modules/server/routes/delete-tiddler.js` untouched. The root law gained ONE spelling (`isMemeRoot`, `src/place-meme.ts`) that both `listMemes` and this door read, so the two cannot drift. `If-Match` rides here as it does on `DELETE …/memes/…`: a base the records moved past answers `412` and removes nothing.
+
+The client learns the group left on its next `syncFromServer` — the skinny answer stops listing the children and the syncer deletes what the server stopped naming. The answer stays stock's `204` either way; the syncer reads a status, never a receipt.
+
+Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group leaves · a plain tiddler delegates · a slot child delegates · an absent title delegates · a stale `If-Match` answers 412 · the path and priority stand above stock's), collided by disabling the gate (two vectors go red, four CONTROLs stay green); `tests/syncer-back-parity.e2e.test.ts` (c) on the live wire.
+
+<<~/ahu>>
+
+<<~ ahu #/leans>>
+
+!! The leans
+
+* ''(b′) the fragment at the founding door.'' The charm could decline `/memes/` for a title carrying `#` — but the native door would then answer `422` on the framed body and STALL the syncer's queue, which is the failure the charm exists to prevent. The cure wants a THIRD answer: a fragment-addressed body re-placed under its ROOT. `-> ?`
+* ''(c′) the dangling `kahea`.'' A member leaving alone has no law. Re-cutting the parent from its remaining children is one shape; refusing a lone child's delete and asking the writer to re-place the root is another. `-> ?`
+* ''(d′) the group's arrival.'' `memes.json` already names a root's whole slot tree (`?tree=1`); a client that read it could hold a group back until every member is fat. That asks for a CLIENT law — the fourth charm — or for the render to tolerate a skinny child by name. `-> ?`
+* ''(b) the ungated child.'' A slot child's native save never grades. The backstop could widen from `framedRootOf` to "a record whose `$fragment-parent` names a root" and re-place the ROOT when a child moves — which would also close (c′). `-> ?`
+* ''(f) the shared `$:/StoryList`.'' Stock's own posture, carried whole; it reads as a defect only when a plain server serves more than one reader. Named here so the first multi-reader lab does not read it as ours. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;GUkLTdn7QaaueFXKTujGQeFE65FiVzqLdj4pzQYQs7s
+
+<<^ code="&#x0004;" -> to="?">>

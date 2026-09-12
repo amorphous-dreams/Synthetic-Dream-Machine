@@ -1100,6 +1100,16 @@ run_meme() {
 
 # THE BROWSER LEG. `browser-a` shares A's namespace and runs the probe; its exit code is the verdict, and
 # the face lines print beside it so the reading carries what the island actually answered.
+#
+# WHAT THIS LEG CANNOT CARRY. The probe boots an ISLAND — a module Web Worker holding its own `$tw` — and
+# an island registers no `module-type: syncadaptor`, so `$tw.syncer` never stands in it and the stock
+# syncer's back-parity flow has nothing here to run against. None of the six flows (a root's save, a slot
+# child's save, either delete, the `syncFromServer` poll, the `revision`/`bag` stamps, the `$:/` filter)
+# can ride this container. They need a plain `tiddlywiki --listen` carrying the packed plugin plus a
+# Chromium loading it over the stock `tiddlyweb` + `filesystem` pair, which
+# `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts` already stands without docker — a second
+# spelling of it here would buy a second place for one measurement to drift.
+# See lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity.
 run_meme_browser() {
   step "browser-a: the island speaks the laws in Chromium's worker"
   if ! $COMPOSE up -d --no-deps browser-a >/dev/null 2>&1; then bad "browser-a would not start"; return; fi

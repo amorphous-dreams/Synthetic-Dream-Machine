@@ -214,6 +214,16 @@ export async function removeMeme(
   return { decision: "removed", tombstoned: group, canonicalHash };
 }
 
+/**
+ * THE ROOT LAW, one spelling. A root reads as a record of the carrier type with no `#` in its title and
+ * no `$fragment-parent`; a slot child carries the parent, a carriage part carries a `$`-opening `$slot`,
+ * and a plain tiddler carries neither the type nor the parent. The listing reads it, and so does the
+ * native delete door — a second spelling of it would drift the day one of them moved.
+ */
+export function isMemeRoot(title: string, fields: TiddlerFields | undefined): boolean {
+  return fields?.["type"] === CARRIER_TYPE && !title.includes("#") && fields["$fragment-parent"] === undefined;
+}
+
 /** One slot of a listed meme's tree: the slot name, the record's title, the slots it holds. */
 export interface MemeSlotNode {
   readonly slot: string;
@@ -247,7 +257,7 @@ export async function listMemes(
     const f = await sink.read(title);
     if (f && f["type"] === CARRIER_TYPE) fields.set(title, f);
   }
-  const roots = [...fields.keys()].filter((t) => !t.includes("#") && fields.get(t)!["$fragment-parent"] === undefined);
+  const roots = [...fields.keys()].filter((t) => isMemeRoot(t, fields.get(t)!));
   const childrenOf = (parent: string): MemeSlotNode[] =>
     [...fields.entries()]
       .filter(([, f]) => f["$fragment-parent"] === parent && typeof f["$slot"] === "string" && !String(f["$slot"]).startsWith("$"))
