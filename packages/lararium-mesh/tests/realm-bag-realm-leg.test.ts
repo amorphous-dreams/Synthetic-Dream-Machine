@@ -111,6 +111,23 @@ describe("realm-bag — THE REALM LEG: the registration decides which documents 
   });
 });
 
+describe("realm-bag — the charter's own HEARTH, at the far end of a dial this vessel opened", () => {
+  test("the realm's registered books federate back to the hearth peer; every other peer reads as before", async () => {
+    const sa = await stewardA();
+    const rec = await signRealmBagRegistration({ realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "contract" }, [sa]);
+    const hearth = new Set<string>(["peer-hearth"]);
+    const gate = new RealmBagGate(baseGate(null), membershipOf(), REALM_URL, {
+      charter: { ...charterConsult({}, {}), holdsCharterPeer: (peerId) => hearth.has(peerId) },
+    });
+    await gate.refold(await docWith(rec), REALM);
+    expect(await gate.mayFederate(idOf(DOC_A), "peer-hearth" as PeerId)).toBe(true);
+    expect(await gate.mayFederate(idOf(REALM_URL), "peer-hearth" as PeerId)).toBe(true);
+    // CONTROL: the lane reaches the realm's own docs alone, and no other peer.
+    expect(await gate.mayFederate(idOf(OTHER_DOC), "peer-hearth" as PeerId)).toBe(false);
+    expect(await gate.mayFederate(idOf(DOC_A), "peer-elsewhere" as PeerId)).toBe(false);
+  });
+});
+
 describe("realm-bag — `keptBy` names the CHARTER each hand holds", () => {
   test("a two-charter book federates to a holder of EITHER charter", async () => {
     const [sa, sb] = [await stewardA(), await stewardB()];

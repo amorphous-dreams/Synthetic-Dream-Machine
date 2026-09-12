@@ -1150,7 +1150,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           onLog: (line) => console.log(`[nexus-join] ${line}`),
         });
         // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
-        try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => { charterHearthPeers.add(peerId); }); }
+        try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => {
+          charterHearthPeers.add(peerId);
+          console.log(`[realm] the charter's hearth stands at peer ${peerId} — the realm's registered books federate back to it`);
+        }); }
         catch { /* an adapter without the event names no hearth — the realm leg simply never opens that lane */ }
         console.log(`[nexus-join] presenting ${
           !selfEdge   ? "the ContactCard alone (no self edge — cross-operator floor)"

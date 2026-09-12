@@ -329,14 +329,17 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     bPut = true;
   }, 240_000);
 
-  // GATED RED. B's placement lands on the realm doc (★ above) and stays there: the RETURN LANE is closed.
-  // MEASURED here — B's gate opens the realm's registered bag docs to a peer her OWN membership consult names
-  // a MEMBER (`RealmBagGate.mayFederate` → `NexusMembership.holdsCarriagePeer`), and B contracted INTO A's
-  // nexus rather than admitting him, so her member set is empty (`nexus refresh` → `memberEntries: 0`) and she
-  // announces nothing back. The realm DOC itself crosses both ways because it sits on the deterministic public
-  // shelf the base gate already federates; A's private bag doc does not. THE SEAM: what proof lets B federate
-  // a realm-carried doc back to the operator whose charter she holds — the charter itself, the standing
-  // registration's `keptBy`, or an admit B writes of her own. The day it stands, this reads "expected to fail".
+  // GATED RED. B's placement lands in the registration's own doc (★ above) and A never reads it.
+  // RE-MEASURED 2026-09-12, and the seam moved: the gate is NOT the refuser. The REALM LEG now opens a
+  // registered book to a peer the registration's `keptBy` names, to a holder of the charter it names, and to
+  // the hearth this vessel dialed the charter from (`RealmBagGate.mayFederate`, the realm's own consult) —
+  // and B's log carries the lane arming: `[realm] the charter's hearth stands at peer peer-…`. Beneath it,
+  // B never gated A at all: `selfSlotShareDecision` gates a peer only when `hasWsSocket` reads true (a socket
+  // on B's OWN server adapter), and A sits at the far end of a dial B opened, so B already shares every doc
+  // with A as an in-process house member (`federation-gate.ts:114` — a peer outside `relayPeers` reads allow).
+  // THE SEAM THAT REMAINS sits PAST the wire: B's change to the registration's doc never reaches A's read —
+  // whether A's replica never applies it, or A's `meme get` answers off a projection that does not, stands
+  // unmeasured. The day it lands, this reads "expected to fail".
   test.fails("⑪ A's `meme get` reads B's new slot — the write crossed the ford, not a second chest", async (ctx) => {
     if (!bPut) ctx.skip();
     const until = Date.now() + 90_000;
