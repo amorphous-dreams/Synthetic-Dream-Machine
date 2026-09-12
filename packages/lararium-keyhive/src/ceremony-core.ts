@@ -147,6 +147,8 @@ export interface FoundingCeremonyResult {
   /** This vessel's OWN signed device-delegation edge (signer→vessel) — the public binding
    *  (vessel × hearthTrueName). */
   founderEdge:           DeviceDelegationTiddler;
+  /** The founder-veil tag the creator-veil stood under — persisted beside the anchors so a re-pave recovers it. */
+  veilTag:               string;
 }
 
 // ── THE TWO HALVES OF A FOUNDING ───────────────────────────────────────────────────────────────
@@ -242,9 +244,16 @@ export interface FaceFoundingInput {
   binding:            FoundingBinding;
   hearthTrueName:     string;
   nexusPubkey:        string;
+  /** A persisted founder-veil tag to RE-DERIVE the SAME creator-veil from, rather than minting a fresh one.
+   *  The identity home backstops it across a preserving re-pave (`vessel clear --force`); on re-light the node
+   *  adapter reads it back and hands it here. ABSENT (a genuine fresh founding) → the founding mints a new tag. */
+  veilTag?:           string;
 }
 
 export interface FaceFoundingResult {
+  /** The founder-veil tag this founding stood the creator-veil under — minted fresh, or the persisted one
+   *  re-derived. The caller persists it beside the anchors so a later re-pave recovers the SAME veil. */
+  veilTag:                string;
   /** The MeshCabal this face founds — a membership structure whose members read as PersonaGroups. */
   meshCabalDocIdHex:      string;
   identitiesUrl:          string;
@@ -283,7 +292,11 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // derives the creator-veil off the VESSEL seed, and stands the veil identity over the SAME event
   // store (both slices flush to the daemon doc; boot re-derives from the persisted tag). The vessel
   // identity keeps custody and transport; the veil keeps the group.
-  const veilTag      = mintVeilTag();
+  //
+  // A persisted tag RE-DERIVES the SAME creator-veil across a preserving re-pave: the veil key is
+  // deterministic in (vesselSeed, veilTag), so a re-light handed the tag its identity home backstopped
+  // stands the same veilDid rather than minting a new one. Absent one, a genuine fresh founding mints.
+  const veilTag      = input.veilTag ?? mintVeilTag();
   const dyadVeilKeys = await deriveDyadVeil(vesselSeed, veilTag);
   const veilKeyhive  = new KeyhiveProvider();
   await veilKeyhive.init({ seed: hexToBytes(dyadVeilKeys.signingKey), eventStore: store });
@@ -455,6 +468,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     signerDid,
     personaKelPrefix,
     founderEdge,
+    veilTag,
   };
 }
 

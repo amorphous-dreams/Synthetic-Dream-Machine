@@ -22,6 +22,12 @@ export interface IdentityAnchors {
   readonly meshCabalDocIdHex: string;
   /** The PersonaGroup agentId — Gate-C membership reads it, and the bootstrap never carried it. */
   readonly personaGroupAgentIdHex: string;
+  /** The founder-veil tag — the per-founding namespace `deriveDyadVeil(vesselSeed, veilTag)` scopes the
+   *  creator-veil leaf by. NOT a secret (the veil SEED derives from the vessel seed; the tag only names the
+   *  leaf), and it lived ONLY in the wiped daemon doc, so a preserving re-pave re-minted it and stood a
+   *  DIFFERENT veil. Persisted here, a re-light re-derives the SAME veil from it. OPTIONAL: anchors written
+   *  before this slot existed, and a joinee (whose veil tag IS its carried group id), carry none. */
+  readonly veilTag?: string;
 }
 
 /**
@@ -48,7 +54,8 @@ export function readIdentityAnchors(parsed: Partial<IdentityAnchors> | null | un
     parsed &&
     typeof parsed.personaGroupDocIdHex === "string" &&
     typeof parsed.meshCabalDocIdHex === "string" &&
-    typeof parsed.personaGroupAgentIdHex === "string"
+    typeof parsed.personaGroupAgentIdHex === "string" &&
+    (parsed.veilTag === undefined || typeof parsed.veilTag === "string")
   ) {
     return parsed as IdentityAnchors;
   }

@@ -28,7 +28,7 @@ import {
 import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import { listPersonaRoots } from "../node-vessel-identity.js";
-import { persistIdentityAnchors } from "../identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors } from "../identity-anchors.js";
 import {
   generateOrLoadVesselIdentity, loadVesselSigningSeed, persistVesselCard,
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
@@ -337,6 +337,13 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
   await generateOrLoadPersonaGroupRoot(storageDir, 0);
   const signerSeed = await loadPersonaGroupRootSeed(storageDir, 0);
 
+  // THE VEIL SURVIVES A PRESERVING RE-PAVE. The founder-veil derives from (vesselSeed, veilTag); the tag
+  // is minted per-founding and lived ONLY in the wiped daemon doc, so a re-light after `vessel clear --force`
+  // (identity home kept) minted a FRESH tag and stood a DIFFERENT veil. When the identity home already
+  // anchors h0, its persisted tag rides back in here and `foundTheFace` re-derives the SAME veil. A genuine
+  // fresh founding (no prior anchors) carries none, and mints one — the recovery never fabricates a veil.
+  const priorVeilTag = loadIdentityAnchors(0)?.veilTag;
+
   const face = await foundTheFace({
     repo,
     daemonHandle,
@@ -347,6 +354,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     hearthTrueName,
     // This node's own gate key IS its Nexus key — the per-Nexus KEL board the inception seats onto.
     nexusPubkey: vesselIdentity.verifyingKey,
+    ...(priorVeilTag ? { veilTag: priorVeilTag } : {}),
   });
 
   writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
@@ -358,6 +366,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
     personaGroupDocIdHex:   face.personaGroupDocIdHex,
     personaGroupAgentIdHex: face.personaGroupAgentIdHex,
+    // The veil tag backstops the founder-veil across a preserving re-pave — beside the doc-ids, out of every
+    // substrate wipe, so the next re-light re-derives the SAME veil rather than minting a fresh one.
+    veilTag:                face.veilTag,
   });
   await repo.flush();
 
