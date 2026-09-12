@@ -63,9 +63,9 @@ if (!forkPresent) {
 interface Fork { base: string; child: ChildProcess; log: string[] }
 
 /** Lay a wiki folder carrying the packed plugin and boot the fork's `--listen` over it. */
-async function bootFork(wiki: string, args: readonly string[], files: Record<string, string> = {}): Promise<Fork> {
+async function bootFork(wiki: string, args: readonly string[], files: Record<string, string> = {}, plugins: readonly string[] = []): Promise<Fork> {
   mkdirSync(path.join(wiki, "tiddlers"), { recursive: true });
-  writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "meme-routes e2e", plugins: [], themes: [], build: {} }));
+  writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "meme-routes e2e", plugins, themes: [], build: {} }));
   copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
   for (const [name, text] of Object.entries(files)) writeFileSync(path.join(wiki, name), text);
   const port = await freePort();
@@ -457,4 +457,75 @@ describe.skipIf(!forkPresent)("★ READERS/WRITERS — the meme skins answer the
     expect(read.status).toBe(200);
     expect(read.body).not.toContain("#/z");
   });
+});
+
+/**
+ * THE TWO DOORS (b), LIVE — a stock browser client over the fork server, the plugin loaded the way a
+ * stock wiki loads it. A framed root added to the client wiki reaches the server SPLIT: the charm
+ * carried it through `/memes/`, where the native door would have answered 422 and the syncer would
+ * have retried forever. The plain CONTROL lands through the native door as ever.
+ * Needs a browser: skips loudly when playwright's chromium cannot launch.
+ */
+describe.skipIf(!forkPresent)("★ THE TWO DOORS (b): a stock client's save of a framed root lands split on the server ★", () => {
+  let fork: Fork | undefined;
+  let root = "";
+  let browser: { close(): Promise<void>; newPage(): Promise<Page> } | undefined;
+  interface Page { goto(url: string): Promise<unknown>; evaluate<T, A>(fn: (arg: A) => T, arg: A): Promise<T>; waitForFunction(fn: string, arg?: unknown, opts?: { timeout?: number }): Promise<unknown>; close(): Promise<void> }
+  const http = async (method: string, p: string): Promise<Reply> => {
+    const r = await fetch(fork!.base + p, { method });
+    return { status: r.status, headers: r.headers, body: await r.text() };
+  };
+  const titles = async (): Promise<string[]> => {
+    const r = await http("GET", "/recipes/default/tiddlers.json");
+    return (JSON.parse(r.body) as { title: string }[]).map((t) => t.title).sort();
+  };
+
+  beforeAll(async () => {
+    const tmpRoot = process.env["LARES_E2E_TMP"] ?? tmpdir();
+    mkdirSync(tmpRoot, { recursive: true });
+    root = mkdtempSync(path.join(tmpRoot, "meme-routes-client-"));
+    // The client-server pair a stock wiki folder carries: the browser's syncadaptor and the server's file store.
+    fork = await bootFork(path.join(root, "wiki"), [], {}, ["tiddlywiki/tiddlyweb", "tiddlywiki/filesystem"]);
+    try {
+      const { chromium } = await import("playwright");
+      browser = await chromium.launch();
+    } catch (err) {
+      console.error(`meme-routes.e2e (client door): SKIPPED — no browser: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }, 90_000);
+
+  afterAll(async () => {
+    await browser?.close();
+    await stopFork(fork);
+    if (root) rmSync(root, { recursive: true, force: true });
+  });
+
+  test("a framed root added in the browser arrives split; a plain tiddler arrives through the native door", async () => {
+    if (!browser) return;
+    const page = await browser.newPage();
+    try {
+      await page.goto(`${fork!.base}/`);
+      await page.waitForFunction("typeof $tw !== 'undefined' && $tw.syncer && $tw.syncadaptor && $tw.syncadaptor.recipe === 'default'", undefined, { timeout: 30_000 });
+      const uri = "lar:///t/client";
+      const text = meme(["a"]).replaceAll("t/x", "t/client");
+      await page.evaluate((arg: { uri: string; text: string }) => {
+        const tw = (globalThis as { $tw: { wiki: { addTiddler(f: Record<string, string>): void } } }).$tw;
+        tw.wiki.addTiddler({ title: arg.uri, type: "text/memetic-wikitext+tiddlywiki", text: arg.text });
+        tw.wiki.addTiddler({ title: "lar:///t/client-plain", text: "prose" });
+      }, { uri, text });
+      const deadline = Date.now() + 20_000;
+      let seen: string[] = [];
+      while (Date.now() < deadline) {
+        seen = await titles();
+        if (seen.includes(`${uri}#/a`) && seen.includes("lar:///t/client-plain")) break;
+        await new Promise((res) => setTimeout(res, 250));
+      }
+      expect(seen.filter((t) => t.startsWith("lar:///t/client"))).toEqual([uri, `${uri}#/a`, "lar:///t/client-plain"]);
+      // The shelf holds the root SPLIT — the door ran, the native PUT never landed it whole.
+      const shelf = JSON.parse((await http("GET", `/recipes/default/tiddlers/${encodeURIComponent(uri)}`)).body) as { text: string };
+      expect(shelf.text).toBe("<<~ kahea ahu #/a>>");
+    } finally {
+      await page.close();
+    }
+  }, 60_000);
 });
