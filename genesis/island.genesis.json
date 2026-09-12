@@ -203,7 +203,7 @@
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins",
         "text": "",
-        "cid": "bafkreig4q5qqo5waauswgqgszqyuw6hufne7v7oza72i4sroj3o6eet3zu",
+        "cid": "bafkreibvpnso6h64wwqurso2jsiaapvwldgaxx2pf4tfyxphxj7iu3olmy",
         "note": "plugins content-CID (sorted plugin id/version/sha256) — fast ratchet",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },

@@ -28,6 +28,7 @@ import {
   LARARIUM_DOC_URI,
   CATALOG_DOC_URI,
   LARES_DOC_URI,
+  LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   bagDescriptorUri,
   recipeUri,
 } from "./lar-uris.js";
@@ -299,6 +300,24 @@ export function computePluginsCid(
   return cidV1Sha256(utf8Bytes(`plugins/v1\n${JSON.stringify(pairs)}`));
 }
 
+/**
+ * THE GRAMMAR REGION — kāhuli's fast ratchet, folded over the memetic-wikitext grammar ALONE.
+ *
+ * kāhuli overturns exactly two tiers: ENGINE (the core's true-name, the slow ratchet) and GRAMMAR (the
+ * parser every carrier is read through). Every OTHER plugin is CONTENT — offered peer-to-peer as an `@cad`
+ * cap by any operator — so it ships in the island's blobs and names no epoch. Folding one in would let a
+ * single operator's extra plugin overturn EVERYBODY's grammar: the same false schism the region CIDs were
+ * split to prevent, arriving through the composition instead of through a version label.
+ *
+ * The SELECTION is the ruling and lives here, at one site, because the mint and the verify both reach it —
+ * a rule copied to two call sites is a rule that drifts, and a drifted region reads as a corrupt genesis.
+ */
+export function computeGrammarCid(
+  plugins: readonly { readonly id: string; readonly version: string; readonly sha256: string }[],
+): string {
+  return computePluginsCid(plugins.filter((p) => p.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI));
+}
+
 // ---------------------------------------------------------------------------
 // Root bag catalog
 // ---------------------------------------------------------------------------
@@ -420,7 +439,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
 
   // Region content-CID witnesses (engine = slow ratchet / true-name; plugins = fast).
   const engineCid  = computeEngineCid(coreVersion, coreSha);
-  const pluginsCid = computePluginsCid(inputs.plugins);
+  const pluginsCid = computeGrammarCid(inputs.plugins);
   tiddlers[GENESIS_CID_ENGINE_TIDDLER] = {
     tiddler: {
       title: GENESIS_CID_ENGINE_TIDDLER, text: "", cid: engineCid,
@@ -482,7 +501,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
   const cid    = cidV1Sha256(bytes);
 
   const engineCid  = computeEngineCid(coreVersion, coreSha);
-  const pluginsCid = computePluginsCid(inputs.plugins);
+  const pluginsCid = computeGrammarCid(inputs.plugins);
 
   // The CAS plane: the bytes the CRDT no longer carries, keyed by sha256 (the CID).
   // The build sink writes each to genesis/cas/<cid>; the loader mirrors them by manifest.
@@ -539,7 +558,7 @@ export function verifyGenesisArtifact(
     );
   }
   const pluginEntries = Object.values(doc.blobs ?? {}).filter((b) => b.id !== ENGINE_CORE_ID);
-  const recomputedPluginsCid = computePluginsCid(pluginEntries);
+  const recomputedPluginsCid = computeGrammarCid(pluginEntries);
   if (recomputedPluginsCid !== storedPluginsCid || recomputedPluginsCid !== artifact.pluginsCid) {
     throw new Error(
       `[genesis] verify FAILED: pluginsCid mismatch — ` +

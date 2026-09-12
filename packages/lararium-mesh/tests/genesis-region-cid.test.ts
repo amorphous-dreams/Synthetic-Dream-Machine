@@ -13,7 +13,8 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { computeEngineCid, computePluginsCid } from "../src/genesis-doc.js";
+import { computeEngineCid, computePluginsCid, buildGenesisDoc, type GenesisPluginEntry, type GenesisInputs } from "../src/genesis-doc.js";
+import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 
 describe("genesis region content-CIDs — bytes name the region, labels never do", () => {
   const plugins = [
@@ -56,5 +57,42 @@ describe("genesis region content-CIDs — bytes name the region, labels never do
   it("an ADDED plugin moves the composition — the pair names WHAT composed, never WHO belongs", () => {
     const grown = [...plugins, { id: "lar:///plugins/c", version: "0.1", sha256: "cc" }];
     expect(computePluginsCid(grown)).not.toBe(computePluginsCid(plugins));
+  });
+});
+
+/**
+ * THE GRAMMAR REGION — kāhuli's fast ratchet, and what it deliberately EXCLUDES.
+ *
+ * Ruled: kāhuli overturns exactly two tiers, ENGINE and GRAMMAR. Every other plugin is CONTENT — offered
+ * peer-to-peer as an `@cad` cap by any operator — so it ships in the island's blobs but stands OUTSIDE the
+ * ratchet's identity. Folding it into the grammar epoch would make one operator's extra plugin overturn
+ * everybody's grammar, which is precisely the schism the region CIDs exist to prevent.
+ *
+ * `computePluginsCid` keeps its general contract (fold whatever entries you hand it); the SELECTION is the
+ * ruling, and it lives at one site so the mint and the verify can never disagree about what the region is.
+ */
+describe("the GRAMMAR region — the ratchet folds the grammar alone", () => {
+  const blobOf = (s: string): Uint8Array => new TextEncoder().encode(s);
+  const entry = (id: string, sha: string): GenesisPluginEntry =>
+    ({ id, version: "1.0", sha256: sha, mimeType: "application/json", blob: blobOf(id) });
+  const inputsWith = (plugins: readonly GenesisPluginEntry[]): GenesisInputs => ({
+    actorSeed: "00".repeat(32), coreBlob: blobOf("tw5-core"), coreVersion: "5.5.0", coreSha256: "ab".repeat(32), plugins,
+  });
+  const GRAMMAR = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
+
+  it("★ another operator's plugin NEVER overturns the grammar epoch ★", () => {
+    const grammar = entry(GRAMMAR, "11".repeat(32));
+    const alone     = buildGenesisDoc(inputsWith([grammar]));
+    const withOther = buildGenesisDoc(inputsWith([grammar, entry("$:/plugins/sq/streams", "22".repeat(32))]));
+    expect(withOther.pluginsCid, "a content plugin sits outside the ratchet").toBe(alone.pluginsCid);
+    // …and it still SHIPS: content rides the island's blobs, it simply names no epoch.
+    expect(withOther.casEntries.length).toBeGreaterThan(alone.casEntries.length);
+  });
+
+  it("CONTROL — the GRAMMAR's own bytes DO overturn it, and the engine true-name holds throughout", () => {
+    const alone = buildGenesisDoc(inputsWith([entry(GRAMMAR, "11".repeat(32))]));
+    const moved = buildGenesisDoc(inputsWith([entry(GRAMMAR, "33".repeat(32))]));
+    expect(moved.pluginsCid, "the grammar's bytes are the ratchet").not.toBe(alone.pluginsCid);
+    expect(moved.engineCid, "the true-name never moves with the grammar").toBe(alone.engineCid);
   });
 });
