@@ -32,6 +32,7 @@ module-type: tiddlerdeserializer
 import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
 import { MemeStreamParser } from "./meme-stream.js";
 import { carrierHeadLinePattern } from "./carrier-head.js";
+import { renderMetaTomlLine } from "./meme-normalize.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   findTopLevelAhuBlocks,
@@ -912,13 +913,14 @@ function emitMetaToml(fields: TiddlerFields, deny: ReadonlySet<string>, parentFi
     return true;
   });
   if (keys.length === 0) return "";
+  // The column law lives in meme-normalize, so the projector's render and `meme normalize` agree.
   const pad = Math.max(...keys.map((k) => k.length));
   return keys.map((k) => {
     const v = fields[k] as string | string[];
     const rendered = k === "namespace" && typeof v === "string"
       ? fmtNamespaceEntities(v)
       : fmtTomlValue(v);
-    return k.padEnd(pad) + " = " + rendered;
+    return renderMetaTomlLine(k, rendered, pad);
   }).join("\n") + "\n";
 }
 

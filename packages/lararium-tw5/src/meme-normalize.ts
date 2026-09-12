@@ -112,6 +112,44 @@ export function normalizeParamSeparators(src: string): { text: string; moved: nu
   return { text, moved };
 }
 
+// ── The toml meta column law ─────────────────────────────────────────────────────────────────────
+
+/** A top-level `key = value` line of a toml meta body, split at its first unquoted `=`. */
+const META_KV_RE = /^([A-Za-z0-9_.-]+)[ \t]*=[ \t]*(.*)$/;
+
+/**
+ * Render one meta line under the column law: the key padded to the longest key, one space, `=`, one
+ * space, the value. The ONE spelling both renderers emit — the disk projector re-emitting a carrier's
+ * fields, and `meme normalize` re-aligning a fence an author spelled by hand.
+ */
+export function renderMetaTomlLine(key: string, value: string, pad: number): string {
+  return `${key.padEnd(pad)} = ${value}`;
+}
+
+/**
+ * Re-align a toml meta fence body's top-level `key = value` lines to the column law.
+ *
+ * Only the block ABOVE the first table header moves; a `[table]` and everything beneath it stays as
+ * written, since the carrier's fields ride the top-level block alone. Values keep every byte — the
+ * split runs at the first `=` after the key, so a value carrying ` = ` inside its quotes never moves.
+ * Idempotent: a body already under the law passes through unchanged.
+ */
+export function alignMetaTomlColumns(body: string): string {
+  const lines = body.split("\n");
+  const top: number[] = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    if (/^[ \t]*\[/.test(lines[i]!)) break;
+    if (META_KV_RE.test(lines[i]!)) top.push(i);
+  }
+  if (top.length === 0) return body;
+  const pad = Math.max(...top.map((i) => META_KV_RE.exec(lines[i]!)![1]!.length));
+  for (const i of top) {
+    const m = META_KV_RE.exec(lines[i]!)!;
+    lines[i] = renderMetaTomlLine(m[1]!, m[2]!, pad);
+  }
+  return lines.join("\n");
+}
+
 export interface NormalizeResult {
   readonly text: string;
   readonly changed: boolean;
@@ -244,6 +282,23 @@ export function normalizeMemeSource(src: string): NormalizeResult {
     return `${head}to="?"${tail}`;
   });
   if (ends > 0) notes.push(`framing ends: ${ends} sigil${ends === 1 ? "" : "s"} named from= and to=`);
+
+  // ── 6. Meta columns ──────────────────────────────────────────────────────
+  //
+  // ONE COLUMN LAW, TWO RENDERERS. The disk projector re-emits a carrier's meta from its fields and
+  // aligns the equals-signs to the longest key; a fence an author spelled a column wider read clean
+  // here and moved under the projector, so the two renders disagreed on bytes no value changed.
+  // The same law re-aligns the fence here, and the two renders agree by construction.
+  {
+    const fence = metaFence(text);
+    if (fence) {
+      const aligned = alignMetaTomlColumns(fence[2]!);
+      if (aligned !== fence[2]!) {
+        text = text.slice(0, fence.index + fence[1]!.length) + aligned + text.slice(fence.index + fence[1]!.length + fence[2]!.length);
+        notes.push("meta columns: equals-signs aligned to the longest key");
+      }
+    }
+  }
 
   return { text, changed: text !== src, notes, flags };
 }

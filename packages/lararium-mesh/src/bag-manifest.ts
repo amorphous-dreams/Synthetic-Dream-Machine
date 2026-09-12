@@ -49,6 +49,24 @@ export interface BagManifest {
   readonly role?: string;
 }
 
+/** The address a bag's MANIFEST answers to — the bag's own name, and nothing beneath it. Distinct from
+ *  `bagDescriptorUri` (lar-uris), the oracle's `<bag>/descriptor` record carrying label and policies. */
+export function bagManifestUri(bag: string): string {
+  return `lar:///ha.ka.ba/bags/${bag}`;
+}
+
+/**
+ * Does this address name a bag's MANIFEST — the `meta.mem` at the bag's own root?
+ *
+ * Exactly one segment after `bags/`: `lar:///ha.ka.ba/bags/crossroads` reads true; a carrier living
+ * UNDER a bag address (`…/bags/other/v2/notes/thing`, `…/bags/oracle/blobs/x`) reads false. The
+ * manifest's file is `meta.mem` at the bag root, owned by the declare verb; a projector that sited
+ * it by its uri-path would write a second copy of the manifest inside the bag it describes.
+ */
+export function isBagManifestUri(uri: string): boolean {
+  return /^lar:\/\/\/ha\.ka\.ba\/bags\/[^/#?]+$/.test(uri);
+}
+
 /** A bag that declares nothing reads as the tightest tier and the recoverable home. */
 export function defaultBagManifest(bag: string): BagManifest {
   return { bag, tier: DEFAULT_CAP_TIER, home: DEFAULT_BAG_HOME };
@@ -82,7 +100,7 @@ export function renderBagManifest(m: BagManifest): string {
   const lines = [
     DECLARATION,
     "",
-    `<<^ code="&#x0001;" namespace="⊙" ? -> lar:///ha.ka.ba/bags/${m.bag}>>`,
+    `<<^ code="&#x0001;" namespace="⊙" ? -> ${bagManifestUri(m.bag)}>>`,
     "```toml meta",
     `bag       = "${m.bag}"`,
     `cap-tier  = "${m.tier}"`,

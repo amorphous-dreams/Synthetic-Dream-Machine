@@ -7,7 +7,7 @@
  */
 
 import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
-import { stripMemeExt, wikiSlotUri } from "@lararium/mesh";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
@@ -97,6 +97,9 @@ function splitHash(s: string): [string, string | null] {
  */
 export function carrierBaseRelPath(uri: string): string | null {
   if (!uri.startsWith("lar:///")) return null;
+  // A bag's MANIFEST sites nowhere here: its file is `meta.mem` at the bag root, owned by the
+  // declare verb. Sited by uri-path it would land as `bags/<bag>/ha.ka.ba/bags/<bag>.mem`.
+  if (isBagManifestUri(uri)) return null;
   const bare = uri.slice("lar:///".length);
   if (!/^\w+\.\w+\.\w+\//.test(bare)) return null;
   const [pathPart, frag] = splitHash(bare);

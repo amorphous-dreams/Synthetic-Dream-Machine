@@ -44,7 +44,7 @@ import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdir
 import { dirname, basename } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
-import { isEffectRecordUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
+import { isEffectRecordUri, isBagManifestUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, WindowServo } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -378,6 +378,9 @@ export class LarDiskProjector {
     // carrier surface. (The general type-filter — project only
     // text/memetic-wikitext+tiddlywiki — arrives with the migration wave.)
     if (isEffectRecordUri(tiddlerUri)) return;
+    // A bag's manifest is a record ABOUT the bag, never a carrier IN it — `meta.mem` at the bag root
+    // belongs to the declare verb. Refused before the render, so no rule can site it either.
+    if (isBagManifestUri(tiddlerUri)) return;
 
     // Site the carrier by its own filetype — ONE render shore. The VM registry
     // hands back the chosen extension + bytes + any `.meta` sidecar, so a
