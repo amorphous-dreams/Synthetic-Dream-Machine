@@ -529,3 +529,47 @@ describe.skipIf(!forkPresent)("★ THE TWO DOORS (b): a stock client's save of a
     }
   }, 60_000);
 });
+
+/**
+ * THE TWO DOORS (c), LIVE — a framed root landed by a door neither the native gate nor the charm
+ * sees: the fork's own `--load` command, which imports through `$tw.wiki.importTiddler`. The backstop
+ * re-stamps it and the server log carries the one line. The plain CONTROL in the same file stays.
+ */
+describe.skipIf(!forkPresent)("★ THE TWO DOORS (c): a root landed by `--load` re-stamps on the server, one log line ★", () => {
+  let fork: Fork | undefined;
+  let root = "";
+  const uri = "lar:///t/loaded";
+
+  beforeAll(async () => {
+    const tmpRoot = process.env["LARES_E2E_TMP"] ?? tmpdir();
+    mkdirSync(tmpRoot, { recursive: true });
+    root = mkdtempSync(path.join(tmpRoot, "meme-routes-backstop-"));
+    const framed = path.join(root, "framed.json");
+    writeFileSync(framed, JSON.stringify([
+      { title: uri, type: "text/memetic-wikitext+tiddlywiki", text: meme(["a"]).replaceAll("t/x", "t/loaded") },
+      { title: "lar:///t/loaded-plain", text: "prose" },
+    ]));
+    fork = await bootFork(path.join(root, "wiki"), ["--load", framed]);
+  }, 60_000);
+
+  afterAll(async () => {
+    await stopFork(fork);
+    if (root) rmSync(root, { recursive: true, force: true });
+  });
+
+  test("the shelf holds the root split and its slot; the log names the re-stamp once; the plain tiddler stands", async () => {
+    const deadline = Date.now() + 10_000;
+    let seen: string[] = [];
+    while (Date.now() < deadline) {
+      const r = await fetch(`${fork!.base}/recipes/default/tiddlers.json`);
+      seen = (JSON.parse(await r.text()) as { title: string }[]).map((t) => t.title).sort();
+      if (seen.includes(`${uri}#/a`)) break;
+      await new Promise((res) => setTimeout(res, 100));
+    }
+    expect(seen).toEqual([uri, `${uri}#/a`, "lar:///t/loaded-plain"]);
+    const shelf = JSON.parse(await (await fetch(`${fork!.base}/recipes/default/tiddlers/${encodeURIComponent(uri)}`)).text()) as { text: string };
+    expect(shelf.text).toBe("<<~ kahea ahu #/a>>");
+    const lines = fork!.log.join("").split("\n").filter((l) => l.includes("[memetic-wikitext]"));
+    expect(lines).toEqual([`[memetic-wikitext] re-stamped ${uri} (landed via a native write)`]);
+  }, 30_000);
+});
