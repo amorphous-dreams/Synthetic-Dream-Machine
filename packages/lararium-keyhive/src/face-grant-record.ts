@@ -20,8 +20,8 @@
  */
 
 import {
-  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, verifyDeviceDelegation,
-  type DeviceDelegationTiddler,
+  canonicalJsonBytes, utf8Bytes, ed25519VerifyHex, verifyDeviceDelegation, verifyEdgeAgainstPersonaKel,
+  type DeviceDelegationTiddler, type PersonaKelEvent,
 } from "@lararium/mesh";
 
 /** The signing domain — a grant record's bytes never verify as any other signed thing. */
@@ -79,6 +79,13 @@ export async function signFaceGrantRecord(
 export interface FaceGrantVerifyContext {
   /** The persona root the joinee pinned at admit — the published seal. */
   readonly personaRootDid: string;
+  /**
+   * The founder's persona-KEL, when the joinee holds it. Present, the founder's edge verifies against the
+   * CURRENT head op-key (the seated key after a rotation) — the same walk the Binding Gate makes — and the
+   * chain must incept at the pinned root, so the seal binds the chain. Absent, the edge verifies under the
+   * pinned root alone.
+   */
+  readonly personaKel?: { readonly prefix: string; readonly chain: readonly PersonaKelEvent[] };
   /** This vessel's own raw verifying-key hex — the record must name it. */
   readonly selfVerifyingKey: string;
   /** The group this vessel's face belongs to — the record must name it. */
@@ -89,8 +96,9 @@ export interface FaceGrantVerifyContext {
 export type FaceGrantVerdict = { ok: true } | { ok: false; reason: string };
 
 /**
- * Verify a grant record OFFLINE. Order: shape → ours (joinee + group) → the founder's edge under the pinned root →
- * the signature under the key that edge licenses. A record that fails reads a reason and re-cuts nothing.
+ * Verify a grant record OFFLINE. Order: shape → ours (joinee + group) → the founder's edge under the persona-KEL
+ * HEAD (or the pinned root when no chain rides) → the signature under the key that edge licenses. A record that
+ * fails reads a reason and re-cuts nothing. A grant a rotated-away op-key signed refuses under the head.
  */
 export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyContext): Promise<FaceGrantVerdict> {
   const r = rec as Partial<FaceGrantRecord> | null;
@@ -103,8 +111,21 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
   if (typeof r.joineeAgentIdHex !== "string" || !r.joineeAgentIdHex.toLowerCase().endsWith(ctx.selfVerifyingKey.toLowerCase())) {
     return { ok: false, reason: "the record names another joinee" };
   }
-  const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, { now: ctx.now });
-  if (!edge.ok) return { ok: false, reason: `founder edge refused under the pinned root: ${edge.reason ?? "signature or window"}` };
+  if (ctx.personaKel) {
+    const { prefix, chain } = ctx.personaKel;
+    const genesis = chain[0];
+    if (!genesis || genesis.prefix !== prefix) {
+      return { ok: false, reason: "the persona-KEL in scope names a prefix other than the pinned one" };
+    }
+    if (genesis.opKeyDid.toLowerCase() !== ctx.personaRootDid.toLowerCase()) {
+      return { ok: false, reason: "the persona-KEL incepts under a root other than the pinned one — the seal binds the chain" };
+    }
+    const walked = await verifyEdgeAgainstPersonaKel(r.founderEdge, chain, { now: ctx.now });
+    if (!walked.ok) return { ok: false, reason: `founder edge refused under the persona-KEL head: ${walked.reason ?? "signature or window"}` };
+  } else {
+    const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, { now: ctx.now });
+    if (!edge.ok) return { ok: false, reason: `founder edge refused under the pinned root: ${edge.reason ?? "signature or window"}` };
+  }
   const founderKey = r.founderEdge.deviceVerifyingKey;
   if (founderKey.toLowerCase() === ctx.selfVerifyingKey.toLowerCase()) {
     return { ok: false, reason: "the record's founder is this vessel — a hearth never seats itself" };

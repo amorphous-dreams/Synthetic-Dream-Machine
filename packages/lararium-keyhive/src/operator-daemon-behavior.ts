@@ -139,6 +139,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       judgedGrants.add(rec.sig);
       const verdict = await verifyFaceGrantRecord(rec, {
         personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group, now: Date.now(),
+        ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),   // the edge verifies under the KEL HEAD, never a frozen root
       });
       if (!verdict.ok) {
         console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
