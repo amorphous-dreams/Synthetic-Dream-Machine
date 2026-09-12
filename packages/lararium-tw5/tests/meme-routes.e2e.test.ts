@@ -255,19 +255,29 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect((await http("DELETE", memePath("default", "bags", uri))).status).toBe(404);
   });
 
-  test("CONTROL (measured): the native tiddler PUT of the same meme text lands ONE unsplit tiddler", async () => {
+  test("★ THE TWO DOORS (a): the native PUT of a framed root refuses with 422 naming the /memes/ door; the door lands it split ★", async () => {
     const title = "lar:///t/native";
     const text = meme(["a", "b"]).replaceAll("t/x", "t/native");
+    const before = await titles();
     const r = await http("PUT", `/recipes/default/tiddlers/${encodeURIComponent(title)}`, {
       body: JSON.stringify({ title, text, type: "text/memetic-wikitext+tiddlywiki" }),
     });
-    expect(r.status).toBe(204);
-    const born = (await titles()).filter((t) => t.startsWith(title));
-    expect(born).toEqual([title]);
-    // The route splits the SAME text into its records.
+    expect(r.status, r.body).toBe(422);
+    expect(JSON.parse(r.body).door).toBe(memePath("default", "recipes", title));
+    expect(await titles()).toEqual(before);
+    // The door splits the SAME text into its records.
     const routed = await http("PUT", memePath("default", "bags", title), { body: text });
     expect(routed.status, routed.body).toBe(200);
     expect((await titles()).filter((t) => t.startsWith(title))).toEqual([title, `${title}#/a`, `${title}#/b`]);
+    // CONTROL: a plain tiddler and a carrier-typed slot child (no head) pass the native door.
+    const plain = await http("PUT", `/recipes/default/tiddlers/${encodeURIComponent("lar:///t/plain")}`, {
+      body: JSON.stringify({ title: "lar:///t/plain", text: "prose" }),
+    });
+    expect(plain.status).toBe(204);
+    const child = await http("PUT", `/recipes/default/tiddlers/${encodeURIComponent(`${title}#/c`)}`, {
+      body: JSON.stringify({ title: `${title}#/c`, type: "text/memetic-wikitext+tiddlywiki", text: "! c", fields: { "$slot": "#/c", "$fragment-parent": title } }),
+    });
+    expect(child.status).toBe(204);
   });
 
   /**

@@ -233,3 +233,28 @@ describe("★ DELETE /bags/:bag/memes/:scheme/:path — the root and its group g
     expect(w.store.size).toBe(0);
   });
 });
+
+describe("★ THE TWO DOORS (a): a framed meme root at the native door refuses, naming the /memes/ door ★", () => {
+  const gate = (body: unknown) => nativeDoorGate(JSON.stringify(body), undefined, "default");
+  const CARRIER = "text/memetic-wikitext+tiddlywiki";
+
+  test("a native PUT of a root (carrier type + SOH head) answers 422 with the door for that URI", () => {
+    const r = gate({ title: URI, type: CARRIER, text: meme(["a"]) });
+    expect(r.kind).toBe("refuse");
+    if (r.kind !== "refuse") return;
+    expect(r.status).toBe(422);
+    expect(r.body["door"]).toBe("/recipes/default/memes/lar/t/x");
+    expect(r.body["uri"]).toBe(URI);
+    // The TiddlyWeb shape nests the unknown fields; the type rides known, the text rides known.
+    expect(gate({ title: URI, type: CARRIER, text: meme(["a"]), fields: { "uri-path": "t/x" } }).kind).toBe("refuse");
+  });
+
+  test("CONTROL: a plain tiddler passes; a carrier-typed tiddler with no head (a split root, a slot child) passes; SOH text under another type passes", () => {
+    expect(gate({ title: URI, text: meme(["a"]) }).kind).toBe("pass");
+    expect(gate({ title: URI, type: "text/vnd.tiddlywiki", text: meme(["a"]) }).kind).toBe("pass");
+    expect(gate({ title: URI, type: CARRIER, text: "<<~ kahea ahu #/a>>" }).kind).toBe("pass");
+    expect(gate({ title: `${URI}#/a`, type: CARRIER, text: "! a", fields: { "$slot": "#/a" } }).kind).toBe("pass");
+    // A head SHOWN inside a fence opens nothing.
+    expect(gate({ title: URI, type: CARRIER, text: "```\n" + meme(["a"]) + "```\n" }).kind).toBe("pass");
+  });
+});

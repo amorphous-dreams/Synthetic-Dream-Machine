@@ -33,6 +33,9 @@ import type { TiddlerFields } from "./deserializer.js";
 import { expandMemeRefs } from "./deserializer.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 
+import { carrierMarkPattern, headUriOf } from "./carrier-head.js";
+import { maskedExec } from "./meme-ast/fence-mask.js";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { sha256HexSync } from "@lararium/mesh/crypto";
 import { tagDigest } from "@lararium/mesh/agile-digest";
 
@@ -97,6 +100,21 @@ export function memePathOf(uri: string, container: { kind: "bags" | "recipes"; n
   const m = /^([a-z][a-z0-9+.-]*):\/\/\/(.+)$/.exec(uri);
   if (!m) return null;
   return `/${container.kind}/${container.name}/memes/${m[1]}/${m[2]!.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+/**
+ * A FRAMED ROOT — a record whose `type` reads the carrier type and whose text still opens with a SOH
+ * head (masked: a head shown inside a fence opens nothing). The whole meme sits in one record, unsplit;
+ * the placement law never ran over it. A split root carries a `<<~ kahea …>>` body and no head; a slot
+ * child carries its own text and no head — neither reads as framed. Answers the URI the head names
+ * (else the title), or null.
+ */
+export function framedRootOf(fields: Record<string, unknown>): string | null {
+  if (fields["type"] !== CARRIER_TYPE) return null;
+  const text = typeof fields["text"] === "string" ? fields["text"] : "";
+  if (!maskedExec(text, carrierMarkPattern("head", "g"))) return null;
+  const title = typeof fields["title"] === "string" ? fields["title"] : "";
+  return headUriOf(text) ?? (title || null);
 }
 
 /** The carrier-group law: the root, its `#slot` fragments, its `/path` children. */
