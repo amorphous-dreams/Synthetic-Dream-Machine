@@ -92,6 +92,17 @@ export function handler(request: RouteRequest, response: RouteResponse, state: R
     response.end("malformed meme path");
     return;
   }
+  // A FRAGMENT NEVER FOUNDS. `#` may not repeat in a lar address, so a placement at `uri#/slot` could
+  // mint only `uri#/slot#/z` — a title the group law admits and the address grammar has no name for,
+  // unreachable by the recompose that walks `#/slot/z`. The root law keeps stock's client off this
+  // door (`framedRootOf`), so this wall costs the syncer nothing and answers every OTHER skin: an MCP
+  // door, the CLI, a hand-rolled request. The read and the removal keep their own answers — they
+  // found nothing, so a fragment there is simply a URI no root stands under.
+  if (uri.includes("#")) {
+    response.writeHead(400, { "Content-Type": "text/plain" });
+    response.end("a fragment address never founds a meme — `#` may not repeat; place the ROOT and let the slot ride its body");
+    return;
+  }
   const baseHash = baseHashOf(request.headers["if-match"]);
   const sink = wikiMemeSink(state.wiki);
   const place = async () => {

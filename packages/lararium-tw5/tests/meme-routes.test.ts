@@ -102,6 +102,26 @@ describe("★ PUT /bags/:bag/memes/:scheme/:path ★", () => {
     expect(w.store.size).toBe(0);
   });
 
+  test("★ a FRAGMENT-addressed uri never founds: PUT answers 400 and names the single-hash law ★", async () => {
+    // `#` may not repeat in a lar address, so a founding at `uri#/slot` could mint only `uri#/slot#/z` —
+    // a title the group law admits and the address grammar has no name for. After the root law gained
+    // one spelling no stock client addresses this door with a fragment; the wall is for every OTHER
+    // skin (MCP, CLI, a hand-rolled curl), and it costs the syncer nothing because nothing sends here.
+    const w = wiki();
+    const reply = await fire(put, w, { uri: "t/x%23/a", data: meme(["z"]) });
+    expect(reply.status).toBe(400);
+    expect(reply.body).toContain("#");
+    expect([...w.store.keys()]).toEqual([]);
+  });
+
+  test("CONTROL · a ROOT uri still lands, and GET/DELETE on the fragment path answer as they always did", async () => {
+    const w = wiki();
+    expect((await fire(put, w, { uri: "t/x", data: meme(["z"]) })).status).toBe(200);
+    // The read and the removal never founded anything, so they keep their own answers: absent.
+    expect((await fire(get, w, { uri: "t/x%23/a" })).status).toBe(404);
+    expect((await fire(del, w, { uri: "t/x%23/a" })).status).toBe(404);
+  });
+
   test("a malformed :path answers 400 on both skins, never an uncaught throw", async () => {
     const w = wiki();
     expect((await fire(put, w, { uri: "t/%E0%A4%A", data: meme(["a"]) })).status).toBe(400);
