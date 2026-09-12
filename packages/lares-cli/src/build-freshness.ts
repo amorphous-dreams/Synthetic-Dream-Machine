@@ -29,6 +29,7 @@ import { join, dirname, relative } from "node:path";
 import { createHash } from "node:crypto";
 import { repoRoot } from "@lararium/mesh/node";
 import { udsAlive } from "./local-connector.js";
+import { VESSEL_SUBS } from "./commands/vessel.js";
 import type { ParsedArgs } from "./parse-args.js";
 
 /**
@@ -44,10 +45,23 @@ import type { ParsedArgs } from "./parse-args.js";
  */
 const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help"]);
 
+/**
+ * The vessel door's own sub-door names, DERIVED from its SUBS table — never a second roster to drift.
+ * `cmdVessel` dispatches exclusively through that table, so this set is the exact catalogue of names
+ * that run vessel logic; anything outside it returns an "unknown sub-door" error and loads nothing.
+ */
+const VESSEL_SUB_SET: ReadonlySet<string> = new Set(VESSEL_SUBS);
+
 export function needsFreshBuild(args: ParsedArgs): boolean {
   if (args.command !== "vessel") return false;
   const sub = args.positional[0];
-  return sub !== undefined && !NEVER_STALE.has(sub);
+  if (sub === undefined) return false;
+  // A name absent from the vessel door dispatches to an error and runs no vessel logic, so it cannot
+  // run STALE logic — building for it would tax a plain typo (or `status`, whose read verb is `read`)
+  // with a full workspace rebuild ahead of the error. Only the REAL sub-doors reach the gate.
+  if (!VESSEL_SUB_SET.has(sub)) return false;
+  // Of the real sub-doors, the reads and port-control start nothing; every founding/booting one builds.
+  return !NEVER_STALE.has(sub);
 }
 
 const BUILT_LARES_BIN = join(repoRoot, "packages", "lares-cli", "dist", "src", "bin", "lares.js");

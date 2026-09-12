@@ -34,12 +34,21 @@ describe("★ the observe cap never triggers a rebuild ★", () => {
     expect(needsFreshBuild(args({}, ["found"]))).toBe(true);
   });
 
-  test("★ membership is DERIVED, so a sub-door nobody thought about is gated by default ★", () => {
-    // The roster this replaced had to be remembered on every surface change, and it drifted the moment
-    // one arrived. Stating the EXCEPTIONS instead means the unsafe direction needs an argument.
-    expect(needsFreshBuild(args({}, ["a-sub-door-invented-tomorrow"]))).toBe(true);
-    expect(needsFreshBuild(args({}, ["read"]))).toBe(false);   // inspects, starts nothing
-    expect(needsFreshBuild(args({}, ["stop"]))).toBe(false);   // port-control, loads no vessel logic
+  test("★ membership is DERIVED from the SUBS table, so a name that runs no vessel logic never builds ★", () => {
+    // `cmdVessel` dispatches EXCLUSIVELY through the SUBS table; a name absent from it returns an
+    // "unknown sub-door" error and loads no vessel logic. It therefore cannot run STALE logic — so
+    // building for it would run a full 16-package rebuild ahead of an error message. A read-shaped
+    // word (`status` — the read verb is `read`) or a plain typo paid that founding tax for nothing.
+    // Membership stays DERIVED and drift-free: the gate reads the SUBS table (VESSEL_SUBS) itself, so a
+    // real sub-door added tomorrow appears there and builds automatically — no separate roster to keep.
+    expect(needsFreshBuild(args({}, ["status"]))).toBe(false);                 // not a sub-door; the read verb is `read`
+    expect(needsFreshBuild(args({}, ["a-name-not-in-the-table"]))).toBe(false); // dispatches to an error, no logic
+    expect(needsFreshBuild(args({}, ["read"]))).toBe(false);                   // a real read — inspects, starts nothing
+    expect(needsFreshBuild(args({}, ["stop"]))).toBe(false);                   // real, port-control, loads no vessel logic
+    // CONTROL: the real founding/booting subs STILL build — the gate withholds nothing it was built for.
+    expect(needsFreshBuild(args({}, ["stand"]))).toBe(true);
+    expect(needsFreshBuild(args({}, ["found"]))).toBe(true);
+    expect(needsFreshBuild(args({}, ["rite"]))).toBe(true);                    // founding/rebuild/rebirth run real logic
   });
 
   test("a verb outside the vessel door never reaches the gate at all", () => {
