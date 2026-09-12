@@ -16,7 +16,8 @@
  *   stats                         — pinned / wela / anu residency snapshot
  *   register-cold <url>           — mark URL as known-but-not-loaded (the oracle entry alone)
  *   compact <url>                 — DXOS-style snapshot-restart; bounds history
- *   cas [--all]                   — the cid/ CAS tier: blobs · referenced · unreferenced · bytes
+ *   cas [--all] [--fetch <cid>] [--pin <cid>] [--release <cid>] [--sweep [--dry-run]]
+ *                                 — the cid/ CAS tier: blobs · referenced · unreferenced · bytes; fetch · pin · release · sweep
  *   list                          — every bag: declared tier + home, and whether it sits where it belongs
  *   show <bag>                    — one bag's declaration, resolved on this vessel
  *   declare <bag> --tier --home   — write/amend the declaration (moves no bytes)
@@ -82,7 +83,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "stats":         { handler: cmdResidency,    summary: "Print the daemon's bag residency snapshot. Needs `lares vessel stand --foreground`." },
   "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded — the oracle entry alone, no tiddlers loaded. Needs `lares vessel stand --foreground`." },
   "compact":       { handler: cmdBagCompact,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
-  "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). --pin <cid> [--tier <t>] [--expiry <Nd|iso|ms>] holds a blob past the grace; --release <cid> frees it." },
+  "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). --pin <cid> [--tier <t>] [--expiry <Nd|iso|ms>] holds a blob past the grace; --release <cid> frees it. --sweep [--dry-run] sweeps the unreferenced blobs past their grace where the composite stands (dry: names them, moves nothing)." },
   // ── The LIFECYCLE half. Everything above answers a RUNTIME question (is this doc in RAM); these answer
   // what a bag IS, who may read it, where it belongs, and how to move it — the questions a bag could not
   // answer about itself at all until it carried a declaration.
