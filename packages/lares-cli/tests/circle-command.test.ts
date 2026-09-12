@@ -53,7 +53,7 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdCircle } from "../src/commands/circle.js";
 import { larIdentityDir } from "../src/env.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex } from "@lararium/mesh";
+import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception } from "@lararium/mesh";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -65,9 +65,15 @@ const circleArgs = (positional: string[], options: Record<string, string> = {}):
 
 /** Mint a self-certifying HandleCard for a fresh nym, write it to a file, return its path + the nym. */
 async function cardFile(dir: string, seedByte: number, glamour: string): Promise<{ nym: string; path: string }> {
-  const { signingKey, verifyingKey: nym } = await derivePersonaKeypair(new Uint8Array(32).fill(seedByte), [0]);
+  const { signingKey, verifyingKey } = await derivePersonaKeypair(new Uint8Array(32).fill(seedByte), [0]);
+  // A self-certifying card CARRIES its handle-KEL chain — the nym retired off a bare key onto the chain
+  // (identity-classes#the-handle-chain). The 1-of-1 SELF-OWNED inception: the handle key is its own sole
+  // owner, and the STABLE nym is the chain's prefix (not the raw key). Head key = the seated inception key.
+  const did = `0x${verifyingKey}`;
+  const chain = [mintHandleInception(did, did, "ab".repeat(32))];
+  const nym = chain[0]!.prefix;
   const card = await signHandleCard(
-    { nym, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
     ed25519SignerFromSeed(signingSeedFromHex(signingKey)),
   );
   const path = join(dir, `${glamour}.card.json`);
