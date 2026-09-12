@@ -15,7 +15,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readd
 import { join, dirname } from "node:path";
 import {
   pinnedCids, casReferences, graceForTier, tiersByGraceDescending, realmPace,
-  type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance,
+  type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
 
@@ -94,6 +94,54 @@ export function readCasBlobFromFs(cid: string, casDir: string): Uint8Array | nul
   } catch {
     return null;
   }
+}
+
+// ── THE HERM SHORE AS A TRANSIT LEG (basket-one #/the-fetch-door) ────────────────────────────────────
+//
+// "A public blob travels to a Herm before any hearth serves it." The fetch door composes local → transit →
+// verify → write-through (`makeCidResolver`); the Herm's public read-face `GET /cas/<cid>` (bulb-read-face) is
+// ONE MORE HOLDER on the transit leg, asked after the fleet: a same-operator peer that went dark costs a miss,
+// and the bytes it staged public still arrive by the crossroads. The resolver's own verify gates the answer —
+// a shore answering wrong bytes under a cid is skipped, never cached — so the Herm holds no trust the bytes
+// do not prove themselves. Carry ⊥ read holds: only a PUBLIC-tier cid ever answers there (the shore's gate).
+
+/** The holder handle the Herm leg answers `discover` with — the read-face URL itself (no key stands behind
+ *  a public GET; the bytes prove themselves). */
+const HERM_HOLDER_PREFIX = "herm:";
+
+/** The Herm's public read-face (`http://host:port`) as a transit leg: one holder, one GET `/cas/<cid>`. A
+ *  404 (a cid the Herm withholds — private, contract, or unnamed) and any transport fault read as dont-have. */
+export function hermCasTransit(readFaceUrl: string): CasTransitTransport {
+  const base = readFaceUrl.replace(/\/+$/, "");
+  const holder = `${HERM_HOLDER_PREFIX}${base}`;
+  return {
+    discover: async () => [holder],
+    fetchBlock: async (cid, h) => {
+      if (h !== holder) return null;
+      try {
+        const res = await fetch(`${base}/cas/${cid}`);
+        if (!res.ok) return null;
+        return new Uint8Array(await res.arrayBuffer());
+      } catch { return null; }
+    },
+  };
+}
+
+/** The fleet leg FIRST, the Herm leg after (null → the fleet leg alone, unchanged). Holders concatenate in that
+ *  order and each block ask routes to the leg whose holder it names. */
+export function composeCasTransits(fleet: CasTransitTransport, herm: CasTransitTransport | null): CasTransitTransport {
+  if (!herm) return fleet;
+  return {
+    discover: async (cid) => [...(await fleet.discover(cid)), ...(await herm.discover(cid))],
+    fetchBlock: (cid, holder) => (holder.startsWith(HERM_HOLDER_PREFIX) ? herm.fetchBlock(cid, holder) : fleet.fetchBlock(cid, holder)),
+  };
+}
+
+/** The Herm shore a vessel dials for public bytes — `LAR_HERM_SHORE` (`http://host:port`, the Herm's read-face);
+ *  unset → no leg (the fleet alone, exactly as before). */
+export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): CasTransitTransport | null {
+  const url = env["LAR_HERM_SHORE"];
+  return url && url.length > 0 ? hermCasTransit(url) : null;
 }
 
 // ── PIN and RELEASE (tiddler-carriage #/pin-and-release) ─────────────────────

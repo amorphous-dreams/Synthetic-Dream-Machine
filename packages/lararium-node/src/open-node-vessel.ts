@@ -48,7 +48,7 @@ import {
   coupleMesh, crystallize, guardHitl,
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
-import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, readCasPins } from "./node-cas.js";
+import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
@@ -665,7 +665,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const resolveCidThroughDoor = carriageLoop
     ? makeCidResolver(
         (cid) => readCasBlobFromFs(cid, cidDir),
-        carriageLoop.transit(fleetHolders),
+        composeCasTransits(carriageLoop.transit(fleetHolders), hermCasTransitFromEnv()),   // the fleet first; the Herm's public shore (`LAR_HERM_SHORE`) after — a dark peer's public bytes still arrive by the crossroads
         (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); },
       )
     : async (cid: string) => readCasBlobFromFs(cid, cidDir);

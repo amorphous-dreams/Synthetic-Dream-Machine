@@ -21,7 +21,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../packages/lararium-mesh/src/rendezvous-path.js";
-import { mkdtempSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -282,4 +282,93 @@ export function vesselStorageDir(instance: LarInstance): string {
 export function bootDocUrl(instance: LarInstance, key: string): string | null {
   const m = instance.bootLog().match(new RegExp(`${key}:\\s+(automerge:[A-Za-z0-9]+)`));
   return m?.[1] ?? null;
+}
+
+// ── THE FLEET — a Herm at the crossroads, a founder A, a same-operator joiner C ─────────────────────────────
+//
+// The three-vessel shape basket-one #/the-fetch-door names: a HERM stands the carriage crossroads (Socket B)
+// and the public read-face (`/bulb/…` · `/cas/<cid>`); A founds a hearth and dials the Herm's crossroads; C
+// founds by A's signed device edge (the admit rite `meme-two-vessel-bag` proves), dials A's `/ws` for the CRDT
+// (Socket A) and the Herm's crossroads for bytes (Socket B), and names the Herm's read-face as its public shore
+// (`LAR_HERM_SHORE`). The Herm lights NO face — `vessel clear` alone founds a PLACE, and a place with no face
+// stands at the waking floor as a Herm by class.
+
+export interface StagedFleet {
+  readonly herm: LarInstance;
+  readonly A:    LarInstance;
+  readonly C:    LarInstance;
+  /** The Herm's carriage crossroads (Socket B) both hearths dial. */
+  readonly relayUrl: string;
+  /** The Herm's public read-face (`http://127.0.0.1:<port>`) — `/cas/<cid>` answers here. */
+  readonly hermShore: string;
+  /** What C's `vessel found --admit` said. */
+  readonly admitted: CliResult;
+  /** Tear all three down (C · A · Herm), deleting every staged root. A vessel already stopped is skipped. */
+  readonly stop: () => Promise<void>;
+}
+
+/** Stand the fleet. Throws (and tears down what stood) when any of the three never reaches live. */
+export async function openStagedFleet(opts: { readonly tag?: string } = {}): Promise<StagedFleet> {
+  const tag = opts.tag ? `${opts.tag}-` : "";
+  const [portHerm, portRelay, portA, portC] = await Promise.all([freePort(), freePort(), freePort(), freePort()]);
+  const relayUrl  = `ws://127.0.0.1:${portRelay}`;
+  const hermShore = `http://127.0.0.1:${portHerm}`;
+  const stood: LarInstance[] = [];
+  const teardown = async (): Promise<void> => { for (const v of stood.reverse()) await v.stop(); };
+  try {
+    // The Herm: a place, no face; the crossroads relay on its own port; the read-face on `portHerm`.
+    const herm = await openStaged({
+      tag: `${tag}herm`, port: portHerm,
+      daemonEnv: { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) },
+      found: async (cli, root) => {
+        const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
+        if (reset.code !== 0) throw new Error(`herm: clear failed (${reset.code})\n${reset.stderr.slice(-800)}`);
+      },
+    });
+    stood.push(herm);
+
+    // A founds; C mints under its own root; A signs the edge naming its dial; C founds by that payload.
+    const rootC = mkdtempSync(join(stageDir(), `lares-staged-${tag}C-`));
+    const cliC  = cliFor({ LAR_ROOT: rootC, LAR_PORT: String(portC) });
+    const admit = join(rootC, "admit.json");
+    let admitted: CliResult | null = null;
+    const A = await openStaged({
+      tag: `${tag}A`, port: portA,
+      daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
+      found: async (cliA, rootA) => {
+        const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
+        if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+        const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
+        if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+        // C founds by A's genesis, copied whole (`vessel found --admit` reads the hearth true-name off `<root>/genesis`).
+        cpSync(join(rootA, "genesis"), join(rootC, "genesis"), { recursive: true });
+        const { mintVesselKey } = await import("./vessel-key.js");
+        const keyC = await mintVesselKey(rootC);
+        const edge = await cliA(["device-admit", "--joinee-key", keyC, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
+        if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);
+        admitted = await cliC(["vessel", "found", "--admit", admit]);
+        if (admitted.code !== 0) throw new Error(`C: found --admit failed (${admitted.code})\n${admitted.stderr.slice(-800)}`);
+      },
+    });
+    stood.push(A);
+    if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
+
+    // C stands dialing A: A's gate key off A's own log, A's lares doc off A's registry.
+    const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
+    const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
+    const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A) }) as
+      { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
+    const laresA = wl.results?.summary?.output?.wikis?.find((w) => w.slug === "lares")?.automergeUrl ?? "";
+    const C = await openStaged({
+      tag: `${tag}C`, root: rootC, port: portC, found: async () => { /* founded by A's edge above */ },
+      daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA, LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
+    });
+    stood.push(C);
+    if (!(await awaitRendezvous(C))) throw new Error(`C reached live but bound no rendezvous:\n${C.bootLog().slice(-800)}`);
+
+    return { herm, A, C, relayUrl, hermShore, admitted: admitted!, stop: teardown };
+  } catch (err) {
+    await teardown();
+    throw err;
+  }
 }
