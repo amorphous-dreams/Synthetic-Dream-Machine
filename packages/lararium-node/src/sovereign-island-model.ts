@@ -22,19 +22,58 @@
 
 import { parentPort } from "worker_threads";
 import { join } from "node:path";
+import { mkdirSync, writeFileSync, existsSync } from "node:fs";
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import {
   runSovereignKernel,
   type IslandHostShore,
 } from "@lararium/tw5";
-import type {
-  StorageAdapterInterface,
-  IslandMsg_Manifest,
-  IslandStorageConfig,
-  IslandToVesselMsg,
+import {
+  makeCidResolver, ISLAND_PROTOCOL_VERSION,
+  type StorageAdapterInterface,
+  type IslandMsg_Manifest,
+  type IslandStorageConfig,
+  type IslandToVesselMsg,
+  type IslandMsg_CasWant,
+  type IslandMsg_CasBlock,
+  type CasTransitTransport,
 } from "@lararium/mesh";
 import type { IslandBehavior } from "@lararium/tw5";
 import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
+
+/** A worker's ask waits this long for the vessel's door before it reads as a miss (PENDING, never a fault). */
+const CAS_WANT_TIMEOUT_MS = 20_000;
+
+/**
+ * THE FETCH DOOR, worker side — a `CasTransitTransport` over the parent port. The worker holds no socket; the
+ * vessel does. `discover` names the one holder it can reach (the vessel); `fetchBlock` posts `cas:want` and
+ * awaits `cas:block` on the same requestId. No answer inside the window → null (a miss stays a miss).
+ */
+function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", fn: (m: unknown) => void): void }): CasTransitTransport {
+  const pending = new Map<string, (bytes: Uint8Array | null) => void>();
+  port.on("message", (raw: unknown) => {
+    const m = raw as Partial<IslandMsg_CasBlock> | null;
+    if (!m || m.type !== "cas:block" || typeof m.requestId !== "string") return;
+    const settle = pending.get(m.requestId);
+    if (!settle) return;
+    pending.delete(m.requestId);
+    settle(m.bytes instanceof Uint8Array ? m.bytes : null);
+  });
+  let seq = 0;
+  return {
+    async discover() { return ["vessel"]; },
+    fetchBlock(cid) {
+      return new Promise<Uint8Array | null>((resolve) => {
+        const requestId = `cas-${process.pid}-${++seq}`;
+        const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, CAS_WANT_TIMEOUT_MS);
+        timer.unref?.();
+        pending.set(requestId, (bytes) => { clearTimeout(timer); resolve(bytes); });
+        const ask: IslandMsg_CasWant = { schema_version: ISLAND_PROTOCOL_VERSION, type: "cas:want", requestId, cid };
+        port.postMessage(ask);
+      });
+    },
+  };
+}
 
 function _buildStorage(cfg: IslandStorageConfig | undefined): StorageAdapterInterface | undefined {
   if (!cfg || cfg.type === "memory") return undefined;
@@ -76,23 +115,33 @@ export function runSovereignWorker(
       if (msg.storage?.type === "nodefs") casDir = casDirFromIslandStorageDir(msg.storage.dir);
       return _buildStorage(msg.storage);
     },
-    // Resolve by content-address: the runtime CID plane first (engine/plugin bytes), then the
-    // corpus CAS (staged carrier bodies). The caller re-verifies cid==hash(bytes), so a two-dir
-    // lookup never widens trust.
-    //
-    // THE REMOTE cad TRANSIT LEG composes AROUND this local read at the DAEMON/RELAY tier, not here: a
-    // sovereign WORKER holds no member↔relay transport, so its resolver stays deliberately LOCAL-FIRST
-    // (the innermost layer). Where a transport DOES stand (the daemon), wrap this local read with
-    // `makeCidResolver(localRead, casTransitTransport, cacheWriteThrough)` (@lararium/mesh): a local miss
-    // fetches over transit (DHT-free discovery via the bag-tracker) and MANDATORY-re-verifies
-    // BLAKE3(bytes)==cid before caching write-through — a body that fails verify never caches, never
-    // returns. Absent a transport the leg degenerates to exactly this local read (fail-closed: a miss is
-    // a miss, never an unverified body).
-    resolveByCid: async (cid) => {
-      const runtime = casDir ? readCasBlobFromFs(cid, casDir) : null;
-      if (runtime) return runtime;
-      return corpusCasDir ? readCasBlobFromFs(cid, corpusCasDir) : null;
-    },
+    // Resolve by content-address — THE FETCH DOOR (basket-one #/the-fetch-door), composed here as
+    // `makeCidResolver(localRead, portTransit, cacheWriteThrough)` (@lararium/mesh):
+    //   · localRead — the runtime CID plane first (engine/plugin bytes), then the corpus CAS (staged
+    //     carrier bodies); the caller re-verifies cid==hash(bytes), so a two-dir lookup never widens trust;
+    //   · portTransit — a local miss asks the VESSEL over the parent port (the worker holds no socket; the
+    //     vessel's door reaches Socket B and its fleet holders); the transit leg re-verifies the bytes
+    //     against the cid's own class before they return — a body that fails verify never returns;
+    //   · cacheWriteThrough — the verified body lands in the local `cid/` so the next read stays local.
+    // Absent a door (the vessel answers every ask with a miss) the leg degenerates to exactly the local
+    // read: a miss is a miss, PENDING stays PENDING, never an unverified body, never a fault.
+    resolveByCid: makeCidResolver(
+      (cid) => {
+        const runtime = casDir ? readCasBlobFromFs(cid, casDir) : null;
+        if (runtime) return runtime;
+        return corpusCasDir ? readCasBlobFromFs(cid, corpusCasDir) : null;
+      },
+      portTransit(port),
+      (cid, bytes) => {
+        const dir = casDir ?? corpusCasDir;
+        if (!dir) return;
+        try {
+          mkdirSync(dir, { recursive: true });
+          const path = join(dir, cid);
+          if (!existsSync(path)) writeFileSync(path, bytes);
+        } catch { /* a failed write-through costs the next read a re-fetch, never the bytes */ }
+      },
+    ),
   };
 
   runSovereignKernel(host, behaviorOrFactory);

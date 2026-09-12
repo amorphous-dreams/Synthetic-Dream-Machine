@@ -122,10 +122,10 @@ export type { SealedBody } from "./ciphertext-cas.js";
 // The cad REMOTE TRANSIT leg — DHT-free discovery + secret-free BLAKE3(bytes)==cid verify (verify-cap ⊥ read-cap).
 export {
   wantHave, have, dontHave, wantBlock, block,
-  fetchCidOverTransit, makeCidResolver,
+  fetchCidOverTransit, makeCidResolver, cidDigestClass, verifyCidBytes,
 } from "./cas-transit.js";
 export type {
-  CasHolder, CasTransitMessage, CasTransitTransport, LocalCasRead, LocalCasCache,
+  CidDigestClass, CasHolder, CasTransitMessage, CasTransitTransport, LocalCasRead, LocalCasCache,
 } from "./cas-transit.js";
 // The open-beta federation POSTURE — the outer gate over cross-operator admission (private/open, default private).
 export type { FederationPosture } from "./federation-gate.js";
@@ -206,6 +206,7 @@ export * from "./handle-card.js";
 export * from "./handle-publish.js";
 export * from "./handle-orchestration.js";
 export * from "./ahi-ka.js";
+export * from "./cas-caps.js";
 export * from "./handle-book.js";
 // The card-arrival front door — decode a carried (paste / QR / URL-fragment) HandleCard so a follow can admit
 // an unmet nym WITHOUT the CLI's `--card <file>` (the card arrives as data, boot-invite posture).

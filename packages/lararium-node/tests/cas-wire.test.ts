@@ -118,3 +118,62 @@ describe("cas-wire — E1a Kapae-Mu (denial ≡ satiety, byte-identical)", () =>
     } finally { cleanup(); }
   });
 });
+
+// ── THE FETCH DOOR — the gate reads the FLEET class for a CLEARTEXT cid (basket-one #/the-fetch-door) ───────
+// Socket B carries two kinds of cid. A `blake3:` cid rides the member lane above (sealed, carry ⊥ read). A bare
+// sha256 cid names a CLEARTEXT `cid/` blob; ONLY a fleet peer (same operator, the vessel that dialed in under a
+// signed device edge) may fetch it. A CONTRACT member asking a cleartext cid draws the same Mu a stranger draws.
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { sha256HexBytesSync } from "@lararium/mesh";
+
+describe("cas-wire — the fetch door: a cleartext cid answers a FLEET peer and draws Mu for everyone else", () => {
+  const CLEAR = utf8Bytes("a family likeness, shared in the clear");
+  const CLEAR_CID = sha256HexBytesSync(CLEAR);
+
+  function fleetDeps(reg: ReturnType<typeof makeSealedPlaneRegistry>, cadDir: string, cidDir: string, fleet: string[], members: string[]): CasWireServerDeps {
+    return { ...serverDepsFor(reg, cadDir, members, []), cidDir, fleet: (peer) => fleet.includes(peer) };
+  }
+
+  test("a FLEET peer fetches a cleartext cid; the bytes verify by sha256", async () => {
+    const { registry, cadDir, cleanup } = sealABody(BODY);
+    const cidDir = mkdtempSync(join(tmpdir(), "cid-"));
+    writeFileSync(join(cidDir, CLEAR_CID), CLEAR);
+    try {
+      const channel = new InMemoryMembershipChannel();
+      const deps = fleetDeps(registry, cadDir, cidDir, ["fleet-B"], ["member-peer"]);
+      const r = await decideAndServeWantBlock(deps, "fleet-B", CLEAR_CID);
+      expect(r.kind).toBe("cas-block");
+      expect([...r.bytes]).toEqual([...CLEAR]);
+      const fetched = await fetchSealedCidOverWire({ channel, requester: "fleet-B", serverAddr: HOLDER, cid: CLEAR_CID, serverDeps: deps });
+      expect(fetched.drewMu).toBe(false);
+      expect([...(fetched.ciphertext ?? [])]).toEqual([...CLEAR]);
+    } finally { cleanup(); rmSync(cidDir, { recursive: true, force: true }); }
+  });
+
+  test("CONTROL: a CONTRACT member asking a cleartext cid draws Mu — byte-identical to a stranger's", async () => {
+    const { registry, cadDir, installed, cleanup } = sealABody(BODY);
+    const cidDir = mkdtempSync(join(tmpdir(), "cid-"));
+    writeFileSync(join(cidDir, CLEAR_CID), CLEAR);
+    try {
+      const deps = fleetDeps(registry, cadDir, cidDir, ["fleet-B"], ["member-peer"]);
+      const member   = await decideAndServeWantBlock(deps, "member-peer",   CLEAR_CID);
+      const stranger = await decideAndServeWantBlock(deps, "stranger-peer", CLEAR_CID);
+      expect(member.kind).toBe("cas-mu");
+      expect(stranger.kind).toBe("cas-mu");
+      expect([...member.bytes]).toEqual([...stranger.bytes]);
+      // …while the SAME member still carries the SEALED body over the member lane (the lanes stay two).
+      const sealedAsk = await decideAndServeWantBlock(deps, "member-peer", installed.cid);
+      expect(sealedAsk.kind).toBe("cas-block");
+    } finally { cleanup(); rmSync(cidDir, { recursive: true, force: true }); }
+  });
+
+  test("CONTROL: no cidDir / no fleet predicate → a cleartext ask draws Mu (fail-closed, the door stays shut)", async () => {
+    const { registry, cadDir, cleanup } = sealABody(BODY);
+    try {
+      const deps = serverDepsFor(registry, cadDir, ["fleet-B"], []);
+      expect((await decideAndServeWantBlock(deps, "fleet-B", CLEAR_CID)).kind).toBe("cas-mu");
+    } finally { cleanup(); }
+  });
+});

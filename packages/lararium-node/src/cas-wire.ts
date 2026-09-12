@@ -28,8 +28,8 @@
  */
 
 import {
-  carrierShareDecision, muVoidBytes, verifyCiphertextCid,
-  type MembershipChannel,
+  carrierShareDecision, muVoidBytes, verifyCidBytes, cidDigestClass,
+  type MembershipChannel, type MembershipEnvelope,
   type AntigenRing, type FederationGate, type NexusMembership, type PlaneSeal,
 } from "@lararium/mesh";
 import type { DocumentId } from "@automerge/automerge-repo";
@@ -59,6 +59,13 @@ export interface CasWireServerDeps {
   readonly antigen:    AntigenRing;
   /** The federatable-public floor gate — a sealed docId falls OUTSIDE it, so the member lane decides. */
   readonly fedGate:    FederationGate;
+  /** THE FETCH DOOR (basket-one #/the-fetch-door): the CLEARTEXT `cid/` tier a FLEET peer may fetch from. Absent →
+   *  a cleartext ask draws Mu (the door stays shut; only the sealed member lane answers). */
+  readonly cidDir?:    string;
+  /** The FLEET class predicate — does this proven peer key stand as a same-operator device of this vessel (the
+   *  vessel that dialed in under a signed device edge)? Absent → nobody is fleet → a cleartext ask draws Mu. A
+   *  CONTRACT member is NOT fleet: it fetches `@cad` only. */
+  readonly fleet?:     (peerId: string) => boolean | Promise<boolean>;
 }
 
 /**
@@ -72,7 +79,18 @@ export async function decideAndServeWantBlock(
   peerId: string,
   cid: string,
 ): Promise<{ kind: typeof CAS_BLOCK; cid: string; bytes: Uint8Array } | { kind: typeof CAS_MU; bytes: Uint8Array }> {
-  const docId: DocumentId = docIdForCiphertextCid(cid);
+  // THE FETCH DOOR — a CLEARTEXT cid (bare sha256 / `sha256:`) rides the FLEET gate, never the member lane: a
+  // same-operator device fetches the `cid/` blob its pointer names; a CONTRACT member / a stranger draws the
+  // SAME Mu (a contracted cabal reaches `@cad` ciphertext only — cleartext never crosses an operator boundary).
+  if (cidDigestClass(cid) === "cleartext") {
+    if (!deps.cidDir || !deps.fleet) return { kind: CAS_MU, bytes: muVoidBytes() };   // door shut → Mu
+    if (!(await deps.fleet(peerId)))  return { kind: CAS_MU, bytes: muVoidBytes() };   // not fleet → Mu (≡ satiety)
+    const clear = readCasBlobFromFs(cid, deps.cidDir);
+    if (!clear) return { kind: CAS_MU, bytes: muVoidBytes() };                          // not held → the SAME Mu
+    return { kind: CAS_BLOCK, cid, bytes: clear };
+  }
+  let docId: DocumentId;
+  try { docId = docIdForCiphertextCid(cid); } catch { return { kind: CAS_MU, bytes: muVoidBytes() }; }
   // The carry-lane gate: a proven MEMBER over a PROVABLY-sealed plane, not Kapae'd. A relay peer is gated (in the
   // relayPeers set); a STRANGER / non-member / Kapae'd draws `false` — the SAME `false` a caught-up peer draws.
   const mayCarry = await carrierShareDecision(
@@ -101,14 +119,26 @@ export async function serveCasWire(
   serverAddr: string,
   deps: CasWireServerDeps,
 ): Promise<number> {
-  const inbound = await channel.poll(serverAddr);
+  return serveCasWireEnvelopes(await channel.poll(serverAddr), channel, serverAddr, deps);
+}
+
+/**
+ * Serve ONE polled batch — the poll and the serve split so a caller that polls ONE inbox for two purposes (the
+ * serve loop answers want-blocks AND settles its own pending fetches) drains once and routes each envelope.
+ */
+export async function serveCasWireEnvelopes(
+  inbound: readonly MembershipEnvelope[],
+  channel: MembershipChannel,
+  serverAddr: string,
+  deps: CasWireServerDeps,
+): Promise<number> {
   let answered = 0;
   for (const env of inbound) {
     if (env.kind !== CAS_WANT_BLOCK) continue;
     const cid = typeof (env.payload as { cid?: unknown })?.cid === "string" ? (env.payload as { cid: string }).cid : "";
     if (!cid) continue;
     const response = await decideAndServeWantBlock(deps, env.from, cid);
-    await channel.offer({ kind: response.kind, from: serverAddr, to: env.from, payload: response });
+    await channel.offer({ kind: response.kind, from: serverAddr, to: env.from, payload: { ...response, cid } });   // the cid rides the envelope so a fetcher correlates a void to ITS ask
     answered += 1;
   }
   return answered;
@@ -141,7 +171,7 @@ export async function fetchSealedCidOverWire(args: {
   for (const env of responses) {
     if (env.kind === CAS_BLOCK) {
       const bytes = (env.payload as { bytes?: Uint8Array }).bytes;
-      if (bytes && verifyCiphertextCid(bytes, args.cid)) return { ciphertext: bytes, drewMu: false };   // verify-cap holds
+      if (bytes && verifyCidBytes(bytes, args.cid)) return { ciphertext: bytes, drewMu: false };   // class-aware verify holds
       return { ciphertext: null, drewMu: false };   // a mis-verifying block is rejected (a hostile holder cannot poison)
     }
     if (env.kind === CAS_MU) return { ciphertext: null, drewMu: true };   // the void — denied OR nothing (indistinguishable)

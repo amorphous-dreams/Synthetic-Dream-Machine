@@ -19,7 +19,9 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh";
 import { listCasBlobs, readGenesisManifest } from "@lararium/node";
-import { larCasDir, larBagsDir, larWikisDir, larGenesisDir } from "../env.js";
+import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, vesselDid } from "../env.js";
+import { runVerb } from "../verb-call.js";
+import { summaryOutput } from "../verb-result.js";
 import { emit } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -109,8 +111,33 @@ export function readCas(opts: CasReadOptions): CasRead {
   };
 }
 
-/** `lares bag cas [--all]` — the summary; `--all` lists every blob with its references. */
-export function cmdCas(args: ParsedArgs): number {
+/**
+ * `lares bag cas --fetch <cid>` — THE FETCH DOOR's explicit read (basket-one #/the-fetch-door): ask the running
+ * vessel to resolve a cid through its door — local `cid/` first, then the fleet holders over Socket B, verified,
+ * write-through. A miss everywhere answers `held: false` and the pointer stays PENDING; nothing is fabricated.
+ */
+async function cmdCasFetch(args: ParsedArgs, cid: string): Promise<number> {
+  const r = await runVerb("cas-fetch", { cid }, await vesselDid());
+  if (r.status === "error") {
+    emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "cas-fetch failed" },
+                 human: () => console.error(`lares bag cas --fetch: ${r.errorMessage ?? "failed"}`) });
+    return 1;
+  }
+  const out = summaryOutput(r) ?? {};
+  emit(args, {
+    ok: true, data: out,
+    human: () => {
+      console.log(`lares bag cas --fetch ${cid.slice(0, 16)}… — held ${String(out["held"])} · fetched ${String(out["fetched"])} · ${String(out["bytes"])}B · door ${String(out["door"])} · holders ${String((out["holders"] as string[] | undefined)?.length ?? 0)}`);
+      if (out["held"] !== true) console.log("  no fleet holder carried the bytes — the pointer stays PENDING (a later read re-asks)");
+    },
+  });
+  return out["held"] === true ? 0 : 2;
+}
+
+/** `lares bag cas [--all] [--fetch <cid>]` — the summary; `--all` lists every blob; `--fetch` reads one through the door. */
+export function cmdCas(args: ParsedArgs): number | Promise<number> {
+  const fetchCid = typeof args.options["fetch"] === "string" ? args.options["fetch"] : "";
+  if (fetchCid) return cmdCasFetch(args, fetchCid);
   const r = readCas({ casDir: larCasDir(), bagsDir: larBagsDir(), wikisDir: larWikisDir(), genesisDir: larGenesisDir() });
   emit(args, {
     ok: true,

@@ -13,11 +13,12 @@
  *
  * The rite (①–⑥) copies `meme-two-vessel-bag` step for step; that file stays untouched.
  *
- * MEASURED 2026-09-11 (the seam): the record crosses; the bytes do not. B's worker resolver reads two
- * LOCAL dirs and nothing else (`sovereign-island-model.ts:91-95`); the `lazyLoad` resolver leaves a
- * CAS miss "loading" (`lazy-resolver.ts:76`); the only wire that carries a blob is Socket B's
- * `cas-want-block` for a `blake3:` ciphertext under the seal registry (`cas-wire.ts`), and no fleet
- * message carries a cleartext sha256 blob. The vector holds as `test.fails` until a fetch door lands.
+ * THE FETCH DOOR (basket-one #/the-fetch-door, ruled 2026-09-11): A stands a carriage crossroads
+ * (Socket B, `LAR_HERM_RELAY_PORT`) and both vessels dial it (`LAR_CARRIAGE_RELAY`). B's resolver composes
+ * `makeCidResolver(localRead, casTransit, cacheWriteThrough)`; a READ on B that misses `cid/` want-blocks
+ * A over Socket B, A's gate reads B as FLEET (same operator — the signed device edge) and serves the
+ * cleartext blob, B verifies sha256 and writes through. Fetch-on-read: the bytes cross when B reads
+ * (`lares bag cas --fetch <cid>`), never before — ★ measures the absence FIRST, as the control.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -122,10 +123,13 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     const portB = await freePort();
     const admit = join(rootB, "admit.json");
     const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
+    // The carriage crossroads (Socket B) A stands and both vessels dial — the fetch door's transport.
+    const portRelay = await freePort();
+    const carriageRelay = `ws://127.0.0.1:${portRelay}`;
 
     // ①–④ the same rite `meme-two-vessel-bag` performs: A founds; B mints under its own root; A signs
     // the edge naming its dial; B founds by that payload — all before any daemon stands.
-    A = await openStaged({ tag: "A", port: portA, found: async (cliA, rootA) => {
+    A = await openStaged({ tag: "A", port: portA, daemonEnv: { LAR_HERM_RELAY_PORT: String(portRelay), LAR_CARRIAGE_RELAY: carriageRelay }, found: async (cliA, rootA) => {
       const clear = await cliA(["vessel", "clear", "--root", rootA, "--force"]);
       if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
       const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
@@ -158,7 +162,7 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     try {
       B = await openStaged({
         tag: "B", root: rootB, port: portB, found: async () => { /* ④ founded B already */ },
-        daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA },
+        daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA, LAR_JOIN_DOC: laresA, LAR_CARRIAGE_RELAY: carriageRelay },
       });
       if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);
     } catch (err) {
@@ -256,12 +260,30 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     expect(existsSync(join(casDirOf(A!), cid))).toBe(true);
   });
 
-  // THE VECTOR THE LAW OWES. A fleet peer holding the pointer and the read cap MUST be able to fetch the
-  // bytes. Today no door carries a cleartext sha256 blob across the fleet dial (Socket A moves CRDT sync
-  // alone; Socket B moves `blake3:` ciphertext under the seal registry; the bulb serves the boot CAS
-  // alone). `test.fails` holds the vector loud: the day a fetch door lands, this reads "expected to
-  // fail" and the hold retires.
-  test.fails("★ the BYTES follow the pointer: B's cid/ holds the blob a fetch door carried ★ (SEAM — no door today)", () => {
+  // THE VECTOR THE LAW OWES — a fleet peer holding the pointer fetches the bytes on a READ. MEASURED
+  // 2026-09-11: B's wiki island reads the pointer as it lands (the lazy resolver's render → `cas:want`), so
+  // the bytes usually stand in B's cid/ before any CLI read — that IS fetch-on-read through the worker's own
+  // resolver, not a prefetch (the prefetch cap stays off). The explicit `bag cas --fetch` then reads
+  // `held:true`; whichever door fired first is reported, never assumed.
+  test("★ the BYTES follow the pointer: a READ on B pulls the blob through the fetch door into its cid/ ★", async () => {
+    const beforeRead = existsSync(join(casDirOf(B!), cid));
+    console.error(`blob-follows-pointer MEASURE B: bytes on B before the CLI read (the island's own read fired?): ${beforeRead}`);
+    const r = await B!.cli(["bag", "cas", "--fetch", cid, "--json"]);
+    console.error(`blob-follows-pointer MEASURE B: bag cas --fetch → ${said(r).trim().slice(0, 400)}`);
+    const carriageLines = (v: LarInstance): string => v.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door|admit|delegation|cross-operator|same-operator|auth/.test(l)).slice(-14).join("\n    ");
+    console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
+    expect(r.json?.["ok"], said(r)).toBe(true);
+    expect(r.json?.["data"] && (r.json["data"] as Record<string, unknown>)["held"]).toBe(true);
     expect(existsSync(join(casDirOf(B!), cid))).toBe(true);
-  });
+    expect(createHash("sha256").update(readFileSync(join(casDirOf(B!), cid))).digest("hex")).toBe(cid);
+  }, 60_000);
+
+  test("CONTROL: a cid no fleet holder carries stays PENDING — `held:false`, no fault, nothing written", async () => {
+    const ghost = createHash("sha256").update("a likeness nobody ever staged").digest("hex");
+    const r = await B!.cli(["bag", "cas", "--fetch", ghost, "--json"]);
+    console.error(`blob-follows-pointer MEASURE B: bag cas --fetch (ghost) → ${said(r).trim().slice(0, 300)}`);
+    expect(r.json?.["ok"]).toBe(true);
+    expect((r.json?.["data"] as Record<string, unknown> | undefined)?.["held"]).toBe(false);
+    expect(existsSync(join(casDirOf(B!), ghost))).toBe(false);
+  }, 60_000);
 });

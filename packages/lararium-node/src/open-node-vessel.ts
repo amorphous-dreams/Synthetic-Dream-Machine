@@ -71,7 +71,9 @@ import { repoRoot }                       from "@lararium/mesh/node";
 import { daemonGenesisDir }               from "./lares-config.js";
 import { resolvePalacePath, orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { LarEventBusImpl, DEFAULT_RINGS, DeterministicFederationGate, federationPostureFromDoc, sealLineageHead, utf8Bytes } from "@lararium/mesh";
+import { LarEventBusImpl, DEFAULT_RINGS, DeterministicFederationGate, federationPostureFromDoc, sealLineageHead, utf8Bytes, makeCidResolver } from "@lararium/mesh";
+import { setCasDoor } from "./worker-handle.js";
+import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
@@ -572,6 +574,32 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // Socket B stays SEPARATE from the Automerge `/ws` relay (Socket A): cleartext CRDT never routes through here.
   // ABSENT the URL → this branch never runs, so no socket opens and boot behaves exactly as it did before.
   const carriageRelayUrl = opts.carriageRelayUrl ?? process.env["LAR_CARRIAGE_RELAY"] ?? null;
+  // THE FLEET CLASS on Socket B (basket-one #/the-fetch-door). A peer proves its vessel key on the carriage
+  // channel; it reads FLEET when the SAME key stands on Socket A as a `same-operator` peer (the keyholder vouched
+  // its signed device edge at admission — `peerClassMap`), or when it names the vessel THIS one dialed under
+  // its own admit (`LAR_JOIN_GATE` — the founder a joinee stood by). A CONTRACT member never reads fleet.
+  const fleetJoinGate = (opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? "").toLowerCase();
+  const isFleetPeer = (peerKey: string): boolean => {
+    const nym = peerKey.slice(-64).toLowerCase();
+    if (fleetJoinGate && nym === fleetJoinGate) return true;
+    for (const [peerId, identHex] of peerIdentifierMap) {
+      if (identHex.slice(-64).toLowerCase() === nym && peerClassMap.get(peerId) === "same-operator") return true;
+    }
+    // Refused, said aloud: a cleartext ask from a peer the gate cannot read as fleet. The peers as this vessel
+    // holds them (nym tail · class) so an operator can see WHY the door stayed shut.
+    const seen = [...peerIdentifierMap].map(([pid, ih]) => `${ih.slice(-64).slice(0, 8)}…/${peerClassMap.get(pid) ?? "unvouched"}`).join(" ");
+    console.log(`[carriage] fetch door: ${nym.slice(0, 8)}… reads NOT fleet (socket-A peers: ${seen || "none"}; join-gate: ${fleetJoinGate.slice(0, 8) || "none"})`);
+    return false;
+  };
+  /** The holders a fetch asks, DHT-free: the fleet peers this vessel stands with right now. */
+  const fleetHolders = (): readonly string[] => {
+    const out = new Set<string>();
+    if (fleetJoinGate) out.add(fleetJoinGate);
+    for (const [peerId, identHex] of peerIdentifierMap) {
+      if (peerClassMap.get(peerId) === "same-operator") out.add(identHex.slice(-64).toLowerCase());
+    }
+    return [...out];
+  };
   const carriageLoop: CarriageServeLoop | null = carriageRelayUrl
     ? startCarriageServeLoop({
         relayUrl:     carriageRelayUrl,
@@ -579,6 +607,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         serverAddr:   vesselIdentity.verifyingKey,
         deps: {
           cadDir:     cadSealDir(storageDir),
+          cidDir:     casDirForStorage(storageDir),
+          fleet:      isFleetPeer,
           seal:       sealRegistry.seal,
           membership: nexusMembership,
           antigen:    antigenRing,
@@ -618,6 +648,22 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     console.log(`[carriage] crossroads relay standing — ws://<host>:${carriageRelay.port} · gate ${carriageRelay.gatePubKey}`);
   }
 
+  // ── THE FETCH DOOR, vessel side — `makeCidResolver(localRead, casTransit, cacheWriteThrough)` ──────────────
+  // Fetch-on-read is the default: a read that misses the local `cid/` asks the fleet holders over Socket B, the
+  // bytes verify against the cid's own class, and the verified body lands write-through in `cid/`. Every worker
+  // (the daemon island, each wiki island) reaches this ONE door through `cas:want`. No carriage channel → the
+  // door answers every ask with a miss (PENDING stays PENDING; a dead upstream faults nothing).
+  const cidDir = casDirForStorage(storageDir);
+  const resolveCidThroughDoor = carriageLoop
+    ? makeCidResolver(
+        (cid) => readCasBlobFromFs(cid, cidDir),
+        carriageLoop.transit(fleetHolders),
+        (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); },
+      )
+    : async (cid: string) => readCasBlobFromFs(cid, cidDir);
+  setCasDoor(resolveCidThroughDoor);
+  if (carriageLoop) console.log(`[carriage] fetch door open — fleet holders ${fleetHolders().length} · cid/ ${cidDir}`);
+
   // ── The CLIENT dial-out (Socket A, cleartext CRDT) — INERT until a peer sync URL + gate key ride the config ──
   // When configured, the vessel mounts a `LarWSClientAdapter` carrying the operator's OWN leaf identity onto the
   // running Repo and DIALS the peer node's `/ws`, so a same-operator second device syncs the private planes both
@@ -631,18 +677,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
   let nexusDial: NexusClientDial | null = null;
-  if (joinSyncUrl) {
-    try {
-      const leafIdentity = await loadLeafIdentity(storageDir);
-      nexusDial = maybeStartNexusClientDial({
-        repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey, identity: leafIdentity,
-        ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
-        onLog: (line) => console.log(`[nexus-join] ${line}`),
-      });
-    } catch (e) {
-      console.log(`[nexus-join] dial-out skipped — leaf identity unavailable (run \`lares vessel found\`): ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
+  // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
+  // device-delegation edge (the one `vessel found --admit` seated), so the peer's keyholder vouches it
+  // `same-operator` (the FLEET class every same-operator door reads) rather than the cross-operator floor.
 
   // ── Main-resident residency MECHANISM (sovereign-worker: policy in the worker,
   //    mechanism here). onEvict commands the pool via the forward `vmManager` ref. ──
@@ -923,6 +960,23 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
     const daemonDoc = (await readDaemonDoc()).doc();
+    // ── The CLIENT dial-out fires here (config read above): present the ContactCard + the self device edge ──
+    if (joinSyncUrl) {
+      try {
+        const leafIdentity = await loadLeafIdentity(storageDir);
+        const selfEdge = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined;
+        nexusDial = maybeStartNexusClientDial({
+          repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey,
+          identity: selfEdge ? { ...leafIdentity, edge: selfEdge } : leafIdentity,
+          ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
+          onLog: (line) => console.log(`[nexus-join] ${line}`),
+        });
+        console.log(`[nexus-join] presenting ${selfEdge ? "the device-delegation edge (fleet)" : "the ContactCard alone (no self edge — cross-operator floor)"}`);
+      } catch (e) {
+        console.log(`[nexus-join] dial-out skipped — leaf identity unavailable (run \`lares vessel found\`): ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+
     const personaGroupDocIdHex   = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_DOC_ID_TIDDLER])   ?? undefined;
     const personaGroupAgentIdHex = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_AGENT_ID_TIDDLER]) ?? undefined;
     const meshCabalDocIdHex     = tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
@@ -1497,6 +1551,18 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       return { verb: "nexus-reshare", held: cids.length, announced, carriage: carriageLoop !== null };
     });
 
+    // cas-fetch — the fetch door's explicit READ: resolve a cid through the vessel's door (local `cid/` first,
+    // then the fleet holders over Socket B, verified, write-through). The verb IS a read, so fetch-on-read holds
+    // it; it fabricates nothing — a miss everywhere answers `held:false` and the pointer stays PENDING.
+    registry.register("cas-fetch", async (args) => {
+      const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
+      if (!cid) throw new Error("cas-fetch: `cid` required");
+      const before = readCasBlobFromFs(cid, cidDir) !== null;
+      const bytes = await resolveCidThroughDoor(cid);
+      return { verb: "cas-fetch", cid, held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0,
+               door: carriageLoop ? "socket-b" : "local-only", holders: fleetHolders() };
+    });
+
     // cad-seal — the cad seal's FIRST live producer. Seal a carrier body's PLAINTEXT into the ciphertext
     // federation plane (a distinct `cad/` tier), ADDITIVELY: the cleartext-local corpus CAS the wake reads stays
     // untouched. The body arrives as a staged `cid` (resolved cleartext from the corpus CAS) or inline `text`.
@@ -1853,6 +1919,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     carriageRelayPort:       p.carriageRelay?.port ?? null,
     carriageRelayGatePubKey: p.carriageRelay?.gatePubKey ?? null,
     dispose: async () => {
+      setCasDoor(null);                // the fetch door closes with the vessel — a late worker ask reads a miss
       await p.carriageRelay?.close();  // tear the crossroads down first (a no-op when none stood) — no WS server leak
       await p.carriageLoop?.stop();   // stop Socket B serve-loop (a no-op when none stood) — no timer / socket leaks
       p.nexusDial?.stop();            // stop the client dial-out (Socket A) — a no-op when none stood

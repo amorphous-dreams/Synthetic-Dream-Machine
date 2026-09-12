@@ -30,7 +30,32 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#cad-transit
  */
 
-import { verifyCiphertextCid } from "./ciphertext-cas.js";
+import { verifyCiphertextCid, CIPHERTEXT_CID_ALGO } from "./ciphertext-cas.js";
+import { parseDigest } from "./agile-digest.js";
+import { sha256HexBytesSync } from "./crypto.js";
+
+/** The two classes a cid names: a SEALED body (`blake3:` — ciphertext under the seal registry) or a CLEARTEXT
+ *  `cid/` blob (bare hex / `sha256:`). The gate on the serve side and the verify on the fetch side both read this. */
+export type CidDigestClass = "sealed" | "cleartext";
+
+/** Read a cid's class off its own tag. A malformed cid reads CLEARTEXT-shaped and fails every verify downstream. */
+export function cidDigestClass(cid: string): CidDigestClass {
+  try { return parseDigest(cid).algo === CIPHERTEXT_CID_ALGO ? "sealed" : "cleartext"; } catch { return "cleartext"; }
+}
+
+/**
+ * THE CLASS-AWARE VERIFY. A `blake3:` cid verifies as ciphertext (BLAKE3); a `sha256:` cid as a cleartext blob
+ * (sha256). A BARE hex carries no tag, so it may name either — accept when EITHER digest recomputes to it
+ * (both collision-resistant; a tampered byte fails both). Never widens: bytes matching neither are rejected.
+ */
+export function verifyCidBytes(bytes: Uint8Array, cid: string): boolean {
+  let parsed: { algo: string; hex: string };
+  try { parsed = parseDigest(cid); } catch { return false; }
+  if (parsed.algo === CIPHERTEXT_CID_ALGO) return verifyCiphertextCid(bytes, cid);
+  const bare = /^[0-9a-fA-F]{64}$/.test(cid);
+  if (sha256HexBytesSync(bytes).toLowerCase() === parsed.hex.toLowerCase()) return true;
+  return bare ? verifyCiphertextCid(bytes, cid) : false;
+}
 
 /** A holder handle — an opaque peer id the transport routes a `want-block` to (a session peer or the relay). */
 export type CasHolder = string;
@@ -82,7 +107,7 @@ export async function fetchCidOverTransit(
   for (const holder of holders) {
     const bytes = await transport.fetchBlock(cid, holder);
     if (bytes === null) continue;                          // dont-have / failed — try the next holder
-    if (verifyCiphertextCid(bytes, cid)) return bytes;     // secret-free verify PASSES → the one right answer
+    if (verifyCidBytes(bytes, cid)) return bytes;          // class-aware secret-free verify PASSES → the one right answer
     // bytes present but BLAKE3(bytes) != cid → tampered/corrupt → REJECT, never cache, try the next holder
   }
   return null;                                             // dont-have everywhere → explicit fail-closed miss

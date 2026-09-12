@@ -93,3 +93,39 @@ describe("makeCidResolver — LOCAL-FIRST, remote leg verifies + caches write-th
     expect(cache.get(sealed.cid)).toEqual(sealed.ciphertext);   // cached → the next read is local
   });
 });
+
+// ── THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11) ─────────────────────────
+// The resolver reads a cid's CLASS off its own tag: a `blake3:` cid names a SEALED body (verify = BLAKE3), a
+// bare / `sha256:` cid names a CLEARTEXT `cid/` blob (verify = sha256). A fleet peer fetches the second kind
+// over the same five messages; the verify never widens — a bare hex that matches neither digest is rejected.
+import { cidDigestClass, sha256HexBytesSync, utf8Bytes, prefetchAllows, type PrefetchCap } from "../src/index.js";
+
+describe("the fetch door — a CLEARTEXT cid crosses transit under its own verify", () => {
+  const clear = utf8Bytes("a family likeness, in the clear, shared as a public thing");
+  const clearCid = sha256HexBytesSync(clear);
+
+  test("cidDigestClass reads the tag: bare hex / sha256: → cleartext; blake3: → sealed", () => {
+    expect(cidDigestClass(clearCid)).toBe("cleartext");
+    expect(cidDigestClass(`sha256:${clearCid}`)).toBe("cleartext");
+    expect(cidDigestClass(sealed.cid)).toBe("sealed");
+  });
+
+  test("fetchCidOverTransit returns a cleartext blob whose sha256 recomputes to the cid", async () => {
+    const store = new Map([[clearCid, new Map<CasHolder, Uint8Array | null>([["fleet-A", clear]])]]);
+    expect(await fetchCidOverTransit(clearCid, makeStoreTransport(store))).toEqual(clear);
+  });
+
+  test("CONTROL: a cleartext blob whose bytes match NEITHER digest is rejected (never cached, never returned)", async () => {
+    const tampered = new Uint8Array(clear); tampered[0] ^= 1;
+    const store = new Map([[clearCid, new Map<CasHolder, Uint8Array | null>([["fleet-A", tampered]])]]);
+    expect(await fetchCidOverTransit(clearCid, makeStoreTransport(store))).toBeNull();
+  });
+
+  test("prefetch is a per-peer CAP — absent → off; declared → only its holder, only before expiry", () => {
+    expect(prefetchAllows(undefined, "fleet-B", 1_000)).toBe(false);          // DEFAULT OFF
+    const cap: PrefetchCap = { tier: "VEIL", holder: "fleet-B", expiry: 2_000 };
+    expect(prefetchAllows(cap, "fleet-B", 1_000)).toBe(true);
+    expect(prefetchAllows(cap, "fleet-C", 1_000)).toBe(false);                // another peer
+    expect(prefetchAllows(cap, "fleet-B", 2_000)).toBe(false);                // expired (expiry inclusive)
+  });
+});
