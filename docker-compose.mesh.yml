@@ -91,6 +91,10 @@ services:
       LAR_PEERS: "${LAR_B_PEERS-http://herm-source:8080}"
       LAR_PUBLIC_URL: "http://lararium-b:8080"
       LAR_STAND_FACE: "beta"
+      # THE DIRECT DIAL — the member-read wire between two operators' hearths (`meme` sets both once A's
+      # gate key is known; empty = no dial, the peerless shape every other reading keeps).
+      LAR_JOIN_SYNC: "${LAR_B_JOIN_SYNC-}"
+      LAR_JOIN_GATE: "${LAR_B_JOIN_GATE-}"
     entrypoint: ["sh", "tools/lararium-container-boot.sh"]
     networks: [mesh]
     ports:

@@ -926,11 +926,22 @@ run_meme() {
   step "the relay stands FIRST — the hearths must not race a cold peer"
   if $COMPOSE up -d herm-source >/dev/null 2>&1 && up_and_answering herm-source; then ok
   else bad "the relay never answered"; clear_all; return; fi
-  for svc in lararium-a lararium-b; do
-    step "$svc stands, alone against a mesh already up"
-    if $COMPOSE up -d --no-deps "$svc" >/dev/null 2>&1 && up_and_answering "$svc"; then ok
-    else bad "$svc never stood"; dump_boot_failure "$svc"; clear_all; return; fi
-  done
+  step "lararium-a stands, alone against a mesh already up"
+  if $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 && up_and_answering lararium-a; then ok
+  else bad "lararium-a never stood"; dump_boot_failure lararium-a; clear_all; return; fi
+
+  # THE DIRECT DIAL. The hearths peer through the herm's FLOW-map for the public shelf and sealed bodies; the
+  # member-read lane a realm bag rides is Automerge sync over B's dial to A's `/ws` — B presents her own
+  # root's edge in the wire's CONTRACT slot, A admits the card at the floor and binds the wire key to the nym
+  # B contracts under. The dial binds its proof to A's gate key (out-of-band, never the wire), so B stands
+  # only once A has said it.
+  step "A's gate key read off her boot; B stands dialing A"
+  local GATE_A
+  GATE_A=$($COMPOSE logs lararium-a 2>&1 | grep -oE 'gate key: [0-9a-f]{64}' | head -1 | cut -d' ' -f3)
+  if [ -z "$GATE_A" ]; then bad "A logged no gate key"; clear_all; return; fi
+  if LAR_B_JOIN_SYNC="ws://lararium-a:8080/ws" LAR_B_JOIN_GATE="$GATE_A" \
+       $COMPOSE up -d --no-deps lararium-b >/dev/null 2>&1 && up_and_answering lararium-b; then ok
+  else bad "lararium-b never stood"; dump_boot_failure lararium-b; clear_all; return; fi
 
   if ! contract_ab; then clear_all; return; fi
   step "the phase leaves SEED — a Nexus stands over both"
@@ -977,30 +988,20 @@ run_meme() {
      && ! json_text "$GA" | grep -q '\$origin-bag'; then ok
   else bad "A's bag read disagrees with A's put"; printf '%s\n' "$GA" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
-  # THE READING THE SCENARIO EXISTS FOR. The realm now carries A's registration; B's `meme get --bag lares`
-  # walks the realm plane first (reach-by-access) and reads A's doc IF it crosses. Two seams stand between
-  # the registration and B's read, each measured 2026-09-12 (`tests/e2e/meme-realm-bag.test.ts`):
-  #   · THE TRANSPORT. The hearths here peer through the herm's FLOW-map (`LAR_PEERS`), which carries the
-  #     public shelf and sealed bodies — no Automerge sync runs between two operators' vessels, so a
-  #     cleartext realm doc has no wire to cross on. The member-read lane the realm gate opens rides the
-  #     direct dial (`LAR_JOIN_SYNC`), which this compose never sets for B.
-  #   · THE WIRE NYM. Even on a direct dial, `accept-carriage` contracts the PERSONA-ROOT nym while the
-  #     wire authenticates the VESSEL key, and `nexus-carriage.ts` `memberNym` binds neither to the other —
-  #     a contracted operator reads STRANGER at the wire, and PRIVATE posture denies her every doc.
-  # The walk succeeds, the system's answer is no, and the step reports a GAP naming the nearer seam; B's
-  # realm-bags prints beside it — an EMPTY list says the realm doc never crossed, a listed bag says the
-  # bag's own doc stalled.
+  # THE READING THE SCENARIO EXISTS FOR. The realm carries A's registration; B's `meme get --bag lares` walks
+  # the realm plane first (reach-by-access) and reads A's doc across the dial — A's wire gate federates the
+  # realm doc and the registered bag's doc to a contracted MEMBER and to nobody else.
   step "★ B gets it — the line byte-whole, canonicalHash = A's ★"
   local GB crossed=0
   if GB=$(await_meme lararium-b "<<~ ahu #/a>>" 90) \
      && json_text "$GB" | grep -qE "$BAG_RE" && [ "$(json_hash "$GB")" = "$HASH_A" ] \
      && ! json_text "$GB" | grep -q '\$origin-bag'; then ok; crossed=1
   else
-    gap "B reads no meme — the realm carries the bag, and no wire carries the realm between these hearths"
+    bad "B reads no meme"
     printf '      B reads:      %s\n' "$(printf '%s' "$GB" | tail -1 | cut -c1-200)"
     printf '      B realm-bags: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
     printf '      A realm-bags: %s\n' "$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
-    printf '      wakes when the realm doc crosses: a member-read wire between the hearths, and the wire nym bound to the contract nym\n'
+    printf '      B dial:       %s\n' "$($COMPOSE logs lararium-b 2>&1 | grep -E '\[nexus-join\] presenting|\[lar-leaf\] (verdict|ANERGIZED)' | tail -2 | tr '\n' ' ' | cut -c1-200)"
   fi
   # THE BYTES BEHIND A PUBLIC POINTER (tiddler-carriage #/measured, step 2). The law: a public pointer's
   # RECORD federates and its BYTES ride the public CAS — a peer holding the pointer fetches them by cid
