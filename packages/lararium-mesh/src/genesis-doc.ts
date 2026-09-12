@@ -125,12 +125,28 @@ export async function verifyPluginAttestation(
 /**
  * GenesisPluginEntry — one vendored plugin blob plus its optional attestation.
  */
+/**
+ * What a vendored blob IS, DECLARED rather than guessed from where it sits.
+ *
+ * Three kinds rode one bucket while the collector globbed a directory: the GRAMMAR every carrier is read
+ * through, the BASE seed (the lararium API/shadow tiddlers that ride beside the lares + lararium bags), and
+ * an operator's own optional PLUGINS. Reading them as one composition made base-seed material overturn an
+ * operator's plugin epoch and an operator's plugin overturn everybody's grammar — one bucket, three
+ * unrelated rhythms. The class travels with the entry so the regions derive from a declaration.
+ */
+export type GenesisBlobKind =
+  | "grammar"   // the memetic-wikitext grammar — REQUIRED, and kāhuli's GRAMMAR tier
+  | "base"      // required base seed (API/shadow tiddlers) — ships, ratchets nothing
+  | "plugin";   // an operator's own offering, layered on top of the required base
+
 export interface GenesisPluginEntry {
   readonly id:          string;
   readonly version:     string;
   readonly sha256:      string;
   readonly mimeType:    string;
   readonly blob:        Uint8Array;
+  /** DECLARED class. Absent reads as `plugin` — the grammar is recognised by its own URI regardless. */
+  readonly kind?:       GenesisBlobKind;
   readonly license?:    string;
   readonly author?:     string;
   readonly source?:     string;
@@ -188,6 +204,9 @@ export interface GenesisArtifact {
   readonly sha256:     string;
   readonly cid:        string;
   readonly engineCid:  string;
+  /** The GRAMMAR region — kāhuli's fast ratchet over the required memetic-wikitext grammar alone. */
+  readonly grammarCid: string;
+  /** The PLUGINS region — this operator's OWN collection, layered on the required base. Moves alone. */
   readonly pluginsCid: string;
   /**
    * The CAS manifest — the byte SOURCE the genesis doc no longer embeds. Names
@@ -239,6 +258,8 @@ export interface GenesisSeed {
 
 /** The two genesis witness tiddlers — one per ratchet region, both in the oracle plane. */
 export const GENESIS_CID_ENGINE_TIDDLER  = `${ORACLE_DOC_URI}/genesis-cid-engine`;
+/** The REQUIRED grammar's own epoch — held apart from an operator's plugin collection. */
+export const GENESIS_CID_GRAMMAR_TIDDLER = `${ORACLE_DOC_URI}/genesis-cid-grammar`;
 export const GENESIS_CID_PLUGINS_TIDDLER = `${ORACLE_DOC_URI}/genesis-cid-plugins`;
 
 // ---------------------------------------------------------------------------
@@ -291,31 +312,49 @@ export function computeEngineCid(_coreVersion: string, coreSha256: string): stri
  * by id so write-order never perturbs it. Versions stay OUT for the same reason they leave the engine
  * preimage — a re-tag must not read as a different composition.
  */
-export function computePluginsCid(
-  plugins: readonly { readonly id: string; readonly version: string; readonly sha256: string }[],
-): string {
-  const pairs = plugins
+type RegionEntry = { readonly id: string; readonly version: string; readonly sha256: string; readonly kind?: GenesisBlobKind };
+
+/** Fold a region: the sorted {id, sha256} PAIRS under a DOMAIN, so two regions holding the same entries
+ *  can never mint the same digest. Versions stay out — a re-tag must not read as a different composition. */
+function foldRegion(domain: string, entries: readonly RegionEntry[]): string {
+  const pairs = entries
     .map((p) => ({ id: p.id, sha256: p.sha256 }))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return cidV1Sha256(utf8Bytes(`plugins/v1\n${JSON.stringify(pairs)}`));
+  return cidV1Sha256(utf8Bytes(`${domain}\n${JSON.stringify(pairs)}`));
+}
+
+const isGrammar  = (p: RegionEntry): boolean => p.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
+const isBaseSeed = (p: RegionEntry): boolean => p.kind === "base";
+
+/**
+ * THE PLUGINS REGION — an OPERATOR'S OWN COLLECTION, layered on the required base.
+ *
+ * It folds neither the grammar nor the base seed: any operator offers their own plugins on top of the
+ * required blobs and the lares/lararium bags, and doing so must overturn nothing anyone else stands on.
+ * A plugin added here moves THIS operator's plugin epoch and nothing further.
+ */
+export function computePluginsCid(plugins: readonly RegionEntry[]): string {
+  return foldRegion("plugins/v1", plugins.filter((p) => !isGrammar(p) && !isBaseSeed(p)));
 }
 
 /**
  * THE GRAMMAR REGION — kāhuli's fast ratchet, folded over the memetic-wikitext grammar ALONE.
  *
  * kāhuli overturns exactly two tiers: ENGINE (the core's true-name, the slow ratchet) and GRAMMAR (the
- * parser every carrier is read through). Every OTHER plugin is CONTENT — offered peer-to-peer as an `@cad`
- * cap by any operator — so it ships in the island's blobs and names no epoch. Folding one in would let a
- * single operator's extra plugin overturn EVERYBODY's grammar: the same false schism the region CIDs were
- * split to prevent, arriving through the composition instead of through a version label.
+ * parser every carrier is read through). The grammar is REQUIRED — every lararium reads through it — so it
+ * earns its own epoch, held apart from whatever plugins an operator happens to offer. Folding the two
+ * together let one operator's extra plugin overturn EVERYBODY's grammar: the same false schism the region
+ * CIDs were split to prevent, arriving through the composition instead of through a version label.
  *
- * The SELECTION is the ruling and lives here, at one site, because the mint and the verify both reach it —
- * a rule copied to two call sites is a rule that drifts, and a drifted region reads as a corrupt genesis.
+ * BASE SEED SITS IN NEITHER. `lararium-boot-shadows` is not a plugin at all — it is the API/shadow tiddler
+ * seed that rides beside the lares + lararium bags. It ships as a required blob, attested by its manifest
+ * sha; a change to it moves the ISLAND, never an epoch, because it binds no membership and no reading.
+ *
+ * Each SELECTION lives at one site, because the mint and the verify both reach it — a rule copied to two
+ * call sites is a rule that drifts, and a drifted region reads as a corrupt genesis.
  */
-export function computeGrammarCid(
-  plugins: readonly { readonly id: string; readonly version: string; readonly sha256: string }[],
-): string {
-  return computePluginsCid(plugins.filter((p) => p.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI));
+export function computeGrammarCid(plugins: readonly RegionEntry[]): string {
+  return foldRegion("grammar/v1", plugins.filter(isGrammar));
 }
 
 // ---------------------------------------------------------------------------
@@ -370,6 +409,8 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
       version:  entry.version,
       sha256:   entry.sha256,
       mimeType: entry.mimeType,
+      // The declared class travels INTO the doc, so the verify classifies exactly as the mint did.
+      ...(entry.kind    && { kind:    entry.kind }),
       ...(entry.license && { license: entry.license }),
       ...(entry.author  && { author:  entry.author }),
       ...(entry.source  && { source:  entry.source }),
@@ -437,9 +478,11 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
     };
   }
 
-  // Region content-CID witnesses (engine = slow ratchet / true-name; plugins = fast).
+  // Region content-CID witnesses — THREE rhythms, never one bucket: the engine's true-name (slow), the
+  // required grammar's epoch (kāhuli's fast ratchet), and this operator's own plugin collection.
   const engineCid  = computeEngineCid(coreVersion, coreSha);
-  const pluginsCid = computeGrammarCid(inputs.plugins);
+  const grammarCid = computeGrammarCid(inputs.plugins);
+  const pluginsCid = computePluginsCid(inputs.plugins);
   tiddlers[GENESIS_CID_ENGINE_TIDDLER] = {
     tiddler: {
       title: GENESIS_CID_ENGINE_TIDDLER, text: "", cid: engineCid,
@@ -448,10 +491,18 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
     },
     meta: { authority: "genesis" },
   };
+  tiddlers[GENESIS_CID_GRAMMAR_TIDDLER] = {
+    tiddler: {
+      title: GENESIS_CID_GRAMMAR_TIDDLER, text: "", cid: grammarCid,
+      note:  "grammar content-CID (the required memetic-wikitext grammar alone) — kāhuli's fast ratchet",
+      "$origin-bag": ORACLE_DOC_URI,
+    },
+    meta: { authority: "genesis" },
+  };
   tiddlers[GENESIS_CID_PLUGINS_TIDDLER] = {
     tiddler: {
       title: GENESIS_CID_PLUGINS_TIDDLER, text: "", cid: pluginsCid,
-      note:  "plugins content-CID (sorted plugin id/version/sha256) — fast ratchet",
+      note:  "plugins content-CID — THIS operator's own collection, layered on the required base",
       "$origin-bag": ORACLE_DOC_URI,
     },
     meta: { authority: "genesis" },
@@ -501,9 +552,12 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
   const cid    = cidV1Sha256(bytes);
 
   const engineCid  = computeEngineCid(coreVersion, coreSha);
-  const pluginsCid = computeGrammarCid(inputs.plugins);
+  const grammarCid = computeGrammarCid(inputs.plugins);
+  const pluginsCid = computePluginsCid(inputs.plugins);
 
-  // The CAS plane: the bytes the CRDT no longer carries, keyed by sha256 (the CID).
+  // The CAS plane: the bytes the CRDT no longer carries, keyed by sha256 (the CID). EVERY vendored blob
+  // ships — grammar, base seed and operator plugins alike. Which REGION a blob names is a separate
+  // question from whether it travels: the base seed rides here and stands in no region at all.
   // The build sink writes each to genesis/cas/<cid>; the loader mirrors them by manifest.
   const casEntries: { cid: string; bytes: Uint8Array }[] = [
     { cid: coreSha, bytes: inputs.coreBlob },
@@ -514,7 +568,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
     ...inputs.plugins.map((p) => ({ id: p.id, sha256: p.sha256, mimeType: p.mimeType, version: p.version })),
   ]);
 
-  return { bytes, sha256, cid, engineCid, pluginsCid, casManifest, casEntries, seed };
+  return { bytes, sha256, cid, engineCid, grammarCid, pluginsCid, casManifest, casEntries, seed };
 }
 
 // ---------------------------------------------------------------------------
@@ -548,6 +602,7 @@ export function verifyGenesisArtifact(
     return cid;
   };
   const storedEngineCid  = readWitness(GENESIS_CID_ENGINE_TIDDLER);
+  const storedGrammarCid = readWitness(GENESIS_CID_GRAMMAR_TIDDLER);
   const storedPluginsCid = readWitness(GENESIS_CID_PLUGINS_TIDDLER);
 
   const recomputedEngineCid = computeEngineCid(core.version, core.sha256);
@@ -557,8 +612,20 @@ export function verifyGenesisArtifact(
       `recomputed=${recomputedEngineCid} stored=${storedEngineCid} artifact=${artifact.engineCid}`,
     );
   }
-  const pluginEntries = Object.values(doc.blobs ?? {}).filter((b) => b.id !== ENGINE_CORE_ID);
-  const recomputedPluginsCid = computeGrammarCid(pluginEntries);
+  // Each region recomputes from the SAME declared classes the mint folded — the blob descriptors carry
+  // `kind`, so a base-seed blob lands outside both regions here exactly as it did at the mint.
+  const vendored = Object.values(doc.blobs ?? {}).filter((b) => b.id !== ENGINE_CORE_ID)
+    .map((b) => ({ id: b.id, version: b.version, sha256: b.sha256, ...(b.kind ? { kind: b.kind as GenesisBlobKind } : {}) }));
+
+  const recomputedGrammarCid = computeGrammarCid(vendored);
+  if (recomputedGrammarCid !== storedGrammarCid || recomputedGrammarCid !== artifact.grammarCid) {
+    throw new Error(
+      `[genesis] verify FAILED: grammarCid mismatch — ` +
+      `recomputed=${recomputedGrammarCid} stored=${storedGrammarCid} artifact=${artifact.grammarCid}`,
+    );
+  }
+
+  const recomputedPluginsCid = computePluginsCid(vendored);
   if (recomputedPluginsCid !== storedPluginsCid || recomputedPluginsCid !== artifact.pluginsCid) {
     throw new Error(
       `[genesis] verify FAILED: pluginsCid mismatch — ` +

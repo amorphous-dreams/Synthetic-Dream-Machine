@@ -45,7 +45,7 @@ function defaultGenesisDir(): string {
 }
 
 function genesisArtifactPaths(genesisDir?: string): {
-  bin: string; sha: string; cid: string; cidEngine: string; cidPlugins: string;
+  bin: string; sha: string; cid: string; cidEngine: string; cidGrammar: string; cidPlugins: string;
   manifest: string; seed: string; casDir: string;
 } {
   const root = genesisDir ?? defaultGenesisDir();
@@ -54,7 +54,8 @@ function genesisArtifactPaths(genesisDir?: string): {
     sha: join(root, "island.sha256"),
     cid: join(root, "island.cid"),            // whole-doc forward CID (integrity)
     cidEngine:  join(root, "island.cid-engine"),   // engine content-CID = the hearth true-name
-    cidPlugins: join(root, "island.cid-plugins"),  // plugins content-CID = the fast ratchet
+    cidGrammar: join(root, "island.cid-grammar"),  // grammar content-CID = kāhuli's fast ratchet (required grammar alone)
+    cidPlugins: join(root, "island.cid-plugins"),  // plugins content-CID = THIS operator's own collection
     manifest:   join(root, "island.manifest.json"),// the CAS manifest (engine + plugin cids)
     seed:       join(root, "island.genesis.json"), // the PLAIN-DATA oracle seed (the boot artifact)
     casDir:     join(root, "cas"),                 // the byte SOURCE: genesis/cas/<cid> files
@@ -153,6 +154,11 @@ export function readGenesisEngineCid(genesisDir?: string): string | undefined {
 }
 export function readGenesisPluginsCid(genesisDir?: string): string | undefined {
   return readSidecar(genesisArtifactPaths(genesisDir).cidPlugins);
+}
+/** The GRAMMAR region — the required memetic-wikitext grammar alone; kāhuli's fast ratchet. Held apart
+ *  from `pluginsCid`, which names only THIS operator's own collection. */
+export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
+  return readSidecar(genesisArtifactPaths(genesisDir).cidGrammar);
 }
 
 const _engineCid  = new Map<string, string | undefined>();

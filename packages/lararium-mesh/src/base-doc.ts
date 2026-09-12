@@ -55,6 +55,10 @@ export interface LarBlobEntry {
   readonly version:  string;
   readonly sha256:   string;
   readonly mimeType: string;
+  /** Which genesis REGION this blob belongs to — "grammar" | "base" | "plugin". DECLARED at mint and
+   *  carried here so a VERIFY classifies exactly as the mint did; a region derived from the path or the
+   *  filename instead would drift the moment a file moved, and a drifted region reads as a corrupt genesis. */
+  readonly kind?:    string;
   /** Inline bytes — present only for ad-hoc bags; absent for CAS-sourced genesis blobs. */
   readonly blob?:    Uint8Array;
   readonly author?:  string;

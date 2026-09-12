@@ -80,19 +80,40 @@ describe("the GRAMMAR region — the ratchet folds the grammar alone", () => {
   });
   const GRAMMAR = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 
-  it("★ another operator's plugin NEVER overturns the grammar epoch ★", () => {
+  it("★ BASE SEED moves NEITHER region — it ships, and it ratchets nothing ★", () => {
+    // `lararium-boot-shadows` is not a plugin at all: it is an array of API/shadow tiddlers, the base seed
+    // that rides beside the lares/lararium bags. The old glob read every .json in the plugins dir as a
+    // plugin and swept it into the composition, so base-seed material overturned an operator's plugin
+    // epoch. Class is DECLARED now (read the declaration, never the path), and base belongs to neither
+    // ratchet: its bytes are attested by the manifest blob sha, and a change moves the island, not an epoch.
     const grammar = entry(GRAMMAR, "11".repeat(32));
-    const alone     = buildGenesisDoc(inputsWith([grammar]));
-    const withOther = buildGenesisDoc(inputsWith([grammar, entry("$:/plugins/sq/streams", "22".repeat(32))]));
-    expect(withOther.pluginsCid, "a content plugin sits outside the ratchet").toBe(alone.pluginsCid);
-    // …and it still SHIPS: content rides the island's blobs, it simply names no epoch.
-    expect(withOther.casEntries.length).toBeGreaterThan(alone.casEntries.length);
+    const operatorPlugin = entry("$:/plugins/sq/streams", "22".repeat(32));
+    const base: GenesisPluginEntry = { ...entry("lararium-boot-shadows", "44".repeat(32)), kind: "base" };
+
+    const without = buildGenesisDoc(inputsWith([grammar, operatorPlugin]));
+    const withBase = buildGenesisDoc(inputsWith([grammar, operatorPlugin, base]));
+    expect(withBase.grammarCid, "base seed is not grammar").toBe(without.grammarCid);
+    expect(withBase.pluginsCid, "base seed is not an operator plugin").toBe(without.pluginsCid);
+    expect(withBase.engineCid,  "base seed is not the engine").toBe(without.engineCid);
+    // …and it SHIPS regardless: a required blob, carried and attested, naming no epoch.
+    expect(withBase.casEntries.length).toBeGreaterThan(without.casEntries.length);
+  });
+
+  it("★ the two regions are INDEPENDENT — an operator's collection never overturns the grammar ★", () => {
+    const grammar = entry(GRAMMAR, "11".repeat(32));
+    const alone = buildGenesisDoc(inputsWith([grammar]));
+    const withPlugin = buildGenesisDoc(inputsWith([grammar, entry("$:/plugins/sq/streams", "22".repeat(32))]));
+    // The operator's collection moved; the grammar epoch did not. This is the whole point of the split:
+    // any operator offers their own plugins ON TOP of the required base without overturning anyone's grammar.
+    expect(withPlugin.pluginsCid, "the operator's own region moves with their collection").not.toBe(alone.pluginsCid);
+    expect(withPlugin.grammarCid, "the grammar epoch is theirs to keep").toBe(alone.grammarCid);
+    expect(withPlugin.engineCid).toBe(alone.engineCid);
   });
 
   it("CONTROL — the GRAMMAR's own bytes DO overturn it, and the engine true-name holds throughout", () => {
     const alone = buildGenesisDoc(inputsWith([entry(GRAMMAR, "11".repeat(32))]));
     const moved = buildGenesisDoc(inputsWith([entry(GRAMMAR, "33".repeat(32))]));
-    expect(moved.pluginsCid, "the grammar's bytes are the ratchet").not.toBe(alone.pluginsCid);
+    expect(moved.grammarCid, "the grammar's bytes are its ratchet").not.toBe(alone.grammarCid);
     expect(moved.engineCid, "the true-name never moves with the grammar").toBe(alone.engineCid);
   });
 });

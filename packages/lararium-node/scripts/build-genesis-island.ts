@@ -29,6 +29,7 @@ import {
   verifyGenesisArtifact,
   type GenesisInputs,
   type GenesisPluginEntry,
+  type GenesisBlobKind,
   type PluginBuildAttestation,
 } from "@lararium/mesh";
 
@@ -130,7 +131,19 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
   return out;
 }
 
-/** Collect vendored plugin blobs from tw5PluginsRoot. */
+/**
+ * Collect the vendored blobs from tw5PluginsRoot, EACH DECLARING WHAT IT IS.
+ *
+ * THE GLOB WAS THE BLUR. Reading every `.json` in one directory as "a plugin" swept three unrelated things
+ * into one composition: the required GRAMMAR, the required BASE seed (`lararium-boot-shadows` — an ARRAY of
+ * API/shadow tiddlers riding beside the lares + lararium bags, carrying no plugin envelope at all), and an
+ * operator's own optional PLUGINS. A file with no envelope fell back to a filename-derived id and
+ * `version: "unknown"` — the tell that it was never a plugin — and still rode the plugins region, so base
+ * seed overturned an operator's plugin epoch.
+ *
+ * So the class reads from the DECLARATION, never the path: a plugin declares a plugin envelope (an object
+ * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI.
+ */
 function collectPlugins(attestations: Map<string, PluginBuildAttestation>): GenesisPluginEntry[] {
   const entries: GenesisPluginEntry[] = [];
   if (!existsSync(tw5PluginsRoot)) return entries;
@@ -142,13 +155,17 @@ function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Gene
     let version = "unknown";
     let author: string | undefined;
     let source: string | undefined;
+    // No declared plugin envelope until one is READ — a bare tiddler array is base seed, not a plugin.
+    let kind: GenesisBlobKind = "base";
     try {
-      const meta = JSON.parse(new TextDecoder().decode(blob)) as Record<string, unknown>;
-      if (typeof meta["title"]   === "string") id      = meta["title"];
+      const parsed = JSON.parse(new TextDecoder().decode(blob)) as unknown;
+      const meta = (Array.isArray(parsed) ? {} : parsed) as Record<string, unknown>;
+      if (typeof meta["title"]   === "string") { id = meta["title"]; kind = "plugin"; }
       if (typeof meta["version"] === "string") version = meta["version"];
       if (typeof meta["author"]  === "string") author  = meta["author"];
       if (typeof meta["source"]  === "string") source  = meta["source"];
-    } catch { /* use filename-derived id */ }
+    } catch { /* unparseable — it declares nothing, so it stands as base seed */ }
+    if (id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI) kind = "grammar";
 
     const att = attestations.get(id);
     if (att && att.pluginJsonSha256 !== sha) {
@@ -158,10 +175,10 @@ function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Gene
       );
     }
     if (att) console.log(`[genesis] plugin attestation  ${id}  modules=${att.moduleCount}  manifest=${att.moduleManifestSha256.slice(0, 12)}…`);
-    console.log(`[genesis] vendored plugin  ${id}  v${version}  sha=${sha.slice(0, 12)}…`);
+    console.log(`[genesis] vendored ${kind.padEnd(7)} ${id}  v${version}  sha=${sha.slice(0, 12)}…`);
 
     entries.push({
-      id, version, sha256: sha, mimeType: "application/json", blob, license: "MIT",
+      id, version, sha256: sha, mimeType: "application/json", blob, license: "MIT", kind,
       ...(author      && { author }),
       ...(source      && { source }),
       ...(att         && { attestation: att }),
@@ -234,7 +251,8 @@ function main(): void {
   };
   const artifact = buildGenesisDoc(inputs);
   console.log(`[genesis] engineCid (true-name) = ${artifact.engineCid}`);
-  console.log(`[genesis] pluginsCid            = ${artifact.pluginsCid}`);
+  console.log(`[genesis] grammarCid            = ${artifact.grammarCid}   (required grammar — kāhuli's fast ratchet)`);
+  console.log(`[genesis] pluginsCid            = ${artifact.pluginsCid}   (this operator's own collection)`);
 
   // Verify integrity before writing (recomputes + matches both region CIDs).
   const counts = verifyGenesisArtifact(artifact);
@@ -248,6 +266,7 @@ function main(): void {
   writeFileSync(join(genesisDir, "island.sha256"),      artifact.sha256     + "\n", "utf8");
   writeFileSync(join(genesisDir, "island.cid"),         artifact.cid        + "\n", "utf8");
   writeFileSync(join(genesisDir, "island.cid-engine"),  artifact.engineCid  + "\n", "utf8");
+  writeFileSync(join(genesisDir, "island.cid-grammar"), artifact.grammarCid + "\n", "utf8");
   writeFileSync(join(genesisDir, "island.cid-plugins"), artifact.pluginsCid + "\n", "utf8");
 
   // The CAS manifest (deterministic, sorted by id) + the content-addressed blob files.
@@ -274,7 +293,7 @@ function main(): void {
   console.log(`[genesis] ✓ island.genesis.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);
   console.log(`[genesis] ✓ sha256=${artifact.sha256}  cid=${artifact.cid}`);
-  console.log(`[genesis] ✓ engineCid=${artifact.engineCid}  pluginsCid=${artifact.pluginsCid}`);
+  console.log(`[genesis] ✓ engineCid=${artifact.engineCid}  grammarCid=${artifact.grammarCid}  pluginsCid=${artifact.pluginsCid}`);
   console.log(`[genesis] wrote ${join(genesisDir, "island.bin")}`);
   console.log("[genesis] S5 gate A satisfied — blob metadata + two region witness tiddlers injected; bytes shipped to CAS.");
 }

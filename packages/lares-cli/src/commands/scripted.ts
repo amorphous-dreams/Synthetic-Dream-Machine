@@ -103,6 +103,7 @@ export function clearTargets(): Array<{ path: string; recursive: boolean }> {
     gen("island.sha256-pre"),                  // the pre-split SHA sidecar — a clear target, so no stale digest survives
     gen("island.cid"),
     gen("island.cid-engine"),
+    gen("island.cid-grammar"),
     gen("island.cid-plugins"),
     gen("island.manifest.json"),               // G-CAS slice 1: the CAS index
     gen("cas", true),                          // G-CAS slice 1: the blob bytes

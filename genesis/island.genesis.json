@@ -1,6 +1,6 @@
 {
   "format": "lararium-genesis-seed/v1",
-  "actorSeed": "7038cca4a4bb0bf85a4fca55323755aa6742036f0b7447553b794505ff606f72",
+  "actorSeed": "d90759c40be83219f068afe0039c1c7b42f2864e8fc2934c6a65973095cdeeb3",
   "schemaVersion": "0.1",
   "blobs": {
     "tiddlywikicore": {
@@ -17,6 +17,7 @@
       "version": "unknown",
       "sha256": "95bde4c6cc3632ae67f4ee43e1bb0bfe8ac0a17c868a202e7aab5f9469b85ccd",
       "mimeType": "application/json",
+      "kind": "base",
       "license": "MIT"
     },
     "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext": {
@@ -24,6 +25,7 @@
       "version": "0.1.0",
       "sha256": "19ed485116ce05d1fc61de94fc906559d29ad4490952ccbc3a6755d2367b45e3",
       "mimeType": "application/json",
+      "kind": "grammar",
       "license": "MIT",
       "author": "lares"
     },
@@ -32,6 +34,7 @@
       "version": "1.2.24",
       "sha256": "17fcae33dc754c1535762ec4915b796410996f0ff21148ac4efcb66ac7fdf7f4",
       "mimeType": "application/json",
+      "kind": "plugin",
       "license": "MIT",
       "author": "Saq Imtiaz",
       "source": "https://saqimtiaz.github.io/streams/"
@@ -199,12 +202,24 @@
         "authority": "genesis"
       }
     },
+    "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": {
+      "tiddler": {
+        "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar",
+        "text": "",
+        "cid": "bafkreiczlqe54xtmmaonoamxrn7tdubfgr66vesdaty7i35evrlehlnlyi",
+        "note": "grammar content-CID (the required memetic-wikitext grammar alone) — kāhuli's fast ratchet",
+        "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
+      },
+      "meta": {
+        "authority": "genesis"
+      }
+    },
     "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins": {
       "tiddler": {
         "title": "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins",
         "text": "",
-        "cid": "bafkreibvpnso6h64wwqurso2jsiaapvwldgaxx2pf4tfyxphxj7iu3olmy",
-        "note": "plugins content-CID (sorted plugin id/version/sha256) — fast ratchet",
+        "cid": "bafkreieikdmaqstvd6pnmte46jdzcw3ddahele7fasjkqmdge4mv4mtzyq",
+        "note": "plugins content-CID — THIS operator's own collection, layered on the required base",
         "$origin-bag": "lar:///ha.ka.ba/bags/oracle"
       },
       "meta": {

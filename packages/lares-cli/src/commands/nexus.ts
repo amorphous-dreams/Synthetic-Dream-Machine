@@ -322,7 +322,9 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
 //   · ENGINE  (engineCid = the hearth true-name) — SLOW, signed into every device delegation edge, so it
 //             binds MEMBERSHIP. Advancing it re-binds the whole fleet; HELD until the graceful forward-
 //             rebind (predecessor pointer + a both-epoch read span, ending by non-renewal) has its rulings.
-//   · GRAMMAR (pluginsCid = the memetic-wikitext composition) — FAST, per-operator, never the true-name.
+//   · GRAMMAR (grammarCid = the REQUIRED memetic-wikitext grammar ALONE) — FAST, never the true-name.
+// An operator's OWN plugin collection (pluginsCid) is NOT a kāhuli tier: it layers on the required base,
+// overturns nobody else's reading, and moves with no ratchet act at all.
 
 /** Where this vessel's baked epoch sidecars live — LAR_ROOT-relative, so an isolated root reads its own. */
 function genesisSidecar(name: string): string | undefined {
@@ -338,7 +340,7 @@ function kahuliUsage(): void {
   console.error("    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device");
   console.error("             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;");
   console.error("             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.");
-  console.error("    grammar  the FAST ratchet: the memetic-wikitext plugin composition (pluginsCid), per-operator,");
+  console.error("    grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —");
   console.error("             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).");
   console.error("");
   console.error("  a read NEVER builds — the deliberate build+push lives behind --apply and in `nexus rite kahuli`.");
@@ -361,10 +363,11 @@ function kahuliEngineHeld(): number {
 
 /**
  * `lares nexus kahuli grammar` — the FAST ratchet. This first version READS the current grammar epoch
- * (pluginsCid) and reports it; a read never builds. `--apply` is where the overturn composes the bake
+ * (grammarCid) and reports it beside the operator's own collection; a read never builds. `--apply` is where the overturn composes the bake
  * (`vessel bake` re-derives the island at the freshly-packed plugin) and the mesh-push — both wired next.
  */
 function kahuliGrammar(args: ParsedArgs): number {
+  const grammarCid = genesisSidecar("island.cid-grammar");
   const pluginsCid = genesisSidecar("island.cid-plugins");
   const engineCid  = genesisSidecar("island.cid-engine");
 
@@ -379,13 +382,15 @@ function kahuliGrammar(args: ParsedArgs): number {
   }
 
   console.log("nexus kahuli grammar — the current genesis epoch (a read; nothing built):");
-  console.log(`  grammar (pluginsCid, fast ratchet): ${pluginsCid ?? "(no island baked in this root yet)"}`);
-  console.log(`  engine  (engineCid, true-name):     ${engineCid ?? "(no island baked in this root yet)"}`);
+  const none = "(no island baked in this root yet)";
+  console.log(`  grammar (grammarCid, fast ratchet): ${grammarCid ?? none}   the REQUIRED memetic-wikitext grammar`);
+  console.log(`  engine  (engineCid, true-name):     ${engineCid ?? none}   the slow ratchet, binds membership`);
+  console.log(`  plugins (pluginsCid, not a tier):   ${pluginsCid ?? none}   THIS operator's own collection`);
   console.log("");
   console.log("  to OVERTURN the grammar: pack the plugin, then compose the re-derive + push —");
   console.log("    pnpm --filter @lararium/tw5 build:plugin   (pack the memetic-wikitext grammar)");
   console.log("    lares nexus rite kahuli                    (diff-gate → re-derive → push; idempotent, skips-unchanged)");
-  console.log("  the diff-gate (candidate pluginsCid vs current) + --apply are wired next.");
+  console.log("  the diff-gate (candidate grammarCid vs current) + --apply are wired next.");
   return 0;
 }
 
