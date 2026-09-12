@@ -97,7 +97,22 @@ const SEAL_USAGE: readonly string[] = [
  */
 export async function runCabalRite(args: ParsedArgs): Promise<number> {
   const rest = { ...args, positional: args.positional.slice(2) };
+  try {
+    return await cabalRiteSteps(rest);
+  } catch (err) {
+    // A DOOR RETURNS A CODE. `cmdSeal` renders these as refusals, and this rite calls the very same seal
+    // steps WITHOUT going through it — so a `UsageError` (an unseatable charter, a threshold past the
+    // roster) threw straight out of `cmdNexus` to the caller. The exit-code vocabulary exists so a caller
+    // never has to catch; a door that throws past its own dispatcher hands the operator a stack trace
+    // where a reading belongs. Same shape and same verdicts as `cmdSeal`, so the two cannot diverge.
+    const msg  = err instanceof Error ? err.message : String(err);
+    const code = err instanceof UsageError ? "usage" : "error";
+    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus rite cabal: ${msg}`) });
+    return exitFor(code);
+  }
+}
 
+async function cabalRiteSteps(rest: ParsedArgs): Promise<number> {
   const reserved = await sealReserveProvision(rest, "provision");
   if (reserved !== 0) {
     console.error("lares nexus rite cabal: halted at `seal reserve` — nothing seated, nothing written.");
