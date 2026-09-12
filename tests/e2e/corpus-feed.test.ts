@@ -14,7 +14,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { matchCarrierHead } from "@lararium/tw5";
+import { matchCarrierHead } from "../../packages/lararium-tw5/src/carrier-head.js";
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { execSync } from "node:child_process";
