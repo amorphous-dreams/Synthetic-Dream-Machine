@@ -120,8 +120,11 @@ export function makeNexusMembership(opts: {
   repo?:             Repo;
   /** The node's own gate key (its Nexus key) — the members board's deterministic address seed. Required with `repo`. */
   nexusPubkey?:      string;
+  /** Fires after the member set swaps. The Repo caches a share verdict per (doc, peer) at admission; a member
+   *  admitted AFTER its socket stood reads DENIED until the caller re-verdicts (`repo.shareConfigChanged()`). */
+  onRefold?:         () => void;
 }): NexusMembershipHolder {
-  const { sealHome, peerIdentifierMap, peerContractNymMap, repo, nexusPubkey } = opts;
+  const { sealHome, peerIdentifierMap, peerContractNymMap, repo, nexusPubkey, onRefold } = opts;
 
   // The member nym set — swapped whole on each refresh/refold (no partial-set window a lookup could read).
   let members: ReadonlySet<string> = new Set<string>();
@@ -161,6 +164,7 @@ export function makeNexusMembership(opts: {
     // Floor-only swap — union with whatever the board fold last produced (empty until refold runs).
     if (boardHandle || boardResolve) { void refold(); return; }   // a wired board owns the union; fold it
     members = kahuFloor();
+    onRefold?.();
   };
 
   // Fold the member union (kahu floor ∪ members{}) against a SUPPLIED board doc + the disk charter — the one
@@ -176,6 +180,7 @@ export function makeNexusMembership(opts: {
     const union = new Set<string>(floor);
     for (const n of folded) union.add(n.toLowerCase());
     members = union;
+    onRefold?.();
   };
 
   const refold = async (): Promise<void> => {

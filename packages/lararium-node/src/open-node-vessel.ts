@@ -555,12 +555,18 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // contracted operator (members{}, not a kahu) now reads MEMBER, so the carry-split's member lane names it.
   // Keep the HOLDER (not just its `.membership` consult): the `nexus-refresh` main verb calls its
   // `refoldWithBoard` to re-fold the member union against an out-of-process CLI board write.
+  // RE-VERDICT. The Repo caches its share verdict per (doc, peer) at the peer's admission; every live change to
+  // what that verdict reads — the member set, the posture, the antigen, a realm registration — must ask the Repo
+  // to read it again, or a member contracted AFTER its socket stood keeps drawing DENIED (measured: B's realm doc
+  // arrived empty while A's board named her). `shareConfigChanged` re-evaluates every doc for every peer.
+  const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
   const nexusMembershipHolder = makeNexusMembership({
     sealHome,
     peerIdentifierMap,
     peerContractNymMap,
     repo,
     nexusPubkey:       vesselIdentity.verifyingKey,
+    onRefold:          reverdict,
   });
   nexusMembership = nexusMembershipHolder.membership;
 
@@ -652,6 +658,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
             setPosture: (p) => { federationPosture = p; },
           });
           await realmPlane?.refresh(readNexusDoc(sealHome));
+          reverdict();
         },
         onLog:        (line) => console.log(`[carriage] ${line}`),
       })
@@ -1602,6 +1609,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       });
       // A charter imported after boot names a realm this vessel never stood — stand it now (idempotent).
       await realmPlane?.refresh(readNexusDoc(sealHome));
+      reverdict();
       return { verb: "nexus-refresh", ...r, realm: realmPlane?.realmId() ?? null, realmDoc: realmPlane?.realmUrl() ?? null };
     });
 
@@ -1623,6 +1631,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       if (!nym) throw new Error(`realm-bag: no persona root at index ${handleIndex} — a bag is kept by a named steward`);
       const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, handleIndex));
       const rec = await realmPlane.register({ bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }] });
+      reverdict();   // the realm gate's standing set grew — a member peer's cached verdict on that bag's doc moves
       return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy, readTier: rec.readTier };
     });
     // realm-bags — the STANDING registrations this vessel's realm carries (counted and folded; an equivocal

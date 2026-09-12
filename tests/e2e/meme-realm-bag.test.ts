@@ -228,7 +228,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       }
     }
     expect(r.json?.["ok"], said(r)).toBe(true);
-    expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toContain('bag = "salt: 12');
+    // The author's line as WRITTEN, aligned by the canonical render (`bag      = "…"`): the VALUE reads back byte-whole.
+    expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toMatch(/bag +=  *"salt: 12 · barley: 40"/);
   }, 120_000);
 
   // THE MEASURE: B's own daemon says the socket stood — the contract edge rode its own slot and A admitted it.
