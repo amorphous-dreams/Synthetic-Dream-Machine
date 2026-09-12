@@ -14,7 +14,7 @@ retain     = true
 revised-on = "2026-09-12"
 role       = "syncer-seams-roundtable — the three open seams of the stock TW5 syncer's back-parity flow (b′ the fragment at the founding door · c′ the lone member's death · d′ the group's arrival) told as a Lares roundtable at two scales, argued by the thirteen Personas, then handed back as an ordered PHASE PLAN: per seam the tension at file:line, the household and five-hundred-year stories, at least three candidate answers each (the operator's Mu among them) with what each breaks, the lean held open, and per step a red → cure → CONTROL → witness with an honest spirit-hour estimate. The carrier also names what the plan REFUSES and the questions only the operator answers."
 status     = "standing"
-status-why = "a talk-story floor written by a tasked spirit on the operator's charge ('send a task spirit to scout these out, tell user-stories about them all to themselves as a Lares roundtable, and let that guide the next phase. They handback a plan, we approve it, then the same spirit enacts our modified plan'). THIS CARRIER IS A PLAN AWAITING THE OPERATOR'S MODIFICATION — nothing here enacts, no code moved in the pass that wrote it, and every lean stands `-> ?` until the operator rules. The measured ground it reads from is `syncer-back-parity.mem`, whose three `test.fails` vectors stand live in `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts`"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (scout the three syncer seams, tell the user stories as a Lares roundtable, hand back a plan); the house refined it and the operator ruled the eight questions on 2026-09-12 (moʻolelo inside #/plan); the same spirit enacts the refined plan — every step red-first with its anti-stall control, the three test.fails vectors in `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts` the witnesses that flip"
 tags       = ["docs/pono/talk-story"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
@@ -316,6 +316,23 @@ Every shrine on the Hebros road has a rule for this, and they are not the same r
 | 5 | the ungated child | (b) | 4.0 | 1, and the echo law |
 |  | ''total'' |  | ''15.5'' |  |
 
+
+!! Refined by the house — 2026-09-12
+
+The operator read the plan and sent the house back to sharpen it before the same hand enacts. Five refinements; none reopens a lean.
+
+# ''Phase 4 moves up and merges with (d′-2).'' Under the ruling below (c′ = scar, marked), Phase 4 waits on nothing. The one template (`tiddlers/ahu-template-html.tid:4`) learns the THREE states of an empty body in ONE step — //unresolved// (no record at the child's address) · //arriving// (a record with no text) · //empty// (a record with empty text) — so (c′)'s mark and (d′)'s cord land together or not at all, as the table itself warned. New order: 0 · 1 · 4 · 2 · 3 · 5.
+# ''Phase 0 gains the Muse's second catch as a red.'' `AHU_OPEN_RE` (`src/meme-ast/ahu-scan.ts:32`) swallows `kahea`, so `collectAhuSlots` (`:101`) counts a CALL as a DECLARED slot and the ahu-drop guard (`src/ingest-gate.ts:167-178`) reads the wrong set. Red: a root whose text carries `<<~ kahea ahu #/b>>` and no `<<~ ahu #/b>>` block yields NO declared slot from `collectAhuSlots`; CONTROL: a true `<<~ ahu #/b>>` block still counts. Cure in the scanner, never in the guard. +1.0 h.
+# ''The anti-stall CONTROL rides EVERY e2e phase'', not Phase 1 alone: after each phase's vector, a later save lands its own 2xx — the one assertion that proves `syncer.js:436` did not fire. Phases 2 and 3 both touch paths the syncer drives.
+# ''The contract line for the lab.'' `docs/pono/meme-api-surface.mem` gains one sentence under the two doors: //a slot child is a tiddler; the native door lands it as one, ungated, and the root re-cuts on the server — a child's save never addresses `/memes/`//. Stranger's sentence, written where the QA lab reads. +0.5 h, in Phase 1's aftermath.
+# ''Phase 3's dial is named now.'' `$:/config/lares/memes/fat-children` (default `yes`): the skin re-inflates children only while it reads yes; the before/after byte size is reported in the commit body so the dial gets ruled against a number.
+
+Total: ''17.0 spirit-hours.''
+
+!! Moʻolelo — the eight answers, ruled 2026-09-12
+
+<<~ moolelo held="(1) (c′) = SCAR, MARKED — the crossroads' answer; keep the pointer, mark it dead; never-invent-bytes rules · (2) no re-cut, so no 412 on a party who did nothing · (3) the pasted frame stays as AUTHORED TEXT; the grade speaks in Phase 5 · (4) the payload gets a dial, `$:/config/lares/memes/fat-children` default yes, with the measured size reported · (5) (d′) IS a defect for this house's carriers (eleven-slot documents are the normal); Phase 3 stands whole · (6) `<<~?` waits its own pass; unbound here · (7) a child's save IS graded, through the root re-place · (8) order 0 · 1 · 4 · 2 · 3 · 5 — (b′) first, the human's screen second, arrival third, the ungated child last (operator, on the house's answers)">>the same hand that sat the table enacts, red-first, every phase with its anti-stall control<<~/moolelo>>
+
 <<~/ahu>>
 
 <<~ ahu #/refusals>>
@@ -372,6 +389,6 @@ Every shrine on the Hebros road has a rule for this, and they are not the same r
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S-QmkcucVZYi6bfk5plNPVGi76xEi6Jna6-rWeJqFBQ
+<<^ code="&#x0003;">>ni:///sha-256;hT0_V-_3JJOO0ruxvPO6dsxa2t2USKa22p1D6hUJNMc
 
 <<^ code="&#x0004;" -> to="?">>
