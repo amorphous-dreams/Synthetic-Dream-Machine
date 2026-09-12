@@ -142,3 +142,95 @@ describe("casSweep — PIN at cid grain, grace per tier", () => {
     expect(r.kept).toContain(veil.cid);
   });
 });
+
+// ── THE PRODUCTION CALLER — a sweep TICK on the daemon + the `cas-sweep` verb ─────────────────────────────
+// `casSweep` had no caller. The tick's cadence reads off the realm's own baseline: the SHORTEST tier's grace
+// over four (a blob past its grace waits at most a quarter-grace for the sweep), never a wall-clock constant;
+// no baseline (the realm has not said its pace) → no tick fires, ever. The verb reports {swept, pinned,
+// retained}; `dryRun` moves nothing; the genesis protect set and standing pins hold as before (CONTROL).
+import { vi } from "vitest";
+import { sweepCadenceMs, installCasSweep, realmPaceReader, type CasSweepVerbResult } from "../src/node-cas.js";
+
+type Handler = (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+function fakeRegistry(): { register(name: string, h: Handler): void; verbs: Map<string, Handler> } {
+  const verbs = new Map<string, Handler>();
+  return { verbs, register: (name, h) => { verbs.set(name, h); } };
+}
+
+describe("the sweep tick and the cas-sweep verb", () => {
+  test("the cadence = the shortest tier's grace / 4 against the realm baseline; no baseline → null", () => {
+    const baselineMs = 40 * 60_000;
+    expect(sweepCadenceMs(baselineMs)).toBe(graceForTier("public", baselineMs) / 4);
+    expect(sweepCadenceMs(null)).toBeNull();
+    expect(sweepCadenceMs(0)).toBeNull();
+    expect(sweepCadenceMs(Number.NaN)).toBeNull();
+  });
+
+  test("`cas-sweep` sweeps an aged orphan, keeps the genesis and the pinned, reports {swept, pinned, retained}", async () => {
+    const orphan = blob("an orphan past its grace");
+    const core   = blob("the engine core");
+    const kept   = blob("a pinned working");
+    writeCasEntriesFs([orphan, core, kept], casDir);
+    for (const b of [orphan, core, kept]) age(b.cid);
+    const registry = fakeRegistry();
+    const sweep = installCasSweep({
+      registry, casDir,
+      references: async () => [],
+      protect: new Set(genesis.blobs.map((b) => b.cid)),
+      pins: () => [{ cid: kept.cid, tier: "veil", holder: "operator", expiry: Date.now() + 86_400_000 }],
+      baselineMs: () => 60_000,   // one-minute rolls: public grace 1m, an hour-old orphan is past it
+      log: () => {},
+    });
+    try {
+      // CONTROL: a dry run names the orphan and moves nothing.
+      const dry = (await registry.verbs.get("cas-sweep")!({ dryRun: true })) as unknown as CasSweepVerbResult;
+      expect(dry.dryRun).toBe(true);
+      expect(dry.swept).toEqual([orphan.cid]);
+      expect(existsSync(join(casDir, orphan.cid))).toBe(true);
+      const live = (await registry.verbs.get("cas-sweep")!({})) as unknown as CasSweepVerbResult;
+      expect(live.swept).toEqual([orphan.cid]);
+      expect(live.pinned).toEqual([kept.cid]);
+      expect(live.retained).toEqual(expect.arrayContaining([core.cid]));
+      expect(existsSync(join(casDir, orphan.cid))).toBe(false);
+      expect(existsSync(join(casDir, core.cid))).toBe(true);      // CONTROL: genesis never sweeps
+      expect(existsSync(join(casDir, kept.cid))).toBe(true);      // CONTROL: pinned never sweeps
+    } finally { sweep.stop(); }
+  });
+
+  test("the TICK fires at the cadence under a baseline, and never without one (CONTROL)", async () => {
+    vi.useFakeTimers();
+    try {
+      const orphan = blob("an orphan the tick finds");
+      writeCasEntriesFs([orphan], casDir);
+      age(orphan.cid);
+      const registry = fakeRegistry();
+      let baseline: number | null = null;
+      const swept: string[][] = [];
+      const sweep = installCasSweep({
+        registry, casDir, references: async () => [], protect: new Set(), pins: () => [],
+        baselineMs: () => baseline, log: () => {}, onSweep: (r) => { swept.push(r.swept); },
+      });
+      try {
+        await vi.advanceTimersByTimeAsync(24 * 3_600_000);
+        expect(swept, "no baseline → no sweep, however long the wall-clock runs").toEqual([]);
+        expect(existsSync(join(casDir, orphan.cid))).toBe(true);
+        baseline = 60_000;                       // the realm now says its pace: one roll a minute
+        await vi.advanceTimersByTimeAsync(sweepCadenceMs(baseline)! + sweep.probeMs + 1);
+        expect(swept.flat()).toEqual([orphan.cid]);
+        expect(existsSync(join(casDir, orphan.cid))).toBe(false);
+      } finally { sweep.stop(); }
+    } finally { vi.useRealTimers(); }
+  });
+
+  test("realmPaceReader abstains until two rolls stand, then answers ms-per-roll off the feed (never a calendar)", async () => {
+    let t = 1_000_000; let epoch = 5;
+    const pace = realmPaceReader({ epoch: () => epoch, now: () => t });
+    expect(await pace()).toBeNull();                 // first sample — no interval yet
+    t += 3_600_000;
+    expect(await pace(), "no roll → no pace, however long the clock runs").toBeNull();
+    epoch = 6; t += 60_000;
+    expect(await pace(), "one roll → no interval").toBeNull();
+    epoch = 7; t += 60_000;
+    expect(await pace()).toBe((3_600_000 + 120_000) / 2);
+  });
+});

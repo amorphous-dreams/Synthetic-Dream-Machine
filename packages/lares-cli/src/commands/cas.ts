@@ -139,6 +139,35 @@ async function cmdCasFetch(args: ParsedArgs, cid: string): Promise<number> {
   return out["held"] === true ? 0 : 2;
 }
 
+/**
+ * `lares bag cas --sweep [--dry-run]` — THE SWEEP, run where the composite stands (basket-one #/grace-and-pin):
+ * the daemon derives the live reference count, reads its standing pins and the genesis protect set, and
+ * sweeps the unreferenced blobs past their grace. The grace reads off the realm's own pace; a realm that
+ * has not said its pace sweeps under the floor alone. `--dry-run` names what would sweep and moves nothing.
+ */
+async function cmdCasSweep(args: ParsedArgs): Promise<number> {
+  const dryRun = args.flags["dry-run"] === true;
+  const r = await runVerb("cas-sweep", { dryRun }, await vesselDid());
+  if (r.status === "error") {
+    emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "cas-sweep failed" },
+                 human: () => console.error(`lares bag cas --sweep: ${r.errorMessage ?? "failed"}`) });
+    return 1;
+  }
+  const out = summaryOutput(r) ?? {};
+  const swept = (out["swept"] as string[] | undefined) ?? [];
+  const pinned = (out["pinned"] as string[] | undefined) ?? [];
+  const retained = (out["retained"] as string[] | undefined) ?? [];
+  emit(args, {
+    ok: true, data: { dryRun, swept, pinned, retained, baselineMs: out["baselineMs"] ?? null },
+    human: () => {
+      console.log(`lares bag cas --sweep${dryRun ? " --dry-run" : ""} — swept ${swept.length} · pinned ${pinned.length} · retained ${retained.length}` +
+                  (out["baselineMs"] ? ` · realm pace ${String(out["baselineMs"])}ms/roll` : " · realm pace unread (floor grace alone)"));
+      for (const cid of swept) console.log(`  ${dryRun ? "would sweep" : "swept     "} ${cid.slice(0, 16)}…`);
+    },
+  });
+  return 0;
+}
+
 /** A pin's expiry as the operator spells it: ms since the epoch, an ISO instant, or `<n>d` days from now. */
 function parseExpiry(raw: string, now: number): number {
   const days = /^(\d+)d$/.exec(raw);
@@ -178,11 +207,13 @@ function cmdCasPin(args: ParsedArgs, pin: string, release: string): number {
   return 0;
 }
 
-/** `lares bag cas [--all] [--fetch <cid>] [--pin <cid> | --release <cid>]` — the summary; `--all` lists every blob;
- *  `--fetch` reads one through the door; `--pin`/`--release` hold or free one past the grace. */
+/** `lares bag cas [--all] [--fetch <cid>] [--pin <cid> | --release <cid>] [--sweep [--dry-run]]` — the summary;
+ *  `--all` lists every blob; `--fetch` reads one through the door; `--pin`/`--release` hold or free one past
+ *  the grace; `--sweep` runs the sweep where the composite stands. */
 export function cmdCas(args: ParsedArgs): number | Promise<number> {
   const fetchCid = typeof args.options["fetch"] === "string" ? args.options["fetch"] : "";
   if (fetchCid) return cmdCasFetch(args, fetchCid);
+  if (args.flags["sweep"] === true) return cmdCasSweep(args);
   const pin = typeof args.options["pin"] === "string" ? args.options["pin"] : "";
   const release = typeof args.options["release"] === "string" ? args.options["release"] : "";
   if (pin || release) return cmdCasPin(args, pin, release);
