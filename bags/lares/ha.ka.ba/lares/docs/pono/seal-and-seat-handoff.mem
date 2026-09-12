@@ -11,10 +11,10 @@ manao      = 15
 manaoio    = 13
 namespace  = "&#x2299;"
 retain     = true
-revised-on = "2026-09-11"
+revised-on = "2026-09-12"
 role       = "seal-and-seat-handoff — a talk-story floor handed to the founding session: two seal defects measured and cured (a floor stand clobbered a sealed archive; rotate left the veil under the old passphrase), one absence measured (device-share never persists), and two plans awaiting a hand (face-join re-grants bindings minted vessel-only; a relation that carries a bag across operators). Ground, telling, bearings, forks — the exit stays the operator's."
 status     = "standing"
-status-why = "a talk-story floor handed to the founding session: the seal cures it describes stand committed with their witnesses; the two plans and four forks stand open at the operator's hand"
+status-why = "a talk-story floor handed to the founding session: the seal cures stand committed; plan face-join BUILT (`1cafc2ec7` re-grant on seat · `c3bcab741` the grant as a signed record on the PersonaGroup plane, the joinee takes it by its own act); plan relation-bag stands as the brief `realm-bag-brief` + a gated red; forks 1 and 2 CLOSED by the 2026-09-11 ruling, forks 3 and 4 stay at the operator's hand"
 tags       = ["docs/pono/handoff"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/seal-and-seat-handoff"
@@ -98,8 +98,8 @@ The cures and the witness stand committed beside this carrier.
 
 !! Forks the founding session holds
 
-# ''The joinee's grant door'' — a daemon verb the founder's caller invokes on the joinee, or a doc the joinee watches for grants. Decides the whole face-join plan's third step.
-# ''Where a relation-carried bag registers'' — `@catalog` (private, per vessel) · the realm's shared CRDT · `@crossroads` (public). Decides who may name the doc and who reads it.
+# ''The joinee's grant door'' — CLOSED 2026-09-11: a signed record on the PersonaGroup plane (`face-grant-record.ts`); the joinee's own kit takes the seat against the published seal; reading never re-cuts. Witnessed `meme-two-vessel-bag` ⑨ (`c3bcab741`). Owed: verify walks the pinned root DID, not the KEL head.
+# ''Where a relation-carried bag registers'' — CLOSED 2026-09-11: the realm's shared CRDT; `@crossroads` names only that the bag exists and who keeps it; read at CONTRACT. The brief stands at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>; registration itself waits a build.
 # ''`device-share` at founding'' — mint the recovery device share at `vessel found` (and turn the witness red on purpose), or hold it for the recovery-keel pass. Decides whether a sealed vessel carries a recovery leg from day one.
 # ''Which stand reads the seal'' — keep the waking-floor stand (a public shelf with no sovereign acts) as the honest answer to a missing passphrase, or refuse the stand outright. Today the floor stands and the cure only forbids the clobber.
 
@@ -113,6 +113,6 @@ No moʻolelo closes here. The cures stand green under their witnesses and uncomm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8q7JeOF_ARJG9sBu8AaHkfxIm5geH3rYe7_sKH0hoKg
+<<^ code="&#x0003;">>ni:///sha-256;_0qH8MK80tFT6bz4Z3XKuKuGBJnyyrNyD7Wve2SOV8c
 
 <<^ code="&#x0004;" -> to="?">>
