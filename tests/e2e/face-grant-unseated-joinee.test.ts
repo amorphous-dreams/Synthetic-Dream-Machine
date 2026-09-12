@@ -7,17 +7,16 @@
  * takes the seat by its own act. THAT joinee dials the founder by hand (`LAR_JOIN_SYNC` · `LAR_JOIN_GATE` ·
  * `LAR_JOIN_DOC`), so the plane it reads crosses a socket the operator opened at boot.
  *
- * THIS joinee holds the same admit edge — the PIN names the hearth's dial (`device-admit --sync-url`, landed as
- * `HEARTH_DAEMON_URL_TIDDLER` at founding) — and boots with NO `LAR_JOIN_*`: the herm-relayed fleet shape,
- * a device that never presented its edge to anyone. The question the drift-ward asks: does the record reach it
- * at all? The CONTROL is the founder's side — the record lands on A's plane regardless (`recordTitle`).
+ * THIS joinee holds the same admit edge — the PIN names the hearth's dial (`device-admit --sync-url`, pinned in
+ * the bootstrap at founding) — and boots with NO `LAR_JOIN_*`. The question the drift-ward asks: does the
+ * record reach it at all? The CONTROL is the founder's side — the record lands on A's plane regardless
+ * (`recordTitle`).
  *
- * MEASURED 2026-09-12: it never reaches — the joinee never reaches LIVE. Its boot waits on the founder's
- * PersonaGroup doc, which crosses only over the dial, and with no `LAR_JOIN_SYNC` the fail-closed boot window
- * closes: `[lararium] fatal: Error: [boot] @persona (automerge:…) did not resolve within 15000ms`. The PIN
- * carries the hearth's url and the boot never dials it (`open-node-vessel.ts`, `joinSyncUrl = opts.joinSyncUrl
- * ?? process.env["LAR_JOIN_SYNC"] ?? null`). The smallest cure — the pinned edge's hearth url as the dial's
- * default — sits in the dial, outside the realm plane's ownership; the vector holds as `test.fails` naming it.
+ * THE PIN NAMES THE DIAL. `device-admit --sync-url` packs the hearth's `ws://` relay AND the hearth's gate key
+ * into the payload; `vessel found --admit` pins both in the joinee's bootstrap (`hearth-dial-pin.ts`), and the
+ * boot dials them where no `LAR_JOIN_*` rides the env (an explicit env still wins; no pin and no env dials
+ * nobody). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC url — an `automerge:` address that dials
+ * nothing — so the dial needed a pin of its own.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -48,7 +47,7 @@ let admitCode = -1;
 /** Why B never stood — its daemon's own fatal line; empty when B stands. */
 let bootFailure = "";
 
-describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that never dialed ★", () => {
+describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed by its pin ★", () => {
   beforeAll(async () => {
     rootB = mkdtempSync(join(stageDir(), "lares-staged-Bq-"));
     const portA = await freePort();
@@ -94,13 +93,13 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that never di
     expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
   });
 
-  test("MEASURE: a joinee that never dialed never reaches LIVE — the boot waits on a plane only the dial carries", () => {
-    if (B) {
-      expect(B.bootLog()).not.toContain("[nexus-join]");   // the measure's premise: no dial at boot
-      return;
-    }
-    expect(bootFailure).toContain("[boot] @persona");
-    expect(bootFailure).toContain("did not resolve");
+  test("MEASURE: a joinee with no LAR_JOIN_* stands by its PIN alone — the boot dials the hearth the edge names", () => {
+    expect(B, `B never stood: ${bootFailure}`).not.toBeNull();
+    const log = B!.bootLog();
+    expect(log).toContain("[nexus-join] nexus dial-out up → ws://127.0.0.1:");
+    expect(log).toContain("[nexus-join] presenting the device-delegation edge (fleet)");
+    expect(log).not.toContain("[lar-leaf] ANERGIZED");
+    expect(log).toContain("phase → live");
   });
 
   test("CONTROL: the founder's side lands the record whether or not the joinee ever reads it", async () => {
@@ -110,8 +109,8 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that never di
     expect(typeof grant["recordTitle"]).toBe("string");
   }, 120_000);
 
-  // THE VECTOR. The record is on A's plane; does it reach a joinee that never dialed?
-  test.fails("★ the founder's grant record reaches a joinee that never dialed ★ (SEAM — the PIN names the dial, the boot never dials it)", async () => {
+  // THE VECTOR. The record is on A's plane; it reaches a joinee that dialed by its pin alone.
+  test("★ the founder's grant record reaches a joinee that dialed by its pin alone ★", async () => {
     expect(B, `B never stood: ${bootFailure}`).not.toBeNull();
     // B's next present reads its plane for the record — poll, bounded.
     const deadline = Date.now() + 60_000;

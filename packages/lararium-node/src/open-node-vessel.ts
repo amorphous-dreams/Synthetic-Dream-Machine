@@ -83,6 +83,7 @@ import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
 import { nodeShareConfig } from "./node-share-config.js";
+import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
@@ -358,6 +359,8 @@ interface NodeBootPrep {
 async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const { hostId, wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
   const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
+  // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
+  const hearthPin = readHearthDialPin(bootstrapPath);
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
 
   emit("boot");
@@ -611,7 +614,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // channel; it reads FLEET when the SAME key stands on Socket A as a `same-operator` peer (the keyholder vouched
   // its signed device edge at admission — `peerClassMap`), or when it names the vessel THIS one dialed under
   // its own admit (`LAR_JOIN_GATE` — the founder a joinee stood by). A CONTRACT member never reads fleet.
-  const fleetJoinGate = (opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? "").toLowerCase();
+  const fleetJoinGate = (opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? "").toLowerCase();
   const isFleetPeer = (peerKey: string): boolean => {
     const nym = peerKey.slice(-64).toLowerCase();
     if (fleetJoinGate && nym === fleetJoinGate) return true;
@@ -717,8 +720,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     }
     return false;
   };
-  const joinSyncUrl    = opts.joinSyncUrl    ?? process.env["LAR_JOIN_SYNC"] ?? null;
-  const joinGatePubKey = opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? null;
+  // THE PINNED EDGE'S HEARTH IS THE DIAL'S DEFAULT. A joinee founded by an admit edge carries the hearth's sync
+  // url + gate key in its bootstrap (hearth-dial-pin.ts); an explicit option / `LAR_JOIN_*` still wins, and a
+  // vessel holding no pin and no env dials nobody — byte-identical to before.
+  const joinSyncUrl    = opts.joinSyncUrl    ?? process.env["LAR_JOIN_SYNC"] ?? hearthPin?.syncUrl    ?? null;
+  const joinGatePubKey = opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null;
   const joinDocUrl     = opts.joinDocUrl     ?? process.env["LAR_JOIN_DOC"]  ?? null;
   // The operator's OWN light leaf identity (cached ContactCard + bare-Ed25519 signer). A missing card (never
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).

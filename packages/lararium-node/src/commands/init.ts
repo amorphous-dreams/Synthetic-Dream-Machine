@@ -27,6 +27,8 @@ import {
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
+import { hearthDialTiddlers } from "../hearth-dial-pin.js";
+import type { CarriedAdmitPayload } from "./device-admit.js";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors } from "../identity-anchors.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
@@ -197,7 +199,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     if (!existsSync(opts.admitPayloadPath)) {
       throw new Error(`[lares vessel found --admit] payload file not found: ${opts.admitPayloadPath}`);
     }
-    const payload = JSON.parse(readFileSync(opts.admitPayloadPath, "utf8")) as DeviceAdmitPayload;
+    const payload = JSON.parse(readFileSync(opts.admitPayloadPath, "utf8")) as CarriedAdmitPayload;
     if (payload.kind !== "device-admit/v1") {
       throw new Error(`[lares vessel found --admit] unexpected payload kind: ${payload.kind}`);
     }
@@ -216,10 +218,13 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
 
     // An admit lands a place AND a contracted face in one act — the contracting operator already signed
     // the edge, so nothing waits on a later ceremony here.
+    // THE PIN NAMES THE DIAL: the hearth's sync url + gate key land beside the sentinel ids, so the boot dials
+    // the hearth with no `LAR_JOIN_*` set by hand (hearth-dial-pin.ts). A payload naming no dial pins none.
     writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
       ...placeTiddlers(daemonUrl),
       ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
                       payload.personaGroupDocIdHex, payload.meshCabalDocIdHex),
+      ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey),
     }), null, 2), "utf8");
     // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
     // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.

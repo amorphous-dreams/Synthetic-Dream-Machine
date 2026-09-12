@@ -32,6 +32,9 @@ import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
+/** The payload as CARRIED: the keyhive's `DeviceAdmitPayload` plus the hearth's gate key (the dial's binding). */
+export type CarriedAdmitPayload = DeviceAdmitPayload & { readonly hearthGatePubKey?: string };
+
 export interface DeviceAdmitOptions {
   readonly storageDir?:    string;
   readonly genesisDir?:    string;
@@ -159,7 +162,11 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaUrl,
   });
 
-  const json = JSON.stringify(payload, null, 2);
+  // THE PIN NAMES THE DIAL (hearth-dial-pin.ts). The founder's gate key IS its vessel key — the anti-relay
+  // binding the joinee's V3 proof commits to. It rides the payload beside `syncUrl` so the joinee's bootstrap
+  // can carry both and its boot can dial with no `LAR_JOIN_*` set by hand.
+  const carried: CarriedAdmitPayload = { ...payload, hearthGatePubKey: founderNexusKey.toLowerCase() };
+  const json = JSON.stringify(carried, null, 2);
   if (opts.outPath) {
     writeFileSync(opts.outPath, json, "utf8");
     console.log(`[lares device-admit] payload written to ${opts.outPath}`);
