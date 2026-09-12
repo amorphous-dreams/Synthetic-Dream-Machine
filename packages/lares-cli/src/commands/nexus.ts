@@ -62,7 +62,7 @@ import {
 import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { larSealHome, larDataDir, vesselDid } from "../env.js";
+import { larSealHome, larDataDir, larRoot, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
@@ -91,7 +91,8 @@ function usage(): void {
   console.error("  members --list                            read the currently-admitted member set (the fold)");
   console.error("  accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in");
   console.error("  posture [private | open]                  read / flip the cross-Nexus federation posture");
-  console.error("  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum");
+  console.error("  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier");
+  console.error("  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition");
   console.error("  refresh                                   re-read the charter and re-fold the boards it names");
 }
 
@@ -129,6 +130,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "accept-carriage": return await cmdAcceptCarriage(args);
     case "posture":         return await cmdPosture(args);
     case "rite":            return await runNexusRite(args);
+    case "kahuli":          return await cmdKahuli(args);
     case "refresh":         return await cmdNexusRefresh(args);
     default:
       if (verb) console.error(`lares nexus: unknown verb "${verb}"`);
@@ -144,7 +146,8 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
  * primitive for namespace. The primitives keep every behaviour; a rite only orders them.
  */
 const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly run: (a: ParsedArgs) => Promise<number> }>> = {
-  cabal: { composes: "seal reserve · seal seat · seal show", run: runCabalRite },
+  cabal:  { composes: "seal reserve · seal seat · seal show", run: runCabalRite },
+  kahuli: { composes: "kahuli grammar (· kahuli engine — held)", run: runKahuliRite },
 };
 
 /**
@@ -240,6 +243,104 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
     return petname ? 2 : 0;
   }
   return rite.run(args);
+}
+
+// ── kāhuli — the OVERTURN ──────────────────────────────────────────────────────────────────────────
+//
+// One verb, the TIER is the argument (parity with `nexus seal <sub>` + `vessel rite <name>`). kāhuli is
+// the act; ʻōlelo kāhuli is the result-state of `kahuli grammar`. Two ratchets ride one genesis doc:
+//   · ENGINE  (engineCid = the hearth true-name) — SLOW, signed into every device delegation edge, so it
+//             binds MEMBERSHIP. Advancing it re-binds the whole fleet; HELD until the graceful forward-
+//             rebind (predecessor pointer + a both-epoch read span, ending by non-renewal) has its rulings.
+//   · GRAMMAR (pluginsCid = the memetic-wikitext composition) — FAST, per-operator, never the true-name.
+
+/** Where this vessel's baked epoch sidecars live — LAR_ROOT-relative, so an isolated root reads its own. */
+function genesisSidecar(name: string): string | undefined {
+  const p = join(larRoot(), "genesis", name);
+  if (!existsSync(p)) return undefined;
+  try { return readFileSync(p, "utf8").trim() || undefined; } catch { return undefined; }
+}
+
+function kahuliUsage(): void {
+  console.error("usage: lares nexus kahuli <engine | grammar>");
+  console.error("");
+  console.error("  the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:");
+  console.error("    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device");
+  console.error("             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;");
+  console.error("             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.");
+  console.error("    grammar  the FAST ratchet: the memetic-wikitext plugin composition (pluginsCid), per-operator,");
+  console.error("             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).");
+  console.error("");
+  console.error("  a read NEVER builds — the deliberate build+push lives behind --apply and in `nexus rite kahuli`.");
+}
+
+/**
+ * `lares nexus kahuli engine` — the SLOW ratchet, HELD. A deliberate not-yet, never an unknown verb: the
+ * tier is real and its advance is withheld on purpose, because moving engineCid re-binds every device edge.
+ */
+function kahuliEngineHeld(): number {
+  const engineCid = genesisSidecar("island.cid-engine");
+  console.error("nexus kahuli engine — HELD.");
+  console.error(`  current engine epoch (true-name): ${engineCid ?? "(no island baked in this root yet)"}`);
+  console.error("  advancing the engine re-binds MEMBERSHIP mesh-wide — every device delegation edge signs it.");
+  console.error("  the graceful forward-rebind (predecessor pointer + a both-epoch read span, ending by");
+  console.error("  non-renewal — NOT a unilateral fleet reset) awaits its coexistence-span rulings. See");
+  console.error("  memory: project_nexus_identity_kahuli_onboarding — engine-watch EW-7.");
+  return 2;
+}
+
+/**
+ * `lares nexus kahuli grammar` — the FAST ratchet. This first version READS the current grammar epoch
+ * (pluginsCid) and reports it; a read never builds. `--apply` is where the overturn composes the bake
+ * (`vessel bake` re-derives the island at the freshly-packed plugin) and the mesh-push — both wired next.
+ */
+function kahuliGrammar(args: ParsedArgs): number {
+  const pluginsCid = genesisSidecar("island.cid-plugins");
+  const engineCid  = genesisSidecar("island.cid-engine");
+
+  if (args.flags["apply"]) {
+    console.error("nexus kahuli grammar --apply — HELD (the overturn's payload is wired next).");
+    console.error("  --apply composes the diff-gate → `vessel bake` (re-derive the island at the newly packed");
+    console.error("  plugin) → the mesh-push. The bake writes the genesis island; the push advances the LIVE");
+    console.error("  Nexus's grammar epoch on the DreamNet — the production breath that rides the same");
+    console.error("  coexistence-span rulings as `kahuli engine`. Ledgered in the kāhuli onboarding memory.");
+    return 2;
+  }
+
+  console.log("nexus kahuli grammar — the current genesis epoch (a read; nothing built):");
+  console.log(`  grammar (pluginsCid, fast ratchet): ${pluginsCid ?? "(no island baked in this root yet)"}`);
+  console.log(`  engine  (engineCid, true-name):     ${engineCid ?? "(no island baked in this root yet)"}`);
+  console.log("");
+  console.log("  to OVERTURN the grammar: pack the plugin, then compose the bake + push —");
+  console.log("    pnpm --filter @lararium/tw5 build:plugin   (pack the memetic-wikitext plugin)");
+  console.log("    lares nexus rite kahuli                    (diff-gate → bake → push; idempotent, skips-unchanged)");
+  console.log("  the diff-gate (candidate pluginsCid vs current) + --apply are wired next.");
+  return 0;
+}
+
+/**
+ * `lares nexus rite kahuli` — the composed OVERTURN, the deliberate build's home (so a read never builds).
+ * Diff-gated + idempotent-by-intent: it runs whichever tier actually moved and skips an unchanged one. This
+ * first version reports each tier's state and the holds; the bake+push payload lands as the zones settle.
+ */
+async function runKahuliRite(args: ParsedArgs): Promise<number> {
+  const rest = { ...args, positional: args.positional.slice(2) };
+  console.log("nexus rite kahuli — the composed overturn (diff-gated, idempotent, skips-unchanged):");
+  console.log("  engine:  HELD — the slow ratchet's forward-rebind span awaits its rulings (see `kahuli engine`).");
+  console.log("  grammar:");
+  return await Promise.resolve(kahuliGrammar(rest));
+}
+
+async function cmdKahuli(args: ParsedArgs): Promise<number> {
+  const tier = args.positional[1];
+  switch (tier) {
+    case "engine":  return kahuliEngineHeld();
+    case "grammar": return await Promise.resolve(kahuliGrammar(args));
+    default:
+      if (tier) console.error(`lares nexus kahuli: unknown tier "${tier}"\n`);
+      kahuliUsage();
+      return 2;
+  }
 }
 
 /**
