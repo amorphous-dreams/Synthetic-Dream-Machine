@@ -26,8 +26,9 @@
 import {
   openBrowserVessel, generateOrLoadBrowserVesselIdentity,
   parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
-  DAEMON_SURFACE_ID,
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport,
 } from "@lararium/browser";
+import { phoneSeatExplanation, ambientPhoneSeatHost } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { pullAndVerifyOracle, DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisCasManifest, type GenesisSeed } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
@@ -360,6 +361,14 @@ async function bootVessel(): Promise<void> {
     row(vesselEl, "mode", "browser vessel · anon veil · no node attached", "veil");
     row(vesselEl, "wiki", result.activeWikiId);
     row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
+    // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
+    // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed.
+    void requestDurableStorage().then((reading) => {
+      const floor = storageFloorReport(reading);
+      if (floor) { console.log(floor); row(vesselEl, "storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
+      const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
+      if (offer) row(vesselEl, "phone seat", offer, "warn");
+    }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
   } catch (e) {
     set("status", `boot failed: ${e instanceof Error ? e.message : String(e)}`, "err");
   }

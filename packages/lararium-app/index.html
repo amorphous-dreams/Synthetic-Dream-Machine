@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lararium — browser vessel</title>
+    <!-- THE PHONE SEAT (basket-one #/the-phone-seat): the manifest lets a phone set this vessel into its own
+         house — a Home Screen install, which exempts the origin from WebKit's seven-day clock. The page never
+         demands it; `phone-seat.ts` explains and offers, once, where the clock stands. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Lararium" />
+    <meta name="theme-color" content="#0d0f14" />
     <style>
       :root { color-scheme: dark; }
       body {
