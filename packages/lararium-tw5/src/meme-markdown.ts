@@ -39,6 +39,7 @@ module-type: library
  */
 
 import { matchCarrierHeadLine } from "./carrier-head.js";
+import { META_OPEN_LINE_RE } from "./meta-fence.js";
 
 export interface SubmissionProjection {
   /** The markdown body — what a reviewer reads. */
@@ -127,7 +128,7 @@ export function transposeMarkdown(text: string): { markdown: string; uri?: strin
     }
     // Only the fence that OPENS the carrier heads the carrier (the position law) — every later
     // `toml meta` fence heads a worksite and STAYS in the body as an ordinary fenced block.
-    if (fence === 0 && metaFenceDone === undefined && /^```toml meta\s*$/.test(line)) { inMetaFence = true; metaFence = []; continue; }
+    if (fence === 0 && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
     // ── fence tracking: N backticks close only on ≥ N ──
     if (fenceMark) {

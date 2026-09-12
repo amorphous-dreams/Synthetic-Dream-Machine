@@ -40,6 +40,7 @@ import {
   composeSlotPath,
 } from "./meme-ast/ahu-scan.js";
 import { fencedSpans, inMask, maskedExec, maskedExecAll } from "./meme-ast/fence-mask.js";
+import { META_OPEN_RE, PLAIN_OPEN_RE } from "./meta-fence.js";
 import { frameMark, FRAME_MARKS } from "./frame-marks.js";
 
 /** name -> code, so the emitter names a mark rather than spelling its entity. */
@@ -600,8 +601,11 @@ function splitRecursive(
 // Used by both header-region and slot-body TOML extraction.
 // ---------------------------------------------------------------------------
 
-const META_FENCE_RE   = /```toml[ \t]+meta[ \t]*\n([\s\S]*?)```\n?/;
-const PLAIN_FENCE_RE = /```toml[ \t]*\n([\s\S]*?)```\n?/;
+// THE OPENER IS SHARED, THE CLOSE IS THIS READER'S OWN. `findMetaFence` hands back `start`/`end` and
+// the render rests on those offsets, so the ```\n? close stays exactly as it stands — a close fused
+// with carrier-shape's `\n``` would move `content` and `end` and byte-exact round-trip with it.
+const META_FENCE_RE  = new RegExp(META_OPEN_RE.source  + "([\\s\\S]*?)```\\n?");
+const PLAIN_FENCE_RE = new RegExp(PLAIN_OPEN_RE.source + "([\\s\\S]*?)```\\n?");
 
 function findMetaFence(text: string, allowPlain = false): { content: string; start: number; end: number } | null {
   // The meta fence IS a fence — accept a match starting AT a span opener,

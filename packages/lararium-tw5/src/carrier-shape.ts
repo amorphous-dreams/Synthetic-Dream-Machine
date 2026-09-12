@@ -27,9 +27,10 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
-import { fencedSpans, maskedExec, maskedExecAll } from "./meme-ast/fence-mask.js";
+import { fencedSpans, maskedExec, maskedExecAll, type MaskSpan } from "./meme-ast/fence-mask.js";
 import { carrierMarkPattern, matchCarrierHead } from "./carrier-head.js";
 import { verifyBcc } from "./carrier-check.js";
+import { META_OPEN_RE, META_OPEN_CANON, isCanonicalMetaOpen } from "./meta-fence.js";
 
 /** One mark's presence, read through the fence mask so a teaching example never counts as a frame. */
 export interface CarrierMarks {
@@ -59,12 +60,31 @@ function marked(text: string, re: RegExp): boolean {
   return maskedExec(text, re, fencedSpans(text)) !== null;
 }
 
-/** The first meta block's value for a key, or null. Read raw: a shape reading must not need a parser. */
-function metaValue(text: string, key: string): string | null {
-  const block = /```toml meta\n([\s\S]*?)\n```/.exec(text)?.[1];
-  if (!block) return null;
-  const m = new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(block);
+/**
+ * The first meta block's value for a key, or null. Read raw: a shape reading must not need a parser.
+ *
+ * READ THROUGH THE MASK, like the `meta` mark beside it. A flat `.exec` took the FIRST block in the
+ * bytes, so a carrier whose head sat above a ````-quoted lesson answered with the LESSON'S address:
+ * `marks.meta` read false at its own mask while `marks.uriPath` read `ha.ka.ba/not/this`, and a shelf
+ * could present as a carrier bearing an address no file owns. No corpus file stood that way — the two
+ * readings were measured over all 724 and never disagreed — so this closes a hole rather than a wound.
+ */
+function metaValue(text: string, spans: readonly MaskSpan[], key: string): string | null {
+  const open = maskedExec(text, META_OPEN_RE, spans, true);
+  if (!open) return null;
+  const from  = open.index + open[0].length;
+  const close = text.indexOf("\n```", from);
+  // An opener with no closer names no block. The flat read required the closer too, and a shape
+  // reading of half a fence would be a value the file never finished stating.
+  if (close < 0) return null;
+  const m = new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(text.slice(from, close));
   return m ? m[1]! : null;
+}
+
+/** The opener line as this file actually spells it, or null when it carries no meta block. */
+function metaOpenLine(text: string, spans: readonly MaskSpan[]): string | null {
+  const open = maskedExec(text, META_OPEN_RE, spans, true);
+  return open ? open[0].replace(/\n$/, "") : null;
 }
 
 export function readCarrierShape(text: string): CarrierShape {
@@ -82,9 +102,9 @@ export function readCarrierShape(text: string): CarrierShape {
     // THE DECLARATION OPENS A FENCE OF ITS OWN, so its opener sits exactly at a mask span's start and a
     // plain masked read rejects it. `allowSpanStart` admits the boundary and still refuses a fence
     // INTERIOR — which is what separates a carrier's real declaration from one quoted in a lesson.
-    meta:     maskedExec(text, /```toml meta\n/g, spans, true) !== null,
-    uriPath: metaValue(text, "uri-path"),
-    bag:     metaValue(text, "bag"),
+    meta:     maskedExec(text, META_OPEN_RE, spans, true) !== null,
+    uriPath: metaValue(text, spans, "uri-path"),
+    bag:     metaValue(text, spans, "bag"),
     // THE ARROW'S FAR SIDE IS A NAMED FIELD, and reading the token after `->` takes the name with it.
     // Every carrier in the corpus names that side, so an unnamed read returned `to=lar:///…` on 639 of
     // 639 files while the only vector for it built its fixture without the name and stayed green. The

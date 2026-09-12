@@ -33,6 +33,7 @@
  */
 
 import { fencedSpans, maskedExec, type MaskSpan } from "./meme-ast/fence-mask.js";
+import { META_OPEN_RE } from "./meta-fence.js";
 /**
  * The media type comes from the ONE place that spells it. A hand-spelled constant drifts the moment
  * the real one moves, and a `type` that no longer matches simply stops projecting — no throw, no
@@ -92,8 +93,10 @@ const SIGIL_FORMS: readonly { form: CarrierDeclarationForm; re: RegExp }[] = [
 const TID_TYPE_RE = new RegExp(String.raw`^\s*type\s*:\s*` + CARRIER_TYPE.replace("+", "\\+"), "m");
 /** The same fact as a toml key, inside the meta block. */
 const TOML_TYPE_RE = new RegExp(String.raw`^\s*type\s*=\s*"` + CARRIER_TYPE.replace("+", "\\+") + `"`, "m");
-/** The meta block's opener. A LABELLED fence carries slot identity; a plain ```toml fence does not. */
-const META_OPEN_RE = /```toml meta\s*\n/g;
+/** The meta block's opener — the ONE spelling, from `meta-fence.ts`. A LABELLED fence carries slot
+ *  identity; a plain ```toml fence does not. The local spelling admitted `\s*` before the newline,
+ *  which matches a newline itself: an opener followed by a blank line swallowed the blank into the
+ *  match and every offset taken from it shifted by a line. `[ \t]*` cannot. */
 /** The type spelling as a WHOLE line, either separator — what `standsAlone` holds a declaration to. */
 const ALONE_TYPE_RE = new RegExp(String.raw`^type\s*[:=]\s*"?` + CARRIER_TYPE.replace("+", "\\+") + `"?$`);
 

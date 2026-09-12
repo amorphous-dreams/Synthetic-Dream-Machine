@@ -46,6 +46,7 @@ const DECLARATION =
   '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
 
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
+import { META_OPEN_RE } from "./meta-fence.js";
 
 const SOH_OPENER_RE =
   /(<<\^)[ \t]*(?:code="(&#x(?:0001|0011);)"(?:[ \t]+namespace="([^"]*)")?|([^&\n]*?)(&#x(?:0001|0011);))/;
@@ -55,9 +56,11 @@ function decodeEntities(s: string): string {
   return s.replace(/&#x([0-9a-fA-F]+);/g, (_m, hex: string) => String.fromCodePoint(parseInt(hex, 16)));
 }
 
-/** The toml meta fence body (between the ```toml meta fences), or null if absent. */
+/** The toml meta fence body (between the ```toml meta fences), or null if absent.
+ *  THREE GROUPS, and callers index them: [1] opener, [2] body, [3] closer. The opener comes from the
+ *  one spelling; the closer is this reader's own and stays as it stands. */
 function metaFence(src: string): RegExpExecResult | null {
-  return /(```toml meta\n)([\s\S]*?)(\n```)/.exec(src);
+  return new RegExp(`(${META_OPEN_RE.source})([\\s\\S]*?)(\\n\`\`\`)`).exec(src);
 }
 type RegExpExecResult = RegExpExecArray;
 
