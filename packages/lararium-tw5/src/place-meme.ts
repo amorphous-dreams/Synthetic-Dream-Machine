@@ -178,6 +178,24 @@ export async function readMeme(
   return { text, canonicalHash: hash(text) };
 }
 
+/**
+ * THE REMOVAL — the meme's whole group (root · `#slot` fragments · `/path` children) tombstones
+ * through the sink. The same base law as a placement: a `baseHash` that fails to match the standing
+ * render answers `conflict` and removes nothing. `absent` when no root stands under the URI.
+ */
+export async function removeMeme(
+  input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
+  sink: MemeSink,
+): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string }> {
+  const hash = input.hash ?? defaultHash;
+  const { group, text } = await currentRender(input.uri, sink);
+  if (!group.includes(input.uri)) return { decision: "absent", tombstoned: [] };
+  const canonicalHash = hash(text);
+  if (input.baseHash && input.baseHash !== canonicalHash) return { decision: "conflict", tombstoned: [], canonicalHash };
+  for (const title of group) await sink.tombstone(title);
+  return { decision: "removed", tombstoned: group, canonicalHash };
+}
+
 /** The `$tw.wiki` skin — a live wiki, on the plain server or inside the island. */
 export function wikiMemeSink(wiki: Pick<TW5Wiki, "allTitles" | "getTiddler" | "addTiddler" | "deleteTiddler">): MemeSink {
   return {

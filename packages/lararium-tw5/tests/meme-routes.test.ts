@@ -7,6 +7,7 @@
 import { describe, test, expect } from "vitest";
 import * as put from "../src/routes/put-meme.js";
 import * as get from "../src/routes/get-meme.js";
+import * as del from "../src/routes/delete-meme.js";
 import { memePathOf } from "../src/place-meme.js";
 import { nativeDoorGate } from "../src/native-door-gate.js";
 import type { TiddlerFields } from "../src/deserializer.js";
@@ -186,5 +187,49 @@ describe("★ THE NATIVE DOOR — `bag` is user space; the container's name is t
     expect(landed(gate({ title: "t", fields: { bag: "default" } }, { title: "t", bag: "mine" }))).toEqual({ title: "t", fields: { bag: "default" } });
     expect(nativeDoorGate("not json", undefined, "default")).toEqual({ kind: "pass", data: "not json" });
     expect(nativeDoorGate("[1]", undefined, "default")).toEqual({ kind: "pass", data: "[1]" });
+  });
+});
+
+describe("★ DELETE /bags/:bag/memes/:scheme/:path — the root and its group go, nothing beside them ★", () => {
+  const fireDel = (w: ReturnType<typeof wiki>, opts: { kind?: string; uri?: string; ifMatch?: string } = {}) =>
+    new Promise<Reply>((resolve) => {
+      const reply: Reply = { status: 0, headers: {}, body: "" };
+      const response = {
+        writeHead: (status: number, headers: Record<string, string>) => { reply.status = status; reply.headers = headers; },
+        end: (body?: string) => { reply.body = body ?? ""; resolve(reply); },
+      };
+      const request = { headers: opts.ifMatch ? { "if-match": opts.ifMatch } : {} };
+      del.handler(request as never, response as never, { wiki: w, params: [opts.kind ?? "bags", "default", "lar", opts.uri ?? "t/x"] } as never);
+    });
+
+  test("204: the root and its `#/slot` children tombstone; CONTROL: a tiddler under the same prefix stays", async () => {
+    const w = wiki();
+    await fire(put, w, { data: meme(["a", "b"]) });
+    w.store.set("lar:///t/xy", { title: "lar:///t/xy", text: "a neighbour, not a child" });
+    expect(del.methods).toEqual(["DELETE"]);
+    const r = await fireDel(w);
+    expect(r.status).toBe(204);
+    expect([...w.store.keys()]).toEqual(["lar:///t/xy"]);
+  });
+
+  test("404 when nothing stands under the uri; the `/recipes/` form answers 404 as stock's delete does", async () => {
+    const w = wiki();
+    expect((await fireDel(w)).status).toBe(404);
+    await fire(put, w, { data: meme(["a"]) });
+    const r = await fireDel(w, { kind: "recipes" });
+    expect(r.status).toBe(404);
+    expect(w.store.size).toBe(2);
+  });
+
+  test("★ `If-Match` over a STALE base answers 412 and removes nothing; the current base removes ★", async () => {
+    const w = wiki();
+    await fire(put, w, { data: meme(["a"]) });
+    const stale = (await fire(get, w, {})).headers["ETag"]!;
+    await fire(put, w, { data: meme(["a", "b"]) });
+    expect((await fireDel(w, { ifMatch: stale })).status).toBe(412);
+    expect(w.store.size).toBe(3);
+    const fresh = (await fire(get, w, {})).headers["ETag"]!;
+    expect((await fireDel(w, { ifMatch: fresh })).status).toBe(204);
+    expect(w.store.size).toBe(0);
   });
 });

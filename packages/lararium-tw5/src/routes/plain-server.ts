@@ -20,9 +20,12 @@ import { reprDigestOf } from "@lararium/mesh/agile-digest";
 /** The one container name a plain server resolves. */
 export const HOST_ANCHOR = "default";
 
-/** The refusal for a container the server cannot name, or null when `default` is named. */
-export function containerRefusal(params: readonly string[]): string | null {
+/** The refusal for a container the server cannot name, or null when `default` is named. A skin that
+ *  addresses one container kind alone (DELETE writes a BAG, as stock's `delete-tiddler.js` does) names
+ *  it in `kinds`; the other kind then reads as a container the skin cannot resolve. */
+export function containerRefusal(params: readonly string[], kinds: readonly string[] = ["recipes", "bags"]): string | null {
   const [kind, name] = params;
+  if (kind === undefined || !kinds.includes(kind)) return `no route under /${kind ?? ""}/ (this skin addresses /${kinds.join("/ and /")}/ alone)`;
   if (name === HOST_ANCHOR) return null;
   return `no such ${kind === "recipes" ? "recipe" : "bag"}: ${name ?? ""} (this server names only ${HOST_ANCHOR})`;
 }

@@ -212,6 +212,28 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect((await http("GET", memePath("default", "recipes"))).status).toBe(200);
   });
 
+  test("★ DELETE /bags/default/memes/… → 204, the group gone; `/recipes/` → 404; a stale If-Match → 412 ★", async () => {
+    const uri = "lar:///t/gone";
+    const text = meme(["a", "b"]).replaceAll("t/x", "t/gone");
+    expect((await http("PUT", memePath("default", "bags", uri), { body: text })).status).toBe(200);
+    // CONTROL: a neighbour under the same prefix, never a child.
+    const neighbour = "lar:///t/gone-not";
+    await http("PUT", `/recipes/default/tiddlers/${encodeURIComponent(neighbour)}`, { body: JSON.stringify({ title: neighbour, text: "stays" }) });
+    expect((await titles()).filter((t) => t.startsWith(uri))).toEqual([uri, `${uri}#/a`, `${uri}#/b`, neighbour]);
+    const stale = (await http("GET", memePath("default", "bags", uri))).headers.get("etag")!;
+    expect((await http("PUT", memePath("default", "bags", uri), { body: text.replace("! b", "! b moved") })).status).toBe(200);
+    const conflict = await http("DELETE", memePath("default", "bags", uri), { headers: { "if-match": stale } });
+    expect(conflict.status, conflict.body).toBe(412);
+    const recipes = await http("DELETE", memePath("default", "recipes", uri));
+    expect(recipes.status).toBe(404);
+    expect((await titles()).filter((t) => t.startsWith(uri))).toHaveLength(4);
+    const fresh = (await http("GET", memePath("default", "bags", uri))).headers.get("etag")!;
+    const gone = await http("DELETE", memePath("default", "bags", uri), { headers: { "if-match": fresh } });
+    expect(gone.status, gone.body).toBe(204);
+    expect((await titles()).filter((t) => t.startsWith(uri))).toEqual([neighbour]);
+    expect((await http("DELETE", memePath("default", "bags", uri))).status).toBe(404);
+  });
+
   test("CONTROL (measured): the native tiddler PUT of the same meme text lands ONE unsplit tiddler", async () => {
     const title = "lar:///t/native";
     const text = meme(["a", "b"]).replaceAll("t/x", "t/native");
