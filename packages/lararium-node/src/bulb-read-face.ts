@@ -5,6 +5,14 @@
  *   GET /bulb/manifest    → the bulb manifest (cid index, JSON)
  *   GET /bulb/pointer     → a signed monotone pointer over the manifest cid (corm-lease freshness / anti-rollback)
  *   GET /bulb/<cid>.bin   → a content-addressed bulb blob (seed · bootstrap · cas-manifest · each engine/plugin blob)
+ *   GET /cas/<cid>        → a PUBLIC-tier blob this Herm holds in its cleartext `cid/` (the Herm re-share, below)
+ *
+ * THE HERM RE-SHARE (basket-one #/the-fetch-door: "a public blob travels to a Herm before any hearth serves
+ * it"). A fleet peer stages a public blob and goes dark; its bytes reached this Herm over Socket B and landed
+ * write-through in `cid/`. A stranger fetches them here by cid — IFF a pointer in a PUBLIC-tier bag names the
+ * cid (`publicCasShore`: the derived reference count → the bag → its declared tier). A cid named only from a
+ * private or contract tier, or named by nothing, draws the SAME 404 the bulb answers, so a withholding never
+ * says which gate refused. The bulb route itself stays the boot CAS alone.
  *
  * PUBLIC-FLOOR ONLY. The bulb carries ALL-PUBLIC boot material, so it rides THIS floor exclusively — NEVER the cad
  * carriage (Socket B). Write-refusal holds by construction: only GET, bytes named by their own hash, no sync session.
@@ -20,7 +28,11 @@
 import type { Server, IncomingMessage, ServerResponse } from "node:http";
 import { readFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { buildOraclePointer, oraclePointerId, sha256HexBytesSync, utf8Bytes, type OraclePointer } from "@lararium/mesh";
+import {
+  buildOraclePointer, oraclePointerId, sha256HexBytesSync, utf8Bytes, casReferences,
+  type OraclePointer, type CasReferenceEntry, type CapTier,
+} from "@lararium/mesh";
+import { readCasBlobFromFs } from "./node-cas.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { buildBulb, type BulbArtifact, type BulbBlob, type BulbManifest } from "./bulb.js";
 import type { OracleReadFace } from "./oracle-read-face.js";
@@ -37,6 +49,40 @@ interface PersistedBulbPointerState {
   readonly cid:           string | null;   // the last published manifest cid (a real bulb change vs a reboot)
 }
 
+/** The public-CAS shore the read-face re-shares from: the bytes a cid names, and whether a PUBLIC pointer names it. */
+export interface PublicCasShore {
+  readonly read:     (cid: string) => Uint8Array | null;
+  /** True IFF at least one pointer in a bag whose declared tier reads PUBLIC names the cid. */
+  readonly isPublic: (cid: string) => Promise<boolean>;
+}
+
+/**
+ * The shore over a vessel's cleartext `cid/` + its live records: a cid reads PUBLIC when a pointer names it from a
+ * bag whose tier reads `public` (`bagTier` — the same reader the crossing gate uses; a null tier reads VEIL, the
+ * tightest, so an undeclared bag never leaks). The reference count derives at each ask — never cached — so a
+ * DROP or a re-tiering answers on the next fetch.
+ */
+export function publicCasShore(opts: {
+  readonly casDir:     string;
+  readonly references: () => Promise<Iterable<CasReferenceEntry>> | Iterable<CasReferenceEntry>;
+  readonly bagTier:    (bagUrl: string) => CapTier | null;
+}): PublicCasShore {
+  return {
+    read: (cid) => readCasBlobFromFs(cid, opts.casDir),
+    isPublic: async (cid) => {
+      const entries = [...(await opts.references())];
+      const names = casReferences(entries).get(cid);
+      if (!names || names.size === 0) return false;
+      for (const e of entries) {
+        if (!e.bagId) continue;
+        const address = `${e.bagId} ${e.title}`;
+        if (names.has(address) && opts.bagTier(e.bagId) === "public") return true;
+      }
+      return false;
+    },
+  };
+}
+
 /**
  * Mount the bulb read-face. Content-addresses the bulb ONCE (the held snapshot is immutable), signs a monotone
  * pointer over the manifest cid, and re-issues the freshness lease on the Ea breath. Returns a disposable face.
@@ -47,8 +93,10 @@ export async function mountBulbReadFace(args: {
   readonly signerSeed: Uint8Array;
   readonly storageDir: string;
   readonly onLog?:     (line: string) => void;
+  /** The Herm re-share shore; absent, `/cas/<cid>` answers the bulb's 404 for every cid. */
+  readonly publicCas?: PublicCasShore;
 }): Promise<OracleReadFace> {
-  const { httpServer, bulb, signerSeed, storageDir, onLog } = args;
+  const { httpServer, bulb, signerSeed, storageDir, onLog, publicCas } = args;
   const { manifest, blobs } = buildBulb(bulb);
   const manifestBytes = utf8Bytes(JSON.stringify(manifest));
   const manifestCid   = sha256HexBytesSync(manifestBytes);
@@ -91,12 +139,27 @@ export async function mountBulbReadFace(args: {
     "access-control-allow-methods": "GET, HEAD, OPTIONS",
     "access-control-allow-headers": "*",
   };
+  const refuse = (res: ServerResponse): void => {
+    res.writeHead(404, { ...CORS, "content-type": "text/plain" }); res.end("unknown or stale bulb cid");
+  };
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
-    if (!pathname.startsWith("/bulb/")) return;   // not ours — leave for other handlers
+    if (!pathname.startsWith("/bulb/") && !pathname.startsWith("/cas/")) return;   // not ours — leave for other handlers
     if (req.method === "OPTIONS") { res.writeHead(204, CORS); res.end(); return; }
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405, { ...CORS, "content-type": "text/plain" }); res.end("method not allowed"); return;
+    }
+    const cas = pathname.match(/^\/cas\/([0-9a-f]{64})$/);
+    if (pathname.startsWith("/cas/")) {
+      if (!cas || !publicCas) { refuse(res); return; }
+      const cid = cas[1]!;
+      void publicCas.isPublic(cid).then((isPublic) => {
+        const bytes = isPublic ? publicCas.read(cid) : null;
+        if (!bytes) { refuse(res); return; }
+        res.writeHead(200, { ...CORS, "content-type": "application/octet-stream", "cache-control": "public, immutable, max-age=31536000" });
+        res.end(Buffer.from(bytes));
+      }).catch(() => refuse(res));   // a torn reference read withholds — never serves on a guess
+      return;
     }
     if (pathname === "/bulb/manifest") {
       res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
@@ -113,7 +176,7 @@ export async function mountBulbReadFace(args: {
       res.writeHead(200, { ...CORS, "content-type": "application/octet-stream", "cache-control": "public, immutable, max-age=31536000" });
       res.end(Buffer.from(bytes)); return;
     }
-    res.writeHead(404, { ...CORS, "content-type": "text/plain" }); res.end("unknown or stale bulb cid");
+    refuse(res);
   };
   httpServer.on("request", onRequest);
 

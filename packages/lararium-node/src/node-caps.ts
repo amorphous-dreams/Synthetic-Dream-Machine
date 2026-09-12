@@ -51,7 +51,7 @@ import {
   type DaemonCapDeps, type VesselDaemonVm,
 } from "@lararium/tw5";
 import { mountFlowMapReadFace, type OracleReadFace } from "./oracle-read-face.js";
-import { mountBulbReadFace } from "./bulb-read-face.js";
+import { mountBulbReadFace, type PublicCasShore } from "./bulb-read-face.js";
 import type { BulbArtifact } from "./bulb.js";
 
 /**
@@ -110,12 +110,15 @@ export function flowMapReadFaceCap(deps: {
  *  sovereign hearth (serve FIRE, never KEY). Requires substrate only (it reads the held artifact, mints nothing). */
 export function bulbCap(deps: {
   httpServer: Server; bulb: BulbArtifact; signerSeed: Uint8Array; storageDir: string; onLog?: (line: string) => void;
+  /** The Herm re-share shore (`/cas/<cid>` for PUBLIC-tier blobs this vessel holds); absent → the route refuses. */
+  publicCas?: PublicCasShore;
 }): CapModule {
   return {
     id: CAP.bulb, requires: [CAP.substrate],
     build: async () => mountBulbReadFace({
       httpServer: deps.httpServer, bulb: deps.bulb, signerSeed: deps.signerSeed, storageDir: deps.storageDir,
       ...(deps.onLog ? { onLog: deps.onLog } : {}),
+      ...(deps.publicCas ? { publicCas: deps.publicCas } : {}),
     }),
     dispose: (face) => (face as OracleReadFace).dispose(),
   };
@@ -144,6 +147,8 @@ export interface HermStackDeps extends DaemonCapDeps {
   /** The HELD bulb this Herm serves by cid over the public floor. Absent → no `/bulb/*` face (a Herm with no
    *  genesis to hand). Present → a stranger pulls it + kindles their OWN sovereign hearth (serve fire, never key). */
   readonly bulb?:          BulbArtifact;
+  /** The Herm re-share shore the bulb face serves `/cas/<cid>` from — PUBLIC-tier blobs only. */
+  readonly publicCas?:     PublicCasShore;
   /** Role caps composed ALONGSIDE the wayfarer stack — the same channel `composeCoreVessel` opens to the
    *  hearth and the leaf, so all three vessels differ ONLY by what their opener passes, never by a forked
    *  cap list. A parity gap can then only ever read as an extraCaps gap. */
@@ -193,6 +198,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     ...(d.bulb ? [bulbCap({
       httpServer: d.httpServer, bulb: d.bulb, signerSeed: d.signerSeed, storageDir: d.storageDir,
       ...(d.onLog ? { onLog: d.onLog } : {}),
+      ...(d.publicCas ? { publicCas: d.publicCas } : {}),
     })] : []),
     ...(d.extraCaps ?? []),
   ]);

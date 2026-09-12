@@ -40,6 +40,7 @@ import {
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
+  makeRealmPlane, type RealmPlaneHolder, ed25519SignerFromSeed,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage, pluginCidsFromIslandBlobs,
@@ -85,6 +86,7 @@ import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
 import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
+import { publicCasShore } from "./bulb-read-face.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusConvergenceKeyring } from "./nexus-convergence-keyring.js";
@@ -125,7 +127,7 @@ import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { generateOrLoadVesselIdentity, loadVesselSigningSeed } from "./node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { DaemonAuthGate }                           from "./daemon-auth-gate.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
@@ -390,6 +392,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // below (the nexus pubkey it addresses the federatable planes from). Null keeps the pre-classification
   // boot window inert (no peer gated) — correct: no doc crosses to any WS peer until the gate arms anyway.
   let selfSlotFedGate: FederationGate | null = null;
+  // The REALM plane — the relation's shared CRDT (realm-bag-brief). Stood once the oracle plane loads and a
+  // charter names a realm; INERT (null) on a vessel outside every relation. Its gate composes ATOP the
+  // deterministic shelf: the realm doc and each steward-registered bag's doc federate to a MEMBER peer alone.
+  let realmPlane: RealmPlaneHolder | null = null;
   // The nexus-doc MEMBERSHIP consult — the carry-split's member gate (a cross-operator MEMBER blind-transits a
   // sealed plane; a STRANGER reaches only the public shelf). Forward-declared (the sharePolicy closes over
   // it) and STOOD once the operator's own nym is loaded, below. Null keeps every cross-operator STRANGER
@@ -625,6 +631,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
             antigen: antigenHolder, membership: nexusMembershipHolder,
             setPosture: (p) => { federationPosture = p; },
           });
+          await realmPlane?.refresh(readNexusDoc(sealHome));
         },
         onLog:        (line) => console.log(`[carriage] ${line}`),
       })
@@ -1032,6 +1039,24 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // relayGatePubKey — so node + its browser leaves resolve the identical crossroads doc. The daemon core
     // splices the crossroads bag into the recipe + registerBags for either vessel.
     await registerCrossroadsInOracle(repo, assembly.islandHandle, vesselIdentity.verifyingKey);
+    // ── THE REALM PLANE — the relation's shared CRDT, materialized on every member's boot ──────────────
+    // The realm doc's id derives from the charter both stewards hold (its genesis epoch), so A and B compute
+    // ONE address from the charter alone. A bag REGISTERS on it (`realm-bag`), and the daemon island's reach
+    // (`meme get --bag <x>`) walks this plane FIRST through the pointer this stand pins on the oracle plane.
+    // The wire gate widens the self-slot shelf by the member-read lane and nothing else: a stranger draws
+    // the same denial as any private plane. A vessel with no charter stands no realm — the shelf stays as it was.
+    if (!realmPlane && nexusMembership && selfSlotFedGate) {
+      realmPlane = makeRealmPlane({
+        repo,
+        oracleHandle:     assembly.islandHandle,
+        crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(vesselIdentity.verifyingKey), "board:crossroads"),
+        membership:       nexusMembership,
+        base:             selfSlotFedGate,
+        onLog:            (line) => console.log(`[realm] ${line}`),
+      });
+      selfSlotFedGate = realmPlane.gate;
+      await realmPlane.refresh(readNexusDoc(sealHome));
+    }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it
     // stands lands in the BOOTSTRAP, which is this island's cold-start seed and reaches no registry. The
@@ -1525,7 +1550,39 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         // Reassign the live posture the sharePolicy closure reads each call (fail-closed PRIVATE on a torn read).
         setPosture:  (p) => { federationPosture = p; },
       });
-      return { verb: "nexus-refresh", ...r };
+      // A charter imported after boot names a realm this vessel never stood — stand it now (idempotent).
+      await realmPlane?.refresh(readNexusDoc(sealHome));
+      return { verb: "nexus-refresh", ...r, realm: realmPlane?.realmId() ?? null, realmDoc: realmPlane?.realmUrl() ?? null };
+    });
+
+    // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief, the
+    // 2026-09-11 ruling): the record `{ bagUri, docUrl, keptBy, readTier: contract }` signed by the steward's
+    // persona root, landed on the realm doc, and announced on @crossroads as `{ bagUri, keptBy }` alone. The
+    // bag's doc is the one this vessel's oracle registry names for the URI — the steward's OWN doc becomes
+    // the ford's one book, read by every contracted member, written by the stewards.
+    registry.register("realm-bag", async (args) => {
+      if (!realmPlane) throw new Error("realm-bag: the realm plane never stood on this vessel (no oracle plane at boot)");
+      const bagUri = typeof args["bag"] === "string" ? (args["bag"] as string).trim() : "";
+      if (!bagUri) throw new Error("realm-bag: `bag` required (the bag's lar: URI, e.g. lar:///ha.ka.ba/bags/lares)");
+      const handleIndex = Number.isFinite(args["index"]) ? Number(args["index"]) : 0;
+      const oracleDoc = assembly.islandHandle.doc();
+      const catalogDoc = assembly.catalogHandle.doc();
+      const docUrl = tiddlerText(oracleDoc?.tiddlers?.[bagUri]) ?? tiddlerText(catalogDoc?.tiddlers?.[bagUri]) ?? null;
+      if (!docUrl) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
+      const nym = await loadPersonaGroupRootVerifyingKey(storageDir, handleIndex);
+      if (!nym) throw new Error(`realm-bag: no persona root at index ${handleIndex} — a bag is kept by a named steward`);
+      const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, handleIndex));
+      const rec = await realmPlane.register({ bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }] });
+      return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy, readTier: rec.readTier };
+    });
+    // realm-bags — the STANDING registrations this vessel's realm carries (counted and folded; an equivocal
+    // bag never lists). Verdict-free: it reads the realm doc as-of-last-sync.
+    registry.register("realm-bags", async () => {
+      const standing = realmPlane ? await realmPlane.standing() : new Map();
+      return {
+        verb: "realm-bags", realm: realmPlane?.realmId() ?? null, realmDoc: realmPlane?.realmUrl() ?? null,
+        bags: [...standing.values()].map((r) => ({ bag: r.bagUri, doc: r.docUrl, keptBy: r.keptBy, readTier: r.readTier })),
+      };
     });
 
     // nexus-rekey — the immune keel's RE-KEY tooth at the Herm's OWN tier: roll a resource's LEASE EPOCH
@@ -1908,6 +1965,8 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     ...(opts.pullIntervalMs !== undefined ? { pullIntervalMs: opts.pullIntervalMs } : {}),
     // Serve the HELD bulb by cid over the public floor (the OPEN path) — present only when the genesis stands.
     ...(p.bulb ? { bulb: p.bulb } : {}),
+    // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through over Socket B) IFF the crossroads board — the public plane by construction — names the cid.
+    publicCas: publicCasShore({ casDir: casDirForStorage(opts.storageDir), references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: record as { tiddler: Record<string, unknown> } })), bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null) }),
     onLog:       (line) => console.log(`[herm] ${line}`),
   });
   p.emit("vessel-ready");
