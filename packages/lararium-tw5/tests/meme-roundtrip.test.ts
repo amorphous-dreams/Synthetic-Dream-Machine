@@ -82,7 +82,7 @@ describe("parse∘render — the recompose inverse on the boot meme", () => {
 // ---------------------------------------------------------------------------
 
 const TEACHING_URI = "lar:///ha.ka.ba/lares/memory/fence-teaching";
-const TEACHING = `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+const TEACHING = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="${"&#x0001;"}" from="?" -> to="${TEACHING_URI}">>
 \`\`\`toml meta
@@ -148,7 +148,7 @@ describe("fence-mask — quoted sigils never frame, split, or expand", () => {
 
 describe("Kapu SOH variant survives the round trip", () => {
   const KAPU_URI = "lar:///ha.ka.ba/lares/memory/kapu-carrier";
-  const KAPU = `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+  const KAPU = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="${"&#x0011;"}" namespace="⊙" from="?" -> to="${KAPU_URI}">>
 \`\`\`toml meta
@@ -167,7 +167,7 @@ kapu body.
   test("the DC1 code and namespace re-emit on the SOH line", () => {
     const records = recordsOf(KAPU, KAPU_URI);
     const rendered = expandMemeRefs(readerOf(records), KAPU_URI)!;
-    expect(rendered.startsWith(`<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+    expect(rendered.startsWith(`<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="${"&#x0011;"}" namespace="⊙" from="?" -> to="${KAPU_URI}">>`)).toBe(true);
     expect(rendered).toBe(expandMemeRefs(readerOf(recordsOf(rendered, KAPU_URI)), KAPU_URI));

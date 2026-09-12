@@ -80,6 +80,14 @@ export interface LarAuthMsg {
    * hearth root (verifyDeviceDelegation); a peer that sends none behaves exactly as before.
    */
   edge?:       DeviceDelegationTiddler;
+  /**
+   * OPTIONAL CONTRACT edge — a CROSS-OPERATOR's own persona-root-signed edge over its OWN vessel key, the
+   * credential the face carries (membership-doctrine #/the-carried-cap). Never the fleet slot above: that
+   * one chains to the gate's pinned KEL and a foreign root anergizes the socket whole. The gate proves this
+   * one offline and keeps the nym beside the identifier; the membership consult pins that nym against the
+   * contracted member set. A peer that sends none behaves exactly as before.
+   */
+  contractEdge?: DeviceDelegationTiddler;
   version:     AuthWireVersion;
 }
 
@@ -313,6 +321,8 @@ export async function buildAuthResponse(parts: {
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge ridden alongside the proof. */
   edge?:       DeviceDelegationTiddler;
+  /** OPTIONAL contract edge — the cross-operator credential, in its own slot. */
+  contractEdge?: DeviceDelegationTiddler;
 }): Promise<LarAuthMsg> {
   const proof = authProofBytes({
     nonce:      parts.nonce,
@@ -329,6 +339,7 @@ export async function buildAuthResponse(parts: {
     sig,
     ts:          parts.ts,
     ...(parts.edge ? { edge: parts.edge } : {}),
+    ...(parts.contractEdge ? { contractEdge: parts.contractEdge } : {}),
     version:     AUTH_WIRE_VERSION,
   };
 }
@@ -357,6 +368,8 @@ export interface PeerHandshake {
   sign:        (bytes: Uint8Array) => Promise<string> | string;
   /** OPTIONAL device-delegation edge — a device-admitted leaf rides its edge to the gate. */
   edge?:       DeviceDelegationTiddler;
+  /** OPTIONAL contract edge — a contracted operator presents its own root's edge over its vessel key. */
+  contractEdge?: DeviceDelegationTiddler;
   /** Clock for the response timestamp (default: now, ISO). */
   now?:        () => string;
 }
@@ -380,6 +393,7 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean;
     ts:          (h.now ?? (() => new Date().toISOString()))(),
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
+    ...(h.contractEdge ? { contractEdge: h.contractEdge } : {}),
   });
   h.send(auth);
   const verdict = await h.recv();
@@ -403,4 +417,7 @@ export interface LeafIdentity {
   sign:        (bytes: Uint8Array) => Promise<string>;
   /** OPTIONAL device-delegation edge — a device-admitted leaf presents its edge to admit. */
   edge?:       DeviceDelegationTiddler;
+  /** OPTIONAL contract edge — a self-founded operator presents its OWN root's edge over its vessel key to a
+   *  hearth it contracted with; the fleet slot above stays empty on that dial. */
+  contractEdge?: DeviceDelegationTiddler;
 }

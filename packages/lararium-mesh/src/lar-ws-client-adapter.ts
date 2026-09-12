@@ -107,6 +107,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
       aud:         this.#aud,
       sign:        this.#identity.sign,
       ...(this.#identity.edge ? { edge: this.#identity.edge } : {}),
+      ...(this.#identity.contractEdge ? { contractEdge: this.#identity.contractEdge } : {}),
       ...(this.#now ? { now: this.#now } : {}),
     };
 

@@ -43,7 +43,7 @@
  * against the one authority, so this copy cannot drift without a witness saying so.
  */
 const DECLARATION =
-  "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>";
+  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
 
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
 

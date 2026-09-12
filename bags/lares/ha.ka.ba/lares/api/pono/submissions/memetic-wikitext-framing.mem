@@ -1,8 +1,8 @@
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing">>
 ```toml meta
-type = "text/memetic-wikitext+tiddlywiki"
+type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing"
 ```
 
@@ -159,7 +159,7 @@ without entering it; everything inside defers to [MEMETIC-WIKITEXT].
 Every carrier opens by naming the grammar that reads it:
 
 ```
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 ```
 
 **The root name carries an RFC 6839 structured syntax suffix.** A `+suffix` names the base syntax a
@@ -1019,6 +1019,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - `"lar:///ha.ka.ba/lares/api/pono/kapu"`
 - `"lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
 
-<<^ code="&#x0003;">>ni:///sha-256;7bgJjVMYKXgR-Jb5ysFRy2jP4g63dPds3nW5eCLt7Cs
+<<^ code="&#x0003;">>ni:///sha-256;6xbpqP6YKR8zf2ZnACaZhAh3UeyMqCj8sg1SaAAcVK0
 
 <<^ code="&#x0004;" -> to="?">>

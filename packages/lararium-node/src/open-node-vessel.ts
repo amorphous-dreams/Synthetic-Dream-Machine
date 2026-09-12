@@ -33,7 +33,7 @@ import type {
   CompositeStore, DiskMirrorGrant,
 } from "@lararium/mesh";
 import {
-  makeDurableMailbox,
+  makeDurableMailbox, verifyingKeyFromDid,
   type DurableMailbox,
   emptyLarDoc, mutableLarRecord, tiddlerText,
   ORACLE_DOC_URI, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
@@ -82,6 +82,7 @@ import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership } from "./nexus-carriage.js";
+import { nodeShareConfig } from "./node-share-config.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
@@ -127,7 +128,7 @@ import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
 import { DaemonAuthGate }                           from "./daemon-auth-gate.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
@@ -372,6 +373,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // an admitted same-operator peer. A WS peer absent here (or present-but-not-same-operator) reads as the
   // stricter cross-operator class at the sharePolicy (fail-closed).
   const peerClassMap = new Map<string, PeerClass>();
+  // The CONTRACT nym map — peerId → the persona-root nym the peer's contract edge proved at the gate. Keyed in
+  // the same microtask; the membership consult reads it AHEAD of the raw wire key (the vessel key names a
+  // device, the nym an operator — `nexus-carriage.ts`). Absent for every peer that presented no contract edge.
+  const peerContractNymMap = new Map<string, string>();
   network.on("peer-candidate", ({ peerId }: { peerId: string }) => {
     queueMicrotask(() => {
       const socket = (network.sockets as Record<string, unknown>)[peerId];
@@ -380,6 +385,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         if (identHex) peerIdentifierMap.set(peerId, identHex);
         const cls = authGate.getClassForSocket(socket as Parameters<typeof authGate.getClassForSocket>[0]);
         if (cls) peerClassMap.set(peerId, cls);
+        const contractNym = authGate.getContractNymForSocket(socket as Parameters<typeof authGate.getContractNymForSocket>[0]);
+        if (contractNym) peerContractNymMap.set(peerId, contractNym);
       }
     });
   });
@@ -440,7 +447,19 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // run a gate). Both are the same shore at two resolutions — the V5 KeyhiveIdentitySlot
     // composes verifyCapability(docUrl, ability) as the INNER ring here (per-doc caps
     // behind the per-peer admission), matching the browser's FederationGate call site.
-    sharePolicy: async (peerId, documentId) => {
+    //
+    // ONE VERDICT, BOTH HOOKS. A legacy `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
+    // ACCESS wide open, so a peer that REQUESTS a doc by id pulls it whatever the verdict said — and every
+    // `bags/*` id derives from the shared genesis (node-share-config.ts, measured in
+    // share-policy-is-access.test.ts). The verdict below is an ACCESS verdict; `nodeShareConfig` seats it on both.
+    shareConfig: nodeShareConfig(async (peerId, documentId) => {
+      // THE ADMISSION LANDS FIRST. The WS adapter emits `peer-candidate` BEFORE it keys the socket into
+      // `network.sockets`, and the Repo's listener resolves this verdict synchronously inside that emit — so a
+      // read of `network.sockets[peerId]` here answered `undefined` and the peer read as an in-process house
+      // member, for every doc the vessel held at that instant. The identifier/class/contract-nym maps above
+      // fill in a microtask queued during the same emit; yielding one microtask here lets them land before a
+      // single byte is decided (measured: a stranger at the floor read a private plane).
+      await new Promise<void>((settle) => queueMicrotask(settle));
       const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
       // OUTER peer-admission gate (unchanged): a WS peer that never passed the DaemonAuthGate is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
@@ -469,7 +488,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         peerId,
         documentId: documentId as DocumentId | undefined,
       });
-    },
+    }),
   });
   emit("repo-open");
 
@@ -539,6 +558,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const nexusMembershipHolder = makeNexusMembership({
     sealHome,
     peerIdentifierMap,
+    peerContractNymMap,
     repo,
     nexusPubkey:       vesselIdentity.verifyingKey,
   });
@@ -679,6 +699,17 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // Automerge `/ws` relay (Socket A) — the SAME transport the server adapter answers on, SEPARATE from the carriage
   // relay (Socket B). REAL crypto: the outbound proof binds to the peer's gate key (out-of-band, never the wire) and
   // carries the operator's own identity, never a forged one. ABSENT the config → no adapter, no dial, no change.
+  /** Does THIS vessel hold the persona root that signed `edge`? True names a self-founded operator's own edge
+   *  (a contract credential toward any other hearth); false names an admit edge some hearth's root issued. */
+  const holdsRootOf = async (edge: DeviceDelegationTiddler): Promise<boolean> => {
+    let signer: string;
+    try { signer = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return false; }
+    for (const index of await listPersonaRoots(storageDir)) {
+      const key = await loadPersonaGroupRootVerifyingKey(storageDir, index);
+      if (key && key.toLowerCase() === signer) return true;
+    }
+    return false;
+  };
   const joinSyncUrl    = opts.joinSyncUrl    ?? process.env["LAR_JOIN_SYNC"] ?? null;
   const joinGatePubKey = opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? null;
   const joinDocUrl     = opts.joinDocUrl     ?? process.env["LAR_JOIN_DOC"]  ?? null;
@@ -968,23 +999,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
     const daemonDoc = (await readDaemonDoc()).doc();
-    // ── The CLIENT dial-out fires here (config read above): present the ContactCard + the self device edge ──
-    if (joinSyncUrl) {
-      try {
-        const leafIdentity = await loadLeafIdentity(storageDir);
-        const selfEdge = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined;
-        nexusDial = maybeStartNexusClientDial({
-          repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey,
-          identity: selfEdge ? { ...leafIdentity, edge: selfEdge } : leafIdentity,
-          ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
-          onLog: (line) => console.log(`[nexus-join] ${line}`),
-        });
-        console.log(`[nexus-join] presenting ${selfEdge ? "the device-delegation edge (fleet)" : "the ContactCard alone (no self edge — cross-operator floor)"}`);
-      } catch (e) {
-        console.log(`[nexus-join] dial-out skipped — leaf identity unavailable (run \`lares vessel found\`): ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
-
     const personaGroupDocIdHex   = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_DOC_ID_TIDDLER])   ?? undefined;
     const personaGroupAgentIdHex = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_AGENT_ID_TIDDLER]) ?? undefined;
     const meshCabalDocIdHex     = tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
@@ -1056,6 +1070,42 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       });
       selfSlotFedGate = realmPlane.gate;
       await realmPlane.refresh(readNexusDoc(sealHome));
+    }
+
+    // ── The CLIENT dial-out fires here (config read above): present the ContactCard + the self device edge ──
+    // AFTER THE BOARDS THIS VESSEL DERIVES FROM ITS OWN KEY STAND (crossroads · realm). A find that a connected
+    // peer answers "unavailable" settles before the local materialize, and the island that later asks for that
+    // board reads the settled verdict, never the doc — measured as a fatal `slot bags/crossroads unavailable —
+    // the peer answered WITHOUT doc` on a cross-operator dial (a foreign hearth answers a stranger fast). The
+    // dial follows the boards, so no peer can answer for a doc this vessel mints itself.
+    // WHICH SLOT THE EDGE RIDES. The self edge is one signed object read two ways. Signed by a root THIS
+    // vessel does not hold, it is an ADMIT — a hearth's root licensed this device — and it presents in the
+    // FLEET slot, where the peer's keyholder chains it to its pinned KEL and vouches `same-operator`. Signed by
+    // a root this vessel HOLDS, it is the vessel's own founding — a fleet credential for a fleet it never dials
+    // (a hearth dials none of its own leaves) — and presenting it in the fleet slot to another operator's hearth
+    // draws "operator is not the pinned root" and anergizes the socket whole. That edge presents in the
+    // CONTRACT slot instead: the peer admits the ContactCard at the cross-operator floor, proves the edge
+    // offline, and its membership consult binds the wire key to the nym `accept-carriage` contracted under.
+    if (joinSyncUrl) {
+      try {
+        const leafIdentity = await loadLeafIdentity(storageDir);
+        const selfEdge = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined;
+        const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
+        nexusDial = maybeStartNexusClientDial({
+          repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey,
+          identity: selfEdge
+            ? (selfSigned ? { ...leafIdentity, contractEdge: selfEdge } : { ...leafIdentity, edge: selfEdge })
+            : leafIdentity,
+          ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
+          onLog: (line) => console.log(`[nexus-join] ${line}`),
+        });
+        console.log(`[nexus-join] presenting ${
+          !selfEdge   ? "the ContactCard alone (no self edge — cross-operator floor)"
+          : selfSigned ? "the contract edge (this vessel's own root signed it — cross-operator; the peer's board binds the nym)"
+          :              "the device-delegation edge (fleet)"}`);
+      } catch (e) {
+        console.log(`[nexus-join] dial-out skipped — leaf identity unavailable (run \`lares vessel found\`): ${e instanceof Error ? e.message : String(e)}`);
+      }
     }
     // ── THE BOOTSTRAP SEEDS; THE CATALOG PLANE REGISTERS ────────────────────────────────────────
     // A face is lit by `lares persona new 0` — a CLI act, on a vessel that is not running — so the plane it

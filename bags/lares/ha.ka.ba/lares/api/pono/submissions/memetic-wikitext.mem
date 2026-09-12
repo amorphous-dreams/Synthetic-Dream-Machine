@@ -1,8 +1,8 @@
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext">>
 ```toml meta
-type = "text/memetic-wikitext+tiddlywiki"
+type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/api/pono/submissions/memetic-wikitext"
 ```
 
@@ -547,7 +547,7 @@ lineage; the degradation property states the warrant.
 A carrier with an identity block, a worksite, and a typed edge — opening on the declaration every
 carrier states first ([FRAMING] #declaration-register):
 ````
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/example">>
 ```toml meta
@@ -647,6 +647,6 @@ A canvas reaction wire (flow surface):
 - `"lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"`
 - `"lar:///ha.ka.ba/lares/api/pono/attention-scale"`
 
-<<^ code="&#x0003;">>ni:///sha-256;xUTgjx4I0WhV4_wing3kxT87RO807okvQ3SAhuat8pI
+<<^ code="&#x0003;">>ni:///sha-256;ctELheZcB5Tfr8JkcTrDtYVcgNyHJ0sZcYOCZ9NpvhM
 
 <<^ code="&#x0004;" -> to="?">>

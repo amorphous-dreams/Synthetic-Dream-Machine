@@ -47,14 +47,14 @@ function makeStubShore(opts: {
 // the V3 plumbing (gate forwards {nonce, sig, ts} to the keyholder worker).
 function makeCapturingShore(id = "0xaabbcc"): {
   shore: AuthVerifierShore;
-  calls: Array<{ bagUrl: string; access: string; proof?: AuthProofWire }>;
+  calls: Array<{ bagUrl: string; access: string; proof?: AuthProofWire; edge?: unknown }>;
 } {
-  const calls: Array<{ bagUrl: string; access: string; proof?: AuthProofWire }> = [];
+  const calls: Array<{ bagUrl: string; access: string; proof?: AuthProofWire; edge?: unknown }> = [];
   return {
     calls,
     shore: {
-      async verify(_cardBytes, bagUrl, access, proof) {
-        calls.push({ bagUrl, access, ...(proof ? { proof } : {}) });
+      async verify(_cardBytes, bagUrl, access, proof, edge) {
+        calls.push({ bagUrl, access, ...(proof ? { proof } : {}), ...(edge ? { edge } : {}) });
         return { ok: true, identifier: id };
       },
     },
@@ -347,5 +347,60 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
     ws.terminate();
     await new Promise<void>((r) => setTimeout(r, 50));
     expect(gate.clients.size).toBe(0);
+  });
+
+  // ── THE CONTRACT SLOT — a cross-operator's persona-root-signed edge over its OWN vessel key ─────────────
+  // It never reaches the fleet verifier (that slot chains to THIS hearth's KEL and would anergize the socket
+  // whole); the gate proves it offline and keeps the nym it proves beside the identifier for the consult.
+  test("a lar:auth carrying a contractEdge: the gate keeps the proven nym for the socket; the shore sees NO fleet edge", async () => {
+    const { buildDeviceDelegation } = await import("@lararium/mesh");
+    const ed = await import("@noble/ed25519");
+    const rootSeed   = new Uint8Array(32).fill(21);
+    const vesselSeed = new Uint8Array(32).fill(22);
+    const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+    const rootKey   = toHex(await ed.getPublicKeyAsync(rootSeed));
+    const vesselKey = toHex(await ed.getPublicKeyAsync(vesselSeed));
+    const now = new Date();
+    const contractEdge = await buildDeviceDelegation({
+      personaRootSeed: rootSeed, deviceVerifyingKey: vesselKey, hearthTrueName: "",
+      issuedAt: new Date(now.getTime() - 60_000).toISOString(), expiresAt: new Date(now.getTime() + 3_600_000).toISOString(), boundEpoch: 0,
+    });
+    const { shore, calls } = makeCapturingShore(`prefix:${vesselKey}`);
+    gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
+    const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
+
+    const ws   = await connect(serverInfo.port);
+    const chal = await nextMessage(ws) as { nonce: string };
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: now.toISOString(), contractEdge }));
+    await nextMessage(ws); // auth-ok
+    const serverSocket = await admitted;
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.edge).toBeUndefined();                                  // CONTROL: the fleet slot stays empty
+    expect(gate.getContractNymForSocket(serverSocket)).toBe(rootKey);        // THE RED
+    expect(gate.getIdentifierForSocket(serverSocket)).toBe(`prefix:${vesselKey}`);
+    ws.close();
+  });
+
+  test("CONTROL: a contractEdge naming ANOTHER vessel key keeps no nym — the socket still admits at the floor", async () => {
+    const { buildDeviceDelegation } = await import("@lararium/mesh");
+    const ed = await import("@noble/ed25519");
+    const toHex = (b: Uint8Array) => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+    const otherKey = toHex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(23)));
+    const now = new Date();
+    const contractEdge = await buildDeviceDelegation({
+      personaRootSeed: new Uint8Array(32).fill(21), deviceVerifyingKey: otherKey, hearthTrueName: "",
+      issuedAt: new Date(now.getTime() - 60_000).toISOString(), expiresAt: new Date(now.getTime() + 3_600_000).toISOString(), boundEpoch: 0,
+    });
+    const { shore } = makeCapturingShore("prefix:" + "ab".repeat(32));
+    gate.arm(shore, "lar:///ha.ka.ba/bags/daemon", "00".repeat(32));
+    const admitted = new Promise<WebSocket>((res) => gate.once("connection", (s: WebSocket) => res(s)));
+    const ws   = await connect(serverInfo.port);
+    const chal = await nextMessage(ws) as { nonce: string };
+    ws.send(JSON.stringify({ ...mkLarAuth("card", chal.nonce, "ab".repeat(64)), ts: now.toISOString(), contractEdge }));
+    const ok = await nextMessage(ws);
+    expect(isLarAuthOkMsg(ok)).toBe(true);
+    expect(gate.getContractNymForSocket(await admitted)).toBeUndefined();
+    ws.close();
   });
 });

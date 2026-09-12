@@ -1,9 +1,9 @@
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/design/meta-perspective">>
 ```toml meta
 cacheable = true
-created   = "Tue Dec 08 2026 10:00:00 GMT-0800 (Pacific Standard Time)"
+created   = "Invalid Date"
 family    = "design"
 file-path = "bags/lares/ha.ka.ba/lares/api/masks/design/meta-perspective.mem"
 l-space   = "stable"

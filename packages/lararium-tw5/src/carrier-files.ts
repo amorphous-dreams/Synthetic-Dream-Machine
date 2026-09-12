@@ -72,7 +72,7 @@ export interface CarrierDeclaration {
  * any file is written in.
  */
 function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
-  if (form === "doctype") return /^<<!DOCTYPE\s+memetic-wikitext[^\n>]*>>$/.test(line);
+  if (form === "doctype") return /^<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>$/.test(line);
   if (form === "commented-doctype") return /^<!--\s*<<~\s*!DOCTYPE\b[^\n]*-->$/.test(line);
   return ALONE_TYPE_RE.test(line);
 }
@@ -84,7 +84,7 @@ function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
  * reads to a human as though the declaration stood. It still DECLARES — the form names which.
  */
 const SIGIL_FORMS: readonly { form: CarrierDeclarationForm; re: RegExp }[] = [
-  { form: "doctype", re: /<<!DOCTYPE\s+memetic-wikitext[^\n>]*>>/ },
+  { form: "doctype", re: /<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>/ },
   { form: "commented-doctype", re: /<!--\s*<<~\s*!DOCTYPE\b[^\n]*-->/ },
 ];
 

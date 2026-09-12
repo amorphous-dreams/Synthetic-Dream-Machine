@@ -97,7 +97,7 @@ async function main(): Promise<void> {
   const memeWithFraming = [
     "prose above the declaration",
     "",
-    "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>",
+    "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>",
     "",
     `<<^ code="&#x0001;" from=? -> to=${carrierUri}>>`,
     "```toml meta",

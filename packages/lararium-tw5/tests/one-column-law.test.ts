@@ -33,7 +33,7 @@ function projectorRender(src: string, uri: string): string {
 }
 
 describe("the projector's render and normalize's render byte-agree", () => {
-  const DECL = "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>\n";
+  const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>\n";
   const src = DECL + readFileSync(join(FIXTURES, "doa-index.committed.body"), "utf8")
     .replace("{CARRIER_TYPE}", "text/memetic-wikitext+tiddlywiki");
 

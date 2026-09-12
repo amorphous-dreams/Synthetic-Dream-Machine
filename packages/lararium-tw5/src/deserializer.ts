@@ -58,7 +58,7 @@ import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
 
 /** The one declaration a carrier opens on: this grammar, at the address that specifies it. */
 const DECLARATION =
-  "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>";
+  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
 import { parseMemeText } from "./meme-ast/parse.js";

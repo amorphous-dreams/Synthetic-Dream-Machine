@@ -22,6 +22,12 @@
  *   1. socketToIdentifier WeakMap records socket → identifierHex.
  *   2. The Repo's sharePolicy should call getIdentifierForSocket() to build
  *      PeerId → identifierHex entries when the adapter emits "peer-candidate".
+ *   3. A CONTRACT edge riding the lar:auth (`contractEdge` — a cross-operator's own persona-root-signed edge over
+ *      its own vessel key) is proved offline HERE (`contractNymOf`: pure ed25519 over public material, no
+ *      keyhive) and the nym it proves lands in socketToContractNym. It never reaches the keyholder's fleet
+ *      verifier — that slot chains to the pinned KEL and a foreign root would anergize the socket whole. The
+ *      gate still decides nothing by it: admission stays the worker's verdict; a bad contract edge simply
+ *      records no nym and the peer stands at the cross-operator floor exactly as before.
  *
  * Security posture (alpha):
  *   - V3 proof-of-possession (ENFORCED): the gate emits its gate-binding key in
@@ -47,6 +53,7 @@ import {
   DAEMON_BAG_ID,
 } from "@lararium/mesh";
 import type { AuthVerifierShore, PeerClass } from "@lararium/mesh";
+import { contractNymOf } from "./nexus-carriage.js";
 
 const AUTH_TIMEOUT_MS       = 5_000;
 const MAX_PENDING           = 50;     // max concurrent unauthenticated connections
@@ -81,6 +88,8 @@ export class DaemonAuthGate extends EventEmitter {
    *  same-operator admit; ABSENT for any admit the worker could not positively vouch — the
    *  sharePolicy reads that absence as the stricter cross-operator class (fail-closed). */
   private readonly socketToClass = new WeakMap<WebSocket, PeerClass>();
+  /** socket → the persona-root nym the peer's CONTRACT edge proved (see the header, step 3). */
+  private readonly socketToContractNym = new WeakMap<WebSocket, string>();
 
   constructor(realWss: WSSType) {
     super();
@@ -120,6 +129,15 @@ export class DaemonAuthGate extends EventEmitter {
     return this.socketToClass.get(socket);
   }
 
+  /**
+   * The persona-root nym the peer's CONTRACT edge proved for this socket — undefined for a peer that presented
+   * none or one that failed to prove. Key it into the sharePolicy's `peerContractNymMap` from the same
+   * "peer-candidate" listener; the membership consult pins it against the contracted member set.
+   */
+  getContractNymForSocket(socket: WebSocket): string | undefined {
+    return this.socketToContractNym.get(socket);
+  }
+
   private async _handleConnection(socket: WebSocket, req: unknown): Promise<void> {
     if (!this.armed) {
       this._deny(socket, WS_CLOSE_NOT_READY, "vessel not ready");
@@ -138,7 +156,7 @@ export class DaemonAuthGate extends EventEmitter {
     this._send(socket, mkLarChallenge(nonce, gatePubKey));
 
     const result = await new Promise<
-      { ok: true; identHex: string; peerClass?: PeerClass } | { ok: false; reason: string }
+      { ok: true; identHex: string; peerClass?: PeerClass; contractNym?: string } | { ok: false; reason: string }
     >((resolve) => {
       const timer = setTimeout(
         () => { socket.off("close", onClose); resolve({ ok: false, reason: "auth timeout" }); },
@@ -202,8 +220,16 @@ export class DaemonAuthGate extends EventEmitter {
           if (!verdict.ok || !verdict.identifier) {
             resolve({ ok: false, reason: verdict.reason ?? (verdict.ok ? "verify-proxy returned no identifier" : "insufficient capability") });
           } else {
+            // The CONTRACT slot, proved offline against the identity the worker just admitted (header, step 3).
+            const contractNym = parsed.contractEdge
+              ? await contractNymOf(parsed.contractEdge, verdict.identifier, Date.now())
+              : null;
             // Carry the self-slot class the keyholder vouched (absent → cross-operator at the gate).
-            resolve({ ok: true, identHex: verdict.identifier, ...(verdict.peerClass !== undefined ? { peerClass: verdict.peerClass } : {}) });
+            resolve({
+              ok: true, identHex: verdict.identifier,
+              ...(verdict.peerClass !== undefined ? { peerClass: verdict.peerClass } : {}),
+              ...(contractNym ? { contractNym } : {}),
+            });
           }
         } catch (err) {
           resolve({
@@ -227,6 +253,7 @@ export class DaemonAuthGate extends EventEmitter {
 
     this.socketToIdentifier.set(socket, result.identHex);
     if (result.peerClass !== undefined) this.socketToClass.set(socket, result.peerClass);
+    if (result.contractNym !== undefined) this.socketToContractNym.set(socket, result.contractNym);
     this._send(socket, mkLarAuthOk());
     this.clients.add(socket);
     socket.once("close", () => this.clients.delete(socket));

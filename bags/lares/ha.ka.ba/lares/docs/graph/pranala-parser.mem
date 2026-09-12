@@ -2,7 +2,7 @@
 
 //A "meme" is any carrier of a lar URI and is the default node in the graph. A "locus" is a meme WEARING `loci` in its has-stack — a component it holds, never a type it is.//
 
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph/pranala-parser">>
 ```toml meta

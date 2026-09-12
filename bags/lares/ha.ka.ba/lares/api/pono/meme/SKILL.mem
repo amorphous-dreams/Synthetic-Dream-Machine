@@ -4,7 +4,7 @@ description: Generate, compress, or audit meme surfaces under lar:///ha.ka.ba/la
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
 ```toml meta
@@ -189,7 +189,7 @@ When writing or revising:
 !!! Copy-Ready Skeleton
 
 ````markdown
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/[PATH]">>
 
@@ -259,6 +259,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RJd_sVdJRTk-sY_WkwP78MLoGW1SCTUqfl4Sfy8S4sk
+<<^ code="&#x0003;">>ni:///sha-256;kozyotbnEPYFP0QJfzl9fQ-3gglP-xUBORkYBUP8Gv4
 
 <<^ code="&#x0004;" -> to="?">>

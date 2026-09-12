@@ -22,7 +22,7 @@ import { REPO } from "./test-wiki.js";
 describe("declaresCarrier — a file counts as a carrier when it says so", () => {
   /** The current spelling: a doctype sigil naming the grammar that reads what follows. */
   test("the current doctype declares", () => {
-    const d = declaresCarrier("<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>\n");
+    const d = declaresCarrier("<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>\n");
     expect(d?.form).toBe("doctype");
   });
 

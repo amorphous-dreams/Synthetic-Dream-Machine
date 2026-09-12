@@ -17,7 +17,7 @@
  */
 import type { DocHandle } from "@automerge/automerge-repo";
 import { readHandleAnnounces, writeHandleAnnounce } from "./handle-announce.js";
-import { mintHandleBurn, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner } from "./handle-kel.js";
+import { mintHandleBurn, mintHandleGraft, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner } from "./handle-kel.js";
 import { deriveVeiledUserKey } from "./persona-identity.js";
 import { didFromVerifyingKey } from "./lar-did.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
@@ -110,6 +110,51 @@ export async function burnOwnHandle(opts: {
         ? { head: chain[chain.length - 1]!, sign: opts.sign }
         : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn!, ...(opts.coSigners ? { coSigners: opts.coSigners } : {}) },   // the one-hand guard above proved it set
     ),
+    buildCard:       opts.buildCard,
+  });
+}
+
+/**
+ * GRAFT a Handle over the leased-projection core — a PRIOR-set member reveals the NEW current owner set, and
+ * the name passes into (or across) a shared holding. The identifier never moves and no fresh Handle key seats:
+ * a graft turns over WHO PRESENTS, nothing else. The founding quorum stays fixed in the prefix forever.
+ *
+ * THE SUCCESSION REACHES THE PRIOR SET'S THRESHOLD, not the new one — the set being left consents to the
+ * leaving. A 1-of-1 cedes by one willing hand (Roberts to Westley); a k-of-n guild gathers k, the presenter
+ * plus `coSigners`. The mint runs over the board's CURRENT chain, so a stale lease cannot graft a name off a
+ * head the board already moved past.
+ */
+export async function graftOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  /** The NEW current owner set this graft reveals, and the threshold IT will present under. */
+  newOwnerSetMembers:    readonly string[];
+  newOwnerSetThreshold:  number;
+  /** A PRIOR-set member presenting the graft, with its head op-key + signer — the succession authority. */
+  ownerAuthMemberPrefix: string;
+  ownerHeadOpKeyDid:     string;
+  sign:                  (bytes: Uint8Array) => Promise<string>;
+  /** DISTINCT PRIOR-set members BEYOND the presenter, gathered toward the PRIOR set's threshold. A 1-of-1
+   *  cedes with none; a 2-of-2 guild passes one. */
+  coSigners?:            readonly HandleCoSigner[];
+  nextRecoverySetHash?:  string;
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  return extendOwnHandle({
+    board:           opts.board,
+    nym:             opts.nym,
+    expectedHeadCid: opts.expectedHeadCid,
+    mintNext:        (chain) => mintHandleGraft({
+      head:                  chain[chain.length - 1]!,
+      newOwnerSetMembers:    opts.newOwnerSetMembers,
+      newOwnerSetThreshold:  opts.newOwnerSetThreshold,
+      ownerAuthMemberPrefix: opts.ownerAuthMemberPrefix,
+      ownerHeadOpKeyDid:     opts.ownerHeadOpKeyDid,
+      sign:                  opts.sign,
+      ...(opts.coSigners ? { coSigners: opts.coSigners } : {}),
+      ...(opts.nextRecoverySetHash ? { nextRecoverySetHash: opts.nextRecoverySetHash } : {}),
+    }),
     buildCard:       opts.buildCard,
   });
 }

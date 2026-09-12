@@ -1,18 +1,18 @@
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/oracles/doa/index">>
 ```toml meta
-cacheable  = true
-file-path  = "bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem"
-l-space    = "archive"
-mana       = 14
-manao      = 14
-manaoio    = 14
-rating     = "meme"
-retain     = true
-role       = "skinny handle for the Discordian Oracle AppleKation reliquary — bytes ride the genesis/cas KIND-plane by content address; this meme carries the names, cids, provenance, and rites"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/library/oracles/doa/index"
+cacheable = true
+file-path = "bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem"
+l-space   = "archive"
+mana      = 14
+manao     = 14
+manaoio   = 14
+rating    = "meme"
+retain    = true
+role      = "skinny handle for the Discordian Oracle AppleKation reliquary — bytes ride the genesis/cas KIND-plane by content address; this meme carries the names, cids, provenance, and rites"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/library/oracles/doa/index"
 ```
 
 <<^ code="&#x0002;">>

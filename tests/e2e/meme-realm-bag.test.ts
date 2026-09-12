@@ -19,9 +19,12 @@
  * byte-identical); C — a third operator dialing A with no contract — answers `not-found` after it too; a
  * crossroads read of the bag's meme shows no record; B's `meme put --bag lares` refuses (read tier).
  *
- * MEASURED 2026-09-12: the vector stays `test.fails` — the realm carries the bag and no WIRE carries the
- * realm: a self-founded operator's dial presents its own device edge and the founder's gate ANERGIZES it
- * (the seam this file's MEASURE pins by B's own log line).
+ * THE WIRE UNDER THE REALM. A self-founded operator's own device edge presents in the wire's CONTRACT slot
+ * (never the fleet slot, which chains to the founder's KEL and anergizes a foreign root); A admits the
+ * ContactCard at the cross-operator floor, proves the edge offline, and `memberNym` binds the wire's vessel
+ * key to the persona-root nym `accept-carriage` contracted under. The share verdict seats on BOTH of
+ * automerge-repo's hooks (announce AND access) and reads the admission maps AFTER they land — a stranger at
+ * the floor asking for a private plane by its genesis-derived id draws nothing.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -209,18 +212,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   // THE VECTOR. B's `meme get --bag lares` walks the realm plane first (reach-by-access) and reads A's doc,
   // which A's wire gate federates to a contracted MEMBER. Gated on the contract: a refusal at a door above
   // reads at ③, never here.
-  //
-  // MEASURED 2026-09-12 — THE SEAM SITS UNDER THE REALM, AT THE WIRE. The realm stands on both sides under
-  // ONE doc id, A's registration lands, and B's realm doc arrives EMPTY, because B never connects: a vessel
-  // that founded its own face holds a self-signed device edge, the dial presents it as a FLEET credential
-  // (`open-node-vessel.ts` `maybeStartNexusClientDial` — `identity: selfEdge ? {…edge} : leafIdentity`), and
-  // A's gate rejects the socket whole ("ANERGIZED: device-delegation rejected: operator is not the pinned
-  // root"). The cross-operator floor (the ContactCard alone) is reached only by a vessel holding NO self
-  // edge — never by a second operator. Beneath that stands a second seam: `accept-carriage` contracts the
-  // PERSONA-ROOT nym while the wire authenticates the VESSEL key, and `nexus-carriage.ts` `memberNym` binds
-  // neither to the other. Both sit outside the realm plane's ownership; until they land this vector reads
-  // "expected to fail", and the MEASURE below pins the nearer seam by B's own words.
-  test.fails("★ B's `meme get --bag lares` answers through the realm ★ (SEAM — the dial presents a self edge and A anergizes it)", async (ctx) => {
+  test("★ B's `meme get --bag lares` answers through the realm ★", async (ctx) => {
     if (!contracted) ctx.skip();
     const r = await pollB(60_000);
     console.error(`meme-realm-bag MEASURE B: meme get --bag lares → ${said(r).trim().slice(0, 300)}`);
@@ -239,8 +231,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toContain('bag = "salt: 12');
   }, 120_000);
 
-  // THE MEASURE that locates the seam: B's own daemon says why nothing crosses.
-  test("MEASURE: the two-operator dial never stands — A ANERGIZES B's self-signed device edge", () => {
+  // THE MEASURE: B's own daemon says the socket stood — the contract edge rode its own slot and A admitted it.
+  test("MEASURE: the two-operator dial STANDS — B presents the contract edge, A admits the socket", () => {
     const b = B!.bootLog();
     const verdict = b.split("\n").find((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l)) ?? "(no verdict line)";
     console.error(`meme-realm-bag MEASURE B dial verdict: ${verdict.trim().slice(0, 200)}`);
@@ -249,8 +241,9 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-A.log"), A!.bootLog());
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-B.log"), b);
     }
-    expect(b).toContain("[nexus-join] presenting the device-delegation edge (fleet)");
-    expect(verdict).toContain("ANERGIZED: device-delegation rejected: operator is not the pinned root");
+    expect(b).toContain("[nexus-join] presenting the contract edge");
+    expect(b).not.toContain("[lar-leaf] ANERGIZED");
+    expect(verdict).toContain("verdict OK — crossing open, syncing");
   });
 
   test("⑦ CONTROL: C — a proof-carrying operator with NO contract — draws `not-found`, byte-identical to B's before", async () => {

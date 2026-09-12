@@ -37,7 +37,7 @@ The graph classifies its own contents. A **specification** states a contract for
 Every meme opens with a doctype naming the dialect it uses, and the specification of that dialect names itself:
 
 ```
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext >>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 ```
 
 Reading the specification requires an implementation of what it specifies. The reference parser versions with the graph.

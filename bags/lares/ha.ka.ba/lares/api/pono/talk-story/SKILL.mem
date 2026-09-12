@@ -12,7 +12,7 @@ description: Convene a talk-story floor (kūkākūkā, talanoa) — co-narrated
   nor for single-step lookups carrying no orient ambiguity.
 ---
 
-<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL">>
 ```toml meta

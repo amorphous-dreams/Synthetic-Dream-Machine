@@ -12,7 +12,7 @@ import { transposeMarkdown, projectSubmission } from "../src/meme-markdown.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
-const CARRIER = `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+const CARRIER = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/probe>>
 \`\`\`toml meta

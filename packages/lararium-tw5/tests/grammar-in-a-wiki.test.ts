@@ -179,7 +179,7 @@ describe.skipIf(wikiSkip)(
       const first = project(src);
       if (!first.out) { faults.push(`${name}: projected to nothing`); continue; }
       const head = first.out.split("\n");
-      if (!/^<<!DOCTYPE memetic-wikitext\+tiddlywiki lar:\/\/\/\S+>>$/.test(head[0] ?? "")) faults.push(`${name}: no declaration`);
+      if (!/^<<!DOCTYPE "memetic-wikitext\+tiddlywiki" "lar:\/\/\/[^"]+">>$/.test(head[0] ?? "")) faults.push(`${name}: no declaration`);
       if (!/^<<\^ code="&#x(?:0001|0011);"[^>\n]*?"?\?"? -> \S+>>/m.test(first.out)) faults.push(`${name}: SOH states no bearing`);
       for (const [claim, mark] of [["STX", "0002"], ["ETX", "0003"]] as const) {
         if (!first.out.includes(`<<^ code="&#x${mark};">>`)) faults.push(`${name}: no ${claim}`);

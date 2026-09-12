@@ -12,7 +12,7 @@
  * Research rhyme: lar:///ha.ka.ba/lares/api/pono/field-collision (event-sourcing · git refs · KERI KERL)
  */
 import { describe, test, expect } from "vitest";
-import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle, burnOwnHandle, rotateOwnHandle } from "../src/handle-orchestration.js";
+import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle, burnOwnHandle, rotateOwnHandle, graftOwnHandle } from "../src/handle-orchestration.js";
 import { mintHandleInception, mintHandleInceptionSet, verifyHandleKel, isBurned, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
 import { HANDLE_CARD_DOMAIN } from "../src/handle-card.js";
 import { writeHandleAnnounce } from "../src/handle-announce.js";
@@ -210,6 +210,66 @@ describe("the witness threshold rides the orchestrator — a shared name moves o
     if (!res.ok) return;
     expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the quorum owner-burn verifies").toBe(true);
     expect(isBurned(res.card.chain as HandleKelEvent[]), "the name reads buried").toBe(true);
+  });
+
+  // ── GRAFT: the act that FORMS a shared name, and the third threshold act beside rotation and owner-burn.
+  // Succession reaches the PRIOR set's threshold, never the new one — the set being left consents to the leaving.
+
+  /** A 1-of-1 SELF-OWNED name: `a` alone holds it, threshold 1 — the name a graft can cede into a guild. */
+  async function soloNameOnBoard() {
+    const aDid = "0x" + (await ed.getPublicKeyAsync(A_SEED).then(hex));
+    const bDid = "0x" + (await ed.getPublicKeyAsync(B_SEED).then(hex));
+    const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(HANDLE_SEED).then(hex));
+    const inc = mintHandleInception(handleKeyDid, aDid, sealKeySetHash([handleKeyDid], 1));
+    const board = makeFakeBoard();
+    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    return { inc, board, aDid, bDid };
+  }
+
+  test("★ a 1-of-1 name GRAFTS into a 2-of-2 guild — one willing hand reaches the prior threshold ★", async () => {
+    const { inc, board, aDid, bDid } = await soloNameOnBoard();
+    const res = await graftOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      newOwnerSetMembers: [aDid, bDid], newOwnerSetThreshold: 2,
+      ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
+      // no coSigners — the PRIOR set is 1-of-1, so the sole holder cedes alone
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the ceding graft verifies").toBe(true);
+    // The name never moves: a graft turns over WHO PRESENTS, not the identifier.
+    expect((res.card.chain[res.card.chain.length - 1] as HandleKelEvent).prefix).toBe(inc.prefix);
+  });
+
+  test("★ grafting a SHARED set forward takes the PRIOR set's quorum — with the co-signature it verifies ★", async () => {
+    const { inc, board, aDid, bDid } = await sharedNameOnBoard();
+    const cDid = "0x" + (await ed.getPublicKeyAsync(new Uint8Array(32).fill(0xd4)).then(hex));
+    const res = await graftOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      newOwnerSetMembers: [aDid, bDid, cDid], newOwnerSetThreshold: 2,
+      ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
+      coSigners: [{ memberPrefix: bDid, keyDid: bDid, sign: signerOf(B_SEED) }],
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the quorum-co-signed graft verifies").toBe(true);
+  });
+
+  test("CONTROL — the SAME forward graft WITHOUT the co-signature fails to verify (one member cannot hand a 2-of-2 name on)", async () => {
+    const { inc, board, aDid, bDid } = await sharedNameOnBoard();
+    const cDid = "0x" + (await ed.getPublicKeyAsync(new Uint8Array(32).fill(0xd4)).then(hex));
+    const res = await graftOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      newOwnerSetMembers: [aDid, bDid, cDid], newOwnerSetThreshold: 2,
+      ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
+      // no coSigners — below the PRIOR 2-of-2 threshold
+      buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
+    });
+    expect(res.ok, res.ok ? "" : res.reason).toBe(true);
+    if (!res.ok) return;
+    expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "a lone-member succession is unverifiable").toBe(false);
   });
 
   test("CONTROL — the SAME owner-burn WITHOUT the co-signature fails to verify (a lone member cannot silence a 2-of-2 name)", async () => {
