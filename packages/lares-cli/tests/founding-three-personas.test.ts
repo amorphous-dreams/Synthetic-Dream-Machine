@@ -57,6 +57,10 @@ const nexusArgs = (positional: string[], options: Record<string, string> = {}): 
 describe("the three symmetric founding commands (CLI, real vault + disk)", () => {
   let root: string;
   beforeEach(async () => {
+    // Each `persona new` now founds a REAL face (its own PersonaGroup + cabal + planes + persona-KEL + veil),
+    // so a test that stands three or four of them runs that many keyhive ceremonies — well past the 5s default
+    // under the parallel suite. The founding is correct, not slow-by-fault; give the ceremonies their room.
+    vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-founding3-"));
     setEnv("LAR_ROOT", root);                       // isolates bags + vault-state + petname store under one tree
     setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);

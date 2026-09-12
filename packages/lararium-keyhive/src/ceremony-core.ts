@@ -248,6 +248,15 @@ export interface FaceFoundingInput {
    *  The identity home backstops it across a preserving re-pave (`vessel clear --force`); on re-light the node
    *  adapter reads it back and hands it here. ABSENT (a genuine fresh founding) → the founding mints a new tag. */
   veilTag?:           string;
+  /** Whether this face MOUNTS — writes the SINGULAR daemon-doc pins (PersonaGroup / MeshCabal / agentId /
+   *  veil-tag / signer / persona-KEL prefix / device-edge / dyad) the boot reads to run the ONE mounted
+   *  face's Binding Gate. DEFAULT true — the founding face (h0) mounts, exactly as before. A per-persona
+   *  founding of an ADDITIONAL compartment passes false: it MINTS its own individual (group, cabal, four
+   *  planes, persona-KEL inception on the shared board, veil, edge) and returns it, but writes none of the
+   *  singular pins — those keys are one-per-daemon-doc, so a second face writing them would unseat the first
+   *  (its continuity anchor forks). The node adapter records the un-mounted face as a register-many plane
+   *  entry the boot's `readPersonaPlanes` consumes; mounting it is a later act (the wear-reboot re-pin). */
+  mount?:             boolean;
 }
 
 export interface FaceFoundingResult {
@@ -278,6 +287,10 @@ export interface FaceFoundingResult {
  */
 export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundingResult> {
   const { repo, daemonHandle, vesselSeed, vesselVerifyingKey, vesselDisplayName } = input;
+  // WHETHER THIS FACE MOUNTS. The founding face (h0) writes the singular daemon-doc pins below; an
+  // additional compartment mints its own individual, is returned, and writes none of them (a register-many
+  // plane entry carries it instead). Absent → true, so h0's path is unchanged.
+  const mount = input.mount !== false;
 
   // Re-open Keyhive over what the place already wrote — the cap events ARE the continuity.
   const keyhive = new KeyhiveProvider();
@@ -335,9 +348,13 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   const meshCabal = await veilKeyhive.createSentinelDoc(MESH_CABAL_SENTINEL_URI);
   await veilKeyhive.addSentinelMember(personaGroup.agentIdHex, meshCabal.docIdHex);
 
+  // The veil-keyhive membership events are ADDITIVE (content-addressed) — every face's group needs them
+  // persisted to be usable, mounted or not, so this flush always runs.
   await flushCapEvents(store, daemonHandle);
 
-  daemonHandle.change((doc) => {
+  // THE SINGULAR MOUNT PINS — one key each per daemon doc, read at boot for the ONE mounted face. Only the
+  // mounting face writes them; an additional compartment leaves the mounted face's pins standing.
+  if (mount) daemonHandle.change((doc) => {
     doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = {
       tiddler: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabal.docIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init" },
@@ -435,7 +452,11 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     : null;
   const dyadRecord: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(dyadRef), ref: dyadRef, edge: founderEdge, binding: dyadBinding };
 
-  daemonHandle.change((doc) => {
+  // THE MOUNTED FACE'S BINDING PINS — the dyad, the signer, the persona-KEL prefix and the device-edge the
+  // boot's Binding Gate walks. Singular per daemon doc, so only the mounting face writes them; the KEL
+  // INCEPTION above already landed on the shared board (keyed by prefix), so an un-mounted compartment's
+  // continuity is walkable the day it comes to be worn — without unseating the face standing now.
+  if (mount) daemonHandle.change((doc) => {
     writeDyad(doc, dyadRecord);
     doc.tiddlers[SIGNER_DID_TIDDLER] = {
       tiddler: { title: SIGNER_DID_TIDDLER, text: signerDid, kind: "operator-root-did" },

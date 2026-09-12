@@ -90,17 +90,19 @@ function placeTiddlers(daemonUrl: string): PackedTiddlers {
   };
 }
 
-/** What a FACE adds on top: the social planes, the PersonaGroup that names them, and the cabal it seats in. */
-function faceTiddlers(
+/**
+ * A FACE'S REGISTER-MANY PLANE ENTRY — the four social planes, all named off the one tag this PersonaGroup's
+ * doc id yields, plus the membership that names the group. This is what the boot's `readPersonaPlanes`
+ * consumes to hold a compartment in the family (register-many), and it carries NO singular mount pin — so
+ * one shape serves both the mounted founding face and every additional compartment a multitude holds.
+ * A vessel-wide circles plane would name one shelf where a multitude needs one per face.
+ */
+function facePlaneTiddlers(
   identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
-  personaGroupDocIdHex: string, meshCabalDocIdHex: string,
+  personaGroupDocIdHex: string,
 ): PackedTiddlers {
-  // A FACE'S PLANES ARE NAMED BY THE FACE. All four ride names derived off the one tag this
-  // PersonaGroup's doc id yields, so the bootstrap that carries them says WHOSE they are; a
-  // vessel-wide circles plane would name one shelf where a multitude needs one per face.
   const face = personaScopedBagIds(personaGroupDocIdHex);
   return {
-    [MESH_CABAL_DOC_ID_TIDDLER]: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabalDocIdHex, kind: "sentinel-id" },
     [face.identities]: { title: face.identities, text: identitiesUrl, kind: "oracle" },
     [face.circles]:    { title: face.circles,    text: circlesUrl,    kind: "oracle" },
     [face.sessions]:   { title: face.sessions,   text: sessionsUrl,   kind: "oracle" },
@@ -111,6 +113,18 @@ function faceTiddlers(
       personaMembershipEntries({ personaGroupId: personaGroupDocIdHex, url: personaUrl })
         .map((e) => [e.title, { title: e.title, text: e.text as string, kind: "oracle" }]),
     ),
+  };
+}
+
+/** What the MOUNTED FACE adds: its register-many plane entry PLUS the singular sentinel pins the boot reads
+ *  to run the ONE mounted face's Binding Gate. Only the founding face (h0) writes these. */
+function faceTiddlers(
+  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
+  personaGroupDocIdHex: string, meshCabalDocIdHex: string,
+): PackedTiddlers {
+  return {
+    [MESH_CABAL_DOC_ID_TIDDLER]: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabalDocIdHex, kind: "sentinel-id" },
+    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, personaGroupDocIdHex),
     [PERSONA_GROUP_DOC_ID_TIDDLER]: { title: PERSONA_GROUP_DOC_ID_TIDDLER, text: personaGroupDocIdHex, kind: "sentinel-id" },
   };
 }
@@ -274,6 +288,12 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
 export interface FoundFaceOptions {
   readonly storageDir?: string;
   readonly genesisDir?: string;
+  /** WHICH face to found. 0 (default) = the founding face — it MOUNTS: writes the singular daemon-doc pins
+   *  and the sentinel bootstrap entry, EXACTLY as before. N>0 = an ADDITIONAL compartment (Path 1,
+   *  persona-policy Ruling 2/2b): it mints its own PersonaGroup + MeshCabal + four planes + persona-KEL
+   *  inception + veil + `anchors-hN`, and writes a register-many bootstrap PLANE ENTRY the boot's
+   *  `readPersonaPlanes` consumes — but no singular mount pins, so the mounted face stands byte-unchanged. */
+  readonly handleIndex?: number;
 }
 
 /** Whether a face already stands on this place — a pure read that founds nothing. */
@@ -291,29 +311,48 @@ export interface FoundFaceResult {
 }
 
 /**
- * Land the FACE onto a standing place — the operator act that turns a carrying vessel into a hearth.
+ * Land a FACE onto a standing place — the operator act that turns a carrying vessel into a hearth (h0), or
+ * adds a compartment to a hearth that already holds one (N>0, the Path-1 per-persona founding).
  *
- * It refuses on a place that has not been founded (nothing to land on) and reads as a no-op on a vessel
- * that already holds a face: a second face would fork the very continuity the persona-KEL pin exists to
- * hold, so the idempotence here is a safety property rather than a convenience.
+ * It refuses on a place that has not been founded (nothing to land on). Idempotence is a SAFETY property,
+ * not a convenience: re-founding an index that already stands would mint a fresh PersonaGroup and orphan
+ * the first, forking the very continuity the persona-KEL pin exists to hold — so each index reads as a
+ * no-op once it stands (h0 by its sentinel pin, an added compartment by its `anchors-hN`).
+ *
+ * The founding face (h0) MOUNTS — it writes the singular daemon-doc pins + the sentinel bootstrap entry,
+ * exactly as before. An added compartment mints its OWN individual (group, cabal, four planes, persona-KEL
+ * inception, veil, `anchors-hN`) and writes only a register-many bootstrap PLANE ENTRY the boot consumes;
+ * it writes no mount pin, so the mounted face stands byte-unchanged. Wearing it is a later act.
  */
 export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<FoundFaceResult> {
-  const defaults   = defaultDirs();
-  const storageDir = opts.storageDir ?? defaults.storageDir;
-  const genesisDir = opts.genesisDir ?? defaults.genesisDir;
-  const bootstrap  = larBootstrapPath();
+  const defaults    = defaultDirs();
+  const storageDir  = opts.storageDir ?? defaults.storageDir;
+  const genesisDir  = opts.genesisDir ?? defaults.genesisDir;
+  const handleIndex = opts.handleIndex ?? 0;
+  const mounts      = handleIndex === 0;
+  const bootstrap   = larBootstrapPath();
 
   if (!existsSync(bootstrap)) {
     throw new Error("[lares persona new] no place stands here — run `lares vessel found` first.");
   }
   const packed = readPackedTiddlers(bootstrap);
 
-  const already = packed[PERSONA_GROUP_DOC_ID_TIDDLER]?.text;
-  if (already) {
-    return {
-      alreadyStood: true, personaGroupDocIdHex: already,
-      personaKelPrefix: "", signerDid: "",
-    };
+  // IDEMPOTENCE, PER INDEX. The mounting face reads its sentinel pin; an added compartment reads its own
+  // anchor — a fresh mint at a standing index would orphan the group already there.
+  if (mounts) {
+    const already = packed[PERSONA_GROUP_DOC_ID_TIDDLER]?.text;
+    if (already) {
+      return { alreadyStood: true, personaGroupDocIdHex: already, personaKelPrefix: "", signerDid: "" };
+    }
+  } else {
+    const anchored = loadIdentityAnchors(handleIndex);
+    if (anchored) {
+      return { alreadyStood: true, personaGroupDocIdHex: anchored.personaGroupDocIdHex, personaKelPrefix: "", signerDid: "" };
+    }
+    // A compartment rides BESIDE the mounted face — the founding face must stand first.
+    if (!packed[PERSONA_GROUP_DOC_ID_TIDDLER]?.text) {
+      throw new Error("[lares persona new] no founding face stands yet — light it with `lares persona new 0 --name '<label>'` first.");
+    }
   }
 
   const daemonUrl = packed[DAEMON_BAG_ID]?.text;
@@ -331,18 +370,18 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
   const repo           = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const daemonHandle   = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
 
-  // The persona ROOT — the human's side. It only ever SIGNS; the per-vessel key stays the Individual.
-  // The founding root seats at h0 ALWAYS — the face IS the vessel's first persona, and a founding that
-  // seated it anywhere else would leave h0 empty beneath a group that names it.
-  await generateOrLoadPersonaGroupRoot(storageDir, 0);
-  const signerSeed = await loadPersonaGroupRootSeed(storageDir, 0);
+  // The persona ROOT for THIS face — the human's side. It only ever SIGNS; the per-vessel key stays the
+  // Individual. Each compartment carries its OWN sovereign signing key at its handle-index; the founding
+  // face seats at h0.
+  await generateOrLoadPersonaGroupRoot(storageDir, handleIndex);
+  const signerSeed = await loadPersonaGroupRootSeed(storageDir, handleIndex);
 
   // THE VEIL SURVIVES A PRESERVING RE-PAVE. The founder-veil derives from (vesselSeed, veilTag); the tag
   // is minted per-founding and lived ONLY in the wiped daemon doc, so a re-light after `vessel clear --force`
   // (identity home kept) minted a FRESH tag and stood a DIFFERENT veil. When the identity home already
-  // anchors h0, its persisted tag rides back in here and `foundTheFace` re-derives the SAME veil. A genuine
-  // fresh founding (no prior anchors) carries none, and mints one — the recovery never fabricates a veil.
-  const priorVeilTag = loadIdentityAnchors(0)?.veilTag;
+  // anchors this face, its persisted tag rides back in here and `foundTheFace` re-derives the SAME veil. A
+  // genuine fresh founding (no prior anchors) carries none, and mints one — recovery never fabricates a veil.
+  const priorVeilTag = loadIdentityAnchors(handleIndex)?.veilTag;
 
   const face = await foundTheFace({
     repo,
@@ -355,13 +394,18 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     // This node's own gate key IS its Nexus key — the per-Nexus KEL board the inception seats onto.
     nexusPubkey: vesselIdentity.verifyingKey,
     ...(priorVeilTag ? { veilTag: priorVeilTag } : {}),
+    // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
+    ...(mounts ? {} : { mount: false }),
   });
 
-  writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
-    ...packed,
-    ...faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
-                    face.personaGroupDocIdHex, face.meshCabalDocIdHex),
-  }), null, 2), "utf8");
+  // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the
+  // register-many plane entry the boot's `readPersonaPlanes` consumes, merged over the mounted face's pins.
+  const faceEntry = mounts
+    ? faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
+                   face.personaGroupDocIdHex, face.meshCabalDocIdHex)
+    : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
+                        face.personaGroupDocIdHex);
+  writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
   persistIdentityAnchors({
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
     personaGroupDocIdHex:   face.personaGroupDocIdHex,
@@ -369,7 +413,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     // The veil tag backstops the founder-veil across a preserving re-pave — beside the doc-ids, out of every
     // substrate wipe, so the next re-light re-derives the SAME veil rather than minting a fresh one.
     veilTag:                face.veilTag,
-  });
+  }, handleIndex);
   await repo.flush();
 
   return {

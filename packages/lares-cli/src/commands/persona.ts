@@ -161,17 +161,22 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     }
   }
 
-  // ── h0 LIGHTS THE HEARTH FIRE ────────────────────────────────────────────────────────────────
-  // `lares vessel found` stands a PLACE — carrying, serving, faceless. The face lands here: the first
-  // persona founds the PersonaGroup, its private plane, the social planes, the device-binding edge and
-  // the persona-KEL inception, and joins that group to the cabal the place already carries.
+  // ── EACH FACE FOUNDS ITS OWN CRYPTOGRAPHIC INDIVIDUAL ────────────────────────────────────────
+  // `lares vessel found` stands a PLACE — carrying, serving, faceless. A face lands here: h0 founds the
+  // PersonaGroup, its private plane, the social planes, the device-binding edge and the persona-KEL
+  // inception, joins that group to the cabal the place already carries, and MOUNTS. Canon rules each
+  // PersonaGroup its OWN individual (persona-policy Ruling 2/2b), so `persona new N` (N>0) founds a full
+  // SECOND face — its own group, cabal, planes, persona-KEL and veil — as a register-many compartment
+  // beside the mounted one; it does not mount (wearing it is `persona wear N`, a later act).
   //
-  // Every later index rides an existing face, so a vessel with no group refuses them: persona h1 inside
-  // no PersonaGroup would mint a root the Binding Gate could never walk to.
+  // Every added compartment rides beside the founding face, so a vessel with no group refuses them:
+  // persona h1 inside no PersonaGroup would mint a root the Binding Gate could never walk to.
   if (index === 0) {
     await runFoundTheFace({ storageDir: larDataDir() });
   } else if (!faceStands()) {
     throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
+  } else {
+    await runFoundTheFace({ storageDir: larDataDir(), handleIndex: index });
   }
 
   // Mint/load the operator-root (idempotent per index; assertHandleIndex guards inside the core), then
