@@ -220,6 +220,16 @@ export function ed25519SignerFromSeed(seed: Uint8Array): (bytes: Uint8Array) => 
   return async (bytes) => hex(await ed25519.signAsync(bytes, seed));
 }
 
+/** The verifying-key hex a 32-byte seed derives — the pair of `ed25519SignerFromSeed`. */
+export async function ed25519VerifyingKeyFromSeed(seed: Uint8Array): Promise<string> {
+  return hex(await ed25519.getPublicKeyAsync(seed));
+}
+
+/** Verify a hex Ed25519 signature over `bytes` under a hex verifying key. Malformed input reads false, never throws. */
+export async function ed25519VerifyHex(sigHex: string, bytes: Uint8Array, verifyingKeyHex: string): Promise<boolean> {
+  try { return await ed25519.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(verifyingKeyHex)); } catch { return false; }
+}
+
 /**
  * verifyAuthProof — the VERIFIER half of V3 proof-of-possession: the counterpart
  * to `buildAuthResponse`. Recompute the gate-bound proof (authProofBytes) and

@@ -177,7 +177,7 @@ export {
   mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
   isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg,
   authProofBytes, buildAuthResponse, verifyAuthProof, runPeerHandshake,
-  ed25519SignerFromSeed,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
 } from "./auth-wire.js";
 export type {
   AuthWireVersion,

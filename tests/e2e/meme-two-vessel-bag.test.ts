@@ -15,7 +15,7 @@
  *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
  *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get`
  *   ⑧ B edits, promotes; A reads the edit back            `meme put --base` · `act MOVE` · `meme get`
- *   ⑨ HELD (test.fails) — a face-join lands ON B; B's binding reads `face`; a put rides the face
+ *   ⑨ the later grant lands as a RECORD on the PersonaGroup plane; B's kit takes the seat by its own act
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
  *
@@ -39,7 +39,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   openStaged, cliFor, freePort, stageDir, awaitRendezvous, vesselStorageDir, type LarInstance, type CliResult,
@@ -297,21 +297,51 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(back.text).not.toContain("$origin-bag");
   });
 
-  // THE JOINEE-SIDE DOOR DOES NOT STAND. A's `face-join` verb seats a joinee and hands the grant back to A's
-  // caller; no CLI verb, no daemon verb and no doc-relay path carries that grant TO B, and `capEvents` ingest
-  // at founding alone (`vessel found --admit`). So B's face stays pinned-not-seated for its whole life, every
-  // binding B mints stays `vessel-only`, and the reuse-path re-grant (`resolve-binding.ts`, witnessed in
-  // keyhive `face-pinned-not-seated` V3) has no seat to fire on. Which door reads pono — a daemon verb the
-  // founder's caller invokes, or a doc the joinee watches — stands as the founding session's call
-  // (seal-and-seat-handoff#/plan-face-join). This step reads LOUD until that ruling lands: the day B's log
-  // stops naming the pinned posture, `test.fails` flips and the step gets written in full — B's wiki binding
-  // reads `face-reach = "face"`, and a `meme put --recipe lares` on B lands under the face, not B's key.
-  test.fails("⑨ HELD — a face-join lands ON B: B's face reads seated, its binding reads `face`, a put rides the face", () => {
+  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's `face-join` seats B in the group
+  // AND writes the grant as a SIGNED RECORD on the PersonaGroup plane (the doc both sync by membership).
+  // B's own kit, on its next present (a `meme put --recipe lares` resolves the binding → `faceSeated`),
+  // reads the record, verifies it offline against the persona root it pinned at admit and A's root-signed
+  // edge, ingests the cap events by its own act, and the face reads SEATED; `regrantOnSeat` then rewrites
+  // B's `vessel-only` binding to `face`. Reading alone re-cuts nothing (the keyhive control witnesses a
+  // tampered / other-root record refused). No daemon verb acts on the remote joinee.
+  test("⑨ the later grant lands as a record on the PersonaGroup plane; B's kit takes the seat; a put rides the face", async () => {
+    const before = B!.bootLog();
+    expect(before, "CONTROL: B stood pinned, not seated").toMatch(/pinned, not yet seated/);
+    expect(before).not.toMatch(/grant record taken/);
+    // B's summons — ITS card (the identity dir sits beside the vessel store) + the edge A signed for it.
+    const idDir = join(rootB, "data/lares/identity");
+    const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"));
+    expect(cardFile, `no vessel card under ${idDir}`).toBeDefined();
+    const contactCard = readFileSync(join(idDir, cardFile!), "utf8");
+    const payload = JSON.parse(readFileSync(join(rootB, "admit.json"), "utf8")) as Record<string, unknown>;
+    const deviceEdge = payload["deviceEdge"] ?? (JSON.parse(Buffer.from(String(payload["admit"] ?? ""), "base64url").toString("utf8") || "{}") as Record<string, unknown>)["deviceEdge"];
+    expect(deviceEdge, `admit.json carries no deviceEdge: ${Object.keys(payload).join(",")}`).toBeDefined();
+    // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
+    const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
+      `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
+      { results?: { summary?: { output?: Record<string, unknown> } } };
+    const grant = r.results?.summary?.output ?? {};
+    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · regranted ${String(grant["regranted"])} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
+    expect(grant["admitted"], JSON.stringify(grant).slice(0, 400)).toBe(true);
+    expect(typeof grant["recordTitle"], "the grant landed on no plane — A's log names why").toBe("string");
+    // B's next present: the binding resolves, the kit reads the record and takes the seat by its own act.
+    const f = join(B!.root, "npc-seated.mem");
+    writeFileSync(f, meme(["a", "b", "c"]));
+    const deadline = Date.now() + 90_000;
+    let taken = false;
+    while (Date.now() < deadline) {
+      const put = await B!.cli(["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+      console.error(`meme-two-vessel-bag MEASURE B: meme put --recipe lares (after the grant) → ${said(put).trim().slice(0, 200)}`);
+      if (/grant record taken .* SEATED/.test(B!.bootLog())) { taken = true; break; }
+      await new Promise((res) => setTimeout(res, 3000));
+    }
     const log = B!.bootLog();
-    const pinned = /pinned, not yet seated/.test(log);
-    if (!pinned) console.error("meme-two-vessel-bag ⑨: B's log no longer names the pinned posture — the door may stand; write this step in full");
-    expect(log, "no door carries A's later grant to B; B's face stays pinned, not seated").not.toMatch(/pinned, not yet seated/);
-  });
+    const tail = log.split("\n").filter((l) => /face-join|pinned|grant record|face-reach|re-grant|regrant/.test(l)).slice(-8).join("\n  ");
+    console.error(`meme-two-vessel-bag MEASURE B: seat lines\n  ${tail}`);
+    expect(taken, `B's kit never took the seat from the record:\n  ${tail}`).toBe(true);
+    // The pinned posture stops naming itself once the seat stands: the LAST pinned line precedes the take.
+    expect(log.lastIndexOf("pinned, not yet seated")).toBeLessThan(log.lastIndexOf("grant record taken"));
+  }, 240_000);
 });
 
 /** Poll a vessel's `meme get` until the rendered text satisfies `ready` — the sync, never faked. */

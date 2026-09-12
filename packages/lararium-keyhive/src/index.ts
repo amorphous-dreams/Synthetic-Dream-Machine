@@ -14,6 +14,8 @@ export type { KeyhiveIdentitySlotOpts } from "./keyhive-identity-slot.js";
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
 export type { PersonaCrossingBundle, CrossingContent, CrossingPlaintext } from "./persona-crossing.js";
 export { runFaceJoin, gateFaceJoin } from "./face-join.js";
+export { faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
+export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict } from "./face-grant-record.js";
 export type {
   FaceJoinSummons, FaceJoinGrant, FaceJoinOutcome, FaceJoinRefusal, FaceJoinProvider, FaceJoinContext,
 } from "./face-join.js";

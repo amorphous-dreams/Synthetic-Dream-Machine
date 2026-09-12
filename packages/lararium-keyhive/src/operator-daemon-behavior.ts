@@ -64,6 +64,9 @@ import { deriveDyadVeil, hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore } from "./daemon-event-store.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
+import { faceGrantTitle, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
+import { base64ToBytes } from "./bytes-base64.js";
+import { ed25519SignerFromSeed, type LarTiddlerRecord } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 
 /**
@@ -104,6 +107,58 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // `meme put --recipe`, the daemon's own working layer). Built once the keyhive stands, over the
   // live context; the face-seat read rides the veil's own registry (a pin is standing, a seat is
   // capability), so a binding never delegates to an agent the veil cannot name.
+  // The grant records this vessel already judged, by signature — a refused record is judged ONCE per boot
+  // (the refusal logs once), a taken one never re-ingests.
+  const judgedGrants = new Set<string>();
+  /**
+   * The joinee's half of THE LATER GRANT. Reads the PersonaGroup plane (the doc both vessels sync by membership)
+   * for a `face-join-grant/v1` record naming THIS vessel; verifies it against the persona root pinned at admit
+   * and the founder's edge under that root; on a verdict, ingests the cap events into BOTH identities and
+   * persists them as cap-event records so the next boot re-hydrates the seat. Returns whether the face now
+   * reads seated. Any failure → false, a logged refusal, and NO binding moved.
+   */
+  const takeFaceGrantIfPublished = async (ctx: IslandContext): Promise<boolean> => {
+    const agent = daemonAuth.personaGroupAgentIdHex;
+    const group = daemonAuth.personaGroupDocIdHex;
+    const ownEdge = daemonAuth.deviceEdge;
+    if (!agent || !group || !ownEdge || !kh || !ctx.catalogUrl) return false;
+    let store: Awaited<ReturnType<ReturnType<typeof makeCatalogAccessor>["storeOf"]>>;
+    try { store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(group)); } catch { return false; }
+    if (!store) return false;
+    const prefix = `${FACE_GRANT_PREFIX}${group}/`;
+    const self = daemonAuth.vesselVerifyingKey.toLowerCase();
+    let titles: string[];
+    try { titles = (await store.listVisible()).filter((t) => t.startsWith(prefix) && t.toLowerCase().endsWith(self)); } catch { return false; }
+    for (const title of titles) {
+      const record = await store.get(title);
+      const text = (record as { tiddler?: { text?: unknown } } | null)?.tiddler?.text;
+      if (typeof text !== "string") continue;
+      let rec: FaceGrantRecord;
+      try { rec = JSON.parse(text) as FaceGrantRecord; } catch { continue; }
+      if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
+      judgedGrants.add(rec.sig);
+      const verdict = await verifyFaceGrantRecord(rec, {
+        personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group, now: Date.now(),
+      });
+      if (!verdict.ok) {
+        console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
+        continue;
+      }
+      // THE KIT'S OWN ACT: ingest the cap events (live) and persist them (boot re-hydrates the seat).
+      const events = rec.capEvents.map(base64ToBytes);
+      const eventStore = new DaemonEventStore({ daemon: ctx.composite });
+      for (const bytes of events) {
+        try { await eventStore.put({ bytes, variant: "cap-membership", hash: "" }); } catch { /* a persisted duplicate reads fine */ }
+      }
+      try { await kh.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: vessel ingest faulted: ${(err as Error)?.message ?? err}`); }
+      try { await veilKh?.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: veil ingest faulted: ${(err as Error)?.message ?? err}`); }
+      const seated = await (veilKh ?? kh).knowsAgent(agent);
+      console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, regranted ${rec.regranted}) — face ${seated ? "SEATED" : "still unseated after ingest"}`);
+      if (seated) return true;
+    }
+    return false;
+  };
+
   let slotDocs: SlotDocResolver | null = null;
   const slotDocsOf = (ctx: IslandContext): SlotDocResolver => {
     if (slotDocs) return slotDocs;
@@ -119,7 +174,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       faceSeated: async () => {
         const agent = daemonAuth.personaGroupAgentIdHex;
         if (!agent) return false;
-        const seated = await (veilKh ?? kh!).knowsAgent(agent);
+        let seated = await (veilKh ?? kh!).knowsAgent(agent);
+        // THE LATER GRANT (basket-one #/the-later-grant): not seated → read the PersonaGroup plane for a grant
+        // record naming this vessel, verify it OFFLINE against the published seal, and take the seat by this
+        // kit's own act. Reading alone re-cuts nothing — a record that fails stays a record.
+        if (!seated) seated = await takeFaceGrantIfPublished(ctx);
         if (!seated) console.log(`[daemon] face ${agent.slice(0, 16)}… pinned, not yet seated — bindings mint vessel-only until a face-join lands`);
         return seated;
       },
@@ -483,8 +542,34 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             });
             // A refusal RETURNS — an unlicensed summons names an absent contract, never an attack, and the
             // reason rides the outcome so the joinee's panel can paint why rather than showing a silence.
+            // THE LATER GRANT LANDS AS A RECORD on the PersonaGroup plane — the doc the joinee already syncs by
+            // membership — signed under this vessel's device key and carrying this vessel's root-signed edge, so
+            // the joinee's own kit verifies it offline against the root it pinned and takes the seat by its own
+            // act. The grant still returns to the caller; a plane that cannot be written is said, never fatal.
+            let recordTitle: string | null = null;
+            if (outcome.ok && facePlane) {
+              try {
+                const store = await facePlane.storeOf(personaBagIdFor(faceGroup()));
+                if (!store) throw new Error("the PersonaGroup plane is unresolved");
+                const { kind: _grantKind, ...grantBody } = outcome.grant;
+                void _grantKind;
+                const rec = await signFaceGrantRecord({
+                  kind: "face-join-grant/v1", groupDocIdHex: faceGroup(), ...grantBody,
+                  founderEdge: ownEdge, issuedAt: new Date().toISOString(),
+                }, ed25519SignerFromSeed(daemonAuth.seed));
+                recordTitle = faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex);
+                await store.put(
+                  { tiddler: { title: recordTitle, text: JSON.stringify(rec), kind: "face-join-grant" } as LarTiddlerRecord["tiddler"], meta: { authority: "lares-verb" } },
+                  { kind: "lares-verb", requestId: `face-grant-${rec.sig.slice(0, 12)}` },
+                );
+                console.log(`[daemon] face-join: grant record written to the PersonaGroup plane (${recordTitle.slice(-16)}) — the joinee's kit takes the seat on its next present`);
+              } catch (err) {
+                console.log(`[daemon] face-join: grant record NOT written (${(err as Error)?.message ?? err}) — the grant returns to the caller alone`);
+                recordTitle = null;
+              }
+            }
             return outcome.ok
-              ? { verb: "face-join", admitted: true,  ...outcome.grant }
+              ? { verb: "face-join", admitted: true,  ...outcome.grant, ...(recordTitle ? { recordTitle } : {}) }
               : { verb: "face-join", admitted: false, reason: outcome.reason };
           });
         }
