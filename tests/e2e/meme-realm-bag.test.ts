@@ -25,12 +25,22 @@
  * key to the persona-root nym `accept-carriage` contracted under. The share verdict seats on BOTH of
  * automerge-repo's hooks (announce AND access) and reads the admission maps AFTER they land — a stranger at
  * the floor asking for a private plane by its genesis-derived id draws nothing.
+ *
+ * ⑬ MEASURES WHERE THE RETURN LANE STOPS, and it stops at the WIRE. One book (A's registry pointer, A's
+ * `realm-bags` and B's all name one doc), one read door on A (it reads back its own write), and two replicas
+ * that diverge in BOTH directions: the registered book crosses once on B's request, and no sync session
+ * carries a change either way after it. The CONTROL names it doc-specific, not peer-specific — on the REALM
+ * doc the same B→A direction carries every record.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStaged, freePort, stageDir, awaitRendezvous, type LarInstance } from "../harness/instance.js";
+import { Repo } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import {
+  openStaged, freePort, stageDir, awaitRendezvous, bootDocUrl, vesselStorageDir, type LarInstance,
+} from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -337,9 +347,26 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   // B never gated A at all: `selfSlotShareDecision` gates a peer only when `hasWsSocket` reads true (a socket
   // on B's OWN server adapter), and A sits at the far end of a dial B opened, so B already shares every doc
   // with A as an in-process house member (`federation-gate.ts:114` — a peer outside `relayPeers` reads allow).
-  // THE SEAM THAT REMAINS sits PAST the wire: B's change to the registration's doc never reaches A's read —
-  // whether A's replica never applies it, or A's `meme get` answers off a projection that does not, stands
-  // unmeasured. The day it lands, this reads "expected to fail".
+  //
+  // ⑬ MEASURES THE REST, twice on two independent foundings, and the three candidate stops read:
+  //   · ONE BOOK, not two chests — A's `realm-bags`, B's `realm-bags` and A's OWN oracle registry pointer
+  //     for `bags/lares` all name the SAME automerge doc.
+  //   · A'S READ DOOR READS THAT BOOK — A's put walks `realmWritable` first and A's get walks
+  //     `composite.storeForBag` first, and A READS BACK ITS OWN WRITE, so both doors hold one doc.
+  //   · THE REPLICAS DIVERGE, BOTH WAYS — B's own storage under that doc id carries B's `#/b` and NOT A's
+  //     marker; A's carries A's marker and NOT B's `#/b`.
+  //   · AND THE CONTROL SAYS THE PEER IS NOT THE PROBLEM — on the REALM doc, the same B→A direction, A's
+  //     replica holds every record B's does (B's own co-signature among them). The wire between these two
+  //     vessels carries changes; this ONE document's replicas simply stop exchanging.
+  // So the stop is the WIRE and it is DOC-SPECIFIC, not peer-specific: the registered book crosses ONCE on
+  // B's request (★ reads A's ledger whole) and no sync session carries a change either way after it. It is
+  // not the verdict — a denied doc would never have crossed at all. THE SHAPE THAT SEPARATES THE TWO DOCS:
+  // the realm doc is MATERIALIZED on both vessels from the charter (`materializeSharedLarDoc`, a deterministic
+  // id each side creates for itself), while the bag doc exists locally on A alone and reaches B by REQUEST.
+  // The next probe belongs beside the share lane: log the (peer, documentId) verdict A answers for this doc
+  // and when, and whether a requested doc ever enters the serving repo's ongoing sync set for that peer
+  // (`open-node-vessel.ts` shareConfig + `reverdict`/`repo.shareConfigChanged` · `repo-helpers.ts`).
+  // The day it lands, this reads "expected to fail".
   test.fails("⑪ A's `meme get` reads B's new slot — the write crossed the ford, not a second chest", async (ctx) => {
     if (!bPut) ctx.skip();
     const until = Date.now() + 90_000;
@@ -371,4 +398,113 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const after = await A!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
     expect(String((after.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("#/stale");
   }, 150_000);
+
+  // ── ⑬ THE MEASURE: WHERE THE RETURN LANE STOPS ──────────────────────────────────────────────────
+  // ⑪ stands red and its header names the seam as "past the wire" without saying WHICH of three stops
+  // it is. This measure separates them on ONE run, and it runs LAST because its third probe takes A's
+  // daemon down (its staged root alone — the home vessel is never touched).
+  //
+  //   (i)   A's REPLICA — does the doc the registration NAMES, read straight off A's own automerge
+  //         storage with the daemon stopped, carry B's `#/b` slot?
+  //   (ii)  A's READ — `resolveSink`'s get branch consults `composite.storeForBag(bag)` BEFORE
+  //         `reach`/`realmReach` (`packages/lararium-tw5/src/meme-verbs.ts` resolveSink, the `mode === "get"`
+  //         fall-through). A's PUT walks the realm FIRST (`opts.realmWritable` in the same function). So
+  //         A writing a marker and failing to read it back proves the two doors land on DIFFERENT docs.
+  //   (iii) A's VERDICT — the registry pointer A's oracle plane holds for `bags/lares` against the
+  //         `docUrl` the standing registration names: one book, or two chests.
+  test("⑬ MEASURE: where the return lane stops — A's read, A's replica, or the book's identity", async (ctx) => {
+    if (!bPut) ctx.skip();
+    const lines: string[] = [];
+
+    // (iii-a) the two doc names, side by side.
+    const bags = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const regs = ((bags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
+    const registered = String(regs.find((r) => r["bag"] === LARES_BAG)?.["doc"] ?? "");
+    const realmDoc = String((bags.json?.["data"] as Record<string, unknown> | undefined)?.["realmDoc"] ?? "");
+    const bBags = await B!.cli(["nexus", "realm-bags", "--json"]);
+    const bRegs = ((bBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
+    const bRegistered = String(bRegs.find((r) => r["bag"] === LARES_BAG)?.["doc"] ?? "");
+    lines.push(`(iii) registration doc — A says ${registered || "(none)"} · B says ${bRegistered || "(none)"} · same book: ${registered !== "" && registered === bRegistered}`);
+
+    // (ii) A WRITES A MARKER AND READS IT BACK. The put walks the realm first; the get walks the
+    // composite first. A read that misses A's OWN write names the read door, not the wire.
+    const before = await A!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    const beforeText = String((before.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    const baseA = String((before.json?.["data"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
+    const markerFile = join(A!.root, "a-marker.mem");
+    writeFileSync(markerFile, memeWithSlot("/a-marker"));
+    const aPut = await A!.cli(["meme", "put", URI, "--bag", "lares", "--base", baseA, "--file", markerFile, "--json"]);
+    const after = await A!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    const afterText = String((after.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    const readsOwnWrite = afterText.includes("#/a-marker");
+    lines.push(`(ii) A's get carried B's slot before the marker: ${beforeText.includes("#/b")}`);
+    lines.push(`(ii) A's own put → ${said(aPut).trim().slice(0, 200)}`);
+    lines.push(`(ii) A reads back its OWN write: ${readsOwnWrite} — false means the put door and the get door hold DIFFERENT docs`);
+
+    // (i) A'S REPLICA, OFF DISK. The daemon owns the store while it stands, so it stops first.
+    const oracleUrl = bootDocUrl(A!, "oracle");
+    await A!.stopDaemonOnly();
+    let pointer = "";
+    let replicaHasB = "unmeasured";
+    let replicaHasMarker = "unmeasured";
+    let aRealmTitles: string[] = [];
+    let bRealmTitles: string[] = [];
+    try {
+      const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(A!)) });
+      if (oracleUrl) {
+        const isle = await repo.find(oracleUrl as never);
+        pointer = String((isle.doc() as { tiddlers?: Record<string, { tiddler?: { text?: string } }> })?.tiddlers?.[LARES_BAG]?.tiddler?.text ?? "");
+      }
+      if (realmDoc) {
+        const rd = await repo.find(realmDoc as never);
+        aRealmTitles = Object.keys((rd.doc() as { tiddlers?: Record<string, unknown> })?.tiddlers ?? {});
+      }
+      if (registered) {
+        const held = await repo.find(registered as never);
+        const rec = (held.doc() as { tiddlers?: Record<string, { tiddler?: { text?: string } }> })?.tiddlers?.[URI];
+        const text = String(rec?.tiddler?.text ?? "");
+        replicaHasB = String(text.includes("#/b") || JSON.stringify((held.doc() as object) ?? {}).includes("#/b"));
+        replicaHasMarker = String(JSON.stringify((held.doc() as object) ?? {}).includes("#/a-marker"));
+      }
+    } catch (err) {
+      lines.push(`(i) the replica read threw: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    // (iv) B'S SIDE OF THE SAME BOOK. A replica that never received the change and a WRITE that never
+    // landed on this book read identically from A alone, so B answers for its own copy: what B's read
+    // door says, and what B's own storage holds under the very same doc id.
+    const bGet = await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    const bText = String((bGet.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    lines.push(`(iv) B's read door carries her own #/b: ${bText.includes("#/b")} · carries A's marker: ${bText.includes("#/a-marker")}`);
+    await B!.stopDaemonOnly();
+    let bReplicaHasB = "unmeasured";
+    let bReplicaHasMarker = "unmeasured";
+    try {
+      const repoB = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(B!)) });
+      if (realmDoc) {
+        const rdB = await repoB.find(realmDoc as never);
+        bRealmTitles = Object.keys((rdB.doc() as { tiddlers?: Record<string, unknown> })?.tiddlers ?? {});
+      }
+      if (registered) {
+        const heldB = await repoB.find(registered as never);
+        const body = JSON.stringify((heldB.doc() as object) ?? {});
+        bReplicaHasB = String(body.includes("#/b"));
+        bReplicaHasMarker = String(body.includes("#/a-marker"));
+      }
+    } catch (err) {
+      lines.push(`(iv) B's replica read threw: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    lines.push(`(iv) B's on-disk replica of the SAME doc carries her #/b: ${bReplicaHasB} · carries A's marker: ${bReplicaHasMarker}`);
+    // (v) THE CONTROL ON THE DIRECTION. B's co-signature is a record B wrote on the REALM doc — the same
+    // B→A direction, a different document. A replica that carries B's co-sign and not B's slot says the
+    // wire runs and the BAG doc alone stays behind; one that carries neither says the direction itself.
+    const onlyB = bRealmTitles.filter((t) => !aRealmTitles.includes(t));
+    lines.push(`(v) the realm doc ${realmDoc || "(none)"} — A holds ${aRealmTitles.length} record(s), B holds ${bRealmTitles.length}; B-only: ${onlyB.length === 0 ? "(none)" : onlyB.join(", ").slice(0, 300)}`);
+    lines.push(`(iii-b) A's oracle registry names ${pointer || "(none)"} for ${LARES_BAG}`);
+    lines.push(`(iii-b) registry pointer === registration doc: ${pointer !== "" && pointer === registered}`);
+    lines.push(`(i) A's on-disk replica of the registered doc carries B's #/b: ${replicaHasB} · carries A's marker: ${replicaHasMarker}`);
+    console.error(`meme-realm-bag ⑬ MEASURE where the lane stops:\n  ${lines.join("\n  ")}`);
+
+    // The measure always reports; it never passes on absence of looking.
+    expect(registered, `no standing registration for ${LARES_BAG} — the measure had nothing to read`).not.toBe("");
+  }, 180_000);
 });
