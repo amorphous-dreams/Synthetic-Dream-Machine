@@ -15,7 +15,7 @@ retain            = true
 revised-on        = "2026-09-12"
 role              = "syncer-back-parity — the STOCK TW5 syncer's whole back-parity flow measured live against a plain server carrying the packed plugin. Six flows as a table (root save · slot-child save · delete · poll · the revision/bag stamps · the `$:/` filter), each with the wire exchange it issued, what the client charm reaches and the three things it cannot, the native delete door that carries the group-leaves-together law onto stock's own delete path, and the leans left open."
 status            = "standing"
-status-why        = "every row reads off a live contact: `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts` drives a real Chromium client over `tiddlywiki --listen` with the stock `tiddlyweb` + `filesystem` pair, 5 standing + 3 named seams against the fork (5.5.0-prerelease) and the same against a pristine `npm pack tiddlywiki@5.4.1`. The cure (`src/routes/native-delete-door`) landed red-first and carries six unit vectors in `tests/syncer-native-delete-door.test.ts`"
+status-why        = "every row reads off a live contact: `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts`, 8/8 on the fork (5.5.0-prerelease) and 8/8 on pristine `tiddlywiki@5.4.1` — every former `test.fails` a plain passing vector after the roundtable's phases 0·1·4·2·3 (2026-09-12); seam (b) stands with its refutation measured; (f) stays stock's own posture"
 tags              = ["api/pono/meme"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/syncer-back-parity"
@@ -159,7 +159,16 @@ Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group le
 
 <<~ ahu #/leans>>
 
-!! The leans
+!! The leans — and what the roundtable made of them
+
+''Read <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> for the argument and the plan; the outcome (2026-09-12) stands here so this carrier's table reads true:''
+
+* ''(b′) CLOSED'' — the root law got ONE spelling (`framedRootOf` reads `isMemeRoot`; all three doors inherit it; no stall — `3d0f7248a`), the fragment PUT door walls itself with 400 for every other skin (`bf9d9e04f`), and the scanner no longer counts a `kahea` CALL as a declared slot (`75e895c3e` — a second defect fell beside it: a call before its own block dropped the slot's body into no record at all).
+* ''(c′) RULED Mu, marked'' — a member's death leaves the call standing (never-invent-bytes); the ahu template distinguishes `unresolved · arriving · empty · filled` (`79420f5b5`); the served text keeps the call, the page marks it. The re-cut lean below was REFUTED by measure: a re-place lands the marker again.
+* ''(d′) CLOSED on the server'' — `native-skinny-door` re-inflates slot children in stock's own `tiddlers.json` (`61ac87090`); measured 132 tiddlers 23 798 B → 38 967 B (×1.64); dial `$:/config/lares/memes/fat-children` (default yes); the cord for //arriving// rides the same template.
+* ''(b) STANDS, and now says why'' — the backstop widening REFUTED at its red (`3dfb06170`): `placeMeme(root, readMeme(root))` is the canonical form's own fixed point, so seven kinds of child edit read `noop · clean · 0 diagnostics` while the same shapes refuse at the root's door. A child's save grades only against the child's OWN authored text, and no congruence reads a fragment body as a gradeable unit. The operator's call.
+
+The leans as first written, kept for the record:
 
 * ''(b′) the fragment at the founding door.'' The charm could decline `/memes/` for a title carrying `#` — but the native door would then answer `422` on the framed body and STALL the syncer's queue, which is the failure the charm exists to prevent. The cure wants a THIRD answer: a fragment-addressed body re-placed under its ROOT. `-> ?`
 * ''(c′) the dangling `kahea`.'' A member leaving alone has no law. Re-cutting the parent from its remaining children is one shape; refusing a lone child's delete and asking the writer to re-place the root is another. `-> ?`
@@ -182,6 +191,6 @@ Witnesses: `tests/syncer-native-delete-door.test.ts` (6 vectors — the group le
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GUkLTdn7QaaueFXKTujGQeFE65FiVzqLdj4pzQYQs7s
+<<^ code="&#x0003;">>ni:///sha-256;ACOET10jBDBGNWMpKHhxtZB72QQeEYsovtNp5l-FmOg
 
 <<^ code="&#x0004;" -> to="?">>
