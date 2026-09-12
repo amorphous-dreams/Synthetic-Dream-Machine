@@ -96,6 +96,12 @@ describe("carrier-edges — every address a carrier points at", () => {
     const dangling = texts.flatMap(readCarrierEdges)
       .filter((e) => e.address !== null && !held.has(e.address));
     expect(files.length).toBeGreaterThan(500);
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(198);
+    // 2026-09-12: 198 -> 201, and the three named rather than counted. `live-equivocation.mem` points
+    // at `elyncia/characters/primary-characters/telarus`, `lararium/mesh/ahi-ka` and
+    // `lares/api/pono/recovery-registration` — three carriers nobody has written yet, named in a
+    // design carrier that landed after this ceiling was seated. A FORWARD REFERENCE IS INTENT
+    // RECORDED AHEAD OF ITS CARRIER, so the ceiling rises and the addresses stand written down; a
+    // ceiling raised without naming what raised it stops guarding on the next honest change.
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(201);
   });
 });
