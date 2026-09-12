@@ -33,6 +33,7 @@ import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
 import { MemeStreamParser } from "./meme-stream.js";
 import { carrierHeadLinePattern } from "./carrier-head.js";
 import { renderMetaTomlLine } from "./meme-normalize.js";
+import { lendHostGlobals } from "./host-globals-lend.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   findTopLevelAhuBlocks,
@@ -53,6 +54,7 @@ import { shoreDiagnostic } from "./meme-ast/diagnostics.js";
 import { classifyPostamble } from "./block-check.js";
 import { bccOfSpan } from "./carrier-check.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
+import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
 
 /** The one declaration a carrier opens on: this grammar, at the address that specifies it. */
 const DECLARATION =
@@ -90,6 +92,9 @@ export function memeticWikitextDeserializer(
   text:   string,
   fields: Record<string, unknown>,
 ): TiddlerFields[] {
+  // A plain server's sandbox lends no TextEncoder; the hashing below needs one whichever path reached
+  // here, startup module or not.
+  lendHostGlobals(globalThis, typeof process === "undefined" ? undefined : process);
   // Carrier-bytes law (memetic-wikitext-framing #carrier-bytes): carriers rest as UTF-8, LF, no
   // BOM. The boundary normalizes foreign line endings and a leading BOM at
   // ingest — once, here, so every stratum downstream sees one byte law.
@@ -828,8 +833,11 @@ export type FieldsReader = (title: string) => TiddlerFields | undefined;
 // forgets.
 const META_DENY: ReadonlySet<string> = new Set([
   // The host's two, and the record stratum they arrive with. TiddlyWiki restricts no field name;
-  // MultiWikiServer overwrites `title` and `revision` on every read. Nothing else belongs here.
+  // MultiWikiServer overwrites `title` and `revision` on every read.
   "title", "text", "modified", "revision",
+  // The skinny handle's pointer internals (content-handle): a recomposed carrier carries its body
+  // inline, so a `_canonical_uri` or `_integrity` re-emitted here would lie about the bytes beneath it.
+  ...HANDLE_ONLY_FIELDS,
 ]);
 // Authored identity re-emits: the deny-set
 // holds MACHINE stamps only. `type` re-emits verbatim — the carrier

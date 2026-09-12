@@ -20,6 +20,10 @@
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
     },
+    "./content-handle": {
+      "import": "./dist/content-handle.js",
+      "types": "./dist/content-handle.d.ts"
+    },
     "./cascade": {
       "import": "./dist/cascade.js",
       "types": "./dist/cascade.d.ts"

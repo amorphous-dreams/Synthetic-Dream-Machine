@@ -61,4 +61,27 @@ describe.skipIf(wikiSkip)(`Export → memetic-wikitext${skipNote}`, () => {
     expect(exportOf("[[plain]]")).toBe("");
     expect(exportOf("[[lar:///t/absent]]")).toBe("");
   });
+
+  test("a canon tiddler's HANDLE fields never export — `_canonical_uri` and its pointer kin stay in the house", () => {
+    // The house stamps a skinny handle with `_canonical_uri` (a `lar:` cid the reader cannot fetch),
+    // `_is_skinny`, `_integrity`, `textCid`, `_source_ext` — pointer internals per content-handle.ts.
+    // A recomposed carrier carries its body inline, so those fields would LIE on the export.
+    const root = uriOf("one");
+    const cur = engine.wiki.getTiddler(root)!.fields as Record<string, unknown>;
+    engine.wiki.addTiddler(new engine.$tw.Tiddler(cur, {
+      _canonical_uri: "lar:///ha.ka.ba/cid/sha256/" + "ab".repeat(32),
+      _is_skinny: "yes", _integrity: "ni:///sha-256;q6tuRQqEHmHAF-h0Rp6fkGnfj98KMcLDivDtgzMkZa4",
+      textCid: "ab".repeat(32), _source_ext: ".mem",
+      // CONTROL fields — user space, and the author's own `bag`.
+      bag: "backpack: rope, lantern", "npc-mood": "wary",
+    }));
+    const out = exportOf(`[[${root}]]`);
+    const fence = /```toml meta\n([\s\S]*?)\n```/.exec(out)?.[1] ?? "";
+    for (const k of ["_canonical_uri", "_is_skinny", "_integrity", "textCid", "_source_ext"]) {
+      expect(fence, `${k} leaked into the export`).not.toMatch(new RegExp(`^${k}\\s*=`, "m"));
+    }
+    expect(fence).toMatch(/^bag\s+= "backpack: rope, lantern"$/m);
+    expect(fence).toMatch(/^npc-mood\s+= "wary"$/m);
+    expect(out).toContain("<<~ ahu #/a>>");
+  });
 });

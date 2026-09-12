@@ -211,6 +211,17 @@ export function assertBodyIndexTier(indexHoldingBagUri: string, publicity: BodyP
   }
 }
 
+/**
+ * The fields a skinny handle carries and NOTHING ELSE may: pointer internals the house mints for its own
+ * CAS, never an author's. A recomposed carrier carries its body inline, so a render or export re-emitting
+ * these would name a cid the reader cannot fetch and an integrity over bytes the file no longer holds.
+ * `size` and `type` stay off this list — an author may write either. `_lar_cas` stays off it too: the
+ * operator's flag names intent, and intent persists.
+ */
+export const HANDLE_ONLY_FIELDS: ReadonlySet<string> = new Set([
+  "_is_skinny", "_canonical_uri", "_integrity", "textCid", "_source_ext",
+]);
+
 export function skinnyHandleTiddler(
   title: string,
   cid: string,

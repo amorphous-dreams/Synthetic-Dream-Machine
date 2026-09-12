@@ -14,30 +14,17 @@ module-type: startup
  * `process.getBuiltinModule`; `??=` respects any global the runtime already holds, so a browser or a
  * lararium worker (both already carry them) reads this as a no-op.
  *
- * What this cannot reach: a carrier deserialized DURING boot, before any startup module runs. That
- * slot belongs to `boot.js` lending the globals into the context it creates.
+ * The lend itself lives in `host-globals-lend` and defines each global NON-ENUMERABLE, so the fork's
+ * per-module `globalCheck` never reports it as a leak. The deserializer calls the same lend at its own
+ * entry, so a reader reached before this startup module runs holds too.
  */
+import { lendHostGlobals } from "../host-globals-lend.js";
 
 export const name = "lar-host-globals";
 export const synchronous = true;
 export const before = ["startup"];
 
-interface HostGlobals {
-  TextEncoder?: unknown;
-  TextDecoder?: unknown;
-  crypto?: unknown;
-}
-
 export function startup(): void {
-  const g = globalThis as HostGlobals;
-  if (g.TextEncoder && g.TextDecoder && g.crypto) return;
   // `process` reaches a sandboxed module as a wrapper PARAMETER, never as a property of `globalThis`.
-  if (typeof process === "undefined") return;
-  const builtin = (process as { getBuiltinModule?: (id: string) => unknown }).getBuiltinModule;
-  if (typeof builtin !== "function") return;
-  const util = builtin("node:util") as { TextEncoder: unknown; TextDecoder: unknown };
-  const nodeCrypto = builtin("node:crypto") as { webcrypto: unknown };
-  g.TextEncoder ??= util.TextEncoder;
-  g.TextDecoder ??= util.TextDecoder;
-  g.crypto ??= nodeCrypto.webcrypto;
+  lendHostGlobals(globalThis, typeof process === "undefined" ? undefined : process);
 }
