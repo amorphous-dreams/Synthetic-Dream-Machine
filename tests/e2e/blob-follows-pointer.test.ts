@@ -22,7 +22,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import {
@@ -130,12 +130,14 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     // ①–④ the same rite `meme-two-vessel-bag` performs: A founds; B mints under its own root; A signs
     // the edge naming its dial; B founds by that payload — all before any daemon stands.
     A = await openStaged({ tag: "A", port: portA, daemonEnv: { LAR_HERM_RELAY_PORT: String(portRelay), LAR_CARRIAGE_RELAY: carriageRelay }, found: async (cliA, rootA) => {
-      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force"]);
+      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
       if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
       const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      const bake = await cliB(["vessel", "bake"]);
-      if (bake.code !== 0) throw new Error(`B: bake failed (${bake.code})\n${bake.stderr.slice(-800)}`);
+      // THE GENESIS UNDER B'S ROOT. `vessel found --admit` reads the hearth true-name off `<root>/genesis`; the
+      // re-derive is an internal rite step (no `vessel bake` door), and A's `clear` just derived it under
+      // A's root — the same bytes B founds by, copied whole.
+      cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
       const keyB = await mintVesselKey(rootB);
       const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
       if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);

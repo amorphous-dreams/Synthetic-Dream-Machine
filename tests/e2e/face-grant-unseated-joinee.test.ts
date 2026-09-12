@@ -56,7 +56,7 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that never di
     const admit = join(rootB, "admit.json");
     const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
     A = await openStaged({ tag: "A", port: portA, found: async (cliA, rootA) => {
-      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force"]);
+      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
       if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
       const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);

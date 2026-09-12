@@ -72,7 +72,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const portB = await freePort();
     const portC = await freePort();
     A = await openStaged({ tag: "A", port: portA, found: async (cliA, rootA) => {
-      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force"]);
+      const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
       if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
       const face = await cliA(["persona", "new", "0", "--name", "spider-steward"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
@@ -92,7 +92,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     // B: its OWN root, its own founding — a second OPERATOR, never a device of A's. C: a third, alike, that
     // never contracts.
     const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string }>, root: string) => {
-      const clear = await cli(["vessel", "clear", "--root", root, "--force"]);
+      const clear = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
       if (clear.code !== 0) throw new Error(`${tag}: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
       const face = await cli(["persona", "new", "0", "--name", name]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
