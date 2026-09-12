@@ -53,3 +53,17 @@ describe("CONTROL — the minted door derives byte-identical to the mesh derivat
     expect(viaDoor).toEqual(direct);
   });
 });
+
+/**
+ * EVERY DERIVATION WALKS THE DOOR. A raw `deriveDyadVeil(seed, tag)` anywhere in this package but the door
+ * itself would let a seed-class or cloud-synced source reach the veil by omission — the type law holds only
+ * where the door stands between. The corpus pins it: one caller, `veil-key.ts`.
+ */
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+test("no keyhive source calls deriveDyadVeil outside veil-key.ts", () => {
+  const dir = new URL("../src/", import.meta.url).pathname;
+  const callers = readdirSync(dir).filter((f) => f.endsWith(".ts") && f !== "veil-key.ts")
+    .filter((f) => /\bderiveDyadVeil\s*\(/.test(readFileSync(join(dir, f), "utf8")));
+  expect(callers).toEqual([]);
+});

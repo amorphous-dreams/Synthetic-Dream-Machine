@@ -60,7 +60,8 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
 };
 import { verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
-import { deriveDyadVeil, hexToBytes as meshHexToBytes } from "@lararium/mesh";
+import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
+import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore } from "./daemon-event-store.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
@@ -648,7 +649,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       kh = keyhive;
       mintedByHex = did;
       if (daemonAuth.dyadVeilTag) {
-        const veilKeys = await deriveDyadVeil(daemonAuth.seed, daemonAuth.dyadVeilTag);
+        // The boot re-derives the founder-veil through the one door: the vessel seed reads as the device-minted key,
+        // never a seed-class or cloud-synced source (the veil ruling, `veil-key.ts`).
+        const veilKeys = await deriveVeilFromDeviceKey(mintDeviceMintedKey(daemonAuth.seed), daemonAuth.dyadVeilTag);
         const v = new KeyhiveProvider();
         await v.init({
           seed: meshHexToBytes(veilKeys.signingKey),
