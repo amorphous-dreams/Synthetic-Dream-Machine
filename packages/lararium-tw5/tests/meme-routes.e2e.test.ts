@@ -57,11 +57,48 @@ if (!forkPresent) {
   console.error(`meme-routes.e2e: SKIPPED — fork or plugin missing (${TW5_JS} · ${PLUGIN_TID})`);
 }
 
+interface Fork { base: string; child: ChildProcess; log: string[] }
+
+/** Lay a wiki folder carrying the packed plugin and boot the fork's `--listen` over it. */
+async function bootFork(wiki: string, args: readonly string[], files: Record<string, string> = {}): Promise<Fork> {
+  mkdirSync(path.join(wiki, "tiddlers"), { recursive: true });
+  writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "meme-routes e2e", plugins: [], themes: [], build: {} }));
+  copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
+  for (const [name, text] of Object.entries(files)) writeFileSync(path.join(wiki, name), text);
+  const port = await freePort();
+  const base = `http://127.0.0.1:${port}`;
+  const log: string[] = [];
+  const child = spawn(process.execPath, [TW5_JS, wiki, "--listen", `port=${port}`, "host=127.0.0.1", ...args], { stdio: ["ignore", "pipe", "pipe"] });
+  child.stdout?.on("data", (d: Buffer) => log.push(String(d)));
+  child.stderr?.on("data", (d: Buffer) => log.push(String(d)));
+  // Poll the listener rather than wait a duration; a child that died ends the poll with its log.
+  const deadline = Date.now() + 30_000;
+  for (;;) {
+    if (child.exitCode !== null) throw new Error(`server died before listening:\n${log.join("")}`);
+    try {
+      const r = await fetch(`${base}/status`);
+      if (r.status < 500) break;
+    } catch { /* listener not up yet */ }
+    if (Date.now() > deadline) throw new Error(`server never listened:\n${log.join("")}`);
+    await new Promise((res) => setTimeout(res, 100));
+  }
+  return { base, child, log };
+}
+
+async function stopFork(fork: Fork | undefined): Promise<void> {
+  const child = fork?.child;
+  if (child && child.exitCode === null) {
+    const gone = new Promise<void>((res) => child.once("exit", () => res()));
+    child.kill("SIGTERM");
+    await Promise.race([gone, new Promise<void>((res) => setTimeout(res, 5_000))]);
+    if (child.exitCode === null) child.kill("SIGKILL");
+  }
+}
+
 describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-TiddlyWiki server ★", () => {
-  let child: ChildProcess;
+  let fork: Fork | undefined;
   let base = "";
   let root = "";
-  const log: string[] = [];
 
   const http = async (method: string, p: string, init: { body?: string; headers?: Record<string, string> } = {}): Promise<Reply> => {
     const headers: Record<string, string> = { ...init.headers };
@@ -80,41 +117,19 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     const tmpRoot = process.env["LARES_E2E_TMP"] ?? tmpdir();
     mkdirSync(tmpRoot, { recursive: true });
     root = mkdtempSync(path.join(tmpRoot, "meme-routes-e2e-"));
-    const wiki = path.join(root, "wiki");
-    mkdirSync(path.join(wiki, "tiddlers"), { recursive: true });
-    writeFileSync(path.join(wiki, "tiddlywiki.info"), JSON.stringify({ description: "meme-routes e2e", plugins: [], themes: [], build: {} }));
-    copyFileSync(PLUGIN_TID, path.join(wiki, "tiddlers/lares-memetic-wikitext.tid"));
-    // The kind-parity witness asks the server's own filter engine over HTTP; the fork gates external
-    // filters behind this switch (get-tiddlers-json.js), so the suite's wiki folder opens it.
-    writeFileSync(path.join(wiki, "tiddlers/allow-filters.tid"), "title: $:/config/Server/AllowAllExternalFilters\n\nyes");
-    // The same route strips `$:/` titles from every answer unless this reads yes — and a partition
-    // compared over stripped answers agrees vacuously.
-    writeFileSync(path.join(wiki, "tiddlers/sync-system.tid"), "title: $:/config/SyncSystemTiddlersFromServer\n\nyes");
-    const port = await freePort();
-    base = `http://127.0.0.1:${port}`;
-    child = spawn(process.execPath, [TW5_JS, wiki, "--listen", `port=${port}`, "host=127.0.0.1"], { stdio: ["ignore", "pipe", "pipe"] });
-    child.stdout?.on("data", (d: Buffer) => log.push(String(d)));
-    child.stderr?.on("data", (d: Buffer) => log.push(String(d)));
-    // Poll the listener rather than wait a duration; a child that died ends the poll with its log.
-    const deadline = Date.now() + 30_000;
-    for (;;) {
-      if (child.exitCode !== null) throw new Error(`server died before listening:\n${log.join("")}`);
-      try {
-        const r = await fetch(`${base}/status`);
-        if (r.ok) break;
-      } catch { /* listener not up yet */ }
-      if (Date.now() > deadline) throw new Error(`server never listened:\n${log.join("")}`);
-      await new Promise((res) => setTimeout(res, 100));
-    }
+    fork = await bootFork(path.join(root, "wiki"), [], {
+      // The kind-parity witness asks the server's own filter engine over HTTP; the fork gates external
+      // filters behind this switch (get-tiddlers-json.js), so the suite's wiki folder opens it.
+      "tiddlers/allow-filters.tid": "title: $:/config/Server/AllowAllExternalFilters\n\nyes",
+      // The same route strips `$:/` titles from every answer unless this reads yes — and a partition
+      // compared over stripped answers agrees vacuously.
+      "tiddlers/sync-system.tid": "title: $:/config/SyncSystemTiddlersFromServer\n\nyes",
+    });
+    base = fork.base;
   }, 60_000);
 
   afterAll(async () => {
-    if (child && child.exitCode === null) {
-      const gone = new Promise<void>((res) => child.once("exit", () => res()));
-      child.kill("SIGTERM");
-      await Promise.race([gone, new Promise<void>((res) => setTimeout(res, 5_000))]);
-      if (child.exitCode === null) child.kill("SIGKILL");
-    }
+    await stopFork(fork);
     if (root) rmSync(root, { recursive: true, force: true });
   });
 
@@ -366,4 +381,64 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
     expect(out("x.html")).toContain("tc-story-river");
     expect(out("x.html")).toMatch(/<h1[^>]*>a<\/h1>/);
   }, 60_000);
+});
+
+/**
+ * THE READERS/WRITERS CASE — the server's principal table stands in front of the meme skins exactly
+ * as it stands in front of `/tiddlers/`: the method→principal mapping and the authenticator run
+ * before any route is chosen. Measured on stock's own path first, asserted as parity on ours.
+ */
+describe.skipIf(!forkPresent)("★ READERS/WRITERS — the meme skins answer the principal table as `/tiddlers/` does ★", () => {
+  let fork: Fork | undefined;
+  let root = "";
+  const basic = (user: string): Record<string, string> => ({ authorization: `Basic ${Buffer.from(`${user}:pw`).toString("base64")}` });
+  const http = async (method: string, p: string, init: { body?: string; headers?: Record<string, string> } = {}): Promise<Reply> => {
+    const headers: Record<string, string> = { ...init.headers };
+    if (method !== "GET") headers["x-requested-with"] = "TiddlyWiki";
+    const r = await fetch(fork!.base + p, { method, headers, body: init.body });
+    return { status: r.status, headers: r.headers, body: await r.text() };
+  };
+  const NATIVE = `/recipes/default/tiddlers/${encodeURIComponent("lar:///t/x")}`;
+  const MEME = memePathOf(URI, { kind: "recipes", name: "default" })!;
+  const MEME_BAG = memePathOf(URI, { kind: "bags", name: "default" })!;
+
+  beforeAll(async () => {
+    const tmpRoot = process.env["LARES_E2E_TMP"] ?? tmpdir();
+    mkdirSync(tmpRoot, { recursive: true });
+    root = mkdtempSync(path.join(tmpRoot, "meme-routes-auth-"));
+    fork = await bootFork(path.join(root, "wiki"), ["readers=(authenticated)", "writers=alice", "credentials=users.csv"], {
+      "users.csv": "username,password\nalice,pw\nbob,pw\n",
+    });
+  }, 60_000);
+
+  afterAll(async () => {
+    await stopFork(fork);
+    if (root) rmSync(root, { recursive: true, force: true });
+  });
+
+  test("★ anonymous: `/memes/` answers the status stock's `/tiddlers/` answers; authenticated: 200 ★", async () => {
+    const stock = await http("GET", NATIVE);
+    expect(stock.status).toBe(401);
+    expect(stock.headers.get("www-authenticate")).toMatch(/^Basic /);
+    const ours = await http("GET", MEME);
+    expect(ours.status).toBe(stock.status);
+    expect(ours.headers.get("www-authenticate")).toBe(stock.headers.get("www-authenticate"));
+    // A writer lands the meme; a reader reads it back.
+    const put = await http("PUT", MEME_BAG, { body: meme(["a"]), headers: basic("alice") });
+    expect(put.status, put.body).toBe(200);
+    expect((await http("GET", MEME, { headers: basic("bob") })).status).toBe(200);
+    expect((await http("GET", MEME, { headers: basic("alice") })).status).toBe(200);
+  });
+
+  test("CONTROL: a reader-only principal's PUT and DELETE refuse as stock refuses; nothing moves", async () => {
+    const stock = await http("PUT", NATIVE, { body: JSON.stringify({ title: "lar:///t/x", text: "bob" }), headers: basic("bob") });
+    expect(stock.status).toBe(401);
+    const put = await http("PUT", MEME_BAG, { body: meme(["a", "z"]), headers: basic("bob") });
+    expect(put.status).toBe(stock.status);
+    const del = await http("DELETE", MEME_BAG, { headers: basic("bob") });
+    expect(del.status).toBe(stock.status);
+    const read = await http("GET", MEME, { headers: basic("alice") });
+    expect(read.status).toBe(200);
+    expect(read.body).not.toContain("#/z");
+  });
 });
