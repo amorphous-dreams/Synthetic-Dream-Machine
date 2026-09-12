@@ -45,6 +45,8 @@
 const DECLARATION =
   "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>";
 
+import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
+
 const SOH_OPENER_RE =
   /(<<\^)[ \t]*(?:code="(&#x(?:0001|0011);)"(?:[ \t]+namespace="([^"]*)")?|([^&\n]*?)(&#x(?:0001|0011);))/;
 
@@ -72,9 +74,13 @@ function metaNamespace(src: string): string | null {
  * The command word a `<<` … `>>` opens with, definition registers named.
  *
  * TiddlyWiki's parameter-list syntax takes `:` and refuses `=`, so a definition keeps the colon it carries.
- * The pragma spellings all lead with a backslash; wehe, kumu and helu spell the same registers as sigils.
+ * The registers are THE SHELF'S: every sigil kinded `pragma` or `pragma-alias` opens a definition — the
+ * backslash pragmas, their unslashed English mirrors (`define` · `procedure` · `function` · `widget` ·
+ * `typos` · `type` · the `let`/`var`/`const` binders) and the Hawaiian spellings (`wehe` · `kumu` · `helu`
+ * · `waiho`). `meme-normalize-param-separator` reads the shelf and holds this list to it.
  */
-const DEFINITION_HEAD = /^[~^!]?\s*(\\[A-Za-z_]|wehe\b|kumu\b|helu\b)/;
+const DEFINITION_HEAD =
+  /^[~^!]?\s*(\\[A-Za-z_]|(?:define|procedure|function|widget|typos|type|let|var|const|wehe|kumu|helu|waiho)(?![\w-]))/;
 
 /** A colon separates a parameter only where a QUOTED value follows — a scheme colon never does. */
 const COLON_PARAM = /\b([A-Za-z0-9_-]+):(?=["']|\[\[)/g;
@@ -102,7 +108,10 @@ const FRAME_CLOSE_ENDS = /(<<\^ code="&#x(?:0004|0014);"[ \t]*->[ \t]*)"?\?"?([ 
  */
 export function normalizeParamSeparators(src: string): { text: string; moved: number } {
   let moved = 0;
-  const text = src.replace(/<<([^\n>]*(?:>(?!>)[^\n>]*)*)>>/g, (whole, inner: string) => {
+  // A sigil SHOWN inside a fence or a code span declares and fires nothing, and never moves.
+  const mask = fencedSpans(src);
+  const text = src.replace(/<<([^\n>]*(?:>(?!>)[^\n>]*)*)>>/g, (whole, inner: string, offset: number) => {
+    if (inMask(mask, offset)) return whole;
     if (DEFINITION_HEAD.test(inner)) return whole;
     const next = inner.replace(COLON_PARAM, "$1=");
     if (next === inner) return whole;
@@ -112,9 +121,6 @@ export function normalizeParamSeparators(src: string): { text: string; moved: nu
   return { text, moved };
 }
 
-// ── The toml meta column law ─────────────────────────────────────────────────────────────────────
-
-/** A top-level `key = value` line of a toml meta body, split at its first unquoted `=`. */
 const META_KV_RE = /^([A-Za-z0-9_.-]+)[ \t]*=[ \t]*(.*)$/;
 
 /**

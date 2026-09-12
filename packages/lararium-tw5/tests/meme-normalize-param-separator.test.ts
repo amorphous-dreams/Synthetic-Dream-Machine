@@ -100,3 +100,58 @@ describe("a named parameter is written key=value", () => {
     expect(normalizeMemeSource(r.text).text).toBe(r.text);
   });
 });
+
+/**
+ * THE DEFINITION REGISTERS ARE THE SHELF'S, NOT A HAND LIST. Every sigil the shelf kinds `pragma` or
+ * `pragma-alias` opens a DEFINITION — `<<~ procedure greet(name:"world")>>` spells TiddlyWiki's own
+ * parameter list — and the separator law reads the shelf's set, so an unslashed mirror (`procedure`,
+ * `function`, `widget`, `define`, `typos`, `type`) keeps its colon exactly as `\procedure` does.
+ * MEASURED on six carriers before this witness: `meme normalize` rewrote `<<~ function myFilter(param:"")>>`
+ * to `param=""`, and the sweep held them at HEAD.
+ */
+import { readdirSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
+const SHELF = fileURLToPath(new URL("../tiddlers/", import.meta.url));
+
+/** The head word of every declaring sigil the shelf holds, read from its own open pattern. */
+function shelfDefinitionHeads(): string[] {
+  return readdirSync(SHELF)
+    .filter((f) => f.startsWith("sigil-") && f.endsWith(".tid"))
+    .map((f) => readFileSync(SHELF + f, "utf8"))
+    .filter((t) => /^lar-kind: pragma(-alias)?$/m.test(t))
+    // The engine reads both spellings of the pattern field (`grammar-heads`), so the witness does too.
+    .map((t) => /^lar-(?:open-)?pattern: <<~\\s\*([A-Za-z_-]+)/m.exec(t)?.[1] ?? "")
+    .filter(Boolean)
+    .sort();
+}
+
+describe("★ a DEFINITION under any shelf spelling keeps its colon ★", () => {
+  test("the shelf declares its definition heads (the set this witness reads is non-empty and holds the mirrors)", () => {
+    const heads = shelfDefinitionHeads();
+    expect(heads).toEqual(expect.arrayContaining(["procedure", "function", "widget", "define", "wehe", "helu", "kumu"]));
+  });
+
+  test("★ every shelf definition head keeps `param:\"default\"` byte-identical ★", () => {
+    for (const head of shelfDefinitionHeads()) {
+      const src = `<<~ ${head} thing(param:"default" other:"")>>body<<~/${head}>>`;
+      expect(norm(src), head).toBe(src);
+    }
+  });
+
+  test("CONTROL: a call-side `param:value` still takes the equals sign; a call-side positional still quotes", () => {
+    expect(norm('<<~ kahea greeting(name:"Operator")>>')).toBe('<<~ kahea greeting(name="Operator")>>');
+    expect(norm('<<~ procedure-call x(a:"1")>>')).toBe('<<~ procedure-call x(a="1")>>');
+    const positional = normalizeMemeSource('<<~ loulou lar:///ha.ka.ba/x>>').text;
+    expect(positional).toMatch(/<<~ loulou "lar:\/\/\/ha\.ka\.ba\/x">>|<<~ loulou lar:\/\/\/ha\.ka\.ba\/x>>/);
+  });
+
+  test("★ a call SHOWN inside a code span or a fence declares nothing and never moves ★", () => {
+    const table = '|`say-hi(name)` |`<<say-hi name:"Bugs" address:"Rabbit Hole Hill">>` |`Hi Bugs.` |';
+    expect(norm(table)).toBe(table);
+    const fence = '```\n<<greet name:"world">>\n```\n';
+    expect(norm(fence)).toBe(fence);
+    // CONTROL: the same call outside the span moves.
+    expect(norm('<<say-hi name:"Bugs">>')).toBe('<<say-hi name="Bugs">>');
+  });
+});
