@@ -13,6 +13,8 @@ export { BrowserVesselIslandPool } from "./browser-vessel-island-pool.js";
 export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-pool.js";
 
 export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
+export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
+export type { LockHost, VesselLockHold } from "./vessel-lock.js";
 export { publishHandleBrowser } from "./browser-handle-publish.js";
 export { burnFaceBrowser, attestFaceBrowser, resolveOwnerBurnHandBrowser } from "./browser-handle-verbs.js";
 export { composeBrowser } from "./browser-caps.js";

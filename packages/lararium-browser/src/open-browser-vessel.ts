@@ -89,6 +89,7 @@ import {
 import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
+import { holdVesselLock } from "./vessel-lock.js";
 // ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
 
 const BOOTSTRAP_KEY  = "social-bootstrap";
@@ -328,6 +329,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   const emit = (p: LarOpenPhase) => onPhase?.(p);
 
   emit("boot");
+
+  // ── One holder per store — the single-owner law across tabs ─────────────────
+  // A second tab on this origin would stand a second repo and a second keyhive provider over ONE
+  // IndexedDB store and ONE OPFS CAS. The Web Lock refuses that open LOUD, naming the holder; it stays
+  // held for this page's life and the browser lets go when the page does. An engine without Web Locks
+  // reads as a floor and opens as before. `steal` never passes.
+  await holdVesselLock(idbName);
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
   // The federation ring split. This vessel's own islands (daemon + wiki workers) sync over
