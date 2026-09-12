@@ -19,7 +19,9 @@ import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
   loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots,
 } from "../src/node-vessel-identity.js";
-import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas } from "../src/identity-anchors.js";
+import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, type IdentityAnchors } from "../src/identity-anchors.js";
+import { readWornPersonaMount } from "../src/worn-mount.js";
+import type { DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
 import { provisionRecoveryAtFounding } from "../src/recovery-keel.js";
 import { loadRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
@@ -43,6 +45,24 @@ function seededRng(seed: number) {
 
 const pubHexOf = async (seed: Uint8Array): Promise<string> =>
   Buffer.from(await ed25519.getPublicKeyAsync(seed)).toString("hex");
+
+/** A signed device→persona edge, shaped as the founding mints one. Its SIGNATURE is checked downstream by
+ *  the Binding Gate, never here — the switch decides WHICH edge is presented, never whether it is checked. */
+const edgeFor = (rootDid: string): DeviceDelegationTiddler => ({
+  kind: "device-delegation",
+  personaRootDid: rootDid as LarDid,
+  deviceDid: "0xbb22" as LarDid,
+  deviceVerifyingKey: "cc".repeat(32),
+  hearthTrueName: "",
+  issuedAt: "2026-01-01T00:00:00.000Z",
+  expiresAt: "2027-01-01T00:00:00.000Z",
+  boundEpoch: "1",
+  signature: "dd".repeat(64),
+});
+const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
+  personaGroupDocIdHex: `aa${n}`, meshCabalDocIdHex: `bb${n}`, personaGroupAgentIdHex: `cc${n}`,
+  ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`) } : {}),
+});
 
 describe("multi-persona-per-vessel (#63)", () => {
   let root: string;
@@ -150,4 +170,49 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(existsSync(join(larIdentityDir(), "anchors-h0.json"))).toBe(true);   // uniform founding spelling
     expect(listAnchoredPersonas()).toEqual([0, 1]);   // the explicit roster record
   });
+
+  /**
+   * THE WEAR-REBOOT MOUNT-SWITCH. `persona wear N` moves ONLY the selector pointer; the daemon doc's singular
+   * pins were written by the FOUNDING face and never move again. So a reboot after a wear re-mounted h0
+   * whatever the operator had put on — while the CLI told them "restart the node to sign as it". The switched
+   * face's material lives in its OWN anchors, persisted at founding: signer DID, persona-KEL prefix, and the
+   * SIGNED device edge, all public re-pin material.
+   */
+  describe("the wear-reboot mount-switch — a reboot mounts the face the operator WORE", () => {
+    test("★ a worn NON-founding persona resolves ITS OWN mount material from anchors-hN ★", async () => {
+      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
+      await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+      persistIdentityAnchors(anchorsFor(1, true), 1);
+      await wearPersona(dataDir(), 1);
+
+      const worn = await readWornPersonaMount(dataDir());
+      expect(worn?.handleIndex).toBe(1);
+      expect(worn?.signerDid).toBe("0xdid1");
+      expect(worn?.personaKelPrefix).toBe("EKEL1");
+      expect(worn?.personaGroupDocIdHex, "the switched face's OWN group, not h0's").toBe("aa1");
+      expect(worn?.meshCabalDocIdHex).toBe("bb1");
+      expect(worn?.deviceEdge.kind).toBe("device-delegation");
+    });
+
+    test("CONTROL — the FOUNDING face resolves NO switch: the daemon-doc pins already name h0", async () => {
+      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
+      persistIdentityAnchors(anchorsFor(0, true), 0);
+      await wearPersona(dataDir(), 0);
+      expect(await readWornPersonaMount(dataDir()), "h0 needs no re-pin — the pins are already its own").toBeNull();
+    });
+
+    test("CONTROL — anchors carrying NO mount material read as no switch (pre-slot anchors, or a joinee)", async () => {
+      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
+      await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+      persistIdentityAnchors(anchorsFor(1, false), 1);   // doc-ids only — no signer, prefix or edge
+      await wearPersona(dataDir(), 1);
+      expect(await readWornPersonaMount(dataDir()), "a half-anchor never re-pins a mount").toBeNull();
+    });
+
+    test("CONTROL — wearing nothing resolves no switch (the selector is unset)", async () => {
+      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
+      expect(await readWornPersonaMount(dataDir())).toBeNull();
+    });
+  });
+
 });

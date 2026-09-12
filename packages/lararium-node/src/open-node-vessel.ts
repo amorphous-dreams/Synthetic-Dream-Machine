@@ -123,6 +123,7 @@ import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensor
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
 import { loadIdentityArchive, loadVeilArchive } from "./identity-anchors.js";
+import { readWornPersonaMount } from "./worn-mount.js";
 import { archiveOpens } from "./archive-passphrase.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import {
@@ -361,6 +362,14 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
   const hearthPin = readHearthDialPin(bootstrapPath);
+  // THE FACE THE OPERATOR WORE. `persona wear N` moves ONLY the selector pointer; the daemon doc's singular
+  // mount pins were written by the FOUNDING face and never move again, so a reboot re-mounted h0 whatever
+  // mask was on. A worn non-founding face carries its own mount material in its anchors — the pins below
+  // default to it. Null means no switch is owed (h0, nothing worn, or anchors without the material).
+  const wornMount = await readWornPersonaMount(storageDir);
+  if (wornMount) {
+    console.log(`[persona] worn h${wornMount.handleIndex} — the mount re-pins from its OWN anchors; the founding face's pins name h0`);
+  }
   const emit = (p: NodeOpenPhase) => onPhase?.(p);
 
   emit("boot");
@@ -907,7 +916,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       // exists to prevent, arriving through a merge rather than a switch.
       const planesFault = personaPlanes.length ? personaPlanesFault(personaPlanes) : null;
       if (planesFault) throw new Error(`[lararium] the PersonaGroup planes this vessel carries do not stand: ${planesFault}`);
-      const personaGroupId = bootstrapTiddlers[PERSONA_GROUP_DOC_ID_TIDDLER]?.text
+      // The WORN face decides which plane mounts. The bootstrap pin names the FOUNDING face, which is the
+      // right answer only when no switch is owed — and both this reading and the Binding Gate's below must
+      // resolve the SAME face, or the writable plane and the signing authority would belong to two people.
+      const personaGroupId = wornMount?.personaGroupDocIdHex
+        ?? bootstrapTiddlers[PERSONA_GROUP_DOC_ID_TIDDLER]?.text
         ?? tiddlerText(id?.[PERSONA_GROUP_DOC_ID_TIDDLER]) ?? null;
       // A vessel standing in compartments but told to wear none it carries halts here rather than
       // wearing whichever happened to load first.
@@ -1014,9 +1027,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
     const daemonDoc = (await readDaemonDoc()).doc();
-    const personaGroupDocIdHex   = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_DOC_ID_TIDDLER])   ?? undefined;
-    const personaGroupAgentIdHex = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_AGENT_ID_TIDDLER]) ?? undefined;
-    const meshCabalDocIdHex     = tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
+    // Each pin defaults to the WORN face's own anchors; absent a switch these read the daemon doc exactly
+    // as before (byte-identical for a single-face vessel, which is every vessel until one wears a second).
+    const personaGroupDocIdHex   = wornMount?.personaGroupDocIdHex   ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_DOC_ID_TIDDLER])   ?? undefined;
+    const personaGroupAgentIdHex = wornMount?.personaGroupAgentIdHex ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_AGENT_ID_TIDDLER]) ?? undefined;
+    const meshCabalDocIdHex     = wornMount?.meshCabalDocIdHex      ?? tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
     // The cabal rides with the FACE — its members read as PersonaGroups, so a faceless place names none.
     // ── THE FACE, IF ONE STANDS ────────────────────────────────────────────────────────────────
     // The signer pin + edge carry the Binding Gate's authority. Their ABSENCE names a place at the
@@ -1027,10 +1042,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // THE GATE STILL NEVER SOFTENS. Downstream, `bootDaemonKeyhive` runs the Binding Gate in FULL or
     // grants no persona caps at all, and refuses a TORN face outright. So absence buys fewer caps, never
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
-    const signerDid  = tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
+    const signerDid  = wornMount?.signerDid ?? tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
     const dyadVeilTag = tiddlerText(daemonDoc?.tiddlers?.[DYAD_VEIL_TAG_TIDDLER]) ?? undefined;
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
-    const deviceEdge = edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined;
+    // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
+    // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
+    const deviceEdge = wornMount?.deviceEdge ?? (edgeRecord?.tiddler as unknown as DeviceDelegationTiddler | undefined);
     // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ──────────────
     // `vesselDyads` reads the ceremony-minted slots, the ONLY source — a bare delegation edge
     // presents no dyad. The read only observes — but a FACE
@@ -1053,7 +1070,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // that pins NO identifier holds no face and stands at the floor. A vessel that pins one whose chain its
     // local replica cannot reach has a face it cannot prove — that HALTS, fail-closed, exactly as before
     // (never a global lookup; a not-yet-synced replica simply denies).
-    const personaKelPrefix = tiddlerText(daemonDoc?.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]) ?? undefined;
+    const personaKelPrefix = wornMount?.personaKelPrefix ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]) ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
     if (personaKelPrefix) {
       const kelHolder = makePersonaKelRingHolder({ repo, nexusPubkey: vesselIdentity.verifyingKey });
@@ -1104,7 +1121,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     if (joinSyncUrl) {
       try {
         const leafIdentity = await loadLeafIdentity(storageDir);
-        const selfEdge = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined;
+        const selfEdge = wornMount?.deviceEdge ?? (daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined);
         const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
         nexusDial = maybeStartNexusClientDial({
           repo, syncUrl: joinSyncUrl, gatePubKey: joinGatePubKey,
