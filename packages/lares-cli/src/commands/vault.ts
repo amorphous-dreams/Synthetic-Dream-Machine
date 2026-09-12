@@ -225,6 +225,11 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       if (kc) {
         console.log(`  keychainKek    ${kc.kekAvailable ? "available" : "dark"} — ${kc.reason ?? "no reason reported"}`);
       }
+      // EVERY KEY NAMES ITS CLASS (basket-one #/the-phone-seat): device-minted · seed · cloud-synced. A key
+      // the census cannot class never renders as a device key by omission — the class rides beside the name.
+      const keys = (output["keys"] ?? []) as readonly { name: string; class: string; file?: string }[];
+      console.log(`  keys           ${keys.length} (cloud-synced: ${keys.filter((k) => k.class === "cloud-synced").length} — none stand today; a PRF/passkey wrap MUST declare one)`);
+      for (const k of keys) console.log(`    ${k.name.padEnd(28)} ${k.class.padEnd(14)}${k.file ? ` ${k.file}` : ""}`);
     },
   });
   return 0;

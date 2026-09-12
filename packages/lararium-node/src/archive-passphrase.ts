@@ -41,6 +41,8 @@ import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { deviceSharePath } from "./recovery-share-store.js";
 import { setSealExpected, sealExpected as readSealExpected, type LaresConfig } from "./lares-config.js";
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
+import { larIdentityDir } from "./vessel-paths.js";
+import { vesselKeyCensus, type KeyCensusEntry } from "./key-class.js";
 
 const SALT_LEN = 16;
 
@@ -87,6 +89,8 @@ export interface CarrierStatus {
 
 export interface ArchiveSealStatus {
   readonly carriers: Record<CarrierName, CarrierStatus>;
+  /** EVERY KEY NAMES ITS CLASS — the identity dir's census (`key-class`): `device-minted` · `seed` · `cloud-synced`. */
+  readonly keys: readonly KeyCensusEntry[];
   /** True when a probe was supplied and the sealed carriers DISAGREE on it — a split-KEK signal. */
   readonly split: boolean;
   /** The boot-gate marker (config hint) — sealing is expected. */
@@ -178,6 +182,7 @@ export function archiveSealStatus(opts: { probe?: string; cfg?: LaresConfig } = 
   const probe = probeSecretService();
   return {
     carriers: out,
+    keys: vesselKeyCensus(larIdentityDir()),
     split,
     sealExpected: readSealExpected(opts.cfg),
     passphraseEnvSet: Boolean(process.env[ARCHIVE_PASSPHRASE_ENV]),
