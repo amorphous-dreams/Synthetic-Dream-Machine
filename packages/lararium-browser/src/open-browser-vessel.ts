@@ -29,7 +29,7 @@ import {
   materializeGenesisIsland,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
-  deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
+  deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
@@ -61,7 +61,6 @@ import { readWornPersonaMount }              from "@lararium/mesh";
 import {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
-  browserJoineePersonaIndex,
   listBrowserPersonaRoots, loadBrowserActivePersona,
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
   openVesselIdb, idbGet, idbPut,
@@ -775,9 +774,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
       // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
       // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins
-      // that root). The selector chooses WHICH root: `browserJoineePersonaIndex` reads the worn index
-      // (a founder's worn/founding root, or a joinee's admitted anchor index — the anchor/edge path,
-      // never a held root the joinee lacks).
+      // that root). The selector chooses WHICH root, and `readWornPersonaMount` is what reads it —
+      // over the PersonaVault both vessel classes implement, so the node and browser boots cannot drift
+      // on the answer (a founder's worn/founding root, or a joinee's admitted anchor index — the
+      // anchor/edge path, never a held root the joinee lacks).
       //
       // THE FACE THE OPERATOR WORE. Wearing moves ONLY the selector; the bootstrap's social record was
       // written by the FOUNDING face and never moves again — so this worker booted on the founding face's
@@ -945,7 +945,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // on custody: wearBrowserPersona REFUSES when this vessel holds no root at that index (the
       // custody-by-type wall — sign only as a persona whose sovereign secret this vessel carries).
       // Wearing moves only the selector pointer; the worker BINDS the worn persona at boot
-      // (browserJoineePersonaIndex feeds openDaemon), so the switch lands on the next reboot —
+      // (`readWornPersonaMount` reads the selector and re-pins the mount), so the switch lands on the
+      // next reboot —
       // rebootRequired names that for the app shell (the reboot itself is the caller's act).
       registry.register("persona-wear", async (args) => {
         const index = Number(args["index"]);
