@@ -33,6 +33,7 @@ import {
   type KeypairCrypto,
 } from "./vessel-identity-core.js";
 import type { AnchorStore } from "./anchor-store.js";
+import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { RecoveryShareStore } from "./recovery-keel-core.js";
 
 /** How a runtime persists WHICH persona the vessel currently wears (one pointer, never a root). */
@@ -211,3 +212,73 @@ export async function loadActivePersona(vault: PersonaVault): Promise<number | u
 // generateOrLoadKeypair rides the same skeleton one layer down (the device key). Re-exported for adapters
 // that build both a device-key store and a persona vault from the same shores.
 export { generateOrLoadKeypair };
+
+// ---------------------------------------------------------------------------
+// The worn mount — WHICH face a reboot mounts
+// ---------------------------------------------------------------------------
+
+/**
+ * WEARING MOVES A POINTER; SOMETHING HAS TO FOLLOW IT.
+ *
+ * `wearPersona` writes the selector and nothing else — "only the selector pointer moves; the root never
+ * does". A vessel's singular mount pins are written ONCE, by the FOUNDING face, and never move again (an
+ * added compartment founds mount:false and pins none), so a reboot after a wear re-mounted the founding
+ * face whatever mask was on, while the door told the operator the opposite. A pointer moved and nothing
+ * followed it.
+ *
+ * The switched face's material is not missing — it lives in that face's OWN anchors, persisted at its
+ * founding: the signer DID, the persona-KEL prefix, and the SIGNED device→persona edge. All of it is
+ * PUBLIC re-pin material (a verifying-key identifier, a KEL prefix, a signed grant record); no secret
+ * rides here, which is why it may sit beside the doc-ids at all.
+ *
+ * PLATFORM-BLIND, because the bug is. It reads a `PersonaVault` — the selector and the anchors, both of
+ * which every vessel class already implements — so the node fs vault and the browser IDB vault answer the
+ * same question with one function rather than two that drift (the composeLararium/composeBrowser law).
+ *
+ * WHAT IT DECIDES, AND WHAT IT REFUSES TO DECIDE. It answers ONLY "which face is worn, and does that face
+ * carry its own mount material". It verifies no signature and grants no capability: the edge it names is
+ * presented to the SAME Binding Gate every boot runs, which verifies it in full or grants no persona caps
+ * at all. The switch changes WHICH edge is presented, never WHETHER it is checked.
+ *
+ * FAIL-CLOSED, AND SILENT WHERE SILENCE IS HONEST. Three readings answer `null`, each meaning "no switch
+ * is owed" rather than "something is wrong": nothing worn, the FOUNDING face worn (the pins already name
+ * it), and anchors carrying no mount material — written before the slot existed, or held by a joinee that
+ * minted no edge of its own. A half-anchor never re-pins: a partial switch would mount one face's planes
+ * under another face's authority, the one outcome worse than not switching at all.
+ */
+export interface WornPersonaMount {
+  readonly handleIndex:            number;
+  readonly personaGroupDocIdHex:   string;
+  readonly meshCabalDocIdHex:      string;
+  readonly personaGroupAgentIdHex: string;
+  readonly signerDid:              string;
+  readonly personaKelPrefix:       string;
+  readonly deviceEdge:             DeviceDelegationTiddler;
+}
+
+/**
+ * The face this vessel WEARS, when a reboot owes it a mount-switch — or `null` when it owes none.
+ *
+ * Index 0 answers `null` by design: the founding face already owns the mount pins, so re-pinning it from
+ * anchors would replace a reading with an identical one and invite the two sources to drift.
+ */
+export async function readWornPersonaMount(vault: PersonaVault): Promise<WornPersonaMount | null> {
+  const handleIndex = await vault.selector.load();
+  if (handleIndex === undefined || handleIndex === 0) return null;
+
+  const anchors = vault.anchors.load(handleIndex);
+  if (!anchors) return null;
+  const { signerDid, personaKelPrefix, deviceEdge } = anchors;
+  // ALL THREE OR NONE — see the fail-closed note above.
+  if (!signerDid || !personaKelPrefix || !deviceEdge) return null;
+
+  return {
+    handleIndex,
+    personaGroupDocIdHex:   anchors.personaGroupDocIdHex,
+    meshCabalDocIdHex:      anchors.meshCabalDocIdHex,
+    personaGroupAgentIdHex: anchors.personaGroupAgentIdHex,
+    signerDid,
+    personaKelPrefix,
+    deviceEdge,
+  };
+}

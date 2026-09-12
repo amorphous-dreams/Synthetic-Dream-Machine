@@ -57,6 +57,7 @@ import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
 import { vesselDyads } from "@lararium/mesh";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
+import { readWornPersonaMount }              from "@lararium/mesh";
 import {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
   generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
@@ -778,30 +779,35 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // (a founder's worn/founding root, or a joinee's admitted anchor index — the anchor/edge path,
       // never a held root the joinee lacks).
       //
-      // SURFACED FORK (per-persona social plane): the browser bootstrap holds ONE founding's social docs,
-      // so today the WORN binding IS the founding persona's. Wearing a SECOND persona whose OWN
-      // PersonaGroup + daemon social docs feed the worker means founding those docs per persona and
-      // keying the bootstrap by index — a whole-social-plane fork node itself does NOT exercise (node
-      // founds only index 0). Left to the operator; this reach threads the worn root's binding from the
-      // single bootstrap, which is exactly node's behaviour.
-      const wornPersona = await browserJoineePersonaIndex(idbName);
-      if (wornPersona !== undefined && wornPersona !== FOUNDING_PERSONA_INDEX) {
-        console.log(`[lararium-browser] worker boots on worn persona h${wornPersona} (binding from bootstrap)`);
+      // THE FACE THE OPERATOR WORE. Wearing moves ONLY the selector; the bootstrap's social record was
+      // written by the FOUNDING face and never moves again — so this worker booted on the founding face's
+      // binding whatever mask was on, while the line it logged claimed the opposite. The switched face's
+      // mount material lives in its OWN anchors, and the READING is mesh's, shared with the node vessel
+      // over the `PersonaVault` both implement, so the two classes cannot drift on it again.
+      const wornMount = await readWornPersonaMount(await makeBrowserIdbPersonaVault(idbName));
+      if (wornMount) {
+        console.log(`[lararium-browser] worn h${wornMount.handleIndex} — the binding re-pins from its OWN anchors`);
       }
+      // STILL A FORK, narrowed: the five MOUNT pins switch, and the per-persona SOCIAL PLANE does not. The
+      // browser bootstrap holds ONE founding's social docs (the plane urls, the contact card), so a second
+      // persona whose own PersonaGroup + daemon docs feed the worker still means founding those per persona
+      // and keying the bootstrap by index. Those are per-founding social documents, correctly NOT part of a
+      // mount — folding them in is the whole-social-plane fork, and it stays the operator's call.
+      const personaKelPrefix = wornMount?.personaKelPrefix ?? social.personaKelPrefix;
       // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier's
       // seq-sorted key-event-log from this vessel's OWN per-Nexus KEL board (its gate key IS its Nexus key),
       // against the LOCAL replica "as of last sync" (no-global-now). FAIL-CLOSED: a chain the replica does not
       // carry HALTS the boot (never a global lookup, never a fall-through to the raw signer pin).
       const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(vesselIdentity.verifyingKey), "board:persona-kel");
-      const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), social.personaKelPrefix);
+      const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
       if (!personaKelChain || personaKelChain.length === 0) {
-        throw new Error(`[lararium-browser] persona-KEL chain for ${social.personaKelPrefix.slice(0, 20)}… absent from the local board — the Binding Gate cannot reach a head (fail-closed).`);
+        throw new Error(`[lararium-browser] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — the Binding Gate cannot reach a head (fail-closed).`);
       }
       const daemonAuth = {
         seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
-        personaGroupDocIdHex: social.personaGroupDocIdHex,
-        personaGroupAgentIdHex: social.personaGroupAgentIdHex,
-        meshCabalDocIdHex: social.meshCabalDocIdHex,
+        personaGroupDocIdHex: wornMount?.personaGroupDocIdHex   ?? social.personaGroupDocIdHex,
+        personaGroupAgentIdHex: wornMount?.personaGroupAgentIdHex ?? social.personaGroupAgentIdHex,
+        meshCabalDocIdHex: wornMount?.meshCabalDocIdHex      ?? social.meshCabalDocIdHex,
         // Derived, never enumerated — the same derivation the node vessel runs, so neither can drift on
         // which bags a cap check can resolve. This vessel had been carrying neither the shared substrate
         // bag nor any bag its own catalog named, which no test could see and no throw announced.
@@ -809,15 +815,15 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
           // EVERY compartment registers; exactly one mounts. The two verbs part company here.
           fleets: social.personaPlanes.map((pl) => ({
             personaGroupId: pl.personaGroupId,
-            catalogNamed: pl.personaGroupId === social.personaGroupDocIdHex ? catalogNamedBags(catalogHandle.doc()) : [],
+            catalogNamed: pl.personaGroupId === (wornMount?.personaGroupDocIdHex ?? social.personaGroupDocIdHex) ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
           wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId],
         }),
         // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
         // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.
-        signerDid: social.signerDid,
-        personaKel: { prefix: social.personaKelPrefix, chain: personaKelChain },
-        deviceEdge: social.deviceEdge,
+        signerDid: wornMount?.signerDid ?? social.signerDid,
+        personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
+        deviceEdge: wornMount?.deviceEdge ?? social.deviceEdge,
       };
       // The engine's plugin-tiddler CIDs — the worker pulls them by CID from OPFS (the breath
       // path), never CRDT-syncing the oracle blob doc over the port. Same derivation as the pool.

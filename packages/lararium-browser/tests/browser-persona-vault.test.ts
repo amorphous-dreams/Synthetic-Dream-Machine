@@ -24,7 +24,8 @@ import {
   browserPersonaRootExists, browserJoineePersonaIndex,
   makeBrowserIdbPersonaVault,
 } from "../src/browser-vessel-identity.js";
-import type { IdentityAnchors } from "@lararium/mesh";
+import type { IdentityAnchors, DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
+import { readWornPersonaMount } from "@lararium/mesh";
 
 let created = 0;
 const freshIdb = (): string => `lares:test-persona:${Date.now()}:${created++}`;
@@ -194,5 +195,60 @@ describe("the joinee-wear path — a joinee reads its persona through the anchor
     const second = await makeBrowserIdbPersonaVault(name);
     expect(second.anchors.list()).toEqual([2]);
     expect(second.anchors.load(2)?.personaGroupDocIdHex).toBe("d1");
+  });
+});
+
+/**
+ * THE WEAR-REBOOT MOUNT-SWITCH, BROWSER SIDE. The reading is mesh's, over the `PersonaVault` both vessel
+ * classes implement — so this suite proves the browser adapter answers the node's question identically.
+ * Before it, the browser read the worn index and only LOGGED it while the binding beneath stayed the
+ * founding face's: a log that claimed what the code did not do.
+ */
+describe("the worn mount over the browser IDB vault", () => {
+  const edgeFor = (rootDid: string): DeviceDelegationTiddler => ({
+    kind: "device-delegation",
+    personaRootDid: rootDid as LarDid,
+    deviceDid: "0xbb22" as LarDid,
+    deviceVerifyingKey: "cc".repeat(32),
+    hearthTrueName: "",
+    issuedAt: "2026-01-01T00:00:00.000Z",
+    expiresAt: "2027-01-01T00:00:00.000Z",
+    boundEpoch: "1",
+    signature: "dd".repeat(64),
+  });
+  const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
+    personaGroupDocIdHex: `aa${n}`, meshCabalDocIdHex: `bb${n}`, personaGroupAgentIdHex: `cc${n}`,
+    ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`) } : {}),
+  });
+
+  test("★ a worn NON-founding persona resolves ITS OWN mount material from its anchors ★", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 1);
+    const vault = await makeBrowserIdbPersonaVault(name);
+    vault.anchors.save(1, anchorsFor(1, true));
+    await wearBrowserPersona(name, 1);
+
+    const worn = await readWornPersonaMount(vault);
+    expect(worn?.handleIndex).toBe(1);
+    expect(worn?.signerDid).toBe("0xdid1");
+    expect(worn?.personaKelPrefix).toBe("EKEL1");
+    expect(worn?.personaGroupDocIdHex, "the switched face's OWN group").toBe("aa1");
+    expect(worn?.deviceEdge.kind).toBe("device-delegation");
+  });
+
+  test("CONTROL — the FOUNDING face resolves NO switch, and a half-anchor never re-pins", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 1);
+    const vault = await makeBrowserIdbPersonaVault(name);
+
+    vault.anchors.save(0, anchorsFor(0, true));
+    await wearBrowserPersona(name, 0);
+    expect(await readWornPersonaMount(vault), "h0's pins already name it").toBeNull();
+
+    vault.anchors.save(1, anchorsFor(1, false));   // doc-ids only — no signer, prefix or edge
+    await wearBrowserPersona(name, 1);
+    expect(await readWornPersonaMount(vault), "a half-anchor never re-pins a mount").toBeNull();
   });
 });
