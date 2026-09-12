@@ -82,7 +82,7 @@ export interface BagResidencyEntry {
   readonly url:          BagUrl;
   readonly temperature:  ResidencyTemperature;   // "wela" | "anu"
   readonly pinned:       boolean;  // orthogonal flag — exempt from cooling
-  readonly lastTouched:  number;   // ms epoch
+  readonly lastTouched:  number;   // in the stowage clock's unit (rolls, or ms on the wall floor)
   readonly pinReason?:   string;   // operator-supplied or system pin reason
   readonly syncActive?:  boolean;  // true when peers are mid-replication
 }
@@ -107,6 +107,9 @@ export const DEFAULT_GRAIN_TYPE = "bag";
 export const DEFAULT_HOT_CAP = 32;
 /** Default idle threshold (ms): a wela grain untouched longer cools to anu. 5 min. */
 export const DEFAULT_IDLE_MS = 300_000;
+/** Idle threshold in ROLLS when a realm clock rides in — the ahi-kā yardstick reads a realm cold only
+ *  against its own pace, so a handful of rolls, never a calendar. */
+export const DEFAULT_IDLE_ROLLS = 8;
 /** Default sweeper tick interval (ms). 30 s. */
 export const DEFAULT_SWEEP_INTERVAL_MS = 30_000;
 
@@ -119,9 +122,15 @@ export interface BagStowageOptions {
    *  `{ wiki: 4 }` bounds live wiki islands independently of bags). A type absent
    *  here falls back to `hotCap`. `bag` always reads `hotCap`. */
   readonly typeCaps?:   Readonly<Record<string, number>>;
-  /** Idle threshold in ms. A wela grain untouched longer than this cools to anu.
-   *  Default 300_000 (5 minutes). */
+  /** Idle threshold in the CLOCK's own unit — rolls when a realm clock rides in (`clock`), ms on the
+   *  wall floor. A wela grain untouched longer than this cools to anu. */
+  readonly idle?:       number;
+  /** The wall-floor spelling of `idle` (ms). Read only when no `clock` rides in. Default 300_000 (5 min). */
   readonly idleMs?:     number;
+  /** THE REALM'S OWN CLOCK — a monotonic count (rolls) the realm advances by feeding. A logical epoch
+   *  accrues no silence on its own (lamplighters), so a day of wall-quiet ages nothing while three rolls
+   *  in one instant age three. Absent, the stowage falls to the wall floor and names it (`clockKind`). */
+  readonly clock?:      () => number;
   /** Sweeper tick interval in ms. Default 30_000 (30 seconds). */
   readonly sweepIntervalMs?: number;
   /** Hook called when heating anu → wela (hoʻowela). Wires into repo.find() (bag)
@@ -167,7 +176,10 @@ export class BagStowage {
   private readonly _bags = new Map<BagUrl, ResidencyState>();
   private readonly hotCap:          number;
   private readonly typeCaps:        Readonly<Record<string, number>>;
-  private readonly idleMs:          number;
+  private readonly idle:            number;
+  private readonly clock:           () => number;
+  /** Which clock decides idle: the realm's rolls, or the wall as the named floor. */
+  readonly clockKind: "realm" | "wall-floor";
   private readonly sweepIntervalMs: number;
   private readonly onHydrate?:      (url: BagUrl, grainType: string) => Promise<void>;
   private readonly onEvict?:        (url: BagUrl, grainType: string) => Promise<void>;
@@ -180,7 +192,9 @@ export class BagStowage {
   constructor(opts: BagStowageOptions = {}) {
     this.hotCap          = opts.hotCap          ?? DEFAULT_HOT_CAP;
     this.typeCaps        = opts.typeCaps        ?? {};
-    this.idleMs          = opts.idleMs          ?? DEFAULT_IDLE_MS;
+    this.clockKind       = opts.clock ? "realm" : "wall-floor";
+    this.clock           = opts.clock ?? (() => Date.now());
+    this.idle            = opts.clock ? (opts.idle ?? DEFAULT_IDLE_ROLLS) : (opts.idle ?? opts.idleMs ?? DEFAULT_IDLE_MS);
     this.sweepIntervalMs = opts.sweepIntervalMs ?? DEFAULT_SWEEP_INTERVAL_MS;
     if (opts.onHydrate) this.onHydrate = opts.onHydrate;
     if (opts.onEvict)   this.onEvict   = opts.onEvict;
@@ -196,7 +210,7 @@ export class BagStowage {
   private _ensure(url: BagUrl, grainType: string = DEFAULT_GRAIN_TYPE): ResidencyState {
     let s = this._bags.get(url);
     if (!s) {
-      s = { temperature: "anu", pinned: false, lastTouched: Date.now(), grainType };
+      s = { temperature: "anu", pinned: false, lastTouched: this.clock(), grainType };
       this._bags.set(url, s);
     }
     return s;
@@ -222,7 +236,7 @@ export class BagStowage {
     if (reason !== undefined) s.pinReason = reason;
     if (wasCold) {
       s.temperature = "wela";
-      s.lastTouched = Date.now();
+      s.lastTouched = this.clock();
       if (this.onHydrate) await this.onHydrate(url, s.grainType);
     }
   }
@@ -244,7 +258,7 @@ export class BagStowage {
     const s = this._ensure(url, grainType);
     if (wasCold && this.onHydrate) await this.onHydrate(url, s.grainType);
     s.temperature = "wela";
-    s.lastTouched = Date.now();
+    s.lastTouched = this.clock();
     delete s.evicting;            // cancel any in-flight cool — grain is live again
     delete s.cooledBy;            // a fed bag carries no verdict about why it was once cold
     await this.enforceCap();
@@ -260,7 +274,7 @@ export class BagStowage {
    *  temperature into a verdict depend on the difference. */
   registerCold(url: BagUrl, grainType: string = DEFAULT_GRAIN_TYPE, cause?: CoolingCause): void {
     if (this._bags.has(url)) return;
-    const s: ResidencyState = { temperature: "anu", pinned: false, lastTouched: Date.now(), grainType };
+    const s: ResidencyState = { temperature: "anu", pinned: false, lastTouched: this.clock(), grainType };
     if (cause) s.cooledBy = cause;
     this._bags.set(url, s);
   }
@@ -368,7 +382,7 @@ export class BagStowage {
     this.sweeperTimer = null;
   }
 
-  /** One sweep pass: cool idle wela → anu (idle > idleMs), then enforce the cap.
+  /** One sweep pass: cool idle wela → anu (idle past `idle` on the stowage's clock), then enforce the cap.
    *  Re-entrancy-guarded so overlapping ticks don't fight.
    *
    *  Known refinement (deferred, adversarial-research finding): this is pure-age
@@ -380,7 +394,7 @@ export class BagStowage {
     this.sweepInFlight = true;
     let cooled = 0, lruEvicted = 0;
     try {
-      const cutoff = Date.now() - this.idleMs;
+      const cutoff = this.clock() - this.idle;
       const stale: BagUrl[] = [];
       for (const [url, s] of this._bags)
         if (!s.pinned && !s.syncActive && s.temperature === "wela" && s.lastTouched < cutoff)
