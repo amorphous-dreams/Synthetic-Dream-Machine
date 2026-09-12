@@ -1,0 +1,226 @@
+<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/meme-api-surface.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 12
+manao             = 14
+manaoio           = 12
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+revised-on        = "2026-09-12"
+role              = "meme-api-surface — ONE page for the work QA lab: a bare `tiddlywiki --listen` carrying the packed plugin. The paths, the methods, the headers (`ETag` · `If-Match` · `If-None-Match: *` · `Repr-Digest`), the status table, the two doors (the native gate's 422, the client charm, the backstop's one log line), the principal-table parity, the pristine claim with its version, the four skins' verb parity (route · daemon · CLI · MCP), and a curl walkthrough."
+status            = "standing"
+status-why        = "every row here reads off a live contact: `packages/lararium-tw5/tests/meme-routes.e2e.test.ts` 17/17 against the fork (5.5.0-prerelease) and 17/17 against a pristine `npm pack tiddlywiki@5.4.1` (the witness landed at `f144ed242`; the `pristine-upstream` CI job invokes it and greps the contact line for the pinned version). The listing (`memes.json` · `meme-list`) and the delete twins (`meme-delete` · `lares meme delete` · `meme_delete`) RULED 2026-09-12; the daemon registration of the two new verbs stands with the keyhive owner"
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/meme-api-surface"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/lab>>
+
+! The Meme API Surface ~ the work QA lab
+
+''Register: Reference.'' One page, every door a meme answers at, read off the live contact rather than off intent. A row without a witness names itself as owed.
+
+''The lab.'' A bare TiddlyWiki server carrying the packed plugin — nothing of the island, nothing of the daemon:
+
+```
+pnpm --filter @lararium/tw5 build:plugin
+mkdir -p lab/tiddlers && cp packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid lab/tiddlers/
+echo '{"description":"meme lab","plugins":[],"themes":[]}' > lab/tiddlywiki.info
+node TiddlyWiki5/tiddlywiki.js lab --listen port=8080 host=127.0.0.1
+```
+
+The same lab stands on a published engine: swap the first argument for `npm pack tiddlywiki@5.4.1`'s `package/tiddlywiki.js`. The plugin drops into stock (#/pristine).
+
+''The container law.'' A 1-wiki server holds ONE container, and `recipes/default` and `bags/default` both name it — `default` names THE HOST'S ANCHOR. Any other recipe or bag answers `404` with a one-line body before the path or the body gets read; a bag the server cannot name swallows nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/paths>>
+
+!! Paths and methods
+
+The meme's URI projects onto the path with the scheme as its own segment: `lar:///ha.ka.ba/x` reads `/bags/default/memes/lar/ha.ka.ba/x` — typable, no percent-encoding. Authority-less URIs alone: a session-form authority IS the HTTP authority and never rides the path.
+
+| method | path | does | answers |
+|---|---|---|---|
+| `PUT` | `/{recipes\|bags}/default/memes/<scheme>/<path>` | the whole meme arrives as text and lands as its records through the Confluence gate (`placeMeme`) | `200` receipt JSON · `412` · `422` · `400` · `404` |
+| `GET` | `/{recipes\|bags}/default/memes/<scheme>/<path>` | the whole meme, children recomposed inline (`readMeme`) | `200` text · `404` · `400` |
+| `DELETE` | `/bags/default/memes/<scheme>/<path>` | the group leaves — root · `#/slot` fragments · `/path` children (`removeMeme`). A removal addresses a BAG, as stock's `delete-tiddler.js` does; the `/recipes/` form answers `404` the same way stock's does | `204` · `412` · `404` · `400` |
+| `GET` | `/{recipes\|bags}/default/memes.json[?tree=1]` | every ROOT with its canonical hash (`listMemes`); `tree=1` nests each root's slot tree. A sibling of stock's `tiddlers.json`: a `$:/`-titled root rides only while `$:/config/SyncSystemTiddlersFromServer` reads `yes` | `200` JSON array · `404` |
+| `PUT` | `/recipes/default/tiddlers/<title>` | THE NATIVE DOOR, gated ahead of stock: a framed root refuses (#/two-doors); every other record reaches stock's own handler | `422` · stock's `204` |
+
+Both container kinds read the same records on a plain server; on an island `--recipe` reads the wiki's whole cascade top-down and writes its designated bag — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>.
+
+<<~/ahu>>
+
+<<~ ahu #/headers>>
+
+!! Headers
+
+| header | on | carries |
+|---|---|---|
+| `ETag: "sha256:<hex>"` | every answer holding a canonical hash (GET · PUT · 412s) | the house's canonical hash of the render the records carry now — the merge base a writer hands back |
+| `Repr-Digest: sha-256=:<base64>:` | beside every `ETag` | the same hash in the RFC 9530 field, so a client verifies the body without learning the house's tag grammar; `digestsEqual` reads either spelling |
+| `If-Match: "<sha256:hex>"` | PUT · DELETE | the base the writer read; records that moved past it answer `412` and nothing moves. Absent = a fresh adoption (PUT) or an unconditioned removal (DELETE) |
+| `If-None-Match: *` | PUT | create-only (RFC 9110 §13.1.2): a URI any record already stands under answers `412` before the gate runs. A tag list reads as no precondition |
+| `Content-Type: text/memetic-wikitext+tiddlywiki; charset=utf-8` | GET | the carrier type |
+| `Content-Type: application/json` | PUT receipts · 412 bodies · `memes.json` · the native gate's 422 | |
+| `x-requested-with: TiddlyWiki` | every non-GET | stock's CSRF gate, unchanged in front of these routes (`csrf-disable` lifts it) |
+| `WWW-Authenticate: Basic …` | 401 | stock's principal table, unchanged (#/principals) |
+
+<<~/ahu>>
+
+<<~ ahu #/status>>
+
+!! The status table
+
+| status | meaning | body |
+|---|---|---|
+| `200` | PUT `ingest` — records landed, stale children tombstoned, `ETag` = the new hash · PUT `noop` — the records already carry this text, `ETag` = the standing hash · GET the meme · `memes.json` the listing | the receipt `{uri, decision, grade, landed, tombstoned, canonicalHash, warnings, diagnostics}` · the text · the array |
+| `204` | DELETE removed the group · stock's native door landed a plain record | empty |
+| `400` | a malformed path segment (a broken percent-escape) | `malformed meme path` — the SKIN answered, never the server's no-route floor |
+| `401` | the principal table refused — anonymous under `readers=(authenticated)`, a reader-only principal writing | stock's, with `WWW-Authenticate` |
+| `404` | no root stands under the URI · no such recipe or bag (the one-line body names it) · DELETE under `/recipes/` | empty, or the one line |
+| `412` | the records moved past the writer's `If-Match` · a record stands where `If-None-Match: *` asked for none | `{uri, decision: "conflict", reason, canonicalHash}` + the live `ETag` |
+| `422` | PUT of a meme grading `error` (a carrier that stopped round-tripping); nothing lands · the native door met a framed root | the receipt with `diagnostics` · `{uri, door, reason}` |
+
+<<~/ahu>>
+
+<<~ ahu #/two-doors>>
+
+!! The two doors
+
+A framed meme root lands whole through the native tiddler door and never splits; the `/memes/` door splits it. Three seams keep the two apart, each measured on the live contact:
+
+# ''The native gate (a).'' `PUT /recipes/default/tiddlers/<title>` with a carrier-typed body that still opens with a SOH head answers `422` and names the door: `{"uri": "lar:///t/native", "door": "/recipes/default/memes/lar/t/native", "reason": "…"}`. Nothing lands. A plain tiddler, a split root (a `<<~ kahea …>>` body, no head), a slot child, and a head shown inside a fence all pass to stock. `bag` IS USER SPACE on this door too: stock's `get-tiddler.js` stamps `bag: "default"` over the JSON it serves, and a stock client hands that stamp back on save — a `bag` naming the anchor reads as the envelope and never lands; any other value reads as the author's and lands as written.
+# ''The client charm (b).'' The stock tiddlyweb syncadaptor speaks the native door for every record; the plugin's startup module decorates the live adaptor so a record `framedRootOf` names rides `PUT /recipes/<recipe>/memes/<scheme>/<path>` with the meme text as its body, the route's `ETag` as the revision. A framed root added in the browser arrives on the server split; the plain control arrives through the native door as ever.
+# ''The backstop (c).'' A root landed by a door neither the gate nor the charm sees — the engine's own `--load`, `$tw.wiki.importTiddler` — re-stamps on the server, and the log carries ONE line: `[memetic-wikitext] re-stamped <uri> (landed via a native write)`.
+
+<<~/ahu>>
+
+<<~ ahu #/principals>>
+
+!! The principal table ~ parity with `/tiddlers/`
+
+The server's method→principal mapping and its authenticator run before any route gets chosen, so the meme skins inherit the table stock's `/tiddlers/` answers from — measured on stock's own path first, asserted as parity on ours:
+
+| principal | `GET /tiddlers/…` | `GET /memes/…` | `PUT` · `DELETE /memes/…` |
+|---|---|---|---|
+| anonymous under `readers=(authenticated)` | `401` + `WWW-Authenticate: Basic` | the same status, the same header | `401` |
+| a reader (`bob`, off the `writers=` list) | `200` | `200` | `401` — as stock refuses, nothing moves |
+| a writer (`alice`) | `200` | `200` | `200` · `204` |
+
+<<~/ahu>>
+
+<<~ ahu #/pristine>>
+
+!! The pristine claim ~ with its version
+
+''Claim:'' the packed plugin drops into a PUBLISHED TiddlyWiki, not only into the fork.
+
+''Measure:'' `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole contact — PUT · GET · DELETE · `memes.json` · the native door · the readers/writers case · the `--render` door — against any `tiddlywiki.js`, and writes the engine's version to the stream: `meme-routes.e2e: contact with TiddlyWiki 5.4.1 at …/package/tiddlywiki.js`.
+
+| engine | version | result |
+|---|---|---|
+| the fork (`TiddlyWiki5/`, tracks `upstream/master`) | `5.5.0-prerelease` | 17/17 |
+| `npm pack tiddlywiki@5.4.1` (the published line) | `5.4.1` | 17/17 |
+
+The witness landed at `f144ed242` (14/14 then; the listing added three). Its `put-tiddler.js` / `get-tiddler.js` / `get-tiddlers-json.js` read the same on both lines; the route table sorts by `info.priority` and reads `methods` the same. ''Its invoker:'' the `pristine-upstream` job in `.github/workflows/ci.yml` — pinned to ONE version at the workflow's `TW5_PRISTINE`, cached by that version, failing when the contact line names no engine or another one (a skipped suite reads green to vitest).
+
+<<~/ahu>>
+
+<<~ ahu #/skins>>
+
+!! The four skins ~ verb parity
+
+One law, four skins. Every row calls the same function in `packages/lararium-tw5/src/place-meme.ts`; a skin supplies a sink and nothing more. `base` on a verb, `--base`/`--if-match` on the CLI and `If-Match` on the route spell ONE hash.
+
+| law | route (plain server) | daemon verb | CLI | MCP tool |
+|---|---|---|---|---|
+| `placeMeme` | `PUT …/memes/<scheme>/<path>` | `meme-put {recipe?, bag?, uri, text, base?}` | `lares meme put <uri> [--recipe\|--bag] [--base] [--file]` | `meme_put(uri, text, recipe?, bag?, base?)` |
+| `readMeme` | `GET …/memes/<scheme>/<path>` | `meme-get {recipe?, bag?, uri}` | `lares meme get <uri> [--recipe\|--bag]` | `meme_get(uri, recipe?, bag?)` |
+| `listMemes` | `GET …/memes.json[?tree=1]` | `meme-list {recipe?, bag?, tree?}` | `lares meme list [--recipe\|--bag] [--tree]` | `meme_list(recipe?, bag?, tree?)` |
+| `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `meme-delete {recipe?, bag?, uri, base?}` | `lares meme delete <uri> [--recipe\|--bag] [--if-match]` | `meme_delete(uri, recipe?, bag?, base?)` |
+| the projection | `tiddlywiki --render` through the house templates | `meme-project {recipe?, bag?, uri, to}` | `lares meme project <uri\|file> --to <mem\|md\|html\|tid\|json>` | `meme_project(uri, to, recipe?, bag?)` |
+| `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [--gradient\|--edges]` | — (LOCAL seat, by law) |
+
+The in-VM face publishes the same verbs to a wiki-side caller as `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}`. The CLI's exit classes: a `conflict` exits `conflict`; an absent meme on `get` or `delete` exits `not-found`; a refusal exits `verb-error`. The fixture `packages/lararium-sensorium/scripts/fixtures/cli-verbs.json` welds the MCP names to the CLI spellings; `tools/mirror-parity-witness.sh` reds when it goes stale. The CLI door law: <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>.
+
+<<~/ahu>>
+
+<<~ ahu #/walkthrough>>
+
+!! A curl walkthrough
+
+Against the lab on `127.0.0.1:8080`, with `x.mem` a framed carrier declaring `uri-path = "t/x"`:
+
+```
+# found it — create-only, so a standing record never gets overwritten
+curl -si -X PUT -H 'x-requested-with: TiddlyWiki' -H 'If-None-Match: *' \
+  --data-binary @x.mem http://127.0.0.1:8080/bags/default/memes/lar/t/x
+#   HTTP/1.1 200 · ETag: "sha256:…" · Repr-Digest: sha-256=:…: · {"decision":"ingest",…}
+
+# read it back; keep the ETag as the base
+curl -si http://127.0.0.1:8080/recipes/default/memes/lar/t/x
+#   HTTP/1.1 200 · Content-Type: text/memetic-wikitext+tiddlywiki · the whole meme, children inline
+
+# list the roots; nest the slots
+curl -s http://127.0.0.1:8080/recipes/default/memes.json
+#   [{"uri":"lar:///t/x","canonicalHash":"sha256:…"}]
+curl -s 'http://127.0.0.1:8080/recipes/default/memes.json?tree=1'
+#   [{"uri":"lar:///t/x","canonicalHash":"sha256:…","slots":[{"slot":"#/a","uri":"lar:///t/x#/a","slots":[]}]}]
+
+# edit against the base you read — a stale base answers 412 and lands nothing
+curl -si -X PUT -H 'x-requested-with: TiddlyWiki' -H 'If-Match: "sha256:…"' \
+  --data-binary @x.mem http://127.0.0.1:8080/bags/default/memes/lar/t/x
+
+# the native door refuses a framed root and names the door
+curl -si -X PUT -H 'x-requested-with: TiddlyWiki' \
+  -d '{"title":"lar:///t/y","type":"text/memetic-wikitext+tiddlywiki","text":"<<^ code=\"&#x0001;\" …>>…"}' \
+  http://127.0.0.1:8080/recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fy
+#   HTTP/1.1 422 · {"uri":"lar:///t/y","door":"/recipes/default/memes/lar/t/y","reason":"…"}
+
+# a container the server cannot name swallows nothing
+curl -si -X PUT -H 'x-requested-with: TiddlyWiki' --data-binary @x.mem http://127.0.0.1:8080/bags/other/memes/lar/t/x
+#   HTTP/1.1 404 · no such bag: other (this server names only default)
+
+# remove the group — a bag address, conditioned on the base
+curl -si -X DELETE -H 'x-requested-with: TiddlyWiki' -H 'If-Match: "sha256:…"' http://127.0.0.1:8080/bags/default/memes/lar/t/x
+#   HTTP/1.1 204 · a stale If-Match: 412 and the group stands · /recipes/…: 404
+```
+
+The same walk through the other skins: `lares meme put lar:///t/x --file x.mem` · `lares meme get lar:///t/x` · `lares meme list --tree` · `lares meme delete lar:///t/x --if-match sha256:…`; over MCP, `meme_put` · `meme_get` · `meme_list(tree=True)` · `meme_delete(base=…)`.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;JG_Mr8lU_tvx3GLlju17b_WMcU-8X6xIFnBSEBenhIs
+
+<<^ code="&#x0004;" -> to="?">>
