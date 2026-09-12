@@ -89,6 +89,17 @@ export async function fetchGenesisCasToOpfs(
   return written;
 }
 
+/** The slice of a FileSystemFileHandle the CAS read touches. `createSyncAccessHandle` exists only inside
+ *  a dedicated worker; on the main thread and on older engines the property reads absent. */
+export interface CasFileHandleLike {
+  getFile(): Promise<{ arrayBuffer(): Promise<ArrayBuffer> }>;
+  createSyncAccessHandle?(): Promise<{
+    getSize(): number;
+    read(buffer: ArrayBufferView, options?: { at?: number }): number;
+    close(): void;
+  }>;
+}
+
 /** Read content-addressed bytes by CID from the OPFS CAS. Null if absent/unavailable.
  *  This IS the worker's resolveByCid shore (OPFS origin-shared, no IPC). */
 export async function readCasBlobFromOpfs(cid: string): Promise<Uint8Array | null> {
@@ -96,11 +107,45 @@ export async function readCasBlobFromOpfs(cid: string): Promise<Uint8Array | nul
     const root  = await navigator.storage.getDirectory();
     const cas   = await root.getDirectoryHandle(OPFS_CAS_DIR);
     const fileH = await cas.getFileHandle(cid);
-    const file  = await fileH.getFile();
-    return new Uint8Array(await file.arrayBuffer());
+    return await readCasFileBytes(fileH as unknown as CasFileHandleLike);
   } catch {
     return null;
   }
+}
+
+/**
+ * Read one CAS file's bytes — the sync leg where the handle offers it, the async read where it does not.
+ *
+ * Inside the island's dedicated worker `createSyncAccessHandle` reads the immutable blob straight into a
+ * buffer with no lock dance and no File object. The main thread, and an engine without the handle, take
+ * `getFile().arrayBuffer()`. A sync handle the platform refuses (another writer holds the file, a private
+ * window) falls to the same async read: the floor stands under both legs, and the CID proves the bytes.
+ */
+export async function readCasFileBytes(fileH: CasFileHandleLike): Promise<Uint8Array | null> {
+  if (typeof fileH.createSyncAccessHandle === "function") {
+    let sync: Awaited<ReturnType<NonNullable<CasFileHandleLike["createSyncAccessHandle"]>>> | null = null;
+    try {
+      sync = await fileH.createSyncAccessHandle();
+    } catch {
+      sync = null;
+    }
+    if (sync) {
+      try {
+        const out = new Uint8Array(sync.getSize());
+        let at = 0;
+        while (at < out.byteLength) {
+          const n = sync.read(out.subarray(at), { at });
+          if (n <= 0) break;
+          at += n;
+        }
+        return at === out.byteLength ? out : out.subarray(0, at);
+      } finally {
+        sync.close();
+      }
+    }
+  }
+  const file = await fileH.getFile();
+  return new Uint8Array(await file.arrayBuffer());
 }
 
 // ── CID helper ────────────────────────────────────────────────────────────────

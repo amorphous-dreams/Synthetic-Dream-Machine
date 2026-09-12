@@ -36,7 +36,7 @@ export {
 } from "./browser-vessel-identity.js";
 
 export {
-  writeBlobsToCasOpfs, readCasBlobFromOpfs,
+  writeBlobsToCasOpfs, readCasBlobFromOpfs, readCasFileBytes, type CasFileHandleLike,
   fetchGenesisCasToOpfs,
   genesisCidFromBytes,
 } from "./browser-genesis.js";
