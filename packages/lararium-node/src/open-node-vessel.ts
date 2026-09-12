@@ -40,7 +40,7 @@ import {
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
-  makeRealmPlane, type RealmPlaneHolder, ed25519SignerFromSeed,
+  makeRealmPlane, type RealmPlaneHolder, type RealmBagRegistration, type CapTier, ed25519SignerFromSeed,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage, pluginCidsFromIslandBlobs,
@@ -81,7 +81,7 @@ import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
-import { makeNexusMembership } from "./nexus-carriage.js";
+import { makeNexusMembership, makeRealmCharterConsult } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
@@ -344,6 +344,9 @@ interface NodeBootPrep {
   openDaemon:       (a: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }) => Promise<VesselDaemonVm>;
   wireVerbs:        (registry: Parameters<NonNullable<VesselOrchestration<VesselIslandPool>["wireVerbs"]>>[0], assembly: VesselCoreAssembly) => void;
   afterDaemon:      (daemon: VesselDaemonVm, assembly: VesselCoreAssembly) => void;
+  /** The STANDING realm registrations this vessel's realm carries (empty while it stands in none) — the Herm's
+   *  shore reads them to follow the realm's PUBLIC books, and the realm plane is the only hand that folds them. */
+  realmStanding:    () => Promise<ReadonlyMap<string, RealmBagRegistration>>;
   /** Forward-ref reads — set as the closures run (the same `let vmManager!` pattern, surfaced). */
   daemonVm:         () => DaemonVmCore;
   eventBus:         () => LarEventBusImpl;
@@ -388,6 +391,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // the same microtask; the membership consult reads it AHEAD of the raw wire key (the vessel key names a
   // device, the nym an operator — `nexus-carriage.ts`). Absent for every peer that presented no contract edge.
   const peerContractNymMap = new Map<string, string>();
+  // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
+  // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
+  // registered books federate back toward it. Filled by the dial below; empty on a vessel that dials nobody.
+  const charterHearthPeers = new Set<string>();
   network.on("peer-candidate", ({ peerId }: { peerId: string }) => {
     queueMicrotask(() => {
       const socket = (network.sockets as Record<string, unknown>)[peerId];
@@ -1104,6 +1111,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(vesselIdentity.verifyingKey), "board:crossroads"),
         membership:       nexusMembership,
         base:             selfSlotFedGate,
+        // THE REALM LEG: the realm's own registration answers which documents cross — the proven contract nym
+        // behind a wire key, the charter this vessel itself holds, and the hearth it dialed that charter from.
+        charter:          makeRealmCharterConsult({ sealHome, peerContractNymMap, charterHearthPeers }),
+        // THE LEASE: a registration's `expiry` reads against the realm's own pace in rolls (0 = cannot judge).
+        pace:             () => (realmPaceCell.read() > 0 ? realmPaceCell.read() : null),
         onLog:            (line) => console.log(`[realm] ${line}`),
       });
       selfSlotFedGate = realmPlane.gate;
@@ -1137,6 +1149,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
           onLog: (line) => console.log(`[nexus-join] ${line}`),
         });
+        // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
+        try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => { charterHearthPeers.add(peerId); }); }
+        catch { /* an adapter without the event names no hearth — the realm leg simply never opens that lane */ }
         console.log(`[nexus-join] presenting ${
           !selfEdge   ? "the ContactCard alone (no self edge — cross-operator floor)"
           : selfSigned ? "the contract edge (this vessel's own root signed it — cross-operator; the peer's board binds the nym)"
@@ -1666,9 +1681,21 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       // NAMING A SECOND STEWARD takes two hands (n-of-n): `stewards` proposes them, and the record stands
       // unregistered until each proposed hand co-signs with its own `cosign`.
       const propose = Array.isArray(args["stewards"]) ? (args["stewards"] as unknown[]).filter((v): v is string => typeof v === "string") : [];
+      // The DECLARED read tier (CONTRACT by default; PUBLIC names a book the Herm carries by hash), the LEASE
+      // in rolls of the realm's pace, and the CHARTER each named hand holds — a book spanning two charters is a
+      // `keptBy` with two charters, never a fused realm.
+      const readTier = typeof args["tier"] === "string" ? (args["tier"] as CapTier) : undefined;
+      const expiry   = Number.isFinite(args["expiry"]) ? Number(args["expiry"]) : undefined;
+      const charters = typeof args["charters"] === "object" && args["charters"] !== null
+        ? (args["charters"] as Record<string, string>) : undefined;
       const rec = args["cosign"] === true
         ? await realmPlane.coSign({ bagUri, signer: nym.toLowerCase(), sign })
-        : await realmPlane.register({ bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }], propose });
+        : await realmPlane.register({
+            bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }], propose,
+            ...(readTier ? { readTier } : {}),
+            ...(expiry === undefined ? {} : { expiry }),
+            ...(charters ? { charters } : {}),
+          });
       reverdict();   // the realm gate's standing set grew — a member peer's cached verdict on that bag's doc moves
       const counts = rec.keptBy.every((k) => rec.signatures.some((sg) => sg.signer.toLowerCase() === k.toLowerCase()));
       return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy,
@@ -1966,6 +1993,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     openDaemon, wireVerbs, afterDaemon,
+    realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
     daemonVm:         () => daemonVm,
     eventBus:         () => eventBus,
     slotActiveWikiId: () => slotActiveWikiId,
@@ -2066,7 +2094,29 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     // Serve the HELD bulb by cid over the public floor (the OPEN path) — present only when the genesis stands.
     ...(p.bulb ? { bulb: p.bulb } : {}),
     // THE HERM RE-SHARE: `/cas/<cid>` serves a fleet peer's PUBLIC blob (landed write-through over Socket B) IFF the crossroads board — the public plane by construction — names the cid.
-    publicCas: publicCasShore({ casDir: casDirForStorage(opts.storageDir), references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: record as { tiddler: Record<string, unknown> } })), bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null) }),
+    publicCas: publicCasShore({
+      casDir: casDirForStorage(opts.storageDir),
+      references: () => Object.entries(hermCrossroads.doc()?.tiddlers ?? {}).map(([title, record]) => ({ title, bagId: CROSSROADS_DOC_URI, record: record as { tiddler: Record<string, unknown> } })),
+      bagTier: (bagUrl) => (bagUrl === CROSSROADS_DOC_URI ? "public" : null),
+      // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every
+      // pointer a peer landed in a public bag. Each standing registration this realm carries names its book
+      // and the tier it declared; the PUBLIC ones reach the shore, and the rest draw the same 404 as before.
+      realmReferences: async () => {
+        const standing = await p.realmStanding();
+        const books: Array<{ bagUri: string; readTier: CapTier; entries: Array<{ title: string; bagId: string; record: { tiddler: Record<string, unknown> } }> }> = [];
+        for (const rec of standing.values()) {
+          // A book this Herm never replicated answers nothing — a rejected find withholds, never serves.
+          const handle = await p.repo.find<LarDoc>(rec.docUrl as AutomergeUrl).catch(() => null);
+          if (!handle) continue;
+          books.push({
+            bagUri: rec.bagUri, readTier: rec.readTier,
+            entries: Object.entries(handle.doc()?.tiddlers ?? {})
+              .map(([title, record]) => ({ title, bagId: rec.bagUri, record: record as { tiddler: Record<string, unknown> } })),
+          });
+        }
+        return books;
+      },
+    }),
     onLog:       (line) => console.log(`[herm] ${line}`),
   });
   p.emit("vessel-ready");

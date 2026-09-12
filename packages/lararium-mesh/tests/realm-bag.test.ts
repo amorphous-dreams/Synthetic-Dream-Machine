@@ -72,12 +72,15 @@ describe("realm-bag — the registration record", () => {
     const conscripted = { ...rec, keptBy: [...rec.keptBy, await pubOf(B)] };
     expect(await realmBagRegistrationCounts(conscripted, REALM)).toBe(false);
   });
-  test("CONTROL: a tampered doc url, a foreign realm, a PUBLIC tier — none counts", async () => {
+  test("CONTROL: a tampered doc url and a foreign realm never count; a PUBLIC-tier book does — the Herm's lane", async () => {
     const rec = await registrationByA();
     expect(await realmBagRegistrationCounts({ ...rec, docUrl: DOC_B }, REALM)).toBe(false);
     expect(await realmBagRegistrationCounts(rec, "another-realm")).toBe(false);
+    // The 2026-09-12 ruling seats the PUBLIC tier on the realm's own registrations: the Herm follows them and
+    // carries those bodies BY HASH. A tier outside the ladder still counts for nothing.
     const pub = await signRealmBagRegistration({ realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "public" }, [await stewardA()]);
-    expect(await realmBagRegistrationCounts(pub, REALM)).toBe(false);
+    expect(await realmBagRegistrationCounts(pub, REALM)).toBe(true);
+    expect(await realmBagRegistrationCounts({ ...pub, readTier: "shouting" as never }, REALM)).toBe(false);
   });
   test("two stewards sign one record — both named, both verified", async () => {
     const rec = await signRealmBagRegistration({ realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "contract" }, [await stewardA(), await stewardB()]);

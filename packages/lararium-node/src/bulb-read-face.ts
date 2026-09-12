@@ -56,27 +56,51 @@ export interface PublicCasShore {
   readonly isPublic: (cid: string) => Promise<boolean>;
 }
 
+/** One realm-registered book this Herm serves: the bag the realm's registration names, the tier that
+ *  registration DECLARED, and the pointers the book carries as of this Herm's last sync. */
+export interface RealmShoreBook {
+  readonly bagUri:   string;
+  readonly readTier: CapTier;
+  readonly entries:  Iterable<CasReferenceEntry>;
+}
+
 /**
- * The shore over a vessel's cleartext `cid/` + its live records: a cid reads PUBLIC when a pointer names it from a
- * bag whose tier reads `public` (`bagTier` — the same reader the crossing gate uses; a null tier reads VEIL, the
- * tightest, so an undeclared bag never leaks). The reference count derives at each ask — never cached — so a
- * DROP or a re-tiering answers on the next fetch.
+ * The shore over a vessel's cleartext `cid/` + the records it can read: a cid reads PUBLIC when a pointer names
+ * it from a book that declares the `public` tier. TWO lanes answer that, and a Herm needs both:
+ *
+ *   · ITS OWN planes — `references` × `bagTier` (the same tier reader the crossing gate uses; a null tier reads
+ *     VEIL, the tightest, so an undeclared bag never leaks).
+ *   · THE REALM LANE — for each realm/fleet this Herm serves, the PUBLIC-tier registrations the realm's own
+ *     shared CRDT carries (`realmReferences`). A pointer a peer lands in a public bag reaches the shore through
+ *     the realm's registration, never through the Herm's own crossroads: the Herm serves books it never
+ *     authored, so reading its own board alone withheld every one of them.
+ *
+ * THE HERM HOLDS THE HINT, NEVER THE READ-CAP: both lanes answer over pointers and declared tiers alone. The
+ * reference count derives at each ask — never cached — so a DROP or a re-tiering answers on the next fetch.
  */
 export function publicCasShore(opts: {
   readonly casDir:     string;
   readonly references: () => Promise<Iterable<CasReferenceEntry>> | Iterable<CasReferenceEntry>;
   readonly bagTier:    (bagUrl: string) => CapTier | null;
+  /** The realm lane — absent, the shore answers exactly as its own planes answer. */
+  readonly realmReferences?: () => Promise<Iterable<RealmShoreBook>> | Iterable<RealmShoreBook>;
 }): PublicCasShore {
   return {
     read: (cid) => readCasBlobFromFs(cid, opts.casDir),
     isPublic: async (cid) => {
-      const entries = [...(await opts.references())];
-      const names = casReferences(entries).get(cid);
+      const own   = [...(await opts.references())];
+      const books = opts.realmReferences ? [...(await opts.realmReferences())] : [];
+      const realm = books.flatMap((b) => [...b.entries].map((e) => ({ book: b, entry: e })));
+      const names = casReferences([...own, ...realm.map((r) => r.entry)]).get(cid);
       if (!names || names.size === 0) return false;
-      for (const e of entries) {
+      for (const e of own) {
         if (!e.bagId) continue;
-        const address = `${e.bagId} ${e.title}`;
-        if (names.has(address) && opts.bagTier(e.bagId) === "public") return true;
+        if (names.has(`${e.bagId} ${e.title}`) && opts.bagTier(e.bagId) === "public") return true;
+      }
+      for (const { book, entry } of realm) {
+        if (book.readTier !== "public") continue;          // a CONTRACT book rides the realm's own lane, never the shore
+        const address = entry.bagId ? `${entry.bagId} ${entry.title}` : entry.title;
+        if (names.has(address)) return true;
       }
       return false;
     },

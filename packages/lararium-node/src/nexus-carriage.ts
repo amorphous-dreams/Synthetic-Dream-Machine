@@ -50,8 +50,9 @@
  */
 
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
-import type { NexusMembership, LarDoc } from "@lararium/mesh";
+import type { NexusMembership, LarDoc, RealmCharterConsult } from "@lararium/mesh";
 import {
+  realmIdOfCharter,
   seatedKahuKeys,
   foundingRoster,
   foldCarriageSet,
@@ -221,6 +222,48 @@ export function makeNexusMembership(opts: {
       if (boardHandle && onChange) boardHandle.off("change", onChange);
       boardHandle = null;
       onChange = null;
+    },
+  };
+}
+
+/**
+ * THE REALM'S OWN CONSULT — what this vessel knows, off its OWN replica, about the hand behind a wire key
+ * (the 2026-09-12 ruling: the Nexus plane decides whether a SOCKET stands; the REALM's own registration
+ * decides which DOCUMENTS cross it). It answers two questions and never the membership question:
+ *
+ *   · `contractNymOfPeer` SURFACES the persona-root nym the DaemonAuthGate already proved offline for this
+ *     peer's contract edge (`peerContractNymMap`) — it re-authenticates nothing and trusts no wire claim.
+ *   · `holdsCharter` reads this vessel's OWN charter on disk: the charter names a realm (its genesis epoch),
+ *     and a hand SEATED in that charter's founding-kahu roster holds it. Any other nym, and any charter this
+ *     vessel does not itself hold, reads false — fail-closed, and never a roster of anybody else's members.
+ *   · `holdsCharterPeer` names the peers standing on a socket THIS vessel dialed to the hearth whose charter
+ *     it holds. The binding is the operator's own out-of-band act (the gate key the config pins, the charter
+ *     `nexus seal import` landed), so it opens the realm's own registered books back toward that hearth — the
+ *     RETURN LANE — and reaches no other doc and no other peer.
+ *
+ * The members board stays the Nexus answer for every peer this consult does not name.
+ */
+export function makeRealmCharterConsult(opts: {
+  readonly sealHome:            string;
+  readonly peerContractNymMap:  ReadonlyMap<string, string>;
+  /** Peers on a socket this vessel dialed to the charter's hearth (filled by the dial; empty until it stands). */
+  readonly charterHearthPeers?: ReadonlySet<string>;
+}): RealmCharterConsult {
+  const { sealHome, peerContractNymMap, charterHearthPeers } = opts;
+  return {
+    contractNymOfPeer(peerId: string): string | null {
+      const nym = peerContractNymMap.get(peerId);
+      return nym !== undefined && NYM_RE.test(nym) ? nym.toLowerCase() : null;
+    },
+    holdsCharter(nym: string, charterId: string): boolean {
+      const want = nym.toLowerCase();
+      if (!NYM_RE.test(want)) return false;
+      const doc = readNexusDoc(sealHome);
+      if (realmIdOfCharter(doc) !== charterId) return false;   // a charter this vessel never held names nobody
+      return seatedKahuKeys(doc).some((k) => k.toLowerCase() === want);
+    },
+    holdsCharterPeer(peerId: string): boolean {
+      return charterHearthPeers?.has(peerId) ?? false;
     },
   };
 }

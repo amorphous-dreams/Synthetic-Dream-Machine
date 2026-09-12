@@ -97,6 +97,9 @@ const NEXUS_USAGE: readonly string[] = [
   "  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)",
   "            [--steward <did>[,<did>]]       also NAME those stewards — the record waits on each one's own co-sign",
   "            [--cosign]                      consent as a named steward to a standing proposal",
+  "            [--tier contract|public]        the DECLARED read — public names a book the Herm carries by hash",
+  "            [--expiry <rolls>]              lease the registration against the realm's own pace",
+  "            [--charter <nym>=<realm-id>]    the charter a named hand holds (a book spanning two charters)",
   "  realm-bags                                the bags the realm carries, and who keeps each",
 ];
 
@@ -243,15 +246,30 @@ async function cmdNexusRefresh(args: ParsedArgs): Promise<number> {
  */
 async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const bag = args.positional[1];
-  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--steward <did>…] [--cosign] [--index N]"); return 2; }
+  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--steward <did>…] [--cosign] [--tier <t>] [--expiry <rolls>] [--charter <nym>=<realm-id>] [--index N]"); return 2; }
   const index = args.options["index"] !== undefined ? Number(args.options["index"]) : 0;
   // `--steward` names a SECOND keeping hand. The record is n-of-n, so naming is a proposal: it stands
   // unregistered until that hand runs `lares nexus realm-bag <bag> --cosign` on her own vessel.
   const stewards = (args.options["steward"] ?? "").split(",")
     .map((v) => v.trim().replace(/^0x/i, "").toLowerCase()).filter((v) => v.length > 0);
   const cosign = args.flags["cosign"] === true;
+  // `--tier` declares the read (CONTRACT default; PUBLIC names a book the Herm carries by hash), `--expiry`
+  // leases the registration in rolls of the realm's own pace, and `--charter <nym>=<realm-id>` names the
+  // charter a second hand holds when the book spans two of them.
+  const tier = typeof args.options["tier"] === "string" ? args.options["tier"].trim() : "";
+  const expiry = args.options["expiry"] !== undefined ? Number(args.options["expiry"]) : undefined;
+  const charters: Record<string, string> = {};
+  for (const pair of (args.options["charter"] ?? "").split(",").map((v) => v.trim()).filter((v) => v.length > 0)) {
+    const [nym, charterId] = pair.split("=");
+    if (nym && charterId) charters[nym.replace(/^0x/i, "").toLowerCase()] = charterId;
+  }
   try {
-    const r = await runVerb("realm-bag", { bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index, stewards, cosign }, await vesselDid());
+    const r = await runVerb("realm-bag", {
+      bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index, stewards, cosign,
+      ...(tier ? { tier } : {}),
+      ...(expiry === undefined || !Number.isFinite(expiry) ? {} : { expiry }),
+      ...(Object.keys(charters).length > 0 ? { charters } : {}),
+    }, await vesselDid());
     if (r.status === "error") {
       emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "realm-bag failed" },
                    human: () => console.error(`lares nexus realm-bag: ${r.errorMessage ?? "failed"}`) });

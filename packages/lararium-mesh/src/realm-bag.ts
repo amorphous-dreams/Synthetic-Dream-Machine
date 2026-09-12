@@ -101,14 +101,55 @@ export interface RealmBagRegistration {
   readonly docUrl:     string;
   /** The stewards' persona-root nyms — the write set. Every one of them signs. */
   readonly keptBy:     readonly string[];
-  /** The declared read tier — CONTRACT (a realm bag reads to the contracted cabal, never wider). */
+  /** The declared read tier — CONTRACT (a realm bag reads to the contracted cabal), or PUBLIC for a book the
+   *  Herm carries BY HASH (the pointer travels; the doc still crosses on the realm's own lane). */
   readonly readTier:   CapTier;
+  /**
+   * Beside each steward nym, the CHARTER (realm id) that hand holds. OMITTED when every steward holds THIS
+   * realm's charter — the single-charter realm, whose canonical bytes then read exactly as they read before
+   * the field existed. A book spanning two charters is a `keptBy` with TWO charters, never a fused realm:
+   * the realm leg federates it to a holder of EITHER charter, and each realm keeps its own name.
+   */
+  readonly charters?:  Readonly<Record<string, string>>;
+  /**
+   * The registration's LEASE, in ROLLS of the realm's own maintenance feed (`realmPace` — an order, never a
+   * wall-clock instant). Past it the WRITE side lapses and the book reads on: a read-only book, re-keepable by
+   * a fresh n-of-n. Absent → the registration stands at every pace (today's records, unmoved).
+   */
+  readonly expiry?:    number;
   /** One signature per steward in `keptBy`, over `realmBagBytes(record)`. */
   readonly signatures: readonly QuorumSignature[];
 }
 
+/** The charter a named hand holds — the record's own `charters` entry, else the realm the record lives in. */
+export function charterOfSteward(rec: Omit<RealmBagRegistration, "signatures">, nym: string): string {
+  return rec.charters?.[nym.toLowerCase()] ?? rec.charters?.[nym] ?? rec.realmId;
+}
+
+/** Every charter this registration's hands hold — the realm's own, plus each hand that keeps it under another. */
+export function registrationCharters(rec: Omit<RealmBagRegistration, "signatures">): ReadonlySet<string> {
+  const out = new Set<string>([rec.realmId]);
+  for (const steward of rec.keptBy) out.add(charterOfSteward(rec, steward));
+  return out;
+}
+
+/** Does this registration stand for the WRITE at the realm's pace? An absent expiry stands at every pace; a
+ *  reader that names no pace reads the lease as unexpired (it cannot judge, so it never narrows). */
+export function registrationWriteStands(rec: RealmBagRegistration, pace?: number | null): boolean {
+  if (rec.expiry === undefined) return true;
+  if (pace === undefined || pace === null) return true;
+  return pace <= rec.expiry;
+}
+
 /** The canonical bytes every steward signs — the record without its signatures. */
 export function realmBagBytes(parts: Omit<RealmBagRegistration, "signatures">): Uint8Array {
+  // A charter map that names THIS realm for every hand says nothing the record does not already say, so it
+  // drops out of the image: a single-charter realm signs the bytes it signed before the field existed.
+  const charters: Record<string, string> = {};
+  for (const [nym, charter] of Object.entries(parts.charters ?? {})) {
+    if (charter !== parts.realmId) charters[nym.toLowerCase()] = charter;
+  }
+  const foreign = Object.keys(charters).length > 0;
   return canonicalJsonBytes({
     kind:     REALM_BAG_DOMAIN,
     realmId:  parts.realmId,
@@ -116,6 +157,8 @@ export function realmBagBytes(parts: Omit<RealmBagRegistration, "signatures">): 
     docUrl:   parts.docUrl,
     keptBy:   [...parts.keptBy].map((n) => n.toLowerCase()).sort(),
     readTier: parts.readTier,
+    ...(foreign ? { charters } : {}),
+    ...(parts.expiry === undefined ? {} : { expiry: parts.expiry }),
   });
 }
 
@@ -124,7 +167,7 @@ export function realmBagBytes(parts: Omit<RealmBagRegistration, "signatures">): 
  * reads exactly the signers' nyms (a steward is named by her own hand). The module holds no key.
  */
 export async function signRealmBagRegistration(
-  parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier">,
+  parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier"> & Partial<Pick<RealmBagRegistration, "charters" | "expiry">>,
   signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
 ): Promise<RealmBagRegistration> {
   const keptBy = signers.map((s) => s.signer.toLowerCase()).sort();
@@ -143,7 +186,7 @@ export async function signRealmBagRegistration(
  * present. The bytes never move between the two hands: `realmBagBytes` reads the sorted `keptBy` alone.
  */
 export async function proposeRealmBagRegistration(
-  parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier">,
+  parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier"> & Partial<Pick<RealmBagRegistration, "charters" | "expiry">>,
   signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
   proposed: readonly string[],
 ): Promise<RealmBagRegistration> {
@@ -180,7 +223,14 @@ export async function realmBagRegistrationCounts(rec: RealmBagRegistration, real
   if (rec.kind !== REALM_BAG_DOMAIN) return false;
   if (rec.realmId !== realmId) return false;
   if (rec.keptBy.length === 0) return false;
-  if (rec.readTier !== "contract" && rec.readTier !== "personagroup" && rec.readTier !== "veil") return false;
+  if (rec.readTier !== "contract" && rec.readTier !== "personagroup" && rec.readTier !== "veil" && rec.readTier !== "public") return false;
+  // A charter map names ONLY hands the record keeps, each under a non-empty charter — a stray name grants nothing.
+  for (const [nym, charter] of Object.entries(rec.charters ?? {})) {
+    if (typeof charter !== "string" || charter.length === 0) return false;
+    if (!rec.keptBy.some((s) => s.toLowerCase() === nym.toLowerCase())) return false;
+  }
+  // A lease reads as a ROLL COUNT — a torn one reads as no lease at all, which would widen the write.
+  if (rec.expiry !== undefined && (!Number.isInteger(rec.expiry) || rec.expiry < 0)) return false;
   if (!rec.bagUri.startsWith("lar:///") || !rec.docUrl.startsWith("automerge:")) return false;
   const bytes = realmBagBytes(rec);
   for (const steward of rec.keptBy) {
@@ -233,9 +283,16 @@ function coerceRegistration(parsed: unknown): RealmBagRegistration | null {
     if (sig === null) return null;
     signatures.push(sig);
   }
+  const charters = p["charters"];
+  const expiry   = p["expiry"];
+  if (charters !== undefined && (typeof charters !== "object" || charters === null || Array.isArray(charters))) return null;
+  if (charters !== undefined && !Object.values(charters as Record<string, unknown>).every((v) => typeof v === "string")) return null;
+  if (expiry !== undefined && typeof expiry !== "number") return null;
   return {
     kind: REALM_BAG_DOMAIN, realmId: p["realmId"], bagUri: p["bagUri"], docUrl: p["docUrl"],
     keptBy: p["keptBy"] as string[], readTier: p["readTier"] as CapTier, signatures,
+    ...(charters === undefined ? {} : { charters: charters as Record<string, string> }),
+    ...(expiry   === undefined ? {} : { expiry:   expiry   as number }),
   };
 }
 
@@ -284,10 +341,14 @@ export async function foldRealmBags(
  */
 export function mayWriteRealmBag(
   standing: ReadonlyMap<string, RealmBagRegistration>, bagUri: string, nym: string | null | undefined,
+  pace?: number | null,
 ): boolean {
   if (!nym) return false;
   const rec = standing.get(bagUri);
   if (!rec) return false;
+  // THE LEASE, read at the realm's own pace: past its expiry the book turns read-only until a fresh n-of-n
+  // re-keeps it. The read side never moves — an expired registration still names the doc every member reads.
+  if (!registrationWriteStands(rec, pace)) return false;
   const want = nym.toLowerCase();
   return rec.keptBy.some((s) => s.toLowerCase() === want);
 }
@@ -319,38 +380,89 @@ export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration):
 // ── THE WIRE GATE ────────────────────────────────────────────────────────────────────────────────
 
 /**
+ * THE REALM'S OWN CONSULT — what a vessel knows, off its OWN replica, about the hand behind a wire key.
+ *
+ * `contractNymOfPeer` surfaces the persona-root nym the peer PROVED at this vessel's gate (the contract edge,
+ * verified offline — `peerContractNymMap`); it never re-authenticates and never trusts a peer's word.
+ * `holdsCharter` answers, off the vessel's OWN charter replica, whether that nym holds the named charter —
+ * the CONTRACT-tier read. Neither question reaches the Nexus members board: the board answers whether a
+ * SOCKET stands, and this consult answers which DOCUMENTS the realm's own registration lets cross it.
+ */
+export interface RealmCharterConsult {
+  /** The persona-root nym this peer proved at the wire, or null for a peer that proved none (fail-closed). */
+  contractNymOfPeer(peerId: string): string | null;
+  /** Does this nym hold that charter, read off this vessel's own charter replica (as of last sync)? */
+  holdsCharter(nym: string, charterId: string): boolean;
+  /**
+   * OPTIONAL: does this peer stand on a socket THIS vessel opened to the hearth whose charter it holds? The
+   * binding is the operator's own out-of-band act — the gate key this vessel dialed, plus the charter it
+   * imported from that hearth — never anything the peer says about itself. It opens the realm's own registered
+   * books back toward the charter's hearth (the return lane) and nothing else.
+   */
+  holdsCharterPeer?(peerId: string): boolean;
+}
+
+/**
  * RealmBagGate — a FederationGate over the realm plane: the realm doc and every STANDING registered bag's doc
- * federate to a peer the membership consult names a MEMBER, and to nobody else. Composes ATOP a base gate
- * (the deterministic public shelf): a doc the base federates still federates; this gate only ADDS the
- * member-read lane for the realm's own docs. The standing set swaps whole on `refold` (never a partial window).
+ * federate on THREE lanes, each additive over a base gate (the deterministic public shelf; a doc the base
+ * federates still federates):
+ *
+ *   · THE REALM LEG (the 2026-09-12 ruling) — the REALM's own registration decides which documents cross. A
+ *     peer whose proven contract nym stands in the registration's `keptBy` reads the book it keeps (the write
+ *     side), and a peer whose nym HOLDS one of the charters that registration names reads it at CONTRACT tier.
+ *     Neither answer consults the members board, so a steward who contracted INTO a charter rather than
+ *     admitting anybody federates the book back to the hand that keeps it with her — the return lane.
+ *   · THE NEXUS LANE, unchanged — the members board stays the Nexus answer for every peer the realm's own
+ *     registration does not name.
+ *
+ * The standing set swaps whole on `refold` (never a partial window).
  */
 export class RealmBagGate implements FederationGate {
   #standing: ReadonlySet<DocumentId> = new Set<DocumentId>();
+  #byDocId: ReadonlyMap<DocumentId, RealmBagRegistration> = new Map<DocumentId, RealmBagRegistration>();
   #registrations: ReadonlyMap<string, RealmBagRegistration> = new Map<string, RealmBagRegistration>();
+  #realmId: string | null = null;
   readonly #realmDocId: DocumentId;
+  readonly #charter: RealmCharterConsult | null;
+  readonly #pace: (() => number | null) | null;
 
   constructor(
     private readonly base: FederationGate,
     private readonly membership: NexusMembership,
     realmUrl: AutomergeUrl,
+    opts?: {
+      /** The realm's own consult — absent, the gate answers exactly as the Nexus lane alone answered. */
+      readonly charter?: RealmCharterConsult;
+      /** The realm's pace in rolls (`realmPace`) — the lease the write side reads against. */
+      readonly pace?: () => number | null;
+    },
   ) {
     this.#realmDocId = interpretAsDocumentId(realmUrl) as DocumentId;
+    this.#charter = opts?.charter ?? null;
+    this.#pace = opts?.pace ?? null;
   }
 
-  /** Re-fold the standing registrations off a realm doc snapshot — the docs the member lane opens for. */
+  /** Re-fold the standing registrations off a realm doc snapshot — the docs the realm and member lanes open for. */
   async refold(doc: LarDoc | undefined | null, realmId: string): Promise<void> {
     const next = new Set<DocumentId>();
+    const byDoc = new Map<DocumentId, RealmBagRegistration>();
     this.#registrations = await foldRealmBags(doc, realmId);
+    this.#realmId = realmId;
     for (const rec of this.#registrations.values()) {
-      try { next.add(interpretAsDocumentId(rec.docUrl as AutomergeUrl) as DocumentId); } catch { /* a malformed url registers nothing */ }
+      try {
+        const id = interpretAsDocumentId(rec.docUrl as AutomergeUrl) as DocumentId;
+        next.add(id);
+        byDoc.set(id, rec);
+      } catch { /* a malformed url registers nothing */ }
     }
     this.#standing = next;
+    this.#byDocId = byDoc;
   }
 
-  /** THE WRITE CAP at the holder: does this nym stand in the bag's counted `keptBy`? The read lane above
-   *  answers CONTRACT (every member); this answers the stewards' set alone. */
+  /** THE WRITE CAP at the holder: does this nym stand in the bag's counted `keptBy`, inside the lease? The
+   *  read lane above answers CONTRACT (every charter holder); this answers the stewards' set alone. */
   mayWrite(bagUri: string, nym: string | null | undefined): boolean {
-    return mayWriteRealmBag(this.#registrations, bagUri, nym);
+    return mayWriteRealmBag(this.#registrations, bagUri, nym, this.#pace?.() ?? null);
   }
 
   /** The standing registrations this gate folded, keyed by bag URI. */
@@ -366,7 +478,18 @@ export class RealmBagGate implements FederationGate {
   async mayFederate(documentId: DocumentId, peerId?: PeerId): Promise<boolean> {
     if (await this.base.mayFederate(documentId, peerId)) return true;
     if (!peerId) return false;
-    if (documentId !== this.#realmDocId && !this.#standing.has(documentId)) return false;
+    const isRealmDoc = documentId === this.#realmDocId;
+    if (!isRealmDoc && !this.#standing.has(documentId)) return false;
+    // THE REALM LEG — the registration's own hands and charters, ahead of any board.
+    if (this.#charter?.holdsCharterPeer?.(peerId)) return true;     // the charter's own hearth — the return lane
+    const nym = this.#charter?.contractNymOfPeer(peerId)?.toLowerCase() ?? null;
+    if (nym && this.#charter) {
+      const rec = this.#byDocId.get(documentId) ?? null;
+      if (rec?.keptBy.some((s) => s.toLowerCase() === nym)) return true;                 // the write side
+      const charters = rec ? registrationCharters(rec) : new Set<string>(this.#realmId ? [this.#realmId] : []);
+      for (const charterId of charters) if (this.#charter.holdsCharter(nym, charterId)) return true;   // CONTRACT
+    }
+    // THE NEXUS LANE, unchanged — the members board answers for every peer the realm does not name.
     return this.membership.holdsCarriagePeer(peerId);
   }
 }

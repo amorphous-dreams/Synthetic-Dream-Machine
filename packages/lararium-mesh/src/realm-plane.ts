@@ -23,7 +23,7 @@ import {
   REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, realmIdOfCharter, realmDocUrl, RealmBagGate,
   signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
-  writeRealmBagAnnounce, type RealmBagRegistration,
+  writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult,
 } from "./realm-bag.js";
 
 export interface RealmPlaneHolder {
@@ -44,6 +44,10 @@ export interface RealmPlaneHolder {
     readonly bagUri: string;
     readonly docUrl: string;
     readonly readTier?: CapTier;
+    /** Beside each steward nym, the charter that hand holds — omit for a single-charter realm. */
+    readonly charters?: Readonly<Record<string, string>>;
+    /** The registration's lease in rolls of the realm's pace — omit for a registration that never lapses. */
+    readonly expiry?: number;
     readonly signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>;
     readonly propose?: readonly string[];
   }): Promise<RealmBagRegistration>;
@@ -67,6 +71,11 @@ export function makeRealmPlane(opts: {
   readonly crossroadsHandle: DocHandle<LarDoc>;
   readonly membership: NexusMembership;
   readonly base: FederationGate;
+  /** The realm's OWN consult — the proven contract nym behind a wire key, and who holds which charter. Absent,
+   *  the gate answers exactly as the Nexus lane alone answered. */
+  readonly charter?: RealmCharterConsult;
+  /** The realm's pace in rolls (`realmPace`) — the lease a registration's `expiry` reads against. */
+  readonly pace?: () => number | null;
   readonly onLog?: (line: string) => void;
 }): RealmPlaneHolder {
   const { repo, oracleHandle, crossroadsHandle, membership, base } = opts;
@@ -100,7 +109,10 @@ export function makeRealmPlane(opts: {
     realmId  = id;
     realmUrl = realmDocUrl(id);
     realmHandle = await materializeSharedLarDoc(repo, realmUrl, "realm");
-    realmGate = new RealmBagGate(base, membership, realmUrl);
+    realmGate = new RealmBagGate(base, membership, realmUrl, {
+      ...(opts.charter ? { charter: opts.charter } : {}),
+      ...(opts.pace    ? { pace:    opts.pace }    : {}),
+    });
     onChange = () => { void refold(); };
     realmHandle.on("change", onChange);
     await refold();
@@ -135,10 +147,14 @@ export function makeRealmPlane(opts: {
       if (!realmHandle || !realmId) return new Map();
       return foldRealmBags(realmHandle.doc(), realmId);
     },
-    async register({ bagUri, docUrl, readTier, signers, propose }) {
+    async register({ bagUri, docUrl, readTier, charters, expiry, signers, propose }) {
       if (!realmHandle || !realmId) throw new Error("realm-bag: this vessel stands in no realm — seat a charter (`lares nexus rite cabal`) or import one (`lares nexus seal import`) and `lares nexus refresh`");
       if (signers.length === 0) throw new Error("realm-bag: a bag is kept by a named steward — no signer supplied");
-      const parts = { realmId, bagUri, docUrl, readTier: readTier ?? "contract" as CapTier };
+      const parts = {
+        realmId, bagUri, docUrl, readTier: readTier ?? "contract" as CapTier,
+        ...(charters ? { charters } : {}),
+        ...(expiry === undefined ? {} : { expiry }),
+      };
       const proposed = (propose ?? []).map((n) => n.toLowerCase()).filter((n) => !signers.some((s) => s.signer.toLowerCase() === n));
       const rec = proposed.length > 0
         ? await proposeRealmBagRegistration(parts, signers, proposed)
