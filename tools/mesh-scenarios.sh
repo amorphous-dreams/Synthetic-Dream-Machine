@@ -951,6 +951,23 @@ run_meme() {
   if printf '%s' "$LD" | grep -q '"ok":true'; then ok
   else bad "the LOAD refused"; printf '%s\n' "$LD" | tail -3 | sed 's/^/      /'; clear_all; return; fi
 
+  # THE REALM BAG (realm-bag-brief, ruled 2026-09-11). Both sides re-fold the relation they just stood — A's
+  # running node folds the admit its CLI wrote beside it, B stands the realm the imported charter names — and
+  # A registers her `lares` on the realm's shared CRDT: steward-signed, read at CONTRACT, @crossroads naming
+  # only that it exists and who keeps it.
+  step "both sides re-fold the relation; the realm stands under ONE doc id"
+  local RA RB
+  RA=$($COMPOSE exec -T lararium-a $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
+  else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
+
+  step "A registers bags/lares on the realm — steward-signed, read at CONTRACT"
+  local REG
+  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --json 2>&1)
+  if printf '%s' "$REG" | grep -q '"readTier":"contract"'; then ok
+  else bad "the registration refused"; printf '%s\n' "$REG" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
+
   # A CONTROL ON A'S OWN SIDE: the bag read carries the author's line, and its hash is the put's. A
   # crossing that failed past this step failed in the carriage; one that failed here never left A.
   step "A's own bag read carries the line byte-whole, hash = the put's"
@@ -960,31 +977,30 @@ run_meme() {
      && ! json_text "$GA" | grep -q '\$origin-bag'; then ok
   else bad "A's bag read disagrees with A's put"; printf '%s\n' "$GA" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
-  # THE READING THE SCENARIO EXISTS FOR. B mounts `lares` too — her OWN registration of it. Whether A's
-  # promotion reaches her names whether two operators' `lares` bags are ONE bag or two.
-  # MEASURED 2026-09-11, and the finding is the seam: B answers `not-found`, and `wiki which` on B names
-  # NO bag for the URI. `lar:///ha.ka.ba/bags/lares` names a doc EACH vessel founded for itself; the
-  # contract writes A's members board and B's kept consent, never a bag. Two contracted operators hold
-  # two `lares` bags with one name, and nothing in the relation carries one into the other. The lone
-  # proven crossing (`meme-two-vessel-bag`) is a FLEET: the joiner dials the founder holding the
-  # founder's own doc url (`LAR_JOIN_DOC`), which is one operator's bag on two devices — reach, never a
-  # second operator. So the walk succeeds, the system's answer is no, and the step reports a GAP rather
-  # than a red; the doc urls print beside it so a reading that ever shows ONE url on both sides wakes
-  # the steps below.
+  # THE READING THE SCENARIO EXISTS FOR. The realm now carries A's registration; B's `meme get --bag lares`
+  # walks the realm plane first (reach-by-access) and reads A's doc IF it crosses. Two seams stand between
+  # the registration and B's read, each measured 2026-09-12 (`tests/e2e/meme-realm-bag.test.ts`):
+  #   · THE TRANSPORT. The hearths here peer through the herm's FLOW-map (`LAR_PEERS`), which carries the
+  #     public shelf and sealed bodies — no Automerge sync runs between two operators' vessels, so a
+  #     cleartext realm doc has no wire to cross on. The member-read lane the realm gate opens rides the
+  #     direct dial (`LAR_JOIN_SYNC`), which this compose never sets for B.
+  #   · THE WIRE NYM. Even on a direct dial, `accept-carriage` contracts the PERSONA-ROOT nym while the
+  #     wire authenticates the VESSEL key, and `nexus-carriage.ts` `memberNym` binds neither to the other —
+  #     a contracted operator reads STRANGER at the wire, and PRIVATE posture denies her every doc.
+  # The walk succeeds, the system's answer is no, and the step reports a GAP naming the nearer seam; B's
+  # realm-bags prints beside it — an EMPTY list says the realm doc never crossed, a listed bag says the
+  # bag's own doc stalled.
   step "★ B gets it — the line byte-whole, canonicalHash = A's ★"
   local GB crossed=0
   if GB=$(await_meme lararium-b "<<~ ahu #/a>>" 90) \
      && json_text "$GB" | grep -qE "$BAG_RE" && [ "$(json_hash "$GB")" = "$HASH_A" ] \
      && ! json_text "$GB" | grep -q '\$origin-bag'; then ok; crossed=1
   else
-    gap "B reads no meme — the relation carries no bag; each operator's \`lares\` is its own doc"
-    printf '      B reads: %s\n' "$(printf '%s' "$GB" | tail -1 | cut -c1-200)"
-    printf '      B which: %s\n' "$($COMPOSE exec -T lararium-b $LARES wiki which "$URI" --no-json 2>&1 | tr '\n' ' ' | tr -s ' ' | cut -c1-200)"
-    for s in lararium-a lararium-b; do
-      printf '      %s lares doc: %s\n' "$s" "$($COMPOSE exec -T "$s" $LARES wiki list 2>&1 \
-        | grep -A1 '^  lares ' | grep -oE 'automerge:[A-Za-z0-9]+' | head -1)"
-    done
-    printf '      wakes when both sides name ONE doc: a bag the relation carries, not a fleet dial\n'
+    gap "B reads no meme — the realm carries the bag, and no wire carries the realm between these hearths"
+    printf '      B reads:      %s\n' "$(printf '%s' "$GB" | tail -1 | cut -c1-200)"
+    printf '      B realm-bags: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
+    printf '      A realm-bags: %s\n' "$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
+    printf '      wakes when the realm doc crosses: a member-read wire between the hearths, and the wire nym bound to the contract nym\n'
   fi
   # THE BYTES BEHIND A PUBLIC POINTER (tiddler-carriage #/measured, step 2). The law: a public pointer's
   # RECORD federates and its BYTES ride the public CAS — a peer holding the pointer fetches them by cid

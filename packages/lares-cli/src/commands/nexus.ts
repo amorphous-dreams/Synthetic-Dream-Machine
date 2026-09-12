@@ -80,7 +80,7 @@ import type { ParsedArgs } from "../parse-args.js";
 class UsageError extends Error {}
 
 function usage(): void {
-  console.error("usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture>");
+  console.error("usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>");
   console.error("");
   console.error("  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony");
   console.error("  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym");
@@ -94,6 +94,8 @@ function usage(): void {
   console.error("  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier");
   console.error("  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition");
   console.error("  refresh                                   re-read the charter and re-fold the boards it names");
+  console.error("  realm-bag <bag-uri> [--index N]           register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT)");
+  console.error("  realm-bags                                the bags the realm carries, and who keeps each");
 }
 
 function sealUsage(): void {
@@ -132,6 +134,8 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "rite":            return await runNexusRite(args);
     case "kahuli":          return await cmdKahuli(args);
     case "refresh":         return await cmdNexusRefresh(args);
+    case "realm-bag":       return await cmdRealmBag(args);
+    case "realm-bags":      return await cmdRealmBags(args);
     default:
       if (verb) console.error(`lares nexus: unknown verb "${verb}"`);
       usage();
@@ -227,6 +231,72 @@ async function cmdNexusRefresh(args: ParsedArgs): Promise<number> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus refresh: ${msg}`) });
+    return 1;
+  }
+}
+
+/**
+ * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
+ * (realm-bag-brief, ruled 2026-09-11). The bag's doc is the one this vessel names for the URI; the record
+ * rides the steward's persona-root signature; @crossroads carries only that the bag exists and who keeps it.
+ * A contracted member reads it through `meme get --bag <slug>`; the stewards alone write.
+ */
+async function cmdRealmBag(args: ParsedArgs): Promise<number> {
+  const bag = args.positional[1];
+  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--index N]"); return 2; }
+  const index = args.options["index"] !== undefined ? Number(args.options["index"]) : 0;
+  try {
+    const r = await runVerb("realm-bag", { bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index }, await vesselDid());
+    if (r.status === "error") {
+      emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "realm-bag failed" },
+                   human: () => console.error(`lares nexus realm-bag: ${r.errorMessage ?? "failed"}`) });
+      return 1;
+    }
+    const out = summaryOutput(r) ?? {};
+    emit(args, {
+      ok: true, data: out,
+      human: () => {
+        console.log("nexus realm-bag — the bag registers on the realm's shared CRDT:");
+        console.log(`  realm:     ${String(out["realm"] ?? "?").slice(0, 24)}…`);
+        console.log(`  bag:       ${String(out["bag"] ?? "?")}`);
+        console.log(`  kept by:   ${(Array.isArray(out["keptBy"]) ? (out["keptBy"] as string[]) : []).map((n) => `${n.slice(0, 16)}…`).join(", ")}`);
+        console.log(`  read tier: ${String(out["readTier"] ?? "?")}  (the contracted cabal reads; the stewards write)`);
+      },
+    });
+    return 0;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus realm-bag: ${msg}`) });
+    return 1;
+  }
+}
+
+/** `lares nexus realm-bags` — the standing registrations the realm carries, as of this vessel's last sync. */
+async function cmdRealmBags(args: ParsedArgs): Promise<number> {
+  try {
+    const r = await runVerb("realm-bags", {}, await vesselDid());
+    if (r.status === "error") {
+      emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "realm-bags failed" },
+                   human: () => console.error(`lares nexus realm-bags: ${r.errorMessage ?? "failed"}`) });
+      return 1;
+    }
+    const out = summaryOutput(r) ?? {};
+    const bags = Array.isArray(out["bags"]) ? (out["bags"] as Array<Record<string, unknown>>) : [];
+    emit(args, {
+      ok: true, data: out,
+      human: () => {
+        if (!out["realm"]) { console.log("nexus realm-bags — this vessel stands in no realm (no charter names one)"); return; }
+        console.log(`nexus realm-bags — realm ${String(out["realm"]).slice(0, 24)}… carries ${bags.length} bag${bags.length === 1 ? "" : "s"}:`);
+        for (const b of bags) {
+          const kept = Array.isArray(b["keptBy"]) ? (b["keptBy"] as string[]).map((n) => `${n.slice(0, 16)}…`).join(", ") : "?";
+          console.log(`  ${String(b["bag"])}  kept by ${kept}  (${String(b["readTier"])})`);
+        }
+      },
+    });
+    return 0;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus realm-bags: ${msg}`) });
     return 1;
   }
 }

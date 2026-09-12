@@ -9,10 +9,19 @@
  * quorum admits her. A LOADs a carrier into `bags/lares`. THE VECTOR: B's `meme get --bag lares <uri>`.
  *
  * MEASURED (seal-and-seat-handoff#/plan-relation-bag): each operator mints its own `bags/lares` doc, the
- * contract writes the carriage-contracts board and never a bag, and B answers `not-found`. The vector holds
- * as `test.fails`, GATED on the contract having landed — a refusal at a relation door skips the vector
- * rather than reading as the seam. The day the realm carries the bag (realm-bag-brief#/what-the-realm-holds
- * names the five seams), this reads "expected to fail" and the hold retires.
+ * contract writes the carriage-contracts board and never a bag, and B answers `not-found`. BUILT: the realm's
+ * shared CRDT materializes on both members' boot from the charter's genesis epoch (`realmDocUrl`); A REGISTERS
+ * her `bags/lares` on it (`lares nexus realm-bag lares` — steward-signed, read at CONTRACT); @crossroads
+ * carries `{ bag, kept-by }` alone; B's third reach (`meme-verbs.ts` reach-by-access) walks the realm plane
+ * FIRST and finds the doc, which A's wire gate federates to a contracted MEMBER and to nobody else.
+ *
+ * CONTROLS: before the registration, B answers exactly what a non-member answers after it (`not-found`,
+ * byte-identical); C — a third operator dialing A with no contract — answers `not-found` after it too; a
+ * crossroads read of the bag's meme shows no record; B's `meme put --bag lares` refuses (read tier).
+ *
+ * MEASURED 2026-09-12: the vector stays `test.fails` — the realm carries the bag and no WIRE carries the
+ * realm: a self-founded operator's dial presents its own device edge and the founder's gate ANERGIZES it
+ * (the seam this file's MEASURE pins by B's own log line).
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -44,16 +53,24 @@ if (gaps.length > 0) console.error(`meme-realm-bag: SKIPPED — missing ${gaps.j
 
 let A: LarInstance | null = null;
 let B: LarInstance | null = null;
+/** C — a third operator dialing A at the same floor, contracted into NOTHING: the non-member CONTROL. */
+let C: LarInstance | null = null;
 let rootB = "";
+let rootC = "";
 /** The relation's doors, as they answered — the gate on the vector. */
 let contracted = false;
 let doors = "";
+/** B's answer BEFORE any registration — the byte-identical "today" a non-member keeps drawing. */
+let beforeB = "";
+let contractNym = "";
 
 describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relation ★", () => {
   beforeAll(async () => {
     rootB = mkdtempSync(join(stageDir(), "lares-staged-Bop-"));
+    rootC = mkdtempSync(join(stageDir(), "lares-staged-Cop-"));
     const portA = await freePort();
     const portB = await freePort();
+    const portC = await freePort();
     A = await openStaged({ tag: "A", port: portA, found: async (cliA, rootA) => {
       const clear = await cliA(["vessel", "clear", "--root", rootA, "--force"]);
       if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
@@ -72,14 +89,20 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
     const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
-    // B: its OWN root, its own founding — a second OPERATOR, never a device of A's.
-    B = await openStaged({ tag: "B", root: rootB, port: portB, found: async (cliB, root) => {
-      const clear = await cliB(["vessel", "clear", "--root", root, "--force"]);
-      if (clear.code !== 0) throw new Error(`B: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
-      const face = await cliB(["persona", "new", "0", "--name", "highland-steward"]);
-      if (face.code !== 0) throw new Error(`B: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-    }, daemonEnv: { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA } });
+    // B: its OWN root, its own founding — a second OPERATOR, never a device of A's. C: a third, alike, that
+    // never contracts.
+    const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string }>, root: string) => {
+      const clear = await cli(["vessel", "clear", "--root", root, "--force"]);
+      if (clear.code !== 0) throw new Error(`${tag}: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
+      const face = await cli(["persona", "new", "0", "--name", name]);
+      if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+    };
+    const dialA = { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
+    // Sequential: `vessel clear` holds the fresh-build lock, and two clears racing refuse each other.
+    B = await openStaged({ tag: "B", root: rootB, port: portB, found: foundOperator("B", "highland-steward"), daemonEnv: dialA });
+    C = await openStaged({ tag: "C", root: rootC, port: portC, found: foundOperator("C", "court-spy"), daemonEnv: dialA });
     if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);
+    if (!(await awaitRendezvous(C))) throw new Error(`C reached live but bound no rendezvous:\n${C.bootLog().slice(-800)}`);
 
     // THE RELATION'S FOUR DOORS — each answer kept, the gate below reads them.
     const lines: string[] = [];
@@ -98,21 +121,28 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const data = (accept.json?.["data"] ?? accept.json ?? {}) as Record<string, unknown>;
       acc = { nym: typeof data["nym"] === "string" ? data["nym"] : undefined, contractSig: typeof data["contractSig"] === "string" ? data["contractSig"] : undefined };
       if (acc.nym && acc.contractSig) {
+        contractNym = acc.nym;
         const contract = await A.cli(["nexus", "contract", acc.nym, "--sig", acc.contractSig, "--json"]);
         lines.push(`A nexus contract → ${contract.code}: ${said(contract).trim().slice(0, 240)}`);
         contracted = contract.code === 0;
+        // BOTH sides re-fold: A's running node folds the admit the CLI wrote beside it (its live member set
+        // now names B at the wire); B stands the realm the imported charter names.
+        const refreshA = await A.cli(["nexus", "refresh", "--json"]);
+        lines.push(`A nexus refresh → ${refreshA.code}: ${said(refreshA).trim().slice(0, 200)}`);
         const refresh = await B.cli(["nexus", "refresh", "--json"]);
-        lines.push(`B nexus refresh → ${refresh.code}`);
+        lines.push(`B nexus refresh → ${refresh.code}: ${said(refresh).trim().slice(0, 200)}`);
       }
     }
     doors = lines.join("\n  ");
     console.error(`meme-realm-bag MEASURE the relation's doors:\n  ${doors}`);
-  }, 400_000);
+  }, 500_000);
 
   afterAll(async () => {
+    if (C) await C.stop();
     if (B) await B.stop();
     if (A) await A.stop();
     if (rootB && existsSync(rootB)) rmSync(rootB, { recursive: true, force: true });
+    if (rootC && existsSync(rootC)) rmSync(rootC, { recursive: true, force: true });
   });
 
   test("① two operators stand, each on its own root; B dials A at the cross-operator floor", () => {
@@ -134,17 +164,111 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   test("③ MEASURE: the relation's doors, as they answered (the gate on the vector)", () => {
     console.error(`meme-realm-bag: contracted=${contracted}`);
     expect(doors.length).toBeGreaterThan(0);
+    expect(contracted, doors).toBe(true);
   });
 
-  // THE SEAM. A contracted operator holding the relation does not hold the bag: each vessel mints its own
-  // `bags/lares` doc, nothing registers a realm-scoped bag in a CRDT both replicate, and B's third reach
-  // (`meme-verbs.ts:136-143`, reach-by-access) finds no doc. Gated on the contract: a refusal at a door above
-  // is reported by ③ and never counted as this seam.
-  test.fails("★ B's `meme get --bag lares` answers through the realm ★ (SEAM — no realm bag registers today)", async (ctx) => {
-    if (!contracted) ctx.skip();   // the gate reads at RUN time — a refused door skips, never a red for the wrong reason
+  test("④ CONTROL (before): B holds the relation and not the bag — `not-found`, the measured today", async () => {
     const r = await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    beforeB = said(r).trim();
+    console.error(`meme-realm-bag MEASURE B before registration: ${beforeB.slice(0, 200)}`);
+    expect(r.json?.["ok"]).toBe(false);
+    expect(beforeB).toContain("not-found");
+  }, 60_000);
+
+  test("⑤ A registers her bag on the realm's shared CRDT — steward-signed, read at CONTRACT", async () => {
+    const reg = await A!.cli(["nexus", "realm-bag", "lares", "--json"]);
+    console.error(`meme-realm-bag MEASURE A realm-bag: ${said(reg).trim().slice(0, 300)}`);
+    expect(reg.json?.["ok"], said(reg)).toBe(true);
+    const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
+    expect(data["bag"]).toBe(LARES_BAG);
+    expect(data["readTier"]).toBe("contract");
+    expect(Array.isArray(data["keptBy"]) && (data["keptBy"] as string[]).length).toBe(1);
+    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
+    expect(bags.map((b) => b["bag"])).toContain(LARES_BAG);
+  }, 60_000);
+
+  test("⑥ CONTROL: @crossroads carries that the bag exists and who keeps it — never its content", async () => {
+    // The crossroads plane holds no record of the ledger's meme: the count never rides the herm.
+    const r = await A!.cli(["meme", "get", URI, "--bag", "crossroads", "--json"]);
+    expect(r.json?.["ok"], said(r)).toBe(false);
+    expect(said(r)).toContain("not-found");
+  }, 60_000);
+
+  /** Poll B's `meme get --bag lares` until it answers ok, bounded — the docs cross by WS-sync, never faked. */
+  const pollB = async (ms: number) => {
+    let r = await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    const until = Date.now() + ms;
+    while (r.json?.["ok"] !== true && Date.now() < until) {
+      await new Promise((res) => setTimeout(res, 3_000));
+      r = await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    }
+    return r;
+  };
+
+  // THE VECTOR. B's `meme get --bag lares` walks the realm plane first (reach-by-access) and reads A's doc,
+  // which A's wire gate federates to a contracted MEMBER. Gated on the contract: a refusal at a door above
+  // reads at ③, never here.
+  //
+  // MEASURED 2026-09-12 — THE SEAM SITS UNDER THE REALM, AT THE WIRE. The realm stands on both sides under
+  // ONE doc id, A's registration lands, and B's realm doc arrives EMPTY, because B never connects: a vessel
+  // that founded its own face holds a self-signed device edge, the dial presents it as a FLEET credential
+  // (`open-node-vessel.ts` `maybeStartNexusClientDial` — `identity: selfEdge ? {…edge} : leafIdentity`), and
+  // A's gate rejects the socket whole ("ANERGIZED: device-delegation rejected: operator is not the pinned
+  // root"). The cross-operator floor (the ContactCard alone) is reached only by a vessel holding NO self
+  // edge — never by a second operator. Beneath that stands a second seam: `accept-carriage` contracts the
+  // PERSONA-ROOT nym while the wire authenticates the VESSEL key, and `nexus-carriage.ts` `memberNym` binds
+  // neither to the other. Both sit outside the realm plane's ownership; until they land this vector reads
+  // "expected to fail", and the MEASURE below pins the nearer seam by B's own words.
+  test.fails("★ B's `meme get --bag lares` answers through the realm ★ (SEAM — the dial presents a self edge and A anergizes it)", async (ctx) => {
+    if (!contracted) ctx.skip();
+    const r = await pollB(60_000);
     console.error(`meme-realm-bag MEASURE B: meme get --bag lares → ${said(r).trim().slice(0, 300)}`);
+    if (r.json?.["ok"] !== true) {
+      // WHERE THE CROSSING STOPPED — the realm doc on B (did the registration arrive?), the nym B contracted
+      // under against the key B presents at A's wire, and each side's realm lines.
+      const bags = await B!.cli(["nexus", "realm-bags", "--json"]);
+      console.error(`meme-realm-bag MEASURE B realm-bags: ${said(bags).trim().slice(0, 400)}`);
+      console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${/gate key: ([0-9a-f]{64})/.exec(B!.bootLog())?.[1] ?? "?"} · contract nym: ${contractNym}`);
+      for (const [tag, v] of [["A", A!], ["B", B!]] as const) {
+        const lines = v.bootLog().split("\n").filter((l) => /\[realm\]|nexus-join|sharePolicy|cross-operator|peer-class|admitted/.test(l)).slice(-8).join("\n  ");
+        console.error(`meme-realm-bag MEASURE ${tag} lines:\n  ${lines}`);
+      }
+    }
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(String((r.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).toContain('bag = "salt: 12');
+  }, 120_000);
+
+  // THE MEASURE that locates the seam: B's own daemon says why nothing crosses.
+  test("MEASURE: the two-operator dial never stands — A ANERGIZES B's self-signed device edge", () => {
+    const b = B!.bootLog();
+    const verdict = b.split("\n").find((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l)) ?? "(no verdict line)";
+    console.error(`meme-realm-bag MEASURE B dial verdict: ${verdict.trim().slice(0, 200)}`);
+    console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${/gate key: ([0-9a-f]{64})/.exec(b)?.[1] ?? "?"} · contract nym: ${contractNym}`);
+    if (process.env["LAR_STAGE_DIR"]) {
+      writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-A.log"), A!.bootLog());
+      writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-B.log"), b);
+    }
+    expect(b).toContain("[nexus-join] presenting the device-delegation edge (fleet)");
+    expect(verdict).toContain("ANERGIZED: device-delegation rejected: operator is not the pinned root");
+  });
+
+  test("⑦ CONTROL: C — a proof-carrying operator with NO contract — draws `not-found`, byte-identical to B's before", async () => {
+    const r = await C!.cli(["meme", "get", URI, "--bag", "lares", "--json"]);
+    console.error(`meme-realm-bag MEASURE C: ${said(r).trim().slice(0, 200)}`);
+    expect(r.json?.["ok"]).toBe(false);
+    // Byte-identical past the per-call requestId — the error object itself.
+    const errorOf = (text: string): string => JSON.stringify((JSON.parse(text.split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>)["error"] ?? null);
+    expect(errorOf(said(r))).toBe(errorOf(beforeB));
+    const list = await C!.cli(["nexus", "realm-bags", "--json"]);
+    expect((list.json?.["data"] as Record<string, unknown> | undefined)?.["realm"] ?? null).toBeNull();
+  }, 60_000);
+
+  test("⑧ CONTROL: a member at the read tier cannot `meme put --bag lares` — the stewards alone write", async () => {
+    const file = join(rootB, "b-edit.mem");
+    writeFileSync(file, meme());
+    const r = await B!.cli(["meme", "put", URI, "--bag", "lares", "--file", file, "--json"]);
+    expect(r.json?.["ok"], said(r)).toBe(false);
+    expect(said(r)).toMatch(/no writable layer|cannot write|refus/i);
   }, 60_000);
 });
