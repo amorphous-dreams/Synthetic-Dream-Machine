@@ -114,6 +114,10 @@ export const KEYRING_ENVELOPE_SEAL_INFO = d("keyring-envelope-seal");
 export const CAD_KEYSTREAM_INFO = d("cad-keystream");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = d("relay-gate");
+/** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
+ *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
+ *  derive into an admit seal or a keyring envelope. */
+export const SEED_WRAP_PRF_INFO = d("seed-wrap-prf");
 
 // ── PLANES + SCOPES (HMAC name derivations) ─────────────────────────────────────────────────────
 /** One PersonaGroup's private plane name, derived from that group's own doc id. */

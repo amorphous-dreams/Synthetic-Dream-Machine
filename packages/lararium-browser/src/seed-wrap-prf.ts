@@ -18,8 +18,9 @@
  *
  * ── THE INFO IS ITS OWN ──────────────────────────────────────────────────────────────────────────
  * `SEED_WRAP_HKDF_INFO` is a NEW separated string (the crypto-spine ruling: the HKDF infos ARE the separation;
- * never reuse `PERSONA_ADMIT_SEAL_INFO` or `KEYRING_ENVELOPE_SEAL_INFO`). It rides under the browser's own
- * root so it can never collide with the mesh `lares/domain` registry, which declares its own.
+ * never reuse `PERSONA_ADMIT_SEAL_INFO` or `KEYRING_ENVELOPE_SEAL_INFO`). It mints in the mesh domain
+ * registry (`domains.ts`) beside every other separation, so one file names them all and the distinctness
+ * witness there reads it.
  *
  * ── THE FLOOR ────────────────────────────────────────────────────────────────────────────────────
  * No PRF on the host → `detectPrf` reads `{ available: false, why }` and nothing wraps. The cleartext path
@@ -30,8 +31,10 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/pattern-integrity-rhymes
  */
 
-/** The HKDF `info` for the seed wrap — declared once, never built at a call site, never another seal's. */
-export const SEED_WRAP_HKDF_INFO = "lar:///ha.ka.ba/lararium/browser/seed-wrap-prf/v1" as const;
+import { SEED_WRAP_PRF_INFO } from "@lararium/mesh";
+
+/** The HKDF `info` for the seed wrap — minted once in the registry, never built at a call site, never another seal's. */
+export const SEED_WRAP_HKDF_INFO = SEED_WRAP_PRF_INFO;
 
 /** The key class the wrapping credential holds — the closed vocabulary of `key-class.ts` (node). */
 export type SeedWrapKeyClass = "cloud-synced" | "device-minted";
