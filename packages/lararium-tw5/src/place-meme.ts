@@ -103,17 +103,28 @@ export function memePathOf(uri: string, container: { kind: "bags" | "recipes"; n
 }
 
 /**
- * A FRAMED ROOT — a record whose `type` reads the carrier type and whose text still opens with a SOH
- * head (masked: a head shown inside a fence opens nothing). The whole meme sits in one record, unsplit;
- * the placement law never ran over it. A split root carries a `<<~ kahea …>>` body and no head; a slot
- * child carries its own text and no head — neither reads as framed. Answers the URI the head names
- * (else the title), or null.
+ * A FRAMED ROOT — a record the ROOT LAW names (`isMemeRoot`) whose text still opens with a SOH head
+ * (masked: a head shown inside a fence opens nothing). The whole meme sits in one record, unsplit; the
+ * placement law never ran over it. A split root carries a `<<~ kahea …>>` body and no head, so it never
+ * reads as framed. Answers the URI the head names (else the title), or null.
+ *
+ * THE MARK IS NOT THE THING. A slot child carries the carrier type by construction and its text is the
+ * author's, so a child into which someone pasted a whole framed carrier wears every mark a founding
+ * wears. Reading the mark alone, this answered the CHILD's own address — and three doors believed it:
+ * the charm re-addressed a fragment to `/memes/` and the split minted `uri#/a#/z`, a title the group law
+ * admits and the address grammar forbids; the native door's gate answered 422 over the same record,
+ * which stalls the stock syncer's queue permanently; the backstop took a child for a founding. So the
+ * root law arrives FIRST, in the one spelling `isMemeRoot` already carries — a second copy of it would
+ * drift the day one of them moved, which is exactly how this seam opened.
+ *
+ * What the child's frame then IS, is authored text: it lands verbatim through the native door and the
+ * grade speaks where a child's save re-places its root (the backstop).
  */
 export function framedRootOf(fields: Record<string, unknown>): string | null {
-  if (fields["type"] !== CARRIER_TYPE) return null;
+  const title = typeof fields["title"] === "string" ? fields["title"] : "";
+  if (!isMemeRoot(title, fields as TiddlerFields)) return null;
   const text = typeof fields["text"] === "string" ? fields["text"] : "";
   if (!maskedExec(text, carrierMarkPattern("head", "g"))) return null;
-  const title = typeof fields["title"] === "string" ? fields["title"] : "";
   return headUriOf(text) ?? (title || null);
 }
 

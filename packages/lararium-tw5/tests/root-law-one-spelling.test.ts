@@ -12,6 +12,9 @@ import { describe, test, expect } from "vitest";
 // `declaredStructure` and the deserializer's split — never by reaching into `meme-ast` directly
 // (the grammar boundary, `tests/vm-grammar-boundary.test.ts`). Those two are where the law bites.
 import { memeticIngestOps } from "../src/ingest-gate.js";
+import { framedRootOf, memePathOf } from "../src/place-meme.js";
+import { nativeDoorGate } from "../src/native-door-gate.js";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import {
   memeticWikitextDeserializer,
   expandMemeRefs,
@@ -98,5 +101,62 @@ describe("Phase 0 · the leans collided", () => {
   test("CONTROL · a quoted call or block declares nothing — the fence mask holds", () => {
     expect([...declared("```\n<<~ ahu #/b>>\nx\n<<~/ahu>>\n```")]).toEqual([]);
     expect([...declared("`<<~ kahea ahu #/b>>`")]).toEqual([]);
+  });
+});
+
+describe("Phase 1 · the root law, one spelling", () => {
+  // `isMemeRoot` (`place-meme.ts:223`) carries the warning: "a second spelling of it would drift the
+  // day one of them moved." `framedRootOf` was the second spelling and it moved — it read the MARK
+  // (the carrier type plus a SOH head) and never asked whether the record IS a root. Three doors read
+  // it: the charm, the native door's gate, the backstop.
+  const CHILD_TITLE = `${URI}#/a`;
+  /** A slot child whose author pasted a whole framed carrier into its text. */
+  const childFields = (): Record<string, unknown> => ({
+    title: CHILD_TITLE,
+    type: CARRIER_TYPE,
+    "uri-path": "t/a#/a",
+    "$fragment-parent": URI,
+    "$slot": "#/a",
+    text: carrier(CHILD_TITLE, ["z"]),
+  });
+
+  test("a slot child carrying a framed head is NOT a founding — `framedRootOf` answers null", () => {
+    expect(framedRootOf(childFields())).toBeNull();
+  });
+
+  test("a record whose TITLE carries a fragment is not a founding, even with no `$fragment-parent`", () => {
+    const bare = { ...childFields() };
+    delete bare["$fragment-parent"];
+    expect(framedRootOf(bare)).toBeNull();
+  });
+
+  test("the native door PASSES that child — a 422 here would stall the stock syncer's queue forever", () => {
+    const body = JSON.stringify({ title: CHILD_TITLE, text: String(childFields()["text"]), fields: {
+      type: CARRIER_TYPE, "uri-path": "t/a#/a", "$fragment-parent": URI, "$slot": "#/a",
+    } });
+    const reply = nativeDoorGate(body, undefined, "default");
+    expect(reply.kind).toBe("pass");
+  });
+
+  test("CONTROL · a true framed root still answers the URI its head names", () => {
+    expect(framedRootOf({ title: URI, type: CARRIER_TYPE, text: carrier(URI, ["a"]) })).toBe(URI);
+  });
+
+  test("CONTROL · the native door still REFUSES a true framed root with 422, naming the `/memes/` door", () => {
+    const body = JSON.stringify({ title: URI, text: carrier(URI, ["a"]), fields: { type: CARRIER_TYPE } });
+    const reply = nativeDoorGate(body, undefined, "default");
+    expect(reply.kind).toBe("refuse");
+    if (reply.kind !== "refuse") return;
+    expect(reply.status).toBe(422);
+    expect(reply.body["door"]).toBe(memePathOf(URI, { kind: "recipes", name: "default" }));
+  });
+
+  test("CONTROL · a plain tiddler and a SPLIT root both pass the native door untouched", () => {
+    for (const fields of [
+      { title: "lar:///t/a-plain", type: "text/vnd.tiddlywiki", text: "plain" },
+      { title: URI, type: CARRIER_TYPE, text: "<<~ kahea ahu #/a>>" },  // split: a body of calls, no head
+    ]) {
+      expect(framedRootOf(fields)).toBeNull();
+    }
   });
 });

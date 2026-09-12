@@ -166,6 +166,27 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
   };
   const under = async (prefix: string): Promise<string[]> => (await titles()).filter((t) => t.startsWith(prefix));
 
+  /**
+   * THE ANTI-STALL CONTROL — the one assertion that tells a cure from a catastrophe.
+   *
+   * A 4xx on a path the stock syncer drives does not retry politely: `syncer.js:431-442` calls
+   * `displayError` and `triggerTimeout(errorRetryInterval)` — five seconds — and never chains to the
+   * next task, while `SaveTiddlerTask.run` exits without touching `tiddlerInfo` (`syncer.js:542-545`),
+   * so `hasChanged` stays true and `chooseNextTask` hands back THE SAME SAVE forever, ahead of every
+   * load, poll and delete (`syncer.js:482-500` · `:516-520`). A vector asserting only that a bad record
+   * is absent goes GREEN over a page whose queue has died. So every e2e leg here writes a fresh plain
+   * tiddler AFTER its act and reads that tiddler's own 2xx off the wire.
+   */
+  let stallProbe = 0;
+  const laterSaveLands = async (): Promise<void> => {
+    const title = `lar:///probe/anti-stall-${++stallProbe}`;
+    wire = [];
+    await write({ title, text: `probe ${stallProbe}` });
+    await settle();
+    expect(wire, "the syncer's queue stalled — a later save never reached the server")
+      .toContain(`PUT /recipes/default/tiddlers/${encodeURIComponent(title)} -> 204`);
+  };
+
   // ── (a) a meme ROOT edited in the browser and saved ──────────────────────────────────────────────
   test("(a) a framed root saved in the browser rides the charm to `/memes/`; a plain tiddler rides the native door", async () => {
     if (!page) return;
@@ -223,7 +244,7 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
   }, 60_000);
 
   // ── (b) the seam under it: a child whose TEXT carries a head ─────────────────────────────────────
-  test.fails("SEAM (b′) a slot child whose text carries a framed head mints a DOUBLE-FRAGMENT record — the charm reads a child's title as a founding", async () => {
+  test("(b′) a slot child whose text carries a framed head rides the NATIVE door — a child is never a founding", async () => {
     if (!page) return;
     const fields = await page.evaluate(() => {
       const f = (globalThis as unknown as { $tw: { wiki: { getTiddler(t: string): { fields: Record<string, string> } } } }).$tw.wiki.getTiddler("lar:///t/a#/a").fields;
@@ -232,11 +253,17 @@ describe.skipIf(!forkPresent)("★ THE STOCK SYNCER'S BACK-PARITY FLOW — six l
     wire = [];
     await write({ ...fields, text: meme("lar:///t/a#/a", "t/a", ["z"]) });
     await settle();
-    // MEASURED: `PUT /recipes/default/memes/lar/t/a%23/a -> 200` — `framedRootOf` reads the child's own
-    // head, `memePathOf` projects a FRAGMENT onto the door, and the split lands `lar:///t/a#/a#/z`: a
-    // title the group law admits and the address grammar never names. A slot child is not a founding.
+    // THE WIRE IS THE ASSERTION, not the absent title: the old vector ("no `#/a#/z` stands") went green
+    // over a cure that refused the child at the native door and stalled the queue forever. The child
+    // takes stock's own door and stock's own 204, and nothing addresses `/memes/` with a fragment.
+    expect(wire).toContain("PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fa -> 204");
+    expect(wire.filter((w) => w.includes("/memes/lar/t/a%23"))).toEqual([]);
+    expect(wire.filter((w) => w.includes("-> 422"))).toEqual([]);
+    // No double-fragment record was minted; the frame the author pasted stands as AUTHORED TEXT.
     expect(await under("lar:///t/a#")).not.toContain("lar:///t/a#/a#/z");
-  }, 60_000);
+    expect(String((await shelf("lar:///t/a#/a"))["text"])).toContain("<<^ code=");
+    await laterSaveLands();
+  }, 90_000);
 
   // ── (c) a DELETE from the browser ────────────────────────────────────────────────────────────────
   test.fails("SEAM (c′) deleting a slot child leaves the root's `kahea` DANGLING — the parent never re-cuts", async () => {

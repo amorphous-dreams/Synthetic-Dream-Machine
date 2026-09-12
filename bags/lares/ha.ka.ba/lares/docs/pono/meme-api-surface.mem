@@ -107,6 +107,8 @@ A framed meme root lands whole through the native tiddler door and never splits;
 # ''The client charm (b).'' The stock tiddlyweb syncadaptor speaks the native door for every record; the plugin's startup module decorates the live adaptor so a record `framedRootOf` names rides `PUT /recipes/<recipe>/memes/<scheme>/<path>` with the meme text as its body, the route's `ETag` as the revision. A framed root added in the browser arrives on the server split; the plain control arrives through the native door as ever.
 # ''The backstop (c).'' A root landed by a door neither the gate nor the charm sees — the engine's own `--load`, `$tw.wiki.importTiddler` — re-stamps on the server, and the log carries ONE line: `[memetic-wikitext] re-stamped <uri> (landed via a native write)`.
 
+''A SLOT CHILD IS A TIDDLER.'' The native door lands it as one, ungated, and the root re-cuts on the server — a child's save never addresses `/memes/`. The root law reads one spelling (`isMemeRoot`): a record of the carrier type, no `#` in its title, no `$fragment-parent`. A child into which an author pasted a whole framed carrier wears every mark a founding wears and is still a child: its frame stands as AUTHORED TEXT, no `uri#/a#/z` is ever minted, and the gate answers `204` rather than `422` — a refusal on a path the stock syncer drives stalls its queue permanently.
+
 <<~/ahu>>
 
 <<~ ahu #/principals>>
@@ -221,6 +223,6 @@ The same walk through the other skins: `lares meme put lar:///t/x --file x.mem` 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JG_Mr8lU_tvx3GLlju17b_WMcU-8X6xIFnBSEBenhIs
+<<^ code="&#x0003;">>ni:///sha-256;X-v1dhnrqYBAeFmXutExg7MVa5u2q3rTt1DVefwWX1g
 
 <<^ code="&#x0004;" -> to="?">>
