@@ -209,7 +209,7 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
   // Fresh-Build Invariant — a daemon-lifecycle verb (found/boot/mutate-identity) never runs
   // from stale dist: build the workspace, then re-exec this command in a fresh process.
   if (needsFreshBuild(args)) {
-    const gate = freshBuildGate(argv, args);
+    const gate = await freshBuildGate(argv, args);
     if (gate !== null) return gate;
   }
   return await cmd.handler(args);

@@ -28,6 +28,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync
 import { join, dirname, relative } from "node:path";
 import { createHash } from "node:crypto";
 import { repoRoot } from "@lararium/mesh/node";
+import { udsAlive } from "./local-connector.js";
 import type { ParsedArgs } from "./parse-args.js";
 
 /**
@@ -114,7 +115,52 @@ function stampBuild(): void {
  * that process's exit code for the caller to propagate. A build failure aborts and
  * returns its non-zero code — the daemon NEVER runs from stale dist.
  */
-export function freshBuildGate(argv: readonly string[], args: ParsedArgs): number | null {
+/**
+ * The gate's four reaches, injectable so a witness fakes a socket rather than standing a daemon.
+ */
+export interface FreshBuildDeps {
+  /** Does a daemon answer at the vessel's socket? */
+  readonly alive: () => Promise<boolean>;
+  /** Does the built dist come from bytes other than the tree's? */
+  readonly stale: () => boolean;
+  /** Build the workspace; the exit status. */
+  readonly build: () => number;
+  /** Re-run the same invocation against the just-built bin; the child's exit status. */
+  readonly reexec: (argv: readonly string[]) => number;
+}
+
+const REAL_DEPS: FreshBuildDeps = {
+  alive: () => udsAlive(),
+  stale: isWorkspaceStale,
+  build: () => {
+    const build = spawnSync("pnpm", ["-r", "build"], {
+      cwd:   repoRoot,
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+    return build.status ?? 1;
+  },
+  reexec: (argv) => {
+    const child = spawnSync(process.execPath, [BUILT_LARES_BIN, ...argv, "--skip-build"], {
+      stdio: "inherit",
+      env:   process.env,
+    });
+    return child.status ?? 1;
+  },
+};
+
+/**
+ * Does this invocation ATTACH when a daemon answers? `stand` in its default posture attaches-or-starts:
+ * with a daemon up it reports and boots nothing, so the socket's answer settles the gate before the tree
+ * is read. A restart tears the daemon down and boots — it founds or boots regardless of what answers,
+ * as every other gated sub-door does — so those never ask the socket.
+ */
+function attachesWhenAlive(args: ParsedArgs): boolean {
+  return args.command === "vessel" && args.positional[0] === "stand"
+    && !args.flags["restart"] && !args.flags["clear"] && !args.flags["foreground"];
+}
+
+export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, deps: FreshBuildDeps = REAL_DEPS): Promise<number | null> {
   if (args.flags["skip-build"]) return null;   // re-exec'd child — already fresh
   // OBSERVING NEVER FOUNDS OR BOOTS, so it never earns a rebuild. The gate exists because founding or
   // booting from stale dist runs superseded logic against real identity; a caller holding the observe cap
@@ -127,7 +173,11 @@ export function freshBuildGate(argv: readonly string[], args: ParsedArgs): numbe
   // sharpest edge has moved; the rule stands on the principle rather than on that one blast radius. A
   // reading must not be able to disturb what it reads, and this is where that promise gets kept.
   if (args.flags["observe"]) return null;
-  if (!isWorkspaceStale()) return null;        // dist clearly current — run the handler in-process
+  // SOCKET FIRST. A daemon that answers turns `stand` into a reading — it attaches and reports — and a
+  // reading never earns a rebuild (the same promise as `--observe`, kept by asking the socket rather than
+  // the caller). The tree is asked only on a MISS, where standing would boot.
+  if (attachesWhenAlive(args) && await deps.alive()) return null;
+  if (!deps.stale()) return null;              // dist clearly current — run the handler in-process
 
   // ONE WRITER. Two builds over one dist race with nothing between them, and the loser writes into a
   // tree the winner is mid-way through replacing. An exclusive create IS the lock: the filesystem
@@ -144,25 +194,17 @@ export function freshBuildGate(argv: readonly string[], args: ParsedArgs): numbe
   }
 
   console.error("[lares] fresh-build: source changed since the last build — rebuilding before the daemon-lifecycle step…");
-  const build = spawnSync("pnpm", ["-r", "build"], {
-    cwd:   repoRoot,
-    stdio: "inherit",
-    shell: process.platform === "win32",
-  });
+  const status = deps.build();
   if (held) rmSync(BUILD_LOCK, { force: true });
-  if (build.status !== 0) {
+  if (status !== 0) {
     console.error("[lares] fresh-build: workspace build FAILED — aborting (never run the daemon from stale dist).");
     console.error("  the previous output stands: `build` re-emits dist without clearing it, so nothing was destroyed.");
-    return build.status ?? 1;
+    return status;
   }
   stampBuild();   // only a SUCCEEDING build earns a stamp — a failed one leaves the tree reading stale
 
   // Re-exec the SAME invocation against the just-built bin, in a fresh process. The
   // `--skip-build` sentinel (appended last) ends the recursion and tells the child to
   // run its handler directly.
-  const child = spawnSync(process.execPath, [BUILT_LARES_BIN, ...argv, "--skip-build"], {
-    stdio: "inherit",
-    env:   process.env,
-  });
-  return child.status ?? 1;
+  return deps.reexec(argv);
 }
