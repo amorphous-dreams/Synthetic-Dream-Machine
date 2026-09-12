@@ -12,7 +12,8 @@
  * ANCHOR — the one wiki here — and any other recipe or bag answers 404.
  *
  * Gate: a missing fork checkout SKIPS LOUDLY (a named skip, a stderr line), never silently.
- * Set `LARES_E2E_TMP` to place the wiki folder; the OS temp dir stands otherwise.
+ * Set `LARES_E2E_TMP` to place the wiki folder; the OS temp dir stands otherwise. Set `LARES_TW5_JS`
+ * to a pristine upstream `tiddlywiki.js` to run the same contact against stock.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
@@ -29,7 +30,9 @@ import { digestsEqual, reprDigestOf } from "@lararium/mesh/agile-digest";
 
 const PKG = fileURLToPath(new URL("..", import.meta.url));
 const REPO = path.resolve(PKG, "../..");
-const TW5_JS = path.join(REPO, "TiddlyWiki5/tiddlywiki.js");
+// `LARES_TW5_JS` points the suite at another TiddlyWiki — a pristine `npm pack tiddlywiki@<ver>` — so the
+// plugin proves it drops into stock, not only into the fork.
+const TW5_JS = process.env["LARES_TW5_JS"] ?? path.join(REPO, "TiddlyWiki5/tiddlywiki.js");
 const PLUGIN_TID = path.join(PKG, "dist-plugin/lares-memetic-wikitext.tid");
 
 const URI = "lar:///t/x";
@@ -126,6 +129,9 @@ describe.skipIf(!forkPresent)("★ THE CONTACT — meme routes on a live plain-T
       "tiddlers/sync-system.tid": "title: $:/config/SyncSystemTiddlersFromServer\n\nyes",
     });
     base = fork.base;
+    // Name the engine under contact, so a pristine run reads as one in the log.
+    const status = JSON.parse(await (await fetch(`${base}/status`)).text()) as { tiddlywiki_version?: string };
+    console.error(`meme-routes.e2e: contact with TiddlyWiki ${status.tiddlywiki_version ?? "?"} at ${TW5_JS}`);
   }, 60_000);
 
   afterAll(async () => {
