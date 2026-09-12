@@ -58,3 +58,13 @@ export function ambientPhoneSeatHost(persistence: PhoneSeatHost["persistence"]):
     persistence,
   };
 }
+
+/**
+ * THE SEED AT REST, SAID ALOUD — one status line beside the storage floor. A persona root rests cleartext
+ * (project_browser_key_custody) unless the human opted a passkey in, and then the line names the CLASS of the
+ * credential that opens it (`cloud-synced` for a synced passkey: a seed-class secret wearing a device name —
+ * said, never hidden). Pure: the wrap record's class rides in; the app reads the IDB slot.
+ */
+export function seedRestStatus(wrap: { readonly keyClass: string } | null | undefined): string {
+  return wrap ? `seed: wrapped under a passkey (${wrap.keyClass})` : "seed: cleartext at rest";
+}

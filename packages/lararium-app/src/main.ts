@@ -26,9 +26,9 @@
 import {
   openBrowserVessel, generateOrLoadBrowserVesselIdentity,
   parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport,
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona,
 } from "@lararium/browser";
-import { phoneSeatExplanation, ambientPhoneSeatHost } from "./phone-seat.js";
+import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { pullAndVerifyOracle, DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisCasManifest, type GenesisSeed } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
@@ -369,6 +369,10 @@ async function bootVessel(): Promise<void> {
       const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
       if (offer) row(vesselEl, "phone seat", offer, "warn");
     }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
+    // THE SEED AT REST — the worn persona's root: cleartext, or wrapped under a passkey whose class the line names.
+    void loadBrowserActivePersona().then((h) => readBrowserSeedWrap(undefined, h ?? 0)).then((wrap) => {
+      row(vesselEl, "seed", seedRestStatus(wrap), wrap ? "ok" : "warn");
+    }).catch(() => { /* an unreadable slot reads as cleartext elsewhere; this line stays silent — never a fault */ });
   } catch (e) {
     set("status", `boot failed: ${e instanceof Error ? e.message : String(e)}`, "err");
   }

@@ -41,3 +41,12 @@ describe("phoneSeatExplanation — one explaining line, or nothing", () => {
     expect(readsWebKitSevenDay("Mozilla/5.0 (X11; Linux) Gecko/20100101 Firefox/140.0")).toBe(false);
   });
 });
+
+describe("the seed-at-rest line — one status line, two spellings", () => {
+  test("no wrap → 'seed: cleartext at rest'; a cloud-synced wrap names its class", async () => {
+    const { seedRestStatus } = await import("../src/phone-seat.js");
+    expect(seedRestStatus(undefined)).toBe("seed: cleartext at rest");
+    expect(seedRestStatus({ keyClass: "cloud-synced" })).toBe("seed: wrapped under a passkey (cloud-synced)");
+    expect(seedRestStatus({ keyClass: "device-minted" })).toBe("seed: wrapped under a passkey (device-minted)");
+  });
+});

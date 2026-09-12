@@ -36,6 +36,7 @@ import {
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
 import { mintDeviceMintedKey, type DeviceMintedKey } from "@lararium/keyhive";
+import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
 const KEY_RECORD = "vessel-key";
@@ -44,7 +45,7 @@ const KEY_RECORD = "vessel-key";
 // social bootstrap (the founding floor); the persona-multitude stores mirror the node fs vault's
 // per-index files. Every store bumps the DB version together, so a reboot upgrades additively (the
 // device key + bootstrap survive; the new stores appear empty until a persona founds).
-const IDB_VERSION       = 5;
+const IDB_VERSION       = 6;
 const PERSONA_ROOTS_STORE  = "persona-roots";     // per-index persona-root keypairs (self-sovereign secret)
 const PERSONA_ROSTER_STORE = "persona-roster";    // the EXPLICIT held-root record (never a keys()-scan)
 const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
@@ -61,6 +62,9 @@ const PERSONA_DECLARATION_STORE  = "persona-declarations";    // handleIndex →
 export const BOOT_INVITE_BURN_STORE = "boot-invite-burned";  // burned invite-id → 1 (single-use, local burn)
 export const CIRCLE_STORE           = "circles-follow";      // circleId → nym[] (the IoC follow-graph, private)
 export const HANDLE_BOOK_STORE      = "handle-book";         // "snapshot" → HandleBookSnapshot (others' nyms + labels)
+// v6 additive: the OPT-IN PRF wrap of a persona-root seed, BESIDE the cleartext root (seed-wrap-prf.ts). Keyed
+// `h${N}` like the root it wraps; absent = the root rests cleartext (today's finding, unchanged).
+export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → SeedWrapRecord
 const ROSTER_RECORD        = "roster";            // the single key both roster stores write under
 const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 
@@ -107,6 +111,9 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(BOOT_INVITE_BURN_STORE)) db.createObjectStore(BOOT_INVITE_BURN_STORE);
       if (!db.objectStoreNames.contains(CIRCLE_STORE))           db.createObjectStore(CIRCLE_STORE);
       if (!db.objectStoreNames.contains(HANDLE_BOOK_STORE))      db.createObjectStore(HANDLE_BOOK_STORE);
+      // v6 additive: the seed-wrap slot. A v5 DB gains it empty; every root keeps resting cleartext until the
+      // human opts a passkey in.
+      if (!db.objectStoreNames.contains(SEED_WRAP_STORE))        db.createObjectStore(SEED_WRAP_STORE);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);
@@ -415,6 +422,19 @@ export async function generateOrLoadBrowserPersonaRoot(idbName = "lares:vessel",
  */
 export async function loadBrowserPersonaRootSeed(idbName = "lares:vessel", handleIndex = 0): Promise<Uint8Array> {
   return loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), handleIndex);
+}
+
+/** Read the opt-in PRF wrap standing beside the persona root at `handleIndex`, or undefined (cleartext at rest). */
+export async function readBrowserSeedWrap(idbName = "lares:vessel", handleIndex = 0): Promise<SeedWrapRecord | undefined> {
+  const db = await openVesselIdb(idbName);
+  try { return await idbGet<SeedWrapRecord>(db, SEED_WRAP_STORE, personaRootKey(handleIndex)); } finally { db.close(); }
+}
+
+/** Land a PRF wrap beside the persona root at `handleIndex`. The cleartext root stays where it stands — the wrap
+ *  rides beside, never replaces; a status line names the class the record carries. */
+export async function writeBrowserSeedWrap(idbName: string, handleIndex: number, wrap: SeedWrapRecord): Promise<void> {
+  const db = await openVesselIdb(idbName);
+  try { await idbPut(db, SEED_WRAP_STORE, personaRootKey(handleIndex), wrap); } finally { db.close(); }
 }
 
 /** WEAR a persona — set the active handle-index ("put on a mask"). The custody-by-TYPE wall (uniform, no

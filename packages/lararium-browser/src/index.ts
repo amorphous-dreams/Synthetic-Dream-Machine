@@ -26,7 +26,11 @@ export type { CoherenceIndicatorSink, CoherenceFrameWithRev } from "./wiki-coher
 export {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, loadBrowserDeviceKey,
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
+  readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";
+// The opt-in PRF wrap of a persona-root seed at rest — beside the cleartext finding, never the mint.
+export { detectPrf, ambientPrfHost, wrapSeed, unwrapSeed, SeedWrapRefused, SEED_WRAP_HKDF_INFO } from "./seed-wrap-prf.js";
+export type { PrfHost, PrfDetection, SeedWrapRecord, SeedWrapKeyClass } from "./seed-wrap-prf.js";
 export type { BrowserVesselIdentity } from "./browser-vessel-identity.js";
 // The two-layer pet-names (#64 stage 4): the PRIVATE own-persona label map (fleet-only; never PUBLICLY
 // federates) + the PUBLIC own-published-face record. Browser twins of the node fs stores; distinct from the
