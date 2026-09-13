@@ -275,7 +275,7 @@ export type { HopRender } from "./persona-admit-flow.js";
 // The `bags/nexus` charter DOC adapter — the antigen roster's authority home read/written on disk (#66).
 export {
   readNexusDoc, writeNexusDoc, renderNexusDoc, writeNexusSeal, writeNexusKahu, writeNexusPractice,
-  nexusCharterDocPath, nexusCharterDocRelPath,
+  nexusCharterDocPath, nexusCharterDocRelPath, nexusCharterStands,
 } from "./nexus-doc.js";
 export { loadLeafIdentity } from "./leaf-identity.js";
 export type { LeafIdentity } from "./leaf-identity.js";

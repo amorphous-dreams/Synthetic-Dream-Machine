@@ -194,6 +194,20 @@ function readBody(bagsDir: string): string | null {
  * seal or kahu block, or either reads torn. The caller folds a null through `foundingRoster(null)` to the
  * empty (inert) roster — never a guess.
  */
+/**
+ * Does a charter doc STAND at this home, whatever it reads as?
+ *
+ * `readNexusDoc` answers null for two unlike facts — no charter here, and a charter here that reads torn —
+ * and folding them together suits every caller that wants an inert roster. A caller that would otherwise
+ * treat null as "nothing founded yet" needs them apart: seating over a torn charter re-genesises a chain
+ * that may already have rotated, stranding every antigen entry rooted on the head it replaces.
+ *
+ * Presence answers that, and only that. A caller pairs it with the read: stands + reads null = REFUSE.
+ */
+export function nexusCharterStands(bagsDir: string): boolean {
+  return existsSync(nexusCharterDocPath(bagsDir));
+}
+
 export function readNexusDoc(bagsDir: string): NexusDoc | null {
   const body = readBody(bagsDir);
   if (body === null) return null;
