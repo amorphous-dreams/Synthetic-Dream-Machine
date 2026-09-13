@@ -27,7 +27,7 @@ import { dirname, join } from "node:path";
 import { IslandAdaptor }      from "../src/island-adaptor.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { isPersonalTitle }  from "../src/filters/lar-kind.js";
-import { wikiSlotUri, type LarTiddlerChange, type ChangeOrigin } from "@lararium/mesh";
+import { wikiSlotUri, VERB_URI_PREFIX, type LarTiddlerChange, type ChangeOrigin } from "@lararium/mesh";
 
 const BAG_PATHS_CONFIG = "lar:///ha.ka.ba/lararium/config/bag-paths";
 const SHIPPED_TID = join(dirname(fileURLToPath(import.meta.url)), "..", "tiddlers", "lar-bag-paths.tid");
@@ -445,6 +445,41 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
     await flush();
     await done;
     expect(puts).toContain("Some Plain Tiddler");
+  });
+
+  /**
+   * THE VOLATILE VM PLANE NEVER PERSISTS. `lar:///lararium.local.vm/verbs/<id>` is the daemon wiki's
+   * own scratch — verb-tiddler names it "daemon TW5 wiki scratch, never synced", and verb-dispatcher
+   * says durable meaning begins at the OUTCOME. The invocation carries the caller's whole payload, so
+   * a corpus-scale `act LOAD` writes ~7 MB of carriers into it; persisting that put the entire corpus
+   * into the CRDT a SECOND time as one monolithic record, and applying that change blew the automerge
+   * WASM module's 4 GiB linear-memory ceiling (`rust_oom` → `Module terminated`) — after which the
+   * mirror projected nothing at all. The `[prefix[lar:]…]` catch-all admitted it; only a rule that
+   * NAMES the volatile plane can withhold it.
+   */
+  test("a volatile-VM verb invocation is withheld — the scratch plane never reaches a bag", async () => {
+    const puts: string[] = [];
+    const orig = store.put.bind(store);
+    store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
+
+    // Never `await` the save here: a WITHHELD save resolves at once, an ADMITTED one resolves only
+    // after the debounce flush — so awaiting first turns "it wrote" into a test TIMEOUT, a red for
+    // the wrong reason that reads identical to the cure landing. Flush, then read what was put.
+    void adaptor.saveTiddler({ fields: { title: `${VERB_URI_PREFIX}sha256:deadbeef`, text: "the whole corpus payload" } });
+    await flush();
+    expect(puts).toHaveLength(0);
+  });
+
+  /** CONTROL — the withholding names the VOLATILE plane, not `lar:` at large: an ordinary carrier still lands. */
+  test("CONTROL: an ordinary lar: carrier still routes to the write layer", async () => {
+    const puts: string[] = [];
+    const orig = store.put.bind(store);
+    store.put = async (rec, o) => { puts.push(rec.tiddler.title); return orig(rec, o); };
+
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "a carrier" } });
+    await flush();
+    await done;
+    expect(puts).toContain(LAR_URI);
   });
 
   /** The named exclusion still withholds — and it is the ONLY thing that does. */

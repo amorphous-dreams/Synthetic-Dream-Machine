@@ -31,7 +31,7 @@ import type {
   MemeProjection,
   SlotUri,
 } from "@lararium/mesh";
-import { toLarTiddlerRecord } from "@lararium/mesh";
+import { toLarTiddlerRecord, isVolatileVmUri } from "@lararium/mesh";
 
 /** Cascade config tiddler — newline-separated filter expressions; first non-empty result wins. */
 const BAG_PATHS_CONFIG   = "lar:///ha.ka.ba/lararium/config/bag-paths";
@@ -287,12 +287,31 @@ export class IslandAdaptor implements MemeProjection {
   // ---------------------------------------------------------------------------
   // Outbound TW5→CRDT
   // ---------------------------------------------------------------------------
+  //
+  // ── THE VOLATILE VM PLANE NEVER LEAVES THE WIKI ───────────────────────────────────────────────
+  // `lar:///lararium.local.vm/…` is each daemon VM's own scratch (lar-uris: "never persisted through
+  // IslandAdaptor, never synced via Automerge"; verb-dispatcher: durable meaning begins at the
+  // OUTCOME, never the invocation). A verb invocation carries the CALLER'S WHOLE PAYLOAD, so
+  // `act LOAD` over the corpus writes ~7 MB of carriers into one scratch tiddler.
+  //
+  // The law lived only in prose. The bag-paths cascade's `[prefix[lar:]…]` catch-all admitted the
+  // plane, and once a live `change` listener carried wiki edits outbound, the whole corpus landed in
+  // the CRDT a SECOND time as ONE monolithic record. Applying that change exhausted the automerge
+  // WASM module's 4 GiB linear memory (`rust_oom` → `Module terminated`), and a terminated module
+  // projects nothing ever again: the disk mirror held ZERO files while the caller waited out its
+  // whole budget. MEASURED: 160 carriers → 1.7 GB RSS and a settled mirror; 381 → 4.9 GB and death.
+  //
+  // So the refusal sits HERE, in the module the law names, ahead of the cascade — the cascade routes
+  // among bags and stays the operator's to edit, and no edit of it may re-open this.
 
   saveTiddler(tiddler: unknown): Promise<void> {
     if (this._isApplying()) return Promise.resolve();
 
     const fields = extractFields(this.tw5, tiddler);
     const title  = fields["title"] ?? "";
+
+    // THE VOLATILE VM PLANE NEVER PERSISTS, and no cascade edit may lift that.
+    if (isVolatileVmUri(title)) return Promise.resolve();
 
     // Cascade pre-check: the in-wiki bag-paths cascade — operator-editable, per-wiki overlayable —
     // answers where this title lands, and only a NAMED withholding stops the write (`_destination`
@@ -328,6 +347,8 @@ export class IslandAdaptor implements MemeProjection {
 
   deleteTiddler(title: string): Promise<void> {
     if (this._isApplying()) return Promise.resolve();
+    // Nothing volatile ever landed, so nothing volatile gets a tombstone (see `saveTiddler`).
+    if (isVolatileVmUri(title)) return Promise.resolve();
     // A DELETE ROUTES LIKE A SAVE, and the tiddler is already gone from the wiki when this runs — so
     // a rule reading a FIELD (`draft.of`) would route its creation and drop its deletion, leaving a
     // record that resurrects on the next boot. The last-known-slot map answers first; a title never
