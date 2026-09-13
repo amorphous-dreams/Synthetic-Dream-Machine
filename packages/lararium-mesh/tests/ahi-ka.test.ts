@@ -23,6 +23,8 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/field-collision · lar:///ha.ka.ba/lararium/mesh/identity-classes
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { readAhiKa, AHI_KA_500YR, type AhiKaState } from "../src/ahi-ka.js";
 
 const PARAMS = { ambientFloor: 5, warmRatio: 0.5, coldRatio: 0.1 };
@@ -108,5 +110,39 @@ describe("realmPace — the realm's own clock, in rolls", () => {
     expect(realmPace({ effectiveEpoch: Number.NaN })).toBe(1);
     expect(realmPace({ effectiveEpoch: -3 })).toBe(1);
     expect(realmPace({ effectiveEpoch: Number.POSITIVE_INFINITY })).toBe(1);
+  });
+});
+
+/**
+ * THE CANON QUOTES THESE THREE NUMBERS, SO THE TWO MUST NOT DRIFT.
+ *
+ * `scale-stories-basket-one.mem` reads the fire the way this module does and quotes the parameters
+ * literally — `AHI_KA_500YR = { ambientFloor: 8, warmRatio: 0.30, coldRatio: 0.05 }` — under a quote
+ * licence, beside a line-cited passage from this file. A carrier that quotes a constant takes on that
+ * constant's drift: tune the ratio here and the canon keeps teaching the old one, confidently, to every
+ * reader who arrives through the story rather than the code.
+ *
+ * Verified by hand once (2026-09-13, closing a φ owed since before a context compaction) — and a hand
+ * verification only holds until the next tuning pass. The module's own note says these stand as "a
+ * STARTING POINT for fiction-QA, not a proven law", so a tuning WILL come; this makes it re-stamp the
+ * carrier rather than orphan it.
+ */
+describe("the ahi kā parameters the canon quotes", () => {
+  test("★ the carrier's quoted ratios match the constant it cites ★", () => {
+    const carrier = readFileSync(
+      join(import.meta.dirname, "..", "..", "..", "bags", "lares", "ha.ka.ba", "lares", "docs", "pono",
+           "scale-stories-basket-one.mem"), "utf8");
+    // Read the numbers the carrier TEACHES, then hold them against the ones the code RUNS.
+    const quoted = /AHI_KA_500YR = \{ ambientFloor: (\d+), warmRatio: ([\d.]+), coldRatio: ([\d.]+) \}/.exec(carrier);
+    expect(quoted, "the carrier no longer quotes the parameters — re-aim this weld or drop it").not.toBeNull();
+    if (!quoted) return;
+    expect(
+      { ambientFloor: Number(quoted[1]), warmRatio: Number(quoted[2]), coldRatio: Number(quoted[3]) },
+      "the canon teaches ratios the code no longer runs — re-stamp scale-stories-basket-one.mem",
+    ).toEqual({ ambientFloor: AHI_KA_500YR.ambientFloor, warmRatio: AHI_KA_500YR.warmRatio, coldRatio: AHI_KA_500YR.coldRatio });
+  });
+
+  test("CONTROL — the constant carries all three fields, so the comparison above is not vacuous", () => {
+    expect(Object.keys(AHI_KA_500YR).sort()).toEqual(["ambientFloor", "coldRatio", "warmRatio"]);
   });
 });
