@@ -61,7 +61,10 @@ const edgeFor = (rootDid: string): DeviceDelegationTiddler => ({
 });
 const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
   personaGroupDocIdHex: `aa${n}`, meshCabalDocIdHex: `bb${n}`, personaGroupAgentIdHex: `cc${n}`,
-  ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`) } : {}),
+  // A FULL MOUNT IS FOUR PINS. The veil tag joined the set: a face's founder-veil derives from
+  // (vesselSeed × tag) and the tag is minted fresh per founding, so mounting a face without its own tag
+  // would leave the FOUNDING face's veil standing over it. The founding path persists all four.
+  ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`), veilTag: `veil-h${n}` } : {}),
 });
 
 describe("multi-persona-per-vessel (#63)", () => {
