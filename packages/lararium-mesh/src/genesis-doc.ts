@@ -192,10 +192,13 @@ export interface GenesisInputs {
  * cid: CIDv1 raw-sha256 of the final bytes (forward integrity).
  * engineCid: content-CID of the engine region (TW5 core + version) — the hearth
  *   TRUE-NAME (G-D3) and the SLOW ratchet. A pure function of inputs, never of doc bytes.
- * pluginsCid: content-CID of the plugins region (sorted plugin id/version/sha256) —
- *   the FAST ratchet. A plugin-only change bumps this, leaving engineCid stable.
+ * grammarCid: content-CID of the grammar region — the REQUIRED memetic-wikitext grammar ALONE.
+ *   kāhuli's FAST ratchet: an overturn the mesh takes together, leaving engineCid stable.
+ * pluginsCid: content-CID of the plugins region (sorted plugin id/version/sha256) — THIS operator's
+ *   own collection. A region, never a kāhuli tier: any operator offers their own on top of the
+ *   required blobs, and plugin drift is not grammar drift.
  *
- * The two region CIDs are INPUTS (content functions), not derived from the saved
+ * The three region CIDs are INPUTS (content functions), not derived from the saved
  * bytes — so the witness tiddlers carry them in a SINGLE write pass. No self-referential
  * fixpoint: the old "strip the genesis-cid tiddler → hash === preSha256" dance is gone.
  */
@@ -538,7 +541,7 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
 /**
  * buildGenesisDoc() — construct the genesis artifact: the plain-data seed (the boot
  * artifact), the deterministic Automerge bytes (back-compat island.bin + verifier),
- * the two region CIDs, and the CAS manifest + blob entries (the CID plane).
+ * the three region CIDs, and the CAS manifest + blob entries (the CID plane).
  *
  * Platform-neutral. No filesystem, no DOM. Accepts assembled byte inputs.
  */
@@ -563,7 +566,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
     { cid: coreSha, bytes: inputs.coreBlob },
     ...inputs.plugins.map((p) => ({ cid: p.sha256, bytes: p.blob })),
   ];
-  const casManifest = buildGenesisCasManifest(engineCid, pluginsCid, [
+  const casManifest = buildGenesisCasManifest(engineCid, grammarCid, pluginsCid, [
     { id: ENGINE_CORE_ID, sha256: coreSha, mimeType: "application/javascript", version: coreVersion },
     ...inputs.plugins.map((p) => ({ id: p.id, sha256: p.sha256, mimeType: p.mimeType, version: p.version })),
   ]);
@@ -613,7 +616,8 @@ export function verifyGenesisArtifact(
     );
   }
   // Each region recomputes from the SAME declared classes the mint folded — the blob descriptors carry
-  // `kind`, so a base-seed blob lands outside both regions here exactly as it did at the mint.
+  // `kind`, so a base-seed blob lands outside BOTH FOLDED regions (grammar and plugins) here exactly as
+  // it did at the mint. The engine stands apart from both — its preimage is not a region fold.
   const vendored = Object.values(doc.blobs ?? {}).filter((b) => b.id !== ENGINE_CORE_ID)
     .map((b) => ({ id: b.id, version: b.version, sha256: b.sha256, ...(b.kind ? { kind: b.kind as GenesisBlobKind } : {}) }));
 

@@ -52,7 +52,8 @@ async function main(): Promise<void> {
   console.log(`[quine] artifact loaded  blobs=${blobCount}  tiddlers=${tiddlerCount}`);
 
   // ------------------------------------------------------------------
-  // 2. Verify both region witness tiddlers (engine = true-name, plugins = fast ratchet)
+  // 2. Verify the region witness tiddlers (engine = the true-name and slow ratchet; grammar = the fast
+  //    ratchet kāhuli overturns; plugins = this operator's own collection)
   // ------------------------------------------------------------------
   const readWitnessCid = (title: string): string => {
     const rec = doc.tiddlers?.[title] as { tiddler?: { cid?: string } } | undefined;

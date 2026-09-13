@@ -254,7 +254,7 @@ function main(): void {
   console.log(`[genesis] grammarCid            = ${artifact.grammarCid}   (required grammar — kāhuli's fast ratchet)`);
   console.log(`[genesis] pluginsCid            = ${artifact.pluginsCid}   (this operator's own collection)`);
 
-  // Verify integrity before writing (recomputes + matches both region CIDs).
+  // Verify integrity before writing (recomputes + matches all three region CIDs).
   const counts = verifyGenesisArtifact(artifact);
 
   // Layer C: write outputs. The CRDT (island.bin) carries blob METADATA only; the
@@ -295,7 +295,7 @@ function main(): void {
   console.log(`[genesis] ✓ sha256=${artifact.sha256}  cid=${artifact.cid}`);
   console.log(`[genesis] ✓ engineCid=${artifact.engineCid}  grammarCid=${artifact.grammarCid}  pluginsCid=${artifact.pluginsCid}`);
   console.log(`[genesis] wrote ${join(genesisDir, "island.bin")}`);
-  console.log("[genesis] S5 gate A satisfied — blob metadata + two region witness tiddlers injected; bytes shipped to CAS.");
+  console.log("[genesis] S5 gate A satisfied — blob metadata + three region witness tiddlers injected; bytes shipped to CAS.");
 }
 
 try {

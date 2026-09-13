@@ -43,31 +43,35 @@ export interface GenesisCasManifestEntry {
   readonly version:  string;
 }
 
-/** The genesis CAS manifest — engine + plugins region CIDs plus every blob's cid. */
+/** The genesis CAS manifest — the three region CIDs plus every blob's cid. */
 export interface GenesisCasManifest {
   readonly format:     typeof GENESIS_CAS_MANIFEST_FORMAT;
-  /** engine region content-CID (the hearth true-name; slow ratchet). */
+  /** engine region content-CID — the hearth true-name, the SLOW ratchet. */
   readonly engineCid:  string;
-  /** plugins region content-CID (fast ratchet). */
+  /** grammar region content-CID — the required grammar alone, kāhuli's FAST ratchet. Without it the
+   *  manifest could not tell two bakes apart by the one fact an overturn moves. */
+  readonly grammarCid: string;
+  /** plugins region content-CID — this operator's own collection. A REGION, never a kāhuli tier. */
   readonly pluginsCid: string;
   /** Every CAS blob this genesis artifact ships, sorted by id (deterministic). */
   readonly blobs:      readonly GenesisCasManifestEntry[];
 }
 
 /**
- * Build a deterministic genesis CAS manifest from blob metadata + the two region
+ * Build a deterministic genesis CAS manifest from blob metadata + the three region
  * CIDs. Sorted by id so write-order never perturbs the serialized bytes — the
  * manifest JSON is byte-stable across re-bakes (mirrors island.bin determinism).
  */
 export function buildGenesisCasManifest(
   engineCid:  string,
+  grammarCid: string,
   pluginsCid: string,
   blobs:      readonly { readonly id: string; readonly sha256: string; readonly mimeType: string; readonly version: string }[],
 ): GenesisCasManifest {
   const entries = blobs
     .map((b) => ({ cid: b.sha256, id: b.id, mimeType: b.mimeType, version: b.version }))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return { format: GENESIS_CAS_MANIFEST_FORMAT, engineCid, pluginsCid, blobs: entries };
+  return { format: GENESIS_CAS_MANIFEST_FORMAT, engineCid, grammarCid, pluginsCid, blobs: entries };
 }
 
 /**

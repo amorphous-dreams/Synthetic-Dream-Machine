@@ -116,4 +116,36 @@ describe("the GRAMMAR region — the ratchet folds the grammar alone", () => {
     expect(moved.grammarCid, "the grammar's bytes are its ratchet").not.toBe(alone.grammarCid);
     expect(moved.engineCid, "the true-name never moves with the grammar").toBe(alone.engineCid);
   });
+
+  /**
+   * THE CAS MANIFEST WITNESSES EVERY REGION, INCLUDING THE ONE THAT MOVES.
+   *
+   * The manifest is the CAS plane's record of a genesis composition — what was baked, addressed by hash.
+   * It carried the engine true-name and the operator's plugin region and NOT the grammar, which is the one
+   * region kāhuli actually overturns. So a manifest could not tell two bakes apart by exactly the fact the
+   * fast ratchet exists to move, and a reader reconciling a peer's CAS plane against its own would find the
+   * grammar epoch simply absent from the record. The omission dates from before the split, when grammar and
+   * plugins were one region and `pluginsCid` covered both.
+   */
+  describe("the genesis CAS manifest", () => {
+    it("★ carries all THREE region CIDs — the fast ratchet is in the record that ships ★", () => {
+      const built = buildGenesisDoc(inputsWith([
+        entry(GRAMMAR, "11".repeat(32)),
+        entry("$:/plugins/sq/streams", "22".repeat(32)),
+      ]));
+      const m = built.casManifest;
+      expect(m.engineCid).toBe(built.engineCid);
+      expect(m.grammarCid, "the manifest omits the region kāhuli overturns").toBe(built.grammarCid);
+      expect(m.pluginsCid).toBe(built.pluginsCid);
+    });
+
+    it("CONTROL — a grammar overturn MOVES the manifest, where before it could not", () => {
+      const before = buildGenesisDoc(inputsWith([entry(GRAMMAR, "11".repeat(32))]));
+      const after  = buildGenesisDoc(inputsWith([entry(GRAMMAR, "33".repeat(32))]));
+      expect(after.casManifest.grammarCid).not.toBe(before.casManifest.grammarCid);
+      // The other two regions hold, so the manifest moved for the grammar ALONE.
+      expect(after.casManifest.engineCid).toBe(before.casManifest.engineCid);
+      expect(after.casManifest.pluginsCid).toBe(before.casManifest.pluginsCid);
+    });
+  });
 });
