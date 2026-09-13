@@ -94,7 +94,7 @@ export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js"
 export { OpenIdentitySlot } from "./identity-slot.js";
 export type { FederationGate } from "./federation-gate.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, shareConfigOf } from "./federation-gate.js";
-export type { SharePolicyFn, ShareConfigOf } from "./federation-gate.js";
+export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
 export type { IdentityRing } from "./federation-gate.js";
 export type { AntigenRing } from "./federation-gate.js";
 export { presenterIsKapaed, carryContractShareDecision, classifyCrossOperatorAdmission } from "./federation-gate.js";

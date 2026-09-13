@@ -76,6 +76,13 @@ export function makeRealmPlane(opts: {
   readonly charter?: RealmCharterConsult;
   /** The realm's pace in rolls (`realmPace`) — the lease a registration's `expiry` reads against. */
   readonly pace?: () => number | null;
+  /**
+   * Fired after EVERY fold of the standing registrations — the stand, a verb this vessel ran, and (the one
+   * that matters) a change ANOTHER member wrote onto the shared realm doc. The fold decides which documents
+   * the wire gate opens, and a Repo caches its share verdict per (doc, peer) until something asks it to read
+   * again: absent this hook a member's co-signature re-seats a registration the holder still answers DENIED for.
+   */
+  readonly onRefold?: () => void;
   readonly onLog?: (line: string) => void;
 }): RealmPlaneHolder {
   const { repo, oracleHandle, crossroadsHandle, membership, base } = opts;
@@ -89,6 +96,7 @@ export function makeRealmPlane(opts: {
   const refold = async (): Promise<void> => {
     if (!realmGate || !realmHandle || !realmId) return;
     await realmGate.refold(realmHandle.doc(), realmId);
+    opts.onRefold?.();
   };
 
   /** Pin THIS vessel's own steward nym on its OWN oracle plane — the write path reads stewardship from here.

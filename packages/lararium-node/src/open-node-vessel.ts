@@ -36,7 +36,7 @@ import {
   makeDurableMailbox, verifyingKeyFromDid,
   type DurableMailbox,
   emptyLarDoc, mutableLarRecord, tiddlerText,
-  ORACLE_DOC_URI, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
+  LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
@@ -50,6 +50,7 @@ import {
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard, shareConfigOf } from "@lararium/mesh";
+import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import {
   ACTIVE_WIKI_URI,
   MemoryTiddlerStore,
@@ -71,12 +72,12 @@ import {
 } from "./genesis-artifact.js";
 import { repoRoot }                       from "@lararium/mesh/node";
 import { daemonGenesisDir }               from "./lares-config.js";
-import { resolvePalacePath, orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
+import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { LarEventBusImpl, DEFAULT_RINGS, DeterministicFederationGate, federationPostureFromDoc, sealLineageHead, utf8Bytes, makeCidResolver } from "@lararium/mesh";
 import { setCasDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
-import type { SparseFormVector, WorldlineStubWire, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
+import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
@@ -272,6 +273,11 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   /** OPTIONAL island/doc URL the dial-out `repo.find()`s once mounted — consumes the device-admit payload's
    *  `islandDocUrl`. Absent → the vessel syncs only docs it already knows. */
   joinDocUrl?: string;
+  /** THE WIRE PROBE — an injectable sink over every share verdict this vessel answers and every sync message
+   *  its Repo generates or receives. ABSENT (and `LAR_WIRE_LOG` unset) → nothing wraps the policy and nothing
+   *  listens; the boot behaves exactly as it did (provably inert). A witness arms it to read WHERE a document
+   *  enters or leaves a peer's sync session. */
+  onShareVerdict?: ShareVerdictSink;
 }
 
 export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonVmCore> {
@@ -360,7 +366,7 @@ interface NodeBootPrep {
  * verbs, pool, after-hooks). NO sequencing here — `composeLararium`/`composeHerm` wire the order.
  */
 async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
-  const { hostId, wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
+  const { wikiId, storageDir, wss, catalogUrl, onPhase, genesisDir, rootDir: rootDirOpt } = opts;
   const bootstrapPath = larBootstrapPath();   // <lares>/vessel — beside the docs it addresses
   // The hearth dial an admission pinned (null on a self-founded vessel — it IS the hearth).
   const hearthPin = readHearthDialPin(bootstrapPath);
@@ -436,6 +442,13 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // registers here AS A SIDE-EFFECT and the member blind-transit lane opens for that ciphertext body. A
   // cleartext body reaches no encrypt path → never registers → a doc can never self-label sealed.
   const sealRegistry = makeSealedPlaneRegistry();
+  // THE WIRE PROBE, armed by the caller or by `LAR_WIRE_LOG=1` on a STAGED vessel. It reads the verdict on both
+  // hooks and every sync message the Repo moves, so a witness can quote the sequence for one (peer, document)
+  // from a peer's request through the holder's next change. Unarmed it is null and wraps nothing.
+  const wireProbe: ShareVerdictSink | null = opts.onShareVerdict
+    ?? (process.env["LAR_WIRE_LOG"] === "1"
+      ? (v: ShareVerdictRecord) => console.log(`[wire] verdict ${v.hook} peer=${v.peerId} doc=${v.documentId ?? "-"} → ${v.verdict}`)
+      : null);
   // THE PER-NEXUS CONVERGENCE KEYRING — the SOURCE the cad seal message-locks against (fork-② = A2, operator-
   // ruled 2026-07-21). Forward-declared null and STOOD once the operator's own nym + the charter epoch are known:
   // the private-lane admission handoff (the SAME lane the read-caps ride, below) delivers the `{epoch → secret}`
@@ -506,8 +519,17 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         peerId,
         documentId: documentId as DocumentId | undefined,
       });
-    }),
+    }, wireProbe ?? undefined),
   });
+  // The SECOND half of the probe — a doc enters a peer's sync session exactly when sync messages start moving
+  // for that (doc, peer) pair, and leaves it when they stop. `doc-metrics` carries both directions.
+  if (wireProbe) {
+    repo.on("doc-metrics", (e) => {
+      if (e.type === "generate-sync-message")     console.log(`[wire] out    doc=${e.documentId} peer=${String(e["forPeer"])}`);
+      else if (e.type === "receive-sync-message") console.log(`[wire] in     doc=${e.documentId} peer=${String(e["fromPeer"])}`);
+      else if (e.type === "doc-denied")           console.log(`[wire] denied doc=${e.documentId}`);
+    });
+  }
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
@@ -1119,6 +1141,11 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         charter:          makeRealmCharterConsult({ sealHome, peerContractNymMap, charterHearthPeers }),
         // THE LEASE: a registration's `expiry` reads against the realm's own pace in rolls (0 = cannot judge).
         pace:             () => (realmPaceCell.read() > 0 ? realmPaceCell.read() : null),
+        // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
+        // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
+        // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
+        // fold and the cache must move together or the registered book stays DENIED to the hand that keeps it.
+        onRefold:         reverdict,
         onLog:            (line) => console.log(`[realm] ${line}`),
       });
       selfSlotFedGate = realmPlane.gate;

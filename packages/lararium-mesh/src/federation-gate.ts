@@ -515,12 +515,30 @@ export interface ShareConfigOf {
   readonly access:   SharePolicyFn;
 }
 
+/** One answered verdict, as the wire witness reads it: which hook asked, for whom, over which doc, and how. */
+export interface ShareVerdictRecord {
+  readonly hook:       "announce" | "access";
+  readonly peerId:     PeerId;
+  readonly documentId: DocumentId | undefined;
+  readonly verdict:    boolean;
+}
+
+/** An INJECTABLE, side-effect-only sink over the share verdict — the seam a witness arms and production leaves
+ *  unarmed. Absent a sink `shareConfigOf` hands the policy through untouched, so an unarmed vessel wraps nothing. */
+export type ShareVerdictSink = (record: ShareVerdictRecord) => void;
+
 /**
  * THE VERDICT SEATS ON BOTH HOOKS. A legacy `sharePolicy` fills `announce` alone and leaves
  * `access: () => true`, so a peer that asks for a doc by id pulls it past a denying policy. Every vessel
  * composes its share decision through this one function; the node's `nodeShareConfig` and the browser's
  * `browserShareConfig` both read it.
  */
-export function shareConfigOf(policy: SharePolicyFn): ShareConfigOf {
-  return { announce: policy, access: policy };
+export function shareConfigOf(policy: SharePolicyFn, onVerdict?: ShareVerdictSink): ShareConfigOf {
+  if (!onVerdict) return { announce: policy, access: policy };
+  const watched = (hook: "announce" | "access"): SharePolicyFn => async (peerId, documentId) => {
+    const verdict = await policy(peerId, documentId);
+    onVerdict({ hook, peerId, documentId, verdict });
+    return verdict;
+  };
+  return { announce: watched("announce"), access: watched("access") };
 }

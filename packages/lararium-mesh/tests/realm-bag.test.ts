@@ -19,7 +19,7 @@ import { hex } from "../src/crypto.js";
 import {
   realmIdOfCharter, realmDocUrl, signRealmBagRegistration, realmBagRegistrationCounts,
   writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
-  crossroadsAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, RealmBagGate, REALM_BAG_DOMAIN,
+  crossroadsAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, RealmBagGate,
 } from "../src/realm-bag.js";
 import { deterministicDocUrl } from "../src/deterministic-doc.js";
 import { NEXUS_DOC_DOMAIN, type NexusDoc } from "../src/nexus-seal-seed.js";

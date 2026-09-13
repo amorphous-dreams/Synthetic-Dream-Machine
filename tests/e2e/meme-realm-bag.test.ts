@@ -26,11 +26,14 @@
  * automerge-repo's hooks (announce AND access) and reads the admission maps AFTER they land — a stranger at
  * the floor asking for a private plane by its genesis-derived id draws nothing.
  *
- * ⑬ MEASURES WHERE THE RETURN LANE STOPS, and it stops at the WIRE. One book (A's registry pointer, A's
- * `realm-bags` and B's all name one doc), one read door on A (it reads back its own write), and two replicas
- * that diverge in BOTH directions: the registered book crosses once on B's request, and no sync session
- * carries a change either way after it. The CONTROL names it doc-specific, not peer-specific — on the REALM
- * doc the same B→A direction carries every record.
+ * ⑬ MEASURED WHERE THE RETURN LANE STOPPED, and it stopped at the WIRE — one book, one crossing, and no sync
+ * session after it. The stop was a STALE VERDICT: ⑨'s proposal, written under A's own nym, replaced A's
+ * counted registration (`writeRealmBagRegistration` keys by bag + signing hand), the fold dropped the bag and
+ * the realm leg denied it; B's co-signature re-seated it as a CHANGE on the shared realm doc, the plane
+ * refolded — and nothing asked the Repo to re-read a verdict it caches per (doc, peer). The cure fires the
+ * reverdict on every fold (`makeRealmPlane` `onRefold` → `repo.shareConfigChanged`). ⑬ keeps measuring, and
+ * (vi) QUOTES THE WIRE: both daemons run with `LAR_WIRE_LOG=1`, so every verdict either share hook answers and
+ * every sync message either Repo moves prints a `[wire]` line, filtered here to the registered book's own id.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -95,7 +98,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const portA = await freePort();
     const portB = await freePort();
     const portC = await freePort();
-    A = await openStaged({ tag: "A", port: portA, found: async (cliA, rootA) => {
+    // THE WIRE PROBE, armed on every staged vessel: each share verdict either hook answers and each sync
+    // message the Repo moves prints a `[wire]` line on the daemon's own log, which ⑬ quotes for the
+    // registered book alone. Unarmed (no env) the vessel wraps nothing.
+    const wireLog = { LAR_WIRE_LOG: "1" };
+    A = await openStaged({ tag: "A", port: portA, daemonEnv: wireLog, found: async (cliA, rootA) => {
       const clear = await cliA(["vessel", "clear", "--root", rootA, "--force", "--skip-build"]);
       if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
       const face = await cliA(["persona", "new", "0", "--name", "spider-steward"]);
@@ -121,7 +128,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const face = await cli(["persona", "new", "0", "--name", name]);
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
     };
-    const dialA = { LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
+    const dialA = { ...wireLog, LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
     // Sequential: `vessel clear` holds the fresh-build lock, and two clears racing refuse each other.
     B = await openStaged({ tag: "B", root: rootB, port: portB, found: foundOperator("B", "highland-steward"), daemonEnv: dialA });
     C = await openStaged({ tag: "C", root: rootC, port: portC, found: foundOperator("C", "court-spy"), daemonEnv: dialA });
@@ -339,35 +346,25 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     bPut = true;
   }, 240_000);
 
-  // GATED RED. B's placement lands in the registration's own doc (★ above) and A never reads it.
-  // RE-MEASURED 2026-09-12, and the seam moved: the gate is NOT the refuser. The REALM LEG now opens a
-  // registered book to a peer the registration's `keptBy` names, to a holder of the charter it names, and to
-  // the hearth this vessel dialed the charter from (`RealmBagGate.mayFederate`, the realm's own consult) —
-  // and B's log carries the lane arming: `[realm] the charter's hearth stands at peer peer-…`. Beneath it,
-  // B never gated A at all: `selfSlotShareDecision` gates a peer only when `hasWsSocket` reads true (a socket
-  // on B's OWN server adapter), and A sits at the far end of a dial B opened, so B already shares every doc
-  // with A as an in-process house member (`federation-gate.ts:114` — a peer outside `relayPeers` reads allow).
+  // ⑪ STANDS. B's placement lands on the registration's own doc and A reads it back — the ford carries one
+  // book in both directions.
   //
-  // ⑬ MEASURES THE REST, twice on two independent foundings, and the three candidate stops read:
-  //   · ONE BOOK, not two chests — A's `realm-bags`, B's `realm-bags` and A's OWN oracle registry pointer
-  //     for `bags/lares` all name the SAME automerge doc.
-  //   · A'S READ DOOR READS THAT BOOK — A's put walks `realmWritable` first and A's get walks
-  //     `composite.storeForBag` first, and A READS BACK ITS OWN WRITE, so both doors hold one doc.
-  //   · THE REPLICAS DIVERGE, BOTH WAYS — B's own storage under that doc id carries B's `#/b` and NOT A's
-  //     marker; A's carries A's marker and NOT B's `#/b`.
-  //   · AND THE CONTROL SAYS THE PEER IS NOT THE PROBLEM — on the REALM doc, the same B→A direction, A's
-  //     replica holds every record B's does (B's own co-signature among them). The wire between these two
-  //     vessels carries changes; this ONE document's replicas simply stop exchanging.
-  // So the stop is the WIRE and it is DOC-SPECIFIC, not peer-specific: the registered book crosses ONCE on
-  // B's request (★ reads A's ledger whole) and no sync session carries a change either way after it. It is
-  // not the verdict — a denied doc would never have crossed at all. THE SHAPE THAT SEPARATES THE TWO DOCS:
-  // the realm doc is MATERIALIZED on both vessels from the charter (`materializeSharedLarDoc`, a deterministic
-  // id each side creates for itself), while the bag doc exists locally on A alone and reaches B by REQUEST.
-  // The next probe belongs beside the share lane: log the (peer, documentId) verdict A answers for this doc
-  // and when, and whether a requested doc ever enters the serving repo's ongoing sync set for that peer
-  // (`open-node-vessel.ts` shareConfig + `reverdict`/`repo.shareConfigChanged` · `repo-helpers.ts`).
-  // The day it lands, this reads "expected to fail".
-  test.fails("⑪ A's `meme get` reads B's new slot — the write crossed the ford, not a second chest", async (ctx) => {
+  // WHERE IT STOPPED, and the wire that names it (`LAR_WIRE_LOG=1` on both daemons, quoted by ⑬ (vi)): the
+  // realm leg answers off a STANDING fold, and `writeRealmBagRegistration` keys a record by (bag, signing
+  // hand) — so ⑨'s PROPOSAL, written under A's OWN nym, REPLACED A's counted registration. The fold dropped
+  // the bag, `RealmBagGate.mayFederate` took its `#standing.has(documentId)` early return, and A's reverdict
+  // denied B that document:
+  //     [wire] verdict announce peer=<B> doc=<bag> → false
+  //     [wire] verdict access   peer=<B> doc=<bag> → false
+  // Then B co-signed. Her counted record reached A as a plain CHANGE on the shared realm doc, A's realm plane
+  // refolded on that change — and nothing asked the Repo to read the verdict again, so its per-(doc, peer)
+  // cache kept answering DENIED. The sync session carried nothing either way after the one crossing.
+  // The cure fires the reverdict on EVERY fold (`makeRealmPlane` `onRefold` → `repo.shareConfigChanged`), and
+  // the same wire now reads:
+  //     [wire] verdict announce peer=<B> doc=<bag> → true
+  //     [wire] verdict access   peer=<B> doc=<bag> → true
+  //     [wire] out doc=<bag> peer=<B> · [wire] in doc=<bag> peer=<B>
+  test("⑪ A's `meme get` reads B's new slot — the write crossed the ford, not a second chest", async (ctx) => {
     if (!bPut) ctx.skip();
     const until = Date.now() + 90_000;
     let text = "";
@@ -425,6 +422,17 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const bRegs = ((bBags.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     const bRegistered = String(bRegs.find((r) => r["bag"] === LARES_BAG)?.["doc"] ?? "");
     lines.push(`(iii) registration doc — A says ${registered || "(none)"} · B says ${bRegistered || "(none)"} · same book: ${registered !== "" && registered === bRegistered}`);
+
+    // (vi) THE WIRE, QUOTED. Both daemons carry `LAR_WIRE_LOG=1`, so every verdict either share hook answered
+    // and every sync message either Repo moved prints a `[wire]` line. Filtered to the registered book's own
+    // document id, the sequence names where that doc entered a peer's sync session and where it left it.
+    const bagDocId = registered.replace(/^automerge:/, "").split(/[#/]/)[0] ?? "";
+    const wireOf = (v: LarInstance): string[] =>
+      v.bootLog().split("\n").map((l) => l.trim()).filter((l) => l.startsWith("[wire]") && bagDocId !== "" && l.includes(bagDocId));
+    const aWire = wireOf(A!);
+    const bWire = wireOf(B!);
+    lines.push(`(vi) A's wire for ${bagDocId || "(no doc)"} — ${aWire.length} line(s):\n      ${aWire.slice(-30).join("\n      ") || "(none)"}`);
+    lines.push(`(vi) B's wire for ${bagDocId || "(no doc)"} — ${bWire.length} line(s):\n      ${bWire.slice(-30).join("\n      ") || "(none)"}`);
 
     // (ii) A WRITES A MARKER AND READS IT BACK. The put walks the realm first; the get walks the
     // composite first. A read that misses A's OWN write names the read door, not the wire.
