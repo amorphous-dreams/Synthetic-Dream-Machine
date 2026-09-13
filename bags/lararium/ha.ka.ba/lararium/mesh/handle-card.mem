@@ -120,6 +120,25 @@ authorizers against the prior threshold (structural), `verifyHandleKelFull` prov
 controls example.net") binds the head event cid, so a rotation/graft/burn STALES it and the fresh head
 re-attests. A domain-attestation travels on the card and verifies reader-locally against the empire's own
 registry (DNS); this stack MUST NOT compile a Handle→domain index, ever (registry-filter).
+# ''TWO VERIFIES, AND CONFLATING THEM IS THE WHOLE HAZARD.'' The CHAIN verify asks //did this Handle say
+it// — structural, offline, no network: the chain holds, stands unburned, matches the prefix, and the
+signature verifies against the very head the statement bound. The SURFACE verify asks //is the claim
+true// — it reaches the world the claim names. ''A card may honestly attest a domain it does not control'',
+and the chain verify passes it, because saying and controlling are different facts. A reader handed a
+chain verdict and told "verified" has been told the wrong thing.
+# ''THE SURFACE RIDES AN ADAPTER, AND THE ADAPTER NAMES ITS OWN AUTHORITY.'' DNS answers //whoever holds
+the zone published this//. A loopback or an operator-approved address answers //whoever holds this machine
+published this//. Different authorities, and a proof must carry WHICH one answered so a recogniser weighs
+it rather than reading every surface as equal. ''A local proof that reads as a DNS proof is a forgery the
+stack performed on itself.''
+# ''LOCAL FIRST, AND THAT DEFERS DEPLOYMENT WITHOUT DEFERRING DESIGN.'' A loopback surface stands in a
+secure context already, so the whole flow — mint, carry, chain-verify, surface-verify, weigh — exercises
+end-to-end with no DNS, no TLS, no CA, and no waiting on the wildcard/split-horizon path. The risky half
+travels in the SHAPE (two verifies, an adapter, an authority tag), never in the transport, so building
+against loopback and adding a DNS adapter later moves one adapter rather than the design.
+# ''THE REGISTRY FILTER BINDS EVERY ADAPTER.'' Reader-local, per-claim, at read time — never a gathered
+Handle→surface index, whatever the surface. An adapter that cached its answers into a lookup would
+re-found the registry this law forbids, by convenience rather than by intent.
 
 <<~/ahu>>
 
@@ -170,6 +189,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;YE-WjbMMMlFN1N2Lo5Ta9pKqyBxMLvdnLV8lMFi7hGg
+<<^ code="&#x0003;">>ni:///sha-256;cNyDUFuD1xooMR3-lbF6z3wZ2RiDUu5xFlxxLee0-Tc
 
 <<^ code="&#x0004;" -> to="?">>
