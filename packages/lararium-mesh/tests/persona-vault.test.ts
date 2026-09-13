@@ -15,6 +15,7 @@ import {
   type PersonaVault, type ActivePersonaStore, type AnchorStore, type RecoveryShareStore,
   type KeypairStore, type KeypairCrypto, type PersistedKeypair, type IdentityAnchors, type RecoveryShare,
   type ReadmissionSecret,
+  readWornPersonaMount,
 } from "../src/index.js";
 import * as ed25519 from "@noble/ed25519";
 
@@ -172,5 +173,52 @@ describe("persona-vault core (#64 stage 1)", () => {
     expect(v.anchors.load(0)).toEqual(a0);
     expect(v.anchors.load(1)).toEqual(a1);
     expect(v.anchors.list()).toEqual([0, 1]);
+  });
+});
+
+/**
+ * THE VEIL IS THE FOURTH PIN.
+ *
+ * A face's founder-veil derives from (vesselSeed × veilTag), and the tag is minted FRESH per founding —
+ * so two faces on one vessel stand two different veils, by construction. The tag lives in the daemon doc,
+ * which pins the FOUNDING face's, and each face also persists its own into its anchors.
+ *
+ * A wear-reboot re-pins the switched face's doc ids, signer DID, KEL prefix and device edge from those
+ * anchors — and left the veil tag alone, so the worn face's sentinel ops ran under the FOUNDING face's
+ * veil. That is the same class of fault the mount-switch exists to close: one face's material standing
+ * under another's authority. The tag rides the mount, and ALL-OR-NONE covers four pins now: a face whose
+ * anchors carry no tag owes a re-found, because mounting it would leave h0's veil in place.
+ */
+describe("the wear-reboot mount-switch carries the veil", () => {
+  const FULL = {
+    personaGroupDocIdHex:   "aa".repeat(32),
+    meshCabalDocIdHex:      "bb".repeat(32),
+    personaGroupAgentIdHex: "cc".repeat(32),
+    signerDid:              "did:key:zWorn",
+    personaKelPrefix:       "EWornPrefix",
+    deviceEdge:             { title: "edge", personaRootDid: "did:key:zWorn" } as unknown as IdentityAnchors["deviceEdge"],
+    veilTag:                "worn-face-veil-tag",
+  } satisfies IdentityAnchors;
+
+  const vaultWearing = async (index: number, anchors: IdentityAnchors): Promise<PersonaVault> => {
+    const v = makeInMemoryVault();
+    await v.selector.save(index);
+    v.anchors.save(index, anchors);
+    return v;
+  };
+
+  test("★ the worn face's OWN veil tag rides the mount — the founding face's veil never covers it ★", async () => {
+    const mount = await readWornPersonaMount(await vaultWearing(1, FULL));
+    expect(mount, "a fully-anchored worn face owes a mount").not.toBeNull();
+    expect(mount?.veilTag).toBe(FULL.veilTag);
+  });
+
+  test("ALL-OR-NONE reaches the veil: anchors without a tag mount NOTHING", async () => {
+    const { veilTag: _dropped, ...noTag } = FULL;
+    expect(await readWornPersonaMount(await vaultWearing(1, noTag))).toBeNull();
+  });
+
+  test("CONTROL — the founding face still owes no switch, tag or no tag", async () => {
+    expect(await readWornPersonaMount(await vaultWearing(0, FULL))).toBeNull();
   });
 });

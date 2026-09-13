@@ -254,6 +254,10 @@ export interface WornPersonaMount {
   readonly signerDid:              string;
   readonly personaKelPrefix:       string;
   readonly deviceEdge:             DeviceDelegationTiddler;
+  /** The founder-veil tag this face was minted under. A veil derives from (vesselSeed × tag) and the tag is
+   *  fresh per founding, so two faces on one vessel stand two veils. The daemon doc pins the FOUNDING
+   *  face's; without this the worn face's sentinel ops would run under it. */
+  readonly veilTag:                string;
 }
 
 /**
@@ -268,9 +272,11 @@ export async function readWornPersonaMount(vault: PersonaVault): Promise<WornPer
 
   const anchors = vault.anchors.load(handleIndex);
   if (!anchors) return null;
-  const { signerDid, personaKelPrefix, deviceEdge } = anchors;
-  // ALL THREE OR NONE — see the fail-closed note above.
-  if (!signerDid || !personaKelPrefix || !deviceEdge) return null;
+  const { signerDid, personaKelPrefix, deviceEdge, veilTag } = anchors;
+  // ALL OR NONE — see the fail-closed note above. The veil tag joins the set: mounting a face whose tag is
+  // absent would leave the FOUNDING face's veil standing over it, which is the fault this reading exists to
+  // prevent, one pin over. Such anchors owe a re-found.
+  if (!signerDid || !personaKelPrefix || !deviceEdge || !veilTag) return null;
 
   return {
     handleIndex,
@@ -280,5 +286,6 @@ export async function readWornPersonaMount(vault: PersonaVault): Promise<WornPer
     signerDid,
     personaKelPrefix,
     deviceEdge,
+    veilTag,
   };
 }

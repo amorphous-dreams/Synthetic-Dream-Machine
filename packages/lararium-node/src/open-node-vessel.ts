@@ -1056,7 +1056,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // grants no persona caps at all, and refuses a TORN face outright. So absence buys fewer caps, never
     // a skipped check — the confused-deputy / PCD cure survives the floor intact.
     const signerDid  = wornMount?.signerDid ?? tiddlerText(daemonDoc?.tiddlers?.[SIGNER_DID_TIDDLER]) ?? undefined;
-    const dyadVeilTag = tiddlerText(daemonDoc?.tiddlers?.[DYAD_VEIL_TAG_TIDDLER]) ?? undefined;
+    // The veil rides the mount with the rest of the pins: the doc's tag is the FOUNDING face's, and a worn
+    // face stands its OWN veil (fresh per founding). Reading the doc here alone put h{N}'s sentinel ops
+    // under h0's veil — the one pin in this cluster that never asked what was worn.
+    const dyadVeilTag = wornMount?.veilTag ?? tiddlerText(daemonDoc?.tiddlers?.[DYAD_VEIL_TAG_TIDDLER]) ?? undefined;
     const edgeRecord = daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER];
     // The switch presents the WORN face's signed edge. It changes WHICH edge is presented, never whether it
     // is checked: `bootDaemonKeyhive` runs the Binding Gate on it in full, or grants no persona caps at all.
