@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/papalohe">>
 ```toml meta
-body-sha256   = "2519de34cc3e6cfbf78423bda0389369f1e4d504f194a4c04934f87dda56f6a1"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/papalohe.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/papalohe"
-role          = "anchor: PapaloheWidget — heleuma ka"
-source-symbol = "PapaloheWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/papalohe", "tw5/modules/tw5-widgets"]
+role          = "render surface: the papalohe reaction-edge sigil — \\widget ~papalohe in sigil-papalohe.tid, a hidden data annotation the compile layer wires"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-papalohe.tid"
+source-symbol = "~papalohe"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/papalohe"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/papalohe"
 ```
@@ -21,22 +21,44 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/papalohe"
 
 !! Contract
 
-`<$papalohe>` renders a `<meta data-lar-kind="papalohe">` element. Encodes a trigger-fn-slot binding for reactive pipeline hooks. Attributes: `from`, `to`, `trigger`, `fn`, `slot`.
+`<<~ papalohe "lar:///a.b.c/x" -> "lar:///a.b.c/y">>` declares a reaction-family edge — an event wire running from a source event to a target function. The compile layer reads the annotation and wires the reaction-graph edge.
+
+The argument RUN carries the whole assertion: `#slot FROM -> TO listenable:EventName subscribable:Name`. The `#slot` fragment names the wire so a `kukali` wait in the same carrier can name it back through `trigger`.
+
+''The widget reads the run, not the slots.'' A from, an arrow and a to compose ONE assertion, so splitting them across positional slots would let the shape be got subtly wrong; `args` hands the definition the text as written.
+
+<<~/ahu>>
+
+<<~ ahu #/render>>
+
+!! Render
+
+''The page stays clear.'' A wire governs execution and never layout, so the widget renders a hidden annotation:
+
+```
+<span class="lar-papalohe" data-papalohe-args=<<args>> hidden="true"/>
+```
+
+The declaration rides in `packages/lararium-tw5/tiddlers/sigil-papalohe.tid` with `lar-kind: edge-sugar` and the match pattern that captures fragment, from, to, `listenable` and `subscribable`.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/papalohe" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-papalohe.tid" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wYbsiMYqQMdnFtxaKdXw1fMMLJ9PwvohWCPcSTuQLsE
+<<^ code="&#x0003;">>ni:///sha-256;FrD4ZuwwnpUGed69HliwhWE5Q_vieeUX7rooKZBPzek
 
 <<^ code="&#x0004;" -> to="?">>

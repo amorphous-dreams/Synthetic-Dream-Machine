@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/sigil">>
 ```toml meta
-body-sha256   = "466661b14ac6fd3d3b560f87f698927c6857905c5ff020e21b965a05a24cf902"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/sigil.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/sigil"
-role          = "anchor: SigilWidget — heleuma ka"
-source-symbol = "SigilWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/sigil", "tw5/modules/tw5-widgets"]
+role          = "render surface: the ~ sigil dispatch — the lar-sigil wikirule in TS, and the \\widget ~ dispatcher that routes every sigil name to its definition"
+source-file   = "packages/lararium-tw5/src/wikirules/lar-sigil.ts"
+source-symbol = "matchCompoundSigilAt findNextMatch"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/sigil"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/sigil"
 ```
@@ -21,22 +21,64 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/sigil"
 
 !! Contract
 
-`<$sigil>` renders a `<span data-lar-kind="sigil">` element. `data-lar-sigil` is the parse-tree tag. Renders children inside the span.
+Two surfaces compose the `~` sigil layer, and each answers a question the other cannot.
+
+''The wikirule stays TS.'' `lar-sigil` registers as a TW5 wikirule (`module-type: wikirule`) over both the block and the inline phase. It claims block forms (container ahu, container pranala, generic-with-closer) at block parse and leaf inline forms (aka, kahea, loulou, inline pranala, ahu/kau invocation) at inline parse — work that runs inside TW5's parser and reaches no wikitext seam.
+
+''The dispatcher stays wikitext.'' `\widget ~(name p1:"" … p5:"" args:"" src:"")` in `tiddlers/sigil-dispatcher.tid` transcludes the variable `~<name>`, so `<<~ WORD ARGS>>` reaches whatever definition this wiki holds under that name.
+
+Dispatch model:
+* every compound and simple sigil routes to the `~` dispatcher as `name=SIGIL, p1..p5=ARGS`
+* block and inline pranala route to `~pranala` directly, on keyword args
+* a generic block-with-closer passes through as a text literal
+
+Child-slot detection (ahu, kau, and whatever the grammar adds next) reads `grammarChildSlotNames()`; the rule hardcodes no sigil name beyond what the grammar registry supplies.
+
+<<~/ahu>>
+
+<<~ ahu #/the-gradient-floor>>
+
+!! The Gradient's Floor
+
+A sigil a reader typed never disappears. TiddlyWiki renders a transclude's CHILDREN where the target resolves to nothing, so the dispatcher hands its own verbatim text — `src` — down as the transclude body, and a wiki that has never seen the procedure puts the sigil's text on the page. The floor rides as the parser's own fallback, never a second mechanism bolted beside it.
+
+''The verbatim rides through `<$text>`, never through a variable reference.'' The text IS sigil syntax, so rendering it as wikitext would re-enter the rule that produced it. Literal text ends the recursion.
+
+''An empty name names nothing.'' Definitions compose by handing the dispatcher a name they were given. An empty slot would make `addprefix` yield the bare `~` — the dispatcher's OWN name — and the transclude would re-enter itself until the stack ended. `!is[blank]` empties the variable instead, and an empty variable resolves to nothing, landing on the floor already standing.
+
+A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degraded lar-sigil-<grade>">` carrying its verbatim text, and the rule files a diagnostic at the matched span so the filter and the gate see the same damage the render plane shows.
+
+<<~/ahu>>
+
+<<~ ahu #/slots-and-runs>>
+
+!! A Slot and a Run Answer Different Questions
+
+`p1 … p5` hold positional slots — one value each, delimiters stripped, `name=value` pairs stepped over. `args` carries the argument run exactly as written, for the definitions that read a SHAPE rather than an arity: an edge annotation whose from, arrow and to compose one assertion, and `kau`, which runs its own parse over `#fragment name props`.
+
+''Neither derives from the other,'' so neither can be got subtly wrong in the definitions that read them.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/sigil" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil.ts" family="code" role="has">>
+<<~ pranala #source-shared from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil-shared.ts" family="code" role="has">>
+<<~ pranala #source-pragma from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil-pragma.ts" family="code" role="has">>
+<<~ pranala #source-dispatcher from="?" -> to="packages/lararium-tw5/tiddlers/sigil-dispatcher.tid" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/sigil">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sigil">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;50H7RLFHyPriwNCJ_i8r2uZ3RCxjxkRuv5iYOWxmvBo
+<<^ code="&#x0003;">>ni:///sha-256;1ihl-OcCj54b0xC9cQ1uX7WbIkP3Jh5ZcKj-arbj8W4
 
 <<^ code="&#x0004;" -> to="?">>

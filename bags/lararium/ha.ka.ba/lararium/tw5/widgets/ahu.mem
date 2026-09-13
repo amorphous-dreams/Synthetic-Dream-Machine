@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/ahu">>
 ```toml meta
-body-sha256   = "26d1bacabd436acf1e2f5b45eedcfe333bade4b400454598c8d7711f7eb4007b"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/ahu.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/ahu"
-role          = "anchor: AhuWidget — heleuma ka"
-source-symbol = "AhuWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/ahu", "tw5/modules/tw5-widgets"]
+role          = "render surface: the ahu child-slot sigil — \\widget ~ahu in sigil-ahu.tid, rendering through the ahu template cascade"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-ahu.tid"
+source-symbol = "~ahu"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/ahu"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/ahu"
 ```
@@ -21,22 +21,68 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/ahu"
 
 !! Contract
 
-`<$ahu>` renders a `<section data-lar-kind="ahu">` slot container, or in `carrier` render-mode, projects the slot body as raw wikitext. Supports reactive refresh on slot-fragment tiddler changes. Attribute: `slot`.
+`<<~ ahu #/slot>>` … `<<~/ahu>>` bounds a worksite scope and addresses a child-slot record at `parentUri#/slot`.
+
+''One slot, one address.'' A slot spelled `#a` or `#/a` resolves to `#/a` under the meme root, and to `#/a/c` under the child `#/a` — the fragment never repeats its `#`. The deserializer mints the record's title by that same law.
+
+The declaration rides in `packages/lararium-tw5/tiddlers/sigil-ahu.tid`, which carries the open and close patterns TW5 matches (`lar-open-pattern`, `lar-close-pattern`) and the `\widget ~ahu(slot uri p1)` body. The widget resolves the child URI, then hands the render to a TEMPLATE, never to a class.
+
+<<~/ahu>>
+
+<<~ ahu #/template-cascade>>
+
+!! The Template Cascade
+
+The widget picks its template by filter, and falls back to the shipped default only when the cascade finds nothing:
+
+```
+[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/ahu-template]!is[draft]]
+  :map:flat[subfilter{!!text}]
+  +[first[]else[lar:///ha.ka.ba/lararium/templates/ahu/html]]
+```
+
+A wiki overrides the render by tagging its own pointer tiddler `lar:///ha.ka.ba/tags/ahu-template`; the shipped pointer names `lar:///ha.ka.ba/lararium/templates/ahu/html`.
+
+''Two postures, two cascades.'' `~kahea~ahu` picks the ahu cascade (live child-slot transclusion); `~aka~ahu` picks the aka cascade (frozen projection read of the same child). Posture lives in the cascade, never in sigil dispatch. `lar-sigil.ts` routes the compound form `name="kahea~ahu", p1=slot`.
+
+Live wiki parent tiddlers hold the space form `<<~ kahea ahu #slot>>`, which reads under a HUD.
+
+<<~/ahu>>
+
+<<~ ahu #/slot-states>>
+
+!! Four Slot States
+
+A section with nothing under it says the same nothing for three different facts, so the template names which fact it met. It stamps `data-slot-state` on the `<section>` and mirrors it into the class as `lar-ahu-<state>`:
+
+| State | The reading that produces it | What it means |
+|---|---|---|
+| `unresolved` | `[is[missing]]` — no record stands at the child's address | a member left alone and the root's call stayed; the house keeps the pointer and marks it dead, never inventing bytes |
+| `arriving` | a record stands, holding no `text` field | the poll lands a group skinny in one batch and fattens it one title at a time — this window, named |
+| `empty` | a record stands, its text empty | the author wrote nothing, which counts as a fact too |
+| `filled` | everything else | the body transcludes in block mode |
+
+''One reading tells the first two apart:'' an arriving child HAS a record and a dead one does not.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/ahu" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-ahu.tid" family="code" role="has">>
+<<~ pranala #source-template from="?" -> to="packages/lararium-tw5/tiddlers/ahu-template-html.tid" family="code" role="has">>
+<<~ pranala #source-cascade from="?" -> to="packages/lararium-tw5/tiddlers/ahu-cascade-html.tid" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kau">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OmAAIFR3Tco_MBJN__OBOU9gpeXrRSRIC3lbEVOATIQ
+<<^ code="&#x0003;">>ni:///sha-256;9CPGHhI-RtnQLAcYnpRhng1OjX8yIh66Tlg1FFKydPc
 
 <<^ code="&#x0004;" -> to="?">>

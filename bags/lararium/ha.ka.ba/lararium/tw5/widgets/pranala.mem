@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
 ```toml meta
-body-sha256   = "c024548a4d09384a9d5df111d3b73b712a2951f3287975efd6140790e2a3ab3d"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/pranala.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/pranala"
-role          = "anchor: PranalaWidget — heleuma ka"
-source-symbol = "PranalaWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/pranala", "tw5/modules/tw5-widgets"]
+role          = "render surface: the pranala edge sigil — \\widget ~pranala in sigil-pranala.tid, rendering through the pranala template cascade"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-pranala.tid"
+source-symbol = "~pranala"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/pranala"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/pranala"
 ```
@@ -21,22 +21,52 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/pranala"
 
 !! Contract
 
-`<$pranala>` renders a `<meta data-lar-kind="pranala">` element carrying edge fields as data attributes. No visible output. Attributes: `from`, `to`, `family`, `role`.
+`<<~ pranala from="lar:///a.b.c/x" -> to="lar:///a.b.c/y">>` names an edge. It takes `from`, `to`, `slot`, `family`, `role`, `body` and an optional `template`; the block form wraps a body between the open and `<<~/pranala>>`. Absent `family`, the edge reads `relation`.
+
+''A fragment resolves against the carrier.'' A `from` or `to` that opens with `#` gains the current tiddler as its prefix, so `#/head` addresses this carrier's own child rather than a bare fragment.
+
+<<~/ahu>>
+
+<<~ ahu #/parse-exception>>
+
+!! The Permanent Parse Exception
+
+Pranala keeps a permanent JS exception in `lar-sigil.ts`. Its arrow syntax — FROM `->` TO plus keyword attributes — stands structurally apart from the `<<~ WORD ARGS>>` shape every other sigil wears, so `findNextMatch` matches it directly BEFORE compound dispatch fires. `PRANALA_OPEN_RE` and `matchPranalaOpenAt` in `lar-sigil-shared.ts` carry that match.
+
+The sibling exception, `pranala-header`, spends `?` as a self-reference token for this carrier: `<<~ ? -> uri>>`. It parses in the same pre-dispatch pass and renders through its own cascade.
+
+<<~/ahu>>
+
+<<~ ahu #/template-cascade>>
+
+!! The Template Cascade
+
+An explicit `template` parameter wins; absent one, the widget takes the first tiddler tagged `lar:///ha.ka.ba/tags/pranala-template`, and falls back to `lar:///ha.ka.ba/lararium/templates/pranala/html`.
+
+The shipped template renders a `<span class="lar-pranala">` carrying `data-from` and `data-to`, adding `data-family` and `data-role` only where those read non-blank, linking both ends, and folding a non-blank `body` into a `<details>` note.
+
+`pranala-header` renders `<span class="lar-pranala-header">` with `data-canonical-uri` and a single link, through `lar:///ha.ka.ba/lararium/templates/pranala-header/html`.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/pranala" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-pranala.tid" family="code" role="has">>
+<<~ pranala #source-header from="?" -> to="packages/lararium-tw5/tiddlers/sigil-pranala-header.tid" family="code" role="has">>
+<<~ pranala #source-template from="?" -> to="packages/lararium-tw5/tiddlers/pranala-template-html.tid" family="code" role="has">>
+<<~ pranala #source-rule from="?" -> to="packages/lararium-tw5/src/wikirules/lar-sigil-shared.ts" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/sigil">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yFeFBuO1BkEWUtO6PYe7D7kanw5yeL_jCqPSmpduc8A
+<<^ code="&#x0003;">>ni:///sha-256;cqT47bXZcYYRzKYv61WFtxB4RT0Fk3WE79quwLrpbzw
 
 <<^ code="&#x0004;" -> to="?">>

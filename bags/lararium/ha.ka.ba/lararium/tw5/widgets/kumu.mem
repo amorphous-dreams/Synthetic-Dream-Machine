@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/kumu">>
 ```toml meta
-body-sha256   = "2d9063b1652eba93ba1e434707360028e4543bb27a20981942e655ee0b35d61b"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kumu.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kumu"
-role          = "anchor: KumuWidget — heleuma ka"
-source-symbol = "KumuWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/kumu", "tw5/modules/tw5-widgets"]
+role          = "render surface: the kumu type-declaration pragma — sigil-kumu.tid declares a named element type that kau resolves and places"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-kumu.tid"
+source-symbol = "~kumu"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/kumu"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/kumu"
 ```
@@ -21,22 +21,42 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/kumu"
 
 !! Contract
 
-`<$kumu>` resolves a named kumu device by `[all[tiddlers]tag[$:/tags/LarariumKumu]field:kumu-name[name]]`, transcluding it with props. Renders a `<div data-lar-kind="kumu">` container; unresolved devices show a `<span data-lar-kind="hole">`. Attributes: `name`, `props`.
+`<<~ kumu Name props>>` … `<<~/kumu>>` DECLARES a named structural node type — a reusable container shape. `sigil-kumu.tid` carries it with `lar-kind: pragma` and `lar-render: compile`: the declaration registers the type and emits no render output of its own.
+
+''Kumu declares a type; wehe declares a procedure.'' The two pragmas sit side by side and answer different questions.
+
+<<~/ahu>>
+
+<<~ ahu #/resolution>>
+
+!! How a Declaration Reaches a Placement
+
+A kumu definition tiddler wears the tag `lar:///ha.ka.ba/tags/kumu` and carries its name in the `kumu-name` field. `~kau` resolves a placement against exactly that pair:
+
+```
+[all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<_kau-name>first[]else[]]
+```
+
+An unresolved name renders `<span class="lar-kau-hole">` at the placement site, so a device nobody declared reads as a hole rather than as silence.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/kumu" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-kumu.tid" family="code" role="has">>
+<<~ pranala #source-placement from="?" -> to="packages/lararium-tw5/tiddlers/sigil-kau.tid" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kumu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kumu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kau">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m7vUuw3VnuUXZ3Cdynrr5aO-Zuzw4yz1ccU-aG5R6FI
+<<^ code="&#x0003;">>ni:///sha-256;Fzf2JyJG6xTS18X3ClcfcPy4a-OWNxskZj3n1d9hh68
 
 <<^ code="&#x0004;" -> to="?">>

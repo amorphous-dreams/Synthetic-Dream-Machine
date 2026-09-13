@@ -8,9 +8,10 @@ file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kau.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kau"
-role          = "anchor: ~kau TW5 wikitext widget — heleuma ka"
+role          = "render surface: the kau device-placement sigil — \\widget ~kau in sigil-kau.tid, rendering through the kau template cascade"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-kau.tid"
 source-symbol = "~kau"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/kau", "tw5/modules/tw5-widgets"]
+tags          = ["lar:///ha.ka.ba/lares/api/pono/kau"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/kau"
 ```
@@ -28,22 +29,20 @@ Each kau placement creates a device instance with:
 * ''Own execution context'': `currentTiddler` set to instance URI before transcluding the kumu def
 * ''Persistent addressability'': instance URI becomes UCAN resource for per-instance capability grants (Keyhive deferred)
 
-`p1` parse: first token starting with `#` = fragment; remainder = name + props.
+''The widget reads the argument RUN, not the slots.'' Its shape runs positional-by-PREFIX rather than positional-by-arity — a placement carries a fragment the invocation form omits — so `args` parse decides: the first token opening with `#` reads as the fragment, and the remainder reads as name plus props.
 
-Invocation form: `<<~ kau Name>>` — no fragment; transcludes kumu def in caller's context.
+Invocation form: `<<~ kau Name>>` — no fragment; transcludes the kumu definition in the caller's context.
 
-Resolves kumu definition via `[all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<name>first[]]`.
-Placement renders `<div class="lar-kau lar-kau-place" data-uri="...">`.
+Resolves the kumu definition via `[all[tiddlers+shadows]tag[lar:///ha.ka.ba/tags/kumu]field:kumu-name<_kau-name>first[]else[]]`.
+Placement renders `<div class="lar-kau lar-kau-place" data-uri="…">`.
 Invocation renders `<div class="lar-kau lar-kau-invoke">`.
-Unresolved devices show `<span class="lar-kau-hole">`.
+An unresolved device shows `<span class="lar-kau-hole">`.
 
 !!! Render surface
 
-`\widget ~kau(p1:"")` lives in `tiddlers/sigil-kau.tid`. Template cascade:
-* HTML: `lar:///ha.ka.ba/lararium/templates/kau/html` (via `lar:///ha.ka.ba/tags/kau-template`)
-* markdown-meme: `lar:///ha.ka.ba/lararium/templates/kau/markdown-meme`
+`\widget ~kau(p1:"" p2:"" p3:"" args:"")` lives in `packages/lararium-tw5/tiddlers/sigil-kau.tid`. The template cascade takes the first tiddler tagged `lar:///ha.ka.ba/tags/kau-template` and falls back to `lar:///ha.ka.ba/lararium/templates/kau/html`. That template branches on the fragment: a non-empty `kau-frag` renders the placement div carrying `data-uri`, `data-kau-name` and, where present, `data-kau-props`; an empty one renders the invocation div.
 
-Companion procedures: `~kahea~kau` (live transclusion of kau child-slot), `~aka~kau` (frozen projection via aka template cascade).
+Companion procedures: `~kahea~kau` (live transclusion of the kau child-slot), `~aka~kau` (frozen projection through the aka template cascade).
 
 !!! Keyhive stubs — deferred
 
@@ -53,7 +52,10 @@ Per-instance capability hooks and UUID write-back surface as explicit TW5 action
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/kau" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-kau.tid" family="code" role="has">>
+<<~ pranala #source-template from="?" -> to="packages/lararium-tw5/tiddlers/kau-template-html.tid" family="code" role="has">>
 
 <<~/ahu>>
 
@@ -64,6 +66,6 @@ Per-instance capability hooks and UUID write-back surface as explicit TW5 action
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wBbc5S_prFIhMOrmx21178th5mRSjJYNkDmxs0xYezQ
+<<^ code="&#x0003;">>ni:///sha-256;q0bI7nUW8z9AouCv3kQMT76jSZ3vMJ_mBCcZd3BEyR0
 
 <<^ code="&#x0004;" -> to="?">>

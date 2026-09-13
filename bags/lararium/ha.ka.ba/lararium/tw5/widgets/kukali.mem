@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
 ```toml meta
-body-sha256   = "8872eb1c59367ae0c24cc5bcffe34d6b83f25fa09edda99d6637fd16c198b5d3"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kukali.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kukali"
-role          = "anchor: KukaliWidget — heleuma ka"
-source-symbol = "KukaliWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/kukali", "tw5/modules/tw5-widgets"]
+role          = "render surface: the kukali wait sigil — \\procedure ~kukali in sigil-kukali.tid, a hidden data annotation the compile layer reads"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-kukali.tid"
+source-symbol = "~kukali"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/kukali"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/kukali"
 ```
@@ -21,22 +21,43 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/kukali"
 
 !! Contract
 
-`<$kukali>` renders a `<span data-lar-kind="kukali">` element and wires a reactive hook via `wiki._larKukaliHook`. The hook cancel function is stored on the DOM node. Attribute: `trigger`.
+`<<~ kukali trigger="on-score">>` declares a WAIT inside a causal island, until a named trigger fires. //Kūkali// waits, patient, remaining in suspense: the island parks rather than freezes, and it resumes EXACTLY ONCE — subscribeOnce semantics.
+
+`trigger` names the `#slot` fragment of a papalohe wire in the same carrier. Omitted, the wait takes the first reaction that arrives. Papalohe declares the wire; kukali declares the wait at the receiving end.
+
+''The trigger rides as a NAMED parameter,'' under either separator — `trigger="x"` and `trigger:x` both reach the slot, since a call binds a name through `=` and `:` alike.
+
+<<~/ahu>>
+
+<<~ ahu #/render>>
+
+!! Render
+
+''The page stays clear.'' A wait governs execution and never layout, so the procedure hands the compile layer a data annotation and renders nothing visible:
+
+```
+<span class="lar-kukali" data-kukali-trigger=<<trigger>> hidden="true"/>
+```
+
+The declaration rides in `packages/lararium-tw5/tiddlers/sigil-kukali.tid` with `lar-kind: leaf`, its match pattern, and `lar-see-also: \suspends`. No template cascade stands here — an annotation carrying no layout needs no override seam.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/kukali" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-kukali.tid" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kukali">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/papalohe">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jQYklTGrsCzJpe2-GnwifcgGO_bP5s69rD5wSG_3WNI
+<<^ code="&#x0003;">>ni:///sha-256;WYxw0YbwCT9m0JZ9PiaWcwWxII49kxk-xrSqXMk0OPg
 
 <<^ code="&#x0004;" -> to="?">>

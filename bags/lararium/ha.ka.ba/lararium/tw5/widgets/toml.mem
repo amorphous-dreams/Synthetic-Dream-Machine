@@ -2,15 +2,15 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/toml">>
 ```toml meta
-body-sha256   = "d4f13f77f33d37dc2115243f6271a959c1021f2ee5226a8e4c8d733232adeb50"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/toml.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/toml"
-role          = "anchor: TomlWidget — heleuma ka"
-source-symbol = "TomlWidget"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/toml", "tw5/modules/tw5-widgets"]
+role          = "render surface: the toml data fence — sigil-toml.tid declares the pattern, parseTaploFields dissolves the meta profile into carrier fields"
+source-file   = "packages/lararium-tw5/src/toml-ast.ts"
+source-symbol = "parseTaploFields"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/toml"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/toml"
 ```
@@ -21,22 +21,40 @@ uri-path      = "ha.ka.ba/lararium/tw5/widgets/toml"
 
 !! Contract
 
-`<$toml>` renders a `<script type="application/toml" data-lar-kind="toml">` element. The `content` attribute is the raw TOML string.
+A triple-backtick fence opening with the language token `toml` declares data inside a carrier. The fence takes an optional PROFILE name after that token, and the profile decides where the parsed table lands:
+
+* ''`meta`'' — the carrier identity prelude. It dissolves into the parent tiddler's fields through `parseTaploFields`, so `uri-path`, `mana`, `source-file` and their kin read as tiddler fields and answer the `toml:` filter operator directly.
+* ''any other name, or none'' — a general-purpose data block. The content stays available to the widget layer and lands in no field.
+
+`sigil-toml.tid` declares the surface with `lar-kind: data` and `lar-render: mark`: the fence marks a region for the compile layer rather than rendering an element of its own.
+
+<<~/ahu>>
+
+<<~ ahu #/parser>>
+
+!! Parser
+
+`smol-toml`, vendored at `packages/lararium-tw5/src/lib-smol-toml.ts` and reachable in the wiki as `lar:///ha.ka.ba/lararium/tw5/lib/smol-toml`. `parseTaploFields` in `toml-ast.ts` runs the sync TOML→flat-record read that the deserializer calls when it splits a carrier into its records.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/widgets/toml" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/toml-ast.ts" family="code" role="has">>
+<<~ pranala #source-sigil from="?" -> to="packages/lararium-tw5/tiddlers/sigil-toml.tid" family="code" role="has">>
+<<~ pranala #source-lib from="?" -> to="packages/lararium-tw5/src/lib-smol-toml.ts" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/toml">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/toml-ast">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/toml-field">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ui_NjPw4Cos5SOLFiH1efKLU5BEMFP1ArDBg0Jx7b1k
+<<^ code="&#x0003;">>ni:///sha-256;mL9_6hi0vxjq2P40o8kB4jpjRFLh-R1qdb_5Y9W-y8w
 
 <<^ code="&#x0004;" -> to="?">>
