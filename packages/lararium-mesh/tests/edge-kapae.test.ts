@@ -13,6 +13,8 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 import { EDGE_KAPAE_DOMAIN } from "../src/domains.js";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
@@ -209,5 +211,55 @@ describe("the epochCid bounds the ceiling grab a scalar cannot", () => {
     const tie = await at("edge-6", false, 1, "e1", B_SEED);
     const up  = await at("edge-6", true,  1, "e1", A_SEED);
     expect(foldEdgeKapae([tie, up], order).has("edge-6")).toBe(true);         // remove-wins survives
+  });
+});
+
+/**
+ * `noChainHeld` EXISTS TO BE SAID, SO SOMETHING MUST SAY IT.
+ *
+ * Its own doc: "A reader holding no chain says so explicitly (`noChainHeld`) rather than by omitting an
+ * argument" — and it is "Named rather than defaulted, because a caller that cannot order epochs should SAY
+ * it at the call site where a reviewer will see it."
+ *
+ * A census of this tree found 347 exports reached only by tests and 109 reached by nothing at all, and
+ * this one sat in the first group while the ONE caller that needed it hand-rolled the same degradation
+ * inline — its comment even naming `noChainHeld` as the thing it declined to use. An export whose whole
+ * purpose is to make a state VISIBLE at a call site does nothing at all until a call site holds it.
+ */
+describe("the no-chain declaration", () => {
+  test("★ a PRODUCTION caller says it — not only a test ★", () => {
+    const repo = join(import.meta.dirname, "..", "..");
+    const srcHits: string[] = [];
+    for (const pkg of ["lararium-node", "lararium-mesh", "lares-cli"]) {
+      const dir = join(repo, pkg, "src");
+      const walk = (d: string): void => {
+        for (const e of readdirSync(d, { withFileTypes: true })) {
+          const full = join(d, e.name);
+          if (e.isDirectory()) { walk(full); continue; }
+          if (!e.name.endsWith(".ts")) continue;
+          const t = readFileSync(full, "utf8");
+          // A MENTION IN A COMMENT IS NOT A CALL. Strip line-comments before looking, or the very comment
+          // that declined to use it would count as using it — which is how this went unnoticed.
+          const code = t.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+          // A DECLARATION IS NOT A CALLER. `edge-kapae.ts` holds the export itself; counting it read as a
+          // caller and passed this test vacuously on its first firing — the exact fault it hunts.
+          const declaring = /export const noChainHeld/.test(code);
+          if (!declaring && /\bnoChainHeld\b/.test(code)) srcHits.push(`${pkg}/${e.name}`);
+        }
+      };
+      try { walk(dir); } catch { /* package absent in this checkout */ }
+    }
+    expect(srcHits, "no production caller holds `noChainHeld` — the declaration declares to nobody").not.toEqual([]);
+  });
+
+  test("CONTROL — the scan ignores a DECLARATION, so the assertion cannot pass on the export itself", () => {
+    const declSrc = "export const noChainHeld: EpochOrder = () => null;";
+    expect(/export const noChainHeld/.test(declSrc)).toBe(true);
+  });
+
+  test("CONTROL — the scan ignores a comment mention, so the assertion above cannot pass on prose", () => {
+    const commentOnly = ["// we could use noChainHeld here", " * see noChainHeld", "const x = 1;"].join("\n");
+    const code = commentOnly.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+    expect(/\bnoChainHeld\b/.test(code)).toBe(false);
   });
 });

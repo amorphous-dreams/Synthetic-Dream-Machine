@@ -28,6 +28,7 @@ import {
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
+import { noChainHeld, type EpochOrder } from "@lararium/mesh";
 import { daemonBagsDir } from "../lares-config.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
@@ -123,9 +124,12 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     }
     const chain = doc?.sealLineage ?? [];
     const rank  = new Map(chain.map((e) => [e.epochCid, e.epoch]));   // cid → its ORDINAL position in the chain
-    const shadowed = await shadowSetFromBoard(
-      handle.doc(), () => signerDid, verify, (cid) => rank.get(cid) ?? null,
-    );
+    // SAID, NOT REACHED BY OMISSION. With no chain to walk, every cid ranks unknown and the fold orders on
+    // VERSION alone — and mesh names that state so a reviewer meets it at the call site. Hand-rolling a
+    // lambda that happens to answer null for everything reaches the same behaviour while hiding the
+    // declaration, which is what the comment above objected to and what this line then did anyway.
+    const epochOrder: EpochOrder = chain.length === 0 ? noChainHeld : (cid) => rank.get(cid) ?? null;
+    const shadowed = await shadowSetFromBoard(handle.doc(), () => signerDid, verify, epochOrder);
     return { edgeId, raised: opts.raised, version, epochCid, signerDid, boardUrl, shadowStands: shadowed.has(edgeId) };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
