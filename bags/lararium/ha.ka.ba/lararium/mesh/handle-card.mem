@@ -140,6 +140,30 @@ against loopback and adding a DNS adapter later moves one adapter rather than th
 Handle→surface index, whatever the surface. An adapter that cached its answers into a lookup would
 re-found the registry this law forbids, by convenience rather than by intent.
 
+!!!! The field rhyme ~ AT Protocol's custom handles, and the two gaps it exposes
+
+''ATproto verifies a custom handle BIDIRECTIONALLY, and lands on our split independently.'' The domain
+publishes the identity — a `_atproto.<domain>` TXT carrying `did=<did>`, ''or'' an
+`https://<domain>/.well-known/atproto-did` returning it — and the DID document names the handle back in
+`alsoKnownAs`. ''Neither direction alone counts.'' Their handle reads as a mutable pointer and the DID as
+the identity, the same way a Handle presents and the persona-KEL owns. Two designs reaching //both
+directions must agree// separately reads as convergent evidence, never as borrowing.
+
+''GAP 1 — our surface has no RETURN DIRECTION.'' A `HandleAttestation` carries `prefix · headEventCid ·
+claim · sig`: the card claims the domain and nothing says what the domain must publish. So a surface
+verify has nothing to look FOR. The cure rhymes: ''the surface names the prefix back''. Until it does,
+the surface half stands underspecified rather than merely unbuilt.
+
+''GAP 2 — a free-text `claim` cannot be checked mechanically.'' ATproto sidesteps it: the handle IS the
+domain, so nothing needs parsing. A claim wanting a machine reader wants a STRUCTURED form; prose suits a
+human weighing a card and suits no adapter at all.
+
+''WHERE WE DIVERGE ON PURPOSE, twice.'' Their AppView compiles a handle→DID index — exactly the registry
+`registry-filter` forbids here, so their //resolution// story cannot travel even though their //proof//
+shape does. And their handle survives key rotation, because it binds a stable DID; ours binds
+`headEventCid`, so a rotation, graft or burn ''stales the claim cryptographically''. Stricter on purpose:
+a claim made under a key-state says nothing about the state that replaced it.
+
 <<~/ahu>>
 
 <<~ ahu #/two-tiers>>
@@ -189,6 +213,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;cNyDUFuD1xooMR3-lbF6z3wZ2RiDUu5xFlxxLee0-Tc
+<<^ code="&#x0003;">>ni:///sha-256;HuZ2Y4LfmHUSYdpQQkaoqCTyhxfUBzmmtEqAxoHqZa8
 
 <<^ code="&#x0004;" -> to="?">>
