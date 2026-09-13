@@ -16,8 +16,8 @@
  *   · a BURNED Handle refuses its successor forever; either hand may burn (Option C),
  *   · an attestation verifies end-to-end reader-locally; NO export takes a collection of handles,
  *   · inception incepts ARMED — an empty rolling recovery pre-commit refuses at the mint,
- *   · [skipped red] TRUE k-of-n GRAFT GOVERNANCE — a threshold of the current set consenting — the
- *     generalization beyond DPR, declared with its wake condition.
+ *   · ★ TRUE k-of-n GRAFT GOVERNANCE — a threshold of the current set consenting: ONE hand cannot graft a
+ *     2-of-2 guild, and BOTH hands can; the generalization beyond DPR, stood.
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";

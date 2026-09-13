@@ -104,6 +104,7 @@ globs   = [
 # ''The dial'' — measured by the meme hearth, ceded by the founding hearth in a pasted message, taken and closed in three commits. Cost: one loop waiting on a file the other hearth held dirty. Law: a ceded seam gets a row here before the hand starts.
 # ''The genesis block'' — the founding hearth's uncommitted `genesis-doc.ts` threw `pluginsCid mismatch` under every staged `vessel clear`; the meme hearth could run no founding e2e for a loop and said so in its drift-ward. Law: a change that moves the genesis verifier lands in one commit, or a row here names the window.
 # ''The return lane'' — CLOSED by the meme hearth (`383301b4f`): a proposal written under A's own nym replaced A's counted registration, the fold dropped it, and the Repo's cached DENIED verdict never re-read after the co-sign refolded the plane; the plane now fires `onRefold` → `reverdict`. Docker: `A gets the new slot ok`.
+# ''The stale mantle header'' — the founding hearth built the handle-KEL's k-of-n witness threshold (`deb7f5967`) and left BOTH its headers reading //declared, not built (a skipped red)//; the meme hearth measured the file green at 24/24 with the guild vectors standing, and re-trued the two headers. Files crossed: `packages/lararium-mesh/src/handle-kel.ts` · `packages/lararium-mesh/tests/handle-kel.test.ts`. No behaviour moved. Law: a carrier that outlives the build it describes sends the NEXT hand to build what already stands — a brief written off that header asked for a cure the tree already held.
 # ''The stash'' — a meme-hearth spirit (Heraldry-Hand) ran `git stash` on the shared tree mid-flight, swallowing 61 files of two other hands' work; recovered by `stash show -p` + blob restore, `stash@{0}` left standing. Law: a brief names the ROAD (a throwaway worktree · `git show HEAD:<path>`), never only the wall.
 
 <<~/ahu>>
@@ -119,6 +120,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PLttDYdp1U4Bme7reThh1klA09WfGv05wbTXJR1MlCI
+<<^ code="&#x0003;">>ni:///sha-256;MKPGtxRT-x82Y4wN6I0tlAkEPIrJGeMhT6BG1l9rUZ4
 
 <<^ code="&#x0004;" -> to="?">>

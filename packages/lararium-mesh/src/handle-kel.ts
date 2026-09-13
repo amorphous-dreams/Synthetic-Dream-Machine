@@ -25,14 +25,16 @@
  * presenting-set digest — separate from the rolling recovery commitment; genesis seats one set in both
  * the prefix and the rolling slot.
  *
- * PRESENTATION (rotation · burn · attest) is authorized by ANY CURRENT MEMBER: an event names which
- * member presents (`ownerAuthMemberPrefix`) and that member's head op-key (`ownerAuthKeyDid`); verify
- * checks (a) the member stands in the CURRENT owner set and (b) the injected `OwnerHeadResolver`
- * confirms the key is that member's authoritative head. GRAFT (the membership move — succession)
- * reveals the NEW current owner set and carries authorization from the PRIOR set; for THIS build a
- * graft authorized by ONE current member suffices (DPR's real case — Roberts cedes to Westley by one
- * willing hand). TRUE k-of-n graft governance (a guild requiring a THRESHOLD to consent) rides
- * DECLARED, not built (a skipped red — `handle-kel.test.ts`).
+ * PRESENTATION names a CURRENT MEMBER as the hand that presents: an event carries which member presents
+ * (`ownerAuthMemberPrefix`) and that member's head op-key (`ownerAuthKeyDid`); verify checks (a) the member
+ * stands in the CURRENT owner set and (b) the injected `OwnerHeadResolver` confirms the key is that member's
+ * authoritative head. An ATTEST rides on that hand alone. A ROTATION, a GRAFT and an OWNER-BURN each gather
+ * a WITNESS THRESHOLD beyond it (`reachesWitnessThreshold`): the presenter plus `coSigs` must reach ≥ the
+ * CURRENT owner set's threshold in DISTINCT current members, so one turned hand seizes, succeeds or buries
+ * a shared name never. GRAFT (the membership move — succession) reveals the NEW current owner set and
+ * counts its authorizers against the PRIOR set's threshold before the set turns over; a guild of 2-of-2
+ * refuses a lone-hand succession and accepts a two-hand one (`handle-kel.test.ts` — TRUE k-of-n graft
+ * governance). 1-of-1 stays the degenerate case: Roberts cedes to Westley by one willing hand.
  *
  * The module stays persona-KEL-DECOUPLED — the mint takes an injected authorizing key and the full
  * walk takes an injected `OwnerHeadResolver`; nothing here imports the persona grammar.
