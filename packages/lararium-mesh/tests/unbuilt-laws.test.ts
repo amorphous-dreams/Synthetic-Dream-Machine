@@ -24,6 +24,8 @@
  * that fusing two "mis-sites every seat it names".
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import * as mesh from "../src/index.js";
 import { realmFeedSlotUri, realmFeedPrefix } from "../src/cabal-realm.js";
 import { cabalRealmMaintenanceProvenance, realmFeedSlotValue } from "../src/cabal-realm-clock.js";
@@ -299,8 +301,36 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
     expect(Object.keys(mesh)).toContain("adoptedNexusPubkey");
   });
 
-  test.skip("THE HERM'S GATE PUBKEY REACHES THE HEARTH THAT DIALS IT — DEFERRED: `lares herm` prints the dial URL and the gate pubkey for an operator to hand over, and nothing on the receiving side stores it. The out-of-band hand-off is designed and instructed; the leg that keeps what was handed over does not exist, so a hearth re-learns its Nexus by hand every boot or not at all", () => {
-    expect(Object.keys(mesh)).toContain("adoptedNexusPubkey");
+  /**
+   * GREENED 2026-09-13 — the first law in this register to flip, and the register never noticed.
+   *
+   * The deferral read: "nothing on the receiving side stores it… the leg that keeps what was handed over
+   * does not exist, so a hearth re-learns its Nexus by hand every boot or not at all." That leg EXISTS
+   * now — an admission packs `HEARTH_SYNC_URL_TIDDLER` + `HEARTH_GATE_KEY_TIDDLER` into the joinee's
+   * bootstrap, `readHearthDialPin` reads both back fail-closed on any tear, and `open-node-vessel` reads
+   * the pin at boot. `packages/lararium-node/tests/hearth-dial-pin.test.ts` proves the round trip.
+   *
+   * THE ASSERTION NAMED A SHAPE THAT NEVER CAME. It expected a mesh export called `adoptedNexusPubkey`;
+   * the cure arrived as a PINNED PAIR read by the node boot instead. A red law asserting a guessed symbol
+   * stays red forever after the capability lands under another name — the register measures the guess, not
+   * the law. So this asserts the LAW: the two halves of a dial travel together or neither does.
+   *
+   * The pin's own module lives in `@lararium/node` and mesh may not import it (node imports mesh, never the
+   * reverse), so the shape is read from source — the honest reach from this side of the boundary.
+   */
+  test("THE HERM'S GATE PUBKEY REACHES THE HEARTH THAT DIALS IT — the pinned pair a joinee keeps across boots", () => {
+    const pin = readFileSync(
+      join(import.meta.dirname, "..", "..", "lararium-node", "src", "hearth-dial-pin.ts"), "utf8");
+    // BOTH HALVES OR NEITHER: a url with no gate key dials a door it cannot prove, and a key with no url
+    // names no door — the packer returns `{}` unless it holds both.
+    expect(pin).toMatch(/HEARTH_SYNC_URL_TIDDLER/);
+    expect(pin).toMatch(/HEARTH_GATE_KEY_TIDDLER/);
+    expect(pin, "the packer no longer refuses a half pin").toMatch(/if \(!syncUrl \|\| !gatePubKey\) return \{\};/);
+    // And the boot READS it — a pin nothing consults leaves the hearth re-learning by hand, which is the
+    // deferral's own words.
+    const boot = readFileSync(
+      join(import.meta.dirname, "..", "..", "lararium-node", "src", "open-node-vessel.ts"), "utf8");
+    expect(boot, "the boot stopped reading the dial pin").toMatch(/readHearthDialPin\(/);
   });
 });
 
