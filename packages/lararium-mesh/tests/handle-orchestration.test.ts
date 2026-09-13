@@ -88,6 +88,45 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     return { inc, board, ownerKeyDid };
   }
 
+  /**
+   * A SELF-BURN GATHERS NO QUORUM, AND SAYS SO.
+   *
+   * Burying a SHARED name is a quorum act: an owner-burn carries co-signers toward the witness threshold.
+   * The self-burn is the opposite gesture — one seated key closing its own name in a panic, no quorum
+   * anywhere. A caller who hands co-signers to the self path has confused the two, and believes they burned
+   * with the gathered consent of the current members when they burned alone.
+   *
+   * Dropping them silently is the one outcome that lets that belief survive the call. The one-hand guard
+   * immediately above refuses "neither nor both" out loud for the same reason, so refusing here is the
+   * consistent reading rather than a new strictness.
+   */
+  test("★ the self-burn REFUSES co-signers rather than dropping them — a panic gathers no quorum ★", async () => {
+    const { inc, board } = await foundedOnBoard();
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      sign: signerOf(new Uint8Array(32).fill(33)),
+      coSigners: [{ memberPrefix: OWNER, keyDid: "0x" + "44".repeat(32), sig: "00" }] as never,
+      buildCard: (_e, chain) => card(inc.prefix, chain, 2),
+    });
+    expect(res.ok, "the self path took co-signers it cannot honour").toBe(false);
+    if (res.ok) return;
+    expect(res.reason).toMatch(/co-?signer/i);
+    // The chain never moved — a refused burn leaves the name standing, not half-burned.
+    const standing = resolveOwnHandleChain(board.doc(), inc.prefix);
+    expect(standing, "the board lost the name entirely").not.toBeNull();
+    expect(isBurned(standing!), "a refused burn still buried the name").toBe(false);
+  });
+
+  test("CONTROL — the self-burn WITHOUT co-signers still lands, and the owner-burn still takes them", async () => {
+    const { inc, board } = await foundedOnBoard();
+    const res = await burnOwnHandle({
+      board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
+      sign: signerOf(new Uint8Array(32).fill(33)),
+      buildCard: (_e, chain) => card(inc.prefix, chain, 2),
+    });
+    expect(res.ok, "the guard swallowed a plain self-burn").toBe(true);
+  });
+
   test("★ the owner buries the name through the lease — the burned chain verifies TERMINAL ★", async () => {
     const { inc, board, ownerKeyDid } = await foundedOnBoard();
     const res = await burnOwnHandle({

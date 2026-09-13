@@ -93,13 +93,20 @@ export async function burnOwnHandle(opts: {
   /** THE OWNER-BURN — a current member (a personal face's owning persona) buries the name from above. */
   ownerBurn?:      { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (bytes: Uint8Array) => Promise<string> };
   /** OWNER-BURN co-signers — DISTINCT current members BEYOND the presenter, gathered toward the current
-   *  witness threshold: burying a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none; the self-burn
-   *  refuses them (a single-hand panic). Ignored on the self path. */
+   *  witness threshold: burying a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none, and the
+   *  SELF-burn REFUSES them: a panic is one seated key closing its own name, and a caller who gathered
+   *  consent has confused the two gestures. */
   coSigners?:      readonly HandleCoSigner[];
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
   if ((opts.sign === undefined) === (opts.ownerBurn === undefined)) {
     return { ok: false, reason: "a burn strikes with EXACTLY ONE hand — pass `sign` (self) or `ownerBurn` (owner), never neither nor both" };
+  }
+  // A SELF-BURN GATHERS NO QUORUM. Dropping these silently would let a caller believe they buried a shared
+  // name with the current members' consent when one key buried it alone — the same confusion the one-hand
+  // guard above refuses out loud, so it earns the same answer rather than a quiet omission.
+  if (opts.sign !== undefined && opts.coSigners !== undefined && opts.coSigners.length > 0) {
+    return { ok: false, reason: "a SELF-burn gathers no quorum — co-signers ride the `ownerBurn` hand; drop them, or bury the name from above" };
   }
   return extendOwnHandle({
     board:           opts.board,
