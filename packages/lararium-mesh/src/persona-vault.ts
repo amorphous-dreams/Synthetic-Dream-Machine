@@ -240,11 +240,15 @@ export { generateOrLoadKeypair };
  * presented to the SAME Binding Gate every boot runs, which verifies it in full or grants no persona caps
  * at all. The switch changes WHICH edge is presented, never WHETHER it is checked.
  *
- * FAIL-CLOSED, AND SILENT WHERE SILENCE IS HONEST. Three readings answer `null`, each meaning "no switch
- * is owed" rather than "something is wrong": nothing worn, the FOUNDING face worn (the pins already name
- * it), and anchors carrying no mount material — written before the slot existed, or held by a joinee that
- * minted no edge of its own. A half-anchor never re-pins: a partial switch would mount one face's planes
- * under another face's authority, the one outcome worse than not switching at all.
+ * FAIL-CLOSED, AND SILENT ONLY WHERE SILENCE IS HONEST. `null` carries two unlike meanings and the reader
+ * keeps them apart. NO SWITCH IS OWED — nothing worn, or the FOUNDING face worn (the pins already name it)
+ * — is honest silence: the boot proceeds correctly and there is nothing to say. A SWITCH IS OWED AND
+ * REFUSED — a non-founding face is worn but its anchors carry no mount material (written before the slot
+ * existed, or held by a joinee that minted no edge of its own) — is not. A half-anchor never re-pins,
+ * because a partial switch would mount one face's planes under another face's authority, the one outcome
+ * worse than not switching at all; but the vessel then comes up wearing the FOUNDING face's pins while the
+ * operator expects the face they wore, and the cure (re-found that face) is invisible from the symptom. So
+ * the refusal reports through `report`, and only the refusal does.
  */
 export interface WornPersonaMount {
   readonly handleIndex:            number;
@@ -266,17 +270,36 @@ export interface WornPersonaMount {
  * Index 0 answers `null` by design: the founding face already owns the mount pins, so re-pinning it from
  * anchors would replace a reading with an identical one and invite the two sources to drift.
  */
-export async function readWornPersonaMount(vault: PersonaVault): Promise<WornPersonaMount | null> {
+export async function readWornPersonaMount(
+  vault: PersonaVault,
+  report?: (reason: string) => void,
+): Promise<WornPersonaMount | null> {
   const handleIndex = await vault.selector.load();
   if (handleIndex === undefined || handleIndex === 0) return null;
 
+  // Past this line a switch IS owed, so every `null` below is a REFUSAL and says so.
+  const refuse = (lacking: string): null => {
+    report?.(`worn h${handleIndex} cannot mount — its anchors lack ${lacking}; the vessel comes up on the founding face's pins. Re-found h${handleIndex} to write its full mount material.`);
+    return null;
+  };
+
   const anchors = vault.anchors.load(handleIndex);
-  if (!anchors) return null;
+  if (!anchors) return refuse("any anchors at all");
   const { signerDid, personaKelPrefix, deviceEdge, veilTag } = anchors;
   // ALL OR NONE — see the fail-closed note above. The veil tag joins the set: mounting a face whose tag is
   // absent would leave the FOUNDING face's veil standing over it, which is the fault this reading exists to
   // prevent, one pin over. Such anchors owe a re-found.
-  if (!signerDid || !personaKelPrefix || !deviceEdge || !veilTag) return null;
+  const lacking = [
+    signerDid       ? null : "signerDid",
+    personaKelPrefix? null : "personaKelPrefix",
+    deviceEdge      ? null : "deviceEdge",
+    veilTag         ? null : "veilTag",
+  ].filter((x): x is string => x !== null);
+  // The second clause repeats the first as a TYPE guard — the array reads which pins are missing for the
+  // operator, the conjunction is what narrows the four to non-optional for the return below.
+  if (lacking.length > 0 || !signerDid || !personaKelPrefix || !deviceEdge || !veilTag) {
+    return refuse(lacking.join(", "));
+  }
 
   return {
     handleIndex,

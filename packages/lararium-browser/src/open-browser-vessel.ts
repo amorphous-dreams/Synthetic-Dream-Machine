@@ -784,7 +784,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // binding whatever mask was on, while the line it logged claimed the opposite. The switched face's
       // mount material lives in its OWN anchors, and the READING is mesh's, shared with the node vessel
       // over the `PersonaVault` both implement, so the two classes cannot drift on it again.
-      const wornMount = await readWornPersonaMount(await makeBrowserIdbPersonaVault(idbName));
+      const wornMount = await readWornPersonaMount(
+        await makeBrowserIdbPersonaVault(idbName),
+        (why) => console.warn(`[lararium-browser] ${why}`),
+      );
       if (wornMount) {
         console.log(`[lararium-browser] worn h${wornMount.handleIndex} — the binding re-pins from its OWN anchors`);
       }

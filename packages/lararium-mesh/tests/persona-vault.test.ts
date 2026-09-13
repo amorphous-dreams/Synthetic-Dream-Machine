@@ -222,3 +222,58 @@ describe("the wear-reboot mount-switch carries the veil", () => {
     expect(await readWornPersonaMount(await vaultWearing(0, FULL))).toBeNull();
   });
 });
+
+/**
+ * A REFUSED SWITCH SAYS SO.
+ *
+ * `null` carries two unlike meanings. "No switch is owed" — nothing worn, or the FOUNDING face worn — is
+ * honest silence: the boot proceeds correctly and there is nothing to say. "A switch IS owed and I refuse
+ * it" is not: the operator wore a face, the vessel comes up under the founding face's pins instead, and
+ * every plane they expected is somewhere else. That reading is the one a boot must voice, because the cure
+ * (re-found the face so its anchors carry the full mount) is invisible from the symptom.
+ *
+ * The reporter fires ONLY on the refusal, so a normal boot stays quiet.
+ */
+describe("a worn face refused for want of its mount material", () => {
+  const FULL_M = {
+    personaGroupDocIdHex:   "aa".repeat(32),
+    meshCabalDocIdHex:      "bb".repeat(32),
+    personaGroupAgentIdHex: "cc".repeat(32),
+    signerDid:              "did:key:zWorn",
+    personaKelPrefix:       "EWornPrefix",
+    deviceEdge:             { title: "edge" } as unknown as IdentityAnchors["deviceEdge"],
+    veilTag:                "worn-face-veil-tag",
+  } satisfies IdentityAnchors;
+
+  const readWearing = async (index: number, anchors: IdentityAnchors | null) => {
+    const v = makeInMemoryVault();
+    await v.selector.save(index);
+    if (anchors) v.anchors.save(index, anchors);
+    const said: string[] = [];
+    const mount = await readWornPersonaMount(v, (r) => said.push(r));
+    return { mount, said };
+  };
+
+  test("★ a half-anchored worn face refuses OUT LOUD, naming the face and what it lacks ★", async () => {
+    const { veilTag: _v, ...noTag } = FULL_M;
+    const { mount, said } = await readWearing(2, noTag);
+    expect(mount).toBeNull();
+    expect(said.length, "the refusal passed in silence").toBe(1);
+    expect(said[0]).toMatch(/h2/);                 // which face
+    expect(said[0]).toMatch(/veilTag/);            // what it lacks
+  });
+
+  test("a worn face with NO anchors at all refuses out loud too — same owed switch, same silence before", async () => {
+    const { mount, said } = await readWearing(3, null);
+    expect(mount).toBeNull();
+    expect(said.length).toBe(1);
+    expect(said[0]).toMatch(/h3/);
+  });
+
+  test("CONTROL — a switch that is not OWED stays silent: the founding face, and a complete mount", async () => {
+    expect((await readWearing(0, FULL_M)).said).toEqual([]);
+    const worn = await readWearing(1, FULL_M);
+    expect(worn.mount).not.toBeNull();
+    expect(worn.said, "a clean switch narrated a refusal").toEqual([]);
+  });
+});
