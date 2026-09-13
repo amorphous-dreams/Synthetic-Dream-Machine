@@ -131,7 +131,7 @@ The chain answers at two assurance depths, and they cross different ground:
 
 * ''Tier-1 — self-contained'' (`verifyHandleKel`): sequence, hash-link, prefix, owner-binding, membership,
 burn-terminality, and cid all recompute from the chain's OWN bytes. No injection, no board, no network — a
-recogniser holding the chain settles structure alone. `verifyAttestation` and `verifyHandleCard` ride here.
+recogniser holding the chain settles structure alone. `verifyHandleCard` rides here, reached live from `handle-book`. ''`verifyAttestation` stands READY and unreached'' — it belongs to this tier by shape and no production caller holds it yet, so a reader auditing an attestation finds a check that runs nowhere. Named rather than implied, because the two sat in one sentence and the live half vouched for the unwired one.
 * ''Tier-2 — board-checked presentation authority'' (`verifyHandleKelFull`): every rotation and graft
 `authSig` must verify AND its signer must stand as the named member's authoritative head, per the injected
 `OwnerHeadResolver` — a presentation signed by a SUPERSEDED member key refuses HERE. That resolver typically
@@ -170,6 +170,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;qGClFKe0X5f_RIbZkHV0-_pM6XRmCESPwUYmMfKf_fE
+<<^ code="&#x0003;">>ni:///sha-256;YE-WjbMMMlFN1N2Lo5Ta9pKqyBxMLvdnLV8lMFi7hGg
 
 <<^ code="&#x0004;" -> to="?">>
