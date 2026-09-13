@@ -1,0 +1,113 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy">>
+```toml meta
+cacheable  = false
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/identity-slot-policy.mem"
+l-space    = "stable"
+mana       = 14
+manao      = 16
+manaoio    = 13
+revised-on = "2026-09-12"
+role       = "what OpenIdentitySlot's sharePolicy could key on now that the realm leg stands — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
+status-why = "measured 2026-09-12; the design reaches a fork only the operator closes — which plane owns an identity-slot doc's verdict — and the reader that a persona-plane answer would need does not exist in code"
+tags       = ["docs/pono/design", "lifecycle/standing"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/identity-slot-policy"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/the-measurement-first>>
+
+! The measurement, before the design
+
+The standing reading calls `OpenIdentitySlot.verifyCapability`'s `return true; // alpha: open` (`packages/lararium-mesh/src/identity-slot.ts:134-136`) the most-urgent crypto hole. ''Measured, it reaches no live path at all.''
+
+* The ONE call site of any slot's `verifyCapability` in source stands at `packages/lararium-mesh/src/federation-gate.ts:192`, inside `identityShareDecision`.
+* That line runs only past `:186` — `if (!identity) return true;`.
+* The BROWSER passes `identityRing` as a `const … = null` (`open-browser-vessel.ts:392`), flagged in its own comment as an honest gap, into `browserShareConfig` (`:1229-1231`).
+* The NODE hands its whole verdict to `selfSlotShareDecision`, which passes `null` for the identity ring at BOTH exits (`self-slot-share.ts:91-100` · `:103`) — and says why in its own header: the split rides the OUTER deterministic gate, never the inner verify-for-self ring, ''sidestepping the allow-all self-grant trap''.
+* `OpenIdentitySlot` is constructed in exactly one place, `lar-vessel.ts:98`, and nothing reads `vessel.identity` to build an `IdentityRing`.
+
+''So the socket stands unwired, and the stub's allow-all is dead code on every live path.'' That matters for how the cure is ranked: nothing leaks today through this line, and lighting the ring NAIVELY would introduce the regression `federation-gate.ts:238-241` already warns of — the self-slot answers //may I sync my own doc// with the presenter equal to self, which reads as an allow-all the moment it is consulted.
+
+<<~/ahu>>
+
+<<~ ahu #/what-decides-today>>
+
+!! What decides a verdict today, in order
+
+The slot is absent from this stack entirely.
+
+# ''the deterministic set'' (`federation-gate.ts:78-96`) — a pure function of the Nexus gate pubkey: crossroads · WHO · Kapae-antigen · carriage · persona-KEL boards, plus caller-supplied extras. Set membership, nothing else.
+# ''the peer ring'' (`:108-118`) — an in-process island peer syncs whole; a same-operator relay peer syncs whole; a doc-less ask denies.
+# ''the antigen ring'' (`:205-224`) — the quorum-signed Kapae denylist against the presenter's resolved nym. Additive deny only.
+# ''the members board'' (`nexus-carriage.ts:219-225`) — the folded carriage contracts, keyed on the PROVEN contract nym ahead of the raw wire key. Fail-closed: unknown reads STRANGER.
+# ''the plane seal'' (`:295-298`) — provable ciphertext, fail-closed.
+# ''the realm leg'' (`realm-bag.ts:490-512`) — the charter's own hearth · the registration's `keptBy` stewards · `holdsCharter(nym, charterId)` at CONTRACT · a faceless carrier PLACE at `readTier === "public"` alone · else the members board.
+# ''the posture'' (`:405-424`) — `private` by default; `open` admits cross-operator.
+
+''And the tier ladder that would carry an answer is itself unlit.'' `capTierShareDecision` (`:485-506`) has no live caller — grep finds it in `cap-tier.test.ts` alone — and `declaredTierForDoc` returns null for every doc because no bag carries a `capTier` datum. `structuralFloorFor` (`cap-tier.ts:187-193`) therefore governs, floored at VEIL.
+
+<<~/ahu>>
+
+<<~ ahu #/what-the-slot-could-key-on>>
+
+!! What the slot could key on, now that the realm leg stands
+
+Three readings are available to a share verdict, and NONE of them is a roster (`lar:///ha.ka.ba/lares/api/pono/registry-filter` — a compiled-about registry at any scope rejects the fork).
+
+# ''THE CAP TIER, resolved.'' `resolveTierForDoc(declared, floor) = meet(declared, floor)` (`cap-tier.ts:246-250`) — declared may only TIGHTEN, and `mayDeclassify` (`:135-138`) makes loosening a one-way ratchet requiring operator-root. `tierPermitsRelayPeer` (`:267-273`) then answers: `public` → any relay peer · `contract` and `personagroup` → `holdsCarriagePeer` only · `veil` → false. ''This reading stands built and needs only lighting'' — a declared datum on the bag and a live caller.
+# ''THE REALM REGISTRATION.'' A doc the realm names carries its own declared tier and its own `keptBy`; `RealmBagGate.mayFederate` already reads both. An identity-slot-shaped doc could register at CONTRACT and inherit the whole leg — steward-write, charter-read, carrier-never.
+# ''THE PERSONA PLANE'S OWN MEMBERSHIP.'' The reading the task asks for — //a member of that persona's plane is admitted, a stranger refused//. ''It does not exist in code.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-fork-that-wants-a-ruling>>
+
+!! ★ The fork — which plane owns the verdict ★
+
+''The persona-plane reading has no reader, and the shape of the missing reader is itself the ruling.''
+
+Measured: no function in `packages/lararium-mesh/src` answers //does this peer stand in this persona's plane//. `persona-planes.ts` and `persona-scope.ts` are name-derivation and LOCAL family logic — zero occurrences of `peerId` in any `persona-*.ts` file. `personaGroupMembers` and `membersOf` do not exist. A persona plane is protected today by sitting OUTSIDE the deterministic federatable set and by the same-operator peer class, never by a reader that knows which persona a peer belongs to.
+
+''And the wire cannot tell the two apart.'' `cap-tier.ts:271` says it in its own comment: the shore ''cannot split fleet from cabal'', so `contract` and `personagroup` collapse to the same `holdsCarriagePeer` answer. A persona-plane verdict would need a distinction the transport does not carry.
+
+So the fork stands, and it is a ruling and not a patch — the three answers differ in WHO the authority is:
+
+* ''(A) THE VEIL OWNS IT.'' An identity-slot doc floors at VEIL and never leaves the vessel; the fleet reaches it by the same-operator class alone, which is a DEVICE answer and not a persona one. Cheapest, and it forecloses a genuinely shared account.
+* ''(B) THE PERSONAGROUP OWNS IT.'' The slot keys on the persona plane's own membership — which needs the reader above, and needs the wire to carry a persona distinction it does not carry. Truest to `lar:///ha.ka.ba/lares/docs/pono/face-planes` (relations travel with the FACE), and the most build.
+* ''(C) THE REALM OWNS IT.'' The doc registers on the realm at CONTRACT and the realm leg answers; the persona never enters the verdict. Reuses everything that stands, and it puts a CABAL between a person and their own identity material — which `lar:///ha.ka.ba/lararium/mesh/reach-plane#/the-truncated-chain` already rules out for credentials by TYPE, and an identity slot sits adjacent to that refusal.
+
+''The reach plane's own ceiling is the nearest standing law and it points at (A)-or-(B), never (C):'' a reach credential fleet-syncs and delivers to a contracted set, ''and it crosses no Nexus boundary in either case''; PUBLIC is refused by type, and the truncation falls out of a FLOOR (`isContractSecretsPlane` read FIRST, ahead of the public reading, `cap-tier.ts:189`) rather than a ceiling, so protection by omission never enters. Whether an identity SLOT reads as that same kind of thing is the operator's call, and it decides the fork.
+
+<<~/ahu>>
+
+<<~ ahu #/what-a-red-would-need>>
+
+!! What the smallest red would need, and why none is written here
+
+The asked-for red — //a stranger asking an identity-slot doc is refused; a member of that persona's plane is admitted; the founder's own reads unchanged// — cannot stand honestly today:
+
+* the ''stranger'' half already passes, for a reason that has nothing to do with the slot: an identity-slot doc sits outside the deterministic federatable set and a WS peer absent from `peerIdentifierMap` draws `false` at `open-node-vessel.ts:497`. A red that goes green on that answer measures the fed gate and names the slot — the exact instrument-lie shape.
+* the ''member of that persona's plane'' half has no function to call. Writing one binds the fork above, which is the ruling.
+* the ''founder's own reads'' CONTROL is the one half that stands and is worth keeping whichever way the fork closes: the same-operator class answer must not move.
+
+''Once the fork closes, the red that pins it is ONE vector per arm'': under (A), a fleet device reads and a contracted cabal member does not; under (B), a member of the persona's plane reads and a fleet device of a DIFFERENT persona does not — which is the vector that proves the wire carries the distinction at all, and which cannot pass today; under (C), a charter holder reads and a carrier place does not. Each arm's CONTROL is the other two arms' admit drawing a refusal.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;PiR54qAkw5_Cs2bHYnZOusu7SG6X-6jpBZQPq7fHsqA
+
+<<^ code="&#x0004;" -> to="?">>
