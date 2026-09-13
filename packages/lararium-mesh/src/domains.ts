@@ -149,6 +149,10 @@ export const PLUGIN_ATTESTATION_DOMAIN = d("plugin-attestation");
 export const MU_VOID_DOMAIN = d("mu-void");
 /** A vessel's raise challenge — verifier-chosen freshness at the waking floor. */
 export const RAISE_CHALLENGE_DOMAIN = d("raise-challenge");
+/** The record a canon PROMOTION leaves behind — what crossed, by whom, from where, at which bytes. Its own
+ *  name because it asserts CONTENT PROVENANCE and never authority: a cap delegation says who may write
+ *  canon, and this says what was written (`docs/pono/canon-boundary#/the-promotion-boundary`). */
+export const PROMOTION_RECEIPT_DOMAIN = d("promotion-receipt");
 
 /**
  * Every domain this house mints. The witness folds THIS — so a domain added above and forgotten here
@@ -165,4 +169,5 @@ export const ALL_DOMAINS: readonly string[] = [
   KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO,
   PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO, PERSONA_SELF_RECOVERY_INFO,
   ORACLE_POINTER_DOMAIN, PLUGIN_ATTESTATION_DOMAIN, MU_VOID_DOMAIN, RAISE_CHALLENGE_DOMAIN,
+  PROMOTION_RECEIPT_DOMAIN,
 ];

@@ -137,6 +137,7 @@ export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
+export * from "./promotion-receipt.js";
 export { carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 // The TRACELESS boot-invite — a sealed single-use capability spent-on-boot; no voucher, no board record.
 export * from "./boot-invite.js";
