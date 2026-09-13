@@ -263,6 +263,43 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks",
   },
 
+  handle: {
+    usage:
+      "usage: lares handle <publish \"<glamour>\" | rotate | graft | burn [--from-persona] | attest \"<claim>\" | " +
+      "verify-attestation <statement | @file | -> [--card <file>]> [--persona <index>]",
+    synopsis:
+      "The Handle's verb family — a persona's public \"here I am\" note and its lifecycle on the handle-KEL. " +
+      "`publish` mints a self-certifying card and announces it onto the Nexus WHO board; `rotate` seats a fresh " +
+      "presentation key under the same name (the OWNING PERSONA authorizes, so a lost key recovers through the " +
+      "persona); `burn` ends the name terminally (the seated key, or the persona from above with " +
+      "--from-persona); `attest` signs a claim under the current head. `graft` (owner-set succession) declares " +
+      "its shape and awaits its vessel-side pass. " +
+      "TWO HALVES OF AN ATTESTATION, NEVER ONE: `verify-attestation` runs the CHAIN-VERIFY half reader-locally " +
+      "— the chain verifies, stands unburned, matches the statement's prefix and seats the head that signed it " +
+      "— touching NO network and NO board. A pass proves THE HANDLE SAID IT, never that the claim is TRUE. The " +
+      "SURFACE-VERIFY half (asking DNS whether the Handle really controls example.net) is a separate act this " +
+      "door does not perform and does not imply.",
+    examples: [
+      "lares handle publish 'Guru-Josh'                      # announce a face onto the WHO board",
+      "lares handle rotate --persona 1                       # seat a fresh presentation key, same name",
+      "lares handle attest 'controls example.net'            # mint a signed claim under the head",
+      "lares handle verify-attestation @stmt.json --card ./card.json   # CHAIN-verify a claim someone handed you",
+      "lares handle verify-attestation - < stmt.json         # ... reading the statement from stdin",
+      "lares handle burn --from-persona                      # the persona buries the face from above",
+    ],
+    flags: [
+      "--persona <index>  which persona acts (default: the worn persona, then 0)",
+      "--from-persona     (burn) the owning persona buries the face from above, not the seated key",
+      "--card <file>      (verify-attestation) the carried HandleCard whose chain to verify against; " +
+        "without it the reader's own handle-book supplies the chain, and an unmet Handle refuses not-found",
+    ],
+    next: [
+      "lares circle card @card.json   # admit a carried card so verify-attestation finds its chain locally",
+      "# the SURFACE half stays yours: check the claimed domain/service yourself — a chain-verify never did",
+    ],
+    meme: "lar:///ha.ka.ba/lararium/mesh/handle-card",
+  },
+
   persona: {
     usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat] | wear <index> | list | sync | admit>",
     synopsis:

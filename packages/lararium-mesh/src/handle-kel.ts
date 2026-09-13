@@ -771,6 +771,14 @@ export async function attestUnderHead(
  * structurally, stands unburned, matches the statement's prefix, its HEAD is the very event the
  * statement bound, and the signature verifies against that head's Handle key. A rotation, graft, or burn
  * since the attestation REFUSES (stale — the fresh head re-attests); no board is consulted.
+ *
+ * ★ CHAIN-VERIFY ⊥ SURFACE-VERIFY — the split a reader must never collapse. ★ This function answers ONE
+ * question: DID THE HANDLE SAY IT? An `ok` verdict proves the seated head key signed this exact claim under
+ * this exact chain state. It proves NOTHING about the world the claim describes: a card may honestly attest
+ * "controls example.net" and lie about the empire's registry. Testing the CLAIM against its surface (DNS for
+ * a domain, an account for a profile) is the OTHER half — a network act, out of this module entirely, and
+ * whichever door runs this one owes the reader that distinction in its own words
+ * (`lares handle verify-attestation`, lar:///ha.ka.ba/lararium/mesh/handle-card).
  */
 export async function verifyAttestation(
   chain: readonly HandleKelEvent[],

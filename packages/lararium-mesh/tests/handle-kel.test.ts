@@ -377,6 +377,21 @@ describe("handle-kel — attestation, reader-local, no board", () => {
     expect((await verifyAttestation([inception, rot.event], stmt2)).ok).toBe(true);
   });
 
+  test("★ A BURN BURIES THE PAST CLAIMS — an attestation that held before the burn refuses after it ★", async () => {
+    const { inception } = await foundedHandle();
+    const stmt = await attestUnderHead([inception], "this Handle controls example.net", signerOf(SEEDS.hA));
+    // CONTROL — against the LIVE chain the very same statement holds, so the refusal below reads off the
+    // burn alone and not off a malformed statement.
+    expect((await verifyAttestation([inception], stmt)).ok).toBe(true);
+
+    const burn = await mintHandleBurn({ head: inception, sign: signerOf(SEEDS.hA) });
+    expect(burn.ok).toBe(true);
+    if (!burn.ok) return;
+    const verdict = await verifyAttestation([inception, burn.event], stmt);
+    expect(verdict.ok, "a buried name claims nothing — even a claim it signed while alive").toBe(false);
+    expect(verdict.reason).toMatch(/burn/i);
+  });
+
   test("★ the registry-filter fence — no export accepts a collection of others' handles ★", () => {
     const src = readFileSync(fileURLToPath(new URL("../src/handle-kel.ts", import.meta.url)), "utf8");
     const exportNames = [...src.matchAll(/export (?:async )?(?:function|const|type|interface) (\w+)/g)].map((m) => m[1]!);
