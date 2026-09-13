@@ -8,7 +8,6 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 namespace = "&#x2299;"
-retain    = true
 role      = "English alias pointer — \\if redirects to wai; canonical spec lives at pono/wai"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if"]
 type      = "text/memetic-wikitext+tiddlywiki"

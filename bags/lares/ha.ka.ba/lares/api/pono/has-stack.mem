@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 14
 manao     = 15
 manaoio   = 13
-retain    = true
 role      = "the has-stack law (kānāwai): nameless entity + composable component stack; single-entity components; relative-name qualification; rating-as-predicate; kapu as grant — ratified 2026-06-12"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/has-stack"

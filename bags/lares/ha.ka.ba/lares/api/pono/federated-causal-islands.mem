@@ -9,7 +9,6 @@ mana      = 17
 manao     = 16
 manaoio   = 16
 namespace = "&#x2299;"
-retain    = true
 role      = "invariant law: Fontany-Fuller-Zelenka non-simultaneous apprehension as ontological basis; causal island tiers 0–3; authority-first sync order; edge-island identity, lifecycle, relay semantics"
 tags      = ["api/pono/pranala"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -4,7 +4,6 @@
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/tiddlywiki-filter.mem"
-retain    = false
 role      = "docs companion for x-tiddlywiki-filter: examples, guidance, reminders, and deferred scope notes"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

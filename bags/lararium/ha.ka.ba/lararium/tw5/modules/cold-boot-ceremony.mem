@@ -10,7 +10,6 @@ mana          = 18
 manao         = 17
 manaoio       = 16
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/cold-boot-ceremony"
-retain        = true
 role          = "heleuma ka: void-start device identity tiddler builder — titles in the @identities/@circles NAMESPACES, written into the founding face's own tag-derived planes"
 source-symbol = "*"
 status-date   = "2026-05-04"

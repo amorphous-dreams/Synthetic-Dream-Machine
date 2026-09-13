@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/persona-kel.mem"
 l-space     = "lararium"
 mana        = 15
-retain      = true
 role        = "invariant law: the persona-KEL — a stable identifier PREFIX the operational key rotates BENEATH, so continuity rides the LOG, never the key. Names the armed inception + rolling recovery commitment, Fork-B threshold-attest (nothing reconstructs), the provisional/veto contest folded structurally, the board as an additive per-Nexus CRDT, the frozen-for-alpha status, and duplicity-detection as the dual of a registry."
 source-file = "packages/lararium-mesh/src/persona-kel.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

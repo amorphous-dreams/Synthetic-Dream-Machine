@@ -9,7 +9,6 @@ last-reviewed  = "2026-05-27"
 mana           = 14
 manao          = 14
 manaoio        = 14
-retain         = false
 review-cadence = "quarterly"
 review-note    = "anchor commitments (Beer's principle, user-rights-criterion, Lares five-laws-plus-two) survive any upstream rev; survey-aging risk acknowledged"
 role           = "doctrine: protocols as political design — frames the Lares stack's architecture-vs-governance-vs-topology position relative to commons literature; three-source synthesis"

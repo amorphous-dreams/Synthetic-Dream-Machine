@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/item.mem"
 mana      = 16
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "mount-point: Item — Power stored in an object; container sub-rule for albums/codices"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

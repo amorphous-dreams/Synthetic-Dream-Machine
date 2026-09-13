@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/floating-disc.mem"
 mana      = 15
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "Power module: Floating Disc — a stuckforce disc that hauls cargo and tilts into a barrier"
 tags      = ["components/domain/stuckforce", "components/function/cargo", "components/function/barrier", "components/hook/sustained", "mount-points/trait"]
 l-space   = "sdm"

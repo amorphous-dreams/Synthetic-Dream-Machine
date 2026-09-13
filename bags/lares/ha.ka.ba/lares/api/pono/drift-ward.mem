@@ -9,7 +9,6 @@ mana      = 17
 manao     = 17
 manaoio   = 17
 namespace = "&#x2299;"
-retain    = true
 role      = "the drift gauge inside the turn panel — measures a turn's exposure to data outside its causal island; fires forward at open (the pull) and outward at close (the contact-ready clue)"
 tags      = ["api/pono/causal-islands", "api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/capability.mem"
 l-space     = "lararium"
 mana        = 13
-retain      = true
 role        = "invariant law: the capability protocol — a provider-neutral authority shore. Mesh owns the SHAPE, adapters prove it. Names the binary gate, the opaque presenter, the refusal that explains itself, and what this interface deliberately does NOT decide."
 source-file = "packages/lararium-mesh/src/capability.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

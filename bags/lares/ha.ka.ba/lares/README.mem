@@ -7,7 +7,6 @@ file-path = "bags/lares/ha.ka.ba/lares/README.mem"
 l-space   = "adjacent"
 mana      = 17
 manao     = 16
-retain    = true
 role      = "identity frame and infrastructure map for the Lares node"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/README"

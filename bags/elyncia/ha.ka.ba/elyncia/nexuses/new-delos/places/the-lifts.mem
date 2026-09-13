@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 12
 rating    = "ano"
-retain    = true
 role      = "routes — the mana-lift network: the Nexus's vertical pointcrawl legs; keeper unruled"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-lifts"

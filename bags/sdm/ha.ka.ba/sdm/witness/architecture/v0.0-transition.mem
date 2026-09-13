@@ -8,7 +8,6 @@ l-space   = "sdm"
 mana      = 12
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "architecture witness: what the v0.0 prototype contained and why it retired into the v0.1 composition model"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/witness/architecture/v0.0-transition"

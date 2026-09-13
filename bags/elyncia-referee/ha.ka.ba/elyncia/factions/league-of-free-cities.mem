@@ -9,7 +9,6 @@ mana      = 14
 manao     = 14
 manaoio   = 13
 rating    = "kapu"
-retain    = true
 role      = "faction meme, referee view — the League of Free Cities: the Confederation the Lindwyrm declared over the new DreamNet; structure, members, tensions, and the summit's politics"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/league-of-free-cities"

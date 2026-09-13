@@ -5,7 +5,6 @@
 cacheable = false
 file-path = "bags/crossroads/ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.mem"
 l-space   = "stable"
-retain    = false
 role      = "session discovery — the Syadasti Reading Rule: Register measures confidence within the active stance's evaluation frame, not universal truth-weight; the full derivation chain"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE"

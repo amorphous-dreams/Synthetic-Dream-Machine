@@ -8,7 +8,6 @@ l-space   = "lararium"
 mana      = 18
 manao     = 18
 manaoio   = 17
-retain    = true
 role      = "Next-thread sprint handoff for lararium-browser detached worker-authority pool alpha reboot"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint"

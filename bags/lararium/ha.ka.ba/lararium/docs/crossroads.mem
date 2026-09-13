@@ -8,7 +8,6 @@ l-space   = "lararium"
 mana      = 5
 manao     = 5
 manaoio   = 4
-retain    = true
 role      = "attractor: @crossroads — the public/infrastructure oracle plane (ring-1); third leg of the three-plane oracle model; UNBUILT, this meme holds the bearing"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/crossroads"

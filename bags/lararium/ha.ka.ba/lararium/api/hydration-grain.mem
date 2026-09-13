@@ -11,11 +11,9 @@ mana       = 13
 manao      = 13
 manaoio    = 11
 namespace  = "&#x0950; &#x0901;"
-retain     = true
 role       = "the ONE pattern integrity — carry the name, defer the body — read across three grains (tiddler · body · bag); names the RUNG the bag grain lacks and gates it behind research"
-status     = "designed"
 status-why = "the grain ruled; no source carries it yet"
-tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci", "lifecycle/designed"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/hydration-grain"
 ```

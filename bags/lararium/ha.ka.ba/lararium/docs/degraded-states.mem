@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 18
 manao     = 17
 manaoio   = 17
-retain    = false
 role      = "canonical vocabulary for named degraded-node states: failure modes, operator correction handles, and recovery patterns"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

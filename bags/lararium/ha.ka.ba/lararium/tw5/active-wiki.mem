@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/active-wiki.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe active-wiki.ts"
 source-file = "packages/lararium-tw5/src/active-wiki.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

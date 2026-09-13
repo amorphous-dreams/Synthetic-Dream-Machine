@@ -9,7 +9,6 @@ mana            = 15
 manao           = 15
 manaoio         = 14
 render-target   = "chat-log:post-header"
-retain          = true
 role            = "format and cast architecture locus for Lindwyrm DreamDeck feed narrative"
 source-consumed = ["packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md", "packages/lares-core/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md"]
 type            = "text/memetic-wikitext+tiddlywiki"

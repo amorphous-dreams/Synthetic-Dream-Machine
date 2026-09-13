@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/automerge-doc-store.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe automerge-doc-store.ts"
 source-file = "packages/lararium-mesh/src/automerge-doc-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

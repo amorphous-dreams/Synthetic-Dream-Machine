@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/fake-dom.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe fake-dom.ts"
 source-file = "packages/lararium-tw5/src/fake-dom.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

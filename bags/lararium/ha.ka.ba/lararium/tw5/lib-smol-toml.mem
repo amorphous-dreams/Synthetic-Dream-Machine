@@ -7,7 +7,6 @@ file-path = "bags/lararium/ha.ka.ba/lararium/tw5/lib-smol-toml.mem"
 mana      = 17
 manao     = 16
 manaoio   = 16
-retain    = true
 role      = "TW5 library tiddler: smol-toml TOML parser, spec-compliant, ~26 kB, sync, no WASM"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/lib-smol-toml"

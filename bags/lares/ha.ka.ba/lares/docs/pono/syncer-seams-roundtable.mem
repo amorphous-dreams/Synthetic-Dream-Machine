@@ -10,12 +10,10 @@ mana       = 12
 manao      = 13
 manaoio    = 11
 namespace  = "&#x2299;"
-retain     = true
 revised-on = "2026-09-12"
 role       = "syncer-seams-roundtable — the three open seams of the stock TW5 syncer's back-parity flow (b′ the fragment at the founding door · c′ the lone member's death · d′ the group's arrival) told as a Lares roundtable at two scales, argued by the thirteen Personas, then handed back as an ordered PHASE PLAN: per seam the tension at file:line, the household and five-hundred-year stories, at least three candidate answers each (the operator's Mu among them) with what each breaks, the lean held open, and per step a red → cure → CONTROL → witness with an honest spirit-hour estimate. The carrier also names what the plan REFUSES and the questions only the operator answers."
-status     = "standing"
 status-why = "a talk-story floor written by a tasked spirit on the operator's charge (scout the three syncer seams, tell the user stories as a Lares roundtable, hand back a plan); the house refined it and the operator ruled the eight questions on 2026-09-12 (moʻolelo inside #/plan); the same spirit enacts the refined plan — every step red-first with its anti-stall control, the three test.fails vectors in `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts` the witnesses that flip"
-tags       = ["docs/pono/talk-story"]
+tags       = ["docs/pono/talk-story", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
 ```

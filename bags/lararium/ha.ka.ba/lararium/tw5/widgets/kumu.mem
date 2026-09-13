@@ -8,7 +8,6 @@ file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kumu.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/kumu"
-retain        = true
 role          = "anchor: KumuWidget — heleuma ka"
 source-symbol = "KumuWidget"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/kumu", "tw5/modules/tw5-widgets"]

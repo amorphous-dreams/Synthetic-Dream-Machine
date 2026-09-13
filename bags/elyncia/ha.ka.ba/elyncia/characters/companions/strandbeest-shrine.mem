@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 13
 rating    = "ano"
-retain    = true
 role      = "companion sheet — the Faerie-Ring Strandbeest Shrine: walking hokora, mycelium sails, Mother Spore ring"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"

@@ -8,7 +8,6 @@ l-space      = "stable"
 mana         = 15
 manao        = 14
 manaoio      = 14
-retain       = false
 role         = "witness carrier for Mischief-Muse Coffee Oracle seed extraction"
 source-lines = "1-57"
 source-path  = "packages/lares-core/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md"

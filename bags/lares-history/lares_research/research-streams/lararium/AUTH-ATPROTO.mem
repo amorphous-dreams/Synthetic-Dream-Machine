@@ -9,7 +9,6 @@ l-space   = "adjacent"
 mana      = 18
 manao     = 18
 manaoio   = 17
-retain    = true
 role      = "ATProto / Bluesky login architecture doctrine — BFF, identity layers, DPoP boundary"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "lares_research/research-streams/lararium/AUTH-ATPROTO"

@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 15
-retain    = false
 role      = "parent docs shelf for Lindwyrm, Elyncia, origin-story, and other narrative scaffolds that inform but do not govern the live stack"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

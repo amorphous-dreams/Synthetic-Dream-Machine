@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
 l-space     = "lararium"
 mana        = 8
-retain      = true
 role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the coalesce servo's set-point semantics. Surface law, granularity and routing live at api/disk-projection."
 source-file = "packages/lararium-node/src/disk-projector.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

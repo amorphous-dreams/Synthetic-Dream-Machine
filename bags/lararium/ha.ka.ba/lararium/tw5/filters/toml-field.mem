@@ -8,7 +8,6 @@ file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/filters/toml-field.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/toml-field"
-retain        = true
 role          = "anchor: registerTomlFieldOperator — heleuma ka"
 source-symbol = "registerTomlFieldOperator"
 tags          = ["tw5/modules/tw5-widgets"]

@@ -18,7 +18,6 @@ manaoio           = 9
 name              = "Map-Wisp"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
-retain            = false
 role              = "named Voice mask — Map-Wisp (Scryer); structural forward-looking character"
 seniority         = "earned name; no special seniority"
 stage             = 10

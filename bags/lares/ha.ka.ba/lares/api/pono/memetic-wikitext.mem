@@ -9,12 +9,11 @@ mana          = 19
 manao         = 19
 manaoio       = 17
 namespace     = "&#x2299;"
-retain        = true
 revised-on    = "2026-08-24"
 revision-note = "the split: the transmission-frame half stands in its own sibling specification (api/pono/memetic-wikitext-framing) — this document keeps the language, composes as the document production the frame wraps, and cites [FRAMING] where the frame law lives"
 role          = "submittable specification for text/memetic-wikitext — abstract, conformance (RFC-2119), lexical structure, ABNF surface grammar, dual-layer processing model, pranala type system, media-type registration, security. Ontology referenced, not duplicated. Sibling submissions: the lar: URI spec and the carrier framing spec."
-status        = "standing"
 status-why    = "submission-draft"
+tags          = ["lifecycle/standing"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext"
 ```

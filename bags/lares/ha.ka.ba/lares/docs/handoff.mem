@@ -9,7 +9,6 @@ l-space   = "stable"
 mana      = 14
 manao     = 14
 manaoio   = 13
-retain    = true
 role      = "live handoff — the next vector and the ground it stands on; updated at each phase boundary, never archived in place; history lives in git, research in pattern-integrities, law in api/ memes"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/handoff"

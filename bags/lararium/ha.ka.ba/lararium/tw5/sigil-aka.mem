@@ -7,7 +7,6 @@ file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-aka.mem"
 mana      = 16
 manao     = 16
 manaoio   = 15
-retain    = true
 role      = "design record: ~aka sigil — shadow transclusion, template mechanism, preview image plan"
 tags      = ["node/disk-projector"]
 type      = "text/memetic-wikitext+tiddlywiki"

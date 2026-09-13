@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-event-bus.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe lar-event-bus.ts"
 source-file = "packages/lararium-mesh/src/lar-event-bus.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

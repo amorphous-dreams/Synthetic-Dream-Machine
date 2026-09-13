@@ -11,12 +11,10 @@ manao             = 14
 manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-12"
 role              = "otakiage — a LIFECYCLE for the house's carriers, designed. Names the five standings a carrier holds (fleeting · designed · standing · folded · gone) and the KIND axis the single `status` key currently fuses into them; the six transitions as rites, each with a who, a witness and a record; the fire — what burns, what never burns, who calls it, how the house schedules it off its own rolls rather than a calendar, and the gratitude line the commit log already writes; the siblings (kapu · tombstone · the lares-history shelf) that take a carrier OUT of the fire's reach; the pattern-integrity rhymes with the Shinto return-rite, the Zettelkasten/evergreen ladders and the archive/tombstone disciplines, and where each rhyme breaks. Every house claim carries a file:line or a measurement dated 2026-09-12; every field claim carries a URL, the date the page shows, and the page's own words."
-status            = "designed"
 status-why        = "a design awaiting the operator's ruling — nothing built, no code, test or existing carrier changed, no carrier burned. The stage names, the split of the `status` key, the fire's caller and its schedule all stand as PROPOSALS under #/questions; the carrier moves to `api/pono/otakiage` when the operator rules, and until then the house's retirement discipline lives where it already lives (`api/pono/meme#/retirement` and the four-step rite in the session record)"
-tags              = ["api/pono/meme"]
+tags              = ["api/pono/meme", "lifecycle/designed"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 ```

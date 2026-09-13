@@ -9,7 +9,6 @@ mana      = 16
 manao     = 16
 manaoio   = 16
 namespace = "&#x2299;"
-retain    = true
 role      = "invariant law: Orichalcum capability profile — UCAN-compatible at wire boundary, Lararium-native semantic caveats; authority-gate law for wiki islands, edge islands, and canon MOVE"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

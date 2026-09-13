@@ -8,7 +8,6 @@ file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/sigil.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/sigil"
-retain        = true
 role          = "anchor: SigilWidget — heleuma ka"
 source-symbol = "SigilWidget"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/sigil", "tw5/modules/tw5-widgets"]

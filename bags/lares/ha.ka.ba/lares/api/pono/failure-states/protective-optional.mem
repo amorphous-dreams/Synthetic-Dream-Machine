@@ -8,7 +8,6 @@ mana      = 14
 manao     = 15
 manaoio   = 13
 namespace = "&#x2299;"
-retain    = true
 role      = "craft failure law — an optional parameter protecting the author's own tests in a codebase with no consumers"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

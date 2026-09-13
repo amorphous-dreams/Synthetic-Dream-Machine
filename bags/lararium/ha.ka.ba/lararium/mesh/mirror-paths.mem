@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/mirror-paths.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe mirror-paths.ts"
 source-file = "packages/lararium-mesh/src/mirror-paths.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

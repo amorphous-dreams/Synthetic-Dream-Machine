@@ -4,7 +4,6 @@
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/RFC-2119.mem"
-retain    = false
 role      = "docs companion for RFC-2119: online references, verb definitions, and IETF provenance"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

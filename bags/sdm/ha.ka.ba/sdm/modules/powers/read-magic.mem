@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/read-magic.mem"
 mana      = 15
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "Power module: Read Magic — decode a magical inscription's interface layer; the first proof of the v0.1 composition chain"
 tags      = ["components/domain/divination", "components/function/magic-decode", "components/function/ecm-scan", "components/function/archive", "components/hook/dangerous", "mount-points/trait"]
 l-space   = "sdm"

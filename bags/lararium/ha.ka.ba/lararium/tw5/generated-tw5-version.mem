@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/generated-tw5-version.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe generated-tw5-version.ts"
 source-file = "packages/lararium-tw5/src/generated-tw5-version.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

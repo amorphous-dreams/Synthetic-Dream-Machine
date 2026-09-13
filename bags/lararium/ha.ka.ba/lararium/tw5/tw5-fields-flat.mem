@@ -9,7 +9,6 @@ mana       = 17
 manao      = 17
 manaoio    = 16
 module-ref = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
-retain     = true
 role       = "heleuma: TW5TiddlerFields → Record<string,string> normaliser"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/tw5/tw5-fields-flat"

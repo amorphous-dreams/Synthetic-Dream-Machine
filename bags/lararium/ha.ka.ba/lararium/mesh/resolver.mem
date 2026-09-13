@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/resolver.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe resolver.ts"
 source-file = "packages/lararium-mesh/src/resolver.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

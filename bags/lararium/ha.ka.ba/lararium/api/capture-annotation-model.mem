@@ -10,7 +10,6 @@ mana      = 19
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "THE holistic capture & annotation model — the implement-from keel that fills mempalace's holes (multi-agent topology · subagent/swarm capture · gradient annotation · ephemeral noise · agent identity). Ties lar-telemetry + agent-worldline + lararium-memory into one layered spec: capture (surfaces·shores·verbatim-always/gradient-eventual) → annotation (lar_* instrument readings, gradient-not-verdict) → multi-agent (identity·provenance·relationship spawn-graph) → ephemeral (lares ephemeral launcher·blind dir·hardening). Carries the operator rulings ledger + the implementation backlog (built/specified/blocked)."
 tags      = ["api/pono/meme", "api/lararium"]
 type      = "text/memetic-wikitext+tiddlywiki"

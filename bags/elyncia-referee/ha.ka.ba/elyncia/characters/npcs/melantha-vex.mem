@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 13
 rating    = "kapu"
-retain    = true
 role      = "referee NPC — Guild-Captain of the Third Oar; Lindwyrm cut-out behind respectable paperwork; full dossier with private truth"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/melantha-vex"

@@ -9,7 +9,6 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "parse→widget→fakeDOM chain spec per camera — pairs with CameraRegistration for the full camera contract"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

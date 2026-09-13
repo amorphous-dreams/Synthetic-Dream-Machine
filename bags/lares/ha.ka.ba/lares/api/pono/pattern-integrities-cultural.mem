@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 14
 manao     = 15
 manaoio   = 14
-retain    = true
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 ```

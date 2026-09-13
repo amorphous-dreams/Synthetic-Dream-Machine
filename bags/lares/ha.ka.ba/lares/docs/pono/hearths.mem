@@ -10,12 +10,10 @@ mana       = 10
 manao      = 12
 manaoio    = 12
 namespace  = "&#x2299;"
-retain     = true
 revised-on = "2026-09-12"
 role       = "hearths — the live ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth is a session, named by its commit trailer)."
-status     = "standing"
 status-why = "three seams crossed hearths this week by a pasted operator message (the dial · the genesis block · the return lane) and cost a loop each; this ledger names the ground per hearth so the next crossing reads a carrier first"
-tags       = ["docs/pono/ledger"]
+tags       = ["docs/pono/ledger", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/hearths"
 ```

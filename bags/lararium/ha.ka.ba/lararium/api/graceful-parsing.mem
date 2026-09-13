@@ -7,7 +7,6 @@ hydrate   = false
 mana      = 18
 manao     = 18
 manaoio   = 18
-retain    = true
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/graceful-parsing"
 ```

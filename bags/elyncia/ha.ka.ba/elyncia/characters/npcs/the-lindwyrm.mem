@@ -9,7 +9,6 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 rating    = "ano"
-retain    = true
 role      = "NPC, public view — the Lindwyrm of New Delos: Patroness, embodied immortal, founder of the League of Free Cities, reluctant infrastructure matriarch"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"

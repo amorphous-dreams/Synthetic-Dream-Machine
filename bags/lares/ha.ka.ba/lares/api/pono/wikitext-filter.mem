@@ -10,7 +10,6 @@ l-space     = "stable"
 mana        = 17
 manao       = 8
 namespace   = "&#x2299;"
-retain      = true
 role        = "wikitext-filter grammar dialect — drops field/index; aligns with the pranala+TOML data model and lexical meme context"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/wikitext-filter"

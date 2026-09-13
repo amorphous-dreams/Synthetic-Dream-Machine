@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 14
 manao     = 14
 manaoio   = 13
-retain    = false
 role      = "docs companion to the HUD law — line composition, glyph and tool tables, the Syadasti confidence reading rule, and field-annotation thresholds"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

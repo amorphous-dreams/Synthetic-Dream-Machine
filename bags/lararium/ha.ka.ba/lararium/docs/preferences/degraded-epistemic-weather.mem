@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 17
 manaoio   = 17
-retain    = false
 role      = "staging docs shelf for named epistemic failure-weather, collapse patterns, and possible short-invariant promotion targets"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

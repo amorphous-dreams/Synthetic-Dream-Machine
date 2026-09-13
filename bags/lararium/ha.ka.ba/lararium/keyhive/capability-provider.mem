@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/capability-provider.mem"
 l-space     = "lararium"
 mana        = 14
-retain      = true
 role        = "invariant law: CapabilityProvider — the narrow interface over Keyhive's pre-alpha API. States exactly WHAT the gate answers and what it declines to, the archive restore a joinee owes itself, the torn-tolerant boot replay, and the lazy island materialization. The four-verb access axis stands as a MODEL, never a second gate."
 source-file = "packages/lararium-keyhive/src/capability-provider.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

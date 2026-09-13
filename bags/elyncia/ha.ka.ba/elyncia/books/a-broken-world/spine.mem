@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 12
 rating    = "ano"
-retain    = true
 role      = "spine — Elyncia 01, A Broken World: the walk through the history, the Curse of Iron, and the gazetteer; chunks live at their topical addresses"
 tags      = ["ha.ka.ba/elyncia/books/index"]
 type      = "text/memetic-wikitext+tiddlywiki"

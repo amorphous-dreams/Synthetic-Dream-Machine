@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kumu.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "element-type declaration pragma — kumu as structural root; declares named grammar node type; English aliases: \\type \\typos"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kumu"]
 type      = "text/memetic-wikitext+tiddlywiki"

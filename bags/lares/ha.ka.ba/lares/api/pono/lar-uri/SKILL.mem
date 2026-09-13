@@ -15,7 +15,6 @@ file-path          = "bags/lares/ha.ka.ba/lares/api/pono/lar-uri/SKILL.mem"
 mana               = 15
 manao              = 16
 manaoio            = 14
-retain             = true
 role               = "lar: URI operational skill — authoring, validation, and audit of addresses against the scheme law"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/lar-uri"
 tags               = ["api/pono/meme", "api/pono/loci"]

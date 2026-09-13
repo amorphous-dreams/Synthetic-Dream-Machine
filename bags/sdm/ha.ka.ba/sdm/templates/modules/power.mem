@@ -7,7 +7,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/templates/modules/power.mem"
 mana      = 15
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "root template meme for Power module memes — flat #has composition, lean playable default"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

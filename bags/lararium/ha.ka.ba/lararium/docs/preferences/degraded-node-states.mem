@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 16
 manaoio   = 17
-retain    = false
 role      = "docs concept room for named failure modes, collapse patterns, and diagnostic language in the recovered Lares stack"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

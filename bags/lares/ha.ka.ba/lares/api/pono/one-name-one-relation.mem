@@ -9,7 +9,6 @@ l-space   = "lares"
 mana      = 17
 manao     = 16
 manaoio   = 15
-retain    = true
 role      = "One name carries one relation — the three relations a lar: name may carry (holding · meeting · being), the identity ladder each layer sits on, and why a name carrying two of them fuses two things a reader cannot tell apart"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/one-name-one-relation"

@@ -9,7 +9,6 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 rating    = "ano"
-retain    = true
 role      = "concept canon — the fae clans of Elyncia, humans among them: the staged portal arrivals of the post-First-Breaking age, the clan taxonomy, and the Neo-Thracian conceit"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-fae-clans"

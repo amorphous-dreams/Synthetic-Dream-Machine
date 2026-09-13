@@ -9,7 +9,6 @@ l-space   = "adjacent"
 mana      = 18
 manao     = 18
 manaoio   = 18
-retain    = true
 role      = "web crypto provider boundary doctrine — canonical bytes, digest, randomness"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "lares_research/research-streams/lararium/CRYPTO"

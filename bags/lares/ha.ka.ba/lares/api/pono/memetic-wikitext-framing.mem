@@ -9,12 +9,11 @@ mana          = 19
 manao         = 19
 manaoio       = 17
 namespace     = "&#x2299;"
-retain        = true
 revised-on    = "2026-08-24"
 revision-note = "stood up at the split: the transmission-frame half of the language spec and the carrier-sigils spine law fold into one carrier-framing specification — declaration register, control set, spine, resonance, trust tiers, authoring, block check, canonical form, carriage, gradient, frame security, byte law"
 role          = "submittable specification for the memetic carrier frame — the declaration register, the SOH/STX/ETX/EOT control set, the ni:/// block check, canonical form, carriage, the health gradient, and frame security. The language it frames rides the sibling memetic-wikitext spec; the address rides lar-uri"
-status        = "standing"
 status-why    = "submission-draft"
+tags          = ["lifecycle/standing"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 ```

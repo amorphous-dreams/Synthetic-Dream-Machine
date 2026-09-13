@@ -9,7 +9,6 @@ last-reviewed = "2026-07-18"
 mana          = 17
 manao         = 17
 manaoio       = 16
-retain        = true
 role          = "lararium-node host: path roots + corpus-source structural contract"
 source-symbol = "*"
 status-date   = "2026-04-30"

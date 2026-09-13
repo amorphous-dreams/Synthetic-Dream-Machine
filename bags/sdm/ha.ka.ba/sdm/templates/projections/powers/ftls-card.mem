@@ -8,7 +8,6 @@ l-space   = "sdm"
 mana      = 14
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "root template meme for FTLS Power card projection memes — playable surface with clickable component pills"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/projections/powers/ftls-card"

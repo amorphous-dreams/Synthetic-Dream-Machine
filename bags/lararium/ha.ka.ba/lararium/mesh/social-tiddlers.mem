@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/social-tiddlers.mem"
 l-space     = "lararium"
 mana        = 12
-retain      = true
 role        = "invariant law: the social plane's tiddler shapes and typed readers — @identities, @circles, @sessions. TIDDLER-FIRST: every principal, circle, session and presence record lives IN tiddlers, so a TW5 field filter queries them directly. Names the three entities, what a reader refuses, the Keyhive-mirroring fields, and the audit trail that never decreases."
 source-file = "packages/lararium-mesh/src/social-tiddlers.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

@@ -13,15 +13,13 @@ manao          = 15
 manaoio        = 15
 merged-from    = "ha.ka.ba/lares/docs/pono/infrastructure-as-myth — 2026-08-24, the doctrine draft and the paper draft welded into one carrier, both bodies verbatim"
 namespace      = "&#x2299;"
-retain         = true
 review-cadence = "quarterly"
 revised-on     = "2026-08-24"
 role           = "doctrine + paper, one carrier — Part I: the IaM design thesis (the symbolic-operational layer above IaC; Lares an early implementation). Part II: the paper, its empirical arm — Infrastructure as Myth: Memetic Wikitext as a gradient navigational grammar for steering and auditing agentic AI. Authored AS a carrier in the grammar it describes (the recursion is the proof). Findings DESCRIPTIVE/pending-gold; honesty = credibility. The api/pono sister holds the submission seat."
 sources        = ["https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-iac.html", "https://developer.hashicorp.com/terraform/tutorials/aws-get-started/infrastructure-as-code", "https://developer.hashicorp.com/well-architected-framework/define-and-automate-processes/define/as-code/infrastructure", "https://www.britannica.com/topic/meme", "https://www.britannica.com/topic/myth", "https://www.britannica.com/topic/myth/Functions-of-myth-and-mythology", "https://openlibrary.org/books/OL27018331M/The_art_of_memetics", "https://books.google.com/books?id=1DcyU12n7PAC", "https://www.anthropic.com/news/claude-character", "https://www.anthropic.com/research/teaching-claude-why", "https://github.com/malfoyslastname/character-card-spec-v2", "https://en.wikipedia.org/wiki/Character.AI", "https://code.claude.com/docs/en/memory"]
 sources-scope  = "the sources field carries Part I's doctrine apparatus; Part II's apparatus rides in-body at #references"
-status         = "designed"
 status-why     = "a research paper rather than a build subject"
-tags           = ["api/pono/meme", "api/pono"]
+tags           = ["api/pono/meme", "api/pono", "lifecycle/designed"]
 tagspace       = "stable"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/infrastructure-as-myth"

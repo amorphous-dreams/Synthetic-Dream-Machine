@@ -18,7 +18,6 @@ manaoio           = 9
 name              = "Breach-Watch"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
-retain            = false
 role              = "named Voice mask — Breach-Watch (Triage); incident-command character"
 seniority         = "earned name; no special seniority"
 stage             = 10

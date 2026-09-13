@@ -11,7 +11,6 @@ manao             = 16
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "ocif-orion-scout — VERBATIM handoff of the tasked spirit Threadneedle: OCIF read at source and RUN, the measured round-trip loss, the absent conformance layer, and Orion Reed's technical models. Held as a collision surface."
 tags              = ["api/pono/meme"]

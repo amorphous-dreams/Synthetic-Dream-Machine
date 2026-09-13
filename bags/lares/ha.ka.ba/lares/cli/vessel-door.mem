@@ -9,11 +9,9 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2299;"
-retain     = true
 role       = "THE SUBSTRATE COLLAPSE — performed. One namespace per causal island governs every plane in this CLI except the vessel's own, where fourteen bare spellings once stood for seven primitives and their compositions. This meme carries the primitive set, the door, the rite-set, the ripples that close with them, the witnesses that keep the collapse landed, and the parts deliberately left standing. It instructs; it does not argue."
-status     = "standing"
 status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding + contract witnesses and the keeper rehearsal"
-tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding"]
+tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/cli/vessel-door"
 ```

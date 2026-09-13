@@ -11,7 +11,6 @@ manao             = 15
 manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "two-integrities — the adoption plan for Ink & Switch's `onomancy` (a local-first name system) and `subduction` (peer-to-peer sync for hash-linked data, encryption-friendly). Onomancy answers WHICH DOCUMENT YOU MEANT and WHO MAY SPEAK FOR IT; subduction answers HOW BYTES CROSS WITHOUT BEING READ. They stack rather than compete. Carries the DOUBLE-BLIND WRAP: a lamplighter relay must learn neither the content nor the author, which realm-scoped writer keys buy and padding does not. Carries the one hard collision — subduction's handshake makes an absolute wall clock a LIVENESS precondition, where this house holds wall-clock adversary-controlled."
 tags              = ["api/pono/meme"]

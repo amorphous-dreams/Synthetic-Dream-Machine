@@ -9,7 +9,6 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 rating    = "meme"
-retain    = true
 role      = "the Arcana model — thirteen rooms as verbs-of-will and axes-of-system, the guard-law, the charters, the walk order, and the word-sense laws that keep Arcana/module from blurring"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/arcana-model"

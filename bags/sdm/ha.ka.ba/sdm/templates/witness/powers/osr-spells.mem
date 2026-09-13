@@ -7,7 +7,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/templates/witness/powers/osr-spells.mem"
 mana      = 12
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "root template meme for OSR spell witness memes — cold provenance and conversion anchors"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

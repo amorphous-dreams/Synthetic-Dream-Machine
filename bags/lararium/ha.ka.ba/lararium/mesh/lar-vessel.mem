@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-vessel.mem"
 l-space     = "lararium"
 mana        = 14
-retain      = true
 role        = "invariant law: LarVessel — the ONE local runtime vessel class for browser, Node, worker and device. Capability declares a hostful SURFACE, never authority; receipt law rather than process role decides whether a local effect may write. Names the NONE default, the three presets, what the identity slot admits today, and where the vessel's reach stops."
 source-file = "packages/lararium-mesh/src/lar-vessel.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

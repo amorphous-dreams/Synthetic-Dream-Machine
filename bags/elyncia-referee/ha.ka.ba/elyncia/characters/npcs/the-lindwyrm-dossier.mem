@@ -9,7 +9,6 @@ mana      = 14
 manao     = 15
 manaoio   = 13
 rating    = "kapu"
-retain    = true
 role      = "NPC dossier, referee view — the Lindwyrm behind the public face: the summit as recruitment engine, the intelligence apparatus, the long game of the mesh; the deepest seals stay in the operator's own seats, pointed at and never carried here"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"

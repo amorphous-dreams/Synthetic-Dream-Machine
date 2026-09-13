@@ -9,13 +9,11 @@ mana        = 16
 manao       = 16
 manaoio     = 15
 namespace   = "&#x0950; &#x0901;"
-retain      = true
 role        = "source-of-truth: the Residency Model ACTION verb handler family — six verbs, withEffectRecord wrapping, cap-gate law, dispatch shore (Sprint 5)"
 source-file = "packages/lararium-tw5/src/action-handler.ts"
-status      = "standing"
 status-date = "2026-06-01"
 status-why  = "the TW5 action handler stands live"
-tags        = ["api/residency-model"]
+tags        = ["api/residency-model", "lifecycle/standing"]
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/api/action-handler"
 ```

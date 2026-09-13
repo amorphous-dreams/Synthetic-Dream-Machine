@@ -10,7 +10,6 @@ mana      = 14
 manao     = 14
 manaoio   = 14
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

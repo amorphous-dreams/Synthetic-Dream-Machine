@@ -8,7 +8,6 @@ l-space       = "stable"
 mana          = 18
 manao         = 18
 manaoio       = 17
-retain        = true
 role          = "invariant registry: all corpus bag targets in the monorepo; each maps to one Automerge doc"
 source-symbol = "CORPUS_SOURCES"
 status-date   = "2026-04-30"

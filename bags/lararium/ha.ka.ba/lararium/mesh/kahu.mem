@@ -8,7 +8,6 @@ l-space   = "lararium"
 mana      = 17
 manao     = 16
 manaoio   = 16
-retain    = true
 role      = "protocol governance concept: kahu as grammar-guardian role in DreamNet topology"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/kahu"

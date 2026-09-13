@@ -11,7 +11,6 @@ manao             = 16
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 role              = "multi-fractal — the pattern integrity where one entity IS a private container binding many scope-bound instances of a single primitive, each instance itself a container (recursion → fractal, never merely plural)"
 tags              = ["api/pono/meme"]
 type              = "text/memetic-wikitext+tiddlywiki"

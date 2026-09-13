@@ -8,7 +8,6 @@ l-space       = "stable"
 mana          = 12
 manao         = 12
 manaoio       = 12
-retain        = true
 revision-note = "the artifact that records THAT a re-anchoring happened and never what made it valid. Carries the three mechanisms that survive alignment with prior art, the six classes that refuse, and the rulings each refusal breaks"
 role          = "the re-anchoring record — one artifact folded two ways: an EVENT on write, accrued DEPTH on read. Holds the un-thresholded attestor bundle, the grounds-free boundary, and the attester⊥minter split, each with its shipped prior art and what it cost to align"
 tags          = ["api/pono/meme"]

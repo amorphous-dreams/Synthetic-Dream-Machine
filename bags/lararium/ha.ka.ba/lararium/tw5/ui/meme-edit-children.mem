@@ -8,7 +8,6 @@ list-after = "$:/core/ui/EditTemplate/body"
 mana       = 18
 manao      = 17
 manaoio    = 16
-retain     = true
 role       = "EditTemplate: inline editors for non-body ahu slots; body slot edited via core EditTemplate/body"
 tags       = ["$:/tags/EditTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
 type       = "text/memetic-wikitext+tiddlywiki"

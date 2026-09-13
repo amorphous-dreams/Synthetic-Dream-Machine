@@ -17,7 +17,6 @@ manaoio           = 16
 name              = "Friend Computer"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = true
-retain            = false
 role              = "character mask — Friend Computer; fictional persona; helpful AI with condescending subtext"
 stage             = 13
 tags              = ["api/pono/meme", "api/masks"]

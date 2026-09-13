@@ -9,7 +9,6 @@ mana          = 13
 manao         = 12
 manaoio       = 12
 render-target = "chat-log:post-header"
-retain        = true
 role          = "build-arc narrative locus — Act I, the Lar gives every chamber of its hoard a true address"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses"

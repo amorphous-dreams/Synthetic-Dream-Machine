@@ -7,7 +7,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 15
 manaoio   = 14
-retain    = true
 role      = "the research shelf: prior art, golden principles, anti-patterns for the seven stack integrities — field-grounded by nine research spirits, 2026-06-11/12; binds as kupono intent (builds implement THESE, never improvisation)"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pattern-integrities"

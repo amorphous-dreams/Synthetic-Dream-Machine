@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/toml-ast.mem"
 l-space     = "lararium"
 mana        = 12
-retain      = true
 role        = "invariant law: the two-layer TOML engine behind a carrier's meta fence. A SYNC spec-compliant reader on the read path, a comment-preserving WASM writer lazily loaded on the write path, and a graceful fall back to the raw string where the WASM cannot load. Names the flattening contract a TW5 field imposes."
 source-file = "packages/lararium-tw5/src/toml-ast.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 16
 manaoio   = 15
-retain    = true
 role      = "capability meme for source-module carrier: package TypeScript source files emitted as memes into the graph"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

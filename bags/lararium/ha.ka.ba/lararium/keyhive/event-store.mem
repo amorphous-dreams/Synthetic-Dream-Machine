@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/event-store.mem"
 l-space     = "lararium"
 mana        = 12
-retain      = true
 role        = "invariant law: EventStore — durable persistence for Keyhive ops, and the island slice a boot may load without losing decryptability. Names why an event carries an island, which events carry NONE and must co-load with every slice, and why causality needs no sorting here."
 source-file = "packages/lararium-keyhive/src/event-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

@@ -11,7 +11,6 @@ manao             = 16
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "subduction-onomancy-scout — VERBATIM handoff of the tasked spirit Onomast: a deep read of Ink and Switch's onomancy (a local-first name system) and subduction (peer-to-peer sync for hash-linked data), at source. Signed-vs-attached, derive(store now decisions), Sedimentree, and the wall-clock collision with a clockless lease model. Held as a collision surface."
 tags              = ["api/pono/meme"]

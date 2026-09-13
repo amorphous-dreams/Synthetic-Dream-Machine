@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 16
 manaoio   = 16
-retain    = false
 role      = "extended docs for the Law of Fives: subscript attention-scale sigils, three-projection unification, boundary zones, Aperture mapping, and scale UCAN attenuation"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

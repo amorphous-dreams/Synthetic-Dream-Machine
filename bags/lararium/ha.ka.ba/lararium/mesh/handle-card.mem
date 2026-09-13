@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/handle-card.mem"
 l-space     = "lararium"
 mana        = 15
-retain      = true
 role        = "invariant law: a Handle is a QUORUM-PRESENTED NAME, and its card is what one such name shows the world. Names the k-of-n HandleGlamour (the owner-set generalises the lone key, 1-of-1 the degenerate personal face), the self-certifying card, the owner-binding folded into the prefix, the four moves (rotation · burn · graft · attest), and the TWO verification tiers — self-contained structure ⊥ board-checked presentation authority."
 source-file = "packages/lararium-mesh/src/handle-card.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

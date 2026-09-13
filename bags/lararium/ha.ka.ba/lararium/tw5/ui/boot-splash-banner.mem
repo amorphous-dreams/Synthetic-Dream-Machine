@@ -7,7 +7,6 @@ file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/boot-splash-banner.mem"
 mana      = 18
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "Boot-splash banner — shown while causal islands warm; hidden by $:/lararium/boot-splash/active signal"
 tags      = ["$:/tags/PageTemplate"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -8,7 +8,6 @@ mana      = 17
 manao     = 17
 manaoio   = 16
 namespace = "&#x2299;"
-retain    = true
 role      = "reaction-family edge sugar — UEFN device graph event wire; listenable at source, subscribable at target"
 tags      = ["api/pono/pranala", "api/pono/reaction-graph", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-papalohe"]
 type      = "text/memetic-wikitext+tiddlywiki"

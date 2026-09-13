@@ -9,7 +9,6 @@ mana          = 16
 manao         = 15
 manaoio       = 14
 research-date = "2026-05-28"
-retain        = true
 role          = "prior art research synthesis: best practices and golden principles for DreamNet two-axis mesh topology (INFRA⊥SOCIAL, relay-floor)"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"

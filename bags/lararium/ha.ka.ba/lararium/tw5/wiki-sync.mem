@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/wiki-sync.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe wiki-sync.ts"
 source-file = "packages/lararium-tw5/src/wiki-sync.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

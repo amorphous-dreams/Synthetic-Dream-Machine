@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 12
 rating    = "ano"
-retain    = true
 role      = "spine — Elyncia 02, the Lares DreamNet: the founding, the shrine practice, the spirits; the pilot book of the spine-and-chunk migration"
 tags      = ["ha.ka.ba/elyncia/books/index"]
 type      = "text/memetic-wikitext+tiddlywiki"

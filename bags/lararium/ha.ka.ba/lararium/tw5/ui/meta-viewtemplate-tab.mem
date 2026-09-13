@@ -8,7 +8,6 @@ list-after = "$:/core/ui/ViewTemplate/body"
 mana       = 18
 manao      = 18
 manaoio    = 17
-retain     = true
 role       = "ViewTemplate tab: injects #meta character sheet as a Metadata tab on all lar: tiddlers"
 tags       = ["$:/tags/ViewTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
 type       = "text/memetic-wikitext+tiddlywiki"

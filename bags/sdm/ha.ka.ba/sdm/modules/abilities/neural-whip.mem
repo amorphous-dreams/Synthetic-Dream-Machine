@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/modules/abilities/neural-whip.mem"
 mana      = 14
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "Ability module: Neural Whip — the Cave Octopus's stuckforce tentacle-lash; first proof the Power template covers a non-spell monster affordance, first exerciser of hook/attack"
 tags      = ["components/domain/stuckforce", "components/function/restrain", "components/hook/attack", "mount-points/trait"]
 l-space   = "sdm"

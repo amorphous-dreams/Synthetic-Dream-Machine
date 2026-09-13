@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 15
 manaoio   = 15
-retain    = false
 role      = "doctrine: the lararium as a personGroup's vessel-swarm holding a distributed wiki-quine; AI-operator alignment as the constitutive relation; the HUD running in chat from wiki primitives; graceful import that lifts foreign data up the pono ladder; UEFN island-model ontology alignment"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -9,7 +9,6 @@ mana          = 17
 manao         = 17
 manaoio       = 16
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/tw5-widgets"
-retain        = true
 role          = "TW5 widget registry: ten lararium widget types, widget tiddler registration, TW5ParseNode shape"
 source-symbol = "LARARIUM_WIDGETS_TIDDLER WorksiteWidget EdgeWidget TomlWidget SigilWidget DynamicWidget HeaderWidget DispatchWidget PapaloheWidget KukaliWidget KumuWidget TW5ParseNode"
 status-date   = "2026-04-30"

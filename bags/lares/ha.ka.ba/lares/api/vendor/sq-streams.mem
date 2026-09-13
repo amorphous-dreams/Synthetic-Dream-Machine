@@ -7,7 +7,6 @@ file-path          = "bags/lares/ha.ka.ba/lares/api/vendor/sq-streams.mem"
 mana               = 18
 manao              = 18
 manaoio            = 17
-retain             = true
 role               = "vendor declaration: Streams plugin by Saq Imtiaz — hierarchical tree-of-tiddlers TW5 UI"
 tags               = ["api/pono/meme"]
 tw5-plugin-id      = "$:/plugins/sq/streams"

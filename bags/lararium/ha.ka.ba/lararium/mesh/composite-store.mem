@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/composite-store.mem"
 l-space     = "lararium"
 mana        = 14
-retain      = true
 role        = "invariant law: CompositeStore — a recipe-ordered overlay of store layers under standard TW5 recipe law. Reads fan out and the highest priority wins; every write routes to ONE designated writable store. Names the async-layer hazard a caller must order around, and why a subscriber must read origin."
 source-file = "packages/lararium-mesh/src/composite-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

@@ -7,7 +7,6 @@ file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meta-panel.mem"
 mana      = 18
 manao     = 18
 manaoio   = 17
-retain    = true
 role      = "character sheet template: renders #meta metadata for any lar: tiddler; stat bars + progressive disclosure + arbitrary field fallback"
 tags      = ["$:/tags/Global", "lar:///ha.ka.ba/lares/api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

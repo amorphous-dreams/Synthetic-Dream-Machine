@@ -8,7 +8,6 @@ l-space         = "adjacent"
 mana            = 16
 manao           = 15
 manaoio         = 15
-retain          = true
 role            = "DreamDeck / Gaia-side narrative locus — the week the Crossroads node learned where it stood"
 source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md"
 type            = "text/memetic-wikitext+tiddlywiki"

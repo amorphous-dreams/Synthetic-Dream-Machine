@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 13
 rating    = "ano"
-retain    = true
 role      = "Lady Aki discounted gear ledger — prose companion to the live CSV table"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger"

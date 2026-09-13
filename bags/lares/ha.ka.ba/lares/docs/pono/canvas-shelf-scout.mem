@@ -11,7 +11,6 @@ manao             = 16
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "canvas-shelf-scout — VERBATIM handoff of the tasked spirit Cartwright: infinite-canvas libraries and the people shipping them, sorted by the only axis that matters — rasterising engines against DOM-hosting spatial layers — with licences read from raw bytes. Held as a collision surface."
 tags              = ["api/pono/meme"]

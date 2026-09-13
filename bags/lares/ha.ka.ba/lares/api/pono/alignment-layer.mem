@@ -10,11 +10,9 @@ manao       = 15
 manaoio     = 13
 namespace   = "&#x2299;"
 proposed-on = "2026-06-01"
-retain      = true
 role        = "design invariant: the alignment plane — non-monotonic subjective trust ABOVE cryptographic capability; the lemures layer; how a mesh survives adversaries at federation scale without global consensus or a central registry"
-status      = "designed"
 status-why  = "doctrine; no source carries it yet"
-tags        = ["api/pono/causal-islands"]
+tags        = ["api/pono/causal-islands", "lifecycle/designed"]
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/alignment-layer"
 ```

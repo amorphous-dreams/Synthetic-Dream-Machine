@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/puka.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "first-through-the-opening sigil — puka as the gap; Verse rush: first wins, losers continue until enclosing scope exits (NOT cancelled by winner); English alias: \\rush; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-puka"]
 type      = "text/memetic-wikitext+tiddlywiki"

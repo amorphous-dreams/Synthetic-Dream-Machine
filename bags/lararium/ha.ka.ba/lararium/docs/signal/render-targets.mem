@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 16
-retain    = false
 role      = "docs room for lararium-side render-target law, glyph conventions, and cross-surface verification"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

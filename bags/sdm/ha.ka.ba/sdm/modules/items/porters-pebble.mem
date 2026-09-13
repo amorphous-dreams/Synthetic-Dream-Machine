@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/modules/items/porters-pebble.mem"
 mana      = 14
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "Item module: Porter's Pebble — a found stuckforce relic that holds the Floating Disc Power; first proof an item is an entity that #has a Power through the item mount-point (module nesting)"
 tags      = ["mount-points/item", "components/domain/stuckforce", "modules/powers/floating-disc"]
 l-space   = "sdm"

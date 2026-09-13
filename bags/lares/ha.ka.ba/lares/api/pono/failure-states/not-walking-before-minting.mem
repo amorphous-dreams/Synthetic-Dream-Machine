@@ -8,7 +8,6 @@ mana      = 14
 manao     = 15
 manaoio   = 13
 namespace = "&#x2299;"
-retain    = true
 role      = "craft failure law — deriving from context what the graph already holds, at the cost of the derivation"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

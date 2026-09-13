@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 17
 manao     = 17
 manaoio   = 18
-retain    = false
 role      = "staging docs shelf for epistemic residue, promotion planning, and the still-unsettled register/stance and degraded-weather material left after foundation-braid migration"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

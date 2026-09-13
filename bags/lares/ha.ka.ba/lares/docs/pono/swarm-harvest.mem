@@ -10,7 +10,6 @@ mana      = 14
 manao     = 15
 manaoio   = 12
 namespace = "&#x2299;"
-retain    = true
 role      = "swarm-harvest INDEX — the three largest messages from each of 55 research spirits across four waves, held verbatim in their own carriers. Names come from each spirit OWN opening heading, never from a summary of it. The fence law that makes it safe, the reason a lane with no independent name still earns a carrier, and the roll of what stands."
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

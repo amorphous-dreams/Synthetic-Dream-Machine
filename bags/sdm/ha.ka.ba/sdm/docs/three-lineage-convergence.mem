@@ -9,7 +9,6 @@ mana      = 13
 manao     = 14
 manaoio   = 12
 rating    = "meme"
-retain    = true
 role      = "design research — the three-lineage convergence: Ars Magica's verb×form grammar, Mage's rated spheres, and the SDM thirteen; what each lens teaches the conversion program"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/three-lineage-convergence"

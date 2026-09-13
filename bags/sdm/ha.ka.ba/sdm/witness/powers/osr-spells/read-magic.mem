@@ -7,7 +7,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/read-magic.mem"
 mana      = 11
 manao     = 16
 manaoio   = 17
-retain    = true
 role      = "OSR spell witness for Read Magic — Basic/Expert/Rules-Cyclopedia provenance, cold-load"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

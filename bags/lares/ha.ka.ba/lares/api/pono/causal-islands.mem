@@ -10,7 +10,6 @@ mana          = 18
 manao         = 17
 manaoio       = 17
 namespace     = "&#x2299;"
-retain        = true
 role          = "invariant law: causal island doctrine — three structural axes (access × scale × powers) + alignment plane; authority-first sync order; visibility gate; edge island lifecycle"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
 status-date   = "2026-06-01"

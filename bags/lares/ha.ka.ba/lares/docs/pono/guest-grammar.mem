@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 14
-retain    = false
 role      = "extended documentation surface for guest-grammar examples, ownership notes, fixture seeds, and migration residue"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

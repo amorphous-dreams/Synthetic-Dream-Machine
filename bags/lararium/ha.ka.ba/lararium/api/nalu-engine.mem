@@ -10,7 +10,6 @@ mana           = 18
 manao          = 18
 manaoio        = 17
 namespace      = "&#x0950; &#x0901;"
-retain         = true
 role           = "TW5 startup module — unified nalu queue across all CRDT bags + frame-aligned wiki.transact() drain + apply-time echo guard; the in-wiki embodiment of the nalu wave"
 tags           = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 type           = "text/memetic-wikitext+tiddlywiki"

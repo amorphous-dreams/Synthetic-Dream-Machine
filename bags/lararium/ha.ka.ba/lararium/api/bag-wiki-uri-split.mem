@@ -6,8 +6,8 @@ content-type = "text/memetic-wikitext+tiddlywiki"
 file-path    = "bags/lararium/ha.ka.ba/lararium/api/bag-wiki-uri-split.mem"
 mana         = 17
 role         = "the bag / wiki / cid kind-plane law — the three surfaces a lar: URI names, the edit/publish shore, and the isomorphic wiki core"
-status       = "standing"
 status-why   = "the minters carry the split (bagUri · wikiUri · cidUri · wikiSlotUri); the per-wiki slot binding stands half-enacted — the island keys draft per (PersonaGroup × fingerprint), the host keys it per vessel DID (recipe-layer-model#/the-blur)"
+tags         = ["lifecycle/standing"]
 type         = "text/memetic-wikitext+tiddlywiki"
 uri-path     = "ha.ka.ba/lararium/api/bag-wiki-uri-split"
 ```

@@ -11,12 +11,10 @@ manao             = 15
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-11"
 role              = "recipe-layer-model — the recipe layer stack under the operator's rulings (canon bags ← named wiki bag ← drafts ← volatile): the layers EXACTLY as three composites mount them, the cascade that routes a tiddler by KIND, what fleet-syncs and what stays on the device, the disk legs for meme and non-meme files, the ONE slot-doc resolver and its floor, the two meme-verb laws, the record ↔ mount convergence, and what remains open. Read whole; every claim carries a file:line."
-status            = "standing"
 status-why        = "enacted under five operator rulings, red-first, each move witnessed (mesh · tw5 · keyhive · the two-vessel e2e); what remains stands named under #/one-model"
-tags              = ["api/pono/meme"]
+tags              = ["api/pono/meme", "lifecycle/standing"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
 ```

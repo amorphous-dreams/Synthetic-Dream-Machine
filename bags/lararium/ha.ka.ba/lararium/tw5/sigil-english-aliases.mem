@@ -7,7 +7,6 @@ file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-english-aliases.mem"
 mana      = 17
 manao     = 17
 manaoio   = 16
-retain    = true
 role      = "design record: English alias sigil vocabulary — \\procedure, \\if, \\for, \\widget cross-refs to Hawaiian equivalents"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-widget"]
 type      = "text/memetic-wikitext+tiddlywiki"

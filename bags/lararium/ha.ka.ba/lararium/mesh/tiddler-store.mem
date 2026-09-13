@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-store.mem"
 l-space     = "lararium"
 mana        = 14
-retain      = true
 role        = "invariant law: LarTiddlerStore — the TW5-NEUTRAL store contract. Five layers with a stated priority, and four hard rules: the live view may override canon and MUST NOT mutate it, the session layer must not leak drafts or temp into shared state, canon promotion stays closed until a receipt graph stands, and deletion marks rather than removes."
 source-file = "packages/lararium-mesh/src/tiddler-store.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

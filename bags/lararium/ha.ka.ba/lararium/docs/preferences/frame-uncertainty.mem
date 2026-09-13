@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 17
 manaoio   = 17
-retain    = false
 role      = "docs concept room for declaring interpretive forks before costly response commitment"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

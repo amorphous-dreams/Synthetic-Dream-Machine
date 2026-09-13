@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/divination.mem"
 mana      = 13
 manao     = 16
 manaoio   = 13
-retain    = true
 role      = "component (domain): Divination — the school of perceiving the hidden"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

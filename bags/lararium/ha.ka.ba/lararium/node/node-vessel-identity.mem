@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/node-vessel-identity.mem"
 l-space     = "lararium"
 mana        = 16
-retain      = true
 role        = "invariant law: THE TRUE NAME MODEL — three parts that bind without merging. The VESSEL key belongs to the PLACE and never travels; the PERSONA ROOT belongs to the HUMAN and derives from no vessel seed; the DELEGATION EDGE binds them without collapsing them. Names why the split carries the whole veil architecture, and what a single copied key would present to every verifier."
 source-file = "packages/lararium-node/src/node-vessel-identity.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

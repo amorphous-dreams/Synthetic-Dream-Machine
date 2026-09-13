@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 17
 manaoio   = 17
-retain    = false
 role      = "extracted syad source shelf, archive-consumed derivation store, register-metaphysics provenance locus"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

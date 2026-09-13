@@ -18,7 +18,6 @@ manaoio           = 9
 name              = "Tide-Caller"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
-retain            = false
 role              = "named Voice mask — Tide-Caller (Hierophant); elevated mythic register"
 seniority         = "earned name; no special seniority"
 stage             = 10

@@ -4,7 +4,6 @@
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/l-prime.mem"
-retain    = false
 role      = "docs companion for l-prime: research provenance, braid notes, and binary-ward guidance"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -4,7 +4,6 @@
 ```toml meta
 file-path = "bags/lares-history/last-sprint/SESSION.mem"
 l-space   = "archive"
-retain    = true
 role      = "sprint resume artifact — the state a session needed to continue without prior chat context"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "last-sprint/SESSION"

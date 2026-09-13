@@ -9,7 +9,6 @@ mana        = 18
 manao       = 18
 manaoio     = 17
 namespace   = "&#x2299;"
-retain      = true
 role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]

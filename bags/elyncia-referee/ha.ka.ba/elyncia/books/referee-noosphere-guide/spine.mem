@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 12
 rating    = "kapu"
-retain    = true
 role      = "spine, referee tier — Elyncia 04, the RNG: the most designed book, migrated LAST, its five-part chiasmus preserved by the spine's mortar"
 tags      = ["ha.ka.ba/elyncia/books/index"]
 type      = "text/memetic-wikitext+tiddlywiki"

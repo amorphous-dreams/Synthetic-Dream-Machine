@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 17
 manaoio   = 16
-retain    = false
 role      = "condensed syad research shelf, stance-reading summary, bridge to the archive bundle"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

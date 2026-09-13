@@ -11,12 +11,10 @@ manao             = 14
 manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-12"
 role              = "meme-api-surface — ONE page for the work QA lab: a bare `tiddlywiki --listen` carrying the packed plugin. The paths, the methods, the headers (`ETag` · `If-Match` · `If-None-Match: *` · `Repr-Digest`), the status table, the two doors (the native gate's 422, the client charm, the backstop's one log line), the principal-table parity, the pristine claim with its version, the four skins' verb parity (route · daemon · CLI · MCP), and a curl walkthrough."
-status            = "standing"
 status-why        = "every row here reads off a live contact: `packages/lararium-tw5/tests/meme-routes.e2e.test.ts` 17/17 against the fork (5.5.0-prerelease) and 17/17 against a pristine `npm pack tiddlywiki@5.4.1` (the witness landed at `f144ed242`; the `pristine-upstream` CI job invokes it and greps the contact line for the pinned version). The listing (`memes.json` · `meme-list`) and the delete twins (`meme-delete` · `lares meme delete` · `meme_delete`) RULED 2026-09-12; the daemon registration of the two new verbs stands with the keyhive owner"
-tags              = ["api/pono/meme"]
+tags              = ["api/pono/meme", "lifecycle/standing"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/meme-api-surface"
 ```

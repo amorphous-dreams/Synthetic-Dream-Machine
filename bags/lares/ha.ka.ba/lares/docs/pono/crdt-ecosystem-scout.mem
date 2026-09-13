@@ -11,7 +11,6 @@ manao             = 16
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "crdt-ecosystem-scout — VERBATIM handoff of the tasked spirit Wayfarer: the local-first / CRDT / capability-security ecosystem measured 2026-09-01. Ink and Switch releases and side-branches, adjacent CRDT sync projects, capability and identity primitives, crypto library movement. Held as a collision surface."
 tags              = ["api/pono/meme"]

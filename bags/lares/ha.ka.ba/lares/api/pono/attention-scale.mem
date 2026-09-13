@@ -9,7 +9,6 @@ mana        = 18
 manao       = 17
 manaoio     = 17
 namespace   = "&#x2299;"
-retain      = true
 role        = "unified attention scale — five bands partitioning the 0–20 Level attention-range continuum across three projections (time, text, space); canonical register names Pulse/Beat/Measure/Arc/Theme; turn-HUD gauge name Aperture; FTLS exploration clock and World-Time clock profiles; FfzClock level alignment"
 status-date = "2026-05-06"
 tags        = ["api/pono/meme"]

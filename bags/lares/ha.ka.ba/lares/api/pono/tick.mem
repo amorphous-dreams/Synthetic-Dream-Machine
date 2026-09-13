@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/tick.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "device lifecycle hook — run-block-once-per-nalu; Verse OnSimulate(StagedUpdates) entry point; DEFERRED to UE6 ~2027"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick"]
 type      = "text/memetic-wikitext+tiddlywiki"

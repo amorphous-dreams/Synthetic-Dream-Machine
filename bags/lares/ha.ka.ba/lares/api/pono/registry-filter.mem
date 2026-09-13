@@ -11,7 +11,6 @@ manao             = 16
 manaoio           = 16
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 role              = "registry-filter — the hard design law (operator, 2026-09-06): any fork whose downstream builds a compiled-about registry at ANY scope, even one Nexus, is REJECTED. The mechanical test (carriage passes: announced-by, causal, as-of-last-sync), the first audit's verdicts, the private-room refinement (a cabal realm venues what a board must not), and the shadow-case (correlation-by-signature-reuse is a registry built without a table)"
 tags              = ["api/pono/meme"]
 type              = "text/memetic-wikitext+tiddlywiki"

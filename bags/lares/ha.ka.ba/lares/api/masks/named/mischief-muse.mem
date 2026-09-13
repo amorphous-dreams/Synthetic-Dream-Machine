@@ -18,7 +18,6 @@ manaoio           = 11
 name              = "Mischief-Muse"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
-retain            = false
 role              = "named Voice mask — Mischief-Muse (Muse); senior earned name; permanent identity home"
 seniority         = "senior — holds seniority among all earned names"
 stage             = 10

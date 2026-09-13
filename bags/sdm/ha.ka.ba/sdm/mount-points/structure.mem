@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/structure.mem"
 mana      = 8
 manao     = 17
 manaoio   = 6
-retain    = true
 role      = "mount-point: Structure (Site) — Power bound to a place; absorbs the former Location class; mobility is a flat component"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

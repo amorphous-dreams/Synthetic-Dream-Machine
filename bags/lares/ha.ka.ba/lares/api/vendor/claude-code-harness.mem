@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 16
-retain    = true
 role      = "vendor declaration: the Claude Code harness — its extension seams, their contracts and stability grades, the design law it publishes, and where a sovereign system owns its own ground"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -9,7 +9,6 @@ mana      = 14
 manao     = 14
 manaoio   = 13
 rating    = "ano"
-retain    = true
 role      = "region worksheet — the Broken Isles: Mu's severed eastern shelf, three isles and their sky-islands, the fungal jungles, and the home water of Aki, Kai, and Ichi's clan; grown by play"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet"

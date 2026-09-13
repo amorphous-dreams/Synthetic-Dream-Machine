@@ -6,7 +6,6 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/cli/bin/lares.mem"
 l-space   = "lararium"
 mana      = 10
-retain    = true
 role      = "operator-CLI dispatch entry — every operator-facing ceremony routes through this binary"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/cli/bin/lares"

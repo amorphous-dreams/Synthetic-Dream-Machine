@@ -7,7 +7,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip.m
 mana      = 14
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "FTLS card projection: Neural Whip — playable surface with clickable component pills"
 tags      = ["components/domain/stuckforce", "components/function/restrain", "components/hook/attack", "mount-points/trait"]
 l-space   = "sdm"

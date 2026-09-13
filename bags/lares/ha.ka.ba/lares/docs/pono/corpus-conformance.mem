@@ -11,7 +11,6 @@ manao             = 15
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-06"
 role              = "corpus-conformance — the design for a run that answers whether a corpus obeys the grammar a NAMED seed-state declares. Ten shell witnesses and nine corpus-walking predicates already stand; nothing binds them to a seed-state, nothing emits one verdict, and nothing keeps a record. Names the five law classes, the drift reading the record makes possible, the failure discipline a run inherits from tonight's four instrument-lies, and what a conformance claim MUST NOT say."
 tags              = ["api/pono/meme"]

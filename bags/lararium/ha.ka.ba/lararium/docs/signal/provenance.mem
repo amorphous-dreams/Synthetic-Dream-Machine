@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 17
 manaoio   = 16
-retain    = false
 role      = "docs room for lararium signal lineage, archive witness, source shelves, and migration residue that still pressures the branch"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

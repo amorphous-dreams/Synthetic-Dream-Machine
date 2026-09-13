@@ -7,7 +7,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/witness/items/uvg/porters-pebble.mem"
 mana      = 11
 manao     = 16
 manaoio   = 15
-retain    = true
 role      = "UVG relic witness for Porter's Pebble — pebble-machine provenance + the Floating Disc 'Stuckforce Relic' variant, cold-load"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

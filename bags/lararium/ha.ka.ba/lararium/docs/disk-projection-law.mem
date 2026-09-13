@@ -9,7 +9,6 @@ last-reviewed = "2026-07-18"
 mana          = 10
 manao         = 10
 manaoio       = 10
-retain        = true
 role          = "pointer: the disk-projection law lives at api/disk-projection — carrier-whole at rest"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/disk-projection-law"

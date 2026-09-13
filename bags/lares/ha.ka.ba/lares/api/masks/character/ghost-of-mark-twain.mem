@@ -17,7 +17,6 @@ manaoio           = 16
 name              = "Ghost of Mark Twain"
 namespace         = "&#x0950; &#x0901;"
 offstage-voice    = false
-retain            = false
 role              = "character mask — Ghost of Mark Twain; historical persona; riverboat-culture author voice"
 stage             = 15
 tags              = ["api/pono/meme", "api/masks"]

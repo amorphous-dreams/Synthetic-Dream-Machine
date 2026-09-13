@@ -7,7 +7,6 @@ file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tiddler-fields.mem"
 mana      = 18
 manao     = 18
 manaoio   = 18
-retain    = true
 role      = "interface note: canonical TW5 core-semantic tiddler field shapes for Lararium"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/tiddler-fields"

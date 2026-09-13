@@ -7,7 +7,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc.me
 mana      = 14
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "FTLS card projection: Floating Disc — playable surface with clickable component pills"
 tags      = ["components/domain/stuckforce", "components/function/cargo", "components/function/barrier", "components/hook/sustained", "mount-points/trait"]
 l-space   = "sdm"

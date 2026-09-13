@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/hana.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "bounded guest-grammar block — hana as work/action container; grammar-key selects the interpreter; English alias: \\task"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hana"]
 type      = "text/memetic-wikitext+tiddlywiki"

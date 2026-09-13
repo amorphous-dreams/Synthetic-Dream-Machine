@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/uefn-scene.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "UEFN scene decomposition model — Verse scene file → Lararium wiki graph → TW5 filtered views; web3 / NOT Blueprint"
 tags      = ["lar:///ha.ka.ba/lararium/mesh/kumu-device"]
 type      = "text/memetic-wikitext+tiddlywiki"

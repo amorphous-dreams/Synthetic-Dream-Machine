@@ -8,7 +8,6 @@ mana      = 16
 manao     = 16
 manaoio   = 16
 namespace = "&#x0950; &#x0901;"
-retain    = true
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/noosphere-boot"
 ```

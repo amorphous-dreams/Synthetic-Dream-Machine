@@ -16,7 +16,6 @@ mask-type         = "chorus"
 name              = "Lagrange Chorus"
 namespace         = "&#x0950; &#x0901;"
 nodes             = "[STUB — pending node registration]"
-retain            = false
 role              = "chorus mask — Lagrange Chorus; multi-node meta-mask; concept staked; harmony protocol pending-grammar"
 stage             = 10
 tags              = ["api/pono/meme", "api/masks"]

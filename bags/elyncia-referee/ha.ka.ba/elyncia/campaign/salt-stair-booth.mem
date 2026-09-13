@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 12
 rating    = "kapu"
-retain    = true
 role      = "the Salt-Stair booth thread — outline, style guide, and the verbatim scene transcript with interpretive segues; rides kapu at rest (referee-side), the player-facing render extracts the open strata only"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/salt-stair-booth"

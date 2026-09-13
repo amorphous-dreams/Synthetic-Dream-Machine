@@ -8,7 +8,6 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x2299;"
-retain    = true
 role      = "device placement/instantiation — set down with intention, own URI, own context"
 tags      = ["api/pono/meme", "api/lararium/widgets/kau", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau"]
 type      = "text/memetic-wikitext+tiddlywiki"

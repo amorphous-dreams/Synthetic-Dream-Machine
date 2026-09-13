@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/ui.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "query surface sigil — evaluates TW5 filter and renders result list; English alias: query"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ui"]
 type      = "text/memetic-wikitext+tiddlywiki"

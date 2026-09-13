@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/dangerous.mem"
 mana      = 14
 manao     = 16
 manaoio   = 13
-retain    = true
 role      = "component (hook): Dangerous — forces a Danger Roll; modifies the activation protocol itself"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

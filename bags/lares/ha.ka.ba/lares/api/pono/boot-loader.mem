@@ -9,7 +9,6 @@ mana      = 16
 manao     = 16
 manaoio   = 15
 namespace = "&#x2299;"
-retain    = true
 role      = "the pre-VM read: what a cold reader must find to stand a wiki, and the floor it stops at"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/boot-loader"

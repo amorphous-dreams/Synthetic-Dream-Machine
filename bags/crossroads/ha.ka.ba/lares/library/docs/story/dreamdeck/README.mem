@@ -5,7 +5,6 @@
 cacheable = false
 file-path = "bags/crossroads/ha.ka.ba/lares/library/docs/story/dreamdeck/README.mem"
 l-space   = "stable"
-retain    = false
 role      = "epic backlog DECK-* — DREAMDECK / elyncia.app integration: tldraw session canvas, Kowloon ActivityPub feeds, DreamDeck threads; S5 sprint target, seeded not begun"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/library/docs/story/dreamdeck/README"

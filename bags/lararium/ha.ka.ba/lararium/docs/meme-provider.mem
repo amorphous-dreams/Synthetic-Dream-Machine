@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/docs/meme-provider.mem"
 l-space     = "lararium"
 mana        = 15
-retain      = true
 role        = "invariant law: MemeProvider — the coalescing fan-out between an Automerge DocHandle and typed projections. Names why coalescing exists at all, the three scales and the threshold between them, the storm gate that keeps a flood from starving re-projection, and the per-island sync-complete ordering. Isomorphic, zero Automerge import."
 source-file = "packages/lararium-mesh/src/meme-provider.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

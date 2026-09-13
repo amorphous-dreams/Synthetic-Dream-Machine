@@ -9,7 +9,6 @@ mana      = 14
 manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "active language-discipline law (kānāwai), certainty-pressure regulator, and forward generation-pressure surface --- seeds wording toward verb-relations as it forms"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

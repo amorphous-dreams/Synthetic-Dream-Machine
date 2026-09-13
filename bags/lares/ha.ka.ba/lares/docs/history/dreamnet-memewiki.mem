@@ -8,7 +8,6 @@ mana       = 15
 manao      = 16
 manaoio    = 12
 north-star = "Boot a memetic-wikitext kernel in Node, resume it in a browser, and bridge it to Kowloon, TLDraw and MemPalace without any of them holding authority over the memetic core."
-retain     = true
 role       = "the consolidation that staged the memetic-wikitext kernel — four scratch notes folded into one OODA-HA worksite, judged against what stands"
 tags       = ["api/pono/meme"]
 type       = "text/memetic-wikitext+tiddlywiki"

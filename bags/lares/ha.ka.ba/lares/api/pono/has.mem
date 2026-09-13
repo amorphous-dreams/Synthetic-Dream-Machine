@@ -9,7 +9,6 @@ mana      = 16
 manao     = 17
 manaoio   = 15
 namespace = "&#x2299;"
-retain    = true
 role      = "the has sigil — one relation in three slots: an ENTITY, a NAME, and what that name HOLDS. Names the copula-free predicate the corpus authors rows with; states the quoting law and the text law that decide what a slot receives; routes the relations has refuses (sequence, crossing, grade) to their own verbs"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -8,7 +8,6 @@ mana      = 17
 manao     = 17
 manaoio   = 17
 namespace = "&#x2299;"
-retain    = true
 role      = "function pragma-alias sigil — declares a named TW5 filter function (TW5 5.3+); leaf-only"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-function"]
 type      = "text/memetic-wikitext+tiddlywiki"

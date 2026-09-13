@@ -9,7 +9,6 @@ mana          = 15
 manao         = 15
 manaoio       = 14
 render-target = "docs"
-retain        = true
 role          = "VERBATIM spirit handback (2026-09-11) — face-join re-grant of pre-seat bindings: a re-delegate is NECESSARY but NOT SUFFICIENT, keyhive reads forward-only so pre-seat content must be RE-SEALED (KeyhiveProvider.reSealBag). Measured on the real provider (DecryptError under re-delegate-only). Captured word-for-word (MD transliterated to wikitext); refines project-face-join-and-plane-law claim 2. Landed 024210396."
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal"

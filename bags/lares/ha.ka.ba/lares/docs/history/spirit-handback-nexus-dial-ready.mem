@@ -9,7 +9,6 @@ mana          = 14
 manao         = 14
 manaoio       = 13
 render-target = "docs"
-retain        = true
 role          = "VERBATIM spirit handback (2026-09-11) — the nexus-client-dial flake diagnosed and cured: the early awaited find's instrument-lie corrected at the observation point with findWhenReady; allowableStates is deprecated-and-ignored in automerge-repo 2.6.0-alpha.3. Measured 6/60 red -> 0/80 green under load. Captured word-for-word (MD transliterated to wikitext); corrects project-nexus-client-dial-flake's prior misdiagnosis. Landed 0b022f98a."
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready"

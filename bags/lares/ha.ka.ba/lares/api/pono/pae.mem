@@ -9,7 +9,6 @@ manao     = 17
 manaoio   = 16
 namespace = "&#x2299;"
 phases    = ["soh", "stx", "etx", "eot"]
-retain    = true
 role      = "carrier phase boundary — transmission lifecycle law"
 tags      = ["api/pono/meme", "api/pono/memetic-wikitext"]
 type      = "text/memetic-wikitext+tiddlywiki"

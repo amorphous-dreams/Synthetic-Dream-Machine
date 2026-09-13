@@ -8,7 +8,6 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 namespace = "&#x2299;"
-retain    = true
 role      = "invariant capability: heleuma-ka — soul/fire anchor; promotion-eligible compiled artifact with quine record and ceremony path"
 tags      = ["api/pono/heleuma"]
 type      = "text/memetic-wikitext+tiddlywiki"

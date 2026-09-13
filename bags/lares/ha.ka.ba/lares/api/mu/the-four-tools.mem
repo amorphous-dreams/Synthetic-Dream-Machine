@@ -10,7 +10,6 @@ mana          = 17
 manao         = 16
 manaoio       = 17
 namespace     = "&#x0950; &#x0901;"
-retain        = true
 role          = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
 source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
 tags          = ["api/pono/meme", "api/pono/loci"]

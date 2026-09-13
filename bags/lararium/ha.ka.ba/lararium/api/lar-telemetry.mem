@@ -10,7 +10,6 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "lar-telemetry — the process by which the @daemon TW5 engine reads a turn's instrument sigils (the gauges) into gradient-valued readings, holds them on the nalu queue, and flushes on the next wave to project lar_* onto the mempalace drawer; the chat sigils as SharktoothSigil instruments; gradient readings never verdicts; verbatim-always / telemetry-eventual; @daemon owns it all"
 tags      = ["api/pono/meme", "api/lararium"]
 type      = "text/memetic-wikitext+tiddlywiki"

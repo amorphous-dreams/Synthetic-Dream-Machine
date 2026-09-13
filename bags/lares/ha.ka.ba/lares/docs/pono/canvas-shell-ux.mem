@@ -11,7 +11,6 @@ manao             = 15
 manaoio           = 14
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "canvas-shell-ux — the shell doctrine for the canvas camera: the canvas is PRIMARY and chrome wraps it without blocking it. Migrated 2026-09-02 out of the superseded multiplayer-canvas constitution and evergreened off its retired surface. Carries the pointer-events discipline, the iOS visual-viewport tracking that a fixed header needs, and the native-scroller answer to one-finger pan."
 tags              = ["api/pono/meme"]

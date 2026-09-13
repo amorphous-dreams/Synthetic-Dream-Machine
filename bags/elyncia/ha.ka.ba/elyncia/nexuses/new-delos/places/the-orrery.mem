@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 12
 rating    = "ano"
-retain    = true
 role      = "place, High Delos — the Orrery: the Reach-tier instrument mapping where Elyncia's pattern reached into neighboring worlds; access unruled"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery"

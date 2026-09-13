@@ -10,7 +10,6 @@ mana      = 17
 manao     = 15
 manaoio   = 14
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "the pono model for mempalace as the lararium's memory-library — tensegrity, the @daemon shore, the lar_ net, the surfaces, the boundary"
 tags      = ["api/pono/meme", "api/lararium"]
 type      = "text/memetic-wikitext+tiddlywiki"

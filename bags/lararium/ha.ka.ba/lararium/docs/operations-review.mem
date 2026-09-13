@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 16
-retain    = false
 role      = "OODA-HA extraction plan for lararium interaction protocols — frame-uncertainty, talk story, session init, and related surfaces"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

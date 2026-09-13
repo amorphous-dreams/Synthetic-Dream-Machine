@@ -4,7 +4,6 @@
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/pranala.mem"
-retain    = false
 role      = "docs companion for pranala: examples, sugar long-forms, and reciprocal-edge guidance"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/meme-write.mem"
 l-space     = "lararium"
 mana        = 3
-retain      = true
 role        = "self-documentation: TODO describe meme-write.ts"
 source-file = "packages/lararium-tw5/src/meme-write.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

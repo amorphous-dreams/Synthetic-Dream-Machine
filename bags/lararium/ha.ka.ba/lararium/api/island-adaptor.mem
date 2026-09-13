@@ -9,7 +9,6 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "TS shore between CompositeStore and the wiki's in-process nalu engine — forwards CRDT-remote changes, owns outbound saveTiddler/deleteTiddler, delegates apply-time echo guard to $tw.lares.isApplyingNalu"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

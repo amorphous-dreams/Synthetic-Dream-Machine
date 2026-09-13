@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/components/function/magic-decode.mem"
 mana      = 13
 manao     = 16
 manaoio   = 13
-retain    = true
 role      = "component (function): Magic Decode — turning a magical inscription into active, readable meaning"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -8,7 +8,6 @@ l-space       = "stable"
 mana          = 15
 manao         = 16
 manaoio       = 14
-retain        = true
 revised-on    = "2026-08-25"
 revision-note = "deep pass on two measured waves: the degradation law rewritten to the engine's real behavior (an unbound macro call renders as nothing, the parse stays total, storage round-trips verbatim), the extension mechanism stood up as a normative rule-object contract, the rule inventory corrected to real exported names (44), security gates measured, the test corpus cited as the executable conformance suite, references seated, and the document's voice held to TW5 ontology alone"
 role          = "the base-syntax specification draft for TiddlyWiki 5 wikitext — the normative reference the +tiddlywiki suffix registration requires and no standards track yet carries"

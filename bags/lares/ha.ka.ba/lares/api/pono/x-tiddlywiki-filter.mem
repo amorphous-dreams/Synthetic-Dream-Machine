@@ -8,7 +8,6 @@ grammar-key = "x-tiddlywiki-filter"
 guest-mime  = "text/x-tiddlywiki-filter"
 mana        = 18
 namespace   = "&#x2299;"
-retain      = true
 role        = "pointer meme: x-tiddlywiki-filter is fully implemented by wikitext-filter; this meme routes to the canonical extension"
 tags        = ["api/pono/meme"]
 type        = "text/memetic-wikitext+tiddlywiki"

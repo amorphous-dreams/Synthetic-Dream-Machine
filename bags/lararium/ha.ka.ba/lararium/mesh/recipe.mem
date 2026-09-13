@@ -7,7 +7,6 @@ file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/recipe.mem"
 l-space     = "lararium"
 mana        = 12
 manao       = 12
-retain      = true
 role        = "RecipeTiddler schema + bag-stack parsing — the stored shape of a wiki's composition record"
 source-file = "packages/lararium-mesh/src/recipe.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

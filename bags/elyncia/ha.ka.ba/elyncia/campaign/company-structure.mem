@@ -9,7 +9,6 @@ mana      = 13
 manao     = 13
 manaoio   = 13
 rating    = "ano"
-retain    = true
 role      = "campaign sidebar — Alpha Playtest company structure and multi-PC play"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/company-structure"

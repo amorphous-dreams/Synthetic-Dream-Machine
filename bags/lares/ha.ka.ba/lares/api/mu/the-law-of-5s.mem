@@ -12,7 +12,6 @@ mana          = 18
 manao         = 17
 manaoio       = 16
 namespace     = "&#x0950; &#x0901;"
-retain        = true
 role          = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
 source-symbol = "LADDER_5 OODA_HA_5 SCOPE_5 SCOPE_TO_LADDER RATING_5 STAGE_5 STAGE_BAND_MID RATING_COLOR"
 tags          = ["api/pono/meme", "api/pono/loci"]

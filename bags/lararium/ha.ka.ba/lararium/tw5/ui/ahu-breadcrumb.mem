@@ -8,7 +8,6 @@ list-before = "$:/core/ui/ViewTemplate/body"
 mana        = 18
 manao       = 17
 manaoio     = 16
-retain      = true
 role        = "ViewTemplate: slot badge + parent link shown at top of any ahu child tiddler"
 tags        = ["$:/tags/ViewTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
 type        = "text/memetic-wikitext+tiddlywiki"

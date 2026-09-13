@@ -11,7 +11,6 @@ manao             = 14
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-02"
 role              = "rust-toolchain — standing the toolchain that builds our nakama forks (keyhive, subduction, onomancy) to wasm locally, so a fix can be READ, PATCHED, PROVEN and DONATED rather than waited for. Carries the measured pins (1.90.0 / 1.91.0, per-repo via rust-toolchain.toml), the emitter (wasm-pack over three targets plus a slim post-step), the two paths (rustup for working, nix for donation parity), and the law that a locally-built wasm which diverges from the published package is a FLAG-DAY against our own mesh."
 tags              = ["api/pono/meme"]

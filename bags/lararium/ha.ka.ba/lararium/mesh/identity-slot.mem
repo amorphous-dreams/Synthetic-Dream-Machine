@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/identity-slot.mem"
 l-space     = "lararium"
 mana        = 14
-retain      = true
 role        = "invariant law: IdentitySlot — the minimum surface a vessel needs from an identity provider. Names the DID namespace, the determinism a derived actor owes, the quine split (the class in TypeScript, the CONFIG as lar: tiddlers), and exactly which layer the open stub leaves ungated and which gates stand elsewhere."
 source-file = "packages/lararium-mesh/src/identity-slot.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

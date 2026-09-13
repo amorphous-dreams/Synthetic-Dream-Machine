@@ -9,7 +9,6 @@ mana      = 19
 manao     = 19
 manaoio   = 18
 namespace = "&#x2299;"
-retain    = true
 role      = "invariant: two planes of different arity — the vessel-wide content tiga (ha/ka/ba) + a face's own four planes (persona/circles/identities/sessions), all named off one derived tag and resolved from @catalog"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

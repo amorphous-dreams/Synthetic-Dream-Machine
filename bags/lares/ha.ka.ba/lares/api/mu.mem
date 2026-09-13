@@ -25,7 +25,6 @@ mana      = 17
 manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
-retain    = true
 role      = "null-oracle core shore, grammar-surface authority, mandatory core-hydration contract"
 tags      = ["api/pono/meme", "api/pono/loci", "api/pono/kapu"]
 type      = "text/memetic-wikitext+tiddlywiki"

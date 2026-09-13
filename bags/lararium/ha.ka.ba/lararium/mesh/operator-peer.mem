@@ -9,7 +9,6 @@ l-space   = "lararium"
 mana      = 19
 manao     = 19
 manaoio   = 18
-retain    = true
 role      = "Canonical operator-vessel contract: two-lane VM pool law, shared command/receipt surface, ea sovereignty model"
 tags      = ["mesh/lar-vessel", "mesh/causal-island"]
 type      = "text/memetic-wikitext+tiddlywiki"

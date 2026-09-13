@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 15
 manao     = 16
 manaoio   = 16
-retain    = false
 role      = "parent docs shelf for lararium voice-work, old all-in-one AGENTS ingests, agent preferences, and house-presence materials where Mischief-Muse and the others can rest and ressurect"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

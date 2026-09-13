@@ -8,7 +8,6 @@ l-space       = "stable"
 mana          = 17
 manao         = 17
 manaoio       = 16
-retain        = true
 role          = "lararium boot open-phase sequence, authority envelope modes, keyhive promotion shore"
 source-symbol = "LarariumOpenPhase LarariumAuthorityEnvelope"
 status-date   = "2026-04-30"

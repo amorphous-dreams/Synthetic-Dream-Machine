@@ -12,7 +12,6 @@ manaoio               = 18
 namespace             = "&#x0950; &#x0901;"
 ooda-ha-default       = 1
 ooda-ha-loop-span     = "multi-turn"
-retain                = true
 role                  = "invariant OODA-HA loop law, loop-visibility Level, and the loop-spans-turns phase-yield grammar"
 tags                  = ["api/pono/meme", "api/pono/loci"]
 type                  = "text/memetic-wikitext+tiddlywiki"

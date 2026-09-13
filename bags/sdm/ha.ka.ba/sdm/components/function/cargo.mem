@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/components/function/cargo.mem"
 mana      = 13
 manao     = 16
 manaoio   = 12
-retain    = true
 role      = "component (function): Cargo — carrying, hauling, or bearing a load"
 l-space   = "sdm"
 type      = "text/memetic-wikitext+tiddlywiki"

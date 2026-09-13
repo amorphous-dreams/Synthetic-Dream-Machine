@@ -10,12 +10,10 @@ mana          = 17
 manao         = 17
 manaoio       = 15
 namespace     = "&#x0950; &#x0901;"
-retain        = true
 revision-note = "minted 2026-06-06 — extracted from lar-uri #path-taxonomy TW5 System Boundary; lar-uri retains only the scheme-intrinsic clause + a loulou here"
 role          = "load-bearing invariant — the sync boundary admits any valid TW5 tiddler; the $:/ system plane stays browser-local by the system filters; a lar: title marks a placed, address-bearing carrier"
-status        = "designed"
 status-why    = "the namespace design; no source carries it yet"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/designed"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
 ```

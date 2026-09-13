@@ -6,7 +6,6 @@ cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/devices/move-button.mem"
 listenable = "InteractedWithEvent"
 namespace  = "&#x2299;"
-retain     = true
 role       = "kumu device type — move-button: fires the MOVE residency ACTION verb on InteractedWithEvent"
 tags       = ["api/residency-model"]
 type       = "text/memetic-wikitext+tiddlywiki"

@@ -9,7 +9,6 @@ mana        = 18
 manao       = 18
 manaoio     = 17
 namespace   = "&#x2299;"
-retain      = true
 role        = "invariant doctrine: UEFN Verse 5.6 event type lattice — event/listenable asymmetry, suspends effect specifier, @editable boundary, using module import; unreleased: sticky_event + subscribable_event; standard for Lararium device model"
 status-date = "2026-05-15"
 tags        = ["api/pono/meme"]

@@ -9,11 +9,9 @@ mana       = 18
 manao      = 17
 manaoio    = 17
 namespace  = "&#x2299;"
-retain     = true
 role       = "submission-grade specification for the lar: URI scheme — abstract, ABNF, five-planes reading (Provisional), resolution model, conformance, scheme registration, security; sibling submission to memetic-wikitext"
-status     = "standing"
 status-why = "submission-draft"
-tags       = ["api/pono/meme", "api/pono/loci"]
+tags       = ["api/pono/meme", "api/pono/loci", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
 ```

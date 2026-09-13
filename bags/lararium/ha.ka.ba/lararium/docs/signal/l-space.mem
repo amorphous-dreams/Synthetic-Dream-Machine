@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 17
 manao     = 17
 manaoio   = 18
-retain    = false
 role      = "docs room for definitional lar l-space semantics and address-slot framing"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/hui.mem"
 namespace = "&#x2299;"
-retain    = true
 role      = "await-all synchronization sigil — hui as gathering; English alias: \\sync; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hui"]
 type      = "text/memetic-wikitext+tiddlywiki"

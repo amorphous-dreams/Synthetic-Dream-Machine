@@ -9,7 +9,6 @@ l-space   = "stable"
 mana      = 16
 manao     = 17
 manaoio   = 16
-retain    = false
 role      = "OODA-HA plan for creating the api/lares/masks/ tree: parent index, named Voice masks, character masks, chorus masks, and skeleton meme-loci template"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

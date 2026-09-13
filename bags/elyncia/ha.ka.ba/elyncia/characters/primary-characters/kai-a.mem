@@ -9,7 +9,6 @@ mana      = 12
 manao     = 12
 manaoio   = 11
 rating    = "ano"
-retain    = true
 role      = "primary character — Kai ʻĀ, the prismatic elf warrior-ranger kaiju-stalker (Kai's PC); build approved, lifepath open for Session 0.1 talk-story"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/kai-a"

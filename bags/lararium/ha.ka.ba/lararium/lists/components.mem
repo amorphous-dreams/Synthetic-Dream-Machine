@@ -6,7 +6,6 @@ cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/lists/components.mem"
 mana      = 13
 manao     = 16
-retain    = true
 role      = "TW5 procedure: render the current tiddler's has-stack as clickable tag-pills (stack filter; captions from definition memes)"
 tags      = ["$:/tags/Global"]
 type      = "text/memetic-wikitext+tiddlywiki"

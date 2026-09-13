@@ -8,7 +8,6 @@ l-space   = "lararium"
 mana      = 19
 manao     = 18
 manaoio   = 18
-retain    = true
 role      = "Package alignment law: mesh as isomorphic spine; dep graph and consistency rules for the monorepo"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/alignment-plan"

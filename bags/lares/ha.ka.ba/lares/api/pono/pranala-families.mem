@@ -9,7 +9,6 @@ mana          = 18
 manao         = 17
 manaoio       = 17
 namespace     = "&#x2299;"
-retain        = true
 role          = "canonical pranala edge-family taxonomy: eight families, role vocabularies, contract flags"
 source-symbol = "KNOWN_FAMILIES FAMILY_ROLES FAMILY_CONTRACTS"
 status-date   = "2026-06-05"

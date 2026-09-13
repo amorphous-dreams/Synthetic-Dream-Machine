@@ -8,7 +8,6 @@ l-space     = "invariant"
 mana        = 18
 manao       = 18
 manaoio     = 17
-retain      = true
 role        = "invariant law: carrier-codec as projection layer; import and export paths between disk carrier format and canonical LarTiddlerRecord entries"
 status-date = "2026-04-30"
 tags        = ["api/pono/meme"]

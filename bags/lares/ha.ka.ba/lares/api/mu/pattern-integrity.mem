@@ -9,7 +9,6 @@ mana        = 18
 manao       = 18
 manaoio     = 17
 namespace   = "&#x0950; &#x0901;"
-retain      = true
 role        = "invariant doctrine: Fuller's 5 pattern integrities applied to Lararium — tensegrity, wave/water, synergy, ephemeralization, trim tab"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]

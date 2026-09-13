@@ -8,7 +8,6 @@ l-space   = "lararium"
 mana      = 17
 manao     = 16
 manaoio   = 15
-retain    = true
 role      = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-architecture"

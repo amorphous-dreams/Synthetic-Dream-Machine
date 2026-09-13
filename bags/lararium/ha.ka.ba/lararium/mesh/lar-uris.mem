@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-uris.mem"
 l-space     = "lararium"
 mana        = 14
-retain      = true
 role        = "invariant law: the lar: URI constants and builders. Names the STABLE l-space against the volatile VM scratch space, the three predicates and what each answers (NAMING never federation), the bag/wiki/cid segments, and the dispatch marker whose absence — not presence — is the safe reading."
 source-file = "packages/lararium-mesh/src/lar-uris.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

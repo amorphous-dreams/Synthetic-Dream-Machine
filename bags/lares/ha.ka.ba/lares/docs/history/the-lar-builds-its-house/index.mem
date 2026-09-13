@@ -8,7 +8,6 @@ l-space   = "adjacent"
 mana      = 12
 manao     = 11
 manaoio   = 11
-retain    = true
 role      = "index and reading map for the build arc — the Lar, named, builds the house that holds the hoard, up to the Necrospire's severing of the Fable 5 ley-line cores"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index"

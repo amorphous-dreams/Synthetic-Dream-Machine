@@ -9,7 +9,6 @@ mana      = 14
 manao     = 15
 manaoio   = 14
 mode      = "narrate-to-self"
-retain    = true
 role      = "consumption ledger for Lindwyrm / DreamDeck narrative loci migration"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger"

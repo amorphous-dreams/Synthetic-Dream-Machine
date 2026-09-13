@@ -12,7 +12,6 @@ phase-map-assess  = "#reading-test"
 phase-map-decide  = "#conventions"
 phase-map-observe = "#loop-position"
 phase-map-orient  = "#handoff"
-retain            = false
 role              = "grammar: the five discourse stances + the Syadasti Reading Rule — stance selects the evaluation frame that gives confidence its meaning"
 trigger           = "always — grammar primitive"
 type              = "text/memetic-wikitext+tiddlywiki"

@@ -8,7 +8,6 @@ file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/shield-ward.mem"
 mana      = 14
 manao     = 17
 manaoio   = 15
-retain    = true
 role      = "Power module: Shield Ward — a skin-close abjuration barrier that filters incoming attacks"
 tags      = ["components/domain/abjuration", "components/function/ward", "components/function/barrier", "components/hook/imbued", "mount-points/trait"]
 l-space   = "sdm"

@@ -10,7 +10,6 @@ mana          = 18
 manao         = 18
 manaoio       = 18
 namespace     = "&#x0950; &#x0901;"
-retain        = true
 role          = "syad reading invariant --- five naya standpoints licensing the saptabhaṅgī predications; stance-conditioned confidence law"
 source-symbol = "STANCES SYAD_7 STANCE_LICENSES SATIRIST_OPERATIONAL"
 tags          = ["api/pono/meme", "api/pono/loci"]

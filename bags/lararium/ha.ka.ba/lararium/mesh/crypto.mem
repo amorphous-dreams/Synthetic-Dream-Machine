@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/crypto.mem"
 l-space     = "lararium"
 mana        = 15
-retain      = true
 role        = "invariant law: THE CRYPTO BOUNDARY. Lararium defines needs and implements no primitive; portable code depends on these shores and never on a platform's own crypto. Names the three doctrines, the two digest paths and which each serves, the canonical-bytes rule, and the buffer constraint a shared view would break."
 source-file = "packages/lararium-mesh/src/crypto.ts"
 type        = "text/memetic-wikitext+tiddlywiki"

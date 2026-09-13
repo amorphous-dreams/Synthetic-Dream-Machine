@@ -9,7 +9,6 @@ mana        = 18
 manao       = 18
 manaoio     = 17
 namespace   = "&#x2299;"
-retain      = true
 role        = "invariant doctrine: 7 local-first ideals (Ink & Switch) + Keyhive/Beelay alignment matrix; server-as-peer law; Fuller non-simultaneous Universe = causal island"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]

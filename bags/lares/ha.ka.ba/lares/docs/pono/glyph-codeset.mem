@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 17
 manao     = 16
 manaoio   = 16
-retain    = true
 role      = "nine-category glyph codeset: Unicode ranges, semantic roles, authority matrix, UCAN attenuation, parsing pseudocode, validation rules, three-layer encoding"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

@@ -5,7 +5,6 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/circles-kowloon.mem"
 mana      = 16
-retain    = true
 role      = "reference model: Kowloon circle data structure and social graph inversion; authoritative design reference for the per-face CirclesDoc that answers to @circles-<tag>"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/circles-kowloon"

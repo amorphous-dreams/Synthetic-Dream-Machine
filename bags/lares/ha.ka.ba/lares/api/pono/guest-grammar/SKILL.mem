@@ -15,7 +15,6 @@ file-path          = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar/SKILL.mem
 mana               = 15
 manao              = 16
 manaoio            = 14
-retain             = true
 role               = "guest-grammar operational skill — admission audit, hana shaping, and companion-meme split discipline"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar"
 tags               = ["api/pono/meme", "api/pono/loci"]

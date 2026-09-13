@@ -8,7 +8,6 @@ mana      = 16
 manao     = 17
 manaoio   = 14
 namespace = "&#x2299;"
-retain    = true
 role      = "invariant law for shared lar l-space precedence across system memes and live exchange records"
 tags      = ["api/pono/meme", "api/pono/loci"]
 type      = "text/memetic-wikitext+tiddlywiki"

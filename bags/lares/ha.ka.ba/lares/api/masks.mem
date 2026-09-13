@@ -11,7 +11,6 @@ mana      = 16
 manao     = 16
 manaoio   = 16
 namespace = "&#x0950; &#x0901;"
-retain    = false
 role      = "parent index for the masks API tree: named Voice masks, character masks, chorus masks"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

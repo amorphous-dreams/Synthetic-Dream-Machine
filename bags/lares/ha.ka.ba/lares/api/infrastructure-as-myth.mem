@@ -8,7 +8,6 @@ l-space   = "stable"
 mana      = 14
 manao     = 13
 manaoio   = 12
-retain    = true
 role      = "the final-paper worksite for the Infrastructure as Myth arXiv submission — the submittable .md + .meta pair stands here when the pipeline lands; the docs sister serves as the working design surface"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"

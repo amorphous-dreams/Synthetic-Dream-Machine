@@ -4,7 +4,6 @@
 ```toml meta
 file-path = "bags/lares/ha.ka.ba/lares/docs/wikitext-paint-research.mem"
 l-space   = "stable"
-retain    = true
 role      = "the grammar research shelf: how a TextMate grammar PAINTS, measured against canon by a research swarm 2026-09-10/11 — scope naming, delimiter treatment, vocabulary size, token share, the loudness dial, typography and perception. Binds as kupono intent: the base tiddlywiki wikitext grammar aligns to THIS before any memetic-wikitext refactor stands on top of it"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/wikitext-paint-research"

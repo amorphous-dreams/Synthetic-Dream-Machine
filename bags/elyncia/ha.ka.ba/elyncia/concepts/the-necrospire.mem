@@ -9,7 +9,6 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 rating    = "ano"
-retain    = true
 role      = "concept canon — the Necrospire: the Oort needle, the Pale Emperor's prison bound onto it, the aeons adrift, the fall, and the caldera in the Accursed Mountains"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-necrospire"
