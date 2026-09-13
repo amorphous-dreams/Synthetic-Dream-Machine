@@ -42,6 +42,60 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
+<<~ ahu #/holds>>
+
+! What each hearth HOLDS, in paths
+
+The table above reads the ground in prose, which a hand reads and a gate cannot. This block names the same ground in ''repo-relative globs'', keyed by the trailer a hearth's commits carry, so `tools/hearths-gate.mjs` can refuse a commit that reaches into another hearth's ground before the ledger carries a crossing row for it. The prose stands as the meaning; the globs stand as its edge.
+
+A glob that matches nothing belongs to no hearth — the gate names only what a commit actually touches. A path claimed by two hearths reads as a crossing in flight, and the gate says so rather than picking a winner.
+
+```toml holds
+[[hold]]
+hearth  = "the meme hearth"
+trailer = "session_01EHVUW6kxAXwK9aBUG31T5N"
+globs   = [
+  "packages/lares-cli/src/commands/meme*.ts",
+  "packages/lares-cli/src/commands/nexus*.ts",
+  "packages/lararium-mesh/src/realm-bag.ts",
+  "packages/lararium-mesh/src/carriage-registry.ts",
+  "packages/lararium-mesh/src/carriage-board.ts",
+  "packages/lararium-mesh/src/cas-transit.ts",
+  "packages/lararium-node/src/nexus-carriage.ts",
+  "packages/lararium-node/src/commands/nexus-*.ts",
+  "packages/lararium-node/src/bulb-read-face.ts",
+  "packages/lararium-node/src/cas-reshare.ts",
+  "tests/harness/**",
+  "tools/mesh-scenarios.sh",
+  "bags/lares/ha.ka.ba/lares/docs/pono/**",
+]
+
+[[hold]]
+hearth  = "the founding hearth"
+trailer = "session_01Jg969FCpJcM84XvtsDNFou"
+globs   = [
+  "packages/lararium-mesh/src/genesis-doc.ts",
+  "packages/lararium-node/scripts/build-genesis-island.ts",
+  "packages/lararium-node/src/open-node-vessel.ts",
+  "packages/lararium-node/src/genesis-artifact.ts",
+  "packages/lararium-mesh/src/handle-kel.ts",
+  "packages/lararium-mesh/src/persona-kel.ts",
+  "packages/lararium-mesh/src/veil-*.ts",
+  "packages/lares-cli/src/commands/persona.ts",
+]
+
+[[hold]]
+hearth  = "the grammar hearth"
+trailer = "session_01QdAMPMM9DsR4rRrmqqQBXe"
+globs   = [
+  "VSCode-TW5-Syntax",
+  "packages/lararium-tw5/src/carrier-shape.ts",
+  "packages/lararium-tw5/tests/carrier-shape*.test.ts",
+]
+```
+
+<<~/ahu>>
+
 <<~ ahu #/crossings>>
 
 ! Crossings this week, and what each cost
@@ -65,6 +119,6 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O3ykDYYjWI7YkvWgj3ANxMh3xy8meKj2dpTuQJcSzgk
+<<^ code="&#x0003;">>ni:///sha-256;PLttDYdp1U4Bme7reThh1klA09WfGv05wbTXJR1MlCI
 
 <<^ code="&#x0004;" -> to="?">>

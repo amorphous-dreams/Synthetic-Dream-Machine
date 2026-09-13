@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# commit-msg — a commit may not reach into another hearth's ground (docs/pono/hearths#/holds).
+# The trailer this gate reads lives in the MESSAGE, which only a commit-msg hook is handed.
+#
+# The gate resolves beside THIS hook's checkout ($0), never the committing repo's toplevel, so the same
+# hooksPath gates a worktree or a throwaway clone that carries no tools/ of its own.
+# Enable once per clone:  git config core.hooksPath .githooks
+exec node "$(cd "$(dirname "$0")/.." && pwd)/tools/hearths-gate.mjs" "$1"
