@@ -73,6 +73,38 @@ Each row: a research file the pass consumed, and the doctrine that carries its c
 
 <<~/ahu>>
 
+<<~ ahu #/the-harvest-room>>
+
+!! The harvest room ~ `lares-history`, read whole and emptied
+
+''The room held 51 files and served as a shelf that read like an archive and did not act as one.'' Its contents arrived in ONE rename sweep rather than by deliberate deposit, a carrier had already burned out of it, its addresses sat outside `ha.ka.ba/`, and edges named into it that nothing could answer. The operator ruled it a HARVEST ROOM: read each carrier, lift what still stands into a living bag, weld every inbound edge, thank the shell and burn it. ''The room's emptiness is the witness.''
+
+Every file below was read before it burned. Where a row names living carriers, they already stood the material — git holds every byte of the source, and the row says where a reader goes instead.
+
+!!! `last-sprint/` and `memes/history/research/` ~ thirteen shells, one lift
+
+''The lift.'' The web3 genesis arc closed S0--S8 on `feature/lararium-node-3` (2026-05): genesis artifact → runtime loader → peer-factory rewrite → quine round-trip → promotion ceremony → BagResidencyManager → Keyhive capability layer → wiki composition. ''Its North Star stands as law'' — every peer boots from one content-addressed genesis artifact, and the artifact carries the engine that deserializes it. The roadmap that recorded it burned with the room; the doctrine it produced lives at <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>, <<~ loulou "lar:///ha.ka.ba/lararium/node/genesis-island">> and the keyhive carriers.
+
+| Source (burned) | What it held | Where a reader goes now |
+|---|---|---|
+| `last-sprint/ROADMAP.mem` | the web3 genesis roadmap, North Star and S0--S8 exits | lifted above; the terminology stands at `lares/docs/federation` · `lares/docs/dreamnet-rhizome` |
+| `last-sprint/HANDOFF.mem` | the May-12 hand-off crystal for `feature/lararium-node-3` | `lares/docs/handoff` (the living shift ledger, four months past it); the durable decisions as law in `lararium/api/residency-model` · `api/action-handler` · `lares/api/pono/causal-islands` · `docs/pono/canon-boundary` |
+| `last-sprint/SESSION.mem` | a reverse-chronological session log, the Five Architecture Laws, the Three-Tiga doc model | `lares/api/pono/causal-islands` · `local-first` · `lararium/api/lararium-canonical-model` · `api/residency-tiers`; the narrative at `lares/docs/history/the-lar-builds-its-house/` |
+| `research/HANDOFF_CRYSTAL_20260410_FISSION.md` | the URI-schema three-way fission plan and the grammar-tree bootstrap | `lares/api/pono/lar-uri` + `lar-uri-namespace` (the spec the fission produced); `lares/docs/history/the-grammar-wakes` |
+| `research/SESSION_CRYSTAL_20260408.md` | the Lindwyrm story opening, Sprint Rev-4, the mana-pool HUD finding | `lares/docs/history/lindwyrm/vault-and-repo` (the same opening, cleaned); `lares/docs/hud` + `api/hud` (the mana field, now law) |
+| `research/The_Lares_Protocols_Dev_Story.md` | the Apr-09 decision log and a `mask.toml` draft spec | `lares/api/masks` and the whole `api/masks/` tree — the mask system as built, past the draft |
+| `research/KAIJU_ASSESSMENT.md` | three readings of MemPalace against the crystal layer | `lares/docs/crystal` · `lares/docs/history/the-bridge-takes-shape` (the integration as built and witnessed) |
+| `research/LIMINAL_PERSPECTIVES.md` | six outsider frames on the HUD, cockpit and CRM among them | `lararium/docs/signal/sa-display` (the CRM framing, standing) · `signal/drift` · `lares/docs/hud` |
+| `research/talk-story-2026-05-15.mem` | the verse graph ontology and the yin-collapse ruling | every ruling carries a named pono meme — `nalu` · `hoolele` · `lele` · `holo` · `puka` · `hui` · `tick` · `reaction-graph` · `verse-task-tree` · `verse-type-lattice` |
+| `research/talk_story_chapel_perilous_first_boot_roadmap.md` | Chapel Perilous as a first-boot roadmap, the four tools against OODA-HA | `lares/api/mu/the-four-tools` · `lares/docs/mu/the-four-tools` · `docs/mu/model-agnosticism` |
+| `research/talk_story_consecration_grammar_20260410.md` | the consecration session's five tensions and its per-art stubs | `lares/api/pono/kapu` · `lares/docs/infrastructure-as-myth` (the silat and kuntao reading, carried far past the stub) |
+| `research/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` | one demo transcript of the Thirteen in conversation | `lares/docs/voices` · `api/voices` · `docs/voices/voices-review` |
+| `research/Lares_Test_Prompt_and_Output_Kid_vs_Adult.md` | one demo transcript reading IaM against IaC at two registers | `lares/docs/infrastructure-as-myth` (Part I, whole) · `lararium/docs/degraded-states` |
+
+''What the consecration file held and nothing carries.'' `sortie`, `escrima` and `lua/LOCI` stood there as candidate grammar primitives and stand nowhere live. They read as deliberately dropped rather than lost, and this row exists so a later reader meets that as a decision rather than as a gap.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/history/period-forms">>
@@ -81,6 +113,6 @@ Each row: a research file the pass consumed, and the doctrine that carries its c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-wcWby-ywCwVG_jTd88u3jRNw9UsA02gNmFiKUatH64
+<<^ code="&#x0003;">>ni:///sha-256;Ee2bbL3dGPBjwN5PXR9CHlLMmzFMm2ZKLEHwtvNVjBE
 
 <<^ code="&#x0004;" -> to="?">>
