@@ -2,23 +2,113 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/genesis-island">>
 ```toml meta
-cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/node/genesis-island.mem"
-l-space   = "lararium"
-mana      = 3
-role      = "self-documentation: TODO describe genesis-island.ts"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/node/genesis-island"
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/node/genesis-island.mem"
+l-space     = "lararium"
+mana        = 8
+retain      = true
+role        = "invariant law: the genesis island BUILD — the three-layer I/O split that keeps the artifact platform-neutral, the DECLARED blob class each vendored file carries into its region, and the determinism the actor seed buys."
+source-file = "packages/lararium-node/scripts/build-genesis-island.ts"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/node/genesis-island"
 ```
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/contract>>
+<<~ ahu #/head>>
 
-TODO: describe the load-bearing surface this file owns.
+! The genesis island ~ how one artifact gets built, and why the builder holds no doctrine
+
+Every peer boots from one content-addressed genesis artifact, and the artifact carries the engine
+that deserializes it. This room owns the BUILD of that artifact: what the runner reads off a disk,
+what it declares about each blob, and what it refuses to decide.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<~ ahu #/three-layers>>
+
+!! Three layers, and the middle one touches no disk
+
+# ''A reads.'' The node runner walks the TW5 core script, the vendored plugin JSONs and their build
+attestations off the filesystem and assembles `GenesisInputs`.
+# ''B builds.'' `buildGenesisDoc(inputs)` in mesh constructs the Automerge doc. Platform-neutral by
+construction — it takes bytes and returns a document, so a browser vessel and a node vessel fold the
+SAME artifact from the same inputs.
+# ''C writes.'' The runner lands the artifact bytes, the CAS entries and the three region CIDs.
+
+''The split is the portability.'' A build step that reached for `fs` inside layer B would bind the
+artifact's shape to one host, and the artifact is the one thing every host must agree on exactly.
+
+''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
+oracle tiddlers (runtime DocUrls) write after `repo.import()` in `reconcileWellKnownTiddlers`. Neither
+is genesis material: one is content the vessel carries, the other is state it discovers.
+
+<<~/ahu>>
+
+<<~ ahu #/the-declaration>>
+
+!! A blob's class is DECLARED at the mint, never read off its path
+
+Each vendored file arrives as one of three classes, and `collectPlugins` decides which by READING it:
+
+* ''grammar'' — the required memetic-wikitext plugin, matched by its own URI. One file, and the whole
+of kāhuli's fast ratchet.
+* ''plugin'' — a file whose JSON envelope declares a `title`. This operator's own collection.
+* ''base'' — the default, and what an envelope-less tiddler array or an unparseable file stands as.
+The `lararium-boot-shadows` seed lives here, beside the lares/lararium bags.
+
+''The default is base, and that is the safe direction.'' A file that declares nothing gets the class
+that ratchets nothing; only a file that SAYS it is a plugin becomes one. An unparseable blob takes the
+same road rather than failing the build, because it declared nothing either.
+
+''The class rides INTO the descriptor,'' so verification classifies exactly as the mint did. A gate
+that re-derived the class from a path would be a second reader, free to disagree with the first — the
+[[carrier gradient|lar:///ha.ka.ba/lares/api/pono/carrier-gradient]] lesson, one layer down.
+
+<<~/ahu>>
+
+<<~ ahu #/regions>>
+
+!! Three regions, two ratchets
+
+The build prints and lands three CIDs, and they are not three tiers of one thing:
+
+|!Region |!What it folds |!What advancing it means |
+|`engineCid` |the TW5 core — the hearth true-name |the SLOW ratchet; it re-binds membership mesh-wide and rides inside every signed device-delegation preimage |
+|`grammarCid` |the required grammar ALONE |kāhuli's FAST ratchet — an overturn the mesh takes together |
+|`pluginsCid` |this operator's own collection |a REGION, never a kāhuli tier — any operator offers their own, and plugin drift is not grammar drift |
+
+''The engine's preimage is not a region fold.'' `computeEngineCid` takes `(version, sha)` and excludes
+the version label deliberately; the other two fold their entries under their OWN domain literal. Three
+hand-written folds read like an inconsistency and are the separation.
+
+<<~/ahu>>
+
+<<~ ahu #/determinism>>
+
+!! The actor seed makes two builds the same build
+
+`actorSeed = sha256hex(sorted content hashes of every walked input)`, so two builds from identical
+source produce an identical `island.sha256`. Automerge would otherwise stamp a fresh actor per build
+and two byte-identical corpora would fold to two different artifacts — which would make the artifact
+useless as a name.
+
+''An attestation that disagrees with its blob ABORTS the build.'' A plugin whose recorded
+`pluginJsonSha256` misses the bytes on disk throws rather than vendoring; a half-true genesis is worse
+than none, because every vessel downstream would carry the lie by hash.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-node/scripts/build-genesis-island.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/residency-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+
+<<^ code="&#x0003;">>ni:///sha-256;nzH-R3rMEmoxbWkRCe5wHv8uLbF6h4BF7p5OF2_FBMk
 
 <<^ code="&#x0004;" -> to="?">>
