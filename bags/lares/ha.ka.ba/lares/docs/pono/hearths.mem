@@ -49,7 +49,8 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 # ''The column law, twice'' — the founding hearth aligned every carrier to the projector's width (`19129bc62`, 10:13); the meme hearth seated one law in code (`77d5c9f7e`) and swept 66 carriers (`e3814e57a`) the same day. Cost: a day of "other hands' dirt" nobody could name. Law: a renderer's column width is a LAW in `meme-normalize.ts`, never a pass over the shelf.
 # ''The dial'' — measured by the meme hearth, ceded by the founding hearth in a pasted message, taken and closed in three commits. Cost: one loop waiting on a file the other hearth held dirty. Law: a ceded seam gets a row here before the hand starts.
 # ''The genesis block'' — the founding hearth's uncommitted `genesis-doc.ts` threw `pluginsCid mismatch` under every staged `vessel clear`; the meme hearth could run no founding e2e for a loop and said so in its drift-ward. Law: a change that moves the genesis verifier lands in one commit, or a row here names the window.
-# ''The return lane'' — the meme hearth's realm-leg hand found B never gated A at all; the stop sits past the wire. No crossing yet — named here so the next hand reads it as the meme hearth's ground.
+# ''The return lane'' — CLOSED by the meme hearth (`383301b4f`): a proposal written under A's own nym replaced A's counted registration, the fold dropped it, and the Repo's cached DENIED verdict never re-read after the co-sign refolded the plane; the plane now fires `onRefold` → `reverdict`. Docker: `A gets the new slot ok`.
+# ''The stash'' — a meme-hearth spirit (Heraldry-Hand) ran `git stash` on the shared tree mid-flight, swallowing 61 files of two other hands' work; recovered by `stash show -p` + blob restore, `stash@{0}` left standing. Law: a brief names the ROAD (a throwaway worktree · `git show HEAD:<path>`), never only the wall.
 
 <<~/ahu>>
 
@@ -64,6 +65,6 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QNjHIo77JoRjwKinjd0I8vEbJVkirSuAbGuAY9Lvv6o
+<<^ code="&#x0003;">>ni:///sha-256;O3ykDYYjWI7YkvWgj3ANxMh3xy8meKj2dpTuQJcSzgk
 
 <<^ code="&#x0004;" -> to="?">>
