@@ -9,6 +9,8 @@
  * Canon: lar:///ha.ka.ba/lararium/mesh/genesis-doc
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   PLUGIN_ATTESTATION_DOMAIN, pluginAttestationBytes, signPluginAttestation, verifyPluginAttestation,
@@ -91,5 +93,45 @@ describe("the signed bytes carry the domain and every field they claim to cover"
   test("★ NO clock rides the preimage — a build verifies in a mesh cut off for five hundred years ★", async () => {
     const wire = new TextDecoder().decode(pluginAttestationBytes(BUILD));
     expect(wire).not.toMatch(/\b(timestamp|issuedAt|expiresAt|notBefore|notAfter|builtAt)\b/);
+  });
+});
+
+/**
+ * THE BUILD MUST READ THE HALF THAT CANNOT BE FORGED BY WHOEVER WROTE THE FILE.
+ *
+ * `verifyPluginAttestation`'s own doc names the threat exactly: "The hashes here bind BYTES excellently
+ * and bind PROVENANCE not at all — anyone who can write the file can write the digests to match whatever
+ * they shipped. The signature names WHO stood behind the build, which is the only thing a reader could
+ * not have recomputed for themselves."
+ *
+ * The genesis build read that attestation and checked ONE thing: `pluginJsonSha256 !== sha`. That is
+ * precisely the half the doc says proves nothing — a tampered attestation whose sha was rewritten to match
+ * a swapped plugin passes it, untouched signature or none at all. The verify that reads the other half sat
+ * fully tested and reached by nobody.
+ *
+ * It REPORTS and never refuses, by design: "whether an unsigned or foreign-signed build may seed a hearth
+ * stays the reader's policy, because a rule baked here would decide every operator's trust from one seat."
+ * So the build SAYS what it found and leaves the ruling to the operator.
+ */
+describe("what the genesis build reads off an attestation", () => {
+  const SCRIPT = () => readFileSync(
+    join(import.meta.dirname, "..", "..", "lararium-node", "scripts", "build-genesis-island.ts"), "utf8");
+
+  test("★ the build reads PROVENANCE, not only the hash it could have recomputed itself ★", () => {
+    const code = SCRIPT().split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+    expect(code, "the build still checks only the sha — the half anyone who writes the file can match")
+      .toMatch(/verifyPluginAttestation\(/);
+  });
+
+  test("CONTROL — it still ABORTS on a sha mismatch, so the new read added a check and removed none", () => {
+    const code = SCRIPT();
+    expect(code).toMatch(/plugin attestation sha mismatch/);
+  });
+
+  test("CONTROL — the verify REPORTS and never refuses, so a build policy stays the operator's", async () => {
+    const unsigned = { format: "lar-plugin-build/v1", pluginJsonSha256: "aa", moduleCount: 1, moduleManifestSha256: "bb" };
+    await expect(verifyPluginAttestation(unsigned as never, async () => true)).resolves.toBe("unsigned");
+    const signed = { ...unsigned, builder: { signer: "cc", sig: "dd" } };
+    await expect(verifyPluginAttestation(signed as never, async () => false)).resolves.toBe("forged");
   });
 });

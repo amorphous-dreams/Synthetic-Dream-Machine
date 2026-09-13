@@ -27,6 +27,8 @@ import {
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
   buildGenesisDoc,
   verifyGenesisArtifact,
+  verifyPluginAttestation,
+  ed25519VerifyHex,
   type GenesisInputs,
   type GenesisPluginEntry,
   type GenesisBlobKind,
@@ -144,7 +146,7 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
  * So the class reads from the DECLARATION, never the path: a plugin declares a plugin envelope (an object
  * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI.
  */
-function collectPlugins(attestations: Map<string, PluginBuildAttestation>): GenesisPluginEntry[] {
+async function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Promise<GenesisPluginEntry[]> {
   const entries: GenesisPluginEntry[] = [];
   if (!existsSync(tw5PluginsRoot)) return entries;
 
@@ -174,7 +176,22 @@ function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Gene
         `attestation=${att.pluginJsonSha256} blob=${sha}`,
       );
     }
-    if (att) console.log(`[genesis] plugin attestation  ${id}  modules=${att.moduleCount}  manifest=${att.moduleManifestSha256.slice(0, 12)}…`);
+    if (att) {
+      // THE SHA BINDS BYTES AND BINDS PROVENANCE NOT AT ALL — anyone who can write the attestation can
+      // write digests matching whatever they shipped. The SIGNATURE names who stood behind the build, the
+      // one thing a reader could not have recomputed alone, so the build reads it and SAYS what it found.
+      // It reports and never refuses: whether an unsigned or foreign-signed build may seed a hearth stays
+      // the operator's policy, and a rule baked into a bake would decide every operator's trust from here.
+      // The shore's arg order reads (sig, bytes, key); the verify asks for (bytes, sig, signer). Adapted
+      // explicitly rather than passed straight — the two happen to take three strings-and-bytes each, so
+      // a direct pass would typecheck in a looser world and verify the wrong thing.
+      const provenance = await verifyPluginAttestation(att,
+        (bytes, sigHex, signerHex) => ed25519VerifyHex(sigHex, bytes, signerHex));
+      const stood = provenance === "unsigned" ? "UNSIGNED (no builder stood behind it)"
+                  : provenance === "forged"   ? "FORGED (a builder signature that does not verify)"
+                  : `signed by ${provenance.signer.slice(0, 16)}…`;
+      console.log(`[genesis] plugin attestation  ${id}  modules=${att.moduleCount}  manifest=${att.moduleManifestSha256.slice(0, 12)}…  provenance: ${stood}`);
+    }
     console.log(`[genesis] vendored ${kind.padEnd(7)} ${id}  v${version}  sha=${sha.slice(0, 12)}…`);
 
     entries.push({
@@ -191,7 +208,7 @@ function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Gene
 // Main — assemble inputs, call mesh builder, write outputs
 // ---------------------------------------------------------------------------
 
-function main(): void {
+async function main(): Promise<void> {
   console.log("[genesis] build-genesis-island starting");
   const genesisDir  = resolveGenesisDir();
   const coreJsPath  = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -232,7 +249,7 @@ function main(): void {
   console.log(`[genesis]     fleet returns only by re-admission. An epoch act, never an upgrade.`);
 
   const attestations     = readPluginAttestations();
-  const plugins          = collectPlugins(attestations);
+  const plugins          = await collectPlugins(attestations);
 
   if (!plugins.some(p => p.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
     throw new Error(
@@ -298,9 +315,7 @@ function main(): void {
   console.log("[genesis] S5 gate A satisfied — blob metadata + three region witness tiddlers injected; bytes shipped to CAS.");
 }
 
-try {
-  main();
-} catch (err) {
+main().catch((err: unknown) => {
   console.error("[genesis] FATAL:", err);
   process.exit(1);
-}
+});
