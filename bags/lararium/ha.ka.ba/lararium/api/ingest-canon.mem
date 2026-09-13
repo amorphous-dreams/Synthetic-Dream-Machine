@@ -66,8 +66,9 @@ module (annotate is sync, `parseMemeText` sync in-worker). (4) ''drawer-write'' 
 `LAR_SCHEMA` (adapter.py) to declare only `lar_hv`+`lar_ast`; bump `LAR_HV` 6→7 (lockstep
 telemetry-writeback.ts:32 + drawer_io.py:32) → next harvest re-projects stale drawers' METADATA
 (verbatim untouched — a metadata re-harvest, not a re-ingest). (5) ''read-side helper'' (lararium-tw5):
-re-hydrate `lar_ast` + structural-filter POST-recall. (6) ''exchange-assembler'' (`readExchanges` —
-done for live; route historical through the VM, Kappa replay). (7) `mine_palace_lock`+busy-retry around
+re-hydrate `lar_ast` + structural-filter POST-recall. (6) ''exchange-assembler'' — the capture leg rides
+PYTHON (`capture_sources.py`, whose `_turn_key` ports `turnKeyOf`); route historical through the VM,
+Kappa replay. (7) `mine_palace_lock`+busy-retry around
 the version-gated `writebackWing`/`drawer_io cmd_apply` re-derive ceremony.
 
 ''RETIRE (one runtime — no fallback):'' `turn-harvest.ts`/`harvestTurnGradient` (the VM-free regex
@@ -186,6 +187,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qqhy7FVY-mNKdwtpYEiVi0QtCguP6rJCed1R_A9W2D0
+<<^ code="&#x0003;">>ni:///sha-256;8ExAtE7OMmBl7IrjtZpvpjO-YMgmofV8LByhW06QYXI
 
 <<^ code="&#x0004;" -> to="?">>

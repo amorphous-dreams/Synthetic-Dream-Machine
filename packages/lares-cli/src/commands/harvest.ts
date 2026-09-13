@@ -145,39 +145,27 @@ function readTurns(file: string): RawTurn[] {
   return turns;
 }
 
-/**
- * The EXCHANGE-ASSEMBLER (the ingest canon's drawer grain): pair each user turn with the assistant
- * response(s) that follow into ONE unit — the self-contained recall drawer (a bare "yes do it" or an
- * answer shorn of its question retrieves poorly). The user side carries a `>` quote prefix (the convo
- * grain mempalace already uses); the assistant side carries the authored sigil instruments the
- * gradient reads. Orphan turns (user with no answer, answer with no question) flush as-is.
- */
-export function readExchanges(file: string): RawTurn[] {
-  const out: RawTurn[] = [];
-  let q: RawTurn | null = null;
-  for (const t of readTurns(file)) {
-    if (t.role === "user") {
-      if (q) out.push(q); // a prior question never got an answer — flush it alone
-      q = { ...t, text: "> " + t.text.replace(/\n/g, "\n> ") };
-    } else {
-      if (q) { q.text += "\n\n" + t.text; out.push(q); q = null; }
-      else out.push(t); // an answer with no preceding question
-    }
-  }
-  if (q) out.push(q);
-  return out;
-}
-
 export function sha(s: string): string {
   return createHash("sha256").update(s).digest("hex").slice(0, 16);
 }
 
 /**
  * The TURN KEY — the USER turn's stable identity (its uuid), the join the kapae convergence keys on.
- * The SAME formula MUST drive both legs: the CAPTURE leg (readExchanges → the .structurepalace provenance
- * turn_key) and the BEARING/rewind leg (readTurns → the gone-turn detection → the worldline KG +
- * structurepalace-kapae). Sharing this one helper keeps them in lockstep by construction — a gone uuid
- * closes the KG edge, the structurepalace tally, AND the Measure salience as ONE key (the grain note).
+ *
+ * TWO LEGS, TWO IMPLEMENTATIONS, ONE KEY ON THE UUID PATH. This helper drives the BEARING/rewind leg
+ * (`readTurns` → gone-turn detection → the worldline KG + structurepalace-kapae). The CAPTURE leg rides
+ * PYTHON: `lares sense capture` hands source identity to the daemon and
+ * `packages/lararium-sensorium/scripts/capture_sources.py` reads the transcript, its `_turn_key`
+ * self-describing as a port of this one. Where a turn carries a native uuid both legs return that uuid,
+ * so a gone uuid closes the KG edge, the structurepalace tally AND the Measure salience as one key.
+ *
+ * THE FALLBACK PATHS DIVERGE — measured, deliberate on the Python side, reported here rather than
+ * papered over. Where a surface turn carries NO native uuid (Codex user turns, Copilot), Python folds
+ * `chunk_index` into the preimage (`<file>#<chunk_index>#<ts><text[:64]>`) and this helper does not
+ * (`<file><ts><text[:64]>`). Python's own docstring names the reason: two no-uuid turns sharing a ts and
+ * a text-prefix would otherwise collapse to ONE key and kapae would mute both together. Unifying the two
+ * formulas would move every existing no-uuid key on one side or the other, so the operator rules that,
+ * not this comment.
  */
 export function turnKeyOf(file: string, turn: { uuid: string; ts: string; text: string }): string {
   return turn.uuid || sha(file + turn.ts + turn.text.slice(0, 64));
