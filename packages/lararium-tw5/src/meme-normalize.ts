@@ -47,7 +47,7 @@ const DECLARATION =
 
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
 import { META_OPEN_RE } from "./meta-fence.js";
-import { RETIRED_KEY_NOTES } from "./carrier-lifecycle.js";
+import { RETIRED_KEY_NOTES, metaTopLevelBlock } from "./carrier-lifecycle.js";
 
 const SOH_OPENER_RE =
   /(<<\^)[ \t]*(?:code="(&#x(?:0001|0011);)"(?:[ \t]+namespace="([^"]*)")?|([^&\n]*?)(&#x(?:0001|0011);))/;
@@ -306,8 +306,11 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   {
     const fence = metaFence(text);
     if (fence) {
+      // THE CARRIER'S OWN FIELDS ONLY. A `status` beneath a `[table]` header names what that table
+      // holds, and warning on it would report a retirement nobody wrote.
+      const top = metaTopLevelBlock(fence[2]!);
       for (const [key, why] of RETIRED_KEY_NOTES) {
-        if (new RegExp(String.raw`^[ \t]*${key}[ \t]*=`, "m").test(fence[2]!)) flags.push(why);
+        if (new RegExp(String.raw`^[ \t]*${key}[ \t]*=`, "m").test(top)) flags.push(why);
       }
     }
   }

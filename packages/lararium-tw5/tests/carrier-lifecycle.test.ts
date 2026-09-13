@@ -164,6 +164,38 @@ describe("carrier-lifecycle — the retired keys", () => {
   });
 });
 
+describe("carrier-lifecycle — a domain field is not a carrier's own key", () => {
+  /**
+   * A CARRIER'S FIELDS RIDE THE TOP-LEVEL BLOCK ALONE. `open-phases.mem` describes two authority
+   * modes in a `[[authority-modes]]` array-of-tables and gives each one a `status` of its own — a
+   * DOMAIN field naming what that mode holds, nothing to do with the carrier's standing. A reader
+   * scanning the whole fence reads it as the carrier's key and reports a retirement that is not
+   * there. `alignMetaTomlColumns` already stops at the first `[`; so does this.
+   */
+  test("a `status` beneath a [table] header belongs to the table, never to the carrier", () => {
+    const src = carrier([
+      `tags = ["api/pono/meme"]`,
+      ``,
+      `[[authority-modes]]`,
+      `mode   = "keyhive"`,
+      `status = "stub — pending encrypted group sync"`,
+    ]);
+    expect(readCarrierLifecycle(src).retiredKeys).toEqual([]);
+    expect(normalizeMemeSource(src).flags).toEqual([]);
+  });
+
+  test("CONTROL — the same key ABOVE the header is the carrier's own, and retires", () => {
+    const src = carrier([
+      `status = "standing"`,
+      `tags   = ["api/pono/meme"]`,
+      ``,
+      `[[authority-modes]]`,
+      `mode = "keyhive"`,
+    ]);
+    expect(readCarrierLifecycle(src).retiredKeys).toEqual(["status"]);
+  });
+});
+
 describe("carrier-lifecycle — the fixtures declare nothing", () => {
   /** A fixture that DECLARES is a carrier to every sweep, gate and normalize run in the tree. */
   test("CONTROL — this suite is not itself corpus", () => {

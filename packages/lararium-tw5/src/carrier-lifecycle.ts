@@ -66,13 +66,29 @@ export interface CarrierLifecycle {
   readonly retiredKeys: readonly string[];
 }
 
-/** The toml meta fence body, or null where the carrier writes none. */
+/**
+ * A CARRIER'S OWN FIELDS RIDE THE TOP-LEVEL BLOCK ALONE, and everything beneath the first `[table]`
+ * header belongs to the table.
+ *
+ * `open-phases.mem` describes two authority modes in a `[[authority-modes]]` array and gives each one
+ * a `status` naming what THAT MODE holds — a domain field with nothing to say about the carrier's
+ * standing. A reader scanning the whole fence takes it for the carrier's key and reports a retirement
+ * that is not there. `alignMetaTomlColumns` already stops at the first `[` for exactly this reason;
+ * one law, and now one spelling of it.
+ */
+export function metaTopLevelBlock(body: string): string {
+  const lines = body.split("\n");
+  const head = lines.findIndex((l) => /^[ \t]*\[/.test(l));
+  return (head < 0 ? lines : lines.slice(0, head)).join("\n");
+}
+
+/** The toml meta fence body ABOVE its first table header, or null where the carrier writes none. */
 function metaBody(text: string): string | null {
   const open = new RegExp(META_OPEN_RE.source).exec(text);
   if (!open) return null;
   const from = open.index + open[0].length;
   const close = text.indexOf("\n```", from);
-  return text.slice(from, close < 0 ? text.length : close);
+  return metaTopLevelBlock(text.slice(from, close < 0 ? text.length : close));
 }
 
 /** One top-level toml value from a meta body, raw and unquoted. */
