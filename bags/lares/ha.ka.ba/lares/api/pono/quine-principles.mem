@@ -159,6 +159,18 @@ Lararium's answer: a filter expression that returns the self-describing layer.
 
 <<~/ahu>>
 
+<<~ ahu #/the-inviolable-kernel>>
+
+!! The inviolable kernel ~ what a self-hosting system refuses to let itself rewrite
+
+''Every self-hosting system that survived runs a two-phase boot and keeps ONE kernel outside its own reach.'' Smalltalk lets a method redefine any method and never the dispatch algorithm that finds one. Emacs Lisp advises a primitive and never replaces the C body beneath it. Oberon versions a module interface and refuses a load that no longer matches. ''The mechanism that READS the extensible layer never sits inside the extensible layer'' — a system that lets itself rewrite its own reader has no way back from one bad write.
+
+''Lararium's kernel reads as `resolveLarUri()` plus the parse-dispatch engine.'' A meme supplies grammar patterns, family contracts and templates ''as data'', and modifies nothing about the mechanism that reads them. That boundary is what lets P1's unified store stay safe: everything may live in the wiki precisely because the thing that opens the wiki does not.
+
+''And the shadow layer names the shape for `lares/`.'' TiddlyWiki's read-through gives a user tiddler the power to override a shadow at a different address and never to delete one, with the shadow layer regenerating from disk at every compile. A carrier under `lares/` takes the same posture: ''override at a new address, never unmake the address beneath.'' That rhymes exactly with the retirement law — an address MUST keep meaning what it meant (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
+
+<<~/ahu>>
+
 <<~ ahu #/if-can-live-in-wiki>>
 
 !! The "If It CAN Live In The Wiki It MUST" Rule
@@ -258,6 +270,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r4VH3tooq3DQQbGbbTykg0vZvFgrwsELElzekS2rldE
+<<^ code="&#x0003;">>ni:///sha-256;jDoX_UNkKaO3NIz-xiHxC7shQL3n8zE5LL6hrbYU0tg
 
 <<^ code="&#x0004;" -> to="?">>

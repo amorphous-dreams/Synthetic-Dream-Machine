@@ -101,6 +101,32 @@ Every file below was read before it burned. Where a row names living carriers, t
 | `research/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` | one demo transcript of the Thirteen in conversation | `lares/docs/voices` · `api/voices` · `docs/voices/voices-review` |
 | `research/Lares_Test_Prompt_and_Output_Kid_vs_Adult.md` | one demo transcript reading IaM against IaC at two registers | `lares/docs/infrastructure-as-myth` (Part I, whole) · `lararium/docs/degraded-states` |
 
+!!! `lares_research/research-streams/lararium/` ~ twenty-two shells, three lifts
+
+''Three files carried their own harvest banner already'' — `CAPABILITY-LAYER.md` ("Surveyed 2026-09-06, nothing harvested"), `LARARIUM-TICK-CLOCK.md` (its two-time-bases text already sitting in `lararium/mesh/ffz-clock#/the-two-time-bases` with a provenance line) and `LARES-CLI-DAEMON-SPRINT-PLAN.md` (its record-laws already at `lares/cli/vessel-door#/the-record-laws`). A shelf that reads itself is the shelf easiest to empty.
+
+''The three lifts, each one paragraph.'' The ATProto OAuth profile and its curve policy went to <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane#/cred-onboarding">>, which already named the OAuth route as an open debt. The randomness doctrine went to <<~ loulou "lar:///ha.ka.ba/lararium/mesh/crypto#/law">> as a fourth doctrine beside the three that stood. The two-phase-boot and inviolable-kernel law went to <<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles#/the-inviolable-kernel">> — P1--P4 stood there and the kernel/surface boundary did not.
+
+| Source (burned) | What it held | Where a reader goes now |
+|---|---|---|
+| `AUTH-ATPROTO.mem` | the ATProto OAuth profile and the identity-layer separation | lifted to `lararium/mesh/reach-plane#/cred-onboarding`; the identity ladder at `lares/docs/pono/identity-stack` |
+| `CRYPTO.mem` | the CryptoProvider boundary, canonical bytes, digest and randomness policy | lifted to `lararium/mesh/crypto#/law`; the rest stood there already, and the djb2 shim's migration is done |
+| `SELF-HOSTING-RESEARCH.mem` | five self-hosting systems scouted, and a four-law synthesis | lifted to `lares/api/pono/quine-principles#/the-inviolable-kernel` |
+| `CAPABILITY-LAYER.md` | the S7 capability spec — membership-IS-capability, three tiers, five planes | `lararium/mesh/identity-classes` · `cap-tier` · `membership-doctrine`; built in `packages/lararium-mesh/src/device-delegation.ts` and `boot-invite.ts` |
+| `S7-CIRCLES-IDENTITIES-REDESIGN.md` | the Kowloon audit (a follow never federates) and the hostile-Nexus threat model | `lares/docs/pono/circles-kowloon`, the authoritative design of record; `lares/api/pono/persona-circle` names the Kowloon inversion by name |
+| `PROTOCOL-STACK-IDENTITY-CIRCLES-SESSIONS.md` | the six-doc model and the Seitan invites | `lararium/mesh/social-tiddlers` (the three entities as law); burnable sealed invites at `mesh/membership-doctrine` supersede Seitan |
+| `KOWLOON-BRIDGE.md` | the four-layer bridge stack and publish-surface-not-sync-peer | `lararium/mesh/reach-plane` — the operator-locked successor, outward-only and mailbox-never-seat |
+| `DREAMNET-FEDERATION-RESEARCH.md` | four spirit reports on Nexus keyspace, UCAN, presence and invites | `lararium/mesh/dreamnet-architecture` · `dreamnet-prior-art` · `nexus-topology` · `social-tiddlers` |
+| `NEXUS-REGISTRY-AND-FORK-RESILIENCE.md` | the scale ladder and a NexusRegistryDoc schema | `lararium/mesh/nexus-topology` · `siege-resilience`; `membership-doctrine`'s contracts-not-rosters supersedes the members field |
+| `NEXUS-NAMING-PETNAMES.md` | Zooko's triangle and a three-layer key/edge/petname model | `lares/docs/pono/dyad-ladder-scout` · `subduction-onomancy-scout` · `lararium/mesh/handle-card`; built at `packages/lararium-mesh/src/persona-petname.ts` |
+| `FFZ-CHRONOMETER.md` · `FFZ-CLOCK-EXTENDED-USE-CASES.md` · `FFZ-WORLD-CLOCK.md` · `LARARIUM-TICK-CLOCK.md` | the bounded hierarchical clock, its profiles, the operator/world clock split | `lararium/mesh/ffz-clock`, developed far past all four; `lares/api/pono/attention-scale` holds the Rhine rule and the watermark |
+| `MEME-STORE-FOUNDATIONS.mem` | meme-immutability, pranala schema binding, grammar-as-memes | `lares/api/pono/quine-principles` · `pranala-families` · `memetic-wikitext`; the Automerge pivot is completed history |
+| `PRINCIPLES.mem` | the authority, round-trip, local-first and receipt laws | `lares/api/pono/quine-principles` · `system-pattern-integrities` · `local-first`; the red flags at `lararium/docs/degraded-states` |
+| `lararium-crdt-federation-research.md` | the UCAN-vs-Orichalcum decision and a Keyhive deep dive | `lares/api/pono/orichalcum-capabilities` (the direct descendant) · `causal-islands` · `federated-causal-islands` |
+| `lararium_node_multidoc_tasked_spirits_research_packet.md` | Automerge sync cost, TW5 bags and recipes, eighteen golden principles | `lares/api/pono/system-pattern-integrities` · `lararium/docs/readiness-keys` · `api/residency-model` · `api/hydration-grain` |
+| `LARES-CLI-DAEMON-SPRINT-PLAN.md` | the CLI/daemon intent surface and records-not-RPC | `lares/cli/vessel-door#/the-record-laws`; the door stands built |
+| `ROADMAP.mem` · `SESSION.mem` | two work journals, 241k and 88k | pure journal — live phase state at `lararium/docs/open-phases` · `mesh/open-phase`; git holds every byte |
+
 ''What the consecration file held and nothing carries.'' `sortie`, `escrima` and `lua/LOCI` stood there as candidate grammar primitives and stand nowhere live. They read as deliberately dropped rather than lost, and this row exists so a later reader meets that as a decision rather than as a gap.
 
 <<~/ahu>>
@@ -113,6 +139,6 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ee2bbL3dGPBjwN5PXR9CHlLMmzFMm2ZKLEHwtvNVjBE
+<<^ code="&#x0003;">>ni:///sha-256;6QihvWrN4qJsZs4WfA7h_42Q1KHVKdrrPnNee10mbRc
 
 <<^ code="&#x0004;" -> to="?">>

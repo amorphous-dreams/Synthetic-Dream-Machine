@@ -36,6 +36,10 @@ reached directly, never on hand-written arithmetic. One import, and the same law
 what has no stable JSON reading — undefined, a function, a symbol, a BigInt, a non-finite number, a
 class instance without a well-typed representation. Two callers that serialized differently would
 digest the same value to two addresses.
+# ''Randomness comes from the platform.'' `getRandomValues` and `randomUUID` are the sources;
+`Math.random()` supplies no id, nonce, token, receipt, session or capability identifier, ever — it
+carries no unpredictability claim any auditor can rest on. A single fill stays at or under 65,536
+bytes, because some runtimes refuse more and refuse it loudly.
 
 <<~/ahu>>
 
@@ -79,6 +83,6 @@ buffer moves that refusal to the call site, where a caller can still choose diff
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
-<<^ code="&#x0003;">>ni:///sha-256;aNMjzoEkHNlG_Jxwv_UcFgy7F4FGngDpZkFOIEdB_yM
+<<^ code="&#x0003;">>ni:///sha-256;lrUDLitYfJNGeK88wxJCw4rMNSAXBwQz533Z8kwp1H0
 
 <<^ code="&#x0004;" -> to="?">>

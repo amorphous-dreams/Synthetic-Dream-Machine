@@ -240,6 +240,14 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 ''The onboarding surface also decides where a credential first exists in the clear'', which makes it a security design and not only a UX one.
 
+!!! The OAuth route, where the far side is ATProto
+
+''ATProto's OAuth profile runs MANDATORY, and the library owns the whole boundary.'' Authorization-code with PKCE (S256), pushed authorization requests, and DPoP with a per-request proof and separately-tracked authorization-server and PDS nonces. `@atproto/oauth-client-*` holds that surface entirely — ''no part of it gets hand-rolled inside the mesh'', which is the same law #/law of the crypto shore already states one layer down.
+
+''Confidential-client is the posture.'' The server holds the tokens and the DPoP key; the browser receives an app session cookie and nothing else. A browser-only flow reads as a ''labelled public-client degradation'', never as the default — it hands the credential to exactly the surface the honeypot section refuses to trust.
+
+''P-256 / ES256 only.'' k256 runs nowhere native in Web Crypto, so it stays out unless a reviewed ATProto library owns it — a curve the platform cannot verify is a primitive the house would end up implementing.
+
 <<~/ahu>>
 
 <<~ ahu #/what-stays-open>>
@@ -272,6 +280,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l7uvw1JrT2YFLhv6pO6eB7PpjGLxhJVM179ek10i7_c
+<<^ code="&#x0003;">>ni:///sha-256;XuinkcthP84099mk-THYfm0TacZQ3hZsvbB76hPAqrU
 
 <<^ code="&#x0004;" -> to="?">>
