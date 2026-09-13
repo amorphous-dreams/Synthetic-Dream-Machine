@@ -16,8 +16,8 @@
  * this one an OFFERING, and a signature minted over one must never verify as the other.
  */
 import { describe, test, expect } from "vitest";
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join, relative } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
@@ -125,14 +125,53 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
  * A comment tracks its CALLERS and nothing checks that by itself, so this does. It fails the moment a
  * production caller appears, and the cure is to re-word the module header as live enforcement and delete
  * this test — never to widen an exemption.
+ *
+ * THE SCAN READS THE WHOLE WORKSPACE, NEVER ONE PACKAGE. `offering.mem` #/must-not rules that
+ * "condemnation is the RECEIVER's opt-in, at the receiving Nexus" — so the offer path never consults the
+ * fold and the FIRST honest caller lands on the TAKER's door, in `@lares/cli`, one package over. A weld
+ * scanning only its own `src/` would therefore stay green for the entire life of the claim it guards:
+ * it would certify an absence in the one place a caller can never appear, and read as a cleared guard
+ * while going quietly false. A guard that cannot expire reads worse than no guard at all.
+ *
+ * So the walk covers every TypeScript source under `packages/<pkg>/src`, minus the declaring module and any build
+ * output (`dist/`, `node_modules/`). Two CONTROLs keep the walk honest: a FLOOR on how many files it
+ * actually read (a scan that stops matching reports the cleanest run it ever produced), and a PROBE for
+ * a symbol that DOES have production callers (proving the matcher finds one when one exists).
  */
 describe("what the offering fold may claim", () => {
   const SRC_DIR = join(import.meta.dirname, "..", "src");
+  const PACKAGES = join(import.meta.dirname, "..", "..");
+
+  /** Every TypeScript source under every `packages/<pkg>/src`, absolute, minus build output. */
+  function workspaceSources(): string[] {
+    const out: string[] = [];
+    const walk = (dir: string): void => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        if (e.name === "dist" || e.name === "node_modules") continue;
+        const p = join(dir, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (e.name.endsWith(".ts") && !e.name.endsWith(".d.ts")) out.push(p);
+      }
+    };
+    for (const pkg of readdirSync(PACKAGES, { withFileTypes: true })) {
+      if (!pkg.isDirectory()) continue;
+      const src = join(PACKAGES, pkg.name, "src");
+      if (existsSync(src)) walk(src);
+    }
+    return out;
+  }
+
+  /** Files (workspace-relative) whose text calls any of `symbols`, excluding the declaring module. */
+  function callersOf(symbols: readonly string[], sources: readonly string[]): string[] {
+    const re = new RegExp(symbols.map((s) => `\\b${s}\\s*\\(`).join("|"));
+    return sources
+      .filter((p) => !p.endsWith(join("lararium-mesh", "src", "offering-antigen.ts")))
+      .filter((p) => re.test(readFileSync(p, "utf8")))
+      .map((p) => relative(PACKAGES, p));
+  }
 
   test("★ no production caller consults the fold — so the header says READY, never enforced ★", () => {
-    const callers = readdirSync(SRC_DIR)
-      .filter((f) => f.endsWith(".ts") && f !== "offering-antigen.ts")
-      .filter((f) => /\bfoldOfferingAntigen\s*\(|\bofferingStandsAside\s*\(/.test(readFileSync(join(SRC_DIR, f), "utf8")));
+    const callers = callersOf(["foldOfferingAntigen", "offeringStandsAside"], workspaceSources());
     expect(
       callers,
       "a caller appeared — WIRE the claim: re-word offering-antigen.ts's header as live enforcement and delete this test",
@@ -140,6 +179,25 @@ describe("what the offering fold may claim", () => {
 
     const header = readFileSync(join(SRC_DIR, "offering-antigen.ts"), "utf8").slice(0, 2600);
     expect(header, "the header claims an enforcement no caller performs").toMatch(/READY|not yet consulted|no caller/i);
+  });
+
+  test("CONTROL — the scan really WALKS the workspace, several packages deep", () => {
+    const sources = workspaceSources();
+    // A floor, never a ceiling: a scan that quietly stops matching reports the cleanest run it ever
+    // produced, so the emptiness above means nothing without a witness that the walk read a real corpus.
+    expect(sources.length, "the workspace walk collapsed — the empty caller list above proves nothing").toBeGreaterThan(200);
+    const packagesSeen = new Set(sources.map((p) => relative(PACKAGES, p).split(/[\\/]/)[0]));
+    expect(packagesSeen.size, "the walk read one package — it must reach the TAKER's door in @lares/cli").toBeGreaterThan(2);
+    expect([...packagesSeen], "the CLI holds the taker's door; a walk that misses it cannot expire").toContain("lares-cli");
+    // And no build output leaked in — a `dist/` hit would fire the weld on a stale compiled copy.
+    expect(sources.filter((p) => p.includes(`${"dist"}/`))).toEqual([]);
+  });
+
+  test("CONTROL — the matcher FINDS a caller when one exists (a symbol that is genuinely wired)", () => {
+    // `standAs` (vessel-standing.ts) IS consulted in production — the node's boot reads it. If the matcher
+    // reports zero here, it reports zero for the fold by defect, not by fact.
+    const wired = callersOf(["standAs"], workspaceSources());
+    expect(wired.length, "the matcher found NO caller for a symbol that has one — the scan is broken").toBeGreaterThan(0);
   });
 
   test("CONTROL — the fold still DECIDES what it names, so the law stands ready to wire", async () => {
