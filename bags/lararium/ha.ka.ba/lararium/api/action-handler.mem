@@ -40,7 +40,7 @@ operated from the CLI by `lares act`.
 
 !! The verb family
 
-Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, RECONCILE) that rides the same rail.
+Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, CREATE, and RECONCILE in design) that rides the same rail.
 
 | Verb | Effect | Effect record(s) | Required args |
 |---|---|---|---|
@@ -51,9 +51,10 @@ Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, REC
 | ''DROP'' | tombstone every live title in bag + mark the bag retired | disposition (bag retired) | bag |
 | ''LOAD'' | land operator-supplied carriers into `to-bag` (carrier-borne; islands never fetch — `source-uri` = provenance) | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
 | ''INGEST'' | disk→records through the Confluence — the three-way reconcile gate (disk · synced · records meet; replace-by-group, NFC; + whole-carrier `deletions`; surface-never-overwrite) — the non-residency precedent | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
+| ''CREATE'' | mint a new record into a PLANE rather than move one between bags — the plane grades the cap: the catalog plane (household) takes `read`, the oracle plane (temple) takes `admin`. Handled in the REACTOR, never `executeAction`, because the gate must read the plane before the mint | accession (the plane's doc) | plane, title, and the record to mint |
 | ''RECONCILE'' //(design)// | fold a newer engine genesis forward into `@oracle` (operator-admin engine rite; preview → conflict-surface → confirm → idempotent) | engine-version record (`@oracle` ledger) | see residency-model #non-residency-verbs |
 
-ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''never version control''. ''INGEST + RECONCILE'' form the non-residency tier — the same VERB → SUMMONS → OUTCOME rail, `withEffectRecord` audit, and cap-gate, with no tiddler-between-bags move. See [[residency-model|lar:///ha.ka.ba/lararium/api/residency-model]] `#action-verb-surface` + `#non-residency-verbs`.
+ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''never version control''. ''INGEST, CREATE + RECONCILE'' form the non-residency tier — the same VERB → SUMMONS → OUTCOME rail, `withEffectRecord` audit, and cap-gate, with no tiddler-between-bags move. See [[residency-model|lar:///ha.ka.ba/lararium/api/residency-model]] `#action-verb-surface` + `#non-residency-verbs`.
 
 <<~/ahu>>
 
@@ -113,6 +114,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Guvq4c2c8N5RAjfQZOuxDV0qRvHurgfSK0QyJ0H_ENk
+<<^ code="&#x0003;">>ni:///sha-256;hFQC2RllbLBbRkZTgnklCENdzhr24Yw5-tHOWambyfA
 
 <<^ code="&#x0004;" -> to="?">>
