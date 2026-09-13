@@ -56,6 +56,10 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   usage:               2,
   "not-found":         3,
   "daemon-unreachable": 3,
+  // A BUDGET OVERRUN ANSWERS NOTHING LIKE AN ABSENT DAEMON: the socket connected, the daemon took the
+  // verb, and the caller stopped waiting. It ranks with the other "the work faulted" codes rather than
+  // with "nothing answered", so a caller retrying on 3 does not retry a gesture that simply needs longer.
+  "verb-timeout":      4,
   conflict:            4,
   "verb-error":        4,
   "cap-denied":        5,

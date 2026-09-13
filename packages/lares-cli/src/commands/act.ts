@@ -140,6 +140,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
     result = await runVerb(submitName, submitArgs, did);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // THE SAME TWO FAULTS, TOLD APART. REPACK rides the default budget rather than a derived one, so its
+    // timeout hint names the gesture instead of an arithmetic — but the split holds: a caller told to
+    // stand a daemon that already stands loses the trail to the real fault either way.
+    if (/timed out after \d+ms/.test(msg)) {
+      const hint = "the daemon answered and the ACK budget ran out — the verb may still be running. Re-run on a quieter machine, or repack a smaller bundle.";
+      emit(args, { ok: false, error: { code: "verb-timeout", message: msg, hint }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error(`  ${hint}`); } });
+      return exitFor("verb-timeout");
+    }
     emit(args, { ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." }, human: () => { console.error(`lares act REPACK: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); } });
     return exitFor("daemon-unreachable");
   }
@@ -360,6 +368,21 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     result = await runVerb(submitName, submitArgs, did, { requestId, timeoutMs });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+    // A TIMED-OUT VERB IS NOT AN ABSENT DAEMON. The socket connected and the daemon took the verb; the
+    // caller stopped waiting. Naming that `daemon-unreachable` sends an operator to start something
+    // already running, and hands an agent a code for the wrong fault. The budget above DERIVES from the
+    // gesture, so the cure names the arithmetic that set it — a reader cannot reach that from the message.
+    const timedOut = /timed out after \d+ms/.test(msg);
+    if (timedOut) {
+      const perCarrier = "10s + 400ms per carrier";
+      const hint = `the daemon answered and the ACK budget ran out — a LOAD of ${carrierCount} carrier(s) budgets ${timeoutMs}ms (${perCarrier}). The verb may still be running. Re-run on a quieter machine, or feed fewer carriers per gesture.`;
+      emit(args, {
+        ok: false, error: { code: "verb-timeout", message: msg, hint },
+        human: () => { console.error(`lares act: ${msg}`); console.error(`  ${hint}`); },
+      });
+      return exitFor("verb-timeout");
+    }
+    // NOTHING ANSWERED — the one fault the standing hint actually cures.
     emit(args, {
       ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
       human: () => {
