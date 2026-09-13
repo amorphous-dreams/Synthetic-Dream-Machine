@@ -8,6 +8,7 @@
  *   normalize <file.mem ...>
  *   check <file.mem ...> [--gradient | --edges]
  *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
+ *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
  * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
@@ -71,6 +72,7 @@ import { runVerb } from "../verb-call.js";
 import { readVerbOutcome } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
 import { helpLines } from "../command-help.js";
+import { promoteCarrier, type PromotionSeat } from "./meme-promote.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
@@ -96,7 +98,7 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project"] as const;
+const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote"] as const;
 type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
@@ -187,6 +189,7 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       case "check":     return checkFiles(args);
       case "sitting":   return surveySitting(namedFiles(args, "sitting"));
       case "project":   return await memeProject(args);
+      case "promote":   return await memePromote(args);
     }
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
@@ -673,4 +676,55 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
   writeFileSync(`${mdPath}.meta`, p.meta);
   console.log(`projected ${p.uri} -> ${mdPath} (+.meta, source-check ${p.check})`);
   return 0;
+}
+
+
+/**
+ * `promote` — THE PRIESTHOOD ACT AT A TERMINAL. The crossing itself lives in `meme-promote.ts`, injectable
+ * whole; this door supplies the SEAT and the corpus the weld reads.
+ *
+ * AND THE SEAT REFUSES BY DEFAULT. Measured: nothing in this package reads `cap("admin", <bag>)` — no door,
+ * no helper, no verb — so the terminal has no admin oracle to hand the crossing. Inventing one here would
+ * make a refusal look like a grant, which is exactly the failure a receipt exists to catch. The door names
+ * what it lacks and exits `cap-denied`; the crossing stands built and tested behind it, and lights the day a
+ * cap reading reaches this shore.
+ */
+async function memePromote(args: ParsedArgs): Promise<number> {
+  const file = args.positional[1];
+  if (!file) throw new UsageError("lares meme promote <docs/…/x.mem> — name the carrier to cross");
+  const root = process.cwd();
+  const corpus = String(execFileSync("git", ["ls-files", "bags/*.mem"], { cwd: root, encoding: "utf8" }))
+    .split("\n").filter(Boolean);
+  const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
+
+  const did = await vesselDid();
+  const seat: PromotionSeat = {
+    proposerNym: did, approverNym: did, approverKeyDid: did,
+    // THE ABSENT ORACLE, named rather than faked. A reading that answered `true` here would certify every
+    // crossing this door performs, and the receipt would read as an audit trail over an ungated act.
+    holdsAdmin: async () => false,
+    sign: async () => { throw new Error("unreachable — the cap refusal precedes the signature"); },
+  };
+  const outcome = await promoteCarrier({ root, file, corpus, ...(destBag ? { destBag } : {}) }, seat);
+  if (!outcome.ok) {
+    const code = /admin/.test(outcome.reason) ? "cap-denied" : "verb-error";
+    emit(args, {
+      ok: false, error: { code, message: outcome.reason },
+      human: () => {
+        console.error(`lares meme promote: ${outcome.reason}`);
+        if (code === "cap-denied") console.error("  no cap(\"admin\") reading stands at this shore — the crossing is built and gated, and nothing moved");
+      },
+    });
+    return exitFor(code);
+  }
+  emit(args, {
+    ok: true, data: outcome,
+    human: () => {
+      console.log(`promoted: ${outcome.from} → ${outcome.to}`);
+      console.log(`  ${outcome.sourceUri} → ${outcome.targetUri}`);
+      console.log(`  welded ${outcome.welded} inbound edge(s) · dangling ${outcome.danglingBefore} → ${outcome.danglingAfter}`);
+      console.log(`  receipt: ${outcome.receiptPath}`);
+    },
+  });
+  return exitFor("ok");
 }

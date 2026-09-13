@@ -176,7 +176,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project>",
+    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote>",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
@@ -192,6 +192,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
+      "lares meme promote bags/…/docs/pono/x.mem              # the canon crossing, receipt beside the carrier",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
@@ -200,6 +201,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
       "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise",
+      "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
       "--to <mem|md|html|tid|json>   (project) the render target",
