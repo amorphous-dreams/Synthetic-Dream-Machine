@@ -158,6 +158,33 @@ the surface half stands underspecified rather than merely unbuilt.
 domain, so nothing needs parsing. A claim wanting a machine reader wants a STRUCTURED form; prose suits a
 human weighing a card and suits no adapter at all.
 
+!!!! The adapter FAMILY ~ one interface, several authorities (operator, 2026-09-13)
+
+''ATproto's shape reads as ONE adapter, never as the design.'' It stands in as a worked example and others
+slot beside it. Each adapter answers the same two questions and differs only in who answers them:
+
+|!surface |!what it proves |!whose authority |!the return direction |
+|''DNS control'' (`controls example.net`) |the zone holder published this |a domain's zone |a record under the domain naming the prefix — ATproto's `_atproto.<domain>` TXT / well-known shape ports directly |
+|''ATproto account'' (`@alice.bsky.social`) |the account holder published this |a PDS and its handle resolution |the ATproto side names the prefix back (a profile field, or a record) |
+|''Kowloon actor'' (`@alice@kowloon.example`) |the actor's server published this |a Kowloon server |the actorId's own object names the prefix |
+|''loopback / approved address'' |whoever holds this machine published this |the operator's own host |a local well-known — the TEST surface, never a peer-facing one |
+
+''THE FIELD AGREES THREE TIMES OVER.'' ATproto verifies bidirectionally (a domain record ↔ the DID's
+`alsoKnownAs`); the fediverse verifies with `rel="me"` on both ends; ours pairs a signed attestation with a
+surface that names the prefix. Three independent designs, one shape — ''bidirectional or nothing''. A
+one-way claim stays a claim; only the return leg makes it a proof.
+
+!!!! Why interop wants exactly this
+
+''An operator carries a Bluesky account and says so on the card.'' A lararium reader verifies the pair and
+weighs it; a Bluesky-native reader finds the operator under a handle they already know. ''The card becomes
+a join point rather than a wall'' — and nothing about it compiles a directory, because every check runs
+reader-local at read time (`registry-filter`).
+
+''The same interface reaches the Kowloon server standing beside the Nexuses.'' Kowloon addresses
+`@<domain>` and keeps circles user-owned, so a Kowloon actorId claim slots in as one more row: a foreign
+surface with its own authority, verified the one way every surface gets verified.
+
 ''WHERE WE DIVERGE ON PURPOSE, twice.'' Their AppView compiles a handle→DID index — exactly the registry
 `registry-filter` forbids here, so their //resolution// story cannot travel even though their //proof//
 shape does. And their handle survives key rotation, because it binds a stable DID; ours binds
@@ -213,6 +240,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;HuZ2Y4LfmHUSYdpQQkaoqCTyhxfUBzmmtEqAxoHqZa8
+<<^ code="&#x0003;">>ni:///sha-256;SWj-kGkerIvuDfEMa-ZYygEzfvDT0p35Vw2aoybwDqc
 
 <<^ code="&#x0004;" -> to="?">>
