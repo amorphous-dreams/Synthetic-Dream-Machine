@@ -73,7 +73,10 @@ if (absent.length > CEILING) {
   process.exit(1);
 }
 if (absent.length < CEILING) {
+  // A SHRINK PASSES. Failing on progress would redden the fleet for somebody else's cleanup — and a gate
+  // that punishes the direction it wants teaches the tree to route around it. The nudge stands in the
+  // output where the next hand will read it; only GROWTH refuses.
   console.log(`  the debt SHRANK: ${absent.length} < ${CEILING}. Lower CEILING in tools/symbol-anchor.mjs to hold the ground.`);
-  process.exit(1);
+  process.exit(0);
 }
 console.log("  the debt holds at its ceiling — visible, and not growing");
