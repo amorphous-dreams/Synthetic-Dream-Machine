@@ -21,7 +21,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync } from "node:fs";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -319,6 +319,8 @@ export interface StagedFleet {
   readonly hermShore: string;
   /** What C's `vessel found --admit` said. */
   readonly admitted: CliResult;
+  /** Every line of the carriage crossing (export · import · carry-for · carry · re-stand · public registration). */
+  readonly crossing: string;
   /** Tear all three down (C · A · Herm), deleting every staged root. A vessel already stopped is skipped. */
   readonly stop: () => Promise<void>;
 }
@@ -336,28 +338,83 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
     if (pairRef) { await pairRef.stop(); pairRef = null; }
     for (const v of stood.reverse()) await v.stop();
   };
+  const hermEnv = { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) };
+  const hermFound = async (cli: (a: readonly string[]) => Promise<CliResult>, root: string): Promise<void> => {
+    const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
+    if (reset.code !== 0) throw new Error(`herm: clear failed (${reset.code})\n${reset.stderr.slice(-800)}`);
+  };
+  const crossing: string[] = [];
   try {
     // The Herm: a place, no face; the crossroads relay on its own port; the read-face on `portHerm`.
-    const herm = await openStaged({
-      tag: `${tag}herm`, port: portHerm,
-      daemonEnv: { LAR_RECIPE: "herm", LAR_HERM_RELAY_PORT: String(portRelay) },
-      found: async (cli, root) => {
-        const reset = await cli(["vessel", "clear", "--root", root, "--force", "--skip-build"]);
-        if (reset.code !== 0) throw new Error(`herm: clear failed (${reset.code})\n${reset.stderr.slice(-800)}`);
-      },
-    });
+    let herm = await openStaged({ tag: `${tag}herm`, port: portHerm, daemonEnv: hermEnv, found: hermFound });
     stood.push(herm);
 
-    // A founds; C mints under its own root; A signs the edge naming its dial; C founds by that payload —
-    // the joinee rite, one door, with both hearths dialing the Herm's crossroads and shore.
+    // A founds (seating a founding quorum, so a charter exists to carry FOR); C mints under its own root; A
+    // signs the edge naming its dial; C founds by that payload — the joinee rite, one door, with both hearths
+    // dialing the Herm's crossroads and shore.
     const pair = await openStagedJoinee({
       tag: `${tag}fleet`,
       daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
+      riteA: async (cliA) => {
+        let i = 1;
+        for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
+          const k = await cliA(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
+          if (k.code !== 0) throw new Error(`A: kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
+          i += 1;
+        }
+        const rite = await cliA(["nexus", "rite", "cabal"]);
+        if (rite.code !== 0) throw new Error(`A: rite cabal failed (${rite.code})\n${rite.stderr.slice(-800)}`);
+      },
+      // ── THE CARRIAGE CROSSING, run while A stands live and C has not yet booted ──────────────────────
+      // A Herm holds no face by class (`personaSlotCeiling("herm") === 0`), so it enters a Nexus by the
+      // CARRIER relation and never the member one: A's charter crosses by `seal export`/`seal import`, the
+      // place signs "I carry for this Nexus" with its OWN vessel key (`nexus carry-for` — no persona read),
+      // and A's quorum seats that seal (`nexus carry <key> --carrier <hex>`). Then the place stands again
+      // DIALING A on Socket A, so the realm doc A's charter names reaches the Herm's own replica and its
+      // standing fold answers; A registers the book at PUBLIC, which is the one tier the carrier leg opens.
+      beforeB: async (A) => {
+        const exp = await A.cli(["nexus", "seal", "export", "--no-json"]);
+        crossing.push(`A nexus seal export → ${exp.code} (${exp.stdout.length} chars)`);
+        if (exp.code !== 0 || !exp.stdout.trim()) throw new Error(`fleet: A exported no charter (${exp.code})\n${exp.stderr.slice(-600)}`);
+        const charter = join(herm.root, "a-charter.mem");
+        writeFileSync(charter, exp.stdout, "utf8");
+        const imp = await herm.cli(["nexus", "seal", "import", charter, "--json"]);
+        crossing.push(`herm nexus seal import → ${imp.code}: ${imp.stdout.trim().slice(0, 160)}`);
+        if (imp.code !== 0) throw new Error(`fleet: the Herm refused the charter (${imp.code})\n${imp.stderr.slice(-600)}`);
+        const carryFor = await herm.cli(["nexus", "carry-for", "--json"]);
+        crossing.push(`herm nexus carry-for → ${carryFor.code}: ${carryFor.stdout.trim().slice(0, 160)}`);
+        const cf = (carryFor.json?.["data"] ?? carryFor.json ?? {}) as Record<string, unknown>;
+        const nym = typeof cf["nym"] === "string" ? cf["nym"] : "";
+        const sig = typeof cf["carrierSig"] === "string" ? cf["carrierSig"] : "";
+        if (!nym || !sig) throw new Error(`fleet: carry-for minted no seal\n${carryFor.stdout}\n${carryFor.stderr.slice(-600)}`);
+        const carry = await A.cli(["nexus", "carry", nym, "--carrier", sig, "--json"]);
+        crossing.push(`A nexus carry ${nym.slice(0, 12)}… → ${carry.code}: ${carry.stdout.trim().slice(0, 160)}`);
+        if (carry.code !== 0) throw new Error(`fleet: A refused the carrier seal (${carry.code})\n${carry.stderr.slice(-600)}`);
+        const refreshA = await A.cli(["nexus", "refresh", "--json"]);
+        crossing.push(`A nexus refresh → ${refreshA.code}`);
+
+        // The DIAL is a boot reading — `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` mount the client adapter as the vessel
+        // opens, and no running verb seats one. So the place stands again on its own root, carrying the dial.
+        const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
+        if (!gateA) throw new Error(`fleet: A's log named no gate key:\n${A.bootLog().slice(-800)}`);
+        await herm.stopDaemonOnly();
+        herm = await openStaged({
+          root: herm.root, port: portHerm, found: async () => { /* founded above; the store stands */ },
+          daemonEnv: { ...hermEnv, LAR_JOIN_SYNC: `ws://127.0.0.1:${A.port}/ws`, LAR_JOIN_GATE: gateA },
+        });
+        stood[0] = herm;
+        crossing.push(`herm re-stood dialing A: ${herm.bootLog().includes("[nexus-join]") ? "[nexus-join] seen" : "no [nexus-join] line"}`);
+
+        // The book registers at PUBLIC — the tier the carrier leg reads, and the only one it reads.
+        const reg = await A.cli(["nexus", "realm-bag", "lares", "--tier", "public", "--json"]);
+        crossing.push(`A nexus realm-bag lares --tier public → ${reg.code}: ${reg.stdout.trim().slice(0, 200)}`);
+        if (reg.code !== 0) throw new Error(`fleet: A registered no public book (${reg.code})\n${reg.stderr.slice(-600)}`);
+      },
     });
     pairRef = pair;
     if (!pair.B) throw new Error(`C never stood: ${pair.joinGate ?? "(no line)"}`);
     const A = pair.A, C = pair.B, admitted = pair.admitted;
-    return { herm, A, C, relayUrl, hermShore, admitted, stop: teardown };
+    return { herm, A, C, relayUrl, hermShore, admitted, crossing: crossing.join("\n  "), stop: teardown };
   } catch (err) {
     await teardown();
     throw err;
@@ -377,6 +434,9 @@ export interface JoineeOptions {
   readonly daemonEnv?: Record<string, string>;
   /** Env A alone carries (e.g. `LAR_HERM_RELAY_PORT`). */
   readonly daemonEnvA?: Record<string, string>;
+  /** A's own rite BEYOND place-and-face, run while NO daemon stands — where a suite seats a founding
+   *  quorum (`persona new <i> --seat` ×3 · `nexus rite cabal`). A charter seats before the daemon reads it. */
+  readonly riteA?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
   /** How B learns A's dial: `"env"` (LAR_JOIN_SYNC/GATE/DOC off A's log and registry) or `"pin"`
    *  (nothing — B boots by the hearth its signed edge names). Default `"env"`. */
   readonly dial?: "env" | "pin";
@@ -423,6 +483,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         if (clear.code !== 0) throw new Error(`A: clear failed (${clear.code})\n${clear.stderr.slice(-800)}`);
         const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
         if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+        await opts.riteA?.(cliA, rootA);
         // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
         // `<root>/genesis`, and A's `clear` just derived it (the re-derive is an internal rite step).
         cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });

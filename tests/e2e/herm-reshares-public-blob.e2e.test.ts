@@ -13,20 +13,49 @@
  *   ★ ⑦ C reads the cid through its fetch door with A dark: the fleet leg misses, the Herm leg (`hermCasTransit`,
  *       0449d1bab's `GET /cas/<cid>`) answers, the sha256 verifies, the bytes land in C's `cid/`
  *
- * MEASURED 2026-09-12, then RE-MEASURED against the realm lane — the vector still stands as `test.fails`,
- * and its seam narrowed. The shore no longer reads the Herm's OWN crossroads alone: `publicCasShore` follows,
- * for each realm the vessel serves, the pointers that realm's PUBLIC-tier registrations name (unit-proven,
- * `packages/lararium-node/tests/herm-follows-realm-public.test.ts`). THIS fleet names no realm — the Herm
- * seats no charter (`openStagedFleet` runs no `nexus rite cabal` and imports none), so it stands in none, the
- * realm lane folds empty, and A's public bag registers nowhere. So the Herm still holds neither the pointer
- * nor the bytes, `/cas/<cid>` draws 404 with A up or dark, and C reads PENDING (`held:false`).
- * WHAT THE FLIP NOW WAITS ON: a FLEET-shaped lane — either this fleet's hearth and its Herm come to stand in
- * ONE realm (a charter seated, exported, imported, and `lares nexus realm-bag lares --tier public` registering
- * the book), or the ruling names how a Herm follows a fleet it relays for without one. The road from C to the Herm
- * stands and is unit-proven (`herm-cas-transit.test.ts`); the road from A's public bag TO the Herm's board
- * belongs to the founding session's dial and gate. CONTROLS: a ghost cid draws the Herm's 404 byte-identical
- * with A dark; the boot CAS still serves at `/bulb/<cid>.bin`; C's fetch of a ghost reads `held:false` and
- * writes nothing.
+ * MEASURED 2026-09-12, RE-MEASURED against the realm lane, and RE-MEASURED again with the fleet standing
+ * in ONE REALM. ⑦ still stands as `test.fails`, and its seam has narrowed to a single line of product law.
+ *
+ * The fleet now performs the whole carriage crossing (`openStagedFleet`): A seats a founding quorum and
+ * `nexus rite cabal`; A exports the charter and the Herm imports it; the Herm signs `nexus carry-for` with
+ * its OWN vessel key (a place holds no face — `personaSlotCeiling("herm") === 0`); A seats that seal with
+ * `nexus carry <key> --carrier <hex>`; the Herm RE-STANDS carrying `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` for A
+ * (the dial is a boot reading, and no running verb seats one); A registers the book with
+ * `nexus realm-bag lares --tier public`. Every door answers 0, and the Herm's own log reads
+ * `[lar-leaf] verdict OK — crossing open, syncing`.
+ *
+ * ★ WHAT THE MEASUREMENT THEN SAID. A and the Herm name the SAME realm and the SAME realm doc
+ * (`realm epoch0-8117…`, `realmDoc automerge:483v…`). A's `nexus realm-bags` carries the registration;
+ * the HERM's reads `bags: []`. The Herm stands in the realm, holds the charter, and folds no registration
+ * from it — so `publicCasShore`'s realm lane is empty, `/cas/<cid>` draws 404 with A up or dark, and C
+ * reads PENDING (`held:false`).
+ *
+ * ★ THE SEAM, QUOTED — A CIRCLE IN THE LAW. `RealmBagGate.mayFederate` (`realm-bag.ts:507-509`):
+ *
+ *     if (!isRealmDoc && this.#charter?.carrierPeer?.(peerId)) {
+ *       if (this.#byDocId.get(documentId)?.readTier === "public") return true;
+ *
+ * and the comment above it says so plainly — //the realm doc itself (which carries the registrations) never
+ * crosses to one//. A carrier may read a book its registration DECLARES public; the declaration lives on the
+ * realm doc; the realm doc withholds from a carrier. So a Herm can never learn WHICH books it may carry, and
+ * the realm lane it gained is unreachable by any carrier, in this fleet or any other.
+ *
+ * IT WANTS A RULING, not a patch — three shapes stand and they differ in what a place gets to see:
+ *   (i) the realm doc crosses to a carrier at a REDUCED PROJECTION — the PUBLIC-tier registrations alone,
+ *       so a place reads the public index and never the CONTRACT rows beside it;
+ *   (ii) the public registrations announce on @crossroads (already the public plane by construction) and a
+ *       carrier folds its shore off that board, the realm doc staying whole and withheld;
+ *   (iii) no fold at all — the PUBLISHING hearth pushes the pointer to the places it carries with, and a
+ *       Herm serves what it was handed rather than what it discovered.
+ *
+ * A SECOND GAP STANDS BEHIND IT, and no ruling is owed on it: `publicCasShore.read` is
+ * `readCasBlobFromFs(cid, casDir)` — local bytes only. Even with the index, the Herm holds no bytes until
+ * something makes it FETCH them, and with A dark at ⑦ the fetch must already have happened. ⑤ is the natural
+ * seat for it (the Herm's own `/cas/<cid>` while A still stands, fetching on a public-and-missing read
+ * through the Socket-B door and writing through into `cid/`).
+ *
+ * CONTROLS: a ghost cid draws the Herm's 404 byte-identical with A dark; the boot CAS still serves at
+ * `/bulb/<cid>.bin`; C's fetch of a ghost reads `held:false` and writes nothing.
  *
  * Run ALONE (`LAR_STAGE_DIR` under a tmp dir): three daemons, ~2 min.
  */
@@ -98,6 +127,7 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
   test("①② the fleet stands: the Herm at the crossroads, A founded, C by A's signed edge — the crossing opens", () => {
     expect(fleet, standGate).not.toBeNull();
     expect(fleet!.admitted.code, said(fleet!.admitted)).toBe(0);
+    console.error(`herm-reshares MEASURE the carriage crossing:\n  ${fleet!.crossing}`);
     expect(fleet!.herm.bootLog()).toContain("crossroads relay standing");
     expect(fleet!.C.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
@@ -134,7 +164,14 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
     await new Promise((r) => setTimeout(r, 3000));
     const res = await fetch(`${fleet!.hermShore}/cas/${cid}`);
     const hermCas = listCas(fleet!.herm);
-    console.error(`herm-reshares MEASURE herm: GET /cas/${cid.slice(0, 12)}… → ${res.status} (A up) · herm cid/ holds the cid: ${hermCas.includes(cid)} (${hermCas.length} blobs)`);
+    const hermBags = await fleet!.herm.cli(["nexus", "realm-bags", "--json"]);
+    const aBags    = await fleet!.A.cli(["nexus", "realm-bags", "--json"]);
+    console.error([
+      `herm-reshares MEASURE herm: GET /cas/${cid.slice(0, 12)}… → ${res.status} (A up) · herm cid/ holds the cid: ${hermCas.includes(cid)} (${hermCas.length} blobs)`,
+      `  A   nexus realm-bags → ${said(aBags).trim().slice(0, 300)}`,
+      `  herm nexus realm-bags → ${said(hermBags).trim().slice(0, 300)}`,
+      `  herm dial (last 4): ${fleet!.herm.bootLog().split("\n").filter((l) => /nexus-join|lar-leaf|realm|dial-out/.test(l)).slice(-4).join(" | ")}`,
+    ].join("\n"));
     expect([200, 404]).toContain(res.status);
   }, 30_000);
 
