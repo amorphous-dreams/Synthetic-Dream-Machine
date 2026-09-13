@@ -33,13 +33,15 @@ import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
 
 /** Map a Keyhive event variant to its lar sub-tag URI. */
 /**
- * The variant a CEREMONY writes when the true one did not survive the crossing.
+ * The variant written for an event this vessel PERSISTS WITHOUT TAKING.
  *
- * `eventsForPeer` hands a peer bare bytes (`Uint8Array[]`), so an admitted vessel's cap events arrive with
- * their variant already discarded — the value is not unknown to this writer by oversight, it is unknown by
- * construction. Deliberately OUTSIDE the vocabulary below: `subTagFor` falls to `null` for it, and no
- * reader can mistake it for a real event class. The field still stands because the store reads a record
- * back by its PRESENCE; the crypto rides the bytes, never this word.
+ * A crossing's bundle is wider than any one receiver's appetite: keyhive accepts the events that move its
+ * state and ignores the rest. The accepted ones arrive typed — the receiver's own handler parses the bytes
+ * back into events and stamps the true variant (see `absorbCapEvents`). The remainder still persist, so a
+ * boot replay sees the whole crossing, and for those the variant is genuinely unknown here: nothing on this
+ * side has read them. Deliberately OUTSIDE the vocabulary below — `subTagFor` falls to `null` for it, and
+ * no reader can mistake it for a real event class. The field stands because the store reads a record back
+ * by its PRESENCE; the crypto rides the bytes, never this word.
  */
 export const CAP_EVENT_VARIANT_UNKNOWN = "UNTYPED";
 
@@ -133,5 +135,56 @@ export class DaemonEventStore implements EventStore {
       }
     }
     return out;
+  }
+}
+
+/** Identify an event by its bytes — the one key both writers share. */
+function bytesKey(bytes: Uint8Array): string {
+  let s = "";
+  for (const b of bytes) s += b.toString(16).padStart(2, "0");
+  return s;
+}
+
+/** The reach `absorbCapEvents` needs of a live keyhive — ingest, then let its handler's writes land. */
+export interface CapEventSink {
+  ingestPeerEvents(events: readonly Uint8Array[]): Promise<void>;
+  settleEvents(): Promise<void>;
+}
+
+/**
+ * Take a crossing's cap events into a live keyhive AND onto the store — TRUTH FIRST.
+ *
+ * The wire drops the variant (`eventsForPeer` hands bare bytes), but the receiver re-derives it: keyhive
+ * parses those same bytes back into events and fires this provider's OWN handler, which stamps the real
+ * variant and self-attributes the island off the event's subject. So the ingest is not merely a state
+ * change here, it is the READING — and because `put` is first-writer-wins by content hash, it has to
+ * happen before anything else writes. Persist first and an `UNTYPED` row masks a knowable variant for good.
+ *
+ * The trailing loop is the backstop: keyhive accepts a subset of any bundle, and what it did not take must
+ * still persist for a boot replay. Those rows carry the sentinel honestly — nothing on this side read them.
+ */
+export async function absorbCapEvents(
+  kh: CapEventSink,
+  store: EventStore,
+  events: readonly Uint8Array[],
+): Promise<void> {
+  // THE READ MAY FAIL; THE RECORD MAY NOT. Keyhive refuses a bundle it cannot deserialize — a crossing packed
+  // by a peer running other code, or one event corrupted in carriage — and it refuses the WHOLE array, not the
+  // bad element. Persisting is what lets a later boot replay the crossing against whatever keyhive stands then,
+  // so an unreadable bundle costs the vessel its variants, never its events.
+  try {
+    await kh.ingestPeerEvents(events);
+  } catch (err) {
+    console.warn(`[cap-events] ingest refused the crossing (${(err as Error)?.message ?? err}) — persisting it untyped for replay`);
+  }
+  // The handler persists fire-and-forget, so its typed rows are not yet in the store when ingest returns.
+  await kh.settleEvents();
+  // What the handler already wrote, read by CONTENT — a store keys its rows by whatever hash its writer
+  // supplied (the handler's is synthetic), so only the bytes identify an event across both writers.
+  const taken = new Set<string>();
+  for (const rec of await store.list()) taken.add(bytesKey(rec.bytes));
+  for (const bytes of events) {
+    if (taken.has(bytesKey(bytes))) continue;
+    await store.put({ bytes, variant: CAP_EVENT_VARIANT_UNKNOWN, hash: await hashBytes(bytes) });
   }
 }

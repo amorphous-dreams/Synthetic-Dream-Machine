@@ -106,8 +106,10 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
 
   test("payload capEvents land in the daemon doc as cap-events — ready for boot hydration into the keyhive", async () => {
     // The daemon packs these (packPersonaCrossing) to admit the vessel into the KEYHIVE PersonaGroup so it
-    // can decrypt content shared through the catalog registry. Here dummy blobs prove the joinee-side WRITE lands them in the
-    // store format boot's hydrateFromEventStore reads (the keyhive ingestion is proven separately).
+    // can decrypt content shared through the catalog registry. Here dummy blobs prove the joinee-side WRITE
+    // lands them in the store format boot's hydrateFromEventStore reads even when keyhive REFUSES to read
+    // them — the read may fail, the record may not (the typed-ingest path is proven in lararium-keyhive's
+    // cap-event-absorption).
     const founder = await found();
     const joineeKey = await pubOf(JOINEE_SEED);
     const base = await runDeviceAdmitEdge({
@@ -132,7 +134,12 @@ describe("the admit ceremony — found · admit · carry · apply · BOUND", () 
     const handle = await joineeRepo.find(applied.daemonUrl as AutomergeUrl);
     const doc = await handle.doc() as { tiddlers: Record<string, unknown> };
     const capTiddlers = Object.keys(doc.tiddlers).filter((t) => t.includes("/cap/"));
-    expect(capTiddlers.length).toBe(capEvents.length);
+    // The crossing's own events, PLUS the ones the joinee's keyhive fires standing itself (its card mint) —
+    // the admit path writes its event store to the daemon doc the same way the founding path does, so a
+    // boot replays this vessel's whole lattice rather than the crossing alone.
+    const texts = capTiddlers.map((t) => (doc.tiddlers[t] as { tiddler: { text: string } }).tiddler.text);
+    for (const ev of capEvents) expect(texts, "a crossing event never reached the doc").toContain(ev);
+    expect(capTiddlers.length).toBeGreaterThanOrEqual(capEvents.length);
   });
 
   test("the ceremony is DETERMINISTIC — the same seeds yield the same binding, every run", async () => {

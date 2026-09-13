@@ -125,6 +125,11 @@ export class KeyhiveProvider implements CapabilityProvider {
    *  provider awaits each doc-op sequentially (single-writer law), so set-before / clear-after
    *  never straddles two ops; a CGKA firing OUTSIDE any op reads undefined → cross-cutting. */
   private _activeIsland: string | undefined;
+  /** The handler's in-flight store writes. It fires SYNCHRONOUSLY inside a keyhive op and persists
+   *  fire-and-forget, so a caller that reads the store the instant an op returns can read it before the
+   *  write lands. `settleEvents` awaits these; a first-writer-wins store makes that ordering load-bearing
+   *  (a record written ahead of the handler's masks the variant it would have stamped). */
+  private pendingWrites: Promise<unknown>[] = [];
   /** bagUrl → DocumentId bytes (hex). DocumentId class wraps bytes; we
    *  keep the hex form to use as a stable string key. */
   private readonly bagToDocId = new Map<string, string>();
@@ -177,7 +182,8 @@ export class KeyhiveProvider implements CapabilityProvider {
         // own bytes; CGKA_OPERATION borrows the doc-op's `_activeIsland` (synchronous, single-writer
         // safe); PREKEY_ROTATED stays unattributed (per-principal → co-loaded across every slice).
         const island  = eventIsland(e) ?? (variant === "CGKA_OPERATION" ? this._activeIsland : undefined);
-        void this.eventStore?.put({ hash, variant, bytes, ...(island !== undefined ? { island } : {}) });
+        const put = this.eventStore?.put({ hash, variant, bytes, ...(island !== undefined ? { island } : {}) });
+        if (put) this.pendingWrites.push(put.catch(() => {}));
       } catch (err) {
         console.error("[keyhive] event capture failed:", err);
       }
@@ -708,7 +714,22 @@ export class KeyhiveProvider implements CapabilityProvider {
     await this.materializeIsland(docIdHex);
   }
 
+  /**
+   * Await every store write the event handler has started. Call it before reading the store back, or
+   * before disposing — a fire-and-forget write that outlives its provider silently loses an event.
+   */
+  async settleEvents(): Promise<void> {
+    // Take the queue before awaiting: a write that starts DURING the await belongs to the next settle,
+    // and clearing after would drop it.
+    while (this.pendingWrites.length > 0) {
+      const inFlight = this.pendingWrites;
+      this.pendingWrites = [];
+      await Promise.all(inFlight);
+    }
+  }
+
   async dispose(): Promise<void> {
+    await this.settleEvents();
     // Keyhive WASM types support Symbol.dispose; rely on JS GC otherwise.
     this.kh = null;
     this.bagToDocId.clear();

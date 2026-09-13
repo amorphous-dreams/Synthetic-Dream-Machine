@@ -62,7 +62,7 @@ import { verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmi
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
-import { DaemonEventStore, CAP_EVENT_VARIANT_UNKNOWN } from "./daemon-event-store.js";
+import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
 import { faceGrantTitle, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
@@ -146,13 +146,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
         continue;
       }
-      // THE KIT'S OWN ACT: ingest the cap events (live) and persist them (boot re-hydrates the seat).
+      // THE KIT'S OWN ACT: take the cap events (live) and persist them (boot re-hydrates the seat).
+      // Ingest is also the READING — the vessel's own handler stamps the true variant and island on the
+      // events keyhive accepts, so it must reach the store before any backstop row masks them.
       const events = rec.capEvents.map(base64ToBytes);
       const eventStore = new DaemonEventStore({ daemon: ctx.composite });
-      for (const bytes of events) {
-        try { await eventStore.put({ bytes, variant: CAP_EVENT_VARIANT_UNKNOWN, hash: "" }); } catch { /* a persisted duplicate reads fine */ }
-      }
-      try { await kh.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: vessel ingest faulted: ${(err as Error)?.message ?? err}`); }
+      try { await absorbCapEvents(kh, eventStore, events); } catch (err) { console.log(`[daemon] face-join grant: vessel ingest faulted: ${(err as Error)?.message ?? err}`); }
       try { await veilKh?.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: veil ingest faulted: ${(err as Error)?.message ?? err}`); }
       const seated = await (veilKh ?? kh).knowsAgent(agent);
       console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, regranted ${rec.regranted}) — face ${seated ? "SEATED" : "still unseated after ingest"}`);

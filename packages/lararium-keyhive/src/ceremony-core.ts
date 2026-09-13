@@ -68,7 +68,7 @@ import { buildCeremonyTiddlers } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { InMemoryEventStore } from "./event-store.js";
-import { capEventTitle, CAP_EVENT_VARIANT_UNKNOWN } from "./daemon-event-store.js";
+import { capEventTitle, absorbCapEvents } from "./daemon-event-store.js";
 import type { DeviceAdmitPayload } from "./index.js";
 
 // ---------------------------------------------------------------------------
@@ -502,6 +502,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
 async function flushCapEvents(
   store: InMemoryEventStore,
   daemonHandle: ReturnType<typeof seedDaemonDoc>,
+  authority = "lares-init",
 ): Promise<void> {
   for (const evt of await store.list()) {
     const hashBuf = await crypto.subtle.digest("SHA-256", evt.bytes.slice());
@@ -524,7 +525,7 @@ async function flushCapEvents(
             ...(evt.island !== undefined ? { island: evt.island } : {}),
             "bytes-len": String(evt.bytes.length),
           },
-          meta: { authority: "lares-init" },
+          meta: { authority },
         };
       }
     });
@@ -823,26 +824,6 @@ export async function runApplyAdmitPayload(
     }
   });
 
-  // Keyhive membership cap-events (packPersonaCrossing), when the founder packed them: write each into this
-  // vessel's daemon doc in DaemonEventStore format, so boot's hydrateFromEventStore ingests them into the live
-  // keyhive — admitting this vessel into the PersonaGroup so it can decrypt content shared through the catalog registry. Absent
-  // → the vessel joins by the Ed25519 edge alone. The `variant` field only needs to be PRESENT for the store
-  // to read the record back; the crypto rides the bytes.
-  for (const capEventB64 of payload.capEvents ?? []) {
-    const bytes   = base64ToBytes(capEventB64);
-    const hashBuf = await crypto.subtle.digest("SHA-256", bytes.slice());
-    const hash    = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    const title   = capEventTitle(hash);
-    daemonHandle.change((doc) => {
-      if (!doc.tiddlers[title]) {
-        doc.tiddlers[title] = {
-          tiddler: { title, text: capEventB64, tags: CAP_EVENT_TAG, variant: CAP_EVENT_VARIANT_UNKNOWN, hash, "bytes-len": String(bytes.length) },
-          meta: { authority: "lares-init-admit" },
-        };
-      }
-    });
-  }
-
   // THE VESSEL'S OWN CARD. The admit supplies the BINDING (whose group this vessel joins); the vessel
   // supplies the SELF (who it is). A self-certifying ContactCard is the latter, and it is minted from the
   // vessel's OWN seed — never the founder's, who is not present and whose seed never crossed.
@@ -851,8 +832,22 @@ export async function runApplyAdmitPayload(
   // cardless vessel cannot speak at a gate at all. The founding path minted one and this path did not,
   // which is why an admitted vessel could be perfectly bound and still never dial.
   const keyhive = new KeyhiveProvider();
-  await keyhive.init({ seed: vesselSeed, eventStore: new InMemoryEventStore() });
+  const capStore = new InMemoryEventStore();
+  await keyhive.init({ seed: vesselSeed, eventStore: capStore });
   const contactCardJson = new TextDecoder().decode(await keyhive.contactCard());
+
+  // Keyhive membership cap-events (packPersonaCrossing), when the founder packed them: take them into this
+  // vessel's own keyhive and write them to its daemon doc, so boot's hydrateFromEventStore replays the same
+  // lattice — admitting this vessel into the PersonaGroup so it can decrypt content shared through the
+  // catalog registry. Absent → the vessel joins by the Ed25519 edge alone.
+  //
+  // THE INGEST IS THE READING. The wire hands bare bytes, but this keyhive parses them back into events and
+  // fires the handler above, which stamps the true variant and self-attributes the island — the record is
+  // typed because the vessel took the events, never because the founder labelled them.
+  if (payload.capEvents?.length) {
+    await absorbCapEvents(keyhive, capStore, payload.capEvents.map(base64ToBytes));
+    await flushCapEvents(capStore, daemonHandle, "lares-init-admit");
+  }
   await keyhive.dispose();
 
   return {

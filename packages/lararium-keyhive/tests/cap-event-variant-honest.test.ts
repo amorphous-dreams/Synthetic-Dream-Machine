@@ -12,7 +12,11 @@
  * pinning variant values reads the FOUNDER's vessel alone, so the admit path's claim was never checked
  * against the vocabulary it violated.
  *
- * The honest reading is "unknown", said in a word that can never be mistaken for a real variant.
+ * The honest reading is "unknown", said in a word that can never be mistaken for a real variant — and it
+ * belongs only to an event the vessel PERSISTS WITHOUT TAKING. Everything keyhive accepts arrives typed: the
+ * receiver parses those same bytes back into events and its own handler stamps the truth. So no ceremony
+ * writes the sentinel by hand any more; both writers route through `absorbCapEvents`, which reads first and
+ * backstops second. See cap-event-absorption.test.ts for the behavior this pins by shape.
  */
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -42,9 +46,18 @@ describe("the cap-event variant a ceremony writes", () => {
     }
   });
 
-  test("CONTROL — the writers still stamp SOME variant (the field is a presence gate the store reads back)", () => {
+  test("★ no writer persists a crossing ahead of taking it — the order is what makes the record true ★", () => {
+    // `put` is first-writer-wins by content hash, so a hand-rolled row written before the ingest masks the
+    // variant the handler would have stamped. Both writers hand the whole bundle to `absorbCapEvents`
+    // instead, which ingests, settles the handler's writes, and only then backstops what keyhive refused.
     for (const f of ["ceremony-core.ts", "operator-daemon-behavior.ts"]) {
-      expect(SRC(f), `${f} writes no variant at all`).toMatch(/variant:/);
+      expect(SRC(f), `${f} still stamps a cap-event variant by hand`).not.toContain("CAP_EVENT_VARIANT_UNKNOWN");
+      expect(SRC(f), `${f} does not route its crossing through absorbCapEvents`).toContain("absorbCapEvents(");
     }
+  });
+
+  test("CONTROL — the sentinel still reaches a record (the field is a presence gate the store reads back)", () => {
+    // The word did not simply vanish; it moved to the one writer that can say it honestly.
+    expect(SRC("daemon-event-store.ts")).toMatch(/variant: CAP_EVENT_VARIANT_UNKNOWN/);
   });
 });
