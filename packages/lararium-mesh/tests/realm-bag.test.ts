@@ -19,7 +19,7 @@ import { hex } from "../src/crypto.js";
 import {
   realmIdOfCharter, realmDocUrl, signRealmBagRegistration, realmBagRegistrationCounts,
   writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
-  crossroadsAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, RealmBagGate,
+  crossroadsAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, publicRealmBooksFromDoc, RealmBagGate,
 } from "../src/realm-bag.js";
 import { deterministicDocUrl } from "../src/deterministic-doc.js";
 import { NEXUS_DOC_DOMAIN, type NexusDoc } from "../src/nexus-seal-seed.js";
@@ -121,6 +121,34 @@ describe("realm-bag — the doc face and the fold", () => {
 });
 
 describe("realm-bag — what @crossroads carries", () => {
+  // THE 2026-09-13 RULING: "the @crossroads ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm
+  // doc never emits a public face; the Herm follows announces." A carrier reads the public plane and learns
+  // WHICH book it may carry — the circle the e2e measured (a carrier may read a book its registration declares
+  // public; the declaration lived only on the realm doc; the realm doc withholds from a carrier) opens here.
+  test("a PUBLIC-tier announce carries the doc url, and the public-book fold reads it back", async () => {
+    const pub = await signRealmBagRegistration(
+      { realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "public" }, [await stewardA()]);
+    expect(crossroadsAnnounceOf(pub)).toEqual({
+      kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)], docUrl: DOC_A,
+    });
+    const cross = emptyDoc();
+    writeRealmBagAnnounce(cross, pub);
+    expect((cross.tiddlers[realmBagAnnounceKey(BAG)]!.tiddler as { text: string }).text).toContain(DOC_A);
+    expect(publicRealmBooksFromDoc(cross)).toEqual([{ bagUri: BAG, docUrl: DOC_A }]);
+  });
+  test("CONTROL: a CONTRACT-tier announce carries no doc url and the fold names no book", async () => {
+    const cross = emptyDoc();
+    writeRealmBagAnnounce(cross, await registrationByA());
+    const text = (cross.tiddlers[realmBagAnnounceKey(BAG)]!.tiddler as { text: string }).text;
+    expect(text).toBe(JSON.stringify({ kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)] }));
+    expect(publicRealmBooksFromDoc(cross)).toEqual([]);
+  });
+  test("CONTROL: a torn announce and an empty board each name no book", () => {
+    const cross = emptyDoc();
+    cross.tiddlers[realmBagAnnounceKey(BAG)] = { tiddler: { title: realmBagAnnounceKey(BAG), text: "{not json" } } as never;
+    expect(publicRealmBooksFromDoc(cross)).toEqual([]);
+    expect(publicRealmBooksFromDoc(emptyDoc())).toEqual([]);
+  });
   test("the announce names the bag and its keepers, never the doc", async () => {
     const rec = await registrationByA();
     const ann = crossroadsAnnounceOf(rec);

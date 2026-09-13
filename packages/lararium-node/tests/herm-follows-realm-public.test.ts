@@ -16,7 +16,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256HexBytesSync, utf8Bytes, type CasReferenceEntry, type CapTier } from "@lararium/mesh";
-import { publicCasShore } from "../src/bulb-read-face.js";
+import { announcedRealmBooks, publicCasShore } from "../src/bulb-read-face.js";
+import { crossroadsAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
+import * as ed from "@noble/ed25519";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 
 const HERM_CROSSROADS = "lar:///ha.ka.ba/bags/crossroads";
@@ -71,5 +73,63 @@ describe("the Herm's shore follows the realm's PUBLIC registrations, never its o
       expect(await shore.isPublic(ownCid)).toBe(true);
       expect(await shore.isPublic(farCid)).toBe(false);
     } finally { rmSync(storageDir, { recursive: true, force: true }); }
+  });
+});
+
+// ── THE CARRIER FOLLOWS THE ANNOUNCES (the 2026-09-13 ruling) ────────────────────────────────────
+//
+// A Herm holds no charter and folds NO realm registration — `nexus realm-bags` on the Herm read `bags: []` in
+// the measured fleet, so the realm lane above was unreachable by the very vessel it was built for. The public
+// plane closes the circle: a PUBLIC-tier announce carries the book's doc url, and the Herm's own @crossroads
+// replica already federates.
+describe("the Herm folds its shore off the @crossroads announces, holding no charter and no realm doc", () => {
+  const hex = (b: Uint8Array): string => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+  const SEED = new Uint8Array(32).fill(7);
+  const PUBLIC_BAG = "lar:///ha.ka.ba/bags/lares";
+  const CONTRACT_BAG = "lar:///ha.ka.ba/bags/ledger";
+  const emptyDoc = (): LarDoc => ({ tiddlers: {} }) as LarDoc;
+
+  async function steward() {
+    return { signer: hex(await ed.getPublicKeyAsync(SEED)), sign: async (b: Uint8Array) => hex(await ed.signAsync(b, SEED)) };
+  }
+
+  test("a PUBLIC announce names a book the carrier replicates; a CONTRACT one names none (CONTROL)", async () => {
+    const PUB_DOC = "automerge:2rEvJcsJjTeS5nDXbyEttkWa6jJa";
+    const CON_DOC = "automerge:3EuA8kB7XEZ5MP1oBBKdxzoLzXMn";
+    const cross = emptyDoc();
+    writeRealmBagAnnounce(cross, await signRealmBagRegistration(
+      { realmId: "r", bagUri: PUBLIC_BAG, docUrl: PUB_DOC, readTier: "public" }, [await steward()]));
+    writeRealmBagAnnounce(cross, await signRealmBagRegistration(
+      { realmId: "r", bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "contract" }, [await steward()]));
+
+    const asked: string[] = [];
+    const books = await announcedRealmBooks({
+      crossroadsDoc: () => cross,
+      findBook: async (url) => {
+        asked.push(url);
+        return url === PUB_DOC
+          ? { tiddlers: { "lar:///t.w.h/photo": { tiddler: { title: "lar:///t.w.h/photo", textCid: "cid-1" } } } } as unknown as LarDoc
+          : null;
+      },
+    });
+    expect(asked).toEqual([PUB_DOC]);                            // CONTROL: the contract book is never even asked for
+    expect(books.map((b) => b.bagUri)).toEqual([PUBLIC_BAG]);
+    expect(books[0]!.readTier).toBe("public");
+    expect([...books[0]!.entries].map((e) => e.title)).toEqual(["lar:///t.w.h/photo"]);
+  });
+
+  test("CONTROL: a book the carrier never replicated answers nothing, and an empty board folds empty", async () => {
+    const cross = emptyDoc();
+    writeRealmBagAnnounce(cross, await signRealmBagRegistration(
+      { realmId: "r", bagUri: PUBLIC_BAG, docUrl: "automerge:2rEvJcsJjTeS5nDXbyEttkWa6jJa", readTier: "public" }, [await steward()]));
+    expect(await announcedRealmBooks({ crossroadsDoc: () => cross, findBook: async () => null })).toEqual([]);
+    expect(await announcedRealmBooks({ crossroadsDoc: () => emptyDoc(), findBook: async () => null })).toEqual([]);
+    expect(await announcedRealmBooks({ crossroadsDoc: () => null, findBook: async () => null })).toEqual([]);
+  });
+
+  test("CONTROL: the announce a CONTRACT registration projects still carries no doc url", async () => {
+    const rec = await signRealmBagRegistration(
+      { realmId: "r", bagUri: CONTRACT_BAG, docUrl: "automerge:3EuA8kB7XEZ5MP1oBBKdxzoLzXMn", readTier: "contract" }, [await steward()]);
+    expect(crossroadsAnnounceOf(rec)).not.toHaveProperty("docUrl");
   });
 });

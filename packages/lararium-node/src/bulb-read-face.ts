@@ -30,8 +30,8 @@ import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_MANIFEST_ROUTE, BULB_POINTER_
 import { readFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import {
-  buildOraclePointer, oraclePointerId, sha256HexBytesSync, utf8Bytes, casReferences,
-  type OraclePointer, type CasReferenceEntry, type CapTier,
+  buildOraclePointer, oraclePointerId, sha256HexBytesSync, utf8Bytes, casReferences, publicRealmBooksFromDoc,
+  type OraclePointer, type CasReferenceEntry, type CapTier, type LarDoc,
 } from "@lararium/mesh";
 import { readCasBlobFromFs } from "./node-cas.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
@@ -63,6 +63,40 @@ export interface RealmShoreBook {
   readonly bagUri:   string;
   readonly readTier: CapTier;
   readonly entries:  Iterable<CasReferenceEntry>;
+}
+
+/**
+ * THE CARRIER'S OWN LANE — the books a Herm folds off its @crossroads replica.
+ *
+ * A Herm holds no charter, so it stands in no realm and folds no registration: the realm lane above named
+ * nothing on the one vessel it was built for (measured — `nexus realm-bags` on the Herm read `bags: []` while
+ * the founder's carried the registration). The 2026-09-13 ruling closes the circle on the public plane the
+ * Herm already replicates: a PUBLIC-tier announce carries its book's doc url, so a place reads which books it
+ * may carry BY HASH and nothing else. A tighter tier announces no address, its book is never asked for, and a
+ * book this carrier never replicated answers nothing — a rejected find withholds, never serves.
+ */
+export async function announcedRealmBooks(opts: {
+  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  readonly findBook:      (docUrl: string) => Promise<LarDoc | null>;
+  /** Fired once per ask with what the board named and what this carrier could actually read — the one place
+   *  an operator sees WHY a public body draws a 404 (no announce · an unreplicated book · an empty book). */
+  readonly onLog?:        (line: string) => void;
+}): Promise<RealmShoreBook[]> {
+  const books: RealmShoreBook[] = [];
+  const announcements = publicRealmBooksFromDoc(opts.crossroadsDoc());
+  opts.onLog?.(`announce lane: ${announcements.length} PUBLIC book(s) on the board`);
+  for (const announced of announcements) {
+    const doc = await opts.findBook(announced.docUrl).catch(() => null);
+    opts.onLog?.(`announce lane: ${announced.bagUri} → ${announced.docUrl} · read ${doc ? `${Object.keys(doc.tiddlers ?? {}).length} record(s)` : "NOTHING (never replicated here)"}`);
+    if (!doc) continue;
+    books.push({
+      bagUri: announced.bagUri, readTier: "public",
+      entries: Object.entries(doc.tiddlers ?? {}).map(([title, record]) => ({
+        title, bagId: announced.bagUri, record: record as { tiddler: Record<string, unknown> },
+      })),
+    });
+  }
+  return books;
 }
 
 /**

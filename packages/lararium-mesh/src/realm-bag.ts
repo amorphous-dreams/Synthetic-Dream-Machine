@@ -356,20 +356,69 @@ export function mayWriteRealmBag(
 
 // ── THE @CROSSROADS ANNOUNCE ─────────────────────────────────────────────────────────────────────
 
-/** What the public plane carries about a realm bag — that it exists and who keeps it. NEVER the doc. */
+/**
+ * What the public plane carries about a realm bag — that it exists, who keeps it, and (for a PUBLIC-tier book
+ * ALONE) the doc the book lives in.
+ *
+ * THE RULING (2026-09-13): "the @crossroads ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm
+ * doc never emits a public face; the Herm follows announces." A carrier reads the PUBLIC tier by hash, and the
+ * declaration that a book reads public lives on the realm doc — which withholds from a carrier. So a carrier
+ * could never learn WHICH books it may carry. The public plane closes that circle and nothing else moves: a
+ * CONTRACT-tier announce carries `{ bagUri, keptBy }` exactly as before, and a public one adds only the address
+ * of a book the registration already declared readable by hash to anyone.
+ */
 export interface RealmBagAnnounce {
   readonly kind:   typeof REALM_BAG_ANNOUNCE_DOMAIN;
   readonly bagUri: string;
   readonly keptBy: readonly string[];
+  /** The book's doc url — present IFF the registration declared the PUBLIC tier. */
+  readonly docUrl?: string;
 }
 
 export function realmBagAnnounceKey(bagUri: string): string {
   return `${REALM_BAG_ANNOUNCE_PREFIX}${encodeURIComponent(bagUri)}`;
 }
 
-/** The announce a registration projects onto @crossroads — the exists · kept-by pair, the doc withheld. */
+/** The announce a registration projects onto @crossroads — the exists · kept-by pair, plus the doc for a
+ *  PUBLIC-tier book alone; every tighter tier withholds the address exactly as it always did. */
 export function crossroadsAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
-  return { kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: rec.bagUri, keptBy: [...rec.keptBy] };
+  return {
+    kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: rec.bagUri, keptBy: [...rec.keptBy],
+    ...(rec.readTier === "public" ? { docUrl: rec.docUrl } : {}),
+  };
+}
+
+/** One PUBLIC book a carrier reads off the public plane: the bag's name and the doc it lives in. */
+export interface PublicRealmBook {
+  readonly bagUri: string;
+  readonly docUrl: string;
+}
+
+/**
+ * THE CARRIER'S FOLD — every PUBLIC book the @crossroads board announces, read off a carrier's OWN replica of
+ * that board. A place that holds no charter and no realm doc learns here which books it may carry BY HASH, and
+ * learns nothing else: an announce without a doc url (every tier tighter than PUBLIC) names no book, a torn
+ * payload skips, and an empty board folds empty. The fold grants no read cap — the wire gate still decides
+ * which documents cross, and the tier the REGISTRATION declared still decides what the shore serves.
+ */
+export function publicRealmBooksFromDoc(doc: LarDoc | undefined | null): PublicRealmBook[] {
+  const tiddlers = doc?.tiddlers;
+  if (!tiddlers) return [];
+  const out: PublicRealmBook[] = [];
+  for (const [title, record] of Object.entries(tiddlers)) {
+    if (!title.startsWith(REALM_BAG_ANNOUNCE_PREFIX)) continue;
+    const text = tiddlerText(record);
+    if (text === null) continue;
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { continue; }
+    if (typeof parsed !== "object" || parsed === null) continue;
+    const p = parsed as Record<string, unknown>;
+    if (p["kind"] !== REALM_BAG_ANNOUNCE_DOMAIN) continue;
+    if (typeof p["bagUri"] !== "string" || !p["bagUri"].startsWith("lar:///")) continue;
+    if (typeof p["docUrl"] !== "string" || !p["docUrl"].startsWith("automerge:")) continue;
+    out.push({ bagUri: p["bagUri"], docUrl: p["docUrl"] });
+  }
+  return out;
 }
 
 /** Land the announce on the crossroads draft. Call INSIDE a `handle.change()` callback. */

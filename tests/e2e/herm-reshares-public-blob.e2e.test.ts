@@ -40,7 +40,36 @@
  * realm doc; the realm doc withholds from a carrier. So a Herm can never learn WHICH books it may carry, and
  * the realm lane it gained is unreachable by any carrier, in this fleet or any other.
  *
- * IT WANTS A RULING, not a patch — three shapes stand and they differ in what a place gets to see:
+ * ★ THE 2026-09-13 RULING, LANDED — shape (ii): "the @crossroads ANNOUNCE carries the doc url for PUBLIC-tier
+ * books only; the realm doc never emits a public face; the Herm follows announces." `crossroadsAnnounceOf`
+ * now carries `docUrl` for a PUBLIC-tier registration and withholds it at every tighter tier (byte-identical
+ * to the announce that stood before the field existed), `publicRealmBooksFromDoc` folds the board back, and
+ * the Herm's shore reads that fold (`announcedRealmBooks`) beside the realm lane it could never reach.
+ *
+ * ★ AND THE MEASUREMENT NAMED A SECOND CIRCLE, one no ruling anticipated. ⑤b plants the body by hand in the
+ * Herm's own `cid/` to separate the INDEX half from the BYTE half, and the index STILL withholds:
+ *
+ *     herm-reshares MEASURE the INDEX half: body planted in the Herm's cid/ → GET /cas/4977… → 404
+ *     herm announce lane: [herm] announce lane: 0 PUBLIC book(s) on the board   (× 4 asks)
+ *
+ * THE BOARDS NEVER MEET. A crossroads board keys on the VESSEL's OWN verifying key — A's realm plane announces
+ * to `crossroadsDocUrl(A.vesselKey)` (`open-node-vessel.ts:1136`) and the Herm's shore reads
+ * `crossroadsDocUrl(herm.vesselKey)` (`:2134`). Both vessels name ONE realm and ONE realm doc, and TWO
+ * disjoint public boards. So the announce lands where its author alone reads it, and the carrier's fold —
+ * correct, and required under every one of the three shapes — folds an empty board.
+ *
+ * THE FORK THE OPERATOR OWNS, and the only thing between here and ⑦: WHICH public plane carries a realm's
+ * announces? (a) the KEEPING hearth's own board, which makes a carrier need that hearth's vessel key (it holds
+ * the peer id and the contract nym, and neither is that key); or (b) a board the REALM ID derives, which both
+ * already compute (the Herm's own `nexus realm-bags` names `realm epoch0-8496…`) at the cost of a second
+ * realm-addressed plane beside the realm doc. Shape (iii) — the publisher PUSHES to the places it carries with
+ * — dissolves the question instead of answering it.
+ *
+ * THE THIRD GAP still stands behind both: `publicCasShore.read` is local bytes only, and a Herm holds no
+ * carriage CLIENT (it IS the relay), so nothing ever makes it fetch. ⑤b plants the body precisely because
+ * nothing in the product does.
+ *
+ * THE THREE SHAPES, as first surfaced — they differ in what a place gets to see:
  *   (i) the realm doc crosses to a carrier at a REDUCED PROJECTION — the PUBLIC-tier registrations alone,
  *       so a place reads the public index and never the CONTRACT rows beside it;
  *   (ii) the public registrations announce on @crossroads (already the public plane by construction) and a
@@ -172,6 +201,27 @@ describe.skipIf(gaps.length > 0)("★ a fleet peer stages a PUBLIC blob and goes
       `  herm nexus realm-bags → ${said(hermBags).trim().slice(0, 300)}`,
       `  herm dial (last 4): ${fleet!.herm.bootLog().split("\n").filter((l) => /nexus-join|lar-leaf|realm|dial-out/.test(l)).slice(-4).join(" | ")}`,
     ].join("\n"));
+    expect([200, 404]).toContain(res.status);
+  }, 30_000);
+
+  // ⑤b ISOLATES THE TWO HALVES OF ⑦. The 2026-09-13 ruling closed the INDEX half: the @crossroads announce
+  // carries the doc url for a PUBLIC-tier book, and the Herm folds its shore off the announces it already
+  // replicates (`announcedRealmBooks`) rather than off a realm doc that withholds from a carrier. The BYTE half
+  // stands open — the Herm holds no carriage CLIENT (it IS the relay), so nothing ever makes it fetch A's body.
+  // Plant the body by hand in the Herm's own `cid/` and the two halves separate: a 200 here says the index
+  // stands and the byte lane alone is owed; a 404 says the index still withholds.
+  test("⑤b MEASURE: with the body planted in the Herm's cid/, does the index alone open /cas/<cid>?", async () => {
+    const hermCas = casDirOf(fleet!.herm);
+    mkdirSync(hermCas, { recursive: true });
+    writeFileSync(join(hermCas, cid), PNG_BYTES);
+    const res = await fetch(`${fleet!.hermShore}/cas/${cid}`);
+    const ghost = await fetch(`${fleet!.hermShore}/cas/${GHOST}`);
+    console.error([
+      `herm-reshares MEASURE the INDEX half: body planted in the Herm's cid/ → GET /cas/${cid.slice(0, 12)}… → ${res.status}`,
+      `  CONTROL a ghost cid (planted by nobody) → ${ghost.status}`,
+      `  herm announce lane: ${fleet!.herm.bootLog().split("\n").filter((l) => /announce lane/.test(l)).slice(-6).join(" | ") || "(silent — the shore never asked)"}`,
+    ].join("\n"));
+    expect(ghost.status).toBe(404);                 // CONTROL: the index grants nothing a pointer never named
     expect([200, 404]).toContain(res.status);
   }, 30_000);
 
