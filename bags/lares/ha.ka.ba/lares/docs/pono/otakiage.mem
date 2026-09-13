@@ -12,8 +12,8 @@ manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-12"
-role              = "otakiage — a LIFECYCLE for the house's carriers, designed. Names the five standings a carrier holds (fleeting · designed · standing · folded · gone) and the KIND axis the single `status` key currently fuses into them; the six transitions as rites, each with a who, a witness and a record; the fire — what burns, what never burns, who calls it, how the house schedules it off its own rolls rather than a calendar, and the gratitude line the commit log already writes; the siblings (kapu · tombstone · the lares-history shelf) that take a carrier OUT of the fire's reach; the pattern-integrity rhymes with the Shinto return-rite, the Zettelkasten/evergreen ladders and the archive/tombstone disciplines, and where each rhyme breaks. Every house claim carries a file:line or a measurement dated 2026-09-12; every field claim carries a URL, the date the page shows, and the page's own words."
-status-why        = "a design awaiting the operator's ruling — nothing built, no code, test or existing carrier changed, no carrier burned. The stage names, the split of the `status` key, the fire's caller and its schedule all stand as PROPOSALS under #/questions; the carrier moves to `api/pono/otakiage` when the operator rules, and until then the house's retirement discipline lives where it already lives (`api/pono/meme#/retirement` and the four-step rite in the session record)"
+role              = "otakiage — the LIFECYCLE the house's carriers stand in, ruled and enacted. Five stages ride a TAG FAMILY on governed memes only (`lifecycle/designed · standing · folded · harvest · retiring`) so a filter answers the stage in the wiki and the stage RENDERS; a KIND rides `kind/rite` beside it; a carrier carrying no `lifecycle/*` tag stands UNGOVERNED and the gate asks nothing of it. `status` and `retain` retire as keys, `status-why` stays as the witness sentence, `cacheable` stays as an instruction to the API server behind the Lares. The six transitions as rites, each with a who, a witness and a record; the fire — what burns, what never burns, and the CALL that fires it, never a schedule; the harvest room as the rite walked it end to end; the siblings (kapu · tombstone) that take a carrier OUT of the fire's reach; the pattern-integrity rhymes with the Shinto return-rite, the Zettelkasten/evergreen ladders and the archive/tombstone disciplines, and where each rhyme breaks. Every house claim carries a file:line or a measurement dated 2026-09-12; every field claim carries a URL, the date the page shows, and the page's own words."
+status-why        = "RULED AND ENACTED 2026-09-12 (operator; the ruling stands verbatim at #/the-lifecycle). The tag family, the `meme check` stage law and `lares meme sitting` stand in code with a red-first witness each (`packages/lararium-tw5/src/carrier-lifecycle.ts`, `tests/carrier-lifecycle.test.ts`, `tests/meme-lifecycle-tag.test.ts`, `packages/lares-cli/tests/meme-command.test.ts`); 54 carriers took their tags (16 designed · 32 standing · 6 kind/rite) and 657 dropped the retired keys; the harvest room `bags/lares-history` was read whole, eight paragraphs lifted, five edges welded and all 51 files burned, dangling edges 198 -> 175. The carrier STAYS `designed` because it still argues its own crossing: it sits in `docs/pono` and moves to `api/pono/otakiage` only when the operator rules that crossing, which #/questions still puts to them — and the promotion receipt that crossing wants remains the declared blocker at `docs/pono/canon-boundary:97`"
 tags              = ["api/pono/meme", "lifecycle/designed"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
@@ -190,6 +190,18 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 !! The lifecycle ~ stages, transitions, rites, witnesses, records
 
+!!! THE RULING ~ the operator's words, and what the house built from them
+
+<<~ moolelo held="the lifecycle rides a TAG FAMILY on governed memes only; `status` and `retain` retire; `cacheable` stays as an API-server instruction; `lares-history` becomes the HARVEST ROOM and gets emptied and deleted; the fire is CALLED, never scheduled (operator, 2026-09-12)">>"Retain and cache (etc) served as 'instructions to the AI api server behind the Lares'. Keep 'cache for that purpose and OODA-HA a user story out of the remaining questions. Propose a different way to track the lifestyle. `lares-history` serves as old designs and files to harvest materials from into other bags then retire/burn. We want to empty it and delete it, so the rite here serves that too. A tag to mark which memes to lifestyle (not all will need it, but designs and handoff have scattered & need consolidation and burning old shells)"<<~/moolelo>>
+
+''The stage leaves the key and joins the index.'' Five stages ride `tags` — `lifecycle/designed` · `lifecycle/standing` · `lifecycle/folded` · `lifecycle/harvest` · `lifecycle/retiring` — on the mechanism TiddlyWiki already runs, so `[tag[lifecycle/designed]]` answers in the wiki and a stage RENDERS rather than reaching the reader of raw `.mem` bytes alone. #/leans held that gap open ("Nothing renders `status` or `status-why`"); the tag closes it, and the KIND lean closes with it — the kind rides `kind/rite` beside the stage, on the same mechanism.
+
+''A carrier carrying no `lifecycle/*` tag stands UNGOVERNED'' — law, record, reference, fiction-canon concept — and `meme check` enforces nothing new on it. Measured the day the tag landed: 726 carriers, 54 governed. The ladder stays cheap to decline, which is exactly what lets standing on it mean something.
+
+''`status` retires; `status-why` stays; `cacheable` stays; `retain` retires.'' One spelling for the stage — the tag. The witness sentence is the half a tag cannot carry, so `status-why` keeps its office beside the tag. `cacheable` instructs the API server behind the Lares, no house code reads it, and none may. `retain` carried no office at all and left the whole shelf in the same sweep: a key retired on 59 carriers while riding 600 others is a warning nobody can act on.
+
+''And a rite is a KIND.'' `talk-story`, `hoike`, both their skills and the two runbooks carry `kind/rite` and stand ungoverned. Nothing about a convened practice awaits a build, so a stage it could advance to never existed.
+
 !!! The correction the candidate shape needs
 
 ''The charge offered a chain to argue against: `fleeting` → `seedling` → `standing` → `rite` → `archaeology` → `otakiage`. Three links break.''
@@ -203,21 +215,25 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 !!! Axis A ~ STANDING: five stages, one line, in order
 
 ```
-<<~ has Stage fleeting "status/none holds/nothing-on-disk ~ a turn's scratch; the temp slot never persists">>
-<<~ has Stage designed "status/designed holds/a-shape-argued ~ nothing enacted; status-why names what stands unbuilt">>
-<<~ has Stage standing "status/standing holds/a-ruling-enacted ~ status-why names the witness that proves it">>
-<<~ has Stage folded "status/folded holds/pointers-alone ~ every lean closed, every ruling rehomed, every inbound edge re-pointed">>
-<<~ has Stage gone "status/none holds/git-alone ~ the shelf holds nothing; the commit holds the argument">>
+<<~ has Stage fleeting "tag/none holds/nothing-on-disk ~ a turn's scratch; the temp slot never persists">>
+<<~ has Stage designed "tag/lifecycle-designed holds/a-shape-argued ~ nothing enacted; status-why names what stands unbuilt">>
+<<~ has Stage standing "tag/lifecycle-standing holds/a-ruling-enacted ~ status-why names the witness that proves it">>
+<<~ has Stage folded "tag/lifecycle-folded holds/pointers-alone ~ every lean closed, every ruling rehomed, every inbound edge re-pointed">>
+<<~ has Stage harvest "tag/lifecycle-harvest holds/materials-awaiting-a-home ~ harvest-to names the living bag; the room's emptiness is the witness">>
+<<~ has Stage retiring "tag/lifecycle-retiring holds/a-last-check-in ~ welded, nothing names it, the commit explains its own ending">>
+<<~ has Stage gone "tag/none holds/git-alone ~ the shelf holds nothing; the commit holds the argument">>
 ```
 
-|! stage |! `status` |! what the carrier holds |! what `status-why` reads |! what `meme check` SHOULD enforce |
-| ''`fleeting`'' | ''absent — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot, a spirit's working note | //nothing — it never reaches a meta block// | ''nothing'' — the gate never sees it. A fleeting thing that wants a check has already stopped being fleeting |
-| ''`designed`'' | `designed` | a shape argued whole against the house and the field; leans open by design | what stands ''unbuilt'', in those words: "nothing built" · "doctrine; no source carries it yet" | open `-> ?` leans read ''correct'' here. An empty `#/leans` slot on a `designed` carrier reads ''wrong'' — a design with no open question has either been ruled or never argued |
-| ''`standing`'' | `standing` | a ruling enacted, or a measurement taken and held | the ''witness'': a commit sha, a named test, a measured run, or an honest partial ("MEASURED IN PART — … 1, 3, 4, 6 unrun") | an open `-> ?` in `#/leans` reads ''wrong'' unless `status-why` names it as held-open with its blocker. A `standing` carrier whose `status-why` names no witness reads ''wrong'' |
-| ''`folded`'' | `folded` //(PROPOSED — no carrier spells it today)// | pointers alone: each slot says where its content went | "folded to `lar:///…`, welded, nothing points here" | ''zero'' inbound `loulou`; ''zero'' open leans; every slot carrying a fold target. Any of the three failing reads ''wrong'' and the carrier stays `standing` |
-| ''`gone`'' | ''absent — no carrier exists'' | nothing. git holds the bytes, the commit holds the argument, the CHANGELOG holds the fact | //nothing// | the shelf's ''global'' check: zero dangling edges gained. The house measures 198 standing today, so this reads as a debt, never a floor |
+''`harvest` and `retiring` joined the line when the rite was walked.'' A ROOM full of material nobody has read yet is not `folded` — folding is what happens after the reading — and the last check-in commit that stands between a welded carrier and the fire occupies a standing of its own, because it is the state a reader bisecting the history is meant to land on. Both earned their place by being walked rather than by being argued.
 
-''The honest default: no `status` at all.'' 669 of 726 carriers carry none, and most of them properly so — a reference table, a library text, a fiction-canon concept enters no lifecycle. ''A missing `status` MUST NOT read as a stage''; it reads as //this carrier declines the ladder//, which the house should keep cheap. #/questions asks whether any class of carrier MUST carry one.
+|! stage |! the tag |! what the carrier holds |! what `status-why` reads |! what `meme check` ENFORCES |
+| ''`fleeting`'' | ''none — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot, a spirit's working note | //nothing — it never reaches a meta block// | ''nothing'' — the gate never sees it. A fleeting thing that wants a check has already stopped being fleeting |
+| ''`designed`'' | `lifecycle/designed` | a shape argued whole against the house and the field; leans open by design | what stands ''unbuilt'', in those words: "nothing built" · "doctrine; no source carries it yet" | open `-> ?` leans read ''correct'' here. An empty `#/leans` slot on a `designed` carrier reads ''wrong'' — a design with no open question has either been ruled or never argued |
+| ''`standing`'' | `lifecycle/standing` | a ruling enacted, or a measurement taken and held | the ''witness'': a commit sha, a named test, a measured run, or an honest partial ("MEASURED IN PART — … 1, 3, 4, 6 unrun") | an open `-> ?` in `#/leans` reads ''wrong'' unless `status-why` names it as held-open with its blocker. A `standing` carrier whose `status-why` names no witness reads ''wrong'' |
+| ''`folded`'' | `lifecycle/folded` | pointers alone: each slot says where its content went | "folded to `lar:///…`, welded, nothing points here" | ''zero'' inbound `loulou`; ''zero'' open leans; every slot carrying a fold target. Any of the three failing reads ''wrong'' and the carrier stays `standing` |
+| ''`gone`'' | ''none — no carrier exists'' | nothing. git holds the bytes, the commit holds the argument, the CHANGELOG holds the fact | //nothing// | the shelf's ''global'' check: zero dangling edges gained. The house measures 198 standing today, so this reads as a debt, never a floor |
+
+''The honest default: no tag at all.'' 672 of 726 carriers carry none, and most of them properly so — a reference table, a library text, a fiction-canon concept enters no lifecycle. ''A missing tag MUST NOT read as a stage''; it reads as //this carrier declines the ladder//, which the house should keep cheap. #/questions asks whether any class of carrier MUST carry one, and the gate as built asks nothing of an untagged carrier — a CONTROL in `tests/carrier-lifecycle.test.ts` holds it to that.
 
 !!! Axis B ~ KIND: what would count as enactment
 
@@ -227,6 +243,8 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 <<~ has Kind reading "enactment/a-measurement-dated ~ a field scout or a census; it ages rather than breaks">>
 <<~ has Kind floor "enactment/an-exit ~ a talk-story floor; it closes by moʻolelo, hoike or honest suspension">>
 ```
+
+''The KIND rides `tags` as well'' — `kind/rite` · `kind/build` · `kind/reading` · `kind/floor`, on one mechanism with the stage, which closes the lean that asked whether it should. `tags` naming what LAW binds a carrier and what KIND it holds at once reads as two questions on one key only if a filter has to guess; the prefixes mean it never does.
 
 ''Why the split earns its keep.'' The two axes cross cleanly and answer different questions. ''`rite` × `designed`'' names a practice argued and not yet convened; ''`rite` × `standing`'' names `talk-story.mem` today. ''`reading` × `standing`'' names `device-capabilities-2026.mem`, whose `status-why` dates its own reading ("read 2026-09-11 against the field as it stands that day") — a reading never goes wrong, it goes ''stale'', and staleness wants a revisit rather than a burn. ''`floor` × `folded`'' names precisely the class the retirement rite already governs.
 
@@ -262,6 +280,20 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 ''Nothing else, ever.'' A carrier that merely went quiet does not qualify; neither does one that reads stale, wrong, or embarrassing. ''A wrong carrier gets corrected; a stale reading gets re-dated; an embarrassing one stays'' — Wikipedia's editing policy says it in the register the house already keeps: "Fix problems if you can, tag or remove them if you can't. Preserve appropriate content."
 
+!!! The rite as walked ~ the harvest room, end to end
+
+''The design proposed a rite and the operator ruled it onto a room.'' `bags/lares-history` held 51 files across 20 declaring carriers, and #/leans had it right: it read like an archive and did not act as one. The walk ran in this order and no other.
+
+# ''READ every file before deciding anything.'' Fifty-one, in three parallel passes, each one extracting the file's distinctive claims and then grepping the LIVING shelf for whether that material already stood. ''A decision to burn rests on evidence that nothing is lost'' — the row names the living carrier, or the file does not burn.
+# ''LIFT what stands nowhere else.'' Eight paragraphs, each into a carrier that held the surrounding law and lacked exactly that piece: the ATProto OAuth profile into a slot that already named the OAuth route as an open debt; the randomness doctrine as a fourth beside three that stood; the inviolable-kernel law beside P1--P4, which had the principles and not the boundary. ''A lift that lands where nothing surrounds it is a move, not a fold.''
+# ''WELD every inbound edge, before the fire and never after.'' Five living carriers named into the room. Two re-aimed at the carriers that inherited the material; three had pointed at targets already burned in an earlier pass, and those re-aimed at the carriers that RECORD where the material went — which is the honest successor to a thing nothing inherited.
+# ''BURN in groups, each with its own commit and its own gratitude line.'' Three burn commits, never one: a wave shows its shape, and a single commit deleting 51 files records nothing a reader could walk backwards.
+# ''The room's declaration goes last, and its emptiness is the witness.'' `meta.mem` had named its own dissolution as the success condition, so the last act of the rite was the room agreeing to it.
+
+''What the walk cost the graph, measured either side:'' `lares meme check --edges` read ''198 naming nothing'' before and ''175'' after — down 23, which is the room's own outbound danglers plus the five welds. The `carrier-edges` ceiling lowered 201 → 178. ''That number was the sharpest argument in this carrier for naming the rite, and paying it down is the receipt.''
+
+''And the exemptions went with the room.'' Four gates and two sweeps carried a `lares-history` exclusion, every one of them written because of that bag. Removing them ''widens'' three gates rather than loosening them — the coordinates witness now reads every `bags/**/*.mem`, and the section-address law now holds the whole corpus rather than the corpus-minus-one-bag. ''A rite that ends a thing should leave the instruments reading MORE, never less.''
+
 !!! What NEVER burns
 
 # ''Canon under `api/pono/`.'' 149 carriers. An address there has readers the house cannot enumerate — that is what promotion into it MEANT. `meme.mem#/retirement` already governs the name; the bytes at a canon address stay.
@@ -291,6 +323,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 # ''The reading names candidates; it never burns.'' Ahi-kā already holds the shape (`ahi-ka.ts:25-53`): a ratio against an independent yardstick, a `warmRatio` of 0.30 and a `coldRatio` of 0.05, an `ambientFloor` of 8 below which the reader ''abstains'' — and the posture "Fail-closed toward alive: abstain, never cold." Read over a ''carrier'' rather than a realm, the yardstick reads as the shelf's own motion — commits touching `bags/*.mem` — and the signal as the carrier's own: inbound edges, `revised-on`, slots rewritten. ''A carrier reading `ahi-mataotao` enters the candidate list and nothing more.'' A thin yardstick abstains, exactly as it does today, and "a dormant shrine woken for a centennial rite is not a dying one."
 # ''The operator calls the season.'' A Koshōgatsu-shaped rite: one sitting, several carriers at once, at a moment the operator names — a phase boundary, a founding, a release. Batching matters for the same reason `delete-gate.ts` batches: ''a wave shows its own shape''. Six carriers proposed at once surfaces a pattern one at a time would hide, and the mass-delete brake's instinct — suspend the whole wave above a quarter — belongs here too, as a reading the operator gets handed rather than a rule that fires.
+# ''The CALL is built, and it burns nothing.'' `lares meme sitting` (and `meme check --sitting`) holds the whole shelf at once and names every candidate — `lifecycle/folded` or `lifecycle/retiring` with nothing naming it, plus every harvest room still standing — then stops. ''A carrier any other carrier still names reads `held`, however its stage reads'': the weld comes first and the fire second, and that ordering rides in the instrument rather than in a spirit's memory. ''The reading never exits non-zero'', because a reading that called a candidate an error could not be run from a hook, and a reading nobody runs names nothing.
 # ''The sigil, PROPOSED and unregistered.'' `<<~ otakiage>>` would open the sitting the way `<<~ talk-story>>` convenes a floor. ⚠ ''No such sigil exists'': the house registers a sigil by its own tiddler (`lar:///ha.ka.ba/…/sigil-<name>`, read by `grammar-cache.ts:115`), and `otakiage` appears nowhere in `bags/` or `packages/` (grep, 2026-09-12). Registering it belongs to a later ruling, never to this design. Until then the sitting convenes as a talk-story floor, which already carries the three exits it needs.
 
 !!! The gratitude line
@@ -359,16 +392,18 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~ ahu #/leans>>
 
-!! Leans ~ held open
+!! Leans ~ four stand open, six closed with the ruling
 
-# ''The `folded` stage may want to live in `status-why` rather than in `status`.'' A fourth value adds a vocabulary the house must teach every reader and every future gate, where the sentence "folded to `lar:///…`, welded, nothing points here" already carries everything a reader needs and rides a key that exists. Against that: a value gets checked and a sentence gets read, and the whole point of naming the stage is that a gate could refuse to burn anything not standing in it. `-> ?`
-# ''The KIND axis may belong in `tags` rather than in a new key.'' Every carrier already carries `tags = ["api/pono/meme"]`, and a `kind/rite` tag would ride a mechanism the house runs. Against: `tags` currently name what LAW binds a carrier, never what kind the carrier holds, and overloading it would make a filter over tags answer two questions at once. `-> ?`
+''The ruling of 2026-09-12 (#/the-lifecycle) closed six of these and part-closed a seventh.'' Each closed lean keeps its argument and carries the verdict, so a reader meets WHY it closed rather than a shorter list.
+
+# ''The `folded` stage may want to live in `status-why` rather than in `status`.'' A fourth value adds a vocabulary the house must teach every reader and every future gate, where the sentence "folded to `lar:///…`, welded, nothing points here" already carries everything a reader needs and rides a key that exists. Against that: a value gets checked and a sentence gets read, and the whole point of naming the stage is that a gate could refuse to burn anything not standing in it. ''CLOSED 2026-09-12'' — the stage rides neither — it rides `tags`, so a gate checks it AND a filter renders it, which is the property both halves of this lean were reaching for.
+# ''The KIND axis may belong in `tags` rather than in a new key.'' Every carrier already carries `tags = ["api/pono/meme"]`, and a `kind/rite` tag would ride a mechanism the house runs. Against: `tags` currently name what LAW binds a carrier, never what kind the carrier holds, and overloading it would make a filter over tags answer two questions at once. ''CLOSED 2026-09-12'' — it does, as `kind/rite`. The prefixes keep the two questions apart on one key, so a filter never guesses which one it is answering.
 # ''The `ahi-kā`-over-a-carrier reading stands unbuilt and possibly unbuildable at this grain.'' The ratio wants a baseline rate — "the realm's own historical rolls per unit of that yardstick" — and a carrier's own history runs far too short and too bursty for one (a carrier touched in three commits on one day and never again reads identically to a carrier touched three times across a year). The estimator may want the ''bag'' as its unit and a carrier as an observation, which changes the design. `-> ?`
-# ''A batched sitting and the mass-delete brake may fight.'' The brake suspends a wave above a quarter of a bag's carriers because a flood signals a mistake. A deliberate seasonal sitting floods ''on purpose''. Whether the brake reads as a safety the sitting must clear, or as an instrument that simply does not apply to an operator-called rite, stands unruled. `-> ?`
+# ''A batched sitting and the mass-delete brake may fight.'' The brake suspends a wave above a quarter of a bag's carriers because a flood signals a mistake. A deliberate seasonal sitting floods ''on purpose''. Whether the brake reads as a safety the sitting must clear, or as an instrument that simply does not apply to an operator-called rite, stands unruled. ''CLOSED 2026-09-12'' — they never meet. The brake governs a sync wave writing tombstones into a live group; the sitting is a READING that writes nothing and burns nothing. The operator calls the fire by hand afterwards.
 # ''Zero-inbound from `meme check --edges` overstates its own reach'' — it reads `.mem` text alone and never source comments, the CHANGELOG, skill files, or memory. A weld that trusts it alone will strand exactly the references that cost most to find. Whether the weld step grows a source-tree grep, or whether the edge reader learns to see `lar:` URIs in TypeScript comments, stands open. `-> ?`
-# ''`lares-history` reads as an archive and does not act as one.'' Its contents arrived by rename, one has since burned out of it, its addresses sit outside `ha.ka.ba/`, and 22 dangling edges name into it. Either it becomes an archive properly or it stops being named as one. `-> ?`
-# ''`retain` carries no office.'' It rode one once (`cc3f85022`) and no code reads it. Whether it becomes the disposition instruction NARA's schedules describe — attached at pour, read at the sitting — or retires as a field, stands open. `-> ?`
-# ''Nothing renders `status` or `status-why`.'' A reader inside the wiki sees neither. A lifecycle whose stages reach only the reader of raw `.mem` bytes governs a smaller house than it thinks. Whether a stage ought to render, and where, stands entirely undesigned here. `-> ?`
+# ''`lares-history` reads as an archive and does not act as one.'' Its contents arrived by rename, one has since burned out of it, its addresses sit outside `ha.ka.ba/`, and 22 dangling edges name into it. Either it becomes an archive properly or it stops being named as one. ''CLOSED 2026-09-12'' — it stopped being named as one. The operator ruled it a HARVEST ROOM, the rite walked it end to end, and git carries the archive role alone — #/the-fire records the walk.
+# ''`retain` carries no office.'' It rode one once (`cc3f85022`) and no code reads it. Whether it becomes the disposition instruction NARA's schedules describe — attached at pour, read at the sitting — or retires as a field, stands open. ''CLOSED 2026-09-12'' — it retires. The disposition rides the `lifecycle/*` tag, and 657 carriers dropped the key in one sweep — a key retired on 59 carriers while riding 600 others is a warning nobody can act on.
+# ''Nothing renders `status` or `status-why`.'' A reader inside the wiki sees neither. A lifecycle whose stages reach only the reader of raw `.mem` bytes governs a smaller house than it thinks. Whether a stage ought to render, and where, stands entirely undesigned here. ''PART-CLOSED 2026-09-12'' — the STAGE renders now, because `tags` is a mechanism TiddlyWiki indexes and `[tag[lifecycle/designed]]` answers. The witness SENTENCE still reaches the reader of raw bytes alone, and where `status-why` ought to surface stands undesigned.
 # ''The promotion receipt remains the declared blocker'' (`canon-boundary.mem:97`), and this design leans on promotion for its `docs/pono` → `api/pono` transition. So the rite this carrier describes for its own crossing cannot yet be recorded the way the boundary says it must. `-> ?`
 # ''The field never answered who may burn a thing they did not receive.'' The scout could reach no shrine or Jinja Honchō source on it, and this carrier therefore builds its who-may-burn rule on the house's own witness law (`hoike.mem:77`) rather than on a borrowed one. If the rule reads wrong, the house's own reasoning carries the fault and no borrowed authority softens it. `-> ?`
 
@@ -376,14 +411,15 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~ ahu #/questions>>
 
-!! Questions ~ only the operator's
+!! Questions ~ three ruled, four standing
 
-# ''Does the `status` key SPLIT?'' Option A: one key, four values (`designed` · `standing` · `rite` · `folded`), accepting that `rite` names a kind wearing a stage's clothes. Option B: `status` carries the standing axis alone (`designed` · `standing` · `folded`) and a second key carries the kind (`build` · `rite` · `reading` · `floor`) — which costs a re-stamp of the six carriers reading `rite` today and makes two checkable rules statable that Option A cannot state.
+''RULED 2026-09-12.'' Q1 — the key SPLITS, and further than either option asked: the stage rides `tags` as `lifecycle/*` and the kind rides `tags` as `kind/*`, so both checkable rules Option B wanted are statable and neither needs a key of its own. Q5 — `lares-history` STOPS being named an archive; it became the harvest room, and the rite emptied and deleted it. Q6 — `retain` RETIRES; `cacheable` stays, as an instruction to the API server behind the Lares that no house code reads.
+
+''The four below still stand at the operator's hand.''
+
 # ''Does any class of carrier MUST-carry a `status`?'' 669 of 726 carry none. A rule reading "every carrier under `docs/pono` and `api/pono` carries one" would cost a sweep across 265 carriers and would make the ladder mean something; leaving it optional keeps the shelf cheap and keeps the ladder advisory. Which?
 # ''Who calls the fire, and does an authored ending skip the call?'' This carrier proposes: the operator calls, any hand carries, and a disposition ruled at pour time (`retain = false`, or its successor) stands as a call already made. Does the operator hold that, or does every burn want a fresh call at the moment?
 # ''What schedules the sitting?'' This carrier proposes: an ahi-kā-shaped reading names candidates and never burns; the operator calls a Koshōgatsu-shaped season at a phase boundary. Does the reading get built at all, or do candidates simply surface when a spirit closes the last lean on a floor?
-# ''Does `lares-history` become an archive, or stop being named as one?'' If an archive: its contents want `ha.ka.ba/` addresses, a `status`, and a standing rule that nothing burns from it. If not: the 22 edges naming into it want re-pointing or burning, and git carries the archive role alone.
-# ''Does `retain` become the disposition instruction, or retire?''
 # ''Does this carrier cross to `api/pono/otakiage`, and if so does it absorb `api/pono/meme#/retirement` or stand beside it?'' The existing law governs the NAME (deprecate-never-redefine); this design governs the BYTES. One carrier holding both would make the whole discipline readable in one place; two would keep each law's scope legible. Which?
 
 <<~/ahu>>
@@ -423,6 +459,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SyqIkCKFjbl5Er-h8ujcHvEiMfBXNXtK7hvac9-lQDM
+<<^ code="&#x0003;">>ni:///sha-256;biMDeYGxoswea4DSx4UICr0WyU9-tNuAd2jcXKfqX4M
 
 <<^ code="&#x0004;" -> to="?">>

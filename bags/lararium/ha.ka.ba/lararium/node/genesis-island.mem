@@ -6,7 +6,6 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/genesis-island.mem"
 l-space     = "lararium"
 mana        = 8
-retain      = true
 role        = "invariant law: the genesis island BUILD — the three-layer I/O split that keeps the artifact platform-neutral, the DECLARED blob class each vendored file carries into its region, and the determinism the actor seed buys."
 source-file = "packages/lararium-node/scripts/build-genesis-island.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -106,9 +105,9 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~/ahu>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/residency-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;nzH-R3rMEmoxbWkRCe5wHv8uLbF6h4BF7p5OF2_FBMk
+<<^ code="&#x0003;">>ni:///sha-256;ZHeR1pg_Li5K6n7w5rJaBoZRnMXK_Yty7hzKgPseiDg
 
 <<^ code="&#x0004;" -> to="?">>

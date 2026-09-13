@@ -104,10 +104,16 @@ describe("carrier-edges — every address a carrier points at", () => {
     // measurement either side of the change: `lares meme check --edges` read 198 before the rite and 175
     // after, over the shelf; this reading adds the runtime kernel face and the fixtures the finder sees.
     //
+    // 178 -> 179, the SECOND kind again and named: `node/genesis-island.mem` teaches the carrier-gradient
+    // law by pointing at `lares/api/pono/carrier-gradient`, a carrier nobody has written — the law lives
+    // in `carrier-files.ts` and in the session record and has never had a `.mem` of its own. Its sibling
+    // edge in the same commit was the FIRST kind, a plain typo naming `lares/api/residency-model` where
+    // the carrier stands at `lararium/api/residency-model`, and that one was repaired rather than absorbed.
+    //
     // Every remaining forward reference stands written down on purpose — `live-equivocation.mem` names
     // `elyncia/characters/primary-characters/telarus`, `lararium/mesh/ahi-ka` and
     // `lares/api/pono/recovery-registration`, three carriers nobody has written yet. A FORWARD REFERENCE
     // IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(178);
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(179);
   });
 });
