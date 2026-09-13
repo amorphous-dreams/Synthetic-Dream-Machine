@@ -8,9 +8,9 @@
  * every reader consulting a different authority drops.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
@@ -24,6 +24,8 @@ import {
   loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
+import { readNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
+import { daemonBagsDir } from "../src/lares-config.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
 
 let root: string;
@@ -122,5 +124,43 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
       .rejects.toThrow(EdgeKapaeError);
     await expect(runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH, version: 0 }))
       .rejects.toThrow(EdgeKapaeError);
+  });
+});
+
+/**
+ * A TORN CHARTER MUST NOT SILENTLY DEGRADE THE EPOCH ORDERING.
+ *
+ * `foldEdgeKapae` ranks acts by `epochOrder(epochCid) ?? -1`, so a reader that answers null for every cid
+ * orders on VERSION ALONE — and the mesh law names that state out loud: `noChainHeld` exists precisely so
+ * "a caller that cannot order epochs should SAY it at the call site where a reviewer will see it."
+ *
+ * This command built its rank map from `readNexusDoc(...)?.sealLineage ?? []`, which answers the empty
+ * chain for BOTH "no charter stands" and "a charter stands and reads torn". The first reads as the honest
+ * floor. The second hides a degradation inside a default: a command deciding whether a shadow STANDS drops
+ * to version-only ordering, and the doc for that state says the ceiling grab stands open.
+ *
+ * Absent keeps the floor. TORN refuses.
+ */
+describe("the epoch ordering a kāpae act folds under", () => {
+  it("★ a charter that STANDS and reads torn refuses the act — never a silent drop to version-only ★", async () => {
+    // The suite's beforeEach already stood the vessel identity and persona root.
+    // Tear the charter: the file stands, its fenced blocks no longer compose.
+    const charter = nexusCharterDocPath(daemonBagsDir());
+    mkdirSync(dirname(charter), { recursive: true });
+    writeFileSync(charter, "```toml seal\nnot a fence at all\n", "utf8");
+    expect(readNexusDoc(daemonBagsDir()), "the tear did not tear").toBeNull();
+
+    await expect(runEdgeKapae({
+      edgeId: "edge-torn", epochCid: "cid-torn", raised: true, storageDir: larDataDir(),
+    })).rejects.toThrow(/torn|unreadable|refus/i);
+  });
+
+  it("CONTROL — with NO charter at all the act still lands: the honest floor, ordered on version alone", async () => {
+    expect(readNexusDoc(daemonBagsDir())).toBeNull();
+
+    const out = await runEdgeKapae({
+      edgeId: "edge-nochain", epochCid: "cid-nochain", raised: true, storageDir: larDataDir(),
+    });
+    expect(out.edgeId).toBe("edge-nochain");
   });
 });

@@ -27,7 +27,7 @@ import {
   edgeKapaeBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, hexToBytes,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
-import { readNexusDoc } from "../nexus-doc.js";
+import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { daemonBagsDir } from "../lares-config.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
@@ -110,7 +110,18 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     // cannot survive its own extraction refuses loudly here instead of sitting on the board doing nothing.
     // The chain that orders the act. A command deciding whether a shadow STANDS holds the chain that
     // orders standing — epochCid outranks version, and nobody runs ahead of an epochCid not yet minted.
-    const chain = readNexusDoc(daemonBagsDir())?.sealLineage ?? [];
+    // A TORN CHARTER MUST NOT DEGRADE THE ORDERING IN SILENCE. `foldEdgeKapae` ranks on
+    // `epochOrder(cid) ?? -1`, so a reader answering null for every cid orders on VERSION ALONE and the
+    // ceiling grab stands open — which is exactly why mesh names that state `noChainHeld` rather than
+    // letting a caller reach it by omission. `readNexusDoc` answers null for BOTH "no charter" and "a
+    // charter that reads torn": the first IS the honest floor, the second hides the degradation inside a
+    // default. A command deciding whether a shadow STANDS refuses the second.
+    const charterStands = nexusCharterStands(daemonBagsDir());
+    const doc = readNexusDoc(daemonBagsDir());
+    if (charterStands && doc === null) {
+      throw new EdgeKapaeError("the charter doc stands here but reads TORN — refusing to act. An act folds under the chain that ORDERS it, and an unreadable chain would silently drop this fold to version-only ordering. Repair the charter, then act.");
+    }
+    const chain = doc?.sealLineage ?? [];
     const rank  = new Map(chain.map((e) => [e.epochCid, e.epoch]));   // cid → its ORDINAL position in the chain
     const shadowed = await shadowSetFromBoard(
       handle.doc(), () => signerDid, verify, (cid) => rank.get(cid) ?? null,
