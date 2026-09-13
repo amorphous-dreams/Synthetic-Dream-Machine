@@ -42,6 +42,8 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
             [--tier contract|public]        the DECLARED read — public names a book the Herm carries by hash
             [--expiry <rolls>]              lease the registration against the realm's own pace
             [--charter <nym>=<realm-id>]    the charter a named hand holds (a book spanning two charters)
+  publish <plugins>                         THE OFFERING DOOR — what THIS operator publishes for others to take;
+                                            held apart from \`kahuli\`, which overturns what the MESH shares
   realm-bags                                the bags the realm carries, and who keeps each"
 `;
 

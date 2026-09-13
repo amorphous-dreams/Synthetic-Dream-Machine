@@ -21,7 +21,7 @@
  * reference back into `nexus.ts` — the dependency runs one way, parent to child, as every other
  * companion in this directory runs.
  */
-import { readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid } from "@lararium/node";
+import { readGenesisEngineCid, readGenesisGrammarCid } from "@lararium/node";
 import { refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -55,12 +55,12 @@ function kahuliEngineHeld(): number {
 
 /**
  * `lares nexus kahuli grammar` — the FAST ratchet. This first version READS the current grammar epoch
- * (grammarCid) and reports it beside the operator's own collection; a read never builds. `--apply` is where the overturn composes the bake
+ * (grammarCid) beside the engine true-name; a read never builds. The operator's OWN collection reads
+ * at `lares nexus publish plugins` — this door names only what it ratchets. `--apply` is where the overturn composes the bake
  * (`vessel bake` re-derives the island at the freshly-packed plugin) and the mesh-push — both wired next.
  */
 function kahuliGrammar(args: ParsedArgs): number {
   const grammarCid = readGenesisGrammarCid();
-  const pluginsCid = readGenesisPluginsCid();
   const engineCid  = readGenesisEngineCid();
 
   if (args.flags["apply"]) {
@@ -76,7 +76,9 @@ function kahuliGrammar(args: ParsedArgs): number {
   const none = "(no island baked in this root yet)";
   console.log(`  grammar (grammarCid, fast ratchet): ${grammarCid ?? none}   the REQUIRED memetic-wikitext grammar`);
   console.log(`  engine  (engineCid, true-name):     ${engineCid ?? none}   the slow ratchet, binds membership`);
-  console.log(`  plugins (pluginsCid, not a tier):   ${pluginsCid ?? none}   THIS operator's own collection`);
+  console.log("");
+  console.log("  THIS operator's own collection (pluginsCid) reads at `lares nexus publish plugins` —");
+  console.log("  a region, never a tier: it overturns nobody else's reading.");
   console.log("");
   console.log("  to OVERTURN the grammar: pack the plugin, then compose the re-derive + push —");
   console.log("    pnpm --filter @lararium/tw5 build:plugin   (pack the memetic-wikitext grammar)");
