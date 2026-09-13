@@ -58,6 +58,13 @@ peer needs before it can stand as the audience of one.
 # ''A delegation ships as BYTES.'' `delegate` returns both a stable id for later revocation and the
 serialized events the audience must ingest — the federation transport carries them, and nothing
 implicit reaches the other peer.
+# ''A CROSSING IS READ, NEVER LABELLED.'' `eventsForPeer` hands bare bytes, so the sender's variant and
+island do not ride the wire — and they do not need to. The receiver parses those same bytes back into
+events and its OWN handler stamps the truth, so an admitted vessel's record is typed because it TOOK the
+events. `absorbCapEvents` is that order — ingest, settle the handler's writes, then persist whatever
+keyhive refused — and the order is load-bearing: a store keeps the FIRST writer's variant, so a record
+written ahead of the ingest masks a knowable one for good. ''The read may fail; the record may not'' —
+keyhive refuses an unreadable bundle whole, and the events persist anyway for a later boot to replay.
 # ''Boot replay stays TORN-TOLERANT.'' `hydrateFromEventStore` counts what a corrupt record forced it
 to skip; a skipped cap-event degrades a membership slice and never brings down the boot.
 # ''Boot loads the SELF slice eagerly and defers the rest.'' Passing the vessel's own sentinel doc-ids
@@ -78,6 +85,6 @@ already sits resident, so an access shore may call it every time without cost.
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;9sJrZ6HCwSc0KSzpZYa6e96_yzBJtzWiNMQoz9Q0954
+<<^ code="&#x0003;">>ni:///sha-256;4x5CBRLkTitCBl5AQYmrLORuTKh6iKKqU4n2QnuPzfU
 
 <<^ code="&#x0004;" -> to="?">>
