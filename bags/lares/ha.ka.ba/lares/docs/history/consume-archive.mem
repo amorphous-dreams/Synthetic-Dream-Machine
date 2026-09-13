@@ -101,6 +101,28 @@ Every file below was read before it burned. Where a row names living carriers, t
 | `research/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` | one demo transcript of the Thirteen in conversation | `lares/docs/voices` · `api/voices` · `docs/voices/voices-review` |
 | `research/Lares_Test_Prompt_and_Output_Kid_vs_Adult.md` | one demo transcript reading IaM against IaC at two registers | `lares/docs/infrastructure-as-myth` (Part I, whole) · `lararium/docs/degraded-states` |
 
+!!! `lares_research/` ~ the rig, the instructions and the schema passes, fifteen shells
+
+''Two files carried their own 2026-09-06 harvest banner'' — `ARCHITECTURE.md` (the forward-commitment rig, whose disciplines stand at `lares/api/pono/gold-anchor#/rig-disciplines`) and `the-kumulipo-test-campaign.md` (a torn terminal capture whose findings stand at `lares/api/corpus#/the-dial-findings`).
+
+''The three lifts.'' The E-Prime scanner's mechanics — the copula and contraction patterns, the fence and `<!-- eprime-ok -->` exclusions, the `-ing`/`-ed` demotion — went to <<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL#/loop">>, which stood the audit ACT and carried no scan mechanics. The `⊕ [tag]` marker went to <<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing#/pressure">> — the one convention in the whole instructions file with no living home. The dual-zoom slot audit went to <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme#/the-dual-zoom-audit">>.
+
+''And one pointer re-aimed.'' `lararium/docs/kairos`'s `spec-source` named a three-line section inside the burned instructions file; it now names <<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing#/pressure">>, which holds that section's whole content and the marker it lacked. `lararium/docs/operations-review` inventories the instructions file section by section, so the room's own provenance survives the burn independently.
+
+| Source (burned) | What it held | Where a reader goes now |
+|---|---|---|
+| `eprime_audit.py` | a 194-line deterministic copula scanner | lifted to `lares/api/mu/l-prime/SKILL#/loop` |
+| `github-instructions/lares-operations.instructions.md` | operating modes, the five-season loop, a resolution table, KAIROS | lifted (`⊕`) to `lararium/docs/preferences/proactive-surfacing`; the rest at `docs/preferences/operating-modes` · `frame-uncertainty` · `collaboration-model` · `docs/signal/sa-display` · `lares/api/mu/ooda-ha`, which supersedes the `p` table and the older glyph set |
+| `memes/meme-structure-research.md` | a 5,462-line thread dump — a boot file, the loop, the Forge and Validator | lifted (dual-zoom) to `lares/docs/pono/meme`; the rest at `api/mu/ooda-ha` · `api/pono/meme` · `has-stack`. Its composite-rating idea stands REFUSED by `meme#/rating-posture` — mana, manao and manaoio stay distinct |
+| `ARCHITECTURE.md` | the forward-commitment rig and its control arms | `lares/api/pono/gold-anchor#/rig-disciplines`; the grader lexicon at `packages/lararium-sensorium/scripts/qa_anchor/lexicons/` |
+| `ENVIRONMENT-AND-STACK.md` | a 2026-06 workstation materials record | `lares/docs/infrastructure-as-myth` compresses the load-bearing parts; the machine no longer exists |
+| `the-kumulipo-test-campaign.md` | a torn terminal capture of a long session | `lares/api/corpus#/the-dial-findings` · `api/pono/pattern-integrities-cultural` · `lararium/mesh/ffz-clock#/the-self-labeling-corpus` |
+| `alpha/alpha-test-prompt-00001.mem` | a constitutional session prompt with Hoʻoko as its own sixth phase | `lares/api/noosphere-boot` and `api/mu/ooda-ha` — and the house has since ruled AGAINST that fork: the loop spins five phases and Hoʻoko rides Aftermath |
+| `github-instructions/lares-talk-story.instructions.md` | Talk Story as a mandatory orient step | `lares/api/pono/talk-story` — eight laws, three exits, degraded states |
+| `github-instructions/lares-voice.instructions.md` | the Thirteen, naming rules and worker lifecycle | `lares/api/voices` and `docs/voices/workers`, a superset — and the living version CORRECTS it: a spirit's handback dissolves to the whole house, never to one coordinator |
+| `memes/ooda-a/OODA-A-DRAFT.md` · `OODA-A-SUBLOOP-PATTERNS.md` | a draft loop grammar and six sub-loop patterns | `lares/api/mu/ooda-ha#/loop-count` and `#/phase-yield` — the living form is stricter and machine-checkable |
+| `memes/lar-uri/uri-schema/{observe,orient,decide,assess}/*.md` | the 2026-04 four-phase URI schema pass | `lares/api/pono/lar-uri` (submission-grade ABNF, equality by codepoint) and `lares/docs/pono/lar-uri`. Both its open forks closed: the sigilization split at `lararium/docs/signal/render-targets`, grammar-vs-protocol at `docs/exchange-protocol`. The `stances=` query param is itself retired — the `syad` lens carries the stances, the URI carries none |
+
 !!! `lares_research/research-streams/lararium/` ~ twenty-two shells, three lifts
 
 ''Three files carried their own harvest banner already'' — `CAPABILITY-LAYER.md` ("Surveyed 2026-09-06, nothing harvested"), `LARARIUM-TICK-CLOCK.md` (its two-time-bases text already sitting in `lararium/mesh/ffz-clock#/the-two-time-bases` with a provenance line) and `LARES-CLI-DAEMON-SPRINT-PLAN.md` (its record-laws already at `lares/cli/vessel-door#/the-record-laws`). A shelf that reads itself is the shelf easiest to empty.
@@ -139,6 +161,6 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6QihvWrN4qJsZs4WfA7h_42Q1KHVKdrrPnNee10mbRc
+<<^ code="&#x0003;">>ni:///sha-256;TFSB4_CPbDyAhcwXuVkYZ0ilgzZok0aYjqNvPz_896A
 
 <<^ code="&#x0004;" -> to="?">>

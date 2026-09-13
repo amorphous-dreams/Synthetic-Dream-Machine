@@ -106,6 +106,16 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
+<<~ ahu #/the-dual-zoom-audit>>
+
+!! The dual-zoom audit ~ read a slot at two zooms at once
+
+''A slot audit that reads at one zoom finds one class of fault.'' Zoom IN on the slot's own loop — Ha: does it name its address, its boundary and what it depends on · Ka: does it carry the charge and register it claims · Ba: does it name its motion and where it hands off. Zoom OUT on the whole span at the same time, looking for slot-leakage ''in reverse'': whether the Ka and Ba prose has quietly started defining territory that belongs to Ha.
+
+''The reverse direction is the one a single-zoom read cannot see.'' A slot that over-reaches downward reads correct in isolation — its own loop closes — and the drift shows only as the parent's Ha thinning into a pointer at its own children. Both zooms run in one pass, because a reader who does them in sequence has already forgotten the first when the second would have caught it.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -115,6 +125,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KIHAjBhH9o7RGa0OQkvE0zY1vJEzFKr5XsDTLPzFbM8
+<<^ code="&#x0003;">>ni:///sha-256;ONM0Zt7IzRaAorhFEMYcVpnkff3_84pMnTFsh0IiMe8
 
 <<^ code="&#x0004;" -> to="?">>

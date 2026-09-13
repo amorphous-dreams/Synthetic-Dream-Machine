@@ -39,7 +39,7 @@ never a subsystem bolted beside it.
 
 ```toml
 myth-source      = "elyncia/Elyncia_02_The_Lares_DreamNet.md — KAIROS, The Proactive Monitor"
-spec-source      = "bags/lares-history/lares_research/github-instructions/lares-operations.instructions.md#proactive-surfacing"
+spec-source      = "bags/lararium/ha.ka.ba/lararium/docs/preferences/proactive-surfacing.mem#/pressure"
 principle-source = "bags/lararium/ha.ka.ba/lararium/docs/preferences/proactive-surfacing.mem"
 seat-source      = "packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs"
 contract-source  = "packages/lares-cli/src/integration-check.ts"
@@ -320,6 +320,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cJStZP01Lpp6tPa5j5os_P-6UlVbohnpEJn21PlNBWE
+<<^ code="&#x0003;">>ni:///sha-256;VkUXzBQaw7s35g6j5CI5vPR1hwFNfS3H0Hc6r_LQgw4
 
 <<^ code="&#x0004;" -> to="?">>

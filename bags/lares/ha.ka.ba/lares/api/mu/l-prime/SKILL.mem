@@ -44,6 +44,8 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 
 !! The Loop
 
+''A mechanical pre-pass MAY lead the read, and it NEVER grades.'' Scan for `\b(is|are|was|were|am|be|been|being)\b` plus the `it's` · `that's` · `there's` · `he's` · `she's` contractions; skip every fenced code block and any line carrying `<!-- eprime-ok -->`; and DEMOTE a hit whose next one or two tokens end in `-ing` or `-ed` to //likely-auxiliary//, since a progressive or a passive auxiliary reads as tense rather than as identity. ''The scan flags for a human read.'' It cannot tell a pattern integrity from a live instance-claim, which is the whole judgement this loop exists to make.
+
 ''✶ Observe'' --- read the requested span, or the smallest obvious local one. Flag each `${copula}` left standing and each counterfeit closure (a confident claim wearing no marker). The token is the ''English instrument'', not the basin: the ward guards ''identity-predication'' (map fused to territory), and in another tongue the auditor targets that tongue's identity-predication constructions by function, never by token (transposition law, Perec — `lar:///ha.ka.ba/lares/api/mu/l-prime`). Leave already-lawful uncertainty alone. `has` runs free --- never flag it.
 
 ''⏿ Orient'' --- sort each hit:
@@ -93,6 +95,6 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qaaeiqPIKihQY7r6SfXnw7BjeTsWsvCcmI5Pwf2aTCQ
+<<^ code="&#x0003;">>ni:///sha-256;9k4Q4BfsphG8Q8IV1bRdPt-yGJ6jU4Z7OWxjPoC8FCg
 
 <<^ code="&#x0004;" -> to="?">>
