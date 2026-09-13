@@ -401,6 +401,17 @@ export interface RealmCharterConsult {
    * books back toward the charter's hearth (the return lane) and nothing else.
    */
   holdsCharterPeer?(peerId: string): boolean;
+  /**
+   * OPTIONAL: does this peer stand as a contracted CARRIER — a faceless PLACE that signed a carrier contract
+   * with its own vessel key (`foldCarrierSet`)? Answered off this vessel's OWN board, never a peer's word.
+   *
+   * It opens EXACTLY ONE THING, and the gate below enforces the narrowing rather than this consult: a book
+   * whose own standing registration declares the PUBLIC tier. Not CONTRACT, not the realm doc, not a read
+   * cap — a carrier "holds the HINT, never the read-cap" (scale-stories-basket-one#/the-shared-bag), and a
+   * world-readable book is bytes the world may already ask any hearth for. Absent → the gate answers exactly
+   * as it answered before a carrier could contract at all.
+   */
+  carrierPeer?(peerId: string): boolean;
 }
 
 /**
@@ -489,6 +500,12 @@ export class RealmBagGate implements FederationGate {
       if (rec?.keptBy.some((s) => s.toLowerCase() === nym)) return true;                 // the write side
       const charters = rec ? registrationCharters(rec) : new Set<string>(this.#realmId ? [this.#realmId] : []);
       for (const charterId of charters) if (this.#charter.holdsCharter(nym, charterId)) return true;   // CONTRACT
+    }
+    // THE CARRIER LEG — a faceless PLACE reads the PUBLIC tier BY HASH and nothing else. Gated on the
+    // registration's OWN declared tier, so a CONTRACT book withholds here even for a carrier the Nexus
+    // contracted, and the realm doc itself (which carries the registrations) never crosses to one.
+    if (!isRealmDoc && this.#charter?.carrierPeer?.(peerId)) {
+      if (this.#byDocId.get(documentId)?.readTier === "public") return true;
     }
     // THE NEXUS LANE, unchanged — the members board answers for every peer the realm does not name.
     return this.membership.holdsCarriagePeer(peerId);

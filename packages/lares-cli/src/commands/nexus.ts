@@ -44,10 +44,9 @@
 
 import {
   readNexusDoc, writeNexusPractice,
-  runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError,
+  runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
 } from "@lararium/node";
 import { federationPostureFromDoc, type FederationPosture } from "@lararium/mesh";
-import { join } from "node:path";
 import { larSealHome, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
@@ -58,7 +57,7 @@ import { cmdSeal, runCabalRite } from "./nexus-seal.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const NEXUS_USAGE: readonly string[] = [
-  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>",
+  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | carry-for | posture | refresh | realm-bag | realm-bags>",
   "",
   "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
   "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
@@ -66,8 +65,14 @@ const NEXUS_USAGE: readonly string[] = [
   "  un_kapae <nym>                            mint a quorum-signed lift at a higher version",
   "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)",
   "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
+  "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
+  "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
+  "                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)",
+  "  uncarry <place-vessel-key>                end a carrier contract (quorum-only)",
   "  members --list                            read the currently-admitted member set (the fold)",
   "  accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in",
+  "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
+  "                                            key — reads no persona, because a crossroads holds none",
   "  posture [private | open]                  read / flip the cross-Nexus federation posture",
   "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
   "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
@@ -89,8 +94,11 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "un_kapae":        return await cmdUnKapae(args);
     case "contract":        return await cmdContract(args, "admit");
     case "revoke":          return await cmdContract(args, "revoke");
+    case "carry":           return await cmdContract(args, "carry");
+    case "uncarry":         return await cmdContract(args, "uncarry");
     case "members":         return await cmdMembers(args);
     case "accept-carriage": return await cmdAcceptCarriage(args);
+    case "carry-for":       return await cmdCarryFor(args);
     case "posture":         return await cmdPosture(args);
     case "rite":            return await runNexusRite(args);
     case "kahuli":          return await cmdKahuli(args);
@@ -257,35 +265,55 @@ async function runNexusRite(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares nexus contract <operator-pubkey> [--sig <hex>]` writes a quorum-signed + contract-in admit onto the
- * members board; `lares nexus revoke <operator-pubkey>` writes a quorum-signed revoke. FAIL CLOSED: an unseated
- * charter, sub-quorum, or (for admit) a missing/invalid operator contract-in REFUSES and writes nothing.
+ * The one door over the carriage board's four acts — TWO relations that never fold into one another:
+ *
+ *   · `contract <operator-pubkey> [--sig <hex>]` / `revoke <operator-pubkey>` seat an OPERATOR (a person),
+ *     whose own PERSONA ROOT signs the accepts-carriage token.
+ *   · `carry <place-vessel-key> --carrier <hex>` / `uncarry <place-vessel-key>` seat a PLACE (a Herm or an
+ *     unlit hearth), whose own device-minted VESSEL key signs the carrier seal. A place never enters the
+ *     member set, and the result line says so rather than leaving a reader to assume it.
+ *
+ * FAIL CLOSED: an unseated charter, a sub-quorum, or a missing / invalid seal REFUSES and writes nothing.
  */
-async function cmdContract(args: ParsedArgs, action: "admit" | "revoke"): Promise<number> {
+async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry" | "uncarry"): Promise<number> {
+  const place = action === "carry" || action === "uncarry";
   const nym = args.positional[1];
   if (!nym) {
-    console.error(`usage: lares nexus ${action === "admit" ? "contract" : action} <operator-pubkey>${action === "admit" ? " [--sig <hex>]" : ""}`);
+    const spelled = action === "admit" ? "contract" : action;
+    console.error(`usage: lares nexus ${spelled} <${place ? "place-vessel-key" : "operator-pubkey"}>${action === "admit" ? " [--sig <hex>]" : action === "carry" ? " --carrier <hex>" : ""}`);
     return 2;
   }
   try {
     const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
-    const r = await runNexusContract({ action, nym, ...(contractSig ? { contractSig } : {}), sealHome: larSealHome() });
+    const carrierSig  = action === "carry" ? (args.options["carrier"] ?? args.options["sig"]) : undefined;
+    const r = await runNexusContract({
+      action, nym,
+      ...(contractSig ? { contractSig } : {}),
+      ...(carrierSig ? { carrierSig } : {}),
+      sealHome: larSealHome(),
+    });
     emit(args, {
       ok: true,
       data: {
         action: r.action, nym: r.nym, version: r.version, priorVersion: r.priorVersion,
         sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
-        contractIn: r.contractIn, boardUrl: r.boardUrl, memberNow: r.memberNow,
+        contractIn: r.contractIn, boardUrl: r.boardUrl, memberNow: r.memberNow, carrierNow: r.carrierNow,
       },
       human: () => {
-        const verb = action === "admit" ? "ADMITTED" : "REVOKED";
+        const verb = action === "admit" ? "ADMITTED" : action === "carry" ? "CARRYING" : action === "uncarry" ? "UNCARRIED" : "REVOKED";
         console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (version ${r.version}${r.priorVersion !== null ? `, superseding ${r.priorVersion}` : ""})`);
         console.log(`  signed by:   ${r.signers.length} of ${r.threshold} required founding-kahu roots`);
         for (const s of r.signers) console.log(`    ${s.slice(0, 16)}…`);
         if (action === "admit") console.log(`  contract-in: ${r.contractIn === "self" ? "self-signed (held persona)" : "supplied token"}`);
+        if (action === "carry") console.log(`  carrier seal: supplied, verified under the place's OWN vessel key`);
         console.log(`  epoch:       ${r.sealEpochCid}`);
         console.log(`  board:       ${r.boardUrl}`);
-        console.log(`  enforced:    ${r.memberNow ? "MEMBER (a cross-operator under this nym co-federates / blind-transits sealed planes)" : "NOT a member (a standing revoke or higher entry supersedes)"}`);
+        if (place) {
+          console.log(`  enforced:    ${r.carrierNow ? "CARRIER (it follows this realm's PUBLIC-declared books BY HASH)" : "NOT a carrier (a standing uncarry or higher entry supersedes)"}`);
+          console.log(`  and NOT:     a member — a place holds no read cap, no seat, and no membership (carry ⊥ read)`);
+        } else {
+          console.log(`  enforced:    ${r.memberNow ? "MEMBER (a cross-operator under this nym co-federates / blind-transits sealed planes)" : "NOT a member (a standing revoke or higher entry supersedes)"}`);
+        }
       },
     });
     return 0;
@@ -371,6 +399,34 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
 }
 
 /**
+ * `lares nexus carry-for` — run by the joining PLACE on its OWN vessel: mint the carrier seal the founding
+ * kahu supply to `nexus carry <key> --carrier <hex>`. It reads the VESSEL key and nothing else, which is the
+ * whole reason the verb exists: a Herm holds no persona root by law, so `accept-carriage` can never run here.
+ */
+async function cmdCarryFor(args: ParsedArgs): Promise<number> {
+  try {
+    const r = await runNexusCarryFor({ sealHome: larSealHome() });
+    emit(args, {
+      ok: true,
+      data: { nym: r.nym, sealEpochCid: r.sealEpochCid, carrierSig: r.carrierSig },
+      human: () => {
+        console.log("nexus carry-for — signed 'I carry for this Nexus' with this vessel's OWN key (no persona read):");
+        console.log(`  this place:   ${r.nym}`);
+        console.log(`  epoch:        ${r.sealEpochCid}`);
+        console.log(`  carrier-sig:  ${r.carrierSig}`);
+        console.log(`  hand this to a founding kahu:  lares nexus carry ${r.nym} --carrier ${r.carrierSig}`);
+      },
+    });
+    return 0;
+  } catch (err) {
+    const msg  = err instanceof Error ? err.message : String(err);
+    const code = err instanceof NexusContractError ? "refused" : "error";
+    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus carry-for: ${msg}`) });
+    return exitFor("error");
+  }
+}
+
+/**
  * `lares nexus posture [private | open]` — read or flip the per-Nexus federation posture on the nexus charter doc
  * doc. Default PRIVATE (a Nexus develops in isolation); OPEN lets cross-Nexus foreign operators co-federate the
  * PUBLIC planes (never a private plane). No arg reads the current posture.
@@ -405,7 +461,6 @@ async function cmdPosture(args: ParsedArgs): Promise<number> {
   // The PRACTICE joint alone, and the narrowness IS the guard: this writer never parses the seal lineage
   // block, so the cheapest act in the house cannot reach the dearest joint in it.
   const path = writeNexusPractice(sealHome, { federationPosture: posture }, doc);
-  const next = { ...doc, federationPosture: posture };
   emit(args, {
     ok: true,
     data: { posture, path },

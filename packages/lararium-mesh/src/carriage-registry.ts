@@ -36,7 +36,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-operator-contract
  */
 
-import { CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
+import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
 import type { QuorumSignature, KahuRoster } from "./kapae-antigen.js";
@@ -48,8 +48,23 @@ export { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
  *  domain, and version-INDEPENDENT: the operator consents to carriage-under-this-epoch ONCE, and a kahu
  *  quorum may then admit / re-admit it at any monotone version citing that one standing consent. */
 export { CARRIAGE_CONTRACT_DOMAIN } from "./domains.js";
-/** A steward act on the members set: ADMIT an operator into carriage, or REVOKE it. Monotone per-nym. */
-export type CarriageAction = "admit" | "revoke";
+/** The domain a PLACE's own "I carry for this Nexus" seal signs over — its OWN name, so a carrier seal can
+ *  never present as a member's accepts-carriage token and no token crosses the two folds. */
+export { CARRIAGE_CARRIER_DOMAIN } from "./domains.js";
+/**
+ * A steward act on this board. FOUR acts, TWO relations, and the relations never fold into one another:
+ *
+ *   · ADMIT / REVOKE name an OPERATOR — a person, whose own PERSONA ROOT signs the accepts-carriage token.
+ *     They fold through `foldCarriageSet` into the member set the carry-split gates on.
+ *   · CARRY / UNCARRY name a PLACE — a Herm or an unlit hearth, faceless by class
+ *     (`personaSlotCeiling("herm") === 0`), whose own device-minted VESSEL key signs a CARRIER seal. They
+ *     fold through `foldCarrierSet` and NEVER enter the member set: a place is not an operator, and the
+ *     members board holds "the maximum the system ever holds about a contracting operator"
+ *     (membership-doctrine#the-operator-contract).
+ *
+ * One board, one monotone CRDT, two folds. Canon: heraldry#/the-herm-card.
+ */
+export type CarriageAction = "admit" | "revoke" | "carry" | "uncarry";
 
 /**
  * One entry in the members set — a quorum-signed admit or revoke of ONE operator nym. Monotone/additive
@@ -73,9 +88,14 @@ export interface CarriageEntry {
   /** ≥ threshold distinct founding-kahu signatures over `carriageEntryBytes` — the steward quorum. */
   readonly signatures:      readonly QuorumSignature[];
   /**
-   * The OPERATOR's OWN signature over `carriageContractBytes({ nym, sealEpochCid })` — the contract-in.
-   * REQUIRED for an `admit` to count (its `signer` MUST equal `nym`); ABSENT / ignored for a `revoke`. This is
-   * the "accepts carriage" wax-seal from the member itself; without it a Nexus cannot conscript an operator.
+   * The subject's OWN wax-seal, and WHICH seal depends on the act:
+   *   · an `admit` carries the OPERATOR's signature over `carriageContractBytes` — the accepts-carriage
+   *     contract-in, signed by that operator's PERSONA ROOT. REQUIRED, `signer` MUST equal `nym`.
+   *   · a `carry` carries the PLACE's signature over `carrierContractBytes` — signed by its own
+   *     device-minted VESSEL key, and by no persona anywhere. REQUIRED, `signer` MUST equal `nym`.
+   *   · a `revoke` / `uncarry` carries none (an uncooperative subject cannot veto its own removal).
+   * The two seals sign DIFFERENT DOMAINS, so neither ever counts on the other's fold — without that a
+   * Nexus could conscript an operator by re-presenting a place's seal, or the reverse.
    */
   readonly contractSig?:    QuorumSignature;
 }
@@ -103,6 +123,52 @@ export function carriageContractBytes(parts: { nym: string; sealEpochCid: string
     nym:             parts.nym,
     sealEpochCid: parts.sealEpochCid,
   });
+}
+
+/**
+ * The canonical bytes a PLACE signs over to carry for a Nexus — version-INDEPENDENT, exactly as the
+ * operator's accepts-carriage token is, and DOMAIN-SEPARATED from it. The place signs this ONCE with its
+ * own vessel key; a kahu quorum may cite the resulting seal on any monotone `carry` version.
+ *
+ * NO PERSONA IS READ ANYWHERE ON THIS PATH. That is the whole point: a Herm holds no persona root by law
+ * (`vessel-standing.ts` — `personaSlotCeiling("herm") === 0`, argument-ignoring), so a relation that asked
+ * for one asked a crossroads to seat the one thing its class exists to prevent.
+ */
+export function carrierContractBytes(parts: { nym: string; sealEpochCid: string }): Uint8Array {
+  return canonicalJsonBytes({
+    kind:         CARRIAGE_CARRIER_DOMAIN,
+    nym:          parts.nym,
+    sealEpochCid: parts.sealEpochCid,
+  });
+}
+
+/**
+ * Mint a place's carrier seal. The caller supplies the vessel signer; the module holds no key. The returned
+ * `QuorumSignature` rides a `carry` entry's `contractSig`.
+ */
+export async function signCarrierContract(
+  nym: string,
+  sealEpochCid: string,
+  sign: (bytes: Uint8Array) => Promise<string>,
+): Promise<QuorumSignature> {
+  const sig = await sign(carrierContractBytes({ nym, sealEpochCid }));
+  return { signer: nym, sig };
+}
+
+/**
+ * Does a carrier seal prove itself? FAIL CLOSED: a malformed nym or signature hex, a signature over any
+ * other domain's bytes, or one raised by a hand other than the named place — each reads false. Exported so
+ * a writer self-verifies before landing an entry the fold would ignore.
+ */
+export async function verifyCarrierContract(
+  seal: { nym: string; sealEpochCid: string; sig: string },
+): Promise<boolean> {
+  const nym = seal.nym.trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(nym)) return false;
+  if (!/^[0-9a-f]+$/.test(seal.sig) || seal.sig.length === 0) return false;
+  const bytes = carrierContractBytes({ nym, sealEpochCid: seal.sealEpochCid });
+  try { return await ed25519.verifyAsync(hexToBytes(seal.sig), bytes, hexToBytes(nym)); }
+  catch { return false; }
 }
 
 /**
@@ -149,15 +215,27 @@ async function verifyContractIn(entry: CarriageEntry): Promise<boolean> {
   catch { return false; }
 }
 
+/** Verify a PLACE's own carrier seal on a `carry` entry — the vessel-key twin of `verifyContractIn`, over
+ *  its own domain. FAIL CLOSED at every shore, exactly as the member seal is. */
+async function verifyCarrierIn(entry: CarriageEntry): Promise<boolean> {
+  const cs = entry.contractSig;
+  if (!cs) return false;
+  if (cs.signer.toLowerCase() !== entry.nym.toLowerCase()) return false;   // the seal MUST be the place's own
+  return verifyCarrierContract({ nym: entry.nym, sealEpochCid: entry.sealEpochCid, sig: cs.sig });
+}
+
 /**
- * Does this WHOLE entry count? A REVOKE counts on the kahu quorum alone. An ADMIT counts ONLY when BOTH the
- * kahu quorum AND the operator's own contract-in verify — the two wax-seals the doctrine requires. Anything
- * short is ignored, never guessed into membership. Exported so a WRITER can self-verify before landing an entry
- * (never write an entry the fold would ignore — a written-but-dead admit reads as enforced while granting nothing).
+ * Does this WHOLE entry count? Each act names the seals it needs, and no act ever borrows another's:
+ *   · REVOKE / UNCARRY — the kahu quorum alone (an uncooperative subject cannot veto its own removal),
+ *   · ADMIT — the kahu quorum AND the OPERATOR's persona-signed accepts-carriage token,
+ *   · CARRY — the kahu quorum AND the PLACE's own VESSEL-key carrier seal.
+ * Anything short is ignored, never guessed into a relation. Exported so a WRITER self-verifies before landing
+ * an entry (a written-but-dead act reads as enforced while granting nothing).
  */
 export async function carriageEntryCounts(entry: CarriageEntry, roster: KahuRoster): Promise<boolean> {
   if (!(await verifyMembershipQuorum(entry, roster))) return false;
-  if (entry.action === "revoke") return true;
+  if (entry.action === "revoke" || entry.action === "uncarry") return true;
+  if (entry.action === "carry") return verifyCarrierIn(entry);
   return verifyContractIn(entry);   // admit → the operator must have signed "accepts carriage"
 }
 
@@ -254,4 +332,41 @@ export async function foldCarriageSet(
 /** Does this operator nym stand a contracted member in the folded members set? */
 export function holdsCarriage(nym: string, memberSet: ReadonlySet<string>): boolean {
   return memberSet.has(nym.toLowerCase());
+}
+
+/**
+ * Fold the SAME board into the currently-contracted CARRIER set — the places, held apart from the members.
+ *
+ * ONE BOARD, TWO FOLDS, AND THEY NEVER MEET. `foldCarriageSet` above counts an `admit` winner; this counts a
+ * `carry` winner. A place therefore never appears in the member set however the board is written, and
+ * `holdsCarriagePeer` stays false for it at the enforcement shore — which is the structural half of the class
+ * law: a crossroads runs infrastructure and holds no civic standing (identity-classes#the-four-classes).
+ *
+ * Same discipline as the member fold: only entries that fully COUNT participate, the highest-version winner
+ * per nym decides, and a same-version tie drops the relation (the more-restrictive act wins).
+ */
+export async function foldCarrierSet(
+  entries: Iterable<CarriageEntry>,
+  roster: KahuRoster,
+): Promise<ReadonlySet<string>> {
+  const winner = new Map<string, { version: number; action: CarriageAction }>();
+  for (const entry of entries) {
+    if (entry.action !== "carry" && entry.action !== "uncarry") continue;   // a member act names no place
+    if (!(await carriageEntryCounts(entry, roster))) continue;              // uncounted → ignored, never trusted
+    const nym = entry.nym.toLowerCase();
+    const cur = winner.get(nym);
+    if (cur === undefined || entry.version > cur.version) {
+      winner.set(nym, { version: entry.version, action: entry.action });
+    } else if (entry.version === cur.version && entry.action === "uncarry") {
+      cur.action = "uncarry";   // a tie never grants carriage
+    }
+  }
+  const carriers = new Set<string>();
+  for (const [nym, w] of winner) if (w.action === "carry") carriers.add(nym);
+  return carriers;
+}
+
+/** Does this PLACE's vessel key stand a contracted carrier in the folded carrier set? */
+export function holdsCarrier(nym: string, carrierSet: ReadonlySet<string>): boolean {
+  return carrierSet.has(nym.toLowerCase());
 }

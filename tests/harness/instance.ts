@@ -22,6 +22,22 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync } from "node:fs";
+
+/**
+ * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
+ *
+ * A kill is a signal, never a barrier: the child is still flushing its store when the parent reaches for the
+ * directory, so a plain recursive remove races the exit and throws `ENOTEMPTY` — the tree emptied, then the
+ * daemon wrote one more file into it. Measured on the whole-set run: `face-grant-unseated-joinee` red on
+ * `ENOTEMPTY, Directory not empty: …/lares-staged-pin-B-…`, a teardown fault reported as a suite failure.
+ *
+ * `maxRetries` is node's own answer to exactly this (it retries `EBUSY`/`EMFILE`/`ENFILE`/`ENOTEMPTY`/`EPERM`
+ * with a linear backoff), so the cure adds no loop of ours to drift. `force` still swallows an absent path, so
+ * a root already gone costs nothing.
+ */
+function removeStagedRoot(root: string): void {
+  rmSync(root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
+}
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -159,7 +175,7 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   try {
     await (opts.found ?? foundHearth)(cli, root);
   } catch (err) {
-    rmSync(root, { recursive: true, force: true });
+    removeStagedRoot(root);
     throw err;
   }
 
@@ -190,7 +206,7 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
     stop: async () => {
       daemon.kill();
       await new Promise((r) => setTimeout(r, 500));
-      rmSync(root, { recursive: true, force: true });
+      removeStagedRoot(root);
     },
     stopDaemonOnly: async () => {
       daemon.kill();
@@ -396,7 +412,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
   const stood: LarInstance[] = [];
   const stop = async (): Promise<void> => {
     for (const v of stood.reverse()) await v.stop();
-    if (existsSync(rootB)) rmSync(rootB, { recursive: true, force: true });
+    if (existsSync(rootB)) removeStagedRoot(rootB);
   };
   try {
     // ①–④ run while NO daemon stands: `device-admit` opens A's store directly, and a store has one owner.

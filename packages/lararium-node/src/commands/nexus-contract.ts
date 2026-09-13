@@ -31,7 +31,8 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, signCarriageContract, verifyCarriageConsent,
-  carriageEntryCounts, foldCarriageSet, holdsCarriage, foundingRoster,
+  signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageSet, foldCarrierSet,
+  holdsCarriage, holdsCarrier, foundingRoster,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature,
 } from "@lararium/mesh";
@@ -40,7 +41,7 @@ import { readNexusDoc } from "../nexus-doc.js";
 
 import {
   listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
-  loadVesselVerifyingKey,
+  loadVesselVerifyingKey, loadVesselSigningSeed,
 } from "../node-vessel-identity.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
@@ -55,6 +56,10 @@ export interface NexusContractOptions {
   /** The joining operator's "accepts carriage" contract-sig hex (from `nexus accept-carriage`). Admit only;
    *  optional when the vessel holds the nym's own persona seed (multitude-of-one self-sign). */
   readonly contractSig?: string;
+  /** The joining PLACE's carrier seal hex, signed by its own device-minted VESSEL key (`nexus carry-for` on
+   *  that place). `carry` only, and REQUIRED there: this path reads NO persona seed and mints NO root, so
+   *  there is no self-sign arm and a Nexus never conscripts a crossroads either. */
+  readonly carrierSig?:  string;
   /** The charter DOC's authority home (the CLI supplies `larSealHome()`). */
   readonly sealHome:    string;
   readonly storageDir?: string;
@@ -68,11 +73,15 @@ export interface NexusContractResult {
   readonly sealEpochCid: string;
   readonly threshold:       number;
   readonly signers:         readonly string[];
-  /** How the operator's consent arrived: "supplied" (out-of-band token), "self" (held seed), or "n/a" (revoke). */
+  /** How the subject's consent arrived: "supplied" (out-of-band token), "self" (held seed — operators only),
+   *  or "n/a" (a revoke / uncarry, which needs none). */
   readonly contractIn:      "supplied" | "self" | "n/a";
   readonly boardUrl:        string;
-  /** Whether the nym stands a MEMBER after this write folds against the seated roster. */
+  /** Whether the nym stands a MEMBER after this write folds against the seated roster. A `carry` NEVER
+   *  moves this: a place is not an operator and never enters the member set (heraldry#/the-herm-card). */
   readonly memberNow:       boolean;
+  /** Whether the nym stands a contracted CARRIER after this write folds — the place's own relation. */
+  readonly carrierNow:      boolean;
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root an admit on. */
@@ -144,6 +153,57 @@ async function resolveContractIn(
 }
 
 /**
+ * Obtain a PLACE's carrier seal for a `carry`. ONE path, and deliberately only one: the token the place
+ * signed with its own vessel key, handed over out of band.
+ *
+ * NO SELF-SIGN ARM, AND THAT IS THE POINT. The admit path above may self-sign because the vessel may hold
+ * the admitted operator's persona seed (the multitude-of-one). A place's seed is its VESSEL identity, which
+ * lives on the place's own device and nowhere else — there is nothing here to reach for, and a path that
+ * reached would be a founder minting a crossroads' identity for it. So: supplied, or REFUSE.
+ */
+async function resolveCarrierIn(
+  opts: NexusContractOptions, nym: string, sealEpochCid: string,
+): Promise<QuorumSignature> {
+  const sig = opts.carrierSig?.trim().toLowerCase() ?? "";
+  if (!sig) {
+    throw new NexusContractError(
+      "carry REFUSED (fail-closed): no carrier seal. The place must sign 'I carry for this Nexus' with its OWN " +
+      "vessel key (`lares nexus carry-for` on that vessel) and supply the token via --carrier. A Nexus never " +
+      "conscripts a crossroads, and it never mints one's identity for it.",
+    );
+  }
+  // Never write an entry the fold would ignore — prove the seal against the epoch BEFORE any board write.
+  if (!(await verifyCarrierContract({ nym, sealEpochCid, sig }))) {
+    throw new NexusContractError(
+      "carry REFUSED (fail-closed): the carrier seal does not verify over this charter epoch under the named " +
+      "vessel key. A seal minted for another epoch, or by another hand, grants nothing.",
+    );
+  }
+  return { signer: nym, sig };
+}
+
+/**
+ * Mint THIS vessel's own carrier seal — run by the joining PLACE, on itself. Reads the vessel verifying key
+ * and signs the version-independent carrier token for the charter epoch standing in its seal home; the
+ * founding kahu supply the token to `runNexusContract({ action: "carry", carrierSig })`.
+ *
+ * IT TOUCHES NO PERSONA. A Herm holds none by law, and this is the whole door that fact required.
+ */
+export async function runNexusCarryFor(opts: {
+  sealHome: string; storageDir?: string;
+}): Promise<{ nym: string; sealEpochCid: string; carrierSig: string }> {
+  const storageDir = opts.storageDir ?? larDataDir();
+  const roster     = foundingRoster(readNexusDoc(opts.sealHome));
+  if (roster.sealEpochCid.length === 0) {
+    throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
+  }
+  const nym  = (await loadVesselVerifyingKey(storageDir)).toLowerCase();
+  const seed = await loadVesselSigningSeed(storageDir);
+  const sig  = await signCarrierContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(seed));
+  return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig };
+}
+
+/**
  * ADMIT (`admit`) or REVOKE (`revoke`) an operator nym — sign a monotone membership entry with ≥ threshold held
  * founding persona-roots (plus, for admit, the operator's contract-in) and LAND it on the always-carried members
  * board. FAILS CLOSED before any write. The lift/re-admit rides a STRICTLY HIGHER version than any standing entry.
@@ -158,10 +218,13 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   const roster   = seatedRosterOrRefuse(opts.sealHome);
   const selected = await selectHeldQuorumSigners(storageDir, roster);
 
-  // The contract-in — REQUIRED for an admit, none for a revoke.
+  // The subject's own wax-seal — an ADMIT takes the operator's persona-signed contract-in, a CARRY takes the
+  // place's vessel-signed carrier seal, and a REVOKE / UNCARRY takes none.
   let contract: { contractSig: QuorumSignature; how: "supplied" | "self" } | null = null;
   if (opts.action === "admit") {
     contract = await resolveContractIn(opts, storageDir, nym, roster.sealEpochCid);
+  } else if (opts.action === "carry") {
+    contract = { contractSig: await resolveCarrierIn(opts, nym, roster.sealEpochCid), how: "supplied" };
   }
 
   const nexusPubkey = await loadVesselVerifyingKey(storageDir);
@@ -189,22 +252,28 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
       throw new NexusContractError(
         opts.action === "admit"
           ? "refusing to write: the signed admit does not COUNT (the kahu quorum or the operator contract-in failed to verify against the seated roster)."
-          : "refusing to write: the signed revoke does not verify against the seated roster (fail-closed).",
+          : opts.action === "carry"
+          ? "refusing to write: the signed carry does not COUNT (the kahu quorum or the place's own carrier seal failed to verify against the seated roster)."
+          : "refusing to write: the signed removal does not verify against the seated roster (fail-closed).",
       );
     }
 
     handle.change((d) => writeCarriageEntry(d, entry));
     await repo.flush();
 
-    const folded    = await foldCarriageSet(carriageEntriesFromBoard(handle.doc()), roster);
-    const memberNow = holdsCarriage(nym, folded);
+    const entries    = carriageEntriesFromBoard(handle.doc());
+    const folded     = await foldCarriageSet(entries, roster);
+    const memberNow  = holdsCarriage(nym, folded);
+    // THE TWO FOLDS STAY TWO. A `carry` moves this one and never `memberNow` — the structural half of the
+    // class law, reported so a caller reads which relation it actually landed.
+    const carrierNow = holdsCarrier(nym, await foldCarrierSet(entries, roster));
 
     return {
       action: opts.action, nym, version, priorVersion,
       sealEpochCid: roster.sealEpochCid, threshold: roster.threshold,
       signers: selected.map((s) => s.verifyingKey),
-      contractIn: opts.action === "admit" ? contract!.how : "n/a",
-      boardUrl, memberNow,
+      contractIn: contract ? contract.how : "n/a",
+      boardUrl, memberNow, carrierNow,
     };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });

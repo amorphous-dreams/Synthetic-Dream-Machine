@@ -56,6 +56,7 @@ import {
   seatedKahuKeys,
   foundingRoster,
   foldCarriageSet,
+  foldCarrierSet,
   carriageEntriesFromBoard,
   carriageDocUrl,
   materializeSharedLarDoc,
@@ -90,6 +91,11 @@ export async function contractNymOf(
 export interface NexusMembershipHolder {
   /** The live consult the node sharePolicy passes to `carrierShareDecision`. */
   readonly membership: NexusMembership;
+  /** The contracted CARRIER nyms — faceless PLACES that signed a carrier contract with their own vessel
+   *  key (`foldCarrierSet`). Held APART from the member set and never unioned into it: a place is not an
+   *  operator, so `holdsCarriagePeer` stays false for every nym here (heraldry#/the-herm-card). Swapped
+   *  whole on each refold, exactly as the member set is. */
+  carriers(): ReadonlySet<string>;
   /** Re-read the kahu floor off disk (idempotent; safe any time). Does NOT touch the members board. */
   refresh(): void;
   /** Re-read the kahu floor AND re-fold the members board, swapping the union whole. No-op board when unwired. */
@@ -129,6 +135,8 @@ export function makeNexusMembership(opts: {
 
   // The member nym set — swapped whole on each refresh/refold (no partial-set window a lookup could read).
   let members: ReadonlySet<string> = new Set<string>();
+  // The carrier nym set — the same board, the other fold. NEVER unioned into `members`.
+  let carriers: ReadonlySet<string> = new Set<string>();
   let boardHandle: DocHandle<LarDoc> | null = null;
   let onChange: (() => void) | null = null;
   // Resolve the members board at most once (the promise is cached); a lazy refold awaits it so a caller that
@@ -181,6 +189,9 @@ export function makeNexusMembership(opts: {
     const union = new Set<string>(floor);
     for (const n of folded) union.add(n.toLowerCase());
     members = union;
+    // THE OTHER FOLD, off the SAME entries. A place never joins the kahu floor and never joins the member
+    // union — its whole grant rides the realm's own PUBLIC registrations, one plane down.
+    carriers = new Set<string>([...(await foldCarrierSet(entries, roster))].map((n) => n.toLowerCase()));
     onRefold?.();
   };
 
@@ -215,6 +226,7 @@ export function makeNexusMembership(opts: {
 
   return {
     membership,
+    carriers: () => carriers,
     refresh,
     refold,
     refoldWithBoard,
@@ -248,8 +260,14 @@ export function makeRealmCharterConsult(opts: {
   readonly peerContractNymMap:  ReadonlyMap<string, string>;
   /** Peers on a socket this vessel dialed to the charter's hearth (filled by the dial; empty until it stands). */
   readonly charterHearthPeers?: ReadonlySet<string>;
+  /** peerId → the Identifier hex the DaemonAuthGate proved at the wire. A faceless PLACE presents NO contract
+   *  edge (it holds no persona root to sign one), so its WIRE KEY is the only nym it ever has — and that key
+   *  IS the nym its carrier contract names. Read here, and nowhere else, for exactly that reason. */
+  readonly peerIdentifierMap?:  ReadonlyMap<string, string>;
+  /** The contracted CARRIER set, read live off this vessel's own board fold (`NexusMembershipHolder.carriers`). */
+  readonly carrierSet?:         () => ReadonlySet<string>;
 }): RealmCharterConsult {
-  const { sealHome, peerContractNymMap, charterHearthPeers } = opts;
+  const { sealHome, peerContractNymMap, charterHearthPeers, peerIdentifierMap, carrierSet } = opts;
   return {
     contractNymOfPeer(peerId: string): string | null {
       const nym = peerContractNymMap.get(peerId);
@@ -264,6 +282,16 @@ export function makeRealmCharterConsult(opts: {
     },
     holdsCharterPeer(peerId: string): boolean {
       return charterHearthPeers?.has(peerId) ?? false;
+    },
+    carrierPeer(peerId: string): boolean {
+      if (!carrierSet || !peerIdentifierMap) return false;               // unwired → answers exactly as before
+      // A place that presented a CONTRACT edge is not a place — it brought a persona root, which the class
+      // forbids. Refuse rather than fall through: the carrier lane is for the faceless alone.
+      if (peerContractNymMap.has(peerId)) return false;
+      const identHex = peerIdentifierMap.get(peerId);
+      if (identHex === undefined) return false;                          // unauthenticated → never a carrier
+      const nym = identHex.slice(-64).toLowerCase();
+      return NYM_RE.test(nym) && carrierSet().has(nym);
     },
   };
 }

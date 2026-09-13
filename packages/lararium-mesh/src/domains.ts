@@ -95,6 +95,11 @@ export const NEXUS_DOC_DOMAIN = d("nexus-doc");
 export const KAPAE_ANTIGEN_DOMAIN = d("kapae-antigen");
 export const CARRIAGE_ENTRY_DOMAIN = d("carriage-entry");
 export const CARRIAGE_CONTRACT_DOMAIN = d("carriage-contract");
+/** A PLACE's own "I carry for this Nexus" seal — signed by its device-minted VESSEL key, never a persona
+ *  root. Its OWN name rather than a flag on the contract domain: a carrier seal must never verify as a
+ *  member's accepts-carriage token, nor that token as a carrier's, so the separation rides the name
+ *  (heraldry#/the-herm-card). */
+export const CARRIAGE_CARRIER_DOMAIN = d("carriage-carrier");
 export const MEMBERSHIP_RELAY_DOMAIN = d("membership-relay");
 /** The kāpae raised over one RELATIONSHIP rather than over a party. */
 export const EDGE_KAPAE_DOMAIN = d("edge-kapae");
@@ -154,6 +159,7 @@ export const ALL_DOMAINS: readonly string[] = [
   PERSONA_ENROLL_DOMAIN, PERSONA_GRANT_DOMAIN, PERSONA_SEALED_DOMAIN, PERSONA_JOIN_DOMAIN,
   PERSONA_ADMIT_SEAL_INFO, BOOT_INVITE_DOMAIN, CABAL_INVITE_DOMAIN,
   NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,
+  CARRIAGE_CARRIER_DOMAIN,
   MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
   GUARDIAN_CONFIRM_DOMAIN, GUARDIAN_REGISTRATION_DOMAIN, RESERVE_TRANSITION_DOMAIN,
   KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO,
