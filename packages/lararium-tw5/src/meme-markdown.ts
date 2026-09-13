@@ -40,6 +40,7 @@ module-type: library
 
 import { matchCarrierHeadLine } from "./carrier-head.js";
 import { META_OPEN_LINE_RE } from "./meta-fence.js";
+import { frameAlt } from "./frame-marks.js";
 
 export interface SubmissionProjection {
   /** The markdown body — what a reviewer reads. */
@@ -54,8 +55,14 @@ export interface SubmissionProjection {
 
 /** Line-standing frame sigil (any control code), with whatever rides after the closer. */
 const FRAME_LINE = /^<<\^ code="&#x00[0-9A-Fa-f]{2};"(?:[^>\n]|>(?!>))*>>.*$/;
-/** The ETX closer with its adjacent check. */
-const ETX_LINE = /^<<\^ code="&#x0003;"[^\n]*>>(\S+)?/;
+/**
+ * The ETX closer with its adjacent check.
+ *
+ * THE CODE SET COMES FROM THE DECLARATION; THIS SHAPE STAYS THIS READER'S OWN (frame-marks.ts). The
+ * line-anchored canonical spelling is what a transpose meets, and the trailing capture takes the BCC
+ * that rides the closer with nothing between.
+ */
+const ETX_LINE = new RegExp(`^<<\\^ code="${frameAlt("ETX")}"[^\\n]*>>(\\S+)?`);
 const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word,
 // and a close word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same

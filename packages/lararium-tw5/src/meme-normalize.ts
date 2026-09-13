@@ -48,9 +48,15 @@ const DECLARATION =
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
 import { META_OPEN_RE } from "./meta-fence.js";
 import { RETIRED_KEY_NOTES, metaTopLevelBlock } from "./carrier-lifecycle.js";
+import { frameAlt } from "./frame-marks.js";
 
-const SOH_OPENER_RE =
-  /(<<\^)[ \t]*(?:code="(&#x(?:0001|0011);)"(?:[ \t]+namespace="([^"]*)")?|([^&\n]*?)(&#x(?:0001|0011);))/;
+// THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS WRITER'S OWN (frame-marks.ts).
+// The alternation groups NON-capturing, so the group numbering each rewrite below indexes survives.
+const SOH_ALT = frameAlt("SOH");
+const EOT_ALT = frameAlt("EOT");
+
+const SOH_OPENER_RE = new RegExp(
+  `(<<\\^)[ \\t]*(?:code="(${SOH_ALT})"(?:[ \\t]+namespace="([^"]*)")?|([^&\\n]*?)(${SOH_ALT}))`);
 
 /** Decode `&#xNNNN;` entities to literal glyphs; non-entity chars pass through. */
 function decodeEntities(s: string): string {
@@ -96,11 +102,12 @@ const COLON_PARAM = /\b([A-Za-z0-9_-]+):(?=["']|\[\[)/g;
  * the bearing arrow between. The arrow stays — TiddlyWiki parses it as an unnamed positional — and the ends
  * it terminates take the names every other sigil already gives them.
  */
-const FRAME_OPEN_ENDS =
-  /(<<\^ code="&#x(?:0001|0011);"(?:[ \t]+namespace="[^"]*")?[ \t]+)"?\?"?([ \t]*->[ \t]*)(\S+?)([ \t]*>>)/g;
+const FRAME_OPEN_ENDS = new RegExp(
+  `(<<\\^ code="${SOH_ALT}"(?:[ \\t]+namespace="[^"]*")?[ \\t]+)"?\\?"?([ \\t]*->[ \\t]*)(\\S+?)([ \\t]*>>)`, "g");
 
 /** The closer states one end: the arrow reaches an unresolved address. */
-const FRAME_CLOSE_ENDS = /(<<\^ code="&#x(?:0004|0014);"[ \t]*->[ \t]*)"?\?"?([ \t]*>>)/g;
+const FRAME_CLOSE_ENDS = new RegExp(
+  `(<<\\^ code="${EOT_ALT}"[ \\t]*->[ \\t]*)"?\\?"?([ \\t]*>>)`, "g");
 
 /**
  * Rewrite every CALL-site colon separator to `=`, leaving definitions and scheme colons untouched.

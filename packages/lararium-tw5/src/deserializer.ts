@@ -41,11 +41,35 @@ import {
 } from "./meme-ast/ahu-scan.js";
 import { fencedSpans, inMask, maskedExec, maskedExecAll } from "./meme-ast/fence-mask.js";
 import { META_OPEN_RE, PLAIN_OPEN_RE } from "./meta-fence.js";
-import { frameMark, FRAME_MARKS } from "./frame-marks.js";
+import { frameMark, FRAME_MARKS, frameAlt, frameHex } from "./frame-marks.js";
 
 /** name -> code, so the emitter names a mark rather than spelling its entity. */
 const FRAME_BY_NAME: Record<string, string> =
   Object.fromEntries(FRAME_MARKS.map((m) => [m.name, m.code]));
+
+// ── THE CODE SETS COME FROM THE DECLARATION; EACH SCAN KEEPS ITS OWN SHAPE (frame-marks.ts) ───────
+// Three shapes stand here and they differ for reasons this file's own comments record: the SOH
+// PREFIX stops at `&` so a namespace written as entities is never read AS the code; the DECORATED
+// form admits namespace glyphs and a `code=` binding alike; the LINE form refuses a sigil that
+// crosses a newline, because the multi-line read once swallowed text to a distant real sigil. Only
+// the entity alternation travels between them.
+const INNER   = "(?:[^>\\n]|>(?!>))*";
+const DECOR   = "(?:\\s*\\S+)?\\s*";
+/** `<<^` then anything but an entity, then a SOH code — the prefix that stops at `&`. */
+const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
+/** The SOH variant a head names through its `code=` binding, captured. */
+const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
+/**
+ * The BARE prefix form, namespace captured. ITS CLASS EXCLUDES THE BINDING MARKS, and that exclusion
+ * is the whole guard: a namespace is glyphs, and a glyph is never a mark that binds.
+ */
+const SOH_BARE_RE = new RegExp(`^<<\\^([^&:=\\n]*)&#x(${frameHex("SOH")})`);
+const ETX_DECOR_SRC = `<<\\^${DECOR}${frameAlt("ETX")}`;
+const EOT_DECOR_SRC = `<<\\^${DECOR}${frameAlt("EOT")}`;
+const ETX_LEADING_SRC = `\\n?<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`;
+const EOT_LEADING_SRC = `\\n?<<\\^${INNER}${frameAlt("EOT")}${INNER}>>`;
+/** The ETX entity ALONE — the fence-swallow diagnostic asks only whether a closer stands at all. */
+const ETX_ENTITY_SRC = frameAlt("ETX");
 // The fence-mask law surfaces through the shore: consumers (tests, the
 // projector layer) read quoted-sigil semantics from HERE, never from
 // meme-ast internals (vm-grammar-boundary law).
@@ -134,7 +158,7 @@ export function memeticWikitextDeserializer(
   // a speaking-head sigil, or later STX/ETX sentinels — an
   // any-control-char form swallows the whole header into `prologue` whenever
   // the SOH carries a namespace it cannot see.
-  const sohM = maskedExec(text, /<<\^[^&\n]*&#x(?:0001|0011);/);
+  const sohM = maskedExec(text, SOH_PREFIX_RE);
   const sohIdx = sohM ? sohM.index : -1;
   // THE FRAME OWNS THE DECLARATION; the field keeps only what stands BEYOND it. `prologue` predates the
   // declaration existing as a register, so it stored a line the emitter now mints — 4,015 copies of it
@@ -158,12 +182,12 @@ export function memeticWikitextDeserializer(
     return idx >= 0 ? idx + 2 : -1;
   };
   let lastEtxEnd = -1;
-  for (const etxMatch of maskedExecAll(text, /<<\^(?:\s*\S+)?\s*&#x0003;/g)) {
+  for (const etxMatch of maskedExecAll(text, new RegExp(ETX_DECOR_SRC, "g"))) {
     const end = closeEnd(etxMatch);
     if (end >= 0) lastEtxEnd = end;
   }
   let eotStart = -1;
-  for (const eotMatch of maskedExecAll(text, /<<\^(?:\s*\S+)?\s*&#x0004;/g)) {
+  for (const eotMatch of maskedExecAll(text, new RegExp(EOT_DECOR_SRC, "g"))) {
     if (lastEtxEnd >= 0 && eotMatch.index >= lastEtxEnd) { eotStart = eotMatch.index; break; }
   }
   // THE SLOT: what the carrier wrote between end-of-text and end-of-transmission.
@@ -206,9 +230,9 @@ export function memeticWikitextDeserializer(
     // FIRST and SILENTLY under any change to the frame's spelling, so the class is the line to check
     // whenever the frame's binding changes.
     const nsParam = /^<<[~^][^>\n]*?\bnamespace=\s*"([^"]*)"/.exec(ev.fullText);
-    const nsBare  = /^<<\^([^&:=\n]*)&#x(0001|0011)/.exec(ev.fullText);
+    const nsBare  = SOH_BARE_RE.exec(ev.fullText);
     // The heading variant rides its own capture: a `code=` param names it, else the bare entity does.
-    const sohCode = /^<<\^[^>\n]*?\bcode=\s*"&#x(0001|0011);"/.exec(ev.fullText)?.[1]
+    const sohCode = SOH_CODE_PARAM_RE.exec(ev.fullText)?.[1]
       ?? nsBare?.[2];
     const namespace = (nsParam?.[1] ?? nsBare?.[1] ?? "").trim();
     if (namespace.length > 0 && tiddlers.length > 0) {
@@ -314,7 +338,7 @@ function safeSplitMeme(uri: string, text: string, fields: TiddlerFields): Tiddle
 // crossing lines (a greedy multi-line match once swallowed from a quoted
 // `<<~` mention down to the real closer; found on loci.md).
 const SOH_LINE_RE = carrierHeadLinePattern();
-const STX_LINE_RE = /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>\n?/;
+const STX_LINE_RE = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>\\n?`);
 
 function stripLeadingNewlines(text: string): string {
   return text.replace(/^\n+/, "");
@@ -368,10 +392,10 @@ function splitMemeToTiddlers(
   // at the last EOT — otherwise the author's own close rides inside the body and the projection mints
   // a second one below it.
   let etxM: { index: number } | null = null;
-  for (const m of maskedExecAll(noSoh, /\n?<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/g)) etxM = m;
+  for (const m of maskedExecAll(noSoh, new RegExp(ETX_LEADING_SRC, "g"))) etxM = m;
   let eotM: { index: number } | null = null;
   if (!etxM) {
-    for (const m of maskedExecAll(noSoh, /\n?<<\^(?:[^>\n]|>(?!>))*&#x(?:0004|0014);(?:[^>\n]|>(?!>))*>>/g)) eotM = m;
+    for (const m of maskedExecAll(noSoh, new RegExp(EOT_LEADING_SRC, "g"))) eotM = m;
   }
   const stripped = etxM ? noSoh.slice(0, etxM.index) : (eotM ? noSoh.slice(0, eotM.index) : noSoh);
   // Degraded-carrier surfacing: a closer swallowed by an UNCLOSED fence
@@ -380,13 +404,13 @@ function splitMemeToTiddlers(
   // on fence-teaching docs CommonMark itself misread. A closer
   // inside a properly CLOSED fence reads as deliberate quotation — benign,
   // no warning (the render adds the structural close lawfully).
-  if (!etxM && /&#x0003;/.test(noSoh)) {
+  if (!etxM && new RegExp(ETX_ENTITY_SRC).test(noSoh)) {
     const spans = fencedSpans(noSoh);
     const openTail = spans.length > 0 && spans[spans.length - 1]!.end === noSoh.length
       ? spans[spans.length - 1]! : null;
     let swallowed = false;
     if (openTail) {
-      const g = /&#x0003;/g; let m: RegExpExecArray | null;
+      const g = new RegExp(ETX_ENTITY_SRC, "g"); let m: RegExpExecArray | null;
       while ((m = g.exec(noSoh)) !== null) {
         if (m.index >= openTail.start) { swallowed = true; break; }
       }

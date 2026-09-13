@@ -57,3 +57,31 @@ export function frameMark(code: string): FrameMark | undefined {
 
 /** Codes only — for a reader building its own scan around a shared set. */
 export const FRAME_CODES: readonly string[] = FRAME_MARKS.map((m) => m.code);
+
+/**
+ * The hex bodies of every mark whose name opens with `family`, joined as a regex alternation —
+ * `frameHex("SOH")` reads `0001|0011`. A family is a NAME PREFIX, so a variant added as `SOH3` joins
+ * the readers of `SOH` without any of them being told.
+ */
+export function frameHex(family: string): string {
+  return FRAME_MARKS
+    .filter((m) => m.name.startsWith(family))
+    .map((m) => m.code.replace(/^&#x|;$/g, ""))
+    .join("|");
+}
+
+/**
+ * The entity alternation a scan stands where a hand-listed code once stood — `&#x(?:0001|0011);`.
+ *
+ * ── WHAT TRAVELS, AND WHAT STAYS ────────────────────────────────────────────────────────────────
+ * The SET travels. The PATTERN does not. A reader interpolates this into its OWN `new RegExp` and
+ * keeps every anchor, flag and surround its context earned — the three scars in this file's header
+ * record what collapsing those costs. Spelling the set into the pattern instead honors NEITHER half:
+ * it keeps no shape the ruling protects, and it drops a mark the declaration stands.
+ *
+ * The alternation groups NON-capturing, so a pattern's own capture numbering survives the swap.
+ * Interpolate ONCE, at module scope — these run on hot parse paths.
+ */
+export function frameAlt(...families: readonly string[]): string {
+  return `&#x(?:${families.map((f) => frameHex(f)).join("|")});`;
+}

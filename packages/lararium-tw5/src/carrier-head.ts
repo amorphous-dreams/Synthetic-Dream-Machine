@@ -48,13 +48,11 @@
  * The framing codes come from frame-marks — ONE fact, declared once. Restating them here would let a
  * mark added there read correct in every file while this one quietly dropped it.
  */
-import { FRAME_MARKS } from "./frame-marks.js";
+import { frameHex } from "./frame-marks.js";
 import { maskedExec } from "./meme-ast/fence-mask.js";
 
-const hexOf = (name: string): string =>
-  FRAME_MARKS.filter((m) => m.name.startsWith(name)).map((m) => m.code.replace(/^&#x|;$/g, "")).join("|");
-const SOH_CODES = `(?:${hexOf("SOH")})`;
-const EOT_CODES = `(?:${hexOf("EOT")})`;
+const SOH_CODES = `(?:${frameHex("SOH")})`;
+const EOT_CODES = `(?:${frameHex("EOT")})`;
 
 /** A control sigil never crosses a line, and `>>` closes it only when a second bracket follows. */
 const INNER = "(?:[^>\\n]|>(?!>))*";
@@ -118,7 +116,7 @@ export const carrierMarkPattern = (which: "head" | "release", flags = ""): RegEx
 export const carrierReleasePattern = (flags = ""): RegExp =>
   new RegExp(`<<\\^${PREFIX}&#x${EOT_CODES};${INNER}->\\s*(?:to=)?${UNK}\\s*>>`, flags);
 
-const CODE_RE = new RegExp(`&#x(${hexOf("SOH")}|${hexOf("EOT")});`);
+const CODE_RE = new RegExp(`&#x(${frameHex("SOH")}|${frameHex("EOT")});`);
 const NS_RE = /\bnamespace="([^"]*)"|\bnamespace=([^\s>"]+)/;
 
 /**

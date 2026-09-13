@@ -54,6 +54,7 @@ import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
+import { frameAlt } from "./frame-marks.js";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
@@ -638,7 +639,9 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
 // took `<<^` and the speaking head `<<~` kept every word sigil — so the head now CARRIES the distinction
 // rather than merely decorating it, and a frame on the speaking head names a malformed carrier, never an
 // older one. Matching both heads would re-fuse the domains the split exists to hold apart.
-const CARRIER_SOH = /<<\^[^&\n]*&#x(?:0001|0011);/;
+// THE CODE SET COMES FROM THE DECLARATION (frame-marks.ts); the prefix STOPS AT `&` so a namespace
+// written as entities ahead of the code is never read AS the code.
+const CARRIER_SOH = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
 
 /**
  * THE BLOB LAW's island-side wall: a standalone content carrier whose declared type (the `.meta`

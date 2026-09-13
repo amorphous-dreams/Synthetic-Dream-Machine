@@ -4,7 +4,7 @@
  * These vectors are the ones that were paid for. Each names a spelling that broke a hand-rolled
  * reader somewhere in this tree, and the shore now answers all of them from one place.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -339,5 +339,200 @@ describe("CONTROLS — what must NOT read as a head", () => {
     const head = `<<^ code="&#x0001;" from="?" -> to="${URI}">>`;
     expect(matchCarrierHeadLine(head)?.uri).toBe(URI);
     expect(matchCarrierHeadLine("  " + head)).toBeNull();
+  });
+});
+
+// ── THE PROBE WALK — a mark added to FRAME_MARKS must reach every scan ────────────────────────────
+//
+// The codes collapse into ONE fact (frame-marks.ts) and the SCANS deliberately stay apart. Between
+// those two halves sits the gap this walk closes: a scan that spells the code SET into its own
+// pattern honors neither. It keeps no shape the ruling protects — the anchors, flags and surround are
+// what the scars record — and it silently drops a mark the declaration stands.
+//
+// So the walk PUSHES a mark and asks each reader whether it sees one. It asserts nothing about the
+// text of any pattern: a reader may reach the answer however its own context earned, and only the
+// answer is checked. The probes ride an isolated module graph and never touch the real declaration.
+describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", () => {
+  /** Codes the grammar stands nowhere, each joining an existing family by NAME PREFIX. */
+  const PROBE_SOH = "&#x0095;";
+  const PROBE_STX = "&#x0092;";
+  const PROBE_ETX = "&#x0093;";
+  const PROBE_EOT = "&#x0094;";
+
+  const PROBES = [
+    { code: PROBE_SOH, name: "SOH3", slots: ["code", "namespace", "bearing", "uri"] },
+    { code: PROBE_STX, name: "STX2", slots: ["code"] },
+    { code: PROBE_ETX, name: "ETX2", slots: ["code", "bcc"] },
+    { code: PROBE_EOT, name: "EOT3", slots: ["code", "target"] },
+  ] as const;
+
+  /**
+   * Load a fresh module graph, stand the probes in ITS declaration, and hand the caller the readers.
+   *
+   * `resetModules` gives the graph its own `frame-marks`; the push lands there BEFORE any consumer
+   * imports it, so each reader derives over the probed table. The real declaration this file imported
+   * at the top never moves.
+   */
+  async function withProbes<T>(fn: (m: {
+    shape: typeof import("../src/carrier-shape.js");
+    check: typeof import("../src/carrier-check.js");
+    block: typeof import("../src/block-check.js");
+    markdown: typeof import("../src/meme-markdown.js");
+    normalize: typeof import("../src/meme-normalize.js");
+    stream: typeof import("../src/meme-stream.js");
+    deser: typeof import("../src/deserializer.js");
+  }) => Promise<T> | T): Promise<T> {
+    vi.resetModules();
+    try {
+      const fm = await import("../src/frame-marks.js");
+      (fm.FRAME_MARKS as { code: string; name: string; slots: readonly string[] }[]).push(...PROBES);
+      return await fn({
+        shape:     await import("../src/carrier-shape.js"),
+        check:     await import("../src/carrier-check.js"),
+        block:     await import("../src/block-check.js"),
+        markdown:  await import("../src/meme-markdown.js"),
+        normalize: await import("../src/meme-normalize.js"),
+        stream:    await import("../src/meme-stream.js"),
+        deser:     await import("../src/deserializer.js"),
+      });
+    } finally {
+      vi.resetModules();
+    }
+  }
+
+  /** A whole carrier spelled in whichever marks the caller names. */
+  const carrier = (soh: string, stx: string, etx: string, eot: string): string =>
+    `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n`
+    + `<<^ code="${soh}" from="?" -> to="${URI}">>\n`
+    + '```toml meta\n'
+    + `uri-path  = "ha.ka.ba/lares/api/pono/example"\n`
+    + '```\n\n'
+    + `<<^ code="${stx}">>\n\n`
+    + `! Entry\n\nthe body stands here.\n\n`
+    + `<<^ code="${etx}">>ni:///sha-256;probe\n\n`
+    + `<<^ code="${eot}" -> to="?">>\n`;
+
+  const probed  = carrier(PROBE_SOH, PROBE_STX, PROBE_ETX, PROBE_EOT);
+  const canon   = carrier("&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;");
+
+  // HANDED BACK, NOT FORGOTTEN. `carrier-shape.ts` sits in the grammar hearth's ground (the
+  // hearths ledger names it and its two tests), and the hearths gate REFUSES a hand that reaches
+  // there without a crossing row. Its three scans spell the code set by hand and would fail this
+  // probe standing; the cure is the same two lines every module above took. The reading stays
+  // written so the hearth that holds the file can turn it green by making the change, and the
+  // alternation walk below names the file for the same reason.
+  test.todo("★ carrier-shape sees a probed STX · ETX · EOT ★ — owed by the grammar hearth", async () => {
+    await withProbes(({ shape }) => {
+      const m = shape.readCarrierShape(probed).marks;
+      expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: true, etx: true, eot: true });
+    });
+  });
+
+  test("★ carrier-check frames a probed span ★", async () => {
+    await withProbes(({ check }) => {
+      expect(check.frameStanding(probed).kind).toBe("framed");
+    });
+  });
+
+  test("★ block-check spans a probed frame and strips a probed EOT ★", async () => {
+    await withProbes(({ block }) => {
+      expect(block.checkedSpan(probed)).not.toBeNull();
+      expect(block.classifyPostamble(`\n<<^ code="${PROBE_EOT}" -> to="?">>\n`).kind).toBe("empty");
+    });
+  });
+
+  test("★ meme-markdown reads the check off a probed ETX ★", async () => {
+    await withProbes(({ markdown }) => {
+      expect(markdown.transposeMarkdown(probed).check).toBe("ni:///sha-256;probe");
+    });
+  });
+
+  test("★ meme-normalize names the ends of a probed opener and closer ★", async () => {
+    await withProbes(({ normalize }) => {
+      const positional =
+        `<<^ code="${PROBE_SOH}" ? -> ${URI}>>\n\n<<^ code="${PROBE_EOT}" -> ?>>\n`;
+      const out = normalize.normalizeMemeSource(positional).text;
+      expect(out).toContain('from="?"');
+      expect(out).toContain('to="?"');
+    });
+  });
+
+  test("★ meme-stream closes a carrier on a probed ETX ★", async () => {
+    await withProbes(({ stream }) => {
+      const p = new stream.MemeStreamParser();
+      const events = p.push(probed);
+      expect(events.map((e) => e.kind)).toContain("carrier-close");
+    });
+  });
+
+  test("★ the deserializer strips a probed STX and keeps the body ★", async () => {
+    await withProbes(({ deser }) => {
+      const fields = deser.memeticWikitextDeserializer(probed, { title: "probe" });
+      const text = String(fields[0]?.["text"] ?? "");
+      expect(text).not.toContain(PROBE_STX);
+      expect(text).toContain("the body stands here.");
+    });
+  });
+
+  // CONTROL — the walk measures the PROBE, never the canonical marks. Every reading above must also
+  // hold over the declaration as it stands, or a green probe would prove only that the walk is loose.
+  test("CONTROL — every reader answers the same over the CANONICAL marks", async () => {
+    await withProbes(({ shape, check, block, markdown, stream, deser }) => {
+      const m = shape.readCarrierShape(canon).marks;
+      expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: true, etx: true, eot: true });
+      expect(check.frameStanding(canon).kind).toBe("framed");
+      expect(block.checkedSpan(canon)).not.toBeNull();
+      expect(markdown.transposeMarkdown(canon).check).toBe("ni:///sha-256;probe");
+      expect(new stream.MemeStreamParser().push(canon).map((e) => e.kind)).toContain("carrier-close");
+      const text = String(deser.memeticWikitextDeserializer(canon, { title: "canon" })[0]?.["text"] ?? "");
+      expect(text).toContain("the body stands here.");
+    });
+  });
+
+  // CONTROL — a code the declaration never stands reaches no reader. Without this the probe tests
+  // would pass over a scan that matched ANY four-hex entity, which honors neither half of the ruling.
+  test("CONTROL — an UNDECLARED code frames nothing", async () => {
+    await withProbes(({ shape, check }) => {
+      const stranger = carrier("&#x0001;", "&#x0099;", "&#x009a;", "&#x009b;");
+      const m = shape.readCarrierShape(stranger).marks;
+      expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: false, etx: false, eot: false });
+      expect(check.frameStanding(stranger).kind).toBe("absent");
+    });
+  });
+
+  // A SUPPLEMENTARY READING, and it says so. The probe tests above drive public readers; the one
+  // remaining scan — `action-handler`'s SOH wall — sits behind an async catalog handler no unit
+  // fixture reaches. What a source walk CAN see is the smell itself: a multi-code alternation of
+  // frame entities spelled into a pattern. The bootstrap scanner passes it standing, because its
+  // hand-written rows carry ONE code each by the ruling that keeps it independent (scanner.ts).
+  test("★ no module spells a MULTI-CODE alternation of frame entities ★", () => {
+    const srcRoot = fileURLToPath(new URL("../src", import.meta.url));
+    // `carrier-shape.ts` stands in the grammar hearth's ground and the hearths gate refuses a hand
+    // that reaches there without a crossing row. ONE FILE, NAMED — never a pattern: the entry leaves
+    // the moment that hearth takes the same alternation every module beside it already takes.
+    const exempt = new Set(["frame-marks.ts", "plugin-tiddler.generated.ts", "carrier-shape.ts"]);
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+        const full = join(dir, e.name);
+        if (e.isDirectory()) return walk(full);
+        return e.isFile() && e.name.endsWith(".ts") && !exempt.has(e.name) ? [full] : [];
+      });
+    // `&#x(` … `|` … `)` — two or more hex bodies listed by hand where the family should speak.
+    const ALT = /&#x\(\??:?[0-9A-Fa-f]{4}\|[0-9A-Fa-f]{4}/;
+    const offenders: string[] = [];
+    for (const file of walk(srcRoot)) {
+      readFileSync(file, "utf8").split("\n").forEach((ln, i) => {
+        // A doc comment may TEACH the alternation; only live source re-spells it.
+        if (/^\s*(\*|\/\/)/.test(ln)) return;
+        if (ALT.test(ln)) offenders.push(`${relative(srcRoot, file)}:${i + 1}`);
+      });
+    }
+    expect(offenders, `a hand-listed code set drifts from FRAME_MARKS:\n${offenders.join("\n")}`).toEqual([]);
+  });
+
+  test("CONTROL — the alternation walk has teeth", () => {
+    const ALT = /&#x\(\??:?[0-9A-Fa-f]{4}\|[0-9A-Fa-f]{4}/;
+    expect(ALT.test('const R = /<<\\^&#x(?:0004|0014);/;')).toBe(true);
+    expect(ALT.test('const R = new RegExp(`<<\\\\^${frameAlt("EOT")}`);')).toBe(false);
   });
 });

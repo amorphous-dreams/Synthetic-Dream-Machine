@@ -30,6 +30,18 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
+import { frameAlt } from "./frame-marks.js";
+
+// THE CODE SET COMES FROM THE DECLARATION; THESE SCANS STAY THIS READER'S OWN (frame-marks.ts).
+// This module reads a frame sigil DECORATED — `(?:\s*\S+)?\s*` admits the namespace glyphs and the
+// `code=` binding alike — and the EOT strip runs to the line's end because `[^>]*` cannot cross the
+// `>` inside `-> ?`. Only the entity alternation travels; every anchor here stays where it stands.
+const DECOR = "(?:\\s*\\S+)?\\s*";
+const EOT_STRIP_SRC = `<<\\^${DECOR}${frameAlt("EOT")}[^\\n]*?>>`;
+const STX_SRC = `<<\\^${DECOR}${frameAlt("STX")}[^>]*>>`;
+const ETX_SRC = `<<\\^${DECOR}${frameAlt("ETX")}[^>]*>>`;
+
+
 /**
  * The trailer's written form: `<<^ BCC sha256:…>>`.
  *
@@ -73,7 +85,7 @@ export function classifyPostamble(postamble: string): Postamble {
   // `[^>]*` cannot cross the `>` inside `-> ?`, so the EOT sigil's own arrow defeats a naive strip.
   // Match to the line's end instead — a frame sigil never spans lines.
   const body = postamble
-    .replace(/<<\^(?:\s*\S+)?\s*&#x0004;[^\n]*?>>/g, "")
+    .replace(new RegExp(EOT_STRIP_SRC, "g"), "")
     .trim();
   if (body.length === 0) return { kind: "empty" };
 
@@ -90,10 +102,10 @@ export function classifyPostamble(postamble: string): Postamble {
  * and inventing a span for it would attest to something the frame never delimited.
  */
 export function checkedSpan(framed: string): string | null {
-  const stx = /<<\^(?:\s*\S+)?\s*&#x0002;[^>]*>>/.exec(framed);
+  const stx = new RegExp(STX_SRC).exec(framed);
   if (!stx) return null;
   // The LAST ETX closes the text; an earlier one would belong to an embedded example.
-  const etxRe = /<<\^(?:\s*\S+)?\s*&#x0003;[^>]*>>/g;
+  const etxRe = new RegExp(ETX_SRC, "g");
   let end = -1;
   for (let m = etxRe.exec(framed); m !== null; m = etxRe.exec(framed)) end = m.index + m[0].length;
   if (end < 0 || end <= stx.index) return null;

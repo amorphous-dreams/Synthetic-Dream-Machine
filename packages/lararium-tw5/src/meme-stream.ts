@@ -24,6 +24,7 @@
 
 import { fencedSpans, maskedExec } from "./meme-ast/fence-mask.js";
 import { carrierHeadPattern } from "./carrier-head.js";
+import { frameAlt } from "./frame-marks.js";
 import type { MaskSpan } from "./meme-ast/fence-mask.js";
 
 // ---------------------------------------------------------------------------
@@ -53,10 +54,16 @@ export type MemeStreamEvent =
 // `<<~` mention swallow text down to a distant real sigil (loci.md).
 /** The SOH pattern comes from the ONE reader of a carrier's framing ends (carrier-head.ts). */
 const SOH_RE  = carrierHeadPattern();
-const STX_RE  = /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/;
-const ETX_RE  = /<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/;
-// EOT: entity form (&#x0004;/&#x0014;) OR return-throat (<<~ -> ?>>)
-const EOT_RE  = /<<[~^](?:(?:[^>\n]|>(?!>))*&#x(?:0004|0014);(?:[^>\n]|>(?!>))*|\s*->\s*\?)\s*>>/;
+/**
+ * THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS READER'S OWN (frame-marks.ts).
+ * Only the entity alternation travels — the line law above, and the EOT's second branch below, are
+ * this module's own and stay where they stand.
+ */
+const INNER   = "(?:[^>\\n]|>(?!>))*";
+const STX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>`);
+const ETX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`);
+// EOT: entity form OR return-throat (<<~ -> ?>>)
+const EOT_RE  = new RegExp(`<<[~^](?:${INNER}${frameAlt("EOT")}${INNER}|\\s*->\\s*\\?)\\s*>>`);
 const AHU_OPEN_RE  = /<<~(?:[^>\n]|>(?!>))*\bahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)\s*>>/;
 const AHU_CLOSE_RE = /<<~\s*\/\s*ahu\s*>>/;
 

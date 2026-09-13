@@ -52,6 +52,13 @@
 import { sha256HexSync } from "@lararium/mesh/crypto";
 
 import { fencedSpans, maskedExec } from "./meme-ast/fence-mask.js";
+import { frameAlt } from "./frame-marks.js";
+
+// THE CODE SET COMES FROM THE DECLARATION; THIS SCAN STAYS THIS READER'S OWN (frame-marks.ts).
+// A frame sigil never crosses a line, and `>>` closes it only when a second bracket follows.
+const INNER = "(?:[^>\\n]|>(?!>))*";
+const STX_SRC = `<<\\^${INNER}${frameAlt("STX")}${INNER}>>`;
+const ETX_SRC = `<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`;
 
 /** The one digest algorithm this grammar accepts, named in the check and never chosen by it. */
 export const CHECK_ALG = "sha-256";
@@ -107,10 +114,10 @@ export type FrameStanding =
 
 export function frameStanding(text: string): FrameStanding {
   const spans = fencedSpans(text);
-  const stxM = maskedExec(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g, spans);
+  const stxM = maskedExec(text, new RegExp(STX_SRC, "g"), spans);
   if (!stxM) return { kind: "absent" };
   const rest = text.slice(stxM.index);
-  const etxM = maskedExec(rest, /<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/g, fencedSpans(rest));
+  const etxM = maskedExec(rest, new RegExp(ETX_SRC, "g"), fencedSpans(rest));
   if (!etxM) return { kind: "torn" };
   return { kind: "framed", start: stxM.index, end: stxM.index + etxM.index + etxM[0].length };
 }
