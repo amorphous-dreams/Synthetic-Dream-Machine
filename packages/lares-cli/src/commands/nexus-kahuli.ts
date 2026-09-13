@@ -8,7 +8,14 @@
  *             rebind (predecessor pointer + a both-epoch read span, ending by non-renewal) has its rulings.
  *   · GRAMMAR (grammarCid = the REQUIRED memetic-wikitext grammar ALONE) — FAST, never the true-name.
  * An operator's OWN plugin collection (pluginsCid) is NOT a kāhuli tier: it layers on the required base,
- * overturns nobody else's reading, and moves with no ratchet act at all.
+ * overturns nobody else's reading, and moves with no RATCHET act at all — it reads and publishes at
+ * `lares nexus publish plugins`.
+ *
+ * THAT SENTENCE ONCE READ AS "UNGOVERNED", AND A LATER RULING NARROWED IT. A Nexus MAY consult an
+ * offering-antigen — a kahu quorum setting one collection aside, the Lamplighters' tenders presenting
+ * without weight (`@lararium/mesh` · offering-antigen). That governance sits OPT-IN per Nexus and touches
+ * no ratchet: a condemned offering still overturns nobody's grammar, and a Nexus consulting nothing reads
+ * exactly as this line always described. The claim holds about RATCHETS; it never held about consent.
  *
  * The epochs read through the SAME composable genesis cap the vessel boots from (`LAR_GENESIS` →
  * `~/.lares/config.json` → repo-relative `<corpus>/genesis`). A hand-rolled `larRoot()/genesis` read
