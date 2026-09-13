@@ -411,8 +411,9 @@ export async function headOpKey(
 }
 
 /**
- * THE GATE-WALK MECHANISM (the Binding-Gate pin-move's pure core, NOT yet wired into the live gate — the
- * wiring surfaces as a plan, identity-classes#the-continuity-anchor). Walk the persona-KEL to its CURRENT
+ * THE GATE-WALK — THE CONTINUITY ANCHOR THE LIVE GATES RUN. Three doors present an edge through it: the
+ * Binding Gate a vessel passes at boot (`boot-daemon-keyhive`), the daemon's live admission path
+ * (`operator-daemon-behavior`), and the face-grant record's own verifier. Walk the persona-KEL to its CURRENT
  * authoritative op-key, then verify a device-delegation edge against THAT head — the pin moves from a raw
  * op-key to the identifier's live head. A rotated key still verifies (a fresh edge re-issued under the new
  * head passes); an edge signed by a SUPERSEDED op-key rejects (it is no longer the head).
