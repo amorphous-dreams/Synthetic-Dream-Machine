@@ -51,6 +51,42 @@ Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freed
 
 <<~/ahu>>
 
+<<~ ahu #/the-offering>>
+
+!! The first thing a tender tends ~ an OFFERING
+
+''An operator publishes their own plugin collection, and a taker settles it alone.'' `pluginsCid` folds
+THIS operator's collection; it layers on the required blobs and overturns nobody else's reading. The
+record carries ONE signature and no steward set, because a taker verifies the blobs BY HASH against the
+declared region — nothing stands for a second hand to attest that the hash has not already settled.
+''Publishing reads as a gift, and a gift takes no quorum.''
+
+''The verify RECOMPUTES.'' A signature says //this offeror wrote these bytes//, never //these blobs fold
+to the region these bytes declare//. So the taker folds them through the same function the genesis bake
+runs. A perfectly-signed offering whose blobs were swapped after the region was declared refuses — that
+forgery reads valid to a signature check alone, and it names exactly the unattested claim the hash retires.
+
+!!! Where the Union stands in it
+
+''The three layers hold, unsoftened.'' A tender PRESENTS what it noticed — its own record, its own domain
+— and the fold that decides standing ''never reads one''. The arithmetic carries no term for tenders, so
+five honest presentations move a verdict exactly as far as none, and the quorum keeps its full k. A
+captured Union therefore holds no blocking power, and the quorum retains its ability to self-present and
+condemn ''with no tender at all''.
+
+''The offering board stands apart from the presenter board.'' `kapae-antigen` shadows an identity; the
+offering board shadows a COLLECTION. Separate domains, so a signature over one can never verify as the
+other — and condemning a collection says nothing whatever about the operator who offered it.
+
+''No roster accrues.'' A presentation names the dark stretch and its own presenter and gathers nowhere.
+Nothing to seize, exactly as the Union's resilience requires.
+
+''The governance sits OPT-IN per Nexus'' and touches no ratchet: a condemned offering still overturns
+nobody's grammar. Built at `@lararium/mesh` · `plugin-offering` · `offering-antigen`; the door reads at
+`lares nexus publish plugins`.
+
+<<~/ahu>>
+
 <<~ ahu #/office>>
 
 !! Kuleana ~ the OFFICE, and why not "residency"
@@ -365,6 +401,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cucUjuFTDU9DdyMjeURIgWNYWI-TysPrVh5RjuOMTm8
+<<^ code="&#x0003;">>ni:///sha-256;X0DNF69_UYFgkj1E1Fa9fnkYr5DVP8hl6k8TpKXTLzA
 
 <<^ code="&#x0004;" -> to="?">>
