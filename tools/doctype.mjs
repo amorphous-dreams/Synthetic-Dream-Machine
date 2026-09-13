@@ -12,6 +12,7 @@
 // One address, exactly: this grammar's spec. A DOCTYPE aimed anywhere else is not a variant, it is a
 // declaration that does not hold.
 import { readFileSync, existsSync } from "fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
@@ -59,7 +60,9 @@ for (const f of carriers) {
   // requires it — YAML front-matter for a skill loader, a shebang, a BOM — and the declaration follows
   // that, binding tightly to the SOH beneath it. Demanding line 1 would refuse every carrier that also
   // serves a second reader, which is the case this grammar exists to make possible.
-  const text = readFileSync(join(REPO, f), "utf8");
+  const text = readCarrier(REPO, f);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (text === null) continue;
   const spans = fencedSpans(text);
   const lines = text.split("\n");
   // Offsets, so a line can be asked whether a fence already holds it.
@@ -92,7 +95,7 @@ for (const f of carriers) {
 }
 
 const md = carriers.filter(showsItsSource).length;
-console.log(`[doctype] ${carriers.length} carriers (${md} also read as markdown) · ${missing.length} without · ${hidden.length} declaring to nobody · ${misaimed.length} in the wrong form`);
+console.log(`[doctype] ${carriers.length} carriers (${md} also read as markdown) · ${missing.length} without · ${hidden.length} declaring to nobody · ${misaimed.length} in the wrong form${vanishedNote()}`);
 for (const f of missing.slice(0, 10)) console.log(`  no declaration   ${f}`);
 if (missing.length > 10) console.log(`  … and ${missing.length - 10} more`);
 for (const f of hidden) console.log(`  declares to nobody   ${f}`);

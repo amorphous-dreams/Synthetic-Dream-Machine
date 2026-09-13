@@ -12,6 +12,7 @@
 // whether anyone SENT a reader to it. An uncited stub owes nobody and reports as slack, never as a
 // fault. A cited stub is a broken promise and fails.
 import { readFileSync, existsSync } from "fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
@@ -73,7 +74,9 @@ function emptiness(text) {
 const rooms = new Map();   // uri-path -> { file, empty }
 const texts = new Map();
 for (const f of carriers) {
-  const text = readFileSync(join(REPO, f), "utf8");
+  const text = readCarrier(REPO, f);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (text === null) continue;
   texts.set(f, text);
   const uri = key(text, "uri-path");
   if (uri) rooms.set(uri, { file: f, empty: emptiness(text) });
@@ -109,7 +112,7 @@ for (const [uri, room] of rooms) {
 
 broken.sort((a, b) => b[2].length - a[2].length);
 
-console.log(`[empty-room] ${rooms.size} rooms · ${broken.length} cited-but-empty · ${slack.length} uncited · ${stale.length} role stale`);
+console.log(`[empty-room] ${rooms.size} rooms · ${broken.length} cited-but-empty · ${slack.length} uncited · ${stale.length} role stale${vanishedNote()}`);
 
 if (broken.length) {
   console.log(`\n  BROKEN PROMISES — a carrier sends a reader here and the room says nothing:`);

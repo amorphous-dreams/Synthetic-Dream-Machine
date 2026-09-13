@@ -48,6 +48,7 @@
  * Usage: node tools/call-reach.mjs
  */
 import { readFileSync, existsSync } from "node:fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -121,7 +122,9 @@ const calls = new Map();
 let live = 0, fenced = 0;
 const heads = new Set();
 for (const rel of currentCarrierFiles(REPO)) {
-  const text = readFileSync(join(REPO, rel), "utf8");
+  const text = readCarrier(REPO, rel);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (text === null) continue;
   const spans = fencedSpans(text);
   HEAD.lastIndex = 0;
   let m;
@@ -150,7 +153,7 @@ for (const [src, c] of calls) {
 }
 
 const n = (a) => a.reduce((t, r) => t + r.n, 0);
-console.log(`[call-reach] ${live} live call(s) · ${fenced} fenced · ${calls.size} distinct · ${heads.size} head(s) · grammar declares ${DECLARED.size}`);
+console.log(`[call-reach] ${live} live call(s) · ${fenced} fenced · ${calls.size} distinct · ${heads.size} head(s) · grammar declares ${DECLARED.size}${vanishedNote()}`);
 console.log(`  ARRIVED  ${String(classed.arrived.length).padStart(3)} distinct / ${n(classed.arrived)} call(s) — a definition ran`);
 console.log(`  INTENDED ${String(classed.intended.length).padStart(3)} distinct / ${n(classed.intended)} call(s) — renders its own text, and says why`);
 for (const r of classed.intended) console.log(`      ${r.head} (${r.why}) ×${r.n}`);

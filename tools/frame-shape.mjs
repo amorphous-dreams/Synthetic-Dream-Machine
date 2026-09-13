@@ -11,6 +11,7 @@
 //
 // Reported per carrier, per mark, so a repair reads off the finding instead of out of a diff.
 import { readFileSync, existsSync } from "fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -50,7 +51,9 @@ const files = carrierFiles(REPO);
 
 const faults = [];
 for (const f of files) {
-  const t = readFileSync(join(REPO, f), "utf8");
+  const t = readCarrier(REPO, f);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (t === null) continue;
   for (const [code, name] of MARKS) {
     // A mark riding the SPEAKING head. Fenced examples legitimately quote frames, so only a mark
     // standing at the start of its own line counts — a quotation sits inside prose or a fence.
@@ -103,7 +106,7 @@ for (const f of files) {
   }
 }
 
-console.log(`[frame-shape] ${files.length} carriers, ${faults.length} malformed frame(s)`);
+console.log(`[frame-shape] ${files.length} carriers, ${faults.length} malformed frame(s)${vanishedNote()}`);
 if (faults.length === 0) {
   console.log("  every frame mark stands on the control head, and every opened carrier closes");
   process.exit(0);

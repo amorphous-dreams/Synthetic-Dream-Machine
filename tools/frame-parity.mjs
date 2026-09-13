@@ -16,6 +16,7 @@
 // tree cannot keep, and it fails. A tiddler declaring a mark the spec never wrote down only means the
 // readers hold more than the spec says — reported, never refused.
 import { readFileSync, existsSync } from "fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { execSync } from "child_process";
 import { join } from "path";
 
@@ -64,7 +65,9 @@ const seen = new Set();
 const tiddlerSlots = new Map();
 const tiddlerPatterns = new Map();
 for (const f of tiddlers) {
-  const t = readFileSync(join(REPO, f), "utf8");
+  const t = readCarrier(REPO, f);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (t === null) continue;
   const code = /^lar-code:\s*(&#x[0-9A-Fa-f]{4};)\s*$/m.exec(t);
   const pattern = /^lar-pattern:\s*(\S.*)$/m.exec(t);
   if (code && pattern) {
@@ -81,7 +84,8 @@ for (const f of tiddlers) {
 // The corpus decides. Each pattern must find the mark it names in a real carrier, and must MISS the
 // speaking head, because a frame pattern that also matches `<<~` erases the split the heads make.
 const corpus = carrierFiles(REPO).slice(0, 400)
-  .map((f) => readFileSync(join(REPO, f), "utf8")).join("\n");
+  // A carrier a parallel commit removed since the walk contributes nothing rather than throwing.
+  .map((f) => readCarrier(REPO, f)).filter((t) => t !== null).join("\n");
 
 // A MARK THE CORPUS NEVER WRITES AND A PATTERN THAT CANNOT FIND ONE READ AS DIFFERENT FACTS, and
 // collapsing them would make this check useless exactly where it earns its keep. The literal code

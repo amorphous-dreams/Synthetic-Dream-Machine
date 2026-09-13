@@ -19,6 +19,7 @@
  * Exit 0 = the shore and the parser name the same address for every carrier.
  */
 import { readFileSync, existsSync } from "node:fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -88,14 +89,16 @@ const files = currentCarrierFiles(REPO);
 const drift = [];
 let agreed = 0, neither = 0;
 for (const rel of files) {
-  const text = readFileSync(join(REPO, rel), "utf8");
+  const text = readCarrier(REPO, rel);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (text === null) continue;
   const shore = matchCarrierHead(text)?.uri ?? null;
   const parser = parserHeadUri(text);
   if (shore === parser) { shore === null ? neither++ : agreed++; continue; }
   drift.push({ rel, shore, parser });
 }
 
-console.log(`[head-parity] ${files.length} carriers · ${agreed} agree · ${neither} name no head · ${drift.length} DRIFT`);
+console.log(`[head-parity] ${files.length} carriers · ${agreed} agree · ${neither} name no head · ${drift.length} DRIFT${vanishedNote()}`);
 if (drift.length) {
   console.log("\n  the shore and TiddlyWiki's parser disagree — the parser decides:");
   for (const d of drift.slice(0, 40)) {

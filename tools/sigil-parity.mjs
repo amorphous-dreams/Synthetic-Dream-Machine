@@ -26,6 +26,7 @@
  * shape `witness-all` exists to refuse. The count prints on every run and only shrinks.
  */
 import { readFileSync, existsSync } from "node:fs";
+import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -94,7 +95,9 @@ const positionalLoss = [];
 const proseOnly = [];
 
 for (const rel of files) {
-  const text = readFileSync(join(REPO, rel), "utf8");
+  const text = readCarrier(REPO, rel);
+  // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
+  if (text === null) continue;
   let tree;
   try { tree = wiki.parseText("text/vnd.tiddlywiki", text, { parseAsInline: false }).tree; }
   catch { continue; }
@@ -140,7 +143,7 @@ for (const rel of files) {
 }
 
 const lossFiles = new Set(positionalLoss.map((p) => p.rel));
-console.log(`[sigil-parity] ${files.length} carriers · ${sigilCount} sigils · ${attrCount} string params compared · ${carried} typed, carried · ${drift.length} DRIFT`);
+console.log(`[sigil-parity] ${files.length} carriers · ${sigilCount} sigils · ${attrCount} string params compared · ${carried} typed, carried · ${drift.length} DRIFT${vanishedNote()}`);
 console.log(`  positional-loss (measured debt, awaiting a ruling): ${positionalLoss.length} in ${lossFiles.size} carriers`);
 const proseFiles = new Set(proseOnly.map((p) => p.rel));
 console.log(`  prose-only (a sigil the grammar registers no call for): ${proseOnly.length} in ${proseFiles.size} carriers`);
