@@ -123,6 +123,31 @@ export const RELAY_GATE_INFO = d("relay-gate");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = d("realm-bag");
+
+/**
+ * THE OFFERING — one operator publishing their own plugin collection for others to take.
+ *
+ * A GIFT, NEVER A QUORUM ACT: a taker verifies the blobs BY HASH against the declared region, so nothing
+ * stands for a second hand to attest that the hash does not already settle. One signature, one announce.
+ */
+export const PLUGIN_OFFERING_DOMAIN = d("plugin-offering");
+
+/**
+ * A TENDER'S PRESENTATION over an offering — the Lamplighters' half of the immune architecture.
+ *
+ * PRESENTATION ⊥ CONDEMNATION. A tender presents what it noticed and carries ZERO threshold weight: N
+ * tenders converging lowers nothing, and the quorum keeps its full k. Its own domain, so a presentation
+ * can never be replayed as a verdict.
+ */
+export const OFFERING_PRESENTATION_DOMAIN = d("offering-presentation");
+
+/**
+ * The quorum act that sets an offering aside — the condemning half, held by a kahu quorum alone.
+ *
+ * Its OWN domain, apart from `kapae-antigen`: that board shadows a PRESENTER, this one an OFFERING, and a
+ * signature minted over one must never verify as the other.
+ */
+export const OFFERING_KAPAE_DOMAIN = d("offering-kapae");
 /** The @crossroads ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
  *  domain from the registration: a public announce must never stand in for a steward's signature. */
 export const REALM_BAG_ANNOUNCE_DOMAIN = d("realm-bag-announce");
@@ -165,6 +190,7 @@ export const ALL_DOMAINS: readonly string[] = [
   NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,
   CARRIAGE_CARRIER_DOMAIN,
   MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
+  PLUGIN_OFFERING_DOMAIN, OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN,
   GUARDIAN_CONFIRM_DOMAIN, GUARDIAN_REGISTRATION_DOMAIN, RESERVE_TRANSITION_DOMAIN,
   KEYRING_ENVELOPE_DOMAIN, KEYRING_ENVELOPE_SEAL_INFO, CAD_KEYSTREAM_INFO, RELAY_GATE_INFO,
   PERSONA_SCOPE_INFO, CIRCLE_SCOPE_INFO, NEXUS_SCOPE_INFO, DYAD_VEIL_INFO, PERSONA_SELF_RECOVERY_INFO,
