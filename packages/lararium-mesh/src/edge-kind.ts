@@ -45,8 +45,13 @@ const GEOMETRY_KINDS: ReadonlySet<EdgeKind> = new Set<EdgeKind>(["fn.sym", "tr.d
 
 /**
  * The geometry-input guard: geometry accepts fn.sym (→ content eigenmap) and tr.dir (→ SR landscape)
- * ONLY; it REFUSES eff.dir — an effective/TE edge never generates geometry and never mints a tunnel
- * (the "TE→tunnels" corruption made structurally impossible). Designation carries authority; fail loud.
+ * ONLY; it REFUSES eff.dir, because an effective/TE edge generates no geometry and mints no tunnel.
+ *
+ * THE LAW STANDS READY HERE, AND NO CALLER RUNS IT YET. No geometry builder takes an `Edge[]` (they take
+ * simplex points and matrices), so a claim that the "TE→tunnels" corruption cannot happen would promise a
+ * reader an enforcement nothing performs. The first builder that accepts edges calls this at its mouth,
+ * and `edge-kind.test.ts` goes red the moment a caller appears so the wording follows the wiring.
+ * Designation carries authority; fail loud.
  */
 export function assertGeometryInput(edges: readonly Edge[]): void {
   for (const e of edges) {
@@ -58,7 +63,8 @@ export function assertGeometryInput(edges: readonly Edge[]): void {
   }
 }
 
-/** The tunnel store holds fn.sym only; any directed or non-fn.sym edge is rejected at the boundary. */
+/** The tunnel store holds fn.sym only, and this refuses every directed or non-fn.sym edge handed to it.
+ *  READY, not yet wired — no tunnel store stands to call it (see the note above). */
 export function assertTunnelEdge(e: Edge): void {
   if (e.kind !== "fn.sym") {
     throw new Error(`edge-kind: the tunnel store holds fn.sym only, got '${e.kind}' (${e.src}->${e.dst})`);
