@@ -7,6 +7,7 @@
  *   ~/.venv/bin/python3 packages/lararium-sensorium/scripts/sensorium_consistency.py fixture
  */
 import { describe, expect, test } from "vitest";
+import { assertSheafPlanes, SHEAF_PLANES } from "../src/sensorium-consistency.js";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -80,5 +81,47 @@ describe("sensorium-consistency-parity — TS consistencyRadius matches the py t
     for (const c of fixture.metricCases.deckard) {
       expect(deckardDistance(c.a, c.b, c.q), c.note).toBeCloseTo(c.distance, 9);
     }
+  });
+});
+
+/**
+ * THE SHEAF GUARD, TESTED AND REACHED.
+ *
+ * `assertSheafPlanes` states the li/ki wall: a RESTRICTION rides a sheaf plane, and nothing cosheaf leaks
+ * into a cover. Coupling EXTENDS (covariant, local→global) where content · structure · form RESTRICT
+ * (contravariant), so a cosheaf plane inside a restriction set is not a bad value — it is a category error
+ * that would make the fuse read a coupling fact as if it narrowed.
+ *
+ * A census of this tree found it reached by NOTHING: no production caller, and no test either — the only
+ * fully orphaned guard in the sweep. A guard nobody calls and nobody exercises states a law it cannot
+ * enforce and cannot even be shown to work.
+ *
+ * Both halves close here: the law gets exercised, and `sensorium-cohere` (which builds the restriction
+ * lists) calls it. Wiring costs nothing today — both build sites already stamp `variance: "sheaf"` — and
+ * earns its keep the day a cosheaf plane reaches that list.
+ */
+describe("the sheaf-plane guard", () => {
+  test("★ a COSHEAF plane in a restriction set REFUSES — the li/ki wall holds ★", () => {
+    expect(() => assertSheafPlanes([
+      { plane: "content",  variance: "sheaf",   value: 1 },
+      { plane: "coupling", variance: "cosheaf", value: 2 },
+    ] as never)).toThrow(/coupling|cosheaf|not a sheaf/i);
+  });
+
+  test("CONTROL — every canonical sheaf plane passes, so the guard refuses variance and not names", () => {
+    expect(() => assertSheafPlanes(
+      SHEAF_PLANES.map((plane) => ({ plane, variance: "sheaf", value: 1 })) as never,
+    )).not.toThrow();
+  });
+
+  test("CONTROL — an EMPTY set passes: the guard judges what it is handed, never absence", () => {
+    expect(() => assertSheafPlanes([])).not.toThrow();
+  });
+
+  test("★ the restriction BUILDER reaches the guard — a law nobody calls enforces nothing ★", () => {
+    const cohere = readFileSync(
+      join(import.meta.dirname, "..", "..", "lararium-node", "src", "sensorium-cohere.ts"), "utf8");
+    const code = cohere.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+    expect(code, "the cohere path builds restrictions and guards none of them").toMatch(/assertSheafPlanes\(/);
   });
 });

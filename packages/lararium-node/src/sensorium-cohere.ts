@@ -29,7 +29,7 @@
 import { readManifest, resolveCapDir, capDir, planeVariance, SHEAF_PLANES } from "./sensorium.js";
 import type { SensoriumManifest } from "./sensorium.js";
 import { enumerateStoreDocs } from "./doctor.js";
-import { consistencyRadius, fuse } from "@lararium/mesh";
+import { consistencyRadius, fuse, assertSheafPlanes } from "@lararium/mesh";
 import type {
   ConsistencyRadius, ComparisonStalk, PlaneRestriction, SheafAssignment, FuseResult, FuseOptions,
 } from "@lararium/mesh";
@@ -126,6 +126,11 @@ export function readCohere(sensoriumDir: string, opts: ReadCohereOptions = {}): 
     planes.push({ plane, read: r !== null });
     if (r !== null) restrictions.push(r);
   }
+  // THE COVER HOLDS SHEAF PLANES ONLY. The candidate filter reads the MANIFEST's declared variance while
+  // each restriction carries its OWN — an injected reader may hand back a plane the manifest called sheaf
+  // and the value did not. Coupling EXTENDS where these RESTRICT, so a cosheaf plane in this list is a
+  // category error rather than a bad number: the fuse would read a coupling fact as though it narrowed.
+  assertSheafPlanes(restrictions);
 
   const nestedFlag = liveBoundary ? {} : { dependenceRisk: "nested-cover" as const };
 
@@ -207,6 +212,9 @@ export function readCohereAcrossContexts(
     facePlanes.push({ plane: faceName, read: r !== null });
     if (r !== null) restrictions.push({ plane: faceName, variance: "sheaf", value: r.value });
   }
+  // Stamped sheaf at the push above, so this reads as a floor rather than a filter — it holds the day the
+  // relabel grows a variance of its own.
+  assertSheafPlanes(restrictions);
 
   const sensorium = `${plane} × ${contexts.map((c) => c.context).join(" ⋈ ")}`;
   if (restrictions.length < 2) {
