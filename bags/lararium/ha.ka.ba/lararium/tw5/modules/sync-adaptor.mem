@@ -8,9 +8,10 @@ mana          = 18
 manao         = 17
 manaoio       = 17
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor"
-role          = "canonical source copy: LarariumCrdtSyncAdaptor — CRDT↔TW5 echo-loop gate and apply-change protocol"
-source-symbol = "_applyChange"
-status-date   = "2026-04-30"
+role          = "the CRDT-to-wiki shore: IslandAdaptor — inbound projection through the nalu queue, outbound saves through the bag-path cascade"
+source-file   = "packages/lararium-tw5/src/island-adaptor.ts"
+source-symbol = "IslandAdaptor"
+status-date   = "2026-09-12"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/heleuma/ha"]
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
@@ -20,36 +21,70 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 
 <<~ ahu #/contract>>
 
-!! Sync Adaptor — Contract
+!! Contract
 
-`LarariumCrdtSyncAdaptor` implements two protocols simultaneously:
+`IslandAdaptor` implements `MemeProjection` and stands as the TS shore between the composite store and the wiki's nalu engine. It carries a narrow brief, and the narrowness IS the contract:
 
-''MemeProjection'' (CRDT→TW5 direction)
-: Changes arriving from the Automerge store are applied to the live TW5 wiki under an echo-loop guard (`_applying` flag). During initial replay (`onSyncComplete`), changes are buffered and flushed in a single `bulkSetTiddlers` transaction to avoid one widget refresh per tiddler.
+''Inbound (projection).'' It forwards each `LarTiddlerChange` to `$tw.lares.enqueueNalu()` and stops there. Initial replay flows the same road: `emitInitialReplay()` fires one immediate change per existing tiddler, the fan-out reaches `onUriChanged`, and the next frame drains the lot inside one `wiki.transact()`.
 
-''TW5 SyncAdaptor'' (TW5→CRDT direction)
-: When TW5 fires `saveTiddler` or `deleteTiddler`, the adaptor resolves a `SaveStrategy` by reading the corpus-driven save-cascade meme (`lar:///ha.ka.ba/lararium/tw5/sync/save-cascade`) and routes accordingly. Carrier-aware: ahu child tiddler writes trigger parent carrier reconstruction.
+''Outbound (TW5 edits).'' `saveTiddler` and `deleteTiddler` route through the bag-path cascade to `store.put` or `store.tombstone`, under a 400 ms capture debounce.
 
-Echo-loop guard rule:
-* Applying a CRDT change sets `_applying = change.origin`
-* Any `saveTiddler` call while `_applying !== null` returns immediately with revision "0"
-* This prevents the TW5 wiki change event from re-writing the change back to the store
+''Cross-bag tombstone resolution stays in TS,'' because it needs an async `getLive` on the composite.
+
+''The echo guard belongs to the wiki.'' The adaptor asks `$tw.lares.isApplyingNalu()`; the wiki owns the apply lifetime, so one authority answers when a change is its own echo.
+
+<<~/ahu>>
+
+<<~ ahu #/what-the-wiki-owns>>
+
+!! What the Nalu Engine Owns Instead
+
+The TW5 module `nalu-engine` holds every piece the adaptor deliberately does not: the per-island buffer, the batch flush on sync (the sync gate reads as observability only), the `IslandAccumulator` wiring behind one shared queue, `flushAll(accs, budget)` for the frame drain, the `wiki.transact()` wrapping of each nalu, and the `kernel.applyDelta` calls that write the wiki.
+
+''One writer, one place.'' Splitting the buffer across the shore and the wiki would give two owners one queue.
+
+<<~/ahu>>
+
+<<~ ahu #/the-cascade>>
+
+!! The Bag-Path Cascade
+
+`_routeBag(title)` walks `lar:///ha.ka.ba/lararium/config/bag-paths` — newline-separated filter expressions evaluated against a single-tiddler source, first non-empty result winning. It mirrors TW5's own `$:/config/FileSystemPaths` shape, and takes the shape of `$:/config/SyncFilter` too: the shipped cascade opens with the exclusions and ends in a catch-all.
+
+''The cascade routes; it does not decide whether to write.'' Everything a hand edits and saves travels through the CRDT and round-trips. Only a rule that NAMES what it withholds may withhold a write.
+
+''Three outcomes, never one.'' A rule may ROUTE a title, a rule may WITHHOLD it, or no rule may reach it at all — and the third names a ROUTER GAP rather than a decision. Read as one, a gap drops the write in silence: the promise resolves, the wiki shows the edit, nothing persists, and the tiddler is gone on the next boot. The walk reports which of the three happened, and each caller acts differently on each.
+
+<<~/ahu>>
+
+<<~ ahu #/slot-of>>
+
+!! The Last-Known-Slot Map
+
+`lar:///ha.ka.ba/lararium/config/slot-of` records the slot each title last landed in, this session: fed at every outbound save with the cascade's verdict, and at every inbound apply with the envelope's bag — the value the nalu stamps as `$origin-bag`.
+
+''A delete reads it BEFORE the cascade,'' because by then the tiddler is gone and no field answers. That ordering is what lets a draft loaded from the CRDT at boot, and deleted before any save, still resolve to a slot.
+
+The map stays volatile: one adaptor, one session.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/island-adaptor.ts" family="code" role="has">>
+<<~ pranala #source-cascade from="?" -> to="packages/lararium-tw5/tiddlers/lar-bag-paths.tid" family="code" role="has">>
+<<~ pranala #source-engine from="?" -> to="packages/lararium-tw5/src/modules/nalu-engine.ts" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/sync/save-cascade">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hNG-z_RWCqBPV0RAz47Nr1C4RXJzx9ZZkq7eeZ7rzfo
+<<^ code="&#x0003;">>ni:///sha-256;5XYSo8qygS2tq7hBnM3rrVoctqDd7k9axChzBXU5pYw
 
 <<^ code="&#x0004;" -> to="?">>

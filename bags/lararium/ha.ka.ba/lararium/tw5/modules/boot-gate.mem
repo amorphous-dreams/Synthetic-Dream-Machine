@@ -8,8 +8,9 @@ mana          = 17
 manao         = 17
 manaoio       = 16
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate"
-role          = "canonical source copy: TW5 boot gate — 3-layer trust check for corpus-promoted JS modules"
-source-symbol = "_bootModules"
+role          = "the TW5 boot gate — the trust check every corpus-promoted JS module passes before it becomes executable"
+source-file   = "packages/lararium-tw5/src/tw5-module-gate.ts"
+source-symbol = "bootTrustedModules"
 status-date   = "2026-04-30"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/heleuma/ha"]
 type          = "text/memetic-wikitext+tiddlywiki"
@@ -22,33 +23,50 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 
 !! Boot Gate
 
-Runs in `LarariumTW5._bootModules()` after TW5 `instance.boot.boot()` resolves. Queries all tiddlers that WEAR the tw5-module component (`[stack:has[lar:///ha.ka.ba/lararium/tw5/tw5-module]]` — the has-stack model) and applies three layers of trust before injecting them as live JS modules.
+`bootTrustedModules(tw)` runs after TW5's own boot resolves. It queries every tiddler that WEARS the tw5-module component — `[all[tiddlers]stack:has[lar:///ha.ka.ba/lararium/tw5/tw5-module]]`, the has-stack model — and admits each one only after it clears the trust layers below. An admitted tiddler re-enters the wiki as `type: application/javascript` carrying the `module-type` its own field names, defaulting to `library`, with its tags stripped.
 
-''This code cannot be loaded from a meme.'' It requires a live `$tw` instance and operates as the mechanism that promotes memes into executables. It lives in `packages/lararium-tw5/src/lararium-tw5.ts` as `_bootModules()`.
+''This code cannot load from a meme.'' It needs a live `$tw` instance and stands as the mechanism that promotes memes into executables.
 
-<<~/ahu>>
-
-<<~ ahu #/source>>
-
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/modules/boot-gate" $mode="block"/>
+''A gate that throws is a gate that opens.'' The whole query sits under a `catch` that falls through, so a wiki whose filter surface has not landed injects nothing rather than failing the boot.
 
 <<~/ahu>>
 
 <<~ ahu #/thresholds>>
 
-!! Gate Constants
+!! Gate Layers
 
-| Field | Constant | Floor |
+| Layer | Reading | Floor |
 |---|---|---|
-| `mana` | `MODULE_MANA_THRESHOLD` | 16 |
-| `manao` | `MODULE_MANAO_THRESHOLD` | 16 |
-| `manaoio` | `MODULE_MANAOIO_THRESHOLD` | 15 |
-| `confidence` | `MODULE_CONFIDENCE_THRESHOLD` | 16 |
+| pono | `mana` via `MODULE_MANA_THRESHOLD` | 18 |
+| pono | `manao` via `MODULE_MANAO_THRESHOLD` | 17 |
+| pono | `manaoio` via `MODULE_MANAOIO_THRESHOLD` | 17 |
+| body | non-empty text, and not the injected-body placeholder | — |
+| digest | `body-sha256` verifies through `SubtleCrypto.digest("SHA-256")` | — |
 
-Plus: `body-sha256` must verify via `SubtleCrypto.digest("SHA-256")`. Gate layer 3 (keyhive capability proof) remains planned; not yet implemented — gate currently passes on layers 1–2 only.
+A level that reads as `null` — absent, or unparseable by `parsePonoLevel` — fails the same way a low one does.
+
+''The digest read accepts two spellings.'' A `body-sha256` field may ride bare (implicit sha256) or tagged (`sha256:…`); `digestsEqual` normalizes both, so a reader accepting both stands BEFORE any emitter starts writing the tagged form.
+
+A keyhive capability proof stands as the layer still owed; the gate admits on pono and digest alone.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RG367EjtbwqeO-fGP-K8Tyl5mQebyM02NGSRK3kHe2M
+<<~ ahu #/aggregate>>
+
+!! The Aggregate Define
+
+After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules` and hands its text to `tw.modules.define(text, "library", "lararium-tw5-modules")` — one call, whatever body stands at that address.
+
+<<~/ahu>>
+
+<<~ ahu #/source>>
+
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/tw5-module-gate.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;8Xe5Z54VQf-m4Q2LKC98bzfGTfn77L8S5QmIJLV2y3g
 
 <<^ code="&#x0004;" -> to="?">>
