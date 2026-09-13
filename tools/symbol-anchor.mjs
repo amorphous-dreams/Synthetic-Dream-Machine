@@ -10,10 +10,12 @@
 // prints the new low and asks for the ceiling to come down. So the class stays visible and cannot quietly
 // grow, while nobody is blocked on a canon sweep somebody else's hands are in.
 //
-// WHAT THE CURRENT DEBT IS. Measured 2026-09-12: 85 of 104 named symbols stand in no source file. The
-// bulk are TW5 widget-class anchors (`AhuWidget`, `SigilWidget`, `PranalaWidget` …) from before the slot
-// render moved to TEMPLATE TIDDLERS — the classes went, the carriers stayed, and each still reads as a
-// live description of how a slot renders. `ABILITY_LADDER` sits here too, and its sibling appearance in
+// WHAT THE CURRENT DEBT IS. Measured 2026-09-12, after the TW5 canon sweep: 43 of 70 named symbols stand
+// in no source file. The TW5 widget-class anchors that made up the bulk (`AhuWidget`, `SigilWidget`,
+// `PranalaWidget` …) are gone — those carriers now name the `.tid` that declares each sigil and the
+// template cascade that renders it, and the ones naming a surface nothing replaced were retired. What
+// remains sits in `bags/lararium/**/docs/` and `bags/lares/**/api/`: MCP tool names, Mu/Law-of-5s table
+// constants, and pono-layer types. `ABILITY_LADDER` sits here too, and its sibling appearance in
 // `mesh/causal-island.mem` was measured the same day promising a four-level gate that never existed.
 //
 // THE MATCH IS DELIBERATELY LOOSE — a word-boundary search across every tracked source file, not a parse.
@@ -29,7 +31,7 @@ import { readCarrier } from "./corpus-read.mjs";
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** The debt as measured 2026-09-12. RATCHET: this number may only ever come DOWN. */
-const CEILING = 85;
+const CEILING = 43;
 
 /** Placeholders a carrier writes where it names no single export. */
 const NOT_A_SYMBOL = /^([*]|<.*>|~.*)$/;
