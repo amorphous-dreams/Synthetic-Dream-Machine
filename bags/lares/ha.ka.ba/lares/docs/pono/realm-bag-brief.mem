@@ -10,9 +10,9 @@ mana       = 12
 manao      = 14
 manaoio    = 11
 namespace  = "&#x2299;"
-revised-on = "2026-09-12"
+revised-on = "2026-09-13"
 role       = "realm-bag-brief — the brief seal-and-seat-handoff#/plan-relation-bag owed: a bag two operators keep through a relation. Where the bag doc registers (the realm's shared CRDT, ruled), what @crossroads carries (that it exists and who keeps it, never content), which cap-tier gates the read (CONTRACT) and the write (the named stewards' set), how B's `meme get --bag <x>` resolves it (reach-by-access, and why), what the realm layer already holds and what stands unbuilt, and the one gated red that waits on the seam. Every claim carries its file:line."
-status-why = "BUILT 2026-09-12: the realm's shared CRDT materializes at boot under one doc id, a bag registers on it steward-signed (`1bf9f0b2d`), and the crossing stands — the dial presents the CONTRACT edge, the share verdict seats on announce and access, B's `meme get --bag lares` answers under two operators (`04895b579`, `be008ef1a`; docker `★ B gets it ★ ok`). Two steps behind it walk red on their own terms (B's md projection wants a `meta` key; B's LOAD lands in her own bag while the stewards alone write A's); the bulb GAP and PARTITION reconnect stand"
+status-why = "BUILT 2026-09-12: the realm's shared CRDT materializes at boot under one doc id, a bag registers on it steward-signed (`1bf9f0b2d`), and the crossing stands — the dial presents the CONTRACT edge, the share verdict seats on announce and access, B's `meme get --bag lares` answers under two operators (`04895b579`, `be008ef1a`; docker `★ B gets it ★ ok`). Two steps behind it walk red on their own terms (B's md projection wants a `meta` key; B's LOAD lands in her own bag while the stewards alone write A's); the bulb GAP and PARTITION reconnect stand — AND THE ANNOUNCE MOVED 2026-09-13 (`10c878d1d`): a PUBLIC-tier registration's announce now carries the book's doc url so a carrier can read which books it may carry, every tighter tier unchanged and byte-identical."
 tags       = ["docs/pono/handoff", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
@@ -62,7 +62,7 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 # ''The bag registration record'' on that doc: `{ bagId: realmScopedBagId(realm, slug), docUrl, stewards: [nym…], tier: "contract" }`, written by the steward who stands the bag, folded by both. SEAM: a `realm-bag` verb beside `realm-feed`.
 # ''The tier declaration.'' The bag's manifest carries its tier through the catalog-declared reader the gate consults (`CapTierRing`, `cap-tier.ts:240`); the realm doc's registration record is the DECLARED-tier source for a realm bag.
 # ''The reach.'' `makeMemeVerbOptions`' `reach` walks the realm plane too (`meme-verbs.ts:104`), so B's third reach finds the doc by the id it computed from the charter.
-# ''The @crossroads announce.'' One record `{ bag, kept-by }` on the crossroads plane, written when the registration lands, never carrying content.
+# ''The @crossroads announce.'' One record on the crossroads plane, written when the registration lands, never carrying content. It reads `{ bag, kept-by }` at every tier tighter than PUBLIC — byte-identical to the announce that stood before the field existed — and gains the book's ''doc url'' for a PUBLIC-tier registration alone (the 2026-09-13 ruling, `10c878d1d`). That address is the only thing that lets a CARRIER learn which books it may carry by hash: the declaration that a book reads public lives on the realm doc, and the realm doc withholds from a carrier, so without it the carrier leg opened a lane nothing could reach.
 
 <<~/ahu>>
 
@@ -86,6 +86,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZbpzKo86GQ2X6G5xKaV0ieht_ueI0ahzTsckMk0V5GY
+<<^ code="&#x0003;">>ni:///sha-256;H6l4e2uoXbdYgSDTK4sO9BLMW_hw66zNtHAmC0UVJzk
 
 <<^ code="&#x0004;" -> to="?">>

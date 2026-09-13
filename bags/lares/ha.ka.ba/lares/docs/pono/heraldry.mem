@@ -10,12 +10,10 @@ mana       = 13
 manao      = 14
 manaoio    = 12
 namespace  = "&#x269C;"
-retain     = true
-revised-on = "2026-09-12"
+revised-on = "2026-09-13"
 role       = "heraldry — the design the 2026-09-12 ruling owes: ANY nameless thing on the DreamNet (a cabal · an infra vessel · a veiled persona) MAY publish a Handle, a public Face. Names the three nameless shapes and what each already holds in code; the MANTLE (a True Name worn in turn — what the KEL's graft threshold guarantees, and why a 1-of-1 cabal Handle reads as a person wearing a mantle's name); the HERM CARD (a self-certifying card owned by the Herm's own DEVICE-MINTED vessel key, carrying no persona root and no read cap) and the CARRIAGE contract that seats it in a realm's PUBLIC registrations; what heraldry must never become; and the plan red-by-red. The wall this meets in code stands quoted at handle-publish.ts:37-41 — 'a face belongs to its persona, never itself'. Every claim carries its file:line."
-status     = "standing"
-status-why = "DESIGN, ahead of code. The ruling stands (operator, 2026-09-12, scale-stories-basket-one#/the-shared-bag); the handle-KEL already admits an OPAQUE owner-set member with an INJECTED head-resolver (handle-kel.ts:614, 192-220), so the Herm card asks no new primitive; the CARRIAGE contract kind and the shore lane that reads it stand UNBUILT, and #/plan names them red-by-red"
-tags       = ["docs/pono/handoff", "mesh/handle-card", "mesh/identity-classes"]
+status-why = "STEPS 1-4 BUILT, AND STEP 4's OWN CLAIM REFUTED BY MEASURING IT. Steps 1-3 stand (`ba5475561` `a33cee0f3` `7271d4574`), and the 2026-09-13 announce ruling landed on top (`10c878d1d`: the @crossroads announce carries the doc url at the PUBLIC tier alone, `publicRealmBooksFromDoc` folds the board back, `announcedRealmBooks` is the carrier's shore lane). e2e (~) STILL READS test.fails: a crossroads board keys on the VESSEL's OWN verifying key, so the keeping hearth announces where only it reads (`[herm] announce lane: 0 PUBLIC book(s) on the board`), and ~b plants the body in the Herm's cid/ to prove the INDEX half, not the byte half, is what withholds. The order note below is wrong about steps 1-4 and says so in its own slot. Steps 5-6 unbuilt."
+tags       = ["docs/pono/handoff", "mesh/handle-card", "mesh/identity-classes", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/heraldry"
 ```
@@ -205,7 +203,7 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 * ''CURE'': `mintHandleGraft` gathers `graftSigs` and `verifyHandleKel` counts distinct prior-set authorizers against the prior threshold, the shape `handle-card.mem` #/the-chain already documents.
 * ''CONTROL'': a 1-of-1 graft by one willing hand still stands (Roberts cedes to Westley) — the degenerate case must not regress.
 
-''Order note.'' Steps 1–4 flip ⑦ and touch the Face not at all. Steps 5–6 stand the Face for the nameless and close the mantle's guarantee. ''They are separable'', and a session short on hours should take 1–4 whole rather than 1–6 partly.
+''Order note — REFUTED BY MEASUREMENT, 2026-09-13.'' Steps 1–4 were written to flip ⑦, and they do not. Two circles stand behind the one they close, and the e2e's own head carries both: the boards NEVER MEET (a crossroads board keys on the vessel's own verifying key, so the keeping hearth's announce lands where only it reads — measured as `0 PUBLIC book(s) on the board` on the Herm, with the fork between a hearth-keyed board and a realm-keyed one owed to the operator), and behind that the Herm holds no carriage CLIENT, so nothing ever makes it FETCH the bytes it would serve. The steps still stand and are still owed — they are necessary under every one of the three shapes — and the claim that they suffice does not. ''What the order note gets right'': steps 1–4 touch the Face not at all. Steps 5–6 stand the Face for the nameless and close the mantle's guarantee. ''They are separable'', and a session short on hours should take 1–4 whole rather than 1–6 partly.
 
 <<~/ahu>>
 
@@ -246,6 +244,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;op0Kn6KxpO6jz3zwGMzxDBUW3wO6HU_NL37zGc96xgo
+<<^ code="&#x0003;">>ni:///sha-256;0qu4_ZSUT3-p4nztFQY79mCifE9q6qI_6hbzn7G_4O4
 
 <<^ code="&#x0004;" -> to="?">>
