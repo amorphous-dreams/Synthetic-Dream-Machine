@@ -11,6 +11,8 @@
  */
 
 import { describe, expect, test } from "vitest";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 import { ffzCoDepth } from "@lararium/mesh";
 
@@ -644,5 +646,46 @@ describe("per-frontier keying — two forks sharing a source_file do not bleed",
     const w2 = capture();
     orchestrateWing("wing_fork", { readEmbeddings: () => reRead, writePatches: w2.writePatches });
     expect(w2.patches).toEqual(w1.patches); // Arc stays `s~F1`, never `s~F1~F1`
+  });
+});
+
+/**
+ * EVERY PYTHON SHORE CARRIES THE HOLDER CAP.
+ *
+ * `resolveHolderCapEnv` folds three policies a python leg must run under: `MEMPALACE_WRITE_ROUTING=require`
+ * (so a write routes through the daemon SINGLETON rather than opening its own chroma handle — the
+ * concurrent-HNSW-writer corruption this house has already paid for once), the lazy-embedder flag, and the
+ * GPU compute cap (without which `loci_io.py` hard-fails importing onnxruntime-gpu on a GPU box).
+ *
+ * `telemetry-writeback`, `worldline-kg` and `ffz-enrich` each compose it into their spawn env. This module
+ * hand-built a `pyEnv` carrying `PYTHONPATH` alone — under a comment reading "mirrors telemetry-writeback's
+ * setup", which is exactly the sibling that composes it. The comment claimed the mirror the code broke.
+ *
+ * A policy that only holds where somebody remembered it holds nowhere. The walk reads the SOURCE rather
+ * than any one spawn, so a new shore added later inherits the check instead of the omission.
+ */
+describe("the python spawn shores", () => {
+  const SRC_DIR = join(import.meta.dirname, "..", "src");
+
+  test("★ every module that spawns python composes resolveHolderCapEnv ★", () => {
+    const spawners = readdirSync(SRC_DIR)
+      .filter((f) => f.endsWith(".ts"))
+      .filter((f) => /PYTHONPATH/.test(readFileSync(join(SRC_DIR, f), "utf8")));
+    expect(spawners.length, "the walk found no python shore at all — it proves nothing").toBeGreaterThan(2);
+
+    const bare = spawners.filter((f) => !/resolveHolderCapEnv\s*\(/.test(readFileSync(join(SRC_DIR, f), "utf8")));
+    expect(
+      bare,
+      "these shores spawn python WITHOUT the holder cap — a write may bypass the daemon singleton",
+    ).toEqual([]);
+  });
+
+  test("CONTROL — the cap folds the three policies the shores depend on", async () => {
+    const { resolveHolderCapEnv } = await import("@lararium/mempalace");
+    const env = resolveHolderCapEnv(null);
+    // Read the KEYS rather than the values: the values vary by host (a GPU box caps differently), the
+    // policy names do not.
+    expect(Object.keys(env).join(","), "the cap folded nothing — the assertion above would pass vacuously")
+      .toMatch(/MEMPALACE/);
   });
 });

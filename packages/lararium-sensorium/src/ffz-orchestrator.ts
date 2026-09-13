@@ -65,7 +65,7 @@ import {
 } from "@lararium/mesh";
 import { repoRoot } from "@lararium/mesh/node";
 
-import { resolveMempalacePython, resolveStructurePalaceSpawn } from "@lararium/mempalace";
+import { resolveMempalacePython, resolveStructurePalaceSpawn, resolveHolderCapEnv } from "@lararium/mempalace";
 import { memorySensoriumStructureDir, memorySensoriumContentDir } from "@lararium/mempalace/xdg-base";
 import { resolveLociIo, TelemetryUnavailable } from "./telemetry-writeback.js";
 import { mineWithServo } from "@lararium/mempalace";
@@ -534,14 +534,21 @@ interface PyContext {
   readonly contentPalace: string;
 }
 
-/** Resolve the python + loci_io.py + PYTHONPATH (mirrors telemetry-writeback's setup). */
+/**
+ * Resolve the python + loci_io.py + PYTHONPATH + THE HOLDER CAP (the same setup telemetry-writeback runs).
+ *
+ * `resolveHolderCapEnv` folds three policies every python leg must run under: write-routing `require`, so a
+ * write routes through the daemon SINGLETON instead of opening its own chroma handle (the concurrent-HNSW
+ * writer corruption); the lazy-embedder flag; and the GPU compute cap, without which `loci_io.py` hard-fails
+ * importing onnxruntime-gpu on a GPU box. A shore that spawns python without it holds none of the three.
+ */
 function pyContext(): PyContext {
   const PY = resolveMempalacePython();
   if (!PY) throw new TelemetryUnavailable("no python holds mempalace — create ~/.venv and pip install the holder deps (`lares vessel stand --install`)");
   const LOCI_IO = resolveLociIo();
   if (!existsSync(LOCI_IO)) throw new TelemetryUnavailable(`loci_io.py missing at ${LOCI_IO}`);
   const submoduleRoot = join(repoRoot, "mempalace");
-  const pyEnv = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : "") };
+  const pyEnv = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : ""), ...resolveHolderCapEnv(PY) };
   return { PY, LOCI_IO, submoduleRoot, pyEnv, contentPalace: memorySensoriumContentDir() };
 }
 
@@ -624,7 +631,7 @@ export function pythonStructureEmbeddingsReader(_wing: string): Map<string, read
   const { python: PY, script: STRUCTUREPALACE_IO, scriptPresent, submoduleRoot } = resolveStructurePalaceSpawn();
   if (!PY) throw new TelemetryUnavailable("no python holds mempalace — create ~/.venv and pip install the holder deps (`lares vessel stand --install`)");
   if (!scriptPresent) throw new TelemetryUnavailable(`structurepalace_io.py missing at ${STRUCTUREPALACE_IO}`);
-  const pyEnv = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : "") };
+  const pyEnv = { ...process.env, PYTHONPATH: submoduleRoot + (process.env["PYTHONPATH"] ? `:${process.env["PYTHONPATH"]}` : ""), ...resolveHolderCapEnv(PY) };
   // NAME the plane — an unpassed --palace reaches the pre-XDG scatter (empty after the home-move), and
   // the structure plane reads silently empty. Designation carries the authority (the content-plane cure).
   const out = mineWithServo("structurepalace-io-structure-embeddings", (timeoutMs) =>

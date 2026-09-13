@@ -31,16 +31,29 @@ import { readCarrier } from "./corpus-read.mjs";
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** The debt as measured 2026-09-12. RATCHET: this number may only ever come DOWN. */
-const CEILING = 43;
+const CEILING = 42;
 
 /** Placeholders a carrier writes where it names no single export. */
 const NOT_A_SYMBOL = /^([*]|<.*>|~.*)$/;
+
+/**
+ * A value carrying ANGLE BRACKETS reads as one PLACEHOLDER, never as a word list.
+ *
+ * The declaration splits on whitespace, so `<standalone function or export name>` fell apart into five
+ * tokens and three of them — `function`, `or`, `export` — walked on as if a carrier had named them. Measured
+ * while widening the corpus: the gate counted English prose as exports, which inflates a debt nobody can
+ * ever clear by fixing code.
+ */
+const IS_PLACEHOLDER = (decl) => decl.includes("<") || decl.includes(">");
 
 const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
   .split("\0").filter(Boolean);
 
 // The haystack: every tracked source carrier, read once.
-const SOURCE = /\.(ts|mts|cts|js|mjs|cjs|tid)$/;
+// PYTHON COUNTS AS SOURCE. `lararium-sensorium` runs python holders under TypeScript callers, so a carrier
+// may legitimately name a python export — and a corpus that never reads `.py` would report such a name
+// absent forever, a red no code change could clear.
+const SOURCE = /\.(ts|mts|cts|js|mjs|cjs|tid|py)$/;
 const IN_SOURCE_TREE = /^(packages|tools|scripts|TiddlyWiki5)\//;
 let haystack = "";
 for (const rel of tracked) {
@@ -58,6 +71,7 @@ for (const rel of tracked) {
   if (text === null) continue;
   const decl = /^source-symbol\s*=\s*"([^"]+)"/m.exec(text);
   if (!decl) continue;
+  if (IS_PLACEHOLDER(decl[1])) continue;
   for (const sym of decl[1].split(/\s+/)) {
     if (!sym || NOT_A_SYMBOL.test(sym)) continue;
     checked++;
