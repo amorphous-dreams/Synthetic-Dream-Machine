@@ -16,6 +16,8 @@
  * this one an OFFERING, and a signature minted over one must never verify as the other.
  */
 import { describe, test, expect } from "vitest";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
@@ -108,5 +110,40 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
       { pluginsCid: OFFERING_CID, action: "kapae", version: 1, sealEpochCid: "epoch-cid-OTHER" },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([elsewhere], r))).toBe(false);
+  });
+});
+
+/**
+ * THE FOLD STANDS READY, AND NOTHING CONSULTS IT YET.
+ *
+ * `foldOfferingAntigen` decides whether an offering stands aside, and no caller asks it — the CLI reads
+ * the region, the daemon serves it, and neither consults this board. That state is fine; DESCRIBING it as
+ * live would not be. This tree already carried one guard whose comment claimed a corruption was
+ * "structurally impossible" while nothing invoked it, and an auditor reading the offering path deserves
+ * better than the same trap one module over.
+ *
+ * A comment tracks its CALLERS and nothing checks that by itself, so this does. It fails the moment a
+ * production caller appears, and the cure is to re-word the module header as live enforcement and delete
+ * this test — never to widen an exemption.
+ */
+describe("what the offering fold may claim", () => {
+  const SRC_DIR = join(import.meta.dirname, "..", "src");
+
+  test("★ no production caller consults the fold — so the header says READY, never enforced ★", () => {
+    const callers = readdirSync(SRC_DIR)
+      .filter((f) => f.endsWith(".ts") && f !== "offering-antigen.ts")
+      .filter((f) => /\bfoldOfferingAntigen\s*\(|\bofferingStandsAside\s*\(/.test(readFileSync(join(SRC_DIR, f), "utf8")));
+    expect(
+      callers,
+      "a caller appeared — WIRE the claim: re-word offering-antigen.ts's header as live enforcement and delete this test",
+    ).toEqual([]);
+
+    const header = readFileSync(join(SRC_DIR, "offering-antigen.ts"), "utf8").slice(0, 2600);
+    expect(header, "the header claims an enforcement no caller performs").toMatch(/READY|not yet consulted|no caller/i);
+  });
+
+  test("CONTROL — the fold still DECIDES what it names, so the law stands ready to wire", async () => {
+    const r = await roster(2);
+    expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([await kapae([1, 2])], r))).toBe(true);
   });
 });

@@ -21,6 +21,13 @@
  * region cid. The domains hold apart so a signature minted over one can never verify as the other, and
  * a hand that condemns a collection has said nothing whatever about the operator who offered it.
  *
+ * ── READY, AND NOT YET CONSULTED ────────────────────────────────────────────────────────────────
+ * Nothing calls this fold. The CLI reads the region and the daemon serves it; NO CALLER asks whether an
+ * offering stands aside, so the law here stands READY rather than enforced. A Nexus opts in by consulting
+ * it — that is the shape, and until one does, an auditor reading the offering path must not take a ready
+ * function for a live one. `offering-antigen.test.ts` fails the moment a production caller appears and
+ * names the cure: re-word this section as live enforcement and delete that test.
+ *
  * ── NO ROSTER OF TENDERS ────────────────────────────────────────────────────────────────────────
  * A presentation names the DARK STRETCH (the offering) and its own presenter, and accrues nowhere. The
  * Union keeps "no central register of who tends what", so this module builds none: there is no list to
