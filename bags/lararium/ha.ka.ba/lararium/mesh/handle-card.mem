@@ -149,14 +149,25 @@ publishes the identity — a `_atproto.<domain>` TXT carrying `did=<did>`, ''or'
 the identity, the same way a Handle presents and the persona-KEL owns. Two designs reaching //both
 directions must agree// separately reads as convergent evidence, never as borrowing.
 
-''GAP 1 — our surface has no RETURN DIRECTION.'' A `HandleAttestation` carries `prefix · headEventCid ·
-claim · sig`: the card claims the domain and nothing says what the domain must publish. So a surface
-verify has nothing to look FOR. The cure rhymes: ''the surface names the prefix back''. Until it does,
-the surface half stands underspecified rather than merely unbuilt.
+''GAP 1 — the RETURN DIRECTION now carries a field, and its conventions stay unwritten.'' Every
+`HandleClaim` member holds an optional `returnLocator`, so a card states //where the far side answers//
+and a surface verify knows where to look. What each surface must //publish there// — the record type, the
+field, the exact bytes naming the prefix back — remains unstated per row. The cure rhymes and the type now
+makes room for it: ''the surface names the prefix back''.
 
-''GAP 2 — a free-text `claim` cannot be checked mechanically.'' ATproto sidesteps it: the handle IS the
-domain, so nothing needs parsing. A claim wanting a machine reader wants a STRUCTURED form; prose suits a
-human weighing a card and suits no adapter at all.
+''GAP 2 — CLOSED. The claim reads STRUCTURED.'' `HandleClaim` stands as a discriminated union on
+`surface`, one member per row of the adapter family below, each carrying ''its own subject field''
+(`dns-control`/`domain` · `atproto-account`/`account` · `kowloon-actor`/`actorId` ·
+`loopback-address`/`address`). A member per row rather than one shape with a tag, because the type must
+''refuse the cross-product'': a `dns-control` claim carrying an `actorId` never compiles, and a reader
+switching on `surface` reaches a subject the type already guaranteed. A fifth adapter costs one member and
+one table row; every existing member's signed bytes stay byte-identical, and a reader meeting an unknown
+surface ''refuses'' rather than half-recognising a field it half-knows.
+
+''The signature covers the WHOLE claim or the claim mints nothing.'' Normalization projects exactly the
+declared fields and ''refuses'' an uncovered extra key rather than dropping it — a dropped field would ride
+the wire unsigned while a reader might still act on it. Structure fails closed //before// the signature is
+weighed. The chain verify gained no surface check: it still answers only //did this Handle say it//.
 
 !!!! The adapter FAMILY ~ one interface, several authorities (operator, 2026-09-13)
 
@@ -263,6 +274,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Fz4aPmw1rXw25Ku_WcjFunXse7U6ScinZczaXpfWkOg
+<<^ code="&#x0003;">>ni:///sha-256;b13iqgCxpOdeUfycw0ACNuOPYoozXnnlE1JVtTXjKjo
 
 <<^ code="&#x0004;" -> to="?">>
