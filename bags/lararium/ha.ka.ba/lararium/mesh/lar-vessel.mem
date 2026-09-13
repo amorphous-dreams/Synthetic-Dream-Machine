@@ -57,14 +57,24 @@ projection sees composite changes rather than one layer's.
 
 !! What the identity slot admits today
 
-The vessel takes an `IdentitySlot` and falls back to `OpenIdentitySlot`, which mints a placeholder
-`did:web:elyncia.app/vessels/<id>` and derives a stable actor id by SHA-256 over the vessel id. A real
-login replaces the DID with `did:web:` at the user's own handle.
+The vessel takes an `IdentitySlot` or carries NONE. `identity` reads `IdentitySlot | null` and the
+constructor binds `opts.identity ?? null`, so ''no default slot stands'' — a vessel that names none
+grants nothing through one, and the alpha line keeps no alias in the empty seat.
 
-''The open slot names an alpha stub, and the admission gates stand elsewhere.'' The node `sharePolicy`
+''The admission gates stand elsewhere, and the asymmetry holds by design.'' The node `sharePolicy`
 gates inbound network peers at the daemon-auth gate; the browser admits only same-origin and
-in-process peers. That asymmetry holds by design rather than by omission — a browser vessel reaches no
-peer a node vessel would have had to authenticate.
+in-process peers. A browser vessel reaches no peer a node vessel would have had to authenticate.
+
+''The verdict a slot doc owes belongs to the PersonaGroup ring.'' `makePersonaGroupIdentityRing`
+(`packages/lararium-mesh/src/persona-group-ring.ts`) reads the asking face's own grant records,
+fail-closes where the peer proved no vessel key, carries no field for a realm's `keptBy` and none for
+a roster, and `compose` widens a base gate while narrowing nothing. It stands ''BUILT AND UNWIRED'':
+its definition, the barrel export and its own test hold every reference to it, and
+`open-browser-vessel.ts` passes `identityRing = null`. The wiring waits at the two sharePolicy shores
+— the node's shore holds a repo and a catalog url while the PersonaGroup plane and its grant records
+rest in the daemon island's store, so it waits on one message carrying that plane across; the browser's
+shore moves nothing until it admits a relay peer at all, where the ring's own-hand class
+short-circuits. A reader who takes the ring for LIVE repeats the same fault in the other direction.
 
 ''Keyhive slots in without moving this interface.'' `KeyhiveSlot` stays typed to four calls —
 capability verification, member add and remove, application-secret derivation — so the three-layer
@@ -84,6 +94,6 @@ names.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 
-<<^ code="&#x0003;">>ni:///sha-256;7H1lrD1SOJae2CMN7tpCrF3Hh1ZRmXaC-NBiDwKwLL0
+<<^ code="&#x0003;">>ni:///sha-256;cBANT9SuHnSuHlGNfeW9RtOzOd0hUJcR7LFZ8F8-ogg
 
 <<^ code="&#x0004;" -> to="?">>

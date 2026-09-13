@@ -6,7 +6,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/identity-slot.mem"
 l-space     = "lararium"
 mana        = 14
-role        = "invariant law: IdentitySlot — the minimum surface a vessel needs from an identity provider. Names the DID namespace, the determinism a derived actor owes, the quine split (the class in TypeScript, the CONFIG as lar: tiddlers), and exactly which layer the open stub leaves ungated and which gates stand elsewhere."
+role        = "invariant law: IdentitySlot — the minimum surface a vessel needs from an identity provider. Names the DID namespace, the determinism a derived actor owes, the quine split (the class in TypeScript, the CONFIG as lar: tiddlers), and exactly which layer an EMPTY slot leaves ungated — the interface ships no default implementation — plus which gates stand elsewhere and which reader answers a slot doc's verdict."
 source-file = "packages/lararium-mesh/src/identity-slot.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/identity-slot"
@@ -55,10 +55,12 @@ that choice does work beyond tidiness — a `lar:` tiddler stands as a heleuma s
 
 <<~ ahu #/what-the-open-slot-leaves>>
 
-!! What the open slot leaves ungated, and what gates anyway
+!! What an empty slot leaves ungated, and what gates anyway
 
-`OpenIdentitySlot` mints a placeholder DID and derives a stable actor id by digest over the vessel id.
-''It names the USER-level layer, and that layer stands as an alpha stub.''
+''The interface ships with NO default implementation.'' A vessel takes an `IdentitySlot` or carries
+`null`; the alpha line keeps no allow-all stub in the empty seat and no alias standing for one, so an
+unfilled slot answers nothing rather than answering yes. The USER-level layer this interface names
+therefore stands ''open at the socket'' — unfilled, never permissive.
 
 ''The gates that DO stand sit elsewhere, and the asymmetry holds by design:''
 
@@ -69,6 +71,15 @@ binding mint.
 to authenticate.
 
 Naming this slot as the house's access gate would promise a reader a check that stands one layer up.
+
+''What answers a slot doc's verdict.'' `makePersonaGroupIdentityRing`
+(`packages/lararium-mesh/src/persona-group-ring.ts`) reads the asking face's own grant records against
+the vessel key the peer PROVED, refuses a peer that proved none, and carries no field for a realm's
+`keptBy` or for a roster. `compose` widens a base gate and narrows nothing. The ring stands ''BUILT AND
+UNWIRED'' — its definition, the barrel export and its own test hold every reference, and
+`open-browser-vessel.ts` passes `identityRing = null`. It waits on the node sharePolicy shore reaching
+the PersonaGroup plane (that shore holds a repo and a catalog url; the grant records rest in the daemon
+island's store), and on the browser shore admitting a relay peer at all.
 
 <<~/ahu>>
 
@@ -81,6 +92,6 @@ Naming this slot as the house's access gate would promise a reader a check that 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;U7iE119lODZdnb9b2mv6lrwr5HBxAWBMCL8bDqMvLBk
+<<^ code="&#x0003;">>ni:///sha-256;pHU8bYh6arbLqdiN8zM8wNxQc9cvauV-m43OBBfmH9A
 
 <<^ code="&#x0004;" -> to="?">>

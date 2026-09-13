@@ -224,9 +224,14 @@ The model converges; these shores stay open and SHOULD reconcile (not re-debate)
    says "light leaf, engine on relay." Both true: symmetric STRUCTURE, asymmetric currently-held
    CAPABILITIES (law #4). The ''hold-vs-express'' model now carries this canon — one held
    cap-stack, a subset expressed per context (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/hold-vs-express">>).
-# ''OpenIdentitySlot stub'' — sharePolicy returns true (legit for same-origin browser peers; the
-   real network gate = V3 on node). User-level identity slots (Bluesky/GitHub/keyhive) remain
-   future; the meme reads one generation behind the live keyhive operator gates.
+# ''The identity slot's empty seat'' — `IdentitySlot` ships NO default implementation:
+   `LarVessel.identity` reads `IdentitySlot | null` and a vessel naming none carries none, so an
+   unfilled slot answers nothing rather than yes. The real network gate stands at V3 on node; the
+   browser admits same-origin and in-process peers alone. `makePersonaGroupIdentityRing`
+   (mesh · `persona-group-ring.ts`) answers a slot doc's verdict off the face's own grant records and
+   stands BUILT AND UNWIRED — definition, barrel export and test hold every reference, and
+   `open-browser-vessel.ts` passes `identityRing = null`. Wiring waits on the node sharePolicy shore
+   reaching the PersonaGroup plane. User-level slots (Bluesky/GitHub/keyhive) remain future.
 # ''EPIC-VESSEL-COLLAPSE decisions'' — the 9 BEHAVIOR rows decided convergent-open 2026-06-08
    ("one pono model, isomorphism, capabilities as meaningful distinctions"); enact onto open-vessel-core.
 
@@ -276,6 +281,6 @@ Read order once held: noosphere-boot → THIS → (open-vessel · causal-island 
 seeded by the boot, enacted per turn, corrected by degree, decaying untended; the memory-palace that
 captures its FORM beside the verbatim CONTENT stands at [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]].
 
-<<^ code="&#x0003;">>ni:///sha-256;JL-zoF61gNH4ovKcR68-eL-9jbMFG9k_H_gQgBGfrBU
+<<^ code="&#x0003;">>ni:///sha-256;ek0YoUYgpD6XRPa4Fi3wAxWuq-5Furl7NUok2NGTDaw
 
 <<^ code="&#x0004;" -> to="?">>
