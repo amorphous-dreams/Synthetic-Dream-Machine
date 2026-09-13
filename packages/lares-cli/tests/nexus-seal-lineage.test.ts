@@ -15,14 +15,14 @@
  * at the mesh layer (wax-stamp.test); this file proves the CLI WIRING over a genuine vault + disk.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
-  generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc,
+  generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
 } from "@lararium/node";
 import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead,
@@ -106,6 +106,43 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const reseat = await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
     expect(reseat).not.toBe(0);
     expect(readNexusDoc(larSealHome())?.sealLineage?.length).toBe(2);   // unchanged
+  });
+
+  /**
+   * A TORN CHARTER MUST NOT READ AS AN ABSENT ONE.
+   *
+   * `readNexusDoc` answers `null` for BOTH "no charter stands here" and "a charter stands and reads torn" —
+   * a correct contract for the roster callers, who fold null to the inert empty roster and guess nothing.
+   * `sealSeat` folds the same null into `emptyFoundingCharterDoc()`, a SCAFFOLD carrying no `sealLineage`
+   * field at all — and the re-seat guard reads `doc.sealLineage && doc.sealLineage.length > 1`, which
+   * short-circuits on `undefined`.
+   *
+   * So a chain that HAS rotated, whose doc reads back torn, walks straight through the one guard written to
+   * stop it: a silent re-genesis that strands every antigen entry rooted on the rotated head. The absent
+   * case must still seat — that is a fresh founding, and refusing it would break the first ceremony a
+   * vessel ever runs. Only the TORN case refuses.
+   */
+  test("★ a rotated chain whose charter reads TORN refuses the re-seat — null means absent OR torn, and they differ ★", async () => {
+    const keys = await seatVault();
+    await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    expect(readNexusDoc(larSealHome())?.sealLineage?.length, "the fixture failed to rotate").toBe(2);
+
+    // TEAR the charter: the file stands, its fenced blocks no longer compose. `readNexusDoc` reads null.
+    const charter = nexusCharterDocPath(larSealHome());
+    const whole = readFileSync(charter, "utf8");
+    writeFileSync(charter, whole.replace(/```/g, "`` "), "utf8");
+    expect(readNexusDoc(larSealHome()), "the tear did not actually tear the doc").toBeNull();
+
+    const reseat = await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    expect(reseat, "a torn charter re-seated as though no charter stood").not.toBe(0);
+  });
+
+  test("CONTROL — an ABSENT charter still seats: a fresh founding must never be refused", async () => {
+    const keys = await seatVault();
+    // No charter written at all — the first ceremony a vessel runs.
+    expect(readNexusDoc(larSealHome())).toBeNull();
+    expect(await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }))).toBe(0);
   });
 
   test("a rotate whose reveal MISMATCHES the pre-commitment REFUSES (nonzero) and writes nothing", async () => {

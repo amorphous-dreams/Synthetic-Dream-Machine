@@ -29,7 +29,7 @@
  * a clean parent-to-child split into a cycle.
  */
 import {
-  readNexusDoc, writeNexusSeal, writeNexusKahu, nexusCharterDocPath, nexusCharterDocRelPath,
+  readNexusDoc, nexusCharterStands, writeNexusSeal, writeNexusKahu, nexusCharterDocPath, nexusCharterDocRelPath,
   listPersonaRoots, generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, runNexusMembersList, hasContractedInto,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState,
@@ -251,6 +251,14 @@ function resolveSeatThreshold(args: ParsedArgs, doc: NexusDoc, rosterSize: numbe
 async function sealSeat(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
   const dataDir = larDataDir();
+  // A TORN CHARTER MUST NOT READ AS AN ABSENT ONE. `readNexusDoc` answers null for both, which suits every
+  // caller that folds null to an inert roster; this one folds it to a founding SCAFFOLD instead, and that
+  // scaffold carries no `sealLineage` at all — so the guard below, reading `doc.sealLineage && …`, short
+  // circuits on undefined and lets a rotated-but-unreadable chain re-genesis itself. Presence tells the two
+  // apart: a charter that stands and will not read is the one case where seating guesses.
+  if (nexusCharterStands(sealHome) && readNexusDoc(sealHome) === null) {
+    throw new UsageError("the charter doc stands here but reads TORN — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
+  }
   const doc = readNexusDoc(sealHome) ?? emptyFoundingCharterDoc();
 
   // FAIL CLOSED: a chain already advanced PAST genesis is never silently re-genesied — a re-seat would
