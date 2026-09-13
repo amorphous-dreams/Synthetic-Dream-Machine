@@ -219,6 +219,8 @@ This root should hand them a stable semantic contract, not duplicate their local
 
 Examples, profile guidance, and extended bridge notes belong in the sidecars.
 
+The wiki's own door onto the placement law reads `<$action-meme-place uri="…" text="…" [bag=… | recipe=…]/>` — it calls the same `$tw.lares.meme.place` every other skin calls and lands its receipt at `$:/temp/lares/meme-place/<uri>`.
+
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/invariant">>
 
@@ -387,6 +389,6 @@ Adding a sigil: tag a tiddler with `lar:///ha.ka.ba/tags/SharktoothSigil` and po
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;B3lMjnCEF3ogwIWmr0C0g2kcVfinnjV8rC9DwMOwlDA
+<<^ code="&#x0003;">>ni:///sha-256;v_fnFXnAfvA2yZ-a_S1T_HqrbRqSrOHPNroNLVLsnzc
 
 <<^ code="&#x0004;" -> to="?">>
