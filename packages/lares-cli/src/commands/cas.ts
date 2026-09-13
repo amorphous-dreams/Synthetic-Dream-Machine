@@ -18,7 +18,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { casReferences, summarizeCas, type CasReferenceEntry } from "@lararium/mesh";
-import { listCasBlobs, readGenesisManifest, readCasPins, pinCas, releaseCas } from "@lararium/node";
+import { listCasBlobs, genesisProtectSet, readCasPins, pinCas, releaseCas } from "@lararium/node";
 import { parseCapTier, type PinCap } from "@lararium/mesh";
 import { larCasDir, larBagsDir, larWikisDir, larGenesisDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -79,7 +79,8 @@ export interface CasReadEntry {
   readonly size:      number;
   /** The projection files referencing the blob (`bags/<bag>/<loci>.tid`). */
   readonly refs:      string[];
-  readonly protected: boolean;
+  /** `"unknown"` where the genesis manifest STANDS and will not read — never folded into `false`. */
+  readonly protected: boolean | "unknown";
 }
 
 export interface CasRead {
@@ -89,11 +90,29 @@ export interface CasRead {
   readonly unreferenced: number;
   readonly pending:      number;
   readonly bytes:        number;
-  /** The genesis-manifest cids present in the CAS — never sweepable. */
+  /**
+   * Whether this read could DECIDE protection at all. A manifest that stands and will not read leaves
+   * the question open; folding that into an empty `protected` would report every genesis blob as
+   * unguarded when the truth reads "the vessel cannot tell".
+   */
+  readonly protectionKnown: boolean;
+  /** The genesis-manifest cids present in the CAS — never sweepable. Empty while `protectionKnown` reads false. */
   readonly protected:    string[];
   /** The cids a STANDING pin holds (basket-one #/grace-and-pin) — never sweepable while the pin stands. */
   readonly pinned:       string[];
   readonly entries:      CasReadEntry[];
+}
+
+/**
+ * The one-line tally a reader sees. A read that could not DECIDE protection prints `UNKNOWN` and says
+ * why, rather than a count of zero — a zero there reads as "confirmed none", which is the claim the
+ * torn manifest cannot support.
+ */
+export function casSummaryLine(r: Pick<CasRead, "blobs" | "referenced" | "unreferenced" | "pending" | "bytes" | "protected" | "pinned" | "protectionKnown">): string {
+  const protection = r.protectionKnown
+    ? String(r.protected.length)
+    : "UNKNOWN (the genesis manifest stands and will not read)";
+  return `blobs ${r.blobs} · referenced ${r.referenced} · unreferenced ${r.unreferenced} · pending ${r.pending} · bytes ${r.bytes} · protected (genesis) ${protection} · pinned ${r.pinned.length}`;
 }
 
 /** The read itself — sited by explicit dirs so a test names its own. */
@@ -101,16 +120,23 @@ export function readCas(opts: CasReadOptions): CasRead {
   const blobs   = listCasBlobs(opts.casDir);
   const refs    = casReferences(projectionEntries(opts));
   const summary = summarizeCas(blobs, refs);
-  const genesis = new Set((readGenesisManifest(opts.genesisDir)?.blobs ?? []).map((b) => b.cid));
+  // THREE ANSWERS, NOT TWO. `genesisProtectSet` separates "no manifest stands here" (an empty set — a
+  // FACT about this vessel) from "a manifest stands here and will not read" ("unreadable" — a LOST fact).
+  // Defaulting both to empty would render every genesis blob `protected: false`, an operator reading
+  // their engine and plugin blobs as unguarded when nothing could be decided either way.
+  const protect = genesisProtectSet(opts.genesisDir);
+  const known   = protect !== "unreadable";
+  const genesis = known ? protect : new Set<string>();
   const entries = blobs.map((b) => ({
     cid: b.cid, size: b.size,
     refs: [...(refs.get(b.cid) ?? [])].sort(),
-    protected: genesis.has(b.cid),
+    protected: known ? genesis.has(b.cid) : ("unknown" as const),
   }));
   const pins = readCasPins(opts.casDir);
   return {
     casDir: opts.casDir, ...summary,
-    protected: entries.filter((e) => e.protected).map((e) => e.cid),
+    protectionKnown: known,
+    protected: entries.filter((e) => e.protected === true).map((e) => e.cid),
     pinned: pins.filter((p) => Date.now() < p.expiry).map((p) => p.cid),
     entries,
   };
@@ -223,11 +249,12 @@ export function cmdCas(args: ParsedArgs): number | Promise<number> {
     data: r as unknown as Record<string, unknown>,
     human: () => {
       console.log(`lares bag cas — ${r.casDir}`);
-      console.log(`  blobs ${r.blobs} · referenced ${r.referenced} · unreferenced ${r.unreferenced} · pending ${r.pending} · bytes ${r.bytes} · protected (genesis) ${r.protected.length} · pinned ${r.pinned.length}`);
+      console.log(`  ${casSummaryLine(r)}`);
       console.log("  references derive from the disk projection (bags/ + wikis/), as of its last write");
       if (args.flags["all"]) {
         for (const e of r.entries) {
-          const tag = e.protected ? "genesis " : e.refs.length > 0 ? "held    " : "orphan  ";
+          // An unknown protection never wears the `orphan` tag: that tag reads as "safe to sweep".
+          const tag = e.protected === "unknown" ? "unknown " : e.protected ? "genesis " : e.refs.length > 0 ? "held    " : "orphan  ";
           console.log(`  ${tag} ${e.cid.slice(0, 16)}… ${String(e.size).padStart(9)}B  ${e.refs.join(" · ")}`);
         }
       }
