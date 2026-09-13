@@ -1178,6 +1178,19 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
             : leafIdentity,
           ...(joinDocUrl ? { docUrl: joinDocUrl } : {}),
           onLog: (line) => console.log(`[nexus-join] ${line}`),
+          // THE RETURN ON SOCKET A — the same re-fold the carriage's own `onReconnect` runs on Socket B.
+          // A partition stales the boards this verdict reads (membership · posture · realm registrations)
+          // and the Repo caches its share verdict per (doc, peer) until something asks it to read anew, so
+          // a peer that comes back re-attaches at the transport and draws a verdict computed before the cut.
+          onReconnect: async () => {
+            await runNexusRefresh({
+              storageDir, sealHome, nexusPubkey: vesselIdentity.verifyingKey,
+              antigen: antigenHolder, membership: nexusMembershipHolder,
+              setPosture: (p) => { federationPosture = p; },
+            });
+            await realmPlane?.refresh(readNexusDoc(sealHome));
+            reverdict();
+          },
         });
         // The peer at the other end of this dial IS the hearth the charter came from — the realm's return lane.
         try { nexusDial?.adapter.on("peer-candidate", ({ peerId }: { peerId: string }) => {
