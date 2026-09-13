@@ -106,10 +106,12 @@ describe("worldline-kg arg/NDJSON building (fake exec)", () => {
       delegationEdge(root, "run.a", { validFrom: "2026-06-29T00:00:00Z", turnKey: "t-a" }),
       delegationEdge(root, "run.b", { validFrom: "2026-06-29T00:00:01Z", turnKey: "t-b" }), // rewound
     ];
-    const r = kapaeThenFork(root, opens, [], ["t-b"], { parent: root, child: "run.c" }, opts);
+    const r = kapaeThenFork(root, opens, [], ["t-b"], { parent: root, child: "run.c" }, { ...opts, ended: "2026-06-29T06:00:00Z" });
     // DURABLE leg: one kapae fired for the rewound turn (fake exec returns closed:3).
     expect(calls.length).toBe(1);
-    expect(calls[0]!.args).toEqual([resolveKgIo(), "--palace", "/tmp/palaceX", "kapae", "--turn-key", "t-b"]);
+    // The argv CARRIES the close-mark. It read without `--ended` before, which the python side refuses
+    // outright — the fake exec never noticed, so the shape under test could not have run for real.
+    expect(calls[0]!.args).toEqual([resolveKgIo(), "--palace", "/tmp/palaceX", "kapae", "--turn-key", "t-b", "--ended", "2026-06-29T06:00:00Z"]);
     expect(r.closed).toBe(3);
     // PURE leg: run.b dropped from the valid view; run.c forked off the rewound frontier.
     expect(r.dropped).toBe(1);
@@ -242,5 +244,41 @@ describe.skipIf(skipReason)(
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+/**
+ * THE CLOSE-MARK CROSSES A LANGUAGE, SO ONE SIDE MUST NOT CALL IT OPTIONAL.
+ *
+ * `kg_io.py kapae` refuses without `--ended` and says why: `valid_to` reads BITEMPORAL and
+ * worldline-critical, so it must never fall back to a host clock — an unreliable-witness date would
+ * silently corrupt the bitemporal stream (no-global-now). It raises `SystemExit` rather than guessing.
+ *
+ * The TypeScript side typed `ended?: string` and forwarded the flag only when truthy. Every production
+ * caller supplies it, so the mismatch never fired — but the TYPE promised a call the other side refuses,
+ * and `kapaeThenFork` inherits it: an omitted `ended` there throws a raw SystemExit-derived error that its
+ * own catch-and-continue re-raises, breaking the best-effort contract its doc-comment states.
+ *
+ * The guard fires BEFORE the spawn, carrying the python's own reason, so a JS caller reaching past the
+ * type meets the law rather than a stack trace from another language.
+ */
+describe("the bitemporal close-mark", () => {
+  let spawned = 0;
+  const base = () => ({
+    python: "python3", script: resolveKgIo(), palacePath: "/tmp/palaceClose",
+    exec: (..._a: unknown[]) => { spawned++; return JSON.stringify({ closed: 0, ended: "2026-06-29T05:00:00Z" }); },
+  });
+
+  test("★ kapaeTurn REFUSES an absent `ended` before it spawns python ★", () => {
+    spawned = 0;
+    expect(() => kapaeTurn("t1", base() as unknown as Parameters<typeof kapaeTurn>[1])).toThrow(/ended/i);
+    expect(spawned, "the refusal reached python instead of standing at the boundary").toBe(0);
+  });
+
+  test("CONTROL — a supplied `ended` still runs through, so the guard refuses absence alone", () => {
+    spawned = 0;
+    const res = kapaeTurn("t1", { ...base(), ended: "2026-06-29T05:00:00Z" });
+    expect(spawned, "the control never reached the spawn").toBe(1);
+    expect(res.ended).toMatch(/2026-06-29/);
   });
 });

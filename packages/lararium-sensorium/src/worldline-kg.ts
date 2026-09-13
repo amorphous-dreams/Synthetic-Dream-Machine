@@ -154,10 +154,19 @@ export function closeWorldlineEdges(closes: readonly WorldlineEdgeClose[], opts:
  * (`structurepalace_io.kapae`) sets aside the AST tally (Legs 2+3 via the daemon). The REWIND-THEN-FORK
  * composition rides {@link kapaeThenFork} — kapae's valid-close → re-project → the new sibling.
  */
-export function kapaeTurn(turnKey: string, opts: WorldlineKgOptions & { ended?: string } = {}): { closed: number; ended: string } {
+export function kapaeTurn(turnKey: string, opts: WorldlineKgOptions & { ended: string }): { closed: number; ended: string } {
   if (!turnKey) throw new Error("kapaeTurn: turnKey required");
+  // THE CLOSE-MARK CROSSES A LANGUAGE, AND THE FAR SIDE REFUSES WITHOUT IT. `kg_io.py kapae` raises
+  // rather than guessing, because `valid_to` reads BITEMPORAL and worldline-critical: a host-clock
+  // fallback would write an unreliable-witness date into the stream (no-global-now). The type says
+  // required now, and this guard carries the same law to a caller reaching past the type — a refusal at
+  // the boundary beats a SystemExit surfacing from another language, and `kapaeThenFork`'s best-effort
+  // catch would otherwise re-raise that as though the leg had merely failed.
+  if (!opts?.ended) {
+    throw new Error("kapaeTurn: `ended` required — valid_to reads bitemporal and MUST NOT fall back to a host clock (no-global-now). Supply the turn's close frontier.");
+  }
   const r = resolve(opts);
-  const args = ["--palace", r.palace, "kapae", "--turn-key", turnKey, ...(opts.ended ? ["--ended", isoWholeSeconds(opts.ended)] : [])];
+  const args = ["--palace", r.palace, "kapae", "--turn-key", turnKey, "--ended", isoWholeSeconds(opts.ended)];
   const out = r.exec(r.py, [r.script, ...args]);
   let res: { closed?: number; ended?: string } = {};
   try { res = JSON.parse(out.trim()) as typeof res; } catch { /* fall through */ }
@@ -188,7 +197,12 @@ export function kapaeThenFork(
   closes: readonly WorldlineEdgeClose[],
   rewoundTurnKeys: readonly string[],
   fork: { readonly parent: string; readonly child: string },
-  opts: WorldlineKgOptions & { ended?: string } = {},
+  // THE CLOSE-MARK RIDES THROUGH. This composes `kapaeTurn`, whose far side refuses without a logical
+  // frontier, so the requirement travels rather than getting swallowed: an omitted `ended` here would
+  // surface as another language's SystemExit inside the best-effort catch below, which re-raises anything
+  // that is not a KgUnavailable — a caller would read "the KG leg failed" where the truth reads "this
+  // call could never have been valid".
+  opts: WorldlineKgOptions & { ended: string },
 ): KapaeThenForkResult {
   let closed = 0;
   for (const turnKey of rewoundTurnKeys) {
