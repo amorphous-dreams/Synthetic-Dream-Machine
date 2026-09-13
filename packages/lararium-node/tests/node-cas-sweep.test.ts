@@ -16,8 +16,9 @@ import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync, writeFileSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { casReferences, sha256HexBytesSync, utf8Bytes, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh";
+import { casReferences, sha256HexBytesSync, utf8Bytes, GENESIS_CAS_MANIFEST_FORMAT, type CasReferenceEntry, type GenesisCasManifest } from "@lararium/mesh";
 import { casSweep, listCasBlobs, writeCasEntriesFs } from "../src/node-cas.js";
+import { genesisProtectSet } from "../src/genesis-artifact.js";
 
 let casDir = "";
 beforeEach(() => { casDir = mkdtempSync(join(tmpdir(), "lr-cas-sweep-")); });
@@ -297,4 +298,48 @@ test("the pace cell reads 0 before any reading, then the last pace, and ignores 
   expect(cell.read()).toBe(7);
   cell.note(null);
   expect(cell.read()).toBe(7);
+});
+
+/**
+ * A TORN MANIFEST MUST NOT READ AS AN ABSENT ONE — the protect set is a DELETION guard.
+ *
+ * `readGenesisManifest` answers null for both "no manifest here" and "a manifest here that reads torn",
+ * and the sweep's caller folded that null to an empty protect set (`?.blobs ?? []`). An empty protect set
+ * does not mean "protect nothing pending" — it means "confirmed: nothing needs protecting", and the sweep
+ * acts on it by deleting. So a manifest that will not parse silently strips the engine and plugin blobs of
+ * the one guard that keeps them, and the vessel eats its own genesis once they age past the grace.
+ *
+ * The ABSENT case keeps its empty set: a vessel carrying no manifest protects nothing because it holds no
+ * genesis blobs, and refusing there would break a legitimate shape.
+ */
+describe("the genesis protect set, when the manifest will not read", () => {
+  let genesisDir = "";
+  beforeEach(() => { genesisDir = mkdtempSync(join(tmpdir(), "lares-genesisdir-")); });
+  afterEach(() => { rmSync(genesisDir, { recursive: true, force: true }); });
+
+  test("★ a manifest that STANDS and reads torn answers `unreadable` — never an empty protect set ★", () => {
+    writeFileSync(join(genesisDir, "island.manifest.json"), "{ not json at all", "utf8");
+    expect(genesisProtectSet(genesisDir)).toBe("unreadable");
+  });
+
+  test("★ a manifest carrying the WRONG format reads unreadable too — a shape guard, not a parse guard ★", () => {
+    writeFileSync(join(genesisDir, "island.manifest.json"), JSON.stringify({ format: "something-else", blobs: [] }), "utf8");
+    expect(genesisProtectSet(genesisDir)).toBe("unreadable");
+  });
+
+  test("CONTROL — an ABSENT manifest still answers an empty set: that vessel holds no genesis blobs", () => {
+    const set = genesisProtectSet(genesisDir);
+    expect(set).not.toBe("unreadable");
+    expect([...(set as ReadonlySet<string>)]).toEqual([]);
+  });
+
+  test("CONTROL — a WELL-FORMED manifest answers its blob cids, so the guard still guards", () => {
+    // The FORMAT rides the constant, never a hand-typed twin — a literal here drifts the day the format moves.
+    const manifest = { format: GENESIS_CAS_MANIFEST_FORMAT, engineCid: "e", grammarCid: "g", pluginsCid: "p",
+      blobs: [{ cid: "aa", id: "x", mimeType: "application/json", version: "1" }] };
+    writeFileSync(join(genesisDir, "island.manifest.json"), JSON.stringify(manifest), "utf8");
+    const set = genesisProtectSet(genesisDir);
+    expect(set).not.toBe("unreadable");
+    expect([...(set as ReadonlySet<string>)]).toEqual(["aa"]);
+  });
 });

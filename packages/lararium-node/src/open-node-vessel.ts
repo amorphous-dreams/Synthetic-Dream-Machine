@@ -68,7 +68,7 @@ import type {
 import {
   loadOrMaterializeOracle,
   reconcileWellKnownTiddlers, mintLaresIfAbsent, mintLarariumIfAbsent,
-  readGenesisManifest, genesisCasDir,
+  readGenesisManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { repoRoot }                       from "@lararium/mesh/node";
 import { daemonGenesisDir }               from "./lares-config.js";
@@ -1784,7 +1784,17 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
 
     // cas-sweep + the sweep TICK — the ONE production caller of `casSweep` (node-cas): the reference count derives
     // off this composite, the cadence off the realm's OWN pace (the mesh-cabal feed on the daemon board), never a calendar.
-    installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: new Set((readGenesisManifest(genesisDir)?.blobs ?? []).map((b) => b.cid)), pins: () => readCasPins(cidDir), realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+    // THE PROTECT SET GOVERNS A DELETION, so a torn manifest must not read as an absent one. An empty set
+    // says "nothing here needs protecting" and the sweep acts on it — folding an unreadable manifest into
+    // one would strip the engine and plugin blobs of their only guard and let the vessel eat its own
+    // genesis. A manifest that stands and will not read withholds the sweep entirely; an ABSENT manifest
+    // keeps its empty set, because a vessel holding no manifest holds no genesis blobs to lose.
+    const genesisProtect = genesisProtectSet(genesisDir);
+    if (genesisProtect === "unreadable") {
+      console.warn("[cas-sweep] the genesis manifest stands but will not read — withholding the sweep. Nothing sweeps until it reads, so no genesis blob can age out unprotected. Repair or remove genesis/island.manifest.json.");
+    } else {
+      installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
+    }
 
     // cas-fetch — the fetch door's explicit READ: resolve a cid through the vessel's door (local `cid/` first,
     // then the fleet holders over Socket B, verified, write-through). The verb IS a read, so fetch-on-read holds

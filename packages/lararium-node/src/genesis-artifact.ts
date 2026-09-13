@@ -11,7 +11,7 @@
  */
 
 import { daemonGenesisDir } from "./lares-config.js";
-import { readFileSync }              from "fs";
+import { readFileSync, existsSync }  from "fs";
 import { join }                      from "path";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
 import type { LarDoc }               from "@lararium/mesh";
@@ -97,6 +97,27 @@ export function readGenesisManifest(genesisDir?: string): GenesisCasManifest | n
   } catch {
     return null;
   }
+}
+
+/**
+ * The genesis blobs the CAS sweep must NEVER delete — or `"unreadable"` when a manifest STANDS at this
+ * home and will not read.
+ *
+ * THE PROTECT SET GOVERNS A DELETION, so its empty value carries weight. An empty set does not say
+ * "protection pending"; it says "nothing here needs protecting", and the sweep acts on that by deleting.
+ * Folding a torn manifest into an empty set therefore strips the engine and plugin blobs of the one guard
+ * that keeps them, and the vessel eats its own genesis once they age past the grace.
+ *
+ * The ABSENT case keeps its empty set on purpose: a vessel carrying no manifest holds no genesis blobs, so
+ * protecting nothing states a fact rather than losing one. Only a manifest that stands and refuses to read
+ * answers `"unreadable"`, and a caller holding that answer must not sweep at all.
+ */
+export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "unreadable" {
+  const { manifest } = genesisArtifactPaths(genesisDir);
+  if (!existsSync(manifest)) return new Set<string>();
+  const read = readGenesisManifest(genesisDir);
+  if (read === null) return "unreadable";
+  return new Set(read.blobs.map((b) => b.cid));
 }
 
 export function readGenesisSha256(genesisDir?: string): string | undefined {
