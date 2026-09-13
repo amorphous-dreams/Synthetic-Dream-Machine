@@ -70,6 +70,7 @@ import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { readVerbOutcome } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
@@ -98,40 +99,7 @@ export interface ProjectPlan {
 const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project"] as const;
 type Sub = typeof SUBS[number];
 
-const USAGE = [
-  "usage: lares meme put <uri> [--recipe <slug> | --bag <slug>] [--base <hash>] [--file <path>]",
-  "       lares meme get <uri> [--recipe <slug> | --bag <slug>]",
-  "       lares meme list [--recipe <slug> | --bag <slug>] [--tree]",
-  "       lares meme delete <uri> [--recipe <slug> | --bag <slug>] [--if-match <hash>]",
-  "       lares meme normalize <file.mem ...>",
-  "       lares meme check <file.mem ...> [--gradient | --edges | --sitting]",
-  "       lares meme sitting <file.mem ...>",
-  "       lares meme project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]",
-  "",
-  "  a verb declares its seat: normalize · check · project --to md (over a file) run LOCAL, no daemon;",
-  "  put · get · list · delete · project to any other target, or from a lar: uri, ride the daemon verb.",
-  "",
-  "  no target       the anchor — the daemon's own wiki (recipes/default)",
-  "  --recipe <slug> an edit AS that wiki: its designated writable bag, write-then-sync",
-  "  --bag <slug>    a residency placement into that bag (refuses when this island cannot write it)",
-  "  --base <hash>   the canonical hash last read; stale → conflict, nothing lands",
-  "  --file <path>   the meme text for put (stdin when absent)",
-  "  --if-match <hash> (delete) the canonical hash last read; stale → conflict, nothing moves",
-  "  --tree          (list) nest each root's slot tree; roots + canonical hash alone otherwise",
-  "",
-  "  normalize       canonicalize a carrier's framing and re-stamp its block check over the body it follows",
-  "  check           report carriers that would change; write nothing (exit 1 if any) — for CI / pre-commit",
-  "  --gradient      name each file's kind and the marks that kind requires and lacks; write nothing",
-  "  --edges         name the addresses these carriers point at, and which of them answer",
-  "  sitting         name every carrier the fire could take — folded or retiring with nothing naming it,",
-  "                  and every carrier still standing in a harvest room. It BURNS NOTHING: the operator calls",
-  "                  the fire, and an empty harvest room is the witness that the rite completed",
-  "  project         render a meme: --to md over a file writes <name>.md + <name>.md.meta beside it",
-  "                  (or under --out <dir>; --title-base <lar-uri> mounts the pair under a shelf address);",
-  "                  every other target writes the rendered text to --out <path>, else stdout",
-].join("\n");
-
-function usage(): void { console.error(USAGE); }
+function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
 /** The container args — at most one of `--recipe` / `--bag`; neither names the anchor. */
 function container(args: ParsedArgs): Record<string, string> {

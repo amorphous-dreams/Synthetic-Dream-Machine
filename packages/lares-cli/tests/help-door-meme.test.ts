@@ -100,31 +100,14 @@ describe("★ ONE HOME for a verb door's words ★", () => {
     return out;
   }
 
-  /**
-   * ONE HANDBACK STANDS. `commands/meme.ts` sits on another hearth's ground (the hearths-gate refuses a
-   * cross-hearth commit), so its migration waits on that hearth's hand. The registry ALREADY holds the
-   * `meme` door's words; only the module's own copy remains. This exception SELF-CLEARS: the assertion
-   * below fails the moment the split closes, telling whoever closes it to delete this list.
-   */
-  const HANDED_BACK: readonly string[] = ["meme put"];
-
-  test("★ no module hand-rolls help text the registry does not hold ★", () => {
+    test("★ no module hand-rolls help text the registry does not hold ★", () => {
     const split = [...handRolled()]
-      .filter(([door]) => !(door in COMMAND_HELP))
-      .filter(([door]) => !HANDED_BACK.includes(door));
+      .filter(([door]) => !(door in COMMAND_HELP));
+
     expect(
       split.map(([d, f]) => `${d} (${f})`),
       "these doors keep a SECOND home for their words — migrate the text into COMMAND_HELP",
     ).toEqual([]);
-  });
-
-  test("the handback list SELF-CLEARS — every door on it still holds a second home", () => {
-    // An exception nobody retires is a hole. When the meme hearth lands the migration this goes red,
-    // and the cure is to delete the entry, not to widen the list.
-    const stillSplit = new Set([...handRolled()].map(([d]) => d));
-    const stale = HANDED_BACK.filter((d) => !stillSplit.has(d));
-    expect(stale, "these handbacks landed — delete them from HANDED_BACK").toEqual([]);
-    expect(COMMAND_HELP["meme"], "the registry already carries the meme door's words").toBeDefined();
   });
 
   test("CONTROL — the scanner CATCHES a re-split, and ignores a registry-fed usage sink", () => {
