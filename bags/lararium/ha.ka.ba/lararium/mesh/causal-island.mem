@@ -9,8 +9,8 @@ l-space     = "lararium"
 mana        = 18
 manao       = 17
 manaoio     = 16
-role        = "Causal-island ontological law: the four-tier boundary model, the ACCESS axis, and the share-substrate-not-sovereignty law that governs co-located vessels"
-source-file = "packages/lararium-mesh/src/causal-island.ts"
+role        = "Causal-island ontological law: the four-tier boundary model, the ACCESS axis (a MODEL, never a checked tier — the live gate is binary), and the share-substrate-not-sovereignty law that governs co-located vessels"
+source-file = "packages/lararium-mesh/src/island-protocol.ts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/causal-island"
 ```
@@ -21,8 +21,8 @@ uri-path    = "ha.ka.ba/lararium/mesh/causal-island"
 
 <<~ ahu #/contract>>
 
-`causal-island.ts` owns the ontological law that names where one island ends and
-another begins, the per-bag ''ACCESS'' axis (a 1:1 mirror of Keyhive's native
+`island-protocol.ts` owns the ontological law that names where one island ends and
+another begins, the per-bag ''ACCESS'' axis (a MODEL mirroring Keyhive's native
 Access enum), and the edge-island federation scaffolding. The boundary law sits
 above any vessel implementation; every vessel honors it.
 
@@ -106,11 +106,16 @@ islands.
 
 !! ACCESS Axis (Axis 1 of the authority model)
 
-The `ABILITY_LADDER` mirrors Keyhive's native Access enum (Pull, Read, Edit, Admin)
-1:1 — lexical, not just structural. The live gate runs
-`CapabilityVerifier.verify({ access: "read" | "admin" })` (capability.ts); the
-ordered tuple gives the edge-island scaffolding a typed vocabulary for the same four
-levels.
+''THE AXIS IS A MODEL; THE GATE IS BINARY.'' `pull · read · edit · admin` mirrors Keyhive's own verbs
+one-for-one and names how authority is TALKED ABOUT. Nothing checks it: `CapabilityAccess` is
+`"read" | "admin"` (capability.ts), the live gate runs `CapabilityVerifier.verify({ access })` over
+those two, and no call site in this tree narrows an action by verb.
+
+''Naming the ladder here as a checked tier would promise a reader a gate they could then fail to find''
+— and this room did exactly that, describing a typed four-level constant that exists in no source file.
+A reader who trusted it would design against a gradation the substrate has never enforced. The sibling
+law at <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">> states the same limit from
+the provider's side.
 
 ''Relay-law exception:'' `pull` does NOT imply `read`. A relay holds pull and
 forwards ENCRYPTED bytes it cannot decrypt or render. Every other level implies all
@@ -134,6 +139,6 @@ Related (project tiddlers): [[project_no_vm_on_main_thread]], [[feedback_isomorp
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sc0nQY--rBd9bSatdEMc_22pHGxsPTi2tPO8ZbJk7ok
+<<^ code="&#x0003;">>ni:///sha-256;6-kvg-fWAU-Iery7CE2J1SslNObuluiU5qJTcE58Ozg
 
 <<^ code="&#x0004;" -> to="?">>
