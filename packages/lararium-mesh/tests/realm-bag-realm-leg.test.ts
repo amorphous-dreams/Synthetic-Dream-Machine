@@ -15,6 +15,7 @@
  *     and CONTROL: a registration with no expiry stands at every pace.
  */
 import { describe, test, expect } from "vitest";
+import { REALM_BAG_DOMAIN, REALM_BAG_ANNOUNCE_DOMAIN } from "../src/domains.js";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { hex } from "../src/crypto.js";
@@ -147,7 +148,7 @@ describe("realm-bag — `keptBy` names the CHARTER each hand holds", () => {
 
   test("CONTROL: a single-charter record signs the bytes it signed before the field existed", async () => {
     const sa = await stewardA();
-    const parts = { kind: "lar-realm-bag/v1", realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "contract" as const, keptBy: [sa.signer] };
+    const parts = { kind: REALM_BAG_DOMAIN, realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "contract" as const, keptBy: [sa.signer] };
     // The field absent, and the field naming exactly THIS realm's charter for every hand: one byte-image.
     expect(hex(realmBagBytes({ ...parts } as never)))
       .toBe(hex(realmBagBytes({ ...parts, charters: { [sa.signer]: REALM } } as never)));

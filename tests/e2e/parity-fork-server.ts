@@ -93,7 +93,7 @@ export async function bootForkServer(root: string, wiki: string): Promise<ForkSe
   const http = async (method: string, p: string, init: { body?: string; headers?: Record<string, string> } = {}): Promise<Reply> => {
     const headers: Record<string, string> = { ...init.headers };
     if (method !== "GET") headers["x-requested-with"] = "TiddlyWiki";
-    const r = await fetch(base + p, { method, headers, body: init.body });
+    const r = await fetch(base + p, { method, headers, ...(init.body !== undefined ? { body: init.body } : {}) });
     return { status: r.status, headers: r.headers, body: await r.text() };
   };
   return {

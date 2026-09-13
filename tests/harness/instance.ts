@@ -20,7 +20,7 @@
 
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
-import { rendezvousPath } from "../packages/lararium-mesh/src/rendezvous-path.js";
+import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

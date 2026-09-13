@@ -66,13 +66,16 @@ function usage(args: ParsedArgs, typed?: string): number {
 }
 
 /**
- * This vessel's persona-slot ceiling. A hearth or leaf carries an operator dial; a Herm carries none and
- * never reaches here, because a faceless vessel stands CONTRACTED and mints no root through this verb at all.
- * `LAR_PERSONA_SLOTS` is that dial — a human holds a multitude, and the code decides no part of how large.
+ * This vessel's persona-slot ceiling. A hearth or leaf carries an operator dial; a Herm carries none — a
+ * faceless vessel stands CONTRACTED and mints no root through this verb. The class reads off the same dial
+ * the daemon boots by (`LAR_RECIPE`, `main.ts`): measured 2026-09-12, a hard-coded `"hearth"` here let the
+ * refusal `personaSlotCeiling("herm") === 0` exist in mesh and never fire at the one door that mints a root.
+ * `LAR_PERSONA_SLOTS` is the dial — a human holds a multitude, and the code decides no part of how large.
  */
-function vesselCeiling(): { cls: VesselClass; declared: number | undefined } {
-  const raw = process.env["LAR_PERSONA_SLOTS"];
-  return { cls: "hearth", declared: raw === undefined ? undefined : Number(raw) };
+export function vesselCeiling(env: NodeJS.ProcessEnv = process.env): { cls: VesselClass; declared: number | undefined } {
+  const raw = env["LAR_PERSONA_SLOTS"];
+  const cls: VesselClass = env["LAR_RECIPE"] === "herm" ? "herm" : "hearth";
+  return { cls, declared: raw === undefined ? undefined : Number(raw) };
 }
 
 /**
@@ -80,13 +83,13 @@ function vesselCeiling(): { cls: VesselClass; declared: number | undefined } {
  * different things: the derivation's own range (structural — no dial reaches past SLIP-0010's hardened
  * ceiling) and THIS VESSEL's slot ceiling (an operator turn, raisable, and the refusal says so).
  */
-function parseIndex(raw: string | undefined): number {
+export function parseIndex(raw: string | undefined, env: NodeJS.ProcessEnv = process.env): number {
   if (raw === undefined) throw new UsageError("a handle-index is required (e.g. `lares persona new 1 --name '…'`)");
   const n = Number(raw);
   if (!Number.isSafeInteger(n) || n < 0 || n >= HANDLE_INDEX_CEILING) {
     throw new UsageError(`handle-index out of range: "${raw}" (expected 0 ≤ n < 0x80000000)`);
   }
-  const { cls, declared } = vesselCeiling();
+  const { cls, declared } = vesselCeiling(env);
   const refusal = refuseSlot(cls, n, declared);
   if (refusal === "faceless-by-class") {
     throw new UsageError("this vessel holds no human face by class — a crossroads stands contracted, never self-stood.");

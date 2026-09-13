@@ -143,7 +143,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       const accept = await B.cli(["nexus", "accept-carriage", "--json"]);
       lines.push(`B nexus accept-carriage → ${accept.code}: ${said(accept).trim().slice(0, 240)}`);
       const data = (accept.json?.["data"] ?? accept.json ?? {}) as Record<string, unknown>;
-      acc = { nym: typeof data["nym"] === "string" ? data["nym"] : undefined, contractSig: typeof data["contractSig"] === "string" ? data["contractSig"] : undefined };
+      acc = { ...(typeof data["nym"] === "string" ? { nym: data["nym"] } : {}), ...(typeof data["contractSig"] === "string" ? { contractSig: data["contractSig"] } : {}) };
       if (acc.nym && acc.contractSig) {
         contractNym = acc.nym;
         const contract = await A.cli(["nexus", "contract", acc.nym, "--sig", acc.contractSig, "--json"]);

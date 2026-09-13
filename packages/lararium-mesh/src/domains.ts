@@ -42,7 +42,8 @@
  */
 
 /** The one path every domain rides. A change here re-keys every signature in the house. */
-const DOMAIN_ROOT = "lar:///ha.ka.ba/lares/domain";
+/** The one root every separation mints under; exported so a witness reads it instead of re-spelling it. */
+export const DOMAIN_ROOT = "lar:///ha.ka.ba/lares/domain";
 
 /** Mint a domain address. Kept private: a domain must be DECLARED below, never built at a call site. */
 const d = (name: string): string => `${DOMAIN_ROOT}/${name}/v1`;
@@ -114,6 +115,12 @@ export const KEYRING_ENVELOPE_SEAL_INFO = d("keyring-envelope-seal");
 export const CAD_KEYSTREAM_INFO = d("cad-keystream");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = d("relay-gate");
+/** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
+ *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
+export const REALM_BAG_DOMAIN = d("realm-bag");
+/** The @crossroads ANNOUNCE of a realm bag — that it exists and who keeps it, NEVER the doc. A different
+ *  domain from the registration: a public announce must never stand in for a steward's signature. */
+export const REALM_BAG_ANNOUNCE_DOMAIN = d("realm-bag-announce");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
  *  derive into an admit seal or a keyring envelope. */

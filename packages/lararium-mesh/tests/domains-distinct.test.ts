@@ -9,11 +9,12 @@
  */
 import { describe, expect, test } from "vitest";
 import * as domains from "../src/domains.js";
+import { DOMAIN_ROOT } from "../src/domains.js";
 
-const ROOT = "lar:///ha.ka.ba/lares/domain/";
+const ROOT = `${DOMAIN_ROOT}/`;
 
 describe("the domain registry", () => {
-  const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k)) as [string, string][];
+  const named = Object.entries(domains).filter(([k, v]) => typeof v === "string" && /_(INFO|DOMAIN)$/.test(k) && k !== "DOMAIN_ROOT") as [string, string][];
 
   test("carries more than a handful of separations", () => {
     expect(named.length).toBeGreaterThan(10);

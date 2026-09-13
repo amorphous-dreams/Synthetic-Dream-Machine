@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    // The e2e harness runs ON node and declares that surface, as the vessel lane does. Measured
+    // 2026-09-12: no tsconfig stood here, so the suites were typechecked by nothing — a witness
+    // that walks packages/* alone never asked.
+    "types": ["node"],
+    "rootDir": "..",
+    "noEmit": true
+  },
+  "include": ["e2e/**/*.ts", "harness/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules"]
+}

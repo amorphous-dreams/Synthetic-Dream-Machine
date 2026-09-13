@@ -12,7 +12,7 @@
  * in the charter materializes it at boot and on `nexus refresh`; a vessel that never held the charter never
  * names it.
  *
- * THE REGISTRATION RECORD (`lar-realm-bag/v1`): `{ realmId, bagUri, docUrl, keptBy, readTier }`, signed by
+ * THE REGISTRATION RECORD (`REALM_BAG_DOMAIN`, minted in the registry): `{ realmId, bagUri, docUrl, keptBy, readTier }`, signed by
  * EVERY steward it names (n-of-n — a steward is named only by her own hand; a record that names a steward who
  * never signed is CONSCRIPTION and never counts). Records ACCRETE under distinct keys (one per signing steward),
  * so a hostile member overwrites nothing; the FOLD adjudicates — exactly one counted registration per bag
@@ -35,6 +35,7 @@
  */
 
 import type { DocumentId, PeerId, AutomergeUrl } from "@automerge/automerge-repo";
+import { REALM_BAG_DOMAIN, REALM_BAG_ANNOUNCE_DOMAIN } from "./domains.js";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
@@ -58,8 +59,8 @@ export const REALM_ID_TIDDLER = `${REALM_DOC_URI}/realm-id`;
  *  the realm doc's `keptBy` alone: a member who could rewrite a nym there could route a foreign put. */
 export const REALM_STEWARD_TIDDLER = `${REALM_DOC_URI}/steward-nym`;
 
-/** The signing / content domain of a realm-bag registration. */
-export const REALM_BAG_DOMAIN = "lar-realm-bag/v1" as const;
+/** The signing / content domain of a realm-bag registration — minted in the registry (`domains.ts`). */
+export { REALM_BAG_DOMAIN };
 
 /** The tiddler prefix registrations accrete under on the realm doc. */
 export const REALM_BAG_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bags/" as const;
@@ -357,7 +358,7 @@ export function mayWriteRealmBag(
 
 /** What the public plane carries about a realm bag — that it exists and who keeps it. NEVER the doc. */
 export interface RealmBagAnnounce {
-  readonly kind:   "lar-realm-bag-announce/v1";
+  readonly kind:   typeof REALM_BAG_ANNOUNCE_DOMAIN;
   readonly bagUri: string;
   readonly keptBy: readonly string[];
 }
@@ -368,7 +369,7 @@ export function realmBagAnnounceKey(bagUri: string): string {
 
 /** The announce a registration projects onto @crossroads — the exists · kept-by pair, the doc withheld. */
 export function crossroadsAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
-  return { kind: "lar-realm-bag-announce/v1", bagUri: rec.bagUri, keptBy: [...rec.keptBy] };
+  return { kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: rec.bagUri, keptBy: [...rec.keptBy] };
 }
 
 /** Land the announce on the crossroads draft. Call INSIDE a `handle.change()` callback. */

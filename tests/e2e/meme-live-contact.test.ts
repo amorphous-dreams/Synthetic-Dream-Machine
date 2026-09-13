@@ -212,7 +212,8 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
     const r = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
     expect(r.code, said(r)).toBe(0);
     const got = await lar.cli(["meme", "get", URI, ...WIKI, "--json"]);
-    expect(got.json?.["error"]?.["code"] ?? got.json?.["code"], said(got)).toBe("not-found");
+    const err = got.json?.["error"] as Record<string, unknown> | undefined;
+    expect(err?.["code"] ?? got.json?.["code"], said(got)).toBe("not-found");
     // CONTROL: a delete of what no longer stands answers not-found, never a second removal.
     const again = await lar.cli(["meme", "delete", URI, ...WIKI, "--json"]);
     expect(again.code, said(again)).not.toBe(0);

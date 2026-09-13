@@ -12,6 +12,7 @@
  *     never widens the base, and a registration that fails to count opens no doc.
  */
 import { describe, test, expect } from "vitest";
+import { REALM_BAG_DOMAIN, REALM_BAG_ANNOUNCE_DOMAIN } from "../src/domains.js";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import { hex } from "../src/crypto.js";
@@ -123,7 +124,7 @@ describe("realm-bag — what @crossroads carries", () => {
   test("the announce names the bag and its keepers, never the doc", async () => {
     const rec = await registrationByA();
     const ann = crossroadsAnnounceOf(rec);
-    expect(ann).toEqual({ kind: "lar-realm-bag-announce/v1", bagUri: BAG, keptBy: [await pubOf(A)] });
+    expect(ann).toEqual({ kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)] });
     const cross = emptyDoc();
     writeRealmBagAnnounce(cross, rec);
     const text = (cross.tiddlers[realmBagAnnounceKey(BAG)]!.tiddler as { text: string }).text;
