@@ -72,6 +72,51 @@ Real cabals with real stakes do not exist yet, so abstract unit tests cannot fee
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZFshXWvkTsq6M27eLXMXWHp7cLaQp9XG-RVj8aGNh70
+<<~ ahu #/what-decides-it>>
+
+!! What this path needs before anyone can rule it (operator, 2026-09-13)
+
+''The PULL-FORWARD lean stands SET ASIDE — not the plan.'' Sequencing recovery-quorum construction beside
+the sensorium reads reasonable and rests on nothing measured. The path DEFERS until the infrastructure
+stands to test it, and defers cleanly: nothing downstream waits on it, and the residual it addresses
+(§#/owed) reads as ''inherent'' rather than as a shortfall anyone is failing to engineer away.
+
+!!! The one number that decides the shape
+
+''A time-lock + veto window is the only lever that touches a genuinely live key'' (§#/owed, answered at
+primary source). Every deployed system picks a duration — did:plc 72 hours, Nostr NIP-41 30 days, Argent
+36 hours, Safe 28 days — and ''a window shorter than the time a watcher takes to NOTICE is theatre'': the
+thief acts, nobody contests in time, and the ceremony ratifies the capture while looking rigorous.
+
+So the ruling waits on ''measured detection latency'': how long, in practice, between a duplicity landing
+on a board and a watcher folding it into a contest. Nobody has measured it, because the organ that would
+measure it does not stand.
+
+!!! What must stand first, and what each one buys
+
+# ''A fully running sensorium stack.'' The detection half. `detectDuplicity` folds a proof today, but no
+live plane WATCHES for one across real traffic — detection latency has no observer, so its distribution
+has never been sampled. With the stack up, the number becomes an experiment rather than an estimate.
+# ''A fully set-up meshpalace.'' The memory half. A latency distribution wants HISTORY, not one reading:
+the window must clear the tail, never the median, and only a durable telemetry plane holds enough
+observations to see a tail at all.
+
+''Both, together, answer one question'': what window clears the observed detection tail with margin? That
+number picks the mechanism — a short window suits an automatic priority-key clobber (did:plc's shape), a
+long one suits a public contest (NIP-41's shape), and the two want different code.
+
+!!! What a later pass should NOT re-derive
+
+''The residual stays inherent.'' An adversary holding current+next, or a full threshold inside one epoch,
+acting within the window, defeats every deployed scheme — KERI states it outright. A pass that arrives
+hoping to close that hole will spend itself; the work is BOUNDING the window, never closing it.
+
+''CHURP bounds the FROST branch and only that branch'' (§#/owed): it earns its keep where a private Circle
+signs as one invisible key, and buys nothing against today's multisig graft, which holds no shared secret
+to refresh.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;IJWE1SiUcFFtZHj3eKZ1HW1at8L-bBk32_lkLHQZGpE
 
 <<^ code="&#x0004;" -> to="?">>

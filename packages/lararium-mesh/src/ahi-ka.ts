@@ -45,8 +45,11 @@ export interface AhiKaParams {
  *     centuries-old realm goes cold by true abandonment, never by a quiet generation;
  *   · ambientFloor 8 — the reader needs a meaningful stretch of INDEPENDENT motion before it dares a verdict,
  *     so a freshly-synced or thinly-connected observer abstains rather than mis-cold a realm it barely saw.
- * These are a STARTING POINT for fiction-QA, not a proven law — run Elyncia's 500-year events through the
- * estimator and tune. The hysteresis gap (revival cost scaling with cold-depth) and the commons-vs-hearth
+ * RATIFIED AS FICTION-QA DEFAULTS (operator, 2026-09-13). These three serve until the infrastructure
+ * stands to iterate around them; tuning DEFERS rather than waits, so nothing downstream holds for a
+ * calibration pass. What a later pass would need, when it comes: an estimator over Elyncia's 500-year
+ * events, run against real event spacing rather than the synthetic numbers the tests exercise. Until then
+ * a verdict off these values reads as fiction-QA — good enough to act on, never a measurement. The hysteresis gap (revival cost scaling with cold-depth) and the commons-vs-hearth
  * exemption (a private single-steward hearth never colds) join these when the full estimator lands; recorded
  * for that pass in `[[field-collision]]` #the-mesh-field.
  */
