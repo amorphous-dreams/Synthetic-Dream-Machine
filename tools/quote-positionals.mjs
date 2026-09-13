@@ -29,10 +29,9 @@
  * A QUOTATION, hands its positional back. An example only earns the change if the form it now shows
  * would work.
  *
- * ── AND A RECORD IS NOT A LESSON ────────────────────────────────────────────────────────────────
- * `lares-history` archives prior worldlines, and `tw5-calls-colon-caveat` DEMONSTRATES the hazard by
- * writing it out — moving either would edit the record, or delete the very thing the caveat exists to
- * show. Both stay, declared.
+ * ── A LESSON IS NOT A DRIFT ─────────────────────────────────────────────────────────────────────
+ * `tw5-calls-colon-caveat` DEMONSTRATES the hazard by writing it out — moving it would delete the very
+ * thing the caveat exists to show. It stays, declared.
  *
  * Usage:  node tools/quote-positionals.mjs [--write] [--teaching] [<path.mem> | <dir>] …
  */
@@ -56,9 +55,8 @@ const { carrierFiles } = await import(DIST_CARRIERS);
 const argv = process.argv.slice(2);
 const write = argv.includes("--write");
 const teaching = argv.includes("--teaching");
-/** DECLARED EXEMPTIONS — a record, and a carrier whose lesson IS the broken form. */
+/** DECLARED EXEMPTION — the carrier whose lesson IS the broken form. */
 const EXEMPT = [
-  "bags/lares-history/",
   "bags/lares/ha.ka.ba/lares/docs/tw5-calls-colon-caveat.mem",
 ];
 const given = argv.filter((a) => !a.startsWith("--"));

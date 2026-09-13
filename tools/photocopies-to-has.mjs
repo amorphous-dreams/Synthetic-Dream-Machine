@@ -35,7 +35,7 @@ const { positionalsOf } = await import(join(DIST, "sigil-attrs.js"));
 const FENCED = /\n```\n\\procedure ~([A-Za-z][\w-]*)\((?:Type|Name):""\s+Params:""\)\s*~\1\s*<<(?:Type|Name)>>\s*holds\s*\[\{\{\{\s*\[<Params>\]\s*\}\}\}\]\n```\n/g;
 
 const files = execSync("git ls-files 'bags/**/*.mem' 'bags/**/*.md' 'packages/**/*.mem'", { cwd: REPO, encoding: "utf8" })
-  .split("\n").filter(Boolean).filter((f) => !f.includes("lares-history"));
+  .split("\n").filter(Boolean);
 
 let carriers = 0, defs = 0, calls = 0;
 const refused = [];

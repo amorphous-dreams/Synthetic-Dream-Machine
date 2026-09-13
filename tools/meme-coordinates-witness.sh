@@ -12,9 +12,6 @@
 #
 # The first pass here checked `file-path` alone, and the second coordinate was left to a reader's eye.
 #
-# `lares-history` sits exempt BY KIND: it archives prior worldlines, and its memes record the
-# coordinates they were written with. Correcting those would edit the record rather than the map.
-#
 # Exit 0 = every coordinate names its own file. Exit 1 = the drift, listed.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -34,7 +31,7 @@ def heads(paths):
     return {r["file"]: r for r in (json.loads(l) for l in out.stdout.splitlines() if l.strip())}
 
 drift = []
-_carriers = [f for f in sorted(pathlib.Path("bags").rglob("*.mem")) if f.parts[1] != "lares-history"]
+_carriers = sorted(pathlib.Path("bags").rglob("*.mem"))
 _heads = heads(_carriers)
 for f in _carriers:
     head = f.read_text(errors="replace")[:4000]

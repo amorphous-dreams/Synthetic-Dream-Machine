@@ -27,7 +27,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/stream-sensorium-ontology"
 
 A ''sensorium'' ingests a ''stream'' — any encoded flow, AI-operator chat being one special case of one special case — and seats its smallest re-storable units for content-addressed, append-only recall. This meme names those units. The naming ran through a four-domain research swarm (event-streaming · content-addressed data · discourse-linguistics · memory-arts); each layer here speaks the ''true word'' its domain already earned, so the names carry their domains' theory for free. The tension "atom vs drawer" dissolved: they never rivalled — they name //different layers//, and the layers ''stack''.
 
-Grounded by [[lar:///ha.ka.ba/lares-history/research/sensorium-pattern-integrities]].
+Grounded by [[lar:///ha.ka.ba/lares/docs/pattern-integrities]].
 
 <<~/ahu>>
 
@@ -71,6 +71,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;paf9coxTADqRBieZysGkVPatSbLbSDt7YxenBTkpDx4
+<<^ code="&#x0003;">>ni:///sha-256;QlZqGWH8M6ZONpdHKyOwLj5yLB3UtYrfV0oG9MwiZBQ
 
 <<^ code="&#x0004;" -> to="?">>

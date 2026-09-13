@@ -5,7 +5,7 @@
  * existing feed gestures, kind-routed per holding:
  *   - SYSTEM bags (lares, lararium — their docs mint at boot) → the diff-gated
  *     `ingest` gesture (disk-hash vs synced-hash vs island render-hash).
- *   - Every OTHER holding (sdm, elyncia, lares-history, …) → the `act LOAD`
+ *   - Every OTHER holding (sdm, elyncia, …) → the `act LOAD`
  *     gesture, whose island reactor mints the catalog-corpus entry on a virgin
  *     catalog (the ingest gate cannot).
  *

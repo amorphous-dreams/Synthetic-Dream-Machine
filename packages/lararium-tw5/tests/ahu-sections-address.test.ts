@@ -34,15 +34,8 @@ import { currentCarrierFiles } from "../src/carrier-files.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
-/**
- * THE LIVE CORPUS. `lares-history/` holds research logs nobody addresses — they are kept as they were
- * written, and two of them carry structures this law would rewrite rather than repair: a `#meta`
- * section opening directly under STX with a lone toml fence, read as a second meta block; and a
- * `#body-close` buried in a template whose nesting predates the law. Gating the live corpus states
- * what the house holds itself to without editing its own record.
- */
-const carriers = (): string[] =>
-  currentCarrierFiles(REPO).filter((f) => !f.startsWith("bags/lares-history/"));
+/** THE WHOLE CORPUS. Every carrier the tree declares answers this law. */
+const carriers = (): string[] => currentCarrierFiles(REPO);
 
 /** Section opens and closes, counted outside fenced blocks — a fence carries examples, never structure. */
 function frame(text: string): { opens: string[]; closes: number } {

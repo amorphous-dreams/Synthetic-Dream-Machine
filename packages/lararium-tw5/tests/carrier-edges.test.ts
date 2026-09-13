@@ -96,12 +96,18 @@ describe("carrier-edges — every address a carrier points at", () => {
     const dangling = texts.flatMap(readCarrierEdges)
       .filter((e) => e.address !== null && !held.has(e.address));
     expect(files.length).toBeGreaterThan(500);
-    // 2026-09-12: 198 -> 201, and the three named rather than counted. `live-equivocation.mem` points
-    // at `elyncia/characters/primary-characters/telarus`, `lararium/mesh/ahi-ka` and
-    // `lares/api/pono/recovery-registration` — three carriers nobody has written yet, named in a
-    // design carrier that landed after this ceiling was seated. A FORWARD REFERENCE IS INTENT
-    // RECORDED AHEAD OF ITS CARRIER, so the ceiling rises and the addresses stand written down; a
-    // ceiling raised without naming what raised it stops guarding on the next honest change.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(201);
+    // 2026-09-12: 201 -> 178. The harvest room emptied and went: `bags/lares-history` held 51 files
+    // whose own edges named addresses nothing answered, and three living carriers named into it. Each
+    // of those three welded onto the carrier that inherited the material — `docs/history/consume-archive`,
+    // `docs/pattern-integrities`, `docs/infrastructure-as-myth` — before the room burned, and the room's
+    // own 23 outbound danglers went with it. A CEILING ONLY EVER LOWERS, and it lowers by the same
+    // measurement either side of the change: `lares meme check --edges` read 198 before the rite and 175
+    // after, over the shelf; this reading adds the runtime kernel face and the fixtures the finder sees.
+    //
+    // Every remaining forward reference stands written down on purpose — `live-equivocation.mem` names
+    // `elyncia/characters/primary-characters/telarus`, `lararium/mesh/ahi-ka` and
+    // `lares/api/pono/recovery-registration`, three carriers nobody has written yet. A FORWARD REFERENCE
+    // IS INTENT RECORDED AHEAD OF ITS CARRIER.
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(178);
   });
 });
