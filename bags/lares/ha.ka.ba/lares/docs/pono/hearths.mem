@@ -113,6 +113,8 @@ globs   = [
 # ''The narrowed claim'' — stage 3 of the offering landed wholly on founding ground (`@lararium/mesh` · plugin-offering · offering-antigen), and one SENTENCE in the meme hearth's `nexus-kahuli.ts` had to move with it. That header read that an operator's own collection "moves with no ratchet act at all" — true about RATCHETS, and readable as "ungoverned by design", which a new opt-in offering-antigen would have silently contradicted. The comment now narrows itself: the claim holds about ratchets and never held about consent, the governance sits OPT-IN per Nexus, and a condemned offering still overturns nobody's grammar. Files crossed: `packages/lares-cli/src/commands/nexus-kahuli.ts` (a comment alone; no behaviour, and its own tests plus the publish weld stay green). Law: when new law narrows an old claim, the claim gets narrowed IN THE SAME COMMIT — a reader who meets the old sentence after the new law lands has been told something false by omission, and "we added a gate elsewhere" never reaches them.
 # ''The stash'' — a meme-hearth spirit (Heraldry-Hand) ran `git stash` on the shared tree mid-flight, swallowing 61 files of two other hands' work; recovered by `stash show -p` + blob restore, `stash@{0}` left standing. Law: a brief names the ROAD (a throwaway worktree · `git show HEAD:<path>`), never only the wall.
 
+# ''The blob-carriage handback'' — the founding hearth found `blob-carriage.mem` claiming `assertBodyIndexTier` ENFORCES map-tier = body-tier where no production caller reaches it, wrote the narrowing patch, and HELD it in the working tree for the meme hearth's row rather than crossing a doc fix. Taken by the meme hearth 2026-09-13 with this row. Law: a handback left in the tree is a crossing that waited its turn — the right shape.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -126,6 +128,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r9ljB9sd_xJdG47JLi8VX7Gb5hXBmDQXsiJkkVHvuPI
+<<^ code="&#x0003;">>ni:///sha-256;Num5h2GslDPFo4w_Aozuqxyf_tch2IT7IealBKqYrPE
 
 <<^ code="&#x0004;" -> to="?">>

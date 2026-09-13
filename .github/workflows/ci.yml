@@ -162,11 +162,11 @@ jobs:
   # ─── witnesses (the whole fleet, under its own name) ───────────────────────
   # THE FLEET RODE INSIDE `test`, WHICH IS A PLACE IT CAN BE HIDDEN. `witness-all` exists because
   # chaining gates with `&&` lets the first red swallow every one after it; a step that runs AFTER
-  # `pnpm test` in the same job inherits exactly that failure — one red suite and the twenty-six
+  # `pnpm test` in the same job inherits exactly that failure — one red suite and the whole fleet (34 `tools/*witness*.sh` files at this writing — the glob reads the live count)
   # witnesses never run, and the PR shows one red where there were two questions. Its own job asks
   # the fleet's question whatever the suites answer.
   #
-  # WHAT THIS JOB CAN HONESTLY RUN: the twenty-six witnesses `tools/*witness*.sh` globs minus the
+  # WHAT THIS JOB CAN HONESTLY RUN: the witnesses `tools/*witness*.sh` globs (34 files at this writing — never a hand count) minus the
   # declared hold-outs. They need node, a pnpm install, python3 (domain-registry · exact-deps ·
   # meme-coordinates · mesh-coverage · mirror-parity · rendezvous-parity · rite-commands ·
   # surface-parity) and a BUILT tree — `frame-shape`, `surface-parity`, `rite-commands` and

@@ -75,7 +75,10 @@ describe("carrier-edges — every address a carrier points at", () => {
    * A rise is only allowed to be absorbed here for the second reason, and only with the cause named;
    * absorbing the first one silently is how a ceiling stops measuring anything.
    *
-   * 196 → 198, and the cause is the SECOND kind. The corpus finder learned to read the DECLARATION
+   * TWO READERS, TWO CORPORA (measured 2026-09-13): `lares meme check --edges $(git ls-files 'bags/*.mem')` reads
+   * 176 over bags/ alone; this test walks `currentCarrierFiles` — every declared carrier, tiddlers and memory
+   * included — and reads 179. The ceiling here is THIS reader's number; lowering it to the CLI's would red on
+   * three edges the CLI never sees. 196 → 198, and the cause is the SECOND kind. The corpus finder learned to read the DECLARATION
    * rather than a `bags/**` path, and the runtime kernel face at
    * packages/lararium-tw5/tiddlers/memetic-wikitext.tid entered a corpus no reader had ever walked.
    * Its four edges — three at `…/api/pono/invariant`, one at `lararium-node/MEME-STORE-FOUNDATIONS` —
