@@ -1,0 +1,333 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⏳" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/no-global-now.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 14
+manao      = 15
+manaoio    = 12
+namespace  = "&#x23F3;"
+revised-on = "2026-09-13"
+role       = "no-global-now — the clockless lease's INTENT, mined from the house's own conversations and carriers rather than re-derived. What the operator has said about No Global Now, every instance dated; the Fork-4 ruling in its own words (SAFETY = corm-fencing + ITC · LIVENESS = φ-accrual · WITNESS = Roughtime); what SUPERSESSION names in the house's words and which mechanism the ruling seats as the validity gate; whether an `expiry` field survives, and in which of three shapes the house already spells it (backstop · rolls · named wall floor); whether the FENCE reads mandatory in the ruling's own text; where the operator's intent stands SILENT and this carrier declines to fill it; five pattern-integrity rhymes the house already carries; and the plan for the two gap-tests `e2da729e4` pinned, red-by-red. Mining pass — no code, no test and no existing carrier moved."
+status-why = "MINED, not ruled. Every operator sentence carries its date and its transcript; every house claim carries a file:line or a carrier line; every gap names the test that pins it. The two cures stay UNBUILT and #/questions names what only the operator answers."
+tags       = ["docs/pono/talk-story", "lifecycle/designed"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/charge>>
+
+! No Global Now ~ the clockless lease, mined
+
+''The charge (operator, 2026-09-13, quote license).'' On the two clockless gaps the probe `e2da729e4` pinned: //"4) agree but send a sporit to the jsonl conversation mines to gather our intent from the design conversations amd memes. \"No Global Now\" holds."//
+
+''What this carrier does and does not do.'' It gathers INTENT from the house's own words — 69 transcripts and 92 carriers — and settles each question from the mines alone. It changes no code, no test and no existing carrier. Where the mines run silent it says so at #/silence rather than reaching for a plausible answer. Every operator sentence below carries its date; a ruling outranks a lean, and the latest ruling outranks an earlier one unless the earlier one holds a scope the later never touched.
+
+''Register: Mined-Testimony.'' Quotes ride under quote license; the copulas inside them belong to their speakers.
+
+<<~/ahu>>
+
+<<~ ahu #/the-mines>>
+
+!! The mines — what got read, and what answered
+
+''The transcripts.'' Every `*.jsonl` under `/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/` — ''69 files, 707 MB'', streamed line-by-line (never loaded whole), filtering `type: user` and main-conversation `type: assistant` text and dropping `isSidechain: true`. ''2733 turns'' carried at least one term.
+
+''Term counts across the whole transcript corpus'' (raw substring, case-folded; the noisy ones marked):
+
+| term | turns | note |
+|---|---|---|
+| `lease` | 988 | noisy — matches //please//, //release// |
+| `fence` / `fencing` | 791 / 67 | |
+| `itc` | 753 | noisy — matches //switch//, //pitch// |
+| `supersede` / `superseded` / `supersession` | 261 / 170 / 40 | |
+| `global now` | 248 | of which ''`no global now` 177'' |
+| `lamplighter` | 130 | |
+| `expiry` / `expires` | 113 / 69 | |
+| `FfzClock` | 103 | |
+| `clockless` | 72 | |
+| `corm` | 50 | |
+| `Date.now` | 46 | |
+| `ahi-kā` / `ahi-ka` / `AHI_KA` | 44 / 32 / 12 | |
+| `φ-accrual` / `phi-accrual` | 40 / 1 | |
+| `Roughtime` | 34 | |
+| `wall clock` | 30 | |
+| `high-water` / `highwater` | 18 / 2 | |
+| `interval tree clock` | 16 | |
+| `fork 4` / `Fork-4` | 11 / 6 | |
+| `logical epoch` | 8 | |
+| `realm roll` | 8 | |
+| `accrue silence` | 7 | |
+| `never a calendar` | 6 | |
+| `wall-floor` | 3 | |
+| `Koshōgatsu` | 1 | |
+
+''The high-signal filter'' (dropping `lease`·`itc`·`fence` and the bare `supersede`) left ''225 operator turns'' and ''456 node turns''. Many of the 177 `no global now` hits ride the boot seed re-served inside a system reminder or a standing spirit-prompt template; the operator sentences quoted at #/no-global-now survive that filter by hand.
+
+''The carriers.'' `git grep -il` over `bags/**/*.mem` for the tight term set answered ''92 carriers''. The load-bearing ones read whole: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> (the supersession law) · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> (the accrual impossibility) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> (the clockless-verdict fork, ruled) · <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> (the realm idle clock, closed) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>.
+
+''The memory.'' `project_clockless_lease_model.md` (the Fork-4 resolution, verbatim at #/the-ruling) · `project_cap_stack_taxonomy_research.md` · `project_turn_decompose_architecture.md` · `project_worldline_rewind_fork_rhizome.md` · `project_talk_story_hoike_layer.md`.
+
+''The code.'' `oracle-substrate.ts` · `oracle-read-client.ts` · `epoch-lease.ts` · `device-delegation.ts` · `ahi-ka.ts` · `bag-residency.ts` · `cas-caps.ts` · `realm-bag.ts` · `oracle-read-face.ts` · `bulb-read-face.ts` · `tests/oracle-substrate.test.ts`.
+
+<<~/ahu>>
+
+<<~ ahu #/no-global-now>>
+
+!! "No Global Now" — the operator's own sentences, dated
+
+''The attribution the house carries.'' The boot seed seats the law under #/causal-islands and names its source: //"''No global now'' (Fuller). The Universe holds no global now; each island carries its own partially-ordered log and knows only //as of my last sync//, never //globally//."// The operator names the same lineage in the FFZ chronometer's own expansion — //"FFZ chronometer (Fontany Fuller Zelenka clock, no global now)"// (2026-06-25).
+
+''Every operator instance the mines surfaced, in order, quote license:''
+
+# ''2026-06-25'' — //"talk story through our model and if the FFZ chronometer (Fontany Fuller Zelenka cloickk with no global now) fits into this kupono model at high mana/manao?"// — ASKS. Seats the clock's name around the law rather than beside it.
+# ''2026-06-29'' — //"Now we need a research swarm to figure out the missing scale defiitions in our FFZ clock as applied to mempalace stores. 'No global now' holds, L-Prime holds."// — RULES the law as a standing constraint on a design pass, paired with the ward.
+# ''2026-06-30'' — //"I reject the capturedTime (Date.now()) as an anchor for the fFZ, that reads un-pono to 'no global now causal islands'. Think through this … send a research spirit to find the most pono 'no global now' rhymthmic schema. Real questions are the very top level ~ what can we pin it to that's not 'the human ratchetts that scale'?"// — ''RULES, and it rules a REJECTION'': a wall-clock reading MUST NOT anchor a grain. The cure landed as nested-membership with no wall time (`8e6d4fdd`).
+# ''2026-07-01'' — //"ensure we align with the web3 laws of the repo, \"no global now\", \"causal islands\", \"nested nameless entities with #has caps\", and our other Pono intent vectors"// — RULES the law as a standing audit axis.
+# ''2026-07-06'' — ''THE FORK-4 SENTENCE'' — //"4. I really want to avoid ANY hard attachments to wall-clocks (soft \"unrealiable-witness-timestamp\" seems pono). This may need a internet research deep knowledge domain \"find the pattern integrities that ryme with the missing puzzle piece\" to resolve."// — ''RULES the direction and commissions the research'' that produced #/the-ruling. Read the two halves apart: //ANY hard attachment// refused; a //soft// unreliable-witness timestamp allowed.
+# ''2026-07-17'' — //"Pono, 'no global now', 'causal islands', and 'pet-name tagged nameless-entities with #has capability stacks' serves as our core pattern integrity triangle."// — ''RULES the law's RANK'': one of three legs, not a preference.
+# ''2026-07-17'' (the HINGE) — //"We can have 'shared public Cabal/org documents posted to the @crossroads layer of the dreamNet' but they MUST retain our base web3 causal island 'no global now' intent (unable to scrape 'person history/registry' etc), but a publicly availalble 'surface'."// — RULES that a PUBLIC surface inherits the law; it names the law's second face, //no aggregable registry//.
+# ''2026-08-08'' — //"Approved, but no 'rosters' remember? Only contracts (no global now, causal island shores, web3-but-not-finance-illth).)"// — ''RULES: a roster carries a global now.'' Carried forward verbatim as a standing constraint in every later session summary.
+# ''2026-08-12'' — //"We lean toward requiring a raise on every boot. \"No global now/protection against empire/web3-but-not-illth-crypto\" lead the way here."// — LEANS, and names the law as a tie-breaker between designs.
+# ''2026-08-13'' — //"Aah pono, language itself has no global now (authority), we each carry our own maps at our personal resolution/grains/capabilities."// — the operator's own GLOSS: ''global now ≡ authority''. The sharpest one-line reading of the law the mines hold.
+# ''2026-08-16'' — //"no global now/causal island law MUST hold. scout again all domains (repo/internet), then plan & enact if you hold high confidence"// — RULES, RFC-2119 grade.
+# ''2026-08-16'' (a correction) — //"Does this read 'no global now' (wallclock on each device serves as an unreliable narrator)?"// — ASKS, and the asking carried the cure; see #/expiry.
+# ''2026-08-30'' — ''THE THREAT MODEL'' — //"Sounds good but we must resolve the \"not gl8bal now\" tension (wall clock timestamps simply cannot get relied on, red-team testers can set them arbitrarily). OODA-HA"// — ''RULES the REASON'': the wall clock reads as an ATTACKER-CONTROLLED input, not merely an imprecise one.
+# ''2026-08-31'' — //"humans never get \"pinned\" to a data entity in our no global now causal island schema & all \"identity gets enacted as relation\""// — RULES the law's reach into identity.
+# ''2026-09-08'' — on differential testing: //"\"The results of two tested programs may differ and yet still be correct.\" -> No Global Now."// — the operator READS the law outside distributed systems entirely; agreement names a sync, never a truth.
+# ''2026-09-13'' — //"\"No Global Now\" holds."// — the charge this carrier answers. RULES that nothing in the two gaps reopens the law.
+
+''The settled sense, as the operator has spoken it'' — three claims, each resting on a sentence above, never on the scout's reading:
+
+* ''No authority of time.'' A global now names an AUTHORITY (2026-08-13). The law forbids the authority, not the reading of a clock.
+* ''A wall clock reads as a hostile narrator.'' Not slow, not skewed — ''settable by an adversary'' (2026-08-30). So no SAFETY verdict may rest on one.
+* ''A roster carries a global now'' (2026-08-08). Any construct that needs "who existed, at an agreed moment" re-imports the law's violation by another door.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ruling>>
+
+!! The ruling — Fork-4, resolved 2026-07-06
+
+''Provenance.'' The operator's Fork-4 sentence (2026-07-06, #/no-global-now §5) commissioned two research spirits — CHRONO-WISP (logical time and fencing) and WITNESS-WISP (witnessed and soft time). Both converged; the house folded them the same evening, and the resolution stands recorded in `project_clockless_lease_model.md`. The mines hold no later operator sentence that reopens it.
+
+''The ruling's own words'' (quote license, `project_clockless_lease_model.md`, 2026-07-06):
+
+> ''SAFETY = pure logical, clock-free, always-on.'' corm is a FENCING TOKEN, not a timer … A grant carries `(corm-epoch, ITC-stamp, ⟨soft: FfzClock-grain⟩)`. The GUARDED RESOURCE … holds `highest-corm-admitted` and REJECTS any invocation whose epoch < high-water OR whose ITC-stamp is causally dominated by an already-admitted one. A paused/forwarded/replayed holder self-revokes the instant a higher epoch touches the resource — NO global broadcast, NO clock. ''Expiry = SUPERSESSION ("a higher epoch exists downstream of me"), NEVER "a duration elapsed."''
+
+> ''LIVENESS = soft, local, adaptive.'' … it reduces to a LOCAL, monotone, roughly-uniform oscillator feeding ''φ-accrual failure detection'' … Quarantine: (a) the tick lives INSIDE one causal island; (b) feeds ONLY suspicion/liveness, NEVER safety/ordering; (c) never leaves the island as a timestamp others must agree on.
+
+> ''WITNESS = the gossip surface, Roughtime-shaped'' … each witness returns a SIGNED (epoch, radius) … the puller sends a FRESH NONCE … "a stamp with no fresh challenge is a photograph of a clock" … The witness supplies rough cross-checked RATE calibration … ONLY when a soft physical rate is needed — radius-tagged, never authoritative.
+
+> ''/oracle pointer = IPNS-MINUS-RFC3339.'' Keep `Sequence` (≡ corm-epoch …). Selection = highest-epoch-wins (ITC breaks concurrency ties). REPLACE the RFC3339 EOL Validity with a SUPERSESSION rule ("live until a higher-Sequence record appears") + an OPTIONAL soft FfzClock-grain hint … that reads as ADVICE, never a hard gate.
+
+> ''ONE-LINE INVARIANT:'' safety rides ITC + corm (causal, monotone, clock-free); liveness rides FfzClock-as-φ (rhythmic suspicion, local, soft); the two NEVER cross wires. "Order is free; rate costs a seed."
+
+''The five warnings, the ruling's own numbering'' (quote license):
+
+# ''MANDATE resource-side fencing (high-water-mark) or the whole model is nothing — a resource that doesn't fence lets two holders act.''
+# SPLIT-BRAIN … ''ITC MUST adjudicate concurrency'' + a deterministic tiebreak … ''Ask ITC for concurrency, NEVER FfzClock.''
+# ''Lint that the soft witness field never colors an ordering/revocation branch — the moment code branches on it for those, the global-now is back.''
+# ''rough⊥tight'' … never ask the rough layer for a tight guarantee — a lease must be epoch-generous vs the witness radius.
+# ''Bootstrap:'' a cold node with no witnesses/anchor accepts first sync as Provisional (never Canon).
+
+''Three amendments the house landed AFTER the ruling, each dated:''
+
+* ''φ-accrual's wall-time, named and confined (2026-08-15).'' A research pass collided the ledger: //"φ-accrual carries wall-time inside it. That ledger entry and the 'no wall-clock durations' law cannot both stand."// A measuring pass the same day found the collision ''moot in code'' — `grep -rin "accrual\|phiAccrual"` over `packages/**/*.ts` returned ''zero hits''; `clock-recovery.ts:1-3` stands the opposite discipline in its own comment (//"recovers the FFZ rhythmic clock FROM the fed stream (no Date.now, no global now)… never a wall-clock timestamp"//). ''Nothing needs unwinding; something needs never-building.'' Roughtime likewise stands ''cited and unbuilt'' — the same pass found zero implementation, zero dependency, zero test.
+* ''THE ACCRUAL IMPOSSIBILITY (2026-08-15, and it does not yield).'' <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> states it: //"''a logical epoch cannot accrue silence at all'' — a per-writer max-register advances only when somebody writes, so ''the neglected herm's counter stops at exactly the moment neglect begins''. Any clockless accrual MUST ride a monotone quantity driven by parties other than the neglected one."//
+* ''THE FOURTH OPTION, and the clockless-verdict fork RULED (operator, 2026-09-11).'' <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> `:117` records it: //"THE CLOCKLESS-VERDICT FORK — RULED (operator, 2026-09-11): READ FREE, ACT BY CONTRACT … the ahi kā reading stays a log-fact plus attenuation ALWAYS: clockless, accusing nobody."// The mechanism that escapes the impossibility reads as a ''RATIO against an INDEPENDENT ambient'' — the realm still while a motion it cannot drive advanced by K — never a duration (`ahi-ka.ts` header). The numeric half stands RATIFIED the same way (operator, 2026-09-13): `ambientFloor 8 · warmRatio 0.30 · coldRatio 0.05`, //"fiction-QA defaults"//.
+
+''So the liveness leg the ruling named φ-accrual has MOVED, by ruling, to a ratio-against-an-ambient; the safety leg and the witness leg stand as written.''
+
+<<~/ahu>>
+
+<<~ ahu #/supersession>>
+
+!! Supersession — what the house means by the word
+
+''The candidates the charge names, answered from the mines:''
+
+| reading | does the house name it the validity gate? | where |
+|---|---|---|
+| a newer lease under the same corm (a higher epoch appears) | ''YES — this one'' | the ruling; `waking-floor:163`, `:203-205`; `device-delegation.ts:183-185` |
+| an ITC dominance | NO — ITC adjudicates ''CONCURRENCY and the tiebreak'', never the gate | ruling warning (2) |
+| a φ-accrual verdict | NO — it feeds ''suspicion only'', and crossing that wire IS the failure | ruling, LIVENESS quarantine (b) |
+| a hand's explicit act | NO — that names ''targeted revocation'', a different mechanism | `epoch-lease.ts:6-8`; `convergent-mesh#two-revocation-modes` |
+
+''The ruling's own gate sentence'': //"Expiry = SUPERSESSION ('a higher epoch exists downstream of me'), NEVER 'a duration elapsed.'"// And for the pointer specifically: //"live until a higher-Sequence record appears"//.
+
+''The house has already written this law once, for the sibling grant type.'' <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> `:163` (quote license): //"''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all … A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock … ''Fusing the two wires is how a global now gets smuggled back in.''"//
+
+''And it names the MECHANISM, refusing a third invention'' (`waking-floor:201-205`): //"A raise ENDS by non-renewal, exactly as every other grant in this house does. `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus is the resource; its lease epoch is the fence. Supersession and expiry come from that one mechanism, with no clock anywhere."//
+
+''One shape STRUCK, and the striking matters'' (`waking-floor:207`): a draft carried a ''rolling WINDOW of markers'' as the epoch. //"A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers is a roster of moments, which this house does not hold."// ''A supersession cure MUST NOT reach for a set.'' It reads a scalar max-register (`epoch-lease.ts`: `effectiveLeaseEpoch` = max over per-writer slots, //"the max never decreases"//).
+
+''What supersession therefore asks of the oracle pointer, in the house's own terms'': the reader compares the pointer's `version` (≡ the corm epoch, ≡ `Sequence`) against the highest version it holds for that object, and refuses ONLY what sits below. A pointer nothing has out-versioned stands live however long a clock has moved.
+
+<<~/ahu>>
+
+<<~ ahu #/expiry>>
+
+!! Does `expiry` survive — and in what shape
+
+''The mines answer YES, and the house already spells it three different ways, each lawful, each NAMED.''
+
+!!! ① The BACKSTOP spelling — `device-delegation.ts`, and the operator's own question produced it
+
+The operator asked (2026-08-16, quote license): //"Does this read 'no global now' (wallclock on each device serves as an unreliable narrator)?"// The house's answer and cure that turn: ''the lease is the authority, the clock only backstops'' — and the code now says it in its own comments (quote license):
+
+* `device-delegation.ts:66` — `expiresAt` — //"ISO-8601 expiry instant — bounds the replay window even absent synchronous revocation (now a replay ''BACKSTOP'', not the lease authority)."//
+* `device-delegation.ts:177-180` — //"The epoch is the lease ''AUTHORITY''; the wall-clock window above is only a replay backstop. Targeted revocation rides the Keyhive membership graph, never this counter."//
+* And the RANKING rides the call site: `verifyDeviceDelegation(edge, root, { now, expectedEpoch })` — the comment at the time of the cure read //"`now` — replay backstop — the unreliable narrator"// beside //"`expectedEpoch` — THE AUTHORITY — monotone, local, no shared clock"//, with two tests fencing the ranking (a grant bound below a rolled lease refuses ''while the wall clock still reads inside its window'').
+
+''The sin that cure named, in the house's own words'': //"The violation is that I made the unreliable narrator the ONLY narrator."// That sentence prices gap (2) exactly.
+
+!!! ② The ROLLS spelling — an `expiry` read against the realm's own pace
+
+* `realm-bag.ts:114-120` — //"The registration's LEASE, in ROLLS of the realm's own maintenance feed (`realmPace` — an order, never a wall-clock instant). Past it the WRITE side lapses and the book reads on."// The reader that names no pace //"reads the lease as unexpired (it cannot judge, so it never narrows)"// (`:137-142`) — ''fail-open toward standing, exactly as `readAhiKa` abstains''.
+* `cas-caps.ts:1-6` — the PIN and PREFETCH caps: //"Both name a holder and an expiry; both read the expiry against the realm's own clock (`graceForTier` in rolls of `realmPace`), never a wall-clock alone."//
+
+!!! ③ The NAMED-FLOOR spelling — when a wall clock rides, the code says so
+
+`bag-residency.ts:126-132`, `:182`, `:195` — `BagStowage` takes an optional realm `clock` (rolls, `DEFAULT_IDLE_ROLLS = 8`, matching ahi kā's `ambientFloor`); absent one it //"falls to the wall floor and names it"// as `clockKind: "realm" | "wall-floor"`. <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> `:533` records the close (2026-09-12): the fallback gets named //"rather than claiming a clocklessness it does not hold. The browser vessel wires no realm clock and stays on the named floor — ''a declared partial, not a silent one''."//
+
+!!! What the ORACLE POINTER carries today, against those three
+
+`oracle-substrate.ts:50` — `expiry: number` — //"ms epoch; freshness lease read against the LOCAL clock"//; minted at `oracle-read-face.ts:91` and `bulb-read-face.ts:146` as `Date.now() + TTL_MS`; gated at `oracle-substrate.ts:~196` by `if (opts.nowMs >= p.expiry) return { ok: false, reason: "expired" }`. It signs the expiry into the pointer (//"a peer must not be able to extend a stale pointer's life"//) while holding it OUT of the pointer's identity string, so a renewal keeps the lineage — a genuinely careful design that nonetheless seats the unreliable narrator as the ''only'' narrator on that branch.
+
+''The reconciliation the mines support'' (and no further): the pointer's `expiry` joins spelling ① — a REPORTED replay backstop that MAY refuse, never the validity authority — or spelling ② if a pace reader reaches it. ''The mines hold no sentence letting it stay the gate.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-fence>>
+
+!! Is the FENCE mandatory in the ruling's own words
+
+''Yes, in the ruling's text — and in the strongest register it uses anywhere.'' Warning (1), verbatim: //"''MANDATE resource-side fencing (high-water-mark) or the whole model is nothing'' — a resource that doesn't fence lets two holders act."// The ruling's SAFETY paragraph repeats it as mechanism, not advice: the guarded resource //"holds `highest-corm-admitted` and REJECTS any invocation whose epoch < high-water"//.
+
+''And the ruling left the fence's REACH as its own named design-time question'' (quote license, the OPEN block): //"does EVERY /oracle read-face + capability endpoint already hold (or cheaply can hold) a per-object high-water mark? ''(any that can't = where a clock sneaks back)''"// — the probe `e2da729e4` answered it, which is exactly why the probe exists.
+
+''What the code does with `highWaterVersion` today.'' `oracle-substrate.ts:~155` — //"`highWaterVersion`: the highest version this reader has accepted; a lower one reads as a ROLLBACK and gets refused"// — ''OPTIONAL'' (`highWaterVersion?: number`). `oracle-read-client.ts:82-88` forwards it only when the caller supplies it, and `nowMs` defaults to `Date.now()` (`:68`). So a reader may verify with ''no fence at all'' and cannot ask for a ''clock-free verdict'' — the inversion the probe pinned.
+
+''Two things the mines separate, and the carrier keeps apart.'' The ruling MANDATES that the guarded RESOURCE fence. Whether the pure `verifyOraclePointer` FUNCTION must refuse a caller who names no high-water names a different question — an API shape, not a law — and the mines carry no sentence on it. See #/silence and #/questions.
+
+''The precedent one layer over, for whoever builds it.'' `device-delegation.ts` also leaves `expectedEpoch` optional (//"OPTIONAL (like opts.now): pass expectedEpoch … to enforce the lease; omit to check signature + pin alone"//) and cures the inversion at the ''call site'', by ranking the two instruments in the caller's own code. The oracle pointer's asymmetry differs from that precedent in one measurable way: `nowMs` there reads optional too, while on the pointer it stands ''required''.
+
+<<~/ahu>>
+
+<<~ ahu #/silence>>
+
+!! Where the operator's intent runs SILENT
+
+''This carrier fills none of these.''
+
+# ''The API shape of the fence.'' The operator has never spoken on whether a pure verify FUNCTION must REFUSE a fence-less caller, or whether a required-`highWater` / optional-`nowMs` swap suffices. Warning (1) belongs to the spirits' fold, blessed by the operator's approval of the whole resolution, and it binds ''the resource'', not a signature.
+# ''Whether the oracle pointer's `expiry` keeps a wall-ms floor at all, or moves to rolls.'' The three spellings at #/expiry all stand lawful in the house. Nothing in the mines picks among them for THIS object.
+# ''Who mints corm epochs per resource.'' The ruling records it OPEN in its own words — //"single-owner (Raft-leader) vs any-forwarder (needs ITC concurrency + tiebreak, making ITC-concurrency load-bearing not optional)"//. No later sentence settles it. The oracle pointer today reads single-signer by construction (`signerSeed`), which ANSWERS the question by omission rather than by ruling.
+# ''Whether ITC rides the oracle pointer at all.'' The ruling's selection rule names //"highest-epoch-wins (ITC breaks concurrency ties)"//; `oracle-substrate.ts` carries no ITC stamp, and a same-version fork today surfaces only through the `prev` lineage check. The mines hold no sentence saying that suffices.
+# ''Roughtime.'' Named WITNESS in the ruling, measured ''zero-implementation'' 2026-08-15, and flagged 2026-09-11 as wanting //"lists of trusted servers, i.e. a roster"// — which #/no-global-now §8 forbids. The mines hold the tension NAMED and unruled.
+# ''The soft FfzClock-grain hint.'' The ruling allows //"an OPTIONAL soft FfzClock-grain hint that reads as ADVICE, never a hard gate"//. Nothing in the mines asks for it to be built, and nothing forbids it.
+
+<<~/ahu>>
+
+<<~ ahu #/pattern-integrity-rhymes>>
+
+!! Pattern-integrity rhymes the house already carries
+
+Each row names what the house built, how it rhymes with the lease, and where it BREAKS against it.
+
+| the rhyme | what it does | rhymes with the lease | breaks against it |
+|---|---|---|---|
+| ''the stowage clock'' (`bag-residency.ts:126-195`) | cools a bag after `idle` in the realm's ROLLS when a clock rides in; else the wall floor, ''named'' `clockKind: "wall-floor"` | the same two-tier shape the lease wants: logical unit first, wall as a declared fallback; and it cites the lamplighters ban in its own comment | nowhere. It even keeps the RESIDENCY sense (a vessel's own RAM pressure, a legitimate local wall reading) apart from a STANDING verdict — the cross-plane leak `handoff:533` closed |
+| ''the CAS sweep'' (`node-cas.ts:222-338`, `cas-caps.ts`) | sweeps at a cadence paced by the realm's roll rate, ''abstaining under two rolls'' — //"a realm nobody feeds never sweeps — never a calendar"// | supersession's own temper: no motion, no ageing. Grace counts ROLLS, so //"a day of silence ages nothing"// | one honest seam its own hand named: the pace reader ''derives'' ms-per-roll from observed rolls over elapsed wall time — a wall reading feeding a cadence (liveness), never a verdict (safety). Lawful under the quarantine, worth watching |
+| ''the ahi-kā reading'' (`ahi-ka.ts`) | renders standing as a RATIO of a realm's own pace against an ''independent ambient'' it cannot drive, with an `abstain` floor | the escape from the accrual impossibility, and the ruling's quarantine honored exactly: a reading, never an ordering | it delivers what the ruling assigned to φ-accrual by a different mechanism. The ledger line //"LIVENESS = φ-accrual"// now names a shape the house superseded by ruling (2026-09-11) |
+| ''the realm registration `expiry`'' (`realm-bag.ts:114-142`, `:348-352`) | a lease in ROLLS; past it the WRITE side lapses and ''the read side never moves'' | the PIN-shaped `expiry` the charge asks about: an `expiry` field that survives by changing its UNIT, not by leaving | nowhere. And it fails OPEN — a reader naming no pace //"cannot judge, so it never narrows"// — the opposite polarity to the pointer's `nowMs >= expiry` fail-closed-on-a-local-clock |
+| ''the outbound bridge's echo SET'' (`outbound-bridge.mem:90`, `:101`; `outbound-bridge.ts`) | an inbound apply MUST NOT re-save; the guard rides a COUNT or a SET of applied titles, //"never a flag"// | the same instinct the lease runs on: a ''monotone recorded fact'' beats an ambient mode. TW5's own `changeCount` stamp reads as a per-title high-water mark | a near-miss worth naming: this SET is exactly the roster-of-moments shape `waking-floor:207` STRUCK for epochs. It stays lawful because it lives ''inside one island for one tick'' and answers //did I just apply this//, never //is this newer// |
+
+''The shape all five share.'' Every one of them puts a ''monotone quantity someone else drives'' under the verdict, and every one of them either counts in a logical unit or NAMES the wall reading as a floor. The oracle pointer sits alone among them in gating a verdict on an un-named local clock.
+
+<<~/ahu>>
+
+<<~ ahu #/plan>>
+
+!! The plan — the two gaps, red by red
+
+!!! The gap-tests as they stand
+
+All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da729e4` (2026-09-13 00:58):
+
+* `:137` — `describe("the clockless lease model, as the oracle pointer actually stands")`
+* `:143` — ★ SAFETY stands clock-free ★ — PASSES today and MUST keep passing. The control that proves the fence works when asked.
+* ''`:153`'' — ★ THE GAP: validity still gates on a DURATION ELAPSING ★ — asserts `verifyOraclePointer(p, { nowMs: NOW + 11 })` refuses with `reason === "expired"` for a pointer ''nothing superseded''. ''Goes RED when the ruling lands.''
+* ''`:165`'' — ★ THE GAP: the FENCE is optional while the CLOCK gate is mandatory ★ — asserts a no-high-water verify still resolves `{ ok: true }`, and that no clock-free verdict stands reachable. ''Goes RED when the ruling lands.''
+* `:174` — CONTROL — the pointer already carries `version` and `prev`, ''so the cure adds no field''.
+
+!!! What the cure changes — files named
+
+| file | what moves |
+|---|---|
+| `packages/lararium-mesh/src/oracle-substrate.ts` | `verifyOraclePointer` opts: `nowMs` goes OPTIONAL; `highWaterVersion` becomes the validity authority. The `expired` branch demotes to a BACKSTOP that refuses only when a caller supplies `nowMs` — the `device-delegation.ts:177-180` ranking, re-spelled. The doc-comment at `:12-14` (//"trusts its LOCAL clock for `expiry` (no global now)"//) re-writes to the supersession rule |
+| `packages/lararium-mesh/src/oracle-read-client.ts` | `:68` — `nowMs` stops defaulting to `Date.now()` behind the caller's back; `:82-88` forwards the fence whenever the caller holds one. The client stores and advances a per-peer high-water |
+| `packages/lararium-node/src/oracle-read-face.ts:91` · `packages/lararium-node/src/bulb-read-face.ts:146` | the MINT: `Date.now() + TTL_MS` either keeps its wall unit and gets NAMED (the `clockKind: "wall-floor"` precedent) or reads `realmPace` (the `realm-bag.ts` precedent). ''#/questions Q2 decides which'' |
+| `packages/lararium-mesh/src/mesh-palace.ts:543,546` | no change — `buildFlowMapPointer` / `verifyFlowMapPointer` alias the same functions and inherit the cure |
+| `packages/lararium-mesh/tests/oracle-substrate.test.ts:153,165` | rewritten AROUND supersession, ''never loosened'': `:153` becomes //a pointer nothing superseded verifies however far the clock moved, and a pointer a higher version superseded refuses//; `:165` becomes //a fence-less verify cannot return a safety verdict// in whichever spelling Q1 rules |
+
+!!! The CONTROL that the cure adds no field
+
+`:174` stands as written and MUST stay green untouched — `typeof p.version === "number"` and `"prev" in p`. A cure that needs a new pointer field ''fails this control'' and names itself a different design. Add one more control beside it: the pointer's ''signed byte image stays identical'' before and after the cure (`pointerSigningString` unchanged), so no published pointer re-verifies differently.
+
+!!! Order, and the cost
+
+# Rule Q1 and Q2 at #/questions. ''Nothing below moves first'' — each cure encodes a ruling.
+# `oracle-substrate.ts` verify + doc-comment, red-first off the rewritten `:153`/`:165`. ''~3 spirit-hours.''
+# `oracle-read-client.ts` fence carriage + the per-peer high-water the client must now hold. ''~3 spirit-hours'' — this one touches state the client never kept.
+# The two mint sites under Q2's ruling, with the `clockKind`-style naming if the wall unit stays. ''~2 spirit-hours.''
+# Sweep every other `nowMs`-gated validity branch for the same inversion (`persona-admit.ts:201`, `:275` name two candidates) and report rather than cure. ''~2 spirit-hours.''
+# Aftermath: `meme check --edges`, the carrier ledger line, the CHANGELOG row. ''~1 spirit-hour.''
+
+''~11 spirit-hours'', gated behind two operator rulings.
+
+<<~/ahu>>
+
+<<~ ahu #/questions>>
+
+!! Questions only the operator answers
+
+''Each one sits where #/silence found no sentence. None of them re-opens "No Global Now".''
+
+# ''Q1 — the fence's API shape.'' Warning (1) mandates that the RESOURCE fence. Does that reach the pure function? Three spellings: ''(a)'' `highWaterVersion` becomes REQUIRED and a fence-less call refuses · ''(b)'' it stays optional and `nowMs` goes optional beside it, curing the asymmetry without conscripting callers (the `device-delegation` precedent) · ''(c)'' a third verdict axis, so a fence-less verify answers //signature-and-lineage only// and never //ok//.
+# ''Q2 — the pointer's `expiry` unit.'' Does the oracle/bulb pointer keep a wall-ms backstop ''NAMED'' as the floor (the `clockKind: "wall-floor"` shape), or move to ROLLS against `realmPace` (the `realm-bag.ts` shape), or drop the field entirely and let supersession alone carry it? Note the coupling: a Herm or a browser vessel that wires no realm clock would read every pointer as unexpirable under the rolls spelling.
+# ''Q3 — the fail polarity when a reader cannot judge.'' `realm-bag.ts` and `readAhiKa` both fail toward STANDING (//it cannot judge, so it never narrows// · `abstain`). The pointer today fails toward DEAD. Does the house's abstain discipline reach the oracle pointer, or does a public read face warrant the stricter polarity?
+# ''Q4 — the ledger line.'' `project_clockless_lease_model.md` still reads `LIVENESS = φ-accrual`, which the 2026-09-11 ruling superseded with the ratio-against-an-ambient. Does that memory line get re-written to the ruling, and does the WITNESS = Roughtime line carry a //cited, unbuilt, roster-tension-named// mark beside it?
+# ''Q5 — does this carrier cross.'' It sits at `docs/pono`. If its findings settle, does it move to `api/pono` beside <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>, or does it stay a mining record and let `waking-floor` carry the law forward alone?
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;OjlSaIWKyfA5w8nWb5O3b7H8TcTRPRceBGLpy08zEGA
+
+<<^ code="&#x0004;" -> to="?">>
