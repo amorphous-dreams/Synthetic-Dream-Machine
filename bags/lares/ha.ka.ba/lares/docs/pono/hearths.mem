@@ -39,7 +39,7 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 | hearth | trailer | ground it holds | owes the others | last crossing |
 |---|---|---|---|---|
 | ''the meme hearth'' (this tree's Fable session) | `session_01EHVUW6kxAXwK9aBUG31T5N` | the meme surface (routes · verbs · CLI · MCP), recipe layers, the blob law, the realm bag + leg, the harness (`tests/harness/**`), the stock-syncer line, the carriers under `docs/pono/` | the clean whole-set e2e reading; seam (b)'s ruling; the replica read behind the return lane | took the dial seam from the founding hearth (`04895b579` · `be008ef1a`) |
-| ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch` | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
+| ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch`; ''three e2e suites red under its road-D work (clean whole-set run, 2026-09-12 evening): `face-lit-stays-bootable` (a bare `vessel found` now refuses without a seeded genesis — the three-region split), `vessel-reboot` (`persona list` reads `[]` after a re-stand — the wear-reboot mount), `herm-floor` (the local verb `where` times out on a Herm)'' | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
 | ''the grammar hearth'' (VSCode-TW5-Syntax) | `session_01QdAMPMM9DsR4rRrmqqQBXe` | the submodule (`feature/memetic-regrammar`, head `d928299`) · `carrier-shape.ts` and its two tests in the parent · the corpus census laws | the field allow-list (owed since 2026-08-26); the 2.3.0 release (operator-locked); the two EOF bleeds; the parser-recovery patchset never offered upstream | closed `carrier-edges` 201 (`df60ad07d`) while the meme hearth still listed it as the founding hearth's |
 
 <<~/ahu>>
@@ -66,6 +66,6 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Omzhlz8IPbDWremYfeWyL0xdWzlIHJg8E49hlVtEVUI
+<<^ code="&#x0003;">>ni:///sha-256;QNjHIo77JoRjwKinjd0I8vEbJVkirSuAbGuAY9Lvv6o
 
 <<^ code="&#x0004;" -> to="?">>
