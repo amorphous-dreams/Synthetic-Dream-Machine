@@ -9,9 +9,9 @@
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
   loadPersonaRootSeed, resolveOwnHandleChain, boardHeadCid, burnOwnHandle, signHandleCard,
-  attestUnderHead, headOpKey, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
+  attestUnderHead, normalizeHandleClaim, headOpKey, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
-  type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation,
+  type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
@@ -159,11 +159,13 @@ export async function burnFaceBrowser(opts: {
 export async function attestFaceBrowser(opts: {
   board:       DocHandle<LarDoc>;
   handleIndex: number;
-  claim:       string;
+  /** The STRUCTURED edge — a named surface + the foreign subject it names. Prose reaches no adapter. */
+  claim:       HandleClaim;
   idbName?:    string;
 }): Promise<HandleAttestation> {
-  const claim = opts.claim.trim();
-  if (claim.length === 0) throw new Error("[browser handle attest] an empty claim attests nothing — pass the claim text.");
+  if (!normalizeHandleClaim(opts.claim)) {
+    throw new Error("[browser handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
+  }
   const face = await openOwnFaceBrowser("attest", opts.board, opts.handleIndex, opts.idbName ?? "lares:vessel");
-  return attestUnderHead(face.chain, claim, face.veiledSigner);
+  return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
 }

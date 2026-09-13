@@ -22,7 +22,10 @@
 import { readFileSync } from "node:fs";
 import type { ParsedArgs } from "../parse-args.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, loadNodeHandleBook } from "@lararium/node";
-import { verifyAttestation, type HandleAttestation, type HandleKelEvent } from "@lararium/mesh";
+import {
+  verifyAttestation, normalizeHandleClaim, handleClaimFrom, handleClaimSubject, HANDLE_CLAIM_SURFACES,
+  type HandleAttestation, type HandleKelEvent,
+} from "@lararium/mesh";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 
@@ -66,12 +69,18 @@ function readStatementArg(args: ParsedArgs, raw: string): string | number {
   return raw;
 }
 
-/** Does this object carry the four fields an attestation is made of? A statement missing one verifies nothing. */
+/**
+ * Does this object carry the four fields an attestation is made of, with the claim reading as a STRUCTURED
+ * EDGE? A statement missing one verifies nothing, and a PROSE claim verifies nothing either — it names no
+ * surface for the other half to reach, so no signature over it could mean anything.
+ */
 function asAttestation(value: unknown): HandleAttestation | null {
   if (typeof value !== "object" || value === null) return null;
   const o = value as Record<string, unknown>;
-  const shaped = ["prefix", "headEventCid", "claim", "sig"].every((k) => typeof o[k] === "string" && (o[k] as string).length > 0);
-  return shaped ? (o as unknown as HandleAttestation) : null;
+  const shaped = ["prefix", "headEventCid", "sig"].every((k) => typeof o[k] === "string" && (o[k] as string).length > 0);
+  if (!shaped) return null;
+  if (!normalizeHandleClaim(o["claim"])) return null;
+  return o as unknown as HandleAttestation;
 }
 
 /**
@@ -104,7 +113,7 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
   catch { return refuse(args, "the statement is not valid JSON — carry the object `lares handle attest` printed"); }
   const statement = asAttestation(parsed);
   if (!statement) {
-    return refuse(args, "the statement lacks prefix · headEventCid · claim · sig — an incomplete statement verifies nothing");
+    return refuse(args, "the statement lacks prefix · headEventCid · sig, or its claim does not read as a structured edge (a known surface + its subject) — such a statement verifies nothing");
   }
 
   // THE CHAIN COMES FROM THE READER'S OWN SIDE — a carried card, else this vessel's recognition memory.
@@ -153,12 +162,13 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
       error: { code: "verb-error", message: reason },
       data: {
         verdict: "refused", reason, prefix: statement.prefix, claim: statement.claim,
+        claimSurface: statement.claim.surface, claimSubject: handleClaimSubject(statement.claim),
         headEventCid: statement.headEventCid, chainSource,
         chainVerify: "refused", surfaceVerify: "out-of-scope",
       },
       human: () => {
         console.error(`lares handle verify-attestation: REFUSED — ${reason}`);
-        console.error(`  claim: "${statement.claim}"   handle: ${statement.prefix.slice(0, 24)}…`);
+        console.error(`  claim: ${statement.claim.surface} → ${handleClaimSubject(statement.claim)}   handle: ${statement.prefix.slice(0, 24)}…`);
       },
     });
     return exitFor("verb-error");
@@ -168,17 +178,53 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
     ok: true,
     data: {
       verdict: "holds", prefix: statement.prefix, claim: statement.claim,
+      // The STRUCTURED EDGE, flattened for a peer that greps: WHICH adapter answers, and WHICH foreign name.
+      claimSurface: statement.claim.surface, claimSubject: handleClaimSubject(statement.claim),
+      ...(statement.claim.returnLocator === undefined ? {} : { claimReturnLocator: statement.claim.returnLocator }),
       headEventCid: statement.headEventCid, chainSource,
       // ★ THE SPLIT, ON THE MACHINE CHANNEL — an agent must never read a chain-verify as a surface-verify.
       chainVerify: "verified", surfaceVerify: "out-of-scope",
     },
     human: () => {
-      console.log(`the Handle SAID IT: ${statement.prefix.slice(0, 24)}… signed "${statement.claim}" under its current head.`);
+      console.log(`the Handle SAID IT: ${statement.prefix.slice(0, 24)}… signed [${statement.claim.surface} → ${handleClaimSubject(statement.claim)}] under its current head.`);
       console.log(`  chain-verify: PASSED reader-locally (chain from the ${chainSource}; no board, no network consulted).`);
       console.log(`  surface-verify: NOT RUN — this says nothing about whether the claim holds in the world.`);
-      console.log(`  a face may honestly sign "controls example.net" and lie about it; checking the surface is a separate act.`);
+      console.log(`  a face may honestly sign a dns-control edge and hold no such zone; reaching the ${statement.claim.surface} surface is a separate act.`);
     },
   });
+  return 0;
+}
+
+/**
+ * `lares handle attest --surface <kind> --subject <name> [--return-locator <where>]` — mint a STRUCTURED edge.
+ *
+ * ★ TWO FLAGS, NOT A SENTENCE AND NOT A JSON BLOB. ★ A claim asserts that this Handle stands in a NAMED
+ * relation to a NAMED foreign subject, readable by a peer sharing none of our context (the operator's ruling,
+ * 2026-09-13). `--surface` names the adapter family's row and therefore WHOSE authority answers the check;
+ * `--subject` names the foreign name in that surface's own grammar. The subject rides ONE flag across every
+ * surface, so a NEW adapter opens this door by naming a new `--surface` value and adds no flag — the union's
+ * "a new adapter is a new MEMBER" law, spoken at the door. `--return-locator` carries where the surface half
+ * looks for the leg coming back; absent, the adapter reads its own conventional location.
+ *
+ * A CLOSED VOCABULARY REFUSES A TYPO LOUDLY. A free-text claim minted an edge no adapter answers and nothing
+ * surfaced until a reader tried to check it; here an unknown surface refuses at the door and names the rows.
+ */
+async function handleAttest(args: ParsedArgs): Promise<number> {
+  const surface = args.options["surface"];
+  const subject = args.options["subject"];
+  const spelling = `lares handle attest --surface <${HANDLE_CLAIM_SURFACES.join("|")}> --subject <name> [--return-locator <where>] [--persona <index>]`;
+  if (!surface || !subject) {
+    return refuse(args, `attest wants a STRUCTURED claim, never prose: ${spelling}`);
+  }
+  const claim = handleClaimFrom(surface, subject, typeof args.options["return-locator"] === "string" ? args.options["return-locator"] : undefined);
+  if (!claim) {
+    return refuse(args, `no adapter answers surface "${surface}" with subject "${subject}" — the surfaces are ${HANDLE_CLAIM_SURFACES.join(" · ")}`);
+  }
+  const opts: Parameters<typeof runHandleAttest>[0] = { claim };
+  if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
+  const statement = await runHandleAttest(opts);
+  // A standalone signed statement the operator carries out-of-band; a reader verifies it against the surface.
+  console.log(JSON.stringify(statement));
   return 0;
 }
 
@@ -205,18 +251,7 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
       return 0;
     }
     case "verify-attestation": return await handleVerifyAttestation(args);
-    case "attest": {
-      const claim = args.positional[1] ?? args.options["claim"];
-      if (!claim) {
-        return refuse(args, 'attest wants a claim: lares handle attest "controls example.net" [--persona <index>]');
-      }
-      const opts: Parameters<typeof runHandleAttest>[0] = { claim };
-      if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
-      const statement = await runHandleAttest(opts);
-      // A standalone signed statement the operator carries out-of-band; a reader verifies it against the surface.
-      console.log(JSON.stringify(statement));
-      return 0;
-    }
+    case "attest": return await handleAttest(args);
     default:
       return refuse(args, sub ? `unknown sub-verb "${sub}"` : "name a sub-verb");
   }

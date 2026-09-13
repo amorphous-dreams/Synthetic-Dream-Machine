@@ -30,7 +30,8 @@ import {
   handlePrefixOf, handleRotationSigningBytes, handleEventCidOf,
   verifyHandleKel, verifyHandleKelFull, currentOwnerSet,
   attestUnderHead, verifyAttestation, headHandleKey, isBurned,
-  type HandleKelEvent, type OwnerHeadResolver,
+  handleAttestationBytes, handleClaimSubject, HANDLE_CLAIM_SURFACES,
+  type HandleKelEvent, type OwnerHeadResolver, type HandleClaim,
 } from "../src/handle-kel.js";
 import { mintPersonaInception } from "../src/persona-kel.js";
 
@@ -326,7 +327,7 @@ describe("handle-kel — the BURN is terminal, forever (Option C: either hand)",
     const again = await mintHandleBurn({ head: burn.event, sign: signerOf(SEEDS.hA) });
     expect(again.ok).toBe(false);
     // And nothing attests under a buried name.
-    await expect(attestUnderHead(chain, "this Handle controls example.net", signerOf(SEEDS.hA))).rejects.toThrow(/burn/i);
+    await expect(attestUnderHead(chain, { surface: "dns-control", domain: "example.net" }, signerOf(SEEDS.hA))).rejects.toThrow(/burn/i);
   });
 
   test("★ A CURRENT MEMBER BURIES THE NAME — an owner-burn verifies, distinct from a self-burn; a superseded key cannot bury ★", async () => {
@@ -357,11 +358,11 @@ describe("handle-kel — the BURN is terminal, forever (Option C: either hand)",
 describe("handle-kel — attestation, reader-local, no board", () => {
   test("★ an attestation verifies end-to-end against the head key; a tampered claim or stale head refuses ★", async () => {
     const { inception, westleyPrefix, westleyOpKeyA } = await foundedHandle();
-    const stmt = await attestUnderHead([inception], "this Handle controls example.net", signerOf(SEEDS.hA));
+    const stmt = await attestUnderHead([inception], { surface: "dns-control", domain: "example.net" }, signerOf(SEEDS.hA));
     expect((await verifyAttestation([inception], stmt)).ok).toBe(true);
 
     // A tampered claim refuses.
-    const bent = { ...stmt, claim: "this Handle controls example.org" };
+    const bent = { ...stmt, claim: { surface: "dns-control", domain: "example.org" } as HandleClaim };
     expect((await verifyAttestation([inception], bent)).ok).toBe(false);
 
     // A rotation moves the head — the OLD attestation reads stale against the NEW head (re-attest to renew).
@@ -373,13 +374,13 @@ describe("handle-kel — attestation, reader-local, no board", () => {
     if (!rot.ok) return;
     expect((await verifyAttestation([inception, rot.event], stmt)).ok).toBe(false);
     // And the NEW head attests afresh under the fresh key.
-    const stmt2 = await attestUnderHead([inception, rot.event], "this Handle controls example.net", signerOf(SEEDS.hB));
+    const stmt2 = await attestUnderHead([inception, rot.event], { surface: "dns-control", domain: "example.net" }, signerOf(SEEDS.hB));
     expect((await verifyAttestation([inception, rot.event], stmt2)).ok).toBe(true);
   });
 
   test("★ A BURN BURIES THE PAST CLAIMS — an attestation that held before the burn refuses after it ★", async () => {
     const { inception } = await foundedHandle();
-    const stmt = await attestUnderHead([inception], "this Handle controls example.net", signerOf(SEEDS.hA));
+    const stmt = await attestUnderHead([inception], { surface: "dns-control", domain: "example.net" }, signerOf(SEEDS.hA));
     // CONTROL — against the LIVE chain the very same statement holds, so the refusal below reads off the
     // burn alone and not off a malformed statement.
     expect((await verifyAttestation([inception], stmt)).ok).toBe(true);
@@ -401,6 +402,87 @@ describe("handle-kel — attestation, reader-local, no board", () => {
     }
     expect(src).not.toMatch(/HandleKelEvent\[\]\[\]/);
     expect(src).not.toMatch(/readonly \(readonly HandleKelEvent\[\]\)\[\]/);
+  });
+});
+
+describe("★ THE CLAIM READS AS A STRUCTURED CAUSAL-ISLAND EDGE, never as prose ★", () => {
+  // The operator's ruling (2026-09-13): a claim must read as a STRUCTURED edge a peer sharing none of our
+  // context can machine-read — a named SURFACE, a named foreign SUBJECT, and room for the RETURN-DIRECTION
+  // locator the surface half reads. The adapter FAMILY (handle-card#the-chain) supplies the surface
+  // vocabulary; a NEW adapter arrives as a NEW MEMBER of the union, never as a new field on one shape.
+
+  test("★ every adapter-family row mints and verifies as its OWN union member ★", async () => {
+    const { inception } = await foundedHandle();
+    const claims: readonly HandleClaim[] = [
+      { surface: "dns-control",      domain:  "example.net",            returnLocator: "_lares.example.net TXT" },
+      { surface: "atproto-account",  account: "alice.bsky.social" },
+      { surface: "kowloon-actor",    actorId: "@alice@kowloon.example", returnLocator: "profile.urls[]" },
+      { surface: "loopback-address", address: "127.0.0.1:7777" },
+    ];
+    for (const claim of claims) {
+      const stmt = await attestUnderHead([inception], claim, signerOf(SEEDS.hA));
+      expect(stmt.claim.surface, "the statement carries the surface KIND, machine-readable").toBe(claim.surface);
+      expect((await verifyAttestation([inception], stmt)).ok, `${claim.surface} verifies`).toBe(true);
+      expect(handleClaimSubject(stmt.claim), "the subject reads off any member without a switch at the call site")
+        .toBe(handleClaimSubject(claim));
+    }
+    // CONTROL — a claim whose SUBJECT moved refuses, so the passes above rest on the signature over the
+    // structure and not on the shape alone.
+    const bent = await attestUnderHead([inception], claims[0]!, signerOf(SEEDS.hA));
+    const tampered = { ...bent, claim: { ...claims[0]!, domain: "example.org" } as HandleClaim };
+    expect((await verifyAttestation([inception], tampered)).ok, "a moved subject refuses").toBe(false);
+  });
+
+  test("★ the bytes fold the structure CANONICALLY — key order at construction moves nothing ★", async () => {
+    const { inception } = await foundedHandle();
+    // Two honest signers assemble ONE claim in different field orders. Object key order differs; the signed
+    // bytes must not, or the same claim yields two signatures that each refuse the other's rendering.
+    const a = { surface: "dns-control", domain: "example.net", returnLocator: "_lares.example.net TXT" } as HandleClaim;
+    const b = { returnLocator: "_lares.example.net TXT", domain: "example.net", surface: "dns-control" } as unknown as HandleClaim;
+    expect(JSON.stringify(a), "the CONTROL: the two objects differ under a naive stringify").not.toBe(JSON.stringify(b));
+    const bytesA = handleAttestationBytes(inception.prefix, inception.eventCid, a);
+    const bytesB = handleAttestationBytes(inception.prefix, inception.eventCid, b);
+    expect(hex(bytesA), "one claim, one canonical rendering").toBe(hex(bytesB));
+
+    // And a statement signed over one ordering verifies against the other.
+    const stmt = await attestUnderHead([inception], a, signerOf(SEEDS.hA));
+    expect((await verifyAttestation([inception], { ...stmt, claim: b })).ok).toBe(true);
+    // CONTROL — a DIFFERENT return locator is different bytes; canonicality never means indifference.
+    const c = { surface: "dns-control", domain: "example.net", returnLocator: "_other.example.net TXT" } as HandleClaim;
+    expect(hex(handleAttestationBytes(inception.prefix, inception.eventCid, c))).not.toBe(hex(bytesA));
+  });
+
+  test("★ an UNKNOWN surface, a missing subject, or an UNCOVERED field mints nothing and verifies nothing ★", async () => {
+    const { inception } = await foundedHandle();
+    const good: HandleClaim = { surface: "dns-control", domain: "example.net" };
+    // CONTROL — the well-formed claim mints.
+    await expect(attestUnderHead([inception], good, signerOf(SEEDS.hA))).resolves.toBeTruthy();
+
+    const malformed = [
+      { surface: "carrier-pigeon", domain: "example.net" },              // no adapter answers this surface
+      { surface: "dns-control" },                                        // no subject — nothing to check against
+      { surface: "dns-control", domain: "   " },                         // a blank subject names nothing
+      { surface: "dns-control", domain: "example.net", note: "trust me" }, // an UNCOVERED field the sig never binds
+      { surface: "atproto-account", domain: "example.net" },             // the WRONG member's subject field
+    ];
+    for (const bad of malformed) {
+      await expect(
+        attestUnderHead([inception], bad as unknown as HandleClaim, signerOf(SEEDS.hA)),
+        `${JSON.stringify(bad)} attests nothing`,
+      ).rejects.toThrow(/claim/i);
+    }
+    // A reader handed one refuses too — fail-closed on both halves of the wire.
+    const stmt = await attestUnderHead([inception], good, signerOf(SEEDS.hA));
+    for (const bad of malformed) {
+      const verdict = await verifyAttestation([inception], { ...stmt, claim: bad as unknown as HandleClaim });
+      expect(verdict.ok, `${JSON.stringify(bad)} verifies nothing`).toBe(false);
+    }
+  });
+
+  test("the surface vocabulary names exactly the adapter family's rows", () => {
+    expect([...HANDLE_CLAIM_SURFACES].sort()).toEqual(
+      ["atproto-account", "dns-control", "kowloon-actor", "loopback-address"],
+    );
   });
 });
 

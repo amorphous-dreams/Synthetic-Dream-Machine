@@ -736,17 +736,124 @@ export function currentOwnerSet(
 // reader-locally against the head key. Binding the head's cid ties the claim to a chain STATE —
 // a rotation, graft, or burn stales it, and the fresh head re-attests to renew.
 
-/** A claim signed under the Handle's head — "this Handle controls example.net" — carried on the card. */
-export interface HandleAttestation {
-  readonly prefix:       string;   // the Handle the claim speaks for
-  readonly headEventCid: string;   // the chain state the claim was made under — a moved head stales it
-  readonly claim:        string;   // the claim text, verified against the claimed surface by the reader
-  readonly sig:          string;   // the head Handle key's signature over the attestation bytes
+/**
+ * ★ A CLAIM READS AS A STRUCTURED CAUSAL-ISLAND EDGE, NEVER AS PROSE (operator, 2026-09-13). ★
+ *
+ * A claim asserts that THIS Handle stands in a NAMED relation to a NAMED foreign subject, and a peer that
+ * shares none of our context must read it mechanically. Prose suits a human weighing a card and suits no
+ * adapter at all (handle-card#the-chain, GAP 2), so the claim carries three things and no sentence:
+ *
+ *   · the SURFACE — which adapter answers, and therefore WHOSE authority answers,
+ *   · the SUBJECT — the foreign name the claim reaches for, spelled in that surface's own grammar,
+ *   · the RETURN LOCATOR — where the surface half looks for the leg coming BACK (the prefix named from the
+ *     other side). "Bidirectional or nothing": a one-way claim stays a claim; only the return leg proves it.
+ *     Absent, the adapter reads its own conventional location.
+ *
+ * ★ A NEW ADAPTER ARRIVES AS A NEW MEMBER, NEVER AS A NEW FIELD. ★ Each row of the adapter family owns its
+ * own member with its own subject field, so `dns-control` can never carry an `actorId` and a reader
+ * switching on `surface` reaches a subject the type guarantees. A fifth surface adds a fifth member; every
+ * existing member's bytes stay untouched, and an old reader REFUSES the unknown surface rather than
+ * guessing at a field it half-recognises.
+ */
+export type HandleClaim =
+  /** DNS control — the ZONE HOLDER published this. Return: a record under the domain naming the prefix. */
+  | { readonly surface: "dns-control";      readonly domain:  string; readonly returnLocator?: string }
+  /** An ATproto account — the ACCOUNT HOLDER published this, per a PDS and its handle resolution. */
+  | { readonly surface: "atproto-account";  readonly account: string; readonly returnLocator?: string }
+  /** A Kowloon actor — the ACTOR'S SERVER published this. Return: `profile.urls[]` carries the prefix. */
+  | { readonly surface: "kowloon-actor";    readonly actorId: string; readonly returnLocator?: string }
+  /** A loopback / operator-approved address — WHOEVER HOLDS THIS MACHINE published this. The TEST surface,
+   *  never a peer-facing one: a local proof that reads as a DNS proof is a forgery the stack performed on
+   *  itself, so it carries its own weaker authority in its own member. */
+  | { readonly surface: "loopback-address"; readonly address: string; readonly returnLocator?: string };
+
+/** The surface kind a claim names — the adapter family's rows, closed at the type. */
+export type HandleClaimSurface = HandleClaim["surface"];
+
+/** WHICH field carries the subject on each member — the one table a new adapter extends. Nothing else in
+ *  the module hard-codes a surface, so adding a row is one entry here plus one union member. */
+const HANDLE_CLAIM_SUBJECT_FIELD = {
+  "dns-control":      "domain",
+  "atproto-account":  "account",
+  "kowloon-actor":    "actorId",
+  "loopback-address": "address",
+} as const satisfies Record<HandleClaimSurface, string>;
+
+/** The surface vocabulary a door offers an operator — the adapter family's rows, spoken. */
+export const HANDLE_CLAIM_SURFACES: readonly HandleClaimSurface[] =
+  Object.keys(HANDLE_CLAIM_SUBJECT_FIELD) as HandleClaimSurface[];
+
+/**
+ * NORMALIZE a claim to exactly the fields its surface declares, or answer null. Two duties, one function:
+ * it VALIDATES (an unknown surface, a blank subject, or the wrong member's subject field yields nothing to
+ * sign) and it CANONICALIZES (the signed projection carries the declared fields alone). An UNCOVERED extra
+ * field refuses rather than riding along unsigned — a field the signature never bound is a field a reader
+ * must never act on, and dropping it silently would leave one on the wire.
+ */
+export function normalizeHandleClaim(claim: unknown): HandleClaim | null {
+  if (typeof claim !== "object" || claim === null || Array.isArray(claim)) return null;
+  const o = claim as Record<string, unknown>;
+  const surface = o["surface"];
+  if (typeof surface !== "string" || !(surface in HANDLE_CLAIM_SUBJECT_FIELD)) return null;
+  const field   = HANDLE_CLAIM_SUBJECT_FIELD[surface as HandleClaimSurface];
+  const subject = o[field];
+  if (typeof subject !== "string" || subject.trim().length === 0) return null;
+  const locator = o["returnLocator"];
+  if (locator !== undefined && (typeof locator !== "string" || locator.trim().length === 0)) return null;
+  for (const k of Object.keys(o)) {
+    if (o[k] === undefined) continue;
+    if (k !== "surface" && k !== field && k !== "returnLocator") return null;   // uncovered → refuse
+  }
+  return {
+    surface, [field]: subject.trim(),
+    ...(locator === undefined ? {} : { returnLocator: (locator as string).trim() }),
+  } as HandleClaim;
 }
 
-/** The canonical bytes an attestation signs — domain-tagged apart from event bytes by the `kind`. */
-export function handleAttestationBytes(prefix: string, headEventCid: string, claim: string): Uint8Array {
-  return canonicalJsonBytes({ domain: HANDLE_KEL_DOMAIN, kind: "attestation", prefix, headEventCid, claim });
+/** The foreign name a claim reaches for, read off ANY member without a switch at the call site. Null when
+ *  the claim does not normalize — the same fail-closed answer every other reader gets. */
+export function handleClaimSubject(claim: HandleClaim): string | null {
+  const normal = normalizeHandleClaim(claim);
+  if (!normal) return null;
+  return (normal as unknown as Record<string, string>)[HANDLE_CLAIM_SUBJECT_FIELD[normal.surface]]!;
+}
+
+/**
+ * Assemble a claim from a door's flat trio (a surface name, a subject, an optional return locator) — the
+ * ONE place a spoken surface becomes its union member, so every door (a CLI's flags, a browser verb's
+ * args) reaches the family through the same mapping and a new adapter opens on every door at once. Null on
+ * an unknown surface or a subject that names nothing: a door refuses rather than minting an edge no
+ * adapter answers.
+ */
+export function handleClaimFrom(surface: string, subject: string, returnLocator?: string): HandleClaim | null {
+  if (!(surface in HANDLE_CLAIM_SUBJECT_FIELD)) return null;
+  const field = HANDLE_CLAIM_SUBJECT_FIELD[surface as HandleClaimSurface];
+  return normalizeHandleClaim({
+    surface, [field]: subject,
+    ...(returnLocator === undefined || returnLocator.trim().length === 0 ? {} : { returnLocator }),
+  });
+}
+
+/** A claim signed under the Handle's head — a structured edge — carried on the card. */
+export interface HandleAttestation {
+  readonly prefix:       string;        // the Handle the claim speaks for
+  readonly headEventCid: string;        // the chain state the claim was made under — a moved head stales it
+  readonly claim:        HandleClaim;   // the structured edge, checked against its surface by the reader
+  readonly sig:          string;        // the head Handle key's signature over the attestation bytes
+}
+
+/**
+ * The canonical bytes an attestation signs — domain-tagged apart from event bytes by the `kind`, and
+ * folding the claim STRUCTURE through `canonicalJson`, which sorts every object's keys at every depth. So
+ * two honest signers assembling one claim in different field orders sign IDENTICAL bytes; construction
+ * order moves nothing. THROWS on a claim that does not normalize — unsignable rather than half-signed.
+ */
+export function handleAttestationBytes(prefix: string, headEventCid: string, claim: HandleClaim): Uint8Array {
+  const normal = normalizeHandleClaim(claim);
+  if (!normal) {
+    throw new Error("attestation claim malformed — a claim names a known surface, a non-blank subject in that surface's own field, and nothing the signature would not bind");
+  }
+  return canonicalJsonBytes({ domain: HANDLE_KEL_DOMAIN, kind: "attestation", prefix, headEventCid, claim: normal });
 }
 
 /**
@@ -756,14 +863,18 @@ export function handleAttestationBytes(prefix: string, headEventCid: string, cla
  */
 export async function attestUnderHead(
   chain: readonly HandleKelEvent[],
-  claim: string,
+  claim: HandleClaim,
   sign: (bytes: Uint8Array) => Promise<string>,   // the head Handle key's signer
 ): Promise<HandleAttestation> {
   if (!verifyHandleKel(chain)) throw new Error("attestation refused — the chain fails structural verification");
   if (isBurned(chain))         throw new Error("attestation refused — the Handle is burned; a buried name claims nothing");
+  const normal = normalizeHandleClaim(claim);
+  if (!normal) {
+    throw new Error("attestation refused — the claim does not read as a structured edge (a known surface, a non-blank subject in that surface's own field, nothing uncovered)");
+  }
   const head = chain[chain.length - 1]!;
-  const sig  = await sign(handleAttestationBytes(head.prefix, head.eventCid, claim));
-  return { prefix: head.prefix, headEventCid: head.eventCid, claim, sig };
+  const sig  = await sign(handleAttestationBytes(head.prefix, head.eventCid, normal));
+  return { prefix: head.prefix, headEventCid: head.eventCid, claim: normal, sig };
 }
 
 /**
@@ -789,6 +900,11 @@ export async function verifyAttestation(
   const head = chain[chain.length - 1]!;
   if (statement.prefix !== head.prefix)             return { ok: false, reason: "the statement names a different Handle" };
   if (statement.headEventCid !== head.eventCid)     return { ok: false, reason: "stale — the head moved since this attestation; the fresh head re-attests" };
+  // FAIL CLOSED ON THE STRUCTURE BEFORE THE SIGNATURE — a claim that does not read as a structured edge
+  // names no surface for the other half to reach, so no signature over it could mean anything.
+  if (!normalizeHandleClaim(statement.claim)) {
+    return { ok: false, reason: "the claim does not read as a structured edge — an unknown surface, a blank subject, or a field the signature never bound" };
+  }
   const bytes = handleAttestationBytes(statement.prefix, statement.headEventCid, statement.claim);
   if (!(await verifySig(statement.sig, bytes, head.handleKeyDid))) {
     return { ok: false, reason: "the signature does not verify against the head Handle key" };

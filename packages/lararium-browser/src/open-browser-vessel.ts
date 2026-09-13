@@ -30,6 +30,7 @@ import {
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
+  handleClaimFrom, HANDLE_CLAIM_SURFACES,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
@@ -1016,7 +1017,14 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // face-attest — sign a claim under the face's head, carried ON the card, verified reader-locally. Not a
       // chain event; writes nothing to the board.
       registry.register("face-attest", async (args) => {
-        const claim = String(args["claim"] ?? "");
+        // THE STRUCTURED EDGE, at the browser door: a named surface + the foreign subject it names. The verb
+        // reaches the adapter family through the SAME mapping the CLI uses (`handleClaimFrom`), so a new
+        // adapter opens on both doors at once and neither door learns a new argument.
+        const claim = handleClaimFrom(
+          String(args["surface"] ?? ""), String(args["subject"] ?? ""),
+          args["return-locator"] === undefined ? undefined : String(args["return-locator"]),
+        );
+        if (!claim) throw new Error(`[face-attest] no adapter answers that claim — name a surface (${HANDLE_CLAIM_SURFACES.join(" · ")}) and its subject.`);
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("attest");
         const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName });

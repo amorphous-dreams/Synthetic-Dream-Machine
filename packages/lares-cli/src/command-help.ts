@@ -265,14 +265,18 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
 
   handle: {
     usage:
-      "usage: lares handle <publish \"<glamour>\" | rotate | graft | burn [--from-persona] | attest \"<claim>\" | " +
+      "usage: lares handle <publish \"<glamour>\" | rotate | graft | burn [--from-persona] | " +
+      "attest --surface <kind> --subject <name> [--return-locator <where>] | " +
       "verify-attestation <statement | @file | -> [--card <file>]> [--persona <index>]",
     synopsis:
       "The Handle's verb family — a persona's public \"here I am\" note and its lifecycle on the handle-KEL. " +
       "`publish` mints a self-certifying card and announces it onto the Nexus WHO board; `rotate` seats a fresh " +
       "presentation key under the same name (the OWNING PERSONA authorizes, so a lost key recovers through the " +
       "persona); `burn` ends the name terminally (the seated key, or the persona from above with " +
-      "--from-persona); `attest` signs a claim under the current head. `graft` (owner-set succession) declares " +
+      "--from-persona); `attest` signs a STRUCTURED claim under the current head — a named SURFACE (which " +
+      "adapter, and whose authority, answers the check: dns-control · atproto-account · kowloon-actor · " +
+      "loopback-address) plus the foreign SUBJECT it names, never prose, because a peer sharing none of our " +
+      "context must read the edge mechanically. `graft` (owner-set succession) declares " +
       "its shape and awaits its vessel-side pass. " +
       "TWO HALVES OF AN ATTESTATION, NEVER ONE: `verify-attestation` runs the CHAIN-VERIFY half reader-locally " +
       "— the chain verifies, stands unburned, matches the statement's prefix and seats the head that signed it " +
@@ -282,7 +286,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares handle publish 'Guru-Josh'                      # announce a face onto the WHO board",
       "lares handle rotate --persona 1                       # seat a fresh presentation key, same name",
-      "lares handle attest 'controls example.net'            # mint a signed claim under the head",
+      "lares handle attest --surface dns-control --subject example.net       # a signed DNS-control edge",
+      "lares handle attest --surface kowloon-actor --subject '@alice@kowloon.example' --return-locator 'profile.urls[]'",
       "lares handle verify-attestation @stmt.json --card ./card.json   # CHAIN-verify a claim someone handed you",
       "lares handle verify-attestation - < stmt.json         # ... reading the statement from stdin",
       "lares handle burn --from-persona                      # the persona buries the face from above",
@@ -290,6 +295,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--persona <index>  which persona acts (default: the worn persona, then 0)",
       "--from-persona     (burn) the owning persona buries the face from above, not the seated key",
+      "--surface <kind>   (attest) WHICH adapter answers: dns-control · atproto-account · kowloon-actor · loopback-address",
+      "--subject <name>   (attest) the foreign name the edge reaches, in that surface's own grammar",
+      "--return-locator <where>  (attest) where the surface half looks for the prefix named BACK " +
+        "(bidirectional or nothing); absent, the adapter reads its own conventional location",
       "--card <file>      (verify-attestation) the carried HandleCard whose chain to verify against; " +
         "without it the reader's own handle-book supplies the chain, and an unmet Handle refuses not-found",
     ],

@@ -18,9 +18,9 @@ import {
   DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, materializeSharedLarDoc, whoBoardDocUrl,
   publishHandleFromDaemonDoc,
   resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle, signHandleCard, handleCardId,
-  attestUnderHead, headOpKey, personaKelBoardDocUrl, personaKelChainForPrefix,
+  attestUnderHead, normalizeHandleClaim, headOpKey, personaKelBoardDocUrl, personaKelChainForPrefix,
   deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
-  type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation,
+  type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
@@ -310,8 +310,9 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
 }
 
 export interface HandleAttestOptions {
-  /** The claim the face signs under its current head — e.g. "controls example.net". */
-  readonly claim: string;
+  /** The STRUCTURED edge the face signs under its current head — a named surface + the foreign subject it
+   *  names (+ optionally where the return leg lives). Prose reaches no adapter, so the type refuses it. */
+  readonly claim: HandleClaim;
   readonly handleIndex?: number;
   readonly storageDir?: string;
 }
@@ -321,10 +322,14 @@ export interface HandleAttestOptions {
  * stales it). A standalone statement the operator carries out-of-band and a reader verifies reader-locally
  * against the empire's own surface (DNS for a domain); this stack compiles no Handle→claim index (registry
  * filter). Not a chain event — it writes nothing to the board.
+ *
+ * The claim reads as a STRUCTURED causal-island edge (handle-card#the-chain): a foreign peer sharing none of
+ * our context reads the surface, reaches the subject, and looks for the prefix coming back.
  */
 export async function runHandleAttest(opts: HandleAttestOptions): Promise<HandleAttestation> {
-  const claim = opts.claim.trim();
-  if (claim.length === 0) throw new Error("[lares handle attest] an empty claim attests nothing — pass the claim text.");
+  if (!normalizeHandleClaim(opts.claim)) {
+    throw new Error("[lares handle attest] the claim does not read as a structured edge — name a known surface and its subject.");
+  }
   const face = await openOwnFace("attest", opts.storageDir, opts.handleIndex);
-  return attestUnderHead(face.chain, claim, face.veiledSigner);
+  return attestUnderHead(face.chain, opts.claim, face.veiledSigner);
 }

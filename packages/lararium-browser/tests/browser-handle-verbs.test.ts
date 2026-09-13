@@ -147,15 +147,17 @@ describe("the browser attest twin — a face signs a claim under its head", () =
       handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
     });
 
-    const statement = await attestFaceBrowser({ board: board as never, handleIndex: 0, claim: "controls example.net", idbName: name });
+    const claim = { surface: "dns-control", domain: "example.net" } as const;
+    const statement = await attestFaceBrowser({ board: board as never, handleIndex: 0, claim, idbName: name });
 
     expect(statement.prefix, "the claim speaks for the published nym").toBe(card.nym);
-    expect(statement.claim).toBe("controls example.net");
+    // THE STRUCTURED EDGE crosses the browser shore intact — the surface KIND and its foreign subject.
+    expect(statement.claim).toEqual(claim);
     const v = await verifyAttestation(card.chain as HandleKelEvent[], statement);
     expect(v.ok, v.reason).toBe(true);
   });
 
-  test("an empty claim attests nothing — refuse", async () => {
+  test("a claim that reads as PROSE, or names no known surface, attests nothing — refuse", async () => {
     const name = idb();
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const board = makeFakeBoard();
@@ -163,7 +165,12 @@ describe("the browser attest twin — a face signs a claim under its head", () =
       daemonDoc: daemonDoc(OWNER), board: board as never,
       handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
     });
-    await expect(attestFaceBrowser({ board: board as never, handleIndex: 0, claim: "   ", idbName: name }))
-      .rejects.toThrow(/empty claim/i);
+    // Prose reaches no adapter; an unknown surface reaches none either; a blank subject names nothing.
+    for (const bad of ["controls example.net", { surface: "carrier-pigeon", subject: "x" }, { surface: "dns-control", domain: "  " }]) {
+      await expect(
+        attestFaceBrowser({ board: board as never, handleIndex: 0, claim: bad as never, idbName: name }),
+        `${JSON.stringify(bad)} attests nothing`,
+      ).rejects.toThrow(/structured edge/i);
+    }
   });
 });
