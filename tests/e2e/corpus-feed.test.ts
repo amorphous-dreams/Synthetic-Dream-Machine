@@ -70,28 +70,54 @@ function expectedRoots(): Set<string> {
   return roots;
 }
 
-/** Poll the staged mirror until the projected file count stabilizes. */
-async function awaitStableMirror(root: string, capMs = 120_000): Promise<string[]> {
+/**
+ * Poll the staged mirror until the projected file count stabilizes.
+ *
+ * ── THE CAP IS A MEASUREMENT, NOT A DEADLINE ────────────────────────────────────────────────────
+ * A cap reached reads IDENTICALLY to a projector that sites a carrier nowhere: the caller gets a file
+ * list, some expected name is absent, and the assertion names THAT carrier — the first one missing in
+ * iteration order — as though a rule had refused it. It had not; the mirror was still being written.
+ * So the cap reports its own trajectory: the counts it saw and the seconds between them, which is what
+ * separates "still projecting" from "settled without it".
+ */
+async function awaitStableMirror(root: string, capMs = 300_000): Promise<string[]> {
   const mirrorRoot = join(root, "bags/lares");
   const start = Date.now();
   let last = -1;
   let stableSince = Date.now();
+  const trail: string[] = [];
   for (;;) {
     const n = walkFiles(mirrorRoot).length;
-    if (n !== last) { last = n; stableSince = Date.now(); }
-    if (n > 0 && Date.now() - stableSince > 4_000) return walkFiles(mirrorRoot);
-    if (Date.now() - start > capMs) return walkFiles(mirrorRoot);
+    if (n !== last) { last = n; stableSince = Date.now(); trail.push(`${Math.round((Date.now() - start) / 1000)}s:${n}`); }
+    if (n > 0 && Date.now() - stableSince > 4_000) {
+      console.error(`corpus-feed MEASURE mirror settled at ${n} file(s) in ${Math.round((Date.now() - start) / 1000)}s · ${trail.slice(-12).join(" ")}`);
+      return walkFiles(mirrorRoot);
+    }
+    if (Date.now() - start > capMs) {
+      console.error(`corpus-feed MEASURE mirror NEVER settled — cap ${capMs}ms reached at ${n} file(s) · ${trail.slice(-16).join(" ")}`);
+      return walkFiles(mirrorRoot);
+    }
     await new Promise((r) => setTimeout(r, 1_000));
   }
 }
 
+// ── THE BUDGET IS PART OF THE WITNESS ───────────────────────────────────────────────────────────
+// This suite feeds the WHOLE corpus through a staged founding, and the corpus grows every week (376
+// carriers at this reading). At a 180s hook the founding-plus-LOAD sat exactly ON the edge: it landed
+// on a quiet machine and timed out beside any other suite, and a timed-out hook SKIPS all four vectors
+// rather than failing one — so the suite reported nothing at all, in either direction. The budget is
+// generous on purpose; a corpus-scale witness that must be run alone at a stopwatch is no witness.
 beforeAll(async () => {
   lar = await targetInstance();
   if (lar.mode !== "staged") return;        // mutating, corpus-scale — staged only
+  const at = Date.now();
   const r = await lar.cli(["act", "LOAD", "--source-uri", CORPUS, "--to", LARES_URI, "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
   loadCount = Number((r.json?.["data"] as { count?: number } | undefined)?.count ?? 0);
-}, 180_000);
+  // NAME WHAT IT SAID. A bare count reads as "the corpus grew past the budget" whichever way the door
+  // answered, and those are different faults with different cures.
+  console.error(`corpus-feed MEASURE the LOAD landed ${loadCount} record(s) in ${Math.round((Date.now() - at) / 1000)}s · code ${r.code} · ${`${r.stdout}\n${r.stderr}`.trim().slice(-600)}`);
+}, 600_000);
 afterAll(async () => { await lar.stop(); });
 
 describe("corpus feed — the whole hearth in one gesture (staged witness)", () => {
@@ -114,9 +140,13 @@ describe("corpus feed — the whole hearth in one gesture (staged witness)", () 
       "lar:///" + relative(mirrorRoot, f).split(sep).join("/").replace(/\.mem$/, ""),
     ));
     const roots = expectedRoots();
-    for (const r of roots) expect(fileUris.has(r), `missing projection for ${r}`).toBe(true);
+    // NAME THE WHOLE ABSENCE, never the first one. A per-root assertion stops at the first missing name
+    // and reads as "the projector refuses THIS carrier" — the shape that sent a hand hunting one carrier's
+    // meta when 40 names were absent and the mirror was simply still being written.
+    const absent = [...roots].filter((r) => !fileUris.has(r));
+    expect(absent, `${absent.length} of ${roots.size} corpus root(s) never projected — first 8: ${absent.slice(0, 8).join(" · ")}`).toEqual([]);
     expect(fileUris.size).toBe(files.length);   // one file, one name — no aliasing
-  }, 180_000);
+  }, 360_000);
 
   test("F3 — the boot meme projects content-whole (iam framing normalizes once)", async () => {
     if (lar.mode !== "staged") return;

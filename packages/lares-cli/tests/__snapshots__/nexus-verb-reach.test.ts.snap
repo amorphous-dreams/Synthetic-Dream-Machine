@@ -16,7 +16,7 @@ usage: lares nexus kahuli <engine | grammar>
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
 "lares nexus: unknown verb "definitely-not-a-verb"
-usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members | accept-carriage | posture | refresh | realm-bag | realm-bags>
+usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | carry-for | posture | refresh | realm-bag | realm-bags>
 
   seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony
   kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
@@ -24,8 +24,14 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | members
   un_kapae <nym>                            mint a quorum-signed lift at a higher version
   contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)
   revoke <operator-pubkey>                  revoke a member (quorum-only)
+  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own
+                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is
+                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)
+  uncarry <place-vessel-key>                end a carrier contract (quorum-only)
   members --list                            read the currently-admitted member set (the fold)
   accept-carriage [--index N]               (joining operator) mint the 'accepts carriage' contract-in
+  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel
+                                            key — reads no persona, because a crossroads holds none
   posture [private | open]                  read / flip the cross-Nexus federation posture
   rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
   kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition

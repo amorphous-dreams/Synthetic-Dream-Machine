@@ -132,11 +132,11 @@ A tasked spirit's walk at this codebase's grain, never a human's. ''The reds com
 ! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
-<<~ loulou "lar:///ha.ka.ba/lararium/node/nexus-client-dial">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/federation-gate">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s9wMX2yprC8TPIZRdXj0IdPXjLCmt9WM-qYIq-7UQSo
+<<^ code="&#x0003;">>ni:///sha-256;GXswyPJmQRYh208TsJHI6segAYdA41U8HbWJK0zo5YE
 
 <<^ code="&#x0004;" -> to="?">>
