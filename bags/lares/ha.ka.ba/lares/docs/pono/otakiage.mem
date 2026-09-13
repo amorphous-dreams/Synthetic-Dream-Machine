@@ -1,0 +1,430 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/otakiage">>
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/otakiage.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 13
+manao             = 14
+manaoio           = 12
+namespace         = "&#x2299;"
+pattern-integrity = true
+retain            = true
+revised-on        = "2026-09-12"
+role              = "otakiage — a LIFECYCLE for the house's carriers, designed. Names the five standings a carrier holds (fleeting · designed · standing · folded · gone) and the KIND axis the single `status` key currently fuses into them; the six transitions as rites, each with a who, a witness and a record; the fire — what burns, what never burns, who calls it, how the house schedules it off its own rolls rather than a calendar, and the gratitude line the commit log already writes; the siblings (kapu · tombstone · the lares-history shelf) that take a carrier OUT of the fire's reach; the pattern-integrity rhymes with the Shinto return-rite, the Zettelkasten/evergreen ladders and the archive/tombstone disciplines, and where each rhyme breaks. Every house claim carries a file:line or a measurement dated 2026-09-12; every field claim carries a URL, the date the page shows, and the page's own words."
+status            = "designed"
+status-why        = "a design awaiting the operator's ruling — nothing built, no code, test or existing carrier changed, no carrier burned. The stage names, the split of the `status` key, the fire's caller and its schedule all stand as PROPOSALS under #/questions; the carrier moves to `api/pono/otakiage` when the operator rules, and until then the house's retirement discipline lives where it already lives (`api/pono/meme#/retirement` and the four-step rite in the session record)"
+tags              = ["api/pono/meme"]
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/charge>>
+
+! Otakiage ~ a carrier lifecycle, designed
+
+''Register: Model-Standing.'' A scout read the house first — the code and the canon, never the memory index — then the field, and wrote the design against both. Every house claim names a file and a line or a measurement taken on 2026-09-12; every field claim names a URL, the date the page shows, and the page's own words. A claim carrying neither names itself as inference. Where the field yielded nothing, this carrier says so rather than reaching for a plausible source.
+
+''The operator's words, verbatim (quote license):''
+
+> "I realized we need an `otakiage ceremony` or `Zettelkasten-style wiki notes` lifecycle in lares/api/pono, we should design that first in lares/docs/pono."
+
+''What the charge asks for, read back.'' A carrier gets born, matures, gets ruled into law, empties out, and ends. The house already performs every one of those moves — it has poured 726 carriers, ruled dozens into `standing`, folded floors into canon, and burned at least seven carriers off the shelf with gratitude in the commit line. What the house lacks names the moves, so each one rides on a spirit's memory of the last time. ''This carrier names them.''
+
+''What this carrier declines to do.'' It rules nothing. It changes no code, no test, no existing carrier, and burns nothing. It stands in `docs/pono` because the operator's own charge seats it there, and it names under #/questions exactly what the operator must rule before it crosses to `api/pono` — where crossing itself rides a rite this carrier describes and the house has not yet built a receipt for (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>, `:97`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-field>>
+
+!! The field ~ three disciplines, quoted and dated
+
+!!! お焚き上げ otakiage ~ the rite that RETURNS rather than discards
+
+''The verb decides the whole thing.'' Jinja Honchō, the Association of Shinto Shrines, writes the year-end return of a year-old ofuda as ordinary practice: 「1年間お祀りしたお神札は年末に神社に納め、お焚き上げをしてもらいます。」 — the ofuda kept for a year ''gets deposited'' (納める //osameru//) at the shrine at year's end and burned there; and beside it 「お守りもお神札同様に年末に神社にお焚き上げしてもらい、新しいお守りを受けます。」 (https://www.jinjahoncho.or.jp/omairi/omamori/, no date shown, read 2026-09-12). The page never writes 捨てる (//suteru//, to throw away). Sapporo Gokoku Jinja names the direction: 「その授与品を受けられた神社にお納めして」 — deposit it ''at the shrine that granted it'' (https://sapporo-gokoku.jp/burning-dondoyaki/, no date shown, read 2026-09-12). Kanda Myōjin's own FAQ writes the relation as reception: 「基本的には、お受けになった神社へお返しいただくものですが、難しい場合には、郵送での返納や、お近くの神社への返納が出来る場合がございます。」 — return it to the shrine you received it from, and where that runs hard, post it or bring it to a nearer shrine (https://www.kandamyoujin.or.jp/faq/, no date shown, read 2026-09-12).
+
+''Why the return, and not the bin.'' Kodaira Shinmeigū states the premise plainly: 「お札やお守には神様の魂が込められています。」 — an ofuda or omamori ''carries a kami's spirit within it'' — and beside it the expiry that makes the rite recur: 「1年たったら新しいものに取り換えることをお勧めします。」 (https://kodaira-shinmeigu.jp/furufuda.html, no date shown, read 2026-09-12).
+
+''The line this whole design turns on.'' The same shrine forbids the silent drop-off: 「黙って置いていかずご相談下さい。」 — ''do not leave it silently; consult us'' (same page, same read). A thing that served ends in front of someone, or it does not end — it merely goes missing.
+
+''WHEN — the field refuses a fixed calendar, and says so.'' The //Encyclopedia of Shinto// (Kokugakuin University, entry "Sagichō", Iwai Hiroshi) calls it "A fire festival event usually held around the fifteenth of January," and then, decisively for this design: "There is also a fair amount of regional variation in the date and the event's proceedings." The same entry carries the regional names — "referred to by such names as //tondo//, //dondonyaki//, //saitōyaki//, //bokkengyō//, and //sankurōyaki//, depending on the region" — the two venues, "The event in some cases takes place in the form of a ritual at a shrine under such names as //matsutaki matsuri// or //shimeyaki shinji//" against a burning "at a particular location such as a village's border, a commons, or in a field," and a year-end variant, "an observance held on New Year's Eve called //toshikoshitondo// in which old //shimenawa// … and disused items from household altars (//kamidana//) are collected and burned" (https://d-museum.kokugakuin.ac.jp/eos/detail/?id=8918, no date shown, read 2026-09-12). ''Reception and combustion run on different clocks:'' Kokuryō Jinja burns on two named dates — 「お焚き上げは毎年、1月1日の午前0時から午前2時まで、1月12日の歳旦祭に執り行います。」 (https://kokuryo-jinja.jp/juyohin/otakiage/, no date shown, read 2026-09-12) — while Sapporo Gokoku Jinja ''receives'' 「一年を通して」, year-round, and fires the dondo-yaki in a January window (URL above).
+
+''WHAT NEVER BURNS — the shrines publish refusal lists.'' Two classes, and the reasons differ. ''Material:'' Sapporo Gokoku Jinja names five — 「金属製・陶器製・プラスチック製・石製・ガラス製」 (metal · ceramic · plastic · stone · glass) — and adds 「梱包のビニールは外してください。」 (URL above). ''Doctrinal:'' Kokuryō Jinja lists under ×納められないもの the items 「神社以外の他宗教のもの（寺院等の護摩札・祈祷札・御守・破魔矢　など）」, and Kodaira Shinmeigū gives the reason rather than the rule — 「お寺や他の宗教のものは『神観念』が違いますのでお預かりできません。」 — the ''conception of the divine'' differs, so the shrine cannot receive it (URLs above). A refusal on that ground names a boundary, never a judgement of worth.
+
+''A doll refuses the ordinary box because it wants a LARGER rite, and the shrines disagree about which.'' Kanda Myōjin declines outright: 「人形や達磨はお受けしておりません。」, accepting only 「紙製、木製等燃やして問題ないものであれば」 (URL above). Kodaira Shinmeigū accepts them through a separately named rite with prior application — 「廃祀昇神焚上焚納」 / 「人形感謝」 (URL above). Meiji Jingū built an annual festival around the class: its Ningyō Kanshasai frames the act as 「人形の魂をお祓いして、感謝の気持ちをこめて納める」 — purify the doll's spirit, and deposit it ''carrying gratitude'' — on the premise 「人形に魂が宿っている」 (https://ningyou-kanshasai.com/, page copyright 2024-08-06, read 2026-09-12); Meiji Jingū's own historical database dates the first: 「明治神宮では初めての人形納めの行事（人形の供養）。平成元年10月15日の第1回、納められた人形は6000体に及び」 (https://www.rekishidb.meijijingu.or.jp/glossary/detail.php?id=161, no date shown, read 2026-09-12). The festival strips the container first: 「ガラスケース、内蔵電池類などはお受けできませんので外して」, 「お人形だけ」 (https://ningyou-kanshasai.com/uketuke.html, page copyright 2024-08-06).
+
+''The sibling rites for tools that served.'' 針供養 //hari kuyō//, the needle memorial, at Sensō-ji's Awashima-dō each 2月8日: 「三宝に乗せた豆腐に古針を刺して、供養し感謝の祈りを捧げています。」 — worn needles pressed into tofu on an offering stand, a prayer of gratitude offered (台東区 official, https://www.city.taito.lg.jp/event/kanko/harikuyo.html, 更新日 2025年12月26日). 筆供養 //fude kuyō//, for brushes, at 菅原天満宮 in Nara each vernal equinox: 「感謝の気持ちを込めて古い筆を納める」, and the clergy intone a //norito// of gratitude over them — 「参拝者の書の上達と使い古した古筆に感謝の祝詞が奏上され」 (奈良市観光協会, https://narashikanko.or.jp/event/detail_10242.html, no date shown, read 2026-09-12).
+
+''The one academic frame the scout could reach.'' Angelika Kretschmer, "Mortuary Rites for Inanimate Objects: The Case of Hari Kuyō," //Japanese Journal of Religious Studies// 27/3–4 (Fall 2000), 380–404, Nanzan Institute: "In Japan, as in other industrialized countries, old and broken objects mostly end up in the trash. Some items, however, end their 'lives' with a special ritual," and the article names itself "the first serious Western-language treatment of mortuary rites (//kuyō//) for inanimate objects" (https://nirc.nanzan-u.ac.jp/journal/6/issue/161/article/1042, issue dated Fall 2000). ''The framing carries the argument:'' the rite treats an object's ending as a ''death'', never a disposal.
+
+⚠ ''What the field did NOT yield, stated as absence rather than filled in.'' (a) No shrine or Jinja Honchō page the scout reached addresses whether one may burn ''another person's'' ofuda, or the norm about a thing one never received — so this carrier builds its who-may-burn rule on the house's own witness law, never on a borrowed one. (b) 感謝 //kansha// runs everywhere at shrine and rite level and ''nowhere in Jinja Honchō's own language'' on the page read; attributed accordingly. (c) The widely-repeated reason for tofu under the needles stands ''affirmatively undocumented'': a professional reference desk working 『日本民俗大辞典』 (吉川弘文館, 2000) recorded 「（なぜ蒟蒻かの記述はなし）」 — no account of why konnyaku (レファレンス協同データベース, answered by 西宮市立中央図書館, https://crd.ndl.go.jp/reference/entry/index.php?id=1000256026, registered 2019/05/15, updated 2019/07/04). (d) //Tsukumogami// — tools resenting a careless discard — fits this design too well and carries no museum or academic source in reach; it stays out. (e) Awashima Jinja's own refusal list never reached the scout from an Awashima domain; the prefectural page alone carries it, so the doll detail above rides Meiji Jingū and Kodaira Shinmeigū, which publish their own.
+
+!!! Zettelkasten · evergreen notes · digital gardens ~ the ladders that GRADE a note
+
+''The three-note ladder.'' Sönke Ahrens, //How to Take Smart Notes// (2017), as read at zettelkasten.de: fleeting notes exist "for capturing ideas quickly while you are busy doing something else" (Ahrens p.43) and get rewritten or dropped within a day or two; permanent notes name the survivors — "Permanent notes, which will never be thrown away and contain the necessary information in themselves in a permanently understandable way" (Ahrens p.41) (https://zettelkasten.de/posts/concepts-sohnke-ahrens-explained/, published 2022-02-10). ''What earns permanence:'' writing for a stranger — full sentences, sources disclosed, precise and brief (attributed to Ahrens via zettelkasten.de; the scout confirmed the wording across the site and forum without landing a single canonical page, so it rides as attribution rather than a pinned quote).
+
+''The address carries the branch.'' Sascha Fast on Folgezettel: "Whenever you continue a train of thought, you increment the last position in the address, be it number or a character from the alphabet," and "when you want to expand, intersperse, or comment on a note, you take its address and append a new character" (https://zettelkasten.de/introduction/, published 2020-10-27). Same page: a Zettel gets written "in your own words," because rewriting "forces you to at least create a different version of it, your own version."
+
+''Evergreen.'' Andy Matuschak: "Evergreen notes are written and organized to evolve, contribute, and accumulate over time, across projects" (https://notes.andymatuschak.org/z5E5QawiXCMbtNtupvxeoEX, no date shown, read 2026-09-12); "It's best to create notes which are only about one thing—but which, as much as possible, capture the entirety of that thing" (`/Evergreen_notes_should_be_atomic`); "It's best to factor Evergreen notes by concept (rather than by author, book, event, project, topic, etc)" (`/Evergreen_notes_should_be_concept-oriented`); "If reading and writing notes doesn't lead to surprises, what's the point?" (`/Notes_should_surprise_you`); and on audience, "it's tempting to 'save time' by writing notes in publishable form. That might mean… self-censoring, or adding lots of qualifiers" (`/zXDPrYcxUSZbF5M8vM5Y1U9`), beside the site's own "These notes are mostly written for myself… if a note seems confusing or under-explained, it's probably because I didn't write it for you!" (`/About_these_notes`). All no date shown, read 2026-09-12. ⚠ The often-cited "Evergreen notes should be a chore to write" ''does not exist'' on that site; the neighbouring note reads "Evergreen notes should be densely linked."
+
+''Growth stages, published so the reader may discount them.'' Maggie Appleton: "🌱 Seedlings" for "very rough and early ideas"; "🌿 Budding" for "work I've cleaned up and clarified"; "🌳 Evergreen" for "work that is reasonably complete" — stamped beside a "planted" and a "last tended" date; and the ethos, "Gardens are imperfect by design. They don't hide their rough edges or claim permanent truth," with the instruction "Post ideas while they're still seedlings, and tend them regularly until fully grown" (https://maggieappleton.com/garden-history, last updated 2022-05-08).
+
+''Three axes where the garden runs one.'' Gwern Branwen publishes //status// — "notes" ("a pile of links & snippets & 'notes'") · "draft" ("at least has some structure and conveys a coherent thesis") · "in progress" ("well-developed draft") · "finished" ("when a page is done---in lieu of additional material turning up") — beside //confidence// on the Kesselman ladder (`certain` · `highly likely` · `likely` · `possible` · `unlikely` · `highly unlikely` · `remote` · `impossible`, plus the non-truth-claim tags `log` and `emotional`), beside //importance// on 0–10 (https://gwern.net/about, last modified 2024-08-30). ''Status, warrant and significance travel apart there'' — the observation this design leans on hardest.
+
+!!! Wikis, tombstones and archives ~ the disciplines that END a record
+
+''Wikipedia grades, and only the top two rungs answer to an outside reader.'' Stub — "A very basic description of the topic"; Start — "developing but still quite incomplete"; C — "substantial but is still missing important content"; B — "mostly complete and does not have major problems"; GA — "meets all of the good article criteria, and has been examined by one or more impartial reviewers"; FA — "attained featured article status by passing an in-depth examination by impartial reviewers" (https://en.wikipedia.org/wiki/Wikipedia:Content_assessment, last edited 2026-09-12). ''Deletion runs last, by policy:'' "If editing can address all relevant reasons for deletion, this should be done rather than deleting the page"; "Articles that are short and unlikely to be expanded could be merged into larger articles or lists"; "A page can be blanked and redirected if there is a suitable page to redirect to" (https://en.wikipedia.org/wiki/Wikipedia:Deletion_policy, live page, read 2026-09-12), beside the editing policy's "Fix problems if you can, tag or remove them if you can't. Preserve appropriate content" (https://en.wikipedia.org/wiki/Wikipedia:Editing_policy, last edited 2026-08-02). ''The decision takes time and reasons, not votes:'' "Articles listed are normally discussed for at least seven days"; "While AfD may look like a voting process, it does not operate like one. Justification and evidence for a response carries far more weight than the response itself" (https://en.wikipedia.org/wiki/Wikipedia:Articles_for_deletion, live, read 2026-09-12). ''And the hard erase runs two-tiered:'' RevisionDelete "allows administrators to remove individual entries in a page history or log from public view," while suppression removes material "from public and administrator view" (https://en.wikipedia.org/wiki/Wikipedia:Revision_deletion, last edited 2026-07-10).
+
+''A delete writes a marker.'' Apache Cassandra: "Cassandra treats a deletion as an insertion, and inserts a time-stamped deletion marker called a tombstone," with `gc_grace_seconds` whose "default value is 864000 seconds (ten days), after which a tombstone expires and can be deleted during compaction" — the window exists "to give unresponsive nodes time to recover and process tombstones normally," and dropping it early resurrects the data (https://cassandra.apache.org/doc/latest/cassandra/managing/operating/compaction/tombstones.html, no date shown, read 2026-09-12).
+
+''The CRDT literature makes the marker structural.'' Shapiro, Preguiça, Baquero and Zawirski, INRIA RR-7506 (submitted 2011-01-13): "Note that a tombstone is required to ensure that, if a removed element is received by a downstream replica before its added counterpart, the effect of the remove still takes precedence" (§3.3.2, p.22). And the cost, named: CRDTs "tend to become inefficient over time, as tombstones accumulate and internal data structures become unbalanced" (§4); reaping them safely wants stability — every concurrent update already delivered — and reaping them fully "requires an atomic, unanimous agreement between all replicas, i.e., a commitment protocol such as 2-Phase Commit or Paxos Commit" (§4.2) (https://hal.inria.fr/inria-00555588).
+
+''Git's ladder: a commit survives by reachability, a branch names nothing durable.'' `git gc` "tries very hard not to delete objects that are referenced anywhere in your repository," and its housekeeping includes "removing unreachable objects… pruning reflog"; the clocks read `gc.reflogExpire` "defaults to 90 days", `gc.reflogExpireUnreachable` "defaults to 30 days", and `gc.pruneExpire` — "it will call prune --expire 2.weeks.ago" (https://git-scm.com/docs/git-gc, docs shown at Git 2.52.0, read 2026-09-12). ''Deleting a ref erases nothing.''
+
+''The museum keeps the record after the object leaves.'' ICOM's //Guidelines on Deaccessioning// (ETHCOM, approved by the Executive Board, September 2019): "The process of deciding whether to deaccession an object should be distinct from the determination of the means for its disposition," and — the line this design borrows outright — "The process of deaccessioning and disposing of an object should be carefully documented in the museum's collections records, and these records should become a permanent part of the museum's records, maintained even after an object is disposed from a museum's collection" (https://icom.museum/wp-content/uploads/2019/10/Guidelines-on-Deaccessioning-of-the-International-Council-of-Museums.pdf). The AAM Code of Ethics (adopted 1993-11-12, amended 2000) binds the act to the mission: "disposal of collections through sale, trade or research activities is solely for the advancement of the museum's mission," and "collections in its custody are accounted for and documented" (https://www.aam-us.org/programs/ethics-standards-and-professional-practices/code-of-ethics-for-museums/).
+
+''Records management attaches the ending AT CREATION.'' NARA: "Disposition: Instructions for what is to be done with a record that is no longer needed to support agency business" — split "Temporary – Records with a temporary disposition that will eventually be destroyed or deleted" against "Permanent – Permanent records that contain historically significant materials"; "Retention: The length of time a record must be kept"; "Disposal: The action taken regarding temporary records after their retention periods expire"; "Disposition Authority: The legal approval empowering an agency to transfer permanent records to the National Archives or to carry out the disposal of temporary records"; and the permanence test — "Record appraised by NARA as having sufficient historical or other value to warrant continued preservation … beyond the time it is needed for administrative, legal, or fiscal purposes" (https://www.archives.gov/records-mgmt/rm-glossary-of-terms.pdf, PDF metadata 2016-03-09; parent page last reviewed 2024-11-19).
+
+!!! What the three disciplines agree on
+
+# ''Nothing good erases on the spot.'' Cassandra's ten days, git's 30/90 plus two weeks, the CRDT stability condition, AfD's seven days, NARA's scheduled retention — each inserts a bounded delay on a NAMED clock between //removed// and //gone//.
+# ''The marker outlives the thing.'' ICOM's permanent disposal record, the Cassandra deletion marker, the Wikipedia redirect-over-blank, git's reflog — the ending gets recorded somewhere the reader can still reach.
+# ''Promotion answers to an outside reader; demotion does not.'' GA/FA reviewers, NARA appraisal, Ahrens's write-for-a-stranger. Where the garden self-assesses (Appleton, Gwern), it ''publishes the axis'' so a reader may discount it.
+# ''Two erase tiers, always.'' RevDel against oversight; tombstone-present against tombstone-purged; unreachable-in-reflog against pruned.
+# ''The ending gets witnessed.'' 「黙って置いていかずご相談下さい。」 and ICOM's permanent record say the same thing in two grammars: a thing may end, and MUST NOT merely go missing.
+
+<<~/ahu>>
+
+<<~ ahu #/the-house-today>>
+
+!! The house today ~ the vocabulary as it stands, measured
+
+!!! The `status` key ~ three values, a sparse convention, no gate
+
+''Measured 2026-09-12 over `git ls-files 'bags/*.mem'`:'' ''726 carriers''; ''57'' carry a `status` key at all. The values in the wild read ''`standing`'' (the majority), ''`designed`'', and ''`rite`'' — no fourth spelling stands anywhere in the shelf.
+
+''No code reads it.'' A grep for `"status"` across `packages/*/src` answers a verb registration (`verb-caps.ts:542`), a CLI subcommand switch, and an HTTP field — ''and never the carrier meta key''. `meme-laws.ts` and `meme-normalize.ts` enforce framing, column alignment and the block check; they hold no stage vocabulary, no allowed-value set, and no rule relating `status` to a carrier's contents. ''So `status` today reads as a sentence a spirit writes for a later spirit'' — which the field would call an epistemic-status badge (Appleton's growth stage, Gwern's `status`), published precisely so the next reader may discount it. The same holds for `retain`, which the shelf writes both ways and no gate consults.
+
+''What each value carries in practice,'' read off the shelf's own `status-why` lines:
+
+|! value |! what the carrier holds |! what `status-why` actually writes |
+| ''`designed`'' | a shape argued whole, nothing enacted | `relational-parameter.mem:15` — "every call path traced from wikirule to binding widget and the radius measured against core, plugins, themes, editions and corpus; ''nothing built''" · `aniani.mem:15` — "doctrine; no source carries it yet" · `infrastructure-as-myth.mem:23` — "a research paper rather than a build subject" |
+| ''`standing`'' | ruled and enacted, with the witness named | `blob-carriage.mem:18` — "ruled 2026-09-11 and ENACTED — all seven clauses … stand in code with a red-first witness each" · `vessel-door.mem:15` — "the door stands … walked by the founding + contract witnesses" · `admission-on-a-lineage.mem:14` — "MEASURED IN PART — experiments 2 + 5 RUN and green …; 1, 3, 4, 6 unrun" |
+| ''`rite`'' | a practice invoked, never built | `talk-story.mem:14` — "the talk-story floor, ''convened rather than built''" · `hoike/SKILL.mem:25` — "a skill definition — ''a procedure invoked, never a thing built''" |
+
+⚠ ''`rite` names a KIND, not a rung.'' `talk-story.mem` stands as full canon in `api/pono` and will never "advance" to `standing`, because nothing about it awaits a build. Reading the three values as one ladder therefore fuses two axes into one key — and the field already showed the cure: Gwern publishes status, confidence and importance apart. #/the-lifecycle splits them.
+
+!!! The ratings ladder ~ an orthogonal axis the house already runs
+
+`api/pono/meme#/rating-posture` (`meme.mem:102-113`) carries five structural buckets — ''Noise · Data · Meme · Ano · Kapu'' — and states their nature: "Rating derives from schema compliance, not from promotion"; "Rating runs as a ''predicate'': a bucket names a query that succeeds or fails on the carrier — typing = running the query, never consulting a class." ''So the house already holds a five-rung ladder that grades SHAPE'' and says in the same breath that the ladder answers nothing about maturity. The `mana` / `manao` / `manaoio` triple rides beside it and "stay distinct and should not collapse into one blended score" (`:114`). A lifecycle therefore adds a ''third'' axis to two that stand; it must not fuse with either.
+
+!!! The retirement law that already stands
+
+`api/pono/meme#/retirement` (`:84-96`) rules the NAME, not the file: "''An address MUST keep meaning what it meant.'' A concept that moves builds a NEW address and the old one retires to a residue pointing forward; a name reused for a changed thing silently breaks every reader who already holds it, and breaks them ''without an error'' — they read on, and the reading drifts." It then scopes the cadence — the authored grammar retires fast, "any author, any pour", while engines and plugins move "on a cadence the kahu hold". ''What it does not cover:'' a carrier whose address nothing wants any more. Deprecate-never-redefine answers the name; it says nothing about the bytes.
+
+!!! The promotion boundary ~ `docs/pono` → `api/pono`, capability-gated and record-less
+
+`docs/pono/canon-boundary` carries the crossing (`:89`): "''COPY-UP IS FREE. PROMOTION-DOWN IS THE PRIESTHOOD'S ACT.'' (operator ruling)", with `:95` naming the gate — "Every residency verb demands `cap("admin", destBag)` … ''Kahu = whoever holds admin on the lares/lararium canon bags''" — and `:97` naming the hole: "''THE RECORD IS MISSING, and it is the declared blocker.'' … promotion is PERMITTED by capability and RECORDED by nothing. A cap gate is a decision at a moment; ''a receipt is a record you can walk backwards''." `meme.mem:112` says the same from the other side: "Promotion to lares/ canon follows a separate ceremony and carries no change to rating." ''The ceremony has a name and no artifact.''
+
+!!! Tombstones ~ three removal grammars, each with its own reach
+
+# ''`removeMeme` — the carrier's own removal.'' `place-meme.ts:211-225`: "THE REMOVAL — the meme's whole group (root · `#slot` fragments · `/path` children) tombstones" — one law every skin calls, so a root leaving through a browser's trash icon takes its fragments with it.
+# ''`tombstoneInBag` against `removeInBag`.'' `composite-store.ts:264` hides a title in one writable bag (the kāpae hide — the record stands, shadowed); `:272` names the other, "HARD-remove a title from one bag (ABSENT — falls through)". ''Two erase tiers, exactly as the field's disciplines run them.''
+# ''The synced tree's `null`.'' `synced-tree.ts:53` holds a journal of `string | null`, and `:114` writes `null` to record "a removal" — so a projector's flush merges an ABSENCE rather than losing one. The house learned this the expensive way; the CHANGELOG carries it under ''EVERY OBSERVATION BUT THE DAEMON'S OWN VANISHED''.
+
+''And the carrier's own honest residue.'' `deserializer.ts:1013`: a slot whose child record left keeps the call — "missing child: keep the marker — honest residue, never invented bytes". `templates/ahu/html` then renders that as `unresolved` against `arriving` against `empty`. ''The house already refuses to let an absence read as a nothing.''
+
+!!! Grace, brake and sweep ~ the delays the house already holds
+
+|! mechanism |! file:line |! what it holds back |
+| the delete grace window | `commands/watch.ts:42` — `DEFAULT_DELETE_GRACE_MS = 60_000` ("Syncthing's delete-pairing window") | a vanished carrier waits a minute before tombstoning; `delete-gate.ts:1-21` splits the settled wave into RENAME · TOMBSTONE · SUSPEND |
+| the mass-delete brake | `commands/watch.ts:43` — `DEFAULT_MASS_DELETE_FRACTION = 0.25`; `delete-gate.ts:48-49`, `:90-93` | tombstones above a quarter of a bag's carriers ''suspend the whole wave and apply nothing'' — a `git checkout` unlink flood trips it |
+| ambiguity declines | `delete-gate.ts:14-19` | a hash shared by more than one delete OR more than one add re-links none of them — "Ambiguity never guesses" |
+| grace per cap-tier | `cas-caps.ts:66-70` — `veil: 8 · personagroup: 4 · contract: 2 · public: 1` rolls; `:78` `graceForTier` | private tiers hold longest, because "Private tiers (one holder-set, no re-fetch road) hold longest" — a VEIL blob has no second copy to re-fetch |
+| PIN | `cas-caps.ts:24-31`, `:49` `pinnedCids` | "a pinned blob never sweeps while the pin stands; an EXPIRED pin releases the blob to the ordinary grace" |
+| the genesis protect set | `node-cas.ts:210` | the genesis manifest's blobs never sweep, ever |
+| ''the unbuilt one'' | `commands/watch.ts:24-25` | "OWED: the file-grain rolling backup (`.stversions`-style) belongs at the PROJECTOR (backup-on-write) — content is gone from disk by the time a delete is detected" |
+
+''The clock under all of it refuses a wall.'' `cas-caps.ts:74-77`: the unit reads "one ROLL of the realm's own clock (`realmPace`, ahi-ka: the sweep passes 1 and counts rolls), never a wall-clock span," and a torn reading folds to ONE "so a zero grace never sweeps a staged body before its verb lands."
+
+!!! Ahi-kā ~ the reading that refuses to call a quiet thing dead
+
+`ahi-ka.ts:25` names four verdicts — `ahi-ka` (kept) · `ahi-tere` (guttering) · `ahi-mataotao` (cold) · `abstain` — measured as a RATIO of a realm's own progress against an ''independent'' yardstick, "never a duration on a clock." `:53` carries `AHI_KA_500YR = { ambientFloor: 8, warmRatio: 0.30, coldRatio: 0.05 }`, and the comment above it rules the posture this design inherits whole: "a dormant shrine woken for a centennial rite is not a dying one; long ebbs are the fiction's normal, not a fault," and "a thin yardstick abstains before any verdict … Fail-closed toward alive: abstain, never cold."
+
+!!! The neighbouring rulings that argue AGAINST a ceremony at all
+
+''Read these first, because they nearly refuse this whole design.'' `founding-runbook.mem:418-440` carries a lifecycle the house already ruled — "The nexus-doc lifecycle ~ born by act, lives by traffic, quiet by absence" — with five stages in the house's own `<<~ has Stage …>>` grammar (Birth · Advance · Succession · Liveness · Quiet) and the ruling beneath them: "''WHICH ANSWERS DISSOLUTION WITHOUT AN ADMIN CAPABILITY.'' A Nexus is never dissolved — ''it goes quiet''. That rhymes with every neighbouring ruling rather than inventing a new shape: a cabal-realm ''DISSOLVES BY COOLING'' and never by an act; a standing lift ''EXPIRES'' and no party holds a lowering act … ''The correct admin capability here reads as NONE.''"
+
+⚠ ''A design that hands anyone a burn capability owes this ruling an answer.'' #/the-fire gives it.
+
+!!! The fire has already burned, and the commits already carry gratitude
+
+`git log --diff-filter=D` over `bags/*.mem` (read 2026-09-12) answers with the house's own precedents — and the register runs remarkably consistent:
+
+* `07241e981` — "''lar:///the-template.leaves.the-shelf — skill-pono-template retires, to be raised again''". The body names the reason ("The carrier described a shape the house no longer writes"), the weld ("Nothing dangles: the only file naming it was itself"), and the witnesses ("699 canonical, 692 checks ok, 0 mismatch, 0 torn … 612 tests pass").
+* `cc3f85022` — "''lar:///the-work-order.completes.and-goes — the handoff deletes, its relation fulfilled''", whose body carries the closest thing the house holds to a //norito//: "The red-doc dies the way the doctrine now says a spirit dies: ''its relation completed, never its data misplaced''." It also names an authored ending: "''The work-order's own frontmatter ruled this end: retain = false, enact-then-delete.''"
+* `194e8419b` — "the ghost yields to its heir — ''a room outlives its file, and the heir answers''" · `8830f5ead` — `holds.mem`, retired with its pre-ruling spelling carried in the successor · `817cdebc6` — a carrier burned ''out of `lares-history` itself''.
+
+!!! The shelf and the archive bag ~ measured, and less of an archive than it reads
+
+`bags/lares-history/` holds 40-odd files. `git log --diff-filter=A` shows them arriving in ''one rename sweep'' — `90e2a2bde`, 2026-08-22, "retire @{slug} to the entity slots' plain names" — never by deliberate individual deposit; and `817cdebc6` shows a carrier later burned out of it. Its contents sit ''outside the `ha.ka.ba/` address scheme'' (`bags/lares-history/lares_research/…`, no `uri-path` meta), while standing canon still names them at `lar:///ha.ka.ba/lares-history/…` addresses (`lararium-identity.mem:570-571`, `sigil-shape-motion.mem`, `stream-sensorium-ontology.mem:31`).
+
+''Measured 2026-09-12'' — `lares meme check --edges $(git ls-files 'bags/*.mem')`:
+
+> `edges: 726 carrier(s) read · 719 address(es) held · 2731 edge(s) · 198 naming nothing · 43 naming a FILE rather than an address`
+
+''198 edges name nothing''; ''22 of them name `lares-history`''. That number IS the cost of an unwitnessed ending, and it stands as the sharpest argument in this carrier for naming the rite.
+
+!!! Two more standing laws this design must not break
+
+* ''Evergreen, no archaeology.'' The house bans "used to", "the old X", strangler framing in code and in carriers; the record of what changed lives in the commit, in the meme, and in memory — never in the present-tense text. A lifecycle that leaves a ''deprecated'' tier lying in the shelf would re-import exactly what that rule ejects.
+* ''The witness law'' (`hoike.mem:77`): "A saksi flows from observer to observed-record, ''never reflexively'': a party MUST NOT witness its own block or its own turn — a mark on one's own finding reads as signature, not witness." ''A spirit therefore cannot witness the burning of a carrier it wrote.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-lifecycle>>
+
+!! The lifecycle ~ stages, transitions, rites, witnesses, records
+
+!!! The correction the candidate shape needs
+
+''The charge offered a chain to argue against: `fleeting` → `seedling` → `standing` → `rite` → `archaeology` → `otakiage`. Three links break.''
+
+# ''`rite` sits on a different axis.'' `talk-story.mem` and `hoike.mem` stand as full canon and will never advance, because nothing about them awaits a build (`talk-story.mem:14`, "convened rather than built"). Placing `rite` after `standing` makes a completed practice read as a way-station. ''Cure: `rite` rides a KIND axis'' — what would count as enactment — beside the standing axis, exactly as Gwern runs status apart from confidence apart from importance.
+# ''`archaeology` names what the house bans.'' The evergreen rule ejects backward-facing narration from carriers entirely; a stage that invites a carrier to sit as archaeology re-imports it under a new name. What actually happens to a closed floor differs: its rulings ''move'', and the carrier ends up holding pointers alone. ''Cure: name it `folded`'' — a state about where the content went, never about age.
+# ''`otakiage` names a TRANSITION, never a stage.'' A burned carrier occupies no stage at all; the shelf holds nothing and git holds everything. Listing it as the sixth rung would make "burned" a place a carrier sits, which it never does. ''Cure: the fire rides the transitions table, and the stage after it reads `gone`.''
+
+''And one link the candidate got exactly right:'' `fleeting` earns its place because the house ''already builds it'' — the `temp` slot takes a `MemoryTiddlerStore` (`island-recipe.ts:70-72`) while every other slot takes an `AutomergeDocStore`, so a fleeting record has ''no persistence mechanism to fail''. Ahrens's fleeting note and the house's temp slot name one thing.
+
+!!! Axis A ~ STANDING: five stages, one line, in order
+
+```
+<<~ has Stage fleeting "status/none holds/nothing-on-disk ~ a turn's scratch; the temp slot never persists">>
+<<~ has Stage designed "status/designed holds/a-shape-argued ~ nothing enacted; status-why names what stands unbuilt">>
+<<~ has Stage standing "status/standing holds/a-ruling-enacted ~ status-why names the witness that proves it">>
+<<~ has Stage folded "status/folded holds/pointers-alone ~ every lean closed, every ruling rehomed, every inbound edge re-pointed">>
+<<~ has Stage gone "status/none holds/git-alone ~ the shelf holds nothing; the commit holds the argument">>
+```
+
+|! stage |! `status` |! what the carrier holds |! what `status-why` reads |! what `meme check` SHOULD enforce |
+| ''`fleeting`'' | ''absent — no carrier exists'' | a turn's scratch: a `$:/temp` tiddler, a draft in the wiki island's `temp` slot, a spirit's working note | //nothing — it never reaches a meta block// | ''nothing'' — the gate never sees it. A fleeting thing that wants a check has already stopped being fleeting |
+| ''`designed`'' | `designed` | a shape argued whole against the house and the field; leans open by design | what stands ''unbuilt'', in those words: "nothing built" · "doctrine; no source carries it yet" | open `-> ?` leans read ''correct'' here. An empty `#/leans` slot on a `designed` carrier reads ''wrong'' — a design with no open question has either been ruled or never argued |
+| ''`standing`'' | `standing` | a ruling enacted, or a measurement taken and held | the ''witness'': a commit sha, a named test, a measured run, or an honest partial ("MEASURED IN PART — … 1, 3, 4, 6 unrun") | an open `-> ?` in `#/leans` reads ''wrong'' unless `status-why` names it as held-open with its blocker. A `standing` carrier whose `status-why` names no witness reads ''wrong'' |
+| ''`folded`'' | `folded` //(PROPOSED — no carrier spells it today)// | pointers alone: each slot says where its content went | "folded to `lar:///…`, welded, nothing points here" | ''zero'' inbound `loulou`; ''zero'' open leans; every slot carrying a fold target. Any of the three failing reads ''wrong'' and the carrier stays `standing` |
+| ''`gone`'' | ''absent — no carrier exists'' | nothing. git holds the bytes, the commit holds the argument, the CHANGELOG holds the fact | //nothing// | the shelf's ''global'' check: zero dangling edges gained. The house measures 198 standing today, so this reads as a debt, never a floor |
+
+''The honest default: no `status` at all.'' 669 of 726 carriers carry none, and most of them properly so — a reference table, a library text, a fiction-canon concept enters no lifecycle. ''A missing `status` MUST NOT read as a stage''; it reads as //this carrier declines the ladder//, which the house should keep cheap. #/questions asks whether any class of carrier MUST carry one.
+
+!!! Axis B ~ KIND: what would count as enactment
+
+```
+<<~ has Kind build "enactment/code-plus-a-red-first-witness ~ the default; a designed build owes a test">>
+<<~ has Kind rite "enactment/invocation ~ a practice convened, never built; it can never owe code">>
+<<~ has Kind reading "enactment/a-measurement-dated ~ a field scout or a census; it ages rather than breaks">>
+<<~ has Kind floor "enactment/an-exit ~ a talk-story floor; it closes by moʻolelo, hoike or honest suspension">>
+```
+
+''Why the split earns its keep.'' The two axes cross cleanly and answer different questions. ''`rite` × `designed`'' names a practice argued and not yet convened; ''`rite` × `standing`'' names `talk-story.mem` today. ''`reading` × `standing`'' names `device-capabilities-2026.mem`, whose `status-why` dates its own reading ("read 2026-09-11 against the field as it stands that day") — a reading never goes wrong, it goes ''stale'', and staleness wants a revisit rather than a burn. ''`floor` × `folded`'' names precisely the class the retirement rite already governs.
+
+''And the split decides what `meme check` may say.'' A ''`build`'' carrier reading `standing` with no witness in `status-why` reads wrong. A ''`rite`'' carrier reading `standing` with no witness reads ''fine'' — invocation IS its witness, which is why `hoike/SKILL.mem:25` writes "a procedure invoked, never a thing built" and nothing more. ''Fusing the axes makes one of those two rules unstatable.''
+
+!!! The transitions ~ six rites, each with a who, a witness and a record
+
+|! rite |! from → to |! WHO may perform it |! WITNESS (what proves it) |! RECORD (where history keeps it) |
+| ''pour'' | fleeting → designed | ''any hand'' — the operator, a Lares, a tasked spirit | `lares meme normalize` then `meme check` answers canonical; `meme check --edges` gains no dangling | the commit that adds the file; `status-why` names what stands unbuilt |
+| ''rule'' | designed → standing | ''the OPERATOR alone.'' A spirit may argue, measure, and enact; it MUST NOT move its own carrier to `standing` on its own authority | the enactment's own red-first witness — the failing test quoted first, its cure, and a CONTROL; or, for a `reading`, the dated measurement | `status-why` names the witness verbatim; the CHANGELOG's Fixed/Added/Changed carries the fact |
+| ''promote'' | `docs/pono/x` → `api/pono/x` | ''the kahu-cabal'' — whoever holds `cap("admin", …)` on the canon bag (`canon-boundary.mem:95`) | the cap gate ''plus'' a receipt — ⚠ ''the receipt does not exist'' (`canon-boundary.mem:97`, the declared blocker) | today: the commit alone. Owed: the proposal/receipt graph |
+| ''fold'' | standing → folded | ''the spirit that closed the last open lean'' — never the carrier's own author witnessing its own fold (`hoike.mem:77`) | `meme check --edges <carrier> $(git ls-files 'bags/*.mem')` shows ''zero inbound''; every ruling reachable at its new `standing` home | each slot rewritten to "folded to `lar:///…`"; `status-why` names the targets; CHANGELOG Changed names the fold |
+| ''otakiage'' | folded → gone | ''the operator CALLS it; any hand may carry it.'' The call and the carriage separate — see #/the-fire | the fold's weld still holds at the moment of the fire (re-run, never trusted from the fold commit); the house's checks green in the same commit | the last check-in commit, then the delete commit. ''git holds the argument''; the CHANGELOG holds the fact |
+| ''tombstone'' | //orthogonal — a live record leaving a live group// | `removeMeme` through any skin (`place-meme.ts:215`) | the 60s grace window and the 0.25 mass-delete brake both passing (`commands/watch.ts:42-43`) | the synced tree's `null` (`synced-tree.ts:114`); the group's whole tombstone set in the result |
+
+''The two-commit shape, and why it holds.'' The last check-in and the delete ride ''separate commits'' — so the shelf carries one state in which the carrier stands, complete, marked as ending, with every pointer already re-aimed. ''A reader bisecting the history lands on a carrier that explains its own ending'', rather than on a diff that removes it. This mirrors ICOM's split: "The process of deciding whether to deaccession an object should be distinct from the determination of the means for its disposition," and the record that "become[s] a permanent part of the museum's records, maintained even after an object is disposed."
+
+!!! The three siblings ~ standings a carrier holds OUTSIDE the ladder
+
+# ''`kapu` — sealed, referee-side, and never burned by another hand.'' The tier chain runs VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC (`cap-tier.mem:35`), fail-closed at VEIL (`:67`), and the rating ladder's top bucket reads "above base namespace; wears the kapu ''grant'' (operator-minted, shore-gated); kernel/sacred tier; cannot be overridden by lower tiers" (`meme.mem:110`). ''Rule: no hand but the grant-holder's ends a kapu carrier'', and a sweep that cannot read a carrier MUST NOT propose it — the grace table already prices this, holding a VEIL blob ''eight'' rolls against PUBLIC's ''one'' (`cas-caps.ts:66-70`), on the reasoning that a private thing has no second copy to re-fetch. ''The field rhymes exactly:'' a shrine refuses what belongs to another tradition — 「『神観念』が違いますので」 — a boundary, never a judgement.
+# ''`tombstone` — a record removed inside a live group.'' This never touches the lifecycle. `removeMeme` takes the whole group at once (`place-meme.ts:211`); `tombstoneInBag` hides where `removeInBag` removes (`composite-store.ts:264`, `:272`); the grace window, the brake and the ambiguity-declines all stand between a vanished path and a written absence. ''The lifecycle governs a carrier's standing in the shelf; the tombstone governs a record's presence in a group.'' Fusing them would let a sync flake burn a carrier.
+# ''`lares-history` — the shelf that reads like an archive and does not act as one.'' What it holds arrived in one rename sweep (`90e2a2bde`, 2026-08-22); a carrier has since been burned ''out'' of it (`817cdebc6`); 22 dangling edges name into it. ''A bag whose own contents burn cannot serve as the thing that saves a carrier from the fire.'' Either the house rules it an archive — addresses inside `ha.ka.ba/`, a `status`, and nothing ever burned from it — or it stops naming it as one and lets git carry the archive role alone, which git already does better (`git-gc`: "tries very hard not to delete objects that are referenced anywhere in your repository"). #/questions puts the fork to the operator.
+
+<<~/ahu>>
+
+<<~ ahu #/the-fire>>
+
+!! The fire ~ what burns, what never burns, who calls it, and how it gets scheduled
+
+!!! What burns
+
+''One class only:'' a carrier reading ''`folded`'' — every lean closed, every ruling rehomed to a `standing` address, every inbound `loulou` re-pointed, `meme check --edges` showing zero inbound — whose continued presence adds nothing a reader could not reach at the fold target.
+
+''Nothing else, ever.'' A carrier that merely went quiet does not qualify; neither does one that reads stale, wrong, or embarrassing. ''A wrong carrier gets corrected; a stale reading gets re-dated; an embarrassing one stays'' — Wikipedia's editing policy says it in the register the house already keeps: "Fix problems if you can, tag or remove them if you can't. Preserve appropriate content."
+
+!!! What NEVER burns
+
+# ''Canon under `api/pono/`.'' 149 carriers. An address there has readers the house cannot enumerate — that is what promotion into it MEANT. `meme.mem#/retirement` already governs the name; the bytes at a canon address stay.
+# ''Anything a standing `loulou` still names.'' This reads mechanically, never by judgement: `meme check --edges` answers it. ''The weld comes first and the fire second, always'' — the house measured the inversion once at 3 carriers moved → 66 dangling refs, against 37 folded weld-first → zero.
+# ''Anything under kapu, or sealed above the reader's tier.'' A sweep that cannot read a carrier cannot judge it. The rating ladder's own words: "cannot be overridden by lower tiers."
+# ''The CHANGELOG.'' It holds the record the fire depends on. A burn that erased its own record would leave the house exactly where the 198 dangling edges already leave it.
+# ''Genesis.'' `node-cas.ts:210` already refuses to sweep the genesis manifest's blobs; the same refusal rides up to the carrier layer. The founding artifacts stand outside every grace.
+# ''`docs/handoff.mem`.'' It declares its own exemption in its `role` (`:13`): "updated at each phase boundary, ''never archived in place''; history lives in git". A carrier may author its own permanence, as NARA's schedules do at creation: "Permanent – Permanent records that contain historically significant materials."
+# ''Any floor with an open lean.'' The standing gate, already ruled: a floor whose leans have not all been ruled stays. ''An unresolved argument holds a claim on the shelf that no tidiness outranks.''
+# ''Anything a hoike contests.'' `hoike.mem:74` keeps a dissent re-openable, and "a later court may depend on the kept words". Burning the record a dissent hangs on would close the re-entry key by deletion.
+
+!!! Who calls it
+
+''The operator calls; any hand may carry.'' The two halves separate deliberately.
+
+''Why a call at all, against the house's own grain.'' `founding-runbook.mem:426` rules that "''The correct admin capability here reads as NONE''" for ending a Nexus, because a Nexus "goes quiet" and liveness "reads off the lines themselves". ''That ruling holds, and a carrier differs in the one way that matters:'' a Nexus lives on traffic, so its silence IS its ending, self-executing and costless. A `.mem` file sits at a fixed path in git and ''never goes quiet''. It keeps rendering, keeps answering `meme get`, keeps being read as current — ''a stale carrier reads exactly like a standing one'', which is the whole reason `status-why` exists. Cooling has no mechanism over a file. So the house faces a choice between an act and an accumulation, and the accumulation already costs 198 dangling edges. ''The capability answers NONE where quiet does the work, and answers OPERATOR where quiet does nothing.''
+
+''Why not a spirit's own authority.'' A spirit can close a lean, run the weld, and prepare the fold whole. It MUST NOT rule that the argument has ended, for the same reason it may not witness its own block (`hoike.mem:77`): a mark on one's own finding reads as signature, never witness. ''The house's own precedent already runs this way'' — every burn in the log rode an operator's call, and the one carrier that authored its own ending did so through a ruling the operator had already made (`cc3f85022`: "The work-order's own frontmatter ruled this end: retain = false, enact-then-delete"). ''An authored ending, ruled at pour time, reads exactly like NARA's disposition instruction attached at creation'' — and stays the one shape that legitimately skips a fresh call.
+
+''Why any hand may carry.'' The field splits these too: the layperson deposits, the clergy burn — 「参拝者の書の上達と使い古した古筆に感謝の祝詞が奏上され」. Here the split inverts, because the house's asymmetry runs the other way: judgement sits with the operator and mechanics sit with whoever runs the commands. ''What the carrier MUST NOT do is end in silence'' — 「黙って置いていかずご相談下さい。」 — and the two-commit shape enforces exactly that.
+
+!!! How it gets scheduled ~ never a calendar
+
+''The field itself refuses a fixed date.'' Sagichō runs "usually held around the fifteenth of January" with "a fair amount of regional variation in the date and the event's proceedings"; one shrine burns on two named January dates while another receives year-round. ''Even the rite this carrier borrows its name from declines a national calendar.''
+
+''So the house proposes, and the operator calls:''
+
+# ''The reading names candidates; it never burns.'' Ahi-kā already holds the shape (`ahi-ka.ts:25-53`): a ratio against an independent yardstick, a `warmRatio` of 0.30 and a `coldRatio` of 0.05, an `ambientFloor` of 8 below which the reader ''abstains'' — and the posture "Fail-closed toward alive: abstain, never cold." Read over a ''carrier'' rather than a realm, the yardstick reads as the shelf's own motion — commits touching `bags/*.mem` — and the signal as the carrier's own: inbound edges, `revised-on`, slots rewritten. ''A carrier reading `ahi-mataotao` enters the candidate list and nothing more.'' A thin yardstick abstains, exactly as it does today, and "a dormant shrine woken for a centennial rite is not a dying one."
+# ''The operator calls the season.'' A Koshōgatsu-shaped rite: one sitting, several carriers at once, at a moment the operator names — a phase boundary, a founding, a release. Batching matters for the same reason `delete-gate.ts` batches: ''a wave shows its own shape''. Six carriers proposed at once surfaces a pattern one at a time would hide, and the mass-delete brake's instinct — suspend the whole wave above a quarter — belongs here too, as a reading the operator gets handed rather than a rule that fires.
+# ''The sigil, PROPOSED and unregistered.'' `<<~ otakiage>>` would open the sitting the way `<<~ talk-story>>` convenes a floor. ⚠ ''No such sigil exists'': the house registers a sigil by its own tiddler (`lar:///ha.ka.ba/…/sigil-<name>`, read by `grammar-cache.ts:115`), and `otakiage` appears nowhere in `bags/` or `packages/` (grep, 2026-09-12). Registering it belongs to a later ruling, never to this design. Until then the sitting convenes as a talk-story floor, which already carries the three exits it needs.
+
+!!! The gratitude line
+
+''The house already writes it, and the register holds.'' The last check-in commit's body says four things and stops:
+
+# ''What the carrier carried'' — stated in the present tense, evergreen, as the thing it held rather than the thing it used to be.
+# ''Where each part went'' — the fold targets by `lar:` URI, so a reader arriving at the commit reaches the content in one hop.
+# ''What proves nothing dangles'' — the weld, re-run, quoted: the edge count and the check line.
+# ''The thanks'' — one clause, in the house's own voice, naming what the carrier did rather than praising it.
+
+''The precedents to write toward'' (both the house's own, both already in the log):
+
+> "The red-doc dies the way the doctrine now says a spirit dies: ''its relation completed, never its data misplaced''." — `cc3f85022`
+
+> "It comes down whole and gets raised again." — `07241e981`
+
+''Both say the same thing the shrines say:'' the ending belongs to the thing's completion, never to its worthlessness — 「感謝の気持ちをこめて納める」. A commit line reading "remove obsolete meme" would end the carrier correctly and ''record the ending wrongly'', which is the only part a later reader gets.
+
+''And the commit subject follows the house's own convention'' — `lar:///w1.w2.w3 — summary` — with the three-term root naming what the ending DID. The log already shows the shape: `the-template.leaves.the-shelf` · `the-work-order.completes.and-goes` · `the-ghost.yields.to-its-heir`.
+
+<<~/ahu>>
+
+<<~ ahu #/pattern-integrity-rhymes>>
+
+!! Pattern-integrity rhymes ~ where the field IS a house law under another name, and where each breaks
+
+# ''The return-rite IS the weld.'' 「黙って置いていかずご相談下さい。」 — do not leave it silently — names the same law as `feedback_weld_test_before_rename`'s measured cost (3 carriers moved → 66 dangling refs; 37 folded weld-first → zero) and as the 198 dangling edges standing today. Both say: an ending that skips the handover does not end the thing, it ''strands the relations pointing at it''. ''Where it breaks:'' the shrine's consultation runs between two humans who both hold the object's meaning; the weld runs between a carrier and a mechanical edge index. `meme check --edges` proves an address unreferenced; it proves nothing about a reader who holds the address ''in their head''. The house's own cure for that gap sits elsewhere entirely — `meme.mem#/retirement`'s deprecate-never-redefine, which protects the reader who "read on, and the reading drifts."
+# ''The shrine's refusal list IS the cap-tier, and the reason matches.'' 「『神観念』が違いますのでお預かりできません。」 refuses an item because the receiving frame differs, never because the item lacks worth — the same move `cap-tier.mem:67` makes when `parseCapTier` folds any torn or unknown value to VEIL: "a torn datum NEVER silently opens a bag." Both fail ''closed toward respect''. ''Where it breaks:'' the shrine's refusal sends the item somewhere it belongs (a temple, the issuing shrine), while the house's refusal simply declines — there exists no forwarding for a carrier a sweep cannot read. The gap reads as honest rather than fixable: a sweep that could route a sealed carrier would have had to read it.
+# ''`gc_grace_seconds` IS `graceForTier`, and the house's version reads better.'' Cassandra's ten days exist "to give unresponsive nodes time to recover and process tombstones normally," and dropping a tombstone early resurrects the data. `cas-caps.ts:74-77` runs the same window against the realm's own rolls — "never a wall-clock span" — and prices it by holder-set: VEIL 8 rolls against PUBLIC 1, because "Private tiers (one holder-set, no re-fetch road) hold longest." ''Where it breaks:'' Cassandra's grace protects against a partitioned ''replica'' and can be reasoned about because every replica runs the same clock; the house's grace protects against a partitioned ''reader'' and runs on a pace each observer computes locally. Two observers may therefore disagree about whether a grace has elapsed, and the house accepts that — `ahi-ka.ts` abstains rather than resolving it, which is the correct posture and also names the reason the fire cannot fire automatically.
+# ''ICOM's permanent disposal record IS the two-commit shape.'' "these records should become a permanent part of the museum's records, maintained even after an object is disposed" — the last check-in commit ''is'' that record, standing in the history at a point where the carrier still exists and already explains its own ending. ''Where it breaks:'' the museum's record lives in the same system a researcher searches for the object; the house's lives in git, which a reader of `bags/` never opens. So the CHANGELOG must carry the fold targets too, or the record exists somewhere nobody looking for the carrier will go.
+# ''NARA's disposition-at-creation IS `retain` — and the house never wired it.'' "Disposition: Instructions for what is to be done with a record that is no longer needed"; permanence assessed as "value … beyond the time it is needed." `retain = false` rode exactly this office once, and `cc3f85022` names it: "The work-order's own frontmatter ruled this end: retain = false, enact-then-delete." ''Where it breaks:'' no code reads `retain` (grep across `packages/*/src`, 2026-09-12), and the shelf spells it both ways with no consistent sense — the instruction landed because a human read it, which makes it a note rather than a schedule. #/questions asks whether it should carry the office properly.
+# ''Ahrens's fleeting note IS the `temp` slot, exactly.'' "Fleeting notes are there for capturing ideas quickly while you are busy doing something else," discarded within a day or two — and `island-recipe.ts:70-72` gives the `temp` slot a `MemoryTiddlerStore` while every other slot takes an `AutomergeDocStore`. ''Where it breaks:'' it does not. This rhyme holds all the way down, and it holds because the house built the mechanism before anyone named the stage — which reads as evidence the stage names something real.
+# ''The evergreen note IS the evergreen rule, from opposite directions.'' Matuschak: notes "written and organized to evolve, contribute, and accumulate over time, across projects." The house: state the invariant in the present tense; no "used to", no "the old X". ''Both refuse a note that narrates its own history.'' ''Where it breaks:'' Matuschak's evergreen note accumulates ''in place'' and its own past stays visible in its growth; the house's evergreen rule actively ''ejects'' the past into the commit log. So a house carrier reads thinner than an evergreen note by design, and the reader who wants the history must know to go somewhere else. The `status-why` line exists precisely to point there.
+# ''Appleton's published growth stage IS `status-why`, and the house's version does more.'' A growth-stage badge lets a reader discount a page; `status-why` lets a reader ''check'' it — "MEASURED IN PART — experiments 2 + 5 RUN and green in `lineage-rank`; 1, 3, 4, 6 unrun" hands over the falsifier rather than a confidence. ''Where it breaks:'' a badge renders and a `status-why` sentence does not — nothing in the TW5 render surfaces it, so today it reaches a reader of the `.mem` file and nobody else. A lifecycle that wants readers to act on stages owes a render, which this carrier does not design.
+# ''AfD's seven days and "not a vote" IS the talk-story floor.'' "Justification and evidence for a response carries far more weight than the response itself" reads as the same law `talk-story.mem:93` holds with its three exits and `hoike.mem:69` with "Reasons travel; votes don't." ''Where it breaks:'' AfD closes on a community consensus among peers; a house floor closes on ''the operator's'' exit. The house runs no quorum for an ending and should not pretend otherwise — the fire's caller stays singular for exactly the reason `founding-runbook.mem:426` refuses an admin capability elsewhere: a quorum for ending things IS a governance surface, and the house has ruled against minting those where quiet suffices.
+# ''Git's reachability IS the shelf's edge index.'' `git gc` "tries very hard not to delete objects that are referenced anywhere in your repository"; the fire refuses any carrier a standing `loulou` names. ''Where it breaks — and this one matters most:'' git computes reachability ''totally and mechanically'', and an object outside it truly reaches nothing. The shelf's edge index reads `loulou` and `pranala` marks in `.mem` text alone — it never sees a `lar:` URI in a source comment (`ahi-ka.ts:21`, `cas-caps.ts:19`, `place-meme.ts` and dozens more name memes in doc comments), in the CHANGELOG, in a skill file, or in a spirit's memory. ''So "zero inbound" from `meme check --edges` reads as a weaker claim than it looks'', and the weld step MUST grep the source tree and the CHANGELOG beside it. The 43 edges "naming a FILE rather than an address" in the same measurement hint at the size of the blind spot.
+# ''Wikipedia's two erase tiers ARE `tombstoneInBag` against `removeInBag`.'' RevDel hides from the public while admins still read; suppression removes from both — and `composite-store.ts:264` hides a title in one bag (the kāpae hide) where `:272` HARD-removes it so the layer below falls through. ''Where it breaks:'' Wikipedia's tiers differ by ''audience'' and the house's differ by ''stack position''. A kāpae'd tiddler stays visible to anyone reading that bag directly; it hides from the composite. Reading the house's pair as a privacy ladder would be a real error — the privacy ladder runs on `cap-tier`, a different axis entirely.
+# ''The doll that wants a larger rite IS the `folded` stage.'' Kanda Myōjin refuses dolls at the ordinary box; Kodaira Shinmeigū takes them through a separately named rite with prior application; Meiji Jingū built a festival. ''None of them treat the doll as trash — they treat it as needing more ceremony than the gate box provides.'' A standing floor whose rulings must all be rehomed before it may end reads exactly the same: the fold IS the prior application. ''Where it breaks:'' the doll's extra rite is about the ''spirit'' the doll holds, and the carrier's extra rite is about the ''edges'' the carrier holds. Dressing the edge-weld in the doll's language would make a mechanical check sound like reverence and hide which one actually protects the reader. ''The weld protects the reader. The language protects the writer's care in doing it.'' Both earn their place; neither substitutes.
+# ''The house's own fiction already holds the counter-case, and it reads as a warning.'' <<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">> names a fire that ''consumed nothing'': "Not destroyed — which would at least read clean. ''Locked'': sealed workings mid-sentence, grammar with the verbs fused shut, texts that read until the third line and then read //back//." And the line that governs any distributed shelf: "''You cannot copy a burned book.'' The fire rides the copies." ''Where it rhymes:'' the restoration's method IS the fold — "witness kept frozen and literal beneath, the pattern re-stood fresh above, never letting the derivation touch the burn" — which names exactly what a fold does when it moves a ruling to a `standing` home while git keeps the argument frozen underneath. ''Where it breaks, and the break carries the whole warning:'' the Library's fire spread ''through l-space instead of shelf-space'', reaching the copies. An honest otakiage runs the other way — it touches ''one path in one tree'' and reaches no copy anywhere, because git holds the bytes, every clone holds the history, and the fold target holds the meaning. ''A rite that could reach the copies would stop being a rite and start being the Necrospire's kind of fire.'' Which names the hard floor under every proposal here: ''the fire burns a path, never a pattern.'' Nothing in this design MAY ever reach a record on another vessel — that plane belongs to `removeMeme` and its grace, under the caps, and the two MUST NOT meet.
+
+<<~/ahu>>
+
+<<~ ahu #/examples>>
+
+!! Examples ~ one shelf carrier per stage, by address, read 2026-09-12
+
+|! stage |! carrier |! why it reads there |
+| ''`fleeting`'' | //no address — by definition// | the `temp` slot's records (`island-recipe.ts:70-72`, a `MemoryTiddlerStore`) and this scout's own scratch under `/home/joshu/.claude/jobs/`. Nothing on the shelf, nothing in git, nothing checked |
+| ''`designed`'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/aniani">> | `status = "designed"`, `status-why = "doctrine; no source carries it yet"`. The purest case: a whole doctrine argued, zero code owed against it, and the carrier says so in six words |
+| ''`designed` (this one)'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">> | this carrier. Leans open at #/leans, questions open at #/questions, nothing built, nothing burned |
+| ''`standing` × `build`'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">> | "ruled 2026-09-11 and ENACTED — all seven clauses … stand in code with a red-first witness each" — and it names what still has no production caller, which is what an honest witness looks like |
+| ''`standing` × `reading`'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> | "read 2026-09-11 against the field as it stands that day" — it cannot go wrong, only stale. Its ending reads as a re-date, never a fire |
+| ''`standing` × `rite`'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">> | `status = "rite"`, `status-why = "the talk-story floor, convened rather than built"`. It will never advance and will never burn — the clearest evidence the KIND axis exists |
+| ''`standing` × `floor`, with open leans — BLOCKED from folding'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> | four forks; three closed by ruling, "fork 4 (the floor stand) stays at the operator's hand". One open lean holds the whole carrier on the shelf, and correctly |
+| ''`standing` × `floor`, nearly foldable'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> | every phase enacted; ''one'' ruling outstanding (seam (b): a child's save grading against its own text). One lean from `folded` |
+| ''`folded`'' | //no carrier spells it — the state has no instance today// | the nearest standing case: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>, whose rulings have largely moved to `realm-bag-brief`, `device-capabilities-2026` and `tiddler-carriage` while the floor still holds the heraldry read. ''Proof that `folded` names something real and unspelled'' |
+| ''`gone`'' | `bags/lares-history/lares_research/skill-pono-template.mem` (burned `07241e981`) | "It comes down whole and gets raised again." The commit carries the reason, the weld and the witnesses; git carries the bytes |
+| ''`gone`, self-authored ending'' | `bags/lares/ha.ka.ba/lares/docs/handoff/iam-paper-red-doc.mem` (burned `cc3f85022`) | "The work-order's own frontmatter ruled this end: retain = false, enact-then-delete" — the only shelf precedent for a disposition attached at creation |
+| ''NEVER burns, self-declared'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> | its `role` reads "updated at each phase boundary, ''never archived in place''; history lives in git". A carrier authoring its own permanence |
+| ''NEVER burns, canon'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">> | the law that governs every other carrier, including the retirement law this one extends |
+| ''`kapu` sibling'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">> | "above-namespace authority law; kernel/sacred tier capability; trust boundary root". No hand but the grant-holder's ends what it governs |
+| ''`tombstone` sibling'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">> | carries PIN, RELEASE and the sweep — the grammar for a record leaving a live group, which the lifecycle never touches |
+
+<<~/ahu>>
+
+<<~ ahu #/leans>>
+
+!! Leans ~ held open
+
+# ''The `folded` stage may want to live in `status-why` rather than in `status`.'' A fourth value adds a vocabulary the house must teach every reader and every future gate, where the sentence "folded to `lar:///…`, welded, nothing points here" already carries everything a reader needs and rides a key that exists. Against that: a value gets checked and a sentence gets read, and the whole point of naming the stage is that a gate could refuse to burn anything not standing in it. `-> ?`
+# ''The KIND axis may belong in `tags` rather than in a new key.'' Every carrier already carries `tags = ["api/pono/meme"]`, and a `kind/rite` tag would ride a mechanism the house runs. Against: `tags` currently name what LAW binds a carrier, never what kind the carrier holds, and overloading it would make a filter over tags answer two questions at once. `-> ?`
+# ''The `ahi-kā`-over-a-carrier reading stands unbuilt and possibly unbuildable at this grain.'' The ratio wants a baseline rate — "the realm's own historical rolls per unit of that yardstick" — and a carrier's own history runs far too short and too bursty for one (a carrier touched in three commits on one day and never again reads identically to a carrier touched three times across a year). The estimator may want the ''bag'' as its unit and a carrier as an observation, which changes the design. `-> ?`
+# ''A batched sitting and the mass-delete brake may fight.'' The brake suspends a wave above a quarter of a bag's carriers because a flood signals a mistake. A deliberate seasonal sitting floods ''on purpose''. Whether the brake reads as a safety the sitting must clear, or as an instrument that simply does not apply to an operator-called rite, stands unruled. `-> ?`
+# ''Zero-inbound from `meme check --edges` overstates its own reach'' — it reads `.mem` text alone and never source comments, the CHANGELOG, skill files, or memory. A weld that trusts it alone will strand exactly the references that cost most to find. Whether the weld step grows a source-tree grep, or whether the edge reader learns to see `lar:` URIs in TypeScript comments, stands open. `-> ?`
+# ''`lares-history` reads as an archive and does not act as one.'' Its contents arrived by rename, one has since burned out of it, its addresses sit outside `ha.ka.ba/`, and 22 dangling edges name into it. Either it becomes an archive properly or it stops being named as one. `-> ?`
+# ''`retain` carries no office.'' It rode one once (`cc3f85022`) and no code reads it. Whether it becomes the disposition instruction NARA's schedules describe — attached at pour, read at the sitting — or retires as a field, stands open. `-> ?`
+# ''Nothing renders `status` or `status-why`.'' A reader inside the wiki sees neither. A lifecycle whose stages reach only the reader of raw `.mem` bytes governs a smaller house than it thinks. Whether a stage ought to render, and where, stands entirely undesigned here. `-> ?`
+# ''The promotion receipt remains the declared blocker'' (`canon-boundary.mem:97`), and this design leans on promotion for its `docs/pono` → `api/pono` transition. So the rite this carrier describes for its own crossing cannot yet be recorded the way the boundary says it must. `-> ?`
+# ''The field never answered who may burn a thing they did not receive.'' The scout could reach no shrine or Jinja Honchō source on it, and this carrier therefore builds its who-may-burn rule on the house's own witness law (`hoike.mem:77`) rather than on a borrowed one. If the rule reads wrong, the house's own reasoning carries the fault and no borrowed authority softens it. `-> ?`
+
+<<~/ahu>>
+
+<<~ ahu #/questions>>
+
+!! Questions ~ only the operator's
+
+# ''Does the `status` key SPLIT?'' Option A: one key, four values (`designed` · `standing` · `rite` · `folded`), accepting that `rite` names a kind wearing a stage's clothes. Option B: `status` carries the standing axis alone (`designed` · `standing` · `folded`) and a second key carries the kind (`build` · `rite` · `reading` · `floor`) — which costs a re-stamp of the six carriers reading `rite` today and makes two checkable rules statable that Option A cannot state.
+# ''Does any class of carrier MUST-carry a `status`?'' 669 of 726 carry none. A rule reading "every carrier under `docs/pono` and `api/pono` carries one" would cost a sweep across 265 carriers and would make the ladder mean something; leaving it optional keeps the shelf cheap and keeps the ladder advisory. Which?
+# ''Who calls the fire, and does an authored ending skip the call?'' This carrier proposes: the operator calls, any hand carries, and a disposition ruled at pour time (`retain = false`, or its successor) stands as a call already made. Does the operator hold that, or does every burn want a fresh call at the moment?
+# ''What schedules the sitting?'' This carrier proposes: an ahi-kā-shaped reading names candidates and never burns; the operator calls a Koshōgatsu-shaped season at a phase boundary. Does the reading get built at all, or do candidates simply surface when a spirit closes the last lean on a floor?
+# ''Does `lares-history` become an archive, or stop being named as one?'' If an archive: its contents want `ha.ka.ba/` addresses, a `status`, and a standing rule that nothing burns from it. If not: the 22 edges naming into it want re-pointing or burning, and git carries the archive role alone.
+# ''Does `retain` become the disposition instruction, or retire?''
+# ''Does this carrier cross to `api/pono/otakiage`, and if so does it absorb `api/pono/meme#/retirement` or stand beside it?'' The existing law governs the NAME (deprecate-never-redefine); this design governs the BYTES. One carrier holding both would make the whole discipline readable in one place; two would keep each law's scope legible. Which?
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aniani">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/RFC-2119">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-prime">>
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;SyqIkCKFjbl5Er-h8ujcHvEiMfBXNXtK7hvac9-lQDM
+
+<<^ code="&#x0004;" -> to="?">>
