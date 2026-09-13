@@ -505,6 +505,23 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   // fixture reaches. What a source walk CAN see is the smell itself: a multi-code alternation of
   // frame entities spelled into a pattern. The bootstrap scanner passes it standing, because its
   // hand-written rows carry ONE code each by the ruling that keeps it independent (scanner.ts).
+  /**
+   * THE EXEMPTION NAMES ITS OWN RETIREMENT.
+   *
+   * One file sits exempt above because another hearth holds it, not because the law spares it. An
+   * exemption nobody retires reads as a hole with a comment on it — so this asks whether the reason still
+   * stands. The moment the grammar hearth takes the shared alternation, this goes red and the cure is to
+   * delete the entry and the `test.todo` beside it, never to widen the set.
+   */
+  test("the handed-back file STILL spells the set by hand — or this exemption has expired", () => {
+    const shapeSrc = readFileSync(fileURLToPath(new URL("../src/carrier-shape.js", import.meta.url)).replace(/\.js$/, ".ts"), "utf8");
+    const stillHandRolled = /&#x\(\??:?[0-9A-Fa-f]{4}\|[0-9A-Fa-f]{4}/.test(shapeSrc);
+    expect(
+      stillHandRolled,
+      "carrier-shape.ts took the shared alternation — DELETE it from `exempt` above and un-todo the probe",
+    ).toBe(true);
+  });
+
   test("★ no module spells a MULTI-CODE alternation of frame entities ★", () => {
     const srcRoot = fileURLToPath(new URL("../src", import.meta.url));
     // `carrier-shape.ts` stands in the grammar hearth's ground and the hearths gate refuses a hand
