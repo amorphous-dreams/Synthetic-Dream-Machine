@@ -36,20 +36,11 @@ import type { ParsedArgs } from "../parse-args.js";
 import { larDataDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
-import { emit, exitFor } from "../render.js";
+import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 
-function usage(): number {
-  console.error("usage: lares cabal <vouch | join | feed | clock>");
-  console.error("");
-  console.error("  vouch <joiner-nym> --realm <realm-doc-id> [--expires <iso8601>] [--as <root-index>]");
-  console.error("        stake YOUR standing on a joiner crossing into that realm. Dilutes you, admits nobody.");
-  console.error("  join --realm <realm-doc-id> [--as <root-index>] [--cap <n>]");
-  console.error("        PRESENT and cross. Reads the lineage, prices it, writes nothing either way.");
-  console.error("  feed --realm <realm-doc-id> [--as <root-index>]");
-  console.error("        the OFFERING — roll your face's lease slot, keeping the realm alive.");
-  console.error("  clock --realm <realm-doc-id>");
-  console.error("        who feeds this realm and how deep — raw numbers, no capture verdict.");
-  return 2;
+function usage(args: ParsedArgs, detail?: string): number {
+  return refuseUsage(args, "cabal", helpLines("cabal"), detail);
 }
 
 /** `lares cabal …` — the realm doors: the JOIN axis, the offering, and the clock. */
@@ -59,7 +50,7 @@ export async function cmdCabal(args: ParsedArgs): Promise<number> {
     case "join":  return await cmdJoin(args);
     case "feed":  return await cmdFeed(args);
     case "clock": return await cmdClock(args);
-    default:      return usage();
+    default:      return usage(args, args.positional[0] ? `unknown sub-verb "${args.positional[0]}"` : undefined);
   }
 }
 
@@ -179,10 +170,8 @@ function cabalFailure(args: ParsedArgs, verb: string, err: unknown): number {
 async function cmdVouch(args: ParsedArgs): Promise<number> {
   const joiner = args.positional[1];
   const realm  = args.options["realm"];
-  if (!joiner || !realm) {
-    console.error("usage: lares cabal vouch <joiner-nym> --realm <realm-doc-id> [--expires <iso8601>] [--as <root-index>]");
-    return 2;
-  }
+  // The words for this door live in the registry alone; the refusal names only what THIS call lacks.
+  if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "--realm <realm-doc-id>"}`);
   const asRaw = args.options["as"];
   const handleIndex = asRaw === undefined ? undefined : Number(asRaw);
   if (handleIndex !== undefined && !Number.isInteger(handleIndex)) {

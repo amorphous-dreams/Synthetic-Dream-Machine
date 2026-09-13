@@ -36,25 +36,13 @@ import {
 import { libraryRef } from "@lararium/mesh";
 import { existsSync } from "node:fs";
 import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class LibraryUsageError extends Error {}
 
-const USAGE_LINES: readonly string[] = [
-  "usage: lares library <list | show | acquire | verify | index | path>",
-  "",
-  "  list                            the collections, and what each holds",
-  "  show <collection>               one collection's bodies, with their anchors",
-  "  acquire <file> --to <coll>      take a body in — MOVES by default (--keep copies)",
-  "       [--origin <url>] [--licence <terms>] [--note <text>]",
-  "  verify [<collection>]           re-digest the BYTES against each directory name",
-  "  index <collection> --out <path> write the tracked index — the part that travels",
-  "  path <collection>               resolve library:<collection> to a directory",
-  "",
-  `  the shelf stands at ${larLibraryHome()} — the shrine that abides, outside every tracked tree and every wipe.`,
-];
 function usage(args: ParsedArgs, typed?: string): number {
-  return refuseUsage(args, "library", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+  return refuseUsage(args, "library", helpLines("library"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
 export async function cmdLibrary(args: ParsedArgs): Promise<number> {

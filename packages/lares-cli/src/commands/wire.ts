@@ -25,7 +25,8 @@ import { wireCodexHome, type CodexWireResult } from "../codex-wire.js";
 import { wireCopilotHome, type CopilotWireResult } from "../copilot-wire.js";
 import { wireVscode, type VscodeWireResult } from "../vscode-wire.js";
 import { tendRepoAdapters, type BootPointerStep } from "../boot-pointer.js";
-import { emit } from "../render.js";
+import { emit, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** The surfaces this door tends. A flag names one; no flag names them all. */
@@ -40,21 +41,8 @@ export interface WireReport {
   adapters?: BootPointerStep[];
 }
 
-function usage(): number {
-  console.error("usage: lares vessel wire [--claude] [--codex] [--copilot] [--vscode] [--observe]");
-  console.error("");
-  console.error("  Point every AI surface on this machine at this vessel. Idempotent: an aligned wire");
-  console.error("  passes untouched, a DRIFTED one re-aims, an absent one gets written.");
-  console.error("");
-  console.error("  no flag        tend every surface, plus this repo's own adapters");
-  console.error("  --claude       ~/.claude — mempalace MCP + the wake/ingest hooks");
-  console.error("  --codex        ~/.codex");
-  console.error("  --copilot      ~/.copilot");
-  console.error("  --vscode       every VS Code root present (stable + Insiders, remote + local)");
-  console.error("  --observe      REPORT what a wiring would do; touch nothing");
-  console.error("");
-  console.error("  This is the one vessel verb that reaches OUTSIDE the vessel root. `stand` never does.");
-  return 2;
+function usage(args: ParsedArgs): number {
+  return refuseUsage(args, "vessel wire", helpLines("vessel wire"));
 }
 
 /** A wire that throws still reports — a missing tool names itself rather than ending the run. */
@@ -99,7 +87,7 @@ export const wireChanged = (r: WireReport): boolean =>
   || (r.adapters ?? []).some((a) => a.action !== "present");
 
 export async function cmdWire(args: ParsedArgs): Promise<number> {
-  if (args.flags["help"] === true) return usage();
+  if (args.flags["help"] === true) return usage(args);
 
   const named = SURFACES.filter((s) => args.flags[s] === true);
   const wanted: readonly Surface[] = named.length > 0 ? named : SURFACES;

@@ -36,6 +36,7 @@ import { loadNodeHandleBook, saveNodeHandleBook } from "@lararium/node";
 import { makeDaemonCircleStore } from "../daemon-circle-store.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
@@ -43,23 +44,8 @@ class UsageError extends Error {}
 /** The system circles seedCirclesDoc plants — the follow lands in one of these unless the operator names another. */
 const DEFAULT_CIRCLE = "following";
 
-const USAGE_LINES: readonly string[] = [
-  "usage: lares circle <add <nym> --to <circle> | remove <nym> --to <circle> | list [--to <circle>]>",
-  "",
-  "  add <nym> --to <circle> [--petname <label>] [--card <file.json>]",
-  "                              follow: recognise the nym + add it to the circle (LOCAL only)",
-  "  card <carriage | @file | -> seed the handle-book from a carried HandleCard (paste / QR /",
-  "                              #card=… fragment / stdin) — TOFU-admit a nym so a later `add`",
-  "                              needs no --card",
-  "  remove <nym> --to <circle>  unfollow: drop the nym from the circle",
-  "  list [--to <circle>]        the private follow-view (petname + last-seen glamour)",
-  "",
-  `  the graph is PRIVATE and NEVER federates; default circle = "${DEFAULT_CIRCLE}".`,
-  "  an unmet nym needs its self-certifying HandleCard admitted first — either `circle card <paste>`",
-  "  (ahead of time) or `add … --card <file.json>` (inline).",
-];
 function usage(args: ParsedArgs, typed?: string): number {
-  return refuseUsage(args, "circle", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+  return refuseUsage(args, "circle", helpLines("circle"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
 /** Read the `--to <circle>` option, defaulting to the primary follow circle. */

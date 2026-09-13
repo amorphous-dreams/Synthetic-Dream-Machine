@@ -19,23 +19,22 @@
 
 import { runRaiseSign, RaiseSignError } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
-import { emit } from "../render.js";
+import { emit, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 
-function usage(): number {
-  console.error("usage: lares raise sign <challenge-json> [--as <persona-index>]");
-  console.error("  the challenge comes from the vessel being raised; the grant goes back to it.");
-  return 2;
+function usage(args: ParsedArgs, detail?: string): number {
+  return refuseUsage(args, "raise", helpLines("raise"), detail);
 }
 
 export async function cmdRaise(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
   if (sub !== "sign") {
     if (sub) console.error(`lares raise: unknown sub-verb "${sub}"`);
-    return usage();
+    return usage(args);
   }
 
   const challengeText = args.positional[1];
-  if (!challengeText) return usage();
+  if (!challengeText) return usage(args);
 
   // WHICH COMPARTMENT ANSWERS BELONGS TO THE OPERATOR. A human holds several persona roots, and the one
   // that signs is the one whose nym the asking vessel's membership fold admits. Defaulting to 0 names the

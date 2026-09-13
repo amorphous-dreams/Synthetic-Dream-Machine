@@ -23,22 +23,20 @@
 
 import { runEdgeKapae, EdgeKapaeError } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
+import { refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 
-function usage(): number {
-  console.error("usage: lares edge {kapae | un-kapae} <edge-id> --epoch-cid <cid> [--as <root-index>] [--version <n>]");
-  console.error("");
-  console.error("  kapae <edge-id>      set the relationship aside (a raised marker wins a tie under partition)");
-  console.error("  un-kapae <edge-id>   take the marker back down — a deliberate re-admission, never a fall-through");
-  return 2;
+function usage(args: ParsedArgs, detail?: string): number {
+  return refuseUsage(args, "edge", helpLines("edge"), detail);
 }
 
 export async function cmdEdge(args: ParsedArgs): Promise<number> {
   const verb = args.positional[0];
-  if (verb !== "kapae" && verb !== "un-kapae") return usage();
+  if (verb !== "kapae" && verb !== "un-kapae") return usage(args, verb ? `unknown sub-verb "${verb}"` : undefined);
 
   const edgeId = args.positional[1];
   const epochCid  = args.options["epoch-cid"];
-  if (!edgeId || !epochCid) return usage();
+  if (!edgeId || !epochCid) return usage(args);
 
   const asRaw = args.options["as"];
   const verRaw = args.options["version"];

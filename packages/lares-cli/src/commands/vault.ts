@@ -27,28 +27,15 @@ import { runVerb } from "../verb-call.js";
 import { udsAlive } from "../local-connector.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import { canPromptSecret, promptSecret, promptSecretConfirmed } from "../prompt-secret.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** The env var carrying a NEW/target passphrase for non-interactive seal/rotate/export. */
 const NEW_PASS_ENV = "LARES_ARCHIVE_PASSPHRASE_NEW";
 
-const USAGE_LINES: readonly string[] = [
-  "usage: lares vault <status|seal|rotate|export <path>|repair> [--force] [--yes]",
-  "",
-  "  status            show the seal state of both carriers (--check probes a passphrase → split detection)",
-  "  seal              seal cleartext carriers under a NEW passphrase",
-  "  rotate            re-seal both carriers old→new passphrase",
-  "  export <path>     write a passphrase-SEALED backup of the archive to <path> (--force overwrites)",
-  "  repair            re-seal a lagging carrier under the passphrase that opens the other (split-KEK cure)",
-  "  passphrase        read back WHICH DAY this vault was sealed on, and what to type",
-  "",
-  "  every seal STAMPS its Erisian day beside the vault — a record, never part of the passphrase.",
-  "",
-  `  non-interactive: ${ARCHIVE_PASSPHRASE_ENV} (current) · ${NEW_PASS_ENV} (new) + --yes`,
-];
 function usage(args: ParsedArgs, typed?: string): number {
-  return refuseUsage(args, "vault", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+  return refuseUsage(args, "vault", helpLines("vault"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
 /** The CURRENT passphrase — env first, else a no-echo prompt. Non-interactive without the env → usage error. */

@@ -40,29 +40,13 @@ import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, fleetPeerDid,
 } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
 
-const USAGE_LINES: readonly string[] = [
-  "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat] | wear <index> | list>",
-  "",
-  "  new <index> --name <name>   mint/load the persona-root at <index> + set its private pet-name",
-  "    [--handle <Handle>]       declare the public Handle it answers to (intent; `lares handle publish` announces it)",
-  "    [--seat]                  stand it for a Kahu chair on this node (needs a Handle)",
-  "  wear <index>                switch the active persona (reboot-to-switch — one face to the mesh)",
-  "  list                        the private multitude — held indices, active marker, labels, Handles",
-  "  sync                        carry this node's labels + declared Handles up to the fleet (the persona plane)",
-  "  admit <offer|grant|open|accept|list>   airgapped device-to-device persona hand-off (QR 3-hop)",
-  "",
-  "  founding sequence (three symmetric commands, each declaring its Handle + standing for a chair):",
-  "    lares persona new 0 --name '<label>' --handle '<declared Handle>' --seat",
-  "    lares persona new 1 --name '<label>' --handle '<declared Handle>' --seat",
-  "    lares persona new 2 --name '<label>' --handle '<declared Handle>' --seat",
-  "    lares nexus seal seat",
-];
 function usage(args: ParsedArgs, typed?: string): number {
-  return refuseUsage(args, "persona", USAGE_LINES, typed ? `unknown sub-verb "${typed}"` : undefined);
+  return refuseUsage(args, "persona", helpLines("persona"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
 /**
