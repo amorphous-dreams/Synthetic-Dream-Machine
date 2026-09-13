@@ -32,10 +32,7 @@ import {
   wikiSlotUri,
   recipeUri,
   bagStackFromRec,
-  type AutomergeUrl,
   type ChangeOrigin,
-  type DocHandle,
-  type LarDoc,
   type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";

@@ -25,7 +25,6 @@
  * Usage: pnpm exec tsx packages/lararium-keyhive/probes/cross-peer-decrypt.ts
  * Findings land in packages/lararium-keyhive/probes/FINDINGS.md.
  */
-import { performance } from "node:perf_hooks";
 import * as KH from "@keyhive/keyhive";
 
 console.log(`[probe] cross-peer-decrypt — exports: ${Object.keys(KH).sort().join(", ").slice(0, 200)}…`);

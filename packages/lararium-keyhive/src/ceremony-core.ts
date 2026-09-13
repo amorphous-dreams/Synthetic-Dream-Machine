@@ -41,14 +41,14 @@
 
 import type { Repo } from "@lararium/mesh";
 import {
-  IDENTITIES_NAMESPACE, CIRCLES_NAMESPACE, SESSIONS_NAMESPACE, DAEMON_BAG_ID,
+  IDENTITIES_NAMESPACE, DAEMON_BAG_ID,
   PERSONA_GROUP_SENTINEL_URI, MESH_CABAL_SENTINEL_URI,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   HEARTH_DAEMON_URL_TIDDLER,
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
   seedIdentitiesDoc, seedCirclesDoc, seedSessionsDoc, seedDaemonDoc, seedPersonaDoc,
-  personaBagIdFor, personaScopedBagIds,
+  personaScopedBagIds,
   buildDeviceDelegation, type DeviceDelegationTiddler,
   personaKelBoardDocUrl, writePersonaKelEvent, materializeSharedLarDoc,
   type PersonaKelEvent,

@@ -59,7 +59,6 @@ import { decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
-import { gradeOf } from "./meme-ast/diagnostics.js";
 import { decideDeletions } from "./delete-gate.js";
 
 /** Island default mass-delete brake when the wave carries no operator dial. */

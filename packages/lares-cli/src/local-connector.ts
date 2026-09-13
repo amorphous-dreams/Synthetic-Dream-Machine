@@ -15,7 +15,6 @@
 
 import { createConnection } from "node:net";
 import { existsSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { larDataDir } from "./env.js";
 import type { SubmitResult, SubmitOptions } from "./verb-result.js";

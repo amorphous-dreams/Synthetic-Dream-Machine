@@ -35,7 +35,7 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { stableLarUri, bagUri, type MeshScale } from "./lar-uris.js";
+import { bagUri, type MeshScale } from "./lar-uris.js";
 import { isPersonaPlaneSlug } from "./persona-scope.js";
 import {
   type OracleSnapshot,

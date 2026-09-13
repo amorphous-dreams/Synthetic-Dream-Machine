@@ -17,7 +17,7 @@ import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
 import { SyncedTree } from "./synced-tree.js";
 import { larProjectionDir } from "./vessel-paths.js";
-import { resolve as resolvePath, join } from "path";
+import { join } from "path";
 
 /**
  * Primary wiki island behavior for the node vessel: the shared wiki behavior

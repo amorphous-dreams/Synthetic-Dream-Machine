@@ -107,7 +107,6 @@ if (gaps.length > 0) console.error(`blob-follows-pointer: SKIPPED — missing ${
 let pair: StagedJoinee | null = null;
 let A: LarInstance | null = null;
 let B: LarInstance | null = null;
-let rootB = "";
 let admitted: CliResult | null = null;
 let joinGate = "";
 /** The cid the stager wrote on A — whichever derivation its `cid/` answers. */
@@ -133,7 +132,7 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
         console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
       },
     });
-    A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
+    A = pair.A; B = pair.B; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
     if (!B) console.error(`blob-follows-pointer: B never stood — the sync vectors SKIP. The daemon said:\n  ${joinGate}`);
   }, 400_000);
 

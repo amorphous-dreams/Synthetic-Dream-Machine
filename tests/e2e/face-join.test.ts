@@ -22,8 +22,6 @@
  * vessel that lost its store restores from its archive; the pair test holds that boundary.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { targetInstance, type LarInstance, awaitRendezvous, vesselStorageDir } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";

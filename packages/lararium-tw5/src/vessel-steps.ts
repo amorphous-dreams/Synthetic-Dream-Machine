@@ -17,12 +17,10 @@
 
 import {
   AutomergeDocStore,
-  BAG_IDS,
   computeRecipeFingerprint,
   LARES_DOC_URI, LARARIUM_DOC_URI,
   recipeUri,
   wikiBagUri, wikiSlotUri,
-  type Repo,
   type DocHandle,
   type AutomergeUrl,
   type LarDoc,

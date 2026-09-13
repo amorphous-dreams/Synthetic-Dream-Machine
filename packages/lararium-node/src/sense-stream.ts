@@ -22,7 +22,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/sensorium#the-caps
  */
 
-import { existsSync, writeFileSync, rmSync } from "node:fs";
+import { writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { execFileSync } from "node:child_process";

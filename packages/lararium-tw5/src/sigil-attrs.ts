@@ -125,8 +125,6 @@ export function readSigilAttrs(body: string): SigilAttr[] {
     // whitespace after the separator is skipped against the RAW body, where the value still stands
     let at = m.index + m[0].length;
     while (at < body.length && (body[at] === " " || body[at] === "\t")) at++;
-    const two = body.slice(at, at + 2);
-
     // A QUOTED value stands legal after EITHER separator — the string literal is tried first.
     const q0 = body[at];
     if (q0 !== '"' && q0 !== "'" && sep === "=") {

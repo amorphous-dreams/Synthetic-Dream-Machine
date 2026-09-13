@@ -208,12 +208,6 @@ export function firedStructuralWrite(effects: readonly PersistedEffect[]): boole
 // (a.1) aftermathClosed — a literal parse of the CLOSING HUD's OODA-HA tally
 // ---------------------------------------------------------------------------
 
-// A suspension marker: `φ:` or a phase-glyph followed by `:` (`0◇:fork…`). Its
-// presence in the closing tally means the loop persists OPEN — not closed.
-const SUSPENSION_RE = /(?:φ|✶|⏿|◇|▶)\s*:/u;
-// The aftermath ratchet: `N↺` with N ≥ 1 — the tally of loops that closed.
-const RATCHET_RE = /(\d+)\s*↺/u;
-
 // ---------------------------------------------------------------------------
 // (b) VoiceAmplitude[] — segment by Voice, read each Voice's register amplitude
 // ---------------------------------------------------------------------------

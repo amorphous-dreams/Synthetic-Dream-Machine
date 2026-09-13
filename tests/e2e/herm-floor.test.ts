@@ -23,7 +23,7 @@
  *   R5 — a herm LIFTS into a lararium                  · the cap-stack transition the runbook's rite performs
  */
 import { describe, test, expect, afterAll } from "vitest";
-import { mkdtempSync, rmSync, existsSync, readdirSync, statSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync, spawn } from "node:child_process";

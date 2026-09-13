@@ -23,7 +23,7 @@ import {
   verifyCoreBootBlob,
 } from "./tw5-host-bridge.js";
 import { bootTrustedModules } from "./tw5-module-gate.js";
-import type { TW5CoreBootBlob, TW5CoreBootInput } from "./tw5-host-bridge.js";
+import type { TW5CoreBootInput } from "./tw5-host-bridge.js";
 
 export type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
 

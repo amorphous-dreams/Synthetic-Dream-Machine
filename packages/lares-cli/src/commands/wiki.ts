@@ -268,7 +268,7 @@ export async function cmdWikiRelease(args: ParsedArgs): Promise<number> {
 }
 
 /** `lares wiki active` — the live switcher state: which wikis run now + which are held. */
-export async function cmdWikiActive(args: ParsedArgs): Promise<number> {
+export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
   const did = await vesselDid();
   const r = await call("wiki-active", {}, did);
   if (r.status === "error") {

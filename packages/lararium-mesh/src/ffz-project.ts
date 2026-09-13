@@ -421,7 +421,6 @@ function matVec(M: readonly (readonly number[])[], v: readonly number[]): number
  * even when the running z is cold or under-dispersed. Diagonal pinned to 1.
  */
 function toCorrelation(C: readonly (readonly number[])[]): number[][] {
-  const n = C.length;
   const d = C.map((row, i) => Math.sqrt(Math.max(row[i] ?? 0, EPS)));
   return C.map((row, i) => row.map((v, j) => (i === j ? 1 : v / ((d[i] ?? 1) * (d[j] ?? 1) + EPS))));
 }

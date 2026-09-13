@@ -17,7 +17,7 @@ import {
   reconstructAndReadmit as coreReconstructAndReadmit,
   provisionRecoveryAtFounding as coreProvisionRecoveryAtFounding,
   provisionRecoveryCardsAtFounding as coreProvisionRecoveryCardsAtFounding,
-  type RecoveryShare, type GuardianCard, type RecoveryCardsAtFounding,
+  type RecoveryShare, type RecoveryCardsAtFounding,
 } from "@lararium/mesh";
 import { runReadmitEdge, type ReadmitEdgeInput } from "@lararium/keyhive";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";

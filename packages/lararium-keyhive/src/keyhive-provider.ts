@@ -31,7 +31,7 @@ import { inSelfSlice } from "./event-store.js";
 import type {
   CapabilityProvider, CapabilityProviderInitOpts,
   DelegateArgs, DelegateResult, VerifyArgs, VerifyResult,
-  PeerDID, KeyhiveAccess,
+  PeerDID,
 } from "./capability-provider.js";
 
 /** setPanicHook installs a global Rust→JS error translator. Calling it twice

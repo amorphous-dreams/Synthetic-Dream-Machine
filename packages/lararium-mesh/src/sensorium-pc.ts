@@ -71,7 +71,6 @@ const EPS = 1e-9;
  * Tied to machine epsilon: a RELATIVE floor, because an absolute one is scale-blind (#crucible-tested).
  */
 const EPS_REL = Number.EPSILON;
-const PI_MAX = 1 / EPS_REL;
 
 /** The confidence-register ceiling (0..20; noosphere-boot #law-of-5s). */
 export const CONFIDENCE_MAX = 20;

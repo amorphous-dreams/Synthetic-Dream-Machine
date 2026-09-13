@@ -52,7 +52,6 @@
 import { sha256HexSync } from "@lararium/mesh/crypto";
 
 import { fencedSpans, maskedExec } from "./meme-ast/fence-mask.js";
-import { frameMark } from "./frame-marks.js";
 
 /** The one digest algorithm this grammar accepts, named in the check and never chosen by it. */
 export const CHECK_ALG = "sha-256";

@@ -29,7 +29,7 @@
  */
 
 import { watch as fsWatch, writeFileSync, rmSync, type FSWatcher } from "node:fs";
-import { join, relative, isAbsolute } from "node:path";
+import { join, isAbsolute } from "node:path";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";

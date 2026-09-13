@@ -18,7 +18,6 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
@@ -41,7 +40,7 @@ import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
-  foundThePlace, foundTheFace, runApplyAdmitPayload, type DeviceAdmitPayload,
+  foundThePlace, foundTheFace, runApplyAdmitPayload,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
 
@@ -206,7 +205,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
     // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
     const admitSeed = await loadVesselSigningSeed(storageDir);
-    const { contactCardJson, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl, hearthDaemonUrl } = await runApplyAdmitPayload({
+    const { contactCardJson, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl } = await runApplyAdmitPayload({
       repo,
       vesselSeed: admitSeed,
       vesselVerifyingKey: operatorIdentity.verifyingKey,

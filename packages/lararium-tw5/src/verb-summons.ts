@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/verb-summons
  */
 
-import type { BatchMode, ChangeOrigin, CompositeStore, LarTiddlerChange } from "@lararium/mesh";
+import type { ChangeOrigin, CompositeStore, LarTiddlerChange } from "@lararium/mesh";
 import { SUMMONS_URI_PREFIX, parseVerb } from "@lararium/mesh";
 import type { VerbPlacement } from "./verb-vm.js";
 

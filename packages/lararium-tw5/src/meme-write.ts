@@ -34,7 +34,7 @@ import type { TW5Instance } from "./types/tiddlywiki.js";
 
 import { skinnyCid } from "./lazy-resolver.js";
 
-import { CARRIER_TYPE as MEMETIC_TYPE, isCarrierType } from "@lararium/mesh/carrier-type";
+import { isCarrierType } from "@lararium/mesh/carrier-type";
 import { MEME_EXT, stripMemeExt } from "@lararium/mesh/mirror-paths";
 
 /**

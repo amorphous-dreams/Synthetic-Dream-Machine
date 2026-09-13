@@ -138,39 +138,16 @@ function isTupleRoot(root: string): boolean {
   return parts.length === 3 && parts.every((p) => p.length > 0);
 }
 
-/** Append the meme extension when the last segment carries no extension. */
-function withMemeSuffix(p: string): string {
-  const lastSegment = p.slice(p.lastIndexOf("/") + 1);
-  return lastSegment.includes(".") ? p : p + ".mem";
-}
-
 /**
  * Resolve a `lar:///...` URI into a LarResolution.
  * Does not perform any I/O — existence checking is the caller's responsibility.
  */
 export function resolveLarUri(uri: string): LarResolution {
-  const { root, childPath, fragmentPath } = splitLarUri(uri);
+  const { root, childPath } = splitLarUri(uri);
   const resourcePath = [root, ...childPath].join("/");
-
-  // `appendFragment` mounts fragment-path segments as nested subdirectories
-  // on disk: `lar:///foo#a/b` → `foo/a/b.mem`. Files materialize as
-  // `<dir>/index.mem` for the root + `<dir>/<segs>.mem` for each tagged-on-
-  // disk descendant. It preserves the base extension, so an .md-carrying adapter
-  // keeps .md fragments while a meme (.mem) keeps .mem. The disk-
-  // projector decides which fragment URIs become file roots via
-  // `lar:///ha.ka.ba/tags/meme-root`; this just names where each URI WOULD project.
-  const appendFragment = (basePath: string): string => {
-    if (fragmentPath.length === 0) return basePath;
-    const m = /(\.mem|\.md)$/.exec(basePath);
-    const ext = m ? m[1]! : ".mem";
-    const baseNoExt = m ? basePath.slice(0, -m[0].length) : basePath;
-    return `${baseNoExt}/${fragmentPath.join("/")}${ext}`;
-  };
 
   if (isTupleRoot(root) && root === STABLE_TUPLE_ROOT) {
     if (childPath[0] === LARES_SCOPE) {
-      const rest = childPath.slice(1);
-      const joined = rest.length > 0 ? rest.join("/") : "";
       return { uri, root, childPath, resourcePath, kind: "tuple-file", virtual: false };
     }
 
@@ -178,9 +155,6 @@ export function resolveLarUri(uri: string): LarResolution {
       if (!childPath[1]) {
         return { uri, root, childPath, resourcePath, kind: "caps-virtual", virtual: true };
       }
-      const pkgSlug = `lararium-${childPath[1]}`;
-      const pathParts = childPath.slice(2);
-      const filePath = pathParts.length > 0 ? pathParts.join("/") : "index";
       return { uri, root, childPath, resourcePath, kind: "tuple-file", virtual: false };
     }
 

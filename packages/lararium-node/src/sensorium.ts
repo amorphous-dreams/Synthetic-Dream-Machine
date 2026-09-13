@@ -1225,7 +1225,7 @@ export function makePersistencePalace(dir: string, opts: PersistencePalaceOption
   // Compose the SHARED transport cap; layer the persistence op-surface + the mesh keel below.
   const p = composePalace(LABEL_PERSISTENCE, dir, opts.spawn ?? defaultPersistenceHolderSpawn, opts.timeoutMs ?? 30_000);
 
-  const claimCidOf = (kind: string, assertion: readonly number[], prov: RecordProvenance): Promise<string> =>
+  const claimCidOf = (_kind: string, assertion: readonly number[], prov: RecordProvenance): Promise<string> =>
     sha256Hex(canonicalJsonBytes({ signer: prov.signer, frontier: prov.frontier, assertion }), defaultCryptoProvider);
 
   // The store's CODE, held here and updated in O(d) per record. The keel's gate reads sufficient statistics

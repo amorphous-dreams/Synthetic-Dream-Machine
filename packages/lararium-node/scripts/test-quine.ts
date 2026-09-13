@@ -18,7 +18,6 @@
 
 import { automergeLoad, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER } from "@lararium/mesh";
 import { repoRoot } from "@lararium/mesh/node";
-import { createHash }      from "crypto";
 import { readFileSync, existsSync } from "fs";
 import { join }             from "path";
 
@@ -33,10 +32,6 @@ const LARES_TW5_PLUGIN_TITLE = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 
 // One root law: genesis lives at <root>/genesis (the repo IS the vessel).
 const GENESIS_BIN = join(repoRoot, "genesis/island.bin");
-
-function sha256hex(input: string | Uint8Array): string {
-  return createHash("sha256").update(input).digest("hex");
-}
 
 async function main(): Promise<void> {
   console.log("[quine] genesis boot smoke");

@@ -32,7 +32,7 @@ import {
   antigenEntriesFromBoard, writeAntigenEntry, signAntigenEntry,
   makeMultiSigQuorumVerifier, foldAntigenSet, isKapaed, foundingRoster,
   kapaeAntigenDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
-  type KapaeAction, type KapaeAntigenEntry, type KahuRoster, type LarDoc,
+  type KapaeAction, type KapaeAntigenEntry, type KahuRoster,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { readNexusDoc } from "../nexus-doc.js";

@@ -74,8 +74,6 @@ export function confineMirrorWrite(
   return { ok: false, reason: `escapes mirror root ${root}: ${candidate}` };
 }
 
-const HA_KA_BA_PREFIX = "lar:///ha.ka.ba/";
-
 function splitHash(s: string): [string, string | null] {
   const i = s.indexOf("#");
   return i >= 0 ? [s.slice(0, i), s.slice(i + 1)] : [s, null];

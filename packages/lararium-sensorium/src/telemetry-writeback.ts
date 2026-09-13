@@ -20,7 +20,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { harvestTurnGradient, buildPatch, LAR_HV, type TurnHarvest } from "@lararium/mesh";
+import { harvestTurnGradient, buildPatch, LAR_HV } from "@lararium/mesh";
 // buildPatch + LAR_HV moved to @lararium/mesh (VM-bundle-able, beside the harvest); re-exported here
 // for the node-side writeback importers (the in-VM annotate imports them from mesh directly).
 export { buildPatch, LAR_HV };

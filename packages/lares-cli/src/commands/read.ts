@@ -14,12 +14,11 @@
  * by ending it, and neither boots a vm.
  */
 
-import { larRoot, larDataDir, larPort, vesselDid, larBootstrapPath } from "../env.js";
+import { larDataDir, larPort, vesselDid, larBootstrapPath } from "../env.js";
 import { stopIncumbent, probePort } from "../port-control.js";
 import { udsAlive } from "../local-connector.js";
 import { existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { repoRoot as REPO_ROOT } from "@lararium/mesh/node";
 import { palaceOrgans, organHealthy, guestMempalaceOrgan, readMemeticWikitextCoupling, runDoctor, formatDoctorReport } from "@lararium/node";
 import { readClaudeCleanupPeriod, CLEANUP_PERIOD_DAYS_FLOOR } from "../claude-wire.js";
 import { emit, exitFor } from "../render.js";
@@ -161,7 +160,6 @@ export async function cmdRead(args: ParsedArgs): Promise<number> {
 /** Node health — bootstrap presence, storage size, port probe, retention. Pure local inspection. */
 async function cmdReadNode(args: ParsedArgs): Promise<number> {
 
-  const root      = larRoot();   // corpus root (genesis); vessel state roots in the home
   const storage   = larDataDir();   // runtime → <lares>/vessel
   const bootstrap = larBootstrapPath();
   const portRaw   = process.env["LAR_PORT"] ?? "8080";

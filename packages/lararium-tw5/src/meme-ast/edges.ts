@@ -15,7 +15,6 @@
 import type { PranalaEdge } from "./types.js";
 import type {
   MemeAstNode,
-  AhuNode,
   PranalaNode,
   PranalaSugarNode,
   LeleNode,

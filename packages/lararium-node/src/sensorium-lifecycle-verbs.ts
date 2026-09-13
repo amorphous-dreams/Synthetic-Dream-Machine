@@ -20,7 +20,7 @@
  * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#sensorium-lifecycle
  */
 
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   nextLifecycle, promoteState, guardHitl,

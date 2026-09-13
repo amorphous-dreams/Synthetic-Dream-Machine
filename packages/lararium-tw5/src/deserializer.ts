@@ -358,7 +358,6 @@ function splitMemeToTiddlers(
   // Fence-mask law: a QUOTED control sigil (in a code fence or inline code)
   // never frames the carrier — before the mask, a fenced ETX mention
   // truncated everything after it (real corpus loss).
-  const hadSoh = SOH_LINE_RE.test(text);
   const noSoh = text.replace(SOH_LINE_RE, "");   // anchored at 0 — never fenced
   // THE LAST CLOSE CLOSES; AN EARLIER ONE BELONGS TO AN EMBEDDED EXAMPLE. Documents that TEACH the
   // frame carry example marks in their prose — `meme/SKILL` holds two ETX and three EOT — and cutting

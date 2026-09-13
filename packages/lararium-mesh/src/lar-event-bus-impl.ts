@@ -39,11 +39,6 @@ import type {
 
 type Handler<T = unknown> = (event: T) => void;
 
-interface Subscription {
-  eventType: string;
-  handler:   Handler;
-}
-
 interface IngressRing {
   descriptor: IngressRingDescriptor;
   queue:      Array<{ eventType: string; event: unknown }>;

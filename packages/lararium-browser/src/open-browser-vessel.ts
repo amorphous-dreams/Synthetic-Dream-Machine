@@ -52,7 +52,7 @@ import type { WikiSenseSupervisor }          from "@lararium/tw5";
 import type { CoherenceStatus } from "@lararium/tw5";
 import type { CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
 import { composeBrowser }                    from "./browser-caps.js";
-import type { VesselWikiSlot, VesselCoreResult, DaemonVmCore } from "@lararium/tw5";
+import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
 import { vesselDyads } from "@lararium/mesh";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
@@ -326,7 +326,7 @@ export function warnDroppedBrowserAlert(
 
 export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<BrowserVesselResult> {
   const {
-    hostId, wikiId,
+    wikiId,
     idbName = "lares:vessel", displayName, onPhase,
     genesisSeed,
     genesisCasManifest, genesisCasBaseUrl,

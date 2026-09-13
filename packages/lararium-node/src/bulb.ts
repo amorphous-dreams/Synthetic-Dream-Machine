@@ -21,8 +21,6 @@
  */
 
 import { readFileSync } from "node:fs";
-import { larBootstrapPath } from "./vessel-paths.js";
-import { join } from "node:path";
 import { sha256HexBytesSync, utf8Bytes, type GenesisSeed, type GenesisCasManifest } from "@lararium/mesh";
 import { readGenesisSeed, readGenesisManifest, genesisCasDir } from "./genesis-artifact.js";
 import { readCasBlobFromFs } from "./node-cas.js";

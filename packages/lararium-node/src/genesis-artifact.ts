@@ -11,7 +11,7 @@
  */
 
 import { daemonGenesisDir } from "./lares-config.js";
-import { readFileSync, existsSync }  from "fs";
+import { readFileSync }              from "fs";
 import { join }                      from "path";
 import type { Repo, DocHandle }      from "@automerge/automerge-repo";
 import type { LarDoc }               from "@lararium/mesh";

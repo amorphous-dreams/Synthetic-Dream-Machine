@@ -31,7 +31,7 @@
  */
 
 import { realmStanding } from "@lararium/mesh";
-import { runCabalVouch, CabalVouchError, runCabalJoin, CabalJoinError, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "@lararium/node";
+import { runCabalVouch, CabalVouchError, runCabalJoin, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { larDataDir, vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
