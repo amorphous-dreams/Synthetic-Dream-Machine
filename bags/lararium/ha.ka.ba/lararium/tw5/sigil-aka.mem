@@ -94,7 +94,6 @@ When the Lararium node resolves an external `aka` URI (HTTP/HTTPS), it should:
 Implementation home: `disk-projector.ts` or a dedicated `og-metadata-fetcher.ts` in `lararium-node`.
 The template renders whatever fields are present — no template changes needed for Tier 2 rollout.
 
-<<~/pranala>>
 
 !!! Off-wiki `lar:///` URIs
 
@@ -109,13 +108,11 @@ could include thumbnail + og-title in the handshake). Hold open.
 !! Source Shelf
 
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/tw5-module">>
-<<~/pranala>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-ast">>
-<<~/pranala>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xw9vzXPW1ZxlorRz_7Wbo8AyX430QkHcYc1mhFlQVCY
+<<^ code="&#x0003;">>ni:///sha-256;j6qC9BNL5CJqka1oMStwyVs4CWVXjRzFdsj66FoPOLo
 
 <<^ code="&#x0004;" -> to="?">>

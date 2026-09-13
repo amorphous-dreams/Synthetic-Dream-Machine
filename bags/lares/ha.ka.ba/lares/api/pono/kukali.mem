@@ -111,8 +111,9 @@ Kukali maps this into memetic-wikitext:
 
 !! Schema (machine-readable)
 
-Canonical TOML form. Source of truth for the kukali case in
-`packages/lararium-mesh/src/parser.ts` and `packages/lararium-tw5/src/tw5-widgets.ts`.
+Canonical TOML form. The kukali case reads off it in `packages/lararium-tw5/src/meme-ast/scanner.ts`
+(the scan) and `packages/lararium-tw5/src/meme-ast/builder.ts` (the node), with the wikitext face carried
+by `packages/lararium-tw5/tiddlers/sigil-kukali.tid`.
 
 ```toml
 sigil           = "kukali"
@@ -144,6 +145,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PcK1Khru4n0oW3yb-0GZZupmRXzeA-O3aZlVaw0kbDE
+<<^ code="&#x0003;">>ni:///sha-256;A5VYQJGPFYZvZQDrhBKvbHMY9jJYjM7gPSVix_hPCK4
 
 <<^ code="&#x0004;" -> to="?">>

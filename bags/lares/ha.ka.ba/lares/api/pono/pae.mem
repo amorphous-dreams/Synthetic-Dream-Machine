@@ -106,17 +106,15 @@ export interface PaeNode extends AstBase {
 
 <<~ ahu #/widget>>
 
-!! Widget
+!! How a phase reaches the page
 
-`<$pae>` — no visible output. Phase metadata lives in the AST.
-Streaming consumers read `data-lar-phase` from the rendered marker.
+''The FRAME MARKS carry the phase, and no widget stands between.'' A carrier writes each phase on the
+CONTROL head — `<<^ code="&#x0001;">>` opens, `&#x0002;` runs the body, `&#x0003;` closes, `&#x0004;`
+bears away — and `frame-marks.ts` holds those codes as ONE fact the readers derive from
+(`FRAME_MARKS` · `FRAME_CODES` · a lookup by code). A scan reads the mark where it stands.
 
-```tw5
-<$pae phase="soh" uri="lar:///my/carrier"/>
-<$pae phase="stx"/>
-<$pae phase="etx"/>
-<$pae phase="eot"/>
-```
+''The codes collapse; the scans stay apart.'' Each reader keeps its own pattern around the shared code
+set, because three scarred readings say a merged scan re-introduces the bugs the split cured.
 
 <<~/ahu>>
 
@@ -138,6 +136,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T8maU641SFyQCiloQILp1hl4LeOAYJQ1ptsxwlGoOyk
+<<^ code="&#x0003;">>ni:///sha-256;5WUkuS0iRKcVqh9X9XBZq6qd_k_WJdCv2wrft5BR96Q
 
 <<^ code="&#x0004;" -> to="?">>
