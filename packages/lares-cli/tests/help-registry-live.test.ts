@@ -14,8 +14,10 @@ import { COMMAND_NAMES } from "../src/bin/lares.js";
 
 describe("the per-command help registry", () => {
   test("★ every entry names a command that answers ★", () => {
+    // A key MAY name a SUB-DOOR (`vessel wire`) — the dispatcher prefers the longer key when the
+    // positional matches. Either way the FIRST token must name a command an operator can reach.
     const live = new Set(COMMAND_NAMES);
-    const orphans = Object.keys(COMMAND_HELP).filter((k) => !live.has(k));
+    const orphans = Object.keys(COMMAND_HELP).filter((k) => !live.has(k.split(" ")[0]!));
     expect(orphans).toEqual([]);
   });
 

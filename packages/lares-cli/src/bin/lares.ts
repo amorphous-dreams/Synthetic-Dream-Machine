@@ -38,7 +38,8 @@ import { cmdMempalace }               from "../commands/mempalace.js";
 import { cmdHooks }                   from "../commands/hooks.js";
 import { cmdSensorium }               from "../commands/sensorium.js";
 import { cmdCleanupDays }             from "../commands/cleanup-days.js";
-import { renderCommandHelp }          from "../command-help.js";
+import { renderCommandHelp, helpDoor } from "../command-help.js";
+import { reachHelpMeme }              from "../help-meme.js";
 import { cmdTestQuine, cmdHeleuma } from "../commands/scripted.js";
 import { cmdDeviceAdmit }             from "../commands/device-admit.js";
 import { cmdHandle }                   from "../commands/handle.js";
@@ -202,8 +203,14 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
   }
   // Per-command help: `lares <command> --help` renders the command's own examples-first help and
   // returns — never running the handler. The command may ALSO render help on missing-args itself.
+  // A SUB-DOOR answers for itself when the registry holds one (`lares vessel wire --help`), so a
+  // sub-verb's flags reach the reader instead of its parent's.
+  // `--meme` follows the door's help with the wiki record standing behind it, read through the meme
+  // rail (`lares meme get`) — the same verb any vessel with the cap can run.
   if (args.flags["help"]) {
-    renderCommandHelp(cmd.name, cmd.summary);
+    const door = helpDoor(cmd.name, args.positional);
+    renderCommandHelp(door, cmd.summary);
+    if (args.flags["meme"] === true) return await reachHelpMeme(door, args);
     return 0;
   }
   // Fresh-Build Invariant — a daemon-lifecycle verb (found/boot/mutate-identity) never runs
