@@ -47,6 +47,7 @@ const DECLARATION =
 
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
 import { META_OPEN_RE } from "./meta-fence.js";
+import { RETIRED_KEY_NOTES } from "./carrier-lifecycle.js";
 
 const SOH_OPENER_RE =
   /(<<\^)[ \t]*(?:code="(&#x(?:0001|0011);)"(?:[ \t]+namespace="([^"]*)")?|([^&\n]*?)(&#x(?:0001|0011);))/;
@@ -292,7 +293,26 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   });
   if (ends > 0) notes.push(`framing ends: ${ends} sigil${ends === 1 ? "" : "s"} named from= and to=`);
 
-  // ── 6. Meta columns ──────────────────────────────────────────────────────
+  // ── 6. Retired meta keys ─────────────────────────────────────────────────
+  //
+  // A WARNING, NEVER A REWRITE. `status` fused a KIND axis into a STAGE axis and `retain` carried a
+  // disposition office nothing ever read; both retire to one spelling — the `lifecycle/*` tag, which
+  // rides TiddlyWiki's own index and therefore RENDERS. But dropping a key here would delete the only
+  // sentence some carrier holds about its own standing before a hand had read it, so this gesture
+  // names the debt and leaves the bytes exactly where the author put them. The sweep removes them.
+  //
+  // `status-why` STAYS — the witness sentence is the half a tag cannot carry. `cacheable` STAYS: it
+  // instructs the API server behind the Lares, no house code reads it, and none may.
+  {
+    const fence = metaFence(text);
+    if (fence) {
+      for (const [key, why] of RETIRED_KEY_NOTES) {
+        if (new RegExp(String.raw`^[ \t]*${key}[ \t]*=`, "m").test(fence[2]!)) flags.push(why);
+      }
+    }
+  }
+
+  // ── 7. Meta columns ──────────────────────────────────────────────────────
   //
   // ONE COLUMN LAW, TWO RENDERERS. The disk projector re-emits a carrier's meta from its fields and
   // aligns the equals-signs to the longest key; a fence an author spelled a column wider read clean

@@ -62,7 +62,10 @@ import { stdin, stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission } from "@lararium/tw5/meme-markdown";
-import { readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan } from "@lararium/tw5";
+import {
+  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan,
+  readCarrierLifecycle, checkCarrierLifecycle,
+} from "@lararium/tw5";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { readVerbOutcome } from "../verb-result.js";
@@ -92,7 +95,7 @@ export interface ProjectPlan {
   readonly container: Record<string, string>;
 }
 
-const SUBS = ["put", "get", "list", "delete", "normalize", "check", "project"] as const;
+const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project"] as const;
 type Sub = typeof SUBS[number];
 
 const USAGE = [
@@ -101,7 +104,8 @@ const USAGE = [
   "       lares meme list [--recipe <slug> | --bag <slug>] [--tree]",
   "       lares meme delete <uri> [--recipe <slug> | --bag <slug>] [--if-match <hash>]",
   "       lares meme normalize <file.mem ...>",
-  "       lares meme check <file.mem ...> [--gradient | --edges]",
+  "       lares meme check <file.mem ...> [--gradient | --edges | --sitting]",
+  "       lares meme sitting <file.mem ...>",
   "       lares meme project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]",
   "",
   "  a verb declares its seat: normalize · check · project --to md (over a file) run LOCAL, no daemon;",
@@ -119,6 +123,9 @@ const USAGE = [
   "  check           report carriers that would change; write nothing (exit 1 if any) — for CI / pre-commit",
   "  --gradient      name each file's kind and the marks that kind requires and lacks; write nothing",
   "  --edges         name the addresses these carriers point at, and which of them answer",
+  "  sitting         name every carrier the fire could take — folded or retiring with nothing naming it,",
+  "                  and every carrier still standing in a harvest room. It BURNS NOTHING: the operator calls",
+  "                  the fire, and an empty harvest room is the witness that the rite completed",
   "  project         render a meme: --to md over a file writes <name>.md + <name>.md.meta beside it",
   "                  (or under --out <dir>; --title-base <lar-uri> mounts the pair under a shelf address);",
   "                  every other target writes the rendered text to --out <path>, else stdout",
@@ -210,6 +217,7 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
       case "delete":    return await memeDelete(args);
       case "normalize": return normalizeFiles(args, true);
       case "check":     return checkFiles(args);
+      case "sitting":   return surveySitting(namedFiles(args, "sitting"));
       case "project":   return await memeProject(args);
     }
   } catch (err) {
@@ -378,16 +386,18 @@ function restamp(text: string): string {
  * file it ate, so flag position stays free.
  */
 function checkFiles(args: ParsedArgs): number {
-  const reading = (name: "gradient" | "edges"): { on: boolean; ate?: string } => {
+  const reading = (name: "gradient" | "edges" | "sitting"): { on: boolean; ate?: string } => {
     const opt = args.options[name];
     return typeof opt === "string" ? { on: true, ate: opt } : { on: name in args.flags };
   };
   const gradient = reading("gradient");
   const edges = reading("edges");
-  const ate = [gradient.ate, edges.ate].filter((f): f is string => typeof f === "string");
+  const sitting = reading("sitting");
+  const ate = [gradient.ate, edges.ate, sitting.ate].filter((f): f is string => typeof f === "string");
   const files = [...(ate.length > 0 ? args.positional.slice(1) : namedFiles(args, "check")), ...ate];
   if (gradient.on) return surveyGradient(files);
   if (edges.on) return surveyEdges(files);
+  if (sitting.on) return surveySitting(files);
   return normalizeFiles(args, false);
 }
 
@@ -408,6 +418,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
   const files = namedFiles(args, write ? "normalize" : "check");
   let drifted = 0;
   let flagged = 0;
+  let faulted = 0;
 
   // Named under BOTH seats: the read-alone run is the one a caller reads before deciding to stamp.
   let unnamed: string[] = [];
@@ -427,6 +438,17 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
       flagged++;
       console.log(`flagged: ${f}`);
       for (const fl of res.flags) console.log(`  ⚠ ${fl}`);
+    }
+
+    // THE STAGE LAW BINDS ONLY WHERE THE TAG STANDS. An untagged carrier — law, record, reference,
+    // 669 of 726 of them — declines the ladder, and this reading answers nothing new for it. A fault
+    // here is a REFUSAL rather than a drift: no gesture can auto-close an open lean or invent a fold
+    // target, so the door names what the stage owes and hands it back to a hand.
+    const stage = checkCarrierLifecycle(src);
+    if (stage.length > 0) {
+      faulted++;
+      console.log(`stage: ${f}`);
+      for (const fault of stage) console.log(`  ✗ ${fault}`);
     }
 
     // THE CHECK COVERS THE BODY, SO IT IS PART OF BEING CANONICAL. Framing rides inside the checked
@@ -456,10 +478,14 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     for (const u of unnamed) console.log(`      ${u}`);
   }
 
-  const tail = flagged > 0 ? ` (${flagged} flagged for triage)` : "";
+  const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
+    + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "");
   if (drifted === 0) {
     console.log(`all ${files.length} carrier(s) canonical.${tail}`);
-    return 0;
+    // A STAGE FAULT FAILS THE READ-ALONE SEAT even where every byte reads canonical — the two say
+    // different things, and a gate that passed a `folded` carrier still holding its argument would
+    // let the fire take a carrier whose content lives nowhere else.
+    return write || faulted === 0 ? 0 : 1;
   }
   console.log(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
   // Read alone, drift fails loud so a CI gate or pre-commit hook catches un-normalized carriers.
@@ -549,6 +575,78 @@ function surveyEdges(files: string[]): number {
   const tail = unaddressed > 0 ? ` · ${unaddressed} naming a FILE rather than an address` : "";
   console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${n} naming nothing${tail}`);
   return n === 0 ? 0 : 1;
+}
+
+/**
+ * The sitting: every carrier the fire COULD take, named — and nothing burned.
+ *
+ * ── THE FIRE IS CALLED, NEVER SCHEDULED ─────────────────────────────────────────────────────────
+ * The rite this reads for refuses a calendar, and so does the field it borrows its name from: Sagichō
+ * runs "usually held around the fifteenth of January" with "a fair amount of regional variation in the
+ * date". A sweep that burned on its own reading would decide an ending on a ratio, and the house has
+ * already ruled the other way everywhere it touches this — a realm DISSOLVES BY COOLING and no party
+ * holds a dissolving act. So this reading names candidates and stops. The operator calls the sitting.
+ *
+ * ── THE WELD COMES FIRST AND THE FIRE SECOND, ALWAYS ────────────────────────────────────────────
+ * A carrier any other carrier still names is HELD, however the stage reads. Measured on this tree:
+ * moving three carriers without the weld left 66 references naming addresses that no longer answered;
+ * folding 37 weld-first broke none. The corpus passed IS the universe here, exactly as it is for the
+ * edges reading — so a narrow run reads as a graph with holes, and the summary states the count read.
+ *
+ * ── AND THE HARVEST ROOM'S EMPTINESS IS THE WITNESS ─────────────────────────────────────────────
+ * A `lifecycle/harvest` carrier names the living bag its materials fold into. It stands in the list as
+ * long as it stands at all; the rite completes when the room reports empty.
+ */
+function surveySitting(files: string[]): number {
+  const texts = new Map<string, string>();
+  const addressOf = new Map<string, string>();
+  for (const f of files) {
+    const src = readNamed(f);
+    texts.set(f, src);
+    const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(src)?.[1];
+    if (uri) addressOf.set(f, uri);
+  }
+
+  // Who names whom — read over every carrier in the run, in every form the grammar spells a reference.
+  const inbound = new Map<string, string[]>();
+  for (const [f, src] of texts) {
+    for (const e of readCarrierEdges(src)) {
+      if (e.address === null) continue;
+      // A carrier naming ITSELF is not a reader holding it.
+      if (addressOf.get(f) === e.address) continue;
+      (inbound.get(e.address) ?? inbound.set(e.address, []).get(e.address)!).push(f);
+    }
+  }
+
+  let candidates = 0, held = 0, rooms = 0;
+  for (const [f, src] of texts) {
+    const life = readCarrierLifecycle(src);
+    if (life.stage === "harvest") {
+      rooms++;
+      console.log(`harvest room: ${f}`);
+      console.log(`     materials fold to ${life.harvestTo ?? "— NO harvest-to; name the living bag"}`);
+      continue;
+    }
+    if (life.stage !== "folded" && life.stage !== "retiring") continue;
+    const addr = addressOf.get(f);
+    const namers = addr ? inbound.get(addr) ?? [] : [];
+    if (namers.length > 0) {
+      held++;
+      console.log(`held — ${namers.length} carrier(s) still name lar:///${addr}: ${f}`);
+      for (const n of namers.slice(0, 3)) console.log(`     from ${n}`);
+      if (namers.length > 3) console.log(`     … and ${namers.length - 3} more`);
+      continue;
+    }
+    candidates++;
+    console.log(`candidate (${life.stage}) ${f}`);
+    if (life.stage === "folded") console.log("     every slot points, nothing names it — the fold stands welded");
+  }
+
+  const room = rooms > 0 ? ` · ${rooms} harvest room(s) still standing` : " · the harvest room stands empty";
+  console.log(`sitting: ${files.length} carrier(s) read · ${candidates} candidate(s) · ${held} held${room}`);
+  // THE READING NEVER FAILS. It reports a state; the operator decides what the state means, and an
+  // exit code that called a candidate an error would make the reading un-runnable from a hook.
+  return 0;
 }
 
 // ── project: the seat law decides local or daemon ──────────────────────────────────────────────

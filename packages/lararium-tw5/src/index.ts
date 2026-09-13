@@ -288,6 +288,16 @@ export type { CarrierShape, CarrierKind, CarrierMarks } from "./carrier-shape.js
 export { META_OPEN_RE, META_OPEN_LINE_RE, PLAIN_OPEN_RE, META_OPEN_CANON, isCanonicalMetaOpen } from "./meta-fence.js";
 export { readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
+// THE STAGE A GOVERNED CARRIER STANDS IN — read off `tags`, so a filter answers it in the wiki.
+export {
+  LIFECYCLE_STAGES,
+  RETIRED_META_KEYS,
+  RETIRED_KEY_NOTES,
+  readCarrierTags,
+  readCarrierLifecycle,
+  checkCarrierLifecycle,
+} from "./carrier-lifecycle.js";
+export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
 // The check a carrier carries, and the span it covers. `meme normalize` re-stamps with these, so a
 // carrier whose framing it rewrites leaves the door holding a check that matches the body it follows.
 export { bccOf, verifyBcc, checkSpan } from "./carrier-check.js";

@@ -26,5 +26,6 @@ export * from "./block-check.js";
 export * from "./carrier-check.js";
 export * from "./carrier-shape.js";
 export * from "./carrier-edges.js";
+export * from "./carrier-lifecycle.js";
 export * from "./carrier-head.js";
 export * from "./frame-marks.js";

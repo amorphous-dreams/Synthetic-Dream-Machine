@@ -333,3 +333,107 @@ describe("project --to md over the daemon — the pair in the reply", () => {
     expect("meta" in (reply.data ?? {})).toBe(false);
   });
 });
+
+// ── the lifecycle: the tag family, the stage law, and the called fire ──────────────────────────
+
+/** A carrier built from parts at read time — nothing here declares, so no sweep enrols the fixture. */
+const governed = (tags: string[], body = "", extraMeta: string[] = []): string => {
+  const rows: Array<[string, string]> = [
+    ...extraMeta.map((l) => l.split(/\s*=\s*/, 2) as [string, string]),
+    ["tags", `[${tags.map((t) => `"${t}"`).join(", ")}]`],
+    ["uri-path", `"ha.ka.ba/t/${tags.join("-").replace(/[^a-z]+/g, "-")}"`],
+  ];
+  // The column law, so a fixture never reads as DRIFT and hides the fault the case is about.
+  const pad = Math.max(...rows.map(([k]) => k.length));
+  return ["```" + "toml meta", ...rows.map(([k, v]) => `${k.padEnd(pad)} = ${v}`), "```", "", body, ""].join("\n");
+};
+
+const say = (): { lines: string[]; done: () => string } => {
+  const lines: string[] = [];
+  vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
+  return { lines, done: () => { vi.restoreAllMocks(); return lines.join("\n"); } };
+};
+
+describe("lares meme check — the stage law, enforced only where the tag stands", () => {
+  test("★ a standing carrier holding an open lean faults, and exits 1 ★", async () => {
+    const file = tmpFile(governed(["lifecycle/standing"], "<<~ ahu #/leans>>\n\n# unruled. `-> ?`\n\n<<~/ahu>>"));
+    const out = say();
+    const code = await cmdMeme(memeArgs(["check", file]));
+    const text = out.done();
+    expect(code).toBe(1);
+    expect(text).toMatch(/an open lean `-> \?` stands in #\/leans/);
+  });
+
+  test("CONTROL — the same carrier tagged designed reads clean and exits 0", async () => {
+    const file = tmpFile(governed(["lifecycle/designed"], "<<~ ahu #/leans>>\n\n# unruled. `-> ?`\n\n<<~/ahu>>"));
+    const out = say();
+    const code = await cmdMeme(memeArgs(["check", file]));
+    out.done();
+    expect(code).toBe(0);
+  });
+
+  /** The whole shelf declines the ladder; a check over an UNGOVERNED carrier enforces nothing new. */
+  test("CONTROL — an untagged carrier carrying the same open lean enforces nothing new", async () => {
+    const file = tmpFile(governed(["api/pono/meme"], "<<~ ahu #/leans>>\n\n# unruled. `-> ?`\n\n<<~/ahu>>"));
+    const out = say();
+    const code = await cmdMeme(memeArgs(["check", file]));
+    out.done();
+    expect(code).toBe(0);
+  });
+
+  test("a harvest carrier naming no living bag faults", async () => {
+    const file = tmpFile(governed(["lifecycle/harvest"]));
+    const out = say();
+    expect(await cmdMeme(memeArgs(["check", file]))).toBe(1);
+    expect(out.done()).toMatch(/no harvest-to/);
+  });
+
+  test("`status` and `retain` read as retired keys, and the bytes stay put", async () => {
+    const file = tmpFile(governed(["lifecycle/standing"], "", [`status = "standing"`, "retain = true"]));
+    const before = readFileSync(file, "utf8");
+    const out = say();
+    await cmdMeme(memeArgs(["check", file]));
+    const text = out.done();
+    expect(text).toMatch(/`status` retired — the stage rides `tags`/);
+    expect(text).toMatch(/`retain` retired/);
+    expect(readFileSync(file, "utf8")).toBe(before);
+  });
+});
+
+describe("lares meme sitting — the fire is CALLED, and this call burns nothing", () => {
+  test("★ names every folded and retiring carrier nothing points at, and writes nothing ★", async () => {
+    const folded = tmpFile(governed(["lifecycle/folded"], "<<~ ahu #/one>>\n\nfolded to lar:///ha.ka.ba/lares/api/pono/meme\n\n<<~/ahu>>"));
+    const before = readFileSync(folded, "utf8");
+    const out = say();
+    const code = await cmdMeme(memeArgs(["sitting", folded]));
+    const text = out.done();
+    expect(code).toBe(0);
+    expect(text).toMatch(/candidate/);
+    expect(text).toContain(folded);
+    expect(existsSync(folded)).toBe(true);
+    expect(readFileSync(folded, "utf8")).toBe(before);
+    expect(h.calls).toEqual([]);
+  });
+
+  /** THE WELD COMES FIRST AND THE FIRE SECOND. A carrier something still names is not a candidate. */
+  test("★ CONTROL: a folded carrier something still names is HELD, never a candidate ★", async () => {
+    const folded = tmpFile(governed(["lifecycle/folded"], "<<~ ahu #/one>>\n\nfolded to lar:///ha.ka.ba/lares/api/pono/meme\n\n<<~/ahu>>"));
+    const addr = /^uri-path = "([^"]+)"/m.exec(readFileSync(folded, "utf8"))![1]!;
+    const namer = tmpFile(governed(["api/pono/meme"], `<<~ loulou "lar:///${addr}">>`));
+    const out = say();
+    const code = await cmdMeme(memeArgs(["sitting", folded, namer]));
+    const text = out.done();
+    expect(code).toBe(0);
+    expect(text).toMatch(/held — 1 carrier\(s\) still name/);
+    expect(text).not.toMatch(/^candidate/m);
+  });
+
+  test("CONTROL — an empty harvest room is the witness, and the sitting says so", async () => {
+    const plain = tmpFile(governed(["api/pono/meme"], "nothing stands here."));
+    const out = say();
+    const code = await cmdMeme(memeArgs(["sitting", plain]));
+    const text = out.done();
+    expect(code).toBe(0);
+    expect(text).toMatch(/sitting: 1 carrier\(s\) read · 0 candidate\(s\) · 0 held/);
+  });
+});
