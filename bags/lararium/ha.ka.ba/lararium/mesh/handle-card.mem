@@ -233,6 +233,22 @@ registry; the cards pass, the compilation does not (registry-filter).
 Pure and isomorphic: the module holds no I/O and no key. The vessel supplies the signer; the caller carries
 the bytes; the read-open oracle plane serves the published blob.
 
+!!! WRITE-OPEN, READ-CERTIFIED ~ the board gates nothing
+
+''Invariant law.'' The announce board (`handle-announce`) admits ANY nym's card. `writeHandleAnnounce` runs no
+membership check — a card lands at its key though its nym stands in no PersonaGroup, no cabal, and no
+recogniser's book. `readHandleAnnounces` filters SHAPE and certifies nothing. ''Standing arrives only as a READ
+verdict'', off the card's own chain (`verifyHandleCard` · `HandleBook`), at the tier the verdict names.
+
+''A membership gate on the WRITE path reads as a REGRESSION, never a hardening.'' Refusing a stranger at write
+time obliges the writer to consult a set of who-may-announce, and that set ''IS'' the compiled registry the
+registry-filter rejects — the roster would arrive wearing the face of a security fix. It also buys nothing: an
+uncertified card already loses at the read, and a certified one needs nobody's permission to travel. The
+openness costs no assurance because the two halves sit on opposite sides of the wire.
+
+Welded: `packages/lararium-mesh/tests/who-board-write-open.test.ts` — a stranger's card rides the board, a
+forgery rides it too and dies at the recogniser, and the writer's arity itself stands as the sentinel.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -247,6 +263,6 @@ the bytes; the read-open oracle plane serves the published blob.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;mtdcBxXCyQMwzSIMLonm6lS9iheho0zI4vX2iHsoBEg
+<<^ code="&#x0003;">>ni:///sha-256;Fz4aPmw1rXw25Ku_WcjFunXse7U6ScinZczaXpfWkOg
 
 <<^ code="&#x0004;" -> to="?">>

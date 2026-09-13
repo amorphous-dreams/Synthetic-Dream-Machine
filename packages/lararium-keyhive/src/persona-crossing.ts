@@ -21,7 +21,17 @@ export interface CrossingContent {
   readonly ciphertext: string;   // base64 — already E2E, safe on any relay
 }
 
-/** Everything a joinee ingests to become a PersonaGroup member and read the shared content. All base64/plain. */
+/**
+ * Everything a joinee ingests to become a PersonaGroup member and read the shared content. All base64/plain.
+ *
+ * INVARIANT LAW — A CROSSING CARRIES NO SEED; THE ROOT SIGNS AND NEVER TRAVELS. This bundle holds exactly three
+ * slots — the founder's public contact card, public CGKA/membership ops, and already-E2E ciphertext. No slot
+ * carries the persona root seed, and none may be added: the root seed enters the tree ONLY as a signing input
+ * (`device-delegation.ts` — the root SIGNS; `ceremony-core.ts` — the founder's PersonaGroup root SIGNS), never
+ * as a payload field. The joinee decrypts with its OWN prekey secret; a vessel that crosses receives standing,
+ * never the key that grants it. A seed slot here would hand every admitted vessel the human's whole persona —
+ * the crossing would stop admitting and start CLONING.
+ */
 export interface PersonaCrossingBundle {
   readonly founderCard: string;                    // base64 — the joinee receives it first
   readonly capEvents:   readonly string[];         // base64 — public CGKA/membership ops (incl. the PCS update)

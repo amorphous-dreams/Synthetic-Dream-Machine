@@ -109,6 +109,14 @@ The operator seed MUST NOT enter any Automerge doc. The ceremony reads it to der
 the Individual keypair and then releases it. The keypair itself (public material only)
 enters the PersonaGroup doc. The private scalar never leaves the memory of the function call.
 
+''A crossing carries no seed; the root SIGNS and never travels.'' The same law extends past founding to every
+admit crossing. A `PersonaCrossingBundle` (`packages/lararium-keyhive/src/persona-crossing.ts`) holds exactly
+the founder's public contact card, public CGKA/membership ops, and already-E2E ciphertext — no seed slot
+stands there, and none may be added. The persona root seed enters the tree ONLY as a ''signing input''
+(`device-delegation` · `ceremony-core`), never as a payload field; a joinee decrypts with its OWN prekey
+secret. A crossed vessel therefore receives ''standing'', never the key that grants it — a seed on the wire
+would turn admission into cloning, and every admitted vessel would hold the human entire.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -122,6 +130,6 @@ enters the PersonaGroup doc. The private scalar never leaves the memory of the f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KZYP_cUx3JumCAIqZz9W6J9kifE39U5WVwyUKcoRP84
+<<^ code="&#x0003;">>ni:///sha-256;wcCkm_a9AL8zHDH8biMQCRqXhWD6EK9RqmauYqq98aQ
 
 <<^ code="&#x0004;" -> to="?">>

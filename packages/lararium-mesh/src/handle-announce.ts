@@ -17,6 +17,16 @@
  * in the target Nexus's doc with no re-sign, and the tiddler key stays stable (it names the identity KIND, so
  * recognition carries across islands), while the hosting bag carries the island-scoped reach.
  *
+ * WRITE-OPEN, READ-CERTIFIED — the board gates nothing; the recogniser decides standing. `writeHandleAnnounce`
+ * runs NO membership check: any nym's card lands at its key, including one standing in no PersonaGroup, no
+ * cabal, and no recogniser's book. `readHandleAnnounces` filters SHAPE and certifies nothing. Standing arrives
+ * only as a READ verdict, from the card's own chain (`verifyHandleCard` / `HandleBook`).
+ *
+ * A membership gate added to the WRITE path reads as a REGRESSION, never a hardening. To refuse a stranger at
+ * write time the writer must consult a set of who-may-announce — and that set IS the compiled registry the
+ * registry-filter law rejects. It would also buy nothing: an uncertified card already loses at the read, and a
+ * certified one needs nobody's permission to travel. `tests/who-board-write-open.test.ts` welds this shut.
+ *
  * Pure and I/O-free: it mutates a LarDoc draft the caller opened inside `handle.change()`, and reads a plain
  * LarDoc. It holds no key and touches no network. Untrusted by construction — a card arrives from an open
  * synced doc, so reading NEVER throws on a malformed tiddler (a bad entry is skipped, and every surviving card
