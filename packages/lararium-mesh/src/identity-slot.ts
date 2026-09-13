@@ -96,78 +96,15 @@ export interface IdentitySlot {
 }
 
 // ---------------------------------------------------------------------------
-// OpenIdentitySlot — the alpha/beta stub: all access permitted.
-// Replace with BlueskyIdentitySlot or KeyhiveIdentitySlot as auth lands.
+// THE DEFAULT SLOT RETIRED — the PersonaGroup ring decides (2026-09-13)
 // ---------------------------------------------------------------------------
-
-/**
- * OpenIdentitySlot — permits all access; uses vesselId hash for stable actorId.
- *
- * Current alpha stub. The sharePolicy wired to it returns true
- * unconditionally (same as the current hardcoded `async () => true`), but now
- * the actorId is stable across reboots — derived from the vesselId string.
- */
-export class OpenIdentitySlot implements IdentitySlot {
-  readonly did: string;
-  private readonly _vesselId: string;
-
-  constructor(vesselId: string) {
-    this._vesselId = vesselId;
-    // Placeholder DID until user logs in via Bluesky (elyncia.social) or GitHub.
-    // Real login sets did:web:elyncia.social or did:web:github.com/<user>.
-    this.did = `did:web:elyncia.app/vessels/${encodeURIComponent(vesselId)}`;
-  }
-
-  async deriveActorId(): Promise<ActorId> {
-    // Stable UUID derived from vesselId via Web Crypto SHA-256 truncated to 16 bytes.
-    // Falls back to a simple string hash in environments without SubtleCrypto.
-    try {
-      const enc  = new TextEncoder();
-      const hash = await crypto.subtle.digest("SHA-256", enc.encode(this._vesselId));
-      const bytes = new Uint8Array(hash).slice(0, 16);
-      return formatUuid(bytes);
-    } catch {
-      return deterministicUuid(this._vesselId);
-    }
-  }
-
-  async verifyCapability(_docUrl: string, _ability: "read" | "edit"): Promise<boolean> {
-    return true; // alpha: open
-  }
-
-  async delegateCapability(
-    _docUrl: string, _toDid: string, _ability: "read" | "edit",
-  ): Promise<CapabilityToken> {
-    return null; // alpha: no token required
-  }
-
-  async verifyDelegation(_token: CapabilityToken, _docUrl: string): Promise<boolean> {
-    return true; // alpha: open
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatUuid(bytes: Uint8Array): string {
-  const h = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
-  return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-${((parseInt(h[16]!, 16) & 0x3) | 0x8).toString(16)}${h.slice(17,20)}-${h.slice(20,32)}`;
-}
-
-// Non-crypto fallback for environments without SubtleCrypto (e.g. old Node).
-function deterministicUuid(seed: string): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = (h * 0x01000193) >>> 0;
-  }
-  const b = new Uint8Array(16);
-  for (let i = 0; i < 16; i++) {
-    h = ((h ^ (h >> 16)) * 0x45d9f3b) >>> 0;
-    b[i] = h & 0xff;
-  }
-  b[6] = (b[6]! & 0x0f) | 0x40;
-  b[8] = (b[8]! & 0x3f) | 0x80;
-  return formatUuid(b);
-}
+//
+// `OpenIdentitySlot` stood here and answered `return true` to every `verifyCapability`. Measured
+// (`lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy`), that answer reached NO live path: both vessels
+// passed `identity = null`, so the allow-all sat as dead code behind an unwired socket — and lighting the
+// socket naively would have made it live, because a self-slot asking "may I sync my own doc" with presenter
+// equal to self reads as an allow-all the moment it is consulted.
+//
+// The operator ruled arm (B): a slot doc's verdict = the FACE's grant records, never the realm's `keptBy`,
+// never a roster. `makePersonaGroupIdentityRing` (`persona-group-ring.ts`) answers it, and a vessel that
+// names no slot now carries none — the alpha line takes the retirement whole, with no alias standing in.

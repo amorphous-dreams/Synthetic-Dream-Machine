@@ -8,9 +8,9 @@ l-space    = "stable"
 mana       = 14
 manao      = 16
 manaoio    = 13
-revised-on = "2026-09-12"
+revised-on = "2026-09-13"
 role       = "what OpenIdentitySlot's sharePolicy could key on now that the realm leg stands — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
-status-why = "measured 2026-09-12; the design reaches a fork only the operator closes — which plane owns an identity-slot doc's verdict — and the reader that a persona-plane answer would need does not exist in code"
+status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader this carrier called missing now stands as `makePersonaGroupIdentityRing` and `OpenIdentitySlot` retired whole. What remains sits at the two sharePolicy shores, named under #/the-ruling"
 tags       = ["docs/pono/design", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/identity-slot-policy"
@@ -84,6 +84,30 @@ So the fork stands, and it is a ruling and not a patch — the three answers dif
 
 <<~/ahu>>
 
+<<~ ahu #/the-ruling>>
+
+! ★ The fork CLOSED — arm (B), 2026-09-13 ★
+
+The operator ruled: ''a slot doc's verdict = the face's grant records (the joinee's own act), never the realm's `keptBy`, never a roster; the realm never reads persona planes.''
+
+!! What stands
+
+`makePersonaGroupIdentityRing` (`packages/lararium-mesh/src/persona-group-ring.ts`) — the reader this carrier measured as missing. Pure, and it reads exactly three things, each injected: the docs it GOVERNS (this face's own planes), the vessel key a peer PROVED at this vessel's gate, and the grant records resting on the PersonaGroup plane with the seal check that judges one. That check rides in as a function, so `verifyFaceGrantRecord` — the same verify the joinee's own kit runs — answers here too, and mesh takes no keyhive dependency to do it.
+
+''It refuses the other two readings by having no field for them.'' No realm input, so a name in a registration's `keptBy` grants nothing (its own CONTROL). No roster, so the registry filter never fires.
+
+''It widens and never narrows.'' `compose(base)` is the realm leg's shape: the base's allow stands untouched and the ring adds ONE admit path. A wired ring can open a door and can never close one that stood — pinned against a permissive base.
+
+''And the red never measures the base.'' This carrier's own warning (#/what-a-red-would-need) said the stranger half already passes for a reason that has nothing to do with the slot; every vector asks `admitsPeer` directly, so the ring is the thing that decides.
+
+`OpenIdentitySlot` RETIRED whole — no alias, the alpha line's own law. `LarVessel.identity` reads `IdentitySlot | null` and a vessel given none carries none, where it once carried a slot that granted everything.
+
+!! What remains, named
+
+''The two sharePolicy shores.'' The node's wire DOES carry the reading the ring needs — `peerIdentifierMap` holds the identifier a peer proved, whose trailing 64 hex are its vessel key, which is exactly what a grant record names. What the shore lacks is the PLANE: the PersonaGroup doc and its grant records reach the daemon island's own store, and the main-thread sharePolicy holds a `repo` and a catalog url. So the wiring is an addition at `open-node-vessel.ts`, ground the FOUNDING hearth holds (`docs/pono/hearths#/holds`), and it waits on that hearth's hand or a row and an override. The BROWSER shore admits only same-origin and in-process peers, where the ring's own-hand class short-circuits — so a ring wired there changes nothing until the browser admits a relay peer at all.
+
+<<~/ahu>>
+
 <<~ ahu #/what-a-red-would-need>>
 
 !! What the smallest red would need, and why none is written here
@@ -108,6 +132,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PiR54qAkw5_Cs2bHYnZOusu7SG6X-6jpBZQPq7fHsqA
+<<^ code="&#x0003;">>ni:///sha-256;hON23jO0FasIUAEHsbBa0iJI7b_KK46g1R_Yv-sYBnI
 
 <<^ code="&#x0004;" -> to="?">>

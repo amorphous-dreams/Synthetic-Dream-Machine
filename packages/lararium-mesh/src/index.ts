@@ -93,7 +93,10 @@ export * from "./automerge-doc-store.js";
 export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";
 export type { IdentitySlot, CapabilityToken, ActorId } from "./identity-slot.js";
-export { OpenIdentitySlot } from "./identity-slot.js";
+export {
+  makePersonaGroupIdentityRing,
+  type PersonaGroupIdentityRing, type PersonaGroupGrantReading,
+} from "./persona-group-ring.js";
 export type { FederationGate } from "./federation-gate.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";

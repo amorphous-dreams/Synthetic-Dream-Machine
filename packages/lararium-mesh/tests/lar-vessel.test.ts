@@ -17,7 +17,6 @@ import {
   LAR_VESSEL_CAPABILITIES_NONE,
   type LarariumVesselOptions,
   type LarariumVesselResult,
-  OpenIdentitySlot,
   CompositeStore,
   BAG_IDS,
 } from "../src/index.js";
@@ -105,46 +104,26 @@ describe("LarVessel — capability presets", () => {
 });
 
 // ---------------------------------------------------------------------------
-// OpenIdentitySlot — DID-based identity (alpha open model)
+// THE RETIRED SLOT — a vessel that names none now CARRIES none (2026-09-13)
 // ---------------------------------------------------------------------------
 
-describe("OpenIdentitySlot — DID shape", () => {
-  test("DID encodes vesselId into did:web:elyncia.app/vessels/<id> namespace", () => {
-    const slot = new OpenIdentitySlot("test-wiki");
-    expect(slot.did).toContain("did:web:elyncia.app/vessels/");
-    expect(slot.did).toContain("test-wiki");
-  });
-
-  test("deriveActorId returns a UUID-formatted string (stable per vesselId)", async () => {
-    const slot = new OpenIdentitySlot("my-vessel");
-    const id1  = await slot.deriveActorId();
-    const id2  = await slot.deriveActorId();
-    // UUID format: 8-4-4-4-12 hex groups
-    expect(id1).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
-    expect(id1).toBe(id2); // deterministic
-  });
-
-  test("different vesselIds produce different actorIds", async () => {
-    const a = await new OpenIdentitySlot("vessel-a").deriveActorId();
-    const b = await new OpenIdentitySlot("vessel-b").deriveActorId();
-    expect(a).not.toBe(b);
-  });
-
-  test("alpha open model: verifyCapability always returns true", async () => {
-    const slot = new OpenIdentitySlot("any");
-    expect(await slot.verifyCapability("automerge:xyz", "read")).toBe(true);
-    expect(await slot.verifyCapability("automerge:xyz", "write")).toBe(true);
-  });
-
-  test("alpha open model: delegateCapability returns null token", async () => {
-    const slot  = new OpenIdentitySlot("issuer");
-    const token = await slot.delegateCapability("automerge:doc", "did:web:target", "read");
-    expect(token).toBeNull();
-  });
-
-  test("vessel gets identity slot from vesselId when not provided", () => {
+describe("the identity slot — no default, and no allow-all standing in for one", () => {
+  test("a vessel given no slot carries null, never a slot that grants everything", () => {
     const vessel = new LarVessel({ vesselId: "my-host", store: makeStore() });
-    expect(vessel.identity.did).toContain("my-host");
+    expect(vessel.identity).toBeNull();
+  });
+  test("a vessel given a slot carries exactly that one", async () => {
+    const slot = {
+      did: "did:web:example/vessels/named",
+      deriveActorId: async () => "00000000-0000-4000-8000-000000000000",
+      verifyCapability: async () => false,
+      delegateCapability: async () => null,
+      verifyDelegation: async () => false,
+    };
+    const vessel = new LarVessel({ vesselId: "named", store: makeStore(), identity: slot });
+    expect(vessel.identity).toBe(slot);
+    // CONTROL: the slot the caller handed in answers for itself — nothing wraps or widens it.
+    expect(await vessel.identity!.verifyCapability("automerge:xyz", "read")).toBe(false);
   });
 });
 

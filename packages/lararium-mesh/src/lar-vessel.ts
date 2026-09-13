@@ -1,7 +1,6 @@
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import type { MemeProjection } from "./meme-provider.js";
 import type { IdentitySlot } from "./identity-slot.js";
-import { OpenIdentitySlot } from "./identity-slot.js";
 
 /**
  * KeyhiveSlot — opaque optional handle for the Keyhive three-layer stack.
@@ -85,7 +84,9 @@ export class LarVessel<TVm = unknown> {
   /** Full doc stack — CompositeStore(system → corpus:* → wiki → draft). */
   readonly store:        LarTiddlerStore;
   readonly capabilities: LarVesselCapabilities;
-  readonly identity:     IdentitySlot;
+  /** The identity slot a factory supplies, or null. NO DEFAULT: the allow-all stub retired 2026-09-13, and a
+   *  vessel that names no slot now carries none rather than one that grants everything. */
+  readonly identity:     IdentitySlot | null;
   readonly keyhive:      KeyhiveSlot | undefined;
 
   private _vmPool: TVm | null;
@@ -95,7 +96,7 @@ export class LarVessel<TVm = unknown> {
     this.vesselId     = opts.vesselId;
     this.store        = opts.store;
     this.capabilities = { ...LAR_VESSEL_CAPABILITIES_NONE, ...opts.capabilities };
-    this.identity     = opts.identity ?? new OpenIdentitySlot(opts.vesselId);
+    this.identity     = opts.identity ?? null;
     this.keyhive      = opts.keyhive;
     this._vmPool      = opts.vmPool ?? null;
   }
