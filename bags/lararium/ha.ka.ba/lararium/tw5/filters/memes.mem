@@ -1,0 +1,54 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/filters/memes">>
+```toml meta
+cacheable     = true
+file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/filters/memes.mem"
+mana          = 14
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/memes"
+role          = "filter operator: memes[] — the collection source that emits every lar: URI title the wiki holds"
+source-file   = "packages/lararium-tw5/src/filters/memes.ts"
+source-symbol = "memes"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/tw5/filters/memes"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+`[memes[]]` emits every title in the wiki that reads as a `lar:` URI, delegating the recognition to `allLarTitles`. It acts as a ''collection source'': it disregards the input pipeline entirely, so it opens a run rather than narrowing one.
+
+<<~/ahu>>
+
+<<~ ahu #/name-law>>
+
+!! The Registered Name
+
+TW5 binds a filter operator to its ''exported binding'', never to a file path and never to a doc-comment. The export reads `memes`, so the operator answers to `memes[]`; renaming the export renames the operator and silently unbinds every filter run that spelled the old name.
+
+The module header inside the source carries the registration triple TW5 reads at boot — `title` (the `lar:` address), `type: application/javascript`, `module-type: filteroperator`.
+
+<<~/ahu>>
+
+<<~ ahu #/source>>
+
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/filters/memes.ts" family="code" role="has">>
+<<~ pranala #source-titles from="?" -> to="packages/lararium-tw5/src/filters/lar-title.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/stack">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/toml-field">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;mfNpQ06eh3ITR5-NjdPYtCLNd6ZcMNNeRoH4ihhoawo
+
+<<^ code="&#x0004;" -> to="?">>

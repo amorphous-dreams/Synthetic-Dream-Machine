@@ -8,9 +8,9 @@ file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/filters/toml-field.mem"
 heleuma       = "ka"
 mana          = 18
 module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/toml-field"
-role          = "anchor: registerTomlFieldOperator — heleuma ka"
-source-symbol = "registerTomlFieldOperator"
-tags          = ["tw5/modules/tw5-widgets"]
+role          = "filter operator: toml:field[value] — the TOML-field equality query, registered under the exported binding `toml`"
+source-file   = "packages/lararium-tw5/src/filters/toml-field.ts"
+source-symbol = "toml"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/filters/toml-field"
 ```
@@ -21,22 +21,37 @@ uri-path      = "ha.ka.ba/lararium/tw5/filters/toml-field"
 
 !! Contract
 
-`toml:fieldName[value]` — returns tiddlers where `fields[fieldName] === value`. Used for TOML-indexed field queries.
+`toml:fieldName[value]` keeps each input tiddler whose field `fieldName` reads exactly `value`, comparing as strings — the suffix names the field, the operand names the value. A carrier's TOML meta keys land as tiddler fields, so this operator queries the prelude directly: `[all[tiddlers]toml:heleuma[ka]]` gathers every carrier anchored at that mooring.
+
+The comparison stays exact and stringly: a missing field reads as the empty string and matches only an empty operand.
+
+<<~/ahu>>
+
+<<~ ahu #/name-law>>
+
+!! The Registered Name
+
+TW5 binds a filter operator to its ''exported binding''. The export here reads `toml`, so the operator answers to `toml:…[…]` — the file name and the doc-comment reach nothing. Renaming the export renames the operator and unbinds every filter run that spelled the old name.
+
+The module header inside the source carries the registration triple TW5 reads at boot — `title` (the `lar:` address), `type: application/javascript`, `module-type: filteroperator`.
 
 <<~/ahu>>
 
 <<~ ahu #/source>>
 
-<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/filters/toml-field" $mode="block"/>
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/filters/toml-field.ts" family="code" role="has">>
 
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/toml-field">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/stack">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/memes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UVzCBRr6h0RJoiQyBpP7r5MLDwf3-4685UY30DhcTc0
+<<^ code="&#x0003;">>ni:///sha-256;8j6Z1CtmmNpdIhITommmlnCBYRzl4d8_6iBNh207FVM
 
 <<^ code="&#x0004;" -> to="?">>
