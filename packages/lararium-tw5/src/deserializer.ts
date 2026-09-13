@@ -393,7 +393,7 @@ function splitMemeToTiddlers(
     }
     if (swallowed) {
       warnings.push(
-        `${uri}: carrier close (&#x0003;) sits inside an UNCLOSED code fence — ` +
+        `${uri}: carrier close (${FRAME_BY_NAME.ETX}) sits inside an UNCLOSED code fence — ` +
         `closers will double on every round trip. Check fence balance ` +
         `(quote fences inside fences with a LONGER outer run).`,
       );
@@ -1150,7 +1150,7 @@ export function deserializeCarrier(
         from: 0, to: text.length, severity: "error",
         source: "memetic-wikitext", code: "postamble-content",
         message: `${stranded} line(s) stand between ETX and EOT. The text ends at ETX; that slot `
-               + "carries the block check alone. Move the content above the `<<^ code=\"&#x0003;\">>` close.",
+               + `carries the block check alone. Move the content above the \`<<^ code="${FRAME_BY_NAME.ETX}">>\` close.`,
       });
     }
     if (!String(record.title ?? "").includes("/parse-warning/")) continue;

@@ -5,6 +5,9 @@
  * reader somewhere in this tree, and the shore now answers all of them from one place.
  */
 import { describe, test, expect } from "vitest";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   matchCarrierHead,
   matchCarrierMark,
@@ -127,6 +130,136 @@ describe("the codes come from frame-marks, never from here", () => {
     for (const m of FRAME_MARKS.filter((x) => !/^(SOH|EOT)/.test(x.name))) {
       expect(matchCarrierHead(`<<^ code="${m.code}" from="?" -> to="${URI}">>`), m.name).toBeNull();
     }
+  });
+});
+
+// ── THE PARITY WALK ─────────────────────────────────────────────────────────────────────────────
+//
+// `frame-marks` rules that the CODES collapse into one fact while the SCANS stay apart. This walk
+// enforces exactly that split across EVERY module, so neither half rots:
+//
+//   · a module that WRITES a control mark must read the code from `FRAME_MARKS` — a code spelled
+//     into a plain string is a second copy of a collapsed fact, and a mark added to the declaration
+//     would read correct in every file while that string quietly emitted the old grammar;
+//   · a module that SCANS for a mark keeps its own regex — three bug-comments in `frame-marks`
+//     record what collapsing those costs, so a code standing inside a REGEX LITERAL passes;
+//   · a module that TEACHES the shape keeps its comment — a code inside a comment passes.
+//
+// So the walk reads only STRING LITERAL bodies, and it tokenizes rather than greps: a regex such as
+// /code=\s*"&#x(0001|0011);"/ carries quote characters, and a line-wise grep would read the tail of
+// it as a string and fail an honest scan.
+
+/** Every string / template literal body in a TS source, with the line each opens on. */
+function stringLiteralBodies(src: string): { line: number; body: string }[] {
+  const out: { line: number; body: string }[] = [];
+  let i = 0;
+  let line = 1;
+  // The last significant character decides whether `/` opens a regex or divides.
+  let prev = "";
+  const bump = (s: string): void => { for (const c of s) if (c === "\n") line++; };
+  while (i < src.length) {
+    const c = src[i]!;
+    if (c === "\n") { line++; i++; continue; }
+    if (c === "/" && src[i + 1] === "/") { const j = src.indexOf("\n", i); i = j < 0 ? src.length : j; continue; }
+    if (c === "/" && src[i + 1] === "*") {
+      const j = src.indexOf("*/", i + 2);
+      const seg = src.slice(i, j < 0 ? src.length : j + 2);
+      bump(seg); i += seg.length; continue;
+    }
+    if (c === "/" && /[=(,:[!&|?{};+\-*%^~<>]/.test(prev)) {
+      let j = i + 1;
+      let inClass = false;
+      for (; j < src.length; j++) {
+        const d = src[j]!;
+        if (d === "\\") { j++; continue; }
+        if (d === "[") inClass = true;
+        else if (d === "]") inClass = false;
+        else if (d === "\n") break;
+        else if (d === "/" && !inClass) break;
+      }
+      i = j + 1; prev = "/"; continue;
+    }
+    if (c === '"' || c === "'" || c === "`") {
+      const opensAt = line;
+      let body = "";
+      let j = i + 1;
+      for (; j < src.length; j++) {
+        const d = src[j]!;
+        if (d === "\\") { body += src[j + 1] ?? ""; j++; continue; }
+        if (d === c) break;
+        if (d === "\n") { if (c !== "`") break; line++; }
+        body += d;
+      }
+      out.push({ line: opensAt, body });
+      i = j + 1; prev = c; continue;
+    }
+    if (!/\s/.test(c)) prev = c;
+    i++;
+  }
+  return out;
+}
+
+/** Every control-code entity spelled into a plain string, by line. */
+function hardcodedMarkStrings(src: string): string[] {
+  const codes = FRAME_MARKS.map((m) => m.code);
+  const found: string[] = [];
+  for (const { line, body } of stringLiteralBodies(src)) {
+    for (const code of codes) if (body.includes(code)) found.push(`line ${line}: ${code}`);
+  }
+  return found;
+}
+
+describe("no module re-spells a control code — the parity walk", () => {
+  // CONTROL. The walk has teeth only if a re-introduced literal trips it.
+  test("★ CONTROL — a code written into a string FAILS the walk ★", () => {
+    const reintroduced = `export function emit(): string {\n  return '<<^ code="&#x0002;">>';\n}\n`;
+    expect(hardcodedMarkStrings(reintroduced)).toHaveLength(1);
+    expect(hardcodedMarkStrings(reintroduced)[0]).toContain("&#x0002;");
+  });
+
+  test("★ CONTROL — a template that writes the same mark from FRAME_MARKS PASSES ★", () => {
+    const cured = "const out = `<<^ code=\"${MARK(\"STX\")}\">>`;\n";
+    expect(hardcodedMarkStrings(cured)).toEqual([]);
+  });
+
+  test("CONTROL — a code inside a regex literal passes (the scans stay local)", () => {
+    const scan = 'const STX_RE = /<<\\^(?:[^>\\n]|>(?!>))*&#x0002;(?:[^>\\n]|>(?!>))*>>/;\n';
+    expect(hardcodedMarkStrings(scan)).toEqual([]);
+  });
+
+  test("CONTROL — a regex carrying QUOTE characters is not misread as a string", () => {
+    const scan = 'const SOH = /^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(0001|0011);"/;\n';
+    expect(hardcodedMarkStrings(scan)).toEqual([]);
+  });
+
+  test("CONTROL — a code inside a comment passes (the docs teach the shape)", () => {
+    const line = '// SOH: both standard &#x0001; and Kapu DC1 &#x0011;\nconst a = 1;\n';
+    const block = '/**\n * The opener canonicalizes to `<<^ code="&#x0001;" `\n */\nconst b = 2;\n';
+    expect(hardcodedMarkStrings(line)).toEqual([]);
+    expect(hardcodedMarkStrings(block)).toEqual([]);
+  });
+
+  test("★ EVERY module writes its marks from frame-marks ★", () => {
+    const srcRoot = fileURLToPath(new URL("../src", import.meta.url));
+    // `frame-marks` IS the declaration; the generated plugin tiddler is a build product, never hand-edited.
+    const exempt = new Set(["frame-marks.ts", "plugin-tiddler.generated.ts"]);
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+        const full = join(dir, e.name);
+        if (e.isDirectory()) return walk(full);
+        return e.isFile() && e.name.endsWith(".ts") && !exempt.has(e.name) ? [full] : [];
+      });
+
+    const modules = walk(srcRoot);
+    expect(modules.length).toBeGreaterThan(50);
+
+    const offenders: string[] = [];
+    for (const file of modules) {
+      for (const hit of hardcodedMarkStrings(readFileSync(file, "utf8"))) {
+        offenders.push(`${relative(srcRoot, file)} ${hit}`);
+      }
+    }
+    expect(offenders, `a control code spelled into a string re-copies a collapsed fact:\n${offenders.join("\n")}`).toEqual([]);
   });
 });
 
