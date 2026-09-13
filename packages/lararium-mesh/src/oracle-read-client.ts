@@ -15,6 +15,25 @@
 import { load as automergeLoad, type Doc } from "@automerge/automerge";
 import { verifyOraclePointer, verifyOracleSnapshotBytes, type OraclePointer } from "./oracle-substrate.js";
 
+/**
+ * THE ORACLE READ-FACE ROUTES, SPELLED ONCE.
+ *
+ * A server in `lararium-node` answers these paths and this client asks for them. Spelled twice, the two
+ * move only when someone remembers both — and they do not run in one process, so nothing forces the
+ * memory: a vessel and a Herm built from different commits would simply 404 at each other, which reads as
+ * a peer being down rather than as a rename.
+ *
+ * Mesh holds them because node imports mesh and never the reverse, so one spelling reaches both sides.
+ */
+export const ORACLE_ROUTE_PREFIX = "/oracle/";
+export const ORACLE_POINTER_ROUTE = `${ORACLE_ROUTE_PREFIX}pointer`;
+/** The content-addressed snapshot path for one cid. */
+export function oracleSnapshotRoute(cid: string): string {
+  return `${ORACLE_ROUTE_PREFIX}${cid}.bin`;
+}
+/** The snapshot route as the SERVER matches it — one 64-hex cid, captured. */
+export const ORACLE_SNAPSHOT_RE = new RegExp(`^${ORACLE_ROUTE_PREFIX}([0-9a-f]{64})\\.bin$`);
+
 export interface OraclePullResult<T = unknown> {
   readonly ok:       boolean;
   readonly reason?:  string;
@@ -52,7 +71,7 @@ export async function pullAndVerifyOracle<T = unknown>(
   // 1. the signed pointer.
   let pointer: OraclePointer;
   try {
-    const r = await f(`${base}/oracle/pointer`);
+    const r = await f(`${base}${ORACLE_POINTER_ROUTE}`);
     if (!r.ok) return { ok: false, reason: `pointer fetch HTTP ${r.status}` };
     pointer = (await r.json()) as OraclePointer;
   } catch (e) {
@@ -71,7 +90,7 @@ export async function pullAndVerifyOracle<T = unknown>(
   // 3. the content-addressed snapshot.
   let bytes: Uint8Array;
   try {
-    const r = await f(`${base}/oracle/${pointer.cid}.bin`);
+    const r = await f(`${base}${oracleSnapshotRoute(pointer.cid)}`);
     if (!r.ok) return { ok: false, reason: `snapshot fetch HTTP ${r.status}`, pointer };
     bytes = new Uint8Array(await r.arrayBuffer());
   } catch (e) {

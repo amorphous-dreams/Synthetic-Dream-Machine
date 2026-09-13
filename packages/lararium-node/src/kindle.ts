@@ -26,6 +26,7 @@
  */
 
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
+import { BULB_MANIFEST_ROUTE, bulbBlobRoute } from "./bulb-routes.js";
 import {
   materializeGenesisDoc, materializeGenesisIsland, validateGenesisBytes,
   buildCeremonyTiddlers, didKeyFromVerifyingKey,
@@ -50,12 +51,12 @@ export interface BulbPullTransport {
  * integrity only. Returns the reconstructed bulb, ready to kindle.
  */
 export async function pullBulb(transport: BulbPullTransport): Promise<BulbArtifact> {
-  const manifest = await transport.getJson("/bulb/manifest") as BulbManifest;
+  const manifest = await transport.getJson(BULB_MANIFEST_ROUTE) as BulbManifest;
   const cids = [manifest.seedCid, manifest.bootstrapCid, manifest.casManifestCid, ...manifest.casCids];
   const cache = new Map<string, Uint8Array>();
   for (const cid of cids) {
     if (cache.has(cid)) continue;
-    cache.set(cid, await transport.getBytes(`/bulb/${cid}.bin`));
+    cache.set(cid, await transport.getBytes(bulbBlobRoute(cid)));
   }
   return assembleBulb(manifest, (cid) => cache.get(cid) ?? null);
 }

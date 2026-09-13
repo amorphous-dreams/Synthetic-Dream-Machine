@@ -26,6 +26,7 @@
  */
 
 import type { Server, IncomingMessage, ServerResponse } from "node:http";
+import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_MANIFEST_ROUTE, BULB_POINTER_ROUTE, BULB_BLOB_RE, CAS_BLOB_RE } from "./bulb-routes.js";
 import { readFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -168,13 +169,13 @@ export async function mountBulbReadFace(args: {
   };
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
-    if (!pathname.startsWith("/bulb/") && !pathname.startsWith("/cas/")) return;   // not ours — leave for other handlers
+    if (!pathname.startsWith(BULB_ROUTE_PREFIX) && !pathname.startsWith(CAS_ROUTE_PREFIX)) return;   // not ours — leave for other handlers
     if (req.method === "OPTIONS") { res.writeHead(204, CORS); res.end(); return; }
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405, { ...CORS, "content-type": "text/plain" }); res.end("method not allowed"); return;
     }
-    const cas = pathname.match(/^\/cas\/([0-9a-f]{64})$/);
-    if (pathname.startsWith("/cas/")) {
+    const cas = pathname.match(CAS_BLOB_RE);
+    if (pathname.startsWith(CAS_ROUTE_PREFIX)) {
       if (!cas || !publicCas) { refuse(res); return; }
       const cid = cas[1]!;
       void publicCas.isPublic(cid).then((isPublic) => {
@@ -185,16 +186,16 @@ export async function mountBulbReadFace(args: {
       }).catch(() => refuse(res));   // a torn reference read withholds — never serves on a guess
       return;
     }
-    if (pathname === "/bulb/manifest") {
+    if (pathname === BULB_MANIFEST_ROUTE) {
       res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
       res.end(Buffer.from(manifestBytes)); return;
     }
-    if (pathname === "/bulb/pointer") {
+    if (pathname === BULB_POINTER_ROUTE) {
       if (!pointer) { res.writeHead(503, CORS); res.end("no pointer yet"); return; }
       res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
       res.end(JSON.stringify(pointer)); return;
     }
-    const m = pathname.match(/^\/bulb\/([0-9a-f]{64})\.bin$/);
+    const m = pathname.match(BULB_BLOB_RE);
     const bytes = m ? blobByCid.get(m[1]!) : undefined;
     if (bytes) {
       res.writeHead(200, { ...CORS, "content-type": "application/octet-stream", "cache-control": "public, immutable, max-age=31536000" });

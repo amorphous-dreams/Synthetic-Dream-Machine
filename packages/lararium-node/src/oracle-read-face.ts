@@ -23,6 +23,7 @@ import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { Doc } from "@automerge/automerge";
+import { ORACLE_ROUTE_PREFIX, ORACLE_POINTER_ROUTE, ORACLE_SNAPSHOT_RE } from "@lararium/mesh";
 import {
   exportOracleSnapshot, buildOraclePointer, oraclePointerId, snapshotPublicFlowMap,
   type OracleSnapshot, type OraclePointer, type LarDoc,
@@ -121,20 +122,20 @@ export async function mountOracleReadFace(args: {
   };
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
-    if (!pathname.startsWith("/oracle/")) return; // not ours — leave for other handlers
+    if (!pathname.startsWith(ORACLE_ROUTE_PREFIX)) return; // not ours — leave for other handlers
     if (req.method === "OPTIONS") { res.writeHead(204, CORS); res.end(); return; } // preflight
     if (req.method !== "GET" && req.method !== "HEAD") {
       res.writeHead(405, { ...CORS, "content-type": "text/plain" });
       res.end("method not allowed");
       return;
     }
-    if (pathname === "/oracle/pointer") {
+    if (pathname === ORACLE_POINTER_ROUTE) {
       if (!pointer) { res.writeHead(503, CORS); res.end("no pointer yet"); return; }
       res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
       res.end(JSON.stringify(pointer));
       return;
     }
-    const m = pathname.match(/^\/oracle\/([0-9a-f]{64})\.bin$/);
+    const m = pathname.match(ORACLE_SNAPSHOT_RE);
     if (m && snapshot && m[1] === snapshot.cid) {
       res.writeHead(200, {
         ...CORS,
