@@ -1,0 +1,251 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚜" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/heraldry">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/heraldry.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 13
+manao      = 14
+manaoio    = 12
+namespace  = "&#x269C;"
+retain     = true
+revised-on = "2026-09-12"
+role       = "heraldry — the design the 2026-09-12 ruling owes: ANY nameless thing on the DreamNet (a cabal · an infra vessel · a veiled persona) MAY publish a Handle, a public Face. Names the three nameless shapes and what each already holds in code; the MANTLE (a True Name worn in turn — what the KEL's graft threshold guarantees, and why a 1-of-1 cabal Handle reads as a person wearing a mantle's name); the HERM CARD (a self-certifying card owned by the Herm's own DEVICE-MINTED vessel key, carrying no persona root and no read cap) and the CARRIAGE contract that seats it in a realm's PUBLIC registrations; what heraldry must never become; and the plan red-by-red. The wall this meets in code stands quoted at handle-publish.ts:37-41 — 'a face belongs to its persona, never itself'. Every claim carries its file:line."
+status     = "standing"
+status-why = "DESIGN, ahead of code. The ruling stands (operator, 2026-09-12, scale-stories-basket-one#/the-shared-bag); the handle-KEL already admits an OPAQUE owner-set member with an INJECTED head-resolver (handle-kel.ts:614, 192-220), so the Herm card asks no new primitive; the CARRIAGE contract kind and the shore lane that reads it stand UNBUILT, and #/plan names them red-by-red"
+tags       = ["docs/pono/handoff", "mesh/handle-card", "mesh/identity-classes"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/heraldry"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ruling>>
+
+! The ruling — the arms name no hands
+
+''Operator, 2026-09-12'' (recorded at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> #/the-shared-bag, quote license): "any nameless thing on the DreamNet — infra, persona, or cabal — may publish a Handle, a public Face/Heraldry". Beside it, two clauses the same paragraph carries: a Face ''may be worn in turn'' — "the KEL's rotate carries the mantle to the next holder, the co-sign threshold keeps a single turned hand from stealing it" — and a Face ''must never become'' "a registry of who wears what — the heraldry says //this is the ford-keepers' arms//, never //these are the ford-keepers//".
+
+''What the ruling asks of the code.'' Three things publish a Face today and one thing cannot. `publishHandleFromDaemonDoc` reads the persona-KEL prefix off the daemon doc and REFUSES when it finds none (`packages/lararium-mesh/src/handle-publish.ts:33-41`, quote license): //"a face belongs to its persona, never itself; found the vessel first (fail-closed, the face never self-owns)"//. A Herm carries no persona-KEL prefix by law — `personaSlotCeiling("herm") === 0`, and the ceiling IGNORES its argument rather than clamping it (`packages/lararium-mesh/src/vessel-standing.ts:69-70`), because raising it "would put a human's key on a crossroads, the one thing the class exists to prevent" (`vessel-standing.ts:23-25`, quote license). So the one class the ruling most plainly names — infra — meets a refusal written as law.
+
+''The reading that clears it, and it turns on WHOSE key.'' The refusal's own stated reason reads //"self-ownership resolves to no persona head and forecloses recovery"//, and both halves belong to a PERSONA's face. A Herm's owner is neither a persona nor the handle key itself: it is the Herm's ''PLACE DID'' — "a somewhere, not a someone … and never an operator DID" (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> #/the-identity-class-ladder, quote license), the device-minted vessel key the keel already boots on. And its recovery never wanted a persona head: a Herm "re-establishes from its operator … The contract IS the whole authority relation; re-issuing it IS the recovery" (`identity-classes.mem` #/herm-establishment, quote license). ''The wall holds where it was built and does not reach here'': the refusal bars a face with NO owner, and a Place DID is an owner.
+
+''And the primitive is already general.'' `mintHandleInceptionSet` takes `ownerSetMembers: readonly string[]` and checks only arity and threshold — no persona-prefix shape, no registry (`packages/lararium-mesh/src/handle-kel.ts:192-220`); the presentation check runs against an ''injected'' `OwnerHeadResolver` (`handle-kel.ts:614`), and the module "stays persona-KEL-DECOUPLED … nothing here imports the persona grammar" (`handle-kel.ts:37-38`, quote license). ''Heraldry for the nameless asks the handle-KEL for nothing new.'' What it asks for lives one layer up: a publish door that seats a non-persona owner, and a carriage relation that lets a faceless carrier hold a realm's PUBLIC registrations.
+
+<<~/ahu>>
+
+<<~ ahu #/the-three-nameless>>
+
+!! The three nameless things — what each already holds
+
+The ruling names three, and they differ by ''what holds the presenting key'', never by tier.
+
+<<~ has Nameless Cabal "is/a collective with NO name of its own holds/its realm's charter (the genesis seal epoch IS the realm's name — realm-bag.ts:80-86) presents/the keptBy set of the books it keeps owner-set/the stewards' persona prefixes, k-of-n publishes/arms for the ford, never a roster of its keepers">>
+<<~ has Nameless Infra "is/a Herm or an unlit hearth — a PLACE holds/a device-minted vessel key + a carriage contract, NO persona root (vessel-standing.ts:69-70) presents/its own vessel key owner-set/that one key, 1-of-1 publishes/where it stands and what it serves, never who passes">>
+<<~ has Nameless Veiled-persona "is/a human face behind the dyad veil holds/a persona-KEL prefix at a handle index presents/the veiled key derived at that index owner-set/the persona prefix, 1-of-1 — the degenerate case that IS the personal face publishes/a glamour, already live (`lares handle publish`)">>
+
+!!! ① A cabal — the arms of a thing with no name
+
+''A cabal holds no name of its own'' and is keyed by its realm's doc id (memory `project_cabal_realm_nexus_planes.md`; enacted at `packages/lararium-mesh/src/realm-bag.ts:80-86` — `realmIdOfCharter` reads the GENESIS epoch cid, "fixed across every rotation — the realm's NAME"). So a cabal's Face names the realm it keeps, and its natural owner-set reads straight off the book: `keptBy` — "the stewards' persona-root nyms — the write set. Every one of them signs" (`realm-bag.ts:105-106`, quote license), already n-of-n and already charter-aware (`charterOfSteward`, `realm-bag.ts:131-133`).
+
+''The threshold the ruling wants already rides in the record.'' A realm-bag registration counts only when every named steward signed (`realmBagRegistrationCounts`, `realm-bag.ts:221-249`); a Handle grafts only at the prior set's threshold (`handle-kel.ts:384`+). The two thresholds answer different questions — who KEEPS the book, who may TURN the name — and a cabal Handle whose owner-set equals `keptBy` fuses them by accident. ''They stay separate'' (#/questions Q1).
+
+!!! ② An infra vessel — a Herm, or a hearth nobody has lit
+
+''One floor, not two kinds of Herm'' (`vessel-standing.ts:96-120`): a crossroads nobody raised and a hearth whose archive holds shut stand in the SAME state, and `standAs(asked, archiveOpens)` returns `"herm"` for either (`vessel-standing.ts:126-129`). So the infra Face covers both, and it covers a hearth ''temporarily'' — the card's monotone `version` + `expiry` lease (`packages/lararium-mesh/src/handle-card.ts:65-71`) already carries a face that stops being fed.
+
+''What it may honestly say.'' Where it stands (a shore URL), what it serves (the bulb by cid, `/bulb/manifest` · `/bulb/<cid>.bin` — `packages/lararium-node/src/bulb-read-face.ts:5-8`), and which crossroads it keeps (the carriage relay's gate key, STABLE across restarts and already domain-separated off the vessel seed — `packages/lararium-node/src/carriage-relay.ts:37-41, 74-77`). ''What it may never say'': who dialed it, what crossed it, or what any of it meant.
+
+!!! ③ A veiled persona — the case already standing
+
+`lares handle publish "<glamour>"` mints and announces a card owned by the persona-KEL prefix (`packages/lares-cli/src/commands/handle.ts:23-34` → `packages/lararium-node/src/commands/handle.ts:47-82` → `handle-publish.ts:25-47`). The veil ruling keeps this the ONLY outward door — the atom never presents, the Circles stay private, the Face alone faces out (memory `project_veil_ruling_stage0.md`). Nothing here moves; it stands as the shape the other two borrow.
+
+<<~/ahu>>
+
+<<~ ahu #/the-mantle>>
+
+!! The mantle — a True Name worn in turn
+
+''The shape.'' A Handle whose glamour's OWNER-SET rotates: Roberts cedes to Westley, the name reads continuously valid, and no observer can tell which hand presents. Canon already rules it, in the field's own vocabulary (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">> #/the-mu, quote license): //"whether ONE human or MANY hold the right to present it stays unknowable by design, exactly as a cabal refuses 'which member signed'"//; a many-presented open name reads as a ''multiple-use name'' (Luther Blissett) and a chartered group as a ''collective pseudonym'' (Wu Ming).
+
+!!! What the KEL actually guarantees, and what it does not
+
+<<~ has Move Rotation "authorized-by/ANY current member (handle-kel.ts:522-524) moves/the presenting KEY, never the set guarantees/a lost or seized key re-seats under the SAME nym costs/nothing about who may present">>
+<<~ has Move Graft "authorized-by/a THRESHOLD of the PRIOR set, presenter + distinct co-signers (handle-card.mem #/the-chain) moves/the presenting SET — the mantle passes guarantees/no ONE turned hand carries the name away when the threshold exceeds 1 costs/a 1-of-1 grafts by one willing hand — by construction">>
+<<~ has Move Burn "authorized-by/the seated key (self) or any current member (owner) moves/nothing — it ENDS guarantees/terminal: 'nothing rotates or grafts past it' (handle-card.mem #/the-chain) costs/the name cannot be resurrected, which IS the property">>
+
+''The guarantee, stated exactly.'' The graft threshold bounds ''how many hands must consent for the mantle to move''. It bounds nothing about how many hands hold it: a set of five with threshold 1 turns on any one hand; a set of one with threshold 1 is a person. `verifyHandleKel` counts distinct prior-set authorizers against the prior threshold structurally; `verifyHandleKelFull` additionally proves each signature against the member's authoritative head through the injected resolver (`handle-card.mem` #/two-tiers, quote license). ''Tier-1 alone cannot tell a mantle from a person'' — and that reads as the design, not a gap.
+
+!!! ★ The collision the operator pointed at — a 1-of-1 cabal Handle ★
+
+''A cabal Handle with a one-member owner-set IS a person wearing a mantle's name.'' Canon states the identity plainly: //"1-of-1 is the degenerate case that IS the personal face"// (`handle-card.mem` #/the-mu, quote license). So a cabal that publishes arms under a 1-of-1 set publishes ''a person's face with a collective's glamour'', and every recogniser who reads the glamour as a collective reads a claim the chain never made.
+
+''May it exist?'' ''YES, and the house MUST NOT check it.'' Three grounds, each already standing:
+
+# ''The unknowability is load-bearing.'' The whole point of the quorum-Handle reads that "whether ONE human or MANY hold the right to present it stays unknowable by design" (`handle-card.mem` #/the-mu). A gate refusing 1-of-1-for-a-cabal would have to KNOW the Handle names a cabal — which means a compiled claim about what a Handle is, one scope up. That IS the rejected registry (memory `project_registry_filter_law.md`: a compiled-about registry at ANY scope, even one Nexus, REJECTS the fork).
+# ''A cabal with one steward is a real thing.'' `realmBagRegistrationCounts` accepts a single-steward record (`realm-bag.ts:225` refuses only the EMPTY set), and the multitude-of-one rides canon everywhere else — the self-recovery inception arms a 1-of-1 "the multitude-of-one, NAMED" (`identity-classes.mem` #/the-two-forks, quote license). A ford one household keeps until the second arrives is the ordinary case, not a lie.
+# ''The honest cure runs at the READER, never the writer.'' A recogniser keeps a LOCAL petname and a card "can certify itself perfectly and STILL be a stranger" (`handle-card.mem` #/self-certifying, quote license). A reader who cares how many hands present a name reads `ownerSetMembers` + `ownerSetThreshold` off the chain it already holds — they ride OUTSIDE the cid and travel with the card (`handle-kel.ts:70-72`). ''The count is legible to anyone who asks; it is simply never asserted by the glamour.''
+
+''What the house SHOULD do instead of a check: say it once, in the card's own prose.'' A glamour makes no claim about its owner-set; a recogniser wanting a collective reads the set. That sentence belongs in `handle-card.mem` #/the-mu as a kept edge, and nowhere in a gate.
+
+!!! The one thing a mantle needs that a 1-of-1 does not
+
+''A mantle worn in turn needs the graft to STAND WITHOUT the departing hand.'' `handle-kel.ts:31-35` records the current build honestly (quote license): //"for THIS build a graft authorized by ONE current member suffices (DPR's real case — Roberts cedes to Westley by one willing hand). TRUE k-of-n graft governance (a guild requiring a THRESHOLD to consent) rides DECLARED, not built (a skipped red — `handle-kel.test.ts`)"//. So the ruling's second clause — //"the co-sign threshold keeps a single turned hand from stealing it"// — names a guarantee the mint does not yet enforce. ''That gap belongs to the mantle, not to heraldry'': #/plan step 5.
+
+<<~/ahu>>
+
+<<~ ahu #/the-herm-card>>
+
+!! The Herm's card — a Face with no persona, and the carriage that seats it
+
+!!! The card
+
+''Signed by the Herm's OWN vessel key, device-minted.'' Not a persona root (the class forbids one, `vessel-standing.ts:69-70`), not the relay gate key (that one derives domain-separated for the transport and stays a transport identity — `carriage-relay.ts:60-77`; joining them would rebuild the link the veil model spends its design preventing, `carriage-relay.ts:62-65`). The owner-set is the ''Place DID'': `mintHandleInceptionSet(handleKeyDid, [placeDid], 1, recoverySetHash)` — the same call `mintHandleInception` already sugars for a 1-of-1 (`handle-kel.ts:228-237`).
+
+''It incepts ARMED, like every prefix.'' `mintHandleInceptionSet` THROWS on an empty `recoverySetHash` (`handle-kel.ts:198-200`). A Herm's recovery leaf derives domain-separated off its own vessel seed — the idiom `resolveRelayGateSeed` already carries (`carriage-relay.ts:74-77`: HMAC-SHA256 under a domain tag, yielding exactly the 32 bytes an Ed25519 seed takes). Nothing leaves the device.
+
+''What it carries:''
+
+<<~ has Field nym "the handle-KEL prefix over (handleKey, genesisOwnerSetHash, recoverySetHash) — handle-card.ts:56-58">>
+<<~ has Field glamour "a shore-name a traveller reads — 'the crossroads below the first wall'. Never a legal identity, never an operator's name">>
+<<~ has Field chain "the self-contained KEL — a reader verifies the head key with no board (Tier-1, handle-card.mem #/two-tiers)">>
+<<~ has Field standing "OPTIONAL content-address of a vouch thread (handle-card.ts:76-77). A Herm MAY leave it null — a crossroads that claims no reputation claims nothing false">>
+<<~ has Field fleetProof "ALWAYS null. A fleet-proof is a persona root's signature over the nym (handle-card.ts:78-84); a Herm holds none, and 'a face that claims no fleet claims nothing false'">>
+<<~ has Field expiry "the freshness lease read against the recogniser's LOCAL clock (handle-card.ts:69-71) — an unfed crossroads goes stale on its own, which is exactly right for a place">>
+
+''What it carries NOT: any read cap.'' The type has no field for one (`handle-card.ts:55-87`), and the class law is structural rather than flagged — "a Herm reads as a cap-stack that never declares the wiki cap … blind by structure, never by a flag a later bug could flip" (`identity-classes.mem` #/the-four-classes, quote license). ''The type refuses the cap'' — that reads as the CONTROL, not a test.
+
+!!! The carriage contract — distinct from a member's contract-in, on purpose
+
+''Today a Nexus knows exactly one way to seat a vessel, and it runs through a persona root.'' `runNexusContract` requires an admit to carry the operator's own "accepts carriage" seal, and `resolveContractIn` obtains it two ways only — a supplied out-of-band token, or a self-sign from a HELD persona seed (`packages/lararium-node/src/commands/nexus-contract.ts:124-146`). Both walk `generateOrLoadPersonaGroupRoot` / `loadPersonaGroupRootSeed` (`nexus-contract.ts:132-136`). A Herm holds neither, so `resolveContractIn` refuses with the doctrine's own line: //"A Nexus never conscripts an operator into carriage"// (`nexus-contract.ts:138-142`, quote license). ''The refusal reads correct and reaches the wrong subject'': it guards against conscripting a PERSON, and a Herm is a place.
+
+''So the relation a Herm enters reads as a CARRIAGE contract, and canon already named it.'' #/herm-establishment rules that an operator "establishes a Herm by signing a Nexus carriage contract from a node vessel" and that the Herm's authority "rides the wax-stamped carriage contract … a frozen causal edge attesting //this operator carriage-contracted this Herm under epoch N//, never a live persona in the Herm" (`identity-classes.mem`, quote license). ''The word carriage already means this; the code has only ever meant the member's contract-in by it'' (`packages/lararium-mesh/src/carriage-registry.ts:78-84` — `contractSig.signer` MUST equal the entry's `nym`).
+
+<<~moves seat/one-kind-member-contract-in -> seat/two-kinds-MEMBER-and-CARRIER on/a-vessel-key-signed-carriage-contract if/the-signer-is-a-PLACE-and-never-a-person do/admit-as-CARRIER-never-into-members>>
+
+''The shape, stated so the fold cannot blur it:''
+
+# ''A distinct DOMAIN.'' `CARRIAGE_CARRIER_DOMAIN`, minted beside `CARRIAGE_ENTRY_DOMAIN` and `CARRIAGE_CONTRACT_DOMAIN` in the registry (`packages/lararium-mesh/src/domains.ts:96-97`). An HKDF/HMAC `info` IS the separation (memory `project_crypto_spine_and_safety_ledger.md`), so a carrier seal can never present as a member's.
+# ''Signed by the VESSEL key, and the carrier is the place.'' The signer equals the Place DID the entry names, exactly as `verifyContractIn` requires the member's seal be the member's own (`carriage-registry.ts:139-147`). No persona root is read, loaded, or minted anywhere on the path.
+# ''Counter-signed by the founder's kahu quorum'' — the same k-of-n over the same charter epoch the member entry already verifies (`verifyMembershipQuorum`, `carriage-registry.ts:117-136`). A carrier still enters by consent of the house, and by its OWN consent: both seals, as the doctrine requires.
+# ''It NEVER enters `members{}`.'' `foldCarriageSet` returns the member nym set the enforcement shore unions with the kahu floor (`carriage-registry.ts:236-257`); a carrier folds into a ''separate'' set and `holdsCarriagePeer` stays false for it (`packages/lararium-node/src/nexus-carriage.ts:213-217`). That reads as the CONTROL, and it keeps the doctrine whole: the members board is "the maximum the system ever holds about a contracting operator" (`membership-doctrine.mem` #/the-operator-contract) — a place is not an operator and does not belong in it.
+# ''Its grant is exactly PUBLIC-by-hash.'' Not CONTRACT, not a read cap. The tier chain already names the ceiling: PUBLIC = `{world}` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">> #/the-chain), and a realm-bag registration already declares PUBLIC "for a book the Herm carries BY HASH (the pointer travels; the doc still crosses on the realm's own lane)" (`realm-bag.ts:107-109`, quote license).
+
+!!! What a PUBLIC registration grants such a card — follow and serve, never read
+
+''The shore already reads a realm's PUBLIC books; it simply never sees one.'' `publicCasShore`'s realm lane walks, for each realm the vessel serves, the pointers its PUBLIC-tier registrations name, and skips every CONTRACT book with a comment that states the law (`packages/lararium-node/src/bulb-read-face.ts:99` — //"a CONTRACT book rides the realm's own lane, never the shore"//). It is unit-proven both ways (`packages/lararium-node/tests/herm-follows-realm-public.test.ts:55-59`). ''The gap sits one step upstream'': `realmStanding()` folds the Herm's OWN realm doc replica (`open-node-vessel.ts:1999`, `realm-plane.ts` `standing()`), and a Herm today replicates no realm doc, because nothing federates one to it.
+
+''Two legs carry that, and only the first is missing.''
+
+<<~ has Leg Charter "the Herm holds the realm's NAME — `lares nexus seal import <roster>` is a file placement with a verdict and NO persona read (packages/lares-cli/src/commands/nexus-seal.ts:643-676), so a Herm may already hold a charter, and `realmPlane.refresh` stands the realm on first sight (open-node-vessel.ts:1660, realm-plane.ts refresh) ~ STANDS TODAY">>
+<<~ has Leg Federation "A must federate the realm doc + each PUBLIC-registered book to the Herm's peer. `RealmBagGate.mayFederate` offers four doors (realm-bag.ts:481-494): the base shelf · `holdsCharterPeer` (a socket THIS vessel dialed to the charter's hearth) · the registration's own `keptBy`/`holdsCharter` by proven contract nym · `membership.holdsCarriagePeer`. A Herm proves NO contract nym (it presents no persona-root edge — nexus-carriage.ts:60-74) and stands in NO members set, so every door reads false ~ THE SEAM">>
+
+''So the cure is one clause on the realm leg, and it is the narrowest one available.'' `RealmCharterConsult` gains a `carrierPeer(peerId)` question answered off the vessel's OWN carrier fold; `RealmBagGate.mayFederate` opens for such a peer ''only when the document's own registration declares PUBLIC'' — `rec.readTier === "public"`, read off `#byDocId` the gate already keeps (`realm-bag.ts:423, 489`). ''A CONTRACT-tier pointer still 404s through the Herm'' — that reads as the CONTROL, and it holds at TWO independent shores: the gate never federates the doc, and the shore would skip it even if it did (`bulb-read-face.ts:99`).
+
+''And carry ⊥ read survives untouched.'' The Herm gains BYTES a pointer in a world-readable book names, which the world may already ask any hearth for. It gains no keyring, no `@cad` secret, no BeeKEM cap; the read-floor stays a causal-island-local FACT rather than a policy (`identity-classes.mem` #/the-mesh-breathes, quote license). ''The Herm holds the HINT, never the read-cap'' — the great-grandchild's sentence the operator already wrote (`scale-stories-basket-one.mem` #/the-shared-bag, moʻolelo clause 3).
+
+<<~/ahu>>
+
+<<~ ahu #/what-it-never-becomes>>
+
+!! What heraldry must never become
+
+<<~ has Never Roster "no surface anywhere accepts a COLLECTION of others' Handles. The handle-KEL already holds this line — 'the module handles ONE chain per call and exposes NO surface accepting a collection of others' Handles' (handle-kel.ts:41-43, quote license) — and the registry filter rules it at every scope (memory project_registry_filter_law.md: a compiled-about registry at ANY scope, even ONE Nexus, REJECTS the fork). A Herm publishing its own card passes; a Herm compiling the cards it relayed does not.">>
+<<~ has Never Read-cap "the HandleCard type carries no field for one (handle-card.ts:55-87) and a carrier's grant stops at PUBLIC-by-hash (#/the-herm-card). A Face is a name presenting itself, never an authorization; 'a CAP answers what may I do, a STANDING answers what do I count as' and only the cap rides a device (membership-doctrine.mem #/the-carried-cap).">>
+<<~ has Never Seat "a card confers no membership, no vote, no quorum share. A seat moves by the charter's own k-of-n (identity-classes.mem #/the-office: the quorum SEATS, and MUST NOT sit in the renewal path); a Face moves by its own publish. The cabal Handle names the ford's arms and seats nobody in the cabal — and a carrier contract seats no member (#/the-herm-card ③-④).">>
+<<~ has Never Who-wears-it "the ruling's own words: the heraldry says //this is the ford-keepers' arms//, never //these are the ford-keepers//. `ownerSetMembers` travels on the chain for a reader who asks (handle-kel.ts:70-72) and is ASSERTED by nothing — no index, no board fold, no glamour claim (#/the-mantle).">>
+
+''The one gate that would violate all four at once'': a check refusing a 1-of-1 owner-set "because a cabal must be many". It would need to know which Handles name cabals, which is a compiled about-registry; it would read the owner count as a claim the glamour never made; and it would turn a present-tense arity into a standing. ''Refused by design, not by omission.''
+
+<<~/ahu>>
+
+<<~ ahu #/plan>>
+
+!! The plan — red → cure → CONTROL
+
+Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-hours name a tasked spirit's walk at this codebase's grain, never a human's.
+
+!!! Step 1 · The carrier contract kind ~ 3 spirit-hours
+
+* ''RED'' (`packages/lararium-mesh/tests/carriage-carrier.test.ts`, new): a carriage contract signed by a VESSEL key verifies as CARRIER; the same bytes presented as a member `contractSig` fail `verifyContractIn` (the domain separates them); `foldCarriageSet` over a board carrying only carrier entries returns the EMPTY member set.
+* ''CURE'': `CARRIAGE_CARRIER_DOMAIN` in `domains.ts` beside `:96-97`; `carrierContractBytes` + `signCarrierContract` + `verifyCarrierContract` + `foldCarrierSet` in `carriage-registry.ts`, each mirroring the member shapes verbatim (`:96-114`, `:139-147`, `:236-257`) and holding no key.
+* ''CONTROL'': the existing `carriage-registry` suite stays green byte-for-byte (a member admit still needs its persona-signed contract-in); a nonsense-domain seal verifies as neither.
+
+!!! Step 2 · The founder's door accepts a carrier ~ 3 spirit-hours
+
+* ''RED'' (`packages/lararium-node/tests/nexus-contract-carrier.test.ts`, new): `runNexusContract({ action: "carry", nym: <herm vessel key>, carrierSig })` lands an entry the carrier fold counts; `runNexusMembersList().members` does NOT contain it; a `--carrier` admit with NO seal REFUSES with a named error.
+* ''CURE'': a `carry` action beside `admit`/`revoke`, resolving its seal through a `resolveCarrierIn` that reads a supplied token ONLY — never `generateOrLoadPersonaGroupRoot`, never `loadPersonaGroupRootSeed` (the whole point; `nexus-contract.ts:124-146` stays untouched for `admit`).
+* ''CONTROL'': `personaSlotCeiling("herm") === 0` and `refuseSlot("herm", …) === "faceless-by-class"` stay green (`packages/lararium-mesh/tests/vessel-standing.test.ts`); `lares persona new 0` on a Herm still refuses (`packages/lares-cli/src/commands/persona.ts:88-91`).
+
+!!! Step 3 · The realm leg opens for a carrier, at PUBLIC only ~ 4 spirit-hours
+
+* ''RED'' (`packages/lararium-mesh/tests/realm-bag-carrier-leg.test.ts`, new): a peer the consult names a CARRIER federates a bag whose standing registration declares `readTier: "public"`; the SAME peer draws false for a `readTier: "contract"` bag AND for the realm doc itself.
+* ''CURE'': `RealmCharterConsult` gains optional `carrierPeer?(peerId): boolean` (`realm-bag.ts:389-404`); `mayFederate` adds ONE clause after the charter doors and before the Nexus lane (`realm-bag.ts:481-494`), gated on `this.#byDocId.get(documentId)?.readTier === "public"`. `makeRealmCharterConsult` answers it off the carrier fold (`nexus-carriage.ts:246-268`).
+* ''CONTROL'': every vector in `realm-bag-realm-leg.test.ts` stays green unchanged; a carrier peer with NO registration naming the doc draws the same false a stranger draws.
+
+!!! Step 4 · The e2e flip ~ 4 spirit-hours
+
+* ''RED'': ⑦ in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` (today `test.fails`). `openStagedFleet` gains, after A founds: A seats a charter (`nexus rite cabal`), exports it, the Herm imports it, A carries the Herm by its vessel key, the Herm dials A's `/ws`, and A registers `bags/lares --tier public`.
+* ''CURE'': the harness lines above (`tests/harness/instance.ts:311-349`) plus a `LAR_JOIN_SYNC` on the Herm's daemonEnv. No product change beyond steps 1–3.
+* ''CONTROL'': the file's three standing CONTROLs hold unchanged — a ghost cid draws the byte-identical 404, the boot CAS still serves at `/bulb/<cid>.bin`, C's ghost fetch reads `held:false` and writes nothing. ''Plus one new'': a CONTRACT-tier registration's pointer draws 404 through the same Herm in the same run.
+
+!!! Step 5 · The publish door seats a non-persona owner ~ 3 spirit-hours
+
+* ''RED'' (`packages/lararium-mesh/tests/handle-publish-place.test.ts`, new): publishing with a Place-DID owner mints a card whose `fleetProof` reads null and whose chain verifies Tier-1 with no persona replica anywhere; publishing with NO owner at all still REFUSES with the line at `handle-publish.ts:37-41`.
+* ''CURE'': `publishHandleFromDaemonDoc` takes an explicit owner rather than deriving one — the persona-KEL prefix when a daemon doc carries it, the vessel's Place DID when the vessel stands faceless. The refusal narrows from //no persona prefix// to //no owner//, which is what its own comment already argues.
+* ''CONTROL'': `handle-publish.test.ts` stays green for the persona path byte-for-byte; a card minted for a Place carries `fleetProof: null` and a reader that demands a fleet-proof refuses it.
+
+!!! Step 6 · The mantle's true threshold ~ 4 spirit-hours
+
+* ''RED'': the skipped red `handle-kel.ts:31-35` already names (`handle-kel.test.ts`) — a graft over a k-of-n set authorized by ONE hand must FAIL when k > 1.
+* ''CURE'': `mintHandleGraft` gathers `graftSigs` and `verifyHandleKel` counts distinct prior-set authorizers against the prior threshold, the shape `handle-card.mem` #/the-chain already documents.
+* ''CONTROL'': a 1-of-1 graft by one willing hand still stands (Roberts cedes to Westley) — the degenerate case must not regress.
+
+''Order note.'' Steps 1–4 flip ⑦ and touch the Face not at all. Steps 5–6 stand the Face for the nameless and close the mantle's guarantee. ''They are separable'', and a session short on hours should take 1–4 whole rather than 1–6 partly.
+
+<<~/ahu>>
+
+<<~ ahu #/questions>>
+
+!! Questions for the operator
+
+# ''Q1 — does a cabal's Handle owner-set EQUAL `keptBy`, or ride beside it?'' Equal reads elegant and fuses two thresholds that answer different questions (who keeps the book ⊥ who may turn the name), so a steward leaving the book would move the arms. Beside reads honest and asks a cabal to mint a second set. ''The design leans BESIDE'', and names the lean rather than taking it.
+# ''Q2 — may a Herm's card name its operator at all?'' #/herm-establishment says the authority relation rides the wax-sealed contract, "never a live persona in the Herm". A card carrying an `attest` of //"contracted under charter epoch N"// claims the relation without naming a human, and verifies reader-locally like every attestation (`handle-card.mem` #/the-chain). ''Lean: yes, as an attestation of the EPOCH, never of the operator.''
+# ''Q3 — does an unlit hearth publish arms?'' `standAs` already returns `"herm"` for it (`vessel-standing.ts:126-129`), so the shape permits it; the cost reads that a hearth later lit would want to burn the place-card and publish a persona card, which the terminal burn makes clean. ''Lean: yes, and the burn is the right ending.''
+# ''Q4 — a carrier contract's LEASE.'' A member entry is monotone-versioned and revocable by quorum (`carriage-registry.ts:236-257`). A carrier could instead expire by non-renewal — the shape `identity-classes.mem` #/the-office prefers ("the quorum SEATS; the renewal rides the lease-epoch roll"). ''Lean: non-renewal'', but it adds a pace reader this step does not otherwise need.
+# ''Q5 — which glamour does a Herm show?'' A shore-name a traveller reads, or the empty string. A named crossroads is friendlier and is one more correlatable datum across restarts. ''Lean: operator-set, defaulting to empty.''
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges — what this design touches, and what it must not
+
+''What it moves'': `domains.ts` (one constant) · `carriage-registry.ts` (a parallel carrier family) · `nexus-contract.ts` (a `carry` action, the `admit` path untouched) · `realm-bag.ts` (`RealmCharterConsult` + one `mayFederate` clause) · `nexus-carriage.ts` (the consult answers it) · `handle-publish.ts` (the owner becomes explicit) · `tests/harness/instance.ts` (`openStagedFleet` seats the Herm).
+
+''What it MUST NOT move'': `personaSlotCeiling` and `refuseSlot` (`vessel-standing.ts:69-91`) — the ceiling stays 0 and stays argument-ignoring; `verifyContractIn` (`carriage-registry.ts:139-147`) — a member's seal stays the member's own; the CONTRACT lane of `publicCasShore` (`bulb-read-face.ts:99`); the `@daemon` plane, which never crosses (memory `project_face_join_and_plane_law.md`).
+
+<<~ pranala #wall from="?" -> to="packages/lararium-mesh/src/handle-publish.ts" family="code" role="has">>
+<<~ pranala #ceiling from="?" -> to="packages/lararium-mesh/src/vessel-standing.ts" family="code" role="has">>
+<<~ pranala #carriage from="?" -> to="packages/lararium-mesh/src/carriage-registry.ts" family="code" role="has">>
+<<~ pranala #realm-leg from="?" -> to="packages/lararium-mesh/src/realm-bag.ts" family="code" role="has">>
+<<~ pranala #shore from="?" -> to="packages/lararium-node/src/bulb-read-face.ts" family="code" role="has">>
+<<~ pranala #vector from="?" -> to="tests/e2e/herm-reshares-public-blob.e2e.test.ts" family="code" role="has">>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;op0Kn6KxpO6jz3zwGMzxDBUW3wO6HU_NL37zGc96xgo
+
+<<^ code="&#x0004;" -> to="?">>
