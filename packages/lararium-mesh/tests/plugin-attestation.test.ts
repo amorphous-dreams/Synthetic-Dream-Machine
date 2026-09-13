@@ -129,7 +129,10 @@ describe("what the genesis build reads off an attestation", () => {
   });
 
   test("CONTROL — the verify REPORTS and never refuses, so a build policy stays the operator's", async () => {
-    const unsigned = { format: "lar-plugin-build/v1", pluginJsonSha256: "aa", moduleCount: 1, moduleManifestSha256: "bb" };
+    // NO INVENTED FORMAT STRING. `verifyPluginAttestation` reads `builder` and nothing else, so a format
+    // here would add a literal the function never consults — and the one I first typed was both wrong and
+    // shaped like a domain, which the registry witness caught. A fixture states what the code reads.
+    const unsigned = { pluginJsonSha256: "aa", moduleCount: 1, moduleManifestSha256: "bb" };
     await expect(verifyPluginAttestation(unsigned as never, async () => true)).resolves.toBe("unsigned");
     const signed = { ...unsigned, builder: { signer: "cc", sig: "dd" } };
     await expect(verifyPluginAttestation(signed as never, async () => false)).resolves.toBe("forged");
