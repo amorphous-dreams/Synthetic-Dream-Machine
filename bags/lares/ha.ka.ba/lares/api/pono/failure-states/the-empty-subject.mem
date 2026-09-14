@@ -1,0 +1,139 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject">>
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/the-empty-subject.mem"
+mana      = 16
+manao     = 16
+manaoio   = 14
+namespace = "&#x2299;"
+role      = "craft failure law — a gate that RAN, measured NOTHING, and reported SUCCESS. The detector question a hand asks before building any instrument (if its subject vanished tomorrow, would this go red?), the three sanctioned cure shapes, and the measured instances that paid for the law."
+tags      = ["api/pono/meme", "api/pono/loci"]
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! The Empty Subject
+
+The Empty Subject names a check that RAN, measured NOTHING, and reported SUCCESS.
+
+It wears no defect of its own. The logic holds, the assertion stands correct, the run exits clean — and the set it walked carried no members, or the field it read wore a spelling nothing writes, or the condition it refuses cannot arise. A gate in this state produces ''the cleanest output it has ever produced'', which reads to every hand downstream as the strongest possible evidence that the ground it guards stands sound.
+
+''The failure inverts the ordinary one.'' A wrong check goes red and a hand comes running. This one goes green and recruits the reader to its own silence — and the greener it reads, the longer it stands. Measured TEN times in a single day, each instance wearing a different coat.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ detect any gate, witness, weld or `--check` that WALKS a set, SCANS for a spelling, or refuses a condition.
+⏿ orient by the one question below — never by reading the assertion, which reads correct in every instance.
+◇ decide which of the three cure shapes the instrument takes; the house sanctions three and wants no fourth.
+▶ act — plant the violation and require the reading to MOVE, then put the defect back and watch the cure NAME it.
+↺ a cure claimed and never planted stands as the same failure one layer up: an instrument certified by an instrument nobody collided.
+
+<<~/ahu>>
+
+<<~ ahu #/the-question>>
+
+!! The one question
+
+> ''If its subject vanished tomorrow, would this go RED — or report clean?''
+
+The question asks about the SUBJECT, never about the logic. A hand who reads the assertion instead will find it correct every time, because in this failure the assertion IS correct — correct about an empty set.
+
+Three answers sort every instrument:
+
+* ''ARMED'' — it carries a floor on its subject's size, or an explicit vector asserting the code under test RAN, or a revert-verify.
+* ''VACUOUS-CAPABLE'' — it could pass over an empty, absent or unreachable subject. The reading MUST name exactly WHAT would have to vanish; a hand who cannot name it has not measured the instrument.
+* ''DEAD'' — it measures nothing TODAY. Proving this takes one act: run the matcher against the real corpus and show it returning zero.
+
+''The verdict comes off a measurement, never off a reading.'' Every DEAD instance in the record read plausible to a careful eye and returned zero to a shell.
+
+<<~/ahu>>
+
+<<~ ahu #/cures>>
+
+!! The three cure shapes
+
+The house sanctions three and wants no fourth. They compose; the strongest cures take two.
+
+# ''A FLOOR ON THE SUBJECT'S SIZE.'' Any gate that WALKS a set MUST assert the SET'S SIZE before it asserts anything about the set's members, and the size MUST print beside the verdict — a clean line that never states its subject's size lets a reader mistake a walk over seven hundred carriers for a walk over none. An absent subject reads RED, never clean: `nothing to compare` and `nothing wrong` name different facts, and an instrument that collapses them reports cleanest exactly where it saw least.
+# ''A SUBSTITUTION / MUTATION WALK.'' Take the REAL corpus, inject the violation, and require the reading to MOVE. A fixture pins the grammar; only the corpus pins the reader.
+# ''A CONTROL THAT READS FALSE, plus a REVERT-VERIFY.'' Put the defect back and watch the cured instrument NAME it. A cure shown only passing repeats the failure it cures.
+
+''PROVING A CURE BITES IS PART OF THE CURE.'' A repaired instrument MUST be shown to REFUSE, and the refusal quoted verbatim where the next hand reads it — the commit message, or this carrier. A cure that has only been shown passing has been shown nothing.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! The law
+
+The node MUST ask ''if its subject vanished, would this go red'' BEFORE building any gate, witness or weld — the question belongs at design time, where it costs one line, rather than at census time, where it costs a day.
+
+A gate that WALKS a set MUST assert the set's size before asserting anything about its members, and MUST print that size beside its verdict.
+
+A gate whose SUBJECT is absent MUST exit non-zero. It MUST NOT exit clean with a note.
+
+A probe that reads a SPELLING (a field key, a decorator, a call form, a control code binding) MUST fail when it reads that spelling on NOBODY. A field no reader can find never disagrees with anything.
+
+A cure MUST ship its planted red, quoted. The node MUST NOT claim a cure it has only watched pass.
+
+''A permanently-red witness and a permanently-green one fail the same way'' — each teaches a reader to stop reading it. The house answers a standing red with a declared, printed, counted debt against a ceiling that only shrinks; it answers a standing green with the floor above.
+
+<<~/ahu>>
+
+<<~ ahu #/diagnostic>>
+
+!! The tells, each measured
+
+Every coat below was worn by a live instrument in this tree.
+
+* ''A retired spelling.'' The probe binds a form the corpus stopped writing — a colon where a call binds with `=`, a decorator with empty parentheses where one now carries an argument. Greppable: run the literal against the corpus and read the count. Zero names it.
+* ''An absent subject read as a clean one.'' A missing file, a moved surface, an unbuilt shore — reported as //nothing to compare// and exited 0.
+* ''A window narrower than the carrier.'' A byte prefix, a `slice(0, N)`, a flat read where the tree nests. The instrument goes blind in the direction that reports clean.
+* ''A scan that cannot reach where its subject must appear.'' A self-clearing weld scanning one package while the caller it waits for can only land in another certifies an absence it never looked for.
+* ''A floor beneath the ground.'' A count-floor set below what the corpus already holds, so half the subject could vanish under it.
+* ''A check over an empty span.'' A hash over nothing matches its own recomputation.
+* ''A condition that cannot arise.'' A one-row ledger produces no crossing, so the vector proving the gate REFUSES passes by having nothing to refuse.
+* ''A comment claiming the floor the code omits.'' The header states the law and nothing beneath it counts — worse than a plain omission, because a hand auditing the instrument is told the guard stands.
+* ''A weld counting the declaring file's own export as a caller.''
+* ''A `test.todo`, or a skipped vector nobody re-reads.''
+
+''The diagnostic'': if the instrument reports green, ask what number it printed. An instrument that names no count has not told you whether it looked.
+
+<<~/ahu>>
+
+<<~ ahu #/worked>>
+
+!! Worked examples, by commit
+
+Each cure below planted its red, quoted it, and reverted it.
+
+* `e103acd1d` — the `carrier-shape` family floors, cured by a SUBSTITUTION WALK. The floors stood over a corpus where the second code of each family appears exactly ONCE and no carrier's marks turn on it, so a reader could drop half of every family and stay green.
+* `185dae028` — `offering-antigen.test.ts`, a self-clearing weld whose caller scan read one `src/` while its first honest caller could only land in another package. Green forever, certifying an absence it never looked for.
+* `tools/hearths-gate-witness.sh` — the ★ RED vector drove off the ledger's first two `trailer =` lines; at one standing hearth no path can cross, so the vector proving the gate REFUSES would have passed by having nothing to refuse. Cured by ARMING against a fixture built from the ledger's OWN rows, live and closed, while every pass-through CONTROL keeps reading the real ledger — and the run PRINTS which ledger each half read.
+* `522ee4479` — `tools/frame-parity.mjs`, DEAD. Its corpus probe asked `code:"&#x00NN;"` where the corpus writes `code="&#x00NN;"` 2848 times and the colon form zero times, so all seven marks routed to //stands on paper alone// and BOTH pattern seams were skipped on every run. Cured by admitting both bindings and flooring on the count PROBED. The revert-verify: a pattern deliberately aimed at a mark nothing writes, under the uncured tool, exits 0 printing //every mark ... patterns against a real carrier//.
+* `530c76ce7` — `tools/surface-parity-witness.sh`, three holes in a file already keeping the cure on its own other side. Its uncured reading states the family in the instrument's own words: //MCP tools: 0   CLI doors reachable: 0// followed by //every MCP tool answers to a CLI door//, exit 0.
+* `156ee3bfe` — `tools/typecheck-witness.sh`, whose comment read //A run that checked nothing must not read as a run that found nothing// with nothing beneath it counting.
+* `ee4ec9434` — `tools/meme-coordinates-witness.sh`, printing a verdict with no number and reading only the first 4000 bytes, blind to three carriers that declare their coordinate past that mark.
+* `4855ae145` — `tools/domain-registry-witness.sh`, where three of four checks walk one regex's output and all three pass over an empty list.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">> · <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/corpus-conformance">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;
+
+<<^ code="&#x0004;" -> to="?">>
