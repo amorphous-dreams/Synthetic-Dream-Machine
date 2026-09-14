@@ -11,9 +11,9 @@ manao             = 15
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-09-11"
-role              = "recipe-layer-model — the recipe layer stack under the operator's rulings (canon bags ← named wiki bag ← drafts ← volatile): the layers EXACTLY as three composites mount them, the cascade that routes a tiddler by KIND, what fleet-syncs and what stays on the device, the disk legs for meme and non-meme files, the ONE slot-doc resolver and its floor, the two meme-verb laws, the record ↔ mount convergence, and what remains open. Read whole; every claim carries a file:line."
-status-why        = "enacted under five operator rulings, red-first, each move witnessed (mesh · tw5 · keyhive · the two-vessel e2e); what remains stands named under #/one-model"
+revised-on        = "2026-09-13"
+role              = "recipe-layer-model — the recipe layer stack under the operator's rulings (canon bags ← named wiki bag ← drafts ← volatile): the layers EXACTLY as three composites mount them, the cascade that routes a tiddler by KIND, what fleet-syncs and what stays on the device, the disk legs for meme and non-meme files, the ONE slot-doc resolver and its floor, the two meme-verb laws, the record ↔ mount convergence, the TW5 surfaces the house rides, the ONE-BUNDLE ruling (the route skins and the in-VM face ship as one plugin; the caps decide what rings) with its three grounds, and what remains open. Read whole; every claim carries a file:line."
+status-why        = "enacted under five operator rulings, red-first, each move witnessed (mesh · tw5 · keyhive · the two-vessel e2e); what remains stands named under #/one-model. HOLDS the Basket-One slot-8 ruling since 2026-09-13 — `one bundle, the caps decide what rings` (operator, 2026-09-11), quoted verbatim at #/one-bundle with its reasoning, rehomed here off `scale-stories-basket-one#/one-plugin-or-two` because that floor TOLD the ruling and no carrier HELD it; this one already carries the cap-decides-behaviour rulings the clause instantiates (#/questions: the cap-stack falls to the floor, never reds) and already inventories what the TW5 side ships (#/tw5-surfaces)"
 tags              = ["api/pono/meme", "lifecycle/standing"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
@@ -217,6 +217,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 # ''Does the `draft.of` FIELD decide routing?'' RULED: the field is the switch; the delete rides the last-known-slot map.
 # ''Which non-meme file types enter through `lares ingest`?'' Every extension, through TW5's registry; binaries under `bags/` read OPEN (talk-story).
 # ''Does the daemon wiki gain its `working` layer?'' RULED: working layers for all wikis; the late attach stands.
+# ''Do the route skins and the in-VM face ship as one bundle, or two?'' RULED: ''one bundle, the caps decide what rings''. The ruling, its three grounds and what it leaves open stand at #/one-bundle.
 
 <<~/ahu>>
 
@@ -246,6 +247,30 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
+<<~ ahu #/one-bundle>>
+
+!! One bundle ~ the caps decide what rings (operator ruling, 2026-09-11)
+
+''The ruling, verbatim (quote license).'' The operator read the eight Basket-One loops and ruled on all of them; the eighth clause reads:
+
+> "one bundle, the caps decide what rings (operator)"
+
+''What it settles.'' The meme verbs stand as //"the daemon island's skins of the meme laws"//, and //"every skin (this, the HTTP route, the MCP tool) carries verbatim"// one contract, with //"the anchor project[ing] through the in-VM face (`$tw.lares.meme.project`)"// (`packages/lararium-tw5/src/meme-verbs.ts:2-11`). The question stood: do the route skins and the in-VM face ship as ONE bundle, or split by tier. ''They ship as one.'' The route skins, the in-VM face and the engine ride a single plugin, and a vessel's declared cap-stack decides which of them rings on that vessel.
+
+''The three grounds the ruling rests on.''
+
+# ''One law shipped twice reads as two laws.'' The contract every skin carries VERBATIM already reads as ONE law. A split bundle carries it in two artifacts that must be tuned together, and the hand-derived enumeration drifts the way every hand-derived enumeration drifts. One casting rings the same law at the road, the gate and the sanctum; two castings drift by a hair a year and nobody notices until a reader does.
+# ''The keel already answers it, for free.'' <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">> `#/absence-is-structural` rules that a Herm reads as //a cap-stack that never declares the wiki cap// and runs //blind by structure, never by a flag a later bug could flip// — //an absent cap grants no authority//. ''One keel, two `#has`-stacks: the same code, thinned by caps, never two codes.'' A bundle split by tier re-spells that thinning in packaging, where the composition root already spells it in wiring — and packaging cannot fail closed. This carrier's own cap posture reads the same direction at #/questions: //the cap-stack falls to the floor, never reds//.
+# ''What travels stays a cap question, never a bundle question.'' Whether the road-bells — the HTTP route, the MCP tool — ring on a given vessel answers off that vessel's declared stack. A wayfarer that declares no sanctum rings no sanctum-bell, and it does so without a second artifact existing.
+
+''Where the bundle stands today, measured.'' `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` ships as ONE plugin tiddler carrying `nalu-engine` and `bag-paths` and no syncadaptor (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>, `:71`). Road A of the bridge would have added a packed module to that same bundle, applying //the same law to the daemon island and the wiki island alike (one plugin)// (`outbound-bridge.mem:98`) — the ruling holds either road, because it rules the artifact count rather than the wire.
+
+''Where the ruling was told.'' The stories that set the intent ride at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> `#/one-plugin-or-two`, and the moʻolelo carrying all eight clauses rides at that floor's `#/exit`. ''That floor holds the telling; this carrier holds the ruling.''
+
+⚠ ''What the ruling does NOT settle.'' It fixes the artifact count at one. It says nothing about which caps gate which skin, nor about the manifest shape a thinned bundle presents to a vessel that declares less than the whole. Those stand open here.
+
+<<~/ahu>>
+
 <<~ ahu #/aftermath>>
 
 !! Aftermath ~ the blast-radius spiral (operator-approved)
@@ -268,9 +293,12 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6pAmDJvhgybiDMlcb6qdy8y2IpG-n_38EPnxCPCQQuw
+<<^ code="&#x0003;">>ni:///sha-256;0WX5FN8m_mhTzWItM5k3YxRmOgBnAIfq0xV1X8S5Fwg
 
 <<^ code="&#x0004;" -> to="?">>

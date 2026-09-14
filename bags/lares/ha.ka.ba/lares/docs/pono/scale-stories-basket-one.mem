@@ -12,7 +12,7 @@ manaoio    = 11
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
-status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits. WITNESS: the last held lean — the heraldry read — landed at `96fac1df9` and `docs/pono/heraldry.mem` carries the ruling with its quote license, so NO lean stands open. Reads `lifecycle/standing` and NOT `folded`: the rite demands zero inbound loulou and a fold target in every slot, and this floor carries SIX inbound carriers (four of them quoting it as the RECORD of an operator ruling) with no slot yet folded — and ONE slot (#/one-plugin-or-two) whose ruling stands nowhere else in the tree at all, which blocks a fold before any weld. The FOLD readiness stands measured at #/fold-readiness, REPORTED and not executed; otakiage#/the-fire rules that the operator alone calls the fire"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits. WITNESS: the last held lean — the heraldry read — landed at `96fac1df9` and `docs/pono/heraldry.mem` carries the ruling with its quote license, so NO lean stands open. Reads `lifecycle/standing` and NOT `folded`: the rite demands zero inbound loulou and a fold target in every slot, and this floor carries SIX inbound carriers with no slot yet folded. TWO BLOCKERS CLEARED 2026-09-13 — slot 8's ruling (`one bundle, the caps decide what rings`) now stands whole at `docs/pono/recipe-layer-model#/one-bundle`, so every slot has an inheritor; and the `otakiage` edge resolved WITHOUT a re-point, because a stage that ends in deletion cannot be evidenced by a pointer (the law now stands at `otakiage#/examples`). WHAT REMAINS: four of the six inbound carriers QUOTE this floor's mo'olelo verbatim under licence — re-aiming one would leave its citation naming a hole — so they read as CONFIRMED LICENCES and no weld is owed there; the two bare edges (`hearths:182`, `offering:449`) BOTH stand HANDED BACK and unwelded, because sibling hands hold those two carriers this watch — the exact rows they need ride at #/fold-readiness; and `packages/lararium-mesh/tests/ahi-ka.test.ts:141` reads this file off disk and asserts its quoted ratios, a tie only code can cut. The FOLD readiness stands measured at #/fold-readiness, REPORTED and not executed; otakiage#/the-fire rules that the operator alone calls the fire"
 tags       = ["docs/pono/talk-story", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
@@ -340,7 +340,9 @@ Aki, tuning the Strandbeest-Shrine's bells on the Hebros road, keeps the sanctum
 
 !!! The lean the stories point at
 
-One bundle with the caps deciding what rings reads as the pono lean; two bundles read as the pono lean only where a wayfarer must load nothing it cannot ring. `-> ?`
+One bundle with the caps deciding what rings reads as the pono lean; two bundles read as the pono lean only where a wayfarer must load nothing it cannot ring.
+
+''RULED, and REHOMED 2026-09-13.'' The operator ruled //one bundle, the caps decide what rings// in the moʻolelo at #/exit. The ruling now stands in a carrier of its own — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">> `#/one-bundle` — whole, with its three grounds (one law shipped twice reads as two laws · the keel already thins by caps and packaging cannot fail closed · what travels stays a cap question), the bundle's measured shape today, and what the ruling leaves open. ''This slot told it; that carrier holds it.''
 
 <<~/ahu>>
 
@@ -360,9 +362,13 @@ The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA
 
 ''Nobody lights this fire from here.'' `otakiage#/the-fire` rules it: //the operator CALLS it; any hand may carry it//. This slot measures what a FOLD would take, so the call rests on a reading rather than on a guess. Nothing below has been enacted; the only act this watch performed on this carrier was giving it its `lifecycle/standing` tag, dropping the two retired keys, and writing this measurement.
 
-!!! ONE BLOCKER stands before any weld — slot 8 has no home
+!!! THE BLOCKER CLEARED 2026-09-13 — slot 8 has a home
 
-Seven of the eight slots have a carrier that inherited their ruling. ''Slot 8 does not.'' `grep -rn "caps decide what rings\|one bundle" --include='*.mem' --include='*.ts' .` (minus `node_modules` and this file) returns ''nothing''. The operator's moʻolelo clause //one bundle, the caps decide what rings (operator)// stands recorded ''here alone''. A fold cannot re-point what nothing inherited, so that ruling wants a standing home — `recipe-layer-model` reads as the nearest shelf, and it names no bundle today — before this floor can carry a fold target in every slot.
+Seven of the eight slots had a carrier that inherited their ruling; slot 8 stood alone, its moʻolelo clause //one bundle, the caps decide what rings (operator)// recorded on this floor and nowhere else in the tree. A fold cannot re-point what nothing inherited.
+
+''The ruling now stands whole at'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">> ''`#/one-bundle`'' — quoted verbatim under quote license, with its three grounds, the bundle's measured shape at `lares-memetic-wikitext.json`, and what it leaves open — plus a ninth entry in that carrier's `#/questions` list and a `status-why` naming what it now holds. ''The home was read off the gradient, never off the path'': that carrier already carries the cap-decides-behaviour rulings this clause instantiates (`#/questions`: //the cap-stack falls to the floor, never reds//; //the daemon reads as a wiki with specific caps to the vessel//) and already inventories what the TW5 side ships (`#/tw5-surfaces`). `composable-keel#/absence-is-structural` holds the DOCTRINE the ruling leans on and gets cited rather than rewritten — it rules runtime composition, never a shipped artifact's contents.
+
+''Every slot now has an inheritor.'' The blocker that stood before any weld stands cleared; what remains reads below, and none of it is a missing home.
 
 !!! Slot → fold target
 
@@ -374,7 +380,7 @@ Seven of the eight slots have a carrier that inherited their ruling. ''Slot 8 do
 |#/grace-and-pin |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>, with `packages/lararium-mesh/tests/stowage-clock.test.ts:9` citing `#/grace-and-pin` by address |a pointer, plus the same code-comment decision |
 |#/the-phone-seat |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> |a pointer |
 |#/the-two-doors |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> holds the measurement and the outcome; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> holds the argument |⚠ ''that second carrier sits in the retirement queue itself'', blocked on seam (b) — a fold pointing there points at something that may burn |
-|#/one-plugin-or-two |''NOWHERE'' |''the blocker above.'' Rehome the ruling first, then point at it |
+|#/one-plugin-or-two |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">> `#/one-bundle` — the ruling whole, with its three grounds, since 2026-09-13 |a pointer; this slot already names it |
 
 !!! The six inbound edges, and where each would re-aim
 
@@ -432,6 +438,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T2Wk7f3uu9mt_zKeCIYYLaav62SA919dxwIYV8hRrA0
+<<^ code="&#x0003;">>ni:///sha-256;SBYvdSwdwkgVREpCRfnWJr90wq0ntGKCwfcFBHvddl8
 
 <<^ code="&#x0004;" -> to="?">>
