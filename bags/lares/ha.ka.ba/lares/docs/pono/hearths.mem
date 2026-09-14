@@ -28,6 +28,10 @@ One tree, several hearths. A hearth names a session by the `Claude-Session:` tra
 
 A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing without a row here reads as the failure this ledger exists to end.
 
+''A HEARTH NAMES A SESSION; A SESSION RUNS MANY HANDS.'' One hearth dispatches several spirits at once, and every one of them signs the same `Claude-Session:` trailer. So the gate — which reads trailers — ''cannot see a hand''. Inside one hearth it refuses nothing, and it refuses nothing CORRECTLY: hands under one hearth share one intent, and a gate that guessed at their boundaries would refuse work the hearth means to do. What follows from that, and what a hand must carry: ''within a hearth the gate guards nothing, so commit isolation stands as the ONLY guard''. `git commit --only -- <explicit paths>` and never touching dirt another hand authored do the whole job the gate does between hearths. A hand that reaches for `git add -A` inside a busy hearth meets no refusal and takes a sibling's half-written file with it.
+
+''A sibling's commit reads like a stranger's.'' A hand watching the log mid-flight meets commits it did not write, landing on files it did not touch, under its own trailer — and the ledger offers no word for that, so it reads as a second hearth opening. It names a busy hearth. Measured 2026-09-13: three hands interleaved commits across one afternoon and one of them reported the tree as newly contested. ''Read the trailer, not the surprise'' — a differing trailer names a hearth, and an identical one names a sibling.
+
 ''A hearth that closes keeps its row.'' The three questions above all read backward: a hand meeting `bulb-read-face.ts` next month asks whose ground it stood on when the lane landed there, and a ledger that deleted the answer with the session answers nothing. So a closed hearth's row stays, marked CLOSED, describing the ground it HELD and the crossings it made. What does NOT survive a close: the hearth's ''claim''. A closed hearth defends nothing, so its `holds` globs leave the fence the gate parses (#/holds) and its OWED entries move onto a hearth that still stands (#/owed-forward) — an unclaimed debt evaporating with a row reads as the same erasure, one loop later.
 
 <<~/ahu>>
@@ -179,6 +183,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J1JaXDktnprV-3LiUH8MUL-iggyIIgTQu2cYgsNKZTg
+<<^ code="&#x0003;">>ni:///sha-256;ORrU3k_y8AVHFayak_rBYPVQFPlM-GgwkoRtDX88aws
 
 <<^ code="&#x0004;" -> to="?">>
