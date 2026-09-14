@@ -42,7 +42,7 @@
  * failed probe stands OPEN as a fork — see `readArchiveOpening`; the waking floor still stands here.
  */
 
-import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync } from "node:fs";
 import { dirname, resolve, basename, join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { isSealedEnvelope, decodeEnvelope, readSealCarrier } from "@lararium/mesh";
@@ -50,9 +50,12 @@ import {
   scryptKek, sealBytes, unsealBytes, openArchiveBytes, ARCHIVE_PASSPHRASE_ENV,
   passphraseSealPolicy, probeArchiveBytes, type CarrierProbe,
 } from "./archive-seal.js";
-import { archivePath, veilArchivePath } from "./identity-anchors.js";
-import { reserveMineSharePath } from "./seal-reserve-store.js";
+import { archivePath } from "./identity-anchors.js";
 import { deviceSharePath } from "./recovery-share-store.js";
+import {
+  vaultCarriers, deviceShareName, DEVICE_SHARE_FILE,
+  type VaultCarrier, type CarrierName, type DeviceShareName,
+} from "./vault-carriers.js";
 import { setSealExpected, sealExpected as readSealExpected, type LaresConfig } from "./lares-config.js";
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -75,71 +78,17 @@ export function weakPassphraseWarning(passphrase: string): string | null {
 }
 
 /**
- * A carrier's name. THREE ARE SINGLETONS AND ONE NAMES A FAMILY: a vessel wearing several personas splits
- * EACH persona-root independently, so the device share is written per handle-index
- * (`recovery-device-share-h${N}.bin`) and every index is its own carrier under this lifecycle. The name
- * carries the index for exactly the reason the filename does — h0's quorum leg and h1's are different
- * secrets, and a status, a rotate report or an export refusal that folded them would name neither.
+ * THE CARRIER ENUMERATION LIVES ONCE, IN `vault-carriers`, and the key census reads the SAME atom for the
+ * SAME set. It moved there for the reason the enumeration itself exists: two derivations of one fact
+ * drift, and a `vault status` naming `recovery-device-share-h1` under `keys` while omitting it from
+ * `carriers` was exactly that drift, one output disagreeing with itself. See that file for why the DISK is
+ * the source and why every location is spelled by its writer's own path function.
  */
-export type DeviceShareName = `device-share-h${number}`;
-export type CarrierName = "archive" | "veil" | "reserve-share" | DeviceShareName;
-
-/** The device-share filename law, read back: the family's spelling in `recovery-share-store`. */
-const DEVICE_SHARE_FILE = /^recovery-device-share-h(\d+)\.bin$/;
-
-function deviceShareName(handleIndex: number): DeviceShareName {
-  return `device-share-h${handleIndex}`;
-}
-
-interface Carrier {
-  readonly name: CarrierName;
-  readonly path: string;
-}
-
-/**
- * Every device-share carrier STANDING ON DISK, ascending by handle-index.
- *
- * THE DISK IS THE SOURCE, AND ON PURPOSE. The fact this lifecycle governs is a FILE THAT EXISTS: a sealed
- * carrier left out of the enumeration keeps the old passphrase through a rotate that reports success,
- * hides from a repair, and reads clean in a status that never opened it. So the enumeration must not be
- * able to MISS one, and every other source can: the writer (`nodeRecoveryShareStore.save`) records no
- * roster of its own; the anchor and persona rosters record a different fact (which persona this vessel
- * anchors / holds a root for), read back as `[]` when torn, and can be restored while a share file is
- * not; and a handle COUNT derived from either would skip a gap in the numbering. A dir read cannot be
- * out of date with the disk it reads. `vesselKeyCensus` already reads this same dir for this same family
- * — a `vault status` naming `recovery-device-share-h1` under `keys` while omitting it from `carriers`
- * was one output disagreeing with itself.
- *
- * The cost of reading the disk instead of a record: a stray file spelled like the family becomes a
- * carrier. That errs the safe way — governing a file that need not be governed refuses a write and names
- * a split; the other error DESTROYS a leg of the recovery quorum.
- */
-function deviceShareCarriers(): readonly Carrier[] {
-  const dir = larIdentityDir();
-  let entries: string[];
-  try { entries = readdirSync(dir); } catch { return []; }   // no identity home yet — no shares stand
-  const found: { index: number; carrier: Carrier }[] = [];
-  for (const entry of entries) {
-    const m = DEVICE_SHARE_FILE.exec(entry);
-    if (!m) continue;
-    const index = Number(m[1]);
-    if (!Number.isSafeInteger(index)) continue;
-    // Name the location through the WRITER's own path function, never by rejoining the string we scanned
-    // — one spelling of a carrier location, as the singletons already do.
-    found.push({ index, carrier: { name: deviceShareName(index), path: deviceSharePath(index) } });
-  }
-  return found.sort((a, b) => a.index - b.index).map((f) => f.carrier);
-}
-
-/** The at-rest secret carriers, in a FIXED order (the rename sequence the ratify flow commits in). */
-function carriers(): readonly Carrier[] {
-  return [
-    { name: "archive",       path: archivePath() },
-    { name: "veil",          path: veilArchivePath() },
-    ...deviceShareCarriers(),
-    { name: "reserve-share", path: reserveMineSharePath() },
-  ];
-}
+type Carrier = VaultCarrier;
+const carriers = vaultCarriers;
+// The names stay readable from this surface — every existing importer of `CarrierName` reads the lifecycle,
+// not the enumeration, and this is the lifecycle's door.
+export type { CarrierName, DeviceShareName };
 
 /**
  * Resolve a path the way the FILESYSTEM will, so a comparison against a carrier path compares LOCATIONS

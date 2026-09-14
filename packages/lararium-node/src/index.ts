@@ -395,7 +395,10 @@ export type {
 
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
 export { KEY_CLASSES, isKeyClass, vesselKeyCensus } from "./key-class.js";
-export type { KeyClass, KeyCensusEntry } from "./key-class.js";
+export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
+// The ONE carrier enumeration the seal lifecycle and the key census both read — see `vault-carriers`.
+export { vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers } from "./vault-carriers.js";
+export type { VaultCarrier } from "./vault-carriers.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisManifest, genesisProtectSet, genesisCasDir,

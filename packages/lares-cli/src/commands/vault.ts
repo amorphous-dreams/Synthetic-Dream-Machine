@@ -218,9 +218,22 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       }
       // EVERY KEY NAMES ITS CLASS (basket-one #/the-phone-seat): device-minted · seed · cloud-synced. A key
       // the census cannot class never renders as a device key by omission — the class rides beside the name.
-      const keys = (output["keys"] ?? []) as readonly { name: string; class: string; file?: string }[];
+      //
+      // AND EVERY KEY NAMES ITS CUSTODY, on a SECOND column, because `class` names two regimes. Three keys
+      // read `seed` and only two of them ride the vault lifecycle above — a reader who saw `seed` alone and
+      // swept "every seed" would either write over the persona-group root or skip it while reporting success.
+      // `at-rest` says which; the carrier name joins the row to the `carriers` block overhead.
+      const keys = (output["keys"] ?? []) as readonly { name: string; class: string; file?: string; atRest?: string; carrier?: string | null }[];
+      const sealedSeeds = keys.filter((k) => k.class === "seed" && k.atRest === "sealed").length;
+      const bareSeeds   = keys.filter((k) => k.class === "seed" && k.atRest === "cleartext").length;
       console.log(`  keys           ${keys.length} (cloud-synced: ${keys.filter((k) => k.class === "cloud-synced").length} — none stand today; a PRF/passkey wrap MUST declare one)`);
-      for (const k of keys) console.log(`    ${k.name.padEnd(28)} ${k.class.padEnd(14)}${k.file ? ` ${k.file}` : ""}`);
+      console.log(`                 seed keys: ${sealedSeeds} under the vault lifecycle · ${bareSeeds} riding no seal`);
+      // 14 for the class, 10 for the at-rest word ("cleartext"), so neither runs into the next field.
+      for (const k of keys) {
+        const custody = k.atRest ?? "unnamed";
+        const where   = k.carrier ? ` → ${k.carrier}` : "";
+        console.log(`    ${k.name.padEnd(28)} ${k.class.padEnd(14)} ${custody.padEnd(10)}${k.file ? ` ${k.file}` : ""}${where}`);
+      }
     },
   });
   return 0;
