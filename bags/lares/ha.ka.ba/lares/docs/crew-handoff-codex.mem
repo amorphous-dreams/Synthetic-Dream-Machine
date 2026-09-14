@@ -68,7 +68,7 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 # ''The seal / archive family'' — the floor-write gate, the five seal readers, `readSealCarrier`'s three answers, the device-share carrier enumeration, the archive write guard. Four passes deep (`05f9162f9` · `a472c8b90` · `e3b85b685` · `2fe5e41b7` · `59212d29e` · `b14fbbc4d` · `dbb6d7ec1`).
 # ''The Nexus climb and its seven boards'' — the carry / re-announce / refuse classification and each board's own reason (`a0db0745a` · `529d477fb` · `6b0784571` · `91ce09afb` · `5251f49b2`).
 # ''The hostful / userinfo split'' — the spec, the title-versus-body line, the conflict-surfacing enforcement (`8d69076af` · `fbaa8ac1e`). #/set-b-designed hands over only the CODE half's open shape, never the split itself.
-# ''The `@lararium/tw5` barrel plus the projection-gate wiring'' — one export and one call; `decideProjection` holds zero production call sites today (`ed88ce776` · `474e730e4` · `b18445d6a` · `179916f39`).
+# ''The `@lararium/tw5` export plus the projection-gate wiring'' — ''CLOSED 2026-09-14.'' `canonicalizeCarrierText` landed on the PURE `@lararium/tw5/carrier-canonical` subpath (no barrel widening), the gate gained its `≈` clause (`project` `canonical-equivalent`, riding one step ahead of the conflict), and `LarDiskProjector.flush` consults `decideProjection` with a `conflict` surfacing on the ward-alert rail (`ed88ce776` · `474e730e4` · `b18445d6a` · `179916f39`, then this thread).
 
 <<~/ahu>>
 
@@ -485,6 +485,6 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IN8NQxYMuuybligUcIOfjpr16BFN_j3NK0cJjS0Qky8
+<<^ code="&#x0003;">>ni:///sha-256;0NjElLkq3pU3G3792MVOHOtq17Men3b2JY4HXJPxI3I
 
 <<^ code="&#x0004;" -> to="?">>
