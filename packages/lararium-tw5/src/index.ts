@@ -184,7 +184,7 @@ export {
   makeWhereReactor, makeResolveReactor, makeListWikisReactor,
   makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
   makeWikiPinReactor, makeWikiUnpinReactor,
-  makeWardAlertReactor,
+  makeWardAlertReactor, fileWardRefusal,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
 // The FOLLOW-GRAPH verbs over the sovereign @circles doc (source of truth; PRIVATE, fleet-synced

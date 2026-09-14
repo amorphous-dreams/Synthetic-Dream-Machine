@@ -233,16 +233,45 @@ export function makeWardAlertReactor(
   composite: CompositeStore,
   post: (msg: DaemonMsg_WikiAlert) => void,
 ): VerbReactor {
-  return async (args) => {
+  return async (args) => fileWardRefusal(composite, post, args);
+}
+
+/**
+ * FILE ONE WARD REFUSAL, directly — the same act the "ward-alert" verb performs, reachable by a
+ * caller that already stands INSIDE the worker and holds no verb invocation to dispatch.
+ *
+ * The archive-floor write is that caller: it refuses three frames from the reactor's own registry, so
+ * routing its refusal back out through a verb envelope would mint a hop with nothing on the far end.
+ * ONE body, two doors — the reactor wraps this, and nothing here reads a `VerbContext`.
+ */
+export async function fileWardRefusal(
+  composite: CompositeStore,
+  post: (msg: DaemonMsg_WikiAlert) => void,
+  args: Readonly<Record<string, unknown>>,
+): Promise<Record<string, unknown>> {
+  {
     const bagId  = typeof args["bagId"]  === "string" ? args["bagId"]  : "(unknown bag)";
     const uri    = typeof args["uri"]    === "string" ? args["uri"]    : "(unknown uri)";
     const reason = typeof args["reason"] === "string" ? args["reason"] : "(no reason)";
+    // WHICH WARD REFUSED. The disk projector was the first caller and is no longer the only one: the
+    // M3 archive-floor write files its own refusals here rather than minting a fourth rail
+    // (`archive-floor-write`, waking-floor). A seal refusal recorded as a disk-ward refusal would
+    // send an operator to the wrong mechanism, so the LEDGER record and the operator-facing message
+    // name the ward that actually refused. Absent → "disk-ward", so the original caller is unchanged.
+    //
+    // THE WIRE KIND STAYS `disk-ward` DELIBERATELY. `kind`/`cause` are Rail A's TRANSPORT names, and
+    // the residency delivery keys off them (`hooks.alertArgs?.(kind)`, the browser drop diagnostics).
+    // Varying them here would be minting a fourth rail under the name of reusing one.
+    const wardKind = typeof args["wardKind"] === "string" && args["wardKind"] ? args["wardKind"] : "disk-ward";
+    const headline = wardKind === "disk-ward"
+      ? `Disk ward refused a write (${bagId})`
+      : `${wardKind} refused a write (${bagId})`;
     const ts     = new Date().toISOString();
 
     // (a) Durable audit in the daemon bag — append-only ledger, never coalesced.
     const auditTitle = `lar:///ha.ka.ba/bags/daemon/ledger/ward/${Date.now().toString(32)}-${Math.floor(Math.random() * 1e6).toString(32)}`;
     await composite.put(
-      { tiddler: { title: auditTitle, "alert-kind": "disk-ward", bag: bagId, uri, reason, ts }, meta: { authority: "disk-ward" } },
+      { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts }, meta: { authority: "disk-ward" } },
       { kind: "lares-verb", requestId: `ward-${ts}` },
     );
 
@@ -252,11 +281,11 @@ export function makeWardAlertReactor(
     if (slug) {
       post(mkDaemonWikiAlert({
         wikiSlug: slug,
-        message:  `Disk ward refused a write (${bagId}): ${reason}`,
+        message:  `${headline}: ${reason}`,
         cause:    "disk-ward",
         kind:     "disk-ward",
       }));
     }
     return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };
-  };
+  }
 }

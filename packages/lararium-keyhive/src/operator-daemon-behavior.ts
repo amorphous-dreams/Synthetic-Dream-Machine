@@ -20,7 +20,7 @@ import {
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
-  makeWardAlertReactor,
+  makeWardAlertReactor, fileWardRefusal,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor,
   makeSwitcherStateReactor,
   makePersonaStateReactor,
@@ -693,8 +693,36 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (floor.barred) {
         console.log("[daemon] the archive holds shut — the identity archive was NOT re-sealed; every sovereign act waits.");
       }
-      for (const r of floor.refusals) {
-        console.warn(`[daemon] ${r.carrier} archive export skipped: ${r.message}`);
+      // ── RAIL B's OTHER HALF: the door DECIDED, this frame SURFACES ─────────────────────────────
+      // A GREEN BOOT IS NOT A WRITTEN ARCHIVE. These refusals used to reach `console.warn` and
+      // nothing else, and `disk-projection` rules against exactly that: "Refusals surface LOUDLY —
+      // a silent skip would hide it from the operator." On an unattended vessel stdout has no
+      // audience at all, so a seal refusal at 3am left nothing behind and the next boot warned
+      // again over the same hole.
+      //
+      // RAIL A, REUSED — no fourth rail minted. `makeWardAlertReactor` is already registered on
+      // THIS registry three frames below, and it writes the durable `@daemon` ledger record FIRST
+      // and UNCONDITIONALLY, before it looks for a pinned VM. That is precisely why it works at the
+      // floor: a boot with no wiki mounted still lands the record, and an alert that cannot be
+      // delivered parks durably downstream rather than vanishing.
+      //
+      // `wardKind` names the ward that actually refused, so a seal refusal is not filed as a
+      // disk-ward one. keyhive stays fs-blind: the record names a `lar:` URI, never a path.
+      if (floor.refusals.length) {
+        for (const r of floor.refusals) {
+          console.warn(`[daemon] ${r.carrier} archive export REFUSED: ${r.message}`);
+          try {
+            await fileWardRefusal(ctx.composite, ctx.post, {
+              bagId:    DAEMON_BAG_ID,
+              uri:      `lar:///ha.ka.ba/identity/${r.carrier}-archive`,
+              reason:   r.message,
+              wardKind: "archive-seal",
+            });
+          } catch (err) {
+            // The surfacing itself must never take the boot down — the refusal is already on stdout.
+            console.warn(`[daemon] archive-seal refusal could not be filed durably: ${(err as Error)?.message ?? err}`);
+          }
+        }
       }
       // The daemon's own working layer — after the keyhive and the veil stand, inside the fail-closed
       // boot window (never earlier). A failed attach leaves the write layer on the daemon bag, the
