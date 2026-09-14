@@ -63,7 +63,29 @@
 /** The carriers this door lands. Two files, two writers — a gate proven on one proves nothing of the other. */
 export type ArchiveFloorCarrier = "archive" | "veil";
 
-/** The node-injected writers. Absent → that carrier simply never persists (a browser vessel holds no fs). */
+/**
+ * The shore-injected writers. Absent → that carrier simply never persists.
+ *
+ * ── WHY THE BROWSER SHORE INJECTS NEITHER, on the ground that actually holds ─────────────────────
+ * Not "a browser vessel holds no fs" — measured, that reason reads FALSE. OPFS *is* a filesystem and
+ * the browser shore already writes it (`browser-genesis.ts` lands CAS blobs by CID through
+ * `navigator.storage.getDirectory()`, and the sovereign island resolves reads back out of it), with
+ * IndexedDB beside it declaring itself the node-fs twin. The multi-writer hazard is solved too
+ * (`vessel-lock.ts` Web Locks, one SharedWorker holder per origin).
+ *
+ * The ground that holds is CUSTODY, not substrate: the browser shore holds NO AT-REST SEAL for
+ * self-sovereign secrets. `exportArchive()` materialises the founding DAG, the hydrated
+ * membership/capability ring and the PREKEY SECRETS; landing those in OPFS or IDB today would write
+ * them CLEARTEXT, with strictly LESS protection than node's sealed store — the same downgrade
+ * `browser-vessel-identity.ts` already refuses by returning `recovery: null` rather than persisting
+ * share material unsealed. So the omission is a RULED custody refusal that retires the day the
+ * WebCrypto seal leg lands, never a claim about what the platform can write.
+ *
+ * ⚠ THE LATENT EDGE, named where the writer would be injected: the browser entry hard-codes
+ * `archiveOpens: true` (its archive is `no-seal-expected`, so the reading is vacuously open), and this
+ * door gates on THAT BOOLEAN ALONE. The pairing is inert only while the writers stay absent — inject
+ * one before the seal leg exists and it writes unconditionally, unsealed. The seal leg comes FIRST.
+ */
 export interface ArchiveFloorWriters {
   readonly persistArchive?: (bytes: Uint8Array) => void | Promise<void>;
   readonly persistVeilArchive?: (bytes: Uint8Array) => void | Promise<void>;
