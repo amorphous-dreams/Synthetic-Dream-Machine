@@ -273,8 +273,25 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
     expect(mesh.crossroadsDocUrl("0x" + "aa".repeat(32))).toBe(a);
   });
 
-  test.skip("A NODE THAT JOINS A NEXUS READS THAT NEXUS'S BOARD, NOT ITS OWN — DEFERRED: `open-node-vessel` binds nexusPubkey to vesselIdentity.verifyingKey at seven sites with no alternative path, so a node admitted to a foreign Nexus still materializes a board derived from ITSELF. The browser leaf takes relayGatePubKey gated on admittedToNexus; the node has no equivalent, and `device-admit` carries a hearthDaemonUrl and no nexus key because it admits a DEVICE to a fleet rather than a vessel to a Nexus", () => {
-    expect(Object.keys(mesh)).toContain("adoptedNexusPubkey");
+  /**
+   * GREENED 2026-09-13 — and, like the dial-pin law above, the ASSERTION NAMED A SHAPE THAT NEVER CAME.
+   * It expected a mesh export called `adoptedNexusPubkey`; the cure arrived as `nexusIdentity` — a RANKING
+   * (explicit scope → the charter's genesis epoch → the anchor gate key → this vessel's own key) that had
+   * stood written and unwired in this package the whole time. So this asserts the LAW: a board keys on the
+   * ISLAND, and every vessel class composes ONE ruling to find it.
+   */
+  test("A NODE THAT JOINS A NEXUS READS THAT NEXUS'S BOARD, NOT ITS OWN — one ruling, every shore", () => {
+    const GENESIS = `epoch0-${"9e".repeat(32)}`;
+    // Two vessels holding ONE charter derive ONE scope, and neither key appears in it.
+    const a = mesh.nexusIdentity({ genesisEpochCid: GENESIS, charterStands: true, ownVesselKey: "aa".repeat(32) });
+    const b = mesh.nexusIdentity({ genesisEpochCid: GENESIS, charterStands: true, ownVesselKey: "bb".repeat(32) });
+    expect(mesh.crossroadsDocUrl(mesh.nexusScopeOrThrow(b))).toBe(mesh.crossroadsDocUrl(mesh.nexusScopeOrThrow(a)));
+    // And BOTH shores compose it — a node off its charter, a browser leaf off the anchor it dials.
+    for (const shore of ["lararium-node/src/open-node-vessel.ts", "lararium-browser/src/open-browser-vessel.ts"]) {
+      const src = readFileSync(join(import.meta.dirname, "..", "..", shore), "utf8");
+      expect(src, `${shore} stopped composing the island ruling`).toMatch(/nexusScopeOrThrow\(/);
+      expect(src, `${shore} keys a board on its own vessel key again`).not.toMatch(/nexusPubkey: vesselIdentity\.verifyingKey/);
+    }
   });
 
   /**
@@ -297,8 +314,17 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
     }
   });
 
-  test.skip("A JOINED NODE WALKS ITS NEXUS'S PERSONA-KEL BOARD — DEFERRED: `personaKelBoardDocUrl(nexusPubkey)` is derived per-vessel from its own key (open-node-vessel's kel ring holder, and the browser leaf's own materialize), so two members of one Nexus hold two different identifier→head maps. The Binding Gate walks a LOCAL replica and HALTS fail-closed on an absent chain, so a member on the wrong board cannot verify a fellow member at all — it refuses the boot rather than misreading it", () => {
-    expect(Object.keys(mesh)).toContain("adoptedNexusPubkey");
+  /** GREENED 2026-09-13 by the same cure — the KEL board rides the island scope like every other board. */
+  test("A JOINED NODE WALKS ITS NEXUS'S PERSONA-KEL BOARD — the identifier→head map is one map per island", () => {
+    const GENESIS = `epoch0-${"7c".repeat(32)}`;
+    const scopeOf = (own: string): string =>
+      mesh.nexusScopeOrThrow(mesh.nexusIdentity({ genesisEpochCid: GENESIS, charterStands: true, ownVesselKey: own }));
+    expect(mesh.personaKelBoardDocUrl(scopeOf("aa".repeat(32)))).toBe(mesh.personaKelBoardDocUrl(scopeOf("bb".repeat(32))));
+    // AND THE THIRD STATE holds it honest: a charter that STANDS and reads torn resolves NO board at all,
+    // rather than descending a serving vessel to a private one it would read as agreement.
+    const torn = mesh.nexusIdentity({ genesisEpochCid: null, charterStands: true, ownVesselKey: "aa".repeat(32) });
+    expect(torn.kind).toBe("torn");
+    expect(() => mesh.nexusScopeOrThrow(torn)).toThrow(/torn/i);
   });
 
   /**

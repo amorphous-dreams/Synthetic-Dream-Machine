@@ -53,14 +53,19 @@ describe("nexus-identity — a shared island names no vessel", () => {
     }
   });
 
-  it("★ a malformed genesis is REFUSED — a bad scope splits an island silently ★", () => {
+  it("★ a malformed genesis is REFUSED — and REFUSED means NO SCOPE, never this vessel's own key ★", () => {
     // Addressing a board by garbage mints a fresh empty one that nobody else resolves, and the
     // vessel would read a quiet, private island as if it were the shared one.
+    //
+    // THE ASSERTION USED TO SAY `scope === OWN`, and that is the null-as-default inversion this
+    // header's own word "REFUSED" already forbade: a vessel that WAS serving an island would descend
+    // to its private board on an accident — believing it published while its peers watched it vanish.
+    // "No charter" STATES a fact; "charter unreadable" LOSES one, so they answer under different names.
     for (const bad of ["nope", "epoch0-", "b".repeat(12)]) {
       const r = nexusIdentity({ genesisEpochCid: bad, ownVesselKey: OWN });
-      expect(r.scope).toBe(OWN);
-      expect(r.shared).toBe(false);
-      expect(r.reading).toMatch(/unread|malform|not an epoch/i);
+      expect(r.kind).toBe("torn");
+      expect(r.scope).toBeUndefined();
+      expect(r.reading).toMatch(/unread|malform|not an epoch|torn|no island/i);
     }
   });
 
@@ -124,10 +129,10 @@ describe("nexus-identity — the whole fallback chain, one rule for node and lea
     expect(r.shared).toBe(false);
   });
 
-  it("★ a malformed anchor key is REFUSED like a malformed genesis ★", () => {
+  it("★ a malformed anchor key is REFUSED like a malformed genesis — no scope, never the vessel's own ★", () => {
     const r = nexusIdentity({ anchorGateKey: "nope", ownVesselKey: OWN });
-    expect(r.scope).toBe(OWN);
-    expect(r.shared).toBe(false);
+    expect(r.kind).toBe("torn");
+    expect(r.scope).toBeUndefined();
   });
 
   it("★ a LEAF cannot outrank its anchor, because a leaf holds no charter to outrank it with ★", () => {

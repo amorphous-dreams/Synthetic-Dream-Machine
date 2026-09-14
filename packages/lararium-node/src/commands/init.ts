@@ -23,10 +23,12 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
   PERSONA_GROUP_DOC_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  nexusIdentity, nexusScopeOrThrow, realmIdOfCharter,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
-import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
-import { hearthDialTiddlers } from "../hearth-dial-pin.js";
+import { larDataDir, larBootstrapPath, larSealHome } from "../vessel-paths.js";
+import { hearthDialTiddlers, readHearthDialPin } from "../hearth-dial-pin.js";
+import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import type { CarriedAdmitPayload } from "./device-admit.js";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors } from "../identity-anchors.js";
@@ -211,8 +213,14 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
       vesselVerifyingKey: operatorIdentity.verifyingKey,
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
-      // The joinee's own gate key IS its Nexus key — the local KEL board it seeds the founder's inception onto.
-      nexusPubkey: operatorIdentity.verifyingKey,
+      // THE ISLAND, resolved by the SAME mesh ruling the boot composes (`nexusIdentity`) — never this
+      // vessel's own key. An admit hands over the hearth's gate key, so the joinee seats its inception on
+      // the board its HEARTH stands; the boot then reads that same board. Seeding one island and reading
+      // another HALTS the Binding Gate fail-closed at first boot, which reads as a broken vessel.
+      nexusPubkey: nexusScopeOrThrow(nexusIdentity({
+        anchorGateKey: payload.hearthGatePubKey ?? null,
+        ownVesselKey:  operatorIdentity.verifyingKey,
+      })),
     });
 
     // An admit lands a place AND a contracted face in one act — the contracting operator already signed
@@ -434,8 +442,15 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,
-    // This node's own gate key IS its Nexus key — the per-Nexus KEL board the inception seats onto.
-    nexusPubkey: vesselIdentity.verifyingKey,
+    // THE ISLAND, resolved by the SAME mesh ruling the boot composes — the charter this vessel holds, then
+    // the hearth it dials, then its own key as a private nexus of one. A face seated on one board while the
+    // boot walks another cannot reach a head, and the Binding Gate HALTS.
+    nexusPubkey: nexusScopeOrThrow(nexusIdentity({
+      genesisEpochCid: realmIdOfCharter(readNexusDoc(larSealHome())),
+      charterStands:   nexusCharterStands(larSealHome()),
+      anchorGateKey:   readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null,
+      ownVesselKey:    vesselIdentity.verifyingKey,
+    })),
     ...(priorVeilTag ? { veilTag: priorVeilTag } : {}),
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),

@@ -330,7 +330,7 @@ export * from "./crossroads-cry.js";
 
 export { rosterStanding, type RosterStanding } from "./roster-standing.js";
 export { nexusPhase, type NexusPhase, type NexusPhaseName } from "./nexus-phase.js";
-export { nexusIdentity, type NexusIdentity } from "./nexus-identity.js";
+export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, type NexusIdentity } from "./nexus-identity.js";
 export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from "./signer-class.js";
 export { nexusScopeIndex } from "./persona-identity.js";
 export { identityHomeClosure, type IdentityHomeClosure } from "./identity-home-closure.js";

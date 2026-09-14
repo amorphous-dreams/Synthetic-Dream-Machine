@@ -31,6 +31,7 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
+  nexusIdentity, nexusScopeOrThrow,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
@@ -404,6 +405,22 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   const vesselSeed     = await loadBrowserSigningSeed(idbName);
   const vesselVerifyingKey      = vesselIdentity.verifyingKey;
 
+  // ── THE ISLAND THIS LEAF STANDS IN — the SAME mesh ruling the node composes ──────────────────────────
+  // Isomorphic by intent (`nexusIdentity`, @lararium/mesh): one ruling, every vessel class. A leaf supplies an
+  // ANCHOR and never a charter — structurally, not by choice: seating a charter reaches a SEAL HOME on disk and
+  // a leaf keeps none — so the anchor term decides here and the ordering never gets to argue. The three states
+  // read the same as they do on a node: an anchor dialled → the hearth's island; NO anchor → this vessel's own
+  // key as a PRIVATE NEXUS OF ONE (coherent — stage one of a lifecycle, since crossing later is a first-class
+  // flow); an anchor key that reads as no key → TORN, and the resolver refuses rather than quietly composing a
+  // private board under the name of the crossroads.
+  const nexusStanding = nexusIdentity({
+    explicitScope: inviteNexusPubkey ?? null,
+    anchorGateKey: relayGatePubKey ?? null,
+    ownVesselKey:  vesselVerifyingKey,
+  });
+  const nexusPubkey = nexusScopeOrThrow(nexusStanding);
+  console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
+
   const bootKeys = await readBootKeys(idbName);
   const bootKeyWrites: BootKeyWrites = {};
   let bootstrap = bootKeys.bootstrap;
@@ -426,8 +443,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       vesselVerifyingKey: vesselIdentity.verifyingKey,
       vesselDisplayName:  displayName ?? "Browser Operator",
       payload:              admit,
-      // This vessel's own gate key IS its Nexus key — the local KEL board it seeds the founder's inception onto.
-      nexusPubkey: vesselIdentity.verifyingKey,
+      // The ISLAND this leaf crosses into keys the KEL board — an admitted leaf seeds its inception onto the
+      // board its HEARTH stands, never onto one only it resolves (a leaf alone on a board reads as agreement).
+      nexusPubkey,
     });
     bootstrap = {
       identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl,
@@ -463,8 +481,9 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // (signerSeed == vesselSeed) survives ONLY as an explicit named floor tier, never the default.
       binding: { mode: "self-stood", signerSeed },
       hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
-      // This vessel's own gate key IS its Nexus key — the per-Nexus KEL board the founding seats the inception on.
-      nexusPubkey: vesselIdentity.verifyingKey,
+      // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
+      // its own key — a private nexus of one, the same value by a different derivation.
+      nexusPubkey,
     });
     bootstrap = {
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
@@ -505,7 +524,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // burns and — because the relay/who caps below gate on `admittedToNexus` — NO federated record is written.
   const invitePolicy: BootInvitePolicy =
     bootInvitePolicy ?? (bootInvite ? { kind: "invite-only" } : { kind: "open" });
-  const inviteNexus = inviteNexusPubkey ?? relayGatePubKey ?? vesselVerifyingKey;
+  const inviteNexus = nexusPubkey;   // the SAME island ruling — explicit scope, then anchor, then own key
   const bootVerdict = await runBrowserBootInviteSpend({
     idbName, nexusPubkey: inviteNexus, invite: bootInvite ?? null, policy: invitePolicy,
   });
@@ -548,7 +567,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // Arm the deny-by-default gate ONLY for a cross-operator crossing (relayGatePubKey names a
     // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
     // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
-    if (relayGatePubKey) fedGate = new DeterministicFederationGate(relayGatePubKey);
+    if (relayGatePubKey) fedGate = new DeterministicFederationGate(nexusPubkey);
     repo.networkSubsystem.addNetworkAdapter(relayAdapter);
   }
 
@@ -702,7 +721,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // (A boot-minted card also had to name SOME key, and the only key at hand is this vessel's own — publishing
   // it would put the substrate key on the social board, the one co-surface the two-key atom forbids.)
   const whoExtraCaps: CapModule[] = (relayUrl && relayGatePubKey && admittedToNexus) ? await (async () => {
-    const nexusPubkey = relayGatePubKey;
     const crossroadsHandle = await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
     return [whoFaceCap({ repo, crossroadsHandle, nexusPubkey, residency })];
   })() : [];
@@ -771,7 +789,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // it. Isomorphic: node + browser share registerCrossroadsInOracle, and the daemon core splices
       // the crossroads bag into the recipe + registerBags for either vessel — only the nexus key differs (here the
       // relay's gate key, so a human's two vessels register the SAME crossroads doc).
-      if (relayGatePubKey) await registerCrossroadsInOracle(repo, assembly.islandHandle, relayGatePubKey);
+      if (relayGatePubKey) await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
       // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
       // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
       // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins
@@ -799,10 +817,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // mount — folding them in is the whole-social-plane fork, and it stays the operator's call.
       const personaKelPrefix = wornMount?.personaKelPrefix ?? social.personaKelPrefix;
       // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier's
-      // seq-sorted key-event-log from this vessel's OWN per-Nexus KEL board (its gate key IS its Nexus key),
+      // seq-sorted key-event-log from the per-Nexus KEL board of the ISLAND this vessel stands in,
       // against the LOCAL replica "as of last sync" (no-global-now). FAIL-CLOSED: a chain the replica does not
       // carry HALTS the boot (never a global lookup, never a fall-through to the raw signer pin).
-      const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(vesselIdentity.verifyingKey), "board:persona-kel");
+      const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
       const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium-browser] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — the Binding Gate cannot reach a head (fail-closed).`);
@@ -974,7 +992,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         if (!relayGatePubKey || !admittedToNexus) {
           throw new Error(`[face-${verb}] this vessel holds no public WHO board — it withheld the Nexus crossing, so it has no board to name a face on.`);
         }
-        return materializeSharedLarDoc(repo, crossroadsDocUrl(relayGatePubKey), "board:crossroads");
+        return materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
       };
       // The daemon doc the publish core reads for the owner prefix — the persona-KEL prefix IS the only field
       // it consults, and `social` carries it authoritatively; a faceless boot has none, so publish fails closed.
@@ -1008,7 +1026,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         if (fromPersona) {
           burnOpts.fromPersona = true;
           burnOpts.daemonDoc   = ownerDaemonDoc();
-          burnOpts.kelBoard    = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(relayGatePubKey!), "board:persona-kel");
+          burnOpts.kelBoard    = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         }
         const card = await burnFaceBrowser(burnOpts);
         return { verb: "face-burn", nym: card.nym, version: card.version, burned: true, hand: fromPersona ? "owner" : "self" };

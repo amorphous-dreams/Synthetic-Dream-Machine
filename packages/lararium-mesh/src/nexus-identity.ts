@@ -73,14 +73,37 @@ const GENESIS_RE = /^epoch0-[0-9a-f]{64}$/;
 /** A gate key names an island only as hex — anything else addresses a board no peer resolves. */
 const KEY_RE = /^[0-9a-f]{16,64}$/;
 
-export interface NexusIdentity {
-  /** The value a shared plane addresses its board under. */
-  readonly scope:   string;
-  /** Whether that scope is an island shared with other operators, or this vessel standing alone. */
-  readonly shared:  boolean;
-  /** Whose island this is, so a caller never reads a private board as the shared one. */
-  readonly reading: string;
-}
+/**
+ * ── AND THE TWO NULLS ANSWER UNDER DIFFERENT NAMES ──────────────────────────────────────────────
+ * "This vessel stands in no Nexus" and "this vessel's Nexus reads TORN" are UNLIKE FACTS, and a
+ * result that folds them together hands every caller one `scope` and lets a single `??` invert
+ * fail-closed into fail-open (the pin-reader law: a default must STATE a fact, never LOSE one).
+ *
+ * So the result discriminates on `kind`, and only a `torn` reading withholds the scope outright:
+ *   · `own`     — a STATED FACT. A vessel alone IS a Nexus of one, and its own key names it. Plausible.
+ *   · `torn`    — a LOST FACT. Material that should name an island reads as no island at all. A vessel
+ *                 that quietly kept its own board here would announce into a private room and call it
+ *                 the crossroads: a split that reports as agreement. It carries NO scope, and
+ *                 `nexusScopeOrThrow` refuses.
+ */
+export type NexusIdentity =
+  | {
+      /** How this vessel came by its island — an explicit call, a charter, an anchor, or standing alone. */
+      readonly kind:    "explicit" | "charter" | "anchor" | "own";
+      /** The value a shared plane addresses its board under. */
+      readonly scope:   string;
+      /** Whether that scope is an island shared with other operators, or this vessel standing alone. */
+      readonly shared:  boolean;
+      /** Whose island this is, so a caller never reads a private board as the shared one. */
+      readonly reading: string;
+    }
+  | {
+      /** Material that should name an island reads as none — the caller REFUSES rather than addressing. */
+      readonly kind:    "torn";
+      readonly scope?:  undefined;
+      readonly shared?: undefined;
+      readonly reading: string;
+    };
 
 /**
  * The island scope this vessel resolves shared planes under.
@@ -95,8 +118,20 @@ export function nexusIdentity(
     explicitScope?:  string | null;
     /** The genesis epoch of a charter this vessel holds — a relation it CONSENTED to. */
     genesisEpochCid?: string | null;
+    /**
+     * Does a charter RECORD stand at this vessel's home, whatever it reads as? PRESENCE ⊥ READABILITY,
+     * and the shore that owns the disk supplies it (`nexusCharterStands` on a node; structurally false on
+     * a leaf, which keeps no seal home). TRUE beside an unreadable `genesisEpochCid` reads TORN — the
+     * exact conflation `hearths.mem` #/crossings records as //the torn charter//, where one reader
+     * answering null for both "no charter stands" and "a charter stands and reads torn" let a re-seat
+     * re-genesis a rotated chain. A vessel that WAS serving an island must never descend to its own
+     * board on a partition, a torn fence or a sync gap.
+     */
+    charterStands?:  boolean;
     /** The gate key of an anchor this vessel dials — a relay it happens to reach. */
     anchorGateKey?:  string | null;
+    /** Does an admission/dial RECORD stand, whatever its key reads as? The anchor's PRESENCE ⊥ READABILITY. */
+    anchorStands?:   boolean;
     ownVesselKey:    string;
   },
 ): NexusIdentity {
@@ -106,37 +141,77 @@ export function nexusIdentity(
   const anchor   = (at.anchorGateKey ?? "").trim().toLowerCase();
 
   if (explicit.length > 0) {
-    return { scope: explicit, shared: explicit !== own,
+    return { kind: "explicit", scope: explicit, shared: explicit !== own,
              reading: "this caller named its island outright, so nothing here infers one. A vessel that "
                     + "knows which Nexus it is composing for is the most reliable source there is." };
   }
   if (genesis.length > 0 && GENESIS_RE.test(genesis)) {
-    return { scope: genesis, shared: true,
+    return { kind: "charter", scope: genesis, shared: true,
              reading: `this vessel holds a charter, so its island is the genesis epoch that charter names `
                     + `(${genesis.slice(0, 18)}…) — derived alike by every holder and belonging to no operator. `
                     + "A charter OUTRANKS an anchor: it names a relation this vessel consented to, where an "
                     + "anchor names only a relay it reaches." };
   }
-  if (genesis.length > 0) {
-    return { scope: own, shared: false,
-             reading: "this charter's genesis epoch is unreadable, so it names no island and this vessel falls "
-                    + "back to its own key. Addressing a board by a malformed scope would mint a clean empty "
-                    + "one that no peer resolves, and a private island reads exactly like an agreeing one." };
+  // ── STATE 3, held apart: a Nexus this vessel KNOWS and cannot READ ─────────────────────────────
+  if (genesis.length > 0 || at.charterStands === true) {
+    return { kind: "torn",
+             reading: "a charter STANDS at this vessel and its genesis epoch reads as no island — a torn fence, a "
+                    + "half-written seat, a chain rotated past what this replica carries. This vessel therefore "
+                    + "names NO scope. Keeping its own key here would descend a serving vessel to a private "
+                    + "board on an accident: it would believe it published while every peer watched it vanish, "
+                    + "and the announce plane would fail in silence. The gradient ratchets on INTENT — a vessel "
+                    + "CLIMBS it by connecting and never DESCENDS it by a failure." };
   }
   if (anchor.length > 0 && KEY_RE.test(anchor)) {
-    return { scope: anchor, shared: anchor !== own,
+    return { kind: "anchor", scope: anchor, shared: anchor !== own,
              reading: "this vessel holds no charter and dials an anchor, so it joins the island it crosses "
                     + "into: an anchor names its confederation by its gate key, and a leaf passes that key "
                     + "back to resolve the one board its anchor stands." };
   }
-  if (anchor.length > 0) {
-    return { scope: own, shared: false,
-             reading: "the anchor key this vessel dials reads as no key at all, so it names no island and this "
-                    + "vessel falls back to its own. A board addressed by a malformed scope mints clean and "
-                    + "empty, and a vessel alone on one cannot tell that from agreement." };
+  if (anchor.length > 0 || at.anchorStands === true) {
+    return { kind: "torn",
+             reading: "an admission RECORD stands at this vessel and the anchor key it names reads as no key at "
+                    + "all, so it names no island. This vessel names NO scope rather than falling to its own: a "
+                    + "board addressed by a malformed scope mints clean and empty, and a vessel alone on one "
+                    + "cannot tell that from agreement." };
   }
-  return { scope: own, shared: false,
-           reading: "this vessel holds no charter and dials no anchor, so it stands as its OWN ISLAND and "
-                  + "resolves its shared planes under its own key. Nothing is wrong here — a vessel alone is "
-                  + "a Nexus of one, and the scope widens when a charter seats or an anchor is dialled." };
+  // ── STATE 1: a PRIVATE NEXUS OF ONE — a stated fact, and stage one of a normal lifecycle ───────
+  return { kind: "own", scope: own, shared: false,
+           reading: "this vessel holds no charter and dials no anchor, so it stands as a PRIVATE NEXUS OF ONE "
+                  + "and resolves its shared planes under its own key. Nothing failed here — standing a hearth "
+                  + "up and connecting it to a Nexus LATER is a first-class flow, so this reads as stage one of "
+                  + "an ordinary lifecycle. It serves nobody and nobody reads its board, which is coherent. The "
+                  + "scope widens by an ACT — a charter seated, an anchor dialled." };
+}
+
+/**
+ * The scope, or a REFUSAL — the one door a caller that must address a board walks through.
+ *
+ * A `torn` standing carries no scope, so this throws rather than handing back anything a `??` could
+ * absorb. That refusal IS the cure: the caller stops loudly at the boot it cannot key, instead of
+ * quietly composing a private board and calling it the crossroads.
+ */
+export function nexusScopeOrThrow(id: NexusIdentity): string {
+  if (id.kind === "torn") throw new Error(`[nexus] the island reads TORN, so no board may be addressed — ${id.reading}`);
+  return id.scope;
+}
+
+/**
+ * ── CONNECTING MOVES THE BOARD, so a connect is a MIGRATION and never a field assignment ────────
+ *
+ * A vessel that climbs from a private nexus of one to a seated charter re-keys every per-Nexus board
+ * it stands on — crossroads, WHO, persona-KEL, antigen, carriage, vouch, edge-kāpae. Nothing carries
+ * across on its own: the old board keeps every announce it ever held and the new one mints blank, so
+ * books announced before the connect stay invisible to the island, and any peer still dialling the old
+ * address reads a silence that looks exactly like a vessel going dark.
+ *
+ * DESCENDING wants the same act for the opposite reason. Leaving a Nexus, or a Nexus dissolving, is
+ * LEGITIMATE — and unless it arrives as an explicit act it reads on the wire byte-identically to state
+ * 3, a partition. An explicit departure is what makes "I left" distinguishable from "I cannot read my
+ * island", which is the whole reason state 3 refuses instead of falling.
+ *
+ * NEITHER MIGRATION STANDS BUILT. This names the debt so a caller does not read the resolver as one.
+ */
+export function nexusScopeMoved(before: NexusIdentity, after: NexusIdentity): boolean {
+  return before.kind !== "torn" && after.kind !== "torn" && before.scope !== after.scope;
 }

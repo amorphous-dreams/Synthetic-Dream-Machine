@@ -46,6 +46,7 @@ import {
   ENGINE_CORE_ID, BagStowage, pluginCidsFromIslandBlobs,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault, type PlaneEntry,
   coupleMesh, crystallize, guardHitl,
+  nexusIdentity, nexusScopeOrThrow, realmIdOfCharter,
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
@@ -89,7 +90,7 @@ import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
 import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
 import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
-import { readNexusDoc } from "./nexus-doc.js";
+import { readNexusDoc, nexusCharterStands } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusConvergenceKeyring } from "./nexus-convergence-keyring.js";
 import { standNexusKeyring } from "./nexus-convergence-secret-store.js";
@@ -567,9 +568,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const vesselIdentity = await generateOrLoadVesselIdentity(storageDir);
   const vesselSeed     = await loadVesselSigningSeed(storageDir);
 
-  // ── The #59 antigen ring — STOOD now the operator's own verifying key is loaded ─────────────
-  // The node IS the confederation anchor: its own gate key IS its Nexus key (the same key browsers
-  // pass as relayGatePubKey, and the deterministic antigen-board id is a pure function of it). The
+  // ── The #59 antigen ring — STOOD now the island this vessel stands in is resolved ─────────────
+  // The board keys on the ISLAND (`nexusPubkey` below), never on this vessel: the deterministic
+  // antigen-board id is a pure function of it, so every member of one Nexus folds ONE board. The
   // holder resolves the always-carried antigen board, folds the quorum-signed bans against the
   // founding-kahu roster read off `bags/nexus` (LAR_BAGS ?? <root>/bags), and re-folds on every board
   // change. FAILS CLOSED: an unseated charter → empty roster → nothing Kapae'd (no quorum, no bans).
@@ -578,9 +579,43 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // belongs to the operators who founded it, so it survives every substrate wipe beside the sovereign root
   // and travels with neither a clone nor a `reset`.
   const sealHome = larSealHome();
+
+  // ── THE ISLAND THIS VESSEL STANDS IN — every per-Nexus board keys on THIS, never on the vessel ─────────
+  // A NEXUS HOLDS NO KEY, so no vessel's key names it. Passing `vesselIdentity.verifyingKey` satisfied a fleet
+  // of one and split every confederation: a keeping hearth announced a PUBLIC book onto its OWN board while its
+  // always-on Herm folded the Herm's, and both read `0 PUBLIC book(s)` with no error anywhere. The ruling
+  // (2026-09-13): NEXUS keys the public/crossroads plane. `nexusIdentity` (mesh, isomorphic — the browser leaf
+  // composes the SAME call with an anchor and no charter) ranks the island's name: an explicit scope, then the
+  // CHARTER's genesis epoch (a KERI autonomic identifier both stewards derive from public material and neither
+  // owns), then the ANCHOR gate key a leaf dials, then this vessel's own key.
+  //
+  // THREE STATES, and the third is why this reads a PRESENCE beside the value:
+  //   ① no charter and no dial → the vessel's own key, a PRIVATE NEXUS OF ONE. Coherent, and stage one of an
+  //      ordinary lifecycle — standing a hearth up and connecting it to a Nexus LATER is a first-class flow.
+  //   ② a readable charter/anchor → the island's own name.
+  //   ③ a charter that STANDS and reads TORN → `nexusScopeOrThrow` REFUSES the boot. `readNexusDoc` answers
+  //      null for BOTH "no charter stands" and "a charter stands and reads torn", and `hearths.mem` #/crossings
+  //      records this tree bitten by exactly that conflation (//the torn charter//). `nexusCharterStands` reports
+  //      PRESENCE alone, which is what holds ③ apart from ①. A serving vessel silently descending to its own
+  //      board on a torn fence would believe it published while every peer watched it vanish.
+  // The gradient ratchets on INTENT: a vessel CLIMBS it by an act and never DESCENDS it by a failure.
+  //
+  // ⚠ CONNECTING MOVES THE BOARD. Climbing from ① to ② re-keys every per-Nexus board, and nothing migrates:
+  // books announced on the private board do not travel and peers dialling the old address read silence. The
+  // re-announce stands UNBUILT (`nexusScopeMoved` names the shape); so does the explicit DEPARTURE that would
+  // keep "I left" distinguishable from ③ on the wire.
+  const nexusStanding = nexusIdentity({
+    genesisEpochCid: realmIdOfCharter(readNexusDoc(sealHome)),
+    charterStands:   nexusCharterStands(sealHome),
+    anchorGateKey:   opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null,
+    ownVesselKey:    vesselIdentity.verifyingKey,
+  });
+  const nexusPubkey = nexusScopeOrThrow(nexusStanding);
+  console.log(`[nexus] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
+
   const antigenHolder = makeAntigenRingHolder({
     repo,
-    nexusPubkey:       vesselIdentity.verifyingKey,
+    nexusPubkey,
     sealHome,
     peerIdentifierMap,
   });
@@ -605,7 +640,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     peerIdentifierMap,
     peerContractNymMap,
     repo,
-    nexusPubkey:       vesselIdentity.verifyingKey,
+    nexusPubkey,
     onRefold:          reverdict,
   });
   nexusMembership = nexusMembershipHolder.membership;
@@ -632,12 +667,12 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // The relay-side discovery index the seal producer announces a sealed cid onto (DHT-free; hint → peers → tracker).
   const casBagTracker = makeBagTracker();
 
-  // Stand the self-slot federation gate now the operator's own verifying key is loaded — the SAME nexus
-  // pubkey the antigen board derives from. The gate's federatable surface is a PURE function of that key
+  // Stand the self-slot federation gate on the SAME island scope the antigen board derives from — a gate
+  // keyed elsewhere would refuse the very boards this vessel is meant to federate. Its federatable surface is a PURE function of that scope
   // (crossroads plane · WHO · kapae-antigen board — deny-by-default for every other doc), so a cross-operator
   // peer reaches exactly the always-carried public/infra planes and nothing private. No hand-maintained
   // allow-list; the private planes (catalog/personal/daemon/home/wikis) fall outside the set → DENY.
-  selfSlotFedGate = new DeterministicFederationGate(vesselIdentity.verifyingKey);
+  selfSlotFedGate = new DeterministicFederationGate(nexusPubkey);
 
   // ── The CARRIAGE serve-loop (Socket B, ciphertext) — INERT until a carriage-relay URL rides the config ──────
   // When configured, the vessel dials the carriage relay over an authenticated WS channel (proving `vesselSeed`)
@@ -693,7 +728,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         // `nexus-refresh` verb runs; here it fires automatically when the carriage transport re-dials.
         onReconnect:  async () => {
           await runNexusRefresh({
-            storageDir, sealHome, nexusPubkey: vesselIdentity.verifyingKey,
+            storageDir, sealHome, nexusPubkey,
             antigen: antigenHolder, membership: nexusMembershipHolder,
             setPosture: (p) => { federationPosture = p; },
           });
@@ -1111,18 +1146,18 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const personaKelPrefix = wornMount?.personaKelPrefix ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]) ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
     if (personaKelPrefix) {
-      const kelHolder = makePersonaKelRingHolder({ repo, nexusPubkey: vesselIdentity.verifyingKey });
+      const kelHolder = makePersonaKelRingHolder({ repo, nexusPubkey });
       await kelHolder.ready;
       personaKelChain = kelHolder.chainForPrefix(personaKelPrefix);
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium] persona-KEL chain for the pinned identifier ${personaKelPrefix.slice(0, 20)}… absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).`);
       }
     }
-    // Register the per-Nexus crossroads plane into the oracle plane (isomorphic with the browser). The node IS the
-    // confederation anchor, so its own gate key IS its Nexus key — the same key browsers pass as
-    // relayGatePubKey — so node + its browser leaves resolve the identical crossroads doc. The daemon core
+    // Register the per-Nexus crossroads plane into the oracle plane (isomorphic with the browser). Both shores
+    // compose the SAME `nexusIdentity` ruling — this one off its charter, a leaf off the anchor gate key it
+    // passes back — so a node, its browser leaves and its Herm resolve the identical crossroads doc. The daemon core
     // splices the crossroads bag into the recipe + registerBags for either vessel.
-    await registerCrossroadsInOracle(repo, assembly.islandHandle, vesselIdentity.verifyingKey);
+    await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
     // ── THE REALM PLANE — the relation's shared CRDT, materialized on every member's boot ──────────────
     // The realm doc's id derives from the charter both stewards hold (its genesis epoch), so A and B compute
     // ONE address from the charter alone. A bag REGISTERS on it (`realm-bag`), and the daemon island's reach
@@ -1133,7 +1168,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       realmPlane = makeRealmPlane({
         repo,
         oracleHandle:     assembly.islandHandle,
-        crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(vesselIdentity.verifyingKey), "board:crossroads"),
+        crossroadsHandle: await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads"),
         membership:       nexusMembership,
         base:             selfSlotFedGate,
         // THE REALM LEG: the realm's own registration answers which documents cross — the proven contract nym
@@ -1184,7 +1219,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
           // a peer that comes back re-attaches at the transport and draws a verdict computed before the cut.
           onReconnect: async () => {
             await runNexusRefresh({
-              storageDir, sealHome, nexusPubkey: vesselIdentity.verifyingKey,
+              storageDir, sealHome, nexusPubkey,
               antigen: antigenHolder, membership: nexusMembershipHolder,
               setPosture: (p) => { federationPosture = p; },
             });
@@ -1693,7 +1728,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       const r = await runNexusRefresh({
         storageDir,
         sealHome,
-        nexusPubkey: vesselIdentity.verifyingKey,
+        nexusPubkey,
         antigen:     antigenHolder,
         membership:  nexusMembershipHolder,
         // Reassign the live posture the sharePolicy closure reads each call (fail-closed PRIVATE on a torn read).
@@ -2044,7 +2079,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   };
 
   return {
-    repo, catalogHandle, vesselSeed, nexusPubkey: vesselIdentity.verifyingKey,
+    repo, catalogHandle, vesselSeed, nexusPubkey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
