@@ -173,6 +173,8 @@ projector onRefusal (wiki island)
 
 Visibility holds by construction: the durable record lives in `@daemon` (admin-grant readers only); the live alert lives in the pinned wiki's `@temp` (the operator's own island; never federated — `noise`/`data` stay node-local). The reactor carries no cap-gate: the signal originates from the island's own mechanism, grants nothing, and writes only audit + alert.
 
+''What the gate says over the real corpus'' (measured 2026-09-13, `bags/` at 701 hand-authored carriers, against the live Synced tree): ''655'' read `noop:disk-matches-records` — `render(parse(disk))` returns the disk bytes exactly — ''46'' read `project:never-projected` (the `sdm` bag carries no anchors; those write, as they write today), and ''0'' read CONFLICT. The 46 name the corpus's //non-canonical-at-rest// carriers (`meme-corpus-roundtrip`'s own finding: framing normalizes on render), so rule 1 misses on them and only the absent anchor keeps them clear; once an anchor lands they read `disk-unmoved` and project. Re-measure by walking `bags/` with the shore's deserializer + `expandMemeRefs` against `synced-tree.json`.
+
 ''One rail, two refusals.'' A projection CONFLICT rides this same chain — the projector calls the same `onRefusal`, so the operator reads it in the same pinned-wiki alert and the same durable `@daemon` ledger. No second rail: a signal with no audience repeats the fault of a fold that stands ready and uncalled. The projector surfaces one alert per DISTINCT standoff (the disk-hash + records-hash pair), so a level-triggered re-reconcile never repeats itself; a standoff that MOVES surfaces afresh.
 
 Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (13 — traversal, absolute, cross-bag, above-bags, new-subdir, grantless, inert-grant, refusal-signal) · `packages/lararium-node/tests/projection-conflict-surfaces.test.ts` (6 — the standoff refuses + surfaces, the repeat stays quiet, a moved standoff re-surfaces, clean-project · noop-no-churn · disk-alone-stands-down controls, and the 701-carrier corpus reading zero conflicts in steady state).
@@ -206,6 +208,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICM4PFILxxRszd-6nACQiNlToyYdsQk7baUWEPkq6d4
+<<^ code="&#x0003;">>ni:///sha-256;u9CtTbTbQB-7MdtwNEM8KCbfAeu1n_LKOCiVdtHD7mg
 
 <<^ code="&#x0004;" -> to="?">>

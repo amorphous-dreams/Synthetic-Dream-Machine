@@ -246,6 +246,16 @@ describe("the gate over the REAL corpus — bags/ holds 701 hand-authored carrie
   }
   const hash = (s: string) => "sha256:" + createHash("sha256").update(s, "utf8").digest("hex");
 
+  // MEASURED over the live tree + the real renders (2026-09-13, 701 carriers):
+  //   noop:disk-matches-records  655   (render(parse(disk)) === disk, byte for byte)
+  //   project:never-projected     46   (the sdm bag holds no anchors; these write,
+  //                                     exactly as they write today)
+  //   CONFLICT                     0
+  // The 46 are the corpus's non-canonical-at-rest carriers (meme-corpus-roundtrip's
+  // own words) — the render normalizes framing, so rule 1 misses on them. They stay
+  // out of conflict only because they carry no anchor; once one lands they read
+  // `disk-unmoved` and project. Re-measure by walking bags/ with the tw5
+  // deserializer + `expandMemeRefs` and the live `synced-tree.json`.
   test("steady state (doc agrees with disk) reads ZERO conflicts over all 701", () => {
     const files = everyMem(repoBags);
     expect(files.length).toBeGreaterThan(600);
