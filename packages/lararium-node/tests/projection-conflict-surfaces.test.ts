@@ -172,6 +172,67 @@ describe("the projection leg reconciles — it never overwrites a moved disk fil
   });
 });
 
+describe("a refusal drops cleanly — it cannot wedge the coalesce gate", () => {
+  test("after a conflict the gate holds nothing pending, and the NEXT change still projects", async () => {
+    root = mkdtempSync(join(tmpdir(), "lar-projwedge-"));
+    const abs = join(root, REL);
+    let docBody = "one\n";
+    const refusals: { bagId: string; uri: string; reason: string }[] = [];
+    const syncedTree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
+    let handler: ((c: Record<string, unknown>) => void) | null = null;
+    const engine = {
+      $tw: {
+        wiki: {
+          getTiddler: (t: string) => (t === URI ? { fields: { title: URI, text: docBody, "$origin-bag": BAG } } : undefined),
+          addEventListener: (_e: string, h: (c: Record<string, unknown>) => void) => { handler = h; },
+          removeEventListener: () => {},
+        },
+      },
+    } as unknown as TW5Engine;
+    const projector = new LarDiskProjector({
+      mirrors: [{ bagId: BAG, mirrorRoot: root }],
+      carrierFileFn: async () => ({ ext: ".mem", body: docBody, encoding: "utf8" }),
+      debounceMs: 5,
+      syncedTree,
+      onRefusal: (info) => { refusals.push(info); },
+    });
+    const stop = projector.start(engine);
+    const gate = (projector as unknown as { gate: { pending: () => number } }).gate;
+    const settle = async () => { handler!({ [URI]: {} }); await new Promise((r) => setTimeout(r, 60)); };
+
+    // Drive the REAL path: wiki change → mark → debounce → flush.
+    await settle();
+    expect(readFileSync(abs, "utf-8")).toBe("one\n");
+
+    // The standoff: the operator's hands move the file, the doc moves too.
+    writeFileSync(abs, "the operator's bytes\n", "utf-8");
+    docBody = "two\n";
+    await settle();
+    expect(refusals).toHaveLength(1);
+    expect(readFileSync(abs, "utf-8")).toBe("the operator's bytes\n");
+    expect(gate.pending()).toBe(0);                      // no key left armed — no wedge
+
+    // The standoff STANDS until the two sides agree — a re-nudge re-refuses
+    // rather than quietly picking a side (and stays quiet: one alert per standoff).
+    writeFileSync(abs, "the operator's bytes, revised\n", "utf-8");
+    await settle();
+    expect(readFileSync(abs, "utf-8")).toBe("the operator's bytes, revised\n");
+    expect(refusals).toHaveLength(2);                    // the standoff MOVED → surfaces afresh
+
+    // The operator talks it out and lands the doc's words on disk: the two sides
+    // now agree, the gate noops, and the anchor advances to that agreement.
+    writeFileSync(abs, "two\n", "utf-8");
+    await settle();
+    expect(refusals).toHaveLength(2);                    // agreement surfaces nothing
+    // With the merge base caught up, the very next doc change projects normally.
+    docBody = "three\n";
+    await settle();
+    expect(readFileSync(abs, "utf-8")).toBe("three\n");   // the gate still flushes
+    expect(gate.pending()).toBe(0);
+    stop();
+  });
+});
+
 describe("the gate over the REAL corpus — bags/ holds 701 hand-authored carriers", () => {
   const repoBags = join(__dirname, "..", "..", "..", "bags");
 
