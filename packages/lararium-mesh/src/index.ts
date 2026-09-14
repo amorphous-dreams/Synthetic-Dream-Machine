@@ -332,6 +332,11 @@ export { rosterStanding, type RosterStanding } from "./roster-standing.js";
 export { nexusPhase, type NexusPhase, type NexusPhaseName } from "./nexus-phase.js";
 export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, nexusIslandsBelow,
          type NexusIdentity, type NexusIdentityAt } from "./nexus-identity.js";
+// The boards a CLIMB moves. THREE of the seven are deliberately absent from this surface — WHO, carriage
+// and vouch — and `nexus-board-climb`'s header carries the reason for each refusal.
+export { climbNexusBoards, carryAntigenUpTheGradient, carryEdgeShadowsUpTheGradient,
+         reAnnounceRealmBooksAtIsland,
+         type NexusBoardClimb, type BoardClimbResult } from "./nexus-board-climb.js";
 export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from "./signer-class.js";
 export { nexusScopeIndex } from "./persona-identity.js";
 export { identityHomeClosure, type IdentityHomeClosure } from "./identity-home-closure.js";

@@ -211,13 +211,22 @@ export function nexusScopeOrThrow(id: NexusIdentity): string {
  * 3, a partition. An explicit departure is what makes "I left" distinguishable from "I cannot read my
  * island", which is the whole reason state 3 refuses instead of falling.
  *
- * THE CLIMB'S HALF STANDS BUILT for the one board that REFUSES rather than degrades — the persona-KEL
- * board the Binding Gate walks (`nexusIslandsBelow` names the sources; `carryPersonaKelUpTheGradient` on
- * the node shore carries the chain). Every OTHER per-Nexus board degrades gracefully across a climb: an
- * empty antigen bans nobody, an empty WHO board names nobody, an empty crossroads announces nothing. The
- * gate alone turns a moved board into a vessel that never boots again, so it is the one that is cured.
- * The RE-ANNOUNCE (carrying books, vouches and carriage forward onto the new board) and the explicit
- * DEPARTURE both stand UNBUILT. This names the remaining debt so a caller does not read the resolver as one.
+ * THE CLIMB STANDS BUILT, and it took THREE acts rather than one (`nexus-board-climb`; `nexusIslandsBelow`
+ * names every source). "Degrades gracefully" was the wrong reading for two of the seven boards:
+ *   · CARRY, verbatim — persona-KEL (`carryPersonaKelUpTheGradient`, node shore: the gate REFUSES rather
+ *     than degrades) · antigen (an empty deny set RE-ADMITS a Kapae'd presenter; the quorum epoch check
+ *     makes the carry self-limiting) · edge-kāpae (an empty shadow board LOWERS EVERY SHADOW, and the board
+ *     sits outside the federation gate, so no peer replica heals it).
+ *   · RE-ANNOUNCE, re-derived — the crossroads realm-bag announce. It carries no signature a reader could
+ *     re-check, so a copied row would launder a lapsed, equivocated or FOREIGN-REALM registration; the
+ *     projection is recomputed from the realm doc's counted registrations instead.
+ *   · DELIBERATELY NEITHER — WHO (a boot-time announce would DISCLOSE a face the operator published only to
+ *     a private nexus of one; disclosure stays an act) · carriage (an allow wants a fresh consent at the new
+ *     epoch, and a roster of who belongs is the one register the laws forbid) · vouch (unfederated, so a
+ *     carried PARTIAL replica would become the whole board and price crossings off one vessel's view — the
+ *     honest cure is federating it). `nexus-board-climb`'s header carries each reason in full.
+ * The explicit DEPARTURE stands UNBUILT — the sibling half, and the one that makes "I left" legible against
+ * state 3. This names the remaining debt so a caller does not read the resolver as one.
  */
 export function nexusScopeMoved(before: NexusIdentity, after: NexusIdentity): boolean {
   return before.kind !== "torn" && after.kind !== "torn" && before.scope !== after.scope;
