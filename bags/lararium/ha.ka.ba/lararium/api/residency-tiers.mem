@@ -93,7 +93,11 @@ Two disciplines survive the collapse as bag-level mechanism (now driven by the p
 * ''Stub-on-oracle-traversal.'' A URL found in `tiddler.text` during traversal does NOT force `find()`/hydration. The bag lands cold (URL known, doc not loaded) until something reads through it. Lazy hydration stays a bag concern; the //tier// is the island's to set.
 * ''Don't drop while syncing.'' A bag mid-replication is unsafe to evict even if its referencing island cooled. The handle-drop on island cool MUST check `syncActive` before releasing.
 
-''Code homing (operator ruling 2026-06-01).'' The residency methods — pin / unpin / hydrate / cool / handle-drop / `ChunkStore` — MUST move OUT of the standalone `bag-residency.ts` side-file (which predates the causal-islands model) and INTO the ''causal-island code'' (`causal-island.ts` for the model + contracts; the Island Pool for the Worker-lifecycle mechanism). The module that owns the causal-islands model hosts residency; no older side-file holds a parallel authority. After the move there is no independent tier vocabulary, no separate bag cap, no independent LRU — ''one cap governs the node: the Island Pool's `wela` (live) slot budget'', and bag handles follow by derivation. The relocation landed 2026-06-01 (S11.1: `bag-residency.ts` → `causal-island.ts`); "bag" stays the TW5 layer term throughout.
+''Code homing (operator ruling 2026-06-01).'' The residency methods — pin / unpin / hydrate / cool / handle-drop / `ChunkStore` — MUST move OUT of the standalone `bag-residency.ts` side-file (which predates the causal-islands model) and INTO the ''causal-island code'' (`causal-island.ts` for the model + contracts; the Island Pool for the Worker-lifecycle mechanism). The module that owns the causal-islands model hosts residency; no older side-file holds a parallel authority. After the move there is no independent tier vocabulary, no separate bag cap, no independent LRU — ''one cap governs the node: the Island Pool's `wela` (live) slot budget'', and bag handles follow by derivation. ⚠ ''THE RELOCATION STANDS UNENACTED, and the tree argues a different cure.'' Measured 2026-09-13: `packages/lararium-mesh/src/bag-residency.ts` stands live at 489 lines, imported by `cabal-realm.ts` and `carriage-caps.ts`, and ''no `causal-island.ts` exists in that package'' (the nearest name reads `worldline-causal.ts`). So this clause reads as a ruling awaiting a hand, never as a landed move — and a clause claiming to have landed sends the next reader to verify a file that answers nothing.
+
+''The counter-argument the code carries, in its own words.'' `bag-residency.ts:14-18` opens ONE FILE, ONE QUESTION and names the hazard it already survived: //"A federation-authority doctrine once shared its file and shared none of its types, functions, or imports — a single name over two unrelated questions, which is the shape that lets a reader carry an assumption from one half into the other."// That reads as a live case AGAINST folding stowage into the causal-island module: the collapse this ruling asks for would re-seat two questions in one file. The axis took its name instead — `BagStowage`, `bag stats` (`4d8ae4a7f`) — which `one-name-one-relation#/the-unbraiding` names as one of the three lawful moves.
+
+''Which cure stands rules OPEN.'' Neither the ruling nor the code's counter-position carries the other's answer, and nothing here picks between them. "bag" stays the TW5 layer term throughout under either.
 
 <<~/ahu>>
 
@@ -143,6 +147,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SJvlJE1zkAKJK3TRBMHz5qbglCGJHqVhD1xUmv7EM7A
+<<^ code="&#x0003;">>ni:///sha-256;LrCcjTVBk9RG9zCw79_sElamlw0iKshNXaFbXi4GO1w
 
 <<^ code="&#x0004;" -> to="?">>

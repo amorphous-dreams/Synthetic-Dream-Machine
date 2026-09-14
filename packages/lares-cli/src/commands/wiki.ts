@@ -545,7 +545,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "release": { handler: cmdWikiRelease, summary: "Drop a wiki's rotatable pin (it stays live, becomes a cooling candidate)." },
   "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
-  "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe residency)." },
+  "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe STOWAGE — the heat axis, never the canon one `resolve` reads)." },
   "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },
   "add-bag":    { handler: cmdWikiAddBag,    summary: "Add a bag to the wiki's recipe at runtime. Hot-reload via composite.addLayer." },
   "remove-bag": { handler: cmdWikiRemoveBag, summary: "Remove a bag from the wiki's recipe (soft remove; F-arc adds StoryList drain)." },

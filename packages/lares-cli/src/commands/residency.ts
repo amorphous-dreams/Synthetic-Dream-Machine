@@ -1,7 +1,14 @@
 /**
- * `lares pin <url> [--reason <text>]`
- * `lares unpin <url>`
- * `lares residency`
+ * `lares bag pin <url> [--reason <text>]`
+ * `lares bag unpin <url>`
+ * `lares bag stats`
+ *
+ * THE DOORS CARRY `bag` AS THEIR AXIS, and the qualifier is the whole point. `residency` names four
+ * things in this tree (`one-name-one-relation#/the-words-that-carry-more-than-one-thing` ranks it first
+ * of them), so the STOWAGE axis takes its name in the surface an operator types: `bag stats`, never a
+ * bare `residency`. `cmdResidency` below stays an internal spelling behind that door, and `"residency"`
+ * survives as the daemon's wire verb. A header naming top-level `lares pin` / `lares residency` would
+ * send a reader to type three commands that resolve nowhere.
  *
  * Operator-driven residency control. Pin guarantees a bag stays hot;
  * unpin demotes (the LRU may then evict if pressure rises). residency
