@@ -115,4 +115,43 @@ describe("identity anchors (M2)", () => {
     expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
     expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
   });
+
+  /**
+   * ── THE OTHER HALF OF THE SAME FLOOR, AND IT COSTS THE IDENTITY ────────────────────────────────
+   * The cleartext guard above reads "no key" as the floor's only shape. A WRONG key wears the same
+   * floor: `readArchiveOpening` answers `key-wrong`, the boot stands faceless, and the M3 export
+   * still fires — this time with a passphrase in hand, so the seal SUCCEEDS and a fresh, empty
+   * keyhive lands over the sovereign one, re-sealed under a passphrase that never opened it.
+   *
+   * MEASURED end to end: `vault rotate` old→new, then a stand under the OLD passphrase, and the
+   * sealed archive comes back readable only under the OLD one. The next stand under the NEW
+   * passphrase reads `key-wrong` and stands at the floor — `tests/e2e/vessel-sealed.test.ts` ⑤,
+   * failing on `bag not registered: lar:///ha.ka.ba/wikis/lares/working`.
+   *
+   * THE INVARIANT: a write lands over a SEALED carrier only under a key that OPENS it. The seal
+   * governs the write as well as the read; a mistyped passphrase destroys nothing.
+   */
+  test("★ a write under a NON-OPENING passphrase REFUSES to replace a sealed archive ★", () => {
+    const sovereign = Uint8Array.from([0x85, 0x6f, 0x4a, 0x83, 0x01, 0x02, 0x03]);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-current");
+    persistIdentityArchive(sovereign);
+    persistVeilArchive(sovereign);
+    const sealed = readFileSync(join(larIdentityDir(), "keyhive-archive.bin"));
+    const sealedVeil = readFileSync(join(larIdentityDir(), "veil-archive.bin"));
+
+    // The floor's fresh keyhive, offered under a passphrase the sealed bytes never answer to.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-stale-x");
+    const fresh = Uint8Array.from([0x00, 0x01]);
+    expect(() => persistIdentityArchive(fresh)).toThrow(/sealed/);
+    expect(() => persistVeilArchive(fresh)).toThrow(/sealed/);
+    expect(readFileSync(join(larIdentityDir(), "keyhive-archive.bin")).equals(sealed), "the stale key rewrote the archive").toBe(true);
+    expect(readFileSync(join(larIdentityDir(), "veil-archive.bin")).equals(sealedVeil), "the stale key rewrote the veil").toBe(true);
+
+    // CONTROL — the OPENING passphrase still writes, and the sovereign bytes read back whole.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, "witness-passphrase-current");
+    persistIdentityArchive(sovereign);
+    persistVeilArchive(sovereign);
+    expect(Array.from(loadIdentityArchive() ?? [])).toEqual(Array.from(sovereign));
+    expect(Array.from(loadVeilArchive() ?? [])).toEqual(Array.from(sovereign));
+  });
 });

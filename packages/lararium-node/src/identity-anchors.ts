@@ -120,20 +120,44 @@ let _warnedCleartext = false;
  * hygiene / defense-in-depth.
  */
 /**
- * Refuse a CLEARTEXT write over a SEALED carrier. A vessel at the waking floor boots without its archive
- * (no key source), and the M3 floor still exports the keyhive it booted — a fresh, empty identity. Landing
- * that over the sealed bytes replaces the sovereign identity with nothing and reads "cleartext" to every
- * later boot; the seal exists so a disk without the key yields ciphertext, and a boot without the key must
- * yield the same. The write throws (the exporter warns and carries on) and the sealed bytes stand.
+ * ── A WRITE LANDS OVER A SEALED CARRIER ONLY UNDER A KEY THAT OPENS IT ──────────────────────────
+ * A vessel at the WAKING FLOOR boots without its archive and the M3 floor still exports the keyhive
+ * it booted — a fresh, empty identity. Landing that over the sealed bytes replaces the sovereign
+ * identity with nothing. The floor wears TWO shapes and both reach this writer:
+ *
+ *   · NO key (`key-absent`) — the write would land CLEARTEXT over ciphertext, and every later boot
+ *     would read the archive as unsealed;
+ *   · a WRONG key (`key-wrong`) — the write SEALS, so no cleartext test catches it, and the
+ *     sovereign archive comes back readable only under a passphrase that never sealed it. Measured:
+ *     `vault rotate` old→new, then one stand under the OLD passphrase, and the identity is gone.
+ *
+ * ONE INVARIANT covers both: the current key must OPEN what stands on disk before anything replaces
+ * it. The seal governs the WRITE as well as the read, so a mistyped passphrase destroys nothing.
+ *
+ * The deliberate policy-movers do NOT pass through here — `vault seal`, `rotate`, `repair` and
+ * `export` stage their own atomic writes in `archive-passphrase.ts`, each having already opened the
+ * carriers under the CURRENT key. This guard governs the boot-time re-seal alone.
+ *
+ * The write throws (the exporter warns and carries on) and the sealed bytes stand.
  */
-function refuseCleartextOverSealed(path: string, policy: SealPolicy): void {
-  if (policy.mode !== "cleartext" || !existsSync(path)) return;
+function refuseWriteOverUnopenableSeal(path: string, policy: SealPolicy): void {
+  if (!existsSync(path)) return;
   let stored: Uint8Array;
   try { stored = readFileSync(path); } catch { return; }
-  if (isSealedEnvelope(stored)) {
+  if (!isSealedEnvelope(stored)) return;   // a cleartext carrier answers to any policy
+  if (policy.mode === "cleartext") {
     throw new Error(
       `archive-seal: refusing to write a cleartext archive over the sealed one at ${path} — ` +
       `set ${ARCHIVE_PASSPHRASE_ENV} to the passphrase that sealed it`,
+    );
+  }
+  // A key rides the policy — try it against the bytes it would replace. Only an OPEN earns the write.
+  try { openArchiveBytes(stored, policy); }
+  catch {
+    throw new Error(
+      `archive-seal: refusing to write over the sealed archive at ${path} — the configured ` +
+      `${ARCHIVE_PASSPHRASE_ENV} does not open it, so this write would replace the sovereign ` +
+      `identity under a passphrase that never sealed it`,
     );
   }
 }
@@ -142,7 +166,7 @@ export function persistIdentityArchive(bytes: Uint8Array): void {
   mkdirSync(larIdentityDir(), { recursive: true });
   const path = archivePath();
   const policy = resolveSealPolicy();
-  refuseCleartextOverSealed(path, policy);
+  refuseWriteOverUnopenableSeal(path, policy);
   // Self-Only Secret Surface: these bytes ARE the daemon's own sovereign identity — brand them
   // self so the type-guarded sealer accepts them. A held/citizen principal's secret never reaches
   // here (a civic node holds their ciphertext + public edges, never their secret).
@@ -172,7 +196,7 @@ export function veilArchivePath(): string {
 export function persistVeilArchive(bytes: Uint8Array): void {
   mkdirSync(larIdentityDir(), { recursive: true });
   const policy = resolveSealPolicy();
-  refuseCleartextOverSealed(veilArchivePath(), policy);
+  refuseWriteOverUnopenableSeal(veilArchivePath(), policy);
   atomicWriteFileSync(veilArchivePath(), sealArchiveBytes(asSelfSovereignSecret(bytes), policy));
   try { chmodSync(veilArchivePath(), 0o600); } catch { /* best-effort on a non-POSIX fs */ }
 }

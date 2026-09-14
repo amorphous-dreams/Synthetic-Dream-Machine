@@ -39,7 +39,7 @@ import {
   standRaiseDoor, effectiveLeaseEpochOnBoard, nexusMemberNyms, verifyNymSignature,
 } from "./vessel-raise.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
-import { archiveOpens } from "./archive-passphrase.js";
+import { readArchiveOpening } from "./archive-passphrase.js";
 import { faceStands } from "./commands/init.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { deriveMeshSelf } from "./node-caps.js";
@@ -198,7 +198,12 @@ async function main(): Promise<void> {
   // The class stays orthogonal to the CEILING. `personaSlotCeiling("herm") === 0` bars a SEATED persona
   // root on a crossroads; standing at the floor for want of a face bars nothing — `lares persona new`
   // reads its own ceiling and lights the face that lifts the next boot. MAY-HOLD-A-FACE ⊥ HOLDS-ONE-NOW.
-  const sealShut = !archiveOpens();
+  // THE READING CARRIES ITS REASON, AND THE FLOOR MUST SPEAK IT. `readArchiveOpening` answers five
+  // kinds — `key-absent`, `key-wrong`, `unreadable`, `nothing-sealed`, `no-seal-expected` — and a boot
+  // that folds them to a boolean prints ONE cure for all of them. An operator whose carrier TORE reads
+  // "set the passphrase" and re-types a credential that was never the fault. The reading rides whole.
+  const opening  = readArchiveOpening();
+  const sealShut = !opening.opens;
   const faceLit  = faceStands();
   const standing = standAs(askedStanding !== "herm" && faceLit ? "hearth" : "herm", !sealShut);
   if (standing === "herm" && !sealShut && askedStanding !== "herm" && !faceLit) {
@@ -207,9 +212,12 @@ async function main(): Promise<void> {
     console.log("[lararium]   light the hearth fire:  lares persona new 0 --name '<label>'   (then stand again)");
   }
   if (sealShut) {
-    console.log("[lararium] the archive holds shut — standing at the WAKING FLOOR, faceless by class.");
+    console.log(`[lararium] the archive holds shut (${opening.kind}) — standing at the WAKING FLOOR, faceless by class.`);
+    console.log(`[lararium]   ${opening.why}.`);
     console.log("[lararium]   carrying and serving the public shelf; every sovereign act waits.");
-    console.log(`[lararium]   light the hearth fire: set ${ARCHIVE_PASSPHRASE_ENV} and boot again.`);
+    console.log(opening.kind === "unreadable"
+      ? "[lararium]   no passphrase opens a torn carrier — recover it from a backup, then boot again."
+      : `[lararium]   light the hearth fire: set ${ARCHIVE_PASSPHRASE_ENV} and boot again.`);
     // NAME NO VERB THAT DOES NOT STAND. The raise DOOR stands (vessel-raise, wired below on the Herm
     // branch); the CLI ceremony that carries a challenge out and a grant back does not. A line naming
     // `lares raise` here would spend the reader's trust the first time they typed it — the same law
