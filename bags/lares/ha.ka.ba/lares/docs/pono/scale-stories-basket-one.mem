@@ -12,7 +12,7 @@ manaoio    = 11
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
-status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits. WITNESS: the last held lean — the heraldry read — landed at `96fac1df9` and `docs/pono/heraldry.mem` carries the ruling with its quote license, so NO lean stands open. Reads `lifecycle/standing` and NOT `folded`: the rite demands zero inbound loulou and a fold target in every slot, and this floor carries SIX inbound carriers (four of them quoting it as the RECORD of an operator ruling) with no slot yet folded, so the rite can now SEE the floor without the fire being any nearer"
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits. WITNESS: the last held lean — the heraldry read — landed at `96fac1df9` and `docs/pono/heraldry.mem` carries the ruling with its quote license, so NO lean stands open. Reads `lifecycle/standing` and NOT `folded`: the rite demands zero inbound loulou and a fold target in every slot, and this floor carries SIX inbound carriers (four of them quoting it as the RECORD of an operator ruling) with no slot yet folded — and ONE slot (#/one-plugin-or-two) whose ruling stands nowhere else in the tree at all, which blocks a fold before any weld. The FOLD readiness stands measured at #/fold-readiness, REPORTED and not executed; otakiage#/the-fire rules that the operator alone calls the fire"
 tags       = ["docs/pono/talk-story", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
@@ -354,6 +354,54 @@ The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA
 
 <<~/ahu>>
 
+<<~ ahu #/fold-readiness>>
+
+!! Fold readiness — measured 2026-09-13, REPORTED and not executed
+
+''Nobody lights this fire from here.'' `otakiage#/the-fire` rules it: //the operator CALLS it; any hand may carry it//. This slot measures what a FOLD would take, so the call rests on a reading rather than on a guess. Nothing below has been enacted; the only act this watch performed on this carrier was giving it its `lifecycle/standing` tag, dropping the two retired keys, and writing this measurement.
+
+!!! ONE BLOCKER stands before any weld — slot 8 has no home
+
+Seven of the eight slots have a carrier that inherited their ruling. ''Slot 8 does not.'' `grep -rn "caps decide what rings\|one bundle" --include='*.mem' --include='*.ts' .` (minus `node_modules` and this file) returns ''nothing''. The operator's moʻolelo clause //one bundle, the caps decide what rings (operator)// stands recorded ''here alone''. A fold cannot re-point what nothing inherited, so that ruling wants a standing home — `recipe-layer-model` reads as the nearest shelf, and it names no bundle today — before this floor can carry a fold target in every slot.
+
+!!! Slot → fold target
+
+|!slot |!where its ruling stands today |!what a fold would write |
+|#/the-bridge |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> — its `status-why` reads //The stories that set the intent ride at `scale-stories-basket-one#/the-bridge`//, RULED and BUILT on Road B (`b2fd7af55`) |a pointer; the inheriting carrier already names this floor, so the fold reverses one sentence |
+|#/the-fetch-door |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">> for the law, with the enactment cited in code at `packages/lararium-mesh/tests/cas-transit.test.ts:97` (//THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11)//) |a pointer, plus a decision about whether the code comment re-aims at `blob-carriage` or keeps naming a burned floor |
+|#/the-shared-bag |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> (the registration ruling) and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> (the 2026-09-12 Face ruling, quoted verbatim under quote license) |''the hard one'' — both inheritors QUOTE this slot rather than absorb it; see the shape below |
+|#/the-later-grant |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> — the floor that carries the plans and forks these stories serve, named in #/exit |a pointer |
+|#/grace-and-pin |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>, with `packages/lararium-mesh/tests/stowage-clock.test.ts:9` citing `#/grace-and-pin` by address |a pointer, plus the same code-comment decision |
+|#/the-phone-seat |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> |a pointer |
+|#/the-two-doors |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> holds the measurement and the outcome; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> holds the argument |⚠ ''that second carrier sits in the retirement queue itself'', blocked on seam (b) — a fold pointing there points at something that may burn |
+|#/one-plugin-or-two |''NOWHERE'' |''the blocker above.'' Rehome the ruling first, then point at it |
+
+!!! The six inbound edges, and where each would re-aim
+
+Re-derive: `grep -rn "scale-stories-basket-one" --include='*.mem' . | grep -v node_modules | grep -v "docs/pono/scale-stories-basket-one.mem"`.
+
+|!carrier |!lines |!what it takes |!the weld |
+|`docs/pono/hearths.mem` |131 |an edge in `#/edges` alone |''cheapest'' — drop the edge, or re-aim at whichever carrier inherits the realm leg. Nothing in the ledger's prose depends on this floor |
+|`docs/pono/syncer-seams-roundtable.mem` |43 · 75 · 384 |the two-doors ruling twice in argument (`:43`, `:75`), once as an edge (`:384`) |re-aim all three at `syncer-back-parity`, which carries the outcome. ⚠ ''both floors are in the queue at once'' — whichever burns first re-points the other, and burning them in one sweep re-points neither |
+|`docs/pono/otakiage.mem` |383 · 448 |the worked example of the `folded` stage — //Proof that `folded` names something real and unspelled// |''wants a REPLACEMENT EXEMPLAR, never a re-point.'' Deleting this floor deletes the evidence the stage names something real. ★ ''One arrived this watch'': `docs/handback-stale-rooms` now reads `lifecycle/folded` with every slot carrying a fold target — the first carrier to spell the stage. `otakiage:383`'s //no carrier spells it// has an answer, and re-pointing there costs one row |
+|`docs/pono/realm-bag-brief.mem` |31 · 82 |//"the ruling this brief enacts"//, quoted verbatim under quote license |see the shape below — the quote already IS the fold |
+|`docs/pono/heraldry.mem` |29 · 147 · 237 |the 2026-09-12 operator ruling, quoted verbatim in three places |same shape, three sites |
+|`docs/pono/offering.mem` |449 |an edge in `#/edges` alone |cheap — drop or re-aim |
+
+A seventh carrier, `docs/pono/outbound-bridge.mem:16`, names this floor in prose inside `status-why` and carries no `loulou`. It welds nothing and the rite counts no edge for it, but a reader arriving through that sentence would meet a missing file.
+
+!!! ★ The code dependency that only code can cut ★
+
+Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` and `:459` · `tests/cas-transit.test.ts:97` · `tests/stowage-clock.test.ts:9` · `tests/ahi-ka.test.ts:119` and `:134`. Five of those read as comments. ''One is a live assertion.''
+
+`packages/lararium-mesh/tests/ahi-ka.test.ts:141` READS this file off disk, regex-extracts the three ahi-kā parameters this floor quotes, and holds them against `AHI_KA_500YR` in the module, failing with //"the canon teaches ratios the code no longer runs — re-stamp scale-stories-basket-one.mem"//. ⚠ ''DELETING THIS CARRIER REDS THAT TEST.'' Any fire folds the ratio prose to wherever the assertion should point next, or moves the assertion, ''before'' the burn — and the test's own sibling CONTROL (//the constant carries all three fields, so the comparison above is not vacuous//) must stay honest through the move.
+
+!!! The shape worth naming, beyond the mechanics
+
+''Four of the six inbound carriers QUOTE this floor as the RECORD of an operator ruling'', under quote license, rather than leaning on it for argument. That reads as a question for the rite rather than a defect here: ''a talk-story floor whose moʻolelo has been quoted out does not retire by welding edges — the quotes ARE the fold, already done, and what remains is the empty vessel plus the licences pointing at it.'' Does such a floor retire by DELETION, or does it become the citable source those licences name? `otakiage` rules neither today. Until it does, a hand reading //six inbound edges// as //six welds owed// will do four welds that destroy the thing the licence cites.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -384,6 +432,6 @@ The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zn9jh4nkUhgICTREQ7gq2ChZ4Szd5X5BEDJbrnO1zoM
+<<^ code="&#x0003;">>ni:///sha-256;84IQtbZaW_R8e5yC_nZhg6sKkxsxsZLiP13eFjnwX6g
 
 <<^ code="&#x0004;" -> to="?">>
