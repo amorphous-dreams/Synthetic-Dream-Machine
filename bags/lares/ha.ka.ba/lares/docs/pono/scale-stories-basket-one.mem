@@ -383,7 +383,7 @@ Re-derive: `grep -rn "scale-stories-basket-one" --include='*.mem' . | grep -v no
 |!carrier |!lines |!what it takes |!the weld |
 |`docs/pono/hearths.mem` |131 |an edge in `#/edges` alone |''cheapest'' — drop the edge, or re-aim at whichever carrier inherits the realm leg. Nothing in the ledger's prose depends on this floor |
 |`docs/pono/syncer-seams-roundtable.mem` |43 · 75 · 384 |the two-doors ruling twice in argument (`:43`, `:75`), once as an edge (`:384`) |re-aim all three at `syncer-back-parity`, which carries the outcome. ⚠ ''both floors are in the queue at once'' — whichever burns first re-points the other, and burning them in one sweep re-points neither |
-|`docs/pono/otakiage.mem` |383 · 448 |the worked example of the `folded` stage — //Proof that `folded` names something real and unspelled// |''wants a REPLACEMENT EXEMPLAR, never a re-point.'' Deleting this floor deletes the evidence the stage names something real. ★ ''One arrived this watch'': `docs/handback-stale-rooms` now reads `lifecycle/folded` with every slot carrying a fold target — the first carrier to spell the stage. `otakiage:383`'s //no carrier spells it// has an answer, and re-pointing there costs one row |
+|`docs/pono/otakiage.mem` |#/examples |''RESOLVED 2026-09-13 — and NOT by a re-point.'' The `folded` row wanted a replacement exemplar; a pointer could never have served as one. `otakiage#/examples` now states the law: ''a stage that ends in deletion cannot be evidenced by a pointer'' — the rite grades `folded` on ZERO inbound `loulou`, so an exemplar link demotes the carrier out of the stage it was cited to prove, and the stage's own exit runs to ash. The exemplar rides as DESCRIPTION: `docs/handback-stale-rooms` by name and commit (`7d3b3bf5c`), with the shape it held at the moment it stood folded. ''This floor's own row moved up beside it'' — as `standing` × `floor`, QUOTED OUT — so the edge at `#/edges` stays earned and now records the licence shape rather than borrowing this floor as evidence. ''No weld owed here'' |
 |`docs/pono/realm-bag-brief.mem` |31 · 82 |//"the ruling this brief enacts"//, quoted verbatim under quote license |see the shape below — the quote already IS the fold |
 |`docs/pono/heraldry.mem` |29 · 147 · 237 |the 2026-09-12 operator ruling, quoted verbatim in three places |same shape, three sites |
 |`docs/pono/offering.mem` |449 |an edge in `#/edges` alone |cheap — drop or re-aim |
@@ -432,6 +432,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;84IQtbZaW_R8e5yC_nZhg6sKkxsxsZLiP13eFjnwX6g
+<<^ code="&#x0003;">>ni:///sha-256;T2Wk7f3uu9mt_zKeCIYYLaav62SA919dxwIYV8hRrA0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -371,6 +371,17 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 !! Examples ~ one shelf carrier per stage, by address, read 2026-09-12
 
+!!! The law this table obeys ~ a stage that ends in deletion cannot be evidenced by a pointer
+
+''Every other stage on the ladder takes an address; `folded` MUST take a description instead.'' The reason runs mechanically, and it runs twice.
+
+# ''The rite's own gate refuses the edge.'' #/the-lifecycle grades `folded` on ''zero'' inbound `loulou`, and rules the failure: //Any of the three failing reads wrong and the carrier stays `standing`//. An exemplar pointer IS an inbound `loulou`. So a `loulou` from this table to a `folded` carrier ''demotes the carrier out of the stage it was cited to prove'' — the citation destroys its own subject at the moment it lands, and the row then names a `standing` carrier while claiming a `folded` one.
+# ''The stage exists to end.'' #/the-fire burns ''one class only'' — a carrier reading `folded` — and the transitions table runs `folded → gone`. A carrier at `folded` occupies a waypoint to ash. Any pointer at one, `loulou` or bare prose, aims at something the rite designs to vanish, and the pointer outlives its target silently: the reader meets a name and reaches nothing.
+
+''So the exemplar of `folded` survives as DESCRIPTION and never as a live edge'' — the carrier's ''name'', its ''commit'', and the ''shape it held at the moment it stood folded'', written into this rite's own words, where the evidence stays reachable after the bytes go. This mirrors ICOM's disposal record, already quoted at #/the-field: the record //become[s] a permanent part of the museum's records, maintained even after an object is disposed//. The record of a folded carrier belongs ''here'', in the rite, not at the end of a link into the fire.
+
+⚠ ''The general form, for every later stage the house adds:'' name a stage whose exit runs to deletion, and the evidence for that stage moves into the governing carrier's prose. A ladder cannot cite its own last rung by reference.
+
 |! stage |! carrier |! why it reads there |
 | ''`fleeting`'' | //no address — by definition// | the `temp` slot's records (`island-recipe.ts:70-72`, a `MemoryTiddlerStore`) and this scout's own scratch under `/home/joshu/.claude/jobs/`. Nothing on the shelf, nothing in git, nothing checked |
 | ''`designed`'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/aniani">> | `status = "designed"`, `status-why = "doctrine; no source carries it yet"`. The purest case: a whole doctrine argued, zero code owed against it, and the carrier says so in six words |
@@ -380,7 +391,8 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 | ''`standing` × `rite`'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">> | `status = "rite"`, `status-why = "the talk-story floor, convened rather than built"`. It will never advance and will never burn — the clearest evidence the KIND axis exists |
 | ''`standing` × `floor`, with open leans — BLOCKED from folding'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> | four forks; three closed by ruling, "fork 4 (the floor stand) stays at the operator's hand". One open lean holds the whole carrier on the shelf, and correctly |
 | ''`standing` × `floor`, nearly foldable'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> | every phase enacted; ''one'' ruling outstanding (seam (b): a child's save grading against its own text). One lean from `folded` |
-| ''`folded`'' | //no carrier spells it — the state has no instance today// | the nearest standing case: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>, whose rulings have largely moved to `realm-bag-brief`, `device-capabilities-2026` and `tiddler-carriage` while the floor still holds the heraldry read. ''Proof that `folded` names something real and unspelled'' |
+| ''`standing` × `floor`, QUOTED OUT — a shape the transitions table does not yet grade'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> | six inbound carriers, and ''four of them QUOTE its moʻolelo verbatim under licence'' rather than lean on it for argument — `realm-bag-brief`, `heraldry` (three sites), `syncer-seams-roundtable`. A quote already carries the ruling whole, so those four read as ''the fold already done'' and want confirming, never welding: re-aiming a licence rewrites the citation and leaves it naming a hole. Two bare edges remain (`hearths:131`, `offering:449`). ''And one tie no rite can cut'' — `packages/lararium-mesh/tests/ahi-ka.test.ts:141` reads the file off disk and asserts its quoted ratios against `AHI_KA_500YR`, so deletion reds a test. The fold table stands measured at that carrier's `#/fold-readiness` |
+| ''`folded`'' | ''`docs/handback-stale-rooms`'', the first carrier to spell the stage — described here and NEVER linked, under the law above | it stood folded at ''`7d3b3bf5c`'' (poured `428550a92`), and the shape it held reads: `tags = ["docs/pono/ledger", "lifecycle/folded"]` · ''zero'' inbound `loulou` (two bare prose mentions, no edge) · ''zero'' open leans, each of its four measurements re-derived against the tree before a word got rewritten · ''every'' slot carrying a fold target, six of them, in one table naming five addresses. Its `status-why` named the one precondition no hand there could supply — the operator's call — and its body carried three laws its own enactment found: a stale room inside a verbatim register gets a room ''beside'' it and never a rewrite · a suggestion offering two tags has not read the rite that grades them · a hold entry carries two facts and its CONTROL can only check one. ''Proof that `folded` names something real, spelled once and walked through to the fire'' |
 | ''`gone`'' | `bags/lares-history/lares_research/skill-pono-template.mem` (burned `07241e981`) | "It comes down whole and gets raised again." The commit carries the reason, the weld and the witnesses; git carries the bytes |
 | ''`gone`, self-authored ending'' | `bags/lares/ha.ka.ba/lares/docs/handoff/iam-paper-red-doc.mem` (burned `cc3f85022`) | "The work-order's own frontmatter ruled this end: retain = false, enact-then-delete" — the only shelf precedent for a disposition attached at creation |
 | ''NEVER burns, self-declared'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> | its `role` reads "updated at each phase boundary, ''never archived in place''; history lives in git". A carrier authoring its own permanence |
@@ -459,6 +471,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;biMDeYGxoswea4DSx4UICr0WyU9-tNuAd2jcXKfqX4M
+<<^ code="&#x0003;">>ni:///sha-256;3ZGRoioC1K7KE0LS22o9rldA4mEp7gaQARQDnAXBdOg
 
 <<^ code="&#x0004;" -> to="?">>
