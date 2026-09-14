@@ -32,15 +32,27 @@ import { memeticIngestOps } from "./ingest-gate.js";
  * The canonical text `diskText` SAYS, read through the memetic-wikitext
  * congruence: `render(parse(diskText))`.
  *
- * Returns `null` — never a guess, never `""` — when the answer does not exist:
+ * Returns `null` — never a guess, never `""` — when the answer does not exist
+ * or cannot be trusted:
  *   - the parse grades `error` (the carrier stopped round-tripping; the ingest
  *     leg REFUSES on this exact grade, so there is nothing to compare here),
- *   - the shore produced no render (a non-memetic parent, an absent group).
+ *   - the shore produced no render (a non-memetic parent, an absent group),
+ *   - THE ROUND TRIP IS LOSSY — the disk declares a structural slot the render
+ *     drops (the ahu-drop). See the fidelity note below.
  *
- * The null carries a FACT: "no canonical view of these bytes exists". It does
- * NOT mean "equivalent" — `projection-gate`'s clause reads presence first, so an
- * absent view falls through to the standoff rather than silently licensing a
- * noop (the null-as-default inversion).
+ * The null carries a FACT: "no trustworthy canonical view of these bytes
+ * exists". It does NOT mean "equivalent" — `projection-gate`'s clause reads
+ * presence first, so an absent view falls through to the standoff rather than
+ * silently licensing a write (the null-as-default inversion).
+ *
+ * THE AHU-FIDELITY GUARD RIDES, AND IT BITES HARDER HERE THAN ON THE INGEST
+ * SHORE. Ingest's rule 3 guards it because a lossy render makes an edit inside a
+ * dropped slot read as "framing only" and never reach the records. On THIS shore
+ * the canonical-equivalence verdict is a DISK WRITE: a lossy render that matched
+ * the records' view would replace the operator's bytes with a text that no longer
+ * carries the slot — the edit does not merely fail to land, it DIES on disk. So
+ * the guard belongs inside this door, where every caller of `≈` gets it, rather
+ * than in the pure gate (which holds no text to scan) or in one caller's body.
  *
  * Pure: no I/O, no clock, no hashing. The caller hashes what comes back.
  */
@@ -48,5 +60,9 @@ export function canonicalizeCarrierText(uri: string, diskText: string): string |
   const { records, diagnostics } = memeticIngestOps.deserialize(uri, diskText);
   if (memeticIngestOps.grade(diagnostics) === "error") return null;
   const canonical = memeticIngestOps.render(uri, records);
-  return canonical === "" ? null : canonical;
+  if (canonical === "") return null;
+  const declared = memeticIngestOps.declaredStructure(diskText);
+  const rendered = memeticIngestOps.declaredStructure(canonical);
+  for (const slot of declared) if (!rendered.has(slot)) return null;
+  return canonical;
 }
