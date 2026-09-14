@@ -33,6 +33,23 @@ root  = re.search(r'const DOMAIN_ROOT = "([^"]+)"', src).group(1)
 
 fail = []
 
+# ── A FLOOR ON THE SUBJECT'S SIZE, BEFORE ANY CLAIM ABOUT ITS MEMBERS ───────────────────────────
+# THREE of the four checks below walk `names` and nothing else: UNIQUE finds no duplicate in an empty
+# list, WELL-FORMED validates nothing, and USED reports nothing unused. Only the stray-literal scan
+# survives an empty registry, and it would then be auditing call sites against a table of no entries.
+#
+# The list comes off ONE regex binding one exact spelling — `^export const NAME = d("name");`. A
+# formatter reflowing a long line, a rename of the `d` helper, a trailing comment, or a declaration
+# built from a table all empty it, and this witness would then print `0 domains` and exit 0 over a
+# registry it had not read. A typo'd domain tag mints a second protocol whose signatures verify
+# against nothing; that is precisely the failure this instrument exists to make loud, so its own
+# silence is the worst affordable outcome here.
+if not names:
+    print(f"[domain-registry] {REG} PARSED TO ZERO DOMAINS — nothing below was checked.")
+    print( "      The probe binds `export const NAME = d(\"name\");` at the start of a line.")
+    print( "      Unique · well-formed · used all walk that list and all pass over an empty one.")
+    sys.exit(1)
+
 # ── UNIQUE ──────────────────────────────────────────────────────────────────────────────────────
 seen = {}
 for export, name in names:
