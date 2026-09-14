@@ -28,7 +28,16 @@
  *
  * THE PASSPHRASE NEVER PERSISTS. Every function DERIVES a KEK at the moment and DROPS the passphrase when
  * it returns; plaintext buffers zeroize the instant they are re-sealed. No function returns or logs key
- * material — a status read reports per-carrier STATE (absent/cleartext/sealed) and never the key.
+ * material — a status read reports per-carrier STATE (absent/cleartext/sealed/unopenable) and never the key.
+ *
+ * ONE READER ANSWERS "WHAT STANDS ON THIS CARRIER", AND IT IS `readSealCarrier`. The strict probe
+ * `isSealedEnvelope` answers a DECODER's question ("can I frame this?") and a flat false on every
+ * envelope version it cannot frame. Every lifecycle verb here asks the writer's question instead —
+ * "does a seal already stand?" — because folding `unopenable` onto `cleartext` made each verb draw a
+ * different wrong conclusion from one wrong reading: status told the operator no seal stands, rotate
+ * wrapped the ciphertext a second time, repair reported success over a broken carrier, and the boot
+ * reading came up `opens: true` over a sealed archive. Reach for the strict probe only where a decode
+ * is about to happen.
  *
  * FAIL-CLOSED throughout: a wrong old passphrase throws at the GCM tag BEFORE any byte is written
  * (zero-write), an empty passphrase is refused, and a would-be silent overwrite on export is refused.
@@ -45,7 +54,7 @@
 import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync } from "node:fs";
 import { dirname, resolve, basename, join } from "node:path";
 import { randomBytes } from "node:crypto";
-import { isSealedEnvelope, decodeEnvelope, readSealCarrier } from "@lararium/mesh";
+import { decodeEnvelope, readSealCarrier } from "@lararium/mesh";
 import {
   scryptKek, sealBytes, unsealBytes, openArchiveBytes, ARCHIVE_PASSPHRASE_ENV,
   passphraseSealPolicy, probeArchiveBytes, type CarrierProbe,
@@ -129,7 +138,14 @@ function carrierAtPath(p: string): CarrierName | null {
   return null;
 }
 
-export type CarrierState = "absent" | "cleartext" | "sealed";
+/**
+ * THREE READINGS PLUS ABSENCE, BECAUSE FOLDING ANY TWO LIES TO THE OPERATOR. `unopenable` names a seal
+ * that STANDS and that this build cannot frame — an unknown envelope version, or a damaged magic over
+ * intact framing. It is neither neighbour: reported as `cleartext` it tells an operator NO SEAL STANDS
+ * where one does, and they act on that map (export, rotate, re-seal); reported as `sealed` it invites a
+ * key to be tried against bytes no key can be judged against. Its own name is the only truthful answer.
+ */
+export type CarrierState = "absent" | "cleartext" | "sealed" | "unopenable";
 
 export interface CarrierStatus {
   readonly state: CarrierState;
@@ -225,7 +241,13 @@ export function archiveSealStatus(opts: { probe?: string; cfg?: LaresConfig } = 
     if (!existsSync(c.path)) { out[c.name] = { state: "absent" }; continue; }
     let bytes: Uint8Array;
     try { bytes = readFileSync(c.path); } catch { out[c.name] = { state: "absent" }; continue; }
-    if (!isSealedEnvelope(bytes)) { out[c.name] = { state: "cleartext" }; continue; }
+    // VERSION-AWARE, and the distinction is reported rather than folded. A carrier this build cannot
+    // frame carries NO mode and NO probe verdict: a mode read off an undecodable header would be a
+    // fabrication, and `opensUnderProbe: false` would send the operator to re-type a credential that
+    // was right all along (the pin-reader law — a default may state a fact, never lose one).
+    const reading = readSealCarrier(bytes);
+    if (reading === "bare") { out[c.name] = { state: "cleartext" }; continue; }
+    if (reading === "unopenable") { out[c.name] = { state: "unopenable" }; continue; }
     const mode = decodeEnvelope(bytes).mode;
     if (opts.probe !== undefined) {
       const opens = opensUnder(bytes, opts.probe);
@@ -279,7 +301,9 @@ export function sealArchiveWithPassphrase(passphrase: string): SealResult {
   for (const p of plaintexts) wipe(p);
   // Mark sealing in force whenever a carrier now reads sealed on disk (this call OR a prior one) — the
   // boot-gate must fire even if every carrier was already sealed and this call sealed nothing new.
-  if (carriers().some((c) => existsSync(c.path) && isSealedEnvelope(readFileSync(c.path)))) {
+  // The marker asks the SAME version-aware reader the skip above asks: a seal this build cannot frame
+  // is still a seal standing on disk, and the boot-gate must fire over it.
+  if (carriers().some((c) => existsSync(c.path) && readSealCarrier(readFileSync(c.path)) !== "bare")) {
     setSealExpected(true);
   }
   return { sealed, skipped };
@@ -297,18 +321,36 @@ export interface RotateResult { readonly rotated: CarrierName[]; }
 export function rotateArchivePassphrase(oldPassphrase: string, newPassphrase: string): RotateResult {
   if (!newPassphrase) throw new Error("archive-passphrase: refusing to rotate to an empty passphrase");
   const present = carriers().filter((c) => existsSync(c.path));
-  const sealedPresent = present.filter((c) => isSealedEnvelope(readFileSync(c.path)));
-  if (sealedPresent.length === 0) {
+  const readings = present.map((c) => ({ c, reading: readSealCarrier(readFileSync(c.path)) }));
+  // ══ THE CENSUS RUNS BEFORE ANYTHING ELSE, AND IT IS VERSION-AWARE ════════════════════════════════
+  // This loop asked `isSealedEnvelope`, which answers a flat false on an envelope version it cannot
+  // frame — so a carrier holding an intact seal fell to the cleartext branch below, where "a cleartext
+  // carrier carries its own plaintext" handed its CIPHERTEXT to the sealer and WRAPPED IT A SECOND
+  // TIME. No bytes were lost (they survive one layer deeper), but the operator's recorded seal state
+  // then described a double wrap nothing names, and the carrier's real KEK moved out of the vault's
+  // reach. A rotate must converge EVERY carrier on the new KEK; a carrier that cannot move means the
+  // act cannot be performed, so refuse the whole rotate rather than leave a split nothing named.
+  const unopenable = readings.filter((r) => r.reading === "unopenable").map((r) => r.c.name);
+  if (unopenable.length > 0) {
+    throw new Error(
+      `archive-passphrase: refusing to rotate — carrier(s) ${unopenable.join(", ")} hold a seal this ` +
+      `build cannot frame (unopenable: an unknown envelope version, or a damaged magic over intact ` +
+      `framing). No key can be judged against those bytes, so a rotate would wrap their ciphertext a ` +
+      `second time. Recover them from a backup, then rotate`,
+    );
+  }
+  if (!readings.some((r) => r.reading === "sealed")) {
     throw new Error("archive-passphrase: nothing is sealed — use `vault seal` to seal cleartext carriers first");
   }
   // PRE-VALIDATE every unseal under the OLD passphrase before touching disk. A wrong old passphrase
-  // throws HERE (GCM tag), aborting with zero writes.
+  // throws HERE (GCM tag), aborting with zero writes. THE GCM TAG IS THE PROOF OF OPERATOR INTENT —
+  // the census above adds a refusal ahead of it and moves no write earlier.
   const plans: { path: string; plaintext: Uint8Array; name: CarrierName }[] = [];
-  for (const c of present) {
+  for (const { c, reading } of readings) {
     const bytes = readFileSync(c.path);
-    const plaintext = isSealedEnvelope(bytes)
+    const plaintext = reading === "sealed"
       ? unsealBytes(decodeEnvelope(bytes), scryptKek(oldPassphrase, decodeEnvelope(bytes).salt))
-      : bytes;   // a cleartext carrier carries its own plaintext
+      : bytes;   // a BARE carrier carries its own plaintext — and only a bare one reaches here
     plans.push({ path: c.path, plaintext, name: c.name });
   }
   // Stage the re-seals under the NEW passphrase, then commit in sequence.
@@ -379,7 +421,18 @@ export function repairSplitKek(openPassphrase: string, sealPassphrase: string): 
   for (const c of carriers()) {
     if (!existsSync(c.path)) continue;
     const bytes = readFileSync(c.path);
-    if (!isSealedEnvelope(bytes)) continue;   // cleartext carriers are not part of a KEK split
+    const reading = readSealCarrier(bytes);
+    if (reading === "bare") continue;         // cleartext carriers are not part of a KEK split
+    // AN UNOPENABLE CARRIER IS A HARD ERROR, the same as one opening under NEITHER passphrase — and for
+    // the same reason, with the same remedy. `isSealedEnvelope` folded it onto "cleartext", so it was
+    // silently CONTINUED: `vault repair` then reported success while that carrier stayed broken, which
+    // is the one thing a repair verb must never do.
+    if (reading === "unopenable") {
+      throw new Error(
+        `archive-passphrase: carrier "${c.name}" holds a seal this build cannot frame (unopenable) — ` +
+        `no key can be judged against it, so nothing here can repair it (recover it from a backup)`,
+      );
+    }
     if (opensUnder(bytes, sealPassphrase)) { alreadyConsistent.push(c.name); continue; }
     if (!opensUnder(bytes, openPassphrase)) {
       throw new Error(`archive-passphrase: carrier "${c.name}" opens under NEITHER passphrase — cannot repair (recover it from a backup)`);
@@ -539,7 +592,23 @@ export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = p
     try { bytes = readFileSync(c.path); } catch {
       return { kind: "unreadable", opens: false, probed: false, why: `the ${c.name} carrier cannot be read from disk` };
     }
-    if (!isSealedEnvelope(bytes)) continue;   // bare cleartext passes straight through the boot's reader
+    // ══ THE THIRD READING DECIDES HERE TOO, AND ITS ABSENCE WAS A FAIL-OPEN ═══════════════════════
+    // `isSealedEnvelope` answers false on an envelope version this build cannot frame, so an intact
+    // seal fell to this `continue`, the `sealed` list came up EMPTY, and the reading below returned
+    // `no-seal-expected` / `opens: true` over a sealed archive — the exact inversion the five answers
+    // exist to prevent. This module already NAMES the right answer (`unreadable`), and names it apart
+    // from `key-wrong` on purpose: these bytes never framed, so no passphrase was ever tested and none
+    // may be blamed. The reading is reported BEFORE the key question arises, so it holds with or
+    // without a key in the environment.
+    const reading = readSealCarrier(bytes);
+    if (reading === "bare") continue;         // bare cleartext passes straight through the boot's reader
+    if (reading === "unopenable") {
+      return {
+        kind: "unreadable", opens: false, probed: false,
+        why: `the ${c.name} carrier holds a seal this build cannot frame (an unknown envelope version, ` +
+             `or a damaged magic over intact framing) — no passphrase can open it (recover it from a backup)`,
+      };
+    }
     sealed.push({ name: c.name, bytes });
   }
   // Nothing sealed stands. The marker only chooses which TRUE thing to say; both open.

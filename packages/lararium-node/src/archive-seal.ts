@@ -27,7 +27,7 @@
 
 import { randomBytes, scryptSync, createCipheriv, createDecipheriv } from "node:crypto";
 import {
-  encodeEnvelope, decodeEnvelope, isSealedEnvelope,
+  encodeEnvelope, decodeEnvelope, readSealCarrier,
   type ArchiveSealMode, type SealedEnvelope,
 } from "@lararium/mesh";
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
@@ -182,9 +182,24 @@ export function sealArchiveBytes(plaintext: SelfSovereignSecret, policy: SealPol
  * Open persisted archive bytes: unseal a sealed envelope, or pass BARE cleartext through
  * (unconfigured archives). A sealed envelope with no unseal policy (the passphrase
  * went missing) throws — better a loud failure than a silent empty identity.
+ *
+ * THE PASS-THROUGH ASKS `readSealCarrier`, NOT `isSealedEnvelope`. The strict probe answers a flat
+ * false on every envelope version it cannot frame, so bytes holding an intact seal from a later
+ * vessel took the cleartext branch and this function HANDED BACK THE CIPHERTEXT AS THOUGH IT WERE
+ * PLAINTEXT. Nothing downstream can tell that apart from a genuinely bare archive, so a re-seal
+ * (`vault export`) wrapped it again and a reader parsed garbage far from the cause. Only `bare`
+ * passes through; `unopenable` throws, naming what stands rather than what is missing.
  */
 export function openArchiveBytes(stored: Uint8Array, policy: SealPolicy = resolveSealPolicy()): Uint8Array {
-  if (!isSealedEnvelope(stored)) return stored; // bare cleartext — unconfigured
+  const reading = readSealCarrier(stored);
+  if (reading === "bare") return stored;        // bare cleartext — unconfigured
+  if (reading === "unopenable") {
+    throw new Error(
+      "archive-seal: a seal stands in these bytes that this build cannot frame (an unknown envelope " +
+      "version, or a damaged magic over intact framing) — no key can open it and the ciphertext must " +
+      "not be read as plaintext; recover the carrier from a backup",
+    );
+  }
   const env = decodeEnvelope(stored);
   if (!policy.unseal) {
     throw new Error(

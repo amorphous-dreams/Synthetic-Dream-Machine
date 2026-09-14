@@ -208,6 +208,16 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
         // (`device-share-h0`, `device-share-h1`, …), and a 14-column field ran the widest name into its state.
         console.log(`  ${name.padEnd(18)} ${c.state}${c.mode ? ` (${c.mode})` : ""}${probeMark}`);
       }
+      // `unopenable` is a FAULT, not a third resting state, so it says so rather than sitting in the
+      // column beside `sealed` as though it were one. It reads apart from a split-KEK: no passphrase
+      // reaches these bytes at all, so `repair` cannot cure it and only a backup can.
+      const unopenable = Object.entries(carriers).filter(([, c]) => c.state === "unopenable").map(([n]) => n);
+      if (unopenable.length > 0) {
+        console.error(
+          `  ⚠ UNOPENABLE: ${unopenable.join(", ")} hold a seal this build cannot frame — no passphrase ` +
+          `opens them and \`vault repair\` cannot cure it; recover from a backup`,
+        );
+      }
       if (output["split"]) console.error("  ⚠ SPLIT-KEK: the carriers ride different passphrases — run `lares vault repair`");
       console.log(`  sealExpected   ${output["sealExpected"]}`);
       console.log(`  passphraseEnv  ${output["passphraseEnvSet"] ? "set" : "unset"}`);
