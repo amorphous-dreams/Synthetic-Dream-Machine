@@ -28,9 +28,9 @@
  *   · NO ADMIN CAP on the destination — the cap gate's own answer, recorded rather than assumed.
  *   · AN UNGOVERNED SUBJECT — the boundary crosses a thing with a LIFECYCLE; a carrier declaring none
  *     names no state to cross from.
- *   · A HOSTLESS SOURCE — //a hostless address on the live layer is a promotion that never happened//.
- *   · A HOSTFUL TARGET — //a hostful address in a canon bag is a promotion that did not complete//.
- *     "Neither needs a policy to detect", and neither does here: the shape of the address decides.
+ *   · A SUBJECT WITH NO ADDRESS — a receipt records WHAT crossed, and an unaddressed thing names nothing.
+ *   · A MOVE THAT MOVES NOTHING — same bag either side, or a bag missing. Residency IS the crossing here,
+ *     so an unmoved envelope leaves nothing to record.
  *
  * And the SESSION wall, which is a refusal of a different kind: //nothing may travel from SESSION to
  * CANON: an unrecorded gesture has no content hash to sign and no source to name, so the receipt could not
@@ -53,16 +53,17 @@ export { PROMOTION_RECEIPT_DOMAIN } from "./domains.js";
 export interface PromotionAssertion {
   /** The domain tag, inside the bytes — a receipt never verifies as any other signed thing. */
   readonly domain:       string;
-  /** Where it came from: a HOSTFUL address, naming who spoke, under what grant, from where. */
-  readonly sourceUri:    string;
-  /** Where it went: the HOSTLESS canon address. The promotion ASSIGNS this, and it is the only moment
-   *  the address of a subject moves. */
-  readonly targetUri:    string;
+  /** WHAT crossed: the subject's own declared address, identical either side of the crossing. A residency
+   *  move changes the envelope's bag and nothing else, so this address names the same thing before and
+   *  after and a reader who holds either copy resolves the same edge. */
+  readonly subjectUri:   string;
   /** The subject's canonical hash AT CROSSING (`ni:///sha-256;…`). An address is stable and its bytes are
    *  versioned; this pins WHICH bytes crossed, which is the claim git alone cannot make. */
   readonly carrierHash:  string;
+  /** The bag the record left. */
+  readonly fromBag:      string;
   /** The canon bag crossed into. */
-  readonly destBag:      string;
+  readonly toBag:        string;
   /** Who proposed the crossing. */
   readonly proposerNym:  string;
   /** Who approved it — the hand that held `cap("admin", destBag)` when this was signed. */
@@ -87,11 +88,6 @@ export interface PromotionSubject {
   readonly tags?: readonly string[];
 }
 
-/** A `lar:` address carrying an authority (`lar://alias:grant@host/…`) names WHO spoke, from where. */
-export function isHostful(uri: string): boolean { return /^lar:\/\/[^/]/.test(uri); }
-/** A `lar:` address carrying no authority (`lar:///…`) names a thing rather than a speaker. */
-export function isHostless(uri: string): boolean { return uri.startsWith("lar:///"); }
-
 /** A subject the boundary knows how to cross declares a LIFECYCLE. A carrier declaring none names no
  *  state to cross from, so the crossing has no meaning to record. */
 export function declaresLifecycle(subject: PromotionSubject): boolean {
@@ -102,10 +98,10 @@ export function declaresLifecycle(subject: PromotionSubject): boolean {
 export function promotionAssertionBytes(assertion: PromotionAssertion): Uint8Array {
   return canonicalJsonBytes({
     domain:         assertion.domain,
-    sourceUri:      assertion.sourceUri,
-    targetUri:      assertion.targetUri,
+    subjectUri:     assertion.subjectUri,
     carrierHash:    assertion.carrierHash,
-    destBag:        assertion.destBag,
+    fromBag:        assertion.fromBag,
+    toBag:          assertion.toBag,
     proposerNym:    assertion.proposerNym,
     approverNym:    assertion.approverNym,
     approverKeyDid: assertion.approverKeyDid,
@@ -120,10 +116,10 @@ export function promotionAssertionBytes(assertion: PromotionAssertion): Uint8Arr
  * worse than none, since it reads as an audit trail while certifying the thing it was built to catch.
  */
 export async function mintPromotionReceipt(input: {
-  readonly sourceUri:      string;
-  readonly targetUri:      string;
+  readonly subjectUri:     string;
   readonly carrierHash:    string;
-  readonly destBag:        string;
+  readonly fromBag:        string;
+  readonly toBag:          string;
   readonly proposerNym:    string;
   readonly approverNym:    string;
   readonly approverKeyDid: string;
@@ -139,24 +135,24 @@ export async function mintPromotionReceipt(input: {
   if (!input.carrierHash) {
     return { ok: false, reason: "a promotion carries the subject's content hash at crossing — an unrecorded gesture has none, and SESSION never crosses to CANON in one step" };
   }
-  if (!isHostful(input.sourceUri)) {
-    return { ok: false, reason: `a promotion comes FROM a hostful address naming who spoke; ${input.sourceUri} names a thing, so this promotion never happened` };
+  if (!input.subjectUri) {
+    return { ok: false, reason: "a promotion records WHAT crossed — a subject declaring no address names nothing to record a crossing of" };
   }
-  if (!isHostless(input.targetUri)) {
-    return { ok: false, reason: `a promotion goes TO a hostless canon address; ${input.targetUri} still names a speaker, so this promotion did not complete` };
+  if (!input.fromBag || !input.toBag || input.fromBag === input.toBag) {
+    return { ok: false, reason: `a promotion moves residency — ${input.fromBag || "(no bag)"} -> ${input.toBag || "(no bag)"} moves nothing, and a move that moves nothing records nothing` };
   }
   if (!declaresLifecycle(input.subject)) {
     return { ok: false, reason: "the subject declares no lifecycle/standing — an ungoverned carrier names no state to cross from, and the crossing has nothing to record" };
   }
-  if (!(await input.holdsAdmin(input.approverNym, input.destBag))) {
-    return { ok: false, reason: `the approver holds no cap("admin", ${input.destBag}) — promotion-down is the kahu-cabal's act` };
+  if (!(await input.holdsAdmin(input.approverNym, input.toBag))) {
+    return { ok: false, reason: `the approver holds no cap("admin", ${input.toBag}) — promotion-down is the kahu-cabal's act` };
   }
   const assertion: PromotionAssertion = {
     domain:         PROMOTION_RECEIPT_DOMAIN,
-    sourceUri:      input.sourceUri,
-    targetUri:      input.targetUri,
+    subjectUri:     input.subjectUri,
     carrierHash:    input.carrierHash,
-    destBag:        input.destBag,
+    fromBag:        input.fromBag,
+    toBag:          input.toBag,
     proposerNym:    input.proposerNym,
     approverNym:    input.approverNym,
     approverKeyDid: input.approverKeyDid,

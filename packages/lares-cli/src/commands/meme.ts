@@ -67,12 +67,14 @@ import {
   readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan,
   readCarrierLifecycle, checkCarrierLifecycle,
 } from "@lararium/tw5";
-import { vesselDid } from "../env.js";
+import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
+import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
+import { vesselDid, larDataDir } from "../env.js";
 import { runVerb } from "../verb-call.js";
-import { readVerbOutcome } from "../verb-result.js";
+import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { promoteCarrier, type PromotionSeat } from "./meme-promote.js";
+import { promoteCarrier, type PromotionSeat, type PromotionMove } from "./meme-promote.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 class UsageError extends Error {}
@@ -681,38 +683,91 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
 
 /**
  * `promote` — THE PRIESTHOOD ACT AT A TERMINAL. The crossing itself lives in `meme-promote.ts`, injectable
- * whole; this door supplies the SEAT and the corpus the weld reads.
+ * whole; this door supplies the SEAT, and every reading in that seat comes from the daemon.
  *
- * AND THE SEAT REFUSES BY DEFAULT. Measured: nothing in this package reads `cap("admin", <bag>)` — no door,
- * no helper, no verb — so the terminal has no admin oracle to hand the crossing. Inventing one here would
- * make a refusal look like a grant, which is exactly the failure a receipt exists to catch. The door names
- * what it lacks and exits `cap-denied`; the crossing stands built and tested behind it, and lights the day a
- * cap reading reaches this shore.
+ * THE DAEMON HOLDS BOTH ANSWERS, so the CLI asks rather than derives. Residency and capability both read off
+ * the CRDT replica the daemon owns; a terminal that answered either from the disk projection would be
+ * reading a copy and calling it the record.
+ *
+ *   · RESIDENCY — the `where` verb (`worker-data-verbs.ts:87`) answers //which bags hold this title// across
+ *     every registered bag on both planes. That is the residency question, asked of residency.
+ *   · CAPABILITY — no verb answers `cap("admin", bag)` on its own, and the daemon's real reading sits one
+ *     line inside the residency verbs (`action-handler.ts:422`). A `--dry-run` MOVE reaches exactly that
+ *     line: the cap gate runs BEFORE the capturing executor, so the daemon answers with its own
+ *     `cap-denied: admin on <bag> required (…)` and nothing commits. The rehearsal IS the cap reading.
+ *   · THE MOVE — the same verb without `--dry-run`. `executeMove` performs the whole-carrier-group transfer;
+ *     this door builds no second mover.
+ *
+ * IT STILL REFUSES WHEN THE CAP IS ABSENT, and that refusal now carries the daemon's own words rather than
+ * this door's confession. Promotion-down stays the kahu-cabal's act, operator-triggered first: an AI nym
+ * holding no admin on the canon bag meets the same closed gate it met before.
  */
 async function memePromote(args: ParsedArgs): Promise<number> {
   const file = args.positional[1];
-  if (!file) throw new UsageError("lares meme promote <docs/…/x.mem> — name the carrier to cross");
+  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
   const root = process.cwd();
-  const corpus = String(execFileSync("git", ["ls-files", "bags/*.mem"], { cwd: root, encoding: "utf8" }))
-    .split("\n").filter(Boolean);
   const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
+  const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
 
-  const did = await vesselDid();
-  const seat: PromotionSeat = {
-    proposerNym: did, approverNym: did, approverKeyDid: did,
-    // THE ABSENT ORACLE, named rather than faked. A reading that answered `true` here would certify every
-    // crossing this door performs, and the receipt would read as an audit trail over an ungated act.
-    holdsAdmin: async () => false,
-    sign: async () => { throw new Error("unreachable — the cap refusal precedes the signature"); },
+  const did     = await vesselDid();
+  const dataDir = larDataDir();
+  const seedKey = await loadVesselVerifyingKey(dataDir);
+  // The record's title, read once for the CAP REHEARSAL — the crossing re-reads the carrier for itself, and
+  // a rehearsal needs a title to name. An unreadable carrier falls through to the crossing's own refusal.
+  const abs   = isAbsolute(file) ? file : join(root, file);
+  const title = (() => { try { return `lar:///${/^uri-path\s*=\s*"([^"]+)"/m.exec(readFileSync(abs, "utf8"))?.[1] ?? ""}`; } catch { return ""; } })();
+
+  /** One MOVE summons, rehearsed or committed. The daemon's answer comes back whole, error text and all. */
+  const summonMove = async (m: PromotionMove, dry: boolean): Promise<{ ok: true } | { ok: false; reason: string }> => {
+    const verbArgs: Record<string, unknown> = {
+      title: m.title, "from-bag": m.fromBag, "to-bag": m.toBag, "change-id": newChangeId(),
+      ...(dry ? { "dry-run": true } : {}),
+    };
+    const r = await runVerb("MOVE", verbArgs, did);
+    return r.status === "error" ? { ok: false, reason: r.errorMessage ?? "MOVE failed with no reason" } : { ok: true };
   };
-  const outcome = await promoteCarrier({ root, file, corpus, ...(destBag ? { destBag } : {}) }, seat);
+
+  const seat: PromotionSeat = {
+    proposerNym: did, approverNym: did, approverKeyDid: seedKey,
+    // THE CAP READING, taken from the daemon's own gate through a rehearsal that moves nothing. Any other
+    // failure — an absent record, an unreachable bag — reads as NOT-a-cap-refusal and lets the residency
+    // refusals downstream name it precisely, so a missing record never masquerades as a missing cap.
+    holdsAdmin: async (_nym, bag) => {
+      const r = await summonMove({ title, fromBag: fromBag ?? bag, toBag: bag }, true);
+      return r.ok || !/^cap-denied/.test(r.reason);
+    },
+    // THE RESIDENCY READING — `where`, unchanged and unmediated.
+    residencyOf: async (title) => {
+      const r = await runVerb("where", { tiddler: title }, did);
+      if (r.status === "error") throw new Error(`where ${title}: ${r.errorMessage ?? "unknown"}`);
+      const bags = (summaryOutput(r) ?? {})["bags"];
+      return Array.isArray(bags) ? (bags as string[]) : [];
+    },
+    move: async (m) => {
+      const r = await summonMove(m, false);
+      return r.ok ? { ok: true, moved: 1 } : { ok: false, reason: r.reason };
+    },
+    sign: ed25519SignerFromSeed(await loadVesselSigningSeed(dataDir)),
+  };
+
+  let outcome;
+  try {
+    outcome = await promoteCarrier({ root, file, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, {
+      ok: false, error: { code: "daemon-unreachable", message: msg, hint: "Start the daemon with `lares vessel stand --foreground` and try again." },
+      human: () => { console.error(`lares meme promote: ${msg}`); console.error("  Start the daemon with `lares vessel stand --foreground` and try again."); },
+    });
+    return exitFor("daemon-unreachable");
+  }
   if (!outcome.ok) {
     const code = /admin/.test(outcome.reason) ? "cap-denied" : "verb-error";
     emit(args, {
       ok: false, error: { code, message: outcome.reason },
       human: () => {
         console.error(`lares meme promote: ${outcome.reason}`);
-        if (code === "cap-denied") console.error("  no cap(\"admin\") reading stands at this shore — the crossing is built and gated, and nothing moved");
+        if (code === "cap-denied") console.error("  promotion-down is the kahu-cabal's act — nothing moved, and the carrier stands where it stood");
       },
     });
     return exitFor(code);
@@ -720,10 +775,11 @@ async function memePromote(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true, data: outcome,
     human: () => {
-      console.log(`promoted: ${outcome.from} → ${outcome.to}`);
-      console.log(`  ${outcome.sourceUri} → ${outcome.targetUri}`);
-      console.log(`  welded ${outcome.welded} inbound edge(s) · dangling ${outcome.danglingBefore} → ${outcome.danglingAfter}`);
-      console.log(`  receipt: ${outcome.receiptPath}`);
+      console.log(`promoted: ${outcome.title}`);
+      console.log(`  residency: ${outcome.fromBag} → ${outcome.toBag}  (${outcome.moved} record(s))`);
+      console.log(`  subject:   ${outcome.subjectUri}  (unchanged — the crossing assigns no address)`);
+      console.log(`  carrier:   ${outcome.carrierFile}  (unmoved — an address is stable)`);
+      console.log(`  receipt:   ${outcome.receiptPath}`);
     },
   });
   return exitFor("ok");

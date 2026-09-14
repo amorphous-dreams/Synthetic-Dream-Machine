@@ -12,11 +12,16 @@
  * — rides ATTACHED and UNSIGNED, so refreshing evidence never wakes a cold key. Signing evidence causes
  * freshness coupling and pins staleness.
  *
- * ★ THE REDS: `mintPromotionReceipt` / `verifyPromotionReceipt` do not exist. Then the four refusals the
- * boundary's own prose implies — no admin cap on the destination · an UNGOVERNED carrier (neither
- * lifecycle nor standing) · a HOSTLESS source (a promotion that never happened) · a HOSTFUL target (a
- * promotion that did not complete) — plus the SESSION wall: a subject with no content hash cannot be
- * receipted even in principle, so the mint refuses it rather than inventing one.
+ * ★ THE FOUR REFUSALS: no admin cap on the destination · an UNGOVERNED carrier (neither lifecycle nor
+ * standing) · an UNADDRESSED subject · a move that moves NOTHING (same bag either side, or a bag missing)
+ * — plus the SESSION wall: a subject with no content hash cannot be receipted even in principle, so the
+ * mint refuses it rather than inventing one.
+ *
+ * ★ AND A HOSTFUL ADDRESS CARRIES NO SPECIAL STANDING (operator ruling). Hostful/hostless names WHAT THE
+ * URI NAMES — who spoke, under what grant, from where — never which layer it lives on. Any `lar:` URI
+ * serves as a valid meme title, so the receipt records ONE subject address, identical either side, and
+ * distinguishes the crossing by the BAGS it names. A source/target address pair would fabricate both
+ * halves: an address the carrier never carried, and an assignment the crossing never performs.
  *
  * CONTROLS: a receipt verifies end-to-end; mutating the ATTACHED region leaves it valid (that IS the
  * discipline); mutating any asserted field invalidates it; a receipt minted for one destination never
@@ -36,8 +41,9 @@ const signWith = (seed: Uint8Array) => async (b: Uint8Array): Promise<string> =>
 const didOf = async (seed: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(seed));
 
 const DEST = "lar:///ha.ka.ba/bags/lares";
-const SOURCE = "lar://mara:admin@crossroads/t.witness.promote/ledger";
-const TARGET = "lar:///ha.ka.ba/lares/docs/pono/t-witness-promote";
+const FROM = "lar:///ha.ka.ba/bags/working";
+/** The subject's OWN address — identical either side of the crossing. A residency move moves no byte of it. */
+const SUBJECT = "lar:///ha.ka.ba/lares/docs/pono/t-witness-promote";
 const HASH = "ni:///sha-256;s9wMX2yprC8TPIZRdXj0IdPXjLCmt9WM-qYIq-7UQSo";
 
 /** The governed subject: a carrier whose meta declares a lifecycle the boundary knows how to cross. */
@@ -49,10 +55,10 @@ async function mint(over: Record<string, unknown> = {}): Promise<
 > {
   const approverDid = await didOf(SEED_APPROVER);
   return mintPromotionReceipt({
-    sourceUri: SOURCE, targetUri: TARGET, carrierHash: HASH, destBag: DEST,
+    subjectUri: SUBJECT, carrierHash: HASH, fromBag: FROM, toBag: DEST,
     proposerNym: "proposer-nym", approverNym: approverDid, approverKeyDid: approverDid,
     subject: GOVERNED,
-    holdsAdmin: (nym, bag) => nym === approverDid && bag === DEST,
+    holdsAdmin: (nym: string, bag: string) => nym === approverDid && bag === DEST,
     sign: signWith(SEED_APPROVER),
     ...over,
   } as Parameters<typeof mintPromotionReceipt>[0]);
@@ -64,7 +70,9 @@ describe("promotion-receipt — the record a promotion leaves behind", () => {
     expect(r.ok, r.ok ? "" : r.reason).toBe(true);
     if (!r.ok) return;
     expect(r.receipt.assertion.domain).toBe(PROMOTION_RECEIPT_DOMAIN);
-    expect(r.receipt.assertion.targetUri).toBe(TARGET);
+    expect(r.receipt.assertion.subjectUri).toBe(SUBJECT);
+    expect(r.receipt.assertion.fromBag).toBe(FROM);
+    expect(r.receipt.assertion.toBag).toBe(DEST);
     expect(r.receipt.assertion.carrierHash).toBe(HASH);
     expect(await verifyPromotionReceipt(r.receipt)).toBe(true);
   });
@@ -83,18 +91,29 @@ describe("promotion-receipt — the record a promotion leaves behind", () => {
     expect(r.reason).toContain("lifecycle/standing");
   });
 
-  test("a HOSTLESS source refuses — a promotion that never happened has nowhere to have come from", async () => {
-    const r = await mint({ sourceUri: "lar:///ha.ka.ba/lares/docs/pono/already-canon" });
+  test("an UNADDRESSED subject refuses — a receipt records WHAT crossed", async () => {
+    const r = await mint({ subjectUri: "" });
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(r.reason).toContain("hostful");
+    expect(r.reason).toContain("address");
   });
 
-  test("a HOSTFUL target refuses — a promotion that did not complete", async () => {
-    const r = await mint({ targetUri: "lar://mara:admin@crossroads/t.witness.promote/ledger" });
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(r.reason).toContain("hostless");
+  test("a move that moves NOTHING refuses — residency IS the crossing, so an unmoved envelope records nothing", async () => {
+    for (const over of [{ fromBag: DEST }, { fromBag: "" }, { toBag: "" }]) {
+      const r = await mint(over);
+      expect(r.ok, `${JSON.stringify(over)} minted a receipt for an unmoved envelope`).toBe(false);
+      if (!r.ok) expect(r.reason).toContain("moves nothing");
+    }
+  });
+
+  test("★ A HOSTFUL ADDRESS CARRIES NO SPECIAL STANDING — any `lar:` URI serves as a meme title ★", async () => {
+    // The operator ruling: hostful/hostless names WHAT THE URI NAMES, never which layer it lives on. A
+    // captured exchange turn split by speaker-aim URI stands as a legitimate canon meme, so a subject
+    // declaring one receipts exactly like any other.
+    const r = await mint({ subjectUri: "lar://mara:admin@crossroads/t.witness.promote/ledger" });
+    expect(r.ok, r.ok ? "" : r.reason).toBe(true);
+    if (!r.ok) return;
+    expect(await verifyPromotionReceipt(r.receipt)).toBe(true);
   });
 
   test("THE SESSION WALL: a subject with NO content hash cannot be receipted even in principle", async () => {
@@ -119,7 +138,7 @@ describe("promotion-receipt — the record a promotion leaves behind", () => {
     const r = await mint();
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    for (const field of ["sourceUri", "targetUri", "carrierHash", "destBag", "proposerNym", "approverNym"] as const) {
+    for (const field of ["subjectUri", "carrierHash", "fromBag", "toBag", "proposerNym", "approverNym"] as const) {
       const tampered: PromotionReceipt = {
         ...r.receipt,
         assertion: { ...r.receipt.assertion, [field]: `${String(r.receipt.assertion[field])}-moved` },
@@ -133,7 +152,7 @@ describe("promotion-receipt — the record a promotion leaves behind", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const swapped: PromotionReceipt = {
-      ...r.receipt, assertion: { ...r.receipt.assertion, destBag: "lar:///ha.ka.ba/bags/lararium" },
+      ...r.receipt, assertion: { ...r.receipt.assertion, toBag: "lar:///ha.ka.ba/bags/lararium" },
     };
     expect(await verifyPromotionReceipt(swapped)).toBe(false);
   });
