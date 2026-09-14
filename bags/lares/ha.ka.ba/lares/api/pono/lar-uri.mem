@@ -26,7 +26,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
 
 !! Abstract
 
-The `lar:` URI scheme names an address in a content-addressed meme graph — one parseable address per named unit. Like `tag:` (RFC 4151), a `lar:` URI ''names; it does not fetch'': resolution runs against a local world graph alone. The scheme carries two forms — a ''local form'' for stable graph addresses and system resource names, and a ''session form'' that names a speaker for exchange spans — and a three-slot attitude root carried by a Ha-Ka-Ba (heading · angle · dynamic) triple.
+The `lar:` URI scheme names an address in a content-addressed meme graph — one parseable address per named unit. Like `tag:` (RFC 4151), a `lar:` URI ''names; it does not fetch'': resolution runs against a local world graph alone. The scheme carries three forms — a ''local form'' for stable graph addresses and system resource names, a ''hostful form'' whose domain carries attribution and sync scope, and a ''session form'' that names a speaker for exchange spans — and a three-slot attitude root carried by a Ha-Ka-Ba (heading · angle · dynamic) triple. The speaker rides a userinfo subcomponent, and its presence alone separates the last form from the second.
 
 This specification names the scheme syntax (a formal ABNF grammar), the path taxonomy, the kind-plane surface rule (the `bags/` and `wikis/` segments designate a CRDT surface, while a meme namespace stands bare), the resolution model, and the conformance, scheme-registration, and security obligations a processor MUST meet. It forms a ''sibling submission'' to the memetic-wikitext markup specification, which addresses its content by this scheme.
 
@@ -68,7 +68,9 @@ The key words ''MUST'', ''MUST NOT'', ''REQUIRED'', ''SHALL'', ''SHALL NOT'', ''
 |---|---|
 | ''address'' | one resolved `lar:` URI; the identity of a named graph unit. |
 | ''local form'' | `lar:///path` — authority-less; for stable addresses and system resource names. |
-| ''session form'' | `lar://alias:grant@host/path` — names a speaker; exchange spans only. |
+| ''hostful form'' | `lar://host/path` — a domain authority and no speaker; the domain carries attribution and sync scope. |
+| ''session form'' | `lar://alias:grant@host/path` — a hostful authority bearing a ''userinfo'' subcomponent, which names a speaker; exchange spans only. |
+| ''userinfo'' | the `alias ":" grant` subcomponent an authority MAY carry ahead of a literal `@`. Its presence, and nothing else, separates session form from hostful form. |
 | ''triple'' | the three-slot `t1.t2.t3` attitude root (Ha heading · Ka angle · Ba carried dynamic). |
 | ''surface'' | a CRDT surface (today an Automerge doc); designated by its kind-plane segment (`bags/slug`, `wikis/slug`). The slug reads as an opaque name. |
 | ''namespace'' | a bare `child[1]` segment naming a meme's minting authority. |
@@ -87,10 +89,12 @@ The following grammar uses ABNF (RFC 5234), importing `unreserved`, `pct-encoded
 ```abnf
 lar-URI       = "lar:" hier-part [ "#" fragment ]
 
-hier-part     = local-form / session-form
+hier-part     = local-form / authority-form
 local-form    = "///" path                 ; authority-less
-session-form  = "//" authority "/" path    ; speaker named
-authority     = alias ":" grant "@" host    ; host per RFC 3986
+authority-form = "//" authority "/" path   ; a domain names the sync scope
+authority     = [ userinfo "@" ] host      ; host per RFC 3986
+userinfo      = alias ":" grant            ; the speaker; PRESENT makes the session form,
+                                            ;   ABSENT makes the hostful form
 
 path          = triple [ "/" child1 ] *( "/" segment )
                 ; the literal triple "ha.ka.ba" names the STABLE root; any other triple, a session
@@ -114,6 +118,16 @@ grant         = 1*( unreserved )
 
 A `lar:` URI MUST hold ASCII only. A root slot MUST hold lowercase ASCII letters and hyphens alone. EVERY path MUST carry a full three-slot root — no class escapes it.  The words `bags`, `wikis`, and `cid` stand RESERVED at `child[1]` — a meme namespace MUST NOT equal one.
 
+''The userinfo fork separates by parse, never by heuristic.'' An authority carries a userinfo
+subcomponent or carries none, and one codepoint decides it: [RFC3986] §3.2.2 builds `host` from
+`IP-literal`, `IPv4address`, or `reg-name`, and a literal `@` appears in none of them — it reads as
+neither `unreserved` nor a `sub-delim`. So the first literal `@` inside an authority terminates a
+userinfo and can terminate nothing else, exactly as [RFC3986] §3.2.1 specifies. A parser therefore
+sorts the hostful form from the session form deterministically, and a processor MAY test for the
+session form by the presence of a literal `@` ahead of the host. To keep that test exact, a `host`
+in a `lar:` URI MUST NOT carry a percent-encoded `@` (`%40`): `reg-name` would admit one, and it
+would hide a userinfo boundary from the very test the rules below rest on.
+
 ''The scheme-relative form: `uri-path`.'' Instruments and carrier declarations abbreviate an address to
 its `uri-path` — the spelling with the leading `lar:///` removed, codepoint-identical to the path it
 abbreviates. A carrier's identity block declares its own address in this form, and every corpus
@@ -121,6 +135,11 @@ instrument walks it. The abbreviation carries no semantics of its own: `uri-path
 `lar:///ha.ka.ba/x/y` name one address, related by exactly seven leading characters, and the equality
 rule (#/equality) reads through the abbreviation unchanged. Defined here and only here: substructure
 within a scheme lives in the scheme's defining document [RFC7320].
+
+The abbreviation covers the ''local form'' alone. Stripping a fixed prefix from an authority-bearing
+address would drop the authority, and the authority carries the distinction between two lawful
+addresses (#/equality) — so a hostful address carries no `uri-path` abbreviation under this rule, and
+the spelling that abbreviates one losslessly waits on the siting question (#/reach).
 
 <<~/ahu>>
 
@@ -149,6 +168,12 @@ lar:///threshold.uncertain.opens
 ''The root admits no exception.'' A resource local to one device still stands at an address: an address
 that skipped the root could not say which house it stood in, and a name that travels nowhere would then
 read the same as a name that travels, with only the reader's assumption telling them apart.
+
+''The authority axis runs orthogonal to this one.'' Stable and unstable classify the ROOT — which
+triple opens the path — and say nothing about which authority form carries it. A path of either class
+MAY ride the local form, the hostful form, or the session form; a stable `ha.ka.ba` root stays stable
+under a host, and an attitude root stays unstable without one. A reader MUST NOT infer an address
+class from the authority, nor an authority form from the class.
 
 (The `l-space` field's `adjacent` band names an unrelated axis — a locality of meaning, never an address class.)
 
@@ -179,9 +204,18 @@ The canonical spelling therefore carries the whole burden, and a conforming prod
   an address silently before any comparison — the spoofing surface this rule closes;
 * no empty segments — `//` within a path and a trailing `/` each produce one, and neither conforms.
 
-The session form never names a stable address (#/path-taxonomy), so equality across the two forms never
-holds: `lar://alias:grant@host/p` and `lar:///p` spell different strings and name different things —
-the first a speaker's span, the second a place in the graph.
+Equality across the authority forms therefore never holds, and it needs no premise about stability to
+say so: `lar:///p`, `lar://host/p`, and `lar://alias:grant@host/p` spell three different strings, so
+they name three different things — a place in the graph, that place under a domain's attribution and
+sync scope, and a speaker's span. The authority carries identity like every other codepoint in the
+spelling; a comparer that strips it reports one address where the author wrote three.
+
+This rule carries more weight than it once did, because the hostless and hostful forms now stand in one
+store together (#/reach). A codepoint-exact comparison is the whole of what keeps
+`lar://evil.example/ha.ka.ba/lares/api/pono/lar-uri` from answering for the canon address
+`lar:///ha.ka.ba/lares/api/pono/lar-uri`: the two differ only in the authority, and every rule above —
+no normalization, no dot-segments, no pct-encoding of unreserved characters, no empty segments — exists
+so that difference cannot be transformed away between writing and comparing.
 
 A resolver MAY dereference less than equality distinguishes — disk projection, for one, reads only the
 path — but it MUST NOT report two addresses equal that this rule reads apart.
@@ -253,7 +287,7 @@ The schema carries five independent planes; conflating them trips residency, pro
 # ''NAME'' — the URI identifies, full stop. A bare `child[1]` segment names the ''minting namespace'' (the authority that named the unit), never a residency claim. The name survives COPY, MOVE, multi-bag presence, deletion, and federation unchanged (coordinate ⊥ change-identity).
 # ''RESIDENCY'' — which surfaces hold a manifestation NOW = a queried relation (`listBagsHolding`, catalog holdings, recipe stacks), never derived from the path. The same URI lawfully exists in a draft layer AND a canon bag AND a personal layer at once, shadowed by layer order. Name and holding surface coincide only by convention.
 # ''SITING'' — where a projection of a manifestation lands on disk: a per-bag mirror convention (`loci` derivation = the canon-bag rule, one projection rule among possible many), gated by the disk-mirror GRANT, never implied by the name.
-# ''SPEECH'' — the hostful session form (`lar://alias:grant@host/...`): who speaks, under what grant, from where — a speech-act envelope for exchange spans, never storage.
+# ''SPEECH'' — the ''userinfo'' subcomponent (`lar://alias:grant@host/...`): who speaks, under what grant — a speech-act envelope for exchange spans, never a storage title (#/security). The plane rides the userinfo alone, never the host: a bare `lar://host/path` names an attribution and a sync scope and speaks for nobody, so it carries no SPEECH at all and MAY title storage like any other address.
 # ''STABILITY'' — literal `ha.ka.ba` (settled namespace) vs unstable attitude roots (session bearing, declared-unresolved until adopted into a bag).
 
 The planes compose: a turn of live exchange mints SPEECH + STABILITY-unstable names; adoption moves a unit to NAME-stable; LOAD/INGEST set RESIDENCY; the mirror grant sets SITING. No plane ever answers for another.
@@ -271,9 +305,48 @@ The planes compose: a turn of live exchange mints SPEECH + STABILITY-unstable na
 # Resolve the remaining path to a named unit within that bag's address space.
 # Hand a `#fragment` to the named unit's media type unread: fragment semantics belong to the representation, never to the scheme [RFC3986 §3.5] — and absent a representation, they stay unconstrained.
 
-Session form names the speaker through the authority. It MUST stay within exchange spans, away from stable graph addresses, system resource names, and other storage.
+Session form names the speaker through the userinfo subcomponent. It MUST stay within exchange spans: a session-form URI MUST NOT stand as a storage title, a stable graph address, or a system resource name (#/security). The hostful form carries no speaker and takes no such restriction — it MAY stand as a storage title and a stable graph address (#/reach).
+
+''No `lar:` URI of any form stands verbatim as a system resource name.'' A filename or a path carrying the scheme's `:`, an authority's `//`, or a userinfo's `@` collides with filesystem and shell metacharacters wherever it lands. A processor MUST derive a system resource name from an address through the siting function (#/reach) rather than spell the URI into a path, and this holds for the local form no less than the rest.
 
 ''The userinfo slot carries the grant by design.'' [RFC3986] §3.2.1 deprecates `user:password` in the userinfo slot — a secret before an unencrypted transport. The grant stands in that slot anyway, deliberately: `alias:grant` re-uses the one authority shape every URI reader — parser, tool, or model — already holds, bent to a new office rather than fighting it. The grant names a capability reference, never a secret: it authorizes nothing by itself, discloses nothing when logged, and rides only within exchange spans the transport already protects. The deprecation guards against a hazard this slot's cargo does not carry, and the familiar shape means every existing URI parser splits the speaker correctly with no new grammar taught.
+
+<<~/ahu>>
+
+<<~ ahu #/reach>>
+
+!! Reach — Residency Bars, Form Never Does
+
+''The law.'' Residency in a ''volatile'' layer stands as the sole bar on whether a record syncs and projects. Address form bars nothing.
+
+A record MUST reach every surface its residency admits it to. A processor MUST NOT withhold a record from sync, from disk projection, from edge minting, or from siting on the ground of its address form. Two withholdings stand lawful, and both name a residency or a routing fact rather than a spelling:
+
+# ''Volatile residency.'' A layer declared volatile — a VM scratch plane, pending surface state, an uncommitted keystroke — never persists. The refusal MUST sit ahead of any routing cascade, so that no edit of the cascade can re-open it.
+# ''A named routing gap.'' A router that cannot place a record MUST say so. A router MUST NOT decide WHETHER a record lands; it decides WHICH surface holds it.
+
+''Therefore a permitted title reaches everything a hostless one reaches.'' Every authority form but the session form MAY stand as a storage title, and a title so standing syncs, projects to disk, mints its edges, and sites at its loci on exactly the terms a `lar:///` title does. The authority changes which address the record carries; it changes nothing about the record's reach.
+
+''Form-based withholding reads as a defect.'' A processor that admits a record into the store under one rule and then drops it at projection under a narrower one holds a ''silent'' inconsistency: the record syncs to every peer and lands in no file, and no instrument reports the difference. Wherever that shape stands, it names repair pressure, never a property of the world — and a processor that cannot yet site an address MUST surface the gap rather than return empty.
+
+!!! The Measured Gap (Informative — OWED)
+
+The tree admits a hostful title into the CRDT and sites it nowhere. The admission carries no form test at all; the siting rules carry `lar:///` throughout. That distance between this law and the tree reads as ''owed work'' for a later pass, and it stands wider than the siting function alone:
+
+* the siting function refuses any address outside `lar:///`, and its root test would refuse a hostful address again even were the scheme test widened, because the host occupies the first segment where the root is sought;
+* the reverse derivation (disk path → address) mints the local form unconditionally, so a projected hostful carrier could not read back as itself;
+* the route path map and the hostless resolver each reject an address carrying an authority;
+* the typed-edge projector mints no edge from a hostful target — MEASURED: a hostful `loulou` and a hostful `aka` in one carrier yield zero edges, while the hostless `loulou` beside them yields one.
+
+No test exercises a hostful title through the adaptor or the projector. Closing this gap belongs to the code half, and the first question it MUST settle stands below.
+
+!!! The Siting Question (OWED — the first question the code half settles)
+
+A hostful address carries an authority that a local-form address does not, and the siting law owes it a lossless landing. Two constraints bind any answer, and the spec states them rather than a spelling:
+
+# ''Lossless.'' The authority MUST survive the derivation. An address and its hostless twin name two different things (#/equality), so a derivation that discards the authority collapses two lawful addresses onto one file — a first-writer-wins collision between a canon carrier and a foreign one.
+# ''Unambiguous against the local form.'' The derived interior path MUST NOT collide with any interior path a local-form address can produce. Stripping a fixed prefix fails this: `lar://a.b.c/x.y.z/s` and `lar:///a.b.c/x.y.z/s` both strip to `a.b.c/x.y.z/s`, because a three-label host spells the same shape as a root.
+
+The loci law's present derivation admits an authority and then drops it, meeting the first constraint not at all. A candidate family that meets both (non-normative): carry the authority under a ''reserved'' segment that no root can equal — a root MUST hold exactly two dots and lowercase stems alone, so any reserved word carrying no dot separates the two interiors by construction. The spelling stays open; the constraints do not.
 
 <<~/ahu>>
 
@@ -302,11 +375,13 @@ BEARING (path) → ANCHOR (fragment, media-type-defined).
 
 !! Conformance Classes
 
-A ''conforming parser'' MUST: accept the surface of #scheme-syntax; reject a path with fewer than three root slots (the root arity law); reject a ROOT slot bearing an underscore, whitespace, or non-ASCII (an internal hyphen joins a compound term); treat a `#fragment` as an opaque anchor.
+A ''conforming parser'' MUST: accept the surface of #scheme-syntax; reject a path with fewer than three root slots (the root arity law); reject a ROOT slot bearing an underscore, whitespace, or non-ASCII (an internal hyphen joins a compound term); distinguish the hostful form from the session form by the presence of a userinfo subcomponent, and report which it read; treat a `#fragment` as an opaque anchor.
 
-A ''conforming resolver'' MUST: resolve against the local graph only; map a kind-plane surface (a `bags/…` or `wikis/…` path) to its live doc through the device's runtime manifest; treat the URI as the stable address and the doc as the bound store (one URI MAY bind different docs per device).
+A ''conforming resolver'' MUST: resolve against the local graph only; map a kind-plane surface (a `bags/…` or `wikis/…` path) to its live doc through the device's runtime manifest; treat the URI as the stable address and the doc as the bound store (one URI MAY bind different docs per device); withhold a record from a surface only on a residency or routing ground, never on its address form (#/reach).
 
 A ''conforming author'' SHOULD: use local form for stable addresses and system resource names; reserve session form for exchange spans; place the slug at `child[2]` of a `bags`/`wikis` surface, and keep a meme namespace bare at `child[1]`.
+
+''The exception to the first clause.'' An author MAY title stable storage with the hostful form where the domain carries meaning the address needs — an attribution, or a sync scope that separates two namespaces sharing a path (#/equality). The SHOULD names the default, not a prohibition; the prohibition rests on the session form alone, and rests there as a MUST (#/security). A hostful title reads as a deliberate act, so an author SHOULD reach for it only when the local form would lose something, and the permission forecloses nothing for a later reader who finds a use the default does not serve.
 
 <<~/ahu>>
 
@@ -344,7 +419,15 @@ The scheme registers as ''provisional''; a future submission MAY seek permanent 
 
 ''Slot injection.'' A slot admits lowercase ASCII letters and internal hyphens only. A processor MUST reject non-ASCII, whitespace, underscores, dot/slash separators, or an out-of-position `@` rather than normalize them silently — silent normalization invites address spoofing.
 
-''Session-form leakage.'' Session form names a speaker. A processor MUST keep a session-form URI within its exchange span; a session-form URI reaching stable storage, a graph address, or a system resource name MUST surface as a violation.
+''Session-form leakage — the userinfo slot, and that slot alone.'' Session form names a speaker through its userinfo subcomponent. A processor MUST keep a session-form URI within its exchange span: a URI carrying a userinfo subcomponent — a literal `@` ahead of its host — reaching stable storage, a graph address, or a system resource name MUST surface as a violation. The hostful form carries no userinfo and takes no part in this rule; it MAY title storage (#/reach).
+
+The restriction narrows to the userinfo because every harm it guards lives there, and a title is the one place a harm cannot be walked back:
+
+# ''A title stands as a KEY.'' A key admits no tier, no redaction, and no tombstone. A tombstone marks a record deleted and leaves its key standing — and a tombstone written against an absent title MINTS the key. So a session-form title freezes ''alias × grant × host'' into a key that replicates to every peer of the surface and that redacting the turn's text does not reach.
+# ''Correlation.'' One search for a host over a synced corpus enumerates one speaker's whole participation — which surfaces, which turns, which grant at each. No content control reaches this: the join key rides in the index, never in the payload.
+# ''Grant drift.'' An address carries no lifetime. A session-form title therefore asserts //this speaker held this grant// for as long as the key stands, long after the grant lapses. The Surface-confusion rule below says the same thing from the other side: authorization comes from the manifest, never from a URI match — and a title is a URI match.
+
+A ''hostful'' title carries none of the three. A host names an attribution and a sync scope, both of which the content already asserts and neither of which identifies a speaker or a capability.
 
 <<~/ahu>>
 
@@ -362,10 +445,24 @@ An unstable session territory:
 lar:///threshold.uncertain.opens/notes/first-pass
 ```
 
-A session-form speaker (exchange span only):
+A session-form speaker (exchange span only — never a title):
 ```
 lar://mischief-muse:agent@host/ha.ka.ba/lares/turn/current
 ```
+
+A hostful storage title, where the domain separates two namespaces sharing a path:
+```
+lar://amorphousdream.com/ha.ka.ba/lares/api/pono/meme
+```
+This names a different unit from `lar:///ha.ka.ba/lares/api/pono/meme`, and the authority reads as the
+whole of the difference.
+
+''The permission names no requirement.'' A pasted exchange turn may carry no DOCTYPE, no sigil head, and
+no frame — a failure state mid-stream spells none of them — so it lands as an ordinary tiddler, not a
+placed carrier, and wants no `lar:` title of any form. Rendering a timeline of such turns therefore
+demands nothing from this section. The hostful permission stands so that a later use is not foreclosed,
+never because a present one compels it; an author who reaches for the local form by default (#/conformance)
+stays conforming in every case.
 
 A registry entry pointing at another bag:
 ```
@@ -396,15 +493,16 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 * ''Session-form authority grammar.'' The `alias:grant@host` shape reads stable for exchange; a fuller authority profile (capability proof, key binding) waits for the keyhive pass.
 * ''Unstable attitude-root vocabulary.'' The Ha-Ka-Ba slot discipline holds; a registry of reserved attitude roots remains open.
 * ''Multi-bag disk projection — full-path-inside-bag.'' Every file lives at its full uri-path inside its holding bag's mirror (`bags/<bag>/<full-name>.mem`): directory = residency, interior = the name, whole. Any bag holds any name losslessly.
+* ''Hostful siting.'' The lossless, collision-free interior path for a hostful title stands unsettled; #/reach states the two constraints any answer MUST meet and names the readers that carry the gap. The first owed pass settles the spelling and closes them together.
 * ''Turn-as-meme-graph.'' Live exchange turns already carry aim/yield wires, worn voices, rating marks, hoike/moolelo children — a meme-graph awaiting ingest. The unstable URIs minted per turn stand as declared-unresolved names for session-bag memes; an INGEST organ can decompose session logs into corpus.
 
 <<~/ahu>>
 
 <<~ ahu #/ooda-ha>>
 
-✶ sense whether the URI carries local form or session form; identify path class
+✶ sense which form the URI carries — local, hostful, or session (a userinfo ahead of the host); identify path class
 ⏿ orient against scheme law — slot count, path class, `child[1]` kind-plane-or-namespace
-◇ decide: valid → carry forward; invalid → surface violation; ambiguous → surface and hold
+◇ decide: valid → carry forward; invalid → surface violation; a userinfo reaching a title → surface violation; ambiguous → surface and hold
 ▶ confirm the path holds ASCII only
 ↺ verify the three-term root and the `child[1]` fork (surface `@`-slug or bare namespace); close — address confirmed or violation named
 
@@ -422,6 +520,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bqwew78NjnFdm-N9SwhmCdx_lkACc5Nz-MR6dDj-OBA
+<<^ code="&#x0003;">>ni:///sha-256;J2Iy_pY_u1SlziYx4mkkNR_kQgvQOgQA820fcYZV2gk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -31,11 +31,14 @@ the answering bag surfaced on the read path (lar-uri #minting). The `ha.ka.ba`
 corpus path stands as the primary hostless root: `lar:///ha.ka.ba/...`
 
 ''Hostful'' URIs (`lar://<host>/...`) anchor to a domain, which carries the
-attribution and the sync scope — a SESSION-plane fact. A hostful URI MUST NOT
-stand as a storage title or a stable graph address (lar-uri #security); the
-domain map below names sync scopes, never places content lives. `lar://elyncia.social/...` and
-`lar://amorphousdream.com/...` are entirely distinct namespaces even if their
-paths overlap.
+attribution and the sync scope. A hostful URI MAY stand as a storage title and a
+stable graph address. What MUST NOT stand as either reads narrower: the ''session
+form'' `lar://alias:grant@host/...`, whose userinfo subcomponent names a speaker
+and a grant, and which belongs to an exchange span alone (lar-uri #security).
+A literal `@` ahead of the host separates the two, and a title carrying one
+surfaces as a violation. The domain map below names sync scopes, never places
+content lives. `lar://elyncia.social/...` and `lar://amorphousdream.com/...` are
+entirely distinct namespaces even if their paths overlap.
 
 ''The domain is the disambiguator.'' `lar:///ha.ka.ba/foo` and
 `lar://amorphousdream.com/ha.ka.ba/foo` are two different tiddlers even though
@@ -59,8 +62,12 @@ paths overlap.
 ''All `lar:` URI tiddlers (hostless and hostful) are heleuma sync candidates.''  
 ''`$:/` tiddlers are NOT sync candidates — reserved strictly for TW5 core + TW5 plugins.''
 
-A tiddler is a heleuma candidate if and only if its title matches `lar://*`.
-The `MemeSyncAdaptor` filter: `[all[tiddlers]regexp[^lar://]]`
+''No admission filter over the title decides this, and none should.'' Residency in a
+volatile layer stands as the sole bar on sync; address form bars nothing
+(lar-uri #reach). `IslandAdaptor.saveTiddler` refuses the volatile VM plane by its
+residency, ahead of any routing cascade, and the bag-paths cascade below it ROUTES
+rather than admits — it answers WHICH slot a save lands in, never WHETHER it lands.
+A record reaches every surface its residency admits it to, whatever its title spells.
 
 The bag a tiddler lives in determines which Automerge doc it syncs through:
 
@@ -108,6 +115,6 @@ a network hop for DID resolution but the content itself is local (CRDT store).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1VNPWqOhk608gfDePDiVpGl26Sm4mAGvJjhQFErV8xg
+<<^ code="&#x0003;">>ni:///sha-256;ZXL7zSMqQa4StpbKjDp3iLNvIaZYoP8g-yqziK-q3ZE
 
 <<^ code="&#x0004;" -> to="?">>
