@@ -27,12 +27,48 @@ import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /** The payload as CARRIED: the keyhive's `DeviceAdmitPayload` plus the hearth's gate key (the dial's binding). */
 export type CarriedAdmitPayload = DeviceAdmitPayload & { readonly hearthGatePubKey?: string };
+
+/**
+ * THE ISLAND THIS DOOR READS A PER-NEXUS BOARD AT — the founder's own, resolved exactly as its BOOT
+ * resolves it.
+ *
+ * ══ WHY IT IS NOT THE VESSEL KEY ═════════════════════════════════════════════════════════════════
+ *
+ * This read was spelled `personaKelBoardDocUrl(await loadVesselVerifyingKey(dir))`, under a comment
+ * reading "its gate key IS its Nexus key." `91ce09afb` ruled that EVERY per-Nexus board keys on the
+ * NEXUS, so that sentence holds at exactly ONE point on the gradient — the `own` island — and
+ * nowhere above it. A founder that CLIMBED to a charter reads the PRIVATE board beneath its charter
+ * island while its own boot reads the charter board.
+ *
+ * AND IT WORKED ONLY BECAUSE A CARRY COPIES. `carryPersonaKelUpTheGradient` writes the destination
+ * and never unlinks the source, so the lower board kept its chain and the wrong-key read still found
+ * one. The correctness sat on copy semantics in another package; when that goes, this door throws
+ * "persona-KEL chain … absent from the local board — run `lares vessel found --force`", a message
+ * pointing at a torn founding over a founding that is sound.
+ *
+ * ══ THE FLEET FRAMING IS KEPT, DELIBERATELY ══════════════════════════════════════════════════════
+ *
+ * `c6cfe5b8d` ruled that "device-admit … admits a DEVICE to a fleet rather than a VESSEL to a
+ * Nexus", and that argument stands: this door takes NO nexus-key parameter and asks its caller for
+ * none. The two rulings answer different questions. The fleet framing settles the PARAMETER (nobody
+ * hands this door an island); `91ce09afb` settles the BOARD (a per-Nexus board keys on the Nexus,
+ * whoever reads it). So the parameter stays absent and the READ composes the shared resolver — the
+ * same disk and environment facts, in the same precedence, as `open-node-vessel`.
+ *
+ * ONE SEAM, SO THE DRIFT CANNOT COME BACK: the resolution lives in `nexus-standing`, which the boot
+ * and the founding doors read too. This function exists as a named seam so a test can measure the
+ * island the DOOR resolves rather than trusting that it restated the boot's object correctly.
+ */
+export function admitBoardIsland(ownVesselKey: string): string {
+  return nodeNexusIsland({ ownVesselKey });
+}
 
 export interface DeviceAdmitOptions {
   readonly storageDir?:    string;
@@ -116,16 +152,19 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
 
   // The founder's persona-KEL PREFIX (the identifier the joinee will pin) + the chain SNAPSHOT off the
-  // founder's own per-Nexus KEL board (its gate key IS its Nexus key). The joinee seeds the snapshot into its
-  // local board so it boots to a head with no sync wait (no-global-now). Fail-closed: a founding always seats
-  // an inception, so a prefix + a chain always stand — their absence names a torn founding, refuse to admit.
+  // founder's own per-Nexus KEL board, AT THE ISLAND THE FOUNDER'S BOOT RESOLVED (`admitBoardIsland` —
+  // read its docblock for why the vessel key is not that island above the `own` notch). The joinee seeds
+  // the snapshot into its local board so it boots to a head with no sync wait (no-global-now). Fail-closed:
+  // a founding always seats an inception, so a prefix + a chain always stand — their absence names a torn
+  // founding, refuse to admit.
   const kelPrefixEntry = tiddlerMap[PERSONA_KEL_PREFIX_TIDDLER] as Record<string,unknown> | undefined;
   const personaKelPrefix = (kelPrefixEntry?.["tiddler"] as Record<string,unknown> | undefined)?.["text"] as string | null ?? null;
   if (!personaKelPrefix) {
     throw new Error(`[lares device-admit] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);
   }
-  const founderNexusKey = await loadVesselVerifyingKey(storageDir);
-  const kelBoard   = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(founderNexusKey), "board:persona-kel");
+  const founderVesselKey = await loadVesselVerifyingKey(storageDir);
+  const boardIsland      = admitBoardIsland(founderVesselKey);
+  const kelBoard   = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!personaKelChain || personaKelChain.length === 0) {
     throw new Error(`[lares device-admit] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — run \`lares vessel found --force\`.`);
@@ -164,7 +203,20 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts). The founder's gate key IS its vessel key — the anti-relay
   // binding the joinee's V3 proof commits to. It rides the payload beside `syncUrl` so the joinee's bootstrap
   // can carry both and its boot can dial with no `LAR_JOIN_*` set by hand.
-  const carried: CarriedAdmitPayload = { ...payload, hearthGatePubKey: founderNexusKey.toLowerCase() };
+  // ⚠ THE PIN CARRIES THE VESSEL KEY ON PURPOSE, AND A CONSEQUENCE STANDS OPEN ONE LAYER OUT.
+  // The gate key is the anti-relay binding the joinee's V3 proof COMMITS TO, so it must stay the
+  // founder's own vessel key — the charter island would break that commitment and is not a fix.
+  //
+  // THE OPEN LOOP, NAMED RATHER THAN QUIETLY CURED: the joinee consumes this as its `anchorGateKey`
+  // (`init.ts`), so it resolves `kind: "anchor"` and seats its inception on a board keyed on the
+  // FOUNDER'S VESSEL KEY. A founder that has CLIMBED to a charter therefore hands its device an
+  // island the founder does not itself stand on — the founder's boot reads `epoch0-…`, the device
+  // reads the vessel key, and the two sit on DISJOINT persona-KEL boards. `init.ts`'s own comment
+  // states the invariant this breaks ("An admit hands over the hearth's gate key, so the joinee
+  // seats its inception on the board its HEARTH stands"), which is false for a climbed hearth.
+  // Splitting the DIAL binding from the ISLAND the pin implies is a ruling about the wire, not a
+  // read to correct here; the board read above is fixed, this is left standing and visible.
+  const carried: CarriedAdmitPayload = { ...payload, hearthGatePubKey: founderVesselKey.toLowerCase() };
   const json = JSON.stringify(carried, null, 2);
   if (opts.outPath) {
     writeFileSync(opts.outPath, json, "utf8");

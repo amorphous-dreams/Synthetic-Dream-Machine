@@ -86,12 +86,13 @@ import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./person
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership, makeRealmCharterConsult } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
+import { nodeNexusStandsAt } from "./nexus-standing.js";
 import { runNexusRefresh } from "./nexus-refresh.js";
 import { rollLeaseEpochOnBoard } from "./lease-rekey.js";
 import { listSealedCids } from "./cas-reshare.js";
 import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
 import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
-import { readNexusDoc, nexusCharterStands } from "./nexus-doc.js";
+import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusConvergenceKeyring } from "./nexus-convergence-keyring.js";
 import { standNexusKeyring } from "./nexus-convergence-secret-store.js";
@@ -620,12 +621,17 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // (`nexusIslandsBelow`, which re-runs this same resolver with each higher term withheld). A second copy
   // of this object would drift from the first the day a term is added, and the carry would then read a
   // gradient the boot does not stand on.
-  const nexusStandsAt: NexusIdentityAt = {
-    genesisEpochCid: realmIdOfCharter(readNexusDoc(sealHome)),
-    charterStands:   nexusCharterStands(sealHome),
-    anchorGateKey:   opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null,
-    ownVesselKey:    vesselIdentity.verifyingKey,
-  };
+  // AND THE ONE STATEMENT NOW LIVES IN ONE PLACE (`nexus-standing`), because the CLI verbs were the
+  // second copy this comment warned about — they did not restate the object, they SKIPPED it and read
+  // their per-Nexus boards at the vessel's own key, which is the resolved island at the `own` notch
+  // and nowhere above it. The boot composes the same seam the admit and founding doors compose, so a
+  // term added here reaches every reader at once.
+  const nexusStandsAt: NexusIdentityAt = nodeNexusStandsAt({
+    ownVesselKey:   vesselIdentity.verifyingKey,
+    joinGatePubKey: opts.joinGatePubKey ?? null,
+    sealHome,
+    bootstrapPath,
+  });
   const nexusStanding = nexusIdentity(nexusStandsAt);
   const nexusPubkey   = nexusScopeOrThrow(nexusStanding);
   console.log(`[nexus] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
