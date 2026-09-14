@@ -20,9 +20,9 @@
  */
 
 import { describe, test, expect, afterEach } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, existsSync, statSync, readdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, readFileSync, statSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { LarDiskProjector } from "../src/disk-projector.js";
 import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
