@@ -216,15 +216,21 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
     vi.restoreAllMocks();
     expect(h.calls).toEqual([]);
   });
-  test("an unchecked carrier is never given a check it did not claim", async () => {
+  test("★ a FRAMED carrier holding NO check gets one MINTED — minting on absent reads pono ★", async () => {
+    // The operator ruling, and this fixture is the one that always exercised the case honestly: it keeps
+    // the ETX sigil and strips only the trailer, so a span stands for a check to cover. Read-optional,
+    // emit-always is the fault it cures — the grammar rules the BCC optional on READ while the emitter
+    // mints one unconditionally, so a hand-authored carrier lands legal on every gate its author runs
+    // and red on the one they do not.
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     const bare = join(d, "bare.mem");
     const src = readFileSync(PRISM, "utf8").replace(/^ni:\/\/\/[^\n]*$/m, "").replace(/<<\^ code="&#x0003;">>[^\n]*/, "<<^ code=\"&#x0003;\">>");
     writeFileSync(bare, src, "utf8");
+    expect(verifyBcc(readFileSync(bare, "utf8")), "the fixture never lost its trailer").toBe("unchecked");
     vi.spyOn(console, "log").mockImplementation(() => {});
     await cmdMeme(memeArgs(["normalize", bare]));
     vi.restoreAllMocks();
-    expect(verifyBcc(readFileSync(bare, "utf8"))).toBe("unchecked");
+    expect(verifyBcc(readFileSync(bare, "utf8"))).toBe("ok");
   });
 });
 

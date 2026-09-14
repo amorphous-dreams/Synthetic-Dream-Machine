@@ -334,21 +334,44 @@ function readNamed(f: string): string {
 }
 
 /**
- * The carrier with its check matching the body it follows.
+ * The carrier with its check matching the body it follows — RE-STAMPED where one stands stale, and
+ * MINTED where a framed carrier holds none.
  *
- * A carrier holding NO check keeps holding none — minting one here would give an unchecked carrier a
- * check it never claimed, and `unchecked` and `mismatch` are different facts this door must not fuse.
+ * MINTING ON ABSENT READS PONO (operator ruling). Read-optional, emit-always is the fault it cures:
+ * `block-check.ts` rules the BCC optional on READ while the deserializer mints one unconditionally on
+ * EMIT, so a hand-authored carrier lands legal on every gate its author runs and red on the one they do
+ * not. Of the 701 carriers under `bags/`, zero legitimately want to stand unchecked — the option reads
+ * real in the grammar and unexercised in the corpus.
+ *
+ * ⚠ THE COST, named: this forecloses deliberately authoring an unchecked FRAMED carrier — the BSC
+ * trusted-link case `block-check.ts` cites, where a block ran without a BCC by choice. The `unchecked`
+ * branch below is the one line to reverse if that case ever becomes real.
+ *
+ * TORN GETS NOTHING. A torn frame opens STX and never closes, so a digest over it would cover bytes the
+ * grammar never bounded — the check-over-the-wrong-span defect, where a hash over nothing matched its
+ * own recomputation and carriers read `ok` at every gate with kilobytes outside the verdict. A torn
+ * carrier wants its frame CLOSED by a hand; `checkSpan` answers null and this door adds no mark. The
+ * normalize loop names the tear aloud rather than passing it in silence.
+ *
+ * UNFRAMED GETS NOTHING EITHER, for a different reason: no span stands, so nothing is stampable. The
+ * corpus's six `<bag>/meta.mem` descriptors sit here.
  *
  * ANCHORED AT THE SPAN, never a whole-file replace: `ni:///…` reads as prose in a carrier that
- * discusses checks, and a global swap would rewrite the lesson along with the stamp.
+ * discusses checks, and a global swap would rewrite the lesson along with the stamp. A mismatch REPLACES
+ * the stale trailer; an absent one INSERTS adjacent to the span's close, because `verifyBcc` demands
+ * EXACT adjacency — the emitter writes the mark immediately after the ETX sigil, and a shifted check
+ * reads as postamble content and verifies as nothing.
  */
 function restamp(text: string): string {
-  if (verifyBcc(text) !== "mismatch") return text;
+  const standing = verifyBcc(text);
+  if (standing !== "mismatch" && standing !== "unchecked") return text;
   const span = checkSpan(text);
   const want = bccOf(text);
+  // A torn frame and an unframed file both answer null here — neither bounds a span to attest to.
   if (!span || !want) return text;
-  return text.slice(0, span.end)
-       + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want);
+  return standing === "mismatch"
+    ? text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want)
+    : text.slice(0, span.end) + want + text.slice(span.end);
 }
 
 /**
@@ -428,8 +451,20 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // span: canonicalizing a carrier and leaving its old check standing hands the next door a carrier
     // this gesture just made non-canonical. STAMPED AFTER FRAMING, never before: the bytes the check
     // covers are the ones normalize leaves.
-    const stamped = restamp(res.text);
-    const changed = res.changed || stamped !== res.text;
+    // A TORN FRAME FAILS THE READ-ALONE SEAT, and says why. Reported BEFORE the no-change exit, because
+    // a tear changes no byte: `restamp` cannot stamp it and normalize cannot close it, so the door that
+    // stayed silent here reported `canonical` over a carrier whose frame opens and never closes — the
+    // exact silence a torn carrier passed the pre-commit gate through. No gesture can close a tear; the
+    // door names it and hands it to a hand.
+    if (verifyBcc(res.text) === "torn") {
+      faulted++;
+      console.log(`torn: ${f}`);
+      console.log("  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand");
+    }
+
+    const standing = verifyBcc(res.text);
+    const stamped  = restamp(res.text);
+    const changed  = res.changed || stamped !== res.text;
     if (!changed) continue;
     drifted++;
 
@@ -441,8 +476,12 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     }
     for (const n of res.notes) console.log(`  - ${n}`);
     if (stamped !== res.text) {
-      console.log(write ? "  - block check re-stamped over the body it follows"
-                        : "  - block check would re-stamp over the body it follows");
+      // MINTED and RE-STAMPED are different facts, and a reader owes the difference: one carrier held a
+      // stale check, the other held none at all.
+      const act = standing === "unchecked"
+        ? (write ? "minted over the body it follows" : "would mint over the body it follows")
+        : (write ? "re-stamped over the body it follows" : "would re-stamp over the body it follows");
+      console.log(`  - block check ${act}`);
     }
   }
 
