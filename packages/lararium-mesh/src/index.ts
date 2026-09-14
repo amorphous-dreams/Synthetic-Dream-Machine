@@ -337,6 +337,9 @@ export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, nexusIslandsBelow,
 export { climbNexusBoards, carryAntigenUpTheGradient, carryEdgeShadowsUpTheGradient,
          reAnnounceRealmBooksAtIsland,
          type NexusBoardClimb, type BoardClimbResult } from "./nexus-board-climb.js";
+// The FOURTH board the climb moves, held in its own module because it REFUSES rather than degrades — and
+// housed HERE rather than on a shore, so the platform-blindness vow every shore composes it.
+export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "./persona-kel-climb.js";
 export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from "./signer-class.js";
 export { nexusScopeIndex } from "./persona-identity.js";
 export { identityHomeClosure, type IdentityHomeClosure } from "./identity-home-closure.js";

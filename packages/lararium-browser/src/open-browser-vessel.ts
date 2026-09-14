@@ -31,7 +31,8 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
-  nexusIdentity, nexusScopeOrThrow,
+  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, type NexusIdentityAt,
+  climbNexusBoards, carryPersonaKelUpTheGradient,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
@@ -413,13 +414,62 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // key as a PRIVATE NEXUS OF ONE (coherent — stage one of a lifecycle, since crossing later is a first-class
   // flow); an anchor key that reads as no key → TORN, and the resolver refuses rather than quietly composing a
   // private board under the name of the crossroads.
-  const nexusStanding = nexusIdentity({
+  //
+  // ⚠ CONNECTING MOVES THE BOARD, and this leaf BRICKED on it. `nexusScopeMoved` names the shape: climbing
+  // re-keys every per-Nexus board and nothing carries across on its own. The gate below
+  // ("a chain the replica does not carry HALTS the boot") REFUSES rather than degrades, so the ordinary
+  // leaf walk — found offline at a private nexus of one, then configure the hearth the page dials, then
+  // reload — left a vessel that never opened again. The leaf is the WORSE half of the pair the node
+  // measured: a node operator holds `--force` and a re-found, while a leaf's anchor key arrives from the
+  // page's own configuration, so no knob exists for the operator to turn.
+  //
+  // ONE statement of the inputs, for the reason the node boot records: the resolution reads them and so do
+  // both CARRIES below, and a second copy of this object would drift from the first the day a term is
+  // added — the carries would then read a gradient the boot does not stand on.
+  //
+  // A LEAF PASSES THREE TERMS AND NO MORE. It supplies `explicitScope` off a carried invite — the only
+  // shore that does, which makes this the only boot whose gradient runs three rungs deep (own → anchor →
+  // explicit). It passes NO `genesisEpochCid` and NO `charterStands`: seating a charter reaches a SEAL HOME
+  // on disk and a leaf keeps none, so those terms are structurally absent rather than merely unset.
+  const nexusStandsAt: NexusIdentityAt = {
     explicitScope: inviteNexusPubkey ?? null,
     anchorGateKey: relayGatePubKey ?? null,
     ownVesselKey:  vesselVerifyingKey,
-  });
+  };
+  const nexusStanding = nexusIdentity(nexusStandsAt);
   const nexusPubkey = nexusScopeOrThrow(nexusStanding);
   console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
+
+  // ── THE CLIMB, at the leaf — the boards a moved island would otherwise leave behind ──────────────────
+  // `climbNexusBoards` lives in `@lararium/mesh` precisely so both shores share it, and its header already
+  // vowed this: "a browser leaf climbing from its own island to the anchor it dials composes the identical
+  // call." Measured, no leaf composed it. Two of the boards fail OPEN when they mint blank:
+  //   · EDGE-KĀPAE — an empty shadow board LOWERS EVERY SHADOW, so a relationship a hand deliberately set
+  //     aside stands re-admittable on the island this leaf now dials. It sits OUTSIDE
+  //     `DeterministicFederationGate`'s list, so no peer's replica ever heals it. The boot must.
+  //   · ANTIGEN — "an empty antigen bans nobody" means a Kapae'd presenter is RE-ADMITTED.
+  //
+  // THE CROSSROADS RE-ANNOUNCE STANDS INERT HERE, and that reads as the leaf's shape rather than a gap:
+  // `realmIdOfCharter(readNexusDoc(sealHome))` has no analogue, because a leaf keeps no seal home and so
+  // holds no charter, and a realm exists only where a charter does. `reAnnounceRealmBooksAtIsland` answers
+  // "a vessel outside every realm announces nothing — it registers nothing either", so `null` states the
+  // fact. Borrowing some other id would announce ANOTHER realm's books onto this island, which is exactly
+  // the foreign-realm laundering the re-announce exists to refuse.
+  //
+  // WHO · carriage · vouch stay exactly where they are — `nexus-board-climb`'s header carries each reason,
+  // and the first is sharpest AT A LEAF: a leaf's own island IS a private nexus of one, so re-landing a card
+  // announced there would DISCLOSE a face to strangers the operator never published to. Passing a fourth
+  // board here compiles an about-set at a new address; read that header before adding one.
+  //
+  // UNCONDITIONAL and at the boot's own depth, deliberately outside every face guard: a faceless leaf holds
+  // shadows and an antigen too. It also runs ahead of any network adapter, so nothing leaves this vessel.
+  // Climb-only and idempotent by construction — every source comes from `nexusIslandsBelow` (empty at the
+  // bottom, empty when torn), and every act writes only what the destination LACKS.
+  await climbNexusBoards({
+    repo, nexusPubkey,
+    priorIslands: nexusIslandsBelow(nexusStandsAt),
+    realmId:      null,   // a leaf keeps no seal home → no charter → no realm to re-announce
+  });
 
   const bootKeys = await readBootKeys(idbName);
   const bootKeyWrites: BootKeyWrites = {};
@@ -820,6 +870,22 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // seq-sorted key-event-log from the per-Nexus KEL board of the ISLAND this vessel stands in,
       // against the LOCAL replica "as of last sync" (no-global-now). FAIL-CLOSED: a chain the replica does not
       // carry HALTS the boot (never a global lookup, never a fall-through to the raw signer pin).
+      //
+      // ── THE CLIMB'S CARRY — run BEFORE the gate walks, which is the whole cure ──────────────────
+      // A founding leaf seats this inception on the board keyed by the island resolved AT THAT MOMENT,
+      // and for a leaf that dials no anchor that island is its OWN key (the founding call above says so
+      // in as many words). Configuring the hearth this page dials re-keys the board, and this gate
+      // REFUSES rather than degrades — so the leaf walk found-offline → configure-the-anchor → reload
+      // left a vessel that never booted again, and unlike the node's operator this one holds no remedy
+      // at all. The carry moves the pinned chain onto the island this boot resolved, reading only the
+      // islands BELOW it (`nexusIslandsBelow` is empty at the bottom and empty when torn, so nothing
+      // ever descends). Idempotent: a destination that already carries it writes nothing, which is
+      // every later boot. The gate is untouched — the events land verbatim, their own cids and their own
+      // rotation signatures, and the same verifier judges them exactly as on the board they came off.
+      await carryPersonaKelUpTheGradient({
+        repo, nexusPubkey, prefix: personaKelPrefix,
+        priorIslands: nexusIslandsBelow(nexusStandsAt),
+      });
       const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
       const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
       if (!personaKelChain || personaKelChain.length === 0) {

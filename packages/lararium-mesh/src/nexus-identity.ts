@@ -213,8 +213,9 @@ export function nexusScopeOrThrow(id: NexusIdentity): string {
  *
  * THE CLIMB STANDS BUILT, and it took THREE acts rather than one (`nexus-board-climb`; `nexusIslandsBelow`
  * names every source). "Degrades gracefully" was the wrong reading for two of the seven boards:
- *   · CARRY, verbatim — persona-KEL (`carryPersonaKelUpTheGradient`, node shore: the gate REFUSES rather
- *     than degrades) · antigen (an empty deny set RE-ADMITS a Kapae'd presenter; the quorum epoch check
+ *   · CARRY, verbatim — persona-KEL (`carryPersonaKelUpTheGradient`, `persona-kel-climb`: the gate REFUSES
+ *     rather than degrades, so a moved board took the vessel down rather than thinning it) · antigen (an
+ *     empty deny set RE-ADMITS a Kapae'd presenter; the quorum epoch check
  *     makes the carry self-limiting) · edge-kāpae (an empty shadow board LOWERS EVERY SHADOW, and the board
  *     sits outside the federation gate, so no peer replica heals it).
  *   · RE-ANNOUNCE, re-derived — the crossroads realm-bag announce. It carries no signature a reader could
@@ -225,6 +226,12 @@ export function nexusScopeOrThrow(id: NexusIdentity): string {
  *     epoch, and a roster of who belongs is the one register the laws forbid) · vouch (unfederated, so a
  *     carried PARTIAL replica would become the whole board and price crossings off one vessel's view — the
  *     honest cure is federating it). `nexus-board-climb`'s header carries each reason in full.
+ * BOTH SHORES NOW COMPOSE IT. The node boot wired it first; the browser leaf composed neither carry for as
+ * long as the platform-blindness vow stood unmeasured, and a leaf halts at the SAME fail-closed gate on a
+ * walk no less ordinary (found offline at a private nexus of one → configure the hearth the page dials →
+ * reload). The leaf is the worse half: a node operator holds a re-found, a leaf's anchor key arrives from
+ * the page's configuration. A leaf's gradient runs THREE rungs (own → anchor → explicit) and its crossroads
+ * re-announce stands structurally inert, holding no charter and therefore no realm.
  * The explicit DEPARTURE stands UNBUILT — the sibling half, and the one that makes "I left" legible against
  * state 3. This names the remaining debt so a caller does not read the resolver as one.
  */

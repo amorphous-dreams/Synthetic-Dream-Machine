@@ -87,6 +87,22 @@
  * Platform-blind: rides ./deterministic-doc + ./base-doc + ./realm-bag only. NO node: imports — a browser
  * leaf climbing from its own island to the anchor it dials composes the identical call.
  *
+ * ── AND IT NOW DOES, which took measuring rather than asserting ─────────────────────────────────────
+ * That vow read ASPIRATIONAL for as long as it stood: `open-browser-vessel` composed neither this call nor
+ * the KEL carry, and it is the only shore supplying `explicitScope`, so it was the only shore reaching the
+ * crossroads' stated reachable case. Both carries are wired at the leaf boot now. Two differences in the
+ * leaf's shape are worth carrying here, because they are the ones an analogy would get wrong:
+ *   · A LEAF'S GRADIENT RUNS THREE RUNGS — own → anchor → explicit — where a node's runs two. A leaf passes
+ *     no `genesisEpochCid` and no `charterStands` at all; `nexusIslandsBelow` answers that correctly, and
+ *     it is verified rather than assumed (`nexus-board-climb-at-leaf`, the browser shore).
+ *   · THE CROSSROADS RE-ANNOUNCE STANDS INERT AT A LEAF, which reads as the leaf's shape and not a gap: a
+ *     leaf keeps no seal home, so it holds no charter, so `realmIdOfCharter` has no analogue and there is
+ *     no realm to re-derive from. It passes `null`, and the guard above answers "a vessel outside every
+ *     realm announces nothing — it registers nothing either." Borrowing some other id would announce
+ *     ANOTHER realm's books, which is the foreign-realm laundering this act exists to refuse.
+ * The KEL carry moved to `./persona-kel-climb` in the same act, for the same reason: it had the property
+ * from the day it was written and sat in a package no leaf could import.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/nexus-identity
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
