@@ -2192,14 +2192,18 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
       // THE REALM LANE: a Herm serves books it never authored, so its own crossroads alone withheld every
       // pointer a peer landed in a public bag. Each standing registration this realm carries names its book
       // and the tier it declared; the PUBLIC ones reach the shore, and the rest draw the same 404 as before.
-      // THE ANNOUNCE ROAD rides beside it (2026-09-13): a Herm holds no charter, so the registration road
-      // names NOTHING on it — it stands in no realm. The public plane it already replicates carries the
-      // address of every PUBLIC-tier book, and only those, so the carrier learns which books it may carry BY
-      // HASH off the board alone. THE FORK THIS DOES NOT CLOSE: a crossroads board keys on the VESSEL's OWN
-      // verifying key (`:2134`), so a keeper and a carrier standing in ONE realm name one realm doc and read
-      // TWO DISJOINT public boards — the announce lands where its author alone reads it. e2e ⑦
-      // (`tests/e2e/herm-reshares-public-blob.e2e.test.ts`) stays red on that, and whether the board should
-      // key on the HEARTH or on the REALM ID awaits the operator's ruling.
+      // THE ANNOUNCE ROAD rides beside it (2026-09-13): a Herm that imported a charter still folds NOTHING
+      // through the registration road — the realm doc withholds its registrations from a carrier by design —
+      // so the public plane it already replicates carries the address of every PUBLIC-tier book, and only
+      // those, and the carrier learns which books it may carry BY HASH off the board alone.
+      // THE FORK THIS ONCE NAMED STANDS RULED AND CURED. The operator ruled NEXUS-keyed boards (2026-09-13),
+      // and `p.nexusPubkey` now resolves through `nexusIdentity`: a keeper and a carrier holding ONE charter
+      // derive ONE island name (the charter's genesis epoch) and therefore ONE crossroads board, so the
+      // announce lands where the carrier reads it. e2e ⑦ (`tests/e2e/herm-reshares-public-blob.e2e.test.ts`)
+      // stands UNMEASURED against this cure — a sibling hearth held the e2e set when the cure landed, and two
+      // sets never run at once over one `synced-tree.json`. Its second half is independent and still owed:
+      // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
+      // body, and the witness plants it by hand at ⑤b to isolate the index half from the byte half.
       realmReferences: () => hermRealmShoreBooks({
         realmStanding: () => p.realmStanding(),
         findDoc:       async (docUrl) => (await p.repo.find<LarDoc>(docUrl as AutomergeUrl).catch(() => null))?.doc() ?? null,
