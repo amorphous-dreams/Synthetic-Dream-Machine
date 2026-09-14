@@ -18,11 +18,13 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 
 status=0
+walked=0
 # `tests/` is a workspace project too (the e2e harness); a witness that walks packages/* alone typechecks
 # the suites by nothing — measured 2026-09-12.
 for dir in packages/*/ tests/; do
   pkg=$(basename "$dir")
   [ -f "$dir/tsconfig.json" ] || continue
+  walked=$((walked + 1))
   cfg="tsconfig.json"
   [ -f "$dir/tsconfig.typecheck.json" ] && cfg="tsconfig.typecheck.json"
 
@@ -38,6 +40,20 @@ for dir in packages/*/ tests/; do
   fi
 done
 
-# A run that checked nothing must not read as a run that found nothing.
-[ "$status" -eq 0 ] && echo "typecheck-witness: every package clean"
+# ── A RUN THAT CHECKED NOTHING MUST NOT READ AS A RUN THAT FOUND NOTHING ────────────────────────
+# This line stood as a COMMENT alone. The loop `continue`s past any directory carrying no
+# `tsconfig.json`, so a glob that matched nothing — packages moved, the script run from another cwd,
+# the workspace re-laid — walked zero projects, left `status` at 0, and printed `every package clean`.
+# The header stated the law and the code never held it, which is the worse of the two failures: a
+# reader who checks the comment is told the floor stands.
+#
+# THE FLOOR IS ON THE SET, ASSERTED BEFORE ANYTHING IS ASSERTED ABOUT ITS MEMBERS. It counts the
+# projects actually entered, and the count PRINTS, so "clean" always arrives with its subject's size.
+if [ "$walked" -eq 0 ]; then
+  echo "typecheck-witness: NO TYPECHECKABLE PROJECT FOUND — nothing was checked, so nothing is clean."
+  echo "  It walks \`packages/*/\` and \`tests/\` for a tsconfig.json, from the repo root."
+  exit 1
+fi
+
+[ "$status" -eq 0 ] && echo "typecheck-witness: every package clean ($walked project(s) walked)"
 exit "$status"
