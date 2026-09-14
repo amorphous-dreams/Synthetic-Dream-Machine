@@ -421,6 +421,8 @@ The scheme registers as ''provisional''; a future submission MAY seek permanent 
 
 ''Session-form leakage — the userinfo slot, and that slot alone.'' Session form names a speaker through its userinfo subcomponent. A processor MUST keep a session-form URI within its exchange span: a URI carrying a userinfo subcomponent — a literal `@` ahead of its host — reaching stable storage, a graph address, or a system resource name MUST surface as a violation. The hostful form carries no userinfo and takes no part in this rule; it MAY title storage (#/reach).
 
+⚠ ''THE PROHIBITION BINDS THE TITLE SLOT ALONE. A userinfo-bearing URI reads lawful in CONTENT.'' A processor MUST NOT reject, strip, or rewrite a `lar:` URI carrying a userinfo because it appears in a record's ''text'' — in a quotation, a link, a captured exchange line, a code block, or any other body position. The two positions differ in what a later hand can do to them: a ''body'' takes a tier, a redaction, and a tombstone; a ''key'' takes none of the three. That asymmetry, and nothing about the characters themselves, carries the whole restriction. A processor enforcing this rule by testing whether a record's text contains a `@`-bearing `lar:` URI closes nothing and breaks every capture of an exchange — the test MUST read the title slot.
+
 The restriction narrows to the userinfo because every harm it guards lives there, and a title is the one place a harm cannot be walked back:
 
 # ''A title stands as a KEY.'' A key admits no tier, no redaction, and no tombstone. A tombstone marks a record deleted and leaves its key standing — and a tombstone written against an absent title MINTS the key. So a session-form title freezes ''alias × grant × host'' into a key that replicates to every peer of the surface and that redacting the turn's text does not reach.
@@ -428,6 +430,10 @@ The restriction narrows to the userinfo because every harm it guards lives there
 # ''Grant drift.'' An address carries no lifetime. A session-form title therefore asserts //this speaker held this grant// for as long as the key stands, long after the grant lapses. The Surface-confusion rule below says the same thing from the other side: authorization comes from the manifest, never from a URI match — and a title is a URI match.
 
 A ''hostful'' title carries none of the three. A host names an attribution and a sync scope, both of which the content already asserts and neither of which identifies a speaker or a capability.
+
+''Surfacing, never a silent drop.'' A violation MUST reach a party who can act on it. A processor MUST NOT satisfy the surfacing obligation by discarding the record quietly — by returning success, by logging where nobody reads, or by letting the write fall away unremarked. A silent refusal reads worse than a stall: the author's text stands on their screen while it stops existing in the store, so the loss surfaces later, elsewhere, to someone who cannot connect it to its cause. Where a processor cannot both refuse and report, it MUST refuse the ''crossing'' and preserve the record where its author can still see it. This clause states an obligation and names no mechanism; which rail carries the report belongs to the implementation.
+
+''Non-normative — how a lararium node meets it.'' A userinfo-bearing title arriving at the sync boundary surfaces as a ''conflict'' on the operator-facing rail, after the manner this house already gives the disk-ward: an event to the admin reactor, a durable `@daemon` audit entry, and an operator-visible alert. The house's own doctrine settles the shape — auto-arbitration reads anti-pono, so a conflict SURFACES rather than one stream silently drowning another.
 
 <<~/ahu>>
 
@@ -520,6 +526,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J2Iy_pY_u1SlziYx4mkkNR_kQgvQOgQA820fcYZV2gk
+<<^ code="&#x0003;">>ni:///sha-256;EQuimcZ-SuI_yw8vKxjksWRE_zQLc5WNgH1EqCOmFe8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -71,9 +71,11 @@ The crossing model above says a crossing must be explicit. This says ''who makes
 
 !!! Hostful and hostless name WHAT A URI NAMES, never WHICH LAYER HOLDS IT
 
-A ''hostful'' address (`lar://alias:grant@host/…`) states who spoke, under what grant, from where. That reads as a fact about the ''content'', and it keeps holding for as long as the content stands. A ''hostless'' address (`lar:///…`) states a place in the graph and names no speaker. The scheme rules both forms under the same grammar and separates the planes they answer to: NAME identifies, RESIDENCY answers a query, SPEECH names the speaker, and ''no plane ever answers for another'' (`lar-uri#/five-planes`).
+A ''hostful'' address (`lar://host/…`) states a domain's attribution and sync scope. That reads as a fact about the ''content'', and it keeps holding for as long as the content stands. A ''hostless'' address (`lar:///…`) states a place in the graph and names no domain. Neither names a speaker: the speaker rides the ''userinfo'' subcomponent of the ''session form'' (`lar://alias:grant@host/…`), and that form answers to a different rule (below). The scheme rules every form under one grammar and separates the planes they answer to: NAME identifies, RESIDENCY answers a query, SPEECH names the speaker, and ''no plane ever answers for another'' (`lar-uri#/five-planes`).
 
-Both forms therefore stand lawful in any bag on any layer. A captured exchange turn, split into memes by speaker-aim URI, reads as a canon meme carrying a hostful address permanently. Every `.mem` carrier in `bags/` today reads hostless because its author ''wrote'' it hostless — a property of authorship, never a mark a crossing conferred.
+Hostful and hostless both stand lawful ''as titles'' in any bag on any layer. Every `.mem` carrier in `bags/` today reads hostless because its author ''wrote'' it hostless — a property of authorship, never a mark a crossing conferred.
+
+⚠ ''A userinfo-bearing URI never stands as a TITLE, and reads fine everywhere else.'' A title stands as a KEY, and a key takes no tier, no redaction, and no tombstone — a tombstone marks a record deleted and leaves its key standing. So `alias × grant × host` frozen into a title replicates to every peer and outlives the grant it names (`lar-uri#/security`). A ''body'' takes all three controls, so the same URI in a record's ''text'' — a quoted turn, a link, a captured chat line — carries no such hazard and stands lawful. A captured exchange turn therefore crosses into canon carrying its speaker-aim URIs ''in its content'', titled by an address that names no speaker.
 
 ⚠ ''The address form carries no residency signal, so a reader derives none from it.'' Only the envelope answers which bag holds a record; only a query over surfaces (`listBagsHolding`, catalog holdings, recipe order) answers which bags hold an address at all. A carrier's own address tells a reader nothing about whether a promotion ran, which leaves ''the receipt carrying the whole burden'' of recording that one did.
 
@@ -201,6 +203,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BnPYuip-fWLQm7wpMdg7ozhujyKhUDsKSZVEMGgVvpI
+<<^ code="&#x0003;">>ni:///sha-256;cPKrfKUUJYcQbm4jO8DSXJlNwkVHBqmDnRB_hA6GRZ0
 
 <<^ code="&#x0004;" -> to="?">>
