@@ -47,6 +47,7 @@ import {
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault, type PlaneEntry,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
+  climbNexusBoards,
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
@@ -601,14 +602,20 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   // The gradient ratchets on INTENT: a vessel CLIMBS it by an act and never DESCENDS it by a failure.
   //
   // ⚠ CONNECTING MOVES THE BOARD. Climbing from ① to ② re-keys every per-Nexus board: books announced on the
-  // private board do not travel and peers dialling the old address read silence. Most of those boards DEGRADE
-  // across the move — an empty antigen bans nobody, an empty WHO board names nobody. The persona-KEL board the
-  // BINDING GATE walks is the exception: that gate REFUSES a boot whose pinned identifier reaches no head, so a
-  // moved board took the vessel down rather than thinning it. Its chain therefore CARRIES up the gradient at the
-  // gate's own seam below (`carryPersonaKelUpTheGradient` over `nexusIslandsBelow`) — climb-only, idempotent,
-  // and reading the gate not one notch lower. The RE-ANNOUNCE of the other boards stands UNBUILT
-  // (`nexusScopeMoved` names it); so does the explicit DEPARTURE that would keep "I left" distinguishable
-  // from ③ on the wire.
+  // private board do not travel and peers dialling the old address read silence. FOUR of the seven boards move
+  // at boot and THREE are refused:
+  //   · the persona-KEL board the BINDING GATE walks CARRIES at the gate's own seam below
+  //     (`carryPersonaKelUpTheGradient`) — that gate REFUSES a boot whose pinned identifier reaches no head,
+  //     so a moved board took the vessel down rather than thinning it.
+  //   · the EDGE-KĀPAE and ANTIGEN boards CARRY, and the CROSSROADS board RE-ANNOUNCES, at the one door
+  //     `climbNexusBoards` opens beside that seam. Both carried boards fail OPEN when they mint blank (an
+  //     empty shadow board lowers every shadow; an empty antigen re-admits a Kapae'd presenter), which is why
+  //     "degrades gracefully" holds for neither.
+  //   · WHO · carriage · vouch stay exactly where they are — `nexus-board-climb`'s header states each reason.
+  // All four acts read only the islands BELOW (`nexusIslandsBelow`) — climb-only, idempotent, reading no gate
+  // one notch lower. The explicit DEPARTURE that would keep "I left" distinguishable from ③ on the wire stands
+  // UNBUILT: a climb DERIVES from present state, and an absence cannot be derived, so it must be NAMED by an
+  // act at the rite rather than inferred at a boot.
   // ONE statement of the inputs. The resolution reads them, and so does the CLIMB'S CARRY further down
   // (`nexusIslandsBelow`, which re-runs this same resolver with each higher term withheld). A second copy
   // of this object would drift from the first the day a term is added, and the carry would then read a
@@ -1176,6 +1183,34 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
         throw new Error(`[lararium] persona-KEL chain for the pinned identifier ${personaKelPrefix.slice(0, 20)}… absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).`);
       }
     }
+    // ── THE REST OF THE CLIMB — the six boards the KEL carry left behind ──────────────────────────
+    // The docblock above reads "most of those boards DEGRADE across the move". Measured, TWO of them fail
+    // OPEN instead:
+    //   · EDGE-KĀPAE — an empty shadow board LOWERS EVERY SHADOW, so a relationship a hand deliberately set
+    //     aside stands re-admittable on the new island. And `edgeKapaeBoardDocUrl` sits OUTSIDE
+    //     `DeterministicFederationGate`'s list, so no peer's replica ever heals it. The boot must.
+    //   · ANTIGEN — "an empty antigen bans nobody" means a Kapae'd presenter is RE-ADMITTED. It federates
+    //     (MANDATORY tier), so an island with other members heals it by sync — bounded by sync-latency,
+    //     never instantly, and never at all for the vessel that climbs onto an island where it stands first.
+    // Both CARRY: their entries ARE the record, so the bytes move verbatim with their own signatures and the
+    // destination's own fold judges them exactly as the board below did. The crossroads board instead
+    // RE-ANNOUNCES: its rows are a PROJECTION of the realm doc's n-of-n-signed registrations and carry no
+    // signature a reader could re-check, so a copy would launder a stale, lapsed or foreign-realm row.
+    //
+    // WHO · carriage · vouch are REFUSED, and `nexus-board-climb`'s header carries the reason for each — a
+    // face DISCLOSED to strangers the operator never published to, a roster that IS a global invariant, and
+    // a partial replica that would read as a whole lineage. Passing a fourth board here compiles an
+    // about-set at a new address; read that header before adding one.
+    //
+    // UNCONDITIONAL, deliberately OUTSIDE the persona-KEL guard above: a faceless vessel holds shadows and
+    // an antigen too. Climb-only and idempotent by the same construction as the KEL carry — every source
+    // comes from `nexusIslandsBelow` (empty at the bottom, empty when torn), and every act writes only what
+    // the destination LACKS, so this runs every boot with one effect.
+    await climbNexusBoards({
+      repo, nexusPubkey,
+      priorIslands: nexusIslandsBelow(nexusStandsAt),
+      realmId:      realmIdOfCharter(readNexusDoc(sealHome)),
+    });
     // Register the per-Nexus crossroads plane into the oracle plane (isomorphic with the browser). Both shores
     // compose the SAME `nexusIdentity` ruling — this one off its charter, a leaf off the anchor gate key it
     // passes back — so a node, its browser leaves and its Herm resolve the identical crossroads doc. The daemon core
