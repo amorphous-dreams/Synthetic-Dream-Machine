@@ -20,6 +20,10 @@
       "import": "./dist/form-layer/index.js",
       "types": "./dist/form-layer/index.d.ts"
     },
+    "./carrier-canonical": {
+      "import": "./dist/carrier-canonical.js",
+      "types": "./dist/carrier-canonical.d.ts"
+    },
     "./meme-ast": {
       "import": "./dist/meme-ast/index.js",
       "types": "./dist/meme-ast/index.d.ts"
