@@ -14,6 +14,17 @@
 #   quorum · relation · realm · open · open-relation · leaf · crossing · realm-crossing · quorum-realm
 #   meme         two contracted operators + browser-a  an author's `bag` crossing; the island's face
 #
+# ── AND SIX THAT WALK SEAMS RATHER THAN CELLS ───────────────────────────────────────────────────
+#   climb        one operator, a face used before a charter   the bricking climb (REGRESSION GUARD)
+#   seal         one operator, the archive's own boot reading a wrong key that reads as no key
+#   title        one operator, the userinfo ban               enforcement, body-passthrough, the allowed form
+#   wikis        one operator, NO cabal                       which layer took the save
+#   conflict     one operator, both hands on one carrier      surface, never overwrite — and the rail
+#   board        two operators, one charter                   the gradient's three states
+#
+# EACH NAMES WHAT MAKES IT RED in its own header, and the two that stand green the day they land say
+# so rather than implying a repro. A scenario that cannot go red proves less than nothing.
+#
 # ── HOW A LONE OPERATOR STANDS ──────────────────────────────────────────────────────────────────
 # `--no-deps` withholds the herms `depends_on` would otherwise drag in, and `LAR_x_PEERS=` blanks the
 # bootstrap list. `peers` filters empty away, so a vessel with none is a supported shape rather than a
@@ -22,7 +33,8 @@
 # The browser vessel shares its operator's network namespace, so both names ride together, always.
 #
 # Usage:  tools/mesh-scenarios.sh [operator-a | operator-b | nexus | quorum | relation | realm | open |
-#                                  crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | all]
+#                                  crossing | open-relation | leaf | realm-crossing | quorum-realm | meme |
+#                                  climb | seal | title | wikis | conflict | board | all]
 # Green:  every named scenario's browser vessel exits 0 and its hearth answers.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -129,6 +141,21 @@ up_and_answering() {
 
 # whether a hearth has stood — the boot line every lararium prints.
 stood() { logs_have "[lararium]" "$1"; }
+
+# HOW MANY TIMES A PATTERN STANDS IN A SERVICE'S LOG — the counting twin of `logs_have`, and it
+# exists for the same reason: `grep -q` over a growing container log closes the pipe at the first
+# match, the producer takes SIGPIPE, and under `pipefail` the pipeline reads FAILURE exactly when the
+# pattern MATCHED. Measured again on this file's own new readings — three steps reported a vessel
+# that had plainly done the thing. `grep -c` reads to the end, so nothing is signalled.
+#
+# `$1` = extended regex · `$2` = service · `$3` (optional) = a `--since` window.
+logs_count() {
+  local pattern="$1" svc="$2" since="${3:-}"
+  local n
+  if [ -n "$since" ]; then n=$($COMPOSE logs --since "$since" "$svc" 2>&1 | grep -cE "$pattern")
+  else                     n=$($COMPOSE logs "$svc" 2>&1 | grep -cE "$pattern"); fi
+  printf '%s' "${n:-0}"
+}
 
 # ── THE CONTRACT, FACTORED ONCE ─────────────────────────────────────────────────────────────────
 # Six scenarios walk the same four doors — `seal export` on A, `seal import` on B, B's `accept-carriage`,
@@ -1126,6 +1153,659 @@ run_meme_browser() {
   $COMPOSE logs browser-a 2>&1 | grep -E "meme-face|REFUSED|speaks the laws|page:" | sed 's/^[^|]*| //' | sed 's/^/      /'
 }
 
+# ════════════════════════════════════════════════════════════════════════════════════════════════
+# THE SIX READINGS BELOW WALK SEAMS, NEVER PIECES — the class every defect this harness has found
+# lives in. Each names what makes it RED, because a scenario that cannot go red proves less than
+# nothing: this house has measured that failure more than a dozen times (a check that ran, measured
+# nothing, and reported success).
+#
+# TWO OF THEM STAND GREEN THE DAY THEY LAND, and they say so rather than implying a repro. `climb`
+# and `board` were written against a claimed brick that the tree had already cured — MEASURED here,
+# not assumed: the climb boots in 15s and the island line reads `[persona-kel] carried 1 event(s)
+# … up the gradient`. They stand as REGRESSION GUARDS, and the label is the honest half.
+# ════════════════════════════════════════════════════════════════════════════════════════════════
+
+# ── ① THE BRICKING CLIMB ────────────────────────────────────────────────────────────────────────
+# THE WALK: `vessel found` → a face → USE IT → `nexus rite cabal` → restart. The founding face's
+# inception seats on the persona-KEL board keyed by the island resolved AT THAT MOMENT, which for an
+# unconnected hearth is its OWN key (`personaKelBoardDocUrl(nexusPubkey)`, deterministic-doc.ts:95).
+# Seating a charter re-keys that board to the charter's genesis epoch, and the Binding Gate refuses
+# rather than degrades — `open-node-vessel.ts:1174`.
+#
+# ⚠ THIS SCENARIO STANDS GREEN TODAY, AND THAT IS THE MEASUREMENT RATHER THAN A GAP IN IT.
+# `carryPersonaKelUpTheGradient` runs BEFORE the gate walks (open-node-vessel.ts:1168) and moves the
+# pinned chain onto the island this boot resolved. Walked in a container 2026-09-13: the vessel
+# answered 15s after the restart, `restarts=0`, and the halt string appeared ZERO times. So this is
+# a regression guard on a cure that landed, never a repro of a live brick.
+#
+# WHAT WOULD MAKE IT RED AGAIN, quoted from the halt it guards:
+#   "[lararium] persona-KEL chain for the pinned identifier … absent from the local board replica
+#    — the Binding Gate cannot reach a head (fail-closed)."
+# The `…` is a real U+2026 and the dash an em-dash, so the probe greps the ASCII-safe head.
+#
+# THE HARNESS HAS NEVER WALKED THIS ORDERING. `lararium-container-boot.sh` seats the cabal BEFORE it
+# serves, so every other scenario in this file stands a vessel whose charter was seated at genesis.
+# The climb seats one against a RUNNING vessel, after the face has already written — which is the
+# operator's actual lifecycle ("standing a hearth up and connecting it to a Nexus LATER is a
+# first-class flow", the vessel's own boot line) and the ordering the brick needed.
+# COVERS: private/seed/unfed
+run_climb() {
+  say "CLIMB — a face is used, a charter seats after it, and the vessel still boots"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local URI="lar:///t.climb.witness/one"
+
+  # NO KAHU AT BOOT. `LAR_A_KAHU=` blanks `LAR_STAND_KAHU`, so the boot skips its seating block and
+  # this vessel stands the way an operator's actually does on day one: a face, and no charter.
+  step "A stands with a face and NO charter"
+  if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1; then ok
+  else bad "up"; return; fi
+  if up_and_answering lararium-a; then :; else
+    bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
+
+  # NEGATIVE ①a — A VESSEL THAT NEVER SEATS A CHARTER STILL BOOTS. Without this the scenario cannot
+  # tell "the climb bricked it" from "this vessel never booted at all", and the whole reading would
+  # rest on a boot nobody proved.
+  step "NEG a — the island reads a PRIVATE NEXUS OF ONE, and a bounce keeps it"
+  if [ "$(logs_count '\[nexus\] island .* \(own\)' lararium-a)" -gt 0 ]; then
+    $COMPOSE restart lararium-a >/dev/null 2>&1
+    if up_and_answering lararium-a; then ok; else bad "a charterless vessel did not survive a bounce"; fi
+  else bad "a charterless vessel did not read as a private nexus of one"; fi
+
+  step "the face is WORN and USED — a carrier lands under it"
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=? -> to=$URI>>\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\"&#x0002;\">>\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=?>>\n' > /tmp/climb.mem" 2>/dev/null
+  if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
+     | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the climb has no inception to strand"; fi
+
+  # THE RE-KEYING ACT. `rite cabal` composes seal reserve · seal seat · seal show; the seat writes the
+  # roster and `sealEpochCid` becomes the island every later boot resolves.
+  step "the charter seats AFTER the face — the board re-keys"
+  local i EPOCH
+  for i in 0 1 2; do
+    $COMPOSE exec -T lararium-a $LARES persona new "$i" --name "kahu-$i" --handle "Kahu $i" --seat >/dev/null 2>&1 || true
+  done
+  $COMPOSE exec -T lararium-a $LARES nexus rite cabal >/dev/null 2>&1
+  EPOCH=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
+          | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  if [ -n "$EPOCH" ]; then ok; else bad "no charter seated — nothing re-keyed, so the climb never happened"; clear_all; return; fi
+
+  # ★ THE READING THIS SCENARIO EXISTS FOR ★
+  # POLL FOR THE ISLAND LINE, never read once. The vessel answers its verb socket before it has
+  # printed the crossroads reading, so a single read here times the harness rather than the climb.
+  step "★ RESTART: the vessel boots, and the island CLIMBED ★"
+  $COMPOSE restart lararium-a >/dev/null 2>&1
+  local climbed=0 cd=$((SECONDS + 240))
+  if up_and_answering lararium-a 240; then
+    while [ "$SECONDS" -lt "$cd" ]; do
+      [ "$(logs_count '\(charter, shared\)' lararium-a)" -gt 0 ] && { climbed=1; break; }
+      sleep 5
+    done
+  fi
+  if [ "$climbed" -eq 1 ]; then ok
+  else
+    bad "the vessel never came back, or the island did not climb"
+    dump_boot_failure lararium-a
+  fi
+
+  step "the carry ran, and the Binding Gate never halted"
+  local HALTS
+  HALTS=$($COMPOSE logs --since 6m lararium-a 2>&1 | grep -cF "persona-KEL chain for the pinned identifier")
+  if logs_have "up the gradient" lararium-a && [ "${HALTS:-0}" -eq 0 ]; then ok
+  else
+    bad "the carry did not run, or the gate halted ${HALTS} time(s)"
+    $COMPOSE logs --since 6m lararium-a 2>&1 | grep -E "persona-kel|Binding Gate" | tail -3 | cut -c1-220 | sed 's/^/      /'
+  fi
+
+  # NEGATIVE ①b — A TORN CHARTER MUST NOT SILENTLY RE-KEY. The gradient ratchets on INTENT, never on
+  # accident: `nexusIdentity` holds "a Nexus this vessel KNOWS and cannot READ" apart as its own state
+  # (nexus-identity.ts:153), and `nexusScopeOrThrow` throws rather than handing back anything a `??`
+  # could absorb. Falling to the vessel's own key here "would descend a serving vessel to a private
+  # board on an accident: it would believe it published while every peer watched it vanish".
+  #
+  # THE TEAR IS SURGICAL: the charter FILE stands (so `charterStands` reads true) and its genesis epoch
+  # reads as no island. That is the exact conflation the record names as //the torn charter//.
+  # THE FLOOR READING IS COUNTED AS A DELTA, never as an absolute. This scenario's own charterless
+  # opening legitimately printed `(own)` lines, so an absolute count reads the vessel's honest past as
+  # this step's failure — measured: the step failed reporting one floor reading that predated the tear
+  # by two restarts. What the negative asks is whether the TEAR produced a NEW one.
+  step "NEG b — a TORN charter REFUSES, and never falls to the floor"
+  local OWN_BEFORE OWN_AFTER
+  OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-a)
+  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /lar-a/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE restart lararium-a >/dev/null 2>&1
+  # THE VESSEL IS EXPECTED TO DIE HERE, and `restart: on-failure:8` means it dies eight times. Wait for
+  # the refusal to appear rather than for an exit, so a cure that refuses WITHOUT dying still reads.
+  local d=$((SECONDS + 180)) tornseen=0
+  while [ "$SECONDS" -lt "$d" ]; do
+    [ "$(logs_count 'the island reads TORN, so no board may be addressed' lararium-a)" -gt 0 ] && { tornseen=1; break; }
+    sleep 5
+  done
+  OWN_AFTER=$(logs_count '\[nexus\] island .* \(own\)' lararium-a)
+  if [ "$tornseen" -eq 1 ] && [ "$OWN_AFTER" -eq "$OWN_BEFORE" ]; then ok
+  else
+    bad "a torn charter did not refuse, or it re-keyed to its own board (floor readings ${OWN_BEFORE} → ${OWN_AFTER})"
+    $COMPOSE logs --since 4m lararium-a 2>&1 | tail -4 | cut -c1-220 | sed 's/^/      /'
+  fi
+
+  # NEGATIVE ①c — THE GATE STILL HALTS WHEN A CHAIN IS GENUINELY ABSENT. A cure that carried the chain
+  # by WIDENING the gate would pass every step above and remove the fail-closed property entirely, so
+  # the guard has to see the gate still refuse for an unrelated reason.
+  #
+  # THE STATE IS NOT CONSTRUCTIBLE FROM OUTSIDE THE VESSEL, measured: the pinned prefix lives in the
+  # daemon bag and the chain in an Automerge board, and nothing on the CLI surface strands one without
+  # also stranding the other. `gap`, never `bad` — the walk succeeded and the system's answer was no.
+  step "NEG c — the gate still halts on a genuinely absent chain"
+  gap "unconstructible from the CLI surface — no door strands a pinned prefix without its board"
+  printf '      the gate stands at open-node-vessel.ts:1174 and unit-tests reach it; a container cannot\n'
+  printf '      wakes when a door pins a persona-KEL prefix independently of seating its chain\n'
+  clear_all
+}
+
+# ── ② THE SEAL DESTRUCTION, IN THE SHAPES A UNIT TEST CANNOT REACH ──────────────────────────────
+# `archive-write-guard-attacks.test.ts` already stands 15 attacks at unit grain, and they are real
+# cures. Every one of them drives an IN-PROCESS function under `mkdtemp` — no daemon, no CLI process,
+# no boot path. This reading walks the two shapes that live outside that reach.
+#
+# ⚠ RED TODAY, and the tree names it in its own test title (attack 14, :390):
+#     "★ a boot-sealed archive leaves `sealExpected` FALSE — the five readings never probe a wrong key ★"
+# `readArchiveOpening` (archive-passphrase.ts:497) short-circuits before it ever probes:
+#     if (!readSealExpected(cfg)) return { kind: "no-seal-expected", opens: true, probed: false, … };
+# So a vessel sealed by the BOOT's M3 export — never by `vault seal` — carries `sealExpected:false`,
+# and a wrong passphrase reads `opens:true` at the floor. The write guard still catches the CARRIER
+# write; the boot's own gate does not, and only a booted vessel can show that.
+#
+# AND THE SECOND SHAPE: the M3 refusal is SWALLOWED. operator-daemon-behavior.ts:672 catches the
+# guard's throw into `console.warn` — "[daemon] keyhive archive export skipped: " — so a refused
+# re-seal leaves exit code 0 and a warn line. A green boot is not a written archive.
+# COVERS: private/seed/unfed
+run_seal() {
+  say "SEAL — the boot path's own reading of a wrong key, and the refusal it swallows"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+
+  step "A stands and seals its archive from the BOOT (never \`vault seal\`)"
+  if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 \
+     && up_and_answering lararium-a; then ok
+  else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
+
+  step "the floor names what the archive did — the reading is stdout, never an exit code"
+  local OPENING
+  OPENING=$($COMPOSE logs lararium-a 2>&1 | grep -oE 'the archive holds shut \([a-z-]+\)' | tail -1)
+  if [ -n "$OPENING" ]; then
+    printf '\033[33mGAP (%s)\033[0m\n' "the floor reads: ${OPENING}"
+  else ok; fi
+
+  # ★ THE READING. A wrong passphrase must not read as an opening one. `sealExpected:false` is exactly
+  # the state a boot-sealed vessel carries, so this asks the vessel the question its own test defers.
+  step "★ a WRONG passphrase must NOT read as \`opens\` at the floor ★"
+  local ST
+  ST=$($COMPOSE exec -T -e LARES_ARCHIVE_PASSPHRASE="a-passphrase-that-never-sealed-anything" \
+        lararium-a $LARES vault status --json 2>&1)
+  if printf '%s' "$ST" | grep -q '"sealExpected":true'; then ok
+  else
+    bad "the vessel reads no seal in force under a wrong key — a wrong passphrase reads as opening"
+    printf '      %s\n' "$(printf '%s' "$ST" | grep -oE '"sealExpected":[a-z]+|"split":[a-z]+|"passphraseEnvSet":[a-z]+' | tr '\n' ' ')"
+    printf '      archive-passphrase.ts:497 returns no-seal-expected/opens:true before it probes\n'
+  fi
+
+  # THE SWALLOWED REFUSAL. A boot whose M3 export the guard refused still exits 0; the only witness is
+  # a warn line. A scenario that read the exit code alone would call this vessel healthy.
+  step "a refused M3 export surfaces as a WARN, never an exit — assert the line is reachable"
+  if logs_have "keyhive archive export skipped:" lararium-a; then
+    ok
+  else
+    gap "no refusal fired this boot — the swallow is unproven from a healthy vessel"
+    printf '      operator-daemon-behavior.ts:672 catches the guard throw into console.warn\n'
+    printf '      wakes when the scenario can seat a carrier the guard refuses, then boot over it\n'
+  fi
+
+  # CONTROL — THE GCM TAG PROVES INTENT, AND A CORRECT ROTATE MUST STILL SUCCEED. Without this the
+  # whole family could be "cured" by refusing every write, which is the failure wearing a fix's face.
+  step "CONTROL — a correct rotate still succeeds"
+  local ROT
+  ROT=$($COMPOSE exec -T -e LARES_ARCHIVE_PASSPHRASE="" -e LARES_ARCHIVE_PASSPHRASE_NEW="a-new-one" \
+        lararium-a $LARES vault rotate --yes --json 2>&1)
+  if printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+  else
+    gap "the rotate refused on this vessel — a cleartext floor has no old passphrase to rotate FROM"
+    printf '      %s\n' "$(printf '%s' "$ROT" | tail -1 | cut -c1-200)"
+  fi
+
+  # THE EXPORT DOOR, WALKED AGAINST A LIVE VESSEL. The refusal is built (archive-passphrase.ts:324) and
+  # unit-tested; what no test walks is the CLI process reaching it through a running daemon.
+  step "\`vault export\` aimed at the archive carrier REFUSES"
+  local EX
+  EX=$($COMPOSE exec -T lararium-a $LARES vault export /lar-a/data/lares/identity/keyhive-archive.bin --force --json 2>&1)
+  if printf '%s' "$EX" | grep -qF 'refusing to export onto the'; then ok
+  else
+    bad "the export did not refuse the carrier it would destroy"
+    printf '      %s\n' "$(printf '%s' "$EX" | tail -1 | cut -c1-220)"
+  fi
+
+  # THE UNGUARDED INDEX. `carriers()` (archive-passphrase.ts:82) enumerates a BARE `deviceSharePath()`
+  # — handle 0 alone — so `recovery-device-share-h1.bin` and higher sit outside rotate, repair, status
+  # and the export refusal entirely. A vessel running a second face carries a share nothing guards.
+  step "a SECOND handle's device share sits outside the guarded set"
+  $COMPOSE exec -T lararium-a $LARES persona new 1 --name "second" >/dev/null 2>&1 || true
+  local SHARES
+  SHARES=$($COMPOSE exec -T lararium-a sh -c 'ls /lar-a/data/lares/identity/ 2>/dev/null | grep -c "recovery-device-share-h"' 2>/dev/null | tr -d '\r')
+  if [ "${SHARES:-0}" -le 1 ]; then
+    gap "only ${SHARES:-0} device share stands — a second face minted none, so the h1+ hole is unreached here"
+    printf '      archive-passphrase.ts:82 enumerates deviceSharePath() with no index\n'
+  else
+    bad "${SHARES} device shares stand and carriers() enumerates one — h1+ escapes every guard"
+  fi
+  clear_all
+}
+
+# ── ③ THE USERINFO TITLE — ENFORCEMENT, NOT DISCOVERY ───────────────────────────────────────────
+# THE OPERATOR RULED (2026-09-13, spec 8d69076af): `lar://host/path` titles stand; userinfo-bearing
+# titles are FORBIDDEN. So this stops asking whether the leak exists and asks whether the enforcement
+# the spec now names can actually be performed.
+#
+# ⚠ THE SPEC AUTHOR'S OWN CLOSING WARD IS THE RED CONDITION:
+#     "the enforcement clause reads well and rests on ZERO measurement — I never ran a userinfo-bearing
+#      title through any processor, so 'MUST refuse the crossing and preserve the record' names a
+#      behaviour no shore has demonstrated it can perform"
+# Nothing in this house has ever put a userinfo-bearing title through it. This walk is the first.
+#
+# THE MEASURED DROP SITES, which are what leg A asserts against:
+#   island-adaptor.ts:314 / :319 — `return Promise.resolve()` (silent success)
+#   outbound-bridge.ts:64        — catch-and-drop into console.warn
+# A refusal down any of those reads WORSE than a stall: the author's text stands on their screen while
+# it stops existing in the store. The record must survive where its author can still see it.
+# COVERS: private/seed/unfed
+run_title() {
+  say "TITLE — the userinfo ban enforced, the body left alone, and the permitted form carried"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local BAD_URI="lar://mara:operator@crossroads/t.title.banned/one"
+  local OK_URI="lar://crossroads/t.title.allowed/one"
+
+  step "A stands"
+  if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 \
+     && up_and_answering lararium-a; then ok
+  else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
+
+  # ── LEG A: THE BAN SURFACES, AND DOES NOT DROP SILENTLY ───────────────────────────────────────
+  # The normative shape is a negative MUST: a processor MUST NOT satisfy the surfacing obligation by
+  # returning success, by logging where nobody reads, or by letting the write fall away unremarked.
+  step "★ A — a userinfo-bearing TITLE is REFUSED, and the refusal is legible ★"
+  local PUT
+  $COMPOSE exec -T lararium-a sh -c "printf 'a body\n' > /tmp/banned.mem" 2>/dev/null
+  PUT=$($COMPOSE exec -T lararium-a $LARES meme put "$BAD_URI" --recipe lares --file /tmp/banned.mem --json 2>&1)
+  if printf '%s' "$PUT" | grep -q '"ok":false'; then ok
+  else
+    bad "a userinfo-bearing title was ACCEPTED — the ban is unenforced on the verb path"
+    printf '      %s\n' "$(printf '%s' "$PUT" | tail -1 | cut -c1-240)"
+    printf '      no form test stands at meme.ts:121 or meme-verbs.ts:173 — presence check only\n'
+  fi
+
+  # THE HALF AS IMPORTANT AS THE REFUSAL. A refusal that also loses the text is the worse failure.
+  step "A — and the record SURVIVES where its author can see it"
+  local BACK
+  BACK=$($COMPOSE exec -T lararium-a $LARES meme get "$BAD_URI" --bag lares --json 2>&1)
+  if printf '%s' "$PUT" | grep -q '"ok":false' && ! printf '%s' "$BACK" | grep -q '"ok":true'; then
+    gap "the write was refused and nothing was stored — the author's copy stands only on their screen"
+    printf '      the spec asks a refusal to PRESERVE the record; a bare refusal preserves nothing\n'
+  elif printf '%s' "$BACK" | grep -q '"ok":true'; then ok
+  else bad "the record neither landed nor was refused legibly — it fell away unremarked"; fi
+
+  # ── LEG B: THE NEGATIVE THAT MATTERS MOST ─────────────────────────────────────────────────────
+  # A record whose BODY carries userinfo URIs must cross byte-identical. The spec names the naive
+  # implementation as the wrong one in its own words: "A processor enforcing this rule by testing
+  # whether a record's text contains a `@`-bearing `lar:` URI closes nothing and breaks every capture
+  # of an exchange — the test MUST read the title slot."
+  #
+  # SO THIS WALKS A FULL CAPTURED-EXCHANGE SHAPE, never a one-line fixture: an aim, a yield, a quoted
+  # link and a fenced block, each carrying a speaker-aim URI in the BODY.
+  step "★ B — userinfo in the BODY passes UNTOUCHED (the over-enforcement trap) ★"
+  local BODY_URI="lar:///t.title.context/capture"
+  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=? -> to=$BODY_URI>>\n\`\`\`toml meta\nuri-path = \"t.title.context/capture\"\n\`\`\`\n\n<<^ code=\"&#x0002;\">>\n\n<<~ lares aim from=\"lar://mara:operator@crossroads/operator.asks.the-cost\" -> to=\"lar://compita:agent@crossroads/clerk.reads.the-record\">>\n\nA quoted link: lar://alias:grant@host/some.path.here\n\n\`\`\`\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=?>>\n' > /tmp/capture.mem" 2>/dev/null
+  local CPUT CGET
+  CPUT=$($COMPOSE exec -T lararium-a $LARES meme put "$BODY_URI" --recipe lares --file /tmp/capture.mem --json 2>&1)
+  if ! printf '%s' "$CPUT" | grep -q '"ok":true'; then
+    bad "a capture carrying userinfo in its BODY was refused — the check read the text, not the title slot"
+    printf '      %s\n' "$(printf '%s' "$CPUT" | tail -1 | cut -c1-240)"
+  else
+    CGET=$($COMPOSE exec -T lararium-a $LARES meme get "$BODY_URI" --bag lares --json 2>&1)
+    # THREE SPEAKER-AIMS WENT IN; ALL THREE MUST READ BACK. A processor that stripped one and kept two
+    # would satisfy any check that only asked whether the record survived.
+    local N
+    N=$(printf '%s' "$CGET" | grep -oE 'lar://[a-z]+:[a-z]+@[a-z.]+' | wc -l | tr -d ' ')
+    if [ "${N:-0}" -ge 3 ]; then ok
+    else bad "only ${N} of 3 body-borne speaker-aims read back — the body was altered"; fi
+  fi
+
+  # ── LEG C: THE PERMITTED FORM, END TO END ─────────────────────────────────────────────────────
+  # ⚠ RED, AND IT STAYS RED UNTIL A PRODUCTION CHANGE LANDS — stated plainly rather than softened.
+  # `carrierBaseRelPath` returns null for anything not `lar:///` (bag-paths.ts:97) and the reverse
+  # derivation mints `lar:///` unconditionally (:146-160), so a projected hostful carrier cannot read
+  # back as itself. The siting has no defensible spelling today either: the loci law admits hostful
+  # then discards the authority, and a three-label host spells the same shape as a root triple, so
+  # `lar://a.b.c/x.y.z/s` and `lar:///a.b.c/x.y.z/s` collide.
+  #
+  # SO THIS ASSERTS THE SYNC HALF AND MARKS THE PROJECTION HALF OWED.
+  step "★ C — the PERMITTED \`lar://host/path\` title is accepted ★"
+  local OPUT
+  $COMPOSE exec -T lararium-a sh -c "printf 'a permitted body\n' > /tmp/allowed.mem" 2>/dev/null
+  OPUT=$($COMPOSE exec -T lararium-a $LARES meme put "$OK_URI" --recipe lares --file /tmp/allowed.mem --json 2>&1)
+  if printf '%s' "$OPUT" | grep -q '"ok":true'; then ok
+  else
+    bad "the PERMITTED hostful form was refused — the ruling's allowed shape does not stand"
+    printf '      %s\n' "$(printf '%s' "$OPUT" | tail -1 | cut -c1-240)"
+  fi
+
+  step "C — and it PROJECTS to disk as itself"
+  gap "unbuilt and unowned — carrierBaseRelPath returns null for a non-\`lar:///\` URI (bag-paths.ts:97)"
+  printf '      the reverse derivation mints lar:/// unconditionally (:146-160), so it cannot read back\n'
+  printf '      wakes when a hostful carrier has a defensible on-disk spelling that round-trips\n'
+  clear_all
+}
+
+# ── ④ WIKIS-FIRST STAGE 1 — AND THE FALLBACK WEARING A SUCCESS'S FACE ───────────────────────────
+# THE TRAP: `defaultWritableSlot(slug, workingMounted)` returns the working slot when its handle
+# stands and "else the wiki's canon bag (the floor — a grant-less mount still lands a bagless write
+# somewhere, never a red)" (wiki-recipe.ts:341). So a save with no working handle lands in `bags/`
+# LAWFULLY, QUIETLY, and answers the stock 204 — the ruling's exact failure wearing a success's face.
+#
+# ⚠ THE STATUS CODE CARRIES NO SIGNAL. Stock TW5's `put-tiddler.js` answers 204 with an Etag whether
+# the bytes landed in `wikis/<slug>/working` or fell back to `bags/<slug>`. That is what makes this
+# red-able at all: only `lares wiki which` discriminates, and it prints to stdout with NO JSON
+# (wiki.ts:514 — plain `console.log`, no `emit`), so the probe must read lines rather than fields.
+#
+# ⚠ AND IT RUNS ON A VESSEL THAT NEVER SEATED A CABAL — or ①'s red arrives wearing ④'s name.
+# COVERS: private/seed/unfed
+run_wikis() {
+  say "WIKIS — a save lands in the WORKING slot, and the silent fallback is named when it does not"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local SLUG="climbless"
+
+  # NO CABAL. `LAR_A_KAHU=` keeps this vessel a private nexus of one, so a boot fault here belongs to
+  # the wiki layer rather than to a charter that re-keyed a board.
+  step "A stands with NO cabal seated — ①'s red must not arrive wearing ④'s name"
+  if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 \
+     && up_and_answering lararium-a; then ok
+  else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
+
+  # ★ THE DISTINGUISHING OBSERVATION ★
+  # THE BRIEF NAMED `lares wiki which`, AND THE MINT IS THE BETTER INSTRUMENT — measured. `wiki which`
+  # prints through plain `console.log` with no `emit` (wiki.ts:514), so it carries no JSON and a probe
+  # must scrape lines; `wiki init --json` states the write layer outright in a field:
+  #     "writableBag":"lar:///ha.ka.ba/wikis/climbless/working"
+  # That IS `defaultWritableSlot`'s answer, reported at the moment it is computed. Working ⟺ the field
+  # reads `wikis/<slug>/working`; the silent fallback ⟺ it reads `bags/<slug>`.
+  step "★ the mint names its write layer — the WORKING slot, never \`bags/\` alone ★"
+  local INIT WRITABLE
+  INIT=$($COMPOSE exec -T lararium-a $LARES wiki init "$SLUG" --json 2>&1)
+  WRITABLE=$(printf '%s' "$INIT" | grep -oE '"writableBag":"[^"]*"' | head -1 | cut -d'"' -f4)
+  if [ "$WRITABLE" = "lar:///ha.ka.ba/wikis/${SLUG}/working" ]; then ok
+  elif [ "$WRITABLE" = "lar:///ha.ka.ba/bags/${SLUG}" ]; then
+    bad "THE SILENT FALLBACK TOOK THE OFFICE — the canon bag holds the write layer"
+    printf '      wiki-recipe.ts:341 — workingMounted ? wikiSlotUri(slug,"working") : wikiBagUri(slug)\n'
+    printf '      a save here lands in bags/ lawfully, quietly, and answers a 204\n'
+  else
+    bad "the mint named no write layer at all"
+    printf '      %s\n' "$(printf '%s' "$INIT" | tail -1 | cut -c1-240)"
+    clear_all; return
+  fi
+
+  # NEGATIVE ④b — THE CANON BAG MUST NOT ALSO HOLD THE OFFICE. The mint reports ONE writable, so a
+  # double-write shows as the canon bag ALSO answering a placement. Measured: it does not, and the
+  # refusal is the evidence —
+  #     meme: bag "lar:///ha.ka.ba/bags/climbless" holds no writable layer in this island
+  #           — a placement never shadows up to the default writable
+  # That refusal IS the negative holding. A canon bag that accepted the placement would be the
+  # fallback taking a save the working slot was supposed to own.
+  step "NEG b — the canon bag REFUSES a placement, so the office is not shared"
+  local TITLE="lar:///t.wikis.witness/one" REF
+  $COMPOSE exec -T lararium-a sh -c "printf 'a wiki-borne carrier\n' > /tmp/wiki-one.mem" 2>/dev/null
+  REF=$($COMPOSE exec -T lararium-a $LARES meme put "$TITLE" --bag "$SLUG" --file /tmp/wiki-one.mem --json 2>&1)
+  if printf '%s' "$REF" | grep -qF "holds no writable layer in this island"; then ok
+  elif printf '%s' "$REF" | grep -q '"ok":true'; then
+    bad "the CANON bag took the placement — the fallback holds the office beside the working slot"
+  else
+    gap "the canon bag refused for another reason — the double-write question stays unanswered"
+    printf '      %s\n' "$(printf '%s' "$REF" | tail -1 | cut -c1-220)"
+  fi
+
+  # NEGATIVE ④c — THE THIRD OUTCOME, kept apart on purpose. No file under EITHER root names an ABSENT
+  # MIRROR GRANT, never a write-layer failure, and conflating the two sends the next reader to the
+  # wrong layer entirely. `island-behaviors.ts:33` returns undefined with no `diskMirrors` and builds
+  # no projector at all — the wiki runs, saves answer 204, and nothing ever reaches disk.
+  step "NEG c — a missing file names an ABSENT GRANT, never a write-layer failure"
+  local ONDISK
+  ONDISK=$($COMPOSE exec -T lararium-a sh -c "find /lar-a -path '*${SLUG}*' -name '*.mem' 2>/dev/null | head -3" 2>/dev/null | tr '\n' ' ')
+  if [ -n "$ONDISK" ]; then
+    printf '\033[33mGAP (%s)\033[0m\n' "on disk: $(printf '%s' "$ONDISK" | cut -c1-110)"
+  else
+    gap "no .mem under either root — an ABSENT MIRROR GRANT, distinct from a write that went astray"
+    printf '      island-behaviors.ts:33 — no diskMirrors, so no projector is constructed\n'
+  fi
+
+  # WHAT THIS SCENARIO CANNOT REACH, and it says so rather than implying coverage. The save that
+  # actually exercises the fallback is the in-wiki TW5 syncer's `PUT /recipes/default/tiddlers/<title>`
+  # answering stock's 204 — and the status code carries NO signal about which root took the bytes,
+  # which is precisely what makes the fallback silent. Measured from the host: that route draws 000
+  # (no listener) against `lararium-a`'s published port, because the wiki is not mounted as the served
+  # recipe in this container. The CLI's `meme put` reaches the doc layer and never that door.
+  step "the SYNCER door — the save whose 204 hides which root took it"
+  gap "unreachable from this container — the wiki is not the served recipe, so the PUT route draws 000"
+  printf '      packages/lararium-tw5/src/routes/native-door.ts serves it at priority 110\n'
+  printf '      wakes when a scenario mounts the minted wiki as the served recipe (wiki switch)\n'
+
+  clear_all
+}
+
+# ── ⑤ CONFLICT SURFACING IN BOTH LEGS ───────────────────────────────────────────────────────────
+# BOTH GATES ARE BUILT. `ingest-gate.ts` decides the disk→records leg — "a conflict SURFACES rather
+# than one stream drowning another (Unison's law: surface, never overwrite)" — and `projection-gate.ts`
+# mirrors it for records→disk, its own header naming the ruling: "BOTH legs of the round trip now
+# reconcile, neither overwrites".
+#
+# ⚠ WHAT IS UNWALKED IS THE RAIL, NOT THE GATE. The verdict is one thing; an operator SEEING it is
+# another, and the rail crosses three hops no unit test spans — `onRefusal` posts an `IslandMsg_Event`
+# (island-behaviors.ts:64), the admin VM's `makeWardAlertReactor` writes a durable `@daemon` audit
+# under `lar:///ha.ka.ba/bags/daemon/ledger/ward/` and posts a `$:/tags/Alert` tiddler. That is the
+# red: a conflict that decides correctly and tells nobody is the failure this scenario exists to catch.
+#
+# THE GREPPABLE HANDLES: `[disk-ward] write refused` · `projection conflict —` · `disk-ward:refused`
+# · `$:/temp/lares/alert/disk-ward` · the ledger prefix above.
+# COVERS: private/seed/unfed
+run_conflict() {
+  say "CONFLICT — both hands move one carrier, nothing is overwritten, and the operator is told"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+  local URI="lar:///t.conflict.witness/one"
+
+  step "A stands"
+  if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1 \
+     && up_and_answering lararium-a; then ok
+  else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
+
+  # NEGATIVE ⑤d — NO CONFLICT AT FIRST BOOT. The tree carries 701 hand-authored `.mem` carriers under
+  # `bags/` (measured: `find bags -name "*.mem" | wc -l` → 701; 600 of them under the three literally
+  # granted bags). A projector that fired a conflict on any of them at a cold boot would bury the one
+  # real standoff in noise, and an operator trained to ignore the rail is the same as no rail.
+  step "NEG d — a cold boot surfaces NO conflict across the hand-authored carriers"
+  local FIRST
+  FIRST=$($COMPOSE logs lararium-a 2>&1 | grep -cF "[disk-ward] write refused")
+  if [ "${FIRST:-0}" -eq 0 ]; then ok
+  else
+    bad "${FIRST} conflict(s) fired at first boot — the rail is noisy before any hand moved"
+    $COMPOSE logs lararium-a 2>&1 | grep -F "[disk-ward] write refused" | head -3 | cut -c1-200 | sed 's/^/      /'
+  fi
+
+  step "a carrier is placed, and projects once"
+  $COMPOSE exec -T lararium-a sh -c "printf 'the base text\n' > /tmp/conf.mem" 2>/dev/null
+  if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/conf.mem --json 2>&1 \
+     | grep -q '"ok":true'; then ok
+  else bad "the base carrier never landed"; clear_all; return; fi
+
+  # NEGATIVE ⑤b — A BYTE-IDENTICAL NOOP WRITES NOTHING AND CHURNS NO MTIME. The echo gate stands at
+  # projection-gate.ts:81 (`disk-matches-records`), and the projector records the observation without
+  # writing (disk-projector.ts:500). A projector that rewrote identical bytes would churn every mtime
+  # on every pass and make the ingest leg blind to real edits.
+  step "NEG b — a byte-identical re-place churns no mtime"
+  local F M1 M2
+  F=$($COMPOSE exec -T lararium-a sh -c "find /lar-a -name '*conflict*' -name '*.mem' 2>/dev/null | head -1" 2>/dev/null | tr -d '\r\n')
+  if [ -z "$F" ]; then
+    gap "the carrier projected to no file — the mtime reading has nothing to watch"
+  else
+    M1=$($COMPOSE exec -T lararium-a sh -c "stat -c %Y '$F'" 2>/dev/null | tr -d '\r')
+    $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/conf.mem >/dev/null 2>&1
+    sleep 5
+    M2=$($COMPOSE exec -T lararium-a sh -c "stat -c %Y '$F'" 2>/dev/null | tr -d '\r')
+    if [ "$M1" = "$M2" ]; then ok; else bad "an identical write churned the mtime ($M1 → $M2)"; fi
+  fi
+
+  # ★ THE READING. BOTH hands move: the file on disk AND the records in the doc, since the last
+  # projection. The gate must answer `conflict / both-moved`, write nothing, and surface.
+  step "★ both hands move one carrier — a CONFLICT surfaces and nothing is overwritten ★"
+  if [ -z "$F" ]; then
+    gap "unwalkable — no projected file stands to move by hand"
+  else
+    $COMPOSE exec -T lararium-a sh -c "printf 'the DISK hand moved this\n' >> '$F'" 2>/dev/null
+    $COMPOSE exec -T lararium-a sh -c "printf 'the RECORD hand moved this\n' > /tmp/conf2.mem" 2>/dev/null
+    $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/conf2.mem >/dev/null 2>&1
+    local d=$((SECONDS + 60))
+    while ! logs_have "[disk-ward] write refused" lararium-a && [ "$SECONDS" -lt "$d" ]; do sleep 5; done
+    if logs_have "projection conflict" lararium-a; then ok
+    else
+      bad "no conflict surfaced — one stream drowned the other, or the gate never ran"
+      $COMPOSE logs --since 3m lararium-a 2>&1 | grep -iE "disk-ward|project" | tail -4 | cut -c1-200 | sed 's/^/      /'
+    fi
+
+    # NEGATIVE ⑤c — NO AUTO-MERGE, NO LAST-WRITER-WINS. Assert the ABSENCE: the operator's disk text
+    # must still stand, unmerged, after the refusal. A gate that surfaced AND overwrote would pass the
+    # step above.
+    step "NEG c — the disk hand's bytes STILL STAND, unmerged"
+    if $COMPOSE exec -T lararium-a sh -c "grep -qF 'the DISK hand moved this' '$F'" 2>/dev/null; then ok
+    else bad "the disk edit was overwritten — the refusal did not refuse"; fi
+  fi
+
+  # THE RAIL. A verdict the operator never sees is the failure this scenario exists to catch.
+  step "the operator is TOLD — a durable @daemon audit under the ward ledger"
+  if logs_have "disk-ward" lararium-a; then
+    local AUD
+    AUD=$($COMPOSE exec -T lararium-a $LARES meme list --bag daemon --json 2>&1 | grep -cF "ledger/ward/")
+    if [ "${AUD:-0}" -gt 0 ]; then ok
+    else
+      gap "the refusal logged but no ward-ledger record stands — the rail stops at the console"
+      printf '      worker-data-verbs.ts:243 writes lar:///ha.ka.ba/bags/daemon/ledger/ward/<id>\n'
+      printf '      wakes when the admin VM reactor runs against a container boot\n'
+    fi
+  else
+    gap "no refusal fired, so the rail carried nothing to measure"
+  fi
+
+  # NEGATIVE ⑤a — A CLEAN PROJECT STILL PROJECTS. Without this the family could be "cured" by refusing
+  # every write, which is the failure wearing a fix's face.
+  step "NEG a — CONTROL: a clean carrier still projects"
+  local CLEAN="lar:///t.conflict.clean/one"
+  $COMPOSE exec -T lararium-a sh -c "printf 'clean text\n' > /tmp/clean.mem" 2>/dev/null
+  if $COMPOSE exec -T lararium-a $LARES meme put "$CLEAN" --recipe lares --file /tmp/clean.mem --json 2>&1 \
+     | grep -q '"ok":true'; then ok
+  else bad "a clean carrier no longer projects — the gate refuses everything"; fi
+  clear_all
+}
+
+# ── ⑥ NEXUS BOARD KEYING, AND THE GRADIENT'S THREE STATES ───────────────────────────────────────
+# TWO VESSELS SHARING ONE CHARTER MUST COMPUTE ONE BOARD. The scope is the charter's genesis epoch —
+# `GENESIS_RE = /^epoch0-[0-9a-f]{64}$/` (nexus-identity.ts:71) — hashed into a doc id by
+# `deterministicDocUrl`, so A and B derive the same address "alike by every holder and belonging to
+# no operator" without exchanging it.
+#
+# ⚠ THE HEADLINE AND ITS SHARPEST NEGATIVE BOTH STAND GREEN, MEASURED 2026-09-13 in a container:
+# a charter torn at its epoch produced `[lararium] fatal: Error: [nexus] the island reads TORN, so no
+# board may be addressed`, the vessel exhausted `restart: on-failure:8` and stayed exited, and the
+# floor reading `(own)` appeared ZERO times. So the separation survives and the refusal is real.
+# This stands as a REGRESSION GUARD on the three-state gradient, and says so.
+#
+# THE THREE STATES, each with its own reading:
+#   (a) no charter          → `(own)`             — a PRIVATE NEXUS OF ONE
+#   (b) charter seated      → `(charter, shared)` — the genesis epoch, shared
+#   (c) charter unreadable  → TORN                — refuses; `nexusScopeOrThrow` throws rather than
+#                                                   handing back anything a `??` could absorb
+# COVERS: private/multisig/unfed
+run_board() {
+  say "BOARD — one charter, one board; different charters, different boards; a torn one, neither"
+  clear_all
+  local LARES="node packages/lares-cli/dist/src/bin/lares.js"
+
+  # THE RELAY FIRST, THEN ONE HEARTH AT A TIME — the boot lottery `realm-crossing` measured.
+  step "the relay stands FIRST"
+  if $COMPOSE up -d herm-source >/dev/null 2>&1 && up_and_answering herm-source; then ok
+  else bad "the relay never answered"; clear_all; return; fi
+  local svc
+  for svc in lararium-a lararium-b; do
+    step "$svc stands, alone against a mesh already up"
+    if $COMPOSE up -d --no-deps "$svc" >/dev/null 2>&1 && up_and_answering "$svc"; then ok
+    else bad "$svc never stood"; dump_boot_failure "$svc"; clear_all; return; fi
+  done
+
+  # NEGATIVE ⑥b — A VESSEL IN NO NEXUS STANDS AS A PRIVATE NEXUS OF ONE. This is state (a), and it is
+  # a first-class lifecycle stage rather than a fault: "standing a hearth up and connecting it to a
+  # Nexus LATER is a first-class flow".
+  #
+  # ⚠ BOTH HEARTHS SEAT THEIR OWN CABAL AT BOOT (`LAR_STAND_KAHU`), so each already reads `charter`
+  # under its OWN genesis epoch — which is exactly what negative ⑥a needs.
+  step "NEG a — two vessels under DIFFERENT charters compute DIFFERENT boards"
+  local EA EB
+  EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  if [ -n "$EA" ] && [ -n "$EB" ] && [ "$EA" != "$EB" ]; then ok
+  else
+    bad "two independently-founded vessels do not separate"
+    printf '      A: %s\n      B: %s\n' "${EA:-none}" "${EB:-none}"
+  fi
+
+  # ★ THE READING. B takes A's charter by its own doors and contracts in; both must then name ONE
+  # island. `nexus refresh` reports the realm doc each side derives — the two must agree.
+  if ! contract_ab; then clear_all; return; fi
+  step "★ under ONE charter, both vessels compute ONE board ★"
+  local RA RB
+  RA=$($COMPOSE exec -T lararium-a $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus refresh --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
+  else
+    bad "the two sides name different boards under one charter"
+    printf '      A: %s\n      B: %s\n' "${RA:-none}" "${RB:-none}"
+  fi
+
+  # NEGATIVE ⑥c — A TORN CHARTER MUST NOT FALL TO THE FLOOR, and its state must read DISTINCT from
+  # no-nexus on the wire. Falling back would "descend a serving vessel to a private board on an
+  # accident: it would believe it published while every peer watched it vanish".
+  # THE FLOOR READING RIDES A DELTA here for the same reason it does in `climb`: B's own boot before
+  # her charter seated printed `(own)` honestly, and an absolute count would read that as this step's
+  # failure. The negative asks whether the TEAR produced a new one.
+  step "NEG c — B's charter is TORN: she REFUSES, and never reads as no-nexus"
+  local OWN_BEFORE OWN_AFTER
+  OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-b)
+  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /lar-b/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE restart lararium-b >/dev/null 2>&1
+  local d=$((SECONDS + 180)) tornseen=0
+  while [ "$SECONDS" -lt "$d" ]; do
+    [ "$(logs_count 'the island reads TORN, so no board may be addressed' lararium-b)" -gt 0 ] && { tornseen=1; break; }
+    sleep 5
+  done
+  OWN_AFTER=$(logs_count '\[nexus\] island .* \(own\)' lararium-b)
+  if [ "$tornseen" -eq 1 ] && [ "$OWN_AFTER" -eq "$OWN_BEFORE" ]; then ok
+  else
+    bad "a torn charter fell to the floor (${OWN_BEFORE} → ${OWN_AFTER}) or never refused"
+    $COMPOSE logs --since 4m lararium-b 2>&1 | tail -4 | cut -c1-220 | sed 's/^/      /'
+  fi
+
+  # AND THE REFUSAL IS LEGIBLE FROM OUTSIDE. A vessel that refused silently would read to a peer
+  # exactly like one that never stood, which is the conflation state (c) exists to prevent.
+  step "and the refusal reads DISTINCT from a vessel that simply never stood"
+  if [ "$(logs_count 'a charter STANDS at this vessel' lararium-b)" -gt 0 ]; then ok
+  else bad "the torn reading names no charter — a peer cannot tell it from an unfounded vessel"; fi
+  clear_all
+}
+
 case "$WANT" in
   operator-a) run_operator a ;;
   operator-b) run_operator b ;;
@@ -1140,8 +1820,14 @@ case "$WANT" in
   open-relation) run_open_relation ;;
   leaf)       run_leaf ;;
   meme)       run_meme ;;
-  all)        run_operator a; run_operator b; run_quorum; run_relation; run_realm; run_open; run_open_relation; run_leaf; run_crossing; run_nexus; run_realm_crossing; run_quorum_realm; run_meme ;;
-  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | all)" >&2; exit 2 ;;
+  climb)      run_climb ;;
+  seal)       run_seal ;;
+  title)      run_title ;;
+  wikis)      run_wikis ;;
+  conflict)   run_conflict ;;
+  board)      run_board ;;
+  all)        run_operator a; run_operator b; run_quorum; run_relation; run_realm; run_open; run_open_relation; run_leaf; run_crossing; run_nexus; run_realm_crossing; run_quorum_realm; run_meme; run_climb; run_seal; run_title; run_wikis; run_conflict; run_board ;;
+  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | climb | seal | title | wikis | conflict | board | all)" >&2; exit 2 ;;
 esac
 
 say "═══ RESULT ═══"
