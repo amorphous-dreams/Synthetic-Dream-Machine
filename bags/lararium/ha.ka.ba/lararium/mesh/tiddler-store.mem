@@ -29,7 +29,7 @@ one, a canon one, a memory one — and the shape moves for none of them.
 
 | ''layer'' | ''holds'' |
 |core |TW5 core, plugin and shadow tiddlers |
-|canon |hostless `lares/` carriers, resident and long-lived |
+|canon |`lares/` carriers, resident and long-lived |
 |wiki |shared live wiki edits, CRDT-backed |
 |user |operator private notes and personal overlays |
 |session |drafts, focus state, temp tiddlers, cursors — personal |
@@ -66,6 +66,6 @@ rather than an absence it must guess at.
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 
-<<^ code="&#x0003;">>ni:///sha-256;krqBmwx2rlYk2gYQaVff8L2ybQWMZA5CxpiH4yayaSw
+<<^ code="&#x0003;">>ni:///sha-256;giLPsHNMFBxdSOXEKtG3mAxqZjzjeK_hSA4agEcDTFM
 
 <<^ code="&#x0004;" -> to="?">>

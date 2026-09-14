@@ -41,13 +41,19 @@ different grammar than the call. A record IS the trace, in the grammar everythin
 ''Every system `id` uses the `lar:` URI scheme'' — command ids, receipt ids, audience ids, principal ids,
 session artifact ids, storage artifact ids, and any other first-class name.
 
-''The authority says where the named thing lives:''
+''The authority says who spoke; the naming CONVENTION reads as a courtesy, never a verdict:''
 
 <<~ scale locality """hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it""">>
 
-''So one glance at a name says whether the thing it names outlives the session.'' A hostless name outlives
-the node; a hostful one does not, and reading a hostful name as durable NAMES the failure this law makes
-visible.
+''An author following the convention hands a reader a hint, and the law stops there.'' Hostful and hostless
+name WHAT a URI names — a hostful authority states who spoke, under what grant, from where, which reads as
+a fact about the CONTENT and keeps holding for as long as the content stands
+(`lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary`).
+
+⚠ ''So a reader derives no durability from the form, and MUST NOT.'' Durability answers to the holding bag
+and the layer, never to the count of slashes: a captured session turn promoted into canon carries its
+hostful name onward and outlives every node that ever held it. A caller that gates, routes, or ranks on
+the address form reads a content property as a layer property — the failure this law names.
 
 ''Provenance:'' harvested verbatim from `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`,
 where both laws stood settled with no live carrier holding either.
@@ -264,6 +270,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-q1LVGnTNx3hpPZoxYf4gtLZVpe1Z0Im1Ca2A84RSqo
+<<^ code="&#x0003;">>ni:///sha-256;nkSrPAdzpfH2do1WtWyISNIxsFL3eV-_9wr-9rz7Ldg
 
 <<^ code="&#x0004;" -> to="?">>

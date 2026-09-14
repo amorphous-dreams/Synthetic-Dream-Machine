@@ -28,11 +28,11 @@ It gives agents and operators examples for keeping all system files, data blobs,
 
 <<~ ahu #/ooda-ha>>
 
-✶ observe which record speaks: hostless meme, hostful exchange, data meme, branch artifact, or generated trajectory.
+✶ observe which record speaks: canonical meme, live exchange record, data meme, branch artifact, or generated trajectory.
 ⏿ orient the record by memetic trust tier before using its content as instruction or memory.
 ◇ decide whether the record informs, proposes, contradicts, or governs.
 ▶ act through the least powerful layer that can lawfully carry the change.
-↺ verify live pressure did not overwrite a stronger hostless meme; leave promotion residue visible when a session wants durable placement.
+↺ verify live pressure did not overwrite a stronger canonical meme; leave promotion residue visible when a session wants durable placement.
 
 <<~/ahu>>
 
@@ -44,7 +44,7 @@ One `lar:` l-space gives the system a single navigable map.
 That map still needs trust markers.
 An injested data bloc belongs on the map, but it marks a high-mana cost resource/signal.
 A live exchange belongs on the map, but it reads as situated signal rather than stable law.
-A hostless invariant meme belongs on the map, and it may govern behavior until changed through a deliberate crossing.
+An invariant meme belongs on the map, and it may govern behavior until changed through a deliberate crossing.
 
 This docs layer uses one simple rule:
 
@@ -61,12 +61,14 @@ It protects operator agency from accidental prompt-glare, recency pressure, or j
 
 Default trust pressure, strongest first:
 
-# hostless invariant memes
-# hostless interface and control-panel memes
-# hostless data, docs, and explanatory memes
+# invariant memes
+# interface and control-panel memes
+# data, docs, and explanatory memes
 # branch-local implementation artifacts and data memes
-# hostful live exchange records and data memes
+# live exchange records and data memes
 # generated trajectory records and data memes
+
+''The rungs name RECORD KINDS, never address forms.'' A record's holding bag reports its kind at rest, and a record in flight declares its own; a hostful authority states who spoke and grades nothing (#/implementation-notes keeps the two fields apart by design).
 
 This ladder should behave as resolver pressure, not metaphysical hierarchy.
 A weaker record may reveal a stronger record has drifted.
@@ -114,9 +116,7 @@ Another data meme address (library document):
 lar:///ha.ka.ba/lares/library/discordia/the-count-of-5s/common-sense-tarot
 ```
 
-Both records may appear in the same graph.
-Only the first one carries hostless invariant pressure.
-The second one records situated operator-node context.
+Both records may appear in the same graph, and the two address forms rank neither: each states what its URI names, and the FTLS pair above names one resource twice — once as a place in the graph, once as a speaker's ingest of it. Which record carries invariant pressure reads off the kind each one declares and the bag holding it, never off the count of slashes.
 
 <<~/ahu>>
 
@@ -150,6 +150,6 @@ Speaker role and truth tier must stay separate.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nEKRwDXJQSRy9ooPDXKONJ-9jjqyRqjvjkFLARHgKYo
+<<^ code="&#x0003;">>ni:///sha-256;pXpk5Zby1UAMErtE_Cf_OxhlJoiEi4kdcC9_wKcJSc8
 
 <<^ code="&#x0004;" -> to="?">>

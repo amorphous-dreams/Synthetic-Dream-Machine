@@ -34,7 +34,7 @@ Without the ceremony, the canon MOVE collapses into silent accumulation — a na
 ✶ gather the live claim, the target meme, affected invariants, and the operator's declared intent.
 ⏿ name what must be reconciled: conflicts, prior state, residue still outstanding.
 ◇ choose the least powerful write path that preserves trust ordering and leaves nothing unnamed.
-▶ perform the crossing — create or revise the hostless meme only under explicit authority.
+▶ perform the crossing — create or revise the canon meme only under explicit authority.
 ↺ verify coherence: file-path, uri-path, capability claims, and known conflicts surface before the canon MOVE holds; release prior state with forgiveness; leave unpromoted residue as named session records with forward pressure.
 
 <<~/ahu>>
@@ -48,7 +48,7 @@ Hoʻoponopono requires:
 # ''Discussion'' — the operator names the claim aloud; conflicts and residue surface, not suppressed
 # ''Acknowledgment'' — prior state gets recognized; the meme under change gets read as it stands
 # ''Forgiveness'' — prior state releases without carrying forward as grievance
-# ''Crossing'' — the operator writes or revises the hostless meme under named authority
+# ''Crossing'' — the operator writes or revises the canon meme under named authority
 # ''Closure'' — the node marks the live record as MOVED to canon; forward pressure discharges
 
 The ceremony MAY compress steps when the change is small and uncontested.
@@ -74,7 +74,7 @@ The crossing MUST be named. Silent canon MOVE is a failure mode — see `lar:///
 A canon-MOVE record SHOULD include (this IS the Sprint-4 `transfer`/`accession` effect record for the MOVE):
 
 * source live exchange URI or session record
-* target hostless `lar:///` URI
+* target canon `lar:` URI — the subject's own address, identical either side of the crossing
 * changed text or new meme file
 * authority confirmation
 * known conflicts
@@ -111,6 +111,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w8ltt3BIApUkuNVyuVYZOjA4l6ZmRd5zINd1WZf0faw
+<<^ code="&#x0003;">>ni:///sha-256;Lol6SlRF_Yivj4_oCyEEVAZto3tkdfvoNmLWR0OPCZM
 
 <<^ code="&#x0004;" -> to="?">>

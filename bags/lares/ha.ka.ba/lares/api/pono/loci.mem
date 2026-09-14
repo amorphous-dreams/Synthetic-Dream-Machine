@@ -60,7 +60,7 @@ Five buckets mark the structural rating of a carrier (law-of-5s):
 # ''Kapu'' — above base namespace; wears the kapu grant (operator-minted); kernel/sacred tier. (Hawaiian: set apart, restricted)
 
 Rating derives from structure — a predicate run against the carrier, never a class consulted.
-Promotion to lares/ canon (live session → branch commit → hostless URI) follows a separate ceremony.
+Promotion to lares/ canon (live session → branch commit → canon residency) follows a separate ceremony; the crossing moves the envelope and leaves the URI standing.
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci/meta">>
 
@@ -201,6 +201,6 @@ Convention fails when:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KvOsG2zS_9K_lH_GHIC4L3danEWvkHrjxU67ZidExlU
+<<^ code="&#x0003;">>ni:///sha-256;Ke4UaSSq2Cl_liFjcbrcw819XKqxqXW9_bBTwuxIAfA
 
 <<^ code="&#x0004;" -> to="?">>

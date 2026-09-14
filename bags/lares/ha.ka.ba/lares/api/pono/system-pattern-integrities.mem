@@ -138,7 +138,7 @@ desc  = "Any write that reaches lares/ MUST carry: actor, origin URI, target URI
 ```toml #AUTH_5_TRUST_LADDER
 id    = "AUTH_5_TRUST_LADDER"
 label = "Weaker record surfaces drift as a trust-boundary event"
-desc  = "Trust order (strongest first): hostless pattern-integrity memes → hostless capability memes → hostless data/docs → branch-local artifacts → hostful live exchange → generated trajectory. A weaker record discovering drift in a stronger record MUST surface a trust-boundary event; canon holds in the stronger record."
+desc  = "Trust order (strongest first): pattern-integrity memes → capability memes → data/docs memes → branch-local artifacts → live exchange records → generated trajectory. The rungs name RECORD KINDS, read off the holding bag at rest and off the record's own declaration in flight; a URI's hostful authority names WHO SPOKE and grades no rung. A weaker record discovering drift in a stronger record MUST surface a trust-boundary event; canon holds in the stronger record."
 ```
 
 <<~/ahu>>
@@ -355,6 +355,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k_BmFXSLwOwg4-Giz6oXzw2QSWPIF1-GMEpVHvWAyEQ
+<<^ code="&#x0003;">>ni:///sha-256;w6Siikb_Mxe1S8-Mz0kMC4R6oD5elbc6O1fSVInXLYc
 
 <<^ code="&#x0004;" -> to="?">>

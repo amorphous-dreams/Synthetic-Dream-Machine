@@ -24,14 +24,16 @@ uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 
 All system memes, imported data memes, and all exchange turns inhabit one `lar:` l-space.
 Shared addressability MUST NOT imply shared authority.
-Hostless canonical memes carry stable law; hostful exchange records carry situated signal; data memes of any type cary signal at a mana cost;
+Canonical memes carry stable law; live exchange records carry situated signal; data memes of any type carry signal at a mana cost.
+
+''The record KIND carries the trust, and the address form carries none of it.'' Hostful and hostless name WHAT a URI names — a hostful authority states who spoke, under what grant, from where, which reads as a fact about the content and keeps holding for as long as the content stands. Both forms stand lawful in any bag on any layer (`lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary`), so a node MUST NOT assign trust by reading the authority.
 
 <<~/ahu>>
 
 <<~ ahu #/ooda-ha>>
 
-✶ read the URI authority, path, query signal, and carrier source before trust assignment.
-⏿ separate hostless canonical memes from hostful exchange records from data memes without merging their force.
+✶ read the record's declared kind, its holding bag, the query signal, and the carrier source before trust assignment.
+⏿ separate canonical memes from live exchange records from data memes without merging their force.
 ◇ choose the higher-precedence source when live session pressure collides with invariant law.
 ▶ surface the trust-boundary event instead of silently rewriting the graph.
 ↺ verify the cited meme tier outranks the live record before applying behavior; leave promotion pressure visible when a session claim wants durable placement.
@@ -40,17 +42,20 @@ Hostless canonical memes carry stable law; hostful exchange records carry situat
 
 <<~ ahu #/law>>
 
-Hostless `lar:///` memes MAY carry stable law, capability shape, data, docs, or file-backed source truth.
-Hostful `lar://alias:grant@host/` records MAY carry live exchange intent, session context, and trajectory pressure.
-Data memes may appear as either pattern, surfaced through exploration.
+A ''canonical meme'' MAY carry stable law, capability shape, data, docs, or file-backed source truth.
+A ''live exchange record'' MAY carry exchange intent, session context, and trajectory pressure.
+Data memes may appear as either kind, surfaced through exploration.
 
 A live exchange record MAY inform interpretation.
 A live exchange record MAY propose revision.
-A live exchange record MUST NOT silently override a hostless invariant meme.
+A live exchange record MUST NOT silently override an invariant meme.
 
-When hostful live context conflicts with hostless invariant law, the node MUST surface a trust-boundary event before applying the live claim.
+When live context conflicts with invariant law, the node MUST surface a trust-boundary event before applying the live claim.
 
-Speaker authority (`alias:grant@host`) and memtic truth authority MUST remain distinct.
+''Speaker authority (`alias:grant@host`) and memetic truth authority MUST remain distinct.'' The authority slot names a speaker and authorizes nothing by itself (`lar:///ha.ka.ba/lares/api/pono/lar-uri#/resolution`), so it grades no record and demotes none.
+
+''How a node reads the kind.'' The holding bag answers it for a record at rest — residency rides the envelope and a query over surfaces reports it. A record in flight through an exchange span carries no bag yet, so its own declaration answers: the carrier's `tags` lifecycle, its declared type, and the turn frame that carries it. ⚠ A turn-borne record declaring neither owes an explicit kind before the ladder below ranks it; ranking an undeclared record by the shape of its address reads a content property as a layer property.
+
 Operator agency matters; persistence and placement still matter.
 
 <<~/ahu>>
@@ -59,15 +64,15 @@ Operator agency matters; persistence and placement still matter.
 
 Precedence pressure reads from most stable to most local:
 
-# hostless invariant memes
-# hostless capability and control-panel memes
-# hostless data, docs, and explanatory memes
+# invariant memes
+# capability and control-panel memes
+# data, docs, and explanatory memes
 # branch-local implementation artifacts and data memes
-# hostful live exchange records and data memes
+# live exchange records and data memes
 # generated trajectory records and data memes
 
 This list expresses default trust pressure, not an absolute metaphysical ranking.
-Explicit operator-mediated promotion MAY move content upward by creating or revising the appropriate hostless meme.
+Explicit operator-mediated promotion MAY move content upward by creating or revising the appropriate canonical meme.
 
 <<~/ahu>>
 
@@ -83,6 +88,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7QjjBry21n58hZf5pzlN1wuq_uP3eafC6yRg3w6rn-c
+<<^ code="&#x0003;">>ni:///sha-256;g1GHsN4iYQeoxu7SqjJ6g7bpSGnrGgtHnDVsM9wfICc
 
 <<^ code="&#x0004;" -> to="?">>

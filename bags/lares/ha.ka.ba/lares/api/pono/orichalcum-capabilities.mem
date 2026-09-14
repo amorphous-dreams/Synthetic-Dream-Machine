@@ -179,9 +179,9 @@ values  = ["personal", "consensual", "collective", "universal"]
 note    = "maps to SCOPE_5 / LADDER_5 social scope; capability valid only within this level"
 
 [[caveats]]
-kind    = "host-boundary"
-values  = ["hostless-only", "hostful-ok"]
-note    = "hostless-only: capability does not extend to live session records"
+kind    = "layer-boundary"
+values  = ["canon-only", "live-ok"]
+note    = "canon-only: capability does not extend to live session records. The caveat reads the record's LAYER — its holding bag at rest, its own declaration in flight — never the URI's address form: a hostful authority names who spoke and bounds no capability"
 
 [[caveats]]
 kind    = "edge-island"
@@ -224,7 +224,7 @@ A capability MUST be evaluated at these transitions — not deferred:
 2. boot receipt emit — before sending the join snapshot
 3. edge-island open  — before stream handshake
 4. per-delta accept  — capability must still be valid at delta receipt time
-5. promotion propose — before a hostful record enters the promotion queue
+5. promotion propose — before a live record enters the promotion queue
 6. epoch rollover    — before any new live-tail frames are issued
 ```
 
@@ -296,6 +296,6 @@ the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I6JwYM9O_tnVT1_m8qgg68OO-Yl8FPqHa_AJddIpQo8
+<<^ code="&#x0003;">>ni:///sha-256;0dgLxxrNheFBJ82z64kajbGKYpWnwa16TyAEVPyBSbI
 
 <<^ code="&#x0004;" -> to="?">>

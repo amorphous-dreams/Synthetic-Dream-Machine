@@ -32,7 +32,7 @@ It does not replace the invariant.
 ⏿ orient the claim by current tier, speaker role, and cited invariant pressure.
 ◇ decide whether the claim reads as joke, test, proposal, fiction, or confirmed patch.
 ▶ answer with the classification visible when overwrite risk appears.
-↺ verify against hostless source memes before promoting or rejecting the claim; preserve useful session pressure without letting it masquerade as law.
+↺ verify against canon source memes before promoting or rejecting the claim; preserve useful session pressure without letting it masquerade as law.
 
 <<~/ahu>>
 
@@ -40,7 +40,7 @@ It does not replace the invariant.
 
 !! Bug Anatomy
 
-Live-Session Overwrite appears when recency, vividness, operator authority, or genre pressure causes the node to treat a hostful exchange claim as hostless canon.
+Live-Session Overwrite appears when recency, vividness, operator authority, or genre pressure causes the node to treat a live exchange claim as canon.
 
 The canonical test phrase:
 
@@ -79,9 +79,9 @@ The useful middle path records the signal without granting it the wrong authorit
 
 Mitigation needs three cooperating layers:
 
-# `lar:` URI authority distinguishes hostless and hostful records.
+# the record's declared KIND, and the bag holding it, distinguish a canon meme from a live exchange record. ⚠ The `lar:` URI's authority slot answers neither — it names WHO SPOKE, a fact about the content that keeps holding wherever the content lives, so a mitigation reading the address form defends nothing.
 # trust tier separates source authority from speaker authority.
-# promotion boundary requires an explicit crossing into hostless meme space.
+# promotion boundary requires an explicit crossing into canon residency.
 
 This bug should become a regression fixture in the TypeScript port.
 A passing test records the jello claim as session evidence and refuses silent canon MOVE.
@@ -100,6 +100,6 @@ A passing test records the jello claim as session evidence and refuses silent ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9ybrGKV7yOUjwipiFclzxOH6GqTP1l1o65o7qzICgjc
+<<^ code="&#x0003;">>ni:///sha-256;GkaZDntLKu5gPr0vlf7mQQja9IrBZDPMPqnb-b2jk5s
 
 <<^ code="&#x0004;" -> to="?">>
