@@ -6,8 +6,11 @@
  * origin, each in its native grain — disk holds whole markdown memes, the
  * doc holds tid-sized records, the VM decomposes for transclusion. Merge
  * authority routes through the CRDT alone; this projector renders the disk
- * co-projection and NEVER reads from disk — that direction belongs to the
- * ingest path (file watcher → store.put).
+ * co-projection and never INGESTS from disk — that direction belongs to the
+ * ingest path (file watcher → store.put). It does READ disk, for one purpose
+ * only: the Confluence gate below needs to know what the operator's hands left
+ * there before it is allowed to write over it. A read that decides whether to
+ * write is not an ingest — no disk byte ever reaches a record through here.
  *
  * Bag-aware: each writable bag may opt into a filesystem mirror via
  * BagMirrorConfig. Bags without a mirror config never write to disk. The two
@@ -43,12 +46,22 @@
  * writes. The `writing` Set survives beneath them as a latency
  * optimization only (skip re-statting our own in-flight writes); no
  * correctness rests on it.
+ *
+ * THE CONFLUENCE, PROJECTING LEG (`projection-gate.decideProjection`): every flush the
+ * byte-identity skip does not answer meets the three-way gate — the records' render, the
+ * merge base, and what stands on disk — before a single byte is written. `project`
+ * writes; `noop` stands down silently (the ingest leg owns that state); `conflict`
+ * stands down LOUDLY on the ward-alert rail (`onConflict`). Both legs of the round trip
+ * reconcile and neither overwrites (the operator's ruling: conflict-surfacing in BOTH
+ * legs). The gate decides and never writes; this file owns every I/O and every alert.
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
 import { dirname, basename } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
+import { decideProjection } from "./projection-gate.js";
+import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, WindowServo } from "@lararium/mesh";
@@ -86,6 +99,32 @@ export interface LarDiskProjectorOptions {
   readonly debounceMs?: number;
   /** Fired on every disk-ward refusal — the island routes it to the daemon VM. */
   readonly onRefusal?: (info: { bagId: string; uri: string; reason: string }) => void;
+  /**
+   * Fired whenever the Confluence's projecting leg reads a STANDOFF (`decideProjection`
+   * → `conflict`): the disk and the records BOTH moved past the merge base, so no write
+   * happens and the divergence SURFACES instead (the operator's ruling — conflict-surfacing
+   * in both legs; Unison's law: surface, never overwrite).
+   *
+   * A SEPARATE callback from `onRefusal` on purpose. A ward refusal says "this write was
+   * not allowed"; a conflict says "this write would have drowned an edit". Routing both
+   * through one callback would send an operator to the wrong mechanism — the same reason
+   * `fileWardRefusal` takes a `wardKind` and names the ward that actually refused.
+   * Absent → the conflict still suppresses the write (fail-closed) and logs; the operator
+   * simply learns of it from the console rather than the daemon ledger.
+   */
+  readonly onConflict?: (info: { bagId: string; uri: string; reason: string }) => void;
+  /**
+   * WHAT THE DISK BYTES SAY — `render(parse(diskText))` for the memetic-wikitext family
+   * (`@lararium/tw5/carrier-canonical`, the ONE door; the pure subpath, no wasm). Feeds
+   * `decideProjection`'s canonical-equivalence clause, which is what tells the ORDINARY
+   * post-ingest round trip apart from a genuine standoff.
+   *
+   * Null from the function, or the option ABSENT, both mean "no trustworthy canonical view"
+   * — and the gate reads that as the standoff, never as equivalence. So a projector mounted
+   * without this stays fail-closed: it surfaces conflicts it cannot resolve rather than
+   * writing through them.
+   */
+  readonly canonicalizeFn?: (uri: string, diskText: string) => string | null;
   /** Optional readiness map — lights `disk-projector` after first flush. */
   readonly readinessMap?: ReadinessMap;
   /** Write a .json sidecar next to each .md for peek debugging. */
@@ -223,6 +262,8 @@ export class LarDiskProjector {
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
   private readonly debounceMs: number;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
+  private readonly onConflict: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
+  private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree | undefined;
@@ -235,6 +276,8 @@ export class LarDiskProjector {
     this.bagsHolding  = opts.bagsHolding;
     this.debounceMs   = opts.debounceMs ?? 1000;
     this.onRefusal    = opts.onRefusal;
+    this.onConflict   = opts.onConflict;
+    this.canonicalizeFn = opts.canonicalizeFn;
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree;
@@ -473,6 +516,32 @@ export class LarDiskProjector {
     renameSync(tmp, candidate);
   }
 
+  /**
+   * WHAT STANDS ON DISK, in the CARRIER'S OWN TEXT FORM — the one shape the Confluence
+   * hashes on both legs. A binary filetype reads its raw bytes and re-encodes to base64,
+   * because the Synced-tree observation and the ingest gesture both hash that base64 text
+   * (the carrier text), never the decoded bytes; only the physical file holds those.
+   *
+   * Returns null for an INCOMPLETE carrier — no content file, or a missing `.meta` beside a
+   * filetype that declares one. Null is the gate's `absent-on-disk`: nothing coherent stands
+   * there to lose. An unreadable file reads the same way, and that is deliberate — the write
+   * that follows replaces bytes this shore cannot read, which loses no edit it could ever
+   * have surfaced.
+   */
+  private diskCarrierText(
+    candidate: string,
+    metaPath: string | null,
+    isBinary: boolean,
+  ): { readonly body: string; readonly meta: string | undefined } | null {
+    try {
+      if (!existsSync(candidate)) return null;
+      const body = isBinary ? readFileSync(candidate).toString("base64") : readFileSync(candidate, "utf-8");
+      if (metaPath === null) return { body, meta: undefined };
+      if (!existsSync(metaPath)) return null;
+      return { body, meta: readFileSync(metaPath, "utf-8") };
+    } catch { return null; }
+  }
+
   private async flush(bagId: string, tiddlerUri: string): Promise<void> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
@@ -576,6 +645,40 @@ export class LarDiskProjector {
       }
       if (bodyPending && metaInSync) return;
     } catch { /* unreadable existing file — fall through to the write */ }
+
+    // ── THE CONFLUENCE, PROJECTING LEG ──────────────────────────────────────
+    // The byte-skip above answers only the cheap identity (disk bytes == would-write
+    // bytes). Everything it did not answer now meets the three-way gate: the records'
+    // render, the merge base, and WHAT THE OPERATOR'S HANDS LEFT. The gate decides and
+    // never writes; this shore owns every I/O and every alert (projection-gate's law).
+    // A pointer whose bytes the tier lacks has nothing to write and nothing to compare,
+    // so it never reaches the gate.
+    if (!bodyPending) {
+      const onDisk  = this.diskCarrierText(candidate, metaPath, isBinary);
+      // WHAT THE DISK SAYS, folded exactly as `obsHash` folds the render — so the gate's
+      // `≈` compares like with like. The congruence is the MEMETIC family's, so the view
+      // exists only for a `.mem` carrier; every other filetype hands the gate null, which
+      // reads as the standoff, never as equivalence.
+      const canonicalText = onDisk !== null && file.ext === MEME_EXT && this.canonicalizeFn
+        ? this.canonicalizeFn(tiddlerUri, onDisk.body)
+        : null;
+      const decision = decideProjection({
+        diskHash:    onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta),
+        syncedHash:  this.syncedTree?.get(syncedTreeKey(bagId, tiddlerUri)) ?? null,
+        recordsHash: obsHash,
+        diskCanonicalHash: canonicalText === null ? null : carrierHash(canonicalText, onDisk?.meta),
+      });
+      if (decision.kind === "noop") return;
+      if (decision.kind === "conflict") {
+        // SURFACE, never overwrite. The write stops here; the divergence goes out on the
+        // ward-alert rail (a durable ledger record + an alert in the operator's pinned VM),
+        // named for the mechanism that actually stood down — never as a disk-ward refusal.
+        const reason = `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned`;
+        console.error(`[confluence] projection conflict (${mirror.bagId} <- ${tiddlerUri}): ${reason}`);
+        this.onConflict?.({ bagId: mirror.bagId, uri: tiddlerUri, reason });
+        return;
+      }
+    }
 
     this.writing.add(tiddlerUri);
     try {

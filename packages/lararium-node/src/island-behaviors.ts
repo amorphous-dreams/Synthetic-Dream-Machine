@@ -13,6 +13,8 @@
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
+// PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
+import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { LarDiskProjector } from "./disk-projector.js";
 import { namedBagMirror } from "./bag-paths.js";
 import { SyncedTree } from "./synced-tree.js";
@@ -66,6 +68,25 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
     listenable: "disk-ward:refused",
     payload: { verb: "ward-alert", requestedBy: "disk-ward", bagId: info.bagId, uri: info.uri, reason: info.reason },
   }),
+  // The Confluence's projecting leg read a STANDOFF — disk and records both moved past the
+  // merge base, so the projector stood down and the divergence must reach the operator
+  // (the ruling: conflict-surfacing in BOTH legs). ONE RAIL, NOT A SECOND: it rides the
+  // same ward-alert verb the disk ward rides — the rail `fileWardRefusal` was already
+  // generalized for (the M3 archive-floor write files here too) — and `wardKind` names the
+  // mechanism that actually stood down, so an operator is never sent to the disk ward for
+  // a conflict. The wire `kind`/`cause` stay Rail A's transport names, per that ruling.
+  onConflict: (info) => ctx.post({
+    schema_version: 1,
+    type: "event",
+    wikiUri: ctx.wikiUri,
+    listenable: "confluence:conflict",
+    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason },
+  }),
+  // WHAT THE DISK BYTES SAY — `render(parse(disk))`, the `≈` seat the projecting leg of
+  // the Confluence has no parse of its own to compute. ONE door, the pure subpath (the
+  // barrel drags wasm the plugin build cannot bundle, and this is the same congruence the
+  // ingest leg reads), so exactly one implementation of `≈` stands in the tree.
+  canonicalizeFn: canonicalizeCarrierText,
   syncedTree,
   });
   return projector.start(ctx.tw5);
