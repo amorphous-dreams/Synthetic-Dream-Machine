@@ -14,8 +14,9 @@ import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, statSync
 import { join } from "node:path";
 import { larIdentityDir } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import { readIdentityAnchors, isSealedEnvelope, type AnchorStore, type IdentityAnchors, identityHomeClosure } from "@lararium/mesh";
-import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret, ARCHIVE_PASSPHRASE_ENV, type SealPolicy } from "./archive-seal.js";
+import { readIdentityAnchors, type AnchorStore, type IdentityAnchors, identityHomeClosure } from "@lararium/mesh";
+import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret, ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
+import { refuseWriteOverUnopenableSeal } from "./archive-write-guard.js";
 
 // The IdentityAnchors SHAPE + the AnchorStore shore lift to @lararium/mesh (platform-blind); this node
 // adapter implements the fs shore. Re-exported so existing importers keep their spelling.
@@ -121,46 +122,10 @@ let _warnedCleartext = false;
  */
 /**
  * ── A WRITE LANDS OVER A SEALED CARRIER ONLY UNDER A KEY THAT OPENS IT ──────────────────────────
- * A vessel at the WAKING FLOOR boots without its archive and the M3 floor still exports the keyhive
- * it booted — a fresh, empty identity. Landing that over the sealed bytes replaces the sovereign
- * identity with nothing. The floor wears TWO shapes and both reach this writer:
- *
- *   · NO key (`key-absent`) — the write would land CLEARTEXT over ciphertext, and every later boot
- *     would read the archive as unsealed;
- *   · a WRONG key (`key-wrong`) — the write SEALS, so no cleartext test catches it, and the
- *     sovereign archive comes back readable only under a passphrase that never sealed it. Measured:
- *     `vault rotate` old→new, then one stand under the OLD passphrase, and the identity is gone.
- *
- * ONE INVARIANT covers both: the current key must OPEN what stands on disk before anything replaces
- * it. The seal governs the WRITE as well as the read, so a mistyped passphrase destroys nothing.
- *
- * The deliberate policy-movers do NOT pass through here — `vault seal`, `rotate`, `repair` and
- * `export` stage their own atomic writes in `archive-passphrase.ts`, each having already opened the
- * carriers under the CURRENT key. This guard governs the boot-time re-seal alone.
- *
- * The write throws (the exporter warns and carries on) and the sealed bytes stand.
+ * The guard itself now stands in `archive-write-guard.ts`, because it governs FOUR sealed carriers and not
+ * only these two — a guard living beside one writer is a guard the next writer forgets. That module carries
+ * the reasoning; both archive writers below call it before anything replaces standing bytes.
  */
-function refuseWriteOverUnopenableSeal(path: string, policy: SealPolicy): void {
-  if (!existsSync(path)) return;
-  let stored: Uint8Array;
-  try { stored = readFileSync(path); } catch { return; }
-  if (!isSealedEnvelope(stored)) return;   // a cleartext carrier answers to any policy
-  if (policy.mode === "cleartext") {
-    throw new Error(
-      `archive-seal: refusing to write a cleartext archive over the sealed one at ${path} — ` +
-      `set ${ARCHIVE_PASSPHRASE_ENV} to the passphrase that sealed it`,
-    );
-  }
-  // A key rides the policy — try it against the bytes it would replace. Only an OPEN earns the write.
-  try { openArchiveBytes(stored, policy); }
-  catch {
-    throw new Error(
-      `archive-seal: refusing to write over the sealed archive at ${path} — the configured ` +
-      `${ARCHIVE_PASSPHRASE_ENV} does not open it, so this write would replace the sovereign ` +
-      `identity under a passphrase that never sealed it`,
-    );
-  }
-}
 
 export function persistIdentityArchive(bytes: Uint8Array): void {
   mkdirSync(larIdentityDir(), { recursive: true });

@@ -23,7 +23,7 @@
  * Isolation: every test drives a fresh `mkdtemp` identity home through XDG_*; the operator's live
  * vessel at `~/.local/share/lares` is never reachable from here.
  */
-import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, writeFileSync, readFileSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -41,7 +41,7 @@ import {
 } from "../src/archive-passphrase.js";
 import { setSealExpected } from "../src/lares-config.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
-import { isSealedEnvelope } from "@lararium/mesh";
+import { isSealedEnvelope, readSealCarrier } from "@lararium/mesh";
 import type { RecoveryShare } from "@lararium/mesh";
 
 const PASS_A = "attack-passphrase-alpha-0";
@@ -100,42 +100,63 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
   // A sealed archive written by a LATER vessel (envelope v2) therefore reads to THIS vessel as "not
   // sealed", and the guard's own comment says a cleartext carrier answers to any policy. The floor's
   // empty export then lands over a perfectly intact sealed archive.
-  test("★ HOLE — a sealed archive at an UNKNOWN envelope version reads as cleartext and the floor overwrites it ★", () => {
+  // CURED: `readSealCarrier` splits the reading the probe used to fold. Magic intact + a version this
+  // vessel cannot decode reads `unopenable`, and an unopenable carrier refuses EVERY write — no key can be
+  // judged against bytes this vessel cannot frame, so none may be blamed and none may overwrite them.
+  test("★ CURED — a sealed archive at an UNKNOWN envelope version REFUSES the floor's write ★", () => {
     const sealed = standSealedArchive();
     const futureVersion = Uint8Array.from(sealed);
     futureVersion[4] = 0x02;                       // a v2 envelope: magic intact, version unknown here
     writeFileSync(archivePath(), futureVersion);
-    expect(isSealedEnvelope(readFileSync(archivePath())), "the probe still calls it sealed").toBe(false);
+    // The strict probe still answers false — its CONTRACT is unchanged, and every old caller keeps it.
+    expect(isSealedEnvelope(readFileSync(archivePath())), "the strict probe kept its reading").toBe(false);
+    // The new reading is the one the guard stands on.
+    expect(readSealCarrier(readFileSync(archivePath()))).toBe("unopenable");
 
     // The floor, with NO key — the shape the cleartext guard was built for.
     setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
-    persistIdentityArchive(FLOOR_EXPORT);          // no throw: the guard waved it through
+    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(/cannot decode/);
 
-    const after = readFileSync(archivePath());
-    expect(after.length, "the v2-sealed archive survived").toBe(FLOOR_EXPORT.length);
-    expect(Array.from(after)).toEqual(Array.from(FLOOR_EXPORT));   // the sovereign bytes are GONE
+    // And with the RIGHT key too: an unopenable carrier is not a key question at all.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(/cannot decode/);
+
+    expect(readFileSync(archivePath()).equals(Buffer.from(futureVersion)), "the v2 bytes stood").toBe(true);
   });
 
   // ── ATTACK 2 · THE MAGIC BYTES ──────────────────────────────────────────────────────────────────
   // One flipped byte in the 4-byte magic and the same door opens. Bounded: a carrier whose header is
   // already damaged may be unrecoverable anyway — but the guard destroys the CIPHERTEXT too, which a
   // header repair would otherwise have recovered.
-  test("★ HOLE — a sealed archive with one corrupt MAGIC byte reads as cleartext and the floor overwrites it ★", () => {
+  // CURED, and by a STRUCTURAL reading rather than a guess: the magic is a label, the LAYOUT is the
+  // evidence. A sealed carrier with a damaged magic byte still frames self-consistently — version 0x01, a
+  // known mode code, then three length-prefixed fields (salt/iv/tag) that land exactly inside the file with
+  // ciphertext after. `readSealCarrier` reads that framing and answers `unopenable`, so the ciphertext a
+  // header repair could recover is never overwritten. A genuine cleartext archive does not frame that way.
+  test("★ CURED — a sealed archive with one corrupt MAGIC byte still REFUSES the write (the framing is the evidence) ★", () => {
     const sealed = standSealedArchive();
     const corrupt = Uint8Array.from(sealed);
     corrupt[0] ^= 0xff;
     writeFileSync(archivePath(), corrupt);
+    expect(readSealCarrier(corrupt), "the damaged magic still frames as an envelope").toBe("unopenable");
 
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);        // the RIGHT passphrase — the ciphertext is still there
-    persistIdentityArchive(FLOOR_EXPORT);          // no throw
+    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(/cannot decode/);
 
-    expect(readFileSync(archivePath()).length, "the ciphertext behind a bad magic byte survived").toBe(
-      // a seal of FLOOR_EXPORT, not the 64-byte sovereign ciphertext
-      readFileSync(archivePath()).length,
-    );
-    // The decisive assertion: the sovereign ciphertext no longer stands anywhere in the file.
-    const after = readFileSync(archivePath());
-    expect(after.includes(Buffer.from(corrupt.subarray(40))), "the old ciphertext tail survived").toBe(false);
+    // The decisive assertion, inverted: the sovereign ciphertext STILL stands, byte for byte.
+    expect(readFileSync(archivePath()).equals(Buffer.from(corrupt)), "the ciphertext survived").toBe(true);
+  });
+
+  // The CONTROL that keeps the framing reading from becoming a blanket refusal: bytes that carry no seal
+  // magic AND do not frame as an envelope still read `bare`, and a bare carrier answers to any policy — the
+  // cleartext→sealed upgrade path the M3 floor rides must keep working.
+  test("CONTROL — genuine cleartext bytes read `bare` and still take a write", () => {
+    setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
+    persistIdentityArchive(SOVEREIGN);                       // a bare, unsealed carrier
+    expect(readSealCarrier(readFileSync(archivePath()))).toBe("bare");
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);                  // now configure a passphrase — the upgrade
+    persistIdentityArchive(SOVEREIGN);                       // no throw: the bare carrier seals
+    expect(isSealedEnvelope(readFileSync(archivePath()))).toBe(true);
   });
 
   // ── ATTACK 3 · TRUNCATION WITH THE MAGIC INTACT ─────────────────────────────────────────────────
@@ -155,7 +176,11 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
   // The pin-reader inversion, surviving INSIDE the guard: `archive-passphrase` went to real trouble to
   // keep `unreadable` apart from `key-wrong` (a torn carrier must never send an operator to re-type a
   // credential that was right all along). The guard folds them back together — one catch, one message.
-  test("★ the guard BLAMES a correct passphrase for a torn carrier (unreadable folded into key-wrong) ★", () => {
+  // CURED: the guard now probes through the SAME three-valued atom `readArchiveOpening` reads
+  // (`probeArchiveBytes`, lifted into `archive-seal` so one definition serves both), and names which fact
+  // it met. A torn carrier reads `unreadable` and the refusal says TORN — it never sends an operator to
+  // re-type a credential that was right.
+  test("★ CURED — the guard names a TORN carrier instead of blaming a correct passphrase ★", () => {
     const sealed = standSealedArchive();
     // Cut inside the HEADER (past magic+version+mode, into the salt) so `decodeEnvelope` itself
     // overruns — the shape `readArchiveOpening` names `unreadable`. A cut in the CIPHERTEXT decodes
@@ -165,20 +190,26 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
 
     let message = "";
     try { persistIdentityArchive(FLOOR_EXPORT); } catch (err) { message = (err as Error).message; }
-    expect(message).toMatch(/does not open it/);   // it names the KEY
-    expect(message, "the torn carrier is never named").not.toMatch(/torn|truncat|decode|backup/i);
+    expect(message, "the tear is named").toMatch(/torn/i);
+    expect(message, "a backup is the route, not a re-type").toMatch(/backup/i);
+    expect(message, "the passphrase is never blamed").not.toMatch(/does not open it/);
 
-    // And the READING one layer out gets it right, which is what makes the guard's wording a drift and
-    // not a missing capability.
+    // And it agrees with the READING one layer out — the same distinction, one definition.
     setSealExpected(true);
     expect(readArchiveOpening().kind).toBe("unreadable");
+
+    // CONTROL — a genuinely WRONG key over an INTACT carrier still names the KEY. The cure separated the
+    // two facts; it did not stop the guard naming a wrong passphrase.
+    writeFileSync(archivePath(), sealed);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
+    expect(() => persistIdentityArchive(FLOOR_EXPORT)).toThrow(/does not open it/);
   });
 
   // ── ATTACK 4 · THE DEVICE RECOVERY SHARE ────────────────────────────────────────────────────────
   // `archive-passphrase` names FOUR sealed carriers and says "ONE RULE NAMES THE SET: every file a boot
   // opens through `openArchiveBytes` under the resolved seal policy rides this lifecycle". The guard
   // stands on TWO of them. `recovery-share-store.ts:47` seals and writes with no guard at all.
-  test("★ HOLE — the DEVICE recovery share takes a write under a non-opening passphrase ★", () => {
+  test("★ CURED — the DEVICE recovery share REFUSES a write under a non-opening passphrase ★", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
     persistRecoveryDeviceShare(share(7));
     const sealed = readFileSync(deviceSharePath());
@@ -187,29 +218,40 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
 
     // A stale / mistyped passphrase — the exact `key-wrong` shape the cure was written for.
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
-    persistRecoveryDeviceShare(share(99));         // NO THROW — the write lands
-    expect(readFileSync(deviceSharePath()).equals(sealed), "the share survived").toBe(false);
+    expect(() => persistRecoveryDeviceShare(share(99))).toThrow(/does not open it/);
+    expect(readFileSync(deviceSharePath()).equals(sealed), "the share stood").toBe(true);
 
-    // And the real share is unrecoverable: under the passphrase that sealed it, the carrier now faults.
+    // And the real share still reads back under the passphrase that sealed it.
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    expect(() => loadRecoveryDeviceShare()).toThrow();
+    expect(loadRecoveryDeviceShare()?.bytes.x).toBe(7);
+    // CONTROL — the OPENING passphrase still re-persists freely (the guard proves the KEY, never the content).
+    persistRecoveryDeviceShare(share(11));
+    expect(loadRecoveryDeviceShare()?.bytes.x).toBe(11);
   });
 
   // ── ATTACK 5 · THE RESERVE "MINE" SHARE ─────────────────────────────────────────────────────────
   // `seal-reserve-store.ts:50`, the same shape. This carrier holds the vessel's ONE share of the Nexus
   // reserve seed.
-  test("★ HOLE — the reserve MINE share takes a write under a non-opening passphrase ★", () => {
+  // AND THE AUDIT'S OWN WARD FAILS HERE — its verdict rested on "founding/seal-rite are their only
+  // callers". `lares nexus seal reserve REFRESH` (nexus-seal.ts: `sealReserveProvision(args,"refresh")`)
+  // re-runs `sealReserveMineShare` UNCONDITIONALLY, with no idempotence check of any kind. So this carrier
+  // is re-written in ordinary operator life, not once at a rite — full severity, and the guard must stand
+  // BEFORE the write rather than beside it.
+  test("★ CURED — the reserve MINE share REFUSES a write under a non-opening passphrase ★", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
     sealReserveMineShare(share(3));
     const sealed = readFileSync(reserveMineSharePath());
     expect(isSealedEnvelope(sealed)).toBe(true);
 
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
-    sealReserveMineShare(share(42));               // NO THROW
-    expect(readFileSync(reserveMineSharePath()).equals(sealed)).toBe(false);
+    expect(() => sealReserveMineShare(share(42))).toThrow(/does not open it/);
+    expect(readFileSync(reserveMineSharePath()).equals(sealed)).toBe(true);
 
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
-    expect(() => loadReserveMineShare()).toThrow();
+    expect(loadReserveMineShare()?.bytes.x).toBe(3);
+    // CONTROL — the refresh rite under the LIVE passphrase still re-splits and re-seals.
+    sealReserveMineShare(share(42));
+    expect(loadReserveMineShare()?.bytes.x).toBe(42);
   });
 
   // ── ATTACK 6 · `vault rotate` UNDER A WRONG OLD PASSPHRASE ──────────────────────────────────────
@@ -253,14 +295,15 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
   // read gets re-sealed as though its ciphertext were plaintext. No BYTES are lost (they survive one
   // layer deeper), and `setSealExpected(true)` still fires — but the operator's recorded seal state now
   // describes a double wrap nothing names.
-  test("★ `vault seal` wraps a header-damaged SEALED carrier as if it were cleartext ★", () => {
+  test("★ CURED — `vault seal` SKIPS a header-damaged SEALED carrier instead of double-wrapping it ★", () => {
     const sealed = standSealedArchive();
     const corrupt = Uint8Array.from(sealed); corrupt[4] = 0x02;
     writeFileSync(archivePath(), corrupt);
 
     const r = sealArchiveWithPassphrase(PASS_B);
-    expect(r.sealed, "the damaged carrier was treated as cleartext").toContain("archive");
-    expect(isSealedEnvelope(readFileSync(archivePath()))).toBe(true);
+    expect(r.sealed, "the damaged carrier was NOT treated as cleartext").not.toContain("archive");
+    expect(r.skipped).toContain("archive");
+    expect(readFileSync(archivePath()).equals(Buffer.from(corrupt)), "the damaged bytes stood").toBe(true);
   });
 
   // ── ATTACK 8 · `vault repair` WITH NEITHER PASSPHRASE OPENING ───────────────────────────────────
@@ -279,19 +322,50 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
   // archive with `--force` it re-seals the live archive under an ARBITRARY passphrase and lands it on
   // the carrier, consulting no standing-bytes openability. The plaintext survives (so this destroys no
   // identity), but the live policy stops opening the carrier and the next boot reads `key-wrong`.
-  test("★ BYPASS (bounded) — `vault export --force` aimed at the archive re-keys the carrier ★", () => {
+  // CURED: an export destination that RESOLVES onto any of the four sealed carriers is refused, `--force`
+  // included. The comparison resolves BOTH sides fully first — `resolve()` for a relative dest, then
+  // `realpathSync` over the deepest existing ancestor so a symlink and a `..` traversal land on the same
+  // string the carrier resolves to. A string check wearing a path check's clothes would miss all three.
+  test("★ CURED — `vault export --force` aimed at the archive REFUSES (and a symlink / `..` / relative dest too) ★", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
     persistIdentityArchive(SOVEREIGN);
+    persistRecoveryDeviceShare(share(7));
     setSealExpected(true);
     expect(readArchiveOpening().kind).toBe("opens");
+    const before = readFileSync(archivePath());
 
-    exportSealedArchive(PASS_B, archivePath(), true);   // the carrier as its own backup destination
+    // ① the carrier named outright, with --force
+    expect(() => exportSealedArchive(PASS_B, archivePath(), true)).toThrow(/onto the "archive" carrier/);
 
-    expect(isSealedEnvelope(readFileSync(archivePath()))).toBe(true);
-    // The live policy (PASS_A) no longer opens the carrier — the boot now reads the floor.
-    expect(readArchiveOpening().kind).toBe("key-wrong");
-    // BOUNDED: the sovereign plaintext survives under PASS_B, so `vault repair` recovers it.
-    expect(archiveSealStatus({ probe: PASS_B }).carriers.archive.opensUnderProbe).toBe(true);
+    // ② a `..` traversal that LANDS on the carrier
+    const traversal = join(larIdentityDir(), "sub", "..", "keyhive-archive.bin");
+    expect(() => exportSealedArchive(PASS_B, traversal, true)).toThrow(/onto the "archive" carrier/);
+
+    // ③ a SYMLINK at the dest pointing at the carrier
+    const link = join(root, "backup.bin");
+    symlinkSync(archivePath(), link);
+    expect(() => exportSealedArchive(PASS_B, link, true)).toThrow(/onto the "archive" carrier/);
+
+    // ④ a RELATIVE dest resolving onto the carrier through the process cwd
+    const cwd = process.cwd();
+    try {
+      process.chdir(larIdentityDir());
+      expect(() => exportSealedArchive(PASS_B, "./keyhive-archive.bin", true)).toThrow(/onto the "archive" carrier/);
+    } finally { process.chdir(cwd); }
+
+    // ⑤ ANOTHER carrier, named by its own name — the guard covers the whole list, not just the archive
+    expect(() => exportSealedArchive(PASS_B, deviceSharePath(), true)).toThrow(/onto the "device-share" carrier/);
+
+    // Nothing moved, and the live policy still opens the carrier.
+    expect(readFileSync(archivePath()).equals(before)).toBe(true);
+    expect(readArchiveOpening().kind).toBe("opens");
+
+    // CONTROL — an ordinary destination still exports, and --force still replaces one.
+    const dest = join(root, "real-backup.bin");
+    expect(exportSealedArchive(PASS_B, dest, false).bytes).toBeGreaterThan(0);
+    expect(isSealedEnvelope(readFileSync(dest))).toBe(true);
+    expect(() => exportSealedArchive(PASS_B, dest, false)).toThrow(/--force/);
+    expect(exportSealedArchive(PASS_B, dest, true).dest).toBe(dest);
   });
 
   // ── ATTACK 10 · THE GUARD CHECKS THE KEY, NOT THE CONTENT ───────────────────────────────────────

@@ -17,6 +17,7 @@ import type { RecoveryShare, CustodianTag, RecoveryShareStore } from "@lararium/
 import { larIdentityDir } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret } from "./archive-seal.js";
+import { refuseWriteOverUnopenableSeal } from "./archive-write-guard.js";
 
 /** The device recovery-share carrier path. Exported so the vault passphrase-lifecycle surface
  *  (`archive-passphrase`) names the ONE carrier location, never a duplicated magic string. A vessel
@@ -44,7 +45,13 @@ export function persistRecoveryDeviceShare(share: RecoveryShare, handleIndex = 0
   const stored: StoredShare = { x: share.bytes.x, ys: [...share.bytes.ys], custodian: share.custodian, recoveryEpoch: share.recoveryEpoch };
   const plain = new TextEncoder().encode(JSON.stringify(stored));
   const path = deviceSharePath(handleIndex);
-  atomicWriteFileSync(path, sealArchiveBytes(asSelfSovereignSecret(plain), resolveSealPolicy()));
+  const policy = resolveSealPolicy();
+  // THE SAME INVARIANT THE ARCHIVE RIDES — this carrier is a share of the PersonaGroup ROOT, so a write
+  // under a key that does not open the standing bytes destroys a leg of the recovery quorum. The guard
+  // stands BEFORE the write, not beside it: `armRecoveryAtFounding`'s idempotence check only reaches a
+  // carrier it can already open, so a carrier it cannot open must be refused here or nowhere.
+  refuseWriteOverUnopenableSeal(path, policy);
+  atomicWriteFileSync(path, sealArchiveBytes(asSelfSovereignSecret(plain), policy));
   try { chmodSync(path, 0o600); } catch { /* best-effort on a non-POSIX fs */ }
 }
 

@@ -39,11 +39,14 @@
  * failed probe stands OPEN as a fork — see `readArchiveOpening`; the waking floor still stands here.
  */
 
-import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync } from "node:fs";
+import { dirname, resolve, basename, join } from "node:path";
 import { randomBytes } from "node:crypto";
-import { isSealedEnvelope, decodeEnvelope } from "@lararium/mesh";
-import { scryptKek, sealBytes, unsealBytes, openArchiveBytes, ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
+import { isSealedEnvelope, decodeEnvelope, readSealCarrier } from "@lararium/mesh";
+import {
+  scryptKek, sealBytes, unsealBytes, openArchiveBytes, ARCHIVE_PASSPHRASE_ENV,
+  passphraseSealPolicy, probeArchiveBytes, type CarrierProbe,
+} from "./archive-seal.js";
 import { archivePath, veilArchivePath } from "./identity-anchors.js";
 import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { deviceSharePath } from "./recovery-share-store.js";
@@ -85,6 +88,28 @@ function carriers(): readonly Carrier[] {
   ];
 }
 
+/**
+ * Resolve a path the way the FILESYSTEM will, so a comparison against a carrier path compares LOCATIONS
+ * rather than spellings. A string check wearing a path check's clothes misses three ordinary shapes: a
+ * RELATIVE dest (resolved through the process cwd), a `..` TRAVERSAL that lands back on a carrier, and a
+ * SYMLINK whose target is a carrier.
+ *
+ * `realpathSync` needs the leaf to exist, and an export destination usually does not — so it falls back to
+ * realpath'ing the deepest EXISTING ancestor (the directory) and rejoining the basename. That resolves a
+ * symlinked directory on the way in while still naming a leaf that has yet to be created.
+ */
+function resolvedLocation(p: string): string {
+  const abs = resolve(p);
+  try { return realpathSync(abs); } catch { /* the leaf does not stand yet */ }
+  try { return join(realpathSync(dirname(abs)), basename(abs)); } catch { return abs; }
+}
+
+/** Which sealed carrier a path RESOLVES onto, or null when it names somewhere else entirely. */
+function carrierAtPath(p: string): CarrierName | null {
+  const target = resolvedLocation(p);
+  return carriers().find((c) => resolvedLocation(c.path) === target)?.name ?? null;
+}
+
 export type CarrierState = "absent" | "cleartext" | "sealed";
 
 export interface CarrierStatus {
@@ -114,23 +139,13 @@ export interface ArchiveSealStatus {
 }
 
 /**
- * Trial-open raw carrier bytes under a passphrase, THREE-VALUED:
- *   · `opens`      — the envelope decoded and the GCM tag verified.
- *   · `key-fails`  — the envelope decoded cleanly and the KEY was refused at the tag.
- *   · `unreadable` — the envelope would not DECODE (torn, truncated, unknown mode). No key can be judged
- *                    against bytes that never framed, so no key may be BLAMED for them.
- *
- * The third value exists because collapsing it into `key-fails` is the pin-reader inversion: one answer
- * covering both "the key is wrong" and "the carrier is torn" sends an operator to re-type a passphrase
- * that was right all along, and hides a corruption behind a credential error.
+ * Trial-open raw carrier bytes under a passphrase, THREE-VALUED — the distinction itself lives ONCE, in
+ * `archive-seal`'s `probeArchiveBytes`, so the boot reading here and the WRITE guard
+ * (`archive-write-guard`) can never drift into disagreeing about what a torn carrier means. See that atom
+ * for why `unreadable` must never fold into `key-fails` (the pin-reader inversion).
  */
-type CarrierProbe = "opens" | "key-fails" | "unreadable";
-
 function probeCarrier(bytes: Uint8Array, passphrase: string): CarrierProbe {
-  let env: ReturnType<typeof decodeEnvelope>;
-  try { env = decodeEnvelope(bytes); } catch { return "unreadable"; }
-  try { unsealBytes(env, scryptKek(passphrase, env.salt)); return "opens"; }
-  catch { return "key-fails"; }
+  return probeArchiveBytes(bytes, passphraseSealPolicy(passphrase));
 }
 
 /** Try unsealing raw carrier bytes under a passphrase; true on a clean GCM open, false on any failure. */
@@ -231,7 +246,12 @@ export function sealArchiveWithPassphrase(passphrase: string): SealResult {
   for (const c of carriers()) {
     if (!existsSync(c.path)) { skipped.push(c.name); continue; }
     const bytes = readFileSync(c.path);
-    if (isSealedEnvelope(bytes)) { skipped.push(c.name); continue; }   // already sealed — idempotent
+    // VERSION-BLIND ON PURPOSE (`readSealCarrier`, not `isSealedEnvelope`). A carrier whose header this
+    // build cannot frame — an unknown envelope version, a damaged magic over intact framing — is still a
+    // SEALED carrier, and treating it as cleartext would wrap its ciphertext a second time under a fresh
+    // KEK while recording `sealExpected`. No bytes are lost by that, but the operator's seal state would
+    // then describe a double wrap nothing names. Skip it: `vault repair` and a backup own that carrier.
+    if (readSealCarrier(bytes) !== "bare") { skipped.push(c.name); continue; }   // already sealed — idempotent
     writes.push({ path: c.path, bytes: sealUnder(bytes, passphrase) });
     plaintexts.push(bytes);
     sealed.push(c.name);
@@ -293,6 +313,20 @@ export function exportSealedArchive(passphrase: string, destPath: string, force 
   if (!passphrase) throw new Error("archive-passphrase: refusing to export under an empty passphrase");
   const src = archivePath();
   if (!existsSync(src)) throw new Error(`archive-passphrase: no keyhive archive at ${src} to export`);
+  // AN EXPORT PROVES INTENT ABOUT A BACKUP, NEVER ABOUT THE CARRIER IT WAS AIMED AT. Aimed at a live
+  // carrier it re-seals the archive under an ARBITRARY passphrase and lands it there, consulting no
+  // standing-bytes openability: the plaintext survives (so `vault repair` recovers it) but the live policy
+  // stops opening the carrier and the next boot reads the floor. Refuse the destination instead — BEFORE
+  // the exists/force question, so `--force` cannot walk past it.
+  const carrierHit = carrierAtPath(destPath);
+  if (carrierHit) {
+    throw new Error(
+      `archive-passphrase: refusing to export onto the "${carrierHit}" carrier itself (${destPath}) — an ` +
+      `export re-seals under the passphrase you supplied here, which would leave the live policy unable to ` +
+      `open the carrier and the next boot reading the waking floor. Write the backup somewhere else; use ` +
+      `\`lares vault rotate\` to change the passphrase a carrier rides`,
+    );
+  }
   if (existsSync(destPath) && !force) {
     throw new Error(`archive-passphrase: ${destPath} exists — pass --force to overwrite (refusing a silent clobber)`);
   }

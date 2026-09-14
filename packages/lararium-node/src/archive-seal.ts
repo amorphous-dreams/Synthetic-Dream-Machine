@@ -100,17 +100,49 @@ export function resolveSealPolicy(env: NodeJS.ProcessEnv = process.env): SealPol
   if (keychainKekAvailable(env)) { /* keychain KEK path — reached once a binding stands */ }
 
   const passphrase = env[ARCHIVE_PASSPHRASE_ENV];
-  if (passphrase && passphrase.length > 0) {
-    return {
-      mode: "passphrase",
-      seal: (plaintext) => {
-        const salt = randomBytes(SALT_LEN);
-        return sealBytes(plaintext, scryptKek(passphrase, salt), "passphrase", salt);
-      },
-      unseal: (envlp) => unsealBytes(envlp, scryptKek(passphrase, envlp.salt)),
-    };
-  }
+  if (passphrase && passphrase.length > 0) return passphraseSealPolicy(passphrase);
   return { mode: "cleartext" };
+}
+
+/**
+ * The passphrase seal policy over an EXPLICIT passphrase, rather than the one the environment carries.
+ * `resolveSealPolicy` composes it; the vault's probes carry it so a trial-open reuses the SAME derivation
+ * the live write would use instead of minting a second one beside it.
+ */
+export function passphraseSealPolicy(passphrase: string): SealPolicy {
+  return {
+    mode: "passphrase",
+    seal: (plaintext) => {
+      const salt = randomBytes(SALT_LEN);
+      return sealBytes(plaintext, scryptKek(passphrase, salt), "passphrase", salt);
+    },
+    unseal: (envlp) => unsealBytes(envlp, scryptKek(passphrase, envlp.salt)),
+  };
+}
+
+/**
+ * Trial-open standing carrier bytes under a policy, THREE-VALUED — THE ONE DEFINITION OF THE DISTINCTION:
+ *   · `opens`      — the envelope decoded and the AEAD tag verified.
+ *   · `key-fails`  — the envelope decoded cleanly and the KEY was refused at the tag.
+ *   · `unreadable` — the envelope would not DECODE (torn, truncated, unknown mode). No key can be judged
+ *                    against bytes that never framed, so no key may be BLAMED for them.
+ *
+ * The third value exists because collapsing it into `key-fails` is the pin-reader inversion: one answer
+ * covering both "the key is wrong" and "the carrier is torn" sends an operator to re-type a passphrase that
+ * was right all along, and hides a corruption behind a credential error. `readArchiveOpening` reads its five
+ * boot answers from this, and `refuseWriteOverUnopenableSeal` names its refusals from it — one distinction,
+ * derived once, so the two can never drift apart.
+ *
+ * CALLERS HANDLE THE CLEARTEXT POLICY FIRST. A policy carrying no `unseal` cannot open anything, so it reads
+ * `key-fails` here; the writers refuse that case earlier and with a message that names the missing key.
+ */
+export type CarrierProbe = "opens" | "key-fails" | "unreadable";
+
+export function probeArchiveBytes(stored: Uint8Array, policy: SealPolicy): CarrierProbe {
+  let env: SealedEnvelope;
+  try { env = decodeEnvelope(stored); } catch { return "unreadable"; }
+  if (!policy.unseal) return "key-fails";
+  try { policy.unseal(env); return "opens"; } catch { return "key-fails"; }
 }
 
 /**

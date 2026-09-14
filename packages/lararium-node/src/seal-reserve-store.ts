@@ -17,6 +17,7 @@ import type { RecoveryShare, CustodianTag } from "@lararium/mesh";
 import { larIdentityDir } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret } from "./archive-seal.js";
+import { refuseWriteOverUnopenableSeal } from "./archive-write-guard.js";
 
 /** The sealed "mine"-share carrier — the ONE share of the reserve seed the vessel holds at rest. */
 export function reserveMineSharePath(): string {
@@ -47,7 +48,14 @@ export function sealReserveMineShare(share: RecoveryShare): void {
   };
   const plain = new TextEncoder().encode(JSON.stringify(stored));
   const path = reserveMineSharePath();
-  atomicWriteFileSync(path, sealArchiveBytes(asSelfSovereignSecret(plain), resolveSealPolicy()));
+  const policy = resolveSealPolicy();
+  // THE SAME INVARIANT THE ARCHIVE RIDES, and this carrier needs it MOST: `lares nexus seal reserve refresh`
+  // re-runs this writer with NO idempotence check of any kind (nexus-seal: `sealReserveProvision(args,
+  // "refresh")`), so a refresh under a stale or mistyped passphrase would land a new share over the standing
+  // one and orphan the vessel's leg of the reserve quorum. This carrier is re-written in ordinary operator
+  // life, not once at a rite.
+  refuseWriteOverUnopenableSeal(path, policy);
+  atomicWriteFileSync(path, sealArchiveBytes(asSelfSovereignSecret(plain), policy));
   try { chmodSync(path, 0o600); } catch { /* best-effort on a non-POSIX fs */ }
 }
 

@@ -46,6 +46,70 @@ export function isSealedEnvelope(bytes: Uint8Array): boolean {
   );
 }
 
+/**
+ * True when `bytes` carry the sealed-archive MAGIC, whatever version follows. VERSION-BLIND on purpose:
+ * `isSealedEnvelope` answers a decoder's question ("can I frame this?"), and this answers a writer's
+ * ("does a seal already stand here?"). A vessel that ever writes envelope v2 hands every older vessel a
+ * shredder if the two questions stay fused.
+ */
+export function carriesSealMagic(bytes: Uint8Array): boolean {
+  return (
+    bytes.length >= 4 &&
+    bytes[0] === ARCHIVE_MAGIC[0] && bytes[1] === ARCHIVE_MAGIC[1] &&
+    bytes[2] === ARCHIVE_MAGIC[2] && bytes[3] === ARCHIVE_MAGIC[3]
+  );
+}
+
+/**
+ * Does the LAYOUT read as a sealed envelope even with the magic damaged? The magic is a LABEL; the framing
+ * is EVIDENCE. A sealed carrier whose magic took a corrupt byte still carries a known version, a known mode
+ * code, and three length-prefixed fields that land exactly inside the file with ciphertext after — a
+ * self-consistency no ordinary plaintext archive reproduces. Reading it keeps a write from destroying
+ * ciphertext that a header repair could have recovered.
+ *
+ * DELIBERATELY STRICT, because the consequence of a false positive is a REFUSED WRITE: the version byte must
+ * match exactly, the mode must be a mode this build knows, every length must frame without overrun, the IV
+ * and tag lengths must be non-zero (a keychain-mode salt may legally be zero), and ciphertext must follow.
+ */
+function framesAsSealedEnvelope(bytes: Uint8Array): boolean {
+  if (bytes.length < 6) return false;
+  if (bytes[4] !== ARCHIVE_VERSION) return false;
+  const mode = CODE_MODE[bytes[5]!];
+  if (mode === undefined || mode === "cleartext") return false;
+  let off = 6;
+  const lengths: number[] = [];
+  for (let i = 0; i < 3; i++) {                    // salt, iv, tag — in layout order
+    if (off >= bytes.length) return false;
+    const len = bytes[off++]!;
+    off += len;
+    if (off > bytes.length) return false;
+    lengths.push(len);
+  }
+  if (lengths[1] === 0 || lengths[2] === 0) return false;   // no envelope carries a zero-length IV or tag
+  if (mode === "passphrase" && lengths[0] === 0) return false;
+  return off < bytes.length;                       // ciphertext must follow the header
+}
+
+/**
+ * How a carrier's STANDING BYTES read, before any key is judged against them. THE READING THE WRITER ASKS —
+ * split out because one boolean folded "not sealed" together with "sealed, and this vessel cannot decode
+ * it", and the second reading must never take a write.
+ *
+ *  · `bare`       — nothing here frames as a seal. A cleartext carrier; it answers to any policy.
+ *  · `sealed`     — magic + a version this build decodes. A key may be tried against it.
+ *  · `unopenable` — a seal stands that THIS vessel cannot frame: the magic over an unknown version, or a
+ *                   damaged magic over framing that is still self-consistently an envelope. No key can be
+ *                   judged against these bytes, so none may be blamed for them and none may replace them.
+ */
+export type SealCarrierReading = "bare" | "sealed" | "unopenable";
+
+export function readSealCarrier(bytes: Uint8Array): SealCarrierReading {
+  if (isSealedEnvelope(bytes)) return "sealed";
+  if (carriesSealMagic(bytes)) return "unopenable";        // the label stands, the version does not decode
+  if (framesAsSealedEnvelope(bytes)) return "unopenable";  // the label is damaged, the layout still testifies
+  return "bare";
+}
+
 /** Frame the sealed parts into the self-describing envelope. Each length field caps at 255. */
 export function encodeEnvelope(env: SealedEnvelope): Uint8Array {
   for (const [name, part] of [["salt", env.salt], ["iv", env.iv], ["tag", env.tag]] as const) {
