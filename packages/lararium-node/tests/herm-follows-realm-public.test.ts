@@ -16,7 +16,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256HexBytesSync, utf8Bytes, type CasReferenceEntry, type CapTier } from "@lararium/mesh";
-import { announcedRealmBooks, publicCasShore } from "../src/bulb-read-face.js";
+import { announcedRealmBooks, hermRealmShoreBooks, publicCasShore } from "../src/bulb-read-face.js";
 import { crossroadsAnnounceOf, writeRealmBagAnnounce, signRealmBagRegistration, type LarDoc } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 import { writeCasEntriesFs } from "../src/node-cas.js";
@@ -131,5 +131,56 @@ describe("the Herm folds its shore off the @crossroads announces, holding no cha
     const rec = await signRealmBagRegistration(
       { realmId: "r", bagUri: CONTRACT_BAG, docUrl: "automerge:3EuA8kB7XEZ5MP1oBBKdxzoLzXMn", readTier: "contract" }, [await steward()]);
     expect(crossroadsAnnounceOf(rec)).not.toHaveProperty("docUrl");
+  });
+
+  // ── THE WELD (`hermRealmShoreBooks`) — the lane the Herm vessel actually wires ──────────────────
+  //
+  // `announcedRealmBooks` folding correctly buys nothing until the vessel's `realmReferences` READS it beside
+  // the registration road. This is that seam: the one function `openNodeHerm` hands `publicCasShore`.
+  describe("the vessel's realm lane reads BOTH roads, and the registration wins the collision", () => {
+    const PUB_DOC = "automerge:2rEvJcsJjTeS5nDXbyEttkWa6jJa";
+    const CON_DOC = "automerge:3EuA8kB7XEZ5MP1oBBKdxzoLzXMn";
+    const bookDoc = (title: string): LarDoc =>
+      ({ tiddlers: { [title]: { tiddler: { title, textCid: "cid-1" } } } }) as unknown as LarDoc;
+
+    async function boardWith(rows: ReadonlyArray<{ bagUri: string; docUrl: string; readTier: CapTier }>): Promise<LarDoc> {
+      const cross = emptyDoc();
+      for (const r of rows) {
+        writeRealmBagAnnounce(cross, await signRealmBagRegistration({ realmId: "r", ...r }, [await steward()]));
+      }
+      return cross;
+    }
+
+    test("a Herm standing in NO realm serves the PUBLIC book off the board, and only that one", async () => {
+      const cross = await boardWith([
+        { bagUri: PUBLIC_BAG,   docUrl: PUB_DOC, readTier: "public"   as CapTier },
+        { bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "contract" as CapTier },
+      ]);
+      const books = await hermRealmShoreBooks({
+        realmStanding: async () => new Map(),            // a Herm holds no charter — the registration road is EMPTY
+        findDoc:       async (url) => (url === PUB_DOC ? bookDoc("lar:///t.w.h/photo") : bookDoc("lar:///t.w.h/ledger")),
+        crossroadsDoc: () => cross,
+      });
+      expect(books.map((b) => b.bagUri)).toEqual([PUBLIC_BAG]);
+      expect(books[0]!.readTier).toBe("public");
+      expect([...books[0]!.entries].map((e) => e.title)).toEqual(["lar:///t.w.h/photo"]);
+    });
+
+    test("CONTROL: a board carrying only a CONTRACT announce serves ZERO books, as an empty board does", async () => {
+      const cross = await boardWith([{ bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "contract" as CapTier }]);
+      const zero = { realmStanding: async () => new Map(), findDoc: async () => bookDoc("lar:///t.w.h/ledger") };
+      expect(await hermRealmShoreBooks({ ...zero, crossroadsDoc: () => cross })).toEqual([]);
+      expect(await hermRealmShoreBooks({ ...zero, crossroadsDoc: () => emptyDoc() })).toEqual([]);
+    });
+
+    test("CONTROL: a stale PUBLIC announce never re-tiers a book the registration road declares CONTRACT", async () => {
+      const cross = await boardWith([{ bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "public" as CapTier }]);
+      const books = await hermRealmShoreBooks({
+        realmStanding: async () => new Map([[CONTRACT_BAG, { bagUri: CONTRACT_BAG, docUrl: CON_DOC, readTier: "contract" as CapTier }]]),
+        findDoc:       async () => bookDoc("lar:///t.w.h/ledger"),
+        crossroadsDoc: () => cross,
+      });
+      expect(books.map((b) => [b.bagUri, b.readTier])).toEqual([[CONTRACT_BAG, "contract"]]);
+    });
   });
 });

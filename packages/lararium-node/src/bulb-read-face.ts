@@ -100,6 +100,45 @@ export async function announcedRealmBooks(opts: {
 }
 
 /**
+ * THE HERM'S WHOLE REALM LANE — the two roads a carrier walks to learn which books it may serve, folded into
+ * the one list `publicCasShore.realmReferences` reads. The vessel wires this; the test welds it.
+ *
+ *   · THE REGISTRATION ROAD — every registration this vessel's realm plane carries, at the tier the
+ *     registration DECLARED. A vessel that stands in no realm folds nothing here.
+ *   · THE ANNOUNCE ROAD — the PUBLIC books the @crossroads board names (`announcedRealmBooks`).
+ *
+ * THE REGISTRATION WINS THE COLLISION. A bag the registration road already named never takes a second entry
+ * off the board, so a stale PUBLIC announce can never re-tier a book whose registration reads CONTRACT here.
+ * The de-dup drops the announce copy alone; it never drops or loosens a declared tier.
+ */
+export async function hermRealmShoreBooks(opts: {
+  readonly realmStanding: () => Promise<ReadonlyMap<string, { bagUri: string; docUrl: string; readTier: CapTier }>>;
+  readonly findDoc:       (docUrl: string) => Promise<LarDoc | null>;
+  readonly crossroadsDoc: () => LarDoc | null | undefined;
+  readonly onLog?:        (line: string) => void;
+}): Promise<RealmShoreBook[]> {
+  const books: RealmShoreBook[] = [];
+  const standing = await opts.realmStanding();
+  for (const rec of standing.values()) {
+    // A book this Herm never replicated answers nothing — a rejected find withholds, never serves.
+    const doc = await opts.findDoc(rec.docUrl).catch(() => null);
+    if (!doc) continue;
+    books.push({
+      bagUri: rec.bagUri, readTier: rec.readTier,
+      entries: Object.entries(doc.tiddlers ?? {})
+        .map(([title, record]) => ({ title, bagId: rec.bagUri, record: record as { tiddler: Record<string, unknown> } })),
+    });
+  }
+  const announced = await announcedRealmBooks({
+    crossroadsDoc: opts.crossroadsDoc,
+    findBook:      opts.findDoc,
+    ...(opts.onLog ? { onLog: opts.onLog } : {}),
+  });
+  for (const book of announced) if (!books.some((b) => b.bagUri === book.bagUri)) books.push(book);
+  return books;
+}
+
+/**
  * The shore over a vessel's cleartext `cid/` + the records it can read: a cid reads PUBLIC when a pointer names
  * it from a book that declares the `public` tier. TWO lanes answer that, and a Herm needs both:
  *
