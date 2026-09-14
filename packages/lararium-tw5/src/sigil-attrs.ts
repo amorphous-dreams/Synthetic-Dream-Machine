@@ -58,6 +58,13 @@ function matchStringLiteral(body: string, at: number): { value: string; end: num
   return { value, end: at + m[0].length };
 }
 
+/**
+ * The name a COLON separator admits — `reStrictIdentifier` in TiddlyWiki5
+ * `core/modules/parsers/parseutils.js:329`, held here ONCE so the three readers in this module
+ * cannot drift apart on it.
+ */
+const STRICT_IDENTIFIER = /^[A-Za-z0-9\-_]+$/;
+
 /** A scheme is not a parameter. `lar:///x` carries no key named `lar`. */
 const SCHEMES = new Set([
   "lar", "ni", "did", "http", "https", "file", "urn", "data", "mailto", "at", "ipfs", "ipns",
@@ -115,7 +122,7 @@ export function readSigilAttrs(body: string): SigilAttr[] {
   // The scan stops AT the separator — a trailing `\s*` would eat a masked value whole, since the mask
   // writes spaces where the quoted text stood, and the read position would land past it.
   const re = /(?<![\w:/@.-])([^\s=:>"'`/]+)[ \t]*([=:])/g;
-  const STRICT = /^[A-Za-z0-9\-_]+$/;
+  const STRICT = STRICT_IDENTIFIER;
   let m: RegExpExecArray | null;
   while ((m = re.exec(scan)) !== null) {
     const name = m[1]!, sep = m[2]! as "=" | ":";
@@ -230,6 +237,14 @@ function maskProtectedSpans(body: string): string {
  * stands at lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat.
  *
  * Quoting the value is the whole cure: the colon stops being a separator and the slot fills.
+ *
+ * ── AND THE COLON BINDS ONLY A STRICT IDENTIFIER ────────────────────────────────────────────────
+ * `parseMacroParameterAsAttribute` discards the name AND the separator where `:` follows anything
+ * but `^[A-Za-z0-9\-_]+$` — "to avoid mis-parsing values like `$:/foo`" (TiddlyWiki5
+ * `core/modules/parsers/parseutils.js:328-346`). So `foo.ts:24-30`, `(foo.ts:24-30)` and `$:/x`
+ * each read as ONE positional, whole. `readSigilAttrs` and `positionalsOf` already keep the rule;
+ * this reader keeps it too, so all three halves of the module answer the same parser. A reader
+ * STRICTER than the parser condemns a carrier for writing what the parser reads correctly.
  */
 export function schemeShapedPositionals(body: string): string[] {
   const out: string[] = [];
@@ -245,9 +260,9 @@ export function schemeShapedPositionals(body: string): string[] {
     // A NAMED parameter is not a positional — `family=lar:///x` fills a name, and its value may carry
     // any colon it likes.
     if (/^[^\s=:>"'/]+\s*=/.test(w)) continue;
-    // The hazard shape: a parameter-name-shaped run, then a colon, then more.
+    // The hazard shape: a STRICT-identifier-shaped run, then a colon, then more.
     const hazard = /^([^\s=:>"'/]+):(.+)$/.exec(w);
-    if (hazard) out.push(w);
+    if (hazard && STRICT_IDENTIFIER.test(hazard[1]!)) out.push(w);
   }
   return out;
 }
@@ -341,7 +356,7 @@ function pastValue(body: string, i: number): number {
 export function positionalsOf(body: string): string[] {
   const out: string[] = [];
   const NAME = /^([^\s=:>"'`/]+)[ \t]*([=:])/;
-  const STRICT = /^[A-Za-z0-9\-_]+$/;
+  const STRICT = STRICT_IDENTIFIER;
   let i = 0;
   while (i < body.length) {
     if (/\s/.test(body[i]!)) { i++; continue; }

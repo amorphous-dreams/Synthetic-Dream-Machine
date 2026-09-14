@@ -25,17 +25,15 @@ import { schemeShapedPositionals, readSigilAttrs, sigilAttrValue, lostPositional
 import { currentCarrierFiles } from "../src/carrier-files.js";
 
 /**
- * DECLARED EXEMPTIONS, each with the reason it stands. A list that only shrinks.
+ * ── THE EXEMPTION LIST STANDS EMPTY, AND NO MACHINERY KEEPS ITS SEAT WARM ───────────────────────
+ * Three prose-bearing carriers once held out here — `living-grammar-palace`, `ffz-clock`,
+ * `memetic-wikitext-sensorium` — on the reading that a wikilink inside a call body binds a phantom
+ * the quote cannot cure. Measured 2026-09-13, each reports ZERO lost positionals: the wikilink mask
+ * at `sigil-attrs.ts` reads `[[label|lar:///x]]` whole, and the strict-identifier rule reads a
+ * `file.ts:24-30` citation whole. The hold-out answered a hazard neither carrier carries.
  *
- * A prose-bearing sigil carrying free PROSE puts a wikilink and a bold run inside a call body. TiddlyWiki
- * binds a phantom parameter off that prose, and quoting the address would break the wikilink that
- * already reads — so the cure is not a quote. Aligning prose-bearing sigils is a separate ruling.
+ * THE WHOLE CORPUS STANDS UNDER THE LAW. A carrier that cannot meet it earns a ruling, never a row.
  */
-const PROSE_BEARING = [
-  { file: "lararium/api/living-grammar-palace.mem", since: "2026-09-07" },
-  { file: "lararium/mesh/ffz-clock.mem", since: "2026-09-07" },
-  { file: "lares/api/memetic-wikitext-sensorium.mem", since: "2026-09-07" },
-];
 
 const REPO = join(new URL("..", import.meta.url).pathname, "../..");
 
@@ -55,9 +53,8 @@ describe("★ the alignment law, over the whole corpus ★", () => {
 
   test("★ no positional argument is lost to a scheme ★", () => {
     const offenders: string[] = [];
-    let sites = 0, prose = 0;
+    let sites = 0;
     for (const { rel, text } of all) {
-      if (PROSE_BEARING.some((e) => rel.endsWith(e.file))) { prose++; continue; }
       // The shore answers the corpus-level question, fences and all — a fenced sigil opens nothing.
       for (const lost of lostPositionals(text)) {
         sites += lost.values.length;
@@ -65,7 +62,7 @@ describe("★ the alignment law, over the whole corpus ★", () => {
       }
     }
     expect(sites, `${sites} positional(s) reach a phantom parameter instead of their slot ` +
-      `(${prose} prose-bearing carriers held out; fenced sigils open nothing):\n  ` +
+      `(no carrier holds out; fenced sigils open nothing):\n  ` +
       offenders.join("\n  ")).toBe(0);
   });
 });
@@ -96,5 +93,30 @@ describe("the law, stated on its own", () => {
   test("CONTROL — a typed value is left exactly as it stands", () => {
     expect(readSigilAttrs("season name=<<name>>")[0]!.kind).toBe("macro");
     expect(schemeShapedPositionals("season name=<<name>>")).toEqual([]);
+  });
+
+  /**
+   * ── THE COLON BINDS ONLY A STRICT IDENTIFIER, AND THE HAZARD READER MUST OBEY IT ────────────────
+   * `parseMacroParameterAsAttribute` discards the name AND the separator where `:` follows anything
+   * but `^[A-Za-z0-9\-_]+$` — "to avoid mis-parsing values like `$:/foo`" (TiddlyWiki5
+   * `core/modules/parsers/parseutils.js:328-346`). Measured against that parser at 5.5.0:
+   *
+   *   <<~ x foo.ts:24-30>>            positional [0="x", 1="foo.ts:24-30"]
+   *   <<~ x (foo.ts:24-30)>>          positional [0="x", 1="(foo.ts:24-30)"]
+   *   <<~ loulou lar:///x>>           positional [0="loulou"]   named [lar="///x"]
+   *
+   * `readSigilAttrs` and `positionalsOf` already keep the rule; a hazard reader that skipped it
+   * reported a phantom the parser never binds, and a carrier citing `file.ts:24-30` in free prose
+   * drew a refusal for writing exactly what the parser reads whole.
+   */
+  test("★ a colon after a NON-identifier separates nothing — the slot fills ★", () => {
+    expect(schemeShapedPositionals(" x foo.ts:24-30")).toEqual([]);
+    expect(schemeShapedPositionals(" moves the-antigen ~ consulted by nothing (offering-antigen.ts:24-30)")).toEqual([]);
+    expect(schemeShapedPositionals(" x $:/config/foo")).toEqual([]);
+  });
+
+  test("CONTROL — a STRICT identifier before the colon still steals the slot", () => {
+    expect(schemeShapedPositionals(" loulou lar:///x")).toEqual(["lar:///x"]);
+    expect(schemeShapedPositionals(" x also-strict_9:value")).toEqual(["also-strict_9:value"]);
   });
 });
