@@ -1,0 +1,385 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/child-grade-decision.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 12
+manao      = 13
+manaoio    = 12
+namespace  = "&#x2299;"
+revised-on = "2026-09-13"
+role       = "child-grade-decision — the DECISION SURFACE for syncer seam (b), the ungated child: what a slot child IS as a record, what the word GRADE names mechanically, the two forks the operator was handed with the losing case for each written as hard as the winning one, the THIRD instrument neither fork names, the consequence ladder with the door that closes behind each choice, three humans who see the divergence, and the collision against law the house already ruled. It presents; it does not rule."
+status-why = "the operator, asked to rule seam (b) — does a child's save grade against its OWN authored text, or does a child read UNGRADED by law — answered `needs more technical context, tiddler ontology, consequences`; a tasked spirit built the surface rather than the verdict, every claim in #/measured collided against the running code on 2026-09-13"
+tags       = ["docs/pono/decision-surface", "lifecycle/standing"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/child-grade-decision"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/meme">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/ground>>
+
+! Ground — what stands open, and what this carrier refuses to do
+
+''Lares (Gatekeeper).'' Seam (b) of the syncer back-parity floor stands as the last open one. Its question, in the roundtable's own words (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> `#/questions` §7): //should a slot child's save be graded at all?// — a child's save grading against its OWN authored text, or a child reading UNGRADED by law.
+
+The operator, handed that fork, answered: "needs more technical context, tiddler ontology, consequences, etc."
+
+''So this carrier presents the surface and withholds the verdict.'' A carrier that quietly picks a side while claiming to inform commits the failure this floor exists to avoid. Every fork below carries its losing case written as hard as its winning one, and the closing slot names what stayed undetermined rather than rounding it into a lean.
+
+''Why the fork opened at all.'' Phase 5's planned cure fell at its red (`3dfb06170`): the backstop would widen to re-place a child's ROOT, computing `placeMeme(root, readMeme(root))`. `readMeme` renders records; handing that render back to `placeMeme` computes `render(parse(render(r)))` against `render(r)` — the canonical form's own fixed point, reached by construction. Seven kinds of child edit read `noop · clean · 0 diagnostics`. The commit's own summary: ''the gate works, the INPUT is the lie.''
+
+That refutation names the shape any new proposal must survive. ''A cure that hands the grader bytes the renderer just produced grades the renderer, never the author.'' Re-measured here (#/measured row 3): `noop`, `clean`, zero diagnostics, on the very paste the seam was named for.
+
+<<~/ahu>>
+
+<<~ ahu #/ontology>>
+
+! The tiddler ontology — what a "child" holds, concretely
+
+''Ink-Clerk (Lorekeeper).'' Four shapes carry the word //child// in this tree, and the seam concerns exactly one of them.
+
+!! The four shapes, by the field that distinguishes them
+
+| shape | title | the fields it carries | minted at |
+|---|---|---|---|
+| ''carrier root'' | `lar:///t/a` | `type` · `uri-path` · `file-path` · the meta's own keys | `deserializer.ts` (the carrier's own record) |
+| ''slot child'' | `lar:///t/a#/a` | `type` · `uri-path` · ''`$fragment-parent`'' · ''`$slot`'' · a declared child meta's keys | `deserializer.ts:596-606` |
+| ''carriage part'' | `lar:///t/a#/a/$postamble` | `type` · `$fragment-parent` · `$slot` opening `$` | `deserializer.ts:1006-1015` (`carriageRecord`) |
+| ''path child'' | `lar:///t/a/b` | its own record entirely — a separate carrier under a shared prefix | its own founding |
+
+''The seam's child'' names row two: a ''slot child'', minted by the ahu split, addressed by a single `#` fragment path, carrying `$fragment-parent` one level up and `$slot` naming its own slot.
+
+!! What rides the child, what rides the parent
+
+* ''The child holds the body bytes authoritatively.'' `deserializer.ts:566-569`: the parent's text keeps only `<<~ kahea ahu #/a>>` where the block stood; the child record holds what the author wrote inside it.
+* ''The child carries NO `file-path`'' (`deserializer.ts:590-591`): a fragment record never owns a disk file; its carrier root does. So a child has no independent projection and no independent disk round trip.
+* ''The child carries its own `type`'' when its meta declares one (`deserializer.ts:598-601`) — a markdown section under a memetic root keeps `text/markdown`.
+* ''`$fragment-parent` points ONE LEVEL up'', never at the meme root (`deserializer.ts:562-564`), so a climb to the root walks a hop chain.
+* ''The parent holds the frame.'' The DOCTYPE, the SOH head, the meta fence, STX, ETX, the block check, EOT — all of it stands on the ROOT's record. ''A child holds body and nothing else.'' This single asymmetry drives most of what follows.
+
+!! Which field the grading reads
+
+''None of them.'' The grading path reads ''`text`'' and nothing else — `memeticIngestOps.deserialize(uri, text)` (`ingest-gate.ts:85-92`) takes a URI for addressing and the text for parsing; the diagnostics come off the parse and the shore. Measured (#/measured rows 5-6): the same bytes grade identically under a root URI and under a child URI. ''The grade reads bytes, never records, never parentage, never address.''
+
+The fields that DO decide things decide ADDRESS, not grade: `isMemeRoot` (`place-meme.ts:234-236`) reads `type` + no `#` in title + no `$fragment-parent`, and `framedRootOf` (`place-meme.ts:123-129`) reads that predicate first and a SOH head second. Those choose a DOOR. The Confluence gate chooses a VERDICT. `syncer-seams-roundtable.mem` `#/refusals` already forbids fusing them.
+
+!! How the two remembered rulings bear
+
+* ''`61ac87090` — a meme's children ride the skinny answer fat.'' `native-skinny-door` re-inflates every record carrying `$fragment-parent` inside stock's own `tiddlers.json`. So ''`$fragment-parent` already functions as a wire-level selector'': the server already picks children out of a mixed answer by that one field, on every poll, for every client. Any fork below that needs to recognise a child on the server needs no new predicate — this one already carries that traffic, and its cost sits measured (132 tiddlers, 23 798 B → 38 967 B, ×1.64, dial `$:/config/lares/memes/fat-children`).
+* ''`79420f5b5` — an empty section says whether its child died or is arriving.'' `templates/ahu/html` (`tiddlers/ahu-template-html.tid:13-15`) resolves FOUR states off one reading and publishes them on `class` and `data-slot-state`: `unresolved · arriving · empty · filled`. So ''a per-child READ verdict already reaches the page, per slot, with a place to sit.'' A fifth band naming a child's grade costs one filter clause on a line that already branches four ways — and moves no hash, no door and no record.
+
+<<~/ahu>>
+
+<<~ ahu #/grading>>
+
+! What "grades" means mechanically — the call, followed
+
+''Map-Wisp (Scryer).'' Four questions, answered from the running code.
+
+!! What function grades
+
+`gradeOf(diagnostics)` (`meme-ast/diagnostics.ts`), reading a diagnostics array produced by `memeticIngestOps.deserialize` (`ingest-gate.ts:85-92`) — the parser's recoveries plus the shore's faults, merged on one channel. Two callers matter: `decideIngest` step 2 (`ingest-gate.ts:145`) and `placeMeme` (`place-meme.ts:175`).
+
+!! What bytes it reads
+
+''The text handed to it, and only that.'' No record, no field, no neighbour, no store. Which is exactly why the refuted cure graded nothing: it handed the grader `readMeme(root)` — bytes the renderer had just written.
+
+!! What a grade DECIDES
+
+One thing, at one band.
+
+* ''`error` → the placement REFUSES'' (`ingest-gate.ts:145-151`, `put-meme.ts:67` → HTTP 422). Nothing lands.
+* ''`warning` · `info` · `hint` → the placement PROCEEDS'' and the diagnostics ride out on the receipt. `diagnostics.ts:38-46` states the ladder: `error` names the one fault that costs the operator their bytes; every recovery keeps the text and grades below the line, because refusing a recovery would drop bytes to protect the grammar.
+
+''And exactly two faults reach `error''' (measured, #/measured row 7): `postamble-content` — content standing between ETX and EOT (`deserializer.ts:1170-1180`) — and `shore-round-trip`, the carrier that stopped round-tripping (`deserializer.ts:1182`, `diagnostics.ts:70-81`). ''No parse failure ever grades error'': `severityOfRung` (`diagnostics.ts:59-67`) maps every recovery rung to `warning` or `info`.
+
+That fact narrows the whole seam. ''A grade over a headless child body can reach `error` only when the child's bytes carry a whole carrier FRAME'' — because both error legs need an ETX. Measured (#/measured rows 8-10): a child body with a bare stray ETX and stranded text grades `clean`; the same stranded text inside a pasted frame grades `error` under a child URI exactly as under a root URI.
+
+!! What happens today when nothing grades
+
+Traced end to end for a slot child's save from a stock browser:
+
+# The charm asks `framedRootOf(tiddler.fields)` (`meme-door-charm.ts:76`). The root law answers null for any title carrying `#`. The charm hands the save to stock's native verb.
+# `PUT /recipes/default/tiddlers/lar%3A%2F%2F%2Ft%2Fa%23%2Fa` reaches the native door skin (`routes/native-door.ts:65`), which asks `nativeDoorGate` → `framedRootOf` → null again. The gate answers `pass`.
+# Stock's `put-tiddler.js` lands the body verbatim. ''No parse, no diagnostics, no grade, no receipt.'' The wire reads `204`.
+# The backstop's `change` listener fires and asks `framedRootOf` a third time (`meme-backstop.ts:66`) → null → `continue`. Nothing logs.
+# `GET /memes/lar/t/a` recomposes: `expandRefs` (`deserializer.ts:1031-1067`) splices the child's text verbatim over its `kahea` marker.
+
+''So the answer to "what happens when it cannot grade" reads: it never tries.'' Grading a child's save is not a thing that fails today; it is a thing no code path attempts. That distinction matters for the reversibility question at #/ladder — the house is not repairing a broken check, it is deciding whether to mint a first one.
+
+<<~/ahu>>
+
+<<~ ahu #/forks>>
+
+! The two forks, each with its failure mode
+
+''Lares (Council).'' Both forks stated at their strongest, then each one's losing case.
+
+!! Fork A — a child's save GRADES against its own authored text
+
+''The shape.'' Somewhere on the child's path — the backstop widened, or a skin on the native door — the child's `text` runs through `memeticIngestOps.deserialize(childUri, childText)` and the resulting band goes somewhere a person can read.
+
+''Its strongest case.'' A section is where authors actually write. The root's own body is `kahea` calls and nothing else, so ''the root's door — the only door that grades today — guards a surface no human types into.'' Every keystroke of a long carrier lands through the ungated path. A gate that guards the empty room and leaves the occupied one open reads as an accident of implementation order, not a law.
+
+''What breaks, and who notices.''
+
+* ''The paste — the case the seam was named for — grades CLEAN.'' Measured (#/measured row 11). A whole framed carrier pasted into a child IS a well-formed carrier; nothing in it is malformed. Fork A, executed literally, catches nothing in the scenario that opened seam (b). ''Whoever builds it will believe the seam closed, and the e2e vector will go green, and the fault will stand.'' That reads as the same class of instrument lie the roundtable named at `#/b-prime`: a vector that cannot tell a cure from a no-op.
+* ''What it DOES catch grades below the refusal line anyway'' — `info:unclosed-frame`, `warning:orphan-close` (#/measured rows 1-2). So Fork A's realised behaviour reduces to REPORTING, in every case but the framed paste.
+* ''If the report becomes a refusal, the queue stalls.'' `syncer.js:431-442` + `:26` + `:542-545`: a 4xx on a path the stock syncer drives never updates `tiddlerInfo`, so the same save re-runs every five seconds ahead of every load, poll and delete, for the life of the page. The roundtable's first refusal (`#/refusals`) already rules this out; it is restated here because Fork A's most natural reading walks straight into it.
+* ''Who notices, and when.'' On the report reading: an author, immediately, on their own screen. On the refusal reading: every reader of that wiki, within five seconds, permanently.
+
+!! Fork B — a child reads UNGRADED by law
+
+''The shape.'' The house declares it: a slot child is a FRAGMENT of a carrier, never a carrier. Grading belongs to the carrier's own save. Phase 5 is not a widening but a deletion of the question, and the e2e vector at `(b)` inverts to a named posture.
+
+''Its strongest case.'' ''A fragment holds no frame, and the grade grades frames.'' Both error legs need an ETX (#/grading); a child has none. The grade over a headless body can only ever report parse recoveries, which the ladder already rules must not refuse. ''So a fragment carries no gradeable surface at the one band a grade decides anything.'' Every door that reads a child today — charm, native gate, backstop — already answers null on it, in ONE spelling (`isMemeRoot`), landed deliberately as the (b′) cure. Fork B says out loud what three doors already do, and adds no code.
+
+Beside it stands the Stranger's sentence, already written into `docs/pono/meme-api-surface.mem` by the operator's own refinement §4: //a slot child is a tiddler; the native door lands it as one, ungated//.
+
+''What breaks, and who notices.''
+
+* ''The pasted frame stands in the record forever, and the ROOT's served carrier loses its block check.'' Measured (#/measured rows 12-13): with a clean child the root serves `check: "ok"`; with a pasted child the same root serves `check: "unchecked"` and the fault `2 text frames stand where the grammar admits one — only the first verifies`. ''A carrier that no longer verifies is the exact artifact the block check exists to prevent'' (`block-check.ts`: BSC answered a bad block with NAK, never with a quiet drop).
+* ''Nobody notices, and there is no time by which they do.'' The wiki renders the section (graceful parsing holds — nothing vanishes). The syncer reports `204`. The listing lists it. The recompose fixed point answers `noop` on every re-read. ''The first reader who learns of it holds a `.mem` file whose check fails, at whatever remove in time and person that happens.'' Contrast the (c′) scar, which the operator ruled acceptable precisely BECAUSE the page marks it: the scar says so and this does not.
+* ''Who bears it.'' The second reader, and the peer the carrier travels to — neither of whom took the action.
+
+!! What the two forks share
+
+Both leave the ROOT's door exactly as it stands, both leave the address law (`isMemeRoot`, one spelling) untouched, and both leave the (c′)/(d′) template ruling intact. ''The forks differ in one axis only: whether any instrument reads a child's bytes at all.'' They do NOT differ on whether a child may be refused — standing law already settles that (#/standing-law).
+
+<<~/ahu>>
+
+<<~ ahu #/third-shape>>
+
+! The third shape — the instrument neither fork names
+
+''Mischief-Muse (Muse).'' The refutation closes with a claim, and the claim reads false against the running code. Its words: //"this package holds no congruence that reads a fragment body as a gradeable unit."//
+
+''The GATE holds none. The PACKAGE holds two, and both already run.''
+
+!! Third shape (i) — `check`: the grade already runs over arbitrary text, published on the face
+
+`meme-face.ts:56-66` binds `$tw.lares.meme.check(text)`, which calls `memeticIngestOps.deserialize` and answers `{ shape, check, bcc, edges, grade, diagnostics }`. Its own comment: //ONE TEXT, ONE GRADE. The grade rides the gate's own deserialize … so `check` and `place` never read one carrier two ways.// `tests/grammar-in-a-wiki.test.ts:142` already calls the ops bundle directly for diagnostics.
+
+''So Fork A needs no new congruence, no new gate, no placement, no hash and no merge base.'' `memeticIngestOps.deserialize(childUri, childText)` + `grade` reads a fragment body today and answers a band (#/measured rows 1-2, 5-6). What the fixed point refuted was not the possibility of grading a child — it was ''one particular INPUT'', and that input was never necessary.
+
+''One gap to name'': `check` passes `headUriOf(text) ?? ""` as the URI, so a headless child body grades under the empty string. The band comes out identical (#/measured row 5 against row 1); what goes missing is the diagnostic naming ''which record'' carries the fault. A caller passing the child's own title fixes it in one argument.
+
+!! Third shape (ii) — `readCarrierShape`: the instrument that ALREADY CATCHES the paste, and decides nothing
+
+The finding this floor was worth building for.
+
+`readCarrierShape` (`carrier-shape.ts`) reads a carrier's declared KIND and the marks that kind requires. Over the root's SERVED text with a pasted child it answers (#/measured row 13):
+
+```
+check:  "unchecked"        (a clean child serves "ok")
+faults: ["2 text frames stand where the grammar admits one — only the first verifies"]
+```
+
+— `carrier-shape.ts:182`. ''The fault the whole seam is about already has a named reading, already computed, already published beside the grade on the same face verb (`meme-face.ts:59`).'' Its readers today: `lares meme --gradient` (`packages/lares-cli/src/commands/meme.ts:488`) and the corpus tests. ''No door and no gate reads it.'' It informs; it never decides.
+
+!! What (ii) reveals about the question itself
+
+''The paste is a COMPOSITION fault, not a CONTENT fault.'' Measured, in one row each:
+
+* the child's bytes alone: a legal carrier, `grade: clean` (#/measured row 11),
+* the root's bytes alone: a legal carrier,
+* the two joined by `expandRefs`: ''two text frames where the grammar admits one'' (#/measured row 13).
+
+''Two legal carriers compose into one illegal one.'' No per-child grade can ever see that, because the fault does not exist in the child — it comes into being at the join. So the operator's fork, as worded, may not reach the thing it was opened for: ''"grade the child's own authored text" and "read a child ungraded" both leave the composition unread'', and the instrument that reads the composition already exists at a third altitude neither names.
+
+!! The fourth thing the code makes available, and its measured cost
+
+`placeMeme` accepts a fragment URI today: `groupOfMeme` filters the child's own subtree correctly (`place-meme.ts:132-134`; #/measured row 14), `readMeme(childUri)` answers a fully framed carrier with its own DOCTYPE, head and check (#/measured row 15), and `placeMeme({uri: child, text})` ingests. ''Named here so no later hand mistakes it for an opening.'' Measured (#/measured row 16), it mints `lar:///t/a#/a#/z` — the double-hash the address grammar forbids (`meme-ast/ahu-scan.ts:148`) and Phase 2 walled at the PUT door (`put-meme.ts:101-105`) — and it ''strips the child's `$fragment-parent`, `$slot` and `uri-path`'', orphaning it from its own parent. ''Grade and placement separate cleanly at a fragment; only the grade survives the trip.''
+
+<<~/ahu>>
+
+<<~ ahu #/ladder>>
+
+! The consequence ladder — what closes behind you
+
+''Lares (Diplomat).'' Cheap now, expensive later, and which door swings only one way.
+
+!! Fork A makes cheap
+
+* A per-child band on the page, riding a template that already branches four ways (`ahu-template-html.tid:13`).
+* A named place for a receipt on a save that today answers a bare `204`.
+* A future stricter reading: once a band EXISTS, tightening it costs a threshold, not a mechanism.
+
+!! Fork A makes expensive
+
+* ''Every child save pays a parse.'' The root's door pays one parse per carrier save; Fork A pays one per SECTION save, which is where the typing happens. Unmeasured; the corpus suite would price it.
+* ''A band that reports and never refuses invites the question again.'' The first operator who sees `warning` on a child save and watches it land anyway asks why the band exists — and the answer ("standing law forbids refusing here") lives two carriers away.
+
+!! Fork B makes cheap
+
+* Nothing to build, nothing to test, nothing to run per save. The e2e vector inverts to a posture and Phase 5 closes at zero hours.
+* One sentence of law, consistent with three doors that already behave that way.
+
+!! Fork B makes expensive
+
+* ''A carrier can stop verifying and nothing says so'' (#/measured row 13). Every later instrument that trusts the check inherits that silence.
+* ''The corpus grows under the silence.'' `project_carrier_gradient_kinds` records the precedent exactly: seventeen carriers sat outside all four witnesses at once while each reported itself corpus-wide, because graceful parsing hides files. A rule that grades nothing at a child creates the same class of hiding place, one section at a time.
+
+!! Reversibility — the asymmetry, stated plainly
+
+''Fork A reverses cheaply. Fork B reverses expensively, and the cost grows with the corpus.''
+
+* ''Removing a check later'': the check's outputs are advisory; deleting it removes a reading nobody depended on for correctness. Cost bounded, one commit.
+* ''Adding a check later, after documents rely on ungraded reads'': the check runs over a corpus that grew under no check. Whatever it finds, it finds all at once, in carriers whose authors have moved on — and each finding must be triaged as a repair rather than caught as a typo. The house has walked this once: `project_carrier_gradient_kinds` records thirteen files below their floor, repaired in one sweep, discovered only when the instrument was finally built.
+* ''The door that closes behind Fork B'': not the ability to add a check — that stays open forever — but ''the ability to add one cheaply''. Each day under Fork B raises the price of Fork A by however many child saves landed unread.
+* ''The door that closes behind Fork A'': the claim that a fragment holds no gradeable surface. Once an instrument reads a child's bytes, "a child is not a carrier" stops being available as a clean law, and every later reader must ask which half of carrier-hood a child holds. `readMeme(childUri)` (#/measured row 15) already weakens that claim on its own.
+
+!! What NEITHER fork makes cheap
+
+''Reading the composition.'' Both forks read one record's bytes at a time. The frame collision lives at the join (#/third-shape). Choosing either fork without naming the third altitude leaves that fault exactly where it stands, and leaves whoever ships the fork believing otherwise.
+
+<<~/ahu>>
+
+<<~ ahu #/stories>>
+
+! Three humans, and what each one sees
+
+''Lares (Advocate).'' The parties who bear the cost, doing ordinary things.
+
+!! Kai ʻĀ — the author promoting a section
+
+Kai keeps the orchard survey: one carrier, eleven terraces, a section each. Terrace 3 outgrows its section. She does what she has always done — pastes a whole document's framing into the section, meaning //this deserves to be its own carrier now// — and saves.
+
+* ''Under Fork B'': the save answers `204`. Her screen shows a saved section. The carrier now serves with `check: "unchecked"` and two text frames. She learns nothing, this week or ever. When Terrace 3 finally does become its own carrier, the promotion runs against a section whose frame has been broken for two months.
+* ''Under Fork A'': the save answers `204`, and the band reads ''clean'' — because her paste IS a well-formed carrier. ''She sees exactly what Fork B shows her.'' The fork is invisible to Kai in the one scenario built to model her.
+* ''Under the third instrument'': the ROOT's shape reads `unchecked` with the frame fault named, and the section she just saved carries the mark. Kai reads: //this section holds a second document frame//. The words match what she did.
+
+!! Ichi — the guest writing into a shared bag
+
+Ichi holds write standing on a bag he does not own and drops a note into a section of someone else's carrier. His editor autocompletes a closer he never opened, so the section's body carries a stray `<<~/ahu>>`.
+
+* ''Under Fork B'': it lands. `warning:orphan-close` exists in nobody's output because nothing computes it. The owner meets it whenever the owner next reads the section.
+* ''Under Fork A'': the band reads `warning:orphan-close` (#/measured row 2). Ichi sees it on his own save, on his own screen, in the one moment he still remembers what he typed.
+* ''The stake Advocate holds'': Ichi is the party best placed to fix it and the least likely to ever hear about it. Fork B routes his mistake to the owner's future. Fork A routes it to Ichi's present. ''That is a distributive choice, not a technical one.''
+
+!! Lady Aki — quoting a parent into a state it never authorized
+
+Aki reads the survey, copies the root's own head and meta out of the served `.mem` to show a colleague how a carrier is framed, and pastes that quotation into terrace 7's section as an example.
+
+* ''Under either fork'': her intent was to QUOTE. The house has a mask for that — `fencedSpans` / `maskedExec`, which the recompose honours (`deserializer.ts:1032`: quoted markers stay verbatim, //the operator SHOWS the grammar there//). ''If she fenced it, nothing breaks and no fork fires.'' If she did not fence it, the root now carries two heads.
+* ''Under Fork A'': `clean` either way. A well-formed quotation and a well-formed paste are the same bytes.
+* ''Under the third instrument'': fenced → `check: ok`, no fault. Unfenced → `2 text frames`. ''The instrument reads exactly the distinction Aki cares about'' — did my quotation stay a quotation — and the grade reads neither.
+* ''Who pays'': the colleague, reading a served carrier whose check no longer verifies, with no way to tell a teaching example from a corruption.
+
+!! What the three stories agree on
+
+In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape tracks the human's intent. In Ichi's alone does the content grade carry the news. ''Two of three humans see nothing under either fork, and something true under the third instrument.''
+
+<<~/ahu>>
+
+<<~ ahu #/standing-law>>
+
+! What the house's law already decides — and where it stops
+
+''Kalani-of-the-Ledger (Lorekeeper).'' Ranked by what inherits shape. Where a standing law decides a question, that outranks every argument above.
+
+!! ALREADY DECIDED — a child's save may never be REFUSED
+
+`syncer-seams-roundtable.mem` `#/refusals`, first bullet, resting on `syncer.js:431-442` + `:26` + `:482-500` + `:542-545`: ''no cure may answer 4xx on a path the stock syncer drives.'' A slot child's save runs on that path by construction — the (b′) cure put it there deliberately, so the native gate would stop stalling the queue.
+
+''So Fork A's refusing reading stands already refused.'' What remains open is narrower than the question as worded: ''not whether a child's save is graded, but whether the grade is READ ALOUD.'' Every proposal below the refusal line is live; every proposal at or above it is dead on standing law. ''A reader taking one thing from this carrier should take that.''
+
+!! ALREADY DECIDED — the grade may not choose a door
+
+`#/refusals`, second bullet: the Confluence gate grades CONTENT, the root law decides ADDRESS, and ''a cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.'' This forbids the shape "grade the child, and route it by the result" in any spelling.
+
+!! DECIDES THE SHAPE, NOT THE ANSWER — write-open, read-certified
+
+`handle-card.mem` `#/public-by-design` and `handle-announce.ts:20-28`: the announce board admits ANY nym's card; `readHandleAnnounces` filters shape and certifies nothing; ''standing arrives only as a READ verdict.'' And the sharp half: ''a membership gate on the WRITE path reads as a REGRESSION, never a hardening'', because refusing at write obliges the writer to consult a set of who-may-announce, and that set IS the compiled registry the registry-filter rejects.
+
+''The honest reading of the analogy, and its limit.'' The board law governs WHO may write, not WHAT the bytes hold — the root's own door refuses on `grade: error` today, which IS a content refusal at a write path, and no law calls that a regression. ''So write-open/read-certified does not decide seam (b).'' What it supplies is a SHAPE with a strong precedent behind it: ''let the write land, and carry the verdict on the read.'' Under that shape Fork A and Fork B stop being opposites — the bytes land either way, and the only question left is whether a reading rides beside them. The (c′)/(d′) ruling already built the surface such a reading would sit on (`ahu-template-html.tid:13-15`, four states on one line).
+
+!! DOES NOT DECIDE — registry-filter · standing ⊥ capability · single-owner
+
+* ''Registry-filter'' (a compiled-about registry at any scope → reject the fork): grading a child's own bytes compiles nothing about anyone. It reads one text in front of it. ''No collision.''
+* ''Standing ⊥ capability'': both forks turn on content, not on who wrote it; neither proposal reads a seat. ''No collision.'' Named because Ichi's story tempts a reading where a guest's saves grade and an owner's do not — ''that shape WOULD collide'', and no fork here proposes it.
+* ''Single-owner'': a slot child has exactly one `$fragment-parent`, one level up, and the group law gives every record exactly one root. ''No collision'', and it supplies one constraint: any grade attached to a child must attach to THAT child's record, never to a set assembled across parents.
+
+!! The one law that leans, and how far
+
+''Never-invent-bytes'' (`deserializer.ts:1036`) and graceful parsing (AUGMENT + WRAP) both rule that a reading may be ADDED and an authored line may not be REMOVED. Every proposal in this carrier adds a reading; none removes a byte. ''The law permits both forks and forbids the strip.'' It does not choose between them.
+
+<<~/ahu>>
+
+<<~ ahu #/measured>>
+
+! The measurements — collided 2026-09-13
+
+''Ink-Clerk (Lorekeeper).'' Every row ran against the working tree through `packages/lararium-tw5`'s own vitest, in scratch probes deleted after reading. ''A lean is not a measurement''; these are the measurements. `t/a` names a root, `t/a#/a` its slot child.
+
+| # | what ran | answer |
+|---|---|---|
+| 1 | `deserialize(child, "<<~ ahu #/z>>\\nunclosed")` | `grade: info` · `info:unclosed-frame` |
+| 2 | `deserialize(child, "<<~/ahu>>\\nstray closer")` | `grade: warning` · `warning:orphan-close:ahu` |
+| 3 | `placeMeme(root, readMeme(root))` over a pasted child | `noop · clean · 0 diagnostics · 0 landed` — the fixed point, re-confirmed |
+| 4 | `deserialize(child, "plain prose")` — CONTROL | `grade: clean` · 0 diagnostics |
+| 5 | the row-1 bytes under URI `""` | `grade: info`, same diagnostic; the record answers title `""` |
+| 6 | the row-1 and row-2 bytes under a ROOT URI, framed | identical bands — ''the grade reads bytes, not address'' |
+| 7 | seven fault shapes, unframed | none reaches `error`; `severityOfRung` maps every rung to `warning`/`info` |
+| 8 | child body with a bare stray ETX + stranded text | `grade: clean` — no frame, no postamble classification |
+| 9 | ROOT framed, one line between ETX and EOT | `grade: error` · `error:postamble-content` |
+| 10 | the row-9 bytes under a CHILD URI | `grade: error`, identical — records answer at the PASTED frame's own uri |
+| 11 | a whole well-formed carrier pasted as a child's body | ''`grade: clean` · 0 diagnostics''; records answer at `lar:///t/promoted` |
+| 12 | `readCarrierShape(readMeme(root))`, CLEAN child — CONTROL | `check: "ok"` · `faults: []` |
+| 13 | `readCarrierShape(readMeme(root))`, PASTED child | ''`check: "unchecked"`'' · `2 text frames stand where the grammar admits one — only the first verifies` |
+| 14 | `groupOfMeme(titles, child)` | the child + its subtree + its carriage; the root excluded |
+| 15 | `readMeme(child)` | a WHOLE framed carrier — DOCTYPE, head to `lar:///t/a#/a`, meta, STX, ETX, its own `ni:///sha-256;…`, EOT |
+| 16 | `placeMeme({uri: child, text})` with a sub-block | `ingest`; lands `lar:///t/a#/a#/z`; ''strips `$fragment-parent`, `$slot`, `uri-path` from the child'' |
+| 17 | re-deserialize the served root of row 13 at the root URI | `grade: clean`; ''3 records against the store's 2'' (a `#/$postamble` appears) — and row 3's `noop` keeps it from landing |
+
+''What row 17 says'': the canonical render reaches its fixed point while the RECORD SET does not. The equivalence noop (`ingest-gate.ts:167-178`) compares hashes of the render and never the records behind it, so a divergence at that grain passes unread. ''Named as a standing observation, not as part of the fork'' — it belongs to whoever next opens the Confluence gate.
+
+!! What no probe here settled
+
+* ''The parse cost per child save.'' Fork A's throughput price stands unmeasured. The corpus suite over `packages/lararium-tw5` prices it in one run.
+* ''Whether the refutation's CONTROL and these rows agree.'' `3dfb06170` reports the same shapes refusing at the root's door with `grade: error`; rows 6-9 here find `error` reachable only through the two ETX-bearing legs. Both readings hold if the commit's seven shapes each carried a frame. ''Re-running that probe's exact fixtures settles it'' — `packages/lararium-tw5/tests/root-law-one-spelling.test.ts` names the floor it was written against.
+* ''Whether any live reader consumes `data-slot-state`.'' The template publishes four states; nothing in this carrier measured what reads them.
+
+<<~/ahu>>
+
+<<~ ahu #/what-a-ruling-would-say>>
+
+! The shape of an answer, unfilled
+
+''Lares (Liminal).'' Holding the maybe: the operator's ruling settles more than one word, and the words separate.
+
+# ''Does an instrument read a child's own bytes at all?'' — Fork A yes, Fork B no. Standing law already fixes that the reading may never refuse (#/standing-law).
+# ''If yes, WHICH instrument'' — the content `grade` (blind to the paste, measured), the frame `shape` (reads the paste, measured), or both. The question as originally worded names only the first.
+# ''At which altitude'' — the child's bytes alone, or the ROOT's composed render where the frame fault comes into being. Row 13 lives only at the second.
+# ''Where the reading lands'' — the save's receipt, the page (`data-slot-state`, a fifth band), the server log, or the `.mem` served text.
+
+''Answering (1) alone leaves (2), (3) and (4) open, and a hand enacting a bare yes or no will pick them silently.'' That reads as the same drift the (b′) seam opened through: one law, two spellings, and the second one moved.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_c-FaUMIaccVXfpvVMfvhVqL_6QHiu_ZPoZouY32zBs
+
+<<^ code="&#x0004;" -> to="?">>
