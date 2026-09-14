@@ -372,7 +372,14 @@ Total: ''17.0 spirit-hours.''
 
 !! Retirement
 
-This floor retires by the rite (fold · weld · one last check-in · delete). Folded already: phases 0·1·4·2·3 into <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> `#/leans`. Blocking: seam (b) — Phase 5's refutation (`3dfb06170`) stands without a ruling (a child's save grades against its OWN authored text, or a child reads ungraded by law). One inbound edge to weld (`syncer-back-parity`). When (b) rules and lands there, this carrier checks in once as RETIRING and the next commit deletes it.
+This floor retires by the rite (fold · weld · one last check-in · delete). Folded already: phases 0·1·4·2·3 into <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> `#/leans`. Blocking: seam (b) — Phase 5's refutation (`3dfb06170`) stands without a ruling (a child's save grades against its OWN authored text, or a child reads ungraded by law). ''TWO inbound edges to weld, and they want DIFFERENT welds.'' Measured 2026-09-13 — re-derive with `grep -rn "syncer-seams-roundtable" --include='*.mem' . | grep -v node_modules | grep -v "docs/pono/syncer-seams-roundtable.mem"`, which returns three `loulou` sites across two carriers:
+
+* `syncer-back-parity.mem:164` points a reader here //for the argument and the plan// — a weld MOVES that content or RE-POINTS the sentence.
+* `otakiage.mem:382` cites this floor as the worked example of ''`standing` × `floor`, nearly foldable'', and `:449` carries the same carrier's outbound edge. That first row wants a ''replacement exemplar'' rather than a re-point: deleting this carrier deletes the evidence the stage names something real. ⚠ `otakiage:383` immediately below leans on `scale-stories-basket-one` for the neighbouring `folded` stage, so ''both of that table's exemplars sit in the retirement queue at once'' — a rite whose worked examples retire faster than the rite documents them.
+
+A fourth reference stands in code at `packages/lararium-tw5/tests/root-law-one-spelling.test.ts:4`, a header comment naming this floor's Phase 0. It carries no edge and welds nothing, and it re-points cheaply — but a hand deleting this carrier should know the comment names a file that will not exist.
+
+When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as RETIRING and the next commit deletes it.
 
 <<~/ahu>>
 
@@ -395,6 +402,6 @@ This floor retires by the rite (fold · weld · one last check-in · delete). Fo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0nb8wJY0mn9oBYCrhE_m8C1DU0Ph3BBWqbEPswipIRI
+<<^ code="&#x0003;">>ni:///sha-256;cdbHmMZfBOModWNY9eGNieIbMYsnaNHUvf1SOvqLGf0
 
 <<^ code="&#x0004;" -> to="?">>

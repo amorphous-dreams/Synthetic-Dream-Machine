@@ -64,9 +64,23 @@ describe("the lifecycle tag carries a stage that differs, and its reason", () =>
    * no mechanical spelling of the exception stands yet. Inventing one would be a ruling wearing a
    * sweep's clothes. A hold that grew would stop measuring anything; this one may only lose entries.
    */
+  /**
+   * BOTH "another hand this watch" ENTRIES RETIRED 2026-09-13 — deleted, never widened, the way the
+   * house retires a self-clearing exception. That watch closed: the hand was the meme hearth and the
+   * operator closed it (`docs/pono/hearths.mem`).
+   *
+   * `scale-stories-basket-one.mem` — its last held lean, the heraldry read, landed at `96fac1df9`; the
+   * carrier now takes `lifecycle/standing` and both retired keys came out with this entry.
+   *
+   * `heraldry.mem` — ALREADY swept, at `58d47f09b`, and the entry outlived the sweep. The CONTROL below
+   * was RED against the tree before this edit, saying exactly that: //swept; drop the entry//. A hold is
+   * meant to shrink on its own, and this is the shrink; the red proves the CONTROL measures.
+   *
+   * The lesson the pair leaves: a hold entry carries TWO facts — that the carrier still writes a retired
+   * key, and WHY it stands outside the sweep. The CONTROL checks the first and cannot check the second,
+   * so a reason like "this watch" outlives the watch silently while the entry still reads green.
+   */
   const HELD_OUTSIDE_THE_SWEEP: ReadonlyArray<readonly [string, string]> = [
-    ["bags/lares/ha.ka.ba/lares/docs/pono/heraldry.mem", "held open by another hand this watch"],
-    ["bags/lares/ha.ka.ba/lares/docs/pono/scale-stories-basket-one.mem", "held open by another hand this watch"],
     [
       "bags/lares/ha.ka.ba/lares/docs/pono/syncer-back-parity.mem",
       "reads standing while holding five leans its own status-why names as held with their blockers — awaiting the operator's ruling on whether a witness sentence may carry that exception",

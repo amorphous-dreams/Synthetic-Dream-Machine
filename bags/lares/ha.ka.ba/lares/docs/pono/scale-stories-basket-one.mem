@@ -10,12 +10,10 @@ mana       = 12
 manao      = 14
 manaoio    = 11
 namespace  = "&#x2299;"
-retain     = true
-revised-on = "2026-09-11"
+revised-on = "2026-09-13"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
-status     = "standing"
-status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits"
-tags       = ["docs/pono/talk-story"]
+status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits. WITNESS: the last held lean — the heraldry read — landed at `96fac1df9` and `docs/pono/heraldry.mem` carries the ruling with its quote license, so NO lean stands open. Reads `lifecycle/standing` and NOT `folded`: the rite demands zero inbound loulou and a fold target in every slot, and this floor carries SIX inbound carriers (four of them quoting it as the RECORD of an operator ruling) with no slot yet folded, so the rite can now SEE the floor without the fire being any nearer"
+tags       = ["docs/pono/talk-story", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
 ```

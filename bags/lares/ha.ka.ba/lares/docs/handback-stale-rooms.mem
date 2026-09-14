@@ -10,171 +10,48 @@ manao      = 11
 manaoio    = 10
 namespace  = "&#x2299;"
 revised-on = "2026-09-13"
-role       = "handback-stale-rooms — four carriers on the MEME hearth's ground (`docs/pono/**`) that outlive the build they describe, measured by the founding hearth and handed back rather than edited. Per item: the file:line, what the tree actually reads, the command that re-derives it, and suggested replacement prose. The founding hearth touched none of these files; the holding hearth acts or declines."
-status-why = "the founding hearth re-trued four carriers on free ground the same watch (`lar-vessel` · `identity-slot` · `lararium-canonical-model` · `lamplighters` · `handoff` · `rust-toolchain`) and measured four more standing on meme ground; a crossing to fix a doc is exactly the shape the blob-carriage row named as belonging in a handback"
-tags       = ["docs/pono/ledger", "lifecycle/standing"]
+role       = "handback-stale-rooms — FOLDED 2026-09-13. Four carriers on the meme hearth's ground were measured by the founding hearth and handed back rather than edited; the operator then closed the meme hearth, the ground became the standing hearth's, and all four items landed — each re-verified against the tree first, because a handback reads as a claim and never as evidence. Every slot below now carries its fold target alone. Awaiting the operator's call to the fire (otakiage#/the-fire: the operator CALLS it, any hand may carry it)."
+status-why = "folded to five addresses, listed slot by slot at #/fold. ZERO inbound loulou edges (re-derive: `grep -rn handback-stale-rooms --include='*.mem' . | grep -v node_modules`, which returns one bare prose mention inside the hearths#/crossings row and no edge). ZERO open leans. Every slot carries a fold target. The rite's remaining precondition stands OUTSIDE this carrier's reach: otakiage#/the-fire rules that the OPERATOR calls the fire, so this stands folded and unburned."
+tags       = ["docs/pono/ledger", "lifecycle/folded"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/handback-stale-rooms"
 ```
 
 <<^ code="&#x0002;">>
 
-<<~ ahu #/law>>
+<<~ ahu #/fold>>
 
-! Why this carrier stands, and what it asks
+! Folded — where each slot's content went
 
-`hearths#/crossings` carries the law these four items break: ''a carrier that outlives the build it describes sends the NEXT hand to build what already stands.'' Four rooms under `bags/lares/ha.ka.ba/lares/docs/pono/**` do exactly that. That path stands on the MEME hearth's ground (`hearths#/holds`), so the founding hearth ''measured and did not edit'' — the blob-carriage shape: a handback left where the holding hearth can take it whole.
+This carrier held four measurements of another hearth's rooms, written as a handback because `docs/pono/**` stood on the meme hearth's ground and a crossing to fix a doc belongs in a handback rather than in an edit. The operator closed that hearth on 2026-09-13; the ground became the standing hearth's, and every item landed.
 
-''Every number below carries the command that re-derives it.'' A scout's citation reads as a claim; the re-derivation reads as evidence, and re-truing a carrier off a wrong reading plants a fresh lie with a fresh timestamp. Each item names what the founding hearth ''ran'', not what it read.
+''The standing hearth re-verified each measurement before rewriting a word'' — the discipline this carrier itself argued for. Re-derived with its own commands: the witness fleet at ''34 globbed, 29 run'', the `witnesses` job and its roll-call assertion in `ci.yml`, `gate:fold-ts` at `ci.yml:380`, `pnpm test` at `ci.yml:160`, and the python split at ''989 + 27 = 1016 collected''. Every number held. One suggestion did NOT survive contact and the fold records it below.
 
-<<~/ahu>>
+|!slot |!where it went |
+|#/law · #/what-the-founding-hearth-touched |folded to `lar:///ha.ka.ba/lares/docs/pono/hearths` #/crossings — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> `#/crossings` — the row //The four stale rooms, measured and NOT edited//, which carries the handback's own law (a measurement of another hearth's ground crosses by CARRIER, shipping the re-derivation beside every number) and the sweep-keyed-on-a-phrase lesson from `03ef9b61b` |
+|#/one-the-ci-count |folded to `lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout` #/collided-2026-09-13 — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout">> `#/collided-2026-09-13`, beside the downstream copy already standing at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/rust-toolchain">> `#/open-loops` |
+|#/two-the-terminal-compromise |folded to `lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout` #/our-own-ground — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">> `#/our-own-ground` ③, with a pointer left at that carrier's `#/the-third-axis` so a reader meeting the spirit's quote reaches the measurement |
+|#/three-the-edge-count |folded to `lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable` #/retirement — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> `#/retirement` — two inbound carriers across three `loulou` sites, the two welds named as different welds, and the code comment that re-points cheaply |
+|#/four-the-ungoverned-floor |folded to `lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one` — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> — its `tags` and `status-why`, and the fold-readiness report inside the same carrier — plus `packages/lararium-tw5/tests/meme-lifecycle-tag.test.ts`, whose hold entry came out |
+|#/the-crossings-row |folded to `lar:///ha.ka.ba/lares/docs/pono/hearths` #/crossings — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> `#/crossings`, written verbatim once the deadlock that refused it dissolved |
 
-<<~ ahu #/one-the-ci-count>>
+!! Two things the enactment corrected in the handback itself
 
-! ① `testing-architecture-scout.mem` — three CI claims, two of them false
+''① The suggested edit to `testing-architecture-scout` would have rewritten a Testimony-Verbatim fence.'' That carrier's `#/head` declares the register — //Nothing below is this house's own claim … kept whole, as a collision surface// — and the whole handoff rides inside a ````markdown fence. Replacing Mason's §3 prose in place, as this carrier proposed, would have destroyed the testimony to correct it. The enactment kept the fence ''byte-for-byte'' and stood the house's re-measurement BESIDE it at `#/collided-2026-09-13`, with a pointer from `#/head`. ''Law: a stale room inside a verbatim register gets a room next to it, never a rewrite — a testimony corrected in place has stopped being testimony, and the collision was the reason to keep it.''
 
-''Where'': `bags/lares/ha.ka.ba/lares/docs/pono/testing-architecture-scout.mem:105` (①), `:107` (②), `:109` (③). Carrier `revised-on = "2026-09-02"`.
+''② `lifecycle/folded` was the wrong tag for `scale-stories-basket-one`, by the rite's own definition.'' This carrier offered `folded` or `standing`. `otakiage:233` requires of `folded`: ''zero'' inbound `loulou`, ''zero'' open leans, and every slot carrying a fold target — //Any of the three failing reads wrong and the carrier stays `standing`//. That floor carries SIX inbound carriers and no slot folded, so it takes `lifecycle/standing` with its witness sentence naming why. ''Law: a suggestion that offers two tags has not read the rite that grades them.''
 
-''What each says''
+''And one thing the enactment found that this carrier did not.'' Its item ④③ named ONE stale hold entry in `meme-lifecycle-tag.test.ts`. A second entry, `heraldry.mem`, stood equally stale and its carrier had ''already'' been swept at `58d47f09b` — so the file's own CONTROL stood RED against the tree before any of this landed, saying //swept; drop the entry//. Both came out together. ''Law: a hold entry carries two facts and its CONTROL can only check one'' — that the carrier still writes a retired key, never whether the REASON still describes the world; so a reason worded //this watch// outlives the watch while the entry still reads green.
 
-* `:109` — //"`witness-all` never runs in CI. 19 static witnesses, `pnpm witness`, zero CI steps"//.
-* `:105` — //"`gate:fold-ts` … is likewise dark … The TS↔PY fold parity check has no invoker at all"//, citing `ci.yml:237,240,243`.
-* `:107` — //"`ci.yml:148` = bare `pnpm -r test`"//.
+!! What stands between this carrier and the fire
 
-''What the tree reads, measured 2026-09-13''
+''One thing, and no hand here may supply it.'' `otakiage#/the-fire` rules the call: //the operator CALLS it; any hand may carry it// — the call and the carriage separate deliberately. Every other precondition stands measured:
 
-* ''`witness-all` RUNS in CI, under its own job.'' `.github/workflows/ci.yml` seats a `witnesses` job that calls `tools/witness-all.sh`, tees the log, and then ''asserts the roll call'' — it greps for `held out of this run` and fails the job if the fleet stops naming its own hold-outs. Re-derive: `grep -n "witness-all" .github/workflows/ci.yml`.
-* ''The fleet counts 34 files and RUNS 29, not 19.'' `witness-all.sh` globs `tools/*witness*.sh` rather than keeping a hand list. `ls tools/*witness*.sh | wc -l` reads ''34''. `HELD_OUT` declares six names with a reason each; ''five match the glob'' — `civic-witness` · `crossing-witness` · `herm-mesh-witness` · `browser-weld-witness` · `witness-all` itself — leaving ''29 that run''. The sixth, `mesh-scenarios`, carries no `witness` in its filename and sits outside the glob; the script's second loop reports it anyway, because a hold-out that stops naming itself has become a silent skip.
-* ''`gate:fold-ts` HAS an invoker.'' The `grammar-artifact` job runs it as its own step, //fold + parity gates (ts host)//, beside `gate:fold` for the py host, deliberately unchained so a red in one host cannot hide a red in the other. Re-derive: `grep -n "gate:fold" .github/workflows/ci.yml`.
-* ''The serialization claim also falls.'' CI's `test` job runs `pnpm test` — the ROOT script, `pnpm -r --workspace-concurrency=1 test` — so the serialization travels rather than being re-spelled, and the workflow's own comment carries the law. Re-derive: `grep -n "run: pnpm test" .github/workflows/ci.yml`.
-* ''One runner genuinely stands uninvoked, and the item should narrow to it.'' `pyproject.toml` names two `testpaths`; collecting them reads ''1016 tests''. `packages/tree-sitter-memetic-wikitext/host-py` contributes ''27'' and rides CI through `gate:fold` (`python -m pytest -q`). `packages/lararium-sensorium/scripts` contributes ''989 across 96 files'' and no workflow step reaches them. Re-derive: `~/.venv/bin/python3 -m pytest --collect-only -q <testpath>`, once per path.
+* ''zero inbound `loulou`'' — `grep -rn "handback-stale-rooms" --include='*.mem' . | grep -v node_modules` returns one line, a bare prose mention inside the `hearths#/crossings` row, carrying no edge.
+* ''zero open leans'' — every item enacted, each with its measurement re-derived.
+* ''every slot carries a fold target'' — the table at #/fold.
 
-''Suggested replacement prose for `:109`''
-
-> ''③ The witness fleet runs in CI, under its own job.'' `witness-all.sh` globs `tools/*witness*.sh` (''34'' files) and runs all but the five hold-outs it declares by name with a reason each — ''29 run''. CI seats a `witnesses` job that calls the script and then asserts the roll call, failing if the log stops naming its hold-outs. The fleet stopped being honor-system when the glob replaced the hand list; a new witness now enrols by existing.
-
-''Suggested narrowing for `:105`'' — drop the `gate:fold-ts` clause and the "three runners" framing; keep the python finding, split by testpath (27 in CI via `gate:fold` · 989 reached by nothing), which is the only half that still measures a hole.
-
-⚠ ''The founding hearth already re-trued the DOWNSTREAM copy of these same claims'' at `bags/lares/ha.ka.ba/lares/api/pono/rust-toolchain.mem#/open-loops` (free ground, commit on this branch). The numbers and re-derivations above are the ones that landed there, so the two rooms agree once this one moves.
-
-<<~/ahu>>
-
-<<~ ahu #/two-the-terminal-compromise>>
-
-! ② `recovery-custody-scout.mem` — "presently open" and "TERMINAL" both overstate
-
-''Where'': `bags/lares/ha.ka.ba/lares/docs/pono/recovery-custody-scout.mem:176`, section `#/our-own-ground` ③. Carrier `revised-on = "2026-09-03"`.
-
-''What it says'': //"a compromise of the recovery authority is TERMINAL on our KEL as it stands today. That is the axis the sweep called larger in severity than the fork, and it is the one presently open."//
-
-''What the tree reads''
-
-* ''The delegation question stands RULED, not open.'' `bags/lararium/ha.ka.ba/lararium/mesh/identity-classes.mem:520-529` prices it and closes it: a delegated inception carries the delegator's AID inside the prefix permanently with no severance mechanic, //"recoverability purchased with a landlord in the identifier"//; the ROLLING COMMITMENT answers the graft without it, and //"Delegation stays REJECTED for the persona plane"//.
-* ''The residual the ruling names is BUILT.'' What delegation alone would have bought — superseding a compromise OF the current rolling set between grafts — narrows in that same paragraph to the contest window's job (Fork C: a provisional rotation the true holder out-competes causally). That machinery stands in `packages/lararium-mesh/src/persona-kel.ts`: the event carries `provisional` (//a recovery rotation NOT yet hardened — kapae-reversible authority only//) and `vetoOfCid`; `personaVetoSigningBytes` + `vetoCore` derive the veto's bytes from the contested and standing events so a veto never floats onto another contest; `mintVeto` takes ONE signature from the STANDING op-key (//the holder's own hand is the whole authority the contest exists to protect//); `foldPersonaContests` folds veto-beats-provisional into one linear lineage, and the header states the discipline — the veto's signature verifies in `verifyPersonaKelFull` and a full walk REFUSES a chain whose veto does not verify. Witnessed at `packages/lararium-mesh/tests/provisional-veto.test.ts`.
-* ''So the KEL is not terminal on a recovery-authority compromise: a provisional rotation minted by a captured recovery set is kapae-reversible and dies to the standing holder's own veto.'' Re-derive: `grep -n "provisional\|vetoOfCid\|mintVeto\|foldPersonaContests" packages/lararium-mesh/src/persona-kel.ts`.
-
-''What genuinely remains, and the item should say only this''
-
-* ''The LIVE-key case.'' A capture of the current op-key ''and'' its next commitment leaves no standing hand to veto with; `api/pono/field-collision#/standing-tensions` already carries it as THE LIVE-EQUIVOCATOR EXPOSURE, and it falls to recovery-quorum, not to delegation. The scout's own severity read survives — attached to that case, not to the delegation axis.
-* ''The scout's second sentence still holds verbatim and should be kept'': ⚠ //"Read, not run — no vector walks a rotation against live key material at either scale."// `provisional-veto.test.ts` walks the grammar; it does not walk live key material.
-
-''Suggested replacement prose''
-
-> ''Self-certifying, with no delegator — and that stands RULED rather than open.'' `identity-classes#the-two-forks` priced delegation and REJECTED it for the persona plane: a delegated inception buys recoverability with //a landlord in the identifier//, and the rolling commitment answers the graft without one. The residual — superseding a compromise OF the current rolling set between grafts — lands on the contest window and ''stands built'': a provisional rotation confers kapae-reversible authority only, and the standing op-key's own single-signature veto out-competes it causally (`persona-kel.ts` · `provisional-veto.test.ts`). ''What stays terminal is narrower and named elsewhere'': a LIVE capture of the current op-key together with its next commitment leaves no standing hand to veto with, and that case falls to recovery-quorum (`api/pono/field-collision#/standing-tensions`). ⚠ Read, not run — no vector walks a rotation against live key material at either scale.
-
-<<~/ahu>>
-
-<<~ ahu #/three-the-edge-count>>
-
-! ③ `syncer-seams-roundtable.mem` — the inbound-edge count gates the fire, so here it is exactly
-
-''Where'': `bags/lares/ha.ka.ba/lares/docs/pono/syncer-seams-roundtable.mem:375`, section `#/retirement`. It reads //"One inbound edge to weld (`syncer-back-parity`)."//
-
-''Measured''. Re-derive with
-
-```
-grep -rn "syncer-seams-roundtable" --include='*.mem' . | grep -v node_modules \
-  | grep -v "docs/pono/syncer-seams-roundtable.mem"
-```
-
-which returns ''three lines across two carriers'':
-
-|!carrier |!line |!shape |!what it does |
-|`docs/pono/syncer-back-parity.mem` |164 |inline `loulou` |//"Read <<~ loulou …syncer-seams-roundtable>> for the argument and the plan"// — the edge the carrier already names |
-|`docs/pono/otakiage.mem` |382 |inline `loulou`, inside the stage table |cites this floor as the worked example of ''`standing` × `floor`, nearly foldable'' |
-|`docs/pono/otakiage.mem` |449 |`loulou` in the edges block |the same carrier's outbound edge |
-
-''So the count reads TWO inbound carriers, not one'' — `syncer-back-parity` and `otakiage` — across three `loulou` sites. A fourth reference stands in code (`packages/lararium-tw5/tests/root-law-one-spelling.test.ts:4`, a header comment naming the floor's Phase 0); it carries no edge and welds nothing, but a hand deleting the carrier should know the comment names a file that will not exist.
-
-⚠ ''The two edges want DIFFERENT welds, and that is why the count matters.'' `syncer-back-parity:164` points a reader at an argument and a plan — a weld moves that content or re-points the sentence. `otakiage:382` uses this floor as ''evidence that a lifecycle stage names something real''; deleting the carrier deletes the example, so that row wants a replacement exemplar rather than a re-point, and `otakiage:383` immediately below already leans on `scale-stories-basket-one` for the neighbouring stage (see ④ — both exemplars sit in the retirement queue at once).
-
-''Suggested replacement prose''
-
-> ''TWO inbound edges to weld, and they want different welds.'' `syncer-back-parity#…:164` points a reader here for the argument and the plan — re-point or move the content. `otakiage:382` cites this floor as the worked example of ''`standing` × `floor`, nearly foldable'' — that row wants a ''replacement exemplar'', because deleting the carrier deletes the evidence the stage names something real. A code comment (`packages/lararium-tw5/tests/root-law-one-spelling.test.ts:4`) names this file too; it welds nothing and re-points cheaply.
-
-<<~/ahu>>
-
-<<~ ahu #/four-the-ungoverned-floor>>
-
-! ④ `scale-stories-basket-one.mem` — the floor most ready to retire, standing outside the rite that would retire it
-
-''Where'': `bags/lares/ha.ka.ba/lares/docs/pono/scale-stories-basket-one.mem:18` — `tags = ["docs/pono/talk-story"]`.
-
-''What the law says''. `otakiage.mem` states it in its own `role`: //"a carrier carrying no `lifecycle/*` tag stands UNGOVERNED and the gate asks nothing of it."// This carrier carries no `lifecycle/*` tag. Compare its sibling floor `syncer-seams-roundtable.mem:16`, which reads `tags = ["docs/pono/talk-story", "lifecycle/standing"]`. Re-derive: `grep -n '^tags' bags/lares/ha.ka.ba/lares/docs/pono/{scale-stories-basket-one,syncer-seams-roundtable}.mem`.
-
-''And its two retired keys still stand'': `:16` writes `retain = true` and `:17` writes `status = "standing"`, both keys `otakiage` retired in favour of the tag family.
-
-''The floor's work stands DONE.'' Its `status-why` records the operator ruling every slot on 2026-09-11 and the realm leg on 2026-09-12, with the heraldry read the last thing held. ''That lean landed'' at `96fac1df9` (//the-arms.name.no-hands — heraldry: a Face any nameless thing may publish//), and `docs/pono/heraldry.mem` now carries the ruling with its quote license.
-
-''Its inbound edge count reads SIX carriers.'' Re-derive with
-
-```
-grep -rn "scale-stories-basket-one" --include='*.mem' . | grep -v node_modules \
-  | grep -v "docs/pono/scale-stories-basket-one.mem"
-```
-
-|!carrier |!lines |!what it takes from the floor |
-|`docs/pono/hearths.mem` |131 |an edge in `#/edges` |
-|`docs/pono/syncer-seams-roundtable.mem` |43 · 75 · 384 |the two-doors ruling, twice in argument and once as an edge |
-|`docs/pono/otakiage.mem` |383 · 448 |the worked example of the `folded` stage — //"Proof that `folded` names something real and unspelled"// |
-|`docs/pono/realm-bag-brief.mem` |31 · 82 |//"the ruling this brief enacts"//, quoted under quote license |
-|`docs/pono/heraldry.mem` |29 · 147 · 237 |the 2026-09-12 operator ruling, quoted verbatim |
-|`docs/pono/offering.mem` |449 |an edge in `#/edges` |
-
-A seventh carrier, `docs/pono/outbound-bridge.mem:16`, names the floor in prose inside `status-why` without a `loulou`. Six code sites also cite it (`realm-bag.ts:4,459` · `cas-transit.test.ts:97` · `stowage-clock.test.ts:9` · `ahi-ka.test.ts:119,134`), and ''one of those is a live assertion'': `ahi-ka.test.ts:141` reads this carrier's file and fails with //"the canon teaches ratios the code no longer runs — re-stamp scale-stories-basket-one.mem"//. ⚠ ''Deleting this file reds that test.'' Any retirement plan folds the ratio prose to wherever the assertion should point next, or moves the assertion, ''before'' the fire.
-
-''The shape worth naming, beyond the fix.'' The rite wants zero inbound edges before a floor burns; this floor carries six, and four of the six quote it as the RECORD of an operator ruling. A talk-story floor whose rulings are quoted elsewhere under quote license does not retire by welding edges — the quotes ''are'' the fold, already done, and what remains is the empty vessel. That reads as a question for the rite rather than a defect in this carrier: does a floor whose moʻolelo has been quoted out retire by DELETION, or does it become the citable source those quote licenses point at?
-
-''Suggested acts, smallest first''
-
-# ''Tag it.'' Add `lifecycle/folded` (its rulings have moved; the heraldry hold landed) or `lifecycle/standing` if the hearth reads the floor as still holding something. Either way the rite can see it.
-# ''Drop the two retired keys'' `retain` and `status`, keeping `status-why` as the witness sentence.
-# ''Re-true the hold entry in the sweep's own test.'' `packages/lararium-tw5/tests/meme-lifecycle-tag.test.ts:69` holds this file out with the reason //"held open by another hand this watch"//. That watch closed and the heraldry lean landed at `96fac1df9`, so the reason no longer describes the world even while the retired keys it holds out for still stand. The file's own CONTROL test exists to catch a stale hold; it checks that the retired keys persist, not that the ''reason'' still holds. A hold whose reason has expired reads as a hold that has stopped measuring.
-# ''Then'' weigh the six edges against the rite, with the `ahi-ka.test.ts` assertion counted as a seventh tie that only code can cut.
-
-<<~/ahu>>
-
-<<~ ahu #/what-the-founding-hearth-touched>>
-
-! What the founding hearth touched, and what it did not
-
-''NOT touched'': every file named above. All four sit under `bags/lares/ha.ka.ba/lares/docs/pono/**`, the meme hearth's ground, and `packages/lararium-tw5/tests/meme-lifecycle-tag.test.ts` sits outside every declared hold. Measured only.
-
-''Touched, on free ground, the same watch'': `bags/lararium/ha.ka.ba/lararium/mesh/lar-vessel.mem` · `bags/lararium/ha.ka.ba/lararium/mesh/identity-slot.mem` · `bags/lararium/ha.ka.ba/lararium/api/lararium-canonical-model.mem` (the retired allow-all identity default, and the PersonaGroup ring named BUILT AND UNWIRED) · `bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem` (the three-way concession folded to the one road that stands) · `bags/lares/ha.ka.ba/lares/docs/handoff.mem` (the COLLISION HANDBACK paragraph, which still sent a reader to rule the `:206` fork and the realm idle clock) · `bags/lares/ha.ka.ba/lares/api/pono/rust-toolchain.mem` (the same CI claims as ① above).
-
-''One shape from that work belongs here.'' Commit `03ef9b61b` swept for exactly this fault — carriers calling OPEN what the tree had settled — cured the burr-ledger row inside `handoff.mem`, and left the COLLISION HANDBACK paragraph in the same file untouched. ''A sweep for stale rooms missed a room, in a file it had open.'' That matters more than the fix: a sweep keyed on a phrase finds the phrase, and a room stating the same staleness in different words survives it. The re-derivation commands above exist so the next sweep keys on the MEASUREMENT rather than on the wording.
-
-<<~/ahu>>
-
-<<~ ahu #/the-crossings-row>>
-
-! The `hearths#/crossings` row, written and REFUSED — take it whole
-
-''What happened.'' This hand wrote the crossings row `hearths.mem` asks for and `[hearths-gate]` REFUSED the commit: `bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem` sits inside `docs/pono/**`, the meme hearth's own glob, so ''a foreign hearth cannot write its own crossing row into the ledger that governs the crossing''. The hand reverted `hearths.mem` cleanly (no `--no-verify`) and left the row here instead. ⚠ ''That reads as a genuine loop in the gate, worth a ruling of its own'': the ledger's law says //a crossing gets a row BEFORE the hand starts//, and the gate refuses exactly the hand that owes the row. Either the ledger takes a narrow exception for its own `#/crossings` block, or every foreign crossing lands as a handback the holding hearth transcribes — which the house may well prefer, since the holding hearth then reads the row before it stands.
-
-''The row, ready to paste as the last entry under `#/crossings`:''
-
-> # ''The four stale rooms, measured and NOT edited'' — a founding-hearth spirit re-trued six carriers on free ground (the retired allow-all identity default in `lar-vessel.mem` · `identity-slot.mem` · `lararium-canonical-model.mem`; the lamplighters concession that posed one road as a three-way fork; `handoff.mem`'s COLLISION HANDBACK paragraph, still routing a reader to two settled rulings; `api/pono/rust-toolchain`'s CI claims) and measured FOUR MORE standing on this hearth's `docs/pono/**`: `testing-architecture-scout:105·107·109` (witness-all and `gate:fold-ts` both DO run in CI — the fleet globs 34 files and runs 29; the one runner nothing invokes is `lararium-sensorium/scripts`, 989 of the 1016 collected python tests) · `recovery-custody-scout:176` (a recovery-authority compromise reads TERMINAL and "presently open"; delegation stands RULED-REJECTED at `identity-classes:520-529` and the contest window that answers it stands BUILT — `provisional`/`vetoOfCid`/`mintVeto`/`foldPersonaContests`) · `syncer-seams-roundtable:375` ("one inbound edge" measures TWO carriers across three `loulou` sites, and the second wants a replacement exemplar rather than a re-point) · `scale-stories-basket-one:18` (no `lifecycle/*` tag, so ungoverned under `otakiage`'s own law, plus the two retired keys; six inbound carriers and a live assertion in `ahi-ka.test.ts:141` that reds on deletion). Files crossed: NONE — every item sits in the handback carrier <<~ loulou "lar:///ha.ka.ba/lares/docs/handback-stale-rooms">> on unheld ground, each with its file:line, the command that re-derives the number, and suggested replacement prose. Law: a measurement of another hearth's ground crosses by CARRIER, and the carrier ships the RE-DERIVATION beside every number — a scout's citation reads as a claim, and a hearth re-truing its own room off someone else's reading plants a fresh lie with a fresh timestamp. Second law, from the shape: `03ef9b61b` swept for exactly this fault and missed a room ''inside a file it had open'', because a sweep keyed on a phrase finds the phrase.
+''The two-commit shape the rite names'' puts this check-in and any delete in separate commits, so the shelf carries one state in which the carrier stands complete and marked as ending, with every pointer already re-aimed. This commit is that check-in.
 
 <<~/ahu>>
 
@@ -184,12 +61,13 @@ A seventh carrier, `docs/pono/outbound-bridge.mem:16`, names the floor in prose 
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/rust-toolchain">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DH6g56729tDtGbJs_4mfGXNqzYsNvhKNEruuCA9X6MM
+<<^ code="&#x0003;">>ni:///sha-256;zcMPR7iu6b4CZaw4cY4Nvj752b0_gtOJUJgBDbf2TV4
 
 <<^ code="&#x0004;" -> to="?">>

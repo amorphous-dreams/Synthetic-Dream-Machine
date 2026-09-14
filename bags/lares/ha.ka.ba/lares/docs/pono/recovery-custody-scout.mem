@@ -11,8 +11,8 @@ manao             = 17
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-09-03"
-role              = "recovery-custody-scout — VERBATIM handoff of the tasked spirit sent after the reconstruct-then-sign ⊥ threshold-attest fork. Carries the decisive comparative finding (every civic-scale m-of-n in the world is SECRET SHARING, never threshold signing), the availability inversion that makes Fork A's worst property its best one, nineteen measured ceremony failures, the distro-archive survey including a key actually lost, and a THIRD AXIS that dominates the one we asked about. Held as a collision surface, not a recommendation."
+revised-on        = "2026-09-13"
+role              = "recovery-custody-scout — VERBATIM handoff of the tasked spirit sent after the reconstruct-then-sign ⊥ threshold-attest fork. Carries the decisive comparative finding (every civic-scale m-of-n in the world is SECRET SHARING, never threshold signing), the availability inversion that makes Fork A's worst property its best one, nineteen measured ceremony failures, the distro-archive survey including a key actually lost, and a THIRD AXIS that dominates the one we asked about. Held as a collision surface, not a recommendation. Re-trued 2026-09-13 at #/our-own-ground ③: the third axis stands ANSWERED without delegation — identity-classes:520-529 rejects it for the persona plane and the contest window stands built and witnessed, so what stays terminal narrows to a LIVE capture of the op-key together with its next commitment, which falls to recovery-quorum."
 tags              = ["api/pono/meme", "mesh/identity-classes"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recovery-custody-scout"
@@ -73,6 +73,8 @@ Read plainly: where a recovery authority ''reconstructs'', a rogue sub-quorum ca
 > Under KERI's own rules, ''a non-delegated rotation cannot supersede another rotation'' — so whichever fork you take, ''a compromise of the recovery authority is terminal unless the identifier is DELEGATED''. That is a third axis, and on severity it dominates the one you asked about.
 
 This changes the SHAPE of the decision rather than answering it: the fork prices the recovery authority's transient exposure, and delegation decides whether that exposure is ''recoverable at all''.
+
+⚠ ''The house answered this axis without taking delegation, and #/our-own-ground carries the answer.'' The quote above states the spirit's reading; the tree settled it another way — `identity-classes:520-529` REJECTS delegation for the persona plane and the contest window (`provisional` / `vetoOfCid` / `mintVeto` / `foldPersonaContests`) stands BUILT, so a captured recovery set mints kapae-reversible authority the standing holder's own veto out-competes. Read the quote as testimony, and #/our-own-ground as the measurement.
 
 <<~/ahu>>
 
@@ -173,9 +175,15 @@ personaPrefixOf(inceptionOpKeyDid, recoverySetHash)
   → `persona-${sha256(domain, op, recoverySetHash)}`
 ```
 
-''Self-certifying, with no delegator.'' Under the KERI rule the sweep surfaced — a non-delegated rotation cannot supersede another rotation — ''a compromise of the recovery authority is TERMINAL on our KEL as it stands today''. That is the axis the sweep called larger in severity than the fork, and it is the one presently open.
+''Self-certifying, with no delegator — and that stands RULED rather than open.'' `identity-classes#the-two-forks` (`:520-529`) priced delegation and REJECTED it for the persona plane: a delegated inception carries the delegator's AID inside the prefix permanently with no severance mechanic, buying recoverability with //a landlord in the identifier//, and the ROLLING COMMITMENT answers the graft without one.
 
-Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. ⚠ ''Read, not run'' — no vector walks a rotation against live key material at either scale.
+''The residual that ruling names stands BUILT.'' What delegation alone would have bought — superseding a compromise OF the current rolling set between grafts — narrows in that same paragraph to the contest window's job (Fork C: a provisional rotation the true holder out-competes causally), and that machinery runs in `packages/lararium-mesh/src/persona-kel.ts`. The event carries `provisional` (//a recovery rotation NOT yet hardened — kapae-reversible authority only//) and `vetoOfCid`; `personaVetoSigningBytes` + `vetoCore` derive the veto's bytes from the contested and standing events so a veto never floats onto another contest; `mintVeto` takes ONE signature from the STANDING op-key, the holder's own hand being the whole authority the contest exists to protect; `foldPersonaContests` folds veto-beats-provisional into one linear lineage, and `verifyPersonaKelFull` REFUSES a chain whose veto does not verify. Witnessed at `packages/lararium-mesh/tests/provisional-veto.test.ts`. Re-derive: `grep -n "provisional\|vetoOfCid\|mintVeto\|foldPersonaContests" packages/lararium-mesh/src/persona-kel.ts`.
+
+''So a recovery-authority compromise reads survivable, not terminal'': a provisional rotation minted by a captured recovery set confers kapae-reversible authority only and dies to the standing holder's own veto.
+
+''What stays terminal runs narrower, and lives elsewhere.'' A LIVE capture of the current op-key ''together with'' its next commitment leaves no standing hand to veto with. `api/pono/field-collision#/standing-tensions` already carries that as THE LIVE-EQUIVOCATOR EXPOSURE, and it falls to recovery-quorum rather than to delegation. The severity read this section made survives — attached to that case, never to the delegation axis.
+
+Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. ⚠ ''Read, not run'' — no vector walks a rotation against live key material at either scale. `provisional-veto.test.ts` walks the grammar; it does not walk live key material.
 
 <<~/ahu>>
 
@@ -197,6 +205,6 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rl_Ann5bZ0lmjlLS0-NQ6YTh7o6gFvE-iBhTcpJlbEM
+<<^ code="&#x0003;">>ni:///sha-256;QZhJ68UR1jbz-AO19Lz4NAsGpfrYmDthpDq73d2_mR0
 
 <<^ code="&#x0004;" -> to="?">>

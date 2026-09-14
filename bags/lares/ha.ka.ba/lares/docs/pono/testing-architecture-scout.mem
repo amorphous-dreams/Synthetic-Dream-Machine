@@ -11,8 +11,8 @@ manao             = 16
 manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
-revised-on        = "2026-09-02"
-role              = "testing-architecture-scout — VERBATIM handoff of the tasked spirit Mason: the whole testing architecture inventoried, the cost of moving the harness under packages/, three runners nothing invokes, and the welds that must NOT be collapsed. Held as a collision surface."
+revised-on        = "2026-09-13"
+role              = "testing-architecture-scout — VERBATIM handoff of the tasked spirit Mason (2026-09-02): the whole testing architecture inventoried, the cost of moving the harness under packages/, the runners nothing invokes, and the welds that must NOT be collapsed. Held as a collision surface, the fence byte-for-byte. #/collided-2026-09-13 stands this house's own re-measurement of the three §3 CI claims BESIDE the testimony — witness-all and gate:fold-ts both run in CI, the serialization travels through the root script, and the one uninvoked runner is lararium-sensorium/scripts at 989 of 1016 collected python tests."
 tags              = ["api/pono/meme"]
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
@@ -29,6 +29,28 @@ uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 ''Why verbatim.'' A summary keeps the claims and drops the line numbers, the exact spec sentences, the version boundaries and the failure reproductions — which is precisely the material a design collides against. ''The detail IS the asset.'' It was extracted straight from the spirit's transcript to this carrier, so no relaying hand rewrote it on the way.
 
 ''Read it against us, not for us.'' It may be wrong where the field is wrong. Collide it; do not inherit it.
+
+''And the field moved.'' The testimony dates to 2026-09-02 and the tree it measured has changed under it. #/collided-2026-09-13 stands the house's own re-measurement beside the three CI claims in §3 that no longer read true. ''The fence stays byte-for-byte'' — a Testimony-Verbatim register that gets corrected in place has stopped being testimony, and the collision is the point of keeping it.
+
+<<~/ahu>>
+
+<<~ ahu #/collided-2026-09-13>>
+
+!! Collided — the three CI claims in §3, re-measured
+
+''Register: this house's own claim,'' beside the testimony rather than inside it. Every number below carries the command that re-derives it, run on 2026-09-13 against this tree. Read this block before §3 items ①②③; the rest of the handoff stands uncollided and a reader still owes it the same scepticism.
+
+|!Mason wrote |!the tree reads, 2026-09-13 |!re-derive |
+|③ //"`witness-all` never runs in CI. 19 static witnesses, `pnpm witness`, zero CI steps"// |''The fleet runs in CI under its own job, and the job asserts the roll call.'' `witness-all.sh` globs `tools/*witness*.sh` — ''34'' files — rather than keeping a hand list, and runs all but the five hold-outs it declares by name with a reason each: ''29 run''. CI seats a `witnesses` job that calls the script, tees the log, and then greps the log for `held out of this run`, failing the job if the fleet stops naming its own hold-outs. The sixth declared hold-out, `mesh-scenarios`, carries no `witness` in its filename and falls outside the glob; the script's second loop reports it anyway, because a hold-out that stops naming itself has become a silent skip |`grep -n "witness-all" .github/workflows/ci.yml` · `ls tools/*witness*.sh` (34 files) · `grep -n -A 12 HELD_OUT tools/witness-all.sh` |
+|① //"`gate:fold-ts` … is likewise dark … The TS↔PY fold parity check has no invoker at all"// (citing `ci.yml:237,240,243`) |''`gate:fold-ts` has an invoker.'' The `grammar-artifact` job runs it as its own step at `ci.yml:380` — //fold + parity gates (ts host)// — beside `gate:fold` for the py host at `:374`, the two deliberately unchained so a red in one host cannot hide a red in the other |`grep -n "gate:fold" .github/workflows/ci.yml` |
+|① //"98 python files / ~944 tests run only when a human types `pytest`"// |''Half of it holds, and the item narrows to that half.'' `pyproject.toml` names two `testpaths` and they part company: `packages/tree-sitter-memetic-wikitext/host-py` collects ''27'' and rides CI through `gate:fold` (`python -m pytest -q`); `packages/lararium-sensorium/scripts` collects ''989 across 96 files'' and no workflow step reaches them. ''989 of 1016 collected python tests stand uninvoked'' — one runner, not three |`~/.venv/bin/python3 -m pytest --collect-only -q <testpath>`, once per path |
+|② //"`ci.yml:148` = bare `pnpm -r test`"// |''CI calls the ROOT script, so the serialization travels.'' The `test` job runs `pnpm test` at `ci.yml:160` — `package.json:9`'s `pnpm -r --workspace-concurrency=1 test` — instead of re-spelling the command, and the workflow carries the law in its own comment above the step: //ONE SERIALIZATION, BOTH PLACES … running them in parallel measures a different repository than the one an operator measures locally, and its flakes are unreproducible by construction// |`grep -n "run: pnpm test" .github/workflows/ci.yml` |
+
+''The law this collision leaves behind,'' worth more than the four numbers: a flag spelled in two places will differ, so CI invokes the SCRIPT and never the command the script wraps — which is what turned Mason's ② from a defect into the tree's own discipline. Beside it, from ③: a fleet enrols by GLOB, so a new witness joins by existing rather than by someone remembering the list, and the hold-outs pay for that by naming themselves in a log the job greps.
+
+⚠ ''The `#/the-handoff` fence carries other claims of the same vintage that this block does not touch'' — §1's runner table (`:53`, `:56`), §5's plan (`:161`, `:168`, `:172`), Stage 5 (`:197`). They date from 2026-09-02 and read against the same moved field; a hand acting on any of them re-measures first. This block corrects the three §3 items the 2026-09-13 sweep measured, and claims nothing about the rest.
+
+''The downstream copy already agrees.'' `api/pono/rust-toolchain.mem#/open-loops` carries these same numbers and re-derivations, landed on free ground the same watch — the two rooms read the same tree.
 
 <<~/ahu>>
 
@@ -217,6 +239,6 @@ Whether Stage 2's newly-lit suites are **green** — I did not run them (the pyt
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;ySr6Yas9d6PRc2N9xuBLhsKFohwxTLTcYB76HjePcO4
+<<^ code="&#x0003;">>ni:///sha-256;bUDzEDWzj1E9sK1sxasSKFwLuZ5aKdckNzIFzjg1-pY
 
 <<^ code="&#x0004;" -> to="?">>
