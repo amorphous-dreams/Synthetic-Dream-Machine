@@ -77,8 +77,21 @@ export function globToRegExp(glob) {
   return new RegExp(`^${out}(?:/[^]*)?$`);
 }
 
-/** The hearths a path stands on. */
+/**
+ * The hearths a path stands on.
+ *
+ * THE LEDGER BELONGS TO NO HEARTH. A hearth crossing another's ground owes a `#/crossings` row in this
+ * very file, so a hold that reaches the ledger refuses the hand reaching for the pen — the book whose
+ * whole purpose records that somebody stepped across a line, forbidding the record. Measured 2026-09-13:
+ * two spirits owed rows and neither could write one, and the fix that day was a hearth closing rather
+ * than a cure. The carve-out stands so the deadlock cannot return by a hearth claiming the docs ground,
+ * which reads as the natural claim to make.
+ *
+ * A hearth may still hold the ledger in PROSE — the row saying who tends it. What no hold may do is
+ * WITHHOLD it, so the carve-out lands here rather than in the fence a hearth writes.
+ */
 export function hearthsOf(path, rows) {
+  if (path === LEDGER) return [];
   return rows.filter((r) => r.globs.some((g) => globToRegExp(g).test(path)));
 }
 
@@ -101,7 +114,15 @@ export function verdict({ message, paths, ledger }) {
     }
   }
   if (crossings.length === 0) {
-    return { ok: true, note: `${paths.length} path(s) stand on ${mine ? `\`${mine.hearth}\`` : "no other hearth's"} ground` };
+    // THE NOTE STATES WHAT IT MEASURED, never what it assumed. Naming `mine` here read as a claim about
+    // the PATHS ("they stand on the founding hearth's ground") over a check that only ever asked whether
+    // they stood on ANOTHER hearth's — so every pass said it about files standing on no hold at all.
+    const held = paths.filter((p) => hearthsOf(p, rows).length > 0).length;
+    const where = held === 0
+      ? "no hearth's ground"
+      : held === paths.length ? `\`${mine?.hearth ?? "this hearth"}\`'s own ground`
+      : `\`${mine?.hearth ?? "this hearth"}\`'s own ground, and ${paths.length - held} on no hold`;
+    return { ok: true, note: `${paths.length} path(s) stand on ${where}` };
   }
   return { ok: false, trailer, mine, crossings };
 }

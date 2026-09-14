@@ -131,6 +131,33 @@ if [ $? -eq 0 ]; then bad "a stranger wrote a held file unchallenged"
 elif grep -q "REFUSED" "$WORK/out.txt"; then ok
 else bad "refused for the wrong reason"; sed 's/^/      /' "$WORK/out.txt" | head -6; fi
 
+# THE LEDGER BELONGS TO NO HEARTH — a hold that reached it would refuse the hand owing a crossing row,
+# and the ledger's own law demands that row BEFORE the hand starts. These vectors read a fixture where a
+# hearth claims the docs ground (the natural claim to make), because the live fence claims it today by
+# nobody and a vector over that proves only the accident.
+sed 's|^  "packages/lares-cli/src/commands/persona.ts",|  "packages/lares-cli/src/commands/persona.ts",\n  "bags/lares/ha.ka.ba/lares/docs/pono/**",|' \
+  "$WORK/fixture-ledger.mem" > "$WORK/claimed-ledger.mem"
+use_ledger "$WORK/claimed-ledger.mem"
+
+step "★ RED-TURNED-GREEN: a FOREIGN hearth writes its own crossing row into the claimed ledger"
+stage "$LEDGER"
+printf 'lar:///a.b.c — a crossing row\n\nClaude-Session: https://claude.ai/code/session_SECONDHEARTHWRITES\n' | attempt
+if [ $? -eq 0 ]; then ok
+else bad "the ledger refused the hand its own law sends to it — the carve-out in hearthsOf is gone"
+     sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+
+# `stage` writes a timestamp over whatever it names, so the vector above left the work tree's ledger
+# unparseable — and an unparseable ledger stands the gate DOWN, which would pass every vector below by
+# having nothing to refuse. Re-seat it. (The control beneath caught exactly this when it was missing.)
+use_ledger "$WORK/claimed-ledger.mem"
+
+step "CONTROL: the carve-out frees the LEDGER ALONE — a sibling under the same glob still refuses"
+stage "bags/lares/ha.ka.ba/lares/docs/pono/otakiage.mem"
+printf 'lar:///a.b.c — a neighbour\n\nClaude-Session: https://claude.ai/code/session_SECONDHEARTHWRITES\n' | attempt
+if [ $? -eq 0 ]; then bad "the carve-out widened past the ledger — every docs/pono path now passes"
+elif grep -q "REFUSED" "$WORK/out.txt"; then ok
+else bad "refused for the wrong reason"; sed 's/^/      /' "$WORK/out.txt" | head -6; fi
+
 # THE PASS-THROUGH CONTROLS READ THE REAL LEDGER. They assert what the gate does to a commit it must NOT
 # refuse, and that answer must come off the rows the tree actually stands on, single hearth or not.
 use_ledger "$WORK/real-ledger.mem"
