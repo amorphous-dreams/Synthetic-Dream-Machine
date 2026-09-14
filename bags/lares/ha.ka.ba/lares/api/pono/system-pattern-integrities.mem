@@ -114,7 +114,7 @@ Sources: lares/lararium-research/PRINCIPLES.md
 ```toml #AUTH_1_CARRIER_CANON_FIRST
 id    = "AUTH_1_CARRIER_CANON_FIRST"
 label = "Carrier canon first"
-desc  = "Hostless lar:/// carriers under lares/ carry canon. The operator can boot, inspect, edit, and recover locally. Network sync serves local agency; it does not define truth."
+desc  = "Carriers resident under lares/ carry canon — RESIDENCY names them, never the shape of their address. The operator can boot, inspect, edit, and recover locally. Network sync serves local agency; it does not define truth."
 ```
 
 ```toml #AUTH_2_PROJECTION_NEVER_WRITES_CANON
@@ -355,6 +355,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w6Siikb_Mxe1S8-Mz0kMC4R6oD5elbc6O1fSVInXLYc
+<<^ code="&#x0003;">>ni:///sha-256;7aRg5032oSwCKrshDqJ-424R6mZ2orkRqN42dLdmKCM
 
 <<^ code="&#x0004;" -> to="?">>
