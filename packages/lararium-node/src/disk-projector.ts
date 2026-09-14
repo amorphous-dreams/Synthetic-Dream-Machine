@@ -34,16 +34,25 @@
  *   fragment URI never owns a disk path (bag-paths returns null for them).
  *
  * Echo suppression ranks (Confluence): the CONTENT-HASH gates carry the law —
- * ingest drops disk-hash == synced-hash; projection skips byte-identical
- * writes. The `writing` Set survives beneath them as a latency
- * optimization only (skip re-statting our own in-flight writes); no
+ * ingest drops disk-hash == synced-hash; projection consults `projection-gate`
+ * over the same three streams. The `writing` Set survives beneath them as a
+ * latency optimization only (skip re-statting our own in-flight writes); no
  * correctness rests on it.
+ *
+ * BOTH LEGS RECONCILE (the operator's ruling). `flush` decides through
+ * `decideProjection` before it writes: a byte-identical carrier noops, a carrier
+ * whose disk file stands where the last projection left it projects, a disk edit
+ * with the records unmoved stands down (the INGEST leg adopts that one), and a
+ * carrier whose file AND records both moved since the merge base surfaces a
+ * CONFLICT on the disk-ward's alert rail — no write, no merge, no winner picked
+ * by timestamp. The operator talks it out.
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
 import { dirname, basename } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
-import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
+import { syncedTreeKey, type SyncedTree } from "./synced-tree.js";
+import { decideProjection } from "./projection-gate.js";
 import { isEffectRecordUri, isBagManifestUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, WindowServo } from "@lararium/mesh";
@@ -160,6 +169,16 @@ export class LarDiskProjector {
    * the loci law. A rule that moves a carrier unlinks its previous files (`cleanupTiddlerFiles`).
    */
   private readonly sited = new Map<string, string>();
+
+  /**
+   * The standoffs already surfaced, per carrier (`syncedTreeKey` → `diskHash\nrecordsHash`).
+   * The reconcile runs LEVEL-TRIGGERED, so an unresolved conflict re-decides on
+   * every nudge; without this the operator's alert rail would repeat one standoff
+   * until they stopped reading it. A standoff that MOVES (either side changes)
+   * carries a new stamp and surfaces afresh; a `project` verdict clears the entry.
+   * Session-lived and advisory — losing it costs one duplicate alert, never a write.
+   */
+  private readonly surfaced = new Map<string, string>();
 
   private readonly mirrors: readonly BagMirrorConfig[];
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
@@ -358,6 +377,31 @@ export class LarDiskProjector {
     }
   }
 
+  /**
+   * The whole-carrier hash of what STANDS on disk — the projection gate's third
+   * stream, folded exactly as the Synced-tree observation folds it
+   * (`carrierHash(body, meta)`), so the three hashes compare like with like.
+   *
+   * A binary carrier re-encodes its raw bytes to the base64 text form the carrier
+   * itself carries (the physical file holds decoded bytes; every hash in the
+   * triangle keys on the carrier text). Null names an absent or INCOMPLETE carrier
+   * — no content file, or a filetype that declares a `.meta` with no `.meta` beside
+   * it — which the gate reads as `absent-on-disk`: no coherent carrier stands there
+   * to lose, so the write lands and a deleted sidecar self-heals. An unreadable file
+   * reads null too, keeping the old fall-through-to-the-write behavior.
+   */
+  private diskCarrierHash(candidate: string, metaPath: string | null, isBinary: boolean): string | null {
+    try {
+      if (!existsSync(candidate)) return null;
+      const body = isBinary
+        ? readFileSync(candidate).toString("base64")
+        : readFileSync(candidate, "utf-8");
+      if (metaPath === null) return carrierHash(body);
+      if (!existsSync(metaPath)) return null;
+      return carrierHash(body, readFileSync(metaPath, "utf-8"));
+    } catch { return null; }
+  }
+
   /** Write bytes atomically: a temp file in the SAME dir, then rename over the
    *  target — a watcher or editor never observes a torn file, and a crash leaves
    *  only a stray temp. */
@@ -430,28 +474,55 @@ export class LarDiskProjector {
     }
     const candidate = gate.path;
 
-    // Projection-side hash gate (Confluence): bytes already on disk == would-write
-    // bytes → skip the write entirely (no event for any watcher, no mtime
-    // churn) — but still record the observation in the Synced tree. The gate
-    // reads the MAIN body per-file; the Synced-tree OBSERVATION folds the `.meta`
-    // in (the echo gate keys on the whole carrier, body + live metadata).
-    const outputHash = contentHash(output);                       // body-only, for the per-file skip
-    const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
-    const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
-    const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
-    try {
-      // The body-skip reads BYTES for a binary file (a utf8 read would mangle the
-      // raw bytes and never match), else hashes the utf8 text against the carrier.
-      // A pending pointer body never compares — nothing to write, nothing to skip.
-      const bodyInSync = !bodyPending && existsSync(candidate) && (isBinary
-        ? readFileSync(candidate).equals(writeBytes as Buffer)
-        : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
-      if (bodyInSync && metaInSync) {
-        this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+    // THE CONFLUENCE, SECOND LEG (projection-gate). Three streams meet here —
+    // the records' render, the last-projected anchor, and the bytes standing on
+    // disk — and the gate decides among noop · project · conflict. A conflict
+    // means the operator's hands moved the FILE and the doc moved the RECORDS
+    // since the last projection; the projector then REFUSES the write and
+    // surfaces on the disk-ward's alert rail. It never merges, never picks a
+    // winner by timestamp: the operator talks it out (the ingest leg's law,
+    // read from this shore).
+    const obsHash  = carrierHash(output, metaBody);               // whole-carrier, the merge seat's view
+    const metaPath = metaBody !== undefined ? candidate + ".meta" : null;
+    const syncedKey = syncedTreeKey(bagId, tiddlerUri);
+    // A pending pointer body writes no content file at all — nothing to project,
+    // nothing to clobber. The `.meta` alone still lands (or already stands).
+    if (bodyPending) {
+      const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
+      if (metaInSync) return;
+    } else {
+      const diskHash = this.diskCarrierHash(candidate, metaPath, isBinary);
+      const decision = decideProjection({
+        diskHash,
+        syncedHash:  this.syncedTree?.get(syncedKey) ?? null,
+        recordsHash: obsHash,
+      });
+      if (decision.kind === "noop") {
+        // `disk-matches-records` — the bytes already stand there; record the
+        // observation so the anchor tracks reality (no write, no mtime churn).
+        // `records-unmoved` — the disk moved ALONE and the INGEST leg owns that
+        // state; the anchor MUST NOT advance, or the ingest gate goes blind to
+        // the very edit it is meant to adopt.
+        if (decision.reason === "disk-matches-records") this.syncedTree?.set(syncedKey, obsHash);
         return;
       }
-      if (bodyPending && metaInSync) return;
-    } catch { /* unreadable existing file — fall through to the write */ }
+      if (decision.kind === "conflict") {
+        // Surface, never overwrite. Once per DISTINCT standoff: a level-triggered
+        // reconcile re-fires on every nudge, and an alert rail that repeats itself
+        // trains the operator to ignore it. A standoff that MOVES surfaces afresh.
+        const stamp = `${diskHash ?? ""}\n${obsHash}`;
+        if (this.surfaced.get(syncedKey) !== stamp) {
+          this.surfaced.set(syncedKey, stamp);
+          const reason = `projection conflict — the file moved on disk AND the records moved since the last projection; nothing written. Talk it out: reconcile ${relPath} against the carrier, then re-project.`;
+          console.error(`[disk-ward] write refused (${mirror.bagId} <- ${tiddlerUri}): ${reason}`);
+          this.onRefusal?.({ bagId: mirror.bagId, uri: tiddlerUri, reason });
+        }
+        return;
+      }
+      // A `project` verdict clears any standing surfaced-conflict memory for this
+      // carrier — the standoff resolved, so the next one must surface again.
+      this.surfaced.delete(syncedKey);
+    }
 
     this.writing.add(tiddlerUri);
     try {

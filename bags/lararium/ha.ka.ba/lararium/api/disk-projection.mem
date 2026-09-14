@@ -107,7 +107,8 @@ A future debug-only disk projection MAY be added behind an explicit flag; it MUS
 # ''RENDER, not copy'' (Fontany-Fuller-Zelenka). Disk projection recomposes the whole carrier from normalized tiddler records via the shore's recompose inverse (`expandMemeRefs`, published as `$tw.lares.meme.recompose`, running inside the island VM). It never copies stored bytes raw — byte-fidelity comes from the proven parse∘render fixed point, not retention.
 # ''Store → disk is one direction; ingest is another.'' The projector is unidirectional (store → disk). Re-reading operator edits (disk → store) is a ''separate file-watcher / ingest path''. The `writing` guard set prevents the projector's own writes from echoing back through ingest.
 # ''The git diff is the operator's signature.'' When a residency ''MOVE'' (the canon ACTION verb) relocates a tiddler between bags, the disk side effect is a file move between surfaces; the diff records the operator's intent. ''Promotion'' rides this rite — a cap-gated `MOVE` from the `@working` live layer to canon crosses the ''working↔canon shore'', and a `MOVE` of a bag's pointer between planes (`@catalog ⇄ @oracle`) crosses the ''plane shore''. Both stay loose causal-island crossings — no shared-now, no synchronous bridge (`wiki-layer-ontology#shore-law`).
-# ''Debounce per (bag, carrier root).'' A child change climbs `fragment-parent` to its root; the group flushes as ONE carrier write (carrier-whole at rest). The projection-side content-hash gate skips byte-identical writes entirely — no event, no mtime churn.
+# ''Debounce per (bag, carrier root).'' A child change climbs `fragment-parent` to its root; the group flushes as ONE carrier write (carrier-whole at rest). The projection-side gate skips byte-identical writes entirely — no event, no mtime churn.
+# ''BOTH LEGS RECONCILE'' (operator ruling, 2026-09-13: //"Approve conflict-surfacing in BOTH legs of round-trip memes."//). The projecting leg consults its own pure three-way decision (`projection-gate`, `decideProjection`) before every write, over the SAME three streams the ingest leg reads — the records' render · the last-projected anchor (Synced tree) · the bytes standing on disk. Its verdicts mirror `ingest-gate`'s: ''noop'' (`disk-matches-records`, the echo gate riding first · `records-unmoved`) · ''project'' (`absent-on-disk` · `never-projected` · `disk-unmoved`) · ''conflict'' (`both-moved`). The gate decides; it never writes.<br>Where the operator's hands moved the FILE //and// the doc moved the RECORDS since the merge base, the projector ''REFUSES the write and surfaces'' on the disk-ward alert rail below — never a merge, never a last-writer, never a newest-timestamp. The operator talks it out. Where the disk moved ALONE, the projecting leg ''stands down'': the ingest leg's answer for that state reads INGEST (it adopts the edit), so the anchor stays put rather than blinding it. Ingest's fourth verdict, `refuse`, rides ABSENT here — it grades a parse of untrusted disk bytes, and this leg parses nothing.
 
 <<~/ahu>>
 
@@ -172,7 +173,9 @@ projector onRefusal (wiki island)
 
 Visibility holds by construction: the durable record lives in `@daemon` (admin-grant readers only); the live alert lives in the pinned wiki's `@temp` (the operator's own island; never federated — `noise`/`data` stay node-local). The reactor carries no cap-gate: the signal originates from the island's own mechanism, grants nothing, and writes only audit + alert.
 
-Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (13 — traversal, absolute, cross-bag, above-bags, new-subdir, grantless, inert-grant, refusal-signal).
+''One rail, two refusals.'' A projection CONFLICT rides this same chain — the projector calls the same `onRefusal`, so the operator reads it in the same pinned-wiki alert and the same durable `@daemon` ledger. No second rail: a signal with no audience repeats the fault of a fold that stands ready and uncalled. The projector surfaces one alert per DISTINCT standoff (the disk-hash + records-hash pair), so a level-triggered re-reconcile never repeats itself; a standoff that MOVES surfaces afresh.
+
+Ward vectors: `packages/lararium-node/tests/disk-confinement.test.ts` (13 — traversal, absolute, cross-bag, above-bags, new-subdir, grantless, inert-grant, refusal-signal) · `packages/lararium-node/tests/projection-conflict-surfaces.test.ts` (6 — the standoff refuses + surfaces, the repeat stays quiet, a moved standoff re-surfaces, clean-project · noop-no-churn · disk-alone-stands-down controls, and the 701-carrier corpus reading zero conflicts in steady state).
 
 <<~/ahu>>
 
@@ -203,6 +206,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8Thmx4EV5vQdzJTmK0ADc0_a8B_YchHle9zhodAMg_k
+<<^ code="&#x0003;">>ni:///sha-256;ICM4PFILxxRszd-6nACQiNlToyYdsQk7baUWEPkq6d4
 
 <<^ code="&#x0004;" -> to="?">>
