@@ -33,22 +33,57 @@ def heads(paths):
 drift = []
 _carriers = sorted(pathlib.Path("bags").rglob("*.mem"))
 _heads = heads(_carriers)
+read_file_path = 0
+read_uri_path = 0
 for f in _carriers:
-    head = f.read_text(errors="replace")[:4000]
+    # THE WHOLE CARRIER, NEVER A BYTE PREFIX. This read `[:4000]`, and a meta block is not obliged to
+    # fit in it: MEASURED 2026-09-13, three carriers declare `uri-path` past that mark —
+    # `mesh/founding-runbook.mem` at char 5276, `pono/antigonish-driving-test.mem` at 4495,
+    # `pono/sensorium-machina.mem` at 4949. The walk was structurally blind to all three, and blind in
+    # the direction that reports clean: a field it cannot see is a field it never disagrees with. A
+    # carrier growing a longer head would have retired itself from this check by getting longer.
+    head = f.read_text(errors="replace")
 
     m = re.search(r'(?m)^file-path\s*=\s*"(.*?)"', head)
+    if m:
+        read_file_path += 1
     if m and m.group(1) != str(f):
         drift.append((str(f), "file-path", m.group(1), str(f)))
 
     # `uri-path` answers to the HEAD SIGIL, never to the tree: a root resource may deliberately carry a
     # rootless address (`lar:///AGENTS`), and the field must follow the address rather than the folder.
     u = re.search(r'(?m)^uri-path\s*=\s*"(.*?)"', head)
+    if u:
+        read_uri_path += 1
     _u = _heads.get(str(f), {}).get("uri")
     _hd = _u[len("lar:///"):] if _u and _u.startswith("lar:///") else None
     if u and _hd and u.group(1) != _hd:
         drift.append((str(f), "uri-path", u.group(1), _hd))
 
+# ── THE FLOOR ON THE SUBJECT, AND THE COUNT THAT MAKES IT READABLE ──────────────────────────────
+# This printed a verdict and NO NUMBER, so a reader could not tell a clean walk over 699 carriers from
+# a clean walk over none. Both coordinates are read by a regex binding one spelling of a TOML key; a
+# key that gains a comment, moves out of the meta fence, or is renamed reads as ABSENT on every
+# carrier, and a field never read is a field that never disagrees. The set is asserted before its
+# members are: the walk states how many carriers it entered and how many declared each coordinate,
+# and a walk that read either coordinate on NOBODY fails rather than reporting the cleanest run.
+_floor = []
+if not _carriers:
+    _floor.append("no carrier under bags/ — the walk had no members")
+if read_file_path == 0:
+    _floor.append("not one carrier declared `file-path` — the probe reads a spelling nothing writes")
+if read_uri_path == 0:
+    _floor.append("not one carrier declared `uri-path` — the probe reads a spelling nothing writes")
+if _floor:
+    print(f"[meme-coordinates] THE WALK MEASURED NOTHING over {len(_carriers)} carrier(s):")
+    for why in _floor:
+        print(f"      {why}")
+    print("      A coordinate no reader can find never disagrees with anything. Re-aim the probe.")
+    sys.exit(1)
+
 if not drift:
+    print(f"[meme-coordinates] {len(_carriers)} carriers · {read_file_path} declare file-path · "
+          f"{read_uri_path} declare uri-path")
     print("[meme-coordinates] every file-path names its own file, and every uri-path its own address")
     sys.exit(0)
 
