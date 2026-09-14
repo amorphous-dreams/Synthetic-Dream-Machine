@@ -46,7 +46,7 @@ import {
   ENGINE_CORE_ID, BagStowage, pluginCidsFromIslandBlobs,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault, type PlaneEntry,
   coupleMesh, crystallize, guardHitl,
-  nexusIdentity, nexusScopeOrThrow, realmIdOfCharter,
+  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
@@ -81,7 +81,7 @@ import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
-import { makePersonaKelRingHolder } from "./persona-kel-ring.js";
+import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
 import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
 import { makeNexusMembership, makeRealmCharterConsult } from "./nexus-carriage.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
@@ -600,17 +600,27 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   //      board on a torn fence would believe it published while every peer watched it vanish.
   // The gradient ratchets on INTENT: a vessel CLIMBS it by an act and never DESCENDS it by a failure.
   //
-  // ⚠ CONNECTING MOVES THE BOARD. Climbing from ① to ② re-keys every per-Nexus board, and nothing migrates:
-  // books announced on the private board do not travel and peers dialling the old address read silence. The
-  // re-announce stands UNBUILT (`nexusScopeMoved` names the shape); so does the explicit DEPARTURE that would
-  // keep "I left" distinguishable from ③ on the wire.
-  const nexusStanding = nexusIdentity({
+  // ⚠ CONNECTING MOVES THE BOARD. Climbing from ① to ② re-keys every per-Nexus board: books announced on the
+  // private board do not travel and peers dialling the old address read silence. Most of those boards DEGRADE
+  // across the move — an empty antigen bans nobody, an empty WHO board names nobody. The persona-KEL board the
+  // BINDING GATE walks is the exception: that gate REFUSES a boot whose pinned identifier reaches no head, so a
+  // moved board took the vessel down rather than thinning it. Its chain therefore CARRIES up the gradient at the
+  // gate's own seam below (`carryPersonaKelUpTheGradient` over `nexusIslandsBelow`) — climb-only, idempotent,
+  // and reading the gate not one notch lower. The RE-ANNOUNCE of the other boards stands UNBUILT
+  // (`nexusScopeMoved` names it); so does the explicit DEPARTURE that would keep "I left" distinguishable
+  // from ③ on the wire.
+  // ONE statement of the inputs. The resolution reads them, and so does the CLIMB'S CARRY further down
+  // (`nexusIslandsBelow`, which re-runs this same resolver with each higher term withheld). A second copy
+  // of this object would drift from the first the day a term is added, and the carry would then read a
+  // gradient the boot does not stand on.
+  const nexusStandsAt: NexusIdentityAt = {
     genesisEpochCid: realmIdOfCharter(readNexusDoc(sealHome)),
     charterStands:   nexusCharterStands(sealHome),
     anchorGateKey:   opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null,
     ownVesselKey:    vesselIdentity.verifyingKey,
-  });
-  const nexusPubkey = nexusScopeOrThrow(nexusStanding);
+  };
+  const nexusStanding = nexusIdentity(nexusStandsAt);
+  const nexusPubkey   = nexusScopeOrThrow(nexusStanding);
   console.log(`[nexus] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
 
   const antigenHolder = makeAntigenRingHolder({
@@ -1146,6 +1156,19 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     const personaKelPrefix = wornMount?.personaKelPrefix ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]) ?? undefined;
     let personaKelChain: ReturnType<ReturnType<typeof makePersonaKelRingHolder>["chainForPrefix"]> = null;
     if (personaKelPrefix) {
+      // ── THE CLIMB'S CARRY — run BEFORE the gate walks ────────────────────────────────────────
+      // A founding seats this inception on the board keyed by the island resolved AT THAT MOMENT, which
+      // for an unconnected hearth is its OWN key. Seating a charter later re-keys the board, and this
+      // gate REFUSES rather than degrades — so the walk `vessel found` → use → `nexus rite cabal` →
+      // restart left a vessel that never booted again, its only remedy a re-found. The carry moves the
+      // pinned chain onto the island this boot resolved, reading only the islands BELOW it
+      // (`nexusIslandsBelow` is empty at the bottom and empty when torn, so nothing ever descends).
+      // Idempotent: a destination that already carries it writes nothing, which is every later boot.
+      // The gate is untouched — the events land verbatim and the holder verifies them as it always did.
+      await carryPersonaKelUpTheGradient({
+        repo, nexusPubkey, prefix: personaKelPrefix,
+        priorIslands: nexusIslandsBelow(nexusStandsAt),
+      });
       const kelHolder = makePersonaKelRingHolder({ repo, nexusPubkey });
       await kelHolder.ready;
       personaKelChain = kelHolder.chainForPrefix(personaKelPrefix);

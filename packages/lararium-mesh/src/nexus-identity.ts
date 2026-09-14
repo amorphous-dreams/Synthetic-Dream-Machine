@@ -105,15 +105,8 @@ export type NexusIdentity =
       readonly reading: string;
     };
 
-/**
- * The island scope this vessel resolves shared planes under.
- *
- * An unreadable genesis is REFUSED rather than addressed: a board keyed by garbage mints cleanly and
- * stays empty, so the vessel would read a quiet private island as though it were the shared one — a
- * split that reports as agreement.
- */
-export function nexusIdentity(
-  at: {
+/** Everything the island resolution reads — one shape, so a caller may narrow it term by term. */
+export interface NexusIdentityAt {
     /** An island this caller already knows — never second-guessed. */
     explicitScope?:  string | null;
     /** The genesis epoch of a charter this vessel holds — a relation it CONSENTED to. */
@@ -133,8 +126,16 @@ export function nexusIdentity(
     /** Does an admission/dial RECORD stand, whatever its key reads as? The anchor's PRESENCE ⊥ READABILITY. */
     anchorStands?:   boolean;
     ownVesselKey:    string;
-  },
-): NexusIdentity {
+}
+
+/**
+ * The island scope this vessel resolves shared planes under.
+ *
+ * An unreadable genesis is REFUSED rather than addressed: a board keyed by garbage mints cleanly and
+ * stays empty, so the vessel would read a quiet private island as though it were the shared one — a
+ * split that reports as agreement.
+ */
+export function nexusIdentity(at: NexusIdentityAt): NexusIdentity {
   const own      = at.ownVesselKey.trim().toLowerCase();
   const explicit = (at.explicitScope ?? "").trim().toLowerCase();
   const genesis  = (at.genesisEpochCid ?? "").trim().toLowerCase();
@@ -210,8 +211,57 @@ export function nexusScopeOrThrow(id: NexusIdentity): string {
  * 3, a partition. An explicit departure is what makes "I left" distinguishable from "I cannot read my
  * island", which is the whole reason state 3 refuses instead of falling.
  *
- * NEITHER MIGRATION STANDS BUILT. This names the debt so a caller does not read the resolver as one.
+ * THE CLIMB'S HALF STANDS BUILT for the one board that REFUSES rather than degrades — the persona-KEL
+ * board the Binding Gate walks (`nexusIslandsBelow` names the sources; `carryPersonaKelUpTheGradient` on
+ * the node shore carries the chain). Every OTHER per-Nexus board degrades gracefully across a climb: an
+ * empty antigen bans nobody, an empty WHO board names nobody, an empty crossroads announces nothing. The
+ * gate alone turns a moved board into a vessel that never boots again, so it is the one that is cured.
+ * The RE-ANNOUNCE (carrying books, vouches and carriage forward onto the new board) and the explicit
+ * DEPARTURE both stand UNBUILT. This names the remaining debt so a caller does not read the resolver as one.
  */
 export function nexusScopeMoved(before: NexusIdentity, after: NexusIdentity): boolean {
   return before.kind !== "torn" && after.kind !== "torn" && before.scope !== after.scope;
+}
+
+/**
+ * ── THE ISLANDS BELOW THIS ONE — a climb's migration SOURCES, ordered high to low ────────────────
+ *
+ * A vessel that climbs needs to know which LOWER board its material rode on, and the answer is not a
+ * list: it is the SAME ranking `nexusIdentity` already states. So this re-runs the resolver with each
+ * higher term WITHHELD and reads the lower islands back out of it. A term added to the ranking later
+ * joins these sources by construction — a hand-written enumeration would escape it silently.
+ *
+ * ── CLIMB-ONLY, because the gradient ratchets on INTENT ──────────────────────────────────────────
+ * A vessel standing at a SHARED island reads the private board beneath it; a vessel standing at its
+ * OWN island reads NOTHING, and a TORN standing reads nothing either. That asymmetry IS the gradient
+ * law in code. Were these sources bidirectional, a charter that merely VANISHED — a failure, never an
+ * act — would carry a serving vessel's chain back onto its private board and let the boot report
+ * success while every peer watched it go dark. Withheld instead, that vessel HALTS, which is the
+ * honest answer: a vessel must climb by an act and never descend by an accident.
+ *
+ * The current island never appears among its own sources, and a collapsed reading (an anchor key that
+ * IS the vessel's own key) names one island rather than two.
+ */
+export function nexusIslandsBelow(at: NexusIdentityAt): readonly string[] {
+  const here = nexusIdentity(at);
+  if (here.kind === "torn") return [];   // ③ names no island: nothing to carry, and nowhere to carry it
+
+  // Withhold the terms from the top down. Each narrowing names the island this vessel would have stood
+  // at with that term absent — which is exactly the island it DID stand at before the act that added it.
+  const narrowings: readonly NexusIdentityAt[] = [
+    { ...at, explicitScope: null },
+    { ...at, explicitScope: null, genesisEpochCid: null, charterStands: false },
+    { ...at, explicitScope: null, genesisEpochCid: null, charterStands: false, anchorGateKey: null, anchorStands: false },
+  ];
+
+  const below: string[] = [];
+  const seen = new Set<string>([here.scope]);
+  for (const narrowed of narrowings) {
+    const lower = nexusIdentity(narrowed);
+    if (lower.kind === "torn") continue;      // a narrowing that reads torn names no source
+    if (seen.has(lower.scope)) continue;      // the current island, or a reading that collapsed onto one already named
+    seen.add(lower.scope);
+    below.push(lower.scope);
+  }
+  return below;
 }
