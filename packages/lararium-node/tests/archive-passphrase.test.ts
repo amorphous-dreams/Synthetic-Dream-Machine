@@ -25,6 +25,7 @@ import { sealExpected } from "../src/lares-config.js";
 import {
   archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
   exportSealedArchive, repairSplitKek, assertSealReady, runVaultVerb, weakPassphraseWarning,
+  archiveOpens, readArchiveOpening,
 } from "../src/archive-passphrase.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -129,6 +130,77 @@ describe("archive-passphrase — the at-rest seal lifecycle", () => {
     expect([...readFileSync(deviceSharePath())]).toEqual([...shareBefore]);
     // and the carriers still open under the ORIGINAL passphrase (never un-rotated).
     expect(opensUnder(readFileSync(archivePath()), PASS_A)).toBe(true);
+  });
+
+  // ── THE BOOT READING: a PROBE, never a presence check ──────────────────────────────────────────
+  //
+  // `archiveOpens` gates `standAs` at main.ts. Reading the ENV VAR's PRESENCE answers a question nobody
+  // asked: a wrong passphrase is present, so the vessel rose to hearth on a key that cannot unseal, and
+  // the fault surfaced far from its cause. These pin the reading as a TRIAL-OPEN, and pin the three
+  // answers apart — the pin-reader law: one default covering both "absent" and "torn" inverts
+  // fail-closed into fail-open.
+
+  test("★ RED — a WRONG passphrase in the environment reads SHUT, and is NAMED wrong ★", { timeout: 60_000 }, () => {
+    writeCleartextCarriers();
+    sealArchiveWithPassphrase(PASS_A);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);            // present, and it does NOT open the archive
+    const reading = readArchiveOpening();
+    expect(reading.kind, "a wrong passphrase passed as an open archive — presence read as fitness").toBe("key-wrong");
+    expect(archiveOpens(), "the boot would have raised the vessel on a key that cannot unseal").toBe(false);
+  });
+
+  test("CONTROL — the CORRECT passphrase still opens, and the probe says so", { timeout: 60_000 }, () => {
+    writeCleartextCarriers();
+    sealArchiveWithPassphrase(PASS_A);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    expect(readArchiveOpening().kind).toBe("opens");
+    expect(archiveOpens()).toBe(true);
+  });
+
+  test("CONTROL — no seal expected: the vessel opens and NO probe runs", () => {
+    // Nothing sealed, no marker. The reading must not derive a KEK to answer this (it has no key to try).
+    expect(sealExpected()).toBe(false);
+    const reading = readArchiveOpening();
+    expect(reading.kind).toBe("no-seal-expected");
+    expect(reading.probed, "a probe ran where the config asked for none").toBe(false);
+    expect(archiveOpens()).toBe(true);
+  });
+
+  test("CONTROL — seal expected and NO key: still SHUT, and named absent (never 'wrong')", { timeout: 60_000 }, () => {
+    writeCleartextCarriers();
+    sealArchiveWithPassphrase(PASS_A);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
+    const reading = readArchiveOpening();
+    expect(reading.kind).toBe("key-absent");
+    expect(reading.probed).toBe(false);                // no key to try — nothing was probed
+    expect(archiveOpens()).toBe(false);
+  });
+
+  test("CONTROL — a TORN archive reads 'unreadable', never 'key-wrong'", { timeout: 60_000 }, () => {
+    writeCleartextCarriers();
+    sealArchiveWithPassphrase(PASS_A);
+    // Keep the LARK magic + version (so it still reads as a sealed envelope) and truncate the body: the
+    // envelope will not DECODE. No key can be judged against it, so no key may be BLAMED for it.
+    writeFileSync(archivePath(), Buffer.from(readFileSync(archivePath()).subarray(0, 7)));
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);            // the RIGHT passphrase, against a torn carrier
+    const reading = readArchiveOpening();
+    expect(reading.kind, "a torn carrier was blamed on the passphrase — cannot-probe read as probed-and-failed").toBe("unreadable");
+    expect(archiveOpens()).toBe(false);                // fail-closed: unopenable is unopenable
+  });
+
+  test("CONTROL — seal marked expected but NOTHING sealed on disk: opens, and says nothing was probed", { timeout: 60_000 }, () => {
+    // The marker is a config HINT and the disk is the fact. With no sealed carrier the boot's readers pass
+    // cleartext straight through, so the vessel genuinely opens — but the reading must not claim a probe.
+    writeCleartextCarriers();
+    sealArchiveWithPassphrase(PASS_A);
+    rmSync(archivePath(), { force: true });
+    rmSync(deviceSharePath(), { force: true });
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    expect(sealExpected()).toBe(true);                 // the hint stands
+    const reading = readArchiveOpening();
+    expect(reading.kind).toBe("nothing-sealed");
+    expect(reading.probed).toBe(false);
+    expect(archiveOpens()).toBe(true);
   });
 
   test("export → a passphrase-sealed backup re-opens to the IDENTICAL plaintext", { timeout: 60_000 }, () => {

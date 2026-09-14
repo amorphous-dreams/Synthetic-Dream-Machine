@@ -168,8 +168,10 @@ export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, pers
 export {
   archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase, exportSealedArchive,
   repairSplitKek, assertSealReady, runVaultVerb, weakPassphraseWarning, PASSPHRASE_MIN_LENGTH,
+  archiveOpens, readArchiveOpening,
 } from "./archive-passphrase.js";
 export type {
+  ArchiveOpening, ArchiveOpeningKind,
   ArchiveSealStatus, CarrierStatus, CarrierState, CarrierName,
   SealResult, RotateResult, ExportResult, RepairResult,
 } from "./archive-passphrase.js";

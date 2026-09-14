@@ -29,6 +29,14 @@
  *
  * FAIL-CLOSED throughout: a wrong old passphrase throws at the GCM tag BEFORE any byte is written
  * (zero-write), an empty passphrase is refused, and a would-be silent overwrite on export is refused.
+ *
+ * THE BOOT READING PROBES; IT NEVER COUNTS THE ENVIRONMENT. `archiveOpens`/`readArchiveOpening` decide
+ * whether a boot can open what it must read by TRIAL-OPENING the boot carriers under the supplied
+ * passphrase. A key that is merely PRESENT proves nothing: a wrong one satisfies presence and the vessel
+ * would rise on a key that cannot unseal, the GCM tag refusing it later at whichever sovereign act read
+ * the archive first. The reading names FIVE answers rather than one boolean, because folding "no key",
+ * "wrong key" and "torn carrier" together inverts fail-closed into fail-open. What should HAPPEN after a
+ * failed probe stands OPEN as a fork — see `readArchiveOpening`; the waking floor still stands here.
  */
 
 import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync } from "node:fs";
@@ -105,13 +113,29 @@ export interface ArchiveSealStatus {
   readonly keychain: { readonly persistentStore: boolean; readonly reason: string; readonly kekAvailable: boolean };
 }
 
+/**
+ * Trial-open raw carrier bytes under a passphrase, THREE-VALUED:
+ *   · `opens`      — the envelope decoded and the GCM tag verified.
+ *   · `key-fails`  — the envelope decoded cleanly and the KEY was refused at the tag.
+ *   · `unreadable` — the envelope would not DECODE (torn, truncated, unknown mode). No key can be judged
+ *                    against bytes that never framed, so no key may be BLAMED for them.
+ *
+ * The third value exists because collapsing it into `key-fails` is the pin-reader inversion: one answer
+ * covering both "the key is wrong" and "the carrier is torn" sends an operator to re-type a passphrase
+ * that was right all along, and hides a corruption behind a credential error.
+ */
+type CarrierProbe = "opens" | "key-fails" | "unreadable";
+
+function probeCarrier(bytes: Uint8Array, passphrase: string): CarrierProbe {
+  let env: ReturnType<typeof decodeEnvelope>;
+  try { env = decodeEnvelope(bytes); } catch { return "unreadable"; }
+  try { unsealBytes(env, scryptKek(passphrase, env.salt)); return "opens"; }
+  catch { return "key-fails"; }
+}
+
 /** Try unsealing raw carrier bytes under a passphrase; true on a clean GCM open, false on any failure. */
 function opensUnder(bytes: Uint8Array, passphrase: string): boolean {
-  try {
-    const env = decodeEnvelope(bytes);
-    unsealBytes(env, scryptKek(passphrase, env.salt));
-    return true;
-  } catch { return false; }
+  return probeCarrier(bytes, passphrase) === "opens";
 }
 
 /** Seal plaintext under a FRESH-salt scrypt KEK (no IV/salt ever repeats — archive-seal law). */
@@ -374,22 +398,132 @@ export function repairSplitKek(openPassphrase: string, sealPassphrase: string): 
  * lar:///ha.ka.ba/lares/api/pono/waking-floor — the waking floor.
  */
 /**
- * Whether this vessel's archive OPENS — a reading, never a verdict on whether to proceed.
+ * ══ THE READING PROBES; IT DOES NOT COUNT THE ENVIRONMENT ════════════════════════════════════════
+ *
+ * `archiveOpens` gates `standAs` on the boot path (`main.ts`). Asking only whether
+ * `LARES_ARCHIVE_PASSPHRASE` CARRIES A VALUE answers presence where the boot asked fitness: a WRONG
+ * passphrase satisfies presence, the vessel rises to hearth on a key that cannot unseal, and the GCM
+ * tag refuses it later — at whichever sovereign act happens to read the archive first, far from the
+ * cause. So the reading TRIAL-OPENS the carriers a boot actually opens, reusing this module's own
+ * unseal atoms (the same `vault status --check` probes with) rather than minting a second derivation.
+ *
+ * FIVE ANSWERS, BECAUSE TWO INVERT FAIL-CLOSED (the pin-reader law). A single boolean folded "no seal
+ * expected", "no key present" and "key present but refused" onto one another; and a torn carrier —
+ * bytes that never even framed — would fold onto "wrong passphrase", sending an operator to re-type a
+ * credential that was right all along while a corruption sat unnamed. Each answer therefore carries
+ * its own name and its own `why`, and only `opens` is derived from an actual successful unseal.
+ *
+ * WHICH CARRIERS. The BOOT opens the keyhive archive and the veil archive (`open-node-vessel.ts`), so
+ * those are what a boot reading probes. A disagreement among the OTHER carriers is a split-KEK, which
+ * `archiveSealStatus`/`vault repair` own and which does not decide whether this vessel can stand.
+ *
+ * ⚠ THE FORK THIS DOES NOT RULE, and deliberately leaves standing. What should HAPPEN after a failed
+ * probe — keep the waking-floor stand, or refuse the stand outright — stands OPEN at
+ * `lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff` #/forks ("Which stand reads the seal"), beside
+ * the wider unattended-reboot tension named above. Nothing here answers it: the floor STILL STANDS on a
+ * shut archive, exactly as before. This changes only what the reading KNOWS and what it SAYS — a wrong
+ * passphrase is now named wrong AT THE POINT IT IS READ instead of passing as open.
+ */
+export type ArchiveOpeningKind =
+  /** The config marks no seal in force — nothing to open, nothing probed. */
+  | "no-seal-expected"
+  /** Sealing marked expected, yet no sealed carrier stands on disk — the hint is a config guess, the disk is the fact. */
+  | "nothing-sealed"
+  /** A key rides the environment and it TRIAL-OPENED every boot carrier. */
+  | "opens"
+  /** Sealing expected and no key rides the environment. */
+  | "key-absent"
+  /** A key rides the environment and the GCM tag REFUSED it. Presence held; fitness did not. */
+  | "key-wrong"
+  /** A sealed boot carrier will not DECODE. No key can be judged against it, so none is blamed. */
+  | "unreadable";
+
+export interface ArchiveOpening {
+  readonly kind: ArchiveOpeningKind;
+  /** Can the boot open what it must read? Only `opens`, `no-seal-expected` and `nothing-sealed` say yes. */
+  readonly opens: boolean;
+  /** Did an actual trial-unseal run? False whenever there was no key, or nothing sealed to try it on. */
+  readonly probed: boolean;
+  /** Operator-facing reason, key-free — never the passphrase, never any derived material. */
+  readonly why: string;
+}
+
+/** The carriers a BOOT opens through `openArchiveBytes`, in read order. */
+function bootCarriers(): readonly Carrier[] {
+  return carriers().filter((c) => c.name === "archive" || c.name === "veil");
+}
+
+/**
+ * Read whether this vessel's archive OPENS — a reading, never a verdict on whether to proceed.
  *
  * The boot asks this and stands accordingly: open → the class the recipe asked for; shut → the waking floor
  * (`standAs`). A reading rather than a throw is the whole ruling — refusing converts an ordinary power cut
  * into an outage, while the seal exists against a stolen disk.
  */
-export function archiveOpens(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): boolean {
-  return !readSealExpected(cfg) || Boolean(env[ARCHIVE_PASSPHRASE_ENV]);
+export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): ArchiveOpening {
+  if (!readSealExpected(cfg)) {
+    return { kind: "no-seal-expected", opens: true, probed: false, why: "no seal stands in force — the archive reads bare" };
+  }
+  const key = env[ARCHIVE_PASSPHRASE_ENV];
+  if (!key) {
+    return {
+      kind: "key-absent", opens: false, probed: false,
+      why: `your archive is sealed and ${ARCHIVE_PASSPHRASE_ENV} carries no passphrase`,
+    };
+  }
+  // Trial-open every SEALED boot carrier. A cleartext or absent one needs no key and cannot fail.
+  const results: { name: CarrierName; probe: CarrierProbe }[] = [];
+  for (const c of bootCarriers()) {
+    if (!existsSync(c.path)) continue;
+    let bytes: Uint8Array;
+    try { bytes = readFileSync(c.path); } catch {
+      return { kind: "unreadable", opens: false, probed: false, why: `the ${c.name} carrier cannot be read from disk` };
+    }
+    if (!isSealedEnvelope(bytes)) continue;   // bare cleartext passes straight through the boot's reader
+    results.push({ name: c.name, probe: probeCarrier(bytes, key) });
+  }
+  if (results.length === 0) {
+    return {
+      kind: "nothing-sealed", opens: true, probed: false,
+      why: "sealing is marked expected and no sealed boot carrier stands on disk — nothing to open",
+    };
+  }
+  const torn = results.find((r) => r.probe === "unreadable");
+  if (torn) {
+    // NAMED APART FROM A WRONG KEY on purpose: these bytes never framed, so the passphrase was never tested.
+    return {
+      kind: "unreadable", opens: false, probed: false,
+      why: `the ${torn.name} carrier will not decode as a sealed envelope — no passphrase can open it (recover it from a backup)`,
+    };
+  }
+  const refused = results.find((r) => r.probe === "key-fails");
+  if (refused) {
+    return {
+      kind: "key-wrong", opens: false, probed: true,
+      why: `${ARCHIVE_PASSPHRASE_ENV} does not open the ${refused.name} carrier — the passphrase is present but wrong`,
+    };
+  }
+  return { kind: "opens", opens: true, probed: true, why: "the supplied passphrase opened every sealed boot carrier" };
 }
 
+/**
+ * Whether this vessel's archive OPENS. A PROBE — see `readArchiveOpening` for the five answers it folds
+ * and for the fork this deliberately leaves open. Callers wanting the reason read that instead.
+ */
+export function archiveOpens(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): boolean {
+  return readArchiveOpening(cfg, env).opens;
+}
+
+/**
+ * The boot-gate throw. It now fires on a WRONG passphrase as well as an absent one, and says WHICH —
+ * the message an operator reads decides whether they re-type a credential or go find a backup.
+ */
 export function assertSealReady(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): void {
-  if (readSealExpected(cfg) && !env[ARCHIVE_PASSPHRASE_ENV]) {
-    throw new Error(
-      `[lararium] your archive is sealed — set ${ARCHIVE_PASSPHRASE_ENV} to the passphrase that sealed it, then boot again`,
-    );
-  }
+  const reading = readArchiveOpening(cfg, env);
+  if (reading.opens) return;
+  throw new Error(
+    `[lararium] ${reading.why} — set ${ARCHIVE_PASSPHRASE_ENV} to the passphrase that sealed it, then boot again`,
+  );
 }
 
 /**
