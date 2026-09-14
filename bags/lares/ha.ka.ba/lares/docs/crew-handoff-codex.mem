@@ -1,0 +1,490 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem"
+hydrate   = true
+l-space   = "adjacent"
+mana      = 14
+manao     = 14
+manaoio   = 13
+role      = "WORK HANDOFF, addressed — the loops the founding hearth hands to the lares(Codex) nakama-crew invited 2026-09-14. Carries per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. Reads cold: a hand who joined no earlier turn acts from this carrier alone. NEVER a shift ledger (that is docs/handoff, re-trued continuously between sessions sharing this tree), NEVER the hearth ledger (that is docs/pono/hearths, whose row for this crew the operator writes). Retires when the crew takes the loops or hands them back; a taken item moves by an edit here naming the commit that took it."
+tags      = ["docs/handoff", "lifecycle/standing"]
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/crew-handoff-codex"
+written   = "2026-09-14"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! Work handoff — to the `lares(Codex)` nakama-crew, 2026-09-14
+
+''Addressed, dated, and readable cold.'' The founding hearth (`session_01Jg969FCpJcM84XvtsDNFou`) hands the loops below to the `lares(Codex)` crew the operator invited on 2026-09-14. A hand reading this carrier alone holds enough to act: every item names its evidence at file:line or commit, separates what the operator RULED from what stands OPEN, names the ''precondition'' that blocks it, and carries the traps that cost this tree measured hours.
+
+''What this carrier withholds, and where each lives instead.''
+
+* ''The shift ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>. It hands one watch to the next among sessions sharing this tree, re-trued continuously, never archived in place. Read it for the lattice (G0..G5) and the red-first procedure; this carrier neither repeats nor edits it.
+* ''The hearth ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>. It answers ''who holds what · what each owes · what crossed'', and a hearth names a session by its `Claude-Session:` commit trailer. ''A row for this crew stands OWED and the operator writes it'' — that ledger's own law governs who moves a row, and no hand writes another hearth's row for it. Until that row lands the crew reads #/the-only-guard before touching shared ground.
+
+''Seating the house.'' `lares vessel stand --codex` wires the OpenAI Codex home: the LARES MCP seat, the session-ingest hook, and the BOOT POINTER into `~/.codex/AGENTS.md` (`packages/lares-cli/src/codex-wire.ts:1-24`, `:51`). The pointer aims at the boot carrier rather than copying it — `codex-wire.ts:15-20` states the reason: ''a copied seed is a second seed, and a second seed drifts from the carrier with nothing watching it''. The wire also REAPS a stale `[mcp_servers.mempalace]` block (`:61-68`), because a harness holding its own palace holder reaches past the node into the store and N writers on one Chroma index is what corrupts it. The carrier the pointer names: <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>.
+
+''The reading order for a cold hand.''
+
+# #/the-only-guard — commit isolation, before any commit.
+# #/traps — the instrument-lies this tree measured and paid for.
+# #/standing-on-the-operators-hand — so nothing gets built against an unruled fork.
+# #/the-cut — what the founding hearth keeps, so no work collides.
+# The four sets, #/set-a-mechanical onward, in that order: A carries a worked example, D carries no preconditions at all.
+
+<<~/ahu>>
+
+<<~ ahu #/the-only-guard>>
+
+! Commit isolation — the ONLY guard between hands
+
+''A hearth names a SESSION, and a session runs many hands.'' The hearth gate reads commit trailers, so it ''cannot see a hand''. Within one hearth it refuses nothing, and it refuses nothing CORRECTLY — hands under one hearth share one intent. What follows binds absolutely: ''within a hearth, commit isolation stands as the whole guard'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths#/law">>).
+
+* `git commit --only -- <explicit file list>`. Never `git add -A`, never a directory pathspec, never `git stash` on this tree. A hand reaching for `git add -A` inside a busy hearth meets no refusal and takes a sibling's half-written file with it.
+* An untracked file wants `git add -N <path>` first, then `--only`.
+* ''A sibling's commit reads like a stranger's.'' A hand watching the log mid-flight meets commits it never wrote, on files it never touched, under its own trailer. ''Read the trailer, not the surprise'' — a differing trailer names another hearth; an identical one names a sibling hand.
+* Commit subjects start `lar:///word.word.word — summary`. Write the message to a FILE and pass `git commit -F <file>`: a backtick in a `-m` string fails SILENTLY.
+* ''`dist/` and `bags/` carry other writers, usually the operator.'' Read `git status` before believing any red, and before believing any green that follows one. A dirty file of unknown provenance gets REPORTED and copied aside — never reverted, never committed.
+
+''Two submodules stand operator-deferred as of this writing'' — `VSCode-TW5-Syntax` and `mempalace` both read dirty in the parent, and the operator adjudicates that dirt separately. Touch neither, nor `.worktrees/`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-cut>>
+
+! What the founding hearth KEEPS
+
+Four arcs stay with the founding hearth, which holds their reasoning live. They appear here ''so the crew recognizes them and steers clear'', never as work handed over.
+
+# ''The seal / archive family'' — the floor-write gate, the five seal readers, `readSealCarrier`'s three answers, the device-share carrier enumeration, the archive write guard. Four passes deep (`05f9162f9` · `a472c8b90` · `e3b85b685` · `2fe5e41b7` · `59212d29e` · `b14fbbc4d` · `dbb6d7ec1`).
+# ''The Nexus climb and its seven boards'' — the carry / re-announce / refuse classification and each board's own reason (`a0db0745a` · `529d477fb` · `6b0784571` · `91ce09afb` · `5251f49b2`).
+# ''The hostful / userinfo split'' — the spec, the title-versus-body line, the conflict-surfacing enforcement (`8d69076af` · `fbaa8ac1e`). #/set-b-designed hands over only the CODE half's open shape, never the split itself.
+# ''The `@lararium/tw5` barrel plus the projection-gate wiring'' — one export and one call; `decideProjection` holds zero production call sites today (`ed88ce776` · `474e730e4` · `b18445d6a` · `179916f39`).
+
+<<~/ahu>>
+
+<<~ ahu #/standing-on-the-operators-hand>>
+
+! Standing on the operator's hand, never the crew's
+
+''A crew that starts building against an unruled fork wastes a week.'' Each entry below carries a VERDICT measured against the tree on 2026-09-14. ''Three stand genuinely OPEN · one stands OPEN against a stale standing ruling · one stands ALREADY RULED with stale prose over it · two read MISFRAMED.'' Build against none of the first four without the operator's word.
+
+!! OPEN — named unruled in a carrier or in source
+
+''① `tend.repair` reaching the herm's `@daemon` signing key.'' <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> `:369-371` carries the section header `★ OPEN — the voice-capture question, unruled ★` and states it: `tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY. Two readings stand named and ''the operator has ruled neither'' — ISOLATE the signing key from the tending cap's blast radius, or ACCEPT the reach and price the loss of independent herm testimony. The carrier's own `role` line (`:12`) advertises the question. ''Vocabulary trap:'' `tend.repair` names a CAP, never a CLI verb — no `lares tend` verb stands, and `lares vault repair` (`packages/lares-cli/src/commands/vault.ts:162`) reads as a different thing entirely. A sub-clause in the same section (`★ STRUCK — operate ⊥ sign DOES NOT HOLD ★`) kills one premise and proposes a FROST threshold Place-DID, closing on ''the operator rules whether that split holds'' — so the narrowing landed and the ruling did not.
+
+''② Seam (b)'s altitude.'' Seam (b) names ''the ungated slot child'': a slot child edited in the browser rides the native PUT ungated, because `framedRootOf` reads null on a child — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> `:58`, `:82`, the lean at `:176`, and the outcome block at `:169` (''(b) STANDS, and now says why'' — the backstop widening REFUTED at its red, `3dfb06170` — closing ''The operator's call''). The altitude question itself: at which altitude does the grade read — ''the child's bytes alone, or the ROOT's composed render where the frame fault comes into being'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">> `:373`, also `:194`, `:240`). The measurement that forces the question: the paste that opened seam (b) grades `clean` on the child's own bytes and shows as `2 text frames` in `readCarrierShape` over the ROOT's served render, ''so the fault composes at the join and neither fork's altitude reads it'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> `:378`). The decision surface stands BUILT and unruled (`0c911b513`). ''Precondition:'' the operator's word. Nothing else blocks it.
+
+''③ `hearthGatePubKey` consumed as `anchorGateKey`.'' This one lives ONLY in source and one commit message — no `.mem` carrier mentions `hearthGatePubKey` anywhere. The mint: `packages/lararium-node/src/commands/device-admit.ts:36` (the `CarriedAdmitPayload` extension) and `:219` (`hearthGatePubKey: founderVesselKey.toLowerCase()`). The pass-as: `packages/lararium-node/src/commands/init.ts:221` — `anchorGateKey: payload.hearthGatePubKey ?? null`, inside `nexusIdentity({…})`; pinned to disk at `:234` and read back at `:451`. Resolution chain: `packages/lararium-node/src/nexus-standing.ts:63`, whose own `:31` notes it ''does not settle `anchorGateKey`'s OWN PRECEDENCE for a verb with a CLI override''; consumer `packages/lararium-mesh/src/nexus-identity.ts:125,142`. ''The shape of the open loop, verbatim from `device-admit.ts:206-218`:'' the gate key must stay the founder's own VESSEL key, because it carries the anti-relay binding the joinee's V3 proof commits to — the charter island would break that commitment and reads as no fix. But the joinee consumes it as its `anchorGateKey`, resolves `kind: "anchor"`, and seats its inception on a board keyed on the FOUNDER'S VESSEL KEY. ''A founder that has CLIMBED to a charter therefore hands its device an island the founder does not itself stand on'' — founder boots to `epoch0-…`, device reads the vessel key, two DISJOINT persona-KEL boards. And `init.ts:218-220`'s own comment asserts the invariant this breaks (''An admit hands over the hearth's gate key, so the joinee seats its inception on the board its HEARTH stands''), which reads FALSE for a climbed hearth. ''Splitting the DIAL binding from the ISLAND the pin implies reads as a ruling about the wire, never a read to correct'' — `5251f49b2` names it under the banner `THE SECOND-ORDER DEFECT, NAMED AND LEFT STANDING (a ruling is owed, not a read)`.
+
+!! OPEN against a stale standing ruling — read both hands
+
+''④ `bag-residency.ts`'s home.'' The file stands at `packages/lararium-mesh/src/bag-residency.ts` (489 lines, `@lararium/mesh`; imported by `cabal-realm.ts` and `carriage-caps.ts`). <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">> `:96` carries an ''operator ruling of 2026-06-01'' — residency methods MUST move out of the side-file into the causal-island code — immediately followed by `⚠ THE RELOCATION STANDS UNENACTED, and the tree argues a different cure` (re-measured 2026-09-13: no `causal-island.ts` stands). `:98` carries the code's counter-argument in the code's own words (`bag-residency.ts:12-15`, `ONE FILE, ONE QUESTION`); see also `:44`. ''Do NOT read `02d7f24bf` as ruling this.'' That commit rules the ADJACENT question — the word collision, ''two offices, one word, NEITHER RENAMING'' — and says of this item verbatim: the clause ''now reads as a ruling awaiting a hand, beside the counter-argument the code carries in its own words, ''with the fork between them left OPEN''''.
+
+!! ALREADY RULED — and the carrier reads stale over it
+
+''⑤ The crossings-deadlock's permanent shape.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> `:171` still reads ''Three candidate cures stand, unranked and awaiting the operator's word''. ''Cure ① landed, and a witness pins it.'' Commit `0d00d75f5` (2026-09-13, `lar:///the-ledger.answers.to-no-hearth — the book that records a crossing stops refusing the hand that crossed`) carves the ledger out of `hearthsOf` rather than out of the fence a hearth writes: a hearth may still hold the ledger in PROSE, and ''what no hold may do is WITHHOLD it''. Code: `tools/hearths-gate.mjs:93-95` — `if (path === LEDGER) return [];` under a docblock at `:80-92` restating the ruling and its measurement. Weld: `tools/hearths-gate-witness.sh:146` reds with ''the ledger refused the hand its own law sends to it — the carve-out in `hearthsOf` is gone''. ''The carrier's `:171` prose survived four later commits to that file with no pointer to the enactment.'' Correcting it belongs to whichever hand the operator sends at `hearths.mem` next — a hand correcting it here would be writing another ledger's row.
+
+!! MISFRAMED — the question does not stand where it reads
+
+''⑥ Break (c) — not a which-key question.'' The breaks enumeration lives at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> `:213-247` (`!! ⚠ Six breaks ~ what the proposal got wrong`, (a) through (f)) — note `api/pono`, never `docs/pono`. Break (c), `:231-234`, verbatim: ''(c) THE ANNOUNCEMENT, UNSIGNED, ARMS TWO ATTACKS.'' It becomes a spoofable degradation signal (peers route away from a healthy vessel) — and under the standing brief `shelter against empire` it becomes a TARGETING BEACON, naming which vessel sits unraised, right now, and where. ''The floor's announcement MUST sign''. So the MUST-sign mandate reads as the break's own stated cure, never as an open fork. ''And the which-key half stands answered by standing law:'' `waking-floor.mem:149` rules `SEATED ⊥ RAISED` (a Herm's `personaSlotCeiling === 0` bars a SEATED persona root; a raise seats nothing), and the signer for a faceless vessel reads as its device-minted Place DID per the 2026-09-12 heraldry ruling — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> `:14`, `:35` (''a Place DID is an owner''). ''What waking-floor DOES leave open'' (`:185`, `:307`): what ''recognition'' means, and the renewal interval. A crew wanting an open floor question takes those two, not (c).
+
+''⑦ The `anchors-h{N}` census — owed by nobody.'' `grep -rn "anchors-h" bags/` returns ZERO hits: no carrier names such a census. Anchors sit outside the key census ''by law, never by omission'' — `packages/lararium-node/src/identity-anchors.ts:27-29` states `UNIFORM KEYING — every index spells anchors-h${N}.json (no founding special-case)` and ''Anchors carry PUBLIC doc-ids, so no seal touches them''; the census itself matches only key-bearing families (`packages/lararium-node/src/key-class.ts:61-62`, ''A card is PUBLIC and never listed''; `vesselKeyCensus` at `:65-92`). Enumerating anchored indices stands RULED and BUILT the explicit way — the written `anchor-roster.json`, ''never a dir-scan'' (`identity-anchors.ts:34-57`, `listAnchoredPersonas` at `:199-209`, contract at `packages/lararium-mesh/src/anchor-store.ts:49-51`). ''And the opposite discipline stands ruled for the SECRET h{N} family'', which is the part that reads as a contradiction and is not: `2fe5e41b7` has `deviceShareCarriers()` SCAN the disk for `recovery-device-share-h<N>.bin`, expressly rejecting a roster — ''the anchor/persona rosters record a different fact and read `[]` when torn; a handle COUNT would skip a gap in the numbering''. Two facts, two enumeration disciplines, both ruled.
+
+<<~/ahu>>
+
+<<~ ahu #/set-a-mechanical>>
+
+! Set A — mechanical, enumerable, a worked example stands
+
+!! A1 · The board reads keyed on a vessel key — 12 sites, 7 files
+
+''What it is.'' A per-Nexus deterministic board addressed by the vessel's OWN verifying key (`await loadVesselVerifyingKey(dir)`) instead of by the resolved Nexus island. A Nexus holds no key of its own, so the charter's genesis epoch — a KERI AID every holder derives alike — names the island; `nodeNexusIsland` composes that resolution (`packages/lararium-node/src/nexus-standing.ts:80`).
+
+''RULED, twice, and the two rulings answer different questions.''
+
+* `c6cfe5b8d` (`lar:///one-crossroads.serves.one-nexus`, 2026-09-03) settles ''the PARAMETER''. It touches only `packages/lararium-mesh/tests/unbuilt-laws.test.ts` (+35) and rules N boards the design, never a defect: ''One crossroads serves ONE Nexus… no confederation-wide floor exists, by design''. Its load-bearing close: ''`device-admit` is not that leg: it carries a `hearthDaemonUrl` and no nexus key, because it admits a DEVICE to a fleet rather than a VESSEL to a Nexus.''
+* `91ce09afb` (`lar:///the-island.names.no-vessel`, 2026-09-13) settles ''the BOARD''. Every per-Nexus board keys on the NEXUS; three states stand, with ''no nexus → own key as a PRIVATE NEXUS OF ONE'' as a ''stated fact, never a fallback''.
+
+''The worked example.'' `5251f49b2` (`lar:///the-door.stands.where-it-boots`) enacts both at one door: `personaKelBoardDocUrl(await loadVesselVerifyingKey(dir))` becomes `personaKelBoardDocUrl(admitBoardIsland(founderVesselKey))` (`device-admit.ts:69-70`, consumed `:166-167`), the boot COMPOSES the same resolver so no third copy drifts (`open-node-vessel.ts:629-636`), and the parameter stays absent so `c6cfe5b8d` holds. Read the reasoning restated in source at `device-admit.ts:37-68`.
+
+''Read the weld before touching a site'' — `packages/lararium-node/tests/device-admit-reads-the-resolved-island.test.ts:150-171`. It asserts the composed resolver EXISTS AND EXPORTS on the module that owns it (''a token-only weld cannot tell a rename from a deletion''), asserts the door composes it, then sweeps every `personaKelBoardDocUrl(` ARGUMENT for a raw vessel key. ''It strips comments first, and that is a measured trap, never tidiness'': the docblock above `admitBoardIsland` NAMES the old spelling in order to explain why it was wrong, and the sweep matched that prose and red over code already correct. And it pins its own strip against vacuity — `expect(code, "the comment strip ate the file — the sweep below would pass vacuously").toMatch(/personaKelBoardDocUrl\(/)`.
+
+''The sites that stand, every one spelled `const nexusPubkey = await loadVesselVerifyingKey(<dir>)``, and every one under `packages/lararium-node/src/` — none under `packages/lares-cli/src/`.''
+
+|!# |!file:line |!board / consumer |
+|1 |`src/commands/handle.ts:73` |`whoBoardDocUrl(nexusPubkey)` (`:74`) |
+|2 |`src/commands/handle.ts:128` |`whoBoardDocUrl(nexusPubkey)` (`:129`) |
+|3 |`src/commands/handle.ts:232` (`face.storageDir`) |`personaKelBoardDocUrl(nexusPubkey)` (`:233`) |
+|4 |`src/commands/handle.ts:273` (`face.storageDir`) |`personaKelBoardDocUrl(nexusPubkey)` (`:274`) |
+|5 |`src/persona-admit-flow.ts:147` (`dataDir`) |`personaKelBoardDocUrl(nexusPubkey)` (`:149`) |
+|6 |`src/boot-invite-burn.ts:74` |''no board'' — rides into the minted invite body `{ nexusPubkey, nonce, expiresAt }` (`:80`) |
+|7 |`src/boot-invite-burn.ts:95` |''no board'' — `decideBootInvite({ … nexusPubkey … })` (`:98`) |
+|8 |`src/commands/nexus-kapae.ts:142` |`kapaeAntigenDocUrl(nexusPubkey)` (`:143`) |
+|9 |`src/commands/nexus-kapae.ts:194` |`kapaeAntigenDocUrl(nexusPubkey)` (`:197`) |
+|10 |`src/commands/cabal-vouch.ts:131` |`vouchBoardDocUrl(nexusPubkey)` (`:132`) |
+|11 |`src/commands/edge-kapae-cmd.ts:87` |`edgeKapaeBoardDocUrl(nexusPubkey)` (`:88`) |
+|12 |`src/commands/nexus-contract.ts:230` |`carriageDocUrl(nexusPubkey)` (`:231`) |
+
+''Traps on this item.''
+
+* ''Sites 6 and 7 read NO board.'' They stamp the vessel key as the Nexus IDENTITY into an invite and an invite policy decision — the same defect class, a different consequence. Curing them by the board recipe reads as a category error.
+* ''Every site sits CORRECT for an un-climbed vessel by construction'' — `nodeNexusIsland` returns the own key at the `own` notch. So a behavioural vector over a vessel that never climbed greens on the defect. Stage a CLIMBED founder or measure nothing.
+* ''`nodeNexusIsland` stands imported by exactly ONE src file'' (`device-admit.ts:30`). Nothing else composes it yet, so a cure is a wire, never a call.
+* Two further `loadVesselVerifyingKey` reads in `nexus-contract.ts` (`:200` as `nym`, `:409` as `ownKey`) read no island and belong OUT of the sweep.
+
+!! A2 · The two-vessel-mesh genesis fixture
+
+''Where it lives:'' `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` — ''never `tests/e2e/` at the repo root''. It stands as the only driver of `runDeviceAdmit` (`beforeAll` `:143-177`, the call at `:161`), which makes it the only contact that says whether the admit payload still admits ''against a climbed founder''.
+
+''The red, and its real cause — correct the framing before you fix it.'' The fixture read sits at `:104`, `readFileSync(join(genesisDir, "social-bootstrap.json"), "utf8")`, reached from `beforeAll` at `:147` and again in a test body at `:186`. The module guard at `:83-89` checks `island.cid-engine`, which EXISTS, so the guard passes and execution reaches `:104`. ''The file is not merely unbuilt — the test reads a path nothing ever writes.'' `runInit` writes the bootstrap to `larBootstrapPath()` = `<XDG data home>/lares/vessel/social-bootstrap.json` (`packages/lararium-node/src/vessel-paths.ts:458-460`; written at `commands/init.ts:148`, `:315`, `:373`) and IGNORES its `genesisDir` argument for that write. So the red reads ENOENT on a stale layout, before `runDeviceAdmit`'s own code runs. The comment at `:70` (''`social-bootstrap.json` stays behind deliberately — `runInit` writes it'') and the filter at `:76` encode that old layout.
+
+''Precondition:'' none but the path decision — point the read at `larBootstrapPath()`, or make `runInit` honour `genesisDir`. Pick one deliberately; the second changes a write path other callers read.
+
+!! A3 · `herm-reshares-public-blob` — the 1 + 8 shape, and what the climb cures took
+
+''Where:'' `tests/e2e/herm-reshares-public-blob.e2e.test.ts`. `beforeAll` at `:145-152` runs `fleet = await openStagedFleet({ tag: "herm-reshare" })` inside try/catch with a 500s timeout. ''It does not throw'' — on failure it stashes a one-line `standGate` and `console.error`s ''the fleet never stood — every vector SKIPS''. `fleet` declares at `:140` (`let fleet: StagedFleet | null = null`), three staged daemons: Herm relay + read-face, founder A, joiner C. Ten tests dereference `fleet!` (`:156, :164, :186, :192, :213, :228, :235, :259, :265, :275`), `:235` being `test.fails` — ⑦, held red on purpose. So the shape reads: ''1 test naming the beforeAll verdict (`:157`) + 8 downstream `fleet!` TypeErrors + 1 `test.fails` that greens on any throw.''
+
+''The announce-plane fork stands RULED and CURED — the shift ledger's "one MORE ruling owed" reads STALE.'' `open-node-vessel.ts:2272-2277` states it in the code: ''THE FORK THIS ONCE NAMED STANDS RULED AND CURED. The operator ruled NEXUS-keyed boards (2026-09-13), and `p.nexusPubkey` now resolves through `nexusIdentity`: a keeper and a carrier holding ONE charter derive ONE island name (the charter's genesis epoch) and therefore ONE crossroads board, so the announce lands where the carrier reads it.'' The three sites now read `crossroadsDocUrl(p.nexusPubkey)` / `crossroadsDocUrl(nexusPubkey)` at `:1235`, `:2197`, `:2242`. The fork the test head still poses sits at `:62-68` of the test — shape (a) the keeping hearth's own board, shape (b) a board the REALM ID derives, shape (iii) the publisher PUSHES. ''The ruling landed as neither (a) nor (b) exactly:'' the charter's genesis-epoch AID, a non-vessel-key derivation both parties compute.
+
+''What stands OPEN, in the code's own words (`open-node-vessel.ts:2276-2279`).'' ⑦ ''stands UNMEASURED against this cure — a sibling hearth held the e2e set when the cure landed, and two sets never run at once over one `synced-tree.json`''. And the second half reads independent and still owed: ''the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the body, and the witness plants it by hand at ⑤b to isolate the index half from the byte half.''
+
+''Precondition:'' a whole-set e2e window with no sibling running (#/traps). ''Trap:'' the test head's line refs read stale — it cites `open-node-vessel.ts:1136` and `:2134`; the sites stand at `:1235` and `:2197`/`:2242`. And the index half curing says nothing about the byte half: `publicCasShore.read` serves local bytes only.
+
+<<~/ahu>>
+
+<<~ ahu #/set-b-designed>>
+
+! Set B — designed, unbuilt, a carrier holds the design
+
+!! B1 · `nexus publish --apply` and the offering's remaining steps
+
+''Carrier:'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/offering">>. Its `status-why` (`:15`) reads: record + recompute + antigen BUILT; `--apply` HELD; the announce kind, the taker's door, and all three caps UNBUILT.
+
+''What stands.'' `--apply` exists as a LOUD refusal — `packages/lares-cli/src/commands/nexus-publish.ts:60-67` prints ''HELD (the offering's payload lands next)'' plus the payload sentence and returns 2. Without it the verb reads only: `:70-85` prints `pluginsCid` and each `$:/plugins/*` blob, with `PUBLISHABLE = ["plugins"]` at `:29` and a pointing refusal for a kāhuli tier at `:89-104`.
+
+''The three preconditions, each verified absent.''
+
+# `OFFERING_ANNOUNCE_DOMAIN` ''exists nowhere in code'' — three hits repo-wide, all prose in the meme (`offering.mem:275`, `:360`, `:361`). `packages/lararium-mesh/src/domains.ts` carries offering / presentation / kapae at `:133`, `:142`, `:150` and `REALM_BAG_ANNOUNCE_DOMAIN` at `:153` — no offering-announce domain. ''Weld first:'' grep the signing domains before minting one (#/traps).
+# ''A signing hand.'' `signPluginOffering` takes the hand as a parameter (`packages/lararium-mesh/src/plugin-offering.ts:57-65`) and holds no production caller; the meme's `Unbuilt Mint` at `:88` names it.
+# ''The shape to mirror — `realm-bag.ts:359-379`, and the span reads exact:'' `:359-369` the doc comment (the PUBLIC-tier-only `docUrl` ruling), `:370-376` the `RealmBagAnnounce` interface (`kind` · `bagUri` · `keptBy` · optional `docUrl`), `:378-380` `realmBagAnnounceKey(bagUri)` = prefix + `encodeURIComponent(bagUri)`. ''The cited span carries a record shape and its key function, and no key material.'' The projection `crossroadsAnnounceOf` sits just below at `:384-389`.
+
+''`foldOfferingAntigen` — definition `packages/lararium-mesh/src/offering-antigen.ts:129-146''' (highest `version` per `pluginsCid` wins; a tie with `action === "kapae"` leaves it aside; the `verifyOfferingQuorum` gate at `:135`). ''Production callers: ZERO.'' Test-only, at `tests/offering-antigen.test.ts:57,62,65,72,89,95,99,104,112,205` plus the weld's own scan at `:174`; the header self-declares READY-not-live at `:24-30`.
+
+''The taker's door owns the first honest call — and the test says so in its own words'' (`tests/offering-antigen.test.ts:131-136`): the offer path never consults the fold, so ''the FIRST honest caller lands on the TAKER's door, in `@lares/cli`, one package over''. The weld walks every `packages/*/src` and its CONTROLs assert the walk reaches `lares-cli` (`:196`). ''Presentation ⊥ condemnation stands STRUCTURAL: the fold holds no term for tenders'' — condemnation reads as the receiver's opt-in. ''Precondition:'' the taker's door itself, which parses no `--from` today (`nexus-kahuli.ts:73-79` stands as a HELD refusal). The meme sequences the door as Step 3 (`:370-373`) and the antigen consult as Step 6 (`:388-391`), whose success condition reads as the weld at `offering-antigen.test.ts:132` FIRING.
+
+''Citation trap:'' the meme repeats `:129-150` for the fold in four places; the body ends at `:146`.
+
+!! B2 · `nexus kahuli grammar --apply`
+
+`--apply` stands as a HELD refusal at `packages/lares-cli/src/commands/nexus-kahuli.ts:73-80` (exit 2), the named hold being the coexistence-span rulings shared with `kahuli engine` (`:52-61`, also exit 2).
+
+''The ratchet region narrowing stands BUILT, in two senses.'' Grammar names ''the REQUIRED memetic-wikitext grammar ALONE'' and `pluginsCid` explicitly reads as no tier, the region read having moved out to `nexus publish` (`:9-12`); and a later ruling narrows the ''ungoverned'' claim to RATCHETS only, admitting the opt-in offering-antigen (`:14-18`).
+
+''The overturn act: door exists, payload does not.'' `runKahuliRite` (`:102-108`) prints ''engine: HELD'' then delegates to the same `kahuliGrammar` read — no bake, no push. ''The diff-gate stands UNBUILT'' and names itself only in three strings (`:75`, `:92`, `:93` — ''the diff-gate (candidate grammarCid vs current) + --apply are wired next''). ''Trap:'' the only real diff-gates in this tree sit in the unrelated `seed` / `vessel seed` ingest path (`packages/lares-cli/src/commands/seed.ts:6,31,36`) — a hand grepping `diff-gate` lands there and mistakes it for prior art.
+
+!! B3 · DEPARTURE — fires at the rite, never at the boot
+
+''RULED as a derivability argument, never a preference.'' `packages/lararium-node/src/open-node-vessel.ts:617-619`: the explicit DEPARTURE ''stands UNBUILT: a climb DERIVES from present state, and an absence cannot be derived, so it must be NAMED by an act at the rite rather than inferred at a boot.'' Sibling statement at `packages/lararium-mesh/src/nexus-identity.ts:235-236`. Related and distinct: `cabal-realm.ts:172` and `packages/lararium-mesh/tests/cooling-cause.test.ts:122` rule that `dissolved` ''reports a DEPARTURE, never an ending''.
+
+''Correction to carry.'' The source requires that the ABSENCE be named by an act at the rite. It does ''not'' say the record carries the departed island as a field. Treat ''the record names the island it left'' as a DESIGN PROPOSAL for the crew to rule with the operator, never as quoted law.
+
+''`nexusIslandsBelow` reads climb-only BY CONSTRUCTION — verified, with the reason.'' Definition `packages/lararium-mesh/src/nexus-identity.ts:261-283`. It re-runs `nexusIdentity` with each higher term WITHHELD, top-down — drop `explicitScope`; then `genesisEpochCid` + `charterStands`; then `anchorGateKey` + `anchorStands` (`:267-271`) — and reads the lower islands out of the resolver. ''Narrowings can only ever produce islands at or below the current notch, so no expression in the function could name a higher one'': no list to invert, no direction flag to flip. Plus `torn` returns `[]` (`:263`), a narrowing that reads torn gets skipped (`:277`), and `seen` seeded with `here.scope` keeps the current island out of its own sources (`:274`). The rationale — a vanished charter must not carry a chain DOWN onto a private board — reads at `:250-256`. Callers treat it as the sole source: `nexus-board-climb.ts:70` · `persona-kel-climb.ts:39,77` · `open-node-vessel.ts:1183,1217` · `open-browser-vessel.ts:470,887`.
+
+!! B4 · Federating the `edge-kāpae` and `vouch` boards
+
+''The requirement, verbatim'' (`packages/lararium-mesh/src/deterministic-doc.ts:80-81`): ''A shadow federates precisely because a raised marker must reach the peers who would otherwise re-admit; unlike a revocation LIST it carries no negative fact about any party, only a mark over one edge.'' (`edgeKapaeBoardDocUrl` at `:83-85`; `vouchBoardDocUrl` at `:71-73`.)
+
+''The five boards the gate names'' (`packages/lararium-mesh/src/federation-gate.ts:83-87`): `crossroadsDocUrl` (83) · `whoBoardDocUrl` (84) · `kapaeAntigenDocUrl` (85) · `carriageDocUrl` (86) · `personaKelBoardDocUrl` (87).
+
+''Both absences CONFIRMED over the whole file.'' `vouch` — zero occurrences anywhere in `federation-gate.ts`. `edge-kapae` — zero; ''every `kapae` hit in that file reads the PRESENTER antigen'' (`:46, :67, :85, :197-233, :256-258, :304-337, :364, :374, :399`), never the edge board. The import at `:46` names only the five. ''The hazard each absence opens stands named in source'' — `nexus-identity.ts:219-220` (''the board sits outside the federation gate, so no peer replica heals it'') and `:226-228` for vouch (''unfederated … the honest cure is federating it'').
+
+''The trap that would make a fix look landed.'' The constructor carries `extraBoardUrls` (`federation-gate.ts:74-76, :81, :88`) — a live door that COULD admit either board at composition. ''Neither live composer passes anything'': `open-browser-vessel.ts:620` and `open-node-vessel.ts:698` both call `new DeterministicFederationGate(nexusPubkey)` with one argument. So a crew wiring `extraBoardUrls` in a test greens while the product federates nothing. Assert at the COMPOSER.
+
+!! B5 · Break (d) — the staleness stamp
+
+''The requirement, verbatim'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> `:236-239`): ''A FLOOR READ WITHOUT A STALENESS STAMP OPENS SPLIT-BRAIN. … Every floor read MUST carry //as of my last sync// — which the causal-islands law already demands and this surface had not yet honoured.'' The shape row states it at `:78`, as a `has Wake Stamp` row reading `every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain`.
+
+''UNHONOURED, and the search that proves it.'' `as-of-last-sync` appears roughly 25 times across the tree and ''every one reads as a prose comment, never a field'' (`nexus-seal-seed.ts:97,103,199,208,228` · `federation-gate.ts:391` · `cas-wire.ts:23` · `bag-tracker.ts:15` · `ahi-ka.ts:59` · `re-anchoring.ts:165` · `vouch-board.ts:28` · `carriage-serve-loop.ts:22` …). Concretely: `standAs` returns a bare `VesselClass` with no stamp (`packages/lararium-mesh/src/vessel-standing.ts:123-126`), and the bulb read-face carries `heads: []` BY DESIGN — ''the bulb is a flat content-address, no CRDT heads'' (`packages/lararium-node/src/bulb-read-face.ts:220-221`).
+
+''The prior art to mirror sits on a DIFFERENT face'' — `packages/lararium-mesh/src/composite-store.ts:67-78` types `heads: readonly string[] | null` + `changeId: string | null` ''so a snapshot reader knows AS-OF-WHICH-log it read (no global now)'' (`:496-501`, populated at `:520`); also `wiki-store-adapter.ts:33`. ''Trap:'' that shape copies wrong onto the bulb, whose `heads: []` states a FACT (no CRDT log) rather than an absence — see the PIN-READER law in #/traps.
+
+!! B6 · The `prepareNodeBoot` split
+
+''Carrier:'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/vessel-regions">>, whose `role` (`:12`) reads ''A plan, never a patch: nothing here moves a line.''
+
+''The precondition, and it blocks absolutely.'' ''No test pins the boot order of this file, and the function carries no `export`, so nothing can import it'' — `packages/lararium-node/src/open-node-vessel.ts:371`, `async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep>`, called only in-file at `:2174` and `:2236`. The only test reference to the symbol reads as a prose comment (`packages/lararium-node/tests/archive-write-guard-attacks.test.ts:375`), and the only test importing the module at all takes one unrelated symbol (`packages/lararium-node/tests/parse-form-vector.test.ts:11`, `parseFormVector`). ''The boot-order red lands before any line moves.''
+
+''R0 = the four boot-order reds, 6 spirit-hours, and R0 gates everything'' (`vessel-regions.mem:119`, `:126` — R4 reads ''Gated on R0''). The four, enumerated at `:103-106`: ① the microtask yield before reading `network.sockets[peerId]` · ② the dial fires after the boards · ③ every writer reverdicts, ten cells over eight hand-kept call sites · ④ the prefab order (write / read of `pendingVerbContribution`) — plus the `vessel-ready`/`live` phase-emit asymmetry (`:108`).
+
+''THE FOUR REDS DO NOT EXIST.'' The only repo-wide hit for `microtask yield`, `dial-after-boards` or `phase-emit` reads `vessel-regions.mem:119` itself. Named, unwritten.
+
+''Two citation traps on this carrier — re-derive every target before writing a red.''
+
+* ''The meme's own line numbers read STALE.'' It places `prepareNodeBoot` at `:363-2035` in a 2177-line file with doors at `:2037-2093` / `:2095-2177`. Measured: the function sits at `:371`, the file runs ''2311 lines'', `openNodeVessel` exports at `:2173` and `openNodeHerm` at `:2232`. The shape of the claim survives; the citations do not. The same staleness reaches R0's own targets (`:486-497`, `:1155-1195`, `:1628`, `:1863`, `:2155-2156`).
+* ''The carrier's absolute "No test anywhere pins the boot order" (`:98-99`, dated 2026-09-12) now reads too strong.'' `packages/lararium-node/tests/nexus-board-climb-at-boot.test.ts:364, :391-394` reads `open-node-vessel.ts` as raw text and asserts `nexusScopeOrThrow(nexusStanding)` before `await climbNexusBoards` before `await registerCrossroadsInOracle`. That pins a SOURCE-TEXT ordering over a DIFFERENT ordering than any of the four — it retires no part of R0, and it means a crew must not treat the file as unpinned when it edits around that region.
+
+!! B7 · The Handle surface adapters
+
+''What stands typed.'' `returnLocator` reads as an optional `string` on every member of the `HandleClaim` discriminated union — `packages/lararium-mesh/src/handle-kel.ts:758-768`, one member per surface with its own subject field: `dns-control`/`domain` (`:760`) · `atproto-account`/`account` (`:762`) · `kowloon-actor`/`actorId` (`:764`) · `loopback-address`/`address` (`:768`). Semantics at `:748-750`: ''where the surface half looks for the leg coming BACK… Absent, the adapter reads its own conventional location''. The extension law at `:752-756` — ''a new adapter = a new member, never a new field''. Canonicalization `normalizeHandleClaim` at `:793-811` (blank locator nulls at `:802`; ''an uncovered extra field REFUSES'' at `:805`), the one extension table `HANDLE_CLAIM_SUBJECT_FIELD` at `:775-780`, the spoken vocabulary `HANDLE_CLAIM_SURFACES` at `:783-784`, door-side assembly `handleClaimFrom` at `:828-835`. Carried signed via `HandleAttestation` at `:838-841`, ''bound to `headEventCid`, so a rotation stales it''.
+
+''The adapter-family table:'' <<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">> `:177-181`, four rows — ''DNS control'' (zone holder / a domain's zone / a record under the domain; ATproto's `_atproto.<domain>` TXT ports directly) · ''ATproto account'' (account holder / a PDS and its handle resolution) · ''Kowloon actor'' (the actor's server / a Kowloon server / `profile.urls[]`, read from source in `kowloon/schema/subschema/Profile.js`, with `profile.description` as a weaker fallback) · ''loopback / approved address'' (whoever holds this machine / the operator's own host / a local well-known — ''the TEST surface, never a peer-facing one'').
+
+''ZERO of the four stand implemented. All four read TYPE plus VOCABULARY.'' No adapter module exists; outside `handle-kel.ts` the surface names appear only in CLI help and prose (`packages/lares-cli/src/command-help.ts:279-300`, `packages/lararium-node/src/commands/handle.ts:192`). ''And the verify door says so on the machine channel'' — `handle.ts:167` and `:186` both emit `surfaceVerify: "out-of-scope"`, with the human face reading ''surface-verify: NOT RUN — this says nothing about whether the claim holds in the world'' (`:191-192`). Even loopback, the meme's own build-first surface (`handle-card.mem:135-138`), has no reacher.
+
+''Order:'' ''LOOPBACK FIRST'' — real crypto, no DNS — then `dns-control`, `atproto-account`, `kowloon-actor`. ''Precondition:'' GAP 1, the per-surface return conventions, stands unwritten by the meme's own words (`:152-156`). GAP 2, the structured claim, reads genuinely CLOSED (`:158-165`, matching `handle-kel.ts:758-768`).
+
+!! B8 · The hostful code half
+
+''What stands.'' `carrierBaseRelPath` returns null for anything not `lar:///` on its FIRST line — `packages/lararium-node/src/bag-paths.ts:96-106`: `if (!uri.startsWith("lar:///")) return null;` (`:97`), then null for a bag manifest (`:100`), null unless the interior opens with a `w.w.w/` root (`:102`), null for any fragment (`:104`). Pinned at `tests/bag-paths.test.ts:19,23,24` and `tests/manifest-never-projects.test.ts:40`. The reverse derivation mints `lar:///` unconditionally — `mirrorRootFileToUri` at `:146-160`, ''the mint at `:159`, `return \`lar:///${namePath}\`;`, with no authority term anywhere in the function''; exported as `bagsFileToUri` (`:167-169`) and `wikisFileToUri` (`:182-184`), with the intended hostless-only bijection stated at `:133` and `:164`.
+
+''CORRECT THE COLLISION CLAIM BEFORE BUILDING ON IT.'' `lar://a.b.c/x.y.z/s` fails `startsWith("lar:///")` at `:97` and returns null, so ''it never sites, and the two forms never fight over one file''. The pair reads IRRECONCILABLE rather than colliding: hostful stands un-projectable on the forward leg, and every file on disk derives back as hostless at `:159`, so a hostful carrier can never round-trip. ''The real collision surface reads LATENT:'' the day anything sites a hostful URI by stripping only the scheme, `:159` re-names it as its hostless twin. Scheme-strippers that already drop the authority and would produce exactly that flattening: `packages/lararium-tw5/src/filters/lar-uri.ts:58-60` · `bearing-harvest.ts:75-76` · `mesh-palace.ts:97` · `vessel-island-pool.ts:81`. ''The asymmetry sharpens the point:'' the resolver understands authorities the siting law cannot express — `resolver.ts:40,107,117` parses `lar://alias:grant@host/…`, and `form-layer/bearing-ast.ts:73,182,200` reads it too.
+
+''The two constraints stand; the spelling does not.'' Lossless authority, and no collision with a local-form interior. ''The reserved-segment idea and the Go-style `!`-escaping for case exist in no carrier'' — `grep` for `go-style`, `!-escap`, `bang-escap`, `reserved segment`, `escaping for case` returns ZERO hits repo-wide. Treat both as ORAL prior art the operator carries, to be written down before it can be built against. NTFS under WSL2 makes the case clobber reachable, which is the reason a case rule matters here at all.
+
+''And one carrier reads FALSE against the code.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace">> `:20-58` tabulates hostless against hostful (`:23-24`), says a hostful URI ''MAY stand as a storage title'' (`:34`), and asserts ''The authority prefix resolves the collision'' (`:45`). ''`bag-paths.ts:97` discards the prefix-bearing form entirely,'' so that sentence describes no code. Case-folding appears nowhere in it.
+
+!! B9 · Title→path persistence
+
+''Siting precedence, three families'' (`bfcf8bd58`, and `packages/lararium-node/src/disk-projector.ts:499-520`): ① a `$:/config/FileSystemPaths` RULE (`relPath`) · ② the LOCI law for `lar:///w.w.w/…` — injective, wanting no uniquifier (`:499`) · ③ TW5's FLATTENED default — ''only this one walks the free-or-mine uniquifier'' (`:502`, called at `:514`).
+
+''What stands BUILT.'' `uniquifyBase` at `packages/lararium-node/src/disk-projector.ts:414-432`: the free-or-mine test at `:426` (`owner === null || owner === title`), ''the loud refusal at `:428`'' — ''is occupied and its format proves no ownership — refusing to clobber or to grow a copy per boot'' — and a 1000-try ceiling refusal at `:431`, surfaced through the disk-ward channel at `:515-517`. Ownership reads from disk alone: `projectedFileTitle` at `:173` with its three-valued contract at `:155-172` (title / `null` free / `undefined` unprovable) and a TW5-parser-faithful field block at `:145-152`.
+
+''A flattened `.mem` proves no ownership — and carries NEITHER field.'' A `.mem`'s bytes name no `title:` (`disk-projector.ts:411-412`: ''a `.mem` carries no `title:` to read back, so uniquifying there could only misfire''; `packages/lararium-tw5/src/meme-write.ts:145-147`: ''Its bytes name no `title:` field, so nothing on disk can prove ownership of that path — the projector refuses an occupied one rather than clobber it''). A `.mem` opens `<<!DOCTYPE …>>`, so `fieldBlockTitle` breaks at `:149` and returns `undefined`, reaching the `:428` refusal. ''Correction:'' `uri-path` lives in a CARRIER meme's TOML meta block (read by `packages/lararium-tw5/src/carrier-shape.ts:117,157,162`), and a FLATTENED `.mem` flattens ''precisely because it holds no uri-path'' (`meme-write.ts:81`, `:145`). So the ''carries `uri-path`, never `title:`'' pairing describes the RULED/LOCI carrier — the one the commit says is not uniquified.
+
+''The orphan, and why it reads structural.'' The title→base map lives in memory alone — `private readonly sited = new Map<string, string>()` at `disk-projector.ts:218`, with `:211-217` conceding it mirrors `$tw.boot.files` and that ''a title never flushed this session falls back to the loci law''. On the delete path `mirrorCarrierFiles` (`:387-396`) resolves `this.sited.get(...) ?? carrierBaseRelPath(uri)` at `:388`. ''After a restart `sited` reads empty, a foreign title returns null from `carrierBaseRelPath`, `:389` returns null, the deleter `continue`s at `:452`, and the file never unlinks'' — the `sited` / `syncedTree` cleanup at `:460-461` never runs either. ''Blast radius today:'' the commit's own corpus measurement reads 391 files, LOCI 391 / FLATTENED 0 — ''the change adds ZERO files to the corpus today'', so the orphan stands as a latent capability, never a live leak.
+
+<<~/ahu>>
+
+<<~ ahu #/set-c-staged>>
+
+! Set C — staged arcs
+
+!! C1 · Wikis-first writes
+
+''Carrier:'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> `#/alpha-transition` at `:254-295`, authored by `fa15f52ef` (''Prose only: no code, no test, no behaviour'').
+
+''CORRECTION FIRST — the carrier carries no five-stage plan.'' `grep` for `Stage [1-5]` over that section returns zero. The operator's ruling reads as ''The Alpha Transition — why the tree does not yet wear the shore (operator, 2026-09-13)'' (`:256`), substantiated by the three-role table at `:266-270` (hand-edit door = ''the alpha scaffold — THIS RETIRES''; genesis/cold-boot seed = permanent; canon of record = permanent), by `:272` (''The retiring role names a DOOR, never mutability''), by `:278` (''Every `.mem` carrier in `bags/` today (701 at this writing) … Nothing migrates''), and by `:282-284`. ''Its ONE ordering statement, verbatim (`:284`):'' ''ORDERING: the hand-edit weld lands LAST and stays silent throughout. The standing carriers keep their hand-edit door until the working surface stands and the promotion MOVE runs; arming that weld earlier stops the transition rather than guarding it.'' So a crew staging this arc ''derives the stages from the ruling and the artifacts'', never from a numbered list in the carrier.
+
+''What the artifacts say, mapped.''
+
+* ''Mint a wiki, save one carrier, read the path back — GREEN, and older than the ruling.'' Three e2e vectors, all 2026-06-19: `tests/e2e/minted-canon-projection.test.ts` (`bf6e66eff`; mint → activate → reboot → LOAD into `@{slug}` → lands under `bags/{slug}`) · `tests/e2e/working-loop.test.ts` W1 (`78e6bc74b`; `LOAD --to wikis/lares/working --in-wiki` projects to `wikis/`) · `tests/e2e/wikis-ingest-back.test.ts` WB1/WB2 (`fbcb19e38`; round-trip identity, edit-ingests-back).
+* ''One round-trip promotion by `lares act MOVE` — EXISTS, green.'' `working-loop.test.ts` W2: MOVE `wikis/lares/working` → `bags/lares` `--in-wiki` publishes and retracts. Landed under operator ruling VERB-LOCUS B (2026-06-19): promotion runs IN THE WIKI ISLAND via `lares act --in-wiki` → `wiki-act` → `placeWikiVerb`. ''Trap:'' the sibling `tests/e2e/promotion-publish-diff.test.ts:68` also runs `act MOVE`, but across `bags/lares → bags/lararium`, and its own header (`:8`) says it stands IN FOR the working→canon crossing. It reads as no evidence for this stage.
+* ''Re-seat `promote` on it — "partly done" reads right, and here is the exact split.'' DONE (`dc53ce389`): `packages/lares-cli/src/commands/meme-promote.ts` stands as a thin door over the residency MOVE — no rename, no host assignment, no re-stamp, no file rite; residency and cap both arrive injected (`PromotionSeat`, `:75-91`), and the terminal seat wires them to the daemon's real readings at `packages/lares-cli/src/commands/meme.ts:818-850` (`where` for residency, a `--dry-run MOVE` for the cap, the same verb committed for the move). ''OWED, and load-bearing: `meme promote` holds no `--in-wiki` / `wiki-act` path.'' `meme.ts:818` summons `runVerb("MOVE", …)` flat; compare `packages/lares-cli/src/commands/act.ts:358-359`, `const submitName = inWiki ? "wiki-act" : verb;`. `in-wiki` appears in `meme.ts` only as a prose comment at `:22`. Under VERB-LOCUS B the working layer lives on the wiki island's composite, which the admin island's MOVE never reaches — ''so `lares meme promote` cannot today cross `wikis/<slug>/working → bags/<slug>`''. Also owed: `meme-promote.ts:120` hardcodes `DEFAULT_DEST_BAG = "lar:///ha.ka.ba/bags/lares"` with no working-slot default for `fromBag`; and its witness (`packages/lares-cli/tests/meme-promote.test.ts:95`) uses a synthetic `LIVE_BAG = "lar:///ha.ka.ba/bags/working"` — never a `wikis/<slug>/working` slot URI, and never a live daemon.
+* ''The hand-edit weld as a WARNING — DOES NOT EXIST. Flipped to refusal — DOES NOT EXIST.'' `grep` for `hand-edit` / `hand edit` across `packages/**/*.ts` returns only unrelated prose (`island-adaptor.ts:113`, `meme-markdown.ts:224`, `plugin-artifact-parity.test.ts:10`). ''Read that absence as CONFORMANCE with `:284`, never as a defect'' — the weld lands LAST.
+
+''The distinguishing observation — and it reads only PARTLY true.'' `lares wiki which` sits at `packages/lares-cli/src/commands/wiki.ts:514-537` (`cmdWikiWhich`, registered `:556`). Two corrections: it takes a ''tiddler URI'', never a wiki title (`:517` usage: `lares wiki which <tiddler-uri>`), and it decides nothing — `:521` reads `const r = await call("where", { tiddler }, did);` and the rest prints. The deciding code lives in the daemon's `where` reactor, `packages/lararium-tw5/src/worker-data-verbs.ts:87-120`: the working-slot half at `:107-115` probes `slotDocUrl(slug, kind, { mint: false })` over `["draft","working","personal"]`, and the fallback half reads the composite base at `:92` (`listBagsHolding`). ''The break: `:100` short-circuits the registry loop — `if (holding.has(bagUri) || composite.hasBag(bagUri)) continue;` — BEFORE reaching the slot probe.'' So for any wiki whose canon bag already stands as a mounted composite layer (the ACTIVE wiki, the common case), the probe never contributes `wikis/<slug>/working`. ''"working present ⟹ the working slot holds the title" holds; "working absent ⟹ fallback" does NOT hold in general'' — an unmounted-but-registered wiki whose canon bag sits in the composite reads `bags/<slug>` alone even while its working slot holds the record. Run it on a vessel that never seated a cabal, and read `:100` before believing the answer.
+
+!! C2 · R0 and the REGION table
+
+See #/set-b-designed B6 — same carrier, same gate, and the same staleness on every cited line. ''R0's four reds gate everything and do not exist.'' A crew taking the REGION table takes R0 first or takes nothing.
+
+!! C3 · The browser corpus — the third siting family
+
+''What it is.'' The third family names TW5's FLATTENED default (`defaultRelPath`), the only one of the three that can collide and therefore the only one that walks the uniquifier (`bfcf8bd58`'s SITING PRECEDENCE paragraph; `packages/lararium-tw5/src/tw5-file-info.ts`; `packages/lararium-node/src/disk-projector.ts`). Witnesses added by the same commit: `packages/lararium-node/tests/foreign-title-projection.test.ts` · `packages/lararium-tw5/tests/foreign-title-siting.test.ts`.
+
+''It lands INERT on every headless vessel, and here is the mechanism, not just the number.'' `readSitingCascades` reads a REAL `$:/config/FileSystemPaths` / `FileSystemExtensions` tiddler ''in this wiki, and nothing else'' (`packages/lararium-tw5/src/tw5-file-info.ts:82-89`, returning `undefined` per absent tiddler; `ruledBasePath` at `:92-95` returns `undefined` when no rule reaches the title). ''No such tiddler stands anywhere in the corpus'' — the only `config/FileSystemPaths` hits in `bags/` read as prose in three carriers (`docs/pono/recipe-layer-model.mem`, `lararium/tw5/modules/sync-adaptor.mem`, `lararium/api/disk-projection.mem`). So family ① never fires, every carrier with a `uri-path` sites by LOCI, and family ③ waits for a foreign title.
+
+''The measurement, and a flag on it.'' `bfcf8bd58`'s closing paragraph reads: a staged vessel fed the whole lares corpus (`act LOAD` → 3514 records from 391 carriers); the settled mirror holds 391 files, every one deriving back through `bagsFileToUri`/`wikisFileToUri` — ''LOCI 391, FLATTENED 0''. The change adds ZERO files today; ''the capability lands inert, and the first flattened file appears when a wiki actually saves a foreign title into a mirrored working layer''. ''FLAG: that 391/0 reading lives in the commit message and nowhere else'' — no carrier and no test holds the number, so it reads as un-re-measurable from the tree. ''It fires first in a human's browser wiki.''
+
+''Reconcile the four counts before quoting any of them — they count four different populations.'' 391 = the lares-corpus subset loaded into the staged mirror for the siting measurement. 701 = `find bags -name "*.mem" | wc -l`, the hand-authored total (`bags/lares` 382 + `bags/lararium` 212 + the rest), and the number `wiki-layer-ontology.mem:278` quotes. 655 noop / 46 project / 0 conflict = the projection-gate reading over the live `synced-tree.json` across those 701 (`179916f39`). 708 = the `tools/source-pointer.mjs` sweep. ''Treat every total as time-stamped, never canonical, and DERIVE it.''
+
+!! C4 · A live leaf boot
+
+''The cure stands LANDED.'' `6b0784571`: `packages/lararium-mesh/src/persona-kel-climb.ts` (new home for `carryPersonaKelUpTheGradient`, +112) · `packages/lararium-node/src/persona-kel-ring.ts` (−87, now re-exporting) · `packages/lararium-browser/src/open-browser-vessel.ts` (+72) · `packages/lararium-browser/tests/nexus-board-climb-at-leaf.test.ts` (+527).
+
+''Where `relayGatePubKey` goes.'' Read off the URL at `packages/lararium-app/src/main.ts:297` (`new URLSearchParams(location.search).get("gate")`), passed at `:355`; the vessel option at `open-browser-vessel.ts:182`, destructured `:336`, folded into the single island reading at `:434-437` (`anchorGateKey: relayGatePubKey ?? null`). Also the federation-gate arm at `:620` and the crossroads-register condition at `:842`.
+
+''The answer to the walk's question: the console LOGS the carry; the gate does not throw.'' On a vessel founded offline and later handed a gate key, `nexusIdentity` resolves scope to the anchor and `nexusIslandsBelow` (`nexus-identity.ts:261-283`, the third narrowing at `:270` nulling `anchorGateKey`) returns the vessel's own key as the island below. So `open-browser-vessel.ts:885-888` runs the carry immediately before the gate read (''which is the whole cure'', `:874`), and `persona-kel-climb.ts:104` prints `[persona-kel] carried N event(s) for <prefix>… up the gradient …`, returning `{ carried, from: island }` at `:107`. Idempotent: `:84` returns `nothing` at the bottom of the gradient, `:91` returns `nothing` when the destination already carries the chain (every later boot), `:99` `console.warn`s an island that would not open. ''The throw survives as the FALLBACK'' — `open-browser-vessel.ts:891-892` reds fail-closed with ''persona-KEL chain … absent from the local board — the Binding Gate cannot reach a head'', reachable now only when the carry finds nothing below, which is the pre-cure brick.
+
+''The walk it cures stands UNOBSERVED, and this is the item.'' All fifteen vectors in `nexus-board-climb-at-leaf.test.ts` drive synthetic repos and boards (`:121-414`) or read the boot's SOURCE TEXT: the fault-pin at `:452` reads the boot with `?raw` (`:58`) and asserts ordering by `indexOf` at `:507-511`, with the −1 hazard called out at `:505`. ''No test and no e2e walks found-offline → configure-the-anchor → reload in a real browser.'' The commit concedes the shape: all eight behavioural vectors stay green against `priorIslands: []`, so the source pin alone holds the wiring. ''Precondition:'' a real browser walk, which means the `browser-weld` witness — held out of every gate and carrying no scheduled runner (#/set-d-infrastructure).
+
+<<~/ahu>>
+
+<<~ ahu #/set-d-infrastructure>>
+
+! Set D — infrastructure
+
+''Every number here stands DERIVED on 2026-09-14, and every number here drifts. Re-derive before quoting.''
+
+!! D1 · The python suite no workflow reaches
+
+''962 python tests reach no workflow step.'' Derived: `def test_` across 96 files under `packages/lararium-sensorium/scripts` — ''note the path, `packages/lararium-sensorium/scripts`, never a top-level `lararium-sensorium/`''. All 962 of the package's python tests live under `scripts/`; the only python outside it carries none (`mempalace_source_lares/{__init__,adapter}.py`). Collected count runs slightly HIGHER than 962 — eight `@pytest.mark.parametrize` decorators expand some functions (`test_loci_io.py:251,258` · `test_stream_events.py:137` · `test_capture_session.py:281` · `test_structure_router.py:35,72` · `qa_anchor/tests/test_dprime.py:51` · `qa_anchor/tests/test_reliability.py:95`).
+
+''The workflow reading.'' ''Two workflows exist'' — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appears in `ci.yml` exactly once, at `:368`, as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then runs it reads `:372-374`, `pnpm run gate:fold` with `working-directory: packages/tree-sitter-memetic-wikitext`, whose script (`packages/tree-sitter-memetic-wikitext/package.json:24`) runs `cd host-py && python -m pytest -q`. ''That is the grammar host-py suite, a different package.'' The `test` job (`ci.yml:106-160`) runs `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. The venv steps (`ci.yml:145-152`) only `pip install -e ./mempalace` and assert `import mempalace`.
+
+''Trap:'' `pnpm -r test` SKIPS the root `tests/` directory BY DESIGN — the workspace runs wider than `packages/*`.
+
+!! D2 · The witness fleet
+
+''30 of 35 run, under a dedicated CI job with a roll-call gate.'' Derived: `tools/*witness*.sh` — the glob `witness-all.sh` actually uses — holds 35 files. `HELD_OUT` in `tools/witness-all.sh` carries SIX keys: `civic-witness` · `crossing-witness` · `herm-mesh-witness` · `mesh-scenarios` · `browser-weld-witness` · `witness-all` (itself). In-glob exclusions number 5 (the four real ones plus the self), so ''the loop executes 35 − 5 = 30''. `mesh-scenarios` gets REPORTED through the out-of-glob roll-call loop and was never among the 35.
+
+''Two shapes that mislead a counter.'' `tools/herm-mesh-witness.mjs` also stands, and `.mjs` falls outside the glob. And `ci.yml:165`, `:170` state in their own comments ''34 `tools/*witness*.sh` files at this writing'' — stale by one, which is exactly the drift that makes a derived count the only honest one.
+
+''The CI job:'' `witnesses` at `ci.yml:181-220` runs `tools/witness-all.sh 2>&1 | tee "$RUNNER_TEMP/witnesses.log"` (`:206-209`), then the roll-call gate at `:212-220` greps for `held out of this run` and `exit 1`s with `::error::the run named no held-out witnesses`. It carries `if: always()`.
+
+!! D3 · The held-out witnesses carry no scheduled runner
+
+''FIVE stand held out, never four'' — `browser-weld` · `civic` · `crossing` · `herm-mesh` · `mesh-scenarios`. The earlier shift ledger's four omits `mesh-scenarios`, added with the reason ''stands the docker-compose mesh, scenario by scenario — needs docker + a host-built dist''.
+
+''No schedule reaches any of them.'' `grep -rn "cron\|schedule" .github/workflows/` returns ZERO. `ci.yml` triggers read `on: push` plus a concurrency group (`:24-32`). No workflow invokes `civic-witness.sh`, `crossing-witness.sh`, `herm-mesh-witness.sh`, `browser-weld-witness.sh` or `mesh-scenarios.sh` directly. ''This blocks C4 (a live leaf boot), and it is the only thing that does.''
+
+!! D4 · QR camera — two one-step lifts
+
+''Neither dep stands in any lararium `package.json`.'' Zero of 71 non-`node_modules` `package.json` files depend on `jsqr`/`jsQR` or `qr-scanner`. The one hit — `folkjs/packages/labs/package.json:87`, `"qr-scanner": "^1.4.2"` (also `folkjs/package-lock.json:7652,10390` and three `folkjs/website/demos/network/*.html` CDN imports) — sits in the VENDORED folkjs third-party tree, never a lararium package. Both decoders live only in prose: `packages/lararium-node/src/qr-transport.ts:14` (nimiq `qr-scanner`, the approved browser/camera dep) and `:16`, `:60`, `:102` (`jsQR`, the intended headless node dep).
+
+''`decodeQrPng` holds ZERO production callers.'' Five occurrences total: the definition at `packages/lararium-node/src/qr-transport.ts:105`; a re-export, never a call, at `packages/lararium-node/src/index.ts:270`; and tests at `packages/lararium-node/tests/qr-transport.test.ts:15,54,57,59`, with `:51` injecting a fake decoder that says in its own words it stands in for jsQR. Its helper `pngToImageData` reads the same (`qr-transport.ts:107` internal · `index.ts:270` re-export · `qr-transport.test.ts:15,35`).
+
+''So the two lifts read:'' the GENERATE side ships complete (`qrCarriageToTerminal` / `PngBuffer` / `Svg` / `Matrix`, ECC H, `index.ts:265-272`); the DECODE side stands as ''a shore with no engine behind it'' — `QrImageDecoder` (`qr-transport.ts:62`) types an INJECTED function, exercised only by a test fake. One `pnpm add` per side plus a call site. ''Today no production path ever decodes a QR.''
+
+!! D5 · live-equivocation's real prerequisites
+
+''FLAG: no live-equivocation test or witness exists.'' `find -name "*equivoc*"` returns exactly one file — `bags/lares/ha.ka.ba/lares/api/pono/live-equivocation.mem`, a canon meme. The only code-adjacent reference reads as a comment (`packages/lararium-tw5/tests/carrier-edges.test.ts:116`). The prerequisite list stands in the meme at `:97-101` (''What must stand first, and what each one buys'').
+
+''(a) The meshpalace FEED ADAPTER stands absent.'' `packages/lararium-mesh/src/mesh-palace.ts` (596 lines) reads as a pure flow-map codec, self-described at `:2-29` as ''the MAP, never the territory'': dial-records (`DialEntry` `:117`, `dialEntryToRecord` `:159`, `recordToDialEntry` `:202`), vessel cap-stacks (`:136`, `:170`), routing slots (`:150`, `:179`), the cap vocabularies (`:54-88`), and the `publicFlowMap` disclosure shore. `grep -n "feed\|gossip\|adapter\|sighting"` over that file returns ZERO. No `meshpalace_io` module exists anywhere. Corroborated in canon at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> `:48` — the flow-map stands, ''but it is the MAP, not the sensorium — it carries no head-sightings, no view-comparison, no duplicity surface''.
+
+''(b) The WATCHER PLANE stands absent.'' `detectDuplicity` defines at `packages/lararium-mesh/src/wax-stamp.ts:83`, surfaced by the barrel at `packages/lararium-mesh/src/index.ts:251`. ''Complete caller enumeration: `packages/lararium-mesh/tests/wax-stamp.test.ts:10,60,61` — test-only, zero production.'' The CONSUMER side stands and rides wired: `foldPersonaContests` (`packages/lararium-mesh/src/persona-kel.ts:259`) gets called in production at `packages/lararium-mesh/src/persona-kel-board.ts:158`. So ''the fold can consume a duplicity once two inconsistent events already sit in one chain, and no plane gossips head-sightings to FIND them''. `packages/lararium-mesh/src/itc.ts` stands as the primitive; `getHeads` appears only in store plumbing, never in a sighting router; `headSighting` / `head-sighting` return zero code hits repo-wide.
+
+''(c) Durable telemetry stands absent.'' Stated as prerequisite ② at `live-equivocation.mem:99-101` (''only a durable telemetry plane holds enough observations to see a tail at all''), with the blocking consequence at `:90-92` (''Nobody has measured it, because the organ that would measure it does not stand''). The absence follows from (a) and (b): with no watcher emitting sightings, nothing exists to persist.
+
+''Precondition, ranked:'' the palace before the wire. The shift ledger's own correction stands: ''watchers await a WHOLE PALACE (the federation-last sensorium), not a wire''.
+
+<<~/ahu>>
+
+<<~ ahu #/traps>>
+
+! The traps this tree already paid for
+
+''Each one below stands MEASURED — an instrument that read green while reporting something false, or a habit that cost hours. Collide each before trusting it.''
+
+!! Test-design traps
+
+''A control set made only of negatives reads satisfied by INERTNESS.'' Measured: `priorIslands: []` killed a carry outright while all eight behavioural vectors stayed GREEN. `packages/lararium-node/tests/nexus-board-climb-at-boot.test.ts:30`, `:370` name it, and the cure at `:363-394` is a FAULT-PIN over the call's own arguments, not another behavioural vector. The same weakening rides the leaf boot (C4).
+
+''A red proving the hole exists does not prove the fix holds.'' Add a pin that bites a WEAKENING, not the original hole. The worked pin (`nexus-board-climb-at-boot.test.ts:363-394`) holds five clauses: ① a CENSUS, `calls.length === 1` · ② the call must name `nexusIslandsBelow(nexusStandsAt)`, never a literal · ③ three forbidden boards asserted ABSENT from the call · ④ the NESTING measured by indentation depth, so the climb cannot slip under a guard · ⑤ the ordering.
+
+''An ordering assertion over an absent call passes VACUOUSLY.'' `indexOf` answers −1, and −1 sits below everything. Both worked pins carry the hazard in a comment (`nexus-board-climb-at-boot.test.ts:391-394` · `nexus-board-climb-at-leaf.test.ts:505`). An ordering clause wants a presence clause beside it.
+
+''Run the nonsense control.'' Feed the gate something that MUST fail — a nonsense verb, a mangled digest, an address nothing holds. A control that passes proves the gate reads nothing, and a green from a gate that reads nothing carries no information.
+
+''Assert the setup took.'' A fixture mutating a live carrier MUST assert its own mutation landed (`.not.toBe(source)`). A silent no-op replace leaves disk == synced == canonical, and four vectors then agree with each other about nothing.
+
+''A fixture that DECLARES is a carrier.'' The finder reads the DOCTYPE / `type` line, never the path. Three witnesses ate themselves in a week. Assemble the declaration at read time, and CONTROL that the finder reads false.
+
+!! Source-reading welds
+
+''A source-reading weld is not behaviour.'' Measured both directions in `dbb6d7ec1`: one weld SURVIVED a deliberate rename because it takes a CENSUS (`calls.length === 2`) of every call site, so renaming a loader drops the count and ungating one stops the prefix matching. The other ''went GREEN over a loop that only warns to stdout'' — its `src.slice(at, at + 900)` window reached ~120 characters PAST the loop's closing braces, and a dead `if (false)` branch carrying a matching call sat in the slack. ''Window by BRACE MATCHING from the anchor'', which has no slack to hide a decoy in and no length to outgrow.
+
+''Strip comments FIRST, and pin the strip.'' `packages/lararium-node/tests/device-admit-reads-the-resolved-island.test.ts:161-167`: a docblock NAMING an old spelling in order to explain why it was wrong made a sweep red over code already correct — ''a weld reading raw source cannot tell an explanation of a defect from the defect''. And assert the strip left something (`:167-168`), or the sweep below passes vacuously.
+
+''Prefer a CENSUS.'' `calls.length === N` cannot be greened by a rename. A token match can.
+
+''A grep for callers counts MENTIONS'', including comments that say the caller does not exist. Follow the call; never grep the door.
+
+!! Reading and reasoning traps
+
+''A law whose REASON measurement refutes ERODES'' — because the next reader corrects the reason and keeps the conclusion. Worked: `59212d29e` found the archive-write omission resting on ''a browser vessel holds no fs'', which measurement reads FALSE (OPFS is a filesystem and that very shore already writes it). The conclusion survived on a DIFFERENT ground — CUSTODY — and now retires ''on a condition rather than on a platform claim''. State the invariant; when a reason falls, re-ground it or drop the law.
+
+''A conjunction is an argument, never a measurement.'' `b14fbbc4d`: six conjunctive gates priced their own trade with zero samples. The measurement (ZERO false positives over 200 real archives, 2,192,000 bytes) came with PROVENANCE named rather than implied, and the shipped test re-derives it at a named `SAMPLES` ''so the figure can be re-derived rather than re-trusted''.
+
+''THE PIN-READER LAW: null means "no default owed", never "something is wrong".'' Two live guards fell to `?? []` / `?? emptyDoc()` over a reader whose null means ABSENT ''or'' TORN. Ask of every default: does it STATE a fact or LOSE one? `bulb-read-face.ts:220-221`'s `heads: []` STATES a fact (no CRDT log) — copying a stamp onto it would lose that.
+
+''MEASURE BOTH SIDES OF A BOUNDARY.'' A wire that DROPS a field may not LOSE it — the receiver re-derives. With a first-writer-wins store, read-ORDER runs load-bearing: the read may fail while the record stands.
+
+''A commit subject is a CLAIM, never evidence.'' And a reader stricter than the parser still reads as a lying reader.
+
+''DERIVE, never enumerate.'' Every count in #/set-d-infrastructure carries its derivation for exactly this reason, and three of the four numbers this hearth was handed measured wrong.
+
+!! Tree and run traps
+
+''Never run two e2e sets at once'' — they share a mutable `synced-tree.json` (`packages/lararium-node/src/island-behaviors.ts:43`, `join(larProjectionDir(), "synced-tree.json")`; the law stated at `open-node-vessel.ts:2277`). Per-suite green hid a clobbered shared tree for two days, reading 6 red files on the whole set. ''Check `pgrep -af witness` and `pgrep -af vitest` before any run.'' RUN THE WHOLE SET; BISECT in a worktree, never guess; an import failure reads as 0 tests, never as a pass.
+
+''`lares vessel stand` DETACHES.'' It spawns detached-and-unref'd so a hook never blocks on a long-lived daemon, and readiness reads SELF-ATTESTED from the node's own log — `phase → vessel-ready` on success, `fatal:` on a boot fault. ''Read `<lares>/vessel/stand.log` from the byte offset the run starts appending at, never the launcher's pipe'' (`packages/lares-cli/src/commands/stand.ts:234-250`; the read worked at `tests/e2e/herm-floor.test.ts:91-97` and `tests/e2e/vessel-sealed.test.ts:159`).
+
+''`witness-all`'s last line lies; capture `$?`.'' The script deliberately never short-circuits (`tools/witness-all.sh:1-6`) and exits the WORST status — but the ''held out of this run'' block prints AFTER the per-witness runs, so on a failure the benign roster is the last thing on screen and ''witness-all: every witness clean'' simply never appears. ''And a pipe's `$?` is the last stage's'' — `ci.yml:206-209` pipes through `tee`, which is why the roll-call gate greps the log rather than trusting an exit code.
+
+''`dist/` and `bags/` stand SHARED MUTABLE.'' Typecheck reads SOURCE and the binary reads DIST, so a cross-package wire passes typecheck and dies at runtime whenever `dist/` lags — run the BUILT binary after any cross-package rename. ''A revert-verify that swaps source only reads VACUOUS against an e2e.'' And know what your import resolves to: `@lararium/mesh` reads SRC under the node package's vitest aliases and DIST under lares-cli's, so the same symbol ''missing'' names a stale dist rather than absent code.
+
+''NEVER touch `~/.local/share/lares`. Isolate with `LAR_ROOT`.'' ''CORRECTION, measured — `LAR_ROOT` alone DOES isolate every XDG kind.'' Each resolver tests it FIRST: `larStateHome` (`packages/lararium-node/src/vessel-paths.ts:82-86`) · `larCacheHome` (`:89-93`) · `larConfigHome` (`:96-100`) · `larRuntimeHome` (`:103-107`) · `larHome` (`:130-131`) · `laresDataHome` and `larariumDataHome` (`packages/lararium-mempalace/src/xdg-base.ts:29-32`, `:57-60`). Setting `XDG_STATE_HOME`/`XDG_DATA_HOME`/`XDG_CONFIG_HOME` beside it reads as belt-and-braces, never as the thing that makes isolation work.
+
+''What `LAR_ROOT` does NOT isolate — this is the real hazard, and one of these reaches a DESTRUCTIVE verb.''
+
+* `~/.mempalace`, the GUEST store parent, LAR_ROOT-blind at `packages/lararium-mempalace/src/xdg-base.ts:73`, `packages/lares-cli/src/commands/mempalace.ts:47`, and ''`packages/lares-cli/src/commands/mempalace-repave.ts:40`''.
+* `~/.venv` (`packages/lararium-mempalace/src/spawn-resolve.ts:44`; `packages/lares-cli/src/link-bin.ts:38`) and `~/.local/bin` (`vessel-paths.ts:122`; `link-bin.ts:43,65,102,105`).
+* The harness homes `~/.claude`, `~/.codex`, `~/.copilot`. The wires accept an injectable `opts.home` (`claude-wire.ts:181,301,339` · `codex-wire.ts:51` · `copilot-wire.ts:50` · `vscode-wire.ts:87`) and DEFAULT to `homedir()`; the harvest reader takes no injection at all (`packages/lares-cli/src/commands/harvest.ts:524`, `:624`). ''A `lares vessel stand --codex` under `LAR_ROOT` still writes the operator's real `~/.codex`.''
+
+''Never read the passphrase file.''
+
+!! Character and rename traps
+
+''WELD TEST before any rename'' — grep the signing domains FIRST. A rename that moves a signing domain changes bytes every peer verifies.
+
+''TAMPER PROBES move DECODED bytes.'' Assert the ENCODING changed first, or the probe measures nothing.
+
+''CHARACTER SWEEPS hit four classes.'' Fence the RELATION, and re-stamp the block checks afterward.
+
+''A blanket re-stamp signs edits nobody authored.'' `lares meme normalize` names its files and takes no glob, because a re-stamp driven by `git diff` signs the OTHER writer's work — and it NAMES every dirty carrier a run passed over, since a carrier nobody named reads two ways and the door cannot tell which.
+
+<<~/ahu>>
+
+<<~ ahu #/corrections>>
+
+! Where the framing this hearth handed over measured WRONG
+
+''Carried openly, because a crew building on a false pointer pays for it twice.'' Each correction below stands measured on 2026-09-14; the item that carries it names the evidence.
+
+|!the framing handed over |!what measurement reads |
+|nine CLI verbs on the wrong-key board |''12 sites across 7 files'', all under `packages/lararium-node/src/`, none under `packages/lares-cli/src/`. ''Nine'' counts the sites `91ce09afb` CURED (nine in `open-node-vessel`, six in `open-browser-vessel`, two in `init.ts`), never the sites left standing. And two of the 12 (`boot-invite-burn.ts:74`, `:95`) read NO board — A1 |
+|`tests/e2e/two-vessel-mesh` reds on an unbuilt `social-bootstrap.json` |It lives at `packages/lararium-node/tests/e2e/`, and the red reads a STALE PATH: `runInit` writes to `larBootstrapPath()` and ignores its `genesisDir` argument, so the test reads a path nothing writes — A2 |
+|`herm-reshares-public-blob` — 1 `beforeAll` death, climb cures unverified |The `beforeAll` does not throw; it stashes a `standGate` and the first test names the verdict. ''And the announce-plane fork stands RULED AND CURED'' (`open-node-vessel.ts:2272-2277`) — the shift ledger's ''one MORE ruling owed'' reads stale. What stands owed reads narrower and is named in source: ⑦ UNMEASURED against the cure, and the Herm holding no carriage CLIENT — A3 |
+|break (c) — which key signs a floor that seats no persona? |MISFRAMED. Break (c) names the UNSIGNED-announcement attack pair, and its own cure reads ''the floor's announcement MUST sign''. The which-key half stands answered by `SEATED ⊥ RAISED` plus the Place-DID heraldry ruling. What waking-floor leaves open: what ''recognition'' means, and the renewal interval — ⑥ |
+|the `anchors-h{N}` census |MISFRAMED. No carrier names such a census (zero grep hits). Anchors sit out of the key census BY LAW (public doc-ids, no seal), enumeration rides an explicit roster never a dir-scan, and the opposite discipline stands ruled for the secret h{N} family — ⑦ |
+|the crossings-deadlock's permanent shape |''ALREADY RULED.'' Cure ① landed at `0d00d75f5`, enacted in `tools/hearths-gate.mjs:93-95` and welded at `tools/hearths-gate-witness.sh:146`. `hearths.mem:171` carries stale prose over it — ⑤ |
+|`02d7f24bf` rules `bag-residency.ts`'s home |It rules the ADJACENT word collision and says of this item, verbatim, ''with the fork between them left OPEN'' — ④ |
+|DEPARTURE's record must NAME the island it left |The source requires the ABSENCE be named by an act at the rite. Naming the departed island reads as a DESIGN PROPOSAL, never quoted law — B3 |
+|the hostful forms COLLIDE on disk |They cannot collide today: hostful fails `startsWith("lar:///")` and never sites. The pair reads IRRECONCILABLE — hostful un-projectable forward, every disk file deriving back as hostless. The collision reads LATENT, arriving the day something sites a hostful URI by stripping only the scheme — B8 |
+|a reserved segment + Go-style `!`-escaping for case |''No carrier holds either idea'' — zero hits repo-wide for every spelling. Oral prior art; write it down before building against it. And `lar-uri-namespace.mem:45` (''The authority prefix resolves the collision'') reads FALSE against `bag-paths.ts:97` — B8 |
+|a flattened `.mem` carries `uri-path`, never `title:` |A flattened `.mem` carries NEITHER, and that absence is precisely why it flattens. The pairing describes the RULED/LOCI carrier, which is the one not uniquified — B9 |
+|`wiki-layer-ontology#/alpha-transition` carries five stages |It carries no staged plan and no numbered stages. Its one ordering statement reads ''the hand-edit weld lands LAST and stays silent throughout''; derive the stages from the ruling and the artifacts — C1 |
+|`lares wiki which <title>`: working ⟺ working present; fallback ⟺ bags alone |It takes a tiddler URI and decides nothing; the daemon's `where` reactor decides. The forward direction holds; the reverse does NOT — `worker-data-verbs.ts:100` short-circuits before the slot probe for any wiki whose canon bag already mounts in the composite — C1 |
+|`vessel-regions.mem` — no test pins the boot order |True of the four reds, and too strong as written: `nexus-board-climb-at-boot.test.ts:391-394` pins a source-text ordering over a different ordering. And the meme's own line cites read stale — `prepareNodeBoot` at `:371`, the file at 2311 lines — B6 |
+|the browser corpus: 0 new files over 391 carriers |Holds, and the 391/0 reading lives in `bfcf8bd58`'s commit message and nowhere else — un-re-measurable from the tree. And 391 / 701 / 708 / 655+46 count FOUR different populations — C3 |
+|989 python tests |''962'' `def test_` across 96 files, collected slightly higher through 8 parametrize decorators. The no-workflow-reach half holds — D1 |
+|the witness fleet runs 29 of 33 |''30 of 35.'' `ci.yml`'s own comment reads 34, itself stale — D2 |
+|five held-out witnesses |''Five stands right'' where the earlier shift ledger's four was stale (`mesh-scenarios` joined). No scheduled runner, confirmed — D3 |
+|`larHome()` honours `LAR_ROOT` alone, so set the XDG vars too |''Inverted.'' Every XDG resolver in the stack tests `LAR_ROOT` FIRST, so `LAR_ROOT` alone isolates state, cache, config, run, and both data houses. The real hazard reads `~/.mempalace` (including the destructive `mempalace repave`), `~/.venv`, `~/.local/bin`, and the harness homes — #/traps |
+|`foldOfferingAntigen` at `offering-antigen.ts:129-150` |The body ends at `:146`; the meme repeats `:150` in four places — B1 |
+
+<<~/ahu>>
+
+<<~ ahu #/what-a-fresh-hand-reads-first>>
+
+! What a fresh hand reads first
+
+# #/the-only-guard, then #/traps. Both before the first commit and before the first vector.
+# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> — the house entire.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> `#/shift-founding-watch` — the RED-FIRST test design as eight ordered moves, and the ladder for wiring a module that stands designed, tested and unreached. Both still govern every vector and every wire in this carrier.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> — who holds what, and the row this crew stands owed.
+# #/standing-on-the-operators-hand — before designing against any fork.
+# <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">> — the law that rejects a fork at design time. A compiled-about registry at ANY scope refuses.
+
+''Naming law, carried from the shift ledger.'' Until a production path calls it, a module stands ''specified in code'' — never ''built'', never ''done'', never ''ready''. Three of the items in this carrier (B1's fold, B7's adapters, D4's decoder) sit exactly there.
+
+''One gauge for this carrier's own honesty.'' Every pointer above resolves under `tools/source-pointer.mjs`. A pointer that stops resolving names a carrier growing false law — re-run the tool before trusting a section a rename passed through.
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;IN8NQxYMuuybligUcIOfjpr16BFN_j3NK0cJjS0Qky8
+
+<<^ code="&#x0004;" -> to="?">>
