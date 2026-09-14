@@ -46,11 +46,25 @@ export interface LarAuthority {
   readonly host: string;
 }
 
+/**
+ * A hostful resolution: the base topology, plus the authority the address names.
+ *
+ * ── HOSTFUL/HOSTLESS NAMES WHAT THE URI NAMES, NEVER WHICH LAYER HOLDS IT (operator ruling) ─────
+ * A hostful address states WHO SPOKE, under what grant, from where — a property of the CONTENT, which
+ * keeps holding for as long as that content stands. It states nothing about residency, durability, or
+ * trust tier, and a reader derives none of those from it: a captured exchange turn split into memes by
+ * speaker-aim URI reads as a canon carrier holding a hostful address permanently.
+ *
+ * So this interface adds the authority and NARROWS NOTHING. An earlier shape pinned
+ * `kind: "caps-virtual"` and `virtual: true` here, which encoded //hostful implies no disk backing// in
+ * the type system — a residency verdict read off the address form, and unfalsifiable at the call site
+ * because the type forbade the other answer. `kind` and `virtual` now carry whatever the topology
+ * classifier reads, exactly as they do for a hostless address.
+ *
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary
+ */
 export interface LarHostfulResolution extends LarResolution {
   readonly authority: LarAuthority;
-  /** Hostful records never resolve to lares/ files — they function as exchange records. */
-  readonly kind: "caps-virtual";
-  readonly virtual: true;
 }
 
 // The one root the scheme stands: lar:///ha.ka.ba/lares/api/pono/lar-uri (#scheme-syntax).
@@ -90,9 +104,12 @@ function splitLarUri(uri: string): { root: string; childPath: string[]; fragment
 }
 
 /**
- * Parse a hostful `lar://alias:grant@host/path` URI.
- * Returns the authority components and a virtual resolution.
- * Hostful records carry lower trust than hostless invariant memes.
+ * Parse a hostful `lar://alias:grant@host/path` URI into its authority and its topology.
+ *
+ * The authority answers WHO SPOKE. The topology answers what the path shape names, read by the SAME
+ * classifier a hostless address walks — the address form steers neither residency nor trust (see
+ * `LarHostfulResolution`). A path whose root the classifier does not recognize resolves virtual, which
+ * states //this parser found no backing shape//, never //a hostful name cannot have one//.
  */
 export function parseHostfulLarUri(uri: string): LarHostfulResolution {
   const url = new URL(uri);
@@ -109,20 +126,30 @@ export function parseHostfulLarUri(uri: string): LarHostfulResolution {
   const [root = "", ...childPath] = parts;
   const resourcePath = [root, ...childPath].join("/");
 
+  // VIRTUAL AS A FALLBACK, NEVER AS A VERDICT ON THE ADDRESS FORM: an unrecognized root reads virtual
+  // here where a hostless address would throw, because a hostful path carries speaker-minted roots the
+  // stable taxonomy never registered. The recognized shapes classify identically either way.
+  const topology = isTupleRoot(root)
+    ? classifyStablePath(root, childPath)
+    : { kind: "caps-virtual" as const, virtual: true };
+
   return Object.freeze({
     uri,
     root,
     childPath: Object.freeze(childPath),
     resourcePath,
-    kind: "caps-virtual" as const,
-    virtual: true as const,
+    kind: topology.kind,
+    virtual: topology.virtual,
     authority: Object.freeze({ alias, grant, host }),
   });
 }
 
 /**
- * Returns true if the URI qualifies as a hostful live exchange record.
- * Hostful records must not silently override hostless invariant memes.
+ * Returns true if the URI names a speaker through an authority — the hostful form.
+ *
+ * It reports the ADDRESS FORM and nothing further. Trust tier, residency, and durability answer to
+ * other readers entirely (see `LarHostfulResolution`); a caller routing any of those off this predicate
+ * reads a content property as a layer property.
  */
 export function isHostfulLarUri(uri: string): boolean {
   try {
@@ -139,6 +166,38 @@ function isTupleRoot(root: string): boolean {
 }
 
 /**
+ * Classify a three-term-root path into its topology — the ONE reader of path shape, walked by the
+ * hostless and the hostful entry points alike so no classification hangs off the address form.
+ */
+function classifyStablePath(
+  root: string,
+  childPath: readonly string[],
+): { kind: LarResolution["kind"]; virtual: boolean } {
+  const VIRTUAL = { kind: "caps-virtual" as const, virtual: true };
+  const FILE    = { kind: "tuple-file" as const,   virtual: false };
+
+  if (root !== STABLE_TUPLE_ROOT) return VIRTUAL;
+
+  if (childPath[0] === LARES_SCOPE) return FILE;
+
+  // The engine scope names a file only below its own head segment.
+  if (childPath[0] === ENGINE_SCOPE) return childPath[1] ? FILE : VIRTUAL;
+
+  // lar:///ha.ka.ba/{bags|wikis}/{slug}[/{path}] — a CRDT surface addressed by its kind-plane. The KIND
+  // SEGMENT names it; the slug that follows carries no marker and needs none, because the segment above
+  // it already said which plane this is. Its interior is doc/registry data, never a corpus file, so it
+  // resolves virtual — doc identity, not a disk path.
+  //
+  // A third arm here matched a bare leading `@`, from when the slug carried the marker instead of the
+  // segment. Routing on it kept a retired address form REACHABLE: anything still minting one would have
+  // resolved correctly and gone unnoticed, which is how a retired form outlives its retirement.
+  //
+  // ha.ka.ba/{rest} — a bare meme namespace with no lares/lararium disk mapping — resolves virtual too
+  // (its file lives in its holding bag on disk, resolved elsewhere), so both arms land on VIRTUAL.
+  return VIRTUAL;
+}
+
+/**
  * Resolve a `lar:///...` URI into a LarResolution.
  * Does not perform any I/O — existence checking is the caller's responsibility.
  */
@@ -146,41 +205,12 @@ export function resolveLarUri(uri: string): LarResolution {
   const { root, childPath } = splitLarUri(uri);
   const resourcePath = [root, ...childPath].join("/");
 
-  if (isTupleRoot(root) && root === STABLE_TUPLE_ROOT) {
-    if (childPath[0] === LARES_SCOPE) {
-      return { uri, root, childPath, resourcePath, kind: "tuple-file", virtual: false };
-    }
+  // A root that carries no three-term tuple names no address this scheme rules (lar-uri #/path-taxonomy:
+  // the root admits no exception), so it fails here rather than resolving to a shape nobody meant.
+  // Stabilize an unrecognized tuple root by moving it into a recognized scope or by registering a custom
+  // bag mirror in the daemon wiki.
+  if (!isTupleRoot(root)) throw new Error(`unsupported lar root "${root}" in ${uri}`);
 
-    if (childPath[0] === ENGINE_SCOPE) {
-      if (!childPath[1]) {
-        return { uri, root, childPath, resourcePath, kind: "caps-virtual", virtual: true };
-      }
-      return { uri, root, childPath, resourcePath, kind: "tuple-file", virtual: false };
-    }
-
-    // lar:///ha.ka.ba/{bags|wikis}/{slug}[/{path}] — a CRDT surface addressed by
-    // its kind-plane. The KIND SEGMENT names it; the slug that follows carries no marker and needs
-    // none, because the segment above it already said which plane this is. Its interior is
-    // doc/registry data, never a corpus file, so it resolves virtual — doc identity, not a disk path.
-    //
-    // A third arm here matched a bare leading `@`, from when the slug carried the marker instead of the
-    // segment. Routing on it kept a retired address form REACHABLE: anything still minting one would
-    // have resolved correctly and gone unnoticed, which is how a retired form outlives its retirement.
-    if (childPath[0] === "bags" || childPath[0] === "wikis") {
-      return { uri, root, childPath, resourcePath, kind: "caps-virtual", virtual: true };
-    }
-
-    // ha.ka.ba/{rest} — a bare meme namespace with no lares/lararium disk mapping;
-    // virtual (its file lives in its holding bag on disk, resolved elsewhere).
-    return { uri, root, childPath, resourcePath, kind: "caps-virtual", virtual: true };
-  }
-
-  // Other three-segment tuple roots — virtual. Stabilize by moving into
-  // a recognized @-scope or by registering a custom bag mirror in the daemon
-  // wiki.
-  if (isTupleRoot(root)) {
-    return { uri, root, childPath, resourcePath, kind: "caps-virtual", virtual: true };
-  }
-
-  throw new Error(`unsupported lar root "${root}" in ${uri}`);
+  const { kind, virtual } = classifyStablePath(root, childPath);
+  return { uri, root, childPath, resourcePath, kind, virtual };
 }
