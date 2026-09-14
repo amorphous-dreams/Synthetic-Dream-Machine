@@ -29,7 +29,7 @@
 import type { TiddlerFields } from "./deserializer.js";
 import { recomposeMeme } from "./meme-project.js";
 import type { TW5Engine } from "./tw5-vm.js";
-import { makeTw5FileInfo, readSitingCascades, ruledBasePath, type Tw5FileInfo } from "./tw5-file-info.js";
+import { makeTw5FileInfo, readSitingCascades, ruledBasePath, flattenedRelPath, type Tw5FileInfo } from "./tw5-file-info.js";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
 import { skinnyCid } from "./lazy-resolver.js";
@@ -75,6 +75,13 @@ export interface CarrierFile {
    *  law (`carrierBaseRelPath`), which is where a stock server with no such rule and an island
    *  part ways: the server flattens the title, the island reads the uri-path. */
   readonly relPath?:  string;
+  /** TW5's FLATTENED-TITLE default path, extension included — `generateTiddlerFilepath`'s no-rule
+   *  branch, the file a stock folder wiki would write. Distinct from `relPath` on purpose: the
+   *  projector's precedence reads off the shape alone — a RULE (`relPath`) first, then the loci law
+   *  for a `lar:` name, then this. A foreign title (`My Notes`, `$:/config/Foo`) has no uri-path, so
+   *  this is the ONLY thing that sites it, and two titles MAY flatten alike (`A/B`, `A_B`) — the
+   *  projector's free-or-mine uniquifier settles that, since only the disk knows what sits there. */
+  readonly defaultRelPath?: string;
 }
 
 /**
@@ -130,7 +137,16 @@ export function exportCarrierFile(tw5: TW5Engine, memeUri: string): CarrierFile 
   if (isCarrierType(type)) {
     // A siting rule reaches a memetic carrier too — the same rule, the same path, `.mem` kept.
     const ruled = ruledBasePath($tw, memeUri, cascades);
-    return { ext: MEME_EXT, body: exportMemeText(tw5, memeUri), ...(ruled !== undefined ? { relPath: stripMemeExt(ruled) + MEME_EXT } : {}) };
+    return {
+      ext: MEME_EXT,
+      body: exportMemeText(tw5, memeUri),
+      ...(ruled !== undefined
+        ? { relPath: stripMemeExt(ruled) + MEME_EXT }
+        // A memetic carrier under a FOREIGN title has no uri-path to site by, so it carries the
+        // flattened default too. Its bytes name no `title:` field, so nothing on disk can prove
+        // ownership of that path — the projector refuses an occupied one rather than clobber it.
+        : { defaultRelPath: flattenedRelPath($tw, memeUri, MEME_EXT) }),
+    };
   }
   return nativeCarrierFile(makeTw5FileInfo($tw, memeUri, fields as Record<string, unknown>, cascades));
 }
@@ -142,6 +158,8 @@ function nativeCarrierFile(info: Tw5FileInfo): CarrierFile {
     body: info.body,
     ...(info.hasMetaFile && info.metaBody !== undefined ? { metaBody: info.metaBody } : {}),
     ...(info.encoding === "base64" ? { encoding: "base64" } : {}),
-    ...(info.pathRuled ? { relPath: info.relPath } : {}),
+    // A rule's path rides as `relPath` (it OVERRIDES the loci law); TW5's flattened default rides as
+    // `defaultRelPath` (it sites what the loci law cannot name at all). Two fields, two precedences.
+    ...(info.pathRuled ? { relPath: info.relPath } : { defaultRelPath: info.relPath }),
   };
 }

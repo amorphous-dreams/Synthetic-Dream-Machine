@@ -16,6 +16,13 @@
  *
  * NOT ported (Node-only, the projector's job): the `fs.existsSync` uniquifier and
  * the `$tw.boot`/`th-make-tiddler-path` write-path encoding (filesystem.js:382-408).
+ * The uniquifier LIVES in the projector (`disk-projector.ts`) and cannot live here —
+ * it reads the disk, and it CANNOT be TW5's unchanged: TW5 stays stable across
+ * restarts because `$tw.boot.files` holds the title→path assignment in memory for the
+ * process's life, and this projector holds no such registry. Its free-path test reads
+ * "absent OR ALREADY MINE" off the disk instead, which is why every native projection
+ * here writes its own `title:` — in the `.tid` field block, the `.json` array, or the
+ * `.meta` sidecar. `flattenedRelPath` supplies the candidate it starts from.
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-file-info
  */
@@ -127,6 +134,53 @@ function sanitizeFilepath($tw: TW5Instance, base: string): string {
   return filepath;
 }
 
+/**
+ * The extension, made safe the way `generateTiddlerFilepath` does (filesystem.js:355-360): trailing
+ * dots or spaces to underscores, then truncated at 32 characters.
+ */
+function safeExtension(ext: string): string {
+  const e = ext.replace(/[. ]+$/, (u) => u.replace(/[. ]/g, "_"));
+  return e.length > 32 ? e.substr(0, 32) : e;
+}
+
+/**
+ * The shared path tail of `generateTiddlerFilepath` (filesystem.js:352-381): sanitize the base, drop a
+ * trailing copy of the extension, truncate at 200, and fall back to the title's character codes when
+ * the sanitization left nothing but underscores.
+ *
+ * NOT here (the projector's job — it is the half that reads the disk): the `fs.existsSync` uniquifier
+ * at filesystem.js:382-390.
+ */
+function sitePath($tw: TW5Instance, title: string, base: string, ext: string): string {
+  let filepath = sanitizeFilepath($tw, base);
+  const extSafe = safeExtension(ext);
+  if (filepath.substring(filepath.length - extSafe.length) === extSafe) {
+    filepath = filepath.substring(0, filepath.length - extSafe.length);
+  }
+  if (filepath.length > 200) filepath = filepath.substr(0, 200);
+  if (!filepath || /^_+$/g.test(filepath)) {
+    // All-punctuation title → char codes (filesystem.js:371-381)
+    filepath = title.split("").map((c) => c.charCodeAt(0).toString()).join("-");
+  }
+  // The fork resolves the finished path with `path.resolve`, which collapses repeated separators and
+  // `.`/`..` segments; the same normalization here, pure, so a rule emitting `x//y` sites `x/y` on both.
+  return normalizePosix(filepath + extSafe);
+}
+
+/**
+ * TW5's FLATTENED-TITLE DEFAULT path — `generateTiddlerFilepath`'s no-rule branch (filesystem.js:
+ * 338-341 + the sanitization tail): path separators become underscores so no title ever mints a
+ * directory, then the whole title sanitizes into one filename.
+ *
+ * The `lar:` family never needs it — the loci law sites those at their uri-path, which is injective —
+ * but every OTHER title does, and a stock folder wiki writes exactly this file. Two distinct titles
+ * MAY flatten to one path (`A/B` and `A_B` both read `A_B`); resolving that collision is the
+ * projector's uniquifier, since only the disk knows what already sits there.
+ */
+export function flattenedRelPath($tw: TW5Instance, title: string, ext: string): string {
+  return sitePath($tw, title, title.replace(/\/|\\/g, "_"), ext);
+}
+
 /** POSIX path normalization (the pure half of `path.resolve`): collapse `//`, drop `.`, fold `..`. */
 function normalizePosix(p: string): string {
   const out: string[] = [];
@@ -197,7 +251,7 @@ export function makeTw5FileInfo(
   }
   const contentTypeInfo = $tw.config.contentTypeInfo[fileType] || { extension: "" };
   const extRaw = extOverride || contentTypeInfo.extension || "";
-  const ext: string = Array.isArray(extRaw) ? (extRaw[0] ?? "") : extRaw;
+  const ext: string = safeExtension(Array.isArray(extRaw) ? (extRaw[0] ?? "") : extRaw);
   // The FILE type's byte encoding — a binary type (image/PDF) reads "base64";
   // the projector decodes the base64 body to raw bytes before it writes.
   const encoding: string = (contentTypeInfo as { encoding?: string }).encoding === "base64" ? "base64" : "utf8";
@@ -205,23 +259,8 @@ export function makeTw5FileInfo(
   // ── Path (filesystem.js:317-381, PURE part) ─────────────────────────────
   const ruled = firstFilterResult($tw, title, opts.pathFilters);
   const pathRuled = ruled !== undefined;
-  const base = ruled ?? title.replace(/\/|\\/g, "_"); // no path separators → no stray dirs
-  let filepath = sanitizeFilepath($tw, base);
-  // Trailing dots or spaces on the extension → underscores; a long extension truncates
-  let extSafe = ext.replace(/[. ]+$/, (u) => u.replace(/[. ]/g, "_"));
-  if (extSafe.length > 32) extSafe = extSafe.substr(0, 32);
-  // Drop a trailing copy of the extension, then truncate
-  if (filepath.substring(filepath.length - extSafe.length) === extSafe) {
-    filepath = filepath.substring(0, filepath.length - extSafe.length);
-  }
-  if (filepath.length > 200) filepath = filepath.substr(0, 200);
-  if (!filepath || /^_+$/g.test(filepath)) {
-    // All-punctuation title → char codes (filesystem.js:371-381)
-    filepath = title.split("").map((c) => c.charCodeAt(0).toString()).join("-");
-  }
-  // The fork resolves the finished path with `path.resolve`, which collapses repeated separators and
-  // `.`/`..` segments; the same normalization here, pure, so a rule emitting `x//y` sites `x/y` on both.
-  const relPath = normalizePosix(filepath + extSafe);
+  // A rule names the base; absent one, the flattened title does (no path separators → no stray dirs).
+  const relPath = ruled !== undefined ? sitePath($tw, title, ruled, ext) : flattenedRelPath($tw, title, ext);
 
   // ── Bytes — delegate to $tw.Tiddler (byte-identical to saveTiddlerToFileSync) ──
   let body: string;
@@ -239,5 +278,5 @@ export function makeTw5FileInfo(
     body = JSON.stringify([tiddler.getFieldStrings({ exclude: [...UNPERSISTED_FIELDS] })], null, jsonSpaces);
   }
 
-  return { relPath, pathRuled, ext: extSafe, type: fileType, encoding, hasMetaFile, body, ...(metaBody !== undefined ? { metaBody } : {}) };
+  return { relPath, pathRuled, ext, type: fileType, encoding, hasMetaFile, body, ...(metaBody !== undefined ? { metaBody } : {}) };
 }

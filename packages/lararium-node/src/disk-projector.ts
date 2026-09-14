@@ -27,6 +27,11 @@
  *   file (+ a `.meta` sidecar where the type needs one). The VM registry decides
  *   type + extension + bytes; the projector only sites at `<uri-path><ext>`.
  *
+ * Siting precedence (every title, not only the `lar:` family): a `$:/config/FileSystemPaths` RULE,
+ * else the LOCI law for a `lar:///w.w.w/…` name, else TW5's FLATTENED default — the file a stock
+ * folder wiki would write for a title that owns no uri-path (`My Notes`, `$:/config/Foo`). Only the
+ * flattened branch can collide, so only it walks `uniquifyBase`'s free-or-mine uniquifier.
+ *
  * Group routing (carrier-whole at rest, disk-projection#projection-routing):
  *   memetic-wikitext records form a tiddler-group keyed by the carrier root.
  *   A child change climbs `$fragment-parent` to the root; debounce keys per
@@ -44,7 +49,7 @@ import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdir
 import { dirname, basename } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
-import { isEffectRecordUri, isBagManifestUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
+import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, WindowServo } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -131,6 +136,57 @@ export function carrierDiskFiles(absBase: string): string[] {
   try {
     return readdirSync(dir).filter((n) => re.test(n)).map((n) => `${dir}/${n}`);
   } catch { return []; }
+}
+
+/**
+ * The `title:` a TW5 field block names. Reads the block the way TW5's own `.tid` parser does —
+ * `name: value` lines until the first blank line — and stops at the first line that is not one.
+ */
+function fieldBlockTitle(text: string): string | undefined {
+  for (const line of text.split("\n")) {
+    if (line.trim() === "") break;
+    const m = /^([^:\s]+)\s*:\s*(.*)$/.exec(line);
+    if (!m) break;
+    if (m[1] === "title") return m[2]!.trim();
+  }
+  return undefined;
+}
+
+/**
+ * WHO OWNS a candidate path — read FROM DISK ALONE, no registry, no memory.
+ *
+ * The projector reconciles statelessly per carrier root on a debounce, so it holds nothing like
+ * TW5's `$tw.boot.files` title→path map. Its uniquifier's free-path test must therefore read
+ * "absent OR ALREADY MINE" — a plain `existsSync` test would write `title.tid` on the first boot
+ * and `title_1.tid` on the second, growing one file per boot, which clobbers worse than the
+ * collision it prevents.
+ *
+ * MINE is provable because every native projection writes its own title: a `.tid` body opens with
+ * the field block (`getFieldStringBlock` excludes only `text` and the unpersisted stamps), a
+ * `.json` file carries the field object, and a content filetype's `.meta` sidecar carries the
+ * fields whole. Returns:
+ *   a title  — the file at this path projects that title
+ *   null     — no file sits there (free)
+ *   undefined— a file sits there and its format proves nothing (a flattened `.mem`, a body whose
+ *              sidecar has gone). The caller must neither clobber it nor grow past it.
+ */
+export function projectedFileTitle(contentPath: string, ext: string, hasMeta: boolean): string | null | undefined {
+  const metaPath = `${contentPath}.meta`;
+  try {
+    if (hasMeta) {
+      if (existsSync(metaPath)) return fieldBlockTitle(readFileSync(metaPath, "utf-8"));
+      return existsSync(contentPath) ? undefined : null;
+    }
+    if (!existsSync(contentPath)) return existsSync(metaPath) ? undefined : null;
+    if (ext === ".tid") return fieldBlockTitle(readFileSync(contentPath, "utf-8"));
+    if (ext === ".json") {
+      const parsed: unknown = JSON.parse(readFileSync(contentPath, "utf-8"));
+      const first = Array.isArray(parsed) ? (parsed[0] as unknown) : parsed;
+      const t = (first as { title?: unknown } | null | undefined)?.title;
+      return typeof t === "string" ? t : undefined;
+    }
+    return undefined;
+  } catch { return undefined; }
 }
 
 /** The per-mirror siting memory's key. */
@@ -233,11 +289,19 @@ export class LarDiskProjector {
       ...(this.servo ? { servo: this.servo } : {}),
     });
     this.gate = gate;
+    // NO FORM CUT. Every changed title reaches the gate — a `lar:` URI, `My Notes`, `$:/config/Foo`
+    // alike. A `!title.startsWith("lar:")` filter here withheld a tiddler by the SHAPE OF ITS NAME,
+    // which is the move canon already refused for hostful URIs, and it stood against the sync law:
+    // what is allowed to sync by NOT sitting in a volatile layer shall sync, and what syncs into a
+    // MIRRORED bag shall land on disk. THE RESIDENCY BAR IS THE ONLY BAR, and it lives one step
+    // down in `reconcile`: a title whose `$origin-bag` names no mirror drops there. That covers the
+    // volatile plane (never persisted, so never stamped), `$:/state/`, `$:/temp/`, `$:/boot/` and
+    // drafts (the in-wiki cascade routes them to unmirrored bags), and `$:/core` (named withholding).
+    // The cost the cut was also paying, undocumented: state churn no longer marks the gate for free.
+    // It is a debounce mark and a `getTiddler` + one field read per change — the reconcile is
+    // level-triggered and idempotent, so a nudge that resolves to no mirror costs exactly that.
     const handler = (changes: Record<string, unknown>) => {
-      for (const title of Object.keys(changes)) {
-        if (!title.startsWith("lar:")) continue;
-        gate.mark(routeToRoot(title));
-      }
+      for (const title of Object.keys(changes)) gate.mark(routeToRoot(title));
     };
     wiki.addEventListener?.("change", handler);
     return () => { wiki.removeEventListener?.("change", handler); this.stop(); };
@@ -293,6 +357,12 @@ export class LarDiskProjector {
     // rides FIRST so it also holds the gone-branch (a vanished member never owns a
     // file to unlink — its home is the pack).
     if (this.isPackMember(rootUri)) return;
+    // THE VOLATILE PLANE NEVER PROJECTS — a RESIDENCY bar, not a form one: `lararium.local.vm` is a
+    // reserved root whose whole meaning is "this vessel's own scratch, never persisted, never synced"
+    // (lar-uris). Nothing there carries a mirrored `$origin-bag` today, because the island adaptor
+    // refuses it before the store; stating it here too keeps the bar readable at the shore that now
+    // admits every title, and no cascade edit can lift it.
+    if (isVolatileVmUri(rootUri)) return;
     const tiddler = this._tw5?.$tw.wiki.getTiddler?.(rootUri);
     if (!tiddler) {
       await this._scheduleUnlinkByTitle(rootUri);
@@ -324,6 +394,41 @@ export class LarDiskProjector {
       return null;
     }
     return carrierDiskFiles(gate.path);
+  }
+
+  /**
+   * THE UNIQUIFIER — TW5's `title`, `title_1`, `title_2` … walk (filesystem.js:382-390), with its
+   * one memory-bound step replaced.
+   *
+   * TW5 breaks its loop on `oldPath == fullPath`, where `oldPath` comes from `$tw.boot.files` — the
+   * in-memory title→path assignment its process holds for life. This projector holds none, so the
+   * break condition reads off the DISK instead: a candidate is free when nothing sits there, and
+   * MINE when what sits there names this very title (`projectedFileTitle`). Same walk, same
+   * assignment, and it survives a restart because the evidence never left the filesystem.
+   *
+   * Where the format proves nothing, this REFUSES rather than clobber a stranger's bytes or grow a
+   * `_1` per boot. Applied ONLY to the flattened default — a ruled path and a loci path both keep
+   * exactly the siting they had (the loci path is injective by construction, and a `.mem` carries
+   * no `title:` to read back, so uniquifying there could only misfire).
+   */
+  private uniquifyBase(
+    mirror: BagMirrorConfig,
+    base: string,
+    ext: string,
+    hasMeta: boolean,
+    title: string,
+  ): { readonly base: string } | { readonly reason: string } {
+    for (let count = 0; count < 1000; count++) {
+      const candidate = count === 0 ? base : `${base}_${count}`;
+      const gate = confineMirrorWrite(mirror.mirrorRoot, candidate + ext, mirror.allowBagsRootFiles);
+      if (!gate.ok) return { reason: gate.reason };
+      const owner = projectedFileTitle(gate.path, ext, hasMeta);
+      if (owner === null || owner === title) return { base: candidate };   // free, or already mine
+      if (owner === undefined) {
+        return { reason: `${candidate}${ext} is occupied and its format proves no ownership — refusing to clobber or to grow a copy per boot (${title})` };
+      }
+    }
+    return { reason: `no free-or-mine path for "${title}" within 1000 tries at ${base}${ext}` };
   }
 
   /** Unlink the files a carrier left at a base it no longer sites at (a siting rule moved it). */
@@ -388,13 +493,32 @@ export class LarDiskProjector {
     // back as its OWN file. The VM decides the type; the projector only sites.
     const file = await this.carrierFileFn(tiddlerUri);
     if (file === null) return;
-    // A `$:/config/FileSystemPaths` rule in the island wiki names the path first — the same
-    // tiddler names it for a stock server's filesystem adaptor, so both doors site one file.
-    // No rule: the loci law sites `lar:///w.w.w/…` at its uri-path and a foreign title nowhere
-    // (a pack member's home is its pack — disk-projection#/projection-routing rule 2).
-    const base = file.relPath !== undefined && file.relPath.endsWith(file.ext)
+    // Three sitings, one precedence, each reading off the shape of what the shore handed back:
+    //   ① a `$:/config/FileSystemPaths` RULE (`relPath`) — the operator's own word, and the same
+    //      word a stock server's filesystem adaptor obeys, so both doors site one file.
+    //   ② the LOCI law — `lar:///w.w.w/…` at its uri-path. Injective, so it needs no uniquifier.
+    //   ③ TW5's FLATTENED default (`defaultRelPath`) — the ONLY thing that sites a foreign title
+    //      (`My Notes`, `$:/config/Foo`), which owns no uri-path. Two titles may flatten alike, so
+    //      this one — and only this one — walks the free-or-mine uniquifier.
+    const ruledBase = file.relPath !== undefined && file.relPath.endsWith(file.ext)
       ? file.relPath.slice(0, file.relPath.length - file.ext.length)
-      : carrierBaseRelPath(tiddlerUri);
+      : null;
+    let base = ruledBase ?? carrierBaseRelPath(tiddlerUri);
+    // The flatten reaches ONLY a name the loci law does not govern. Inside the `lar:` family a null
+    // base is a DELIBERATE refusal (a fragment owns no file — its carrier root does; a bag manifest
+    // belongs to the declare verb), never a name left un-sited for want of a path, so flattening one
+    // would resurrect exactly what those refusals withhold.
+    if (base === null && !tiddlerUri.startsWith("lar:")
+        && file.defaultRelPath !== undefined && file.defaultRelPath.endsWith(file.ext)) {
+      const flat = file.defaultRelPath.slice(0, file.defaultRelPath.length - file.ext.length);
+      const sited = this.uniquifyBase(mirror, flat, file.ext, file.metaBody !== undefined, tiddlerUri);
+      if ("reason" in sited) {
+        console.error(`[disk-ward] siting refused (${mirror.bagId} <- ${tiddlerUri}): ${sited.reason}`);
+        this.onRefusal?.({ bagId: mirror.bagId, uri: tiddlerUri, reason: sited.reason });
+        return;
+      }
+      base = sited.base;
+    }
     if (!base) return;
     const key = sitedKey(bagId, tiddlerUri);
     const previous = this.sited.get(key);
