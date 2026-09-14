@@ -1,235 +1,113 @@
 /**
- * projection-conflict-surfaces — THE SECOND LEG OF THE CONFLUENCE.
+ * projection-conflict-surfaces — THE SECOND LEG OF THE CONFLUENCE, and the one
+ * clause it still owes before it can be wired.
  *
- * The disk→records leg reconciles (ingest-gate: noop · ingest · conflict ·
- * refuse). This pins the records→disk leg to the same discipline: where the
- * operator's hands moved the FILE and the doc moved the RECORDS since the last
- * projection, the projector REFUSES the write and surfaces a conflict on the
- * disk-ward's existing alert rail — it never overwrites, never auto-merges.
+ * The disk→records leg reconciles (`@lararium/tw5`'s `ingest-gate`: noop ·
+ * ingest · conflict · refuse). `projection-gate` mirrors it for the records→disk
+ * leg — a pure three-way decision over the same three streams, deciding and
+ * never writing. These vectors pin its decision law and measure it over the real
+ * corpus.
  *
- * The RED this replaces: with the gate unconsulted, the third case below writes
- * the doc's bytes straight over the operator's disk edit, silently, because the
- * content-hash gate can only ask "do the bytes I am about to write differ from
- * the bytes there" — never "did anyone else move this file".
+ * ── WHY THE PROJECTOR DOES NOT YET CONSULT IT ────────────────────────────────
+ * MEASURED, not reasoned: wiring `decideProjection` into `LarDiskProjector.flush`
+ * turns `tests/e2e/wikis-ingest-back.test.ts` WB2 red — `expected 1 to be +0` on
+ * the second scan — and removing it turns WB2 green again (both directions run
+ * against a REBUILT dist; a source-only swap proves nothing, the e2e loads dist).
  *
- * CONTROLs ride beside the cure: a clean project still projects · a byte-identical
- * carrier still noops with no mtime churn · a disk edit with the doc UNMOVED
- * surfaces nothing and writes nothing (the ingest leg owns that state and ADOPTS
- * the edit — the two legs must not disagree about one state) · and the real
- * 701-carrier `bags/` corpus reads zero conflicts in its steady state.
+ * The probe named the verdict: on the ordinary round trip the gate reads
+ * `conflict:both-moved`.
+ *
+ *   1. the projector lands a carrier      → anchor := render, disk == anchor
+ *   2. the operator edits the file        → disk moves
+ *   3. `lares ingest --apply` ADOPTS it   → records move to render(parse(disk))
+ *   4. the projector reconciles           → disk ≠ anchor, records ≠ anchor
+ *
+ * All three differ, so the gate calls it a standoff. It is not one: step 3 IS the
+ * other leg agreeing, and the write at step 4 is the round trip NORMALIZING, not
+ * one stream drowning another. Two independent confirmations that the design
+ * intends that write — `recordLandedPacks` (lares-cli/src/ingest-core.ts) records
+ * a pack's synced hash explicitly BECAUSE "a pack file never projects back … so
+ * the projector never sets its synced hash", i.e. for every other carrier the
+ * projector's write is what advances the merge base; and an applied ingest
+ * advances the anchor for renames and packs only, never for a plain adoption.
+ *
+ * ── THE CLAUSE OWED ──────────────────────────────────────────────────────────
+ * The ingest leg tells these two states apart with its rule 3 — `render(parse(disk))
+ * == current render → NOOP canonical-equivalent`. The projecting leg has no view of
+ * `render(parse(disk))`, so it cannot. Wiring it needs a canonicalizer injected at
+ * the composition root (`island-behaviors`, beside `carrierFileFn`) and a fourth
+ * gate input; `memeticWikitextDeserializer`/`expandMemeRefs` sit off the
+ * `@lararium/tw5` barrel today, so that wire widens a package's public surface —
+ * a design call for the operator, not a side effect of this work.
+ *
+ * Until then the conflict verdict would fire on the NORMAL round trip. A gate that
+ * cries conflict on every adoption is the catastrophe wearing a cure's face; the
+ * gate stands specified, tested and measured, and unwired.
  */
 
-import { describe, test, expect, afterEach } from "vitest";
-import { mkdtempSync, writeFileSync, rmSync, readFileSync, statSync, readdirSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, test, expect } from "vitest";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { LarDiskProjector } from "../src/disk-projector.js";
-import { SyncedTree, syncedTreeKey } from "../src/synced-tree.js";
 import { decideProjection } from "../src/projection-gate.js";
-import type { TW5Engine } from "@lararium/tw5";
 
-let root = "";
-afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });
+const hash = (s: string) => "sha256:" + createHash("sha256").update(s, "utf8").digest("hex");
+const A = hash("stream A"), B = hash("stream B"), C = hash("stream C");
 
-const BAG = "lares";
-const URI = "lar:///ha.ka.ba/confluence/leg-two";
-const REL = "ha.ka.ba/confluence/leg-two.mem";
-
-/** A minimal $tw whose wiki resolves one mutable carrier record. */
-function fakeEngine(fields: Record<string, unknown>): TW5Engine {
-  return {
-    $tw: {
-      wiki: {
-        getTiddler: (title: string) => (title === URI ? { fields } : undefined),
-        addEventListener: () => {},
-        removeEventListener: () => {},
-      },
-    },
-  } as unknown as TW5Engine;
-}
-
-function reconcile(p: LarDiskProjector, uri: string): Promise<void> {
-  return (p as unknown as { reconcile: (u: string) => Promise<void> }).reconcile(uri);
-}
-
-/** Build a projector over a temp mirror + a TEMP Synced tree. The shared
- *  `synced-tree.json` is NEVER touched by a test (it is one file, many writers). */
-function makeProjector(body: () => string, refusals: { bagId: string; uri: string; reason: string }[]) {
-  const syncedTree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
-  const projector = new LarDiskProjector({
-    mirrors: [{ bagId: BAG, mirrorRoot: root }],
-    carrierFileFn: async () => ({ ext: ".mem", body: body(), encoding: "utf8" }),
-    debounceMs: 1,
-    syncedTree,
-    onRefusal: (info) => { refusals.push(info); },
-  });
-  return { projector, syncedTree };
-}
-
-describe("the projection leg reconciles — it never overwrites a moved disk file", () => {
-  test("RED→GREEN: disk moved AND records moved → conflict surfaces, disk keeps the operator's bytes", async () => {
-    root = mkdtempSync(join(tmpdir(), "lar-projconflict-"));
-    const abs = join(root, REL);
-    let docBody = "the doc's first words\n";
-    const refusals: { bagId: string; uri: string; reason: string }[] = [];
-    const { projector } = makeProjector(() => docBody, refusals);
-    const stop = projector.start(fakeEngine({ title: URI, text: docBody, "$origin-bag": BAG }));
-
-    // 1 — first projection lays the merge base down.
-    await reconcile(projector, URI);
-    expect(readFileSync(abs, "utf-8")).toBe("the doc's first words\n");
-    expect(refusals).toHaveLength(0);
-
-    // 2 — the operator's hands move the FILE.
-    const operatorBytes = "the doc's first words\nand the operator's own line\n";
-    writeFileSync(abs, operatorBytes, "utf-8");
-
-    // 3 — the doc moves too, independently.
-    docBody = "the doc's SECOND words\n";
-    await reconcile(projector, URI);
-
-    // The cure: the operator's bytes stand untouched and the conflict surfaces.
-    expect(readFileSync(abs, "utf-8")).toBe(operatorBytes);
-    expect(refusals).toHaveLength(1);
-    expect(refusals[0]!.uri).toBe(URI);
-    expect(refusals[0]!.bagId).toBe(BAG);
-    expect(refusals[0]!.reason).toMatch(/conflict/i);
-
-    // A repeat nudge on the SAME standoff surfaces once, not once per nudge —
-    // an alert rail that repeats itself trains the operator to ignore it.
-    await reconcile(projector, URI);
-    expect(readFileSync(abs, "utf-8")).toBe(operatorBytes);
-    expect(refusals).toHaveLength(1);
-
-    // …and a MOVED standoff (the doc moves again) surfaces afresh.
-    docBody = "the doc's THIRD words\n";
-    await reconcile(projector, URI);
-    expect(readFileSync(abs, "utf-8")).toBe(operatorBytes);
-    expect(refusals).toHaveLength(2);
-
-    stop();
+describe("the projection gate's decision law — clause for clause against the ingest leg", () => {
+  test("1 — disk == records → noop disk-matches-records (the echo gate, riding FIRST)", () => {
+    // Rides first so a STALE merge base cannot manufacture a conflict where the
+    // two live streams already agree. Ingest's rule 1, read from this shore.
+    expect(decideProjection({ diskHash: A, syncedHash: C, recordsHash: A }))
+      .toEqual({ kind: "noop", reason: "disk-matches-records" });
   });
 
-  test("CONTROL — a clean project still projects (no disk file, and disk-unmoved)", async () => {
-    root = mkdtempSync(join(tmpdir(), "lar-projclean-"));
-    const abs = join(root, REL);
-    let docBody = "first\n";
-    const refusals: { bagId: string; uri: string; reason: string }[] = [];
-    const { projector } = makeProjector(() => docBody, refusals);
-    const stop = projector.start(fakeEngine({ title: URI, text: docBody, "$origin-bag": BAG }));
-
-    await reconcile(projector, URI);                    // absent-on-disk → project
-    expect(readFileSync(abs, "utf-8")).toBe("first\n");
-
-    docBody = "second\n";
-    await reconcile(projector, URI);                    // disk-unmoved → project
-    expect(readFileSync(abs, "utf-8")).toBe("second\n");
-    expect(refusals).toHaveLength(0);
-    stop();
+  test("2 — nothing coherent on disk → project absent-on-disk", () => {
+    expect(decideProjection({ diskHash: null, syncedHash: C, recordsHash: A }))
+      .toEqual({ kind: "project", reason: "absent-on-disk" });
   });
 
-  test("CONTROL — a byte-identical carrier noops: no write, no mtime churn, no alert", async () => {
-    root = mkdtempSync(join(tmpdir(), "lar-projnoop-"));
-    const abs = join(root, REL);
-    const refusals: { bagId: string; uri: string; reason: string }[] = [];
-    const { projector } = makeProjector(() => "steady\n", refusals);
-    const stop = projector.start(fakeEngine({ title: URI, text: "steady\n", "$origin-bag": BAG }));
-
-    await reconcile(projector, URI);
-    const first = statSync(abs).mtimeMs;
-    await new Promise((r) => setTimeout(r, 12));
-    await reconcile(projector, URI);
-    expect(statSync(abs).mtimeMs).toBe(first);          // the write never fired
-    expect(readFileSync(abs, "utf-8")).toBe("steady\n");
-    expect(refusals).toHaveLength(0);
-    stop();
+  test("3 — no merge base → project never-projected (ingest's fresh adoption, 4b)", () => {
+    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B }))
+      .toEqual({ kind: "project", reason: "never-projected" });
   });
 
-  test("CONTROL — a disk edit with the doc UNMOVED stands down: the ingest leg adopts it", async () => {
-    // The ingest gate's rule 4 answers this exact state with INGEST (adopt the
-    // disk edit). The projecting leg therefore refuses to race it — no write,
-    // and no alert either: nothing disagrees, so nothing needs talking out.
-    root = mkdtempSync(join(tmpdir(), "lar-projdiskonly-"));
-    const abs = join(root, REL);
-    const refusals: { bagId: string; uri: string; reason: string }[] = [];
-    const { projector, syncedTree } = makeProjector(() => "steady\n", refusals);
-    const stop = projector.start(fakeEngine({ title: URI, text: "steady\n", "$origin-bag": BAG }));
-
-    await reconcile(projector, URI);
-    const anchor = syncedTree.get(syncedTreeKey(BAG, URI));
-    expect(anchor).toBeTruthy();
-
-    writeFileSync(abs, "the operator's line alone\n", "utf-8");
-    await reconcile(projector, URI);
-
-    expect(readFileSync(abs, "utf-8")).toBe("the operator's line alone\n");
-    expect(refusals).toHaveLength(0);
-    // The anchor still names the last PROJECTION, so the ingest leg can still
-    // see disk != synced and adopt. An anchor advanced here would blind it.
-    expect(syncedTree.get(syncedTreeKey(BAG, URI))).toBe(anchor);
-    stop();
+  test("4 — disk == synced → project disk-unmoved (only the records moved)", () => {
+    expect(decideProjection({ diskHash: A, syncedHash: A, recordsHash: B }))
+      .toEqual({ kind: "project", reason: "disk-unmoved" });
   });
-});
 
-describe("a refusal drops cleanly — it cannot wedge the coalesce gate", () => {
-  test("after a conflict the gate holds nothing pending, and the NEXT change still projects", async () => {
-    root = mkdtempSync(join(tmpdir(), "lar-projwedge-"));
-    const abs = join(root, REL);
-    let docBody = "one\n";
-    const refusals: { bagId: string; uri: string; reason: string }[] = [];
-    const syncedTree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
-    let handler: ((c: Record<string, unknown>) => void) | null = null;
-    const engine = {
-      $tw: {
-        wiki: {
-          getTiddler: (t: string) => (t === URI ? { fields: { title: URI, text: docBody, "$origin-bag": BAG } } : undefined),
-          addEventListener: (_e: string, h: (c: Record<string, unknown>) => void) => { handler = h; },
-          removeEventListener: () => {},
-        },
-      },
-    } as unknown as TW5Engine;
-    const projector = new LarDiskProjector({
-      mirrors: [{ bagId: BAG, mirrorRoot: root }],
-      carrierFileFn: async () => ({ ext: ".mem", body: docBody, encoding: "utf8" }),
-      debounceMs: 5,
-      syncedTree,
-      onRefusal: (info) => { refusals.push(info); },
-    });
-    const stop = projector.start(engine);
-    const gate = (projector as unknown as { gate: { pending: () => number } }).gate;
-    const settle = async () => { handler!({ [URI]: {} }); await new Promise((r) => setTimeout(r, 60)); };
+  test("5 — records == synced → noop records-unmoved (the INGEST leg owns that state)", () => {
+    // Ingest's rule 4 answers this state with INGEST — it ADOPTS the disk edit —
+    // so the projecting leg must not race it. Two legs disagreeing about one
+    // state is how a round trip eats an edit.
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: B }))
+      .toEqual({ kind: "noop", reason: "records-unmoved" });
+  });
 
-    // Drive the REAL path: wiki change → mark → debounce → flush.
-    await settle();
-    expect(readFileSync(abs, "utf-8")).toBe("one\n");
+  test("6 — all three differ → conflict both-moved", () => {
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C }))
+      .toEqual({ kind: "conflict", reason: "both-moved" });
+  });
 
-    // The standoff: the operator's hands move the file, the doc moves too.
-    writeFileSync(abs, "the operator's bytes\n", "utf-8");
-    docBody = "two\n";
-    await settle();
-    expect(refusals).toHaveLength(1);
-    expect(readFileSync(abs, "utf-8")).toBe("the operator's bytes\n");
-    expect(gate.pending()).toBe(0);                      // no key left armed — no wedge
+  test("the digest tag boundary never reads as a move (bare stored vs tagged fresh)", () => {
+    // A pre-agile tree holds bare hex; a fresh hash arrives tagged. Comparing
+    // literally would read EVERY carrier as moved — a mass conflict storm.
+    const bare = A.slice("sha256:".length);
+    expect(decideProjection({ diskHash: A, syncedHash: bare, recordsHash: B }))
+      .toEqual({ kind: "project", reason: "disk-unmoved" });
+  });
 
-    // The standoff STANDS until the two sides agree — a re-nudge re-refuses
-    // rather than quietly picking a side (and stays quiet: one alert per standoff).
-    writeFileSync(abs, "the operator's bytes, revised\n", "utf-8");
-    await settle();
-    expect(readFileSync(abs, "utf-8")).toBe("the operator's bytes, revised\n");
-    expect(refusals).toHaveLength(2);                    // the standoff MOVED → surfaces afresh
-
-    // The operator talks it out and lands the doc's words on disk: the two sides
-    // now agree, the gate noops, and the anchor advances to that agreement.
-    writeFileSync(abs, "two\n", "utf-8");
-    await settle();
-    expect(refusals).toHaveLength(2);                    // agreement surfaces nothing
-    // With the merge base caught up, the very next doc change projects normally.
-    docBody = "three\n";
-    await settle();
-    expect(readFileSync(abs, "utf-8")).toBe("three\n");   // the gate still flushes
-    expect(gate.pending()).toBe(0);
-    stop();
+  // THE CLAUSE OWED (see the header). Ingest's rule 3, transposed: where the
+  // records already carry the canonical render of what stands on disk, the two
+  // streams SAY THE SAME THING and the write normalizes rather than overwrites.
+  // Red until the projector gains a view of `render(parse(disk))`; the projector
+  // stays unwired while this stands red, because without it the conflict verdict
+  // fires on the ordinary post-ingest round trip (e2e WB2).
+  test.skip("OWED — disk's canonical view == records → noop canonical-equivalent", () => {
+    const decide = decideProjection as unknown as (i: Record<string, unknown>) => { reason: string };
+    expect(decide({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C }).reason)
+      .toBe("canonical-equivalent");
   });
 });
 
@@ -244,28 +122,23 @@ describe("the gate over the REAL corpus — bags/ holds 701 hand-authored carrie
     }
     return out;
   }
-  const hash = (s: string) => "sha256:" + createHash("sha256").update(s, "utf8").digest("hex");
 
-  // MEASURED over the live tree + the real renders (2026-09-13, 701 carriers):
-  //   noop:disk-matches-records  655   (render(parse(disk)) === disk, byte for byte)
-  //   project:never-projected     46   (the sdm bag holds no anchors; these write,
-  //                                     exactly as they write today)
+  // MEASURED over the live `synced-tree.json` and the REAL renders (2026-09-13,
+  // 701 carriers, walked with the tw5 deserializer + `expandMemeRefs`):
+  //   noop:disk-matches-records  655   render(parse(disk)) === disk, byte for byte
+  //   project:never-projected     46   the sdm bag carries no anchors — these write,
+  //                                    exactly as they write today
   //   CONFLICT                     0
-  // The 46 are the corpus's non-canonical-at-rest carriers (meme-corpus-roundtrip's
-  // own words) — the render normalizes framing, so rule 1 misses on them. They stay
-  // out of conflict only because they carry no anchor; once one lands they read
-  // `disk-unmoved` and project. Re-measure by walking bags/ with the tw5
-  // deserializer + `expandMemeRefs` and the live `synced-tree.json`.
-  test("steady state (doc agrees with disk) reads ZERO conflicts over all 701", () => {
+  // The 46 matter more than the 655: `meme-corpus-roundtrip` states that corpus
+  // files stay NON-CANONICAL AT REST until a deliberate normalization commit, so
+  // the render normalizes framing and rule 1 misses on them. Only their absent
+  // anchor keeps them clear; once an anchor lands they read `disk-unmoved`.
+  test("a stale merge base cannot manufacture a conflict where disk and records agree", () => {
     const files = everyMem(repoBags);
     expect(files.length).toBeGreaterThan(600);
     const tally: Record<string, number> = {};
     for (const f of files) {
       const disk = hash(readFileSync(f, "utf-8"));
-      // Post-ingest steady state: the records render to what the disk holds. The
-      // anchor is deliberately STALE (a hash from some other projection) — the
-      // echo gate rides FIRST precisely so a stale tree cannot manufacture 701
-      // conflicts at first boot.
       const d = decideProjection({ diskHash: disk, syncedHash: hash("a stale anchor"), recordsHash: disk });
       tally[`${d.kind}:${d.reason}`] = (tally[`${d.kind}:${d.reason}`] ?? 0) + 1;
     }
@@ -278,10 +151,7 @@ describe("the gate over the REAL corpus — bags/ holds 701 hand-authored carrie
     for (const f of files) {
       const disk = hash(readFileSync(f, "utf-8"));
       const moved = hash(readFileSync(f, "utf-8") + "\nthe doc moved\n");
-      // A live-but-different anchor (the operator edited the file since the last
-      // projection) + a moved doc = the standoff the operator must talk out.
       if (decideProjection({ diskHash: disk, syncedHash: hash("older"), recordsHash: moved }).kind === "conflict") conflict++;
-      // No anchor at all = a fresh adoption; the write lands.
       if (decideProjection({ diskHash: disk, syncedHash: null, recordsHash: moved }).kind === "project") project++;
     }
     expect(conflict).toBe(files.length);
