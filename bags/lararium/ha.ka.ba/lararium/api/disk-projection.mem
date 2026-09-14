@@ -11,8 +11,8 @@ mana          = 17
 manao         = 17
 manaoio       = 15
 namespace     = "&#x0950; &#x0901;"
-revised-on    = "2026-09-11"
-revision-note = "working↔canon split (shore-law): a wiki's saved edits land in the typed @working live layer (wikis/, tracked); canon (bags/) is reached only by a cap-gated promotion MOVE; the general lararium shore law (working↔canon · plane↔plane · host↔lararium) governs every causal-island crossing, host-agnostic surface contract; prior: @oracle/@lararium split (#/oracle-split) — the runtime system island (@oracle) separates from the memetic corpus (@lararium); projection-law trued to running code; co-projection rewrite; carrier-whole at rest"
+revised-on    = "2026-09-13"
+revision-note = "the `disk-leaning` grading reads as GRAIN, never as a write door — two grounds under one word, the authoring grain holding and the alpha-era surviving-copy retiring, pointed at wiki-layer-ontology#/alpha-transition; prior: working↔canon split (shore-law): a wiki's saved edits land in the typed @working live layer (wikis/, tracked); canon (bags/) is reached only by a cap-gated promotion MOVE; the general lararium shore law (working↔canon · plane↔plane · host↔lararium) governs every causal-island crossing, host-agnostic surface contract; prior: @oracle/@lararium split (#/oracle-split) — the runtime system island (@oracle) separates from the memetic corpus (@lararium); projection-law trued to running code; co-projection rewrite; carrier-whole at rest"
 role          = "load-bearing invariant — the node vessel's two on-disk projection surfaces: bags/ (seed/canon) vs wikis/ (projection/output); which bags mirror, which ride the sync mesh"
 status-why    = "the disk projector stands live; bags render to wikis"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
@@ -38,6 +38,8 @@ The node vessel SHALL write an editable, re-readable ''Artifact'' of a bag's CRD
 | ''`wikis/{slug}/`'' | ''projection / output'' — instantiated playspace content | `@<wikiSlug>` (per-wiki content) | store-leaning (the merge seat; disk projects the rendered artifact) | memetic-wikitext `.md` |
 
 The distinction reads ''definition vs instance''. An FTLS Power Card //definition// (its rules, its template) lives in `bags/sdm/`; a character's //filled-in// card and their sheet project to `wikis/{slug}/`. `bags/` seeds the world; `wikis/` carries a running instance's output. More generally, `wikis/` reads as the ''live working surface'' — saved-but-unpromoted content, fed by the typed ''`@working`'' write layer (saved tiddlers, never drafts) — and `bags/` reads as ''canon'', reached only by a cap-gated promotion `MOVE`; definition-vs-instance names one shape of this ''working↔canon shore'' (`wiki-layer-ontology#shore-law`).
+
+⚠ ''Read the `disk-leaning` grading as GRAIN, never as a write door.'' The word carries two grounds: the ''authoring grain'' — a hand edits one whole carrier, one meme, one git history (#granularity) — which holds under the designed model; and the alpha-era ''surviving copy'', where disk outlasts a paved substrate and so answers first. The second retires, and until it does the tree's instruments side with it. Full reading, the three roles `bags/` carries, and the ordering the transition owes: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/alpha-transition">> (operator, 2026-09-13).
 
 <<~/ahu>>
 
@@ -201,6 +203,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gNuyN96NmaCDPfypibxTaW4LO9GWv42BN1qCK18FV_k
+<<^ code="&#x0003;">>ni:///sha-256;8Thmx4EV5vQdzJTmK0ADc0_a8B_YchHle9zhodAMg_k
 
 <<^ code="&#x0004;" -> to="?">>

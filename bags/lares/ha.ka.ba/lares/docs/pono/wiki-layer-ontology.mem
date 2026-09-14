@@ -8,7 +8,7 @@ l-space   = "stable"
 mana      = 14
 manao     = 14
 manaoio   = 13
-role      = "doctrine: the wiki layer stack in OCI-aligned nouns — library layers / write layer / instance mounts; named⇒shareable vs typed-slot⇒owned; only the write layer crosses (motion rides ACTION verbs, never VCS verbs); writes flow through the layer's own wiki; recipe DAG; the wiki-as-bag quine; transitive closure held open"
+role      = "doctrine: the wiki layer stack in OCI-aligned nouns — library layers / write layer / instance mounts; named⇒shareable vs typed-slot⇒owned; only the write layer crosses (motion rides ACTION verbs, never VCS verbs); writes flow through the layer's own wiki; recipe DAG; the wiki-as-bag quine; transitive closure held open; the ALPHA TRANSITION (#/alpha-transition) — why the tree does not yet wear the shore: `bags/` survives because the substrate gets paved, three roles ride it and only the hand-edit door retires, the standing carriers stay put, the window carries the risk and the weld lands last"
 tags      = ["api/pono/meme"]
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
@@ -251,6 +251,49 @@ Every boundary a lararium holds reads as a ''causal-island shore'' (`causal-isla
 
 <<~/ahu>>
 
+<<~ ahu #/alpha-transition>>
+
+!! The Alpha Transition — why the tree does not yet wear the shore (operator, 2026-09-13)
+
+#shore-law rules the working↔canon crossing and #quine rules that ''no wiki writes into its own canon''. The tree enacts neither today. A reader who meets `bags/` before meeting this section reads the alpha practice as the law, and that misreading has cost this house days of re-derivation. This section names the gap so the next hand spends none.
+
+!!! `bags/` survives because the substrate gets thrown away
+
+A founding paves the vessel substrate whole and `bags/` stands outside the cut: `<lares>/vessel` ''re-forges from `bags/`'', correct to lose because a rite re-makes it from the carriers on disk (`founding-runbook#/clear`). So through the alpha disk genuinely holds the surviving copy, and a hand edits carriers in place, re-stamps them and commits them (`canon-boundary#/the-promotion-boundary`, which reads the corpus the same way). ''That names a property of a substrate under repeated refounding, never a property of `bags/`.'' Under the designed model the doc persists and disk projects from it, and the survivorship argument falls away with the disposability that grounds it.
+
+!!! Three roles ride `bags/`; exactly one retires
+
+| role | what it does | standing |
+|---|---|---|
+| ''the hand-edit door'' | a hand saves into a canon carrier and the ingest gate carries it into the records | ''the alpha scaffold — THIS RETIRES'' |
+| ''the genesis / cold-boot seed'' | a fresh vessel re-forges its whole substrate from these carriers | ''permanent'' |
+| ''the canon of record'' | git-tracked carriers at hostless `lar:///` addresses | ''permanent'' |
+
+''The retiring role names a DOOR, never mutability.'' `canon-boundary#/the-promotion-boundary` holds that an address stands while its bytes move, and that law survives the transition whole — canon carriers keep changing. What moves: a hand's save lands in the wiki's `@working` layer (`wikis/{slug}`) and reaches canon by the cap-gated promotion `MOVE`, rather than by typing into `bags/` and letting the ingest gate carry it down.
+
+⚠ ''`residency` names two things and a reader meets both right here.'' The promotion rides CANON residency — the ACTION verb surface (`residency-model#action-verb-surface`). The `lares residency` command reports something else: a vessel's hot/cold cache standing (pinned · wela · anu). Two offices, one word, neither renaming; a reader takes the sense from the surrounding verb.
+
+!!! The carriers already standing stay put
+
+Every `.mem` carrier in `bags/` today (701 at this writing) sits at a hostless address, ''which names the completed END of a promotion rather than a violation of one'' — `canon-boundary#/the-promotion-boundary` reads a hostless address in a canon bag exactly that way. ''Nothing migrates.'' The corpus keeps its bytes, its addresses and its git history; the transition changes the door a future edit walks through, never where a standing carrier lives. No corpus witness sees a changed byte on account of this ruling.
+
+!!! The window carries the risk, never the destination
+
+The habit and the design disagree while the move runs, and ''every instrument sides with the habit'': the vessel grants literal disk mirrors on `bags/lares` and `bags/lararium`, the ingest gate weighs a disk read against the last-projected hash to decide noop / ingest / conflict (`synced-tree`), and the working surface — the `wikis` mirror root standing beside `bags` under the same worker root — holds nothing on disk yet. A weld that refuses hand edits to `bags/` therefore refuses the very work that carries the house across.
+
+''ORDERING: the hand-edit weld lands LAST and stays silent throughout.'' The standing carriers keep their hand-edit door until the working surface stands and the promotion `MOVE` runs; arming that weld earlier stops the transition rather than guarding it.
+
+!!! What ''disk-leaning'' means under the design
+
+`disk-projection#/core-claim` grades `bags/` ''disk-leaning'' against `wikis/`'s ''store-leaning''. Two grounds sit under that one word, and only one of them retires:
+
+* ''the authoring grain'' — a hand edits one whole carrier: one meme, one `.md`, one git history (`disk-projection#/granularity`, the co-projection ruling). ''This HOLDS.'' Merge authority routes through the CRDT under either model; the grain never moves.
+* ''the surviving copy'' — disk outlasts each refounding, so disk answers first. ''This RETIRES'' with the disposable substrate.
+
+So a reader takes the grading as a statement about ''grain'', never as a licence for a wiki to write its own canon.
+
+<<~/ahu>>
+
 <<~ ahu #/crossing-grain>>
 
 !! Crossing Grain — SETTLED (operator, 2026-06-10)
@@ -295,6 +338,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XLJurrEI9VRHr7y9JT7GpSk861bf-BfS1LHox5CAs5g
+<<^ code="&#x0003;">>ni:///sha-256;rTOOXUGrOr0uuVGwbb-N10lGkvGQnp0brByB59XK3cY
 
 <<^ code="&#x0004;" -> to="?">>
