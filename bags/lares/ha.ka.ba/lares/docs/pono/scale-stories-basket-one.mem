@@ -387,14 +387,20 @@ Seven of the eight slots had a carrier that inherited their ruling; slot 8 stood
 Re-derive: `grep -rn "scale-stories-basket-one" --include='*.mem' . | grep -v node_modules | grep -v "docs/pono/scale-stories-basket-one.mem"`.
 
 |!carrier |!lines |!what it takes |!the weld |
-|`docs/pono/hearths.mem` |131 |an edge in `#/edges` alone |''cheapest'' — drop the edge, or re-aim at whichever carrier inherits the realm leg. Nothing in the ledger's prose depends on this floor |
-|`docs/pono/syncer-seams-roundtable.mem` |43 · 75 · 384 |the two-doors ruling twice in argument (`:43`, `:75`), once as an edge (`:384`) |re-aim all three at `syncer-back-parity`, which carries the outcome. ⚠ ''both floors are in the queue at once'' — whichever burns first re-points the other, and burning them in one sweep re-points neither |
+|`docs/pono/hearths.mem` |''182'' (re-measured 2026-09-13; the `:131` reading went stale) |an edge in `#/edges` alone |''BARE — HANDED BACK 2026-09-13, unwelded.'' A sibling hand holds that carrier this watch. THE ROW IT NEEDS: `hearths.mem:182` carries `<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>` in `#/edges`; nothing in the ledger's prose depends on this floor, and its `#/crossings` row at `:169` names this carrier only as a measured subject — so ''drop the edge line'', or re-aim at whichever carrier inherits the realm leg |
+|`docs/pono/syncer-seams-roundtable.mem` |43 · 75 · 378 · 391 |the two-doors ruling twice in argument (`:43`, `:75`), once as an edge (`:391`), and one stale row at `:378` |''HANDED BACK 2026-09-13'' — a sibling hand holds that carrier this watch, and one of its rows now reads FALSE. THE ROWS IT NEEDS: (a) `:43` and `:75` cite `#/the-two-doors` in argument; both re-aim at `syncer-back-parity`, which carries the outcome. (b) `:391` carries the bare edge. (c) ⚠ ''`:378` reads stale'': it warns that //both of that table's exemplars sit in the retirement queue at once//, because `otakiage:383` leaned on this floor for the `folded` stage. It no longer does — `otakiage#/examples` now rules that a stage ending in deletion cannot be evidenced by a pointer, spells the `folded` exemplar as DESCRIPTION (`docs/handback-stale-rooms`, burned this watch), and gives this floor a row of its own as `standing` × `floor`, QUOTED OUT. Only ONE of that table's exemplars sits in the queue now, and it is `syncer-seams-roundtable` itself. ⚠ ''both floors still stand in the queue together'' — whichever folds first re-points the other, and folding them in one sweep re-points neither |
 |`docs/pono/otakiage.mem` |#/examples |''RESOLVED 2026-09-13 — and NOT by a re-point.'' The `folded` row wanted a replacement exemplar; a pointer could never have served as one. `otakiage#/examples` now states the law: ''a stage that ends in deletion cannot be evidenced by a pointer'' — the rite grades `folded` on ZERO inbound `loulou`, so an exemplar link demotes the carrier out of the stage it was cited to prove, and the stage's own exit runs to ash. The exemplar rides as DESCRIPTION: `docs/handback-stale-rooms` by name and commit (`7d3b3bf5c`), with the shape it held at the moment it stood folded. ''This floor's own row moved up beside it'' — as `standing` × `floor`, QUOTED OUT — so the edge at `#/edges` stays earned and now records the licence shape rather than borrowing this floor as evidence. ''No weld owed here'' |
-|`docs/pono/realm-bag-brief.mem` |31 · 82 |//"the ruling this brief enacts"//, quoted verbatim under quote license |see the shape below — the quote already IS the fold |
-|`docs/pono/heraldry.mem` |29 · 147 · 237 |the 2026-09-12 operator ruling, quoted verbatim in three places |same shape, three sites |
-|`docs/pono/offering.mem` |449 |an edge in `#/edges` alone |cheap — drop or re-aim |
+|`docs/pono/realm-bag-brief.mem` |31 · 82 |//"the ruling this brief enacts"//, quoted verbatim under quote license |''LICENCE — CONFIRMED 2026-09-13 in that carrier's own words'', beside the quote: the clause rides there verbatim, the `loulou` marks provenance and never a dependency, and a hand folding this floor MUST NOT re-point it. The quote already IS the fold. ''No weld owed'' |
+|`docs/pono/heraldry.mem` |29 · ~147 · 237 |the 2026-09-12 operator ruling, quoted verbatim in three places |''LICENCE — CONFIRMED 2026-09-13'', once at `#/ruling` for all three sites (the ruling, the `#/the-herm-card` great-grandchild sentence, the edge). Same shape, same instruction: re-aiming a provenance mark leaves the quote standing over a hole, silently. ''No weld owed'' |
+|`docs/pono/offering.mem` |449 |an edge in `#/edges` alone |''BARE — HANDED BACK 2026-09-13, unwelded.'' A sibling hand holds that carrier this watch. THE ROW IT NEEDS: `offering.mem:449` carries `<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>` in `#/edges` and nothing in that carrier's prose leans on this floor — so ''drop the line'', or re-aim at `docs/pono/recipe-layer-model` if the offering wants the one-bundle ruling it now holds |
 
-A seventh carrier, `docs/pono/outbound-bridge.mem:16`, names this floor in prose inside `status-why` and carries no `loulou`. It welds nothing and the rite counts no edge for it, but a reader arriving through that sentence would meet a missing file.
+A seventh carrier, `docs/pono/outbound-bridge.mem:16`, names this floor in prose inside `status-why` and carries no `loulou`. It welds nothing and the rite counts no edge for it, but a reader arriving through that sentence would meet a missing file. ''CONFIRMED 2026-09-13 in that carrier's own words'' as a naming of where the intent got told, with the ruling and its witness standing in `outbound-bridge` itself — so it survives this floor's ending intact and wants no re-point.
+
+!!! The class this floor's shape named, now written into the rite
+
+''Four of six inbound edges read as LICENCES, not welds — and the rite now says so.'' `otakiage#/examples` carries this floor as its own worked row: `standing` × `floor`, ''QUOTED OUT'' — a floor whose moʻolelo has been quoted out does not retire by welding edges, because the quotes ARE the fold, already done. A hand reading //six inbound edges// as //six welds owed// would perform four welds that each destroy the record the licence cites, ''silently and permanently'' — the citation reads on unchanged while its target names a hole.
+
+''The general form, which the rite now also carries:'' a stage that ends in deletion cannot be evidenced by a pointer. Both halves of that law came out of this floor's own measurement.
 
 !!! ★ The code dependency that only code can cut ★
 
@@ -438,6 +444,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SBYvdSwdwkgVREpCRfnWJr90wq0ntGKCwfcFBHvddl8
+<<^ code="&#x0003;">>ni:///sha-256;awp9Te5LLGAYKGuAFYXeqguIgDGQ6FKJ_3RKpNXS82Y
 
 <<^ code="&#x0004;" -> to="?">>

@@ -30,6 +30,8 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 ''The ruling this brief enacts'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> #/exit, quote license): "the shared bag registers in the realm's shared CRDT, @crossroads names only that it exists, read at CONTRACT".
 
+''That edge reads as a LICENCE, and no weld stands owed on it.'' The clause above sits here ''verbatim'', so this brief holds the ruling whole rather than reaching for it. The `loulou` names the floor that RECORDED the operator's words — a provenance mark, never a dependency — and it stays pointed there whatever becomes of that floor: a citation names where a thing got said, and re-aiming one at a carrier that never said it destroys the record while the sentence reads on unchanged. ''A hand folding `scale-stories-basket-one` MUST NOT re-point this site.'' Should that floor end, this quote stands as the record and this brief reads complete without it.
+
 ''The law under it'' (`/home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/project_cabal_realm_nexus_planes.md`, the 2026-09-01 ruling): a CABAL holds no name of its own and is keyed by its realm's doc id; a REALM holds the cabal's shared CRDT and resources; a NEXUS federates hardware. Fusing cabal and realm once made feeding a realm stale its own invites (`realmFeedPrefix` vs `leaseEpochPrefix` — `packages/lararium-mesh/src/cabal-realm.ts:91-98`). A bag two households keep through a relation belongs to the REALM plane: it is stuff held in common, never a seat and never a machine.
 
 <<~/ahu>>
@@ -86,6 +88,6 @@ uri-path   = "ha.ka.ba/lares/docs/pono/realm-bag-brief"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H6l4e2uoXbdYgSDTK4sO9BLMW_hw66zNtHAmC0UVJzk
+<<^ code="&#x0003;">>ni:///sha-256;N0oYJZ7xfu_ds__bT7X-TE7l6bzLQ5NhxDiZ6DTW5Fo
 
 <<^ code="&#x0004;" -> to="?">>
