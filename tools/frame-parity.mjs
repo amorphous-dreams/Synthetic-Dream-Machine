@@ -95,17 +95,37 @@ const corpus = carrierFiles(REPO).slice(0, 400)
 //
 // The speaking head is the second question. `<<^` opens the control set and `<<~` the speaking set, so
 // a frame pattern must go blind when the head flips. One that still fires never depended on the head.
+//
+// THE PROBE BINDS BOTH BINDINGS, AND THAT IS WHY THIS SEAM RAN DEAD. A call binds with `=` and a
+// definition with `:`, and this probe read the COLON form alone. Measured 2026-09-13: the corpus writes
+// `code="&#x00NN;"` 2848 times and `code:"&#x00NN;"` ZERO times, so every one of the seven marks routed
+// to `onPaper` and BOTH seams below — the pattern that finds nothing, and the pattern that fires without
+// the control head — were skipped for every mark on every run. The witness printed a green line about
+// seven marks it had never asked a single question of. Same fault, same spelling, as the one `doctype`
+// records at its own `sohAt`: a reader left behind on a retired binding reports the cleanest run it can.
+const WRITES = (code) => new RegExp(`code\\s*[:=]\\s*"${code}"`).test(corpus);
+
 const inert = [];
 const onPaper = [];
 const overreaching = [];
 const speaking = corpus.replace(/<<\^/g, "<<~");
+let probed = 0;
 for (const [code, src] of tiddlerPatterns) {
   let re;
   try { re = new RegExp(src); } catch { inert.push([code, `unparseable: ${src}`]); continue; }
-  if (!corpus.includes(`code:"${code}"`)) { onPaper.push(code); continue; }
+  if (!WRITES(code)) { onPaper.push(code); continue; }
+  probed++;
   if (!re.test(corpus)) inert.push([code, `a carrier writes ${code} and this pattern misses it: ${src}`]);
   if (re.test(speaking)) overreaching.push([code, src]);
 }
+
+// ── THE FLOOR ON THE SUBJECT ────────────────────────────────────────────────────────────────────
+// `onPaper` reports honestly for ONE mark the corpus has not started writing. It reports a DEAD SEAM
+// when it swallows the whole set: a corpus that writes no declared mark leaves the two pattern checks
+// with nothing to run against, and their empty findings then say nothing about the patterns at all.
+// So the run states how many marks it actually probed, and a run that probed NONE fails rather than
+// passing on an absence — the shape this house names `A FLOOR ON THE SUBJECT'S SIZE`.
+const noSubject = tiddlerPatterns.size > 0 && probed === 0;
 
 // AND THE BOOTSTRAP SCANNER, which reads before any tiddler loads. `BOOTSTRAP_SCANS` carries its own
 // control table so a cold parse can find a frame at all — a second recogniser, hand-written, that no
@@ -182,8 +202,18 @@ const undeclared = [...seen].filter(
 
 console.log(
   `[frame-parity] spec declares ${standing.length} standing + ${reserved.length} reserved; ` +
-  `tiddlers recognise ${seen.size}`,
+  `tiddlers recognise ${seen.size}; ${probed} of ${tiddlerPatterns.size} pattern(s) probed against a written mark`,
 );
+
+if (noSubject) {
+  console.log(
+    `  NO DECLARED MARK IS WRITTEN ANYWHERE IN THE CORPUS — the pattern seams below measured NOTHING.\n` +
+    `    ${tiddlerPatterns.size} tiddler pattern(s) stand and the corpus writes none of the codes they name,\n` +
+    `    so "a pattern that finds nothing" and "a pattern that fires without the control head" both ran\n` +
+    `    over an empty subject and found nothing to say. Read the probe before reading the verdict:\n` +
+    `    a carrier binds its code as \`code="&#x00NN;"\`, and a reader left on another binding sees zero.`,
+  );
+}
 
 if (scannerOnly.length > 0) {
   console.log(`  the bootstrap scanner reads marks the spec never wrote down: ${scannerOnly.sort().join(" ")}`);
@@ -231,7 +261,7 @@ if (undeclared.length > 0) {
 // seam below either fails the run or it is decoration, so all of them count.
 const broken =
   unrecognised.length + strayInReader.length + unscanned.length + untabled.length + specOnly.length +
-  inert.length + overreaching.length + slotDrift.length;
+  inert.length + overreaching.length + slotDrift.length + (noSubject ? 1 : 0);
 
 if (broken === 0) {
   console.log("  every mark the spec stands, a tiddler declares, patterns against a real carrier, and slots alike");
