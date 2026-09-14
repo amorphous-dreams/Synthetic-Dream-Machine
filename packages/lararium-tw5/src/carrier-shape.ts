@@ -30,7 +30,18 @@
 import { fencedSpans, maskedExec, maskedExecAll, type MaskSpan } from "./meme-ast/fence-mask.js";
 import { carrierMarkPattern, matchCarrierHead } from "./carrier-head.js";
 import { verifyBcc } from "./carrier-check.js";
+import { frameAlt } from "./frame-marks.js";
 import { META_OPEN_RE, META_OPEN_CANON, isCanonicalMetaOpen } from "./meta-fence.js";
+
+// THE CODE SET COMES FROM THE DECLARATION; THESE SCANS STAY THIS READER'S OWN (frame-marks.ts).
+// A frame sigil never crosses a line, and `>>` closes it only when a second bracket follows — the
+// arrow's own `>` rides as content, and a tail scanned as `[^>\n]*` would stop at it and read the
+// whole corpus unframed. The alternation groups NON-capturing, so nothing here indexes a group that
+// moves. Interpolated ONCE, at module scope: `readCarrierShape` runs on the ingest path.
+const INNER  = "(?:[^>\\n]|>(?!>))*";
+const STX_RE = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>`, "g");
+const ETX_RE = new RegExp(`<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`, "g");
+const EOT_RE = new RegExp(`<<\\^${INNER}${frameAlt("EOT")}${INNER}>>`, "g");
 
 /** One mark's presence, read through the fence mask so a teaching example never counts as a frame. */
 export interface CarrierMarks {
@@ -114,9 +125,9 @@ export function readCarrierShape(text: string): CarrierShape {
     // converts — and it is stripped where present.
     // AND THE ADDRESS COMES FROM THE SHORE, which strips the quote pair and refuses a torn head.
     headUri: headM ? (matchCarrierHead(headM[0])?.uri ?? null) : null,
-    stx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g),
-    etx:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x0003;(?:[^>\n]|>(?!>))*>>/g),
-    eot:     marked(text, /<<\^(?:[^>\n]|>(?!>))*&#x(?:0004|0014);(?:[^>\n]|>(?!>))*>>/g),
+    stx:     marked(text, STX_RE),
+    etx:     marked(text, ETX_RE),
+    eot:     marked(text, EOT_RE),
     check:   verifyBcc(text),
   };
 
@@ -167,14 +178,14 @@ export function readCarrierShape(text: string): CarrierShape {
   // ONE TEXT FRAME PER CARRIER. The check covers the first STX..ETX span and only that, so a second
   // frame would ride beneath a verdict computed over the first — the smuggling shape. The gradient
   // surfaces it rather than letting the first frame's `ok` speak for bytes it never covered.
-  const stxCount = maskedExecAll(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g, spans).length;
-  if (stxCount > 1) faults.push(`${stxCount} text frames stand where the grammar admits one — only the first verifies`);
+  const stxMarks = maskedExecAll(text, STX_RE, spans);
+  if (stxMarks.length > 1) faults.push(`${stxMarks.length} text frames stand where the grammar admits one — only the first verifies`);
   // THE FRAME MUST OPEN BEFORE THE BODY IT CLAIMS TO COVER. An STX seated after the last block leaves
   // a span of nearly nothing, and the check over nothing matches its own recomputation — so the file
   // reads `ok` at every gate while none of its bytes are covered. Two carriers stood that way, and the
   // check-witness counted both among its greens. Ahu openers outside the frame are the reading: they
   // are body, and body before the frame is body the verdict never saw.
-  const stxAt = maskedExecAll(text, /<<\^(?:[^>\n]|>(?!>))*&#x0002;(?:[^>\n]|>(?!>))*>>/g, spans)[0]?.index;
+  const stxAt = stxMarks[0]?.index;
   if (stxAt !== undefined) {
     const outside = maskedExecAll(text, /<<~ ahu\b/g, spans).filter((m) => m.index < stxAt).length;
     if (outside > 0) faults.push(`${outside} block(s) stand ahead of the text frame — the check covers a span that is not the body`);

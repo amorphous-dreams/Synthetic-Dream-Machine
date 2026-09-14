@@ -415,13 +415,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   const probed  = carrier(PROBE_SOH, PROBE_STX, PROBE_ETX, PROBE_EOT);
   const canon   = carrier("&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;");
 
-  // HANDED BACK, NOT FORGOTTEN. `carrier-shape.ts` sits in the grammar hearth's ground (the
-  // hearths ledger names it and its two tests), and the hearths gate REFUSES a hand that reaches
-  // there without a crossing row. Its three scans spell the code set by hand and would fail this
-  // probe standing; the cure is the same two lines every module above took. The reading stays
-  // written so the hearth that holds the file can turn it green by making the change, and the
-  // alternation walk below names the file for the same reason.
-  test.todo("★ carrier-shape sees a probed STX · ETX · EOT ★ — owed by the grammar hearth", async () => {
+  test("★ carrier-shape sees a probed STX · ETX · EOT ★", async () => {
     await withProbes(({ shape }) => {
       const m = shape.readCarrierShape(probed).marks;
       expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: true, etx: true, eot: true });
@@ -505,29 +499,11 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   // fixture reaches. What a source walk CAN see is the smell itself: a multi-code alternation of
   // frame entities spelled into a pattern. The bootstrap scanner passes it standing, because its
   // hand-written rows carry ONE code each by the ruling that keeps it independent (scanner.ts).
-  /**
-   * THE EXEMPTION NAMES ITS OWN RETIREMENT.
-   *
-   * One file sits exempt above because another hearth holds it, not because the law spares it. An
-   * exemption nobody retires reads as a hole with a comment on it — so this asks whether the reason still
-   * stands. The moment the grammar hearth takes the shared alternation, this goes red and the cure is to
-   * delete the entry and the `test.todo` beside it, never to widen the set.
-   */
-  test("the handed-back file STILL spells the set by hand — or this exemption has expired", () => {
-    const shapeSrc = readFileSync(fileURLToPath(new URL("../src/carrier-shape.js", import.meta.url)).replace(/\.js$/, ".ts"), "utf8");
-    const stillHandRolled = /&#x\(\??:?[0-9A-Fa-f]{4}\|[0-9A-Fa-f]{4}/.test(shapeSrc);
-    expect(
-      stillHandRolled,
-      "carrier-shape.ts took the shared alternation — DELETE it from `exempt` above and un-todo the probe",
-    ).toBe(true);
-  });
-
   test("★ no module spells a MULTI-CODE alternation of frame entities ★", () => {
     const srcRoot = fileURLToPath(new URL("../src", import.meta.url));
-    // `carrier-shape.ts` stands in the grammar hearth's ground and the hearths gate refuses a hand
-    // that reaches there without a crossing row. ONE FILE, NAMED — never a pattern: the entry leaves
-    // the moment that hearth takes the same alternation every module beside it already takes.
-    const exempt = new Set(["frame-marks.ts", "plugin-tiddler.generated.ts", "carrier-shape.ts"]);
+    // `frame-marks.ts` IS the declaration; the generated plugin tiddler is a build product. Every
+    // other module in this tree reads its code set from `frameAlt` — the set has no exemptions left.
+    const exempt = new Set(["frame-marks.ts", "plugin-tiddler.generated.ts"]);
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
         const full = join(dir, e.name);
