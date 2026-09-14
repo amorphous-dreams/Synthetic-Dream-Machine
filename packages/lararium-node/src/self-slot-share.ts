@@ -17,10 +17,14 @@
  * federatable; the sealed-carry lane opens only for a PROVABLY-member peer over a PROVABLY-sealed plane
  * (absent the nexus-doc consult or the seal oracle, every cross-operator is treated STRANGER).
  *
- * The SPLIT rides the OUTER deterministic federatable set (DeterministicFederationGate), never the INNER
- * verifyCapability-for-self ring (identity stays null) — sidestepping the allow-all self-grant trap: a
- * cross-operator peer reaches a FIXED public/infra surface, never an over-broad grant of this vessel's own
- * docs. The #59 antigen consult runs AHEAD (a Kapae'd presenter draws Mu even for a federatable plane).
+ * THE SPLIT RIDES THE OUTER RING — the deterministic federatable set (DeterministicFederationGate) — and
+ * that placement IS the safety: the outer gate is the position where a permissive substitution would leak a
+ * private-own plane, because nothing runs ahead of it, so the split seats a CLOSED-SET membership test there.
+ * A cross-operator peer therefore reaches a FIXED public/infra surface, never an over-broad grant of this
+ * vessel's own docs. The INNER verifyCapability-for-self ring stays null here, and its absence costs no
+ * safety: the composition ANDs outer-first, so an inner ring can only ever NARROW this verdict, never widen
+ * it (measured: `lararium-mesh/tests/allow-all-ring-ordering.test.ts`). The #59 antigen consult runs AHEAD
+ * (a Kapae'd presenter draws Mu even for a federatable plane).
  *
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */

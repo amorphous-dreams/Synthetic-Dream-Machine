@@ -234,14 +234,49 @@ export function presenterIsKapaed(antigen: AntigenRing | null, peerId: string): 
  *   2. the existing #58 `identityShareDecision`, UNCHANGED — the inner self-slot ring stays inert
  *      (identity = null on the live path) exactly as today; deny-by-default intact.
  *
- * ── SURFACED FORK (the #59 self-slot question) ──────────────────────────────
- * Lighting the INNER self-slot capability ring fully (identity ≠ null) re-introduces the allow-all
- * regression Ringward found (the self-slot `verifyCapability(bagUrl,"read")` for presenter = self grants
- * the vessel every one of its own docs, so an over-broad self-slot leaks the private planes to the relay).
- * This fn does NOT light that ring — it passes `identity` straight through so the self-slot stays inert —
- * and wires ONLY the antigen-consult that is safe. Making the self-slot inner ring live needs the
- * main↔worker cap-verify bridge (identityShareDecision's own HONEST BOUND) AND a tightened self-slot that
- * distinguishes federatable-own from private-own; kept as the open fork.
+ * ── SURFACED FORK (the #59 self-slot question), AS MEASURED ─────────────────
+ * WHERE THE ALLOW-ALL HAZARD LIVES: at the OUTER `fedGate` position, NOT at this fn's `identity` param.
+ * A permissive ring substituted for `DeterministicFederationGate` leaks a private-own plane to a gated
+ * cross-operator peer, because nothing runs ahead of the outer gate. A permissive ring passed as `identity`
+ * leaks NOTHING: `identityShareDecision` runs the fed gate FIRST, its `if (!fedAllows) return false` holds
+ * absolute, and the composition ANDs — so a slot answering `true` unconditionally degenerates to the
+ * fed-gate verdict doc for doc, exactly as `identity = null` does, and over a private-own doc the slot never
+ * even gets asked. Both verdicts, and the leak the INVERTED ordering would produce, stand pinned in
+ * `tests/allow-all-ring-ordering.test.ts`. THE AND-ORDERING CARRIES THE SAFETY, not the ring's answer: a
+ * refactor that consulted `identity` for an ALLOW ahead of the fed verdict would convert the inner ring
+ * from narrowing to widening, and that test goes red on it.
+ *
+ * So this fn passes `identity` straight through and wires only the antigen-consult — and the remaining
+ * blockers on lighting the inner ring read as ONE safety condition and ONE IRREVERSIBILITY condition:
+ *
+ *   ① federatable-own ⊥ private-own — STANDS, ENFORCED, not merely stated. `DeterministicFederationGate
+ *      .mayFederate` (above) is a closed-set membership test over deterministic doc ids derived from the
+ *      Nexus key; private-own means NOT IN THE SET, and the private planes carry random 16-byte ids that
+ *      can never collide with a derived address. Pinned in `lararium-node/tests/self-slot-share.test.ts`
+ *      (a cross-operator reaches crossroads / WHO / kapae-antigen and is DENIED catalog- and
+ *      personal-like planes; an unclassified peer routes to the same stricter branch).
+ *   ② THE WORKER-BOUNDARY MESSAGE — the one open safety condition, and it is ONE MESSAGE WIDE. See this
+ *      fn's HONEST BOUND above: the bridge (`daemon:verify-request`/`-result`) and the docId→bagUrl map
+ *      BOTH stand; what is absent sits between them. `DaemonMsg_VerifyRequest` (island-protocol.ts) takes a
+ *      `bagUrl`, so it assumes a caller who knows one, while a sharePolicy shore holds only a `documentId`.
+ *      One message carries that map across, then the ring.
+ *   ③ THE NAMING FREEZE — an IRREVERSIBILITY condition, and the loudest of the three because no later fix
+ *      undoes it. A bag URL gets hashed to seed the Document it names, so a name that has passed through a
+ *      live ring costs a RE-FOUNDING to change. Every remaining naming fusion resolves BEFORE this lights,
+ *      never after (canon: lar:///ha.ka.ba/lares/api/pono/one-name-one-relation; the same freeze is written
+ *      at `lararium-browser`'s `open-browser-vessel.ts` identityRing shore).
+ *
+ * ── TWO DOORS, TWO BLOCKERS — three readers have fused these ────────────────
+ * `identity` here takes an `IdentityRing` (`{slot, bagUrlForDoc, ability}`): the INNER per-doc capability
+ * ring, which only ever NARROWS the fed-gate verdict, and which conditions ②+③ gate. `makePersonaGroupIdentityRing`
+ * (`persona-group-ring.ts`) builds a `PersonaGroupIdentityRing` (`{admitsPeer, compose(base)}`): it plugs into
+ * the OUTER `fedGate` position and only WIDENS — the base's allow stands untouched and it adds one admit path
+ * for the planes a face governs. Wiring the PersonaGroup ring lights NO self-slot and trips NEITHER
+ * precondition. Two different doors with two different blockers; one question does not answer both.
+ *
+ * NOT KEYHIVE. This fn's wait carries no keyhive dependency: mesh holds none and never will
+ * (`persona-group-ring.ts` — the seal check rides in as an injected function precisely so keyhive never
+ * enters this package). The wait is the worker-boundary message of ② and the naming freeze of ③.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#carry-read-contract
  */
