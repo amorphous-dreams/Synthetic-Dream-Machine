@@ -309,6 +309,125 @@ describe("lares meme project — the daemon seat rides meme-project", () => {
 });
 
 /**
+ * THE COMPOSITION VERDICT REACHES THE OPERATOR WHO ASKED FOR IT.
+ *
+ * `readCarrierShape` reads a fault that exists NOWHERE in the records it composes: a guest pastes a whole
+ * framed carrier into an `ahu` section, the child's bytes read as a legal carrier, the root's bytes read as
+ * a legal carrier, and `expandRefs` joins them into an illegal one carrying TWO text frames where only the
+ * first verifies. The paste GRADES CLEAN — measured, `child-grade-decision.mem` #/measured row 11 — and the
+ * shape reading, which catches it (row 13), had exactly ONE production caller in the whole tree: the
+ * `--gradient` survey. No door, no gate, no route, no projector read it.
+ *
+ * SO THE COST ROUTED FROM THE ACTOR'S PRESENT TO A STRANGER'S FUTURE. Four months on, a reader on another
+ * peer meets a carrier with two heads and an `unchecked` verdict, with no author left to ask.
+ *
+ * `project --to mem` is where a human stands waiting on a command they JUST TYPED, and it is the one target
+ * whose output IS a carrier, so that is where the reading belongs.
+ *
+ * AND IT REPORTS RATHER THAN REFUSES — see the ruling in `memeProject`. These tests pin both halves: the
+ * bytes still land, and the fault still reaches BOTH channels with a non-zero exit.
+ */
+describe("project --to mem reads the composition it just rendered", () => {
+  /** The two-frame smuggle, as `expandRefs` composes it. Assembled at read time — it declares nothing on disk. */
+  const HEAD = [
+    `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>`,
+    ``,
+    `<<^ code="&#x0001;" namespace="&#x2299;" from="?" -> to="lar:///t/two-heads">>`,
+    "```toml meta",
+    `type     = "text/memetic-wikitext+tiddlywiki"`,
+    `uri-path = "t/two-heads"`,
+    "```",
+    ``,
+  ].join("\n");
+  const TWO_FRAMES = HEAD + [
+    `<<^ code="&#x0002;">>`, ``, `body one`, ``,
+    `<<^ code="&#x0002;">>`, ``, `body two`, ``,
+    `<<^ code="&#x0003;">>ni:///sha-256;AAAA`,
+    `<<^ code="&#x0004;" -> to="?">>`, ``,
+  ].join("\n");
+  const TORN = HEAD + [`<<^ code="&#x0002;">>`, ``, `body one`, ``].join("\n");
+
+  /** Run the door on the human channel, gathering what each stream carried. */
+  async function human(reply: Record<string, unknown>, options: Record<string, string> = {}): Promise<{ code: number; out: string; err: string }> {
+    h.calls.length = 0; h.refuse = "";
+    h.reply = reply;
+    const out: string[] = []; const err: string[] = [];
+    const so = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { out.push(String(l)); return true; }) as never);
+    const ce = vi.spyOn(console, "error").mockImplementation(((...a: unknown[]) => { err.push(a.map(String).join(" ")); }) as never);
+    const cl = vi.spyOn(console, "log").mockImplementation(((...a: unknown[]) => { out.push(a.map(String).join(" ")); }) as never);
+    const code = await cmdMeme(memeArgs(["project", "lar:///t/two-heads"], { to: "mem", ...options }, { json: false }));
+    so.mockRestore(); ce.mockRestore(); cl.mockRestore();
+    return { code, out: out.join("\n"), err: err.join("\n") };
+  }
+
+  test("★ RED — a composed render carrying TWO text frames reaches the operator's channel ★", async () => {
+    const r = await human({ uri: "lar:///t/two-heads", to: "mem", text: TWO_FRAMES, contentType: "text/memetic-wikitext+tiddlywiki" });
+    // THE FAULT REACHES A HUMAN, in the words the reading itself uses.
+    expect(r.err).toMatch(/2 text frames stand where the grammar admits one/);
+    // …and the BYTES STILL LAND. A reading that ate the operator's render would drop bytes to protect the
+    // grammar — the one thing the diagnostics ladder forbids.
+    expect(r.out).toContain("body two");
+    // …and a hook can catch it: the render happened, the reading faulted, the exit says so.
+    expect(r.code).not.toBe(0);
+  });
+
+  test("the fault rides the --json channel too (vitest is never a TTY, so `emit` renders JSON on the flag)", async () => {
+    h.calls.length = 0; h.refuse = "";
+    h.reply = { uri: "lar:///t/two-heads", to: "mem", text: TWO_FRAMES, contentType: "text/memetic-wikitext+tiddlywiki" };
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { lines.push(String(l)); return true; }) as never);
+    const code = await cmdMeme(memeArgs(["project", "lar:///t/two-heads"], { to: "mem" }, { json: true }));
+    spy.mockRestore();
+    const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { ok?: boolean; data?: Record<string, unknown> };
+    const shape = reply.data?.["shape"] as { kind?: string; faults?: string[] } | undefined;
+    expect(shape?.kind).toBe("carrier");
+    expect(shape?.faults?.join(" ")).toMatch(/2 text frames stand where the grammar admits one/);
+    // `ok` names whether the ACT landed; the exit code names what the READING found. Two facts, two
+    // channels — the same custody ⊥ secret-kind separation, one altitude along.
+    expect(reply.ok).toBe(true);
+    expect(reply.data?.["text"]).toBe(TWO_FRAMES);
+    expect(code).not.toBe(0);
+  });
+
+  test("CONTROL: a clean carrier projects silently and BYTE-IDENTICALLY, exactly as before", async () => {
+    const clean = readFileSync(PRISM, "utf8");
+    const r = await human({ uri: "lar:///ha.ka.ba/lares/api/pono/prism", to: "mem", text: clean, contentType: "text/memetic-wikitext+tiddlywiki" });
+    expect(r.code).toBe(0);
+    expect(r.err).toBe("");                 // not one line of shape noise on a carrier at its floor
+    expect(r.out).toBe(clean);              // byte-identical, and nothing else on stdout
+  });
+
+  test("CONTROL: a clean carrier's --out file lands byte-identical and the exit stays 0", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    const out = join(d, "clean.mem");
+    const clean = readFileSync(PRISM, "utf8");
+    const r = await human({ uri: "lar:///ha.ka.ba/lares/api/pono/prism", to: "mem", text: clean, contentType: "text/memetic-wikitext+tiddlywiki" }, { out });
+    expect(r.code).toBe(0);
+    expect(readFileSync(out, "utf8")).toBe(clean);
+  });
+
+  test("CONTROL: a TORN frame reads DISTINCT from a two-frame smuggle — truncated is never unchecked", async () => {
+    const torn = await human({ uri: "lar:///t/two-heads", to: "mem", text: TORN, contentType: "text/memetic-wikitext+tiddlywiki" });
+    expect(torn.err).toMatch(/the frame opens and never closes — STX stands without ETX/);
+    expect(torn.err).not.toMatch(/2 text frames/);
+    const two = await human({ uri: "lar:///t/two-heads", to: "mem", text: TWO_FRAMES, contentType: "text/memetic-wikitext+tiddlywiki" });
+    expect(two.err).not.toMatch(/opens and never closes/);
+  });
+
+  test("CONTROL: the OTHER targets read no carrier shape — an html render is not a carrier", async () => {
+    h.calls.length = 0; h.refuse = "";
+    h.reply = { uri: "lar:///t/x", to: "html", text: "<p>not a carrier at all</p>", contentType: "text/html" };
+    const lines: string[] = [];
+    const so = vi.spyOn(process.stdout, "write").mockImplementation(((l: unknown) => { lines.push(String(l)); return true; }) as never);
+    const code = await cmdMeme(memeArgs(["project", "lar:///t/x"], { to: "html" }, { json: true }));
+    so.mockRestore();
+    const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { data?: Record<string, unknown> };
+    expect("shape" in (reply.data ?? {})).toBe(false);
+    expect(code).toBe(0);
+  });
+});
+
+/**
  * THE SIDECAR RIDES THE JSON REPLY. The daemon's `meme-project` answers `{ text, meta }` for md — a carrier in
  * two files — and the CLI's `--json` reply carried `text` alone unless `--out` wrote the `.meta` to disk, so a
  * JSON consumer (the MCP twin, the docker check, an AI at the QA lab) read half the pair. Measured on the docker

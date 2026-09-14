@@ -681,6 +681,19 @@ async function memeProject(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const text = String(outcome.output["text"] ?? "");
+  // ── THE COMPOSITION READING, AT THE ONE PLACE A HUMAN STANDS WAITING ──────────────────────────────
+  //
+  // A `mem` projection RENDERS A CARRIER — the composed one, the join `expandRefs` makes out of a root
+  // and its slot children. That join is where a whole class of fault comes into being and nowhere else:
+  // the child's bytes read as a legal carrier, the root's bytes read as a legal carrier, and the two
+  // together carry TWO text frames where only the first verifies. A guest's paste GRADES CLEAN at every
+  // content instrument in the tree (`child-grade-decision.mem` #/measured row 11) and the shape reading
+  // catches it (row 13) — and until now that reading had ONE production caller, the `--gradient` survey.
+  // So the cost routed from the actor's present to a stranger's future: four months on, a reader on
+  // another peer meets a carrier with two heads and no author left to ask.
+  //
+  // Projection is where a human waits on a command they just typed, so this is where the reading lands.
+  const shape = plan.to === "mem" ? readCarrierShape(text) : null;
   const out = typeof args.options["out"] === "string" ? args.options["out"] : "";
   if (out) writeFileSync(out, text, "utf8");
   // THE SIDECAR PAIR IS A CARRIER IN TWO FILES: an `md` projection rides its `.meta` in the reply, and it
@@ -696,11 +709,56 @@ async function memeProject(args: ParsedArgs): Promise<number> {
       uri, to: plan.to, contentType: outcome.output["contentType"],
       ...(out ? { out, ...(typeof meta === "string" ? { outMeta: `${out}.meta` } : {}) } : { text }),
       ...(typeof meta === "string" ? { meta } : {}),
+      // The reading rides the machine channel whole — kind AND faults — so an agent reads the same
+      // verdict a person does. Absent for every target whose render is not a carrier: an html page has
+      // no carrier shape, and inventing one would be a reading over bytes the question does not fit.
+      ...(shape ? { shape: { kind: shape.kind, check: shape.marks.check, faults: shape.faults } } : {}),
     },
     // The rendered text alone reaches stdout, so `lares meme project <uri> --to html > file` carries it.
-    human: () => { if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text); },
+    // THE READING GOES TO STDERR, and that placement is load-bearing: stdout is the operator's artifact
+    // — the redirect they typed — and a verdict written into it would corrupt the very carrier it warns
+    // about. The two streams are the two facts.
+    human: () => {
+      if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text);
+      if (!shape || shape.faults.length === 0) return;
+      console.error(`\n⚠ the composed carrier stands below its kind's floor (${shape.kind}, check ${shape.marks.check}):`);
+      for (const fault of shape.faults) console.error(`  ⚠ ${fault}`);
+      console.error("  the bytes above are what the island composed — read the fault before you carry them anywhere.");
+    },
   });
-  return 0;
+  // ── REPORT, NEVER REFUSE — and the doctrine that decided it ────────────────────────────────────────
+  //
+  // THREE STANDING RULINGS point one way, and none of them is close.
+  //
+  //   · WRITE-OPEN, READ-CERTIFIED (`child-grade-decision.mem` #/standing-law, on `handle-card.mem`
+  //     #/public-by-design): let the act land, and carry the verdict on the read. The precedent is the
+  //     announce board, which admits any nym's card and certifies nothing at write.
+  //   · THE DIAGNOSTICS LADDER (`diagnostics.ts:38-46`): `error` names the one fault that costs the
+  //     operator their bytes, and every recovery grades below the line BECAUSE refusing a recovery would
+  //     drop bytes to protect the grammar. Exactly two faults reach `error`, and a composition fault is
+  //     neither. A projection that withheld a render would be that forbidden drop, at a door whose whole
+  //     job is to hand over bytes.
+  //   · A CONFLICT SURFACES RATHER THAN ONE STREAM DROWNING ANOTHER, and auto-arbitration reads
+  //     anti-pono (talk-story conflict law). A door that refused here would ARBITRATE — deciding on its
+  //     own reading that the operator may not have the render they asked for — over a carrier whose
+  //     every byte an author wrote on purpose. Refusing is the move this house does not make.
+  //
+  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE FIX IS NOT HERE. Two legal carriers joined into
+  // an illegal one: no byte of the projection is wrong, and nothing this door could refuse would repair
+  // the records behind it. Refusing would withhold the one artifact that SHOWS the operator the join.
+  //
+  // SO THE EXIT CODE CARRIES THE READING AND `ok` CARRIES THE ACT. The projection happened — `ok: true`,
+  // the text in the payload, the `--out` file on disk — and the exit says a reading faulted, so a hook,
+  // a CI gate or a script catches it without a human reading prose. Two facts, two channels, neither
+  // answering for the other.
+  //
+  // MY EXIT DISCIPLINE AGREES WITH `--gradient`, and the reported divergence does not reproduce:
+  // `meme check --gradient` over a faulted file exits 1, measured on the built binary. The "exits 0 while
+  // printing 1 file(s) below their kind's floor" reading came from `$?` after a pipe, which reports the
+  // LAST stage's status — the instrument lie, not a defect in the door. `surveySitting` keeps 0 by its own
+  // ruling (a candidate is a state, not a fault); a carrier below its kind's floor IS a fault, so it
+  // exits non-zero here exactly as it does there.
+  return shape && shape.faults.length > 0 ? 1 : 0;
 }
 
 /** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`. */
