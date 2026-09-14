@@ -27,13 +27,30 @@ import pathlib, re, subprocess, sys
 MCP = pathlib.Path("packages/lararium-sensorium/scripts/lares_mcp.py")
 CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
 
+# A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. This read `nothing to compare` and exited 0, so the
+# day the MCP surface moved or was renamed, the one witness that welds an agent's reach to an operator's
+# would have reported the cleanest run it has ever produced — over a comparison it never made. The CLI
+# half of this same file already keeps the law (`or not doors` → exit 1); the MCP half now answers to it.
 if not MCP.exists():
-    print(f"[surface-parity] no MCP surface at {MCP} — nothing to compare"); sys.exit(0)
+    print(f"[surface-parity] NO MCP SURFACE AT {MCP} — parity is unmeasurable, not clean.")
+    print( "      An agent's reach and an operator's reach go uncompared until this file answers.")
+    print( "      If the surface moved, re-aim MCP here; if it retired, retire this witness with it.")
+    sys.exit(1)
 if not CLI.exists():
     print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
 
 tools = [t.replace("_", "-") for t in
          re.findall(r'@mcp\.tool\(\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
+
+# A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool()` with EMPTY parentheses, so the
+# ordinary act of giving one tool a `name=` or `description=` argument would drop it from this reading —
+# and a reading that drops every tool leaves `missing` empty and the run green. The set the whole witness
+# walks must be asserted before anything is asserted about its members.
+if not tools:
+    print(f"[surface-parity] {MCP} DECLARES NO TOOLS to this reader — the walk below has no members.")
+    print( "      The probe binds `@mcp.tool()` with empty parentheses; a decorator carrying an argument")
+    print( "      reads as absent, and every check here then passes by having nothing to check.")
+    sys.exit(1)
 
 # The CLI's own answer, never a transcription of it: the top-level listing, plus each parent verb's own
 # help. A door counts whether it stands at the top or one level in.
@@ -173,6 +190,17 @@ for f in pathlib.Path("packages").rglob("src/**/*.ts"):
     if "/dist/" in str(f): continue
     registered |= set(REG.findall(f.read_text(errors="ignore")))
 registered = {r.replace("_", "-") for r in registered}
+
+# AND A FLOOR ON THE PORT. `registry.register("verb")` is one hand-written spelling of a call the daemon
+# makes in many places; a refactor to `registerVerb(...)` or a registration built from a table would empty
+# this set, and all four buckets below would then read 0 with the run still green. The buckets are the
+# only place an UNREACHED daemon capability is ever counted, so an empty port erases the count rather
+# than reporting zero of it.
+if not registered:
+    print("[surface-parity] THE DAEMON REGISTRY READS EMPTY — the port buckets below counted nothing.")
+    print("      The probe binds `registry.register(\"verb\")`; a registration written any other way")
+    print("      reads as absent, and 'unreached daemon capability' then has no set to be counted in.")
+    sys.exit(1)
 
 both      = sorted(v for v in registered if v in tools and has_door(v))
 cli_only  = sorted(v for v in registered if v not in tools and has_door(v))
