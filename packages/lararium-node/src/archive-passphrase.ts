@@ -6,7 +6,10 @@
  * secret carriers the vessel holds at rest:
  *   · keyhive-archive.bin           — the sovereign identity floor; the daemon RE-SEALS it every boot (M3).
  *   · veil-archive.bin              — the veil identity's archive; re-sealed beside the vessel's every boot.
- *   · recovery-device-share.bin     — the device recovery share; written ONCE at founding.
+ *   · recovery-device-share-h${N}.bin — the device recovery share, ONE PER PERSONA (written at each
+ *                                     persona's founding). The enumeration READS THE DISK for them —
+ *                                     a family spelled as a single path is a family that escapes rotate,
+ *                                     repair, status and the export refusal (see `deviceShareCarriers`).
  *   · seal-reserve-mine-share.bin   — the vessel's one share of the Nexus reserve seed; written at the seal rite.
  *
  * ONE RULE NAMES THE SET: every file a boot opens through `openArchiveBytes` under the resolved seal policy
@@ -39,7 +42,7 @@
  * failed probe stands OPEN as a fork — see `readArchiveOpening`; the waking floor still stands here.
  */
 
-import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync } from "node:fs";
+import { readFileSync, existsSync, writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, chmodSync, mkdirSync, realpathSync, readdirSync } from "node:fs";
 import { dirname, resolve, basename, join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { isSealedEnvelope, decodeEnvelope, readSealCarrier } from "@lararium/mesh";
@@ -71,19 +74,69 @@ export function weakPassphraseWarning(passphrase: string): string | null {
   return null;
 }
 
-export type CarrierName = "archive" | "veil" | "device-share" | "reserve-share";
+/**
+ * A carrier's name. THREE ARE SINGLETONS AND ONE NAMES A FAMILY: a vessel wearing several personas splits
+ * EACH persona-root independently, so the device share is written per handle-index
+ * (`recovery-device-share-h${N}.bin`) and every index is its own carrier under this lifecycle. The name
+ * carries the index for exactly the reason the filename does — h0's quorum leg and h1's are different
+ * secrets, and a status, a rotate report or an export refusal that folded them would name neither.
+ */
+export type DeviceShareName = `device-share-h${number}`;
+export type CarrierName = "archive" | "veil" | "reserve-share" | DeviceShareName;
+
+/** The device-share filename law, read back: the family's spelling in `recovery-share-store`. */
+const DEVICE_SHARE_FILE = /^recovery-device-share-h(\d+)\.bin$/;
+
+function deviceShareName(handleIndex: number): DeviceShareName {
+  return `device-share-h${handleIndex}`;
+}
 
 interface Carrier {
   readonly name: CarrierName;
   readonly path: string;
 }
 
-/** The two at-rest secret carriers, in a FIXED order (the rename sequence the ratify flow commits in). */
+/**
+ * Every device-share carrier STANDING ON DISK, ascending by handle-index.
+ *
+ * THE DISK IS THE SOURCE, AND ON PURPOSE. The fact this lifecycle governs is a FILE THAT EXISTS: a sealed
+ * carrier left out of the enumeration keeps the old passphrase through a rotate that reports success,
+ * hides from a repair, and reads clean in a status that never opened it. So the enumeration must not be
+ * able to MISS one, and every other source can: the writer (`nodeRecoveryShareStore.save`) records no
+ * roster of its own; the anchor and persona rosters record a different fact (which persona this vessel
+ * anchors / holds a root for), read back as `[]` when torn, and can be restored while a share file is
+ * not; and a handle COUNT derived from either would skip a gap in the numbering. A dir read cannot be
+ * out of date with the disk it reads. `vesselKeyCensus` already reads this same dir for this same family
+ * — a `vault status` naming `recovery-device-share-h1` under `keys` while omitting it from `carriers`
+ * was one output disagreeing with itself.
+ *
+ * The cost of reading the disk instead of a record: a stray file spelled like the family becomes a
+ * carrier. That errs the safe way — governing a file that need not be governed refuses a write and names
+ * a split; the other error DESTROYS a leg of the recovery quorum.
+ */
+function deviceShareCarriers(): readonly Carrier[] {
+  const dir = larIdentityDir();
+  let entries: string[];
+  try { entries = readdirSync(dir); } catch { return []; }   // no identity home yet — no shares stand
+  const found: { index: number; carrier: Carrier }[] = [];
+  for (const entry of entries) {
+    const m = DEVICE_SHARE_FILE.exec(entry);
+    if (!m) continue;
+    const index = Number(m[1]);
+    if (!Number.isSafeInteger(index)) continue;
+    // Name the location through the WRITER's own path function, never by rejoining the string we scanned
+    // — one spelling of a carrier location, as the singletons already do.
+    found.push({ index, carrier: { name: deviceShareName(index), path: deviceSharePath(index) } });
+  }
+  return found.sort((a, b) => a.index - b.index).map((f) => f.carrier);
+}
+
+/** The at-rest secret carriers, in a FIXED order (the rename sequence the ratify flow commits in). */
 function carriers(): readonly Carrier[] {
   return [
     { name: "archive",       path: archivePath() },
     { name: "veil",          path: veilArchivePath() },
-    { name: "device-share",  path: deviceSharePath() },
+    ...deviceShareCarriers(),
     { name: "reserve-share", path: reserveMineSharePath() },
   ];
 }
@@ -104,10 +157,27 @@ function resolvedLocation(p: string): string {
   try { return join(realpathSync(dirname(abs)), basename(abs)); } catch { return abs; }
 }
 
-/** Which sealed carrier a path RESOLVES onto, or null when it names somewhere else entirely. */
+/**
+ * Which sealed carrier a path RESOLVES onto, or null when it names somewhere else entirely.
+ *
+ * A DEVICE-SHARE SLOT COUNTS EVEN WHILE IT HOLDS NOTHING. The other three carriers exist or do not, but
+ * the share family has slots the writer will mint later, and an export landing on an empty one seals an
+ * arbitrary backup exactly where `persistRecoveryDeviceShare(share, N)` must write — after which the
+ * write guard refuses that write forever, over bytes no passphrase in the vault opens. The pattern names
+ * the family; standing bytes are not what makes a location a carrier's.
+ */
 function carrierAtPath(p: string): CarrierName | null {
   const target = resolvedLocation(p);
-  return carriers().find((c) => resolvedLocation(c.path) === target)?.name ?? null;
+  const standing = carriers().find((c) => resolvedLocation(c.path) === target)?.name;
+  if (standing) return standing;
+  const m = DEVICE_SHARE_FILE.exec(basename(target));
+  if (m) {
+    const index = Number(m[1]);
+    if (Number.isSafeInteger(index) && resolvedLocation(deviceSharePath(index)) === target) {
+      return deviceShareName(index);
+    }
+  }
+  return null;
 }
 
 export type CarrierState = "absent" | "cleartext" | "sealed";

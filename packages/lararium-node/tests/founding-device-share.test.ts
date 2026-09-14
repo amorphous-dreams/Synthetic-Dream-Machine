@@ -51,7 +51,7 @@ describe("the device share mints at the face founding", () => {
     expect(first.escrowCarrier.length).toBeGreaterThan(0);
     expect(loadRecoveryDeviceShare(0)?.custodian).toBe("device");
     const bytes = readFileSync(deviceSharePath(0));
-    expect(archiveSealStatus().carriers["device-share"].state).toBe("cleartext");   // no policy → bare, honestly
+    expect(archiveSealStatus().carriers["device-share-h0"]!.state).toBe("cleartext");   // no policy → bare, honestly
 
     // CONTROL: the second act (a re-light, a re-stand) leaves the carrier byte-identical.
     const again = await armRecoveryAtFounding(root, 0);

@@ -276,7 +276,7 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
     const status = archiveSealStatus({ probe: PASS_B });
     expect(status.split).toBe(false);
     expect(status.carriers.archive.opensUnderProbe).toBe(true);
-    expect(status.carriers["device-share"].opensUnderProbe).toBe(true);
+    expect(status.carriers["device-share-h0"]!.opensUnderProbe).toBe(true);
   });
 
   // ── ATTACK 7 · `vault seal` OVER AN ALREADY-SEALED CARRIER ──────────────────────────────────────
@@ -354,7 +354,7 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
     } finally { process.chdir(cwd); }
 
     // ⑤ ANOTHER carrier, named by its own name — the guard covers the whole list, not just the archive
-    expect(() => exportSealedArchive(PASS_B, deviceSharePath(), true)).toThrow(/onto the "device-share" carrier/);
+    expect(() => exportSealedArchive(PASS_B, deviceSharePath(), true)).toThrow(/onto the "device-share-h0" carrier/);
 
     // Nothing moved, and the live policy still opens the carrier.
     expect(readFileSync(archivePath()).equals(before)).toBe(true);
@@ -428,5 +428,128 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
     expect(existsSync(archivePath())).toBe(false);
     persistIdentityArchive(SOVEREIGN);
     expect(existsSync(archivePath())).toBe(true);
+  });
+
+  // ── ATTACK 12 · THE DEVICE-SHARE FAMILY THE ENUMERATION NEVER NAMED ─────────────────────────────
+  // The WRITE guard reaches every device share (each writer calls it, whatever its handle-index). The
+  // ENUMERATION did not: `carriers()` listed a bare `deviceSharePath()` — h0 alone — while the writer
+  // mints `recovery-device-share-h${N}.bin` per persona. So every share at h1 and above escaped the four
+  // consumers keyed off that list: `rotate` left it on the OLD passphrase and reported success, `repair`
+  // could not see it, `status --check` read clean over a carrier it never opened, and the export refusal
+  // did not defend its path. A vessel wearing two personas therefore split its own identity across two
+  // passphrases with nothing saying so.
+  //
+  // THE CURE READS THE DISK. The identity dir is scanned for `recovery-device-share-h<N>.bin` and every
+  // file found becomes a carrier — because the fact the lifecycle governs is a FILE THAT EXISTS, and a
+  // roster is a written hint that can go missing exactly when it matters (`readAnchorRoster` reads a torn
+  // roster as `[]`, which would re-open this same hole one layer along). `vesselKeyCensus` already scans
+  // this same dir for this same family; a status naming `recovery-device-share-h1` under `keys` while
+  // omitting it from `carriers` was one output disagreeing with itself.
+
+  /** Seal a device share at each index under PASS_A, and hand back the sealed bytes per index. */
+  function standShares(indices: readonly number[]): Map<number, Buffer> {
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    persistIdentityArchive(SOVEREIGN);
+    const out = new Map<number, Buffer>();
+    for (const i of indices) {
+      persistRecoveryDeviceShare(share(i + 1), i);
+      const bytes = readFileSync(deviceSharePath(i));
+      expect(isSealedEnvelope(bytes), `the rig failed to seal h${i}`).toBe(true);
+      out.set(i, bytes);
+    }
+    return out;
+  }
+
+  test("★ CURED — `vault rotate` moves EVERY device share, h1 and above included ★", () => {
+    standShares([0, 1]);
+    rotateArchivePassphrase(PASS_A, PASS_B);
+
+    // The decisive reading: both shares OPEN under the new passphrase. Before the cure h1 stayed on
+    // PASS_A and this threw at its GCM tag — while `rotate` reported success.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
+    expect(loadRecoveryDeviceShare(0)?.bytes.x, "h0 rotated").toBe(1);
+    expect(loadRecoveryDeviceShare(1)?.bytes.x, "h1 stayed on the OLD passphrase").toBe(2);
+
+    // And the OLD passphrase opens neither — no leg was left behind.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    expect(() => loadRecoveryDeviceShare(1)).toThrow();
+  });
+
+  test("★ CURED — `vault status --check` NAMES the split when h1 rides a foreign passphrase ★", () => {
+    standShares([0]);
+    // h1 seals under a DIFFERENT passphrase — the exact residue a pre-cure rotate left behind.
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
+    persistRecoveryDeviceShare(share(9), 1);
+
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    const status = archiveSealStatus({ probe: PASS_A });
+    expect(status.carriers["device-share-h1"], "h1 never reached the status at all").toBeDefined();
+    expect(status.carriers["device-share-h0"]!.opensUnderProbe).toBe(true);
+    expect(status.carriers["device-share-h1"]!.opensUnderProbe).toBe(false);
+    expect(status.split, "the split-KEK detector went blind where a split is most likely").toBe(true);
+
+    // CONTROL — `vault repair` now REACHES h1 and closes the split it just named.
+    repairSplitKek(PASS_B, PASS_A);
+    expect(archiveSealStatus({ probe: PASS_A }).split).toBe(false);
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
+    expect(loadRecoveryDeviceShare(1)?.bytes.x).toBe(9);
+  });
+
+  test("★ CURED — `vault export` aimed at a device share at h1 REFUSES (standing or not) ★", () => {
+    standShares([0, 1]);
+    const before = readFileSync(deviceSharePath(1));
+
+    expect(() => exportSealedArchive(PASS_B, deviceSharePath(1), true))
+      .toThrow(/onto the "device-share-h1" carrier/);
+    expect(readFileSync(deviceSharePath(1)).equals(before), "the h1 share stood").toBe(true);
+
+    // A slot that holds NOTHING YET is refused too: the PATTERN names the family, not only its extant
+    // members. An export landing on an empty slot would seal an arbitrary backup where the next
+    // `persistRecoveryDeviceShare(share, 5)` must write — and the guard would then refuse that write
+    // forever, on bytes no passphrase in the vault opens.
+    expect(existsSync(deviceSharePath(5))).toBe(false);
+    expect(() => exportSealedArchive(PASS_B, deviceSharePath(5), true))
+      .toThrow(/onto the "device-share-h5" carrier/);
+
+    // CONTROL — an ordinary destination still exports.
+    expect(exportSealedArchive(PASS_B, join(root, "backup.bin"), false).bytes).toBeGreaterThan(0);
+  });
+
+  test("CONTROL — a GAP in the numbering (h0 and h2, no h1) throws in no consumer", () => {
+    standShares([0, 2]);
+    const status = archiveSealStatus({ probe: PASS_A });
+    expect(Object.keys(status.carriers)).not.toContain("device-share-h1");
+    expect(status.carriers["device-share-h2"]!.state).toBe("sealed");
+    expect(status.split).toBe(false);
+
+    expect(rotateArchivePassphrase(PASS_A, PASS_B).rotated).toContain("device-share-h2");
+    expect(repairSplitKek(PASS_B, PASS_B).alreadyConsistent).toContain("device-share-h2");
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
+    expect(loadRecoveryDeviceShare(2)?.bytes.x).toBe(3);
+    expect(loadRecoveryDeviceShare(1), "an absent index reads absent, never a throw").toBeNull();
+  });
+
+  test("CONTROL — h0 ALONE behaves exactly as before (one share, one name, a clean rotate)", () => {
+    standShares([0]);
+    const status = archiveSealStatus({ probe: PASS_A });
+    expect(Object.keys(status.carriers).filter((k) => k.startsWith("device-share"))).toEqual(["device-share-h0"]);
+    expect(status.split).toBe(false);
+
+    const r = rotateArchivePassphrase(PASS_A, PASS_B);
+    expect(r.rotated).toEqual(["archive", "device-share-h0"]);
+    expect(archiveSealStatus({ probe: PASS_B }).split).toBe(false);
+
+    // CONTROL — the GCM tag still proves intent: a WRONG old passphrase writes zero bytes.
+    const after = readFileSync(deviceSharePath(0));
+    expect(() => rotateArchivePassphrase(PASS_A, "third-passphrase-charlie")).toThrow();
+    expect(readFileSync(deviceSharePath(0)).equals(after), "a refused rotate moved the share").toBe(true);
+  });
+
+  test("CONTROL — the WRITE guard still refuses a non-opening write at h1 (the cure moved the finding, not the guard)", () => {
+    standShares([0, 1]);
+    const before = readFileSync(deviceSharePath(1));
+    setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);
+    expect(() => persistRecoveryDeviceShare(share(99), 1)).toThrow(/does not open it/);
+    expect(readFileSync(deviceSharePath(1)).equals(before)).toBe(true);
   });
 });

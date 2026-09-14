@@ -204,7 +204,9 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
       console.log(`vault status (${via}):`);
       for (const [name, c] of Object.entries(carriers)) {
         const probeMark = c.opensUnderProbe === undefined ? "" : c.opensUnderProbe ? "  ✓ opens under probe" : "  ✗ does NOT open under probe";
-        console.log(`  ${name.padEnd(14)} ${c.state}${c.mode ? ` (${c.mode})` : ""}${probeMark}`);
+        // 18 columns, because the device share names a FAMILY: one carrier per persona
+        // (`device-share-h0`, `device-share-h1`, …), and a 14-column field ran the widest name into its state.
+        console.log(`  ${name.padEnd(18)} ${c.state}${c.mode ? ` (${c.mode})` : ""}${probeMark}`);
       }
       if (output["split"]) console.error("  ⚠ SPLIT-KEK: the carriers ride different passphrases — run `lares vault repair`");
       console.log(`  sealExpected   ${output["sealExpected"]}`);
