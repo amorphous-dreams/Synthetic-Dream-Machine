@@ -340,6 +340,7 @@ Total: ''17.0 spirit-hours.''
 ''Lares (Gatekeeper).'' Each refusal names the line it rests on, so a later reader can overturn it against evidence rather than against taste.
 
 * ''No cure may answer 4xx on a path the stock syncer drives.'' `syncer.js:431-442` + `:26` + `:482-500` + `:542-545`: a refused save never updates `tiddlerInfo`, so the same task re-runs every five seconds forever, ahead of every load, poll and delete. One 422 is a permanent stall, not a retry. This refusal eats (b′-2), (b′-4)-in-place-of-(b′-3), and (c′-4).
+** ''The population it binds'' (operator ruling, 2026-09-13). The refusal holds at full strength over what ships in `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` — a consumer's own wiki folder under a plain `tiddlywiki --listen`, where the stock `tiddlyweb` syncadaptor stands and answers to stock TW5's contract. The SDM repo's own `bags/` and `wikis/` run the lararium multi-wiki + daemon-wiki setup, and ''the daemon-wiki stands outside this refusal's jurisdiction'': the island boots with no syncadaptor module, no `$tw.syncer` and no poll timer (`src/sovereign-kernel.ts:415`), ROAD B carries one direct `change` listener into `IslandAdaptor.saveTiddler` instead (`src/outbound-bridge.ts:1-19`), the packed plugin registers no `module-type: syncadaptor`, and the daemon serves `/ws` alone (`packages/lararium-node/src/main.ts:156-167`). The refusal's own measurement declares that scope: `tests/syncer-back-parity.e2e.test.ts:3-4` names its contact //"a plain `tiddlywiki --listen` carrying the packed plugin, driven by a real Chromium client running the stock `tiddlyweb` + `filesystem` pair. Nothing of the island, nothing of the daemon."//
 * ''No gate gets fused.'' The Confluence gate (`src/ingest-gate.ts:120`) grades CONTENT; the root law decides ADDRESS. Phase 1 moves the address law and MUST NOT read a diagnostic; Phase 5 grades content and MUST NOT decide a door. A cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.
 * ''No stock route gets re-implemented.'' Both standing skins hand stock the work (`routes/native-door.ts:68`, `routes/native-delete-door.ts:88`). Phase 3 keeps that shape by decorating the response; a re-derived copy of `get-tiddlers-json.js`'s filter, its `ExternalFilters` guard or its system clause would drift the day upstream moved.
 * ''No client law where a server law reaches.'' `syncer-back-parity.mem` `#/charm-reach`. This eats (d′-4) and holds (b′-5) unbuilt. The charm gains nothing in this plan but a narrower root law it already shares.
@@ -406,6 +407,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZKp6LIwOskm9CDtG2j-T137bcdzl3qo9f1A4esx-NJs
+<<^ code="&#x0003;">>ni:///sha-256;zGZeUH8i3-BNGwRPz5FOYvI_yUFaf3-mhQmeYXNBKKg
 
 <<^ code="&#x0004;" -> to="?">>

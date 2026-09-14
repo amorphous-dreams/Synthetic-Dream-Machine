@@ -290,6 +290,20 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 ''So Fork A's refusing reading stands already refused.'' What remains open is narrower than the question as worded: ''not whether a child's save is graded, but whether the grade is READ ALOUD.'' Every proposal below the refusal line is live; every proposal at or above it is dead on standing law. ''A reader taking one thing from this carrier should take that.''
 
+!!! The population that law binds — and the one it does not
+
+''The refusal holds at full strength over the SHIPPED PLUGIN'' (operator ruling, 2026-09-13): a consumer's own wiki folder under a plain `tiddlywiki --listen` carrying `packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, where the stock `tiddlyweb` syncadaptor stands. ''The SDM repo's `bags/` and `wikis/` run the lararium multi-wiki + daemon-wiki setup, and the daemon-wiki stands outside its jurisdiction'' — the island boots with no syncadaptor module, no `$tw.syncer`, no poll timer (`src/sovereign-kernel.ts:415`); ROAD B carries one direct `change` listener into `IslandAdaptor.saveTiddler` (`src/outbound-bridge.ts:1-19`); the packed plugin registers no `module-type: syncadaptor`; the daemon serves `/ws` alone (`packages/lararium-node/src/main.ts:156-167`). The refusal's own measurement declares that scope in its first lines: `tests/syncer-back-parity.e2e.test.ts:3-4` names its contact //"a plain `tiddlywiki --listen` carrying the packed plugin … Nothing of the island, nothing of the daemon."//
+
+!!! THE CAVEAT — "the daemon MAY refuse" never reads as "refusing is safe"
+
+''Breach-Watch (Triage).'' A daemon-side refusal costs differently, never nothing. Three measured lines:
+
+# ''A rejection cannot poison the burst.'' `src/outbound-bridge.ts:64` wraps the call as `void adaptor.saveTiddler(tiddler).catch(err => console.warn(…))` — the rejection gets caught and dropped inside the listener, so it never reaches the `change` bus. No queue stalls, no `tiddlerInfo` corrupts, the next save runs clean. This carries the whole difference from the stock path.
+# ''But a refusal carries no voice.'' It reads as a console line and a lost write while the wiki still shows the user's text. Worse, `src/island-adaptor.ts:314` (the volatile-VM plane) and `:319` (a cascade withholding) both `return Promise.resolve()` — ''silent success'', indistinguishable from a landed write at every surface the operator can see.
+# ''So a daemon-side content refusal MUST ride the disk-ward's alert rail'', spelled as a cascade withholding rule and never as a throw: island refusal → `IslandMsg_Event` → admin VM reactor → a durable `@daemon` audit record + a `$:/tags/Alert` in the operator's pinned wiki (`bags/lararium/ha.ka.ba/lararium/api/disk-projection.mem:156-171`, `packages/lararium-node/src/island-behaviors.ts:62-68`). A throw breaks the five-clause contract ROAD B was ruled into existence to satisfy.
+
+''A dropped write with no surface reads WORSE than a stalled queue.'' A stall shouts within five seconds; a silent withhold leaves the author's text on screen and gone from the CRDT, vanishing on the next inbound apply.
+
 !! ALREADY DECIDED — the grade may not choose a door
 
 `#/refusals`, second bullet: the Confluence gate grades CONTENT, the root law decides ADDRESS, and ''a cure that reads a grade to choose a door has fused two instruments that exist to be able to contradict each other.'' This forbids the shape "grade the child, and route it by the result" in any spelling.
@@ -380,6 +394,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_c-FaUMIaccVXfpvVMfvhVqL_6QHiu_ZPoZouY32zBs
+<<^ code="&#x0003;">>ni:///sha-256;y6ekrO2ju4-4gsVEZebsMScjkqdONcrTTCviJEaTeRc
 
 <<^ code="&#x0004;" -> to="?">>
