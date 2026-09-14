@@ -30,6 +30,11 @@ export const KEYHIVE_PROBE_VERSION = "0.0.0-alpha.56c";
 
 export { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
+// THE ONE DOOR that lands the sovereign identity archive — and the standing gate standing on it.
+export { persistArchiveFloor } from "./archive-floor-write.js";
+export type {
+  ArchiveFloorCarrier, ArchiveFloorWriters, ArchiveFloorRefusal, ArchiveFloorOutcome, ArchiveFloorInput,
+} from "./archive-floor-write.js";
 
 export { resolveOrMintBinding } from "./resolve-binding.js";
 export type {

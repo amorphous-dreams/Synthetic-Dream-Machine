@@ -218,6 +218,24 @@ export interface IslandMsg_Manifest {
     /** A prior keyhive Archive (from the identity home) — the restore FLOOR keyhive inits from before
      *  replaying daemon cap-events. Absent on a first boot / a vessel that never persisted one. */
     archiveBytes?:         Uint8Array;
+    /**
+     * WHETHER THIS VESSEL'S IDENTITY ARCHIVE OPENS — the node's `readArchiveOpening().opens`, carried
+     * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.
+     *
+     * REQUIRED, and that is the point. The M3 re-seal used to export the sovereign archive on EVERY
+     * boot, which landed a fresh faceless export over a sealed identity whenever the archive held
+     * shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
+     * worker gates on this and reads it `=== true`, so a drifted value fails CLOSED; making the field
+     * REQUIRED makes the compiler, rather than a reviewer, the thing that notices a populator which
+     * answers nothing.
+     *
+     * IT NAMES THE ARCHIVE FACT, NEVER THE CLASS. `standAs` renders a shut archive as `"herm"`, so the
+     * two agree wherever the seal decides the class; they part on a FOUNDING (no face lit, archive
+     * opens) and on an operator-declared `--recipe herm` crossroads, both of which must keep
+     * persisting their own place identity. `personaSlotCeiling("herm") === 0` bars a SEATED persona,
+     * never an archive.
+     */
+    archiveOpens:          boolean;
   };
 }
 

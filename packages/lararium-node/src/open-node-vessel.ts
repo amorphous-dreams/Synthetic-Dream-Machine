@@ -1304,11 +1304,20 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     //
     // Reading rather than asserting is the ruling itself (canon: waking-floor). Nothing is lowered — a
     // vessel that cannot open simply never rose, and an operator supplying the key raises it.
-    const archiveBytes = archiveOpens() ? loadIdentityArchive() : null;
-    const veilArchiveBytes = archiveOpens() ? loadVeilArchive() : null;
+    //
+    // ONE READING, READ ONCE, CARRIED WHOLE. The same fact that decides whether this boot may READ
+    // the archive decides whether it may WRITE one, so it rides into the worker on `daemonAuth`
+    // rather than being re-derived there: the worker's archive-write door refuses on it (`=== true`,
+    // fail-closed), which is the DOOR rather than the grant — `node-daemon-island` injects the
+    // writers, and a gate there would leave every other route into the worker unchecked
+    // (waking-floor #/the-breaks ①). Reading it twice would let the two readings drift apart mid-boot.
+    const opens = archiveOpens();
+    const archiveBytes = opens ? loadIdentityArchive() : null;
+    const veilArchiveBytes = opens ? loadVeilArchive() : null;
     const daemonAuth = {
       seed:                 vesselSeed,
       vesselVerifyingKey: vesselIdentity.verifyingKey,
+      archiveOpens:         opens,
       ...(dyadVeilTag ? { dyadVeilTag } : {}),
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as

@@ -161,6 +161,9 @@ async function main(): Promise<void> {
   const daemonAuth: NonNullable<IslandMsg_Manifest["daemonAuth"]> = {
     seed:                   daemonSeed,
     vesselVerifyingKey:   operatorVk,
+    // The probe drives the admission gate, not the archive floor, and injects no writer — so the
+    // archive-write door is inert here whatever this says. Open, matching a vessel with nothing sealed.
+    archiveOpens:           true,
     personaGroupDocIdHex:   "11".repeat(32), // unread by boot (affiliation left the boot path)
     personaGroupAgentIdHex: "22".repeat(32),
     meshCabalDocIdHex:      "33".repeat(32),

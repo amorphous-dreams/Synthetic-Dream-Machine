@@ -60,6 +60,7 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
 };
 import { verifyAuthProof, verifyEdgeAgainstPersonaKel, classifyCrossOperatorAdmission } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
+import { persistArchiveFloor } from "./archive-floor-write.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { hexToBytes as meshHexToBytes } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
@@ -659,17 +660,41 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         await v.hydrateFromEventStore();
         veilKh = v;
-        if (persistVeilArchive) {
-          try { await persistVeilArchive(await v.exportArchive()); }
-          catch (err) { console.warn(`[daemon] veil archive export skipped: ${(err as Error)?.message ?? err}`); }
-        }
       }
-      // M3 — seed the on-disk archive FLOOR every boot: exportArchive() captures the founding +
-      // hydrated membership/capability DAG (+ prekey secrets) so a later torn daemon doc restores from
-      // here instead of orphaning the veiled Handle. Best-effort — a failed export never blocks boot.
-      if (persistArchive) {
-        try { await persistArchive(await keyhive.exportArchive()); }
-        catch (err) { console.warn(`[daemon] keyhive archive export skipped: ${(err as Error)?.message ?? err}`); }
+      // ── M3 — THE ARCHIVE FLOOR, THROUGH THE ONE DOOR ──────────────────────────────────────────
+      // `exportArchive()` captures the founding + hydrated membership/capability DAG (+ prekey
+      // secrets) so a later torn daemon doc restores from here instead of orphaning the veiled
+      // Handle. Best-effort — a failed export never blocks boot.
+      //
+      // "EVERY BOOT" WAS THE SEAM. This ran unconditionally, written when only one boot shape
+      // existed; a vessel whose archive holds SHUT boots too now, and canon rules that a locked
+      // vessel signs nothing (waking-floor #/the-shape). `persistArchiveFloor` reads the standing
+      // ITSELF and bars both writers — the gate stands at the DOOR that performs the write, never
+      // at the injection site, because "a model that fences at the grant and not at the door has
+      // moved the check somewhere nobody performs it" (waking-floor #/the-breaks ①). keyhive stays
+      // fs-blind: the door reads a boolean fact and declines to CALL the writer, learning no path.
+      //
+      // THE RESTORE PREMISE IS PARTLY SUPERSEDED, so the loss is smaller than it reads.
+      // `KeyhiveProvider.init` now self-heals an ORPHANED veil by comparing the restored archive's
+      // `whoami` against the seed-derived identity and standing fresh from the seed on a mismatch
+      // (founding-runbook §the-seed-decides-the-identity). A barred boot loses its restore FLOOR
+      // and replays cap-events alone — a vessel that has lost its CAPS and kept its FLOOR.
+      //
+      // RAIL B: the door DECIDES the refusals; this frame SURFACES them (below).
+      const floor = await persistArchiveFloor({
+        archiveOpens: daemonAuth.archiveOpens,
+        writers: {
+          ...(persistArchive     ? { persistArchive }     : {}),
+          ...(persistVeilArchive ? { persistVeilArchive } : {}),
+        },
+        exportArchive: () => keyhive.exportArchive(),
+        ...(veilKh ? { exportVeilArchive: () => veilKh!.exportArchive() } : {}),
+      });
+      if (floor.barred) {
+        console.log("[daemon] the archive holds shut — the identity archive was NOT re-sealed; every sovereign act waits.");
+      }
+      for (const r of floor.refusals) {
+        console.warn(`[daemon] ${r.carrier} archive export skipped: ${r.message}`);
       }
       // The daemon's own working layer — after the keyhive and the veil stand, inside the fail-closed
       // boot window (never earlier). A failed attach leaves the write layer on the daemon bag, the

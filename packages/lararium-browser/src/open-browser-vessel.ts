@@ -827,6 +827,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       }
       const daemonAuth = {
         seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
+        // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
+        // vacuously open here — the node's `readArchiveOpening()` equivalent is `no-seal-expected`.
+        // It stays INERT regardless: this entry injects no `persistArchive`/`persistVeilArchive`, so
+        // the door has no writer to call ("the archive floor simply never persists"). The field rides
+        // REQUIRED so a populator that answers nothing fails at the compiler rather than at review.
+        archiveOpens: true,
         personaGroupDocIdHex: wornMount?.personaGroupDocIdHex   ?? social.personaGroupDocIdHex,
         personaGroupAgentIdHex: wornMount?.personaGroupAgentIdHex ?? social.personaGroupAgentIdHex,
         meshCabalDocIdHex: wornMount?.meshCabalDocIdHex      ?? social.meshCabalDocIdHex,
