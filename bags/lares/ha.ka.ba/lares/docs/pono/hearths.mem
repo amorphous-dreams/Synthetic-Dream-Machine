@@ -10,9 +10,9 @@ mana       = 10
 manao      = 12
 manaoio    = 12
 namespace  = "&#x2299;"
-revised-on = "2026-09-12"
-role       = "hearths — the live ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth is a session, named by its commit trailer)."
-status-why = "three seams crossed hearths this week by a pasted operator message (the dial · the genesis block · the return lane) and cost a loop each; this ledger names the ground per hearth so the next crossing reads a carrier first"
+revised-on = "2026-09-13"
+role       = "hearths — the ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth, and at every hearth that opens or closes; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth names a session by its commit trailer). A hearth that closes keeps its row — the ledger answers 'which ground was whose, what crossed, and what each owed', and every one of those questions outlives the concurrency that raised it."
+status-why = "ONE hearth holds this tree as of 2026-09-13 — the operator closed the meme hearth and the grammar hearth, and the founding hearth stands alone. The two closed rows stay as the record of what they HELD, their OWED entries carried forward onto the standing hearth at #/owed-forward, and the `holds` fence carries one live hold, which stands the gate down until a second hearth opens"
 tags       = ["docs/pono/ledger", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/hearths"
@@ -28,17 +28,40 @@ One tree, several hearths. A hearth names a session by the `Claude-Session:` tra
 
 A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing without a row here reads as the failure this ledger exists to end.
 
+''A hearth that closes keeps its row.'' The three questions above all read backward: a hand meeting `bulb-read-face.ts` next month asks whose ground it stood on when the lane landed there, and a ledger that deleted the answer with the session answers nothing. So a closed hearth's row stays, marked CLOSED, describing the ground it HELD and the crossings it made. What does NOT survive a close: the hearth's ''claim''. A closed hearth defends nothing, so its `holds` globs leave the fence the gate parses (#/holds) and its OWED entries move onto a hearth that still stands (#/owed-forward) — an unclaimed debt evaporating with a row reads as the same erasure, one loop later.
+
 <<~/ahu>>
 
 <<~ ahu #/hearths>>
 
-! The hearths, 2026-09-12
+! The hearths, 2026-09-13 — one stands, two closed
 
-| hearth | trailer | ground it holds | owes the others | last crossing |
-|---|---|---|---|---|
-| ''the meme hearth'' (this tree's Fable session) | `session_01EHVUW6kxAXwK9aBUG31T5N` | the meme surface (routes · verbs · CLI · MCP), recipe layers, the blob law, the realm bag + leg, the harness (`tests/harness/**`), the stock-syncer line, the carriers under `docs/pono/` | the clean whole-set e2e reading; seam (b)'s ruling; the replica read behind the return lane | took the dial seam from the founding hearth (`04895b579` · `be008ef1a`) |
-| ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch`; ''three e2e suites red under its road-D work (clean whole-set run, 2026-09-12 evening): `face-lit-stays-bootable` (a bare `vessel found` now refuses without a seeded genesis — the three-region split), `vessel-reboot` (`persona list` reads `[]` after a re-stand — the wear-reboot mount), `herm-floor` (the local verb `where` times out on a Herm)'' | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
-| ''the grammar hearth'' (VSCode-TW5-Syntax) | `session_01QdAMPMM9DsR4rRrmqqQBXe` | the submodule (`feature/memetic-regrammar`, head `d928299`) · `carrier-shape.ts` and its two tests in the parent · the corpus census laws | the field allow-list (owed since 2026-08-26); the 2.3.0 release (operator-locked); the two EOF bleeds; the parser-recovery patchset never offered upstream | closed `carrier-edges` 201 (`df60ad07d`) while the meme hearth still listed it as the founding hearth's |
+''One hearth holds this tree.'' The operator closed the meme hearth and the grammar hearth on 2026-09-13; the founding hearth stands alone. The `standing` column carries the distinction, and it governs every other column: a CLOSED row's ''ground'' reads as what that hearth HELD (a record), its ''owed'' reads as what it owed AT CLOSE (carried forward to #/owed-forward, which states each debt's state today), and its ''last crossing'' reads as it always did.
+
+| standing | hearth | trailer | ground it holds / HELD | owed the others (at close) | last crossing |
+|---|---|---|---|---|---|
+| ''CLOSED'' 2026-09-13 | ''the meme hearth'' (this tree's Fable session) | `session_01EHVUW6kxAXwK9aBUG31T5N` | the meme surface (routes · verbs · CLI · MCP), recipe layers, the blob law, the realm bag + leg, the harness (`tests/harness/**`), the stock-syncer line, the carriers under `docs/pono/` | the clean whole-set e2e reading; seam (b)'s ruling; the replica read behind the return lane | took the dial seam from the founding hearth (`04895b579` · `be008ef1a`) |
+| ''LIVE'' — holds the tree | ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground — and, since 2026-09-13, the whole tree | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch`; ''the three e2e suites red under its road-D work stand CLEARED'' — `handoff.mem#/shift-2026-09-13-meme-hearth` records the whole set at 25 of 25 files · 150 passed + 1 expected fail · exit 0, `herm-floor` R3 green inside that window; plus everything at #/owed-forward | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
+| ''CLOSED'' 2026-09-13 | ''the grammar hearth'' (VSCode-TW5-Syntax) | `session_01QdAMPMM9DsR4rRrmqqQBXe` | the submodule (`feature/memetic-regrammar`) · `carrier-shape.ts` and its two tests in the parent · the corpus census laws. ''At close the submodule reads dirty in the parent'': gitlink `9192445`, worktree head `0788bc0` (`v2.2.1-241-g0788bc0`); the operator adjudicates that dirt separately | the field allow-list (owed since 2026-08-26); the release (''measured 3.0.0, unreleased'' — this row read `2.3.0` and the submodule's own `package.json` and `CHANGELOG.md` both read `3.0.0 — unreleased`); the two EOF bleeds; the parser-recovery patchset never offered upstream | closed `carrier-edges` 201 (`df60ad07d`) while the meme hearth still listed it as the founding hearth's |
+
+<<~/ahu>>
+
+<<~ ahu #/owed-forward>>
+
+! The closed hearths' debts, carried onto the standing hearth
+
+''A debt does not close by the closing of the hand that owed it.'' Every OWED entry the two closed rows carry moves here, re-measured against the tree on 2026-09-13 and re-stated as ''open'' or ''closed, with the evidence''. The row above keeps the debt as it stood AT CLOSE; this block keeps it as it stands TODAY. A reader who wants only "what still stands" reads this block and nothing else.
+
+|!from |!debt |!state 2026-09-13 |!evidence, or what a hand does next |
+|the meme hearth |''the clean whole-set e2e reading'' |''CLOSED'' |`handoff.mem#/shift-2026-09-13-meme-hearth` records the whole set at ''25 of 25 files · 150 passed + 1 expected fail (151) · 1540s · exit 0''. The single expected fail rides ⑦ in `herm-reshares-public-blob`, held red on purpose against the announce-plane fork the same shift names |
+|the meme hearth |''seam (b)'s ruling'' |''OPEN — the operator's'' |a child's save grades against its OWN authored text, or a child reads ungraded by law. `3dfb06170` refuted Phase 5's planned cure as a tautology. Carried at `syncer-seams-roundtable#/retirement` and `syncer-back-parity`, and it gates that floor's retirement |
+|the meme hearth |''the replica read behind the return lane'' |''OPEN'' |the return lane itself CLOSED (`383301b4f`, the row under #/crossings) — the plane fires `onRefold` → `reverdict` and Docker reads //A gets the new slot ok//. What stays owed sits one layer under it: the announce filter reads a peer's crossroads replica ''as-of-last-sync'' (`offering.mem:312`), and no vector walks a verdict against a replica that has NOT synced. Re-derive: `grep -n "read/as-of-last-sync" bags/lares/ha.ka.ba/lares/docs/pono/offering.mem` |
+|the grammar hearth |''the field allow-list'' (owed since 2026-08-26) |''OPEN'' |the submodule's `CHANGELOG.md` carries the allow-list's ''reading'' (a dictionary key names no tiddler field, so the allow-list reads nothing there — measured across 2863 entries in 28 upstream dictionaries), and nothing in the tree closes the allow-list itself. Re-derive: `grep -n "allow-list" VSCode-TW5-Syntax/CHANGELOG.md`. Memory carries it at `project_tw5_syntax_field_allowlist` |
+|the grammar hearth |''the release'' |''OPEN, and re-numbered'' |the closed row read `2.3.0`; the submodule reads `3.0.0` in `package.json:5` and `## 3.0.0 — unreleased` at the head of `CHANGELOG.md`. A MAJOR bump, because it retires 94 of 460 published scope names and a reader's `tokenColorCustomizations` entry naming a retired one stops matching SILENTLY. Operator-locked; a hand does not cut it |
+|the grammar hearth |''the two EOF bleeds'' |''OPEN, unlocated by this hand'' |`grep -rn "EOF bleed" VSCode-TW5-Syntax bags` returns only this ledger's own row. The defect stands named nowhere a grep reaches, which makes the row the only carrier of it — a debt described in four words on a closed hearth's row asks the next hand to re-measure it before it can be worked |
+|the grammar hearth |''the parser-recovery patchset, never offered upstream'' |''OPEN'' |`grep -rln "parser-recovery" VSCode-TW5-Syntax` returns nothing; the submodule's upstream surface reads as `tools/upstream-coverage.js` and the coverage gate, never a patch offer. The patchset stands in the submodule's history rather than under a name a grep finds |
+
+⚠ ''Four of these seven stand on the submodule'', whose working tree reads dirty and which the operator adjudicates separately. The standing hearth carries them so they do not evaporate; it does not thereby take the submodule's ground.
 
 <<~/ahu>>
 
@@ -50,10 +73,43 @@ The table above reads the ground in prose, which a hand reads and a gate cannot.
 
 A glob that matches nothing belongs to no hearth — the gate names only what a commit actually touches. A path claimed by two hearths reads as a crossing in flight, and the gate says so rather than picking a winner.
 
+''A closed hearth defends nothing, so its globs leave this fence.'' The fence states a ''claim against other hands'', and a session that has ended presses none. Leaving a closed hearth's globs here would refuse the only hearth left standing from ground nobody contests — an outage wearing a safeguard's clothes, which the gate's own header names as the shape it must not take. The ground the closed hearths held stands recorded twice over: in prose in the table above, and verbatim in the `holds-closed` fence below, which the gate does not parse.
+
+!! What one hearth does to the gate
+
+''Under a single hearth `tools/hearths-gate.mjs` refuses nothing, and it does so honestly rather than by being switched off.'' Its `verdict` refuses only a path that lands in a hold whose `trailer` differs from the committing hearth's; with one row, no path can. Every commit from `session_01Jg969FCpJcM84XvtsDNFou` reads back one line — ''N path(s) stand on `the founding hearth`'s ground'' — and a commit carrying no trailer (the operator's own) passes with its own note, as it always did.
+
+''Leave the gate installed.'' It arms again the moment a second `[[hold]]` row appears — no code moves, no hook re-installs; the ledger IS the configuration, and the gate reads it fresh at every commit. Deleting the tool would make the next hearth's opening a build task instead of a table edit.
+
+''The witness had to move, and the ledger says why.'' `tools/hearths-gate-witness.sh` drives the gate against ''the real ledger'' by design — a witness reading a fixture proves the parser rather than the rows the tree stands on. A one-hold ledger can produce no crossing, so its ★ RED vector would have passed by having nothing to refuse: a gate wearing a check it never earned. The witness now reads the live fence's count and, at one hold, runs its ARMING vectors against a fixture gathered from ''this ledger's own `[[hold]]` blocks, live and closed, in one live fence'' — the exact shape the tree takes when a second hearth opens — while every pass-through CONTROL keeps reading the real ledger. It PRINTS which ledger each half read. Nothing in `hearths-gate.mjs` moved.
+
+⚠ ''One reading genuinely runs noisy under one hearth, and this hand names it rather than cutting it'': the pass note prints on ''every'' commit, so a hand watching hook output sees a line about hearth ground on work that crosses nothing. That reads as chatter, never as a lie — the note states a true fact about a tree with one hearth — so the noise wants the operator's word before a `--quiet` lands, since a gate that learns to say less is exactly the gate that stops being read.
+
 ```toml holds
+[[hold]]
+hearth  = "the founding hearth"
+trailer = "session_01Jg969FCpJcM84XvtsDNFou"
+globs   = [
+  "packages/lararium-mesh/src/genesis-doc.ts",
+  "packages/lararium-node/scripts/build-genesis-island.ts",
+  "packages/lararium-node/src/open-node-vessel.ts",
+  "packages/lararium-node/src/genesis-artifact.ts",
+  "packages/lararium-mesh/src/handle-kel.ts",
+  "packages/lararium-mesh/src/persona-kel.ts",
+  "packages/lararium-mesh/src/veil-*.ts",
+  "packages/lares-cli/src/commands/persona.ts",
+]
+```
+
+!! The ground the closed hearths held
+
+Recorded verbatim, in a fence `parseHolds` does not read (it keys on the exact `toml holds` opener). A hearth that reopens, or a new hearth taking one of these surfaces, copies its rows back into the live fence above and the gate arms on them unchanged.
+
+```toml holds-closed
 [[hold]]
 hearth  = "the meme hearth"
 trailer = "session_01EHVUW6kxAXwK9aBUG31T5N"
+closed  = "2026-09-13"
 globs   = [
   "packages/lares-cli/src/commands/meme*.ts",
   "packages/lares-cli/src/commands/nexus*.ts",
@@ -71,22 +127,9 @@ globs   = [
 ]
 
 [[hold]]
-hearth  = "the founding hearth"
-trailer = "session_01Jg969FCpJcM84XvtsDNFou"
-globs   = [
-  "packages/lararium-mesh/src/genesis-doc.ts",
-  "packages/lararium-node/scripts/build-genesis-island.ts",
-  "packages/lararium-node/src/open-node-vessel.ts",
-  "packages/lararium-node/src/genesis-artifact.ts",
-  "packages/lararium-mesh/src/handle-kel.ts",
-  "packages/lararium-mesh/src/persona-kel.ts",
-  "packages/lararium-mesh/src/veil-*.ts",
-  "packages/lares-cli/src/commands/persona.ts",
-]
-
-[[hold]]
 hearth  = "the grammar hearth"
 trailer = "session_01QdAMPMM9DsR4rRrmqqQBXe"
+closed  = "2026-09-13"
 globs   = [
   "VSCode-TW5-Syntax",
   "packages/lararium-tw5/src/carrier-shape.ts",
@@ -132,6 +175,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C9VDlvP3BF5UFEzlbR9_Xr-4txC8GSlI5j5QlFaZlTQ
+<<^ code="&#x0003;">>ni:///sha-256;oRrBnz9PUjvqpcDYNGakQOWKmOWGZorOyzFlb-yCRc4
 
 <<^ code="&#x0004;" -> to="?">>
