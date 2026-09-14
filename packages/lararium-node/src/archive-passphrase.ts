@@ -514,18 +514,25 @@ function bootCarriers(): readonly Carrier[] {
  * into an outage, while the seal exists against a stolen disk.
  */
 export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = process.env): ArchiveOpening {
-  if (!readSealExpected(cfg)) {
-    return { kind: "no-seal-expected", opens: true, probed: false, why: "no seal stands in force — the archive reads bare" };
-  }
-  const key = env[ARCHIVE_PASSPHRASE_ENV];
-  if (!key) {
-    return {
-      kind: "key-absent", opens: false, probed: false,
-      why: `your archive is sealed and ${ARCHIVE_PASSPHRASE_ENV} carries no passphrase`,
-    };
-  }
-  // Trial-open every SEALED boot carrier. A cleartext or absent one needs no key and cannot fail.
-  const results: { name: CarrierName; probe: CarrierProbe }[] = [];
+  // ══ THE DISK OUTRANKS THE GUESS ═════════════════════════════════════════════════════════════════
+  // This module's own `nothing-sealed` clause already rules it — "the hint is a config guess, the disk
+  // is the fact" — and an earlier body contradicted that clause by returning off the marker and the
+  // env var BEFORE any carrier was opened. Two clauses of one module ruled one moment differently.
+  //
+  // Reading the disk first settles two seams with no config change:
+  //   · a CLEARED vessel keeps `sealExpected` (`vessel clear --force` does not remove it) while no
+  //     carrier stands. The guess said `key-absent` — a FALSE floor over an empty identity home.
+  //   · a BOOT-SEALED vessel carries `sealExpected: false` beside sealed bytes (the M3 re-seal never
+  //     calls `setSealExpected`), so the guess short-circuited to `no-seal-expected` / `opens: true`
+  //     and a MISTYPED passphrase read as opening. The disk names it `key-wrong`.
+  // NO CONFIG CHANGE is the point: an unattended vessel is never made to demand a passphrase it was
+  // never given (founding-runbook — "the var exists so one ceremony can run unattended, never so a
+  // machine can seal itself forever"). Only a vessel with SEALED BYTES ON DISK is ever asked for one.
+  //
+  // FAIL-CLOSED MOVES WITH THE ORDER, it does not soften: sealed carriers standing + no key still
+  // reads `key-absent`, shut. What changes is that the sealed bytes, not the marker, decide WHETHER
+  // the question of a key arises at all.
+  const sealed: { name: CarrierName; bytes: Uint8Array }[] = [];
   for (const c of bootCarriers()) {
     if (!existsSync(c.path)) continue;
     let bytes: Uint8Array;
@@ -533,14 +540,28 @@ export function readArchiveOpening(cfg?: LaresConfig, env: NodeJS.ProcessEnv = p
       return { kind: "unreadable", opens: false, probed: false, why: `the ${c.name} carrier cannot be read from disk` };
     }
     if (!isSealedEnvelope(bytes)) continue;   // bare cleartext passes straight through the boot's reader
-    results.push({ name: c.name, probe: probeCarrier(bytes, key) });
+    sealed.push({ name: c.name, bytes });
   }
-  if (results.length === 0) {
+  // Nothing sealed stands. The marker only chooses which TRUE thing to say; both open.
+  if (sealed.length === 0) {
+    return readSealExpected(cfg)
+      ? {
+          kind: "nothing-sealed", opens: true, probed: false,
+          why: "sealing is marked expected and no sealed boot carrier stands on disk — nothing to open",
+        }
+      : { kind: "no-seal-expected", opens: true, probed: false, why: "no seal stands in force — the archive reads bare" };
+  }
+  // Sealed bytes stand, so a key is genuinely owed — whatever the marker guessed.
+  const key = env[ARCHIVE_PASSPHRASE_ENV];
+  if (!key) {
     return {
-      kind: "nothing-sealed", opens: true, probed: false,
-      why: "sealing is marked expected and no sealed boot carrier stands on disk — nothing to open",
+      kind: "key-absent", opens: false, probed: false,
+      why: `your archive is sealed and ${ARCHIVE_PASSPHRASE_ENV} carries no passphrase`,
     };
   }
+  // Trial-open every SEALED boot carrier. A cleartext or absent one needed no key and was skipped above.
+  const results: { name: CarrierName; probe: CarrierProbe }[] =
+    sealed.map((s) => ({ name: s.name, probe: probeCarrier(s.bytes, key) }));
   const torn = results.find((r) => r.probe === "unreadable");
   if (torn) {
     // NAMED APART FROM A WRONG KEY on purpose: these bytes never framed, so the passphrase was never tested.

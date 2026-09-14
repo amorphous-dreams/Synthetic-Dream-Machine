@@ -381,24 +381,31 @@ describe("the write-over-sealed guard, attacked", { timeout: 120_000 }, () => {
     expect(readFileSync(archivePath()).length).toBeLessThan(SOVEREIGN.length + 40);
   });
 
-  // ── ATTACK 11 · THE READING NEVER RUNS ──────────────────────────────────────────────────────────
-  // `readArchiveOpening` consults the CONFIG marker first. The M3 boot re-seal SEALS a carrier without
-  // ever calling `setSealExpected`, so a vessel that got its seal from a boot (env var set, `vault seal`
-  // never run) carries `sealExpected: false` beside sealed bytes — and the five readings collapse to
-  // `no-seal-expected / opens: true` on a WRONG key. Fail-closed survives only because
-  // `loadIdentityArchive` throws instead of returning null.
-  test("★ a boot-sealed archive leaves `sealExpected` FALSE — the five readings never probe a wrong key ★", () => {
+  // ── ATTACK 11 · THE READING NEVER RAN — CURED, and this now keeps it cured ──────────────────────
+  // The hole this attack named: `readArchiveOpening` consulted the CONFIG marker FIRST. The M3 boot
+  // re-seal SEALS a carrier without ever calling `setSealExpected`, so a vessel that got its seal from
+  // a boot (env var set, `vault seal` never run) carried `sealExpected: false` beside sealed bytes —
+  // and the five readings collapsed to `no-seal-expected / opens: true` on a WRONG key. Fail-closed
+  // survived only because `loadIdentityArchive` threw instead of returning null, which converted an
+  // ordinary mistyped passphrase into a dead boot.
+  //
+  // CURE 2 reads the DISK BEFORE THE GUESS — the module's own `nothing-sealed` clause already ruled
+  // that order ("the hint is a config guess, the disk is the fact"). The marker now chooses only which
+  // TRUE thing to say when NOTHING sealed stands; sealed bytes on disk raise the key question by
+  // themselves. `probed` is the field that proves the apparatus RAN rather than guessed.
+  test("CONTROL — a boot-sealed archive reads `key-wrong` on a mistyped passphrase, marker or no marker", () => {
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_A);
     persistIdentityArchive(SOVEREIGN);              // the M3 shape: seal by boot, no `vault seal`
     expect(isSealedEnvelope(readFileSync(archivePath()))).toBe(true);
-    expect(archiveSealStatus().sealExpected, "the boot re-seal recorded the seal").toBe(false);
+    expect(archiveSealStatus().sealExpected, "the boot re-seal records nothing in the config").toBe(false);
 
     setEnv(ARCHIVE_PASSPHRASE_ENV, PASS_B);         // a mistyped passphrase
     const reading = readArchiveOpening();
-    expect(reading.kind).toBe("no-seal-expected");  // NOT `key-wrong`
-    expect(reading.opens, "the boot believes it can open an archive it cannot").toBe(true);
+    expect(reading.kind).toBe("key-wrong");         // the DISK answered, not the marker
+    expect(reading.opens, "the boot no longer believes it can open an archive it cannot").toBe(false);
+    expect(reading.probed, "the GCM tag was actually asked").toBe(true);
 
-    // CONTROL — with the marker set, the same disk state reads correctly.
+    // CONTROL — setting the marker changes NOTHING: the disk was already the fact.
     setSealExpected(true);
     expect(readArchiveOpening().kind).toBe("key-wrong");
   });
