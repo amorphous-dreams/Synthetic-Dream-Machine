@@ -116,7 +116,7 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     // The face founding ARMS recovery: the device share stands from day one (absent by omission and absent
     // by choice read identical from outside — only the mint tells them apart). The reserve share belongs
     // to the seal rite and stays absent here (CONTROL: one leg, not two).
-    expect(carriers["device-share"]?.state).toBe("cleartext");
+    expect(carriers["device-share-h0"]?.state).toBe("cleartext");
     expect(carriers["reserve-share"]?.state).toBe("absent");
     expect(dataOf(r)["sealExpected"]).toBe(false);
     expect(dataOf(r)["via"]).toBe("daemon");
@@ -135,12 +135,12 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     expect(r.json?.["ok"], said(r)).toBe(true);
     expect(dataOf(r)["via"]).toBe("daemon");
     // The vessel archive, the veil archive AND the device share — one policy, one act.
-    expect(dataOf(r)["sealed"]).toEqual(expect.arrayContaining(["archive", "veil", "device-share"]));
+    expect(dataOf(r)["sealed"]).toEqual(expect.arrayContaining(["archive", "veil", "device-share-h0"]));
     const s = await cli(NO_KEY, ["vault", "status", "--json"]);
     const carriers = carriersOf(s);
     expect(carriers["archive"]).toMatchObject({ state: "sealed", mode: "passphrase" });
     expect(carriers["veil"]).toMatchObject({ state: "sealed", mode: "passphrase" });
-    expect(carriers["device-share"]).toMatchObject({ state: "sealed", mode: "passphrase" });
+    expect(carriers["device-share-h0"]).toMatchObject({ state: "sealed", mode: "passphrase" });
     expect(carriers["reserve-share"]).toMatchObject({ state: "absent" });
     expect(dataOf(s)["sealExpected"]).toBe(true);
     // The archive on disk wears the envelope — bare bytes would be the seal faked.
@@ -200,7 +200,7 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     expect(dataOf(r)["via"]).toBe("daemon");
     // Every present carrier moves in one act: a veil left under the old passphrase faults the next boot at
     // its GCM tag while the archive opens — a split the rotate itself would have made.
-    expect(dataOf(r)["rotated"]).toEqual(["archive", "veil", "device-share"]);   // the reserve share stands absent — one leg
+    expect(dataOf(r)["rotated"]).toEqual(["archive", "veil", "device-share-h0"]);   // the reserve share stands absent — one leg
     // The share re-sealed under the NEW passphrase: fresh envelope bytes, opened by PASS_2 alone.
     const rotatedShare = readFileSync(SHARE());
     expect(rotatedShare.equals(sealedShare), "rotate left the device share under the old passphrase").toBe(false);
@@ -242,14 +242,14 @@ describe.skipIf(gaps.length > 0)("★ a sealed vessel stands end to end ★", ()
     const rc = carriersOf(right);
     expect(rc["archive"]?.opensUnderProbe).toBe(true);
     expect(rc["veil"]?.opensUnderProbe).toBe(true);
-    expect(rc["device-share"]?.opensUnderProbe).toBe(true);
+    expect(rc["device-share-h0"]?.opensUnderProbe).toBe(true);
     expect(rc["reserve-share"]?.opensUnderProbe, "an absent carrier answers no probe").toBeUndefined();
     expect(dataOf(right)["split"]).toBe(false);
     const wrong = await cli(KEY_1, ["vault", "status", "--check", "--json"]);
     const wc = carriersOf(wrong);
     expect(wc["archive"]?.opensUnderProbe).toBe(false);
     expect(wc["veil"]?.opensUnderProbe).toBe(false);
-    expect(wc["device-share"]?.opensUnderProbe).toBe(false);
+    expect(wc["device-share-h0"]?.opensUnderProbe).toBe(false);
     expect(wc["reserve-share"]?.opensUnderProbe).toBeUndefined();
     expect(dataOf(wrong)["split"]).toBe(false);
   }, 120_000);
