@@ -48,46 +48,45 @@ written   = "2026-09-14"
 
 ! OODA-HA — next watch and surrounding terrain, 2026-09-15
 
-!! ✶ Observe — distinguish receipts from fresh measurements
+!! ✶ Observe — the successor watch's receipts
 
-C4 and D1 move to #/completed. C4 carries a five-check Chromium pass from the preceding watch, including the disabled-carry control; D1 carries CI wiring plus its focused regression, never a completed green run of the whole Python suite. This roadmap-only refresh runs no browser or Docker scenario. The remaining sets retain earlier scouts, not a claim that every design and line number received a fresh audit.
+''W3 TAKEN — `972700021`.'' The live Recent-tab action traversed the return leg before any runtime cure. The original first target, Hide sidebar, dispatched render-id `2` to worker `lares`, then failed in `RevealWidget.updateState` on absent `$tw.anim.perform`. A real TW5 fixture reproduced that failure. The projection now supplies synchronous fake-DOM animation completion, including the callback that applies the retained reveal's hidden state; existing real-DOM animation dispatch keeps its original receiver.
 
-The current W3 driver (`tools/browser-weld/weld.mjs`) chooses the FIRST matching link/button and compares the whole projection. No changed HTML cannot prove that a particular handler never fired. The recorded worker `perform` error supplies a clue, not a demonstrated cause. Earlier C4 stalls after `corpus-ready` remain unexplained; its final pass does not erase them.
+The strengthened browser witness asserts named Open→Recent selection, unknown-render-id safe drop, a deliberately disabled return leg, and the restored positive transition. It separately asserts Hide/Show sidebar and traces returned frames to the same worker. The final browser run passed W0–W4, including these controls, and retained W5 as a gap. ''Fixture correction, not a second runtime cure:'' this watch first expected a `tc-hide-sidebar` class absent from the vendored TW5; the actual contract changes the sidebar reveal's `hidden` attribute and swaps Hide/Show buttons. No runtime change followed that mistaken assertion.
+
+''C4's new verification attempt did NOT pass.'' The unchanged continuity driver stalled after `corpus-ready` for 90 seconds before its first continuity assertion. Its failure reports the last rendered surface and console tail. The preceding watch's five-check pass remains a dated receipt; it does not certify this run. Earlier stalls and this recurrence remain unexplained, separate from the diagnosed reveal failure. MCP fixes remain operator-deferred.
 
 !! ⏿ Orient — extend the available test surfaces
 
 |!boundary |!existing surface |!scope |
-|DOM → worker → TW5 → projection | `tools/browser-weld/weld.mjs`; `packages/lararium-tw5/tests/projection-input-leg.test.ts` | Playwright walks the real app; the TW5 test isolates dispatch with fake elements, not a browser boot |
-|Browser worker transport | `packages/lararium-browser/tests/browser-verb-breathing.test.ts` and the Chromium Vitest suite | The worker/pool seam; its fixture stands in for reaction routing |
-|Persistent leaf continuity | `tools/browser-weld/leaf-continuity.mjs` | DID/prefix/event CIDs across reload, carry-disabled refusal, malformed-anchor recovery; no admitted relay exchange |
-|Peers, boards and carriage | `docker-compose.mesh.yml` + `tools/mesh-scenarios.sh` | Extend operator-a/operator-b, leaf, crossing, realm-crossing, climb, board, wikis or conflict as the boundary demands; presence does not certify a fresh pass |
-|Node save/projection and admission | `tests/e2e/working-loop.test.ts`, `tests/e2e/wikis-ingest-back.test.ts`, `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` | Real-vessel witnesses; A2's stale bootstrap fixture must not masquerade as an admission failure |
+|DOM → worker → TW5 → projection | `tools/browser-weld/weld.mjs`; `packages/lararium-tw5/tests/projection-reveal.test.ts`; `packages/lararium-tw5/tests/projection-input-leg.test.ts` | real-browser named actions plus real-TW5 reveal lifecycle and isolated input dispatch |
+|Browser worker transport | `packages/lararium-browser/tests/browser-verb-breathing.test.ts` and Chromium Vitest suite | neighboring suite passed 24 files, 138 tests plus one existing expected failure |
+|Persistent leaf continuity | `tools/browser-weld/leaf-continuity.mjs` | preceding five-check pass; current 90-second boot stall, before continuity; no admitted relay proof |
+|Recurring held-out coverage | `.github/workflows/held-out.yml` | weekly/manual runner wiring; independent jobs, finite timeouts and artifacts; hosted execution still owed |
+|Peers, boards and carriage | `docker-compose.mesh.yml` + `tools/mesh-scenarios.sh` | fixed project and destructive volume cleanup; reserve before local execution |
+|Node save/projection and admission | `tests/e2e/working-loop.test.ts`, `tests/e2e/wikis-ingest-back.test.ts`, `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` | A2's stale bootstrap fixture still precedes any admission conclusion |
 
-''Reserve the shared terrain.'' The mesh runner uses the fixed `dreamnet-mesh` project and `clear_all` runs `down -v`. Confirm that no other session owns its containers/volumes before running it; a project-name override alone does not isolate its hard-coded readers. Serialize shared-tree e2e, build relevant outputs, and inspect processes in the execution context that launched them: sandbox-local absence cannot prove an escalated process stopped. No mesh teardown belongs to this documentation turn.
+''Reserve the shared terrain.'' Read `docs/pono/hearths` for the active successor session and exact holds. The operator closed the preceding Codex session; never reuse its trailer. Local mesh runners use fixed project names and tear down named volumes. Hosted jobs receive separate machines, but that isolation does not authorize a shared-host teardown. Serialize shared-tree e2e, build relevant outputs, and inspect processes in their launch context.
 
 !! ◇ Decide — priority and stopping conditions
 
-# ''W3 first: make the action meaningful, then isolate its red.'' Identify a known widget/action and its intended state change. Record target/render-id, active surface, dispatch and worker error together. Assert the specific result, not any HTML difference. An unknown render-id control should preserve documented safe-drop behavior; disabling the return leg must break the positive vector. If the failure only exposes a bad fixture, repair that evidence before choosing a runtime cure.
-# ''D3 next: recurring, honest coverage.'' Define runner prerequisites, serialization, timeouts and failure artifacts over existing drivers. Preserve independent failure statuses and W5's explicit gap. W3 blocks claiming a healthy browser gate, not writing a workflow that honestly reports its red. No blanket expected-failure exception.
-# ''A2 → one bounded A1 slice → broader mesh proof.'' Establish the stale bootstrap-read red, then repair the fixture rather than changing production storage layout to fit it. Exercise a climbed-founder board consumer with own-scope and torn-scope controls before generalizing the census. Invite identity sites need distinct tests from board addressing. The admit wire's operator-held fork remains untouched.
+# ''Classify the recurring C4 boot stall before claiming a healthy browser gate.'' Observe progress around `corpus-ready`, worker creation and boot completion. Preserve the current red; do not add retries or an expected-failure exception to manufacture green. The W3 reveal cure does not explain a boot that never reaches the continuity assertion.
+# ''D3 — verify the wired runner on its actual hosted substrate.'' The source now declares weekly/manual coverage; no workflow was dispatched or pushed during this watch. Retain independent statuses and W5's explicit gap. Docker/image/hosted-action behavior still needs a real receipt.
+# ''A2 → one bounded A1 slice → broader mesh proof.'' Establish the stale bootstrap-read red under isolated `LAR_ROOT`, repair the fixture, then exercise a climbed-founder board consumer with own-scope and torn-scope controls. Invite identity sites need distinct tests. The admit wire's operator-held fork remains untouched.
 # ''D4 follows: real QR decoding at the consuming door.'' Re-read the approved design, choose browser or node scope, and test actual generated bytes plus corrupt inputs before wiring a decoder dependency.
-# ''B6/C2 and C1/C3 remain staged; the other B designs need fresh reads.'' Reserve Opus's boot ground before splitting it. The hand-edit retirement weld comes last, after the working surface and promotion path. D5 stays behind whole-palace, watcher and durable-telemetry prerequisites.
+# ''B6/C2 and C1/C3 remain staged; the other B designs need fresh reads.'' Reserve Opus's boot ground before splitting it. Hand-edit retirement follows the working surface and promotion path. D5 stays behind whole-palace, watcher and durable-telemetry prerequisites.
 
-The source census still finds A1's raw vessel-key assignments (including double-spaced declarations); no cure follows from a grep alone. Workflow inspection still finds no scheduled held-out drivers. D2 supplies existing coverage context, not an unfinished implementation to retire. Operator-held decisions and the founding hearth's retained arcs remain outside this crew's unilateral choices.
+!! ▶ Act — the next bounded measurement
 
-!! ▶ Act — the next bounded ticket, designed red-first
+''Gaia / human engineer.'' Locate the exact boot await that stalls in the persistent-profile C4 walk. Record which worker/messages arrived and which awaited result did not. A controlled change must discriminate that boundary before any cure follows.
 
-''Gaia / human engineer.'' Activate a named action in the browser's live wiki and observe its promised state change through the real worker and projection. Surface a failure beside the action that triggered it; unrelated HTML changes do not count as success.
+''Elyncia / elf wild mage — illustration, not new canon.'' The sidebar rune now returns its promised sign; the founding rite sometimes pauses before the shrine declares readiness. Keep those rites separate and find the unreturned response.
 
-''Elyncia / elf wild mage — illustration, not new canon.'' Touch a named rune at the household shrine; the shrine performs that rune's promised act and returns its sign. Another candle flickering cannot certify a silent rune. Prove the household rite before summoning the wider mesh.
-
-''Definition of done.'' Extend the nearest existing surface. Verify setup, observe the intended red and read its failure, retain nonsense/fault controls, implement the smallest cure, then re-run the focused vector and neighboring browser tests. Extend Docker only where the diagnosed boundary crosses peers. Preserve C4 continuity coverage. Record exact commands, results, gaps and the taking commit. The present turn updates this plan; it does not implement W3.
+''Definition of done.'' Extend the nearest existing surface, assert setup, read the intended red, retain positive and deliberate-weakening controls, then implement the smallest cure. Preserve independent failure statuses. Do not widen into the operator-held forks or deferred MCP work.
 
 !! ↺ Hoʻoko / aftermath
 
-Completed receipts no longer occupy the active sets. Re-open Observe with W3's chosen target and expected effect. Full Python-suite health, intermittent boot stalls, W5's disk leg and admitted relay proof remain distinct debts, not implied completions.
-
-''Separate ordinary-weld red, measured and not expanded here.'' The same held-out shell first runs `tools/browser-weld/weld.mjs`; its latest run passed W0–W2 and W4, failed W3 (`click-crosses`: projection did not change after the dispatched click), and retained the declared W5 node-disk gap. Vite also named a diagnostic clue, not a cause: `[worker-handle] worker error: Uncaught TypeError: Cannot read properties of undefined (reading 'perform') @ 287`, followed by `[vessel-pool] island error for lares` from `dist/worker-handle.js:19:20`. Those are existing browser-weld seams outside the C4 identity-continuity vector; the shell aggregates their status so no C4 green can hide them, but C4 does not claim to cure them.
+W3 closes under its named actions and measured limits. D3 gains source wiring, with hosted execution still owed. C4 boot stalls, W5's node-disk leg, full Python-suite health and admitted relay proof remain separate debts. The deeper scouts below retain their historical measurements rather than claiming a fresh full audit.
 
 <<~/ahu>>
 
@@ -366,11 +365,13 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 ''The CI job:'' `witnesses` at `ci.yml:181-220` runs `tools/witness-all.sh 2>&1 | tee "$RUNNER_TEMP/witnesses.log"` (`:206-209`), then the roll-call gate at `:212-220` greps for `held out of this run` and `exit 1`s with `::error::the run named no held-out witnesses`. It carries `if: always()`.
 
-!! D3 · The held-out witnesses carry no scheduled runner
+!! D3 · Recurring held-out coverage wired; hosted execution owed
 
-''FIVE stand held out, never four'' — `browser-weld` · `civic` · `crossing` · `herm-mesh` · `mesh-scenarios`. The earlier shift ledger's four omits `mesh-scenarios`, added with the reason ''stands the docker-compose mesh, scenario by scenario — needs docker + a host-built dist''.
+''WIRING TAKEN — `fd5c1284d`, 2026-09-15.'' Hosted execution stays open.
 
-''No schedule reaches any of them.'' `grep -rn "cron\|schedule" .github/workflows/` returns ZERO. `ci.yml` triggers read `on: push` plus a concurrency group (`:24-32`). No workflow invokes `civic-witness.sh`, `crossing-witness.sh`, `herm-mesh-witness.sh`, `browser-weld-witness.sh` or `mesh-scenarios.sh` directly. ''This no longer blocks C4's live-leaf proof'' — the held-out `browser-weld-witness.sh` now invokes the C4 Chromium walk manually; lack of scheduling remains a fleet/CI coverage gap, not a false statement that no C4 browser witness exists.
+Five held-out drivers now have weekly Sunday 06:17 UTC and manual workflow entries in `.github/workflows/held-out.yml`: browser-weld, civic, crossing, herm-mesh and mesh-scenarios. Each matrix entry receives its own hosted runner and independent failure status (`fail-fast: false`). Dependencies, built outputs and Chromium setup precede bounded driver commands. The Herm leg starts its three relay services and waits for relay-2's actual oracle read face. Artifacts persist for 14 days, including Vite and pre-teardown compose evidence. This watch neither dispatched CI nor ran Docker locally; runner wiring does not certify those substrates.
+
+The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a fake Compose exit `42` yielded `4 passed, 0 failed` and process exit `0`. Its correction captures the producer's status immediately. `node tools/crossing-witness.test.mjs` passed all three named cases: quiet failure, quiet success, and a bounded timeout that preserves raw output and tears down only the active scenario. No Docker was invoked. Bash syntax, workflow YAML parsing and diff checks passed; no actionlint binary was available. Cleanup now preserves evidence and tracks active projects; an invalid mesh scenario refuses before arming volume teardown. W5 stays an explicit gap, and C4's current boot stall remains a real failure rather than an expected-failure exemption.
 
 !! D4 · QR camera — two one-step lifts
 
@@ -399,6 +400,14 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 ! Completed increments — bounded receipts
 
 ''Completion follows the item, never every adjacent capability.'' C4 and D1 keep their labels and evidence here; residual work stays at #/next-steps or its active set. An implemented subcomponent does not retire its containing arc.
+
+!! W3 · Named browser actions and retained reveal completion
+
+''TAKEN — `972700021`, 2026-09-15.'' Before repair, Recent selected successfully while Hide sidebar failed after dispatch in `RevealWidget.updateState`. `patchFakeDomAnimation` completes fake-node lifecycle callbacks synchronously and preserves the real-node animator. The real-TW5 reveal fixture fails when the callback alone is deliberately removed: retained content never receives `hidden="true"`. Restoring the exact source restores green.
+
+''Commands and limits.'' `pnpm --filter @lararium/tw5 exec vitest run tests/projection-reveal.test.ts tests/projection-input-leg.test.ts`: 10 passed. TW5 typecheck and package build passed. `WELD_APP_URL=http://localhost:5187 node tools/browser-weld/weld.mjs`: final 0 failures, W5 one gap; unknown-ID and dropped-return-leg controls passed, Recent selected, sidebar hid and restored, W4 re-projected from the same worker. `pnpm --filter @lararium/browser exec vitest run --browser.headless`: 24 files, 138 passed plus one existing expected failure. The unchanged C4 driver separately timed out after `corpus-ready` at 90 seconds before C4.1; no new continuity pass follows. Other browser boot errors still appeared independently of the repaired reveal path.
+
+''Historical receipt: preceding Codex watch.''
 
 !! C4 · A live leaf boot
 
@@ -554,6 +563,6 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fc7icIQG6qfK4KERgi6yHQSJzX2wULMP03YvDnNMz2A
+<<^ code="&#x0003;">>ni:///sha-256;Jd5_jM8b_nfSqrBE1jm4SKYXMr2naayOs_BHoSN1IO8
 
 <<^ code="&#x0004;" -> to="?">>
