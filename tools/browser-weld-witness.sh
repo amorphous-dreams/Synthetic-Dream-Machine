@@ -45,4 +45,7 @@ if ! curl -sf "http://localhost:$PORT/" >/dev/null 2>&1; then
   exit 1
 fi
 
-WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
+status=0
+WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs || status=1
+WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs || status=1
+exit "$status"
