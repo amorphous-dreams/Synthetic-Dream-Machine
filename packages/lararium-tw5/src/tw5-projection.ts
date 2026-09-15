@@ -7,11 +7,11 @@
  *
  * The island's TW5 engine lives in the Worker (§9), so the cameras live here: render the story
  * river + page stylesheet into `$tw.fakeDocument`, serialize to HTML+CSS, and emit COALESCED
- * `projection:frame` events. The main thread applies each frame to a shadow root. First beat is
- * READ-ONLY: widget handlers stay in the worker on the fake DOM (handlers can't cross postMessage),
- * so the projected HTML is inert — interactivity (the worker-dom event round-trip) is the deferred
- * twin-half. The nalu is COALESCE-to-latest (newest snapshot supersedes; a burst of wiki changes
- * collapses to one post), not the capture-nalu's accumulate-every-record.
+ * `projection:frame` events. The main thread applies each frame to a shadow root. Widget handlers
+ * stay live in the worker on the fake DOM; the main thread returns DOM events by render-id, and this
+ * module dispatches them into the native TW5 handler. The nalu is COALESCE-to-latest (newest snapshot
+ * supersedes; a burst of wiki changes collapses to one post), not the capture-nalu's
+ * accumulate-every-record.
  *
  * Isomorphic: uses only `$tw.fakeDocument` (no window.document) — safe in @lararium/tw5.
  *
@@ -51,6 +51,7 @@ interface RidNode {
 }
 const ridMap = new Map<string, RidNode>();
 let ridSeq = 0;
+const FAKE_DOM_ANIMATION_PATCHED = Symbol("lararium.fake-dom-animation-patched");
 
 /** Patch the fake-element prototype once per worker (the RETURN-leg capability the fakedom platform
  *  lacks): restore listener-storage + render-id stamping + the two reads TW5's click handler makes
@@ -82,6 +83,32 @@ export function patchFakeElementForEvents(fakeDoc: { createElement(t: string): R
   proto["select"]            = function (): void { /* likewise */ };
   proto["setSelectionRange"] = function (this: RidNode, start: number, end: number): void {
     this.selectionStart = start; this.selectionEnd = end;
+  };
+}
+
+/**
+ * TW5 installs its Animator only in a browser startup. A retained reveal nevertheless calls
+ * `$tw.anim.perform()` unconditionally, even in the fake-DOM worker, and relies on the close
+ * callback to apply its final `hidden` state. Supply that missing capability at the projection
+ * shore: fake nodes complete synchronously; any existing animator keeps authority over real nodes.
+ */
+export function patchFakeDomAnimation(tw: Record<string, any>): void {
+  const existing = tw.anim as ({
+    perform?: (type: unknown, domNode: unknown, options?: unknown) => void;
+    [FAKE_DOM_ANIMATION_PATCHED]?: true;
+  } | undefined);
+  if (existing?.[FAKE_DOM_ANIMATION_PATCHED]) return;
+  const perform = existing?.perform;
+  tw.anim = {
+    ...existing,
+    [FAKE_DOM_ANIMATION_PATCHED]: true,
+    perform(type: unknown, domNode: { isTiddlyWikiFakeDom?: boolean }, options?: { callback?: () => void }): void {
+      if (!domNode.isTiddlyWikiFakeDom && typeof perform === "function") {
+        perform.call(existing, type, domNode, options);
+        return;
+      }
+      options?.callback?.();
+    },
   };
 }
 
@@ -132,6 +159,9 @@ export function mountProjection(ctx: IslandContext): () => void {
   // engine facade does not expose — the same loose-access the cameras take.
   const tw = ctx.tw5.$tw as unknown as Record<string, any>;
   const fakeDoc = tw.fakeDocument;
+  // A retained <$reveal> calls $tw.anim for its lifecycle completion even though this worker's
+  // fake DOM cannot animate. Install the fake-node completion before the camera can render one.
+  patchFakeDomAnimation(tw);
   // Arm the interactivity RETURN leg before the camera renders (so every widget that binds a
   // listener gets its render-id stamped + handler stored).
   patchFakeElementForEvents(fakeDoc);
