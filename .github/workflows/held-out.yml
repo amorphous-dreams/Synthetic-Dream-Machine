@@ -1,0 +1,140 @@
+name: Held-out witnesses
+
+# The normal CI fleet names these witnesses but cannot raise their browser and Docker substrates.
+# This workflow gives each one its own hosted runner: a red civic matrix cannot conceal a red crossing
+# matrix, and the fixed `dreamnet-mesh` compose project never has a second writer on the same host.
+on:
+  schedule:
+    - cron: "17 6 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  held-out:
+    name: Held-out · ${{ matrix.driver }}
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.timeout_minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - driver: browser-weld
+            timeout_minutes: 60
+          - driver: civic
+            timeout_minutes: 110
+          - driver: crossing
+            timeout_minutes: 45
+          - driver: herm-mesh
+            timeout_minutes: 45
+          - driver: mesh-scenarios
+            timeout_minutes: 225
+    env:
+      NODE_VERSION: "24"
+      PNPM_VERSION: "11"
+      ARTIFACT_DIR: ${{ runner.temp }}/held-out/${{ matrix.driver }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Prepare held-out evidence directory
+        run: mkdir -p "$ARTIFACT_DIR"
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+      # The Docker files bind-mount this checkout and explicitly trust its host-built dist/. The
+      # browser weld also imports the workspace's Playwright package from this install.
+      - name: Build the mounted tree
+        run: pnpm -r build
+      - name: Verify Docker Compose substrate
+        run: docker compose version
+      - name: Install Playwright Chromium
+        if: matrix.driver == 'browser-weld'
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Regression for the status bug that held this runner back. The fake Docker seam runs no
+      # container and checks both a quiet failed compose result and a quiet successful one.
+      - name: Crossing driver preserves a quiet compose verdict
+        if: matrix.driver == 'crossing'
+        run: node --test tools/crossing-witness.test.mjs
+
+      - name: Run ${{ matrix.driver }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          run_logged() {
+            # Signal the owned process group, including Compose/Node children, then bound cleanup.
+            timeout --kill-after=60s "$@" 2>&1 | tee "$ARTIFACT_DIR/driver.log"
+            statuses=("${PIPESTATUS[@]}")
+            [ "${statuses[0]}" -eq 0 ] && [ "${statuses[1]}" -eq 0 ]
+          }
+          set +e
+          case "${{ matrix.driver }}" in
+            browser-weld)
+              run_logged 40m bash tools/browser-weld-witness.sh
+              status=$?
+              ;;
+            civic)
+              run_logged 85m bash tools/civic-witness.sh
+              status=$?
+              ;;
+            crossing)
+              run_logged 25m bash tools/crossing-witness.sh
+              status=$?
+              ;;
+            herm-mesh)
+              docker compose -f docker-compose.mesh.yml up -d herm-source herm-relay herm-relay-2 2>&1 | tee "$ARTIFACT_DIR/mesh-setup.log"
+              setup_statuses=("${PIPESTATUS[@]}")
+              if [ "${setup_statuses[0]}" -eq 0 ] && [ "${setup_statuses[1]}" -eq 0 ]; then status=0; else status=1; fi
+              if [ "$status" -eq 0 ]; then
+                ready=0
+                for _ in $(seq 1 45); do
+                  if curl -fsS http://localhost:18093/oracle/pointer >"$ARTIFACT_DIR/relay-2-pointer.json"; then ready=1; break; fi
+                  sleep 2
+                done
+                if [ "$ready" -ne 1 ]; then
+                  echo "relay-2 never exposed its oracle read-face within 90s" | tee -a "$ARTIFACT_DIR/driver.log"
+                  status=1
+                else
+                  run_logged 90s bash tools/herm-mesh-witness.sh
+                  status=$?
+                fi
+              fi
+              ;;
+            mesh-scenarios)
+              run_logged 205m bash tools/mesh-scenarios.sh all
+              status=$?
+              ;;
+            *)
+              echo "unknown held-out driver: ${{ matrix.driver }}" >&2
+              status=2
+              ;;
+          esac
+          exit "$status"
+
+      - name: Capture and tear down Herm mesh
+        if: always() && matrix.driver == 'herm-mesh'
+        shell: bash
+        run: |
+          {
+            echo "── mesh compose state before teardown ──"
+            docker compose -f docker-compose.mesh.yml ps
+            docker compose -f docker-compose.mesh.yml logs --no-color
+          } >>"$ARTIFACT_DIR/mesh-compose.log" 2>&1 || true
+          docker compose -f docker-compose.mesh.yml down -v || true
+      - name: Upload held-out evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: held-out-${{ matrix.driver }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.ARTIFACT_DIR }}
+          if-no-files-found: error
+          retention-days: 14

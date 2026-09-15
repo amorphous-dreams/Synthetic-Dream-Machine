@@ -42,6 +42,8 @@ cd "$(dirname "$0")/.."
 COMPOSE="docker compose -f docker-compose.mesh.yml"
 WANT="${1:-all}"
 FAILED=0
+ARTIFACT_DIR="${ARTIFACT_DIR:-}"
+if [ -n "$ARTIFACT_DIR" ]; then mkdir -p "$ARTIFACT_DIR"; fi
 
 say()  { printf '\n\033[1m%s\033[0m\n' "$*"; }
 step() { printf '  %-46s' "$*"; }
@@ -57,13 +59,35 @@ gap()  { printf '\033[33mGAP (%s)\033[0m\n' "$1"; }
 #
 # AND IT WAITS FOR THE TEARDOWN TO LAND. `down -v` returns before the network is released, so the next
 # `up` raced it and failed — a harness fault that reads exactly like a mesh that cannot stand.
+capture_mesh_state() {
+  [ -n "$ARTIFACT_DIR" ] || return 0
+  {
+    printf '\n── mesh compose state before teardown (%s) ──\n' "$(date -u +%FT%TZ)"
+    $COMPOSE ps
+    $COMPOSE logs --no-color
+  } >>"$ARTIFACT_DIR/mesh-compose.log" 2>&1 || true
+}
+
 clear_all() {
+  capture_mesh_state
   $COMPOSE down -v >/dev/null 2>&1 || true
   local deadline=$((SECONDS + 60))
   while docker network ls --format '{{.Name}}' | grep -q '^dreamnet-mesh_mesh$' && [ "$SECONDS" -lt "$deadline" ]; do
     sleep 1
   done
 }
+
+# Reject a typo before arming the EXIT trap: an invalid request must not tear down a mesh another
+# operator owns merely because this runner parsed its argument.
+case "$WANT" in
+  operator-a|operator-b|nexus|quorum|relation|realm|realm-crossing|quorum-realm|open|crossing|open-relation|leaf|meme|climb|seal|title|wikis|conflict|board|all) ;;
+  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | climb | seal | title | wikis | conflict | board | all)" >&2; exit 2 ;;
+esac
+
+# `all` already clears after each scenario. This covers early returns and CI cancellation, when the
+# fixed compose project would otherwise be left holding volumes or a network for the next scheduled run.
+trap clear_all EXIT
+trap 'exit 130' INT TERM
 
 # The browser vessel is the verdict: it refuses at the floor unless the origin can actually mint, so a
 # zero here means a real engine held a real secure context against that operator's own namespace.

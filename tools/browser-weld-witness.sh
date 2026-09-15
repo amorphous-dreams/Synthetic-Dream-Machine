@@ -18,14 +18,24 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 PORT="${WELD_PORT:-5173}"
-LOG="$(mktemp -t weld-vite-XXXXXX.log)"
+ARTIFACT_DIR="${ARTIFACT_DIR:-}"
+if [ -n "$ARTIFACT_DIR" ]; then
+  case "$ARTIFACT_DIR" in
+    /*) ;;
+    *) ARTIFACT_DIR="$(pwd)/$ARTIFACT_DIR" ;;
+  esac
+  mkdir -p "$ARTIFACT_DIR"
+  LOG="$ARTIFACT_DIR/vite.log"
+else
+  LOG="$(mktemp -t weld-vite-XXXXXX.log)"
+fi
 VITE_PID=""
 
 cleanup() {
   [ -n "$VITE_PID" ] && kill "$VITE_PID" 2>/dev/null
   # Reap by PID only. A pattern kill here once matched this house's own waiter shells.
   wait "$VITE_PID" 2>/dev/null
-  rm -f "$LOG"
+  [ -n "$ARTIFACT_DIR" ] || rm -f "$LOG"
 }
 trap cleanup EXIT
 

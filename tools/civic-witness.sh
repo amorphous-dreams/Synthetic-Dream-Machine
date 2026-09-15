@@ -20,7 +20,36 @@
 
 set -u
 PASS=0; FAIL=0; FAILED=""
-LOGDIR="$(mktemp -d)"
+ACTIVE_FILE=""
+ARTIFACT_DIR="${ARTIFACT_DIR:-}"
+if [ -n "$ARTIFACT_DIR" ]; then
+  mkdir -p "$ARTIFACT_DIR"
+  LOGDIR="$ARTIFACT_DIR/civic-families"
+  mkdir -p "$LOGDIR"
+else
+  LOGDIR="$(mktemp -d)"
+fi
+
+capture_compose() {  # capture_compose <compose-file>
+  [ -n "$ARTIFACT_DIR" ] || return 0
+  local file="$1" name
+  name="$(basename "$file" .yml)"
+  {
+    printf '\n── %s: compose state before teardown ──\n' "$file"
+    docker compose -f "$file" ps
+    docker compose -f "$file" logs --no-color
+  } >>"$ARTIFACT_DIR/${name}.compose.log" 2>&1 || true
+}
+
+cleanup() {
+  [ -n "$ACTIVE_FILE" ] || return 0
+  capture_compose "$ACTIVE_FILE"
+  docker compose -f "$ACTIVE_FILE" down -v >/dev/null 2>&1 || true
+  ACTIVE_FILE=""
+}
+on_signal() { exit 130; }
+trap cleanup EXIT
+trap on_signal INT TERM
 
 family() {  # family <name> <log> <command...>
   local name="$1" log="$2"; shift 2
@@ -35,8 +64,11 @@ family() {  # family <name> <log> <command...>
 
 compose_scenario() {  # compose_scenario <file> <verdict-service> [ENV=val …]
   local file="$1" svc="$2"; shift 2
+  ACTIVE_FILE="$file"
   env "$@" docker compose -f "$file" up --abort-on-container-exit --exit-code-from "$svc"
-  local ec=$?; docker compose -f "$file" down -v >/dev/null 2>&1; return $ec
+  local ec=$?
+  cleanup
+  return $ec
 }
 
 echo "═══════════════════════════════════════════════════════════════"
