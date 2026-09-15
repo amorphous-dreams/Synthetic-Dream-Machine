@@ -46,7 +46,7 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 |---|---|---|---|---|---|
 | ''CLOSED'' 2026-09-13 | ''the meme hearth'' (this tree's Fable session) | `session_01EHVUW6kxAXwK9aBUG31T5N` | the meme surface (routes · verbs · CLI · MCP), recipe layers, the blob law, the realm bag + leg, the harness (`tests/harness/**`), the stock-syncer line, the carriers under `docs/pono/` | the clean whole-set e2e reading; seam (b)'s ruling; the replica read behind the return lane | took the dial seam from the founding hearth (`04895b579` · `be008ef1a`) |
 | ''LIVE'' — holds the tree | ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground — and, since 2026-09-13, the whole tree | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch`; ''the three e2e suites red under its road-D work stand CLEARED'' — `handoff.mem#/shift-2026-09-13-meme-hearth` records the whole set at 25 of 25 files · 150 passed + 1 expected fail · exit 0, `herm-floor` R3 green inside that window; plus everything at #/owed-forward | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
-| ''LIVE'' — bounded handoff ground | ''the Codex hearth'' (Codex crew) | `session_01a0a15e830c7f22bab4d2fd96dff131` | `docs/crew-handoff-codex.mem`: handoff triage, declared red-first vectors, and later take-marking | prioritize the handed loops without deciding an operator-held fork; report any crossing before expanding the hold | seated by operator authorization, 2026-09-14 |
+| ''LIVE'' — bounded handoff and C4 witness ground | ''the Codex hearth'' (Codex crew) | `session_01a0a15e830c7f22bab4d2fd96dff131` | `docs/crew-handoff-codex.mem`: handoff triage and take-marking; `tools/browser-weld/leaf-continuity.mjs` + `tools/browser-weld-witness.sh`: C4 browser continuity witness | prove persistent offline founding → configured-anchor reopening without claiming relay admission; preserve the founding hearth's Nexus design and report any runtime crossing before expanding | operator tasked a GPT-5.6 Terra spirit for the prioritized sprint, 2026-09-15 |
 | ''CLOSED'' 2026-09-13 | ''the grammar hearth'' (VSCode-TW5-Syntax) | `session_01QdAMPMM9DsR4rRrmqqQBXe` | the submodule (`feature/memetic-regrammar`) · `carrier-shape.ts` and its two tests in the parent · the corpus census laws. ''At close the submodule reads dirty in the parent'': gitlink `9192445`, worktree head `0788bc0` (`v2.2.1-241-g0788bc0`); the operator adjudicates that dirt separately | the field allow-list (owed since 2026-08-26); the release (''measured 3.0.0, unreleased'' — this row read `2.3.0` and the submodule's own `package.json` and `CHANGELOG.md` both read `3.0.0 — unreleased`); the two EOF bleeds; the parser-recovery patchset never offered upstream | closed `carrier-edges` 201 (`df60ad07d`) while the meme hearth still listed it as the founding hearth's |
 
 <<~/ahu>>
@@ -110,6 +110,8 @@ hearth  = "the Codex hearth"
 trailer = "session_01a0a15e830c7f22bab4d2fd96dff131"
 globs   = [
   "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem",
+  "tools/browser-weld/leaf-continuity.mjs",
+  "tools/browser-weld-witness.sh",
 ]
 ```
 
@@ -155,6 +157,8 @@ globs   = [
 
 ! Crossings this week, and what each cost
 
+# ''The C4 browser walk'' — the operator tasked the Codex hearth with a prioritized sprint and a GPT-5.6 Terra spirit, 2026-09-15. The crew takes `tools/browser-weld/leaf-continuity.mjs`, its invocation in `tools/browser-weld-witness.sh`, and its existing handoff carrier; the founding hearth keeps the Nexus climb's design and runtime. A provisional Vitest iframe harness met runner-transform and asset-route failures before app boot and yielded to the normal app server; the crew removed only its own provisional files. Independent Chromium verification passed all five C4 checks: offline founding, anchor carry, idempotent reload, disabled-carry refusal, and malformed-anchor refusal followed by recovery of the same DID and event CIDs. No production runtime changed and no relay-admission claim follows. The original weld separately failed W3; its diagnostic and the unscheduled suite remain carried in the handoff. Any runtime repair returns here before the hold expands.
+
 # ''The column law, twice'' — the founding hearth aligned every carrier to the projector's width (`19129bc62`, 10:13); the meme hearth seated one law in code (`77d5c9f7e`) and swept 66 carriers (`e3814e57a`) the same day. Cost: a day of "other hands' dirt" nobody could name. Law: a renderer's column width is a LAW in `meme-normalize.ts`, never a pass over the shelf.
 # ''The dial'' — measured by the meme hearth, ceded by the founding hearth in a pasted message, taken and closed in three commits. Cost: one loop waiting on a file the other hearth held dirty. Law: a ceded seam gets a row here before the hand starts.
 # ''The genesis block'' — the founding hearth's uncommitted `genesis-doc.ts` threw `pluginsCid mismatch` under every staged `vessel clear`; the meme hearth could run no founding e2e for a loop and said so in its drift-ward. Law: a change that moves the genesis verifier lands in one commit, or a row here names the window.
@@ -191,6 +195,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x7SUBI5zF3R1XSeU4eBAf_8LcP0FhXjy0-pumo4p108
+<<^ code="&#x0003;">>ni:///sha-256;rNGYvYGqMuJ7X_4i0OHrEcfndxpj9Ie3NNq9cOiP5eE
 
 <<^ code="&#x0004;" -> to="?">>
