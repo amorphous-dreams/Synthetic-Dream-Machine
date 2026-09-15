@@ -65,16 +65,24 @@ jobs:
       - name: Crossing driver preserves a quiet compose verdict
         if: matrix.driver == 'crossing'
         run: node --test tools/crossing-witness.test.mjs
+      - name: Browser weld driver preserves its entry contract
+        if: matrix.driver == 'browser-weld'
+        run: node --test tools/browser-weld-witness.test.mjs
 
       - name: Run ${{ matrix.driver }}
         shell: bash
         run: |
           set -uo pipefail
-          run_logged() {
+          run_captured() {
+            local log="$1"
+            shift
             # Signal the owned process group, including Compose/Node children, then bound cleanup.
-            timeout --kill-after=60s "$@" 2>&1 | tee "$ARTIFACT_DIR/driver.log"
+            timeout --kill-after=60s "$@" 2>&1 | tee "$log"
             statuses=("${PIPESTATUS[@]}")
             [ "${statuses[0]}" -eq 0 ] && [ "${statuses[1]}" -eq 0 ]
+          }
+          run_logged() {
+            run_captured "$ARTIFACT_DIR/driver.log" "$@"
           }
           set +e
           case "${{ matrix.driver }}" in
@@ -91,13 +99,12 @@ jobs:
               status=$?
               ;;
             herm-mesh)
-              docker compose -f docker-compose.mesh.yml up -d herm-source herm-relay herm-relay-2 2>&1 | tee "$ARTIFACT_DIR/mesh-setup.log"
-              setup_statuses=("${PIPESTATUS[@]}")
-              if [ "${setup_statuses[0]}" -eq 0 ] && [ "${setup_statuses[1]}" -eq 0 ]; then status=0; else status=1; fi
+              run_captured "$ARTIFACT_DIR/mesh-setup.log" 10m docker compose -f docker-compose.mesh.yml up -d herm-source herm-relay herm-relay-2
+              status=$?
               if [ "$status" -eq 0 ]; then
                 ready=0
                 for _ in $(seq 1 45); do
-                  if curl -fsS http://localhost:18093/oracle/pointer >"$ARTIFACT_DIR/relay-2-pointer.json"; then ready=1; break; fi
+                  if curl --connect-timeout 2 --max-time 2 -fsS http://localhost:18093/oracle/pointer >"$ARTIFACT_DIR/relay-2-pointer.json"; then ready=1; break; fi
                   sleep 2
                 done
                 if [ "$ready" -ne 1 ]; then
@@ -126,10 +133,10 @@ jobs:
         run: |
           {
             echo "── mesh compose state before teardown ──"
-            docker compose -f docker-compose.mesh.yml ps
-            docker compose -f docker-compose.mesh.yml logs --no-color
+            timeout --kill-after=30s 2m docker compose -f docker-compose.mesh.yml ps
+            timeout --kill-after=30s 2m docker compose -f docker-compose.mesh.yml logs --no-color
           } >>"$ARTIFACT_DIR/mesh-compose.log" 2>&1 || true
-          docker compose -f docker-compose.mesh.yml down -v || true
+          timeout --kill-after=60s 5m docker compose -f docker-compose.mesh.yml down -v || true
       - name: Upload held-out evidence
         if: always()
         uses: actions/upload-artifact@v4

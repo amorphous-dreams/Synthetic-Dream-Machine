@@ -18,6 +18,9 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 PORT="${WELD_PORT:-5173}"
+READY_ATTEMPTS="${WELD_READY_ATTEMPTS:-60}"
+READY_INTERVAL="${WELD_READY_INTERVAL:-0.5}"
+READY_SETTLE_SECONDS="${WELD_READY_SETTLE_SECONDS:-0.2}"
 ARTIFACT_DIR="${ARTIFACT_DIR:-}"
 if [ -n "$ARTIFACT_DIR" ]; then
   case "$ARTIFACT_DIR" in
@@ -32,25 +35,65 @@ fi
 VITE_PID=""
 
 cleanup() {
-  [ -n "$VITE_PID" ] && kill "$VITE_PID" 2>/dev/null
-  # Reap by PID only. A pattern kill here once matched this house's own waiter shells.
-  wait "$VITE_PID" 2>/dev/null
+  if [ -n "$VITE_PID" ]; then
+    # `setsid` below makes this process group ours. Kill the whole Vite/npx tree
+    # without reaching the runner's own shells or an unrelated server on $PORT.
+    kill -TERM -- "-$VITE_PID" 2>/dev/null || true
+    wait "$VITE_PID" 2>/dev/null || true
+  fi
   [ -n "$ARTIFACT_DIR" ] || rm -f "$LOG"
 }
 trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 echo "browser-weld: standing the app on :$PORT"
-( cd packages/lararium-app && npx vite --port "$PORT" --strictPort >"$LOG" 2>&1 ) &
+# Keep the session leader as $VITE_PID, not the launcher subshell. `npx` may
+# leave a Vite child behind, and a PID-only cleanup would then leak the server.
+(
+  cd packages/lararium-app
+  exec setsid npx vite --port "$PORT" --strictPort
+) >"$LOG" 2>&1 &
 VITE_PID=$!
+
+vite_announced_local_url() {
+  grep -F "Local:" "$LOG" | grep -F "http://localhost:$PORT/" >/dev/null
+}
+
+app_answers() {
+  curl -sf --connect-timeout 1 --max-time 2 "http://localhost:$PORT/" >/dev/null 2>&1
+}
 
 # Wait for the server to ANSWER, never for a fixed sleep — a fixed sleep reports a slow machine as a
 # broken one, and this house has already paid for that lesson in a readiness race.
-for _ in $(seq 1 60); do
-  curl -sf "http://localhost:$PORT/" >/dev/null 2>&1 && break
-  sleep 0.5
+ready=0
+server_exited=0
+for _ in $(seq 1 "$READY_ATTEMPTS"); do
+  if ! kill -0 "$VITE_PID" 2>/dev/null; then
+    server_exited=1
+    break
+  fi
+  # An unrelated server can answer this port. Require Vite's own startup
+  # announcement from our log before probing the port at all.
+  if vite_announced_local_url && app_answers; then
+    # The child can die just after either proof, so accept only the pair while
+    # the Vite session leader still lives.
+    sleep "$READY_SETTLE_SECONDS"
+    if kill -0 "$VITE_PID" 2>/dev/null && vite_announced_local_url; then
+      ready=1
+      break
+    fi
+    server_exited=1
+    break
+  fi
+  sleep "$READY_INTERVAL"
 done
-if ! curl -sf "http://localhost:$PORT/" >/dev/null 2>&1; then
-  echo "browser-weld: the app never answered on :$PORT — vite log follows"
+if [ "$ready" -ne 1 ]; then
+  if [ "$server_exited" -eq 1 ]; then
+    echo "browser-weld: app process exited before readiness on :$PORT — vite log follows"
+  else
+    echo "browser-weld: the app never answered on :$PORT — vite log follows"
+  fi
   tail -12 "$LOG"
   exit 1
 fi

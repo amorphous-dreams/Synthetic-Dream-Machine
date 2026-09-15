@@ -86,6 +86,10 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 
 !! ↺ Hoʻoko / aftermath
 
+''AFTERMATH / YIN, 2026-09-15.'' The runner sweep adds owned-process-group cleanup, app readiness controls and a fake-tool regression wired into the hosted browser job. Herm setup, readiness probes, evidence capture and teardown gain deadlines. Both fake-tool regression files passed; shell syntax, workflow YAML parsing and carrier canonical checks passed. Readiness now requires the owned Vite startup announcement before a bounded HTTP probe, including a delayed foreign-port control. These local runner controls do not supply a hosted workflow receipt. The ledger now carries the enacted crossings carveout and the completed W3 state; the A2 scout separates ordinary founding from the climbed-founder case.
+
+''Projection follow-up, source audit rather than a reproduced product red.'' `tw5-projection.ts` adds render IDs to a module-level map without retiring detached nodes. The unknown-ID control proves only unknown-ID handling. Next, render a valid target, detach it, send its former ID, and test that no handler fires; retain a live-target positive control. Also tighten the witness's frame ordering and worker-error attribution: a same-worker frame alone does not establish causation, and an unrelated worker fault must not convict the unknown-ID probe. Preserve named state transitions and the disabled-message control. Ensure CI supplies the generated TW5 core so the retained-reveal fixture executes rather than skips.
+
 W3 closes under its named actions and measured limits. D3 gains source wiring, with hosted execution still owed. C4 boot stalls, W5's node-disk leg, full Python-suite health and admitted relay proof remain separate debts. The deeper scouts below retain their historical measurements rather than claiming a fresh full audit.
 
 <<~/ahu>>
@@ -123,7 +127,7 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 ! Standing on the operator's hand, never the crew's
 
-''A crew that starts building against an unruled fork wastes a week.'' Each entry below carries a VERDICT measured against the tree on 2026-09-14. ''Three stand genuinely OPEN · one stands OPEN against a stale standing ruling · one stands ALREADY RULED with stale prose over it · two read MISFRAMED.'' Build against none of the first four without the operator's word.
+''A crew that starts building against an unruled fork wastes a week.'' Each entry below carries a VERDICT measured against the tree on 2026-09-14. ''Three stand genuinely OPEN · one stands OPEN against a stale standing ruling · one stands ALREADY RULED with its ledger prose corrected · two read MISFRAMED.'' Build against none of the first four without the operator's word.
 
 !! OPEN — named unruled in a carrier or in source
 
@@ -137,9 +141,9 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 ''④ `bag-residency.ts`'s home.'' The file stands at `packages/lararium-mesh/src/bag-residency.ts` (489 lines, `@lararium/mesh`; imported by `cabal-realm.ts` and `carriage-caps.ts`). <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">> `:96` carries an ''operator ruling of 2026-06-01'' — residency methods MUST move out of the side-file into the causal-island code — immediately followed by `⚠ THE RELOCATION STANDS UNENACTED, and the tree argues a different cure` (re-measured 2026-09-13: no `causal-island.ts` stands). `:98` carries the code's counter-argument in the code's own words (`bag-residency.ts:12-15`, `ONE FILE, ONE QUESTION`); see also `:44`. ''Do NOT read `02d7f24bf` as ruling this.'' That commit rules the ADJACENT question — the word collision, ''two offices, one word, NEITHER RENAMING'' — and says of this item verbatim: the clause ''now reads as a ruling awaiting a hand, beside the counter-argument the code carries in its own words, ''with the fork between them left OPEN''''.
 
-!! ALREADY RULED — and the carrier reads stale over it
+!! ALREADY RULED — the ledger carve-out
 
-''⑤ The crossings-deadlock's permanent shape.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> `:171` still reads ''Three candidate cures stand, unranked and awaiting the operator's word''. ''Cure ① landed, and a witness pins it.'' Commit `0d00d75f5` (2026-09-13, `lar:///the-ledger.answers.to-no-hearth — the book that records a crossing stops refusing the hand that crossed`) carves the ledger out of `hearthsOf` rather than out of the fence a hearth writes: a hearth may still hold the ledger in PROSE, and ''what no hold may do is WITHHOLD it''. Code: `tools/hearths-gate.mjs:93-95` — `if (path === LEDGER) return [];` under a docblock at `:80-92` restating the ruling and its measurement. Weld: `tools/hearths-gate-witness.sh:146` reds with ''the ledger refused the hand its own law sends to it — the carve-out in `hearthsOf` is gone''. ''The carrier's `:171` prose survived four later commits to that file with no pointer to the enactment.'' Correcting it belongs to whichever hand the operator sends at `hearths.mem` next — a hand correcting it here would be writing another ledger's row.
+''⑤ The crossings-deadlock's permanent shape — closed.'' `0d00d75f5` exempts the ledger path in `tools/hearths-gate.mjs`'s `hearthsOf`, so a hold cannot prevent another hearth from recording a crossing. `tools/hearths-gate-witness.sh` pins the carve-out. The aftermath sweep also corrected the ledger's stale alternatives; no new operator ruling waits here.
 
 !! MISFRAMED — the question does not stand where it reads
 
@@ -191,11 +195,11 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 !! A2 · The two-vessel-mesh genesis fixture
 
-''Where it lives:'' `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` — ''never `tests/e2e/` at the repo root''. It stands as the only driver of `runDeviceAdmit` (`beforeAll` `:143-177`, the call at `:161`), which makes it the only contact that says whether the admit payload still admits ''against a climbed founder''.
+''Where it lives:'' `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` — ''never `tests/e2e/` at the repo root''. Its `beforeAll` exercises `runDeviceAdmit` after ordinary founding. The current fixture does not establish a climbed-founder scenario; that proof needs an explicit climb and stays separate from the path repair.
 
 ''The red, and its real cause — correct the framing before you fix it.'' The fixture read sits at `:104`, `readFileSync(join(genesisDir, "social-bootstrap.json"), "utf8")`, reached from `beforeAll` at `:147` and again in a test body at `:186`. The module guard at `:83-89` checks `island.cid-engine`, which EXISTS, so the guard passes and execution reaches `:104`. ''The file is not merely unbuilt — the test reads a path nothing ever writes.'' `runInit` writes the bootstrap to `larBootstrapPath()` = `<XDG data home>/lares/vessel/social-bootstrap.json` (`packages/lararium-node/src/vessel-paths.ts:458-460`; written at `commands/init.ts:148`, `:315`, `:373`) and IGNORES its `genesisDir` argument for that write. So the red reads ENOENT on a stale layout, before `runDeviceAdmit`'s own code runs. The comment at `:70` (''`social-bootstrap.json` stays behind deliberately — `runInit` writes it'') and the filter at `:76` encode that old layout.
 
-''Precondition:'' none but the path decision — point the read at `larBootstrapPath()`, or make `runInit` honour `genesisDir`. Pick one deliberately; the second changes a write path other callers read.
+''Next bounded repair.'' Isolate each vessel's `LAR_ROOT`, assert the actual founding output, and read the returned `bootstrapPath` (or the matching `larBootstrapPath()`). Keep production storage layout unchanged. First recover ordinary admission coverage; then add a climbed-founder vector under the separate wire ruling.
 
 !! A3 · `herm-reshares-public-blob` — the 1 + 8 shape, and what the climb cures took
 
@@ -345,7 +349,7 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 ''Reconcile the four counts before quoting any of them — they count four different populations.'' 391 = the lares-corpus subset loaded into the staged mirror for the siting measurement. 701 = `find bags -name "*.mem" | wc -l`, the hand-authored total (`bags/lares` 382 + `bags/lararium` 212 + the rest), and the number `wiki-layer-ontology.mem:278` quotes. 655 noop / 46 project / 0 conflict = the projection-gate reading over the live `synced-tree.json` across those 701 (`179916f39`). 708 = the `tools/source-pointer.mjs` sweep. ''Treat every total as time-stamped, never canonical, and DERIVE it.''
 
-''C4 completed; its receipt moved to #/completed. W3 remains active at #/next-steps.''
+''C4's earlier five-check receipt and W3's completed repair live at #/completed. The recurring C4 boot stall and D3 hosted verification remain active at #/next-steps.''
 
 <<~/ahu>>
 
@@ -411,7 +415,7 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 !! C4 · A live leaf boot
 
-''TAKEN — `f90454aca`, 2026-09-15.'' The Codex hearth's GPT-5.6 Terra spirit built the browser witness; the parent independently verified all five C4 checks. The separate W3 click/worker failure remains active at #/next-steps, before fleet scheduling (D3). Relay admission remains outside this receipt.
+''TAKEN — `f90454aca`, 2026-09-15.'' The Codex hearth's GPT-5.6 Terra spirit built the browser witness; the parent independently verified all five C4 checks. The later W3 repair appears above; D3 now carries weekly/manual wiring. The later C4 timeout remains active at #/next-steps. Relay admission remains outside this receipt.
 
 ''The cure stands LANDED.'' `6b0784571`: `packages/lararium-mesh/src/persona-kel-climb.ts` (new home for `carryPersonaKelUpTheGradient`, +112) · `packages/lararium-node/src/persona-kel-ring.ts` (−87, now re-exporting) · `packages/lararium-browser/src/open-browser-vessel.ts` (+72) · `packages/lararium-browser/tests/nexus-board-climb-at-leaf.test.ts` (+527).
 
@@ -421,15 +425,15 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 ''Earlier scout state (now superseded by the witness below).'' All fifteen vectors in `nexus-board-climb-at-leaf.test.ts` drive synthetic repos and boards (`:121-414`) or read the boot's SOURCE TEXT: the fault-pin at `:452` reads the boot with `?raw` (`:58`) and asserts ordering by `indexOf` at `:507-511`, with the −1 hazard called out at `:505`. At that reading no test or e2e walked found-offline → configure-the-anchor → reload in a real browser, so the source pin alone held the wiring. The held-out `browser-weld` surface was the stated precondition; it now carries the C4 walk described next.
 
-''The held-out walk now stands as a real-browser harness, and the full five-vector run passed.'' `tools/browser-weld/leaf-continuity.mjs`, invoked after the ordinary weld by `tools/browser-weld-witness.sh`, opens a fresh persistent Chromium profile against the NORMAL Vite app. Its ordinary vector reads the private Binding-Gate chain through a test-only fetched-module observation (no production debug door), then proves: offline founding → `?gate=` anchor → document reload preserves the same `0x` device DID and the same non-empty ordered event-CID sequence; the first anchor boot logs the one KEL carry and the reload logs none. Its fault vector replaces the ONE exact `carryPersonaKelUpTheGradient` call in its fetched module and demands the existing fail-closed missing-chain halt. Its malformed-anchor vector reaches the exact `nexusScopeOrThrow` TORN/no-board door, then retries a valid anchor and demands the original DID+CIDs. The isolated normal-app Chromium run passed C4.1 offline identity, C4.2 anchored carry, C4.3 idempotent reload, C4.4 disabled-carry refusal, and C4.5 malformed scope-door + valid retry: `pnpm --filter @lararium/app exec vite --host 127.0.0.1 --port 5182` (one terminal), then `WELD_APP_URL=http://127.0.0.1:5182 LEAF_BOOT_MS=30000 node tools/browser-weld/leaf-continuity.mjs` (another). Earlier attempts at an isolated Vite port stalled after `corpus-ready` with the DOM still `booting…`; the final run did not reproduce that intermittent observation, and this handoff does not infer its cause. This is a browser proof surface, not relay admission: `?gate=` scopes the local leaf's Nexus, while a real crossing still requires an explicit `?relay=` service.
+''The held-out walk now stands as a real-browser harness, and the full five-vector run passed.'' `tools/browser-weld/leaf-continuity.mjs`, invoked after the ordinary weld by `tools/browser-weld-witness.sh`, opens a fresh persistent Chromium profile against the NORMAL Vite app. Its ordinary vector reads the private Binding-Gate chain through a test-only fetched-module observation (no production debug door), then proves: offline founding → `?gate=` anchor → document reload preserves the same `0x` device DID and the same non-empty ordered event-CID sequence; the first anchor boot logs the one KEL carry and the reload logs none. Its fault vector replaces the ONE exact `carryPersonaKelUpTheGradient` call in its fetched module and demands the existing fail-closed missing-chain halt. Its malformed-anchor vector reaches the exact `nexusScopeOrThrow` TORN/no-board door, then retries a valid anchor and demands the original DID+CIDs. The isolated normal-app Chromium run passed C4.1 offline identity, C4.2 anchored carry, C4.3 idempotent reload, C4.4 disabled-carry refusal, and C4.5 malformed scope-door + valid retry: `pnpm --filter @lararium/app exec vite --host 127.0.0.1 --port 5182` (one terminal), then `WELD_APP_URL=http://127.0.0.1:5182 LEAF_BOOT_MS=30000 node tools/browser-weld/leaf-continuity.mjs` (another). Earlier attempts at an isolated Vite port stalled after `corpus-ready` with the DOM still `booting…`; the final run did not reproduce that intermittent observation, and this handoff does not infer its cause. This proof covers local browser continuity; relay admission needs another boundary: `?gate=` scopes the local leaf's Nexus, while a real crossing still requires an explicit `?relay=` service.
 
-!! D1 · The python suite no workflow reaches
+!! D1 · Python-suite CI wiring; full-run receipt still owed
 
 ''TAKEN 2026-09-15 — `24366c5f6` (`lar:///the-sensorium.reaches-the-python-suite`).'' The `test` job now installs `pytest` into the holder venv and runs `~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q`. Its regression vector lives at `packages/lararium-sensorium/scripts/test_ci_sensorium_suite.py`: it REDDED first because the workflow named no sensorium-holder step, then GREENED only after that exact venv invocation landed. Re-derived collection: 990 cases before this vector's one added case; do not preserve the old 962-function number as a CI total.
 
 ''The handoff's 962-test observation.'' Derived: `def test_` across 96 files under `packages/lararium-sensorium/scripts` — ''note the path, `packages/lararium-sensorium/scripts`, never a top-level `lararium-sensorium/`''. All 962 of the package's python tests live under `scripts/`; the only python outside it carries none (`mempalace_source_lares/{__init__,adapter}.py`). Collected count runs slightly HIGHER than 962 — eight `@pytest.mark.parametrize` decorators expand some functions (`test_loci_io.py:251,258` · `test_stream_events.py:137` · `test_capture_session.py:281` · `test_structure_router.py:35,72` · `qa_anchor/tests/test_dprime.py:51` · `qa_anchor/tests/test_reliability.py:95`).
 
-''The workflow reading at handoff.'' ''Two workflows exist'' — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appeared in `ci.yml` only as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then ran it was the grammar host's `pnpm run gate:fold`, a different package. The `test` job ran `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. Its holder venv then only installed `mempalace` and asserted its import.
+''The workflow reading at handoff.'' At the original scout, two workflows stood — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appeared in `ci.yml` only as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then ran it was the grammar host's `pnpm run gate:fold`, a different package. The `test` job ran `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. Its holder venv then only installed `mempalace` and asserted its import.
 
 ''Trap:'' `pnpm -r test` SKIPS the root `tests/` directory BY DESIGN — the workspace runs wider than `packages/*`.
 
@@ -525,7 +529,7 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 |`herm-reshares-public-blob` — 1 `beforeAll` death, climb cures unverified |The `beforeAll` does not throw; it stashes a `standGate` and the first test names the verdict. ''And the announce-plane fork stands RULED AND CURED'' (`open-node-vessel.ts:2272-2277`) — the shift ledger's ''one MORE ruling owed'' reads stale. What stands owed reads narrower and is named in source: ⑦ UNMEASURED against the cure, and the Herm holding no carriage CLIENT — A3 |
 |break (c) — which key signs a floor that seats no persona? |MISFRAMED. Break (c) names the UNSIGNED-announcement attack pair, and its own cure reads ''the floor's announcement MUST sign''. The which-key half stands answered by `SEATED ⊥ RAISED` plus the Place-DID heraldry ruling. What waking-floor leaves open: what ''recognition'' means, and the renewal interval — ⑥ |
 |the `anchors-h{N}` census |MISFRAMED. No carrier names such a census (zero grep hits). Anchors sit out of the key census BY LAW (public doc-ids, no seal), enumeration rides an explicit roster never a dir-scan, and the opposite discipline stands ruled for the secret h{N} family — ⑦ |
-|the crossings-deadlock's permanent shape |''ALREADY RULED.'' Cure ① landed at `0d00d75f5`, enacted in `tools/hearths-gate.mjs:93-95` and welded at `tools/hearths-gate-witness.sh:146`. `hearths.mem:171` carries stale prose over it — ⑤ |
+|the crossings-deadlock's permanent shape |''ALREADY RULED.'' Cure ① landed at `0d00d75f5`, enacted in `tools/hearths-gate.mjs:93-95` and welded at `tools/hearths-gate-witness.sh:146`. the aftermath sweep reconciled the ledger prose — ⑤ |
 |`02d7f24bf` rules `bag-residency.ts`'s home |It rules the ADJACENT word collision and says of this item, verbatim, ''with the fork between them left OPEN'' — ④ |
 |DEPARTURE's record must NAME the island it left |The source requires the ABSENCE be named by an act at the rite. Naming the departed island reads as a DESIGN PROPOSAL, never quoted law — B3 |
 |the hostful forms COLLIDE on disk |They cannot collide today: hostful fails `startsWith("lar:///")` and never sites. The pair reads IRRECONCILABLE — hostful un-projectable forward, every disk file deriving back as hostless. The collision reads LATENT, arriving the day something sites a hostful URI by stripping only the scheme — B8 |
@@ -537,7 +541,7 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 |the browser corpus: 0 new files over 391 carriers |Holds, and the 391/0 reading lives in `bfcf8bd58`'s commit message and nowhere else — un-re-measurable from the tree. And 391 / 701 / 708 / 655+46 count FOUR different populations — C3 |
 |989 python tests |''962'' `def test_` across 96 files, collected slightly higher through 8 parametrize decorators. The no-workflow-reach half holds — D1 |
 |the witness fleet runs 29 of 33 |''30 of 35.'' `ci.yml`'s own comment reads 34, itself stale — D2 |
-|five held-out witnesses |''Five stands right'' where the earlier shift ledger's four was stale (`mesh-scenarios` joined). No scheduled runner, confirmed — D3 |
+|five held-out witnesses |''Five stands right'' where the earlier shift ledger's four was stale (`mesh-scenarios` joined). Previously unscheduled; `held-out.yml` now wires weekly/manual runs, with hosted execution still owed — D3 |
 |`larHome()` honours `LAR_ROOT` alone, so set the XDG vars too |''Inverted.'' Every XDG resolver in the stack tests `LAR_ROOT` FIRST, so `LAR_ROOT` alone isolates state, cache, config, run, and both data houses. The real hazard reads `~/.mempalace` (including the destructive `mempalace repave`), `~/.venv`, `~/.local/bin`, and the harness homes — #/traps |
 |`foldOfferingAntigen` at `offering-antigen.ts:129-150` |The body ends at `:146`; the meme repeats `:150` in four places — B1 |
 
@@ -557,12 +561,12 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 ''Naming law, carried from the shift ledger.'' Until a production path calls it, a module stands ''specified in code'' — never ''built'', never ''done'', never ''ready''. Three of the items in this carrier (B1's fold, B7's adapters, D4's decoder) sit exactly there.
 
-''One gauge for this carrier's own honesty.'' Every pointer above resolves under `tools/source-pointer.mjs`. A pointer that stops resolving names a carrier growing false law — re-run the tool before trusting a section a rename passed through.
+''Pointer checks carry a bounded claim.'' `tools/source-pointer.mjs` checks explicit `source-file` metadata and source edges across tracked carriers. It does not validate this handoff's inline file/line citations or prove their claims. Open each named source before acting; rerun the pointer tool after changes to explicit source edges.
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Jd5_jM8b_nfSqrBE1jm4SKYXMr2naayOs_BHoSN1IO8
+<<^ code="&#x0003;">>ni:///sha-256;TIkx9_ZL2J61YF40VJup0-Ax82uKxSyYEByQ4hdKQms
 
 <<^ code="&#x0004;" -> to="?">>
