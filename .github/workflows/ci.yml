@@ -150,6 +150,15 @@ jobs:
           ~/.venv/bin/python3 -m pip install -e ./mempalace
       - name: Witness the holder answers
         run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
+      - name: Install the sensorium test runner in the holder venv
+        run: ~/.venv/bin/python3 -m pip install pytest
+      # `pnpm test` reaches the sensorium's two TypeScript tests only.  The
+      # holder suite is Python and lives beside its modules under scripts/, so
+      # invoke it through the same venv that holds mempalace.  Calling bare
+      # `pytest` here would let the runner's global interpreter silently stand
+      # in for the holder environment the suite actually requires.
+      - name: Run lararium-sensorium Python suite
+        run: ~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q
       - name: Install Playwright Chromium (browser-vessel suite)
         run: pnpm exec playwright install --with-deps chromium
       # ONE SERIALIZATION, BOTH PLACES. The root `test` script pins `--workspace-concurrency=1`
