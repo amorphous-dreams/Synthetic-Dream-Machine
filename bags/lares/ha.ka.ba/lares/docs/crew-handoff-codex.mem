@@ -29,7 +29,7 @@ written   = "2026-09-14"
 ''What this carrier withholds, and where each lives instead.''
 
 * ''The shift ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>. It hands one watch to the next among sessions sharing this tree, re-trued continuously, never archived in place. Read it for the lattice (G0..G5) and the red-first procedure; this carrier neither repeats nor edits it.
-* ''The hearth ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>. It answers ''who holds what · what each owes · what crossed'', and a hearth names a session by its `Claude-Session:` commit trailer. ''A row for this crew stands OWED and the operator writes it'' — that ledger's own law governs who moves a row, and no hand writes another hearth's row for it. Until that row lands the crew reads #/the-only-guard before touching shared ground.
+* ''The hearth ledger'' — <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>. It answers ''who holds what · what each owes · what crossed'', and a hearth names a session by its `Claude-Session:` commit trailer. ''The operator authorised this crew's own row; it landed in `0ba716cab`, with C4 scope updated in `0d5deb15c`.'' That permission does not authorise rewriting another hearth's row. The crew still reads #/the-only-guard before touching shared ground.
 
 ''Seating the house.'' `lares vessel stand --codex` wires the OpenAI Codex home: the LARES MCP seat, the session-ingest hook, and the BOOT POINTER into `~/.codex/AGENTS.md` (`packages/lares-cli/src/codex-wire.ts:1-24`, `:51`). The pointer aims at the boot carrier rather than copying it — `codex-wire.ts:15-20` states the reason: ''a copied seed is a second seed, and a second seed drifts from the carrier with nothing watching it''. The wire also REAPS a stale `[mcp_servers.mempalace]` block (`:61-68`), because a harness holding its own palace holder reaches past the node into the store and N writers on one Chroma index is what corrupts it. The carrier the pointer names: <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>.
 
@@ -39,7 +39,55 @@ written   = "2026-09-14"
 # #/traps — the instrument-lies this tree measured and paid for.
 # #/standing-on-the-operators-hand — so nothing gets built against an unruled fork.
 # #/the-cut — what the founding hearth keeps, so no work collides.
-# The four sets, #/set-a-mechanical onward, in that order: A carries a worked example, D carries no preconditions at all.
+# #/next-steps — current priority and test terrain; #/completed — finished increments and their limits.
+# The four sets, #/set-a-mechanical onward, retain the deeper open-item scouts; re-read their older measurements before implementing.
+
+<<~/ahu>>
+
+<<~ ahu #/next-steps>>
+
+! OODA-HA — next watch and surrounding terrain, 2026-09-15
+
+!! ✶ Observe — distinguish receipts from fresh measurements
+
+C4 and D1 move to #/completed. C4 carries a five-check Chromium pass from the preceding watch, including the disabled-carry control; D1 carries CI wiring plus its focused regression, never a completed green run of the whole Python suite. This roadmap-only refresh runs no browser or Docker scenario. The remaining sets retain earlier scouts, not a claim that every design and line number received a fresh audit.
+
+The current W3 driver (`tools/browser-weld/weld.mjs`) chooses the FIRST matching link/button and compares the whole projection. No changed HTML cannot prove that a particular handler never fired. The recorded worker `perform` error supplies a clue, not a demonstrated cause. Earlier C4 stalls after `corpus-ready` remain unexplained; its final pass does not erase them.
+
+!! ⏿ Orient — extend the available test surfaces
+
+|!boundary |!existing surface |!scope |
+|DOM → worker → TW5 → projection | `tools/browser-weld/weld.mjs`; `packages/lararium-tw5/tests/projection-input-leg.test.ts` | Playwright walks the real app; the TW5 test isolates dispatch with fake elements, not a browser boot |
+|Browser worker transport | `packages/lararium-browser/tests/browser-verb-breathing.test.ts` and the Chromium Vitest suite | The worker/pool seam; its fixture stands in for reaction routing |
+|Persistent leaf continuity | `tools/browser-weld/leaf-continuity.mjs` | DID/prefix/event CIDs across reload, carry-disabled refusal, malformed-anchor recovery; no admitted relay exchange |
+|Peers, boards and carriage | `docker-compose.mesh.yml` + `tools/mesh-scenarios.sh` | Extend operator-a/operator-b, leaf, crossing, realm-crossing, climb, board, wikis or conflict as the boundary demands; presence does not certify a fresh pass |
+|Node save/projection and admission | `tests/e2e/working-loop.test.ts`, `tests/e2e/wikis-ingest-back.test.ts`, `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` | Real-vessel witnesses; A2's stale bootstrap fixture must not masquerade as an admission failure |
+
+''Reserve the shared terrain.'' The mesh runner uses the fixed `dreamnet-mesh` project and `clear_all` runs `down -v`. Confirm that no other session owns its containers/volumes before running it; a project-name override alone does not isolate its hard-coded readers. Serialize shared-tree e2e, build relevant outputs, and inspect processes in the execution context that launched them: sandbox-local absence cannot prove an escalated process stopped. No mesh teardown belongs to this documentation turn.
+
+!! ◇ Decide — priority and stopping conditions
+
+# ''W3 first: make the action meaningful, then isolate its red.'' Identify a known widget/action and its intended state change. Record target/render-id, active surface, dispatch and worker error together. Assert the specific result, not any HTML difference. An unknown render-id control should preserve documented safe-drop behavior; disabling the return leg must break the positive vector. If the failure only exposes a bad fixture, repair that evidence before choosing a runtime cure.
+# ''D3 next: recurring, honest coverage.'' Define runner prerequisites, serialization, timeouts and failure artifacts over existing drivers. Preserve independent failure statuses and W5's explicit gap. W3 blocks claiming a healthy browser gate, not writing a workflow that honestly reports its red. No blanket expected-failure exception.
+# ''A2 → one bounded A1 slice → broader mesh proof.'' Establish the stale bootstrap-read red, then repair the fixture rather than changing production storage layout to fit it. Exercise a climbed-founder board consumer with own-scope and torn-scope controls before generalizing the census. Invite identity sites need distinct tests from board addressing. The admit wire's operator-held fork remains untouched.
+# ''D4 follows: real QR decoding at the consuming door.'' Re-read the approved design, choose browser or node scope, and test actual generated bytes plus corrupt inputs before wiring a decoder dependency.
+# ''B6/C2 and C1/C3 remain staged; the other B designs need fresh reads.'' Reserve Opus's boot ground before splitting it. The hand-edit retirement weld comes last, after the working surface and promotion path. D5 stays behind whole-palace, watcher and durable-telemetry prerequisites.
+
+The source census still finds A1's raw vessel-key assignments (including double-spaced declarations); no cure follows from a grep alone. Workflow inspection still finds no scheduled held-out drivers. D2 supplies existing coverage context, not an unfinished implementation to retire. Operator-held decisions and the founding hearth's retained arcs remain outside this crew's unilateral choices.
+
+!! ▶ Act — the next bounded ticket, designed red-first
+
+''Gaia / human engineer.'' Activate a named action in the browser's live wiki and observe its promised state change through the real worker and projection. Surface a failure beside the action that triggered it; unrelated HTML changes do not count as success.
+
+''Elyncia / elf wild mage — illustration, not new canon.'' Touch a named rune at the household shrine; the shrine performs that rune's promised act and returns its sign. Another candle flickering cannot certify a silent rune. Prove the household rite before summoning the wider mesh.
+
+''Definition of done.'' Extend the nearest existing surface. Verify setup, observe the intended red and read its failure, retain nonsense/fault controls, implement the smallest cure, then re-run the focused vector and neighboring browser tests. Extend Docker only where the diagnosed boundary crosses peers. Preserve C4 continuity coverage. Record exact commands, results, gaps and the taking commit. The present turn updates this plan; it does not implement W3.
+
+!! ↺ Hoʻoko / aftermath
+
+Completed receipts no longer occupy the active sets. Re-open Observe with W3's chosen target and expected effect. Full Python-suite health, intermittent boot stalls, W5's disk leg and admitted relay proof remain distinct debts, not implied completions.
+
+''Separate ordinary-weld red, measured and not expanded here.'' The same held-out shell first runs `tools/browser-weld/weld.mjs`; its latest run passed W0–W2 and W4, failed W3 (`click-crosses`: projection did not change after the dispatched click), and retained the declared W5 node-disk gap. Vite also named a diagnostic clue, not a cause: `[worker-handle] worker error: Uncaught TypeError: Cannot read properties of undefined (reading 'perform') @ 287`, followed by `[vessel-pool] island error for lares` from `dist/worker-handle.js:19:20`. Those are existing browser-weld seams outside the C4 identity-continuity vector; the shell aggregates their status so no C4 green can hide them, but C4 does not claim to cure them.
 
 <<~/ahu>>
 
@@ -298,21 +346,7 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 ''Reconcile the four counts before quoting any of them — they count four different populations.'' 391 = the lares-corpus subset loaded into the staged mirror for the siting measurement. 701 = `find bags -name "*.mem" | wc -l`, the hand-authored total (`bags/lares` 382 + `bags/lararium` 212 + the rest), and the number `wiki-layer-ontology.mem:278` quotes. 655 noop / 46 project / 0 conflict = the projection-gate reading over the live `synced-tree.json` across those 701 (`179916f39`). 708 = the `tools/source-pointer.mjs` sweep. ''Treat every total as time-stamped, never canonical, and DERIVE it.''
 
-!! C4 · A live leaf boot
-
-''TAKEN — `f90454aca`, 2026-09-15.'' The Codex hearth's GPT-5.6 Terra spirit built the browser witness; the parent independently verified all five C4 checks. Next priority: diagnose the separate W3 click/worker failure below, then schedule the held-out fleet (D3). Relay admission remains outside this receipt.
-
-''The cure stands LANDED.'' `6b0784571`: `packages/lararium-mesh/src/persona-kel-climb.ts` (new home for `carryPersonaKelUpTheGradient`, +112) · `packages/lararium-node/src/persona-kel-ring.ts` (−87, now re-exporting) · `packages/lararium-browser/src/open-browser-vessel.ts` (+72) · `packages/lararium-browser/tests/nexus-board-climb-at-leaf.test.ts` (+527).
-
-''Where `relayGatePubKey` goes.'' Read off the URL at `packages/lararium-app/src/main.ts:297` (`new URLSearchParams(location.search).get("gate")`), passed at `:355`; the vessel option at `open-browser-vessel.ts:182`, destructured `:336`, folded into the single island reading at `:434-437` (`anchorGateKey: relayGatePubKey ?? null`). Also the federation-gate arm at `:620` and the crossroads-register condition at `:842`.
-
-''The answer to the walk's question: the console LOGS the carry; the gate does not throw.'' On a vessel founded offline and later handed a gate key, `nexusIdentity` resolves scope to the anchor and `nexusIslandsBelow` (`nexus-identity.ts:261-283`, the third narrowing at `:270` nulling `anchorGateKey`) returns the vessel's own key as the island below. So `open-browser-vessel.ts:885-888` runs the carry immediately before the gate read (''which is the whole cure'', `:874`), and `persona-kel-climb.ts:104` prints `[persona-kel] carried N event(s) for <prefix>… up the gradient …`, returning `{ carried, from: island }` at `:107`. Idempotent: `:84` returns `nothing` at the bottom of the gradient, `:91` returns `nothing` when the destination already carries the chain (every later boot), `:99` `console.warn`s an island that would not open. ''The throw survives as the FALLBACK'' — `open-browser-vessel.ts:891-892` reds fail-closed with ''persona-KEL chain … absent from the local board — the Binding Gate cannot reach a head'', reachable now only when the carry finds nothing below, which is the pre-cure brick.
-
-''Earlier scout state (now superseded by the witness below).'' All fifteen vectors in `nexus-board-climb-at-leaf.test.ts` drive synthetic repos and boards (`:121-414`) or read the boot's SOURCE TEXT: the fault-pin at `:452` reads the boot with `?raw` (`:58`) and asserts ordering by `indexOf` at `:507-511`, with the −1 hazard called out at `:505`. At that reading no test or e2e walked found-offline → configure-the-anchor → reload in a real browser, so the source pin alone held the wiring. The held-out `browser-weld` surface was the stated precondition; it now carries the C4 walk described next.
-
-''The held-out walk now stands as a real-browser harness, and the full five-vector run passed.'' `tools/browser-weld/leaf-continuity.mjs`, invoked after the ordinary weld by `tools/browser-weld-witness.sh`, opens a fresh persistent Chromium profile against the NORMAL Vite app. Its ordinary vector reads the private Binding-Gate chain through a test-only fetched-module observation (no production debug door), then proves: offline founding → `?gate=` anchor → document reload preserves the same `0x` device DID and the same non-empty ordered event-CID sequence; the first anchor boot logs the one KEL carry and the reload logs none. Its fault vector replaces the ONE exact `carryPersonaKelUpTheGradient` call in its fetched module and demands the existing fail-closed missing-chain halt. Its malformed-anchor vector reaches the exact `nexusScopeOrThrow` TORN/no-board door, then retries a valid anchor and demands the original DID+CIDs. The isolated normal-app Chromium run passed C4.1 offline identity, C4.2 anchored carry, C4.3 idempotent reload, C4.4 disabled-carry refusal, and C4.5 malformed scope-door + valid retry: `pnpm --filter @lararium/app exec vite --host 127.0.0.1 --port 5182` (one terminal), then `WELD_APP_URL=http://127.0.0.1:5182 LEAF_BOOT_MS=30000 node tools/browser-weld/leaf-continuity.mjs` (another). Earlier attempts at an isolated Vite port stalled after `corpus-ready` with the DOM still `booting…`; the final run did not reproduce that intermittent observation, and this handoff does not infer its cause. This is a browser proof surface, not relay admission: `?gate=` scopes the local leaf's Nexus, while a real crossing still requires an explicit `?relay=` service.
-
-''Separate ordinary-weld red, measured and not expanded here.'' The same held-out shell first runs `tools/browser-weld/weld.mjs`; its latest run passed W0–W2 and W4, failed W3 (`click-crosses`: projection did not change after the dispatched click), and retained the declared W5 node-disk gap. Vite also named a diagnostic clue, not a cause: `[worker-handle] worker error: Uncaught TypeError: Cannot read properties of undefined (reading 'perform') @ 287`, followed by `[vessel-pool] island error for lares` from `dist/worker-handle.js:19:20`. Those are existing browser-weld seams outside the C4 identity-continuity vector; the shell aggregates their status so no C4 green can hide them, but C4 does not claim to cure them.
+''C4 completed; its receipt moved to #/completed. W3 remains active at #/next-steps.''
 
 <<~/ahu>>
 
@@ -322,15 +356,7 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 ''Every number here stands DERIVED on 2026-09-14, and every number here drifts. Re-derive before quoting.''
 
-!! D1 · The python suite no workflow reaches
-
-''TAKEN 2026-09-15 — `24366c5f6` (`lar:///the-sensorium.reaches-the-python-suite`).'' The `test` job now installs `pytest` into the holder venv and runs `~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q`. Its regression vector lives at `packages/lararium-sensorium/scripts/test_ci_sensorium_suite.py`: it REDDED first because the workflow named no sensorium-holder step, then GREENED only after that exact venv invocation landed. Re-derived collection: 990 cases before this vector's one added case; do not preserve the old 962-function number as a CI total.
-
-''The handoff's 962-test observation.'' Derived: `def test_` across 96 files under `packages/lararium-sensorium/scripts` — ''note the path, `packages/lararium-sensorium/scripts`, never a top-level `lararium-sensorium/`''. All 962 of the package's python tests live under `scripts/`; the only python outside it carries none (`mempalace_source_lares/{__init__,adapter}.py`). Collected count runs slightly HIGHER than 962 — eight `@pytest.mark.parametrize` decorators expand some functions (`test_loci_io.py:251,258` · `test_stream_events.py:137` · `test_capture_session.py:281` · `test_structure_router.py:35,72` · `qa_anchor/tests/test_dprime.py:51` · `qa_anchor/tests/test_reliability.py:95`).
-
-''The workflow reading at handoff.'' ''Two workflows exist'' — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appeared in `ci.yml` only as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then ran it was the grammar host's `pnpm run gate:fold`, a different package. The `test` job ran `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. Its holder venv then only installed `mempalace` and asserted its import.
-
-''Trap:'' `pnpm -r test` SKIPS the root `tests/` directory BY DESIGN — the workspace runs wider than `packages/*`.
+''D1 completed as CI wiring; its receipt and verification limit moved to #/completed.''
 
 !! D2 · The witness fleet
 
@@ -365,6 +391,40 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 ''(c) Durable telemetry stands absent.'' Stated as prerequisite ② at `live-equivocation.mem:99-101` (''only a durable telemetry plane holds enough observations to see a tail at all''), with the blocking consequence at `:90-92` (''Nobody has measured it, because the organ that would measure it does not stand''). The absence follows from (a) and (b): with no watcher emitting sightings, nothing exists to persist.
 
 ''Precondition, ranked:'' the palace before the wire. The shift ledger's own correction stands: ''watchers await a WHOLE PALACE (the federation-last sensorium), not a wire''.
+
+<<~/ahu>>
+
+<<~ ahu #/completed>>
+
+! Completed increments — bounded receipts
+
+''Completion follows the item, never every adjacent capability.'' C4 and D1 keep their labels and evidence here; residual work stays at #/next-steps or its active set. An implemented subcomponent does not retire its containing arc.
+
+!! C4 · A live leaf boot
+
+''TAKEN — `f90454aca`, 2026-09-15.'' The Codex hearth's GPT-5.6 Terra spirit built the browser witness; the parent independently verified all five C4 checks. The separate W3 click/worker failure remains active at #/next-steps, before fleet scheduling (D3). Relay admission remains outside this receipt.
+
+''The cure stands LANDED.'' `6b0784571`: `packages/lararium-mesh/src/persona-kel-climb.ts` (new home for `carryPersonaKelUpTheGradient`, +112) · `packages/lararium-node/src/persona-kel-ring.ts` (−87, now re-exporting) · `packages/lararium-browser/src/open-browser-vessel.ts` (+72) · `packages/lararium-browser/tests/nexus-board-climb-at-leaf.test.ts` (+527).
+
+''Where `relayGatePubKey` goes.'' Read off the URL at `packages/lararium-app/src/main.ts:297` (`new URLSearchParams(location.search).get("gate")`), passed at `:355`; the vessel option at `open-browser-vessel.ts:182`, destructured `:336`, folded into the single island reading at `:434-437` (`anchorGateKey: relayGatePubKey ?? null`). Also the federation-gate arm at `:620` and the crossroads-register condition at `:842`.
+
+''The answer to the walk's question: the console LOGS the carry; the gate does not throw.'' On a vessel founded offline and later handed a gate key, `nexusIdentity` resolves scope to the anchor and `nexusIslandsBelow` (`nexus-identity.ts:261-283`, the third narrowing at `:270` nulling `anchorGateKey`) returns the vessel's own key as the island below. So `open-browser-vessel.ts:885-888` runs the carry immediately before the gate read (''which is the whole cure'', `:874`), and `persona-kel-climb.ts:104` prints `[persona-kel] carried N event(s) for <prefix>… up the gradient …`, returning `{ carried, from: island }` at `:107`. Idempotent: `:84` returns `nothing` at the bottom of the gradient, `:91` returns `nothing` when the destination already carries the chain (every later boot), `:99` `console.warn`s an island that would not open. ''The throw survives as the FALLBACK'' — `open-browser-vessel.ts:891-892` reds fail-closed with ''persona-KEL chain … absent from the local board — the Binding Gate cannot reach a head'', reachable now only when the carry finds nothing below, which is the pre-cure brick.
+
+''Earlier scout state (now superseded by the witness below).'' All fifteen vectors in `nexus-board-climb-at-leaf.test.ts` drive synthetic repos and boards (`:121-414`) or read the boot's SOURCE TEXT: the fault-pin at `:452` reads the boot with `?raw` (`:58`) and asserts ordering by `indexOf` at `:507-511`, with the −1 hazard called out at `:505`. At that reading no test or e2e walked found-offline → configure-the-anchor → reload in a real browser, so the source pin alone held the wiring. The held-out `browser-weld` surface was the stated precondition; it now carries the C4 walk described next.
+
+''The held-out walk now stands as a real-browser harness, and the full five-vector run passed.'' `tools/browser-weld/leaf-continuity.mjs`, invoked after the ordinary weld by `tools/browser-weld-witness.sh`, opens a fresh persistent Chromium profile against the NORMAL Vite app. Its ordinary vector reads the private Binding-Gate chain through a test-only fetched-module observation (no production debug door), then proves: offline founding → `?gate=` anchor → document reload preserves the same `0x` device DID and the same non-empty ordered event-CID sequence; the first anchor boot logs the one KEL carry and the reload logs none. Its fault vector replaces the ONE exact `carryPersonaKelUpTheGradient` call in its fetched module and demands the existing fail-closed missing-chain halt. Its malformed-anchor vector reaches the exact `nexusScopeOrThrow` TORN/no-board door, then retries a valid anchor and demands the original DID+CIDs. The isolated normal-app Chromium run passed C4.1 offline identity, C4.2 anchored carry, C4.3 idempotent reload, C4.4 disabled-carry refusal, and C4.5 malformed scope-door + valid retry: `pnpm --filter @lararium/app exec vite --host 127.0.0.1 --port 5182` (one terminal), then `WELD_APP_URL=http://127.0.0.1:5182 LEAF_BOOT_MS=30000 node tools/browser-weld/leaf-continuity.mjs` (another). Earlier attempts at an isolated Vite port stalled after `corpus-ready` with the DOM still `booting…`; the final run did not reproduce that intermittent observation, and this handoff does not infer its cause. This is a browser proof surface, not relay admission: `?gate=` scopes the local leaf's Nexus, while a real crossing still requires an explicit `?relay=` service.
+
+!! D1 · The python suite no workflow reaches
+
+''TAKEN 2026-09-15 — `24366c5f6` (`lar:///the-sensorium.reaches-the-python-suite`).'' The `test` job now installs `pytest` into the holder venv and runs `~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q`. Its regression vector lives at `packages/lararium-sensorium/scripts/test_ci_sensorium_suite.py`: it REDDED first because the workflow named no sensorium-holder step, then GREENED only after that exact venv invocation landed. Re-derived collection: 990 cases before this vector's one added case; do not preserve the old 962-function number as a CI total.
+
+''The handoff's 962-test observation.'' Derived: `def test_` across 96 files under `packages/lararium-sensorium/scripts` — ''note the path, `packages/lararium-sensorium/scripts`, never a top-level `lararium-sensorium/`''. All 962 of the package's python tests live under `scripts/`; the only python outside it carries none (`mempalace_source_lares/{__init__,adapter}.py`). Collected count runs slightly HIGHER than 962 — eight `@pytest.mark.parametrize` decorators expand some functions (`test_loci_io.py:251,258` · `test_stream_events.py:137` · `test_capture_session.py:281` · `test_structure_router.py:35,72` · `qa_anchor/tests/test_dprime.py:51` · `qa_anchor/tests/test_reliability.py:95`).
+
+''The workflow reading at handoff.'' ''Two workflows exist'' — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appeared in `ci.yml` only as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then ran it was the grammar host's `pnpm run gate:fold`, a different package. The `test` job ran `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. Its holder venv then only installed `mempalace` and asserted its import.
+
+''Trap:'' `pnpm -r test` SKIPS the root `tests/` directory BY DESIGN — the workspace runs wider than `packages/*`.
+
+''D1 verification limit.'' The focused CI regression passed. This crew did not complete a full holder-suite run; wiring the command does not certify suite health.
 
 <<~/ahu>>
 
@@ -481,7 +541,8 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 # #/the-only-guard, then #/traps. Both before the first commit and before the first vector.
 # <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> — the house entire.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> `#/shift-founding-watch` — the RED-FIRST test design as eight ordered moves, and the ladder for wiring a module that stands designed, tested and unreached. Both still govern every vector and every wire in this carrier.
-# <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> — who holds what, and the row this crew stands owed.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> — who holds what, including this crew's authorised row.
+# #/next-steps, then #/completed — current priorities before the deeper scouts, finished receipts before re-opening an item.
 # #/standing-on-the-operators-hand — before designing against any fork.
 # <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">> — the law that rejects a fork at design time. A compiled-about registry at ANY scope refuses.
 
@@ -493,6 +554,6 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hpn23YzOXkYWfl1Fk8YR0lydoFWp2Nx6W1jYw-dw6MY
+<<^ code="&#x0003;">>ni:///sha-256;fc7icIQG6qfK4KERgi6yHQSJzX2wULMP03YvDnNMz2A
 
 <<^ code="&#x0004;" -> to="?">>
