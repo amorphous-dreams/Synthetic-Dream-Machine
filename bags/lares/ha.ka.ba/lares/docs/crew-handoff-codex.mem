@@ -318,9 +318,11 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 !! D1 · The python suite no workflow reaches
 
-''962 python tests reach no workflow step.'' Derived: `def test_` across 96 files under `packages/lararium-sensorium/scripts` — ''note the path, `packages/lararium-sensorium/scripts`, never a top-level `lararium-sensorium/`''. All 962 of the package's python tests live under `scripts/`; the only python outside it carries none (`mempalace_source_lares/{__init__,adapter}.py`). Collected count runs slightly HIGHER than 962 — eight `@pytest.mark.parametrize` decorators expand some functions (`test_loci_io.py:251,258` · `test_stream_events.py:137` · `test_capture_session.py:281` · `test_structure_router.py:35,72` · `qa_anchor/tests/test_dprime.py:51` · `qa_anchor/tests/test_reliability.py:95`).
+''TAKEN 2026-09-15 — `24366c5f6` (`lar:///the-sensorium.reaches-the-python-suite`).'' The `test` job now installs `pytest` into the holder venv and runs `~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q`. Its regression vector lives at `packages/lararium-sensorium/scripts/test_ci_sensorium_suite.py`: it REDDED first because the workflow named no sensorium-holder step, then GREENED only after that exact venv invocation landed. Re-derived collection: 990 cases before this vector's one added case; do not preserve the old 962-function number as a CI total.
 
-''The workflow reading.'' ''Two workflows exist'' — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appears in `ci.yml` exactly once, at `:368`, as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then runs it reads `:372-374`, `pnpm run gate:fold` with `working-directory: packages/tree-sitter-memetic-wikitext`, whose script (`packages/tree-sitter-memetic-wikitext/package.json:24`) runs `cd host-py && python -m pytest -q`. ''That is the grammar host-py suite, a different package.'' The `test` job (`ci.yml:106-160`) runs `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. The venv steps (`ci.yml:145-152`) only `pip install -e ./mempalace` and assert `import mempalace`.
+''The handoff's 962-test observation.'' Derived: `def test_` across 96 files under `packages/lararium-sensorium/scripts` — ''note the path, `packages/lararium-sensorium/scripts`, never a top-level `lararium-sensorium/`''. All 962 of the package's python tests live under `scripts/`; the only python outside it carries none (`mempalace_source_lares/{__init__,adapter}.py`). Collected count runs slightly HIGHER than 962 — eight `@pytest.mark.parametrize` decorators expand some functions (`test_loci_io.py:251,258` · `test_stream_events.py:137` · `test_capture_session.py:281` · `test_structure_router.py:35,72` · `qa_anchor/tests/test_dprime.py:51` · `qa_anchor/tests/test_reliability.py:95`).
+
+''The workflow reading at handoff.'' ''Two workflows exist'' — `.github/workflows/ci.yml` and `notify-pages.yml`. `pytest` appeared in `ci.yml` only as `pip install tree-sitter pytest pygls` — an INSTALL — and the only step that then ran it was the grammar host's `pnpm run gate:fold`, a different package. The `test` job ran `pnpm test` → root `package.json:9` `pnpm -r … test`, and `packages/lararium-sensorium/package.json` declares `"test": "vitest run"` — ''vitest only''. Sensorium carries 2 `.test.ts` files. Its holder venv then only installed `mempalace` and asserted its import.
 
 ''Trap:'' `pnpm -r test` SKIPS the root `tests/` directory BY DESIGN — the workspace runs wider than `packages/*`.
 
@@ -485,6 +487,6 @@ See #/set-b-designed B6 — same carrier, same gate, and the same staleness on e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0NjElLkq3pU3G3792MVOHOtq17Men3b2JY4HXJPxI3I
+<<^ code="&#x0003;">>ni:///sha-256;12XZIyrASEHJntf2Rxx44E7aFu4c2SiiNv9Sbdy7Ewc
 
 <<^ code="&#x0004;" -> to="?">>
