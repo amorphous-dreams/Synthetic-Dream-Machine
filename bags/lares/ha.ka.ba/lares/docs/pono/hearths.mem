@@ -10,9 +10,9 @@ mana       = 10
 manao      = 12
 manaoio    = 12
 namespace  = "&#x2299;"
-revised-on = "2026-09-13"
+revised-on = "2026-09-14"
 role       = "hearths — the ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth, and at every hearth that opens or closes; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth names a session by its commit trailer). A hearth that closes keeps its row — the ledger answers 'which ground was whose, what crossed, and what each owed', and every one of those questions outlives the concurrency that raised it."
-status-why = "ONE hearth holds this tree as of 2026-09-13 — the operator closed the meme hearth and the grammar hearth, and the founding hearth stands alone. The two closed rows stay as the record of what they HELD, their OWED entries carried forward onto the standing hearth at #/owed-forward, and the `holds` fence carries one live hold, which stands the gate down until a second hearth opens"
+status-why = "TWO hearths hold this tree as of 2026-09-14 — the founding hearth (Opus) and the Codex hearth. The two closed rows stay as the record of what they HELD, their OWED entries carried forward onto the standing hearth at #/owed-forward, and the `holds` fence carries both live holds so the gate can surface a crossing."
 tags       = ["docs/pono/ledger", "lifecycle/standing"]
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/hearths"
@@ -38,14 +38,15 @@ A row moves when a hearth seals a region, cedes a seam, or takes one. A crossing
 
 <<~ ahu #/hearths>>
 
-! The hearths, 2026-09-13 — one stands, two closed
+! The hearths, 2026-09-14 — two stand, two closed
 
-''One hearth holds this tree.'' The operator closed the meme hearth and the grammar hearth on 2026-09-13; the founding hearth stands alone. The `standing` column carries the distinction, and it governs every other column: a CLOSED row's ''ground'' reads as what that hearth HELD (a record), its ''owed'' reads as what it owed AT CLOSE (carried forward to #/owed-forward, which states each debt's state today), and its ''last crossing'' reads as it always did.
+''Two hearths hold this tree.'' The operator closed the meme hearth and the grammar hearth on 2026-09-13; the founding hearth and the Codex hearth now stand concurrently. The `standing` column carries the distinction, and it governs every other column: a CLOSED row's ''ground'' reads as what that hearth HELD (a record), its ''owed'' reads as what it owed AT CLOSE (carried forward to #/owed-forward, which states each debt's state today), and its ''last crossing'' reads as it always did.
 
 | standing | hearth | trailer | ground it holds / HELD | owed the others (at close) | last crossing |
 |---|---|---|---|---|---|
 | ''CLOSED'' 2026-09-13 | ''the meme hearth'' (this tree's Fable session) | `session_01EHVUW6kxAXwK9aBUG31T5N` | the meme surface (routes · verbs · CLI · MCP), recipe layers, the blob law, the realm bag + leg, the harness (`tests/harness/**`), the stock-syncer line, the carriers under `docs/pono/` | the clean whole-set e2e reading; seam (b)'s ruling; the replica read behind the return lane | took the dial seam from the founding hearth (`04895b579` · `be008ef1a`) |
 | ''LIVE'' — holds the tree | ''the founding hearth'' (Opus) | `session_01Jg969FCpJcM84XvtsDNFou` | founding · veil/re-pave · handle-KEL · persona faces · kāhuli and the genesis regions (`genesis-doc.ts`, `build-genesis-island.ts`) · `open-node-vessel.ts` as boot ground — and, since 2026-09-13, the whole tree | the `open-node-vessel.ts` region plan; EW-7; Ruling B's second half; `handoff.mem#shift-grammar-watch`; ''the three e2e suites red under its road-D work stand CLEARED'' — `handoff.mem#/shift-2026-09-13-meme-hearth` records the whole set at 25 of 25 files · 150 passed + 1 expected fail · exit 0, `herm-floor` R3 green inside that window; plus everything at #/owed-forward | ceded the dial seam by a pasted message (2026-09-12); its uncommitted `genesis-doc.ts` froze every staged `vessel clear` for one loop |
+| ''LIVE'' — bounded handoff ground | ''the Codex hearth'' (Codex crew) | `session_01a0a15e830c7f22bab4d2fd96dff131` | `docs/crew-handoff-codex.mem`: handoff triage, declared red-first vectors, and later take-marking | prioritize the handed loops without deciding an operator-held fork; report any crossing before expanding the hold | seated by operator authorization, 2026-09-14 |
 | ''CLOSED'' 2026-09-13 | ''the grammar hearth'' (VSCode-TW5-Syntax) | `session_01QdAMPMM9DsR4rRrmqqQBXe` | the submodule (`feature/memetic-regrammar`) · `carrier-shape.ts` and its two tests in the parent · the corpus census laws. ''At close the submodule reads dirty in the parent'': gitlink `9192445`, worktree head `0788bc0` (`v2.2.1-241-g0788bc0`); the operator adjudicates that dirt separately | the field allow-list (owed since 2026-08-26); the release (''measured 3.0.0, unreleased'' — this row read `2.3.0` and the submodule's own `package.json` and `CHANGELOG.md` both read `3.0.0 — unreleased`); the two EOF bleeds; the parser-recovery patchset never offered upstream | closed `carrier-edges` 201 (`df60ad07d`) while the meme hearth still listed it as the founding hearth's |
 
 <<~/ahu>>
@@ -102,6 +103,13 @@ globs   = [
   "packages/lararium-mesh/src/persona-kel.ts",
   "packages/lararium-mesh/src/veil-*.ts",
   "packages/lares-cli/src/commands/persona.ts",
+]
+
+[[hold]]
+hearth  = "the Codex hearth"
+trailer = "session_01a0a15e830c7f22bab4d2fd96dff131"
+globs   = [
+  "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem",
 ]
 ```
 
@@ -183,6 +191,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NuNuct6-xtwmww4nzB2xTTs3jN5bUJkrM3mCL2fDESs
+<<^ code="&#x0003;">>ni:///sha-256;x7SUBI5zF3R1XSeU4eBAf_8LcP0FhXjy0-pumo4p108
 
 <<^ code="&#x0004;" -> to="?">>
