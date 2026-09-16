@@ -18,7 +18,9 @@ import { chromium } from "playwright";
 const APP = process.env.WELD_APP_URL ?? "http://localhost:5173";
 const ANCHOR = "4a".repeat(32);
 const BOOT_MS = Number(process.env.LEAF_BOOT_MS ?? 90_000);
+const BOOT_TRACE = process.env.LEAF_BOOT_TRACE === "1";
 const pageDiagnostics = new WeakMap();
+const pageBootTrace = new WeakMap();
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const say = (kind, text) => console.log(`  ${kind.padEnd(8)} ${text}`);
@@ -55,7 +57,12 @@ async function liveReading(page) {
       body: document.body?.textContent?.trim().slice(0, 500) ?? "",
     })).catch(() => ({ status: "<unreadable>", vessel: "", body: "" }));
     const diagnosticTail = (pageDiagnostics.get(page) ?? []).slice(-12);
-    throw new Error(`${error.message}; last rendered surface: ${JSON.stringify(surface)}; browser tail: ${JSON.stringify(diagnosticTail)}`);
+    const trace = pageBootTrace.get(page) ?? [];
+    const traceSummary = trace.length <= 24
+      ? trace
+      : [...trace.slice(0, 12), `[C4 boot] … ${trace.length - 24} marker(s) omitted …`, ...trace.slice(-12)];
+    throw new Error(`${error.message}; last rendered surface: ${JSON.stringify(surface)}; browser tail: ${JSON.stringify(diagnosticTail)}` +
+      (BOOT_TRACE ? `; C4 boot trace: ${JSON.stringify(traceSummary)}` : ""));
   }
   if (state.kind === "failed") throw new Error(`browser vessel boot refused: ${state.status}`);
   return await page.evaluate(() => {
@@ -69,10 +76,101 @@ async function liveReading(page) {
 /** Keep a small terminal tail: a boot timeout must expose a concrete browser cause. */
 function watchPage(page) {
   const diagnostics = [];
+  const bootTrace = [];
   pageDiagnostics.set(page, diagnostics);
-  page.on("console", (message) => diagnostics.push(`console/${message.type()}: ${message.text()}`));
+  pageBootTrace.set(page, bootTrace);
+  page.on("console", (message) => {
+    const text = message.text();
+    diagnostics.push(`console/${message.type()}: ${text}`);
+    if (BOOT_TRACE && text.startsWith("[C4 boot]")) bootTrace.push(text);
+  });
   page.on("pageerror", (error) => diagnostics.push(`pageerror: ${error.message}`));
   page.on("requestfailed", (request) => diagnostics.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText ?? "unknown"}`));
+  if (BOOT_TRACE) {
+    page.on("worker", (worker) => {
+      const marker = `worker:spawn ${worker.url()}`;
+      diagnostics.push(marker);
+      bootTrace.push(`[C4 boot] ${marker}`);
+    });
+  }
+}
+
+/**
+ * Test-only boot trace. It instruments fetched development JavaScript only when LEAF_BOOT_TRACE=1;
+ * the default path returns every response byte-for-byte unchanged. Markers observe ordering across
+ * the host/worker boundary; they do not retry, gate, or alter any readiness decision.
+ */
+function instrumentBootSource(source) {
+  if (!BOOT_TRACE || source.includes("__laresC4BootTrace")) return source;
+  let body = source;
+
+  // Host-side waits before the worker exists. The exact call text also anchors the trace to the
+  // production await chain rather than a DOM phase inferred by the witness.
+  body = body.replace(
+    /emit\("corpus-ready"\);/,
+    `emit("corpus-ready"); console.log("[C4 boot] host:corpus-ready");`,
+  );
+  body = body.replace(
+    /await carryPersonaKelUpTheGradient\(\{\s*repo,\s*nexusPubkey,\s*prefix: personaKelPrefix,\s*priorIslands: nexusIslandsBelow\(nexusStandsAt\),\s*\}\);/,
+    (match) => `console.log("[C4 boot] host:kel-carry:start");\n      ${match}\n      console.log("[C4 boot] host:kel-carry:done");`,
+  );
+  body = body.replace(
+    /const kelBoard = await materializeSharedLarDoc\(repo, personaKelBoardDocUrl\(nexusPubkey\), "board:persona-kel"\);/,
+    (match) => `console.log("[C4 boot] host:kel-board:start");\n    ${match}\n    console.log("[C4 boot] host:kel-board:done");`,
+  );
+  body = body.replace(
+    /daemon = await openBrowserDaemonVm\(\{/,
+    (match) => `console.log("[C4 boot] host:daemon-vm:start");\n      ${match}`,
+  );
+
+  // Core-side worker and manifest boundaries. These markers remain observational; the original
+  // expressions stay in place and keep their original ordering/arguments.
+  body = body.replace(
+    /const worker = host\.spawnWorker\(workerScriptUrl\);/,
+    (match) => `console.log("[C4 boot] host:worker-spawn");\n  ${match}`,
+  );
+  body = body.replace(
+    /if \(isIslandToVesselMsg\(raw\) && raw\.type === "ready"\) finish\(\);/,
+    `if (isIslandToVesselMsg(raw) && raw.type === "ready") { console.log("[C4 boot] worker:ready"); finish(); }`,
+  );
+  body = body.replace(
+    /setTimeout\(finish, 1500\);/,
+    `setTimeout(() => { if (!settled) console.log("[C4 boot] host:ready-fallback"); finish(); }, 1500);`,
+  );
+  body = body.replace(
+    /\}\)\.then\(\(\) => \{ worker\.post\(manifestMsg, \[syncPort\]\); \}\);/,
+    `}).then(() => { console.log("[C4 boot] host:manifest-post"); worker.post(manifestMsg, [syncPort]); });`,
+  );
+
+  // The generic daemon listener receives protocol breaths/ea/fault and the test-only worker markers.
+  // The guard stays intact; the trace simply makes otherwise private worker progress visible in the
+  // page's existing diagnostic tail.
+  body = body.replace(
+    /if \(!isIslandToVesselMsg\(raw\)\) return;/,
+    `if (raw && typeof raw === "object" && raw.__laresC4BootTrace) {\n` +
+      `      console.log("[C4 boot] " + String(raw.__laresC4BootTrace) + (raw.detail ? " " + String(raw.detail).slice(0, 240) : ""));\n` +
+      `    }\n` +
+      `    if (isIslandToVesselMsg(raw) && (raw.type === "ready" || raw.type === "breath" || raw.type === "ea" || raw.type === "fault")) {\n` +
+      `      console.log("[C4 boot] worker:" + raw.type);\n` +
+      `    }\n` +
+      `    if (!isIslandToVesselMsg(raw)) return;`,
+  );
+
+  // The worker's caught startup rejection normally stays in the worker console. A test-only marker
+  // crosses the same worker message boundary, so the host can distinguish it from pre-worker silence.
+  if (body.includes('registerWorkerErrorRelay("daemon-worker");')) {
+    body = body.replace(
+      'registerWorkerErrorRelay("daemon-worker");',
+      'registerWorkerErrorRelay("daemon-worker");\n' +
+      'const __laresC4Trace = (phase, detail = "") => { try { self.postMessage({ __laresC4BootTrace: phase, ...(detail ? { detail } : {}) }); } catch {} };\n' +
+      '__laresC4Trace("worker:entry");\n' +
+      'const __laresC4ConsoleError = console.error;\n' +
+      'console.error = (...args) => { if (String(args[0] ?? "").includes("[daemon-worker] run-threw")) __laresC4Trace("worker:startup-error", String(args[1] ?? "")); __laresC4ConsoleError(...args); };',
+    );
+    body = body.replace("await initKeyhiveWasm();", '__laresC4Trace("worker:wasm-start");\n  await initKeyhiveWasm();\n  __laresC4Trace("worker:wasm-ready");');
+    body = body.replace('await import("@lararium/browser/browser-daemon-island");', '__laresC4Trace("worker:kernel-import-start");\n  await import("@lararium/browser/browser-daemon-island");\n  __laresC4Trace("worker:kernel-imported");');
+  }
+  return body;
 }
 
 async function refusedReading(page) {
@@ -109,9 +207,10 @@ async function observeKelRead(page) {
     if (!/javascript/.test(type)) return route.fulfill({ response });
     const source = await response.text();
     const read = /const personaKelChain = personaKelChainForPrefix\(kelBoard\.doc\(\), personaKelPrefix\);/;
-    if (!read.test(source)) return route.fulfill({ response, body: source });
+    const traced = instrumentBootSource(source);
+    if (!read.test(source)) return route.fulfill({ response, body: traced });
     observations += 1;
-    const body = source.replace(read, `$&\n      globalThis.__laresC4PersonaKel = { prefix: personaKelPrefix, eventCids: personaKelChain?.map((event) => event.eventCid) ?? [] };`);
+    const body = traced.replace(read, `$&\n      globalThis.__laresC4PersonaKel = { prefix: personaKelPrefix, eventCids: personaKelChain?.map((event) => event.eventCid) ?? [] };`);
     return route.fulfill({ response, body });
   });
   return () => {
@@ -183,7 +282,7 @@ async function faultWalk() {
       const response = await route.fetch();
       const type = response.headers()["content-type"] ?? "";
       if (!/javascript/.test(type)) return route.fulfill({ response });
-      const source = await response.text();
+      const source = instrumentBootSource(await response.text());
       const call = /await carryPersonaKelUpTheGradient\(\{\s*repo, nexusPubkey, prefix: personaKelPrefix,\s*priorIslands: nexusIslandsBelow\(nexusStandsAt\),\s*\}\);/;
       const matches = source.match(new RegExp(call.source, "g")) ?? [];
       if (matches.length === 0) return route.fulfill({ response, body: source });

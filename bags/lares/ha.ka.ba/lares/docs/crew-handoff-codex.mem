@@ -54,7 +54,7 @@ written   = "2026-09-14"
 
 The strengthened browser witness asserts named Open→Recent selection, unknown-render-id safe drop, a deliberately disabled return leg, and the restored positive transition. It separately asserts Hide/Show sidebar and traces returned frames to the same worker. The final browser run passed W0–W4, including these controls, and retained W5 as a gap. ''Fixture correction, not a second runtime cure:'' this watch first expected a `tc-hide-sidebar` class absent from the vendored TW5; the actual contract changes the sidebar reveal's `hidden` attribute and swaps Hide/Show buttons. No runtime change followed that mistaken assertion.
 
-''C4's new verification attempt did NOT pass.'' The unchanged continuity driver stalled after `corpus-ready` for 90 seconds before its first continuity assertion. Its failure reports the last rendered surface and console tail. A focused fake-worker witness now records the current delayed-browser ordering: the compatibility fallback posts its manifest before a late `ready`; immediate ready and Node fallback remain separate green controls. This demonstrates a plausible race without attributing the live stall to it. The preceding watch's five-check pass remains a dated receipt; it does not certify this run. MCP fixes remain operator-deferred.
+''C4's new verification attempt did NOT pass.'' The unchanged continuity driver stalled after `corpus-ready` for 90 seconds before its first continuity assertion. Its failure reports the last rendered surface and console tail. A focused fake-worker witness now records the current delayed-browser ordering: the compatibility fallback posts its manifest before a late `ready`; immediate ready and Node fallback remain separate green controls. `LEAF_BOOT_TRACE=1` now adds opt-in witness markers for post-corpus host work, worker spawn/ready, fallback, manifest post, worker startup and first protocol messages to a failing C4 artifact. This demonstrates a plausible race without attributing the live stall to it. The preceding watch's five-check pass remains a dated receipt; it does not certify this run. MCP fixes remain operator-deferred.
 
 !! ⏿ Orient — extend the available test surfaces
 
@@ -569,6 +569,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bw0KiLLOKcv6rU5YTwxh7NtEiGs79bEgulj94UXbd3M
+<<^ code="&#x0003;">>ni:///sha-256;8wS8VqKgwJN7KLBj7YO5weXtWuwqbF5DPhQ9lbQqaTk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -13,6 +13,11 @@ import { spawn } from "node:child_process";
 
 const REPO = resolve(new URL(".", import.meta.url).pathname, "..");
 const RUNNER = join(REPO, "tools/browser-weld-witness.sh");
+const LEAF = join(REPO, "tools/browser-weld/leaf-continuity.mjs");
+const OPEN_VESSEL = join(REPO, "packages/lararium-browser/src/open-browser-vessel.ts");
+const OPEN_CORE = join(REPO, "packages/lararium-mesh/src/open-vessel-core.ts");
+const DAEMON_CORE = join(REPO, "packages/lararium-tw5/src/daemon-vm-core.ts");
+const DAEMON_WORKER = join(REPO, "packages/lararium-app/src/workers/daemon.worker.ts");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -125,6 +130,40 @@ async function readLines(path) {
   return (await readFile(path, "utf8")).trim().split("\n").filter(Boolean);
 }
 
+async function testC4TraceHookIsOptIn() {
+  const source = await readFile(LEAF, "utf8");
+  assert.match(source, /const BOOT_TRACE = process\.env\.LEAF_BOOT_TRACE === "1"/);
+  assert.match(source, /if \(!BOOT_TRACE \|\| source\.includes\("__laresC4BootTrace"\)\) return source/);
+  for (const marker of [
+    "host:corpus-ready", "host:kel-carry:start", "host:kel-board:start", "host:daemon-vm:start",
+    "host:worker-spawn", "worker:ready", "host:ready-fallback", "host:manifest-post",
+    "raw.type === \"breath\"", "raw.type === \"ea\"", "worker:startup-error",
+  ]) {
+    assert.match(source, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing C4 marker ${marker}`);
+  }
+}
+
+async function testC4TraceAnchorsStillStand() {
+  const [vessel, openCore, daemon, worker] = await Promise.all([
+    readFile(OPEN_VESSEL, "utf8"),
+    readFile(OPEN_CORE, "utf8"),
+    readFile(DAEMON_CORE, "utf8"),
+    readFile(DAEMON_WORKER, "utf8"),
+  ]);
+  for (const [label, source, pattern] of [
+    ["corpus-ready", openCore, /emit\("corpus-ready"\);/g],
+    ["KEL carry", vessel, /await carryPersonaKelUpTheGradient\(\{/g],
+    ["daemon VM", vessel, /daemon = await openBrowserDaemonVm\(\{/g],
+    ["worker spawn", daemon, /const worker = host\.spawnWorker\(workerScriptUrl\);/g],
+    ["ready gate", daemon, /raw\.type === "ready"/g],
+    ["manifest post", daemon, /worker\.post\(manifestMsg, \[syncPort\]\)/g],
+    ["worker WASM init", worker, /await initKeyhiveWasm\(\);/g],
+    ["worker kernel import", worker, /await import\("@lararium\/browser\/browser-daemon-island"\);/g],
+  ]) {
+    assert.equal(source.match(pattern)?.length ?? 0, 1, `${label} trace anchor drifted`);
+  }
+}
+
 async function testIndependentDriversAndArtifacts() {
   for (const statuses of [{ FAKE_WELD_STATUS: "1" }, { FAKE_C4_STATUS: "1" }]) {
     const harness = await makeHarness("ready", statuses);
@@ -195,6 +234,8 @@ async function testSignalReapsTheViteProcessGroup() {
   }
 }
 
+await testC4TraceHookIsOptIn();
+await testC4TraceAnchorsStillStand();
 await testIndependentDriversAndArtifacts();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();
