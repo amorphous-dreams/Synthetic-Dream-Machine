@@ -97,14 +97,17 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
       const accessor = makeCatalogAccessor(reach.repo, planeUrl);
       const regDoc   = (await accessor.handle().catch(() => null))?.doc();
       for (const bagUri of listRegisteredDocUris(regDoc)) {
-        if (holding.has(bagUri) || composite.hasBag(bagUri)) continue;
+        const mounted = holding.has(bagUri) || composite.hasBag(bagUri);
         // A draft FLOOR doc (`wikis/<slug>/drafts/<did>`) answers under its slot name below, never its key.
-        if (isDraftFloorKey(bagUri)) continue;
-        const h   = await accessor.find(bagUri).catch(() => null);
-        const rec = h?.doc()?.tiddlers?.[tiddler] as LarTiddlerRecord | undefined;
-        if (rec && !rec.meta?.deleted) holding.add(bagUri);
+        if (!mounted && !isDraftFloorKey(bagUri)) {
+          const h   = await accessor.find(bagUri).catch(() => null);
+          const rec = h?.doc()?.tiddlers?.[tiddler] as LarTiddlerRecord | undefined;
+          if (rec && !rec.meta?.deleted) holding.add(bagUri);
+        }
         // A registered WIKI's live instance slots — the docs THE ONE slot-doc resolver names (the
-        // same docs its island mounts), reached by access, never mounted here.
+        // same docs its island mounts), reached by access, never mounted here. This probe must still
+        // run when the wiki's canon bag is mounted: membership of that bag says nothing about its
+        // typed working/personal/draft slots.
         const slug = wikiSlugOfBagUri(bagUri);
         if (!slug || !reach.slotDocUrl) continue;
         for (const kind of ["draft", "working", "personal"] as const) {

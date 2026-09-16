@@ -53,8 +53,10 @@ import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js"
 // ---------------------------------------------------------------------------
 
 const TEST_ROOT  = join(tmpdir(), `lar-two-vessel-${Date.now()}`);
-const VESSEL_A   = { storage: join(TEST_ROOT, "a", ".lararium"), genesis: join(TEST_ROOT, "a", "genesis") };
-const VESSEL_B   = { storage: join(TEST_ROOT, "b", ".lararium"), genesis: join(TEST_ROOT, "b", "genesis") };
+const VESSEL_A_ROOT = join(TEST_ROOT, "a");
+const VESSEL_B_ROOT = join(TEST_ROOT, "b");
+const VESSEL_A   = { root: VESSEL_A_ROOT, storage: join(VESSEL_A_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_A_ROOT, "genesis") };
+const VESSEL_B   = { root: VESSEL_B_ROOT, storage: join(VESSEL_B_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_B_ROOT, "genesis") };
 const ADMIT_FILE = join(TEST_ROOT, "admit.json");
 
 // The built hearth artifact, which `pnpm --filter @lararium/node build:genesis` produces.
@@ -67,7 +69,8 @@ const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", ".
  * A vessel handed an empty genesis dir is not a vessel with a missing file; it is a vessel with no
  * hearth to be the true-name OF. So each temp vessel gets the same artifact a real one ships with.
  *
- * `social-bootstrap.json` stays behind deliberately — `runInit` writes it, and it names THIS founding.
+ * `social-bootstrap.json` stays out of the shipped genesis seed deliberately — `runInit` writes it under
+ * the vessel's isolated `LAR_ROOT`, and it names THIS founding.
  */
 function shipHearthEngine(genesisDir: string): void {
   mkdirSync(genesisDir, { recursive: true });
@@ -100,9 +103,20 @@ afterAll(() => {
 
 type BootstrapTiddlers = Record<string, { text?: string; title?: string; kind?: string }>;
 
-function readBootstrap(genesisDir: string): BootstrapTiddlers {
-  const raw = JSON.parse(readFileSync(join(genesisDir, "social-bootstrap.json"), "utf8")) as { text?: string };
+function readBootstrap(bootstrapPath: string): BootstrapTiddlers {
+  const raw = JSON.parse(readFileSync(bootstrapPath, "utf8")) as { text?: string };
   return (JSON.parse(raw.text ?? "{}") as { tiddlers?: BootstrapTiddlers }).tiddlers ?? {};
+}
+
+async function withLarRoot<T>(root: string, work: () => Promise<T>): Promise<T> {
+  const previous = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = root;
+  try {
+    return await work();
+  } finally {
+    if (previous === undefined) delete process.env["LAR_ROOT"];
+    else process.env["LAR_ROOT"] = previous;
+  }
 }
 
 /** Open a bag doc from a SEPARATE repo — the reader's vantage, not the writer's.
@@ -139,12 +153,19 @@ const HEX_RE = /^(0x)?[0-9a-f]{60,}$/;
 let vesselADaemonTiddlers: Record<string, unknown> = {};
 let admitPayload: Record<string, unknown> = {};
 let vesselBDaemonTiddlers: Record<string, unknown> = {};
+let vesselABootstrapPath = "";
+let vesselBBootstrapPath = "";
 
 beforeAll(async () => {
   // Step 1 — founding ceremony
-  await runInit({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis });
+  const initA = await withLarRoot(VESSEL_A.root, () =>
+    runInit({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
+  vesselABootstrapPath = initA.bootstrapPath;
+  if (vesselABootstrapPath !== join(VESSEL_A.storage, "social-bootstrap.json")) {
+    throw new Error(`Vessel A: runInit returned an unexpected bootstrap path: ${vesselABootstrapPath}`);
+  }
 
-  const bootstrapA  = readBootstrap(VESSEL_A.genesis);
+  const bootstrapA  = readBootstrap(vesselABootstrapPath);
   const daemonUrlA   = bootstrapA[DAEMON_BAG_ID]?.text;
   if (!daemonUrlA) throw new Error("Vessel A: daemon URL missing from bootstrap");
   vesselADaemonTiddlers = await openDaemonDocTiddlers(VESSEL_A.storage, daemonUrlA);
@@ -159,19 +180,24 @@ beforeAll(async () => {
   const vesselB = await generateOrLoadVesselIdentity(VESSEL_B.storage);
 
   // Step 3 — A's PersonaGroup root signs B's edge
-  await runDeviceAdmit({
-    storageDir:         VESSEL_A.storage,
-    genesisDir:         VESSEL_A.genesis,
-    outPath:            ADMIT_FILE,
-    syncUrl:            "ws://localhost:3000/automerge",
-    joineeVerifyingKey: vesselB.verifyingKey,
-  });
+  await withLarRoot(VESSEL_A.root, () => runDeviceAdmit({
+      storageDir:         VESSEL_A.storage,
+      genesisDir:         VESSEL_A.genesis,
+      outPath:            ADMIT_FILE,
+      syncUrl:            "ws://localhost:3000/automerge",
+      joineeVerifyingKey: vesselB.verifyingKey,
+    }));
   admitPayload = JSON.parse(readFileSync(ADMIT_FILE, "utf8"));
 
   // Step 4 — Vessel B founds against the signed payload
-  await runInit({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE });
+  const initB = await withLarRoot(VESSEL_B.root, () =>
+    runInit({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
+  vesselBBootstrapPath = initB.bootstrapPath;
+  if (vesselBBootstrapPath !== join(VESSEL_B.storage, "social-bootstrap.json")) {
+    throw new Error(`Vessel B: runInit returned an unexpected bootstrap path: ${vesselBBootstrapPath}`);
+  }
 
-  const bootstrapB = readBootstrap(VESSEL_B.genesis);
+  const bootstrapB = readBootstrap(vesselBBootstrapPath);
   const daemonUrlB  = bootstrapB[DAEMON_BAG_ID]?.text;
   if (!daemonUrlB) throw new Error("Vessel B: daemon URL missing from bootstrap");
   vesselBDaemonTiddlers = await openDaemonDocTiddlers(VESSEL_B.storage, daemonUrlB);
@@ -182,8 +208,17 @@ beforeAll(async () => {
 // ---------------------------------------------------------------------------
 
 describe("Vessel A — founding ceremony", () => {
+  test("the fixture consumes A's init-produced bootstrap under A's isolated vessel root", () => {
+    // The bootstrap is a per-vessel address book, not a genesis seed. This catches a future test
+    // regression that silently reads a copied/stale genesis file and then claims founding passed.
+    expect(vesselABootstrapPath).toBe(join(VESSEL_A.storage, "social-bootstrap.json"));
+    expect(existsSync(vesselABootstrapPath)).toBe(true);
+    expect(existsSync(join(VESSEL_A.genesis, "social-bootstrap.json"))).toBe(false);
+    expect(readBootstrap(vesselABootstrapPath)[DAEMON_BAG_ID]?.text).toBeTruthy();
+  });
+
   test("social-bootstrap.json exists and carries PersonaGroup + MeshCabal oracle IDs", () => {
-    const bootstrap = readBootstrap(VESSEL_A.genesis);
+    const bootstrap = readBootstrap(vesselABootstrapPath);
     expect(bootstrap[PERSONA_GROUP_DOC_ID_TIDDLER]?.text).toMatch(HEX_RE);
     expect(bootstrap[MESH_CABAL_DOC_ID_TIDDLER]?.text).toMatch(HEX_RE);
   });
@@ -252,8 +287,15 @@ describe("device-admit payload", () => {
 // ---------------------------------------------------------------------------
 
 describe("Vessel B — admitted vessel", () => {
+  test("the fixture consumes B's init-produced bootstrap under B's isolated vessel root", () => {
+    expect(vesselBBootstrapPath).toBe(join(VESSEL_B.storage, "social-bootstrap.json"));
+    expect(existsSync(vesselBBootstrapPath)).toBe(true);
+    expect(existsSync(join(VESSEL_B.genesis, "social-bootstrap.json"))).toBe(false);
+    expect(readBootstrap(vesselBBootstrapPath)[DAEMON_BAG_ID]?.text).toBeTruthy();
+  });
+
   test("bootstrap carries sentinel IDs matching the admit payload", () => {
-    const bootstrap = readBootstrap(VESSEL_B.genesis);
+    const bootstrap = readBootstrap(vesselBBootstrapPath);
     expect(bootstrap[PERSONA_GROUP_DOC_ID_TIDDLER]?.text).toBe(admitPayload["personaGroupDocIdHex"]);
     expect(bootstrap[MESH_CABAL_DOC_ID_TIDDLER]?.text).toBe(admitPayload["meshCabalDocIdHex"]);
   });

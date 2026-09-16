@@ -54,7 +54,7 @@ written   = "2026-09-14"
 
 The strengthened browser witness asserts named Open→Recent selection, unknown-render-id safe drop, a deliberately disabled return leg, and the restored positive transition. It separately asserts Hide/Show sidebar and traces returned frames to the same worker. The final browser run passed W0–W4, including these controls, and retained W5 as a gap. ''Fixture correction, not a second runtime cure:'' this watch first expected a `tc-hide-sidebar` class absent from the vendored TW5; the actual contract changes the sidebar reveal's `hidden` attribute and swaps Hide/Show buttons. No runtime change followed that mistaken assertion.
 
-''C4's new verification attempt did NOT pass.'' The unchanged continuity driver stalled after `corpus-ready` for 90 seconds before its first continuity assertion. Its failure reports the last rendered surface and console tail. The preceding watch's five-check pass remains a dated receipt; it does not certify this run. Earlier stalls and this recurrence remain unexplained, separate from the diagnosed reveal failure. MCP fixes remain operator-deferred.
+''C4's new verification attempt did NOT pass.'' The unchanged continuity driver stalled after `corpus-ready` for 90 seconds before its first continuity assertion. Its failure reports the last rendered surface and console tail. A focused fake-worker witness now records the current delayed-browser ordering: the compatibility fallback posts its manifest before a late `ready`; immediate ready and Node fallback remain separate green controls. This demonstrates a plausible race without attributing the live stall to it. The preceding watch's five-check pass remains a dated receipt; it does not certify this run. MCP fixes remain operator-deferred.
 
 !! ⏿ Orient — extend the available test surfaces
 
@@ -64,7 +64,7 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 |Persistent leaf continuity | `tools/browser-weld/leaf-continuity.mjs` | preceding five-check pass; current 90-second boot stall, before continuity; no admitted relay proof |
 |Recurring held-out coverage | `.github/workflows/held-out.yml` | weekly/manual runner wiring; independent jobs, finite timeouts and artifacts; hosted execution still owed |
 |Peers, boards and carriage | `docker-compose.mesh.yml` + `tools/mesh-scenarios.sh` | fixed project and destructive volume cleanup; reserve before local execution |
-|Node save/projection and admission | `tests/e2e/working-loop.test.ts`, `tests/e2e/wikis-ingest-back.test.ts`, `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` | A2's stale bootstrap fixture still precedes any admission conclusion |
+|Node save/projection and admission | `tests/e2e/working-loop.test.ts`, `tests/e2e/wikis-ingest-back.test.ts`, `packages/lararium-node/tests/e2e/two-vessel-mesh.test.ts` | A2 now consumes initializer-produced bootstrap paths under isolated roots; its opt-in e2e receipt still precedes any admission conclusion |
 
 ''Reserve the shared terrain.'' Read `docs/pono/hearths` for the active successor session and exact holds. The operator closed the preceding Codex session; never reuse its trailer. Local mesh runners use fixed project names and tear down named volumes. Hosted jobs receive separate machines, but that isolation does not authorize a shared-host teardown. Serialize shared-tree e2e, build relevant outputs, and inspect processes in their launch context.
 
@@ -72,9 +72,9 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 
 # ''Classify the recurring C4 boot stall before claiming a healthy browser gate.'' Observe progress around `corpus-ready`, worker creation and boot completion. Preserve the current red; do not add retries or an expected-failure exception to manufacture green. The W3 reveal cure does not explain a boot that never reaches the continuity assertion.
 # ''D3 — verify the wired runner on its actual hosted substrate.'' The source now declares weekly/manual coverage; no workflow was dispatched or pushed during this watch. Retain independent statuses and W5's explicit gap. Docker/image/hosted-action behavior still needs a real receipt.
-# ''A2 → one bounded A1 slice → broader mesh proof.'' Establish the stale bootstrap-read red under isolated `LAR_ROOT`, repair the fixture, then exercise a climbed-founder board consumer with own-scope and torn-scope controls. Invite identity sites need distinct tests. The admit wire's operator-held fork remains untouched.
+# ''A2 → one bounded A1 slice → broader mesh proof.'' The fixture now reads the returned bootstrap under isolated `LAR_ROOT`; run it in its reserved built-artifact window, then exercise a climbed-founder board consumer with own-scope and torn-scope controls. Invite identity sites need distinct tests. The admit wire's operator-held fork remains untouched.
 # ''D4 follows: real QR decoding at the consuming door.'' Re-read the approved design, choose browser or node scope, and test actual generated bytes plus corrupt inputs before wiring a decoder dependency.
-# ''B6/C2 and C1/C3 remain staged; the other B designs need fresh reads.'' Reserve Opus's boot ground before splitting it. Hand-edit retirement follows the working surface and promotion path. D5 stays behind whole-palace, watcher and durable-telemetry prerequisites.
+# ''B6/C2 and C3 remain staged; C1's `where` now reports a populated working slot beside mounted canon.'' Reserve Opus's boot ground before splitting it. Hand-edit retirement follows the working surface and promotion path. D5 stays behind whole-palace, watcher and durable-telemetry prerequisites.
 
 !! ▶ Act — the next bounded measurement
 
@@ -87,6 +87,8 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 !! ↺ Hoʻoko / aftermath
 
 ''AFTERMATH / YIN, 2026-09-15.'' The runner sweep adds owned-process-group cleanup, app readiness controls and a fake-tool regression wired into the hosted browser job. Herm setup, readiness probes, evidence capture and teardown gain deadlines. Both fake-tool regression files passed; shell syntax, workflow YAML parsing and carrier canonical checks passed. Readiness now requires the owned Vite startup announcement before a bounded HTTP probe, including a delayed foreign-port control. These local runner controls do not supply a hosted workflow receipt. The ledger now carries the enacted crossings carveout and the completed W3 state; the A2 scout separates ordinary founding from the climbed-founder case.
+
+''Approved flowstates, 2026-09-16.'' C4 now carries a test-local manifest-timing witness: `ready → manifest` passes for an immediate browser worker, the 1,500 ms Node compatibility fallback remains explicit, and a delayed browser `ready` records `manifest → ready` as an unresolved race candidate. A2 puts each vessel under its own `LAR_ROOT`, consumes `runInit`'s returned bootstrap path and rejects the stale genesis location; node typechecking passes, while the real opt-in mesh run still owes its isolated window. C1's `where` now probes typed slots even when canon is mounted; its mounted-canon/working-slot witness and TW5 typecheck pass. W5 stays unclaimed.
 
 ''Projection follow-up, source audit rather than a reproduced product red.'' `tw5-projection.ts` adds render IDs to a module-level map without retiring detached nodes. The unknown-ID control proves only unknown-ID handling. Next, render a valid target, detach it, send its former ID, and test that no handler fires; retain a live-target positive control. Also tighten the witness's frame ordering and worker-error attribution: a same-worker frame alone does not establish causation, and an unrelated worker fault must not convict the unknown-ID probe. Preserve named state transitions and the disabled-message control. Ensure CI supplies the generated TW5 core so the retained-reveal fixture executes rather than skips.
 
@@ -567,6 +569,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TIkx9_ZL2J61YF40VJup0-Ax82uKxSyYEByQ4hdKQms
+<<^ code="&#x0003;">>ni:///sha-256;bw0KiLLOKcv6rU5YTwxh7NtEiGs79bEgulj94UXbd3M
 
 <<^ code="&#x0004;" -> to="?">>

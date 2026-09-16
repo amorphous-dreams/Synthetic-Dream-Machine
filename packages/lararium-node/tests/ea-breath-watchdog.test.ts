@@ -12,12 +12,13 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-vm-core
  */
 
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
 import { MessageChannel, type MessagePort as NodeMessagePort } from "worker_threads";
 import { Repo } from "@automerge/automerge-repo";
 import {
   emptyLarDoc,
   mkEa, mkBreath,
+  mkReady,
   type LarDoc,
   type IslandMsg_Manifest,
 } from "@lararium/mesh";
@@ -25,17 +26,29 @@ import { openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** A scripted island stand-in: captures listeners, lets the test emit upward. */
+/**
+ * A scripted island stand-in: captures listeners, lets the test emit upward.
+ *
+ * The event recorder remains test-scoped: it observes only this fake worker's boundary and adds no
+ * production trace hook, browser instrumentation, or readiness behavior.
+ */
 function fakeWorker() {
   const listeners: Array<(raw: unknown) => void> = [];
+  const events: string[] = [];
   return {
     handle: {
-      post:      (_msg: unknown, _transfer?: unknown[]) => {},
+      post:      (msg: unknown, _transfer?: unknown[]) => {
+        events.push(`post:${(msg as { type?: string })?.type ?? "unknown"}`);
+      },
       listen:    (h: (raw: unknown) => void): (() => void) => { listeners.push(h); return () => {}; },
       onError:   (_h: (err: Error) => void): (() => void) => () => {},
       terminate: () => {},
     },
-    emit: (msg: unknown): void => { for (const l of listeners) l(msg); },
+    emit: (msg: unknown): void => {
+      events.push(`emit:${(msg as { type?: string })?.type ?? "unknown"}`);
+      for (const l of listeners) l(msg);
+    },
+    events,
   };
 }
 
@@ -43,6 +56,8 @@ describe("openDaemonVmCore — the ea-breath watchdog", () => {
   const cleanups: Array<() => void | Promise<void>> = [];
 
   afterEach(async () => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
     for (const c of cleanups.splice(0)) await c();
   });
 
@@ -130,5 +145,39 @@ describe("openDaemonVmCore — the ea-breath watchdog", () => {
     // ...then breathing stops.
 
     await expect(core.workerEa).rejects.toThrow(/silence.*tw5-boot/s);
+  });
+
+  test("manifest timing witness — immediate browser ready posts after ready", async () => {
+    vi.useFakeTimers();
+    const { fw } = openCore(60_000);
+
+    // Browser workers signal readiness before accepting the transferred manifest.
+    fw.emit(mkReady());
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fw.events).toEqual(["emit:ready", "post:manifest"]);
+  });
+
+  test("manifest timing witness — Node fallback posts without ready", async () => {
+    vi.useFakeTimers();
+    const { fw } = openCore(60_000);
+
+    // Node workers omit ready; the compatibility fallback remains observable and bounded.
+    await vi.advanceTimersByTimeAsync(1_500);
+
+    expect(fw.events).toEqual(["post:manifest"]);
+  });
+
+  test("manifest timing witness — delayed browser ready records the current red ordering", async () => {
+    vi.useFakeTimers();
+    const { fw } = openCore(60_000);
+
+    // A cold browser worker can take longer than the compatibility fallback. This test deliberately
+    // records the present behavior without changing it: the manifest posts before delayed ready.
+    await vi.advanceTimersByTimeAsync(1_500);
+    fw.emit(mkReady());
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fw.events).toEqual(["post:manifest", "emit:ready"]);
   });
 });
