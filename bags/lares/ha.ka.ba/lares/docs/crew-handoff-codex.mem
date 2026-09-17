@@ -316,6 +316,22 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 ''The orphan, and why it reads structural.'' The title→base map lives in memory alone — `private readonly sited = new Map<string, string>()` at `disk-projector.ts:218`, with `:211-217` conceding it mirrors `$tw.boot.files` and that ''a title never flushed this session falls back to the loci law''. On the delete path `mirrorCarrierFiles` (`:387-396`) resolves `this.sited.get(...) ?? carrierBaseRelPath(uri)` at `:388`. ''After a restart `sited` reads empty, a foreign title returns null from `carrierBaseRelPath`, `:389` returns null, the deleter `continue`s at `:452`, and the file never unlinks'' — the `sited` / `syncedTree` cleanup at `:460-461` never runs either. ''Blast radius today:'' the commit's own corpus measurement reads 391 files, LOCI 391 / FLATTENED 0 — ''the change adds ZERO files to the corpus today'', so the orphan stands as a latent capability, never a live leak.
 
+!! B10 · The ahu-family quoteblock floor — Layer-2's water floor
+
+''What it is.'' A `.mem` deserializes into a FAMILY — the parent meme plus one child tiddler per top-level `<<~ ahu #/slot>>…<<~/ahu>>` (the shared scanner: `packages/lararium-tw5/src/meme-ast/ahu-scan.ts`, `findTopLevelAhuBlocks` + `collectAhuSlots`, gated by the declaration-vs-call predicate `isAhuDeclaration`). Layer 1 — the meme-ast BUILDER — already carries its never-fail floor (panic-to-water: an unparseable sigil becomes a verbatim `Error` node, `recoveredAs:"water"`; the graceful-parsing canon). ''Layer 2 — the FAMILY SPLIT — carries none.'' A partial split failure today either rides into a parent body as raw content (`packages/lararium-tw5/src/deserializer.ts:401`, the degraded-carrier surfacing) or drags the whole carrier to the verbatim fallback that fires only on TOTAL failure (`:286`, `:298`, ''drop-honesty'').
+
+''RULED — operator, 2026-09-16, two grains matched to the WRITE.'' Un-decomposable content fences to a quoteblock; the fence IS the artifact surfaced to the operator. The grain equals the write's grain:
+* ''Whole-chunk ingest'' — a carrier through the deserializer, or from OUTSIDE the wiki INTO it, whole and PARTIALLY un-decomposable → quoteblock the WHOLE chunk. Seat: `deserializer.ts` (no family exists yet; carrier grain is the only grain available).
+* ''In-place ahu update'' — an ahu tiddler that ALREADY stands, edited to un-parseable → quoteblock ONLY that ahu's BODY text, the family untouched. Seat: the placement path a wiki save runs — `packages/lararium-tw5/src/widgets/action-meme-place.ts` → the `$tw.lares.meme.place` face → `place-meme.ts`, which runs the Confluence gate `decideIngest` per family. The floor is that path's family-split leg, per-tiddler grain.
+
+''Why it needs no new law — it is self-enforcing.'' A fenced span is masked by fence-mask (`ahu-scan.ts` reads `fencedSpans`; a quoted sigil neither opens nor closes a block), so it declares ZERO slots → `collectAhuSlots` finds nothing to drop → the ahu-fidelity guard passes BY CONSTRUCTION (`packages/lararium-tw5/src/ingest-gate.ts:97-98` `declaredStructure`→`collectAhuSlots`, consumed `:169-170`; mirror `packages/lararium-tw5/src/carrier-canonical.ts:64-65`). Un-decomposable content can never mint a phantom slot or a false conflict. And the quoteblock IS the conflict artifact — the same surface the projection gate raises on `onConflict` (#/the-cut item ④).
+
+''THE JOINT THE RED-FIRST BUILD LIVES ON.'' On the per-tiddler leg, fence the ahu's BODY but PRESERVE the `<<~ ahu #/slot>>…<<~/ahu>>` WRAPPER. If the fence takes the wrapper, `collectAhuSlots` loses the slot and the guard fires a FALSE conflict — the exact failure the floor exists to prevent. Pin wrapper-survival as its own vector, beside a whole-chunk vector and a genuine-both-moved CONTROL (a real divergence must STILL surface, or the floor reads greened by fencing everything).
+
+''Traps.'' ① Fence-mask makes quoteblocking a ONE-WAY demotion — every sigil inside goes INERT until the operator resolves it — so the surfacing rail is NOT optional; a silently-quoteblocked span the operator never sees is a drop wearing a cure's face (wire it isomorphic to `onConflict`). ② `ahu-scan.ts`'s own docblock names three shared callers, one of which — `packages/lararium-tw5/src/widgets/lar-meme-split.ts` — DOES NOT STAND (the UX door is `action-meme-place.ts`); re-true that anchor as part of the build (#/traps — a gone anchor grows false law). ③ `.mem` edits re-stamp: run `lares meme normalize <file>` (it names its files and takes no glob — #/traps) or the block check reds; `meme-corpus-roundtrip` is the gate. ④ Blast radius = write grain: a per-tiddler edit MUST NOT demote the whole meme — that is the whole reason the ruling splits the two grains.
+
+''Precondition.'' RULED, no operator fork pending — build red-first (#/what-a-fresh-hand-reads-first, and the shift ledger's eight ordered moves). The design carries no separate `.mem` yet; this entry holds it. Author a canon carrier only if the crew wants the reasoning to stand outside the roadmap.
+
 <<~/ahu>>
 
 <<~ ahu #/set-c-staged>>
@@ -569,6 +585,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8wS8VqKgwJN7KLBj7YO5weXtWuwqbF5DPhQ9lbQqaTk
+<<^ code="&#x0003;">>ni:///sha-256;YHaLBc_mCxk0z2DWF90ciHsR24gadhh5Aiy-0QpLKCc
 
 <<^ code="&#x0004;" -> to="?">>
