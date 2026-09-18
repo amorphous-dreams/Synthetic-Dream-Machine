@@ -42,6 +42,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''BagStowage debt cleared + ④ RESOLVED'' — the PIN-DURABILITY correctness hole FIXED: pins now survive a restart (writer → admin-doc tiddler, reader before `startSweeper`, on BOTH node + browser; `d8f3c7a7a`, red-first + revert-verify). Stale comments re-trued (`e58a45b6a`); dead `lastUsedAt` crud dropped (`72638ed82`, grep-proven zero readers). Fork ④: the 2026-06-01 relocation clause CLOSED as superseded, keep-separate ruled (`dacae83b8`).
 * ''`:814` epoch lease (Option 1)'' — device-delegation admission now licenses off the PersonaGroup LEASE EPOCH (clockless), not a wall-clock: `expectedEpoch` threaded through `verifyEdgeAgainstPersonaKel` into all THREE doors (`verifyPeer` · the Binding Gate · face-grant); `boundEpoch` minted REAL at device-admit (was hardcoded `0`); a stale-lease device DENIED, re-presents via the existing regrant (`6b0910fbc`). Red-first + revert-verify (3 proofs + a source-weld); `boundEpoch` weld-confirmed signed-in (a device cannot forge its epoch). One fix, three doors.
 * ''The wired-boot e2e'' — the ring's admission now proven END-TO-END through a REAL boot: a founded vessel wears a face, a cross-operator grant-holder dials in over a real WS with a real V3 proof + a real published grant and SYNCS the persona-plane doc; a stranger is refused. Red-first captured (neutralize the ring-compose → the grant-holder fails IDENTICALLY to the stranger → restore → green; zero residual diff) (`79348c14f`). The "proven in parts, not lived whole" gap — CLOSED.
+* ''Wave-2 follow-ons (all three, red-first)'' — (a) recovery-keel readmit epoch: a readmitted device must bind the PRESENT lease epoch, never a silent 0 (`ReadmitEdgeInput.boundEpoch` REQUIRED, scoped so founding's signed bytes are untouched; `592f46d0d`); (b) browser-leaf parity: the leaf inherits ③'s Option A (island fields ride beside the gate key; `admittedJoineeIsland` → mesh + `CarriedAdmitPayload` → keyhive, the shared packages; `0da4ff55f`); (c) `identityDir` dead-param REMOVED — the `dataDir` footgun swept from ~236 call sites / 47 files, `withLarRoot` promoted to ONE shared harness helper (`df36bfad6`).
 
 <<~/ahu>>
 
@@ -49,7 +50,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 ! In flight — tasked spirits enacting now (2026-09-18)
 
-# ''The three follow-ons (wave 2)'' — scout→refine→enact: (a) BROWSER-LEAF parity for hearthGatePubKey Option A (`open-browser-vessel.ts:436` inherits the climbed-founder defect via `relayGatePubKey`); (b) recovery-keel readmit epoch (the 4th `runDeviceAdmitEdge` caller still mints `boundEpoch ?? 0` — the consistent completion of `:814`); (c) the `identityDir` dataDir isolation footgun. Scouted wave 1; enacting wave 2.
+''No tasks in flight — the arc's active work is complete (all landed, see #/landed).'' What remains: the deferred+pinned items (#/deferred) and the surfaced follow-ups (#/hazards).
 
 <<~/ahu>>
 
@@ -79,11 +80,14 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''The e2e set flakes at file level'' (`minted-canon-projection`, `smoke`, `herm-floor` have each flipped) — run-twice, never trust one pass; never run two e2e sets at once (shared `synced-tree.json`).
 * ''Wall-clock residue beyond the ring'' — `:814` + `boot-daemon-keyhive.ts:130` are now CLEARED (`6b0910fbc`, epoch-lease licensed). Remaining: `daemon-auth-gate.ts:225` (`contractNymOf`) + the HandleCard expiry reader, both flagged UNVERIFIED (read before ruling); the oracle-pointer clocks already tracked in `no-global-now.mem`'s own plan; and `recovery-keel`'s readmit epoch (follow-on 2, enacting wave 2).
 * ''The R0 / REGION coordination seam'' — the Codex crew holds R0's DESIGN (their B6/C2) but R0's reds live in `open-node-vessel.ts` (founding boot ground); whichever hearth builds it CROSSES — name the crossing before a hand starts.
+* ''SURFACED — the `two-vessel-mesh.test.ts` Step 2 identity leak'' (2026-09-18, by the FO3 spirit) — the test reds PRE-EXISTINGLY ("sentinel oracle IDs missing from social-bootstrap.json"); its Step 2 mints vessel B's identity OUTSIDE any `withLarRoot`, reading ambient `LAR_ROOT` — the EXACT `identityDir` footgun FO3 targets, now a LIVE failure. Clear fix: wrap Step 2 in `withLarRoot(VESSEL_B.root, ...)` (the shared helper). A dedicated follow-up, not silent deferral.
+* ''FO3's compile-gate isn't CI-guarded'' — `lararium-node`'s `tsconfig.typecheck.json` excludes `tests/`, so `typecheck-witness.sh` does NOT catch a regression of the `@ts-expect-error` gate pinning `identityDir`'s no-second-arg contract. Flagged, not silently relied on.
+* ''Browser-leaf behavioral proof owed'' — FO1 (`0da4ff55f`) landed at the source-weld level (fault-pin `?raw` assertions; `openBrowserVessel` needs Chromium); a true behavioral proof (a climbed-founder-admitted leaf seats on the charter board) is owed to the Codex Lares hearth's C4/browser-weld harness.
 * ''`dist/` is STALE against ③ + ⑤ + native-parity source'' (2026-09-18) — run `pnpm -r build` (mesh→tw5→node) before any e2e or live daemon boot; do NOT rebuild while an e2e runs (shared dist). (The e2e spirit rebuilds the chain as part of its red/green cycle.)
 * ''Two small follow-ons surfaced, both `more-work-now` candidates'' — (a) `recovery-keel.ts`'s `runReadmitEdge` (a 4th caller of `runDeviceAdmitEdge`) still mints `boundEpoch ?? 0`, so a recovery-readmitted device reads maximally stale if the group rolled since founding — the consistent completion of `:814` (backward-compatible today). (b) `identityDir()` in `node-vessel-identity.ts` IGNORES its `dataDir` param (reads `LAR_ROOT`/XDG only) — an isolation footgun a caller passing a dir would be bitten by.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3UnQsAMn8__ubv1QCv704q_1RJvlWYSepnlSSIvr-3o
+<<^ code="&#x0003;">>ni:///sha-256;pVcxpyvPEj3_aQtHDbjLvMOAv4c0sUEuv2hA6e3wbmE
 
 <<^ code="&#x0004;" -> to="?">>
