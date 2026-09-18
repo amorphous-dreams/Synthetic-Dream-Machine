@@ -90,7 +90,14 @@ export interface FaceGrantVerifyContext {
   readonly selfVerifyingKey: string;
   /** The group this vessel's face belongs to — the record must name it. */
   readonly groupDocIdHex: string;
-  readonly now: number;
+  /**
+   * OPTIONAL wall-clock witness (ms) — a soft, non-authoritative backstop on the founder edge's replay
+   * window, never the licensing authority. Omitted, the freshness check inside `verifyDeviceDelegation`
+   * skips cleanly (its own `opts?.now !== undefined` guard); the KEL-head walk (`verifyEdgeAgainstPersonaKel`)
+   * already licenses the edge clocklessly (event order — a rotated-away key refuses under the head, no
+   * clock consulted). No global now in load-bearing admission.
+   */
+  readonly now?: number;
 }
 
 export type FaceGrantVerdict = { ok: true } | { ok: false; reason: string };
@@ -120,10 +127,10 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
     if (genesis.opKeyDid.toLowerCase() !== ctx.personaRootDid.toLowerCase()) {
       return { ok: false, reason: "the persona-KEL incepts under a root other than the pinned one — the seal binds the chain" };
     }
-    const walked = await verifyEdgeAgainstPersonaKel(r.founderEdge, chain, { now: ctx.now });
+    const walked = await verifyEdgeAgainstPersonaKel(r.founderEdge, chain, ctx.now !== undefined ? { now: ctx.now } : undefined);
     if (!walked.ok) return { ok: false, reason: `founder edge refused under the persona-KEL head: ${walked.reason ?? "signature or window"}` };
   } else {
-    const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, { now: ctx.now });
+    const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, ctx.now !== undefined ? { now: ctx.now } : undefined);
     if (!edge.ok) return { ok: false, reason: `founder edge refused under the pinned root: ${edge.reason ?? "signature or window"}` };
   }
   const founderKey = r.founderEdge.deviceVerifyingKey;

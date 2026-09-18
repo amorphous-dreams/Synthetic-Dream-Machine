@@ -124,6 +124,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const group = daemonAuth.personaGroupDocIdHex;
     const ownEdge = daemonAuth.deviceEdge;
     if (!agent || !group || !ownEdge || !kh || !ctx.catalogUrl) return false;
+    // NO CLOCK. Absent a founder persona-KEL chain to walk, ABSTAIN rather than fall back to a
+    // pinned-root-only verify gated on a wall clock — fail-closed, event order or nothing (no global now).
+    if (!daemonAuth.personaKel) return false;
     let store: Awaited<ReturnType<ReturnType<typeof makeCatalogAccessor>["storeOf"]>>;
     try { store = await makeCatalogAccessor(ctx.repo, ctx.catalogUrl).storeOf(personaBagIdFor(group)); } catch { return false; }
     if (!store) return false;
@@ -140,8 +143,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
       judgedGrants.add(rec.sig);
       const verdict = await verifyFaceGrantRecord(rec, {
-        personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group, now: Date.now(),
-        ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),   // the edge verifies under the KEL HEAD, never a frozen root
+        personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group,
+        personaKel: daemonAuth.personaKel,   // the edge verifies under the KEL HEAD, never a frozen root — no clock
       });
       if (!verdict.ok) {
         console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
