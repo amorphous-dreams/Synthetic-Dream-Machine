@@ -13,6 +13,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 
 const APP = process.env.WELD_APP_URL ?? "http://localhost:5173";
@@ -337,6 +338,10 @@ async function malformedAnchorWalk() {
   });
 }
 
-await ordinaryWalk();
-await faultWalk();
-await malformedAnchorWalk();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await ordinaryWalk();
+  await faultWalk();
+  await malformedAnchorWalk();
+}
+
+export { instrumentBootSource };
