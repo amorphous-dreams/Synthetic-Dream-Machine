@@ -149,6 +149,8 @@ async function testC4TraceHookIsOptIn() {
     "host:awaitIslandMsg-raw", "host:awaitIslandMsg-guard-accepted",
     "host:awaitIslandMsg-guard-rejected", "host:awaitIslandMsg-expected-match",
     "host:awaitIslandMsg-resolve",
+    "host:worker-handle-listen", "host:worker-handle-dispatch",
+    "host:daemon-workerEa-callback",
   ]) {
     assert.match(source, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing C4 marker ${marker}`);
   }

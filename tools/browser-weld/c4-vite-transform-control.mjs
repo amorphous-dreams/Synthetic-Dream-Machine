@@ -92,6 +92,8 @@ async function runCase(browser, mode) {
   const servedScripts = [];
   const transformedScripts = [];
   const awaitIslandMsgSources = [];
+  const workerHandleSources = [];
+  const daemonWorkerEaSources = [];
   const consoleErrors = [];
   const scriptReceipts = [];
   const workerResponseReceipts = [];
@@ -163,6 +165,8 @@ async function runCase(browser, mode) {
     const source = await response.text();
     let transformed = instrumentBootSource(source);
     if (mode === "instrumented" && source.includes("awaitIslandMsg") && source.includes("isIslandToVesselMsg(raw)")) awaitIslandMsgSources.push(url);
+    if (mode === "instrumented" && source.includes("browserWorkerHandle") && source.includes("w.addEventListener(\"message\", fn)")) workerHandleSources.push(url);
+    if (mode === "instrumented" && source.includes("const workerEa") && source.includes("worker.listen(h)")) daemonWorkerEaSources.push(url);
     if (mode === "instrumented" && isDaemonWorkerUrl(url)) transformed = addEarliestWorkerMarker(transformed);
     if (transformed !== source) transformedScripts.push(url);
     return route.fulfill({ response, body: transformed });
@@ -205,6 +209,8 @@ async function runCase(browser, mode) {
     servedScripts: servedScripts.length,
     transformedScripts: transformedScripts.length,
     awaitIslandMsgSources,
+    workerHandleSources,
+    daemonWorkerEaSources,
     workerOutcomes: {
       constructed: outcome("constructed"),
       workerResponse: workerResponseReceipts,
@@ -246,6 +252,9 @@ async function runCase(browser, mode) {
         awaitIslandMsgBreathReset: hostOutcome("awaitIslandMsg-breath-reset"),
         awaitIslandMsgExpectedMatch: hostOutcome("awaitIslandMsg-expected-match"),
         awaitIslandMsgResolve: hostOutcome("awaitIslandMsg-resolve"),
+        workerHandleListen: hostOutcome("worker-handle-listen"),
+        workerHandleDispatch: hostOutcome("worker-handle-dispatch"),
+        daemonWorkerEaCallback: hostOutcome("daemon-workerEa-callback"),
       },
     },
     workerReceipts,

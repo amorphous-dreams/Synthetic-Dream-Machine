@@ -271,6 +271,36 @@ function instrumentBootSource(source) {
     );
   }
 
+  // Fan-out witness: browserWorkerHandle owns the native Worker listener registrations. Number each
+  // registration and report only protocol type/version at dispatch; the callback remains unchanged.
+  if (body.includes("function browserWorkerHandle") && body.includes("w.addEventListener(\"message\", fn)")) {
+    body = body.replace(
+      /listen: \(cb\) => \{/,
+      `listen: (cb) => {
+      const __laresC4ListenId = ((globalThis.__laresC4ListenId ??= 0) + 1);
+      console.log("[C4 boot] host:worker-handle-listen " + __laresC4ListenId);`,
+    );
+    body = body.replace(
+      /const fn = \(e(?:: MessageEvent)?\)(?:: void)? => cb\(e\.data\);/,
+      `const fn = (e) => {
+        const raw = e.data;
+        if (raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault" || raw.type === "ready")) console.log("[C4 boot] host:worker-handle-dispatch " + JSON.stringify({ listen: __laresC4ListenId, type: raw.type, schema_version: raw.schema_version ?? null }));
+        cb(raw);
+      };`,
+    );
+  }
+
+  // Name the daemon-core workerEa subscriber before it hands the raw value into awaitIslandMsg.
+  if ((body.includes("const workerEa: Promise<void>") || body.includes("const workerEa = awaitIslandMsg")) && body.includes("subscribe: (h) => worker.listen(h)")) {
+    body = body.replace(
+      /subscribe:\s*\(h\) => worker\.listen\(h\),/,
+      `subscribe:       (h) => worker.listen((raw) => {
+        if (raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault")) console.log("[C4 boot] host:daemon-workerEa-callback " + JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null }));
+        h(raw);
+      }),`,
+    );
+  }
+
   // The worker's caught startup rejection normally stays in the worker console. A test-only marker
   // crosses the same worker message boundary, so the host can distinguish it from pre-worker silence.
   if (body.includes('registerWorkerErrorRelay("daemon-worker");')) {
