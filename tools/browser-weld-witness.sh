@@ -101,13 +101,27 @@ fi
 status=0
 # L-Prime receipt boundary: run both drivers and aggregate only after both exits are visible.
 echo "browser-weld: starting Weld driver"
-WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
-weld_status=$?
+if [ -n "$ARTIFACT_DIR" ]; then
+  # L-Prime artifact boundary: keep Weld's receipt separate from Vite's log.
+  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs 2>&1 | tee "$ARTIFACT_DIR/weld.log"
+  weld_pipeline=(${PIPESTATUS[@]})
+  weld_status="${weld_pipeline[0]}"
+else
+  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
+  weld_status=$?
+fi
 echo "browser-weld: Weld driver exited $weld_status"
 
 echo "browser-weld: starting C4 leaf driver"
-WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs
-c4_status=$?
+if [ -n "$ARTIFACT_DIR" ]; then
+  # L-Prime artifact boundary: keep C4's receipt separate from Weld's log.
+  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs 2>&1 | tee "$ARTIFACT_DIR/c4.log"
+  c4_pipeline=(${PIPESTATUS[@]})
+  c4_status="${c4_pipeline[0]}"
+else
+  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs
+  c4_status=$?
+fi
 echo "browser-weld: C4 leaf driver exited $c4_status"
 
 if [ "$weld_status" -ne 0 ] || [ "$c4_status" -ne 0 ]; then

@@ -190,6 +190,12 @@ async function testIndependentDriversAndArtifacts() {
       const viteLog = await readFile(join(harness.artifacts, "vite.log"), "utf8");
       assert.match(viteLog, /Local:/);
       assert.doesNotMatch(viteLog, /(?:WELD|C4)-SENTINEL|browser-weld: starting/);
+      const weldLog = await readFile(join(harness.artifacts, "weld.log"), "utf8");
+      const c4Log = await readFile(join(harness.artifacts, "c4.log"), "utf8");
+      assert.match(weldLog, /WELD-SENTINEL/);
+      assert.doesNotMatch(weldLog, /C4-SENTINEL/);
+      assert.match(c4Log, /C4-SENTINEL/);
+      assert.doesNotMatch(c4Log, /WELD-SENTINEL/);
     } finally {
       await harness.dispose();
     }
