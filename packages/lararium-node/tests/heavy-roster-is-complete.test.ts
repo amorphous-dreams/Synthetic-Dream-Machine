@@ -34,6 +34,13 @@ const testsDir = path.dirname(fileURLToPath(import.meta.url));
 const ALLOWED_LIGHT: Record<string, string> = {
   // This reader itself only READS the source of other suites; it binds and spawns nothing.
   "tests/heavy-roster-is-complete.test.ts": "reads source text; stands no live resource",
+  // EXCLUDED_BY_DESIGN already keeps this suite out of BOTH `main` and `heavy` (it lives under
+  // `tests/e2e/`, which `mainExclude` drops entirely) — it never runs under THIS package's split at
+  // all, so the "live resource → serial project" cure this roster exists to apply has nothing to
+  // apply it to here. `vitest.e2e.config.ts` runs it alone (no sibling heavy suites to starve against).
+  "tests/e2e/persona-ring-cross-operator-admit.test.ts":
+    "binds a real WS listener + a nested daemon-island worker, but runs ONLY under the separate, " +
+    "already-serial-by-being-alone `vitest.e2e.config.ts` — see EXCLUDED_BY_DESIGN below.",
 };
 
 /** The roster the config declares — read from the module, so the two cannot disagree. */
@@ -69,6 +76,10 @@ const EXCLUDED_BY_DESIGN: Record<string, string> = {
   "tests/e2e/two-vessel-mesh.test.ts":
     "excluded from `main`, absent from `heavy` — the two-vessel founding ceremony. It fails against " +
     "current `runInit` (hearth true-name absent) and awaits an operator ruling: repair and roster, or retire.",
+  "tests/e2e/persona-ring-cross-operator-admit.test.ts":
+    "excluded from `main`, absent from `heavy` — a full `openNodeVessel` boot (real DaemonAuthGate, " +
+    "nested daemon-island worker, real WS crossing). Runs opt-in via `vitest.e2e.config.ts`, which this " +
+    "package's own heavy/main split does not cover; every other suite under `tests/e2e/` reads the same way.",
 };
 
 describe("the serial heavy roster detects its own staleness", () => {
