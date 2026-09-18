@@ -34,7 +34,7 @@ if (!existsSync(DIST_CARRIERS)) {
   console.error(`[head-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
   process.exit(2);
 }
-const { currentCarrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await import(DIST_CARRIERS);
 
 
 // THE ABSENCE NAMES ITS CURE. A witness that skipped here would read clean over an unbuilt tree.
@@ -84,7 +84,7 @@ function parserHeadUri(text) {
   return null;
 }
 
-const files = currentCarrierFiles(REPO);
+const files = carrierFiles(REPO);
 
 const drift = [];
 let agreed = 0, neither = 0;

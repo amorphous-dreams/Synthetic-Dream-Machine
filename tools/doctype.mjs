@@ -11,7 +11,8 @@
 //
 // One address, exactly: this grammar's spec. A DOCTYPE aimed anywhere else is not a variant, it is a
 // declaration that does not hold.
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
+import { execFileSync } from "child_process";
 import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { join } from "path";
 
@@ -29,24 +30,45 @@ if (!existsSync(DIST_CARRIERS)) {
   console.error(`[doctype] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
   process.exit(2);
 }
-const { carrierFiles } = await import(DIST_CARRIERS);
-// A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes both forms in a
-// fence, and a reader counting lines takes the lesson for the carrier's own act — measured the moment
-// the framing spec gained a worked example of the comment form and reported itself undeclared.
+const { carrierFiles, inSubmodule } = await import(DIST_CARRIERS);
+// A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes the declaration in
+// a fence, and a reader counting lines takes the lesson for the carrier's own act.
 const { fencedSpans, inMask } = await import(
   new URL("../packages/lararium-tw5/dist/meme-ast/fence-mask.js", import.meta.url).pathname);
 
-
-
 // ── A DECLARATION STANDS BARE, ON ITS OWN LINE ─────────────────────────────────────────────────
 // A carrier answers to this grammar alone, so its declaration stands bare where the grammar reads it.
-// The retired comment spelling hides the declaration from the one reader it addresses — it declares to
-// nobody. The file's DECLARATION decides that, never its extension.
-const COMMENTED = /^<!--\s*<<~\s*!DOCTYPE/;
+// A declaration inside a comment renders as nothing and reaches no reader: it declares to nobody, and
+// the file's DECLARATION decides that, never its extension.
+//
+// The finder counts such a file undeclared, so the carrier list can never name it. This gate asks the
+// tracked tree instead — every live line that is a comment holding a DOCTYPE aimed at this grammar.
+const HIDDEN = /^<!--.*\bDOCTYPE\b.*memetic-wikitext.*-->$/;
 
 const carriers = carrierFiles(REPO);
 
-const missing = [], hidden = [], misaimed = [];
+/** The live lines of a text — those no fence or code span quotes. */
+function liveLines(text) {
+  const spans = fencedSpans(text);
+  const lines = text.split("\n");
+  const starts = []; { let o = 0; for (const l of lines) { starts.push(o); o += l.length + 1; } }
+  return { lines, live: (i) => !inMask(spans, starts[i]) };
+}
+
+const hidden = [];
+const tracked = execFileSync("git", ["ls-files", "-z"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
+  .split("\0").filter(Boolean);
+for (const f of tracked) {
+  if (inSubmodule(f)) continue;
+  // A tracked path that refuses to read as text — a symlink to nowhere, a binary blob — holds no line.
+  let text;
+  try { text = readFileSync(join(REPO, f), "utf8"); } catch { continue; }
+  if (!text.includes("DOCTYPE")) continue;
+  const { lines, live } = liveLines(text);
+  if (lines.some((l, i) => live(i) && HIDDEN.test(l.trim()))) hidden.push(f);
+}
+
+const missing = [], misaimed = [];
 for (const f of carriers) {
   // THE DECLARATION PRECEDES ITS GRAMMAR, NEVER THE FILE. Byte zero belongs to whatever outside reader
   // requires it — YAML front-matter for a skill loader, a shebang, a BOM — and the declaration follows
@@ -55,11 +77,7 @@ for (const f of carriers) {
   const text = readCarrier(REPO, f);
   // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
   if (text === null) continue;
-  const spans = fencedSpans(text);
-  const lines = text.split("\n");
-  // Offsets, so a line can be asked whether a fence already holds it.
-  const starts = []; { let o = 0; for (const l of lines) { starts.push(o); o += l.length + 1; } }
-  const live = (i) => !inMask(spans, starts[i]);
+  const { lines, live } = liveLines(text);
   const findLive = (p) => lines.findIndex((l, i) => live(i) && p(l.trim()));
   const at = findLive((l) => l.startsWith("<<!DOCTYPE"));
   // A CALL binds with `=`; `:` is definition-side. Reading only the colon form matched 5 stragglers and
@@ -67,9 +85,6 @@ for (const f of carriers) {
   // fired — a gate that reads green because it never runs. Both spellings are admitted; the colon form is
   // the retired one and still worth catching where it stands.
   const sohAt = findLive((l) => l.startsWith("<<^ code=") || l.startsWith("<<^ code:"));
-  const commented = lines.some((l, i) => live(i) && COMMENTED.test(l.trim()));
-  // A hidden declaration declares to nobody.
-  if (commented) { hidden.push(f); continue; }
   if (at < 0) { missing.push(f); continue; }
   const first = (lines[at] ?? "").trim();
   if (first !== DECLARATION) { misaimed.push([f, first.slice(0, 100)]); continue; }
@@ -85,30 +100,7 @@ if (missing.length > 10) console.log(`  … and ${missing.length - 10} more`);
 for (const f of hidden) console.log(`  declares to nobody   ${f}`);
 for (const [f, line] of misaimed) console.log(`  ${f}\n    ${line}`);
 
-// ── A SPECIMEN HOLDS PRE-RULING TEXT ON PURPOSE ────────────────────────────────────────────────
-// Six `.mem` files carry the comment form and MUST keep it: four kumulipo corpora (placebo and
-// shuffled) that a measurement depends on holding still, and two `wild-*` specimens that exist to
-// feed a parser text written before the ruling. Migrating either destroys the thing it holds.
-//
-// They ride as a DECLARED CLASS with the reason written here, never as a count that can never reach
-// zero. A witness failing every run shrinks to nothing; a witness naming what it exempts stays a
-// witness. Any OTHER `.mem` or `.tid` hiding its declaration fails outright.
-const SPECIMENS = [
-  "packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/",
-  "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/",
-  "packages/tree-sitter-memetic-wikitext/fixtures/specimens/wild-",
-];
-const unowned = hidden.filter((f) => !SPECIMENS.some((p) => f.startsWith(p)));
-if (unowned.length) {
-  console.log(`  ${unowned.length} carrier(s) declare to nobody and name no reason:`);
-  for (const f of unowned) console.log(`    ${f}`);
-  process.exit(1);
-}
-if (hidden.length) {
-  console.log(`  ${hidden.length} specimen(s) hold pre-ruling text on purpose — declared, never inferred`);
-}
-
-if (missing.length + misaimed.length === 0) {
+if (missing.length + hidden.length + misaimed.length === 0) {
   console.log("  every carrier opens by naming the grammar that reads it, at the one address that does");
   process.exit(0);
 }

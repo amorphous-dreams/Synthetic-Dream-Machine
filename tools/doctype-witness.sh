@@ -21,9 +21,9 @@ if ! REPO="$scratch" node tools/doctype.mjs >/dev/null 2>&1; then
 fi
 
 # PROVOCATION: the same address hidden in a comment, in a file of another extension, fails.
-printf '<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->\n\n# notes\n' > "$scratch/notes.md"
+printf '<!-- <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->\n\n# notes\n' > "$scratch/notes.md"
 git -C "$scratch" add -A
 if REPO="$scratch" node tools/doctype.mjs >/dev/null 2>&1; then
-  echo "[doctype-witness] a declaration hidden in a comment read as declaring — the extension decided it"; exit 1
+  echo "[doctype-witness] a declaration hidden in a comment passed the gate — it declares to nobody"; exit 1
 fi
 echo "[doctype-witness] a hidden declaration fails whatever the file's extension, and the control passes"

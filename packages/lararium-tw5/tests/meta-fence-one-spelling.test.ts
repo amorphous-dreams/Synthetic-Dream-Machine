@@ -32,7 +32,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { readCarrierShape } from "../src/carrier-shape.js";
-import { declaresCarrier, currentCarrierFiles } from "../src/carrier-files.js";
+import { declaresCarrier, carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 import { transposeMarkdown } from "../src/meme-markdown.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
@@ -171,7 +171,7 @@ describe("a deviant spelling is ADMITTED and then FAULTED", () => {
    * fixtures above prove the fault fires; only the corpus proves it does not fire on the house.
    */
   test("no carrier in the corpus carries a fence fault", () => {
-    const files = currentCarrierFiles(REPO);
+    const files = carrierFiles(REPO);
     expect(files.length).toBeGreaterThan(500);
     const faulted = files
       .map((f) => [f, readCarrierShape(readFileSync(join(REPO, f), "utf8")).faults] as const)

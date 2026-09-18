@@ -19,7 +19,7 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { BLOCK_CLOSERS } from "../src/wikirules/lar-sigil-shared.js";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 
 const REPO = join(new URL("..", import.meta.url).pathname, "../..");
 
@@ -44,7 +44,7 @@ const ANY_CLOSER = /<<~\/[\w-]*/g;
 function taught(): Array<{ rel: string; text: string }> {
   const defs = execSync('git ls-files "packages/lararium-tw5/tiddlers/*.tid"', { cwd: REPO, encoding: "utf8" })
     .split("\n").filter(Boolean);
-  const files = [...new Set([...currentCarrierFiles(REPO), ...defs])];
+  const files = [...new Set([...carrierFiles(REPO), ...defs])];
   return files.map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
 }
 

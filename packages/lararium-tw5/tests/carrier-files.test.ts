@@ -15,24 +15,24 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { carrierFiles, currentCarrierFiles, declaresCarrier, SUBMODULES } from "../src/carrier-files.js";
-import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { carrierFiles, declaresCarrier, readCarrierFiles, SUBMODULES } from "../src/carrier-files.js";
+import { CARRIER_TYPE, DECLARATION as DECL } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
 describe("declaresCarrier — a file counts as a carrier when it says so", () => {
-  /** The current spelling: a doctype sigil naming the grammar that reads what follows. */
-  test("the current doctype declares", () => {
-    const d = declaresCarrier("<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>\n");
+  /** The declaration: a doctype sigil naming the grammar that reads what follows. */
+  test("the doctype declares", () => {
+    const d = declaresCarrier(`${DECL}\n`);
     expect(d?.form).toBe("doctype");
   });
 
   /**
-   * A declaration hidden inside `<!-- -->` renders as nothing and reads to a human as though it stood.
-   * The finder still counts it, because the file DECLARES — the doctype gate then names the form.
+   * A DECLARATION HIDDEN IN A COMMENT DECLARES NOTHING. `<!-- -->` renders as nothing, so the grammar
+   * the line names never reads it; the finder treats the file as it treats any undeclared one, and the
+   * doctype gate names it as a declaration that reaches nobody.
    */
-  test("a doctype inside an HTML comment still declares", () => {
-    const d = declaresCarrier("<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->\n");
-    expect(d?.form).toBe("commented-doctype");
+  test("a declaration hidden inside an HTML comment declares nothing", () => {
+    expect(declaresCarrier(`<!-- ${DECL} -->\n`)).toBeNull();
   });
 
   /** A `.tid` field line carries the type where no sigil can precede it. */
@@ -70,7 +70,7 @@ describe("declaresCarrier — a file counts as a carrier when it says so", () =>
    */
   test("a declaration embedded in a program's line declares nothing", () => {
     expect(declaresCarrier('const DECL = "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///x>>";\n')).toBeNull();
-    expect(declaresCarrier('_HEAD = """<!-- <<~ !DOCTYPE = lar:///x>> -->\n"""\n')).toBeNull();
+    expect(declaresCarrier(`_HEAD = """${DECL}\n"""\n`)).toBeNull();
     expect(declaresCarrier(`  "content-type": "${CARRIER_TYPE}",\n`)).toBeNull();
   });
 
@@ -127,32 +127,15 @@ describe("carrierFiles — the corpus, from the declarations that make it", () =
   });
 });
 
-describe("currentCarrierFiles — what a post-ruling law may hold", () => {
-  const all = carrierFiles(REPO);
-  const current = currentCarrierFiles(REPO);
-
+describe("readCarrierFiles — every carrier declares in one of two ways", () => {
   /**
-   * ONE PREDICATE EXPLAINS THE WHOLE RESIDUE. Measured the day the finder widened: every carrier that
-   * declares in the retired comment spelling ALSO carries pre-ruling frame marks, unquoted URI
-   * positionals and unrooted slots — 17 files, and head-parity's 8 DRIFT plus 9 name-no-head land on
-   * exactly that set and nowhere else. The declaration form reads the carrier's whole vintage.
+   * ONE CORPUS, EVERY LAW. A carrier declares with a doctype standing on its own line or with its
+   * `type`; the finder admits nothing else, so every per-carrier law holds the whole of what it finds
+   * and no law narrows the corpus by the way a file declares.
    */
-  test("the retired spelling is the only thing that separates the two answers", () => {
-    const dropped = all.filter((f) => !current.includes(f));
-    expect(dropped.length).toBeGreaterThan(0);
-    for (const f of dropped) {
-      expect(declaresCarrier(readFileSync(join(REPO, f), "utf8"))?.form).toBe("commented-doctype");
-    }
-  });
-
-  /** The migrated kernel face rides in the CURRENT corpus, not the debt. */
-  test("the kernel face rides in the current corpus", () => {
-    expect(current).toContain("packages/lararium-tw5/tiddlers/memetic-wikitext.tid");
-  });
-
-  /** CONTROL: a narrowing that narrowed to nothing would satisfy every law beneath it. */
-  test("the current corpus holds nearly all of it", () => {
-    expect(current.length).toBeGreaterThan(all.length - 40);
+  test("every carrier found declares by doctype or by type", () => {
+    const forms = new Set(readCarrierFiles(REPO).map((c) => c.form));
+    expect([...forms].sort()).toEqual(["doctype", "type-field"]);
   });
 });
 

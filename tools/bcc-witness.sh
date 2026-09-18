@@ -22,10 +22,9 @@ import { execSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 const { verifyBcc } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-check.js"));
 // THE CORPUS COMES FROM THE ONE FINDER. A `find bags -name "*.mem"` answers a question about paths
-// and walks untracked scratch besides; the law asks which files DECLARE. A carrier in the retired
-// comment spelling carries no ETX check to verify, so this witness takes the current corpus.
-const { currentCarrierFiles } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-files.js"));
-const files = currentCarrierFiles(process.cwd());
+// and walks untracked scratch besides; the law asks which files DECLARE.
+const { carrierFiles } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-files.js"));
+const files = carrierFiles(process.cwd());
 let ok = 0, mismatch = 0, unchecked = 0, torn = 0;
 for (const f of files) {
   const verdict = verifyBcc(readFileSync(f, "utf8"));

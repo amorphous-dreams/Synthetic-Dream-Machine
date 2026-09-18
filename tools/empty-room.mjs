@@ -23,10 +23,10 @@ if (!existsSync(DIST_CARRIERS)) {
   console.error(`[empty-room] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
   process.exit(2);
 }
-const { currentCarrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await import(DIST_CARRIERS);
 
 
-const carriers = currentCarrierFiles(REPO);
+const carriers = carrierFiles(REPO);
 
 // SPACING IS NOT THE LAW. A key written `role = ` and one written `role      = ` state the same fact,
 // and a probe that binds one spelling reports the other as absent — measured, twice, in one night.

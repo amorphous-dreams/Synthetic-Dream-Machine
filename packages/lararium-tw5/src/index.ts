@@ -265,7 +265,7 @@ export type { CarrierHead, CarrierMark } from "./carrier-head.js";
 // disagreeing answers, and the disagreement hid a real carrier from every gate. Read the DECLARATION,
 // never the path — see carrier-files.ts.
 export {
-  carrierFiles, currentCarrierFiles, retiredCarrierFiles, readCarrierFiles, forgetCarrierFiles,
+  carrierFiles, readCarrierFiles, forgetCarrierFiles,
   declaresCarrier, inSubmodule,
   SUBMODULES,
 } from "./carrier-files.js";

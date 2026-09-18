@@ -14,7 +14,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { readCarrierEdges } from "../src/carrier-edges.js";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
 describe("carrier-edges — every address a carrier points at", () => {
@@ -76,7 +76,7 @@ describe("carrier-edges — every address a carrier points at", () => {
    * absorbing the first one silently is how a ceiling stops measuring anything.
    *
    * TWO READERS, TWO CORPORA (measured 2026-09-13): `lares meme check --edges $(git ls-files 'bags/*.mem')` reads
-   * 176 over bags/ alone; this test walks `currentCarrierFiles` — every declared carrier, tiddlers and memory
+   * 176 over bags/ alone; this test walks `carrierFiles` — every declared carrier, tiddlers and memory
    * included — and reads 179. The ceiling here is THIS reader's number; lowering it to the CLI's would red on
    * three edges the CLI never sees. 196 → 198, and the cause is the SECOND kind. The corpus finder learned to read the DECLARATION
    * rather than a `bags/**` path, and the runtime kernel face at
@@ -86,7 +86,7 @@ describe("carrier-edges — every address a carrier points at", () => {
    * that same carrier now holds. Nothing broke; a blind spot closed.
    */
   test("the corpus points at no more nothing than it already did", () => {
-    const files = currentCarrierFiles(REPO);
+    const files = carrierFiles(REPO);
     const held = new Set<string>(), texts: string[] = [];
     for (const f of files) {
       const t = readFileSync(path.join(REPO, f), "utf8");

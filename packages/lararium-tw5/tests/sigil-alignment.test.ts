@@ -22,7 +22,7 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { schemeShapedPositionals, readSigilAttrs, sigilAttrValue, lostPositionals } from "../src/sigil-attrs.js";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 
 /**
  * ── THE EXEMPTION LIST STANDS EMPTY, AND NO MACHINERY KEEPS ITS SEAT WARM ───────────────────────
@@ -39,7 +39,7 @@ const REPO = join(new URL("..", import.meta.url).pathname, "../..");
 
 /** Every carrier the corpus stands, read once. */
 function carriers(): Array<{ rel: string; text: string }> {
-  return currentCarrierFiles(REPO).map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
+  return carrierFiles(REPO).map((rel) => ({ rel, text: readFileSync(join(REPO, rel), "utf8") }));
 }
 
 describe("★ the alignment law, over the whole corpus ★", () => {

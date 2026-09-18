@@ -29,13 +29,13 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 import { LIFECYCLE_STAGES, readCarrierLifecycle, readCarrierTags } from "../src/carrier-lifecycle.js";
 
 const REPO = resolve(__dirname, "../../..");
 
 function memegraph(): string[] {
-  return currentCarrierFiles(REPO).filter((f) => f.endsWith(".mem"));
+  return carrierFiles(REPO).filter((f) => f.endsWith(".mem"));
 }
 
 function read(rel: string): string | null {

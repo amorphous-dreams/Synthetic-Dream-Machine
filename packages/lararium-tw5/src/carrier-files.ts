@@ -26,10 +26,10 @@
  * holds that law for the framing and edge scanners; it holds it here too, from the same module, so
  * the corpus boundary and the sigil scans cannot drift apart.
  *
- * ── THREE SPELLINGS STAND, AND THE FINDER ADMITS ALL THREE ───────────────────────────────────────
- * A finder narrowed to the CURRENT spelling would drop every carrier awaiting migration from the
- * corpus, and a gate reports clean over what it cannot see. The finder takes the widest read; the
- * per-form gates below it — `doctype` chief among them — name which spelling a carrier may keep.
+ * ── TWO WAYS TO DECLARE, ONE CORPUS ─────────────────────────────────────────────────────────────
+ * A carrier declares with a doctype standing on its own line, or with its `type` — a `.tid` field
+ * line or the meta block's key. A file carrying neither is undeclared, whatever else it holds, and
+ * every per-carrier law reads the whole of what this finder returns.
  */
 
 import { fencedSpans, maskedExec, type MaskSpan } from "./meme-ast/fence-mask.js";
@@ -53,8 +53,8 @@ export const SUBMODULES: readonly string[] = [
   "ftls",
 ];
 
-/** Which spelling a file used to say it carries. */
-export type CarrierDeclarationForm = "doctype" | "commented-doctype" | "type-field";
+/** How a file says it carries: a doctype line, or its `type`. */
+export type CarrierDeclarationForm = "doctype" | "type-field";
 
 export interface CarrierDeclaration {
   readonly form: CarrierDeclarationForm;
@@ -74,20 +74,14 @@ export interface CarrierDeclaration {
  */
 function standsAlone(form: CarrierDeclarationForm, line: string): boolean {
   if (form === "doctype") return /^<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>$/.test(line);
-  if (form === "commented-doctype") return /^<!--\s*<<~\s*!DOCTYPE\b[^\n]*-->$/.test(line);
   return ALONE_TYPE_RE.test(line);
 }
 
 /**
- * The two SIGIL spellings a carrier opens with.
- *
- * The commented form renders as nothing and parses as nothing, which is exactly why it survived: it
- * reads to a human as though the declaration stood. It still DECLARES — the form names which.
+ * The doctype sigil a carrier opens with. It declares only standing alone on its line: inside a
+ * comment it renders as nothing and reaches no reader, so it declares nothing.
  */
-const SIGIL_FORMS: readonly { form: CarrierDeclarationForm; re: RegExp }[] = [
-  { form: "doctype", re: /<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>/ },
-  { form: "commented-doctype", re: /<!--\s*<<~\s*!DOCTYPE\b[^\n]*-->/ },
-];
+const DOCTYPE_RE = /<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>/;
 
 /** A `.tid` field line, where no sigil may precede the fields. */
 const TID_TYPE_RE = new RegExp(String.raw`^\s*type\s*:\s*` + CARRIER_TYPE.replace("+", "\\+"), "m");
@@ -122,10 +116,8 @@ export function declaresCarrier(text: string, spans?: readonly MaskSpan[]): Carr
     if (best === null || at < best.at) best = { form, at, text: line };
   };
 
-  for (const { form, re } of SIGIL_FORMS) {
-    const m = maskedExec(text, re, mask);
-    if (m) offer(form, m.index);
-  }
+  const doctype = maskedExec(text, DOCTYPE_RE, mask);
+  if (doctype) offer("doctype", doctype.index);
 
   const tid = maskedExec(text, TID_TYPE_RE, mask);
   if (tid) offer("type-field", tid.index);
@@ -201,7 +193,7 @@ export function readCarrierFiles(repo: string): CarrierFile[] {
     // Refusing to read is refusing to declare.
     try { text = readFileSync(join(repo, rel), "utf8"); } catch { continue; }
     // The declaration stands near the top of every carrier this corpus holds; the cheap prefilter
-    // keeps the fence mask off the several thousand files that mention none of the three spellings.
+    // keeps the fence mask off the several thousand files that name neither the doctype nor the type.
     if (!text.includes("DOCTYPE") && !text.includes(CARRIER_TYPE)) continue;
     const d = declaresCarrier(text);
     if (d) out.push({ path: rel, ...d });
@@ -218,35 +210,4 @@ export function readCarrierFiles(repo: string): CarrierFile[] {
  */
 export function carrierFiles(repo?: string): string[] {
   return readCarrierFiles(repo ?? process.cwd()).map((c) => c.path);
-}
-
-/**
- * The carriers a POST-RULING law may hold — every declaration but the retired comment spelling.
- *
- * ── ONE PREDICATE READS A CARRIER'S WHOLE VINTAGE ────────────────────────────────────────────────
- * Measured the day the finder widened: 17 carriers declare in the retired comment form, and every one
- * of them also carries pre-ruling frame marks, unquoted URI positionals and unrooted child slots.
- * head-parity's 8 DRIFT and 9 name-no-head land on exactly that set and nowhere else; so do
- * empty-room's 4 broken promises. The form a carrier declares in tells its vintage — no path needed,
- * and no per-gate list of names to go stale.
- *
- * ── WHY A LAW SKIPS THEM RATHER THAN FAILING THEM ────────────────────────────────────────────────
- * A witness that fails every run is a standing failure, and a standing failure shrinks a check to
- * nothing. The debt stands COUNTED instead — `doctype` prints it on every run against a ceiling that
- * only shrinks, so the class stays visible and cannot quietly grow.
- *
- * `carrierFiles` stays the honest total. A gate reaching for this one asks a narrower question, and
- * the two derive from ONE enumeration rather than from two globs.
- */
-export function currentCarrierFiles(repo?: string): string[] {
-  return readCarrierFiles(repo ?? process.cwd())
-    .filter((c) => c.form !== "commented-doctype")
-    .map((c) => c.path);
-}
-
-/** The carriers awaiting migration off the retired comment spelling — the debt, named. */
-export function retiredCarrierFiles(repo?: string): string[] {
-  return readCarrierFiles(repo ?? process.cwd())
-    .filter((c) => c.form === "commented-doctype")
-    .map((c) => c.path);
 }

@@ -7,7 +7,7 @@
  *
  * ── THE FIXTURES DECLARE NOTHING ────────────────────────────────────────────────────────────────
  * Every carrier text below gets assembled from parts at read time and carries neither a DOCTYPE line
- * nor a bare `type` line, so this file never enters `currentCarrierFiles` and then fails a corpus law
+ * nor a bare `type` line, so this file never enters `carrierFiles` and then fails a corpus law
  * on a fixture nobody poured. The CONTROL at the foot of the suite proves it.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/otakiage
@@ -22,7 +22,7 @@ import {
   RETIRED_META_KEYS,
 } from "../src/carrier-lifecycle.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
 /** A meta fence assembled at read time — the opener joins its label here, never in the source. */
@@ -199,6 +199,6 @@ describe("carrier-lifecycle — a domain field is not a carrier's own key", () =
 describe("carrier-lifecycle — the fixtures declare nothing", () => {
   /** A fixture that DECLARES is a carrier to every sweep, gate and normalize run in the tree. */
   test("CONTROL — this suite is not itself corpus", () => {
-    expect(currentCarrierFiles(REPO).some((f) => f.includes("carrier-lifecycle.test"))).toBe(false);
+    expect(carrierFiles(REPO).some((f) => f.includes("carrier-lifecycle.test"))).toBe(false);
   });
 });

@@ -30,12 +30,12 @@ import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
 /** THE WHOLE CORPUS. Every carrier the tree declares answers this law. */
-const carriers = (): string[] => currentCarrierFiles(REPO);
+const carriers = (): string[] => carrierFiles(REPO);
 
 /** Section opens and closes, counted outside fenced blocks — a fence carries examples, never structure. */
 function frame(text: string): { opens: string[]; closes: number } {

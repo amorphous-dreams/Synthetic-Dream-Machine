@@ -24,7 +24,7 @@ import { readCarrierShape } from "../src/carrier-shape.js";
 // comparison, and the CODE SET is the one thing being held apart.
 import { fencedSpans, maskedExecAll } from "../src/deserializer.js";
 import { frameMark } from "../src/frame-marks.js";
-import { currentCarrierFiles } from "../src/carrier-files.js";
+import { carrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
@@ -57,7 +57,7 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
    * this one asks every carrier and refuses an address carrying a field name into itself.
    */
   test("no carrier's head address carries a field name into it", () => {
-    const files = currentCarrierFiles(REPO);
+    const files = carrierFiles(REPO);
     const mangled = files
       .map((f) => [f, readCarrierShape(readFileSync(path.join(REPO, f), "utf8")).marks.headUri] as const)
       .filter(([, u]) => u !== null && !u.startsWith("lar:"))
@@ -107,7 +107,7 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
 
   /** The corpus itself: no file may sit below the floor of the kind it declares. */
   test("every carrier in the corpus stands at its kind's floor", () => {
-    const files = currentCarrierFiles(REPO);
+    const files = carrierFiles(REPO);
     const below = files
       .map((f) => [f, readCarrierShape(readFileSync(path.join(REPO, f), "utf8"))] as const)
       .filter(([, s]) => s.faults.length > 0)
@@ -223,7 +223,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
   }
 
   test("★ every corpus carrier's marks read exactly as that carrier spells them ★", () => {
-    const files = currentCarrierFiles(REPO);
+    const files = carrierFiles(REPO);
     const carried = { stx: 0, etx: 0, eot: 0 };
     const disagreed: string[] = [];
     for (const f of files) {
@@ -265,7 +265,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    */
   test("★ the thin codes still stand in the corpus, or the walk above lost its teeth ★", () => {
     const tally = new Map<string, number>();
-    for (const f of currentCarrierFiles(REPO)) {
+    for (const f of carrierFiles(REPO)) {
       const text = readFileSync(path.join(REPO, f), "utf8");
       const seen = new Set<string>();
       for (const sig of maskedExecAll(text, SIGIL, fencedSpans(text))) {
@@ -290,7 +290,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    */
   test("★ every corpus carrier re-spelled in its family's OTHER code reads the same marks ★", () => {
     const sibling = new Map<string, string>([["&#x0004;", "&#x0014;"], ["&#x0001;", "&#x0011;"]]);
-    const files = currentCarrierFiles(REPO);
+    const files = carrierFiles(REPO);
     let moved = 0;
     const drifted: string[] = [];
     for (const f of files) {

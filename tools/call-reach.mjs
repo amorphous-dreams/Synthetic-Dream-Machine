@@ -61,7 +61,7 @@ for (const need of ["carrier-files.js", "grammar-heads.js", "tw5-vm.js", "genera
     process.exit(2);
   }
 }
-const { currentCarrierFiles } = await import(join(DIST, "carrier-files.js"));
+const { carrierFiles }        = await import(join(DIST, "carrier-files.js"));
 const { grammarHeads }        = await import(join(DIST, "grammar-heads.js"));
 const { fencedSpans, inMask } = await import(join(DIST, "meme-ast/fence-mask.js"));
 // THE PARSER'S OWN WALK. A regex ending on the first `>>` stops INSIDE a value carrying a nested
@@ -121,7 +121,7 @@ const HEAD = /<<~[ \t]*([A-Za-z][\w-]*)/g;
 const calls = new Map();
 let live = 0, fenced = 0;
 const heads = new Set();
-for (const rel of currentCarrierFiles(REPO)) {
+for (const rel of carrierFiles(REPO)) {
   const text = readCarrier(REPO, rel);
   // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
   if (text === null) continue;
