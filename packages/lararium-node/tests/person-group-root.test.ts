@@ -44,7 +44,7 @@ describe("PersonaGroup-root custody (operator-root capability — genesis Phase 
   it("mints a fresh root into the identity dir — a sibling of the substrate, never inside it", async () => {
     const dataDir = freshDataDir();
     try {
-      const root = await generateOrLoadPersonaGroupRoot(dataDir);
+      const root = await generateOrLoadPersonaGroupRoot();
       expect(root.created, "first call mints").toBe(true);
       expect(root.verifyingKey).toMatch(/^[0-9a-f]{64}$/);
 
@@ -60,8 +60,8 @@ describe("PersonaGroup-root custody (operator-root capability — genesis Phase 
   it("loads idempotently — a second call returns the SAME key, created:false", async () => {
     const dataDir = freshDataDir();
     try {
-      const first  = await generateOrLoadPersonaGroupRoot(dataDir);
-      const second = await generateOrLoadPersonaGroupRoot(dataDir);
+      const first  = await generateOrLoadPersonaGroupRoot();
+      const second = await generateOrLoadPersonaGroupRoot();
       expect(second.created).toBe(false);
       expect(second.verifyingKey).toBe(first.verifyingKey);
     } finally {
@@ -72,8 +72,8 @@ describe("PersonaGroup-root custody (operator-root capability — genesis Phase 
   it("the root is a DISTINCT capability from the per-vessel device key (not numbered planes)", async () => {
     const dataDir = freshDataDir();
     try {
-      const vessel = await generateOrLoadVesselIdentity(dataDir);
-      const root   = await generateOrLoadPersonaGroupRoot(dataDir);
+      const vessel = await generateOrLoadVesselIdentity();
+      const root   = await generateOrLoadPersonaGroupRoot();
       expect(root.verifyingKey).not.toBe(vessel.verifyingKey); // the split actually splits
     } finally {
       rmSync(dirname(dataDir), { recursive: true, force: true });
@@ -83,9 +83,9 @@ describe("PersonaGroup-root custody (operator-root capability — genesis Phase 
   it("loadPersonaGroupRootSeed returns the 32-byte seed founder-only, throws when absent", async () => {
     const dataDir = freshDataDir();
     try {
-      await expect(loadPersonaGroupRootSeed(dataDir)).rejects.toThrow(/no persona-root/);
-      await generateOrLoadPersonaGroupRoot(dataDir);
-      const seed = await loadPersonaGroupRootSeed(dataDir);
+      await expect(loadPersonaGroupRootSeed()).rejects.toThrow(/no persona-root/);
+      await generateOrLoadPersonaGroupRoot();
+      const seed = await loadPersonaGroupRootSeed();
       expect(seed).toBeInstanceOf(Uint8Array);
       expect(seed.length).toBe(32);
     } finally {

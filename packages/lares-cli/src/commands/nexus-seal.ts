@@ -49,7 +49,7 @@ import {
 import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { larSealHome, larDataDir } from "../env.js";
+import { larSealHome } from "../env.js";
 import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -188,7 +188,7 @@ const normHex = (s: string | undefined): string => (s ?? "").trim().toLowerCase(
 type UnstoodChairs = "keep" | "drop";
 
 async function seatKahuFromVault(
-  doc: NexusDoc, dataDir: string, unstood: UnstoodChairs = "keep",
+  doc: NexusDoc, unstood: UnstoodChairs = "keep",
 ): Promise<{ kahu: NexusCharterKahu[]; seatedKeys: string[] }> {
   // THE ROSTER FORMS FROM WHAT STOOD, never from a list this build shipped. A persona reaches a chair by
   // DECLARING the Handle it answers to and STANDING for a seat — two explicit acts on the operator's own
@@ -198,7 +198,7 @@ async function seatKahuFromVault(
   // The chair name reads the DECLARED HANDLE, never the private pet-name. Matching the label would weld the
   // two registers: an operator could then seat only under the same string they call the compartment at home,
   // and every private label would become a public commitment by construction.
-  const held = new Set(await listPersonaRoots(dataDir));
+  const held = new Set(await listPersonaRoots());
   // The declared Handle rides the FLEET (the persona plane), the seat claim stays LOCAL — so the seal reads a persona's
   // outward name as every device of the human knows it, and reads the chair claim as THIS node holds it.
   const localDeclarations = await makeNodePersonaDeclarationStore();
@@ -216,7 +216,7 @@ async function seatKahuFromVault(
 
   for (const [index, handle] of standing) {
     if (!held.has(index)) continue;             // a declaration without a held root seats nothing here
-    const root = await generateOrLoadPersonaGroupRoot(dataDir, index);   // loads a held root; never mints here
+    const root = await generateOrLoadPersonaGroupRoot(index);   // loads a held root; never mints here
     const at = chairAt.get(norm(handle));
     if (at === undefined) {
       chairAt.set(norm(handle), kahu.length);
@@ -250,7 +250,6 @@ function resolveSeatThreshold(args: ParsedArgs, doc: NexusDoc, rosterSize: numbe
 
 async function sealSeat(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
-  const dataDir = larDataDir();
   // A TORN CHARTER MUST NOT READ AS AN ABSENT ONE. `readNexusDoc` answers null for both, which suits every
   // caller that folds null to an inert roster; this one folds it to a founding SCAFFOLD instead, and that
   // scaffold carries no `sealLineage` at all — so the guard below, reading `doc.sealLineage && …`, short
@@ -272,11 +271,11 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   // there too. Seating onto his MERGES the quorums: measured, six seated kahu at threshold two, so the
   // partner holds quorum over her Nexus using his own keys with no further act by her.
   const heldKeys = await Promise.all(
-    (await listPersonaRoots(dataDir)).map(async (i) => (await generateOrLoadPersonaGroupRoot(dataDir, i)).verifyingKey));
+    (await listPersonaRoots()).map(async (i) => (await generateOrLoadPersonaGroupRoot(i)).verifyingKey));
   const foreign = foreignSeats(doc.kahu ?? [], heldKeys);
   if (!foreign.ok) throw new UsageError(foreign.why);
 
-  const { kahu, seatedKeys } = await seatKahuFromVault(doc, dataDir);
+  const { kahu, seatedKeys } = await seatKahuFromVault(doc);
   const nextKeyCommit = normHex(args.options["next-key-commit"]);
   if (kahu.length === 0) {
     throw new UsageError(
@@ -447,7 +446,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
       const core = p && boundCoreOf(p);
       if (!p || !core) throw new UsageError("no bound crossing stands — `grow open`, rotate, `grow bind` first");
       const idx = Number(args.options["index"] ?? "0");
-      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(larDataDir(), idx));
+      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(idx));
       const inOld = p.oldKeys.some((k) => k.toLowerCase() === hand.signer.toLowerCase());
       const inNew = (p.newKeys ?? []).some((k) => k.toLowerCase() === hand.signer.toLowerCase());
       if (!inOld && !inNew) throw new UsageError("this hand sits in neither set — it may `grow witness`, never sign");
@@ -466,7 +465,7 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
       const idx = Number(args.options["index"] ?? "0");
       const note = args.options["note"];
       if (!note) throw new UsageError("a witness mark carries a note — what stood observed (--note)");
-      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(larDataDir(), idx));
+      const hand = await transitionSignerFromSeed(await loadPersonaGroupRootSeed(idx));
       const holders = new Set([...p.oldKeys, ...(p.newKeys ?? [])].map((k) => k.toLowerCase()));
       if (holders.has(hand.signer.toLowerCase())) throw new UsageError("a keyholder attests as a party — `grow sign`, never witness");
       const mark: TransitionWitness = { witness: hand.signer, note, sig: await hand.sign(witnessSignBytes(core, note)) };
@@ -508,7 +507,6 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
 
 async function sealRotate(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
-  const dataDir = larDataDir();
   const doc = readNexusDoc(sealHome);
   const head = sealLineageHead(doc);
   if (!doc || !head) {
@@ -521,7 +519,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // a new one takes a chair by declaring a Handle and standing. Neither needs an admin verb, because the
   // reveal below must still match the head's PRE-COMMITMENT: a roster change only lands if the operator
   // pre-committed the successor key-set an epoch earlier, under the quorum that stood then.
-  const { kahu, seatedKeys } = await seatKahuFromVault(doc, dataDir, "drop");
+  const { kahu, seatedKeys } = await seatKahuFromVault(doc, "drop");
   if (kahu.length === 0) {
     throw new UsageError(
       "no persona stands for a chair — a rotation seats the roster that STANDS, and none does. " +

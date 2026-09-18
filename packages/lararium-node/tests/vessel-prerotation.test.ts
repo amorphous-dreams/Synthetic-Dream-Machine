@@ -44,7 +44,7 @@ describe("vessel-identity pre-rotation commitment (KERI n hook)", () => {
   it("commits the next-key digest at GENERATION (before first use)", async () => {
     const dataDir = freshDataDir();
     try {
-      const { verifyingKey } = await generateOrLoadVesselIdentity(dataDir);
+      const { verifyingKey } = await generateOrLoadVesselIdentity();
       const idDir = idDirOf(dataDir);
 
       const kelName  = find(idDir, ".vessel-kel");
@@ -72,12 +72,12 @@ describe("vessel-identity pre-rotation commitment (KERI n hook)", () => {
   it("does NOT retrofit a KEL onto a key that lacks one (no-retrofit guard)", async () => {
     const dataDir = freshDataDir();
     try {
-      await generateOrLoadVesselIdentity(dataDir);            // mints key + KEL
+      await generateOrLoadVesselIdentity();            // mints key + KEL
       const idDir = idDirOf(dataDir);
       rmSync(join(idDir, find(idDir, ".vessel-kel")!));      // simulate a pre-pre-rotation key
       expect(find(idDir, ".vessel-kel")).toBeUndefined();
 
-      await expect(generateOrLoadVesselIdentity(dataDir)).resolves.toBeTruthy(); // load: no throw
+      await expect(generateOrLoadVesselIdentity()).resolves.toBeTruthy(); // load: no throw
       expect(find(idDir, ".vessel-kel"), "no KEL retrofitted").toBeUndefined();  // no fake
     } finally {
       rmSync(dirname(dataDir), { recursive: true, force: true });

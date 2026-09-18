@@ -52,33 +52,33 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("founding mints TWO distinct keys — the place's and the human's", async () => {
-    await generateOrLoadVesselIdentity(dataDir());
-    const vesselKey = await loadVesselVerifyingKey(dataDir());
-    const personaRoot = await generateOrLoadPersonaGroupRoot(dataDir());
+    await generateOrLoadVesselIdentity();
+    const vesselKey = await loadVesselVerifyingKey();
+    const personaRoot = await generateOrLoadPersonaGroupRoot();
 
     expect(personaRoot.created).toBe(true);
     // The two never share bytes — the persona root derives from its own CSPRNG draw, never the vessel seed.
     expect(personaRoot.verifyingKey).not.toBe(vesselKey);
-    const vesselSeed  = await loadVesselSigningSeed(dataDir());
-    const personaSeed = await loadPersonaGroupRootSeed(dataDir());
+    const vesselSeed  = await loadVesselSigningSeed();
+    const personaSeed = await loadPersonaGroupRootSeed();
     expect(Buffer.from(personaSeed).toString("hex")).not.toBe(Buffer.from(vesselSeed).toString("hex"));
   });
 
   test("the read-only accessor surfaces the human's face without minting one", async () => {
     // Before any root stands, the accessor READS nothing — a read never stands a sovereign key up.
-    expect(await loadPersonaGroupRootVerifyingKey(dataDir())).toBeUndefined();
+    expect(await loadPersonaGroupRootVerifyingKey()).toBeUndefined();
 
-    const minted = await generateOrLoadPersonaGroupRoot(dataDir());
-    expect(await loadPersonaGroupRootVerifyingKey(dataDir())).toBe(minted.verifyingKey);
+    const minted = await generateOrLoadPersonaGroupRoot();
+    expect(await loadPersonaGroupRootVerifyingKey()).toBe(minted.verifyingKey);
     // A second handle-index still holds nothing — the accessor never widens custody by being called.
-    expect(await loadPersonaGroupRootVerifyingKey(dataDir(), 1)).toBeUndefined();
+    expect(await loadPersonaGroupRootVerifyingKey(1)).toBeUndefined();
   });
 
   test("the persona root SIGNS the edge that binds the vessel to the hearth's True Name", async () => {
-    await generateOrLoadVesselIdentity(dataDir());
-    const vesselKey   = await loadVesselVerifyingKey(dataDir());
-    const personaRoot = await generateOrLoadPersonaGroupRoot(dataDir());
-    const signerSeed  = await loadPersonaGroupRootSeed(dataDir());
+    await generateOrLoadVesselIdentity();
+    const vesselKey   = await loadVesselVerifyingKey();
+    const personaRoot = await generateOrLoadPersonaGroupRoot();
+    const signerSeed  = await loadPersonaGroupRootSeed();
 
     const issuedAt  = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
@@ -102,10 +102,10 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("pinning the VESSEL key REFUSES the edge — the two names never substitute", async () => {
-    await generateOrLoadVesselIdentity(dataDir());
-    const vesselKey  = await loadVesselVerifyingKey(dataDir());
-    await generateOrLoadPersonaGroupRoot(dataDir());
-    const signerSeed = await loadPersonaGroupRootSeed(dataDir());
+    await generateOrLoadVesselIdentity();
+    const vesselKey  = await loadVesselVerifyingKey();
+    await generateOrLoadPersonaGroupRoot();
+    const signerSeed = await loadPersonaGroupRootSeed();
 
     const issuedAt  = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 86_400_000).toISOString();
@@ -121,12 +121,12 @@ describe("the True Name Model — vessel, persona root, and the edge that binds 
   });
 
   test("a re-read of the vessel key loads the SAME place — founding never re-mints it", async () => {
-    const first = await generateOrLoadVesselIdentity(dataDir());
-    const again = await generateOrLoadVesselIdentity(dataDir());
+    const first = await generateOrLoadVesselIdentity();
+    const again = await generateOrLoadVesselIdentity();
     expect(again.verifyingKey).toBe(first.verifyingKey);
     // The persona root is idempotent per index the same way — a second call loads, never mints.
-    const minted = await generateOrLoadPersonaGroupRoot(dataDir());
-    const loaded = await generateOrLoadPersonaGroupRoot(dataDir());
+    const minted = await generateOrLoadPersonaGroupRoot();
+    const loaded = await generateOrLoadPersonaGroupRoot();
     expect(minted.created).toBe(true);
     expect(loaded.created).toBe(false);
     expect(loaded.verifyingKey).toBe(minted.verifyingKey);

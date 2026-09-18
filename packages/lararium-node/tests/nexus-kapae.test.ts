@@ -65,8 +65,8 @@ function seatCharter(keys: string[], threshold = 2): void {
 
 describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   it("RAISE → board → fold → isKapaed: a 2-of-3 held-root ban Kapae's the victim", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
 
     const res = await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
@@ -83,8 +83,8 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("un_kapae at a STRICTLY HIGHER version LIFTS the standing ban", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
 
     await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });   // ban @ v1
@@ -104,8 +104,8 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("SUB-QUORUM REFUSES: one held root against a 2-of-3 roster writes NOTHING", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const held = await generateOrLoadPersonaGroupRoot(larDataDir(), 0);   // the ONLY held root
+    await generateOrLoadVesselIdentity();
+    const held = await generateOrLoadPersonaGroupRoot(0);   // the ONLY held root
     // Two roster co-signers the vessel does NOT hold — real ed25519 keys, just not in this vault.
     const stranger1 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(7)));
     const stranger2 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
@@ -121,16 +121,16 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
   });
 
   it("UNSEATED charter REFUSES: no roster to root a ban on", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    await generateOrLoadPersonaGroupRoot(larDataDir(), 0);
+    await generateOrLoadVesselIdentity();
+    await generateOrLoadPersonaGroupRoot(0);
     // No seatCharter — the authority home is absent.
     await expect(runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusKapaeError);
   });
 
   it("a malformed nym REFUSES before any quorum work", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
     await expect(runNexusKapae({ action: "kapae", nym: "not-a-key", sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusKapaeError);

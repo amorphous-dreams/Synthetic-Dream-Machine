@@ -69,7 +69,7 @@ import {
 } from "@lararium/tw5";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
-import { vesselDid, larDataDir } from "../env.js";
+import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { readVerbOutcome, summaryOutput } from "../verb-result.js";
 import { emit, exitFor } from "../render.js";
@@ -807,8 +807,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
   const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
 
   const did     = await vesselDid();
-  const dataDir = larDataDir();
-  const seedKey = await loadVesselVerifyingKey(dataDir);
+  const seedKey = await loadVesselVerifyingKey();
   // The record's title, read once for the CAP REHEARSAL — the crossing re-reads the carrier for itself, and
   // a rehearsal needs a title to name. An unreadable carrier falls through to the crossing's own refusal.
   const abs   = isAbsolute(file) ? file : join(root, file);
@@ -844,7 +843,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
       const r = await summonMove(m, false);
       return r.ok ? { ok: true, moved: 1 } : { ok: false, reason: r.reason };
     },
-    sign: ed25519SignerFromSeed(await loadVesselSigningSeed(dataDir)),
+    sign: ed25519SignerFromSeed(await loadVesselSigningSeed()),
   };
 
   let outcome;

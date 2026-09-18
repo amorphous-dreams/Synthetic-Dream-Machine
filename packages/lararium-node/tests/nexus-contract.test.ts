@@ -67,9 +67,9 @@ function seatCharter(keys: string[], threshold = 2): void {
 
 describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   it("ADMIT (self-contract) → board → fold → holdsCarriage: a 2-of-3 held-root admit contracts the operator", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
+    await generateOrLoadVesselIdentity();
     // The vessel holds 4 persona-roots: 0-2 are the founding kahu; 3 is the joining operator it self-contracts.
-    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = roots[3]!.verifyingKey.toLowerCase();
 
@@ -86,8 +86,8 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("accept-carriage → admit --contract: a joiner's out-of-band token admits it", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
 
     // The joiner mints its 'accepts carriage' token (index 3 on this same vessel stands in for the joiner's vessel).
@@ -98,8 +98,8 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("REVOKE at a higher version drops membership", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const joinerNym = roots[3]!.verifyingKey.toLowerCase();
 
@@ -113,8 +113,8 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("SUB-QUORUM admit REFUSES (one held root against a 2-of-3 roster) — nothing written", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const held = await generateOrLoadPersonaGroupRoot(larDataDir(), 0);
+    await generateOrLoadVesselIdentity();
+    const held = await generateOrLoadPersonaGroupRoot(0);
     const s1 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(7)));
     const s2 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
     seatCharter([held.verifyingKey, s1, s2]);
@@ -127,15 +127,15 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
   });
 
   it("UNSEATED charter REFUSES", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    await generateOrLoadPersonaGroupRoot(larDataDir(), 0);
+    await generateOrLoadVesselIdentity();
+    await generateOrLoadPersonaGroupRoot(0);
     await expect(runNexusContract({ action: "admit", nym: "ab".repeat(32), contractSig: "00".repeat(64), sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusContractError);
   });
 
   it("admit for a NON-HELD nym with NO --contract REFUSES (no conscription — WAX-SEALS-ONLY)", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
     const foreign = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(42)));   // not a held persona
     await expect(runNexusContract({ action: "admit", nym: foreign, sealHome: sealHome() }))
@@ -145,8 +145,8 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
 describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SELF-SLOT-B lit)", () => {
   it("the holder reads a seated kahu AND an admitted non-kahu operator as MEMBER (no-global-now: off the local replica)", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     const kahuNym   = roots[0]!.verifyingKey.toLowerCase();
     const joinerNym = roots[3]!.verifyingKey.toLowerCase();
@@ -155,7 +155,7 @@ describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SE
     await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
 
     // Stand the membership holder over the SAME store (its own replica, as-of-last-sync) + the SAME board.
-    const nexusPubkey = await loadVesselVerifyingKey(larDataDir());
+    const nexusPubkey = await loadVesselVerifyingKey();
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const peerMap = new Map<string, string>([
       ["peer-kahu",   `prefix:${kahuNym}`],     // a seated kahu → MEMBER (the floor)
@@ -172,10 +172,10 @@ describe("the members{} ∪ kahu-floor UNION — the sharePolicy member gate (SE
   });
 
   it("no-global-now — an EMPTY local replica (unsynced board, unseated charter) reads NOBODY member (fail-closed-stale)", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1].map((i) => generateOrLoadPersonaGroupRoot(i)));
     // No seatCharter, no admit — the local replica is blank (as-of-a-sync-that-never-happened).
-    const nexusPubkey = await loadVesselVerifyingKey(larDataDir());
+    const nexusPubkey = await loadVesselVerifyingKey();
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const peerMap = new Map<string, string>([["peer-kahu", `prefix:${roots[0]!.verifyingKey.toLowerCase()}`]]);
     const holder = makeNexusMembership({ sealHome: sealHome(), peerIdentifierMap: peerMap, repo, nexusPubkey });
@@ -198,8 +198,8 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
 
   /** Three seated kahu keys from this vessel's own vault — the founding shape every case here needs. */
   async function threeKeys(): Promise<string[]> {
-    await generateOrLoadVesselIdentity(larDataDir());
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(larDataDir(), i)));
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     return roots.map((r) => r.verifyingKey);
   }
 

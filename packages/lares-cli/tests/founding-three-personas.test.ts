@@ -84,7 +84,7 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
     for (let i = 0; i < KAHU.length; i++) {
       expect(await cmdPersona(personaArgs(["new", String(i)], { name: LABELS[i]!, handle: KAHU[i]! }, { seat: true }))).toBe(0);
     }
-    expect(await listPersonaRoots(larDataDir())).toEqual([0, 1, 2]);
+    expect(await listPersonaRoots()).toEqual([0, 1, 2]);
 
     const petnames = await makeNodePersonaPetnameStore();
     const declarations = await makeNodePersonaDeclarationStore();
@@ -114,12 +114,12 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
 
   test("persona new 0 on a PRE-STANDING founder LOADS + names it (idempotent — same key, never re-minted)", async () => {
     // The founding STANDS h0's operator-root before the operator ever runs `persona new`.
-    const founder = await generateOrLoadPersonaGroupRoot(larDataDir(), 0);
+    const founder = await generateOrLoadPersonaGroupRoot(0);
     expect(founder.created).toBe(true);
 
     // `persona new 0` LOADS that same root (never re-mints) AND lands both the label and the declaration.
     expect(await cmdPersona(personaArgs(["new", "0"], { name: LABELS[0]!, handle: KAHU[0]! }, { seat: true }))).toBe(0);
-    const reloaded = await generateOrLoadPersonaGroupRoot(larDataDir(), 0);
+    const reloaded = await generateOrLoadPersonaGroupRoot(0);
     expect(reloaded.created).toBe(false);
     expect(reloaded.verifyingKey).toBe(founder.verifyingKey);   // the founder key is unchanged — loaded, not re-minted
 

@@ -83,7 +83,7 @@ describe("multi-persona-per-vessel (#63)", () => {
   });
 
   test("UNIFORM keying — the founding persona spells `-h0`, its mint records the explicit roster, selector unset reads undefined", async () => {
-    const founding = await generateOrLoadPersonaGroupRoot(dataDir());   // default index 0
+    const founding = await generateOrLoadPersonaGroupRoot();   // default index 0
     expect(founding.created).toBe(true);
 
     const idDir = larIdentityDir();
@@ -92,61 +92,61 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(rootFiles[0], "uniform keying — the founding persona carries the -h0 suffix").toMatch(/-h0\.json$/);
 
     // The roster is the store's OWN explicit written record (no dir-scan), and the mint recorded index 0.
-    expect(await listPersonaRoots(dataDir())).toEqual([0]);
+    expect(await listPersonaRoots()).toEqual([0]);
 
     // No selector has landed, so the vessel wears NONE yet — undefined, never a silently-inferred founding.
     expect(existsSync(join(idDir, ".active-persona.json")) || readdirSync(idDir).some((f) => f.startsWith(".active-persona"))).toBe(false);
-    expect(await loadActivePersonaIndex(dataDir())).toBeUndefined();
+    expect(await loadActivePersonaIndex()).toBeUndefined();
   });
 
   test("a vessel HOLDS two distinct persona-roots (multitude-of-one), each its own sovereign key", async () => {
-    const p0 = await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-    const p1 = await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+    const p0 = await generateOrLoadPersonaGroupRoot(0);
+    const p1 = await generateOrLoadPersonaGroupRoot(1);
     expect(p0.created && p1.created).toBe(true);
     expect(p0.verifyingKey).not.toBe(p1.verifyingKey);       // two DISTINCT quorum-identities
 
     // Idempotent per index — a reload returns the SAME key, created:false, and never crosses indices.
-    const p1b = await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+    const p1b = await generateOrLoadPersonaGroupRoot(1);
     expect(p1b.created).toBe(false);
     expect(p1b.verifyingKey).toBe(p1.verifyingKey);
 
     // Each seed signs AS its own persona: its ed25519 public key matches its OWN root, differs from the other.
-    const seed0 = await loadPersonaGroupRootSeed(dataDir(), 0);
-    const seed1 = await loadPersonaGroupRootSeed(dataDir(), 1);
+    const seed0 = await loadPersonaGroupRootSeed(0);
+    const seed1 = await loadPersonaGroupRootSeed(1);
     expect(await pubHexOf(seed0)).toBe(p0.verifyingKey);
     expect(await pubHexOf(seed1)).toBe(p1.verifyingKey);
     expect(await pubHexOf(seed0)).not.toBe(await pubHexOf(seed1));
 
-    expect(await listPersonaRoots(dataDir())).toEqual([0, 1]);
+    expect(await listPersonaRoots()).toEqual([0, 1]);
   });
 
   test("WEAR a mask — switch the active persona, and it survives (persisted outside the wipe)", async () => {
-    await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-    await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+    await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
 
-    expect(await loadActivePersonaIndex(dataDir())).toBeUndefined();   // nothing worn yet — no inference
-    await wearPersona(dataDir(), 1);
-    expect(await loadActivePersonaIndex(dataDir())).toBe(1);   // the mask is on
-    await wearPersona(dataDir(), 0);
-    expect(await loadActivePersonaIndex(dataDir())).toBe(0);   // and off again — the house beneath unchanged
+    expect(await loadActivePersonaIndex()).toBeUndefined();   // nothing worn yet — no inference
+    await wearPersona(1);
+    expect(await loadActivePersonaIndex()).toBe(1);   // the mask is on
+    await wearPersona(0);
+    expect(await loadActivePersonaIndex()).toBe(0);   // and off again — the house beneath unchanged
   });
 
   test("custody wall in mask form — cannot WEAR a persona whose root the vessel does not hold", async () => {
-    await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-    expect(await personaRootExists(dataDir(), 7)).toBe(false);
-    await expect(wearPersona(dataDir(), 7)).rejects.toThrow(/no persona-root held/);
+    await generateOrLoadPersonaGroupRoot(0);
+    expect(await personaRootExists(7)).toBe(false);
+    await expect(wearPersona(7)).rejects.toThrow(/no persona-root held/);
     // The custody guard reads uniformly — index 0 wears only because its root was just minted (held).
-    await expect(wearPersona(dataDir(), 0)).resolves.toBeUndefined();
+    await expect(wearPersona(0)).resolves.toBeUndefined();
   });
 
   test("handle-index guard rejects out-of-range indices (SLIP-0010 hardened ceiling)", async () => {
-    await expect(generateOrLoadPersonaGroupRoot(dataDir(), -1)).rejects.toThrow(/out of range/);
-    await expect(generateOrLoadPersonaGroupRoot(dataDir(), 0x80000000)).rejects.toThrow(/out of range/);
+    await expect(generateOrLoadPersonaGroupRoot(-1)).rejects.toThrow(/out of range/);
+    await expect(generateOrLoadPersonaGroupRoot(0x80000000)).rejects.toThrow(/out of range/);
   });
 
   test("recovery splits PER persona — persona-1's quorum reconstructs persona-1's root, not persona-0's", async () => {
-    await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-    await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+    await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
 
     const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir(), seededRng(11), 1, 1);
 
@@ -158,8 +158,8 @@ describe("multi-persona-per-vessel (#63)", () => {
     const codeShare:   RecoveryShare = { bytes: decodeShareBytes(recordedCode),  custodian: "recorded-code", recoveryEpoch: 1 };
     const escrowShare: RecoveryShare = { bytes: decodeShareBytes(escrowCarrier), custodian: "escrow-peer",   recoveryEpoch: 1 };
     const recovered = reconstructFromQuorum(assembleQuorum([codeShare, escrowShare], 2));
-    expect([...recovered]).toEqual([...await loadPersonaGroupRootSeed(dataDir(), 1)]);
-    expect([...recovered]).not.toEqual([...await loadPersonaGroupRootSeed(dataDir(), 0)]);
+    expect([...recovered]).toEqual([...await loadPersonaGroupRootSeed(1)]);
+    expect([...recovered]).not.toEqual([...await loadPersonaGroupRootSeed(0)]);
   });
 
   test("veiled-Handle anchors extend to a SET — each persona anchors to its OWN PersonaGroup", () => {
@@ -183,10 +183,10 @@ describe("multi-persona-per-vessel (#63)", () => {
    */
   describe("the wear-reboot mount-switch — a reboot mounts the face the operator WORE", () => {
     test("★ a worn NON-founding persona resolves ITS OWN mount material from anchors-hN ★", async () => {
-      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-      await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+      await generateOrLoadPersonaGroupRoot(0);
+      await generateOrLoadPersonaGroupRoot(1);
       persistIdentityAnchors(anchorsFor(1, true), 1);
-      await wearPersona(dataDir(), 1);
+      await wearPersona(1);
 
       const worn = await readWornPersonaMount(dataDir());
       expect(worn?.handleIndex).toBe(1);
@@ -198,22 +198,22 @@ describe("multi-persona-per-vessel (#63)", () => {
     });
 
     test("CONTROL — the FOUNDING face resolves NO switch: the daemon-doc pins already name h0", async () => {
-      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
+      await generateOrLoadPersonaGroupRoot(0);
       persistIdentityAnchors(anchorsFor(0, true), 0);
-      await wearPersona(dataDir(), 0);
+      await wearPersona(0);
       expect(await readWornPersonaMount(dataDir()), "h0 needs no re-pin — the pins are already its own").toBeNull();
     });
 
     test("CONTROL — anchors carrying NO mount material read as no switch (pre-slot anchors, or a joinee)", async () => {
-      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-      await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+      await generateOrLoadPersonaGroupRoot(0);
+      await generateOrLoadPersonaGroupRoot(1);
       persistIdentityAnchors(anchorsFor(1, false), 1);   // doc-ids only — no signer, prefix or edge
-      await wearPersona(dataDir(), 1);
+      await wearPersona(1);
       expect(await readWornPersonaMount(dataDir()), "a half-anchor never re-pins a mount").toBeNull();
     });
 
     test("CONTROL — wearing nothing resolves no switch (the selector is unset)", async () => {
-      await generateOrLoadPersonaGroupRoot(dataDir(), 0);
+      await generateOrLoadPersonaGroupRoot(0);
       expect(await readWornPersonaMount(dataDir())).toBeNull();
     });
   });

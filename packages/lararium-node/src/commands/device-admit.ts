@@ -39,7 +39,7 @@ export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive"
  *
  * ══ WHY IT IS NOT THE VESSEL KEY ═════════════════════════════════════════════════════════════════
  *
- * This read was spelled `personaKelBoardDocUrl(await loadVesselVerifyingKey(dir))`, under a comment
+ * This read was spelled `personaKelBoardDocUrl(await loadVesselVerifyingKey())`, under a comment
  * reading "its gate key IS its Nexus key." `91ce09afb` ruled that EVERY per-Nexus board keys on the
  * NEXUS, so that sentence holds at exactly ONE point on the gradient — the `own` island — and
  * nowhere above it. A founder that CLIMBED to a charter reads the PRIVATE board beneath its charter
@@ -160,7 +160,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!personaKelPrefix) {
     throw new Error(`[lares device-admit] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);
   }
-  const founderVesselKey = await loadVesselVerifyingKey(storageDir);
+  const founderVesselKey = await loadVesselVerifyingKey();
   const boardIsland      = admitBoardIsland(founderVesselKey);
   const kelBoard   = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
@@ -176,7 +176,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!opts.joineeVerifyingKey) {
     throw new Error("[lares device-admit] --joinee-key <hex> required — the joining vessel's public verifying key.");
   }
-  const signerSeed     = await loadPersonaGroupRootSeed(storageDir);
+  const signerSeed     = await loadPersonaGroupRootSeed();
   const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
   if (!hearthTrueName) {
     throw new Error("[lares device-admit] hearth true-name (engine CID) absent — run `lares vessel found` first.");

@@ -17,7 +17,7 @@ const IDENTITY  = join(REPO_ROOT, "packages/lararium-node/dist/src/node-vessel-i
 export function mintVesselKey(root: string): Promise<string> {
   const script =
     `import { generateOrLoadVesselIdentity } from ${JSON.stringify(IDENTITY)};\n` +
-    `const id = await generateOrLoadVesselIdentity(process.env.LAR_ROOT + "/data/lares/vessel");\n` +
+    `const id = await generateOrLoadVesselIdentity();\n` +
     `process.stdout.write("KEY " + id.verifyingKey + "\\n");\n`;
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ["--input-type=module", "-e", script], {

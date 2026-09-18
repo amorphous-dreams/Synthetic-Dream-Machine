@@ -2,7 +2,7 @@
  * device-admit must read the persona-KEL board AT THE ISLAND THE BOOT RESOLVED.
  *
  * ── THE LATENT READ ──────────────────────────────────────────────────────────────────────────────
- * `device-admit.ts` resolved its board as `personaKelBoardDocUrl(await loadVesselVerifyingKey(dir))`,
+ * `device-admit.ts` resolved its board as `personaKelBoardDocUrl(await loadVesselVerifyingKey())`,
  * under a comment reading "its gate key IS its Nexus key." After `91ce09afb` — every per-Nexus board
  * keys on the NEXUS — that sentence holds at exactly ONE point on the gradient, the `own` island,
  * and nowhere above it. A vessel that CLIMBED to a charter reads the PRIVATE board beneath its

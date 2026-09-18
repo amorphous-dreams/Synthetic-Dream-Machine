@@ -70,9 +70,11 @@ async function verifyHex(bytes: Uint8Array, sigHex: string, keyHex: string): Pro
 export async function runBootInviteMint(opts: {
   expiresInDays?: number; storageDir?: string; now?: Date;
 }): Promise<BootInvite> {
-  const storageDir  = opts.storageDir ?? larDataDir();
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
-  const seed        = await loadVesselSigningSeed(storageDir);
+  // `opts.storageDir` no longer feeds a local read — `loadVesselVerifyingKey`/`loadVesselSigningSeed`
+  // resolve the identity home off LAR_ROOT/XDG alone (Follow-on 3: `identityDir()` no longer takes a
+  // `dataDir`). The field stays on `opts` for call-site shape compatibility; nothing reads it here now.
+  const nexusPubkey = await loadVesselVerifyingKey();
+  const seed        = await loadVesselSigningSeed();
   const now         = opts.now ?? new Date();
   const expiresAt   = new Date(now.getTime() + (opts.expiresInDays ?? 14) * 86_400_000).toISOString();
   const nonce       = randomBytes(16).toString("hex");
@@ -92,7 +94,7 @@ export async function runBootInviteSpend(opts: {
   invite: BootInvite | null; policy?: BootInvitePolicy; storageDir?: string; now?: Date;
 }): Promise<BootVerdict> {
   const storageDir  = opts.storageDir ?? larDataDir();
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const verdict = await decideBootInvite({
     policy:      opts.policy ?? { kind: "invite-only" },
     nexusPubkey,

@@ -99,14 +99,14 @@ function seatedRosterOrRefuse(sealHome: string): KahuRoster {
  * threshold, distinct signers).
  */
 async function selectHeldQuorumSigners(
-  storageDir: string, roster: KahuRoster,
+  roster: KahuRoster,
 ): Promise<Array<{ handleIndex: number; verifyingKey: string }>> {
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
-  const indices    = await listPersonaRoots(storageDir);
+  const indices    = await listPersonaRoots();
   const candidates: Array<{ handleIndex: number; verifyingKey: string }> = [];
   const seen       = new Set<string>();
   for (const handleIndex of indices) {
-    const root = await generateOrLoadPersonaGroupRoot(storageDir, handleIndex);   // loads a HELD root; never mints here (founder-side)
+    const root = await generateOrLoadPersonaGroupRoot(handleIndex);   // loads a HELD root; never mints here (founder-side)
     const vk   = root.verifyingKey.toLowerCase();
     if (!rosterKeys.has(vk) || seen.has(vk)) continue;   // only a seated, not-yet-counted key counts toward quorum
     seen.add(vk);
@@ -137,9 +137,9 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
   }
 
   const roster   = seatedRosterOrRefuse(opts.sealHome);
-  const selected = await selectHeldQuorumSigners(storageDir, roster);
+  const selected = await selectHeldQuorumSigners(roster);
 
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const boardUrl    = kapaeAntigenDocUrl(nexusPubkey);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
@@ -154,7 +154,7 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
     // no key). loadPersonaGroupRootSeed reads founder-only custody; a joinee never reaches this branch.
     const signers = await Promise.all(selected.map(async (s) => ({
       signer: s.verifyingKey,
-      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, s.handleIndex)),
+      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
     })));
     const entry: KapaeAntigenEntry = await signAntigenEntry(
       { nym, action: opts.action, version, sealEpochCid: roster.sealEpochCid },
@@ -191,7 +191,7 @@ export async function runNexusKapaeList(opts: { sealHome: string; storageDir?: s
   const storageDir = opts.storageDir ?? larDataDir();
   const roster     = foundingRoster(readNexusDoc(opts.sealHome));
 
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
     const handle  = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(nexusPubkey), "board:kapae-antigen");

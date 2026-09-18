@@ -42,7 +42,7 @@ describe("the device share mints at the face founding", () => {
   });
 
   test("a founding mints the share; a re-found never re-mints; the reserve stays absent", async () => {
-    await generateOrLoadPersonaGroupRoot(root, 0);
+    await generateOrLoadPersonaGroupRoot(0);
     expect(loadRecoveryDeviceShare(0)).toBeNull();
 
     const first = await armRecoveryAtFounding(root, 0);
@@ -65,7 +65,7 @@ describe("the device share mints at the face founding", () => {
 
   test("under the seal policy the share lands sealed (passphrase), the same policy the veil rides", async () => {
     setEnv("LARES_ARCHIVE_PASSPHRASE", "founding-share-witness-passphrase");
-    await generateOrLoadPersonaGroupRoot(root, 1);
+    await generateOrLoadPersonaGroupRoot(1);
     const r = await armRecoveryAtFounding(root, 1);
     expect(r.minted).toBe(true);
     expect(isSealedEnvelope(readFileSync(deviceSharePath(1)))).toBe(true);

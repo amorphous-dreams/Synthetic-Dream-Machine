@@ -40,7 +40,7 @@ export async function cmdHerm(args: ParsedArgs): Promise<number> {
   // The gate pubkey the CLI can name up-front when the relay seed DEFAULTS to the Herm's own identity — a pinned
   // `--relay-seed` derives a different key inside the node, echoed from its log below (never re-derived here).
   let ownGateKey: string | null = null;
-  try { ownGateKey = await loadVesselVerifyingKey(dataDir); } catch { /* no identity yet */ }
+  try { ownGateKey = await loadVesselVerifyingKey(); } catch { /* no identity yet */ }
 
   const dialHint: string[] = [];
   let live = false;

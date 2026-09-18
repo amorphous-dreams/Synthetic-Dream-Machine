@@ -34,7 +34,6 @@ import {
   loadVesselSigningSeed, loadVesselVerifyingKey,
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
 } from "@lararium/node";
-import { larDataDir } from "../env.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -65,11 +64,10 @@ function printHop(label: string, hop: { carriage: string; terminalQr: string; qr
 
 export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
   const op = args.positional[1];
-  const dataDir = larDataDir();
   try {
     switch (op) {
       case "offer": {
-        const deviceVerifyingKey = await loadVesselVerifyingKey(dataDir);
+        const deviceVerifyingKey = await loadVesselVerifyingKey();
         const hop = await offerAdmitFlow({ deviceVerifyingKey });
         emit(args, { ok: true, data: { carriage: hop.carriage, ephemeralPubkey: hop.offer.ephemeralPubkey, expiry: hop.offer.expiry }, human: () => printHop("enrollment offer (hand QR#1 to the granting vessel)", hop) });
         return 0;
@@ -82,9 +80,9 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         if (!offerCarriage) throw new UsageError("grant needs --offer <carriage> (the target's QR#1)");
         if (!prefix) throw new UsageError("grant needs --prefix <persona-kel-aid> (the persona's stable identifier)");
         if (!Number.isInteger(index) || index < 0) throw new UsageError(`--index must be a non-negative integer (got "${idxRaw}")`);
-        const root = await generateOrLoadPersonaGroupRoot(dataDir, index);
+        const root = await generateOrLoadPersonaGroupRoot(index);
         const personaRef: PersonaRef = { prefix, verifyingKey: root.verifyingKey };
-        const personaSigner = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(dataDir, index));
+        const personaSigner = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(index));
         const r = await grantAdmitFlow({ offerCarriage, personaRef, personaSigner });
         if ("error" in r) throw new UsageError(r.error);
         emit(args, { ok: true, data: { carriage: r.carriage, oversized: r.qrOversized }, human: () => printHop("sealed grant (hand QR#2 back to the target vessel)", r) });
@@ -93,7 +91,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
       case "open": {
         const grantCarriage = String(args.options["grant"] ?? "");
         if (!grantCarriage) throw new UsageError("open needs --grant <carriage> (the granter's QR#2)");
-        const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed(dataDir));
+        const deviceSigner = ed25519SignerFromSeed(await loadVesselSigningSeed());
         const resolveHeadOpKey = await makeLocalPersonaKelHeadResolver();
         const r = await openAdmitFlow({ grantCarriage, resolveHeadOpKey, deviceSigner });
         if ("error" in r) throw new UsageError(r.error);

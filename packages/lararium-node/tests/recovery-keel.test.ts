@@ -147,7 +147,7 @@ describe("recovery-keel — founding provision against the real identity store",
 
   test("provision at founding: split the minted root, seal the device-share, recover from {code, escrow}", async () => {
     const dataDir = root;   // identityDir ignores it — the store resolves under XDG state
-    await generateOrLoadPersonaGroupRoot(dataDir);                    // the founding mint
+    await generateOrLoadPersonaGroupRoot();                    // the founding mint
     const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11));
 
     // The device-share landed sealed in the identity home; the two off-device carriers came back.
@@ -159,7 +159,7 @@ describe("recovery-keel — founding provision against the real identity store",
     const codeShare:   RecoveryShare = { bytes: decodeShareBytes(recordedCode),  custodian: "recorded-code", recoveryEpoch: 1 };
     const escrowShare: RecoveryShare = { bytes: decodeShareBytes(escrowCarrier), custodian: "escrow-peer",   recoveryEpoch: 1 };
     const recovered = reconstructFromQuorum(assembleQuorum([codeShare, escrowShare], 2));
-    expect([...recovered]).toEqual([...await loadPersonaGroupRootSeed(dataDir)]);
+    expect([...recovered]).toEqual([...await loadPersonaGroupRootSeed()]);
   });
 });
 
@@ -180,7 +180,7 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
   });
 
   test("founding: split the minted root into mine + guardian-A/B cards, seal 'mine', recover from the two guardians", async () => {
-    await generateOrLoadPersonaGroupRoot(dir);                       // the founding mint
+    await generateOrLoadPersonaGroupRoot();                       // the founding mint
     const { cards, mineSealed } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
 
     // The SAME card shape the charter reserve issues: three slots, three distinct custodians, human labels.
@@ -198,14 +198,14 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     const payload = await reconstructAndReadmit(quorum, readmitFields(freshVK));
 
     // The re-admit edge verifies against the ORIGINAL minted root — reconstruct-to-readmit, unchanged.
-    const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(await loadPersonaGroupRootSeed(dir))).toString("hex")}`;
+    const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(await loadPersonaGroupRootSeed())).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
     expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
     expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
   });
 
   test("ONE guardian card alone cannot recover — below threshold (fail closed)", async () => {
-    await generateOrLoadPersonaGroupRoot(dir);
+    await generateOrLoadPersonaGroupRoot();
     const { cards } = await provisionRecoveryCardsAtFounding(dir, "Ola", "Kai", seededRng(11));
     const one = [guardianShareFromCard(cards.find((c) => c.slot === "guardian-a")!, 1)];
     await expect(reconstructAndReadmit(one, readmitFields(freshDeviceKey()))).rejects.toThrow(/below threshold/);

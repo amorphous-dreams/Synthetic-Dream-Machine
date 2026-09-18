@@ -36,8 +36,8 @@ beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-join-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity(larDataDir());
-  await generateOrLoadPersonaGroupRoot(larDataDir());
+  await generateOrLoadVesselIdentity();
+  await generateOrLoadPersonaGroupRoot();
 });
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
@@ -61,7 +61,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
     expect(v.admitted).toBe(true);
     // The co-pay charges the hand that staked; an admission that forgot who vouched charges nobody.
-    expect(v.voucherDid).toBe((await loadPersonaGroupRootVerifyingKey(larDataDir(), 0))?.toLowerCase());
+    expect(v.voucherDid).toBe((await loadPersonaGroupRootVerifyingKey(0))?.toLowerCase());
   });
 
   it("refuses a joiner nobody vouched for — invite-only is the fail-closed default", async () => {

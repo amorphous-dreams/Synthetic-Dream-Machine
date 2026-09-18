@@ -40,8 +40,8 @@ beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-kapae-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity(larDataDir());
-  await generateOrLoadPersonaGroupRoot(larDataDir());
+  await generateOrLoadVesselIdentity();
+  await generateOrLoadPersonaGroupRoot();
 });
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
@@ -54,7 +54,7 @@ afterEach(async () => {
 async function boardState(authority: string) {
   const repo   = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
   const handle = await materializeSharedLarDoc(
-    repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey(larDataDir())), "board:edge-kapae");
+    repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
   const acts     = edgeKapaeActsFromBoard(handle.doc());
   // This harness holds no charter chain, and declares it rather than omitting the argument —
   // so the fold orders on version alone, which is exactly what these witnesses exercise.
@@ -69,7 +69,7 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
 
     expect(r.version).toBe(1);                     // a monotone counter starts where the law starts it
     expect(r.shadowStands).toBe(true);
-    expect(r.signerDid).toBe(await loadPersonaGroupRootVerifyingKey(larDataDir(), 0));
+    expect(r.signerDid).toBe(await loadPersonaGroupRootVerifyingKey(0));
 
     const { shadowed } = await boardState(r.signerDid);
     expect(shadowed.has(EDGE)).toBe(true);

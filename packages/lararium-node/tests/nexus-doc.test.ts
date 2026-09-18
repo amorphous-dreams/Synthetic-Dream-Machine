@@ -148,7 +148,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
 
   test("the private pet-name set by `persona new` round-trips through the node store", async () => {
     const petnames = await makeNodePersonaPetnameStore();
-    await generateOrLoadPersonaGroupRoot(root, 1);
+    await generateOrLoadPersonaGroupRoot(1);
     await renameOwnPersona(petnames, 1, "Kahu Beta");
     expect(await ownPersonaPetname(petnames, 1)).toBe("Kahu Beta");
   });
@@ -162,7 +162,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     const handles = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
     const labels  = ["work", "the-quiet-one", "burner"];
     for (let i = 0; i < handles.length; i++) {
-      await generateOrLoadPersonaGroupRoot(root, i);
+      await generateOrLoadPersonaGroupRoot(i);
       await renameOwnPersona(petnames, i, labels[i]!);
       await declarePersonaHandle(declarations, i, handles[i]!);
       await standForKahuSeat(declarations, i, true);
@@ -170,11 +170,11 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
 
     // Replicate the seat gesture the CLI runs: every persona that declared AND stood takes a chair under the
     // name it declared, keyed by the root it holds.
-    const held = new Set(await listPersonaRoots(root));
+    const held = new Set(await listPersonaRoots());
     const kahu: NexusCharterKahu[] = [];
     for (const [index, handle] of await personasStandingForSeat(declarations)) {
       if (!held.has(index)) continue;
-      const rt = await generateOrLoadPersonaGroupRoot(root, index);
+      const rt = await generateOrLoadPersonaGroupRoot(index);
       kahu.push({ displayName: handle, verifyingKey: rt.verifyingKey });
     }
     const seated    = kahu.map((k) => k.verifyingKey).filter((v): v is string => Boolean(v));

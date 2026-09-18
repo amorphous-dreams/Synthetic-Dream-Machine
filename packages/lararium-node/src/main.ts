@@ -262,7 +262,7 @@ async function main(): Promise<void> {
     // which is what keeps SEATED ⊥ RAISED true at rest (waking-floor#the-raise-is-a-vessel-layer-act).
     // The vessel's OWN verifying key names both sides here: it is the vessel a grant must answer for, and
     // the Nexus whose members board it reads. A Herm carrying a foreign Nexus names that Nexus instead.
-    const selfKey = await loadVesselVerifyingKey(storageDir);
+    const selfKey = await loadVesselVerifyingKey();
     const raiseDoor = standRaiseDoor({
       vesselId:   selfKey,
       nexus:      selfKey,
@@ -371,7 +371,7 @@ async function main(): Promise<void> {
   // The gate arms with this vessel's operator verifying key, so this vessel already HOLDS the one thing a
   // crossing leaf cannot obtain for itself. Printing it turns an unperformable ritual into an instruction.
   // The load runs idempotent — the same identity the gate armed with, read back, never a second one.
-  const gateIdentity = await generateOrLoadVesselIdentity(storageDir);
+  const gateIdentity = await generateOrLoadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
   for (const f of reachFaces) {
@@ -396,7 +396,7 @@ async function main(): Promise<void> {
   if (result.oracleDocUrl) {
     try {
       const oracleHandle = await result.repo.find(result.oracleDocUrl as AutomergeUrl);
-      const signerSeed   = await loadVesselSigningSeed(storageDir);
+      const signerSeed   = await loadVesselSigningSeed();
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
         onLog: (line) => console.log(`[lararium] ${line}`),

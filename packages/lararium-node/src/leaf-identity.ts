@@ -29,11 +29,11 @@ export type { LeafIdentity } from "@lararium/mesh";
  * when either artifact is absent — the caller must run `lares vessel found` first (it
  * generates the keypair and mints + caches the ContactCard).
  */
-export async function loadLeafIdentity(dataDir: string): Promise<LeafIdentity> {
+export async function loadLeafIdentity(): Promise<LeafIdentity> {
   const [seed, peerPubKey, contactCard] = await Promise.all([
-    loadVesselSigningSeed(dataDir),
-    loadVesselVerifyingKey(dataDir),
-    loadVesselCard(dataDir),
+    loadVesselSigningSeed(),
+    loadVesselVerifyingKey(),
+    loadVesselCard(),
   ]);
   return { contactCard, peerPubKey, sign: ed25519SignerFromSeed(seed) };
 }

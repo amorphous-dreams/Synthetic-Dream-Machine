@@ -101,14 +101,14 @@ function seatedRosterOrRefuse(sealHome: string): KahuRoster {
  * ever minted). Mirrors nexus-kapae `selectHeldQuorumSigners`.
  */
 async function selectHeldQuorumSigners(
-  storageDir: string, roster: KahuRoster,
+  roster: KahuRoster,
 ): Promise<Array<{ handleIndex: number; verifyingKey: string }>> {
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
-  const indices    = await listPersonaRoots(storageDir);
+  const indices    = await listPersonaRoots();
   const candidates: Array<{ handleIndex: number; verifyingKey: string }> = [];
   const seen       = new Set<string>();
   for (const handleIndex of indices) {
-    const root = await generateOrLoadPersonaGroupRoot(storageDir, handleIndex);   // loads a HELD root; never mints here
+    const root = await generateOrLoadPersonaGroupRoot(handleIndex);   // loads a HELD root; never mints here
     const vk   = root.verifyingKey.toLowerCase();
     if (!rosterKeys.has(vk) || seen.has(vk)) continue;
     seen.add(vk);
@@ -131,17 +131,17 @@ async function selectHeldQuorumSigners(
  * Neither → REFUSE (never admit an operator that has not consented to carriage).
  */
 async function resolveContractIn(
-  opts: NexusContractOptions, storageDir: string, nym: string, sealEpochCid: string,
+  opts: NexusContractOptions, nym: string, sealEpochCid: string,
 ): Promise<{ contractSig: QuorumSignature; how: "supplied" | "self" }> {
   if (opts.contractSig) {
     return { contractSig: { signer: nym, sig: opts.contractSig.trim().toLowerCase() }, how: "supplied" };
   }
   // multitude-of-one: does this vessel hold the admitted nym's seed? Then self-sign the carriage token.
-  for (const handleIndex of await listPersonaRoots(storageDir)) {
-    const root = await generateOrLoadPersonaGroupRoot(storageDir, handleIndex);
+  for (const handleIndex of await listPersonaRoots()) {
+    const root = await generateOrLoadPersonaGroupRoot(handleIndex);
     if (root.verifyingKey.toLowerCase() !== nym) continue;
     const contractSig = await signCarriageContract(
-      nym, sealEpochCid, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, handleIndex)),
+      nym, sealEpochCid, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)),
     );
     return { contractSig, how: "self" };
   }
@@ -192,13 +192,14 @@ async function resolveCarrierIn(
 export async function runNexusCarryFor(opts: {
   sealHome: string; storageDir?: string;
 }): Promise<{ nym: string; sealEpochCid: string; carrierSig: string }> {
-  const storageDir = opts.storageDir ?? larDataDir();
-  const roster     = foundingRoster(readNexusDoc(opts.sealHome));
+  // `opts.storageDir` no longer feeds a local read (Follow-on 3: identity resolves off LAR_ROOT/XDG
+  // alone). Kept on `opts` for call-site shape compatibility; nothing reads it here now.
+  const roster = foundingRoster(readNexusDoc(opts.sealHome));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
   }
-  const nym  = (await loadVesselVerifyingKey(storageDir)).toLowerCase();
-  const seed = await loadVesselSigningSeed(storageDir);
+  const nym  = (await loadVesselVerifyingKey()).toLowerCase();
+  const seed = await loadVesselSigningSeed();
   const sig  = await signCarrierContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(seed));
   return { nym, sealEpochCid: roster.sealEpochCid, carrierSig: sig.sig };
 }
@@ -216,18 +217,18 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   }
 
   const roster   = seatedRosterOrRefuse(opts.sealHome);
-  const selected = await selectHeldQuorumSigners(storageDir, roster);
+  const selected = await selectHeldQuorumSigners(roster);
 
   // The subject's own wax-seal — an ADMIT takes the operator's persona-signed contract-in, a CARRY takes the
   // place's vessel-signed carrier seal, and a REVOKE / UNCARRY takes none.
   let contract: { contractSig: QuorumSignature; how: "supplied" | "self" } | null = null;
   if (opts.action === "admit") {
-    contract = await resolveContractIn(opts, storageDir, nym, roster.sealEpochCid);
+    contract = await resolveContractIn(opts, nym, roster.sealEpochCid);
   } else if (opts.action === "carry") {
     contract = { contractSig: await resolveCarrierIn(opts, nym, roster.sealEpochCid), how: "supplied" };
   }
 
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const boardUrl    = carriageDocUrl(nexusPubkey);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
@@ -238,7 +239,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
 
     const signers = await Promise.all(selected.map(async (s) => ({
       signer: s.verifyingKey,
-      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, s.handleIndex)),
+      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
     })));
     const entry: CarriageEntry = await signCarriageQuorum(
       { nym, action: opts.action, version, sealEpochCid: roster.sealEpochCid },
@@ -339,7 +340,7 @@ export function readCarriageConsent(sealHome: string): CarriageConsent | null {
  * Grants nothing either way — this answers a reading, never a capability. It is held to this standard
  * because a vessel that misreports the relation it stands in is lying to its own operator.
  */
-export async function hasContractedInto(sealHome: string, storageDir?: string): Promise<boolean> {
+export async function hasContractedInto(sealHome: string): Promise<boolean> {
   const consent = readCarriageConsent(sealHome);
   if (!consent) return false;
 
@@ -348,9 +349,8 @@ export async function hasContractedInto(sealHome: string, storageDir?: string): 
 
   if (!(await verifyCarriageConsent(consent))) return false;
 
-  const dir = storageDir ?? larDataDir();
-  for (const index of await listPersonaRoots(dir)) {
-    const key = await loadPersonaGroupRootVerifyingKey(dir, index);
+  for (const index of await listPersonaRoots()) {
+    const key = await loadPersonaGroupRootVerifyingKey(index);
     if (key && key.toLowerCase() === consent.nym) return true;
   }
   return false;
@@ -359,15 +359,16 @@ export async function hasContractedInto(sealHome: string, storageDir?: string): 
 export async function runNexusAcceptCarriage(opts: {
   handleIndex: number; sealHome: string; storageDir?: string;
 }): Promise<{ nym: string; sealEpochCid: string; contractSig: string }> {
-  const storageDir = opts.storageDir ?? larDataDir();
-  const roster     = foundingRoster(readNexusDoc(opts.sealHome));
+  // `opts.storageDir` no longer feeds a local read (Follow-on 3). Kept on `opts` for call-site shape
+  // compatibility; nothing reads it here now.
+  const roster = foundingRoster(readNexusDoc(opts.sealHome));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage consent to — the Nexus must seat its charter first.");
   }
-  const root = await generateOrLoadPersonaGroupRoot(storageDir, opts.handleIndex);
+  const root = await generateOrLoadPersonaGroupRoot(opts.handleIndex);
   const nym  = root.verifyingKey.toLowerCase();
   const sig  = await signCarriageContract(
-    nym, roster.sealEpochCid, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, opts.handleIndex)),
+    nym, roster.sealEpochCid, ed25519SignerFromSeed(await loadPersonaGroupRootSeed(opts.handleIndex)),
   );
   // KEEP IT. The signature travels to the founding kahu, and a copy stays here so this vessel can read
   // its own half of the relation without a partner's document.
@@ -406,7 +407,7 @@ export async function runNexusMembersList(opts: { sealHome: string; storageDir?:
   // vessel's carriage: an operator consents to a Nexus at one epoch, never to every admit made
   // afterwards, and `nexus-contract` holds that "a Nexus cannot conscript an operator into carriage".
   // Whether two operators stand in a relation is a WHO-plane question and is answered elsewhere.
-  const ownKey      = (await loadVesselVerifyingKey(storageDir)).toLowerCase();
+  const ownKey      = (await loadVesselVerifyingKey()).toLowerCase();
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
     const handle  = await materializeSharedLarDoc(repo, carriageDocUrl(ownKey), "board:carriage-contracts");

@@ -24,7 +24,6 @@ import {
 } from "@lararium/mesh";
 
 import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../node-vessel-identity.js";
-import { larDataDir } from "../vessel-paths.js";
 
 export class RaiseSignError extends Error {}
 
@@ -65,9 +64,10 @@ export async function runRaiseSign(opts: {
       "and this signs nothing it cannot read whole.",
     );
   }
-  const storageDir = opts.storageDir ?? larDataDir();
-  const root = await generateOrLoadPersonaGroupRoot(storageDir, opts.handleIndex);
-  const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, opts.handleIndex));
+  // `opts.storageDir` no longer feeds a local read (Follow-on 3). Kept on `opts` for call-site shape
+  // compatibility; nothing reads it here now.
+  const root = await generateOrLoadPersonaGroupRoot(opts.handleIndex);
+  const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(opts.handleIndex));
   return signRaiseGrant({
     challenge,
     byNym: root.verifyingKey.toLowerCase(),

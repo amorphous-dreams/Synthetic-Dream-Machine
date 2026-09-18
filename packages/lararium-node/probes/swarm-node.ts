@@ -43,8 +43,8 @@ const TRANSPORT = RELAY ? `ws ${RELAY}` : `file ${DIR}`;
  *  points at a `lares vessel found`-founded dataDir; a deterministic test byte otherwise. */
 async function loadSeed(): Promise<Uint8Array> {
   if (ROOT) {
-    await generateOrLoadVesselIdentity(ROOT);   // mint this vessel's identity if absent (idempotent, = lares vessel found's mint)
-    const seed = await loadVesselSigningSeed(ROOT);
+    await generateOrLoadVesselIdentity();   // mint this vessel's identity if absent (idempotent, = lares vessel found's mint)
+    const seed = await loadVesselSigningSeed();
     console.log(`[swarm-node] using FOUNDED vessel identity from ${ROOT}`);
     return seed;
   }

@@ -60,7 +60,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const declarations = await makeNodePersonaDeclarationStore();
     const keys: string[] = [];
     for (let i = 0; i < KAHU.length; i++) {
-      const rt = await generateOrLoadPersonaGroupRoot(larDataDir(), i);
+      const rt = await generateOrLoadPersonaGroupRoot(i);
       await renameOwnPersona(petnames, i, `compartment-${i}`);
       await declarePersonaHandle(declarations, i, KAHU[i]!);
       await standForKahuSeat(declarations, i, true);
@@ -175,7 +175,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const declarations = await makeNodePersonaDeclarationStore();
 
     // Stand the fourth NOW, so its key exists to pre-commit against — then step it back until the rotation.
-    const fourth = await generateOrLoadPersonaGroupRoot(larDataDir(), 3);
+    const fourth = await generateOrLoadPersonaGroupRoot(3);
     await renameOwnPersona(petnames, 3, "compartment-3");
     await declarePersonaHandle(declarations, 3, "Kahu Delta");
     await standForKahuSeat(declarations, 3, false);
@@ -201,7 +201,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
 
     const petnames     = await makeNodePersonaPetnameStore();
     const declarations = await makeNodePersonaDeclarationStore();
-    await generateOrLoadPersonaGroupRoot(larDataDir(), 3);
+    await generateOrLoadPersonaGroupRoot(3);
     await renameOwnPersona(petnames, 3, "compartment-3");
     await declarePersonaHandle(declarations, 3, "Kahu Delta");
     await standForKahuSeat(declarations, 3, true);

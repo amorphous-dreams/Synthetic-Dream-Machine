@@ -54,7 +54,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     const keys: string[] = [];
     for (let i = 0; i < names.length; i++) {
       const idx = startAt + i;
-      const rt = await generateOrLoadPersonaGroupRoot(larDataDir(), idx);
+      const rt = await generateOrLoadPersonaGroupRoot(idx);
       await renameOwnPersona(petnames, idx, `compartment-${idx}`);
       await declarePersonaHandle(declarations, idx, names[i]!);
       await standForKahuSeat(declarations, idx, true);
@@ -68,7 +68,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     const founders = await stand(KAHU);
     expect((await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(founders, 2) }))) ).toBe(0);
     // Arm the succession: the four-key set, pre-committed an epoch ahead.
-    const rt3 = await generateOrLoadPersonaGroupRoot(larDataDir(), 3);
+    const rt3 = await generateOrLoadPersonaGroupRoot(3);
     const fourKeys = [...founders, rt3.verifyingKey];
     expect((await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(fourKeys, 2) })))).toBe(0);
     const fromHead = sealLineageHead(readNexusDoc(larSealHome()))!;

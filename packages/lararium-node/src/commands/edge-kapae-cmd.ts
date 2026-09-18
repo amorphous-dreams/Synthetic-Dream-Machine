@@ -70,7 +70,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   if (edgeId.length === 0) throw new EdgeKapaeError("an edge id names the relationship to act on — none given.");
   if (epochCid.length === 0)  throw new EdgeKapaeError("an epochCid roots the act — none given (an act carries an order, never an instant).");
 
-  const held = await listPersonaRoots(storageDir);
+  const held = await listPersonaRoots();
   if (held.length === 0) {
     throw new EdgeKapaeError("no persona root held on this vessel — an act carries a signature, and this vessel signs with none.");
   }
@@ -79,12 +79,12 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     throw new EdgeKapaeError(`persona root ${handleIndex} is not held here (held: ${held.join(", ")}).`);
   }
 
-  const signerDid = await loadPersonaGroupRootVerifyingKey(storageDir, handleIndex);
+  const signerDid = await loadPersonaGroupRootVerifyingKey(handleIndex);
   if (!signerDid) {
     throw new EdgeKapaeError(`persona root ${handleIndex} surfaces no usable verifying key — nothing to sign with.`);
   }
 
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const boardUrl    = edgeKapaeBoardDocUrl(nexusPubkey);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
@@ -101,7 +101,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
 
     const act = await signEdgeKapae(
       { edgeId, raised: opts.raised, version, epochCid },
-      ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, handleIndex)),
+      ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)),
     );
     handle.change((d) => writeEdgeKapae(d, act));
     await repo.flush();

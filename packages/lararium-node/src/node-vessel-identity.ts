@@ -78,8 +78,19 @@ import { nodeRecoveryShareStore } from "./recovery-share-store.js";
  * state home OUTSIDE any substrate wipe. `reset`/`regenesis`/`rebuild` reforge the
  * `<lares>/vessel` store; the key + card + anchors survive here, unreachable by any storage
  * verb. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
+ *
+ * TAKES NO `dataDir` — it never did, in effect: this resolver has always answered off
+ * `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never off a caller-supplied path. A `dataDir`
+ * parameter here USED to exist and be silently ignored, which is the exact footgun a prior spirit
+ * measured live (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per
+ * simulated vessel, in-process, with no matching `LAR_ROOT` mutation, silently read/wrote the REAL
+ * `~/.local/share/lares/identity` home instead of its intended isolated one. Removing the parameter
+ * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
+ * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to
+ * keep identity outside a `dataDir`'s own wipe zone, which is exactly the thing this file's storage
+ * law forbids. The ONE sanctioned in-process isolation pattern is now `tests/harness/with-lar-root.ts`.
  */
-function identityDir(_dataDir: string): string {
+function identityDir(): string {
   return larIdentityDir();
 }
 
@@ -239,10 +250,8 @@ function mintInceptionCommitment(currentVerifyingKey: string): {
  * cold-boot ceremony which writes the IdentityTiddler into IdentitiesDoc via
  * direct handle.change() — not through the TW5 sync adaptor (wrong island).
  */
-export async function generateOrLoadVesselIdentity(
-  dataDir: string,
-): Promise<VesselIdentity> {
-  const idDir = identityDir(dataDir);
+export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
+  const idDir = identityDir();
   mkdirSync(idDir, { recursive: true });
 
   const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
@@ -298,7 +307,7 @@ export async function generateOrLoadVesselIdentity(
  * inside the operator's trust domain.
  *
  * Throws when no key file exists — caller must call
- * `generateOrLoadVesselIdentity(dataDir)` first to ensure one is on disk.
+ * `generateOrLoadVesselIdentity()` first to ensure one is on disk.
  */
 /**
  * Load the operator's hex-encoded Ed25519 PUBLIC verifying key from disk.
@@ -309,9 +318,9 @@ export async function generateOrLoadVesselIdentity(
  * Keyhive-recognizable DID (`0x` + verifyingKey hex). Throws when no key
  * file exists.
  */
-export async function loadVesselVerifyingKey(dataDir: string): Promise<string> {
+export async function loadVesselVerifyingKey(): Promise<string> {
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const keyFile = join(identityDir(dataDir), keyFileName(hint.login));
+  const keyFile = join(identityDir(), keyFileName(hint.login));
   if (!existsSync(keyFile)) {
     throw new Error(
       `[vessel-identity] no key file at ${keyFile} — run \`lares vessel found\` first to generate the keypair`,
@@ -336,8 +345,8 @@ function cardFileName(login: string | null): string {
  * OP-AP5). The card carries no expiry/nonce, so the cache never goes stale; proof
  * freshness rides the per-challenge nonce, never the card.
  */
-export async function persistVesselCard(dataDir: string, contactCardJson: string): Promise<void> {
-  const idDir = identityDir(dataDir);
+export async function persistVesselCard(contactCardJson: string): Promise<void> {
+  const idDir = identityDir();
   mkdirSync(idDir, { recursive: true });
   const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   const cardFile = join(idDir, cardFileName(hint.login));
@@ -350,9 +359,9 @@ export async function persistVesselCard(dataDir: string, contactCardJson: string
  * Load the operator's cached ContactCard JSON. Throws when absent — the caller
  * must run `lares vessel found` (which mints + persists it during the founding ceremony).
  */
-export async function loadVesselCard(dataDir: string): Promise<string> {
+export async function loadVesselCard(): Promise<string> {
   const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const cardFile = join(identityDir(dataDir), cardFileName(hint.login));
+  const cardFile = join(identityDir(), cardFileName(hint.login));
   if (!existsSync(cardFile)) {
     throw new Error(
       `[vessel-identity] no ContactCard at ${cardFile} — run \`lares vessel found\` (it mints the card during the founding ceremony)`,
@@ -361,9 +370,9 @@ export async function loadVesselCard(dataDir: string): Promise<string> {
   return readFileSync(cardFile, "utf8");
 }
 
-export async function loadVesselSigningSeed(dataDir: string): Promise<Uint8Array> {
+export async function loadVesselSigningSeed(): Promise<Uint8Array> {
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const keyFile = join(identityDir(dataDir), keyFileName(hint.login));
+  const keyFile = join(identityDir(), keyFileName(hint.login));
   if (!existsSync(keyFile)) {
     throw new Error(
       `[vessel-identity] no key file at ${keyFile} — run \`lares vessel found\` first to generate the keypair`,
@@ -497,10 +506,10 @@ export type PersonaGroupRoot = PersonaRoot;
 /**
  * Generate or load the PersonaGroup-root keypair at `handleIndex` (the operator-root delegation
  * capability). FOUNDER-ONLY — a joining vessel receives the founder's public DID + a signed delegation
- * edge at admit instead. Thin wrapper over the mesh core flow; `dataDir` rides the call-site contract
- * (the identity home resolves under XDG state, outside the substrate wipe).
+ * edge at admit instead. Thin wrapper over the mesh core flow — takes no `dataDir`; the identity home
+ * resolves under XDG state/`LAR_ROOT` alone, outside the substrate wipe (see `identityDir()`'s own doc).
  */
-export async function generateOrLoadPersonaGroupRoot(_dataDir: string, handleIndex = 0): Promise<PersonaGroupRoot> {
+export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<PersonaGroupRoot> {
   const vault  = await makeNodeFsPersonaVault();
   const result = await generateOrLoadPersonaRoot(vault, nodeKeypairCrypto, handleIndex);
   console.log(`[vessel-identity] ${result.created ? "minted" : "loaded"} PersonaGroup root (persona h${handleIndex})`);
@@ -512,7 +521,7 @@ export async function generateOrLoadPersonaGroupRoot(_dataDir: string, handleInd
  * returned bytes ARE the operator-root private key — the most sensitive secret on the vessel. Throws when
  * absent — mint via the founding ceremony first (a joinee never holds this).
  */
-export async function loadPersonaGroupRootSeed(_dataDir: string, handleIndex = 0): Promise<Uint8Array> {
+export async function loadPersonaGroupRootSeed(handleIndex = 0): Promise<Uint8Array> {
   return loadPersonaRootSeed(await makeNodeFsPersonaVault(), handleIndex);
 }
 
@@ -523,33 +532,32 @@ export async function loadPersonaGroupRootSeed(_dataDir: string, handleIndex = 0
  * there (a joinee pins the founder's DID + a signed edge instead of custodying a root).
  */
 export async function loadPersonaGroupRootVerifyingKey(
-  _dataDir: string,
   handleIndex = 0,
 ): Promise<string | undefined> {
   return loadPersonaRootVerifyingKey(await makeNodeFsPersonaVault(), handleIndex);
 }
 
 /** True when this vessel HOLDS a persona-root at `handleIndex` (founder-side custody). A joinee holds none. */
-export async function personaRootExists(_dataDir: string, handleIndex: number): Promise<boolean> {
+export async function personaRootExists(handleIndex: number): Promise<boolean> {
   return corePersonaRootExists(await makeNodeFsPersonaVault(), handleIndex);
 }
 
 /** Load the active-persona handle-index the vessel currently WEARS, or undefined when it wears none yet
  *  (no inference from an empty home — the caller decides any default). */
-export async function loadActivePersonaIndex(_dataDir: string): Promise<number | undefined> {
+export async function loadActivePersonaIndex(): Promise<number | undefined> {
   return coreLoadActivePersona(await makeNodeFsPersonaVault());
 }
 
 /** WEAR a persona — set the active handle-index ("put on a mask"). The custody-by-TYPE wall (uniform,
  *  no founding special-case): wearing REQUIRES that this vessel HOLD that persona-root. */
-export async function wearPersona(_dataDir: string, handleIndex: number): Promise<void> {
+export async function wearPersona(handleIndex: number): Promise<void> {
   await coreWearPersona(await makeNodeFsPersonaVault(), handleIndex);
   console.log(`[vessel-identity] wearing persona h${handleIndex}`);
 }
 
 /** The persona ROSTER — every handle-index this vessel HOLDS a root for, ascending, from the explicit
  *  written record. A one-persona vessel returns `[0]`; a joinee returns `[]`. */
-export async function listPersonaRoots(_dataDir: string): Promise<number[]> {
+export async function listPersonaRoots(): Promise<number[]> {
   return coreListPersonaRoots(await makeNodeFsPersonaVault());
 }
 

@@ -135,7 +135,7 @@ export async function runCabalJoin(
     throw new CabalJoinError(`the applicant reads as a 64-hex verifying key, got "${opts.applicant}"`);
   }
 
-  const vesselKey = await loadVesselVerifyingKey(storageDir);
+  const vesselKey = await loadVesselVerifyingKey();
   if (!vesselKey) {
     throw new CabalJoinError("this vessel surfaces no verifying key — no board to read the lineage from.");
   }

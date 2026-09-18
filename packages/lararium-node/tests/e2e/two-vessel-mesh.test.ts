@@ -47,6 +47,7 @@ import {
 import { InMemoryEventStore } from "@lararium/keyhive";
 import { runInit, runDeviceAdmit } from "../../src/index.js";
 import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
+import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation directories
@@ -108,16 +109,11 @@ function readBootstrap(bootstrapPath: string): BootstrapTiddlers {
   return (JSON.parse(raw.text ?? "{}") as { tiddlers?: BootstrapTiddlers }).tiddlers ?? {};
 }
 
-async function withLarRoot<T>(root: string, work: () => Promise<T>): Promise<T> {
-  const previous = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-  try {
-    return await work();
-  } finally {
-    if (previous === undefined) delete process.env["LAR_ROOT"];
-    else process.env["LAR_ROOT"] = previous;
-  }
-}
+// `withLarRoot` now lives at `tests/harness/with-lar-root.ts` — the ONE sanctioned in-process
+// vessel-identity isolation pattern (Follow-on 3: `identityDir()` no longer takes a `dataDir`, so
+// every isolated call here MUST run inside this wrapper or it reaches the REAL, non-isolated
+// `~/.local/share/lares/identity` home). Previously reinvented here and in
+// `persona-ring-cross-operator-admit.test.ts` near-identically; both now import the one copy.
 
 /** Open a bag doc from a SEPARATE repo — the reader's vantage, not the writer's.
  *
@@ -177,7 +173,7 @@ beforeAll(async () => {
   // ceremony stay photograph-inert, and why `runDeviceAdmit` refuses to run without that key.
   // `generateOrLoadVesselIdentity` reads through on a second call, so B's `runInit` below loads this
   // same identity rather than minting a second one.
-  const vesselB = await generateOrLoadVesselIdentity(VESSEL_B.storage);
+  const vesselB = await generateOrLoadVesselIdentity();
 
   // Step 3 — A's PersonaGroup root signs B's edge
   await withLarRoot(VESSEL_A.root, () => runDeviceAdmit({

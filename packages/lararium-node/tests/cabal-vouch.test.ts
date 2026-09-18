@@ -41,8 +41,8 @@ beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-vouch-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity(larDataDir());   // the REALM's key — scopes the board
-  await generateOrLoadPersonaGroupRoot(larDataDir()); // the HUMAN's face — the hand that stakes
+  await generateOrLoadVesselIdentity();   // the REALM's key — scopes the board
+  await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
 });
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
@@ -54,7 +54,7 @@ afterEach(async () => {
 /** Read the board back the way any consumer must — through the verifying read. */
 async function boardVouches(realm = REALM) {
   const repo   = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-  const handle = await materializeSharedLarDoc(repo, vouchBoardDocUrl(await loadVesselVerifyingKey(larDataDir())), "board:vouch-registry");
+  const handle = await materializeSharedLarDoc(repo, vouchBoardDocUrl(await loadVesselVerifyingKey()), "board:vouch-registry");
   const out    = await verifiedVouchesFromBoard(handle.doc(), realm, verify);
   await repo.flush();
   return out;
@@ -64,7 +64,7 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
   it("mints a vouch that reads back through the VERIFYING read, signed by the held face", async () => {
     const r = await runCabalVouch({ joiner: JOINER, realm: REALM, expiresAt: LATER }, NOW);
 
-    expect(r.voucherDid).toBe(await loadPersonaGroupRootVerifyingKey(larDataDir(), 0));
+    expect(r.voucherDid).toBe(await loadPersonaGroupRootVerifyingKey(0));
     expect(r.outDegreeFloor).toBe(1);
     expect(r.reMinted).toBe(false);
 
@@ -90,7 +90,7 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
   });
 
   it("REFUSES to vouch for itself — self-boosting is unrepresentable on a lineage", async () => {
-    const self = (await loadPersonaGroupRootVerifyingKey(larDataDir(), 0))!;
+    const self = (await loadPersonaGroupRootVerifyingKey(0))!;
     await expect(runCabalVouch({ joiner: self, realm: REALM, expiresAt: LATER }, NOW))
       .rejects.toThrow(CabalVouchError);
     expect(await boardVouches()).toHaveLength(0);   // and nothing landed

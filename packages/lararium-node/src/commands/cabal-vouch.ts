@@ -103,7 +103,7 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
 
   // WHICH FACE VOUCHES. A human holds a multitude; the vouch stakes ONE of them, named here rather than
   // guessed, because the standing it dilutes belongs to that face alone.
-  const held = await listPersonaRoots(storageDir);
+  const held = await listPersonaRoots();
   if (held.length === 0) {
     throw new CabalVouchError("no persona root held on this vessel — a vouch stakes a face, and this vessel holds none.");
   }
@@ -114,7 +114,7 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
 
   // The vault may hold a root it cannot surface a key for (a torn or half-written slot). Refuse rather than
   // vouch under a face nobody can verify — an unverifiable voucher yields a vouch the board's read drops.
-  const voucherDid = await loadPersonaGroupRootVerifyingKey(storageDir, handleIndex);
+  const voucherDid = await loadPersonaGroupRootVerifyingKey(handleIndex);
   if (!voucherDid || !NYM_RE.test(voucherDid.toLowerCase())) {
     throw new CabalVouchError(`persona root ${handleIndex} surfaces no usable verifying key — nothing to stake.`);
   }
@@ -122,13 +122,13 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
     throw new CabalVouchError("a face cannot vouch for itself — self-boosting is unrepresentable on a lineage.");
   }
 
-  const seed   = await loadPersonaGroupRootSeed(storageDir, handleIndex);
+  const seed   = await loadPersonaGroupRootSeed(handleIndex);
   const invite = await signCabalInvite(
     { realmDocIdHex: realm, joinerIdentityHex: joiner, voucherDid, expiresAt, boundEpoch },
     ed25519SignerFromSeed(seed),
   );
 
-  const nexusPubkey = await loadVesselVerifyingKey(storageDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const boardUrl    = vouchBoardDocUrl(nexusPubkey);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>

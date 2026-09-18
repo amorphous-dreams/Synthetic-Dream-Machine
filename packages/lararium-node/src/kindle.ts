@@ -120,7 +120,7 @@ export async function kindleFromBulb(args: {
 
   // 3. the DEVICE mints its OWN Ed25519 — HERE, on the cold device. The Herm never sees this key (serve fire, never
   //    key). A fresh storageDir → a fresh keypair → a NEW sovereign; the bulb supplies NO key to source it from.
-  const identity = await generateOrLoadVesselIdentity(storageDir);
+  const identity = await generateOrLoadVesselIdentity();
 
   // 4. build the cold-boot ceremony ON the device's own verifying key — the identity did:key derives from IT.
   const ceremony = buildCeremonyTiddlers(identity.verifyingKey, args.displayName);

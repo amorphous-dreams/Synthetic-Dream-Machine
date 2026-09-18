@@ -161,7 +161,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
   // and the operator would meet a herm where they left a hearth.
   //
   // Two records of one fact, and only one of them gets rewritten here. This says which.
-  const standingRoots = await listPersonaRoots(larDataDir()).catch(() => [] as number[]);
+  const standingRoots = await listPersonaRoots().catch(() => [] as number[]);
   if (standingRoots.length > 0) {
     console.log(`[lares vessel found] ${standingRoots.length} persona root(s) stand: ${standingRoots.join(", ")}`);
     console.log("  This bootstrap names none of them, so the vessel stands FACELESS at the waking floor.");
@@ -188,7 +188,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     );
   }
 
-  const operatorIdentity = await generateOrLoadVesselIdentity(storageDir);
+  const operatorIdentity = await generateOrLoadVesselIdentity();
   console.log(`[lares vessel found] operator verifyingKey  ${operatorIdentity.verifyingKey.slice(0, 16)}…`);
 
   const repo = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
@@ -207,7 +207,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     }
     // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
     // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
-    const admitSeed = await loadVesselSigningSeed(storageDir);
+    const admitSeed = await loadVesselSigningSeed();
     const { contactCardJson, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl } = await runApplyAdmitPayload({
       repo,
       vesselSeed: admitSeed,
@@ -245,7 +245,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     }), null, 2), "utf8");
     // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
     // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.
-    await persistVesselCard(storageDir, contactCardJson);
+    await persistVesselCard(contactCardJson);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
     persistIdentityAnchors({
@@ -274,13 +274,13 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
-  const vesselSeed = await loadVesselSigningSeed(storageDir);
+  const vesselSeed = await loadVesselSigningSeed();
 
   const place = await foundThePlace({ repo, vesselSeed, hearthTrueName });
 
   // Cache the vessel's ContactCard for the light leaf-identity path — a CLI/agent
   // re-presents it on every peer handshake without booting keyhive (OP-AP5).
-  await persistVesselCard(storageDir, place.contactCardJson);
+  await persistVesselCard(place.contactCardJson);
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -415,16 +415,16 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     throw new Error(`[lares persona new] hearth true-name (engine CID) absent from ${genesisDir} — the edge binds (device × hearthTrueName) and has nothing to bind to.`);
   }
 
-  const vesselIdentity = await generateOrLoadVesselIdentity(storageDir);
-  const vesselSeed     = await loadVesselSigningSeed(storageDir);
+  const vesselIdentity = await generateOrLoadVesselIdentity();
+  const vesselSeed     = await loadVesselSigningSeed();
   const repo           = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const daemonHandle   = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
 
   // The persona ROOT for THIS face — the human's side. It only ever SIGNS; the per-vessel key stays the
   // Individual. Each compartment carries its OWN sovereign signing key at its handle-index; the founding
   // face seats at h0.
-  await generateOrLoadPersonaGroupRoot(storageDir, handleIndex);
-  const signerSeed = await loadPersonaGroupRootSeed(storageDir, handleIndex);
+  await generateOrLoadPersonaGroupRoot(handleIndex);
+  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
 
   // The recovery leg arms with the root: the device share seals beside the veil, the two off-device
   // carriers say aloud that shares are keys and leave by the operator's hand.

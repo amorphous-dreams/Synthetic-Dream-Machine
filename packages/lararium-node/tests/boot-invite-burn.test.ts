@@ -35,7 +35,7 @@ afterEach(() => {
 
 describe("boot-invite burn — sealed, single-use, LOCAL", () => {
   it("mint → spend ADMITS once and burns the id; a SECOND spend refuses already-spent", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
+    await generateOrLoadVesselIdentity();
     const inv = await runBootInviteMint({});
     const id  = bootInviteId(inv);
 
@@ -50,7 +50,7 @@ describe("boot-invite burn — sealed, single-use, LOCAL", () => {
   });
 
   it("a GARBLED / null invite → no-invite (anon floor), and burns nothing", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
+    await generateOrLoadVesselIdentity();
     const v = await runBootInviteSpend({ invite: null });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("no-invite");
@@ -58,7 +58,7 @@ describe("boot-invite burn — sealed, single-use, LOCAL", () => {
   });
 
   it("a WRONG-NEXUS invite refuses (sealed for another Nexus)", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
+    await generateOrLoadVesselIdentity();
     const inv = await runBootInviteMint({});
     const foreign = { ...inv, nexusPubkey: "ff".repeat(32) };   // re-target it → the seal no longer binds this Nexus
     const v = await runBootInviteSpend({ invite: foreign });
@@ -68,7 +68,7 @@ describe("boot-invite burn — sealed, single-use, LOCAL", () => {
   });
 
   it("NO FEDERATED REGISTRY — the burn is a plain LOCAL file carrying only opaque ids", async () => {
-    await generateOrLoadVesselIdentity(larDataDir());
+    await generateOrLoadVesselIdentity();
     const inv = await runBootInviteMint({});
     await runBootInviteSpend({ invite: inv });
 

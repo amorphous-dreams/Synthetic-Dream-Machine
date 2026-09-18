@@ -66,8 +66,8 @@ describe("node persona pet-name stores (#64 stage 4)", () => {
   });
 
   test("the MULTITUDE-VIEW over the real fs vault: held roots + private labels + the one federated glamour", async () => {
-    await generateOrLoadPersonaGroupRoot(dataDir(), 0);
-    await generateOrLoadPersonaGroupRoot(dataDir(), 1);
+    await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
     const petnames = await makeNodePersonaPetnameStore();
     const publicStore = await makeNodePublicHandleStore();
     await renameOwnPersona(petnames, 0, "work");

@@ -127,7 +127,7 @@ export function larPort(): number {
  */
 export async function vesselDid(): Promise<string> {
   try {
-    return "0x" + (await loadVesselVerifyingKey(larDataDir()));
+    return "0x" + (await loadVesselVerifyingKey());
   } catch {
     throw new Error(`no vessel key under ${larDataDir()} — run \`lares vessel found\` (or point LAR_ROOT at an initialized instance)`);
   }
@@ -143,7 +143,7 @@ export async function vesselDid(): Promise<string> {
  * DID plus a signed edge instead of a root, and an unfounded vessel holds neither.
  */
 export async function personaRootDid(handleIndex = 0): Promise<string> {
-  const vk = await loadPersonaGroupRootVerifyingKey(larDataDir(), handleIndex).catch(() => undefined);
+  const vk = await loadPersonaGroupRootVerifyingKey(handleIndex).catch(() => undefined);
   if (!vk) {
     throw new Error(
       `no persona root h${handleIndex} under ${larDataDir()} — this vessel custodies no operator root ` +

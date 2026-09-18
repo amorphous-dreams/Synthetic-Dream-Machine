@@ -66,6 +66,7 @@ import {
 } from "../../dist/src/index.js";
 import { generateOrLoadVesselIdentity } from "../../dist/src/node-vessel-identity.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
+import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -90,16 +91,9 @@ if (!existsSync(join(BUILT_GENESIS, "island.cid-engine"))) {
 }
 shipHearthEngine(FOUNDER.genesis);
 
-async function withLarRoot<T>(root: string, work: () => Promise<T>): Promise<T> {
-  const previous = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-  try {
-    return await work();
-  } finally {
-    if (previous === undefined) delete process.env["LAR_ROOT"];
-    else process.env["LAR_ROOT"] = previous;
-  }
-}
+// `withLarRoot` now lives at `tests/harness/with-lar-root.ts` — the ONE sanctioned in-process
+// vessel-identity isolation pattern (Follow-on 3). Previously reinvented here and in
+// `two-vessel-mesh.test.ts` near-identically; both now import the one copy.
 
 /** A cross-operator peer's real Keyhive identity — the SAME machinery `face-join-pair.test.ts` uses,
  *  wired here to a `LeafIdentity` for the real WS/V3 proof exchange. */
@@ -170,12 +164,15 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
       throw new Error("[persona-ring-cross-operator-admit] founding face carries no anchors — runFoundTheFace did not land a face");
     }
     personaGroupDocIdHex = anchors.personaGroupDocIdHex;
-    // `identityDir()` (node-vessel-identity.ts) ignores its `dataDir` argument and resolves purely off
-    // `LAR_ROOT` (`larIdentityDir()`) — so EVERY vessel-identity read/write MUST run inside `withLarRoot`,
+    // `identityDir()` (node-vessel-identity.ts) takes NO `dataDir` and resolves purely off `LAR_ROOT`
+    // (`larIdentityDir()`) — a `dataDir` parameter used to exist there and be silently ignored (this
+    // comment originally measured that live), and Follow-on 3 removed it rather than honoring it, since
+    // honoring it would need a second address-derivation scheme this file's storage law forbids. So EVERY
+    // vessel-identity read/write MUST still run inside `withLarRoot` (now `tests/harness/with-lar-root.ts`),
     // or it silently reaches the real, non-isolated `~/.local/share/lares/identity` home instead of this
     // test's isolated vessel.
-    const founderSeed = await withLarRoot(FOUNDER.root, () => loadVesselSigningSeed(FOUNDER.storage));
-    const founderIdentity = await withLarRoot(FOUNDER.root, () => generateOrLoadVesselIdentity(FOUNDER.storage));
+    const founderSeed = await withLarRoot(FOUNDER.root, () => loadVesselSigningSeed());
+    const founderIdentity = await withLarRoot(FOUNDER.root, () => generateOrLoadVesselIdentity());
     gatePubKey = founderIdentity.verifyingKey;
 
     // ── Mint the grant-holder's identity + a REAL, live-published face-join-grant/v1 record ───

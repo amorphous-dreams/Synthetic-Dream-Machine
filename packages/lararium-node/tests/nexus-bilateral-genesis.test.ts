@@ -91,9 +91,9 @@ interface Hearth {
 async function standHearth(root: string, threshold = 2): Promise<Hearth> {
   return asRoot(root, async () => {
     const dir = larDataDir();
-    await generateOrLoadVesselIdentity(dir);
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(dir, i)));
-    const nexusPubkey = await loadVesselVerifyingKey(dir);
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const nexusPubkey = await loadVesselVerifyingKey();
     const keys = roots.map((r) => r.verifyingKey);
     const bags = join(root, "state", "nexus");
     const doc: NexusDoc = {
@@ -235,8 +235,8 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
       // Hand-build the entry `runNexusContract` REFUSES to mint: a valid 2-of-3 kahu quorum over an admit that
       // carries NO operator contract-in (bypassing the command's `resolveContractIn` gate outright).
       const signers = await Promise.all([0, 1].map(async (i) => {
-        const r = await generateOrLoadPersonaGroupRoot(dir, i);
-        return { signer: r.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(dir, i)) };
+        const r = await generateOrLoadPersonaGroupRoot(i);
+        return { signer: r.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) };
       }));
       const conscript: CarriageEntry = await signCarriageQuorum(
         { nym: unconsented, action: "admit", version: 1, sealEpochCid: rosterA.sealEpochCid },

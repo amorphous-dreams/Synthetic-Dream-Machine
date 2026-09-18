@@ -144,7 +144,7 @@ async function render(carriage: string): Promise<HopRender> {
  */
 export async function makeLocalPersonaKelHeadResolver(dir?: string): Promise<(prefix: string) => Promise<string | null>> {
   const dataDir = dir ?? larDataDir();
-  const nexusPubkey = await loadVesselVerifyingKey(dataDir);
+  const nexusPubkey = await loadVesselVerifyingKey();
   const repo = new Repo({ storage: new NodeFSStorageAdapter(dataDir) });
   const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
   return async (prefix: string): Promise<string | null> => {

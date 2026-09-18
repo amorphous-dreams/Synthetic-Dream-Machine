@@ -170,7 +170,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
 
   // Mint/load the operator-root (idempotent per index; assertHandleIndex guards inside the core), then
   // set the PRIVATE pet-name. renameOwnPersona keeps its own non-blank guard.
-  const root = await generateOrLoadPersonaGroupRoot(larDataDir(), index);
+  const root = await generateOrLoadPersonaGroupRoot(index);
   await renameOwnPersona(petnames, index, name);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching
@@ -213,7 +213,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
 async function personaWear(args: ParsedArgs): Promise<number> {
   const index = parseIndex(args.positional[1]);
   // The custody wall lives in the core: wearing REQUIRES a held root — an unheld index throws there.
-  await wearPersona(larDataDir(), index);
+  await wearPersona(index);
   emit(args, {
     ok: true,
     data: { active: index },
@@ -226,9 +226,8 @@ async function personaWear(args: ParsedArgs): Promise<number> {
 }
 
 async function personaList(args: ParsedArgs): Promise<number> {
-  const dataDir = larDataDir();
-  const held = await listPersonaRoots(dataDir);
-  const active = await loadActivePersonaIndex(dataDir);
+  const held = await listPersonaRoots();
+  const active = await loadActivePersonaIndex();
   const { petnames, declarations } = await fleetStores();
 
   const rows = await Promise.all(

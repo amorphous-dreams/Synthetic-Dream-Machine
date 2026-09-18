@@ -570,8 +570,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   emit("catalog-ready");
 
   // ── Operator identity (node-held) ──────────────────────────────────────────
-  const vesselIdentity = await generateOrLoadVesselIdentity(storageDir);
-  const vesselSeed     = await loadVesselSigningSeed(storageDir);
+  const vesselIdentity = await generateOrLoadVesselIdentity();
+  const vesselSeed     = await loadVesselSigningSeed();
 
   // ── The #59 antigen ring — STOOD now the island this vessel stands in is resolved ─────────────
   // The board keys on the ISLAND (`nexusPubkey` below), never on this vessel: the deterministic
@@ -812,8 +812,8 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
   const holdsRootOf = async (edge: DeviceDelegationTiddler): Promise<boolean> => {
     let signer: string;
     try { signer = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return false; }
-    for (const index of await listPersonaRoots(storageDir)) {
-      const key = await loadPersonaGroupRootVerifyingKey(storageDir, index);
+    for (const index of await listPersonaRoots()) {
+      const key = await loadPersonaGroupRootVerifyingKey(index);
       if (key && key.toLowerCase() === signer) return true;
     }
     return false;
@@ -1270,7 +1270,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // offline, and its membership consult binds the wire key to the nym `accept-carriage` contracted under.
     if (joinSyncUrl) {
       try {
-        const leafIdentity = await loadLeafIdentity(storageDir);
+        const leafIdentity = await loadLeafIdentity();
         const selfEdge = wornMount?.deviceEdge ?? (daemonDoc?.tiddlers?.[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as unknown as DeviceDelegationTiddler | undefined);
         const selfSigned = selfEdge ? await holdsRootOf(selfEdge) : false;
         nexusDial = maybeStartNexusClientDial({
@@ -1851,9 +1851,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       // name (that substitution would be the two-chests equivocation the fold refuses).
       const docUrl = tiddlerText(oracleDoc?.tiddlers?.[bagUri]) ?? tiddlerText(catalogDoc?.tiddlers?.[bagUri]) ?? "";
       if (!docUrl && args["cosign"] !== true) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
-      const nym = await loadPersonaGroupRootVerifyingKey(storageDir, handleIndex);
+      const nym = await loadPersonaGroupRootVerifyingKey(handleIndex);
       if (!nym) throw new Error(`realm-bag: no persona root at index ${handleIndex} — a bag is kept by a named steward`);
-      const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(storageDir, handleIndex));
+      const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex));
       // NAMING A SECOND STEWARD takes two hands (n-of-n): `stewards` proposes them, and the record stands
       // unregistered until each proposed hand co-signs with its own `cosign`.
       const propose = Array.isArray(args["stewards"]) ? (args["stewards"] as unknown[]).filter((v): v is string => typeof v === "string") : [];
