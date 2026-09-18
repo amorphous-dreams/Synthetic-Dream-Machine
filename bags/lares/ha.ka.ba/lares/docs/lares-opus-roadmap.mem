@@ -37,6 +37,8 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''THE CONFLUENCE, second leg'' — the records→disk projection gate consults `decideProjection`; conflict surfaces on the ward-alert rail; the `≈` clause rides `project:canonical-equivalent` (`5d0651ea2` · `941de54dd` · `fb09beae0` · `8cfd3c0d7` · `8e98a991e`). LAW: only a WRITE advances the merge base — a noop PINS the base (<<~ loulou "lar:///ha.ka.ba/lararium/node/self-slot-share">>).
 * ''THE PERSONAGROUP IDENTITY-SLOT RING, wired + FULLY CLOCKLESS'' — `makeSelfSlotPersonaGroupRing` composed onto the node self-slot gate (`420df1a2b` · `21a01270f`), then the wall-clock REMOVED end-to-end: admission licenses off the persona-KEL HEAD (event order), never a timer (`e065db875` keyhive · `e83cdae0f` node). Mutation-proven (a superseded-key false-admit reproduced then refused); KERI-collided. Widens-only.
 * ''B10, the ahu-family quoteblock floor'' — drafted + handed to the Codex crew, crossing recorded (`055d1330d`); the crew engaged it (`7ccae1a75`).
+* ''③ hearthGatePubKey → anchor-scope (Option A)'' — the admit payload split: the gate key stays the dial (anti-relay, byte-identical, weld-verified NOT in the signed image), the founder's resolved island kind+scope ride beside it, so a CLIMBED founder's device seats on the charter board it actually stands on (`aa15cfb3b`). Red-first + revert-verify (exactly 1 test reds under the charter-branch mutation). Browser-leaf parity rides on as a follow-on.
+* ''⑤ native TW5 file-write parity'' — completeness was ALREADY there (`tw5-file-info.ts` faithfully ports TW5's file-info cascade; foreign-titled tiddlers project end-to-end); the native `≈` congruence now rides the projection leg so a native both-move NORMALIZES instead of always-conflicting (`011c9d683`).
 
 <<~/ahu>>
 
@@ -44,10 +46,9 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 ! In flight — tasked spirits enacting now (2026-09-18)
 
-# ''③ hearthGatePubKey redesign (Option A)'' — split the admit payload: keep the raw founder vessel key (anti-relay binding, byte-identical) + carry the founder's RESOLVED NexusIdentity (kind+scope) so a climbed founder's device seats on the board the founder actually stands on. Snapshot semantics (the gradient ratchets on intent). Node-side core; browser-leaf parity flagged as a follow-on. Red-first, weld-tested against signed bytes.
-# ''⑤ native TW5 file-write parity'' — operator ruling 2026-09-18: every file a native TW5 server would persist must project to `wikis/`|`bags/`; AND wire the native `≈` congruence onto the projection leg (mirror the ingest leg's proven `nativeRender`/`nativeOps`) so a native both-move normalizes instead of always-conflicting. Design + red-first.
-# ''The wired-boot e2e'' — the ring's admission is unit + mutation proven but never exercised through a real boot; an e2e admits a live cross-operator grant-holder end-to-end, refuses a stranger.
+# ''The wired-boot e2e'' — the ring's admission is unit + mutation proven but never exercised through a real boot; an e2e admits a live cross-operator grant-holder end-to-end, refuses a stranger. Created `tests/e2e/persona-ring-cross-operator-admit.test.ts` (still to be registered in the vitest roster); running its own e2e.
 # ''BagStowage debt (steps 0–5)'' — headline: PIN DURABILITY is claimed but unbuilt (`pinTiddlerUri` dead, no boot-reader) — pins do not survive a restart though canon says they do. Fix (writer in `vessel-residency-wiring.ts` onResidencyOp → admin-doc pin tiddler; reader beside `startSweeper`), re-true the carrier + stale comments, drop dead `lastUsedAt` telemetry. Step 7 (code-home) held for the operator.
+# ''③ browser-leaf parity (follow-on)'' — `open-browser-vessel.ts:436` (`anchorGateKey: relayGatePubKey ?? null`) carries the IDENTICAL climbed-founder defect via `relayGatePubKey`; port Option A after confirming the browser admit-carry/apply path. Isomorphic-by-intent — the node fix (`aa15cfb3b`) leaves the leaf asymmetric until this lands.
 
 <<~/ahu>>
 
@@ -55,8 +56,8 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 ! Forks that await the operator's word
 
-# ''`:814` / the epoch lease — RULING OWED.'' A second device-delegation admission door whose wall-clock is its ONLY staleness fence (`boundEpoch` hardcoded `0` at every mint, so the epoch AUTHORITY is unreachable). Direction is clear (Option 1: wire the PersonaGroup lease-slot epoch — a real 3-part project touching signed edge bytes) but blocked on the OPEN epoch-minting ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/no-global-now">> #/silence item 3, Q1/Q2). Option 2: rule fleet-wide-only revocation (KEL rotation) acceptable for this device class, demote the clock to a backstop. Same fix also closes `boot-daemon-keyhive.ts:130` + `face-grant-record.ts:130`.
-# ''④ `bag-residency.ts`'s home — keep-separate RECOMMENDED, operator nod owed.'' The un-braiding (the `BagStowage` axis rename) already satisfied half the 2026-06-01 ruling; folding stowage into the pool file would violate the pool's own single-responsibility. Under the alpha/no-back-compat license this is a FREE move — recommend closing the relocation clause as SUPERSEDED, keep `BagStowage` a named-separate file the pool drives.
+# ''`:814` / the epoch lease — RULED 2026-09-18: OPTION 1, enacting'' ("more work now, less churn later"). Wire the PersonaGroup lease-slot epoch (`leaseEpochPrefix(faceGroup())` / `effectiveLeaseEpoch`, the same resource `:543` uses) as the device-delegation staleness AUTHORITY: `verifyEdgeAgainstPersonaKel` gains `expectedEpoch` → `verifyDeviceDelegation`; stop minting `boundEpoch: 0` (`ceremony-core.ts:393,641`) — mint against the live lease epoch (this changes the signed edge image; an alpha-legal re-mint); thread the lease read into `verifyPeer` (`:814`) + `bootDaemonKeyhive` (`:130`) + `face-grant-record.ts:130` — ONE fix, three doors. A rolled-past device re-presents via the existing face-join regrant. Red-first + weld-test (boundEpoch IS signed).
+# ''④ `bag-residency.ts`'s home — RULED 2026-09-18: KEEP-SEPARATE.'' The 2026-06-01 relocation clause closes as SUPERSEDED by the un-braiding (`BagStowage`/`bag stats`); the axis stays a named-separate file the pool DRIVES. Enacting as BagStowage Step 7 (re-true `residency-tiers.mem`).
 
 <<~/ahu>>
 
@@ -78,9 +79,10 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''The e2e set flakes at file level'' (`minted-canon-projection`, `smoke`, `herm-floor` have each flipped) — run-twice, never trust one pass; never run two e2e sets at once (shared `synced-tree.json`).
 * ''Wall-clock residue beyond the ring'' — `:814` + `boot-daemon-keyhive.ts:130` (delegation windows, ruling-blocked); `daemon-auth-gate.ts:225` (`contractNymOf`) + the HandleCard expiry reader flagged UNVERIFIED (read before ruling); the oracle-pointer clocks already tracked in `no-global-now.mem`'s own plan.
 * ''The R0 / REGION coordination seam'' — the Codex crew holds R0's DESIGN (their B6/C2) but R0's reds live in `open-node-vessel.ts` (founding boot ground); whichever hearth builds it CROSSES — name the crossing before a hand starts.
+* ''`dist/` is STALE against ③ + ⑤ + native-parity source'' (2026-09-18) — the ③ spirit deferred `pnpm -r build` (a sibling e2e held dist live). Run `pnpm -r build` (mesh→tw5→node) before any e2e or live daemon boot against these changes; do NOT rebuild while an e2e spirit runs (it shares dist).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tc2xBixFG39MLqyfomMwMLHmSJgiEKvfy3M5KcyagiE
+<<^ code="&#x0003;">>ni:///sha-256;PhGEYUPE8c41EmdFUn8ZreTcurvjIx1hAn68SRas6ng
 
 <<^ code="&#x0004;" -> to="?">>
