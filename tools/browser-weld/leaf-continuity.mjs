@@ -199,9 +199,11 @@ async function withProfile(run) {
  * prefix plus event CIDs, so a green reload proves the exact copied events,
  * rather than merely a carry-shaped console receipt.
  */
-async function observeKelRead(page) {
+async function observeKelRead(context, page) {
   let observations = 0;
-  await page.route("**/*.js*", async (route) => {
+  // The daemon starts in a Worker. Context routing reaches its module requests;
+  // page routing observes the document graph but can leave that island opaque.
+  await context.route("**/*.js*", async (route) => {
     const response = await route.fetch();
     const type = response.headers()["content-type"] ?? "";
     if (!/javascript/.test(type)) return route.fulfill({ response });
@@ -239,7 +241,7 @@ async function ordinaryWalk() {
     const logs = [];
     page.on("console", (message) => logs.push(message.text()));
     page.on("pageerror", (error) => logs.push(`pageerror: ${error.message}`));
-    const finishObservation = await observeKelRead(page);
+    const finishObservation = await observeKelRead(context, page);
 
     await page.goto(appUrl(), { waitUntil: "domcontentloaded" });
     const offline = await liveReading(page);

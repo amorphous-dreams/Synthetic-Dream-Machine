@@ -133,6 +133,8 @@ async function readLines(path) {
 async function testC4TraceHookIsOptIn() {
   const source = await readFile(LEAF, "utf8");
   assert.match(source, /const BOOT_TRACE = process\.env\.LEAF_BOOT_TRACE === "1"/);
+  assert.match(source, /async function observeKelRead\(context, page\)/);
+  assert.match(source, /await context\.route\("\*\*\/\*\.js\*"/);
   assert.match(source, /if \(!BOOT_TRACE \|\| source\.includes\("__laresC4BootTrace"\)\) return source/);
   for (const marker of [
     "host:corpus-ready", "host:kel-carry:start", "host:kel-board:start", "host:daemon-vm:start",
