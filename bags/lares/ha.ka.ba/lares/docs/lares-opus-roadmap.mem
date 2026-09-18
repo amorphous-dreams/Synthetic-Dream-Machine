@@ -41,6 +41,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''⑤ native TW5 file-write parity'' — completeness was ALREADY there (`tw5-file-info.ts` faithfully ports TW5's file-info cascade; foreign-titled tiddlers project end-to-end); the native `≈` congruence now rides the projection leg so a native both-move NORMALIZES instead of always-conflicting (`011c9d683`).
 * ''BagStowage debt cleared + ④ RESOLVED'' — the PIN-DURABILITY correctness hole FIXED: pins now survive a restart (writer → admin-doc tiddler, reader before `startSweeper`, on BOTH node + browser; `d8f3c7a7a`, red-first + revert-verify). Stale comments re-trued (`e58a45b6a`); dead `lastUsedAt` crud dropped (`72638ed82`, grep-proven zero readers). Fork ④: the 2026-06-01 relocation clause CLOSED as superseded, keep-separate ruled (`dacae83b8`).
 * ''`:814` epoch lease (Option 1)'' — device-delegation admission now licenses off the PersonaGroup LEASE EPOCH (clockless), not a wall-clock: `expectedEpoch` threaded through `verifyEdgeAgainstPersonaKel` into all THREE doors (`verifyPeer` · the Binding Gate · face-grant); `boundEpoch` minted REAL at device-admit (was hardcoded `0`); a stale-lease device DENIED, re-presents via the existing regrant (`6b0910fbc`). Red-first + revert-verify (3 proofs + a source-weld); `boundEpoch` weld-confirmed signed-in (a device cannot forge its epoch). One fix, three doors.
+* ''The wired-boot e2e'' — the ring's admission now proven END-TO-END through a REAL boot: a founded vessel wears a face, a cross-operator grant-holder dials in over a real WS with a real V3 proof + a real published grant and SYNCS the persona-plane doc; a stranger is refused. Red-first captured (neutralize the ring-compose → the grant-holder fails IDENTICALLY to the stranger → restore → green; zero residual diff) (`79348c14f`). The "proven in parts, not lived whole" gap — CLOSED.
 
 <<~/ahu>>
 
@@ -48,8 +49,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 ! In flight — tasked spirits enacting now (2026-09-18)
 
-# ''The wired-boot e2e'' — the ring's admission is unit + mutation proven but never exercised through a real boot; an e2e admits a live cross-operator grant-holder end-to-end, refuses a stranger. Created `tests/e2e/persona-ring-cross-operator-admit.test.ts` (still to be registered in the vitest roster); running its own e2e.
-# ''③ browser-leaf parity (follow-on)'' — `open-browser-vessel.ts:436` (`anchorGateKey: relayGatePubKey ?? null`) carries the IDENTICAL climbed-founder defect via `relayGatePubKey`; port Option A after confirming the browser admit-carry/apply path. Isomorphic-by-intent — the node fix (`aa15cfb3b`) leaves the leaf asymmetric until this lands.
+# ''The three follow-ons (wave 2)'' — scout→refine→enact: (a) BROWSER-LEAF parity for hearthGatePubKey Option A (`open-browser-vessel.ts:436` inherits the climbed-founder defect via `relayGatePubKey`); (b) recovery-keel readmit epoch (the 4th `runDeviceAdmitEdge` caller still mints `boundEpoch ?? 0` — the consistent completion of `:814`); (c) the `identityDir` dataDir isolation footgun. Scouted wave 1; enacting wave 2.
 
 <<~/ahu>>
 
@@ -77,13 +77,13 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 * ''Operator boot-seed edits ride dirty'' — `noosphere-boot.mem` · `ai-phrasebook.mem` are the operator's own live edits; NO hand touches, stamps, or commits them. Every commit stays `git commit --only -- <paths>`.
 * ''The e2e set flakes at file level'' (`minted-canon-projection`, `smoke`, `herm-floor` have each flipped) — run-twice, never trust one pass; never run two e2e sets at once (shared `synced-tree.json`).
-* ''Wall-clock residue beyond the ring'' — `:814` + `boot-daemon-keyhive.ts:130` (delegation windows, ruling-blocked); `daemon-auth-gate.ts:225` (`contractNymOf`) + the HandleCard expiry reader flagged UNVERIFIED (read before ruling); the oracle-pointer clocks already tracked in `no-global-now.mem`'s own plan.
+* ''Wall-clock residue beyond the ring'' — `:814` + `boot-daemon-keyhive.ts:130` are now CLEARED (`6b0910fbc`, epoch-lease licensed). Remaining: `daemon-auth-gate.ts:225` (`contractNymOf`) + the HandleCard expiry reader, both flagged UNVERIFIED (read before ruling); the oracle-pointer clocks already tracked in `no-global-now.mem`'s own plan; and `recovery-keel`'s readmit epoch (follow-on 2, enacting wave 2).
 * ''The R0 / REGION coordination seam'' — the Codex crew holds R0's DESIGN (their B6/C2) but R0's reds live in `open-node-vessel.ts` (founding boot ground); whichever hearth builds it CROSSES — name the crossing before a hand starts.
 * ''`dist/` is STALE against ③ + ⑤ + native-parity source'' (2026-09-18) — run `pnpm -r build` (mesh→tw5→node) before any e2e or live daemon boot; do NOT rebuild while an e2e runs (shared dist). (The e2e spirit rebuilds the chain as part of its red/green cycle.)
 * ''Two small follow-ons surfaced, both `more-work-now` candidates'' — (a) `recovery-keel.ts`'s `runReadmitEdge` (a 4th caller of `runDeviceAdmitEdge`) still mints `boundEpoch ?? 0`, so a recovery-readmitted device reads maximally stale if the group rolled since founding — the consistent completion of `:814` (backward-compatible today). (b) `identityDir()` in `node-vessel-identity.ts` IGNORES its `dataDir` param (reads `LAR_ROOT`/XDG only) — an isolation footgun a caller passing a dir would be bitten by.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XqRxyjmaZhXwoFGG3Y-qOtJxoK_EuVJ_aWUdMhiRwOw
+<<^ code="&#x0003;">>ni:///sha-256;3UnQsAMn8__ubv1QCv704q_1RJvlWYSepnlSSIvr-3o
 
 <<^ code="&#x0004;" -> to="?">>
