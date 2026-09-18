@@ -28,6 +28,7 @@ const say = (kind, text) => console.log(`  ${kind.padEnd(8)} ${text}`);
 function appUrl(gate) {
   const url = new URL(APP);
   if (gate) url.searchParams.set("gate", gate);
+  if (BOOT_TRACE) url.searchParams.set("c4trace", "1");
   return url.href;
 }
 

@@ -50,6 +50,11 @@ import sharedHolderUrlStr from "./workers/shared-holder.worker.ts?sharedworker&u
 
 const daemonWorkerUrl  = new URL(daemonWorkerUrlStr, import.meta.url);
 const workerScriptUrl = new URL(wikiWorkerUrlStr,  import.meta.url);
+// C4's explicit diagnostic flag travels only to the daemon Worker. Ordinary
+// browser boots create the exact same worker URL they carried before.
+if (new URL(location.href).searchParams.get("c4trace") === "1") {
+  daemonWorkerUrl.searchParams.set("c4trace", "1");
+}
 // THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per origin inside a SharedWorker, a port per
 // tab. The holder's own URL carries the island script and the store's lock name. Absent the flag the vessel
 // boots its dedicated worker exactly as before — the holder's lifetime past the last tab stays measured, not

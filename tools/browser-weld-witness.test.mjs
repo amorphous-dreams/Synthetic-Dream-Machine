@@ -18,6 +18,7 @@ const OPEN_VESSEL = join(REPO, "packages/lararium-browser/src/open-browser-vesse
 const OPEN_CORE = join(REPO, "packages/lararium-mesh/src/open-vessel-core.ts");
 const DAEMON_CORE = join(REPO, "packages/lararium-tw5/src/daemon-vm-core.ts");
 const DAEMON_WORKER = join(REPO, "packages/lararium-app/src/workers/daemon.worker.ts");
+const APP_MAIN = join(REPO, "packages/lararium-app/src/main.ts");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -146,11 +147,12 @@ async function testC4TraceHookIsOptIn() {
 }
 
 async function testC4TraceAnchorsStillStand() {
-  const [vessel, openCore, daemon, worker] = await Promise.all([
+  const [vessel, openCore, daemon, worker, appMain] = await Promise.all([
     readFile(OPEN_VESSEL, "utf8"),
     readFile(OPEN_CORE, "utf8"),
     readFile(DAEMON_CORE, "utf8"),
     readFile(DAEMON_WORKER, "utf8"),
+    readFile(APP_MAIN, "utf8"),
   ]);
   for (const [label, source, pattern] of [
     ["corpus-ready", openCore, /emit\("corpus-ready"\);/g],
@@ -161,6 +163,8 @@ async function testC4TraceAnchorsStillStand() {
     ["manifest post", daemon, /worker\.post\(manifestMsg, \[syncPort\]\)/g],
     ["worker WASM init", worker, /await initKeyhiveWasm\(\);/g],
     ["worker kernel import", worker, /await import\("@lararium\/browser\/browser-daemon-island"\);/g],
+    ["worker trace gate", worker, /searchParams\.get\("c4trace"\) !== "1"/g],
+    ["worker trace route", appMain, /daemonWorkerUrl\.searchParams\.set\("c4trace", "1"\);/g],
   ]) {
     assert.equal(source.match(pattern)?.length ?? 0, 1, `${label} trace anchor drifted`);
   }
