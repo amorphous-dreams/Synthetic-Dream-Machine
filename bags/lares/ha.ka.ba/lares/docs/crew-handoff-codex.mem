@@ -437,6 +437,51 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
+<<~ ahu #/set-e-vessel-surfaces>>
+
+! Set E — vessel surfaces, full scout and reorganization
+
+''Operator ruling, 2026-09-18:'' reserve `app` for generic application-surface composition. The present Vite and DOM deployable becomes `web`. This starts with a full scout and a reorganization plan; no package directory, import, worker route, runtime authority, or artifact route moves under this item alone. The current Vite shore continues to build while its exact successor is measured.
+
+The intended codebase reaches Node, PC and tablet browsers, native Android/iOS/tablets, Mudlet, Unreal, and later vessels. `packages/AGENTS.md` presently calls `@lararium/browser` the browser vessel shore and `@lararium/app` the browser app shell. The names overfill that distinction: the latter is one web page's Vite, DOM, admission, and projection adapter, not generic application composition.
+
+!! E1 · One codebase, many nameless vessel entities
+
+A package is never itself a vessel or an authority. A running device-plus-context is a nameless entity that holds a declared `#has-capability` stack. `@lararium/mesh` supplies neutral contracts and graph law. `@lararium/tw5` supplies isolated worker-island engine law. A platform vessel shore composes the local authority, persistence, identity custody, transport and worker capabilities. A surface presents projections and returns bounded intent to a named vessel.
+
+Every proposed target MUST answer one question before code begins: does it host a sovereign local vessel, or does it attach a surface to an already named vessel? Native mobile may be either a real native vessel shore or an explicit WebView browser vessel; Mudlet and Unreal carry the same fork. No target inherits identity, CRDT truth, private key custody, or peer authority merely by rendering a Lararium frame.
+
+!! E2 · The current capability stacks
+
+| package / shore | it makes available | it MUST NOT quietly become |
+|---|---|---|
+| `@lararium/mesh` | URI, capability, identity, transport, store, residency and island-protocol contracts | DOM, platform storage, or a running vessel |
+| `@lararium/tw5` | isolated TW5 VM and island machinery | a main-thread engine or platform UI authority |
+| `@lararium/browser` | a browser vessel's WebCrypto, IndexedDB/OPFS, Worker/MessageChannel, WebSocket, secure-context and browser-identity floor; `openBrowserVessel` returns the vessel's bounded input and projection seams | Vite, page DOM, React/canvas, or a static host's authority |
+| current `@lararium/app`, renamed `@lararium/web` | Vite artifact and worker URLs, genesis asset reachability, web-page mount/frame, DOM/Shadow-DOM projection adapter, DOM input/click return, admission-carrier reading, oracle read-face and PWA affordances | CRDT truth, private identity custody, worker-engine ownership, or network authority |
+
+The web surface therefore holds interface capabilities: it can present a frame, translate local DOM gestures into bounded intent, observe a projection or public read face, and carry a URL admission offer to the local vessel. The browser vessel holds the browser-native capabilities that let that local entity persist, identify, host workers and communicate. The browser vessel may expose a web adapter seam; it does not become the web page. The web page may start or observe a browser vessel; it does not become its source of truth.
+
+!! E3 · Full scout before the rename
+
+# Inventory every `@lararium/app` and `@lararium/browser` import, export, test, script, Docker/weld route, Vite worker URL, genesis/CAS asset path, generated artifact and prose claim. Classify each as neutral contract, platform-vessel capability, web build artifact, or DOM surface behavior. Re-derive counts at execution time; no present count becomes a standing fact.
+# Write one bounded story each for web, native mobile, Mudlet and Unreal. Each story declares sovereign-vessel versus attached-surface, the capabilities supplied by that platform, the projection it consumes, the intent it emits, and where failure is visible. Surface any ownership conflict to the operator before a cross-hearth or cross-model merge.
+# Only then rename the present package and workspace identity to `@lararium/web`, updating imports, scripts, Docker/weld routes, documentation and asset routes together. Pin the web build's worker and genesis/CAS URLs with reachability tests. A static host remains a distribution shore, never a vessel authority.
+# Reduce the browser public seam to platform-vessel construction and declared callbacks. Keep page status, query/hash/session handling and DOM projection on the web shore. Keep the worker VM isolated. Do not make a general `@lararium/surface` package until two materially different renderers require and test the same intent contract; current HTML/CSS projection remains a DOM adapter, not a claimed universal renderer.
+# Add a future platform shore only through an independent vertical slice with its own declared stack and its own host/attach ruling. `app` may later name generic application-surface composition only when those shared contracts stand in more than one real vessel surface.
+
+!! E4 · Stories that constrain the shape
+
+''Gaia:'' Gaia opens the same household from a PC browser and later from a native tablet. Each surface names which local vessel it hosts or attaches to, and the person can inspect the active `#has-capability` stack: identity custody, local persistence, worker-island transport and chosen sync edge. Moving a frame between vessels never silently transfers authority.
+
+''Elyncia:'' A traveler reaches a public web read face and opens a local web vessel. The page can name a phase or refusal without pretending the host owns the traveler. A Mudlet or Unreal surface can later host or attach to a declared vessel and return bounded intent, while its origin, renderer and deployment route never masquerade as the source of identity or shared truth.
+
+!! E5 · Completion boundary
+
+This arc completes when the present DOM/Vite package is explicitly `web`; browser carries no Vite/page-DOM concern; web build and asset reachability have receipts; focused browser and web tests cover their respective seams; and each planned future platform has a declared host/attach story. C4's named red remains independent evidence: this reorganization neither cures nor masks it. Stop before inventing a generic renderer, a mobile vessel, or a cross-platform authority model without a discriminating second implementation.
+
+<<~/ahu>>
+
 <<~ ahu #/completed>>
 
 ! Completed increments — bounded receipts
@@ -605,6 +650,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D_c0nwBRz4zy94VP8Fi_xQNqrJeA3ntW6OAsutTPUhM
+<<^ code="&#x0003;">>ni:///sha-256;xHEScYW-qGQDNZY2ePCEIOcp91koUalgDEDvbROuwTk
 
 <<^ code="&#x0004;" -> to="?">>
