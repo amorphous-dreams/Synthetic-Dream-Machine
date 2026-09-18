@@ -46,6 +46,7 @@ import {
   loadCatalogCorpora, seedVesselDefaults,
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
+  replayPinsFromDaemonDoc,
   PROJECTION_FRAME,
   COHERENCE_FRAME,
   SENSORIUM_FRAME,
@@ -1165,6 +1166,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         void residency.pin(pinFace.sessions,   "boot:sessions");
       }
       void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
+      // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
+      // idle-cool tick. Recovers whatever an operator pin persisted under the daemon doc across a
+      // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
+      void replayPinsFromDaemonDoc(daemon.daemonHandle, residency);
       residency.startSweeper();
       assembly.composite.attachResidency(residency);
       // NB: no inbound WS gate — a browser cannot listen on a socket (substrate floor).

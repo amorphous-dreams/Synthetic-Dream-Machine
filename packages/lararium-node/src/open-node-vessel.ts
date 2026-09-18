@@ -134,6 +134,7 @@ import { openDaemonVm }                    from "./open-daemon-vm.js";
 import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
+  replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
 import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
 import { DaemonAuthGate }                           from "./daemon-auth-gate.js";
@@ -2032,6 +2033,10 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       void residency.pin(pinFace.sessions,   "boot:sessions");
     }
     void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
+    // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
+    // idle-cool tick. Recovers whatever `lares pin` persisted under the daemon doc across a
+    // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
+    void replayPinsFromDaemonDoc(daemonVm.daemonHandle, residency);
     residency.startSweeper();
     assembly.composite.attachResidency(residency);
 

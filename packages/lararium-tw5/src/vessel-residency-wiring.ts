@@ -32,6 +32,7 @@ import {
   makeWikiActivationCap,
   slugFromUri, wikiBagUri, tiddlerText, recipeUri, recipeFromRecord,
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
+  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers,
 } from "@lararium/mesh";
 import type {
   ActivationPool, WikiActivationCap, ResolveWikiSpec,
@@ -115,6 +116,44 @@ export interface VesselResidency {
   wireToPool(args: WireToPoolArgs): WikiActivationCap;
 }
 
+// ── Pin durability — the admin-doc write/read half of residency-tiers.mem#/pin-flag ─────────────
+//
+// `BagStowage.pin()` is purely in-memory; nothing before this made an operator pin survive a
+// daemon restart, though the canon and the (until now unused) `pinTiddlerUri` both assumed one
+// did. `writePinTiddler`/`removePinTiddler` persist the durable half under the daemon bag;
+// `replayPinsFromDaemonDoc` — called at boot, BEFORE `residency.startSweeper()`, so a replayed
+// pin can never lose a race to the first sweep tick — restores them into a fresh collector.
+
+/** Persist a pin as a tiddler under the daemon doc (write half of durability). Mutates via
+ *  `daemonHandle.change()` the same way `AutomergeDocStore.put` does; kept as a direct mutation
+ *  rather than routed through the store so this stays a small, dependency-free bookkeeping write
+ *  (no MemeProvider projection fan-out for an internal residency marker). */
+export function writePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string, reason?: string): void {
+  const record = pinTiddlerRecord(bagUrl, reason);
+  daemonHandle.change((doc) => {
+    (doc.tiddlers as Record<string, LarTiddlerRecord>)[record.tiddler.title] = record;
+  });
+}
+
+/** Hard-remove a pin tiddler on unpin (never a tombstone — an unpinned bag carries no residual
+ *  durability claim; see `scanPinTiddlers`' tombstone-skip for why a lagging delete must not
+ *  resurrect). */
+export function removePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string): void {
+  const title = pinTiddlerUri(bagUrl);
+  daemonHandle.change((doc) => {
+    delete (doc.tiddlers as Record<string, LarTiddlerRecord>)[title];
+  });
+}
+
+/** Boot-time replay (read half of durability) — re-pin every bag the daemon doc's pin tiddlers
+ *  still name, into `residency`. Call this BEFORE `residency.startSweeper()` starts: a pin
+ *  replayed after the sweeper's first tick raced the very idle-cool it exists to prevent.
+ *  Idempotent (`BagStowage.pin()` no-ops an already-wela+pinned bag), so a double call is safe. */
+export async function replayPinsFromDaemonDoc(daemonHandle: DocHandle<LarDoc>, residency: BagStowage): Promise<void> {
+  const pins = scanPinTiddlers(daemonHandle.doc()?.tiddlers);
+  for (const { url, reason } of pins) await residency.pin(url, reason);
+}
+
 /**
  * Build the ONE residency + pool-wiring for a vessel.
  *
@@ -188,14 +227,22 @@ export function makeVesselResidency(
     // ── D. Sovereign-worker residency binding: a daemon evict routes THROUGH the ONE collector
     //    (cool → onEvict → unmountWiki) so the collector stays authoritative — never a direct
     //    unmount that would desync its wela/anu view (and it refuses a pinned grain, correctly).
-    //    The daemon's pin/unpin/register-cold ops drive the same collector. ──
+    //    The daemon's pin/unpin/register-cold ops drive the same collector. Pin/unpin ALSO write
+    //    through to the daemon-doc tiddler (the durability half — see `writePinTiddler` above) so
+    //    an operator pin survives the restart `replayPinsFromDaemonDoc` recovers at boot. ──
     // "reclaimed": an evict request is this vessel freeing memory, never the grain going unfed. A
     // reader converting temperature into a claim about a polity must not read a resource act as one.
     daemon.onEvictRequest(async (bagId) => { await residency.cool(bagId, "reclaimed"); });
     daemon.onResidencyOp(async (op, bagId, reason) => {
-      if (op === "pin")        await residency.pin(bagId, reason);
-      else if (op === "unpin") residency.unpin(bagId);
-      else                     residency.registerCold(bagId);
+      if (op === "pin") {
+        await residency.pin(bagId, reason);
+        writePinTiddler(daemon.daemonHandle, bagId, reason);
+      } else if (op === "unpin") {
+        residency.unpin(bagId);
+        removePinTiddler(daemon.daemonHandle, bagId);
+      } else {
+        residency.registerCold(bagId);
+      }
     });
 
     // ── E. Wiki-alert delivery. The worker names an affected wiki; place a system-alert verb into

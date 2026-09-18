@@ -176,7 +176,9 @@ export { runSovereignKernel } from "./sovereign-kernel.js";
 export type { IslandHostShore } from "./sovereign-kernel.js";
 export { addSubstrateLayer, addReadOnlyLayer, seedVesselDefaults, mountPrimaryWiki, buildWikiMountSpec } from "./vessel-steps.js";
 export type { ResolveBagHandle, PrimaryMountPool, BindingResolver, PrimaryMountInputs } from "./vessel-steps.js";
-export { makeVesselResidency } from "./vessel-residency-wiring.js";
+export {
+  makeVesselResidency, writePinTiddler, removePinTiddler, replayPinsFromDaemonDoc,
+} from "./vessel-residency-wiring.js";
 export type {
   VesselResidency, VesselResidencyPool, VesselResidencyConfig, VesselResidencyHooks,
   VesselAlertVerbOpts, AlertDropReason, WireToPoolArgs,

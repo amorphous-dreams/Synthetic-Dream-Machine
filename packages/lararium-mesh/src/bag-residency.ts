@@ -22,6 +22,8 @@
  */
 
 import { DAEMON_BAG_ID } from "./lar-uris.js";
+import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 
 /** A bag's URL — Automerge doc URL, e.g. "automerge:abc123…". */
 export type BagUrl = string;
@@ -486,4 +488,51 @@ export class BagStowage {
 /** Build the URI for a pin tiddler under the daemon doc. */
 export function pinTiddlerUri(bagUrl: BagUrl): string {
   return `${DAEMON_BAG_ID}/pin/${encodeURIComponent(bagUrl)}`;
+}
+
+/** Inverse of `pinTiddlerUri` — recover the bag URL a pin-tiddler title names, or `null` when
+ *  `title` does not carry the `${DAEMON_BAG_ID}/pin/` prefix (not a pin tiddler at all — most
+ *  titles in a daemon doc aren't). Never throws on a malformed percent-encoding; a foreign or
+ *  corrupt title just fails to parse, same as "not a pin tiddler". */
+export function parsePinBagUrl(title: string): BagUrl | null {
+  const prefix = `${DAEMON_BAG_ID}/pin/`;
+  if (!title.startsWith(prefix)) return null;
+  try {
+    return decodeURIComponent(title.slice(prefix.length));
+  } catch {
+    return null;
+  }
+}
+
+/** Build the pin-tiddler record for a pin (or re-pin) of `bagUrl` — pure, so both the writer
+ *  (vessel-residency-wiring's onResidencyOp) and any test can construct one without a live
+ *  DocHandle. `reason` (absent → "") rides as the tiddler's `text` field, mirroring `pin()`'s
+ *  own optional-reason shape. */
+export function pinTiddlerRecord(bagUrl: BagUrl, reason?: string): LarTiddlerRecord {
+  return mutableLarRecord(pinTiddlerUri(bagUrl), { text: reason ?? "" }, "residency-pin");
+}
+
+/** Scan a tiddlers map for pin/-prefixed entries, recovering (bagUrl, reason) pairs — pure and
+ *  DocHandle-free, so the boot-time replay this feeds (`replayPinsFromDaemonDoc` in
+ *  vessel-residency-wiring.ts) is testable against a plain object. A tombstoned pin tiddler
+ *  (`meta.deleted`) is skipped — a hard-removed pin (see `removePinTiddler`) never resurrects
+ *  via a lagging tombstone a sync leg still carries.
+ *
+ *  Canon: residency-tiers.mem#/pin-flag — "Pin is durable: pin state lives as tiddlers in the
+ *  admin doc and federates to operator devices via the existing admin-doc sync surface." This is
+ *  the READ half of that durability; `pinTiddlerRecord` + the tw5-layer `writePinTiddler` are the
+ *  WRITE half. */
+export function scanPinTiddlers(
+  tiddlers: Readonly<Record<string, LarTiddlerRecord>> | undefined,
+): readonly { url: BagUrl; reason?: string }[] {
+  const out: { url: BagUrl; reason?: string }[] = [];
+  if (!tiddlers) return out;
+  for (const [title, record] of Object.entries(tiddlers)) {
+    if (record?.meta?.deleted) continue;
+    const url = parsePinBagUrl(title);
+    if (!url) continue;
+    const reason = tiddlerText(record) ?? undefined;
+    out.push(reason ? { url, reason } : { url });
+  }
+  return out;
 }
