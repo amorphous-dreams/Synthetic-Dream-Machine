@@ -116,6 +116,32 @@ function instrumentBootSource(source) {
   if (!BOOT_TRACE || source.includes("__laresC4BootTrace")) return source;
   let body = source;
 
+  // Worker-side manifest boundary. This source transform stays inside the test route: it reports only
+  // the protocol type/version summary, never the manifest body or its transferred port.
+  if (body.includes("function runSovereignKernel") && body.includes("host.ready")) {
+    body = body.replace(
+      /host\.listen\(\(raw(?:\s*:\s*unknown)?\) => \{/,
+      (match) => `${match}\n    if (raw?.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-received", detail: JSON.stringify({ type: raw?.type ?? null, schema_version: raw?.schema_version ?? null }) }); } catch {} }`,
+    );
+    body = body.replace(
+      /if \(!isVesselToIslandMsg\(raw\)\) return;/,
+      `const __laresC4Accepted = isVesselToIslandMsg(raw);
+    if (!__laresC4Accepted) { if (raw?.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-rejected", detail: JSON.stringify({ type: raw?.type ?? null, schema_version: raw?.schema_version ?? null }) }); } catch {} } return; }
+    if (raw.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-accepted", detail: JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null }) }); } catch {} }`,
+    );
+    body = body.replace(
+      /const breathe = \(\) => \{/,
+      `let __laresC4FirstBreath = true;
+    const breathe = () => {
+      if (__laresC4FirstBreath) { __laresC4FirstBreath = false; try { self.postMessage({ __laresC4BootTrace: "worker:pre-first-breath" }); } catch {} }`,
+    );
+    body = body.replace(
+      /handler\.sendEa\(msg\.wikiUri\);/,
+      `try { self.postMessage({ __laresC4BootTrace: "worker:pre-ea" }); } catch {}
+    handler.sendEa(msg.wikiUri);`,
+    );
+  }
+
   // Host-side waits before the worker exists. The exact call text also anchors the trace to the
   // production await chain rather than a DOM phase inferred by the witness.
   body = body.replace(
@@ -154,10 +180,55 @@ function instrumentBootSource(source) {
     `}).then(() => { console.log("[C4 boot] host:manifest-post"); worker.post(manifestMsg, [syncPort]); });`,
   );
 
+  // Post-ea host-chain receipts. These replacements are test-route observations only: they leave
+  // the production promises, capability order, phase names and error paths intact.
+  body = body.replace(
+    /workerEa\.catch\(\(\) => \{\}\);/,
+    `workerEa.then(() => console.log("[C4 boot] host:workerEa-resolved"), () => console.log("[C4 boot] host:workerEa-rejected"));\n  workerEa.catch(() => {});`,
+  );
+  let workerEaGate = 0;
+  body = body.replace(/await daemon\.workerEa;/g, () => {
+    workerEaGate++;
+    const stem = workerEaGate === 1 ? "wiki" : "mount";
+    return `console.log("[C4 boot] host:${stem}-workerEa-pre");\n      await daemon.workerEa;\n      console.log("[C4 boot] host:${stem}-workerEa-post");`;
+  });
+  body = body.replace(
+    /const \{ wikiHandle, draftHandle \} = await mountWikiSlot\(/,
+    `console.log("[C4 boot] host:wiki-mount-pre");\n      const { wikiHandle, draftHandle } = await mountWikiSlot(`,
+  );
+  body = body.replace(
+    /emit\("wiki-ready"\);/,
+    `console.log("[C4 boot] host:wiki-mount-post");\n      emit("wiki-ready");`,
+  );
+  body = body.replace(
+    /await mountPrimaryWiki\(pool, daemon\.resolveBinding, \{/,
+    `console.log("[C4 boot] host:primary-mount-pre");\n      await mountPrimaryWiki(pool, daemon.resolveBinding, {`,
+  );
+  body = body.replace(
+    /\n      \}\);\n      emit\("tw5-booted"\);/,
+    `\n      });\n      console.log("[C4 boot] host:primary-mount-post");\n      emit("tw5-booted");`,
+  );
+  body = body.replace(
+    /const emit = \(p: LarOpenPhase\) => onPhase\?\.\(p\);/g,
+    `const emit = (p: LarOpenPhase) => { console.log("[C4 boot] host:phase " + String(p)); onPhase?.(p); };`,
+  );
+  body = body.replace(
+    /const result = await openBrowserVessel\(\{/,
+    `console.log("[C4 boot] host:open-browser-vessel-start");\n    const result = await openBrowserVessel({`,
+  );
+  body = body.replace(
+    /\n    _sendDomEvent = result\.sendDomEvent;/,
+    `\n    console.log("[C4 boot] host:open-browser-vessel-settled");\n    _sendDomEvent = result.sendDomEvent;`,
+  );
+  body = body.replace(
+    /row\(vesselEl, "status", "live — sovereign local island", "ok"\);/,
+    `console.log("[C4 boot] host:paint-live");\n    row(vesselEl, "status", "live — sovereign local island", "ok");`,
+  );
+
   // The generic daemon listener receives protocol breaths/ea/fault and the test-only worker markers.
   // The guard stays intact; the trace simply makes otherwise private worker progress visible in the
   // page's existing diagnostic tail.
-  body = body.replace(
+  if (!body.includes("function awaitIslandMsg")) body = body.replace(
     /if \(!isIslandToVesselMsg\(raw\)\) return;/,
     `if (raw && typeof raw === "object" && raw.__laresC4BootTrace) {\n` +
       `      console.log("[C4 boot] " + String(raw.__laresC4BootTrace) + (raw.detail ? " " + String(raw.detail).slice(0, 240) : ""));\n` +
@@ -167,6 +238,38 @@ function instrumentBootSource(source) {
       `    }\n` +
       `    if (!isIslandToVesselMsg(raw)) return;`,
   );
+
+  // The workerEa subscriber lives in the separately served mesh module. Keep this anchor explicit:
+  // a host-side cap receipt cannot prove that awaitIslandMsg saw or accepted the same message.
+  if (body.includes("awaitIslandMsg") && body.includes("isIslandToVesselMsg(raw)")) {
+    body = body.replace(
+      /if \(!isIslandToVesselMsg\(raw\)\) return;/,
+      `const __laresC4Watched = raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault");
+      const __laresC4Guard = isIslandToVesselMsg(raw);
+      if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-raw " + JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null, guard: __laresC4Guard, expected: opts.expectedType }));
+      if (!__laresC4Guard) { if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-guard-rejected"); return; }
+      if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-guard-accepted");`,
+    );
+    body = body.replace(
+      /if \(opts\.rejectOnTypes\?\.includes\(raw\.type\)\) \{/,
+      `if (opts.rejectOnTypes?.includes(raw.type)) { if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-reject-branch");`,
+    );
+    body = body.replace(
+      /if \(opts\.resetOnTypes\?\.includes\(raw\.type\)\) \{/,
+      `if (opts.resetOnTypes?.includes(raw.type)) { if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-breath-reset");`,
+    );
+    body = body.replace(
+      /if \(raw\.type !== opts\.expectedType\) return;/,
+      `if (raw.type !== opts.expectedType) return;
+      if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-expected-match");`,
+    );
+    body = body.replace(
+      /cleanup\(\);\n      resolve\(raw as T\);/,
+      `cleanup();
+      if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-resolve");
+      resolve(raw as T);`,
+    );
+  }
 
   // The worker's caught startup rejection normally stays in the worker console. A test-only marker
   // crosses the same worker message boundary, so the host can distinguish it from pre-worker silence.

@@ -144,6 +144,11 @@ async function testC4TraceHookIsOptIn() {
     "host:corpus-ready", "host:kel-carry:start", "host:kel-board:start", "host:daemon-vm:start",
     "host:worker-spawn", "worker:ready", "host:ready-fallback", "host:manifest-post",
     "raw.type === \"breath\"", "raw.type === \"ea\"", "worker:startup-error",
+    "worker:manifest-received", "worker:manifest-rejected", "worker:manifest-accepted",
+    "worker:pre-first-breath", "worker:pre-ea",
+    "host:awaitIslandMsg-raw", "host:awaitIslandMsg-guard-accepted",
+    "host:awaitIslandMsg-guard-rejected", "host:awaitIslandMsg-expected-match",
+    "host:awaitIslandMsg-resolve",
   ]) {
     assert.match(source, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing C4 marker ${marker}`);
   }
