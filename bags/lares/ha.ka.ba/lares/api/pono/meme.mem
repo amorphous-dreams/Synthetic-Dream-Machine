@@ -55,7 +55,7 @@ through a social network.
 
 A boot-legal meme should carry these surfaces:
 
-# memetic-wikitext doctype comment
+# the memetic-wikitext DOCTYPE declaration
 # document opener with declared `lar:` address
 # the toml `meta` slot with canonical payload and role
 # title plus one to three sentences naming scope and boundary
@@ -169,6 +169,6 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dlKXYwy8O6eESmjTuZRXzpnV37DnyLdu3PoTSqdkQYM
+<<^ code="&#x0003;">>ni:///sha-256;4x7cXAVZ0FawRJdq2ySjFdi9KurTZgACQj57DEFNp7o
 
 <<^ code="&#x0004;" -> to="?">>

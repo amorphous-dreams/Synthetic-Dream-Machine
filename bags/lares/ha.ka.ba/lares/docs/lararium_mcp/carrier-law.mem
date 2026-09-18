@@ -50,7 +50,7 @@ It should not begin from markdown files plus links.
 
 | Surface | Compiler check | Artifact consequence |
 |---|---|---|
-| doctype comment | present before active sigils | carrier class gate |
+| DOCTYPE declaration | present before active sigils | carrier class gate |
 | document opener | parses and matches `#meta.uri-path` | source identity |
 | `ahu #meta` | TOML payload parses | metadata extraction |
 | title / opening scope | readable boundary appears early | summary and receipt text |
@@ -170,6 +170,6 @@ Carrier truth stays ahead of syntax swell.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RaKraq8AvSNArRaqFQUxUDUaIVYUJnp_DSwGsv2LHFY
+<<^ code="&#x0003;">>ni:///sha-256;jxWQ99VWldWrFy9kek3-yERUkHfasGbVxf47u2eunOw
 
 <<^ code="&#x0004;" -> to="?">>
