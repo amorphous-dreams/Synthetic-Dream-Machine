@@ -165,12 +165,10 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     }
     personaGroupDocIdHex = anchors.personaGroupDocIdHex;
     // `identityDir()` (node-vessel-identity.ts) takes NO `dataDir` and resolves purely off `LAR_ROOT`
-    // (`larIdentityDir()`) — a `dataDir` parameter used to exist there and be silently ignored (this
-    // comment originally measured that live), and Follow-on 3 removed it rather than honoring it, since
-    // honoring it would need a second address-derivation scheme this file's storage law forbids. So EVERY
-    // vessel-identity read/write MUST still run inside `withLarRoot` (now `tests/harness/with-lar-root.ts`),
-    // or it silently reaches the real, non-isolated `~/.local/share/lares/identity` home instead of this
-    // test's isolated vessel.
+    // (`larIdentityDir()`) — honoring a caller-supplied `dataDir` would need a second address-derivation
+    // scheme this file's storage law forbids. So EVERY vessel-identity read/write MUST still run inside
+    // `withLarRoot` (`tests/harness/with-lar-root.ts`), or it silently reaches the real, non-isolated
+    // `~/.local/share/lares/identity` home instead of this test's isolated vessel.
     const founderSeed = await withLarRoot(FOUNDER.root, () => loadVesselSigningSeed());
     const founderIdentity = await withLarRoot(FOUNDER.root, () => generateOrLoadVesselIdentity());
     gatePubKey = founderIdentity.verifyingKey;

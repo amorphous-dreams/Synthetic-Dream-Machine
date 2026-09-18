@@ -70,9 +70,9 @@ async function verifyHex(bytes: Uint8Array, sigHex: string, keyHex: string): Pro
 export async function runBootInviteMint(opts: {
   expiresInDays?: number; storageDir?: string; now?: Date;
 }): Promise<BootInvite> {
-  // `opts.storageDir` no longer feeds a local read — `loadVesselVerifyingKey`/`loadVesselSigningSeed`
-  // resolve the identity home off LAR_ROOT/XDG alone (Follow-on 3: `identityDir()` no longer takes a
-  // `dataDir`). The field stays on `opts` for call-site shape compatibility; nothing reads it here now.
+  // `opts.storageDir` feeds no local read: `loadVesselVerifyingKey`/`loadVesselSigningSeed` resolve the
+  // identity home off LAR_ROOT/XDG alone (`identityDir()` takes no `dataDir`). The field stays on `opts`
+  // for call-site shape compatibility only.
   const nexusPubkey = await loadVesselVerifyingKey();
   const seed        = await loadVesselSigningSeed();
   const now         = opts.now ?? new Date();

@@ -109,11 +109,11 @@ function readBootstrap(bootstrapPath: string): BootstrapTiddlers {
   return (JSON.parse(raw.text ?? "{}") as { tiddlers?: BootstrapTiddlers }).tiddlers ?? {};
 }
 
-// `withLarRoot` now lives at `tests/harness/with-lar-root.ts` — the ONE sanctioned in-process
-// vessel-identity isolation pattern (Follow-on 3: `identityDir()` no longer takes a `dataDir`, so
-// every isolated call here MUST run inside this wrapper or it reaches the REAL, non-isolated
-// `~/.local/share/lares/identity` home). Previously reinvented here and in
-// `persona-ring-cross-operator-admit.test.ts` near-identically; both now import the one copy.
+// `withLarRoot` lives at `tests/harness/with-lar-root.ts` — the ONE sanctioned in-process
+// vessel-identity isolation pattern (`identityDir()` takes no `dataDir`, so every isolated call
+// here MUST run inside this wrapper or it reaches the REAL, non-isolated
+// `~/.local/share/lares/identity` home). This file and `persona-ring-cross-operator-admit.test.ts`
+// both import the one copy rather than each reinventing it.
 
 /** Open a bag doc from a SEPARATE repo — the reader's vantage, not the writer's.
  *

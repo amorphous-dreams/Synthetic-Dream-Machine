@@ -192,8 +192,8 @@ async function resolveCarrierIn(
 export async function runNexusCarryFor(opts: {
   sealHome: string; storageDir?: string;
 }): Promise<{ nym: string; sealEpochCid: string; carrierSig: string }> {
-  // `opts.storageDir` no longer feeds a local read (Follow-on 3: identity resolves off LAR_ROOT/XDG
-  // alone). Kept on `opts` for call-site shape compatibility; nothing reads it here now.
+  // `opts.storageDir` feeds no local read: identity resolves off LAR_ROOT/XDG alone. Kept on `opts` for
+  // call-site shape compatibility only.
   const roster = foundingRoster(readNexusDoc(opts.sealHome));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage to — import the charter (`lares nexus seal import`) first.");
@@ -359,8 +359,7 @@ export async function hasContractedInto(sealHome: string): Promise<boolean> {
 export async function runNexusAcceptCarriage(opts: {
   handleIndex: number; sealHome: string; storageDir?: string;
 }): Promise<{ nym: string; sealEpochCid: string; contractSig: string }> {
-  // `opts.storageDir` no longer feeds a local read (Follow-on 3). Kept on `opts` for call-site shape
-  // compatibility; nothing reads it here now.
+  // `opts.storageDir` feeds no local read. Kept on `opts` for call-site shape compatibility only.
   const roster = foundingRoster(readNexusDoc(opts.sealHome));
   if (roster.sealEpochCid.length === 0) {
     throw new NexusContractError("no seated charter epoch to bind carriage consent to — the Nexus must seat its charter first.");

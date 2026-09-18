@@ -64,8 +64,7 @@ export async function runRaiseSign(opts: {
       "and this signs nothing it cannot read whole.",
     );
   }
-  // `opts.storageDir` no longer feeds a local read (Follow-on 3). Kept on `opts` for call-site shape
-  // compatibility; nothing reads it here now.
+  // `opts.storageDir` feeds no local read. Kept on `opts` for call-site shape compatibility only.
   const root = await generateOrLoadPersonaGroupRoot(opts.handleIndex);
   const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(opts.handleIndex));
   return signRaiseGrant({
