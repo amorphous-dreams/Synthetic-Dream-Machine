@@ -35,6 +35,12 @@
 
 import { nexusIdentity, nexusScopeOrThrow, realmIdOfCharter, type NexusIdentityAt, type NexusIdentity } from "@lararium/mesh";
 
+// `admittedJoineeIsland` moved to `@lararium/mesh/nexus-identity.ts` — it composes only `nexusIdentity`/
+// `nexusScopeOrThrow` and touches no disk, so it belongs beside them rather than in this node-only module.
+// Re-exported here so existing importers (`init.ts`, `hearth-dial-pin.ts`) need no path change; the browser
+// leaf imports it straight from `@lararium/mesh`, with no node dependency.
+export { admittedJoineeIsland } from "@lararium/mesh";
+
 import { readNexusDoc, nexusCharterStands } from "./nexus-doc.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { larSealHome, larBootstrapPath } from "./vessel-paths.js";
@@ -75,29 +81,6 @@ export function nodeNexusStandsAt(opts: {
     anchorGateKey:   opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null,
     ownVesselKey:    opts.ownVesselKey,
   };
-}
-
-/**
- * The island an ADMITTED JOINEE resolves for its inception, from the payload its admit carried — the
- * founder's RESOLVED NexusIdentity at mint time (`kind`/`scope`, hearth-dial-pin.ts), fed through the
- * SAME `nexusIdentity` ruling the boot composes: a `charter` kind re-enters as a genesis epoch (every
- * charter holder derives the identical scope, by construction); any other kind — today `own`/`anchor`,
- * and an absent kind on an older payload — resolves through the anchor branch exactly as before, keyed
- * on the founder's own gate key. That is not a fallback of convenience: at every point on the gradient
- * below a charter, the founder's device IS the anchor its joinee dials (the fleet model), so the gate
- * key already names the right board there.
- */
-export function admittedJoineeIsland(opts: {
-  readonly hearthGatePubKey?:  string | null | undefined;
-  readonly hearthIslandKind?:  string | null | undefined;
-  readonly hearthIslandScope?: string | null | undefined;
-  readonly ownVesselKey:       string;
-}): string {
-  return nexusScopeOrThrow(
-    opts.hearthIslandKind === "charter" && opts.hearthIslandScope
-      ? nexusIdentity({ genesisEpochCid: opts.hearthIslandScope, ownVesselKey: opts.ownVesselKey })
-      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? null, ownVesselKey: opts.ownVesselKey }),
-  );
 }
 
 /** The resolved standing — the `kind`, the `scope`, and the `reading` an operator sees in a log line. */

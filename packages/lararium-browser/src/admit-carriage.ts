@@ -14,7 +14,7 @@
  * platform: no `location`, no `history`, no clock, no network. Same bytes in, same payload out — which is
  * what lets the crossing be tested without standing a relay up.
  */
-import type { DeviceAdmitPayload } from "@lararium/keyhive";
+import type { CarriedAdmitPayload } from "@lararium/keyhive";
 
 /** The kind this carriage admits. A payload announcing anything else gets refused, never guessed at. */
 export const ADMIT_KIND = "device-admit/v1" as const;
@@ -35,7 +35,7 @@ function fromBase64Url(b64url: string): string {
  * ARRIVE — the vessel then founds its own group and stands at the floor as an anon, which is a correct
  * outcome. A vessel that crashed on a bad paste would fail a human's typo as if it were an attack.
  */
-export function parseAdmitCarriage(carriage: string): DeviceAdmitPayload | null {
+export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null {
   const m = /(?:^|[#&?])admit=([A-Za-z0-9_-]+)/.exec(carriage);
   if (!m?.[1]) return null;
   let payload: unknown;
@@ -55,7 +55,7 @@ export function parseAdmitCarriage(carriage: string): DeviceAdmitPayload | null 
   if (typeof p["personaKelPrefix"] !== "string" || !p["personaKelPrefix"]) return null;
   if (typeof p["hearthTrueName"] !== "string" || !p["hearthTrueName"]) return null;
   if (!p["deviceEdge"] || typeof p["deviceEdge"] !== "object") return null;
-  return payload as DeviceAdmitPayload;
+  return payload as CarriedAdmitPayload;
 }
 
 /**
@@ -70,7 +70,7 @@ export function parseAdmitCarriage(carriage: string): DeviceAdmitPayload | null 
  * `parseAdmitCarriage` — so the kind-check and the binding-field refusal live in exactly one place, and a
  * paste never reaches a second, looser door. Returns null on anything it cannot read; a typo fails soft.
  */
-export function parseAdmitPaste(text: string): DeviceAdmitPayload | null {
+export function parseAdmitPaste(text: string): CarriedAdmitPayload | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
   const direct = parseAdmitCarriage(trimmed);
@@ -78,7 +78,7 @@ export function parseAdmitPaste(text: string): DeviceAdmitPayload | null {
   // The JSON the CLI writes to stdout — re-encoded into a carriage so ONE parser adjudicates it.
   if (trimmed.startsWith("{")) {
     try {
-      return parseAdmitCarriage(toAdmitCarriage(JSON.parse(trimmed) as DeviceAdmitPayload));
+      return parseAdmitCarriage(toAdmitCarriage(JSON.parse(trimmed) as CarriedAdmitPayload));
     } catch {
       return null;
     }
@@ -102,7 +102,7 @@ export function formatAdmitCommand(verifyingKey: string): string {
 }
 
 /** Encode a payload into the carriage form the CLI prints and a vessel reads. The round-trip inverse. */
-export function toAdmitCarriage(payload: DeviceAdmitPayload): string {
+export function toAdmitCarriage(payload: CarriedAdmitPayload): string {
   const json = JSON.stringify(payload);
   const bytes = new TextEncoder().encode(json);
   let bin = "";

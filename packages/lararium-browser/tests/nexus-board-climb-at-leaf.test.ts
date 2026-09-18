@@ -525,3 +525,53 @@ describe("★ WHO · carriage · vouch stay where they are, at the LEAF", () => 
       .toBeLessThan(gateReadAt);
   });
 });
+
+describe("★ ADMIT-AWARE ISLAND — an admitted leaf resolves the FOUNDER'S island, not merely its raw gate key", () => {
+  // The node closed the identical defect at its own admit door (`aa15cfb3b`, `admittedJoineeIsland` —
+  // now `@lararium/mesh/nexus-identity.ts`): an admit payload carries the founder's RESOLVED
+  // `hearthIslandKind`/`hearthIslandScope`, a SNAPSHOT at mint time, so a CLIMBED founder's joinee seats
+  // on the board the founder actually stands on rather than always reading `kind: "anchor"` off the raw
+  // `hearthGatePubKey`/`relayGatePubKey`. This leaf inherited the SAME defect (the follow-on `aa15cfb3b`
+  // itself flagged, "not built"). `openBrowserVessel` needs a real IndexedDB + WebCrypto substrate and
+  // cannot stand in a unit test (same limitation the fault-pin above already works around), so this reads
+  // the boot's own source — the ONLY reachable witness, same method as the pin above.
+  test("★ FAULT-PIN — the admit branch composes admittedJoineeIsland over the CARRIED island fields, not relayGatePubKey alone", () => {
+    // RED — the admit-aware resolution must exist and must read the carried island fields, beside the
+    // unchanged anti-relay binding (hearthGatePubKey stays byte-identical to before — Option A, node-side).
+    expect(bootSrc, "an admit must resolve through admittedJoineeIsland, the SAME ruling the node's init.ts composes")
+      .toContain("admittedJoineeIsland({");
+    expect(bootSrc, "the admit branch must read the carried hearthIslandKind")
+      .toContain("hearthIslandKind:  admit.hearthIslandKind");
+    expect(bootSrc, "the admit branch must read the carried hearthIslandScope")
+      .toContain("hearthIslandScope: admit.hearthIslandScope");
+    expect(bootSrc, "the admit branch must still carry the anti-relay binding beside the island fields")
+      .toContain("hearthGatePubKey:  admit.hearthGatePubKey");
+
+    // The admit-aware resolution must land INSIDE the `if (admit)` branch, not merely exist somewhere in
+    // the file unreachable from it.
+    const admitBranch = /if \(admit\) \{[\s\S]*?\n {2}\} else \{/.exec(bootSrc)?.[0] ?? "";
+    expect(admitBranch, "the admit branch must be findable").not.toBe("");
+    expect(admitBranch, "admittedJoineeIsland must be called from WITHIN the admit branch")
+      .toContain("admittedJoineeIsland({");
+
+    // CONTROL — the founding (no-admit) branch is UNCHANGED: it still resolves via nexusIdentity over
+    // nexusStandsAt (`relayGatePubKey ?? null`), and never reaches for admittedJoineeIsland.
+    const elseBranch = /\} else \{[\s\S]*?\n {2}\}\n/.exec(bootSrc.slice(bootSrc.indexOf("if (admit) {")))?.[0] ?? "";
+    expect(elseBranch, "the founding branch must be findable").not.toBe("");
+    expect(elseBranch, "the founding branch must still resolve via nexusIdentity(nexusStandsAt)")
+      .toContain("nexusIdentity(nexusStandsAt)");
+    expect(elseBranch, "the founding branch must NOT reach for admittedJoineeIsland — an OLDER payload with no "
+      + "island fields, or no admit at all, resolves EXACTLY as it did before this fix")
+      .not.toContain("admittedJoineeIsland");
+
+    // ORDER — the admit-aware resolution must land BEFORE climbNexusBoards AND runApplyAdmitPayload, since
+    // both consume the ONE nexusPubkey (the file's own "ONE statement of the inputs" law, restated for the
+    // admit-aware branch: a second, later-computed nexusPubkey would let the climb and the apply disagree).
+    const resolvedAt    = bootSrc.indexOf("if (admit) {");
+    const climbAt2      = bootSrc.indexOf("await climbNexusBoards");
+    const applyAdmitAt  = bootSrc.indexOf("await runApplyAdmitPayload");
+    expect(resolvedAt, "the admit-aware resolution must stand in the boot").toBeGreaterThan(-1);
+    expect(resolvedAt, "before the climb consumes nexusPubkey").toBeLessThan(climbAt2);
+    expect(resolvedAt, "before runApplyAdmitPayload consumes nexusPubkey").toBeLessThan(applyAdmitAt);
+  });
+});

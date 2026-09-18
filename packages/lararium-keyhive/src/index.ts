@@ -144,3 +144,30 @@ export interface DeviceAdmitPayload {
    */
   readonly hearthDaemonUrl?:       string | null;
 }
+
+/**
+ * The payload as CARRIED: `DeviceAdmitPayload` plus the hearth's gate key (the dial's binding) and the
+ * founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed founder's joinee seats
+ * where the founder actually stood rather than where its raw vessel key falls.
+ *
+ * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these three fields are added
+ * by object-spread AFTER the ceremony signature is computed (both the node CLI's `runDeviceAdmit` and the
+ * browser's admit-apply path add them post-signing), so they never enter the SIGNED byte image
+ * (`delegationProofBytes`, device-delegation.ts). Widening the base interface would blur that boundary —
+ * a reader of `DeviceAdmitPayload` alone should not have to ask which of its fields the signature covers.
+ *
+ * Exported here (not `@lararium/node`) for the same reason `DeviceAdmitPayload` is — so browser and
+ * mobile vessels can read a payload carrying these fields without taking a Node dependency. The node CLI
+ * mints this shape (`commands/device-admit.ts`); the browser's `admit-carriage.ts`/`open-browser-vessel.ts`
+ * read it, isomorphically, off a `#admit=` carriage.
+ */
+export type CarriedAdmitPayload = DeviceAdmitPayload & {
+  readonly hearthGatePubKey?: string;
+  /** How the founder's island resolved at admit time — never `torn` (a torn founder refuses before
+   *  minting: `admitBoardIsland`/`nodeNexusStanding` throws). Absent on an older payload; a reader
+   *  without it falls back to the pre-existing anchor-by-gate-key behavior, unchanged for `own`/`anchor`
+   *  founders. */
+  readonly hearthIslandKind?:  "own" | "anchor" | "charter" | "explicit";
+  /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
+  readonly hearthIslandScope?: string;
+};

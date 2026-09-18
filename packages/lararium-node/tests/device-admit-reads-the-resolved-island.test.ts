@@ -326,7 +326,16 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
     const initSrc  = readFileSync(new URL("../src/commands/init.ts", import.meta.url), "utf8");
     const admitSrc = readFileSync(new URL("../src/commands/device-admit.ts", import.meta.url), "utf8");
     const standingSrc = readFileSync(new URL("../src/nexus-standing.ts", import.meta.url), "utf8");
-    expect(standingSrc, "the composed resolver stands").toMatch(/export function admittedJoineeIsland\(/);
+    const meshIdentitySrc = readFileSync(
+      new URL("../../lararium-mesh/src/nexus-identity.ts", import.meta.url), "utf8");
+    // `admittedJoineeIsland` moved to `@lararium/mesh/nexus-identity.ts` (Follow-on 1 — it composes only
+    // `nexusIdentity`/`nexusScopeOrThrow` and touches no disk, so the browser leaf can import it with no
+    // node dependency). `nexus-standing.ts` now RE-EXPORTS it so `init.ts`'s import path needs no change —
+    // the weld below still pins that init.ts composes the shared resolution, never a restated inline copy.
+    expect(meshIdentitySrc, "the composed resolver stands in mesh, platform-blind")
+      .toMatch(/export function admittedJoineeIsland\(/);
+    expect(standingSrc, "nexus-standing.ts re-exports it rather than restating it")
+      .toMatch(/export \{ admittedJoineeIsland \} from "@lararium\/mesh";/);
     expect(initSrc, "init.ts composes the shared resolution rather than restating it").toMatch(/admittedJoineeIsland\(/);
     expect(admitSrc, "device-admit.ts carries the resolved kind").toMatch(/hearthIslandKind/);
     expect(admitSrc, "device-admit.ts carries the resolved scope").toMatch(/hearthIslandScope/);

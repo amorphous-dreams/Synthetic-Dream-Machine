@@ -26,27 +26,12 @@ import {
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
-import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
+import { runDeviceAdmitEdge, type DeviceAdmitPayload, type CarriedAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland, nodeNexusStanding } from "../nexus-standing.js";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 
-export type { DeviceAdmitPayload } from "@lararium/keyhive";
-
-/**
- * The payload as CARRIED: the keyhive's `DeviceAdmitPayload` plus the hearth's gate key (the dial's
- * binding) and the founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed
- * founder's joinee seats where the founder actually stood rather than where its raw vessel key falls.
- */
-export type CarriedAdmitPayload = DeviceAdmitPayload & {
-  readonly hearthGatePubKey?: string;
-  /** How the founder's island resolved at admit time — never `torn` (a torn founder refuses before
-   *  minting: `admitBoardIsland` throws). Absent on an older payload; a reader without it falls back to
-   *  the pre-existing anchor-by-gate-key behavior, unchanged for `own`/`anchor` founders. */
-  readonly hearthIslandKind?:  "own" | "anchor" | "charter" | "explicit";
-  /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
-  readonly hearthIslandScope?: string;
-};
+export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive";
 
 /**
  * THE ISLAND THIS DOOR READS A PER-NEXUS BOARD AT — the founder's own, resolved exactly as its BOOT

@@ -330,7 +330,7 @@ export * from "./crossroads-cry.js";
 
 export { rosterStanding, type RosterStanding } from "./roster-standing.js";
 export { nexusPhase, type NexusPhase, type NexusPhaseName } from "./nexus-phase.js";
-export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, nexusIslandsBelow,
+export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, nexusIslandsBelow, admittedJoineeIsland,
          type NexusIdentity, type NexusIdentityAt } from "./nexus-identity.js";
 // The boards a CLIMB moves. THREE of the seven are deliberately absent from this surface — WHO, carriage
 // and vouch — and `nexus-board-climb`'s header carries the reason for each refusal.

@@ -31,7 +31,7 @@ import {
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
-  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, type NexusIdentityAt,
+  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
   climbNexusBoards, carryPersonaKelUpTheGradient,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
@@ -59,7 +59,7 @@ import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
 import { vesselDyads } from "@lararium/mesh";
-import type { DeviceAdmitPayload } from "@lararium/keyhive";
+import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
 import {
@@ -193,7 +193,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * failure. Present, `runApplyAdmitPayload` seeds this vessel's OWN sovereign social docs and adopts
    * the founder's persona doc (membership crosses; the daemon bag stays sovereign-per-vessel).
    */
-  admit?:           DeviceAdmitPayload;
+  admit?:           CarriedAdmitPayload;
   /**
    * A carried TRACELESS boot-invite (membership-doctrine #the-invite) — a sealed, single-use capability the
    * vessel spends ON BOOT to cross into the Nexus. CARRIED, never fetched (a URL fragment / paste / QR that
@@ -437,9 +437,30 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     anchorGateKey: relayGatePubKey ?? null,
     ownVesselKey:  vesselVerifyingKey,
   };
-  const nexusStanding = nexusIdentity(nexusStandsAt);
-  const nexusPubkey = nexusScopeOrThrow(nexusStanding);
-  console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
+  // AN ADMIT CARRIES THE FOUNDER'S RESOLVED ISLAND — a SNAPSHOT (`hearthIslandKind`/`hearthIslandScope`,
+  // `aa15cfb3b`) of what the founder itself stood on at mint time. Read it here, not inferred from
+  // `relayGatePubKey` alone: `relayGatePubKey` is the page's OWN independent `?gate=` param (see
+  // `main.ts`) and stays exactly what it always was — the DIAL binding `nexusStandsAt.anchorGateKey`
+  // composes for the FOUNDING (no-admit) branch below. Without this branch, a CLIMBED founder's admitted
+  // leaf always resolved `kind: "anchor"` off the raw gate key — the identical defect the node closed at
+  // its own admit door (`admittedJoineeIsland`, `@lararium/mesh`) — landing this leaf on a board disjoint
+  // from the one its founder actually stands on. `admittedJoineeIsland` is PURE and platform-blind, so
+  // this leaf composes the SAME ruling the node's `init.ts` does, not a second reading of it.
+  let nexusPubkey: string;
+  if (admit) {
+    nexusPubkey = admittedJoineeIsland({
+      hearthGatePubKey:  admit.hearthGatePubKey,
+      hearthIslandKind:  admit.hearthIslandKind,
+      hearthIslandScope: admit.hearthIslandScope,
+      ownVesselKey:      vesselVerifyingKey,
+    });
+    console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (admitted — the founder's resolved `
+      + `island at mint time, kind=${admit.hearthIslandKind ?? "anchor (older payload, no island fields carried)"})`);
+  } else {
+    const nexusStanding = nexusIdentity(nexusStandsAt);
+    nexusPubkey = nexusScopeOrThrow(nexusStanding);
+    console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
+  }
 
   // ── THE CLIMB, at the leaf — the boards a moved island would otherwise leave behind ──────────────────
   // `climbNexusBoards` lives in `@lararium/mesh` precisely so both shores share it, and its header already

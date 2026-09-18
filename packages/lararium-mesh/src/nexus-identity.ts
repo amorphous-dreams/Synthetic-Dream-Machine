@@ -198,6 +198,35 @@ export function nexusScopeOrThrow(id: NexusIdentity): string {
 }
 
 /**
+ * The island an ADMITTED JOINEE resolves for its inception, from the payload its admit carried — the
+ * founder's RESOLVED `NexusIdentity` at mint time (`kind`/`scope`, a SNAPSHOT), fed through this SAME
+ * `nexusIdentity` ruling: a `charter` kind re-enters as a genesis epoch (every charter holder derives
+ * the identical scope, by construction); any other kind — today `own`/`anchor`, and an absent kind on
+ * an older payload — resolves through the anchor branch exactly as before, keyed on the founder's own
+ * gate key. That is not a fallback of convenience: at every point on the gradient below a charter, the
+ * founder's device IS the anchor its joinee dials (the fleet model), so the gate key already names the
+ * right board there.
+ *
+ * PURE and PLATFORM-BLIND — every shore that mints or applies a carried admit composes it identically,
+ * whether the joinee reads its admit off a node CLI payload file or a browser's `#admit=` carriage. It
+ * lives here (not in a node-only module) precisely so the browser leaf can import it with no node
+ * dependency, the same reason `DeviceAdmitPayload` itself lives in `@lararium/keyhive` rather than
+ * `@lararium/node`.
+ */
+export function admittedJoineeIsland(opts: {
+  readonly hearthGatePubKey?:  string | null | undefined;
+  readonly hearthIslandKind?:  string | null | undefined;
+  readonly hearthIslandScope?: string | null | undefined;
+  readonly ownVesselKey:       string;
+}): string {
+  return nexusScopeOrThrow(
+    opts.hearthIslandKind === "charter" && opts.hearthIslandScope
+      ? nexusIdentity({ genesisEpochCid: opts.hearthIslandScope, ownVesselKey: opts.ownVesselKey })
+      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? null, ownVesselKey: opts.ownVesselKey }),
+  );
+}
+
+/**
  * ── CONNECTING MOVES THE BOARD, so a connect is a MIGRATION and never a field assignment ────────
  *
  * A vessel that climbs from a private nexus of one to a seated charter re-keys every per-Nexus board
