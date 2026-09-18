@@ -92,6 +92,8 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 
 ''Approved flowstates, 2026-09-16.'' C4 now carries a test-local manifest-timing witness: `ready → manifest` passes for an immediate browser worker, the 1,500 ms Node compatibility fallback remains explicit, and a delayed browser `ready` records `manifest → ready` as an unresolved race candidate. A2 puts each vessel under its own `LAR_ROOT`, consumes `runInit`'s returned bootstrap path and rejects the stale genesis location; node typechecking passes, while the real opt-in mesh run still owes its isolated window. C1's `where` now probes typed slots even when canon is mounted; its mounted-canon/working-slot witness and TW5 typecheck pass. W5 stays unclaimed.
 
+''C4 receipt boundary, 2026-09-17.'' `93e234f1c` keeps `vite.log` confined to Vite. When `ARTIFACT_DIR` stands, the runner additionally writes `weld.log` and `c4.log`, teeing each child stream while retaining that child's own pipeline status and while still running both drivers. Its fake-tool witness passes with a Weld red, a C4 red, and a green pair. This makes the recurring C4 timeout inspectable; it does not explain or cure the boot stall.
+
 ''Projection follow-up, source audit rather than a reproduced product red.'' `tw5-projection.ts` adds render IDs to a module-level map without retiring detached nodes. The unknown-ID control proves only unknown-ID handling. Next, render a valid target, detach it, send its former ID, and test that no handler fires; retain a live-target positive control. Also tighten the witness's frame ordering and worker-error attribution: a same-worker frame alone does not establish causation, and an unrelated worker fault must not convict the unknown-ID probe. Preserve named state transitions and the disabled-message control. Ensure CI supplies the generated TW5 core so the retained-reveal fixture executes rather than skips.
 
 W3 closes under its named actions and measured limits. D3 gains source wiring, with hosted execution still owed. C4 boot stalls, W5's node-disk leg, full Python-suite health and admitted relay proof remain separate debts. The deeper scouts below retain their historical measurements rather than claiming a fresh full audit.
@@ -587,6 +589,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ObfHThkoDEgUqMupO62GYws-MzBk_4p4L6aH3nKrKo4
+<<^ code="&#x0003;">>ni:///sha-256;m0Hm2fTz0n_EVuoJVJJPt3BN9BIWdKTpi3aKhL4sV_A
 
 <<^ code="&#x0004;" -> to="?">>
