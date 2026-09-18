@@ -1,5 +1,23 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-beckwith">>
+```toml meta
+cacheable = false
+file-path = "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/kumulipo-beckwith.mem"
+l-space   = "stable"
+role      = "the Kumulipo ablation's shuffled leg, Beckwith carrier — envelope and wā markers verbatim, the chant's lines seeded-shuffled in place; held whole as the text the testbed reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-beckwith"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/held>>
+```toml meta
+type = "text/x-memetic-wikitext"
+```
+
+````
 <<^ &#x0001; ? -> lar:///ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-beckwith>>
 ```toml iam
 cacheable = false
@@ -11748,3 +11766,10 @@ MAKEMSON, MAUD. The Morning Star Rises. New Haven, 1941.
 <<^ &#x0003;>>
 
 <<^ &#x0004; -> ?>>
+````
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;R4ouMqTni_sSyQ-R-vafEcxqZLvsZtfJKETAm0rV2M0
+
+<<^ code="&#x0004;" -> to="?">>

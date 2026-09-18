@@ -20,6 +20,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import held_text as ht  # noqa: E402
 import memeast_fold as mf  # noqa: E402
 
 _PKG = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
@@ -33,8 +34,9 @@ def main() -> int:
     was = doc.get("specimens", {})
     now = {}
     for name in sorted(f for f in os.listdir(_DIR) if f.endswith(".mem")):
-        with open(os.path.join(_DIR, name), "rb") as fh:
-            data = fh.read()
+        # A carrier holding a specimen pins what it holds: the text the fold reads, byte for byte.
+        with open(os.path.join(_DIR, name), encoding="utf-8") as fh:
+            data = ht.held(fh.read()).encode("utf-8")
         now[name] = {"hash": mf.structural_hash(mf.fold(data)),
                      "sha256": hashlib.sha256(data).hexdigest()}
 

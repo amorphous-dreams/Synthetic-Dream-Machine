@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import os
 import random
+import shutil
 
 import pytest
 
-from kumulipo_sections import section_corpus_file, source_text_span
+from kumulipo_sections import held, section_corpus_file, source_text_span
 from placebo_kumulipo import (
     CARRIERS,
     DEFAULT_SEED,
@@ -20,6 +21,7 @@ from placebo_kumulipo import (
     _is_marker,
     _kept_slots,
     placebo_text,
+    write_fixture,
 )
 from test_kumulipo_sections import _mini_beckwith, _mini_liliuokalani
 
@@ -124,6 +126,26 @@ def test_missing_source_text_fails_loud():
 
 # ── the committed fixtures (regeneration witness, gated on the real shelf) ───────────────
 
+
+@pytest.mark.skipif(shutil.which("lares") is None, reason="the lares CLI stamps the block check")
+def test_the_fixture_writer_rebuilds_every_committed_carrier_byte_for_byte(tmp_path):
+    """The generator's writer, fed the text a committed fixture holds, rebuilds that fixture exactly —
+    head, role, holding ahu and block check. A scratch tree mirrors the fixture's repo-relative home,
+    so the `file-path` the writer derives matches the one committed."""
+    (tmp_path / "bags").mkdir()
+    for arm in ("placebo", "shuffled"):
+        home = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "fixtures",
+                            f"{arm}-kumulipo")
+        scratch = tmp_path / "packages" / "lararium-sensorium" / "scripts" / "fixtures" / f"{arm}-kumulipo"
+        scratch.mkdir(parents=True)
+        for basename in CARRIERS:
+            with open(os.path.join(home, basename), encoding="utf-8") as fh:
+                committed = fh.read()
+            written = write_fixture(str(scratch), basename, held(committed), arm=arm)
+            with open(written, encoding="utf-8") as fh:
+                assert fh.read() == committed, f"{arm}/{basename}"
+
+
 # this suite lives in scripts/testbeds/, so the repo root sits five levels up
 _REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))))
@@ -136,7 +158,7 @@ def test_committed_fixtures_rederive_byte_identical():
         with open(os.path.join(_LIBRARY, basename), encoding="utf-8") as fh:
             real = fh.read()
         with open(os.path.join(FIXTURES_DIR, basename), encoding="utf-8") as fh:
-            committed = fh.read()
+            committed = held(fh.read())
         assert placebo_text(real, basename, seed=DEFAULT_SEED) == committed
 
 

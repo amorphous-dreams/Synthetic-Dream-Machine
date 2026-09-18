@@ -1,5 +1,23 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-liliuokalani">>
+```toml meta
+cacheable = false
+file-path = "packages/lararium-sensorium/scripts/fixtures/shuffled-kumulipo/kumulipo-liliuokalani.mem"
+l-space   = "stable"
+role      = "the Kumulipo ablation's shuffled leg, Liliʻuokalani carrier — envelope and wā markers verbatim, the chant's lines seeded-shuffled in place; held whole as the text the testbed reads"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-liliuokalani"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/held>>
+```toml meta
+type = "text/x-memetic-wikitext"
+```
+
+````
 <<^ &#x0001; ? -> lar:///ha.ka.ba/lares/testbed/shuffled/kumulipo/kumulipo-liliuokalani>>
 ```toml iam
 cacheable = false
@@ -4125,3 +4143,10 @@ KAPAAKEA.
 <<^ &#x0003;>>
 
 <<^ &#x0004; -> ?>>
+````
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;99cQGXTD9wKKwljhpFeRcpTeIe270uR1P1akYxF5X_U
+
+<<^ code="&#x0004;" -> to="?">>

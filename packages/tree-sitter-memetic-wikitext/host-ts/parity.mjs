@@ -6,7 +6,8 @@
  * manifest the py host bakes. A full pass witnesses cross-host parity byte-for-byte —
  * UTF-16 conversion, containment order, canonical JSON — through one sha256 per specimen.
  *
- * The ground is `fixtures/specimens/`, which moves only in a commit that also moves it.
+ * The ground is `fixtures/specimens/`, which moves only in a commit that also moves it. A carrier
+ * holding a specimen folds as the text it holds (`held-text.mjs`), exactly as the py host reads it.
  * A hash that drifts here names a disagreement between the hosts, never a content edit.
  */
 import { readFile, readdir } from "node:fs/promises";
@@ -14,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { loadArtifact } from "./loader.mjs";
 import { fold, structuralHash } from "./fold.mjs";
+import { heldBytes } from "./held-text.mjs";
 
 const PKG_DIR = path.normalize(path.join(path.dirname(fileURLToPath(import.meta.url)), ".."));
 const SPECIMEN_DIR = path.join(PKG_DIR, "fixtures", "specimens");
@@ -36,7 +38,7 @@ for (const [name, want] of Object.entries(manifest.specimens)) {
     missing.push(name); // a specimen the manifest names must stand beside it
     continue;
   }
-  const got = structuralHash(fold(new Uint8Array(data), artifact));
+  const got = structuralHash(fold(heldBytes(new Uint8Array(data)), artifact));
   if (got === want.hash) matched += 1;
   else drifted.push(`${name}  ts:${got.slice(0, 16)}  py:${want.hash.slice(0, 16)}`);
 }

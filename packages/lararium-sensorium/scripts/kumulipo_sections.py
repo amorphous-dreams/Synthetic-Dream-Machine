@@ -31,6 +31,17 @@ from __future__ import annotations
 
 import os
 import re
+import sys
+
+# ── the fixture carriers — a text HELD whole ─────────────────────────────────────────────
+# A fixture the testbeds measure stands as a canonical carrier holding its text in one typed ahu;
+# `held` gives that text back byte for byte, and `hold` writes a carrier around a generated one.
+# The one reader lives beside the carrier grammar's host, which reads its specimens the same way.
+_HOST_PY = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                         "..", "..", "tree-sitter-memetic-wikitext", "host-py"))
+if _HOST_PY not in sys.path:
+    sys.path.insert(0, _HOST_PY)
+from held_text import held, held_type, hold  # noqa: E402  (re-exported for the kumulipo beds)
 
 # ── the #source-text carrier (the extraction shore) ──────────────────────────────────────
 # The house wraps a witness meme's bare text in ONE `<<~ ahu #source-text >> … <<~/ahu >>`

@@ -45,6 +45,7 @@ from placebo_kumulipo import (
     _find_repo_root,
     _is_marker,
     _scopes,
+    write_fixture,
     CARRIERS,
     DEFAULT_SEED,
     LIBRARY_DIR,
@@ -147,8 +148,7 @@ def generate(library_dir: str, out_dir: str, seed: int = DEFAULT_SEED) -> dict:
             real_text = fh.read()
         fake_text = shuffle_text(real_text, basename, seed=seed)
         report["carriers"][basename] = _verify_mirror(basename, real_text, fake_text)
-        with open(os.path.join(out_dir, basename), "w", encoding="utf-8") as fh:
-            fh.write(fake_text)
+        write_fixture(out_dir, basename, fake_text, arm="shuffled")
     return report
 
 

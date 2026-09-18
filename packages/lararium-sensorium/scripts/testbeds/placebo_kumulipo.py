@@ -45,9 +45,11 @@ import json
 import os
 import random
 import re
+import subprocess
 import sys
 
 from kumulipo_sections import (
+    hold,
     _CHANT_RE,
     _KALAKAUA_HEAD_RE,
     _KAWA_RE,
@@ -265,6 +267,34 @@ def _verify_mirror(basename: str, real_text: str, fake_text: str) -> dict:
     return report
 
 
+#: What each control leg does to the chant, as its fixture carrier's role states it.
+_LEGS = {
+    "placebo": "order-1 babble where the chant stood",
+    "shuffled": "the chant's lines seeded-shuffled in place",
+}
+_WHO = {"kumulipo-beckwith": "Beckwith", "kumulipo-liliuokalani": "Liliʻuokalani"}
+
+#: The media type a control's text declares for itself — the dialect its envelope was written in.
+HELD_TYPE = "text/x-memetic-wikitext"
+
+
+def write_fixture(out_dir: str, basename: str, text: str, *, arm: str) -> str:
+    """Write one control as a canonical carrier HOLDING `text` whole, and stamp its block check
+    through `lares meme normalize` — the one door every carrier's check passes through. The testbeds
+    read the held text back byte for byte (`kumulipo_sections.held`). Returns the written path."""
+    stem = os.path.splitext(basename)[0]
+    path = os.path.join(out_dir, basename)
+    rel = os.path.relpath(os.path.abspath(path), _find_repo_root(out_dir)).replace(os.sep, "/")
+    role = (f"the Kumulipo ablation's {arm} leg, {_WHO[stem]} carrier — envelope and wā markers "
+            f"verbatim, {_LEGS[arm]}; held whole as the text the testbed reads")
+    carrier = hold(text, uri=f"ha.ka.ba/lares/testbed/{arm}/kumulipo/{stem}", file_path=rel,
+                   role=role, held_type=HELD_TYPE)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(carrier)
+    subprocess.run(["lares", "meme", "normalize", path], check=True, stdout=subprocess.DEVNULL)
+    return path
+
+
 def generate(library_dir: str, out_dir: str, seed: int = DEFAULT_SEED) -> dict:
     """Generate both placebo carriers from the real library shelf into `out_dir`,
     self-witnessing the mirror before any byte lands. Returns the witness report."""
@@ -276,8 +306,7 @@ def generate(library_dir: str, out_dir: str, seed: int = DEFAULT_SEED) -> dict:
             real_text = fh.read()
         fake_text = placebo_text(real_text, basename, seed=seed)
         report["carriers"][basename] = _verify_mirror(basename, real_text, fake_text)
-        with open(os.path.join(out_dir, basename), "w", encoding="utf-8") as fh:
-            fh.write(fake_text)
+        write_fixture(out_dir, basename, fake_text, arm="placebo")
     return report
 
 

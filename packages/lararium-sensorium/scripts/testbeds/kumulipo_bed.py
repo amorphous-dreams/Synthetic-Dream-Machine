@@ -46,6 +46,8 @@ from __future__ import annotations
 import os
 import re
 
+from kumulipo_sections import held
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 # fixtures/ stays in the parent scripts/ dir, one level up from this testbeds/ home
 _FIX = os.path.join(os.path.dirname(_HERE), "fixtures", "shuffled-kumulipo")
@@ -73,8 +75,9 @@ BRANCH_PARENT_WA = 12
 
 
 def _read(name: str) -> "list[str]":
+    """The lines of the text a fixture carrier holds — the bed measures that text, never its carrier."""
     with open(os.path.join(_FIX, name), encoding="utf-8") as f:
-        return f.read().splitlines()
+        return held(f.read()).splitlines()
 
 
 def _hawaiian_lines() -> "list[str]":

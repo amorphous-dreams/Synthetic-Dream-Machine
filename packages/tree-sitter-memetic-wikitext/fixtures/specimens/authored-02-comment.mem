@@ -1,0 +1,7 @@
+title: authored-02-comment
+role: specimen — the comment, which renders as nothing and folds to its own kind
+type: text/x-memetic-wikitext
+
+<!-- a comment the host renders as nothing -->
+
+Prose after the comment reads as text.

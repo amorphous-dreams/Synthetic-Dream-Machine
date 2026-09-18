@@ -1,5 +1,23 @@
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/specimens/wild-01-voices">>
+```toml meta
+cacheable = false
+file-path = "packages/tree-sitter-memetic-wikitext/fixtures/specimens/wild-01-voices.mem"
+l-space   = "stable"
+role      = "a parity specimen for the carrier grammar — a meme written before the framing ruling, held whole so the fold reads its pre-ruling text byte for byte"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/testbed/specimens/wild-01-voices"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/held>>
+```toml meta
+type = "text/x-memetic-wikitext"
+```
+
+````
 <<^ &#x0001; ? -> lar:///ha.ka.ba/lares/docs/lares/voices>>
 ```toml iam
 cacheable = false
@@ -252,3 +270,10 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/lares/voices` MUST 
 <<^ &#x0003;>>
 
 <<^ &#x0004; -> ?>>
+````
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Ev-YxZQi8dY3vOQKK-LAJVpNtCNJoTNHM5o4XPbwduM
+
+<<^ code="&#x0004;" -> to="?">>

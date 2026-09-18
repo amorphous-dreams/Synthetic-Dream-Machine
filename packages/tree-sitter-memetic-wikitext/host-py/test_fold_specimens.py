@@ -10,6 +10,8 @@ Each property below sits on ground chosen to suit it:
 
   · REGRESSION SENTINEL — hashes pinned over FROZEN specimens in `fixtures/specimens/`. The input
     lives beside the pinned hash, so a hash can only move by a commit that also moves the specimen.
+    A specimen written in another grammar's time stands as a carrier HOLDING it (`held_text`), and
+    the fold reads what the carrier holds — the text itself, byte for byte.
   · CONSTRUCT COVERAGE — the specimens must reach every named node type the grammar DECLARES, read
     from `src/node-types.json` (the parser generator writes it; no hand-kept list to drift).
   · LIVING GROUND — the real corpus keeps a gate, but on INVARIANTS rather than hashes: no meme
@@ -31,6 +33,7 @@ from __future__ import annotations
 import json
 import os
 
+import held_text as ht
 import memeast_fold as mf
 import pytest
 
@@ -46,6 +49,12 @@ def _specimens() -> list[str]:
     return sorted(f for f in os.listdir(_SPECIMEN_DIR) if f.endswith(".mem"))
 
 
+def _ground(name: str) -> bytes:
+    """The bytes the fold reads for a specimen: the text its carrier holds, or the file itself."""
+    with open(os.path.join(_SPECIMEN_DIR, name), encoding="utf-8") as fh:
+        return ht.held(fh.read()).encode("utf-8")
+
+
 def _declared_named_types() -> set[str]:
     """Every named node type the GRAMMAR declares. The parser generator writes this file, so the
     universe this suite measures against cannot drift from the grammar the way a hand-kept list would."""
@@ -53,11 +62,10 @@ def _declared_named_types() -> set[str]:
         return {n["type"] for n in json.load(fh) if n.get("named")}
 
 
-def _named_types_in(path: str) -> set[str]:
+def _named_types_in(name: str) -> set[str]:
     from tree_sitter import Parser
 
-    with open(path, "rb") as fh:
-        tree = Parser(mf._language()).parse(fh.read())
+    tree = Parser(mf._language()).parse(_ground(name))
     seen, stack = set(), [tree.root_node]
     while stack:
         node = stack.pop()
@@ -86,8 +94,7 @@ def test_specimen_folds_to_its_pinned_hash(name):
         f"{name} carries no pinned hash. A specimen the manifest does not name is a specimen nothing "
         f"gates — re-bake with `python host-py/bake_specimens.py` or add it deliberately."
     )
-    with open(os.path.join(_SPECIMEN_DIR, name), "rb") as fh:
-        data = fh.read()
+    data = _ground(name)
     assert mf.structural_hash(mf.fold(data)) == pinned[name]["hash"], (
         f"{name} folds differently than pinned. The specimen has NOT changed unless this commit "
         f"changed it, so this reads as a grammar or fold change — intended (re-bake in the same "
@@ -112,7 +119,7 @@ def test_specimens_reach_every_declared_node_type():
     declared = _declared_named_types()
     reached: set[str] = set()
     for name in _specimens():
-        reached |= _named_types_in(os.path.join(_SPECIMEN_DIR, name))
+        reached |= _named_types_in(name)
     missing = sorted(declared - reached)
     assert not missing, (
         "The grammar declares node types no frozen specimen exercises, so a change to any of them "
@@ -200,8 +207,7 @@ def test_every_span_slices_back_into_its_own_ground():
 def test_fold_is_deterministic_over_a_specimen(name):
     """Same bytes, same tree — over real specimens rather than a four-line string, so the claim covers
     every construct the frozen set reaches."""
-    with open(os.path.join(_SPECIMEN_DIR, name), "rb") as fh:
-        data = fh.read()
+    data = _ground(name)
     first, second = mf.fold(data), mf.fold(data)
     assert mf.canonical_json(first) == mf.canonical_json(second)
     assert mf.structural_hash(first) == mf.structural_hash(second)

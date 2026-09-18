@@ -25,7 +25,7 @@
     "gates": "pnpm run gate:generate-parity && pnpm run gate:fold && pnpm run gate:fold-ts",
     "build:wasm": "tree-sitter build --wasm -o tree-sitter-memetic_wikitext.wasm",
     "release:bundle": "pnpm run gates && pnpm run build:wasm && node tools/bundle-release.mjs",
-    "gate:fold-ts": "node --test host-ts/fold.test.mjs && node host-ts/parity.mjs"
+    "gate:fold-ts": "node --test host-ts/fold.test.mjs host-ts/held-text.test.mjs && node host-ts/parity.mjs"
   },
   "devDependencies": {
     "tree-sitter-cli": "0.27.0"
