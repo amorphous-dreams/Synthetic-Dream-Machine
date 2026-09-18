@@ -50,7 +50,6 @@ interface IslandSlot {
   worker:      VesselWorkerHandle;
   /** Vessel side of the island sync channel. Close on unmount (Law §7). */
   mainPort:    MessagePort;
-  lastUsedAt:  number;
 }
 
 interface ColdSlot {
@@ -188,10 +187,9 @@ export class VesselIslandPoolCore {
   /** Mount a wiki as a live (`wela`) island. `opts.pinned` exempts from LRU.
    *  Single-flight per grain: concurrent activations of one wikiId fold into ONE. */
   async mountWiki(wikiId: string, spec: WikiMountSpec, opts: { pinned?: boolean } = {}): Promise<void> {
-    // Already live — refresh recency, done.
+    // Already live — done.
     const existing = this._slots.get(wikiId);
     if (existing && existing.temperature === "wela") {
-      existing.lastUsedAt = Date.now();
       return;
     }
     // Single-flight activation latch: an activation for this grain already runs →
@@ -202,8 +200,6 @@ export class VesselIslandPoolCore {
     const inFlight = this._activating.get(wikiId);
     if (inFlight) {
       await inFlight;
-      const live = this._slots.get(wikiId);
-      if (live && live.temperature === "wela") live.lastUsedAt = Date.now();
       return;
     }
     const activation = this._activateWiki(wikiId, spec, opts);
@@ -229,8 +225,6 @@ export class VesselIslandPoolCore {
    */
   async ensureWiki(wikiId: string): Promise<boolean> {
     if (this.has(wikiId)) {
-      const slot = this._slots.get(wikiId);
-      if (slot && slot.temperature === "wela") slot.lastUsedAt = Date.now();
       return true;
     }
     const retained = this._mountSpecs.get(wikiId);
@@ -328,7 +322,7 @@ export class VesselIslandPoolCore {
 
     this._mountFailures.delete(wikiId);   // a clean mount clears the ledger
     this._slots.set(wikiId, {
-      temperature: "wela", pinned, wikiId, worker, mainPort, lastUsedAt: Date.now(),
+      temperature: "wela", pinned, wikiId, worker, mainPort,
     });
     this._onEa?.(wikiId);   // the island breathed; respond
   }
@@ -432,7 +426,6 @@ export class VesselIslandPoolCore {
         `(the designation must name a supervised, live island; no ambient fallback)`,
       );
     }
-    slot.lastUsedAt = Date.now();
     slot.worker.post(mkSensoriumSignal(msg));
   }
 
