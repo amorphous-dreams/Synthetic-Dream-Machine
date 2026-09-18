@@ -99,6 +99,9 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 # ''TOML 1.1 in full'' — a hand port of the sublimehq grammar, the only one covering it.
 # ''Ship'' — on the operator's word: `release/3.0.0` → tag → cut on merge to `main`, then the parent's submodule pointer.
 
+''Pinned — approved, enact on the next quiet window (a Sonnet spirit):''
+* ''The tree-sitter four-backtick fence'' — `packages/tree-sitter-memetic-wikitext/grammar.js` `fenced_block` closes a fence at ANY triple-backtick line, so it reads inside a four-backtick fence that `fence-mask` holds as one block. Six held-text carriers and 73 `bags/` carriers that quote examples in four-backtick fences parse without error nodes yet lose the block. The cure: a fence closes only on a run at least as long as its opener (the rule `fence-mask` already keeps), red-first against a four-backtick specimen holding a triple-backtick line; then regenerate the committed `src/parser.c` with the package's own generator and re-bake the corpus folds (`gate:fold`, `gate:fold-ts`, `specimens-0.1.0.json`), each re-pin traced to the fence. Operator-approved 2026-09-18.
+
 ''Hazards:'' two worktrees edit one grammar file, so merge in order and re-run every gate after each merge · the parent tree carries another writer's open work, so every commit stays `git commit --only`.
 
 <<~/ahu>>
@@ -118,6 +121,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VCZymQ1c-IiLP8lPUpqlYycgq-FIMHjuu5rA0BFN6n0
+<<^ code="&#x0003;">>ni:///sha-256;LCDMbvjCjCWvQKycRpJuu03KNx4-Lp2qeCKnDOSP81s
 
 <<^ code="&#x0004;" -> to="?">>
