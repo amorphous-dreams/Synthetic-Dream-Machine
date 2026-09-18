@@ -224,10 +224,10 @@ the top of the page — a declaration doing its work for one reader by defacing 
 So a carrier that shows its own source declares inside a comment its other reader already hides:
 
 ```
-<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->
 ```
 
-**THE CORPUS KEPT THIS LAW BEFORE ANYONE WROTE IT.** Eleven of eleven markdown carriers wear the
+**THE CORPUS KEPT THIS LAW BEFORE ANYONE WROTE IT.** Four of four markdown carriers wear the
 comment form, with no counter-example anywhere. The form reads as a FUNCTION OF THE FILE and never as
 a spelling choice: wearing the wrong one for your kind fails, and wearing the right one passes,
 whichever it happens to be.
@@ -1019,6 +1019,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - `"lar:///ha.ka.ba/lares/api/pono/kapu"`
 - `"lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
 
-<<^ code="&#x0003;">>ni:///sha-256;6xbpqP6YKR8zf2ZnACaZhAh3UeyMqCj8sg1SaAAcVK0
+<<^ code="&#x0003;">>ni:///sha-256;muw67vJ-eDCCm4dS-KIONFTUoRQpKiknAMUG9_aGhbU
 
 <<^ code="&#x0004;" -> to="?">>
