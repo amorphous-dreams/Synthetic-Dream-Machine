@@ -347,6 +347,11 @@ async function main(): Promise<void> {
     wss,
     catalogUrl,
     meshSelf,
+    // THE PROCESS-EDGE TIME WITNESS. The PersonaGroup ring's grant-window verify reads a wall-time window
+    // (a device delegation's validity span); no logical clock speaks that unit. The witness enters HERE, at
+    // the process entry — an acknowledged unreliable witness at the edge — so the ring core and the boot
+    // hold no clock of their own (no global now in load-bearing code).
+    now: () => Date.now(),
     onPhase: (phase) => {
       console.log(`[lararium] phase → ${phase}`);
     },

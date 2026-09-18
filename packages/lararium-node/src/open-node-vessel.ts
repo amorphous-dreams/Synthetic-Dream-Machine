@@ -62,11 +62,13 @@ import {
   composeVerbPlane,
   mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
   recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
+  makeCatalogAccessor,
 } from "@lararium/tw5";
 import type {
   VesselWikiSlot, DaemonVmCore, VesselDaemonVm, VesselOrchestration,
   VerbContribution, MempalaceProvider, FormPalaceProvider, DaemonVerbProvider, TelemetryProvider, RecallClient,
 } from "@lararium/tw5";
+import { makeSelfSlotPersonaGroupRing } from "./self-slot-persona-ring.js";
 import {
   loadOrMaterializeOracle,
   reconcileWellKnownTiddlers, mintLaresIfAbsent, mintLarariumIfAbsent,
@@ -240,6 +242,9 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   storageDir: string;
   wss:        WebSocketServer;
   catalogUrl?: string | null;
+  /** The time WITNESS the PersonaGroup ring's grant-window verify reads — injected at the process edge
+   *  (`main.ts`), never a `Date.now` baked in the boot. Absent → the ring stays unwired (no global now). */
+  now?: () => number;
   /** Directory holding the BAKED GENESIS SEED (island + cas). The bootstrap no longer lives here. */
   genesisDir?: string;
   /** Repo root for wiki memes scan and all mirror paths. Defaults to monorepo root. */
@@ -1409,6 +1414,26 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       storageDir,
       rootDir: rootDirOpt ?? repoRoot,
     });
+
+    // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
+    // A cross-operator peer holding a VERIFIED face-join grant on THIS face's plane reaches the face's own
+    // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
+    // atop the deterministic federatable set), so a stranger, and every private plane, read exactly as
+    // before. The grant read reuses the plane the joinee's own `takeFaceGrantIfPublished` reads, bound to
+    // the ONE `verifyFaceGrantRecord`. The window's clock rides in as an INJECTED witness (`opts.now`,
+    // supplied at the process edge): this boot names no wall clock, and absent a witness the ring stays
+    // UNWIRED — the pre-ring verdict stands rather than a widening on a clock the vessel cannot honor.
+    if (personaGroupDocIdHex && deviceEdge?.personaRootDid && selfSlotFedGate && opts.now) {
+      const base = selfSlotFedGate;
+      selfSlotFedGate = (await makeSelfSlotPersonaGroupRing({
+        catalog: makeCatalogAccessor(repo, catalogHandle.url),
+        personaGroupDocIdHex,
+        personaRootDid: deviceEdge.personaRootDid,
+        ...(personaKelPrefix && personaKelChain ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain } } : {}),
+        provenIdentifierOf: (peerId) => peerIdentifierMap.get(peerId),
+        now: opts.now,
+      })).compose(base);
+    }
 
     // ── NESTED verb-plane compose (composable-keel idiom) ─────────────────────────────────────────
     // The four provider-heavy verb groups (recall · lar-telemetry · capture · worldline) lift into a
