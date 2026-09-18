@@ -39,6 +39,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''B10, the ahu-family quoteblock floor'' — drafted + handed to the Codex crew, crossing recorded (`055d1330d`); the crew engaged it (`7ccae1a75`).
 * ''③ hearthGatePubKey → anchor-scope (Option A)'' — the admit payload split: the gate key stays the dial (anti-relay, byte-identical, weld-verified NOT in the signed image), the founder's resolved island kind+scope ride beside it, so a CLIMBED founder's device seats on the charter board it actually stands on (`aa15cfb3b`). Red-first + revert-verify (exactly 1 test reds under the charter-branch mutation). Browser-leaf parity rides on as a follow-on.
 * ''⑤ native TW5 file-write parity'' — completeness was ALREADY there (`tw5-file-info.ts` faithfully ports TW5's file-info cascade; foreign-titled tiddlers project end-to-end); the native `≈` congruence now rides the projection leg so a native both-move NORMALIZES instead of always-conflicting (`011c9d683`).
+* ''BagStowage debt cleared + ④ RESOLVED'' — the PIN-DURABILITY correctness hole FIXED: pins now survive a restart (writer → admin-doc tiddler, reader before `startSweeper`, on BOTH node + browser; `d8f3c7a7a`, red-first + revert-verify). Stale comments re-trued (`e58a45b6a`); dead `lastUsedAt` crud dropped (`72638ed82`, grep-proven zero readers). Fork ④: the 2026-06-01 relocation clause CLOSED as superseded, keep-separate ruled (`dacae83b8`).
 
 <<~/ahu>>
 
@@ -47,7 +48,6 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 ! In flight — tasked spirits enacting now (2026-09-18)
 
 # ''The wired-boot e2e'' — the ring's admission is unit + mutation proven but never exercised through a real boot; an e2e admits a live cross-operator grant-holder end-to-end, refuses a stranger. Created `tests/e2e/persona-ring-cross-operator-admit.test.ts` (still to be registered in the vitest roster); running its own e2e.
-# ''BagStowage debt (steps 0–5)'' — headline: PIN DURABILITY is claimed but unbuilt (`pinTiddlerUri` dead, no boot-reader) — pins do not survive a restart though canon says they do. Fix (writer in `vessel-residency-wiring.ts` onResidencyOp → admin-doc pin tiddler; reader beside `startSweeper`), re-true the carrier + stale comments, drop dead `lastUsedAt` telemetry. Step 7 (code-home) held for the operator.
 # ''③ browser-leaf parity (follow-on)'' — `open-browser-vessel.ts:436` (`anchorGateKey: relayGatePubKey ?? null`) carries the IDENTICAL climbed-founder defect via `relayGatePubKey`; port Option A after confirming the browser admit-carry/apply path. Isomorphic-by-intent — the node fix (`aa15cfb3b`) leaves the leaf asymmetric until this lands.
 
 <<~/ahu>>
@@ -57,7 +57,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 ! Forks that await the operator's word
 
 # ''`:814` / the epoch lease — RULED 2026-09-18: OPTION 1, enacting'' ("more work now, less churn later"). Wire the PersonaGroup lease-slot epoch (`leaseEpochPrefix(faceGroup())` / `effectiveLeaseEpoch`, the same resource `:543` uses) as the device-delegation staleness AUTHORITY: `verifyEdgeAgainstPersonaKel` gains `expectedEpoch` → `verifyDeviceDelegation`; stop minting `boundEpoch: 0` (`ceremony-core.ts:393,641`) — mint against the live lease epoch (this changes the signed edge image; an alpha-legal re-mint); thread the lease read into `verifyPeer` (`:814`) + `bootDaemonKeyhive` (`:130`) + `face-grant-record.ts:130` — ONE fix, three doors. A rolled-past device re-presents via the existing face-join regrant. Red-first + weld-test (boundEpoch IS signed).
-# ''④ `bag-residency.ts`'s home — RULED 2026-09-18: KEEP-SEPARATE.'' The 2026-06-01 relocation clause closes as SUPERSEDED by the un-braiding (`BagStowage`/`bag stats`); the axis stays a named-separate file the pool DRIVES. Enacting as BagStowage Step 7 (re-true `residency-tiers.mem`).
+# ''④ `bag-residency.ts`'s home — RESOLVED + LANDED 2026-09-18: KEEP-SEPARATE'' (`dacae83b8`). The 2026-06-01 relocation clause CLOSED as superseded by the un-braiding; `BagStowage` stays a named-separate file the pool drives. (Moved to #/landed.)
 
 <<~/ahu>>
 
@@ -83,6 +83,6 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PhGEYUPE8c41EmdFUn8ZreTcurvjIx1hAn68SRas6ng
+<<^ code="&#x0003;">>ni:///sha-256;jkmQ7BmeriTuW9COSGip6X04AhjTeiTljGPV3GjYUeM
 
 <<^ code="&#x0004;" -> to="?">>
