@@ -1,0 +1,72 @@
+========================================
+a triple-backtick fence closes on its triple-backtick closer (CONTROL)
+========================================
+```
+abc
+```
+---
+
+(document
+  (fenced_block
+    info: (fence_open)
+    line: (fence_line)
+    (fence_close)))
+
+========================================
+a four-backtick fence holds a triple-backtick line as ONE block (RED)
+========================================
+````
+abc
+```
+def
+````
+---
+
+(document
+  (fenced_block
+    info: (fence_open)
+    line: (fence_line)
+    line: (fence_line)
+    line: (fence_line)
+    (fence_close)))
+
+========================================
+a four-backtick fence closes on a run of four (CONTROL)
+========================================
+````
+abc
+````
+---
+
+(document
+  (fenced_block
+    info: (fence_open)
+    line: (fence_line)
+    (fence_close)))
+
+========================================
+a four-backtick fence closes on a run of five (CONTROL)
+========================================
+````
+abc
+`````
+---
+
+(document
+  (fenced_block
+    info: (fence_open)
+    line: (fence_line)
+    (fence_close)))
+
+========================================
+an unclosed fence parses to completion, not a hang (RED — regression guard)
+========================================
+````
+abc
+---
+
+(document
+  (fenced_block
+    info: (fence_open)
+    line: (fence_line)
+    (MISSING fence_close)))

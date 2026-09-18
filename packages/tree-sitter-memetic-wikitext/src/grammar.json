@@ -269,11 +269,8 @@
           "content": {
             "type": "ALIAS",
             "content": {
-              "type": "TOKEN",
-              "content": {
-                "type": "PATTERN",
-                "value": "```[^\\n]*\\n"
-              }
+              "type": "SYMBOL",
+              "name": "_fence_open_tok"
             },
             "named": true,
             "value": "fence_open"
@@ -287,11 +284,8 @@
             "content": {
               "type": "ALIAS",
               "content": {
-                "type": "TOKEN",
-                "content": {
-                  "type": "PATTERN",
-                  "value": "[^`\\n][^\\n]*\\n|`[^`][^\\n]*\\n|\\n"
-                }
+                "type": "SYMBOL",
+                "name": "_fence_line_tok"
               },
               "named": true,
               "value": "fence_line"
@@ -301,11 +295,8 @@
         {
           "type": "ALIAS",
           "content": {
-            "type": "TOKEN",
-            "content": {
-              "type": "PATTERN",
-              "value": "```[ \\t]*\\n?"
-            }
+            "type": "SYMBOL",
+            "name": "_fence_close_tok"
           },
           "named": true,
           "value": "fence_close"
@@ -677,7 +668,20 @@
     ]
   ],
   "precedences": [],
-  "externals": [],
+  "externals": [
+    {
+      "type": "SYMBOL",
+      "name": "_fence_open_tok"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_fence_line_tok"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_fence_close_tok"
+    }
+  ],
   "inline": [],
   "supertypes": [],
   "reserved": {}

@@ -55,17 +55,23 @@ _FIELD_OF = dict(_FIELD_KINDS)
 
 def _shared_object() -> str:
     """The compiled grammar beside its committed source — built once, reused;
-    a stale .so (older than parser.c) rebuilds so the artifact stays the truth."""
+    a stale .so (older than parser.c OR scanner.c) rebuilds so the artifact
+    stays the truth. The external scanner (fence-length counting) links in
+    whenever it's present — an absent file means the grammar carries no
+    external tokens and the parser-only link still stands."""
     src = os.path.join(_GRAMMAR_DIR, "src", "parser.c")
+    scanner = os.path.join(_GRAMMAR_DIR, "src", "scanner.c")
     so = os.path.join(_GRAMMAR_DIR, "memetic.so")
     if not os.path.isfile(src):
         raise SystemExit(
             f"memeast_fold: the grammar artifact stands absent ({src!r}) — "
             "the fold reads the committed parser.c, never a private grammar."
         )
-    if not os.path.isfile(so) or os.path.getmtime(so) < os.path.getmtime(src):
+    sources = [src] + ([scanner] if os.path.isfile(scanner) else [])
+    newest_source = max(os.path.getmtime(p) for p in sources)
+    if not os.path.isfile(so) or os.path.getmtime(so) < newest_source:
         subprocess.run(
-            ["cc", "-shared", "-fPIC", "-I", os.path.join(_GRAMMAR_DIR, "src"), src, "-o", so],
+            ["cc", "-shared", "-fPIC", "-I", os.path.join(_GRAMMAR_DIR, "src"), *sources, "-o", so],
             check=True,
         )
     return so

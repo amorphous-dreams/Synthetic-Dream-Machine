@@ -23,6 +23,13 @@ module.exports = grammar({
 
   extras: _ => [],
 
+  // Fence-length counting is context-sensitive (a close must match a run
+  // AT LEAST as long as its opener — the CommonMark rule `fence-mask`
+  // already keeps in the TS mask). A regex token cannot carry that count
+  // across lines, so the three ``` tokens ride an external scanner
+  // (src/scanner.c) that remembers the opener's run length.
+  externals: $ => [$._fence_open_tok, $._fence_line_tok, $._fence_close_tok],
+
   conflicts: $ => [
     // an opening sigil stands alone when no closing form ever arrives
     [$._block, $.ahu_block],
@@ -102,12 +109,14 @@ module.exports = grammar({
     // Everything between the teeth, single token: no `>>` inside.
     sigil_body: _ => token(prec(1, /([^>\n]|>[^>])+/)),
 
-    // ``` fenced blocks — the info string, then lines that never open with
-    // a fence.
+    // ``` fenced blocks — the info string, then lines that never close the
+    // fence, then a close whose backtick run is AT LEAST as long as the
+    // opener's (CommonMark; `fence-mask` in lararium-tw5 already keeps this
+    // law reading the corpus). The external scanner counts the run.
     fenced_block: $ => seq(
-      field('info', alias(token(/```[^\n]*\n/), $.fence_open)),
-      repeat(field('line', alias(token(/[^`\n][^\n]*\n|`[^`][^\n]*\n|\n/), $.fence_line))),
-      alias(token(/```[ \t]*\n?/), $.fence_close),
+      field('info', alias($._fence_open_tok, $.fence_open)),
+      repeat(field('line', alias($._fence_line_tok, $.fence_line))),
+      alias($._fence_close_tok, $.fence_close),
     ),
 
     // `<<<` quote fences — raw interior (a quoted voice, held verbatim);
