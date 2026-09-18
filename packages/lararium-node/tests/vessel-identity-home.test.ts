@@ -65,8 +65,18 @@ describe("Follow-on 3 — identityDir() takes NO dataDir (the removed footgun)",
   // isolation a caller believed it had and did not. That specific collision is no longer EXPRESSIBLE
   // (there is no `dataDir` parameter left to pass two different values to), which is the stronger
   // guarantee the removal (over honoring it) was chosen for. The two vectors below pin what replaced it.
-  test("★ COMPILE-GATE (documented, not CI-enforced for this package's tests/ — see commit note): a caller "
-    + "cannot pass a dataDir expecting isolation; TypeScript refuses the extra argument", async () => {
+  test("★ RUNTIME GATE (CI-enforced — see COMPILE-GATE note below): generateOrLoadVesselIdentity/"
+    + "loadVesselVerifyingKey/etc. take ZERO arguments; a regression back toward a dataDir parameter "
+    + "shows up here as arity > 0, and plain `vitest run` catches it", async () => {
+    // This package's own `tsconfig.typecheck.json` excludes `tests/` (rootDir/path-mapping reasons —
+    // it lets a test import sibling packages' source through the same alias list the build honors,
+    // which would collide with a narrower rootDir), so `tools/typecheck-witness.sh` never typechecks
+    // THIS file, and a `@ts-expect-error` comment alone (below) is not CI-enforced: nothing runs `tsc`
+    // over it in the normal pipeline. `.length` is a plain runtime property vitest evaluates on every
+    // run with no typecheck involved, so it is the actual gate a regression trips.
+    expect(generateOrLoadVesselIdentity.length).toBe(0);
+    expect(loadVesselVerifyingKey.length).toBe(0);
+
     // SAFETY FIRST: `@ts-expect-error` disarms the type CHECK, not the JS call itself — an extra argument
     // is silently ignored at runtime (not a JS error), so this still calls the real function. Wrap it in an
     // isolated LAR_ROOT so the "believed-isolated path" argument, once ignored, resolves somewhere
