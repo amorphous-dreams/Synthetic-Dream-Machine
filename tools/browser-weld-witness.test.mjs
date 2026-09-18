@@ -91,8 +91,8 @@ exit 0
 `,
     node: `#!/bin/sh
 case "$*" in
-  *leaf-continuity.mjs*) echo c4 >> "$FAKE_CALLS"; exit "\${FAKE_C4_STATUS:-0}" ;;
-  *) echo weld >> "$FAKE_CALLS"; [ "\${FAKE_BLOCK_WELD:-0}" = 1 ] && while :; do /bin/sleep 1; done; exit "\${FAKE_WELD_STATUS:-0}" ;;
+  *leaf-continuity.mjs*) echo c4 >> "$FAKE_CALLS"; echo C4-SENTINEL; exit "\${FAKE_C4_STATUS:-0}" ;;
+  *) echo weld >> "$FAKE_CALLS"; echo WELD-SENTINEL; [ "\${FAKE_BLOCK_WELD:-0}" = 1 ] && while :; do /bin/sleep 1; done; exit "\${FAKE_WELD_STATUS:-0}" ;;
 esac
 `,
   };
@@ -165,17 +165,31 @@ async function testC4TraceAnchorsStillStand() {
 }
 
 async function testIndependentDriversAndArtifacts() {
-  for (const statuses of [{ FAKE_WELD_STATUS: "1" }, { FAKE_C4_STATUS: "1" }]) {
-    const harness = await makeHarness("ready", statuses);
+  for (const testCase of [
+    { env: { FAKE_WELD_STATUS: "1" }, expectedStatus: 1, weldStatus: 1, c4Status: 0 },
+    { env: { FAKE_C4_STATUS: "1" }, expectedStatus: 1, weldStatus: 0, c4Status: 1 },
+    { env: {}, expectedStatus: 0, weldStatus: 0, c4Status: 0 },
+  ]) {
+    const harness = await makeHarness("ready", testCase.env);
     try {
       const { done } = run("bash", [RUNNER], { cwd: REPO, env: harness.env });
       const result = await done;
-      assert.equal(result.status, 1, result.output);
+      assert.equal(result.status, testCase.expectedStatus, result.output);
       assert.deepEqual(await readLines(harness.calls), ["weld", "c4"]);
+      // L-Prime receipt boundary: driver output stays visible beside the Vite artifact.
+      assert.match(result.output, /WELD-SENTINEL/);
+      assert.match(result.output, /C4-SENTINEL/);
+      assert.match(result.output, /starting Weld driver/);
+      assert.match(result.output, /starting C4 leaf driver/);
+      assert.match(result.output, new RegExp(`Weld driver exited ${testCase.weldStatus}`));
+      assert.match(result.output, new RegExp(`C4 leaf driver exited ${testCase.c4Status}`));
+      assert.ok(result.output.indexOf("starting Weld driver") < result.output.indexOf("starting C4 leaf driver"));
       const probe = await readFile(harness.curlCalls, "utf8");
       assert.match(probe, /--connect-timeout 1/);
       assert.match(probe, /--max-time 2/);
-      assert.equal(await exists(join(harness.artifacts, "vite.log")), true);
+      const viteLog = await readFile(join(harness.artifacts, "vite.log"), "utf8");
+      assert.match(viteLog, /Local:/);
+      assert.doesNotMatch(viteLog, /(?:WELD|C4)-SENTINEL|browser-weld: starting/);
     } finally {
       await harness.dispose();
     }

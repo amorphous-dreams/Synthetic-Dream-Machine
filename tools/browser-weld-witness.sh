@@ -99,6 +99,18 @@ if [ "$ready" -ne 1 ]; then
 fi
 
 status=0
-WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs || status=1
-WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs || status=1
+# L-Prime receipt boundary: run both drivers and aggregate only after both exits are visible.
+echo "browser-weld: starting Weld driver"
+WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
+weld_status=$?
+echo "browser-weld: Weld driver exited $weld_status"
+
+echo "browser-weld: starting C4 leaf driver"
+WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs
+c4_status=$?
+echo "browser-weld: C4 leaf driver exited $c4_status"
+
+if [ "$weld_status" -ne 0 ] || [ "$c4_status" -ne 0 ]; then
+  status=1
+fi
 exit "$status"
