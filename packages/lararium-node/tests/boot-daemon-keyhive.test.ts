@@ -128,4 +128,23 @@ describe("bootDaemonKeyhive", () => {
       personaKel: { prefix: "persona-not-the-founded-one", chain: founded.bootArgs.personaKel.chain },
     })).rejects.toThrow(/Binding Gate/);
   });
+
+  // ── THE LEASE-EPOCH FENCE (Option 1: license off the PersonaGroup lease epoch, not the wall clock) ──────
+  // The founding edge mints `boundEpoch: 0` (a genesis founding — `effectiveLeaseEpoch` over no slots IS 0,
+  // ceremony-core.ts). Passing `expectedEpoch` to the Binding Gate must therefore ADMIT at 0 and HALT above it.
+  describe("★ the Binding Gate fences on `expectedEpoch` (the PersonaGroup lease), not the wall clock alone ★", () => {
+    test("RED-FIRST — expectedEpoch ABOVE the edge's boundEpoch HALTS; AT it, boots clean", async () => {
+      await expect(bootDaemonKeyhive({
+        ...founded.bootArgs, expectedEpoch: 1,
+      })).rejects.toThrow(/Binding Gate/);
+
+      const { keyhive } = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+      await keyhive.dispose();
+    });
+
+    test("CONTROL — omitting expectedEpoch skips the lease fence (unchanged prior behavior: wall-clock window only)", async () => {
+      const { keyhive } = await bootDaemonKeyhive(founded.bootArgs);
+      await keyhive.dispose();
+    });
+  });
 });

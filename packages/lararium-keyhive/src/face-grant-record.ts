@@ -98,6 +98,13 @@ export interface FaceGrantVerifyContext {
    * clock consulted). No global now in load-bearing admission.
    */
   readonly now?: number;
+  /**
+   * OPTIONAL PersonaGroup lease epoch (`effectiveLeaseEpoch` off the live daemon replica) the JOINEE holds
+   * at verify time. Present, the founder's OWN edge must not read stale against it — the founder leases too,
+   * the same as any other device (FRESHNESS TAKES THE LEASE). Absent, the wall-clock window (`now`) stays
+   * the only staleness check — never a fabricated epoch when the joinee cannot read one.
+   */
+  readonly expectedEpoch?: number;
 }
 
 export type FaceGrantVerdict = { ok: true } | { ok: false; reason: string };
@@ -118,6 +125,12 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
   if (typeof r.joineeAgentIdHex !== "string" || !r.joineeAgentIdHex.toLowerCase().endsWith(ctx.selfVerifyingKey.toLowerCase())) {
     return { ok: false, reason: "the record names another joinee" };
   }
+  const freshnessOpts = (ctx.now !== undefined || ctx.expectedEpoch !== undefined)
+    ? {
+        ...(ctx.now !== undefined ? { now: ctx.now } : {}),
+        ...(ctx.expectedEpoch !== undefined ? { expectedEpoch: ctx.expectedEpoch } : {}),
+      }
+    : undefined;
   if (ctx.personaKel) {
     const { prefix, chain } = ctx.personaKel;
     const genesis = chain[0];
@@ -127,10 +140,10 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
     if (genesis.opKeyDid.toLowerCase() !== ctx.personaRootDid.toLowerCase()) {
       return { ok: false, reason: "the persona-KEL incepts under a root other than the pinned one — the seal binds the chain" };
     }
-    const walked = await verifyEdgeAgainstPersonaKel(r.founderEdge, chain, ctx.now !== undefined ? { now: ctx.now } : undefined);
+    const walked = await verifyEdgeAgainstPersonaKel(r.founderEdge, chain, freshnessOpts);
     if (!walked.ok) return { ok: false, reason: `founder edge refused under the persona-KEL head: ${walked.reason ?? "signature or window"}` };
   } else {
-    const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, ctx.now !== undefined ? { now: ctx.now } : undefined);
+    const edge = await verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid, freshnessOpts);
     if (!edge.ok) return { ok: false, reason: `founder edge refused under the pinned root: ${edge.reason ?? "signature or window"}` };
   }
   const founderKey = r.founderEdge.deviceVerifyingKey;

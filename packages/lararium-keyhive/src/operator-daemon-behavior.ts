@@ -103,6 +103,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     await veilKh.delegate({ bagUrl, audience: faceAgent(), access });
   };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
+  // Captured at `verifierFactory` boot time (the only site this behavior sees an `IslandContext`) so the
+  // lease read below stays reachable from doors that boot supplies no ctx to (`verifyPeer`). Only the
+  // (repo, oracleUrl) PAIR is cached — never a snapshot of the epoch itself — so every read below is FRESH
+  // as of the moment it runs, never a stale boot-time number (a roll after boot must still bite immediately).
+  let epochCtx: { repo: IslandContext["repo"]; oracleUrl: IslandContext["oracleUrl"] } | null = null;
 
   // THE ONE SLOT-DOC RESOLVER — every site that names a wiki's draft/working/personal doc reads
   // through it (the island's slot grants, the host mount by proxy, wiki init, prune-stale,
@@ -142,9 +147,13 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       try { rec = JSON.parse(text) as FaceGrantRecord; } catch { continue; }
       if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
       judgedGrants.add(rec.sig);
+      // The founder's own edge leases too — read the SAME epoch the founder's door checks it against
+      // (readLeaseEpoch, shared). null (unreachable) omits the fence rather than blocking a take on a read fault.
+      const expectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl);
       const verdict = await verifyFaceGrantRecord(rec, {
         personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group,
         personaKel: daemonAuth.personaKel,   // the edge verifies under the KEL HEAD, never a frozen root — no clock
+        ...(expectedEpoch !== null ? { expectedEpoch } : {}),
       });
       if (!verdict.ok) {
         console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);
@@ -240,6 +249,35 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const id = daemonAuth.personaGroupDocIdHex;
     if (!id) throw new Error("[daemon] this vessel stands at the waking floor and holds no PersonaGroup plane — light a face with `lares persona new 0 --name '<label>'`.");
     return id;
+  };
+
+  // THE LEASE READ every device-delegation admission door shares — off the live daemon replica, the SAME
+  // per-writer slots `gateFaceJoin` folds by max (leaseEpochPrefix/effectiveLeaseEpoch, :502-509 below). A
+  // device edge's `boundEpoch` checks against the epoch a FRESH join would license against — read fresh on
+  // every call, never cached, so a roll after boot bites at the very next admission attempt, not just the
+  // next reboot. Returns null (never a fabricated 0) when the epoch cannot be read — no PersonaGroup pinned,
+  // no oracle plane reachable, or a store fault — so the caller falls back to NO epoch fence rather than
+  // hard-denying admission on a read the vessel simply cannot make right now.
+  const readLeaseEpoch = async (
+    repo: IslandContext["repo"], oracleUrl: IslandContext["oracleUrl"],
+  ): Promise<number | null> => {
+    const group = daemonAuth.personaGroupDocIdHex;
+    if (!group || !oracleUrl) return null;
+    try {
+      const store = await makeCatalogAccessor(repo, oracleUrl).storeOf(DAEMON_BAG_ID);
+      if (!store) return null;
+      const prefix = leaseEpochPrefix(group);
+      const slots: string[] = [];
+      for (const title of await store.listVisible()) {
+        if (!title.startsWith(prefix)) continue;
+        const record = await store.get(title);
+        const text = (record as { tiddler?: { text?: unknown } } | null)?.tiddler?.text;
+        if (typeof text === "string") slots.push(text);
+      }
+      return effectiveLeaseEpoch(slots);
+    } catch {
+      return null;
+    }
   };
 
   return {
@@ -635,6 +673,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
     },
     verifierFactory: async (ctx: IslandContext) => {
+      // Cache (repo, oracleUrl) for the FRESH per-call lease reads below (verifyPeer, the joinee grant-take) —
+      // never the epoch itself, which must be read live at each door.
+      epochCtx = { repo: ctx.repo, oracleUrl: ctx.oracleUrl };
+      // THE BINDING GATE'S OWN LEASE READ — the same fold, done once here (boot only re-runs the gate at
+      // boot, so a single read at this moment is exactly as fresh as the gate itself).
+      const bindingGateExpectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl);
       const { keyhive, did } = await bootDaemonKeyhive({
         seed:                  daemonAuth.seed,
         eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
@@ -647,6 +691,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
         ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
         ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
+        ...(bindingGateExpectedEpoch !== null ? { expectedEpoch: bindingGateExpectedEpoch } : {}),
         ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
       });
       kh = keyhive;
@@ -811,7 +856,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         if (!kel || kel.chain.length === 0 || kel.chain[0]!.prefix !== kel.prefix) {
           return { ok: false, identifier: id, proofVerified, reason: "device-delegation: no pinned persona-KEL in scope — refusing to admit on an unpinned edge" };
         }
-        const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, { now: Date.now() });
+        // FRESHNESS TAKES THE LEASE, NEVER THE CLOCK ALONE (same law as gateFaceJoin, :502-509). Read the
+        // CURRENT PersonaGroup lease epoch fresh at this admission attempt — a device whose boundEpoch has
+        // rolled past denies HERE, and re-presents via the existing face-join regrant flow (:467-470). null
+        // (unreachable) omits the fence, leaving the wall-clock window as the only staleness check — the
+        // pre-epoch-wiring floor, never a false deny on a read the vessel cannot make right now.
+        const expectedEpoch = epochCtx ? await readLeaseEpoch(epochCtx.repo, epochCtx.oracleUrl) : null;
+        const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, {
+          now: Date.now(),
+          ...(expectedEpoch !== null ? { expectedEpoch } : {}),
+        });
         const deviceMatches = edge.deviceDid === id;
         if (delegation.ok && deviceMatches && proofVerified) {
           // Admitted at the operator's-own-device tier — equivalent flow to admin (it IS the

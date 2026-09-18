@@ -425,10 +425,16 @@ export async function headOpKey(
 export async function verifyEdgeAgainstPersonaKel(
   edge:  DeviceDelegationTiddler,
   chain: readonly PersonaKelEvent[],
-  opts?: { now?: number; driftMs?: number },
+  opts?: { now?: number; driftMs?: number; expectedEpoch?: number },
 ): Promise<{ ok: boolean; reason?: string; headOpKey?: string }> {
   const head = await headOpKey(chain, { verifyQuorums: true });
   if (head === null) return { ok: false, reason: "persona-KEL failed structural or rotation-quorum verification" };
-  const r = await verifyDeviceDelegation(edge, head, opts?.now !== undefined ? { now: opts.now, ...(opts.driftMs !== undefined ? { driftMs: opts.driftMs } : {}) } : undefined);
+  const innerOpts = (opts?.now !== undefined || opts?.expectedEpoch !== undefined)
+    ? {
+        ...(opts.now !== undefined ? { now: opts.now, ...(opts.driftMs !== undefined ? { driftMs: opts.driftMs } : {}) } : {}),
+        ...(opts.expectedEpoch !== undefined ? { expectedEpoch: opts.expectedEpoch } : {}),
+      }
+    : undefined;
+  const r = await verifyDeviceDelegation(edge, head, innerOpts);
   return r.ok ? { ok: true, headOpKey: head } : { ok: false, reason: r.reason ?? "edge does not chain to the KEL head op-key", headOpKey: head };
 }

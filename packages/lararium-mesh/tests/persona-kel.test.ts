@@ -227,3 +227,74 @@ describe("persona-kel — the gate-walk (pin-move mechanism, pure)", () => {
     expect(stale.headOpKey).toBe(freshOpKeyDid);
   });
 });
+
+describe("persona-kel — the gate-walk LICENSES OFF THE LEASE EPOCH, never the wall-clock alone", () => {
+  // Option 1 (operator-approved): device-delegation admission fences on the PersonaGroup's clockless
+  // lease epoch (`boundEpoch` vs. `expectedEpoch`), not `now` alone. `verifyEdgeAgainstPersonaKel`
+  // FORWARDS `opts.expectedEpoch` into the inner `verifyDeviceDelegation` call — before this fix, the
+  // opts type carried only {now, driftMs} and a caller had no way to reach the epoch fence at all,
+  // even though `verifyDeviceDelegation` itself already implemented it.
+  test("★ RED-FIRST — a device bound BELOW the current lease epoch is DENIED; AT/ABOVE it, ADMITTED ★", async () => {
+    const { inception, foundingOpKeyDid } = await foundedInception();
+    const now = Date.now();
+    const issuedAt  = new Date(now - 1000).toISOString();
+    const expiresAt = new Date(now + 3600_000).toISOString();
+
+    // A device edge minted at epoch 1 — a PersonaGroup that has since rolled its lease to epoch 3
+    // (a retirement / rekey) must deny this device at the door, wall-clock window notwithstanding.
+    const staleLeaseEdge = await buildDeviceDelegation({
+      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      hearthTrueName: "", issuedAt, expiresAt, boundEpoch: 1,
+    });
+    const denied = await verifyEdgeAgainstPersonaKel(staleLeaseEdge, [inception], { now, expectedEpoch: 3 });
+    expect(denied.ok).toBe(false);
+    expect(denied.reason).toMatch(/lease stale/i);
+
+    // The SAME device, re-minted at the current epoch (3), admits.
+    const currentLeaseEdge = await buildDeviceDelegation({
+      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      hearthTrueName: "", issuedAt, expiresAt, boundEpoch: 3,
+    });
+    const admitted = await verifyEdgeAgainstPersonaKel(currentLeaseEdge, [inception], { now, expectedEpoch: 3 });
+    expect(admitted.ok).toBe(true);
+    expect(admitted.headOpKey).toBe(foundingOpKeyDid);
+  });
+
+  test("CONTROL — the KEL-head rotation refusal still fires even with an epoch fence in play", async () => {
+    const { inception, guardianRecoveryKeys, recoveryThreshold } = await foundedInception();
+    const now = Date.now();
+    const issuedAt  = new Date(now - 1000).toISOString();
+    const expiresAt = new Date(now + 3600_000).toISOString();
+
+    const foundingEdge = await buildDeviceDelegation({
+      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      hearthTrueName: "", issuedAt, expiresAt, boundEpoch: 0,
+    });
+    const freshOpKeyDid = await didOf(SEEDS.opB);
+    const guardianSigners = await Promise.all([guardianSigner(SEEDS.g1), guardianSigner(SEEDS.g2)]);
+    const rot = await attestAndRotate({ head: inception, freshOpKeyDid, guardianRecoveryKeys, recoveryThreshold, guardianSigners });
+    expect(rot.ok).toBe(true);
+    if (!rot.ok) return;
+    const chain = [inception, rot.event];
+
+    // A superseded op-key still refuses under the head — EVEN when the epoch itself would have passed
+    // (expectedEpoch: 0, well below the edge's own boundEpoch). The KEL walk and the epoch fence are
+    // independent gates; either can deny alone.
+    const stale = await verifyEdgeAgainstPersonaKel(foundingEdge, chain, { now, expectedEpoch: 0 });
+    expect(stale.ok).toBe(false);
+  });
+
+  test("omitting expectedEpoch skips the lease fence entirely (freshness backstop only) — unchanged prior behavior", async () => {
+    const { inception } = await foundedInception();
+    const now = Date.now();
+    const issuedAt  = new Date(now - 1000).toISOString();
+    const expiresAt = new Date(now + 3600_000).toISOString();
+    // boundEpoch 0 would fail ANY expectedEpoch > 0, but with no expectedEpoch supplied the fence never runs.
+    const edge = await buildDeviceDelegation({
+      personaRootSeed: SEEDS.opA, deviceVerifyingKey: await pubOf(SEEDS.vesselX),
+      hearthTrueName: "", issuedAt, expiresAt, boundEpoch: 0,
+    });
+    const v = await verifyEdgeAgainstPersonaKel(edge, [inception], { now });
+    expect(v.ok).toBe(true);
+  });
+});

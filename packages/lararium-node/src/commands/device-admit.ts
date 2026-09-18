@@ -22,6 +22,7 @@ import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
+  leaseEpochPrefix, effectiveLeaseEpoch,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
@@ -195,6 +196,20 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   if (!hearthTrueName) {
     throw new Error("[lares device-admit] hearth true-name (engine CID) absent — run `lares vessel found` first.");
   }
+
+  // THE LEASE READ — off the SAME daemon doc already open above, the same fold `gateFaceJoin` runs
+  // (leaseEpochPrefix → per-writer slot values → effectiveLeaseEpoch = max). The minted edge binds to
+  // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
+  // roll leases it stale (re-admits via face-join regrant, never a silent renewal).
+  const leasePrefix = leaseEpochPrefix(personaGroupDocIdHex);
+  const leaseSlotValues: string[] = [];
+  for (const [title, entry] of Object.entries(tiddlerMap)) {
+    if (!title.startsWith(leasePrefix)) continue;
+    const text = ((entry as Record<string, unknown> | undefined)?.["tiddler"] as Record<string, unknown> | undefined)?.["text"];
+    if (typeof text === "string") leaseSlotValues.push(text);
+  }
+  const boundEpoch = effectiveLeaseEpoch(leaseSlotValues);
+
   const payload = await runDeviceAdmitEdge({
     signerSeed,
     joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),
@@ -204,6 +219,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaGroupDocIdHex,
     personaGroupAgentIdHex,
     meshCabalDocIdHex,
+    boundEpoch,
     syncUrl:      opts.syncUrl      ?? null,
     islandDocUrl: opts.islandDocUrl ?? null,
     // THE DOOR. Defaults to this hearth's OWN daemon doc, read from the same bootstrap the sentinel ids come

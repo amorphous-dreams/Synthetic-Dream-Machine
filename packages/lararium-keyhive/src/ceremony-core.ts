@@ -391,7 +391,12 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
         hearthTrueName:     input.hearthTrueName,      // the place this binds TO
         issuedAt:           new Date().toISOString(),
         expiresAt:          new Date(Date.now() + EDGE_BACKSTOP_MS).toISOString(),
-        boundEpoch:         0,                         // genesis lease epoch (effectiveLeaseEpoch starts at 0)
+        // GENESIS, NOT A PLACEHOLDER: at self-stood founding the daemon bag carries no lease-epoch slots yet
+        // for this PersonaGroup (they cannot — the group is born in this same act), so `effectiveLeaseEpoch`
+        // over an empty slot set IS 0 (epoch-lease.ts) — this 0 already equals the live read, not a stand-in
+        // for one. Nothing to thread here; see the DEVICE-ADMIT mint below for the site that DOES need a live read.
+        boundEpoch:         0,
+
       })
     // CONTRACTED — the edge arrived signed. This vessel binds under a root it does not hold, so it
     // verifies what it carries rather than trusting the hand that carried it: the edge MUST name THIS
@@ -609,6 +614,13 @@ export interface DeviceAdmitEdgeInput {
   personaGroupAgentIdHex: string;
   meshCabalDocIdHex:      string;
   syncUrl:                string | null;
+  /** The PersonaGroup's CURRENT lease epoch (`effectiveLeaseEpoch` over `leaseEpochPrefix(personaGroupDocIdHex)`
+   *  slots, read by the caller off the live daemon replica — the SAME read `gateFaceJoin` folds by max) at
+   *  mint time. The minted edge's `boundEpoch` binds to THIS value, so a device admitted before a later roll
+   *  reads stale at the admission door and is denied until it re-presents via face-join regrant. OPTIONAL —
+   *  a caller with no reachable lease read (e.g. a bare unit fixture) omits it and the edge mints `boundEpoch:
+   *  0`, the pre-epoch-wiring floor (never a forged non-zero value from an unreachable source). */
+  boundEpoch?:            number;
   /** Automerge URL of the issuing vessel's genesis island — for peer-sync delivery. */
   islandDocUrl?:          string | null;
   /** The HEARTH's own daemon doc — the door the joinee knocks on to ask for its seat (the daemon plane never
@@ -645,7 +657,11 @@ export async function runDeviceAdmitEdge(
     hearthTrueName:     input.hearthTrueName,
     issuedAt,
     expiresAt,
-    boundEpoch:         0,
+    // THE DEVICE-ADMIT PATH MUST CARRY A REAL EPOCH — this edge licenses a NEW device, so it binds to the
+    // lease epoch the caller read live (`input.boundEpoch`), never a frozen genesis value. Absent a live
+    // read, 0 is the honest floor (a doc predating the epoch wiring reads every device as maximally stale —
+    // safe direction — never the reverse).
+    boundEpoch:         input.boundEpoch ?? 0,
   });
   return {
     kind:                   "device-admit/v1",
