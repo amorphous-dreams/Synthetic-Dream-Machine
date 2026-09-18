@@ -45,7 +45,7 @@ import {
   HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
 import { InMemoryEventStore } from "@lararium/keyhive";
-import { runInit, runDeviceAdmit } from "../../src/index.js";
+import { runInit, runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
 import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 
@@ -160,6 +160,12 @@ beforeAll(async () => {
   if (vesselABootstrapPath !== join(VESSEL_A.storage, "social-bootstrap.json")) {
     throw new Error(`Vessel A: runInit returned an unexpected bootstrap path: ${vesselABootstrapPath}`);
   }
+
+  // Step 1b — A wears a FACE. `runInit` founds the PLACE alone (faceless: `foundThePlace` writes no
+  // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and `runDeviceAdmit` (Step 3)
+  // needs the face's sentinel oracle IDs to sign an edge — mirrors the founder in `persona-ring-cross-operator-admit`.
+  await withLarRoot(VESSEL_A.root, () =>
+    runFoundTheFace({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
 
   const bootstrapA  = readBootstrap(vesselABootstrapPath);
   const daemonUrlA   = bootstrapA[DAEMON_BAG_ID]?.text;
