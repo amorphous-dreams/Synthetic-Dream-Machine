@@ -7,8 +7,10 @@
  * PROVED at the gate), `isOwnHand` (the same class the shore already vouches), and `grants` (the persona-plane
  * store read that `takeFaceGrantIfPublished` already runs, bound to the real `verifyFaceGrantRecord`).
  *
- * THE CLOCK RIDES IN AS A WITNESS, never as ground: the factory takes `now: () => number` and writes no
- * `Date.now` — the vessel hands the witness at the edge (no global now, load-bearing code stays clockless).
+ * NO CLOCK RIDES IN AT ALL. The factory takes no `now`; admission licenses off the persona-KEL HEAD alone
+ * (event order — a rotated-away key refuses under the head, no clock consulted), and ABSTAINS (refuses)
+ * whenever it holds no founder persona-KEL chain to walk, rather than falling back to a pinned-root-only
+ * check gated on a wall clock.
  *
  * THE INSTRUMENT-LIE THIS FILE REFUSES. A stranger asking a plane doc ALREADY draws false — the base gate denies
  * it. So every vector that must prove the ring BUYS something drives a peer that SHOULD pass (a real signed
@@ -19,33 +21,59 @@ import { describe, test, expect } from "vitest";
 import { Repo, interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import {
   buildDeviceDelegation, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, personaScopedBagIds,
-  type FederationGate,
+  deriveSelfRecoveryKey, sealKeySetHash, mintPersonaInception, personaRotationSigningBytes, mintPersonaRotation,
+  hexToBytes, type FederationGate, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { faceGrantTitle, signFaceGrantRecord, FACE_GRANT_PREFIX, type FaceGrantRecord } from "@lararium/keyhive";
 import { makeSelfSlotPersonaGroupRing, provenVesselKeyOf } from "../src/self-slot-persona-ring.js";
 
 // ── The face + its founder, mirroring the keyhive grant recipe ──────────────────────────────────────────
-const ROOT_SEED    = new Uint8Array(32).fill(7);
-const FOUNDER_SEED = new Uint8Array(32).fill(21);
-const HEARTH       = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqwa";
-const GROUP        = "ab".repeat(16);
-const JOINEE_KEY   = "6".repeat(64);           // the peer's vessel verifying key
-const NOW          = Date.parse("2026-09-11T12:00:00.000Z");   // an INJECTED witness, fixed — not Date.now
+const ROOT_SEED     = new Uint8Array(32).fill(7);
+const FOUNDER_SEED  = new Uint8Array(32).fill(21);
+const FRESH_OP_SEED = new Uint8Array(32).fill(23);   // the op-key a rotation seats
+const HEARTH        = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqwa";
+const GROUP         = "ab".repeat(16);
+const JOINEE_KEY    = "6".repeat(64);           // the peer's vessel verifying key
 
-async function founderEdge() {
+async function founderEdge(opKeySeed = ROOT_SEED) {
   const founderKey = await ed25519VerifyingKeyFromSeed(FOUNDER_SEED);
   return buildDeviceDelegation({
-    personaRootSeed: ROOT_SEED, deviceVerifyingKey: founderKey, hearthTrueName: HEARTH,
+    personaRootSeed: opKeySeed, deviceVerifyingKey: founderKey, hearthTrueName: HEARTH,
     issuedAt: "2026-09-01T00:00:00.000Z", expiresAt: "2026-12-01T00:00:00.000Z", boundEpoch: 0,
   });
 }
-async function validGrant(): Promise<FaceGrantRecord> {
-  const edge = await founderEdge();
+async function validGrant(opKeySeed = ROOT_SEED): Promise<FaceGrantRecord> {
+  const edge = await founderEdge(opKeySeed);
   return signFaceGrantRecord({
     kind: "face-join-grant/v1", groupDocIdHex: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
     founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, regranted: 1, reSealed: [],
     founderEdge: edge, issuedAt: "2026-09-11T11:00:00.000Z",
   }, ed25519SignerFromSeed(FOUNDER_SEED));
+}
+
+/**
+ * The founder's persona-KEL, INCEPTING UNDER THE SAME ROOT `founderEdge` chains to (`ROOT_SEED`) — a
+ * mismatch here makes `verifyEdgeAgainstPersonaKel`'s `genesis.opKeyDid !== ctx.personaRootDid` fail-closed
+ * for the wrong reason (an unpublished-seal refusal, not a KEL-head one). Optionally rotated to a FRESH
+ * op-key by the self-recovery signer — the same recipe `face-grant-record.test.ts` runs.
+ */
+async function personaKel(rotateTo: Uint8Array | null = null): Promise<{ prefix: string; chain: PersonaKelEvent[] }> {
+  const rootDid = `0x${await ed25519VerifyingKeyFromSeed(ROOT_SEED)}`;
+  const selfRecovery = await deriveSelfRecoveryKey(ROOT_SEED);
+  const inception = mintPersonaInception(rootDid, sealKeySetHash([selfRecovery.verifyingKey], 1));
+  const chain: PersonaKelEvent[] = [inception];
+  if (rotateTo) {
+    const freshOpKeyDid = `0x${await ed25519VerifyingKeyFromSeed(rotateTo)}`;
+    const bytes = personaRotationSigningBytes(inception, freshOpKeyDid);
+    const sig = await ed25519SignerFromSeed(hexToBytes(selfRecovery.signingKey))(bytes);
+    const rotated = await mintPersonaRotation({
+      head: inception, freshOpKeyDid, recoveryRoster: [selfRecovery.verifyingKey], recoveryThreshold: 1,
+      rotationSigs: [{ signer: selfRecovery.verifyingKey, sig }],
+    });
+    if (!rotated.ok) throw new Error(rotated.reason);
+    chain.push(rotated.event);
+  }
+  return { prefix: inception.prefix, chain };
 }
 
 // ── A catalog + persona-plane store the factory reads, over a throwaway repo for VALID plane urls ───────
@@ -80,16 +108,25 @@ const OWN    = "peer-own-island"    as PeerId;
 const denyAll:  FederationGate = { mayFederate: () => false };
 const allowAll: FederationGate = { mayFederate: () => true };
 
-async function ringOver(grantText: Map<string, string>, reads: Reads, identifiers: Map<PeerId, string>) {
+/**
+ * `kelOverride` — omit for the default happy-path chain (inception under `ROOT_SEED`, no rotation, matching
+ * `founderEdge()`'s default op-key); pass a chain from `personaKel(...)` to test a rotation; pass `null` to
+ * test the RING'S OWN ABSTENTION when it holds no chain at all (never a pinned-root-only fallback).
+ */
+async function ringOver(
+  grantText: Map<string, string>, reads: Reads, identifiers: Map<PeerId, string>,
+  kelOverride?: { prefix: string; chain: PersonaKelEvent[] } | null,
+) {
   const { urls, governedDoc, foreignDoc } = standPlanes();
   const edge = await founderEdge();
+  const kel = kelOverride === null ? undefined : (kelOverride ?? (await personaKel()));
   const ring = await makeSelfSlotPersonaGroupRing({
     catalog: fakeCatalog(urls, grantText, reads),
     personaGroupDocIdHex: GROUP,
     personaRootDid: edge.personaRootDid,
+    ...(kel ? { personaKel: kel } : {}),
     provenIdentifierOf: (p) => identifiers.get(p) ?? null,
     isOwnHand: (p) => p === OWN,
-    now: () => NOW,
   });
   return { ring, governedDoc, foreignDoc };
 }
@@ -165,6 +202,34 @@ describe("the assembled ring — the flip the null-hole leaves unmade today", ()
       [faceGrantTitle(GROUP, `0x${JOINEE_KEY}`), JSON.stringify(g)],
     ]);
     const { ring, governedDoc } = await ringOver(grants, reads, new Map([[PEER, `0x${JOINEE_KEY}`]]));
+    expect(await ring.admitsPeer(governedDoc, PEER)).toBe(true);
+  });
+
+  // ── NO CLOCK: the ring licenses off the persona-KEL HEAD alone, and ABSTAINS absent one ─────────────────
+
+  test("★ no persona-KEL chain in hand → ABSTAINS (refuses), even though the grant is otherwise signature-valid ★", async () => {
+    const reads = { visible: 0, got: 0 };
+    const g = await validGrant();
+    const grants = new Map([[faceGrantTitle(GROUP, `0x${JOINEE_KEY}`), JSON.stringify(g)]]);
+    const { ring, governedDoc } = await ringOver(grants, reads, new Map([[PEER, `0x${JOINEE_KEY}`]]), null);
+    expect(await ring.admitsPeer(governedDoc, PEER)).toBe(false);
+  });
+
+  test("★ a grant whose founder edge a ROTATED-AWAY key signed → refused under the KEL head, at the ring's own boundary ★", async () => {
+    const reads = { visible: 0, got: 0 };
+    const kel = await personaKel(FRESH_OP_SEED);
+    const g = await validGrant();   // edge signed by ROOT_SEED — the now-superseded op-key
+    const grants = new Map([[faceGrantTitle(GROUP, `0x${JOINEE_KEY}`), JSON.stringify(g)]]);
+    const { ring, governedDoc } = await ringOver(grants, reads, new Map([[PEER, `0x${JOINEE_KEY}`]]), kel);
+    expect(await ring.admitsPeer(governedDoc, PEER)).toBe(false);
+  });
+
+  test("★ a grant whose founder edge the CURRENT head signed → admitted, clocklessly ★", async () => {
+    const reads = { visible: 0, got: 0 };
+    const kel = await personaKel(FRESH_OP_SEED);
+    const g = await validGrant(FRESH_OP_SEED);   // edge re-issued under the seated op-key
+    const grants = new Map([[faceGrantTitle(GROUP, `0x${JOINEE_KEY}`), JSON.stringify(g)]]);
+    const { ring, governedDoc } = await ringOver(grants, reads, new Map([[PEER, `0x${JOINEE_KEY}`]]), kel);
     expect(await ring.admitsPeer(governedDoc, PEER)).toBe(true);
   });
 });

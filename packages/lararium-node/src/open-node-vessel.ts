@@ -242,9 +242,6 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   storageDir: string;
   wss:        WebSocketServer;
   catalogUrl?: string | null;
-  /** The time WITNESS the PersonaGroup ring's grant-window verify reads — injected at the process edge
-   *  (`main.ts`), never a `Date.now` baked in the boot. Absent → the ring stays unwired (no global now). */
-  now?: () => number;
   /** Directory holding the BAKED GENESIS SEED (island + cas). The bootstrap no longer lives here. */
   genesisDir?: string;
   /** Repo root for wiki memes scan and all mirror paths. Defaults to monorepo root. */
@@ -1420,18 +1417,17 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // planes — and nothing else. The ring WIDENS the self-slot fed gate by that ONE path (`compose` ORs it
     // atop the deterministic federatable set), so a stranger, and every private plane, read exactly as
     // before. The grant read reuses the plane the joinee's own `takeFaceGrantIfPublished` reads, bound to
-    // the ONE `verifyFaceGrantRecord`. The window's clock rides in as an INJECTED witness (`opts.now`,
-    // supplied at the process edge): this boot names no wall clock, and absent a witness the ring stays
-    // UNWIRED — the pre-ring verdict stands rather than a widening on a clock the vessel cannot honor.
-    if (personaGroupDocIdHex && deviceEdge?.personaRootDid && selfSlotFedGate && opts.now) {
+    // the ONE `verifyFaceGrantRecord`. NO CLOCK RIDES IN: admission licenses off the persona-KEL HEAD alone
+    // (event order), so absent a resolved KEL chain the ring stays UNWIRED — the pre-ring verdict stands
+    // rather than a widening the vessel cannot walk clocklessly.
+    if (personaGroupDocIdHex && deviceEdge?.personaRootDid && selfSlotFedGate && personaKelPrefix && personaKelChain) {
       const base = selfSlotFedGate;
       selfSlotFedGate = (await makeSelfSlotPersonaGroupRing({
         catalog: makeCatalogAccessor(repo, catalogHandle.url),
         personaGroupDocIdHex,
         personaRootDid: deviceEdge.personaRootDid,
-        ...(personaKelPrefix && personaKelChain ? { personaKel: { prefix: personaKelPrefix, chain: personaKelChain } } : {}),
+        personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
         provenIdentifierOf: (peerId) => peerIdentifierMap.get(peerId),
-        now: opts.now,
       })).compose(base);
     }
 

@@ -12,9 +12,11 @@
  *   · `grants`          — the persona-plane read `takeFaceGrantIfPublished` already runs, bound to the ONE
  *                         `verifyFaceGrantRecord` the joinee's own kit runs (the ring re-cuts no seal).
  *
- * THE CLOCK RIDES IN AS A WITNESS. `verifyFaceGrantRecord` reads a validity window; this factory takes
- * `now: () => number` and calls NO `Date.now` of its own — the vessel hands the witness at the edge, so
- * load-bearing admission stays clockless (no global now).
+ * NO CLOCK RIDES IN AT ALL. `verifyFaceGrantRecord`'s validity window is a founder-edge freshness check
+ * `verifyEdgeAgainstPersonaKel` can run with or without; this factory supplies no `now` and abstains
+ * (refuses) whenever it holds no founder persona-KEL chain to walk, rather than falling back to a
+ * pinned-root-only verify gated on a wall clock. Admission rides EVENT ORDER alone: the KEL-head walk
+ * refuses an edge a rotated-away op-key signed, clocklessly (no global now).
  *
  * IT WIDENS AND NEVER NARROWS: the ring `compose`s onto the outer fed gate by an OR, opening exactly the
  * face's own planes to a proven grant-holder and touching nothing else (see `persona-group-ring.ts`).
@@ -46,8 +48,6 @@ export interface SelfSlotPersonaRingInput {
   readonly provenIdentifierOf: (peerId: PeerId) => string | null | undefined;
   /** The vessel's OWN hand — its in-process island / own fleet; never questioned. */
   readonly isOwnHand?: (peerId: PeerId) => boolean;
-  /** The time WITNESS — injected, never a `Date.now` baked in load-bearing code. */
-  readonly now: () => number;
 }
 
 /**
@@ -96,14 +96,16 @@ export async function makeSelfSlotPersonaGroupRing(input: SelfSlotPersonaRingInp
         }
         return out;
       },
-      // The ONE verify the joinee's own kit runs, bound to THIS face's root/KEL. The clock rides in as a witness.
+      // The ONE verify the joinee's own kit runs, bound to THIS face's root/KEL — NO clock. Absent a
+      // founder persona-KEL chain to walk, this ABSTAINS (refuses) rather than falling back to a
+      // pinned-root-only check gated on a wall clock: fail-closed, never a clock-decided admit.
       verify: async (record, joineeVesselKey) => {
+        if (!input.personaKel) return false;
         const verdict = await verifyFaceGrantRecord(record, {
           personaRootDid: input.personaRootDid,
           selfVerifyingKey: joineeVesselKey,
           groupDocIdHex: group,
-          now: input.now(),
-          ...(input.personaKel ? { personaKel: input.personaKel } : {}),
+          personaKel: input.personaKel,
         });
         return verdict.ok;
       },
