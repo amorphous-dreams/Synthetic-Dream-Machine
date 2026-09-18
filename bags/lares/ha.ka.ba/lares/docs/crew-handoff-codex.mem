@@ -106,6 +106,8 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 
 ''C4 awaitIslandMsg boundary, 2026-09-18.'' The transform now explicitly names and counts served modules containing the `awaitIslandMsg` subscriber and records only safe `ea`/`breath`/`fault` type/version summaries, guard verdicts, expected-type comparison, reset/reject branches, and resolve. The fresh instrumented route transformed six matching served module URLs, including `packages/lararium-mesh/dist/vessel-host.js`, but emitted no awaitIslandMsg raw receipt; it reached `open-browser-vessel-start` and `wiki-workerEa-pre`, then stayed `booting…` without a workerEa settle or mount/phase/paint receipt. Classify this witness as **anchor present, subscriber saw no watched protocol message**; it is neither `transform-anchor-missed` nor evidence of a guard rejection. The next fork remains the served worker-to-subscriber delivery boundary, with raw Worker receipts retained alongside it.
 
+''C4 listener-fanout witness, 2026-09-18.'' The instrumented dedicated-worker route now names the served `browserWorkerHandle` source and daemon-core `workerEa` source explicitly. It recorded three native-handle registrations and three `ready` dispatches, while the outer Worker wrapper also recorded raw `ready`; no `ea`, `breath`, or `fault` reached the daemon `workerEa` callback. The route reached `open-browser-vessel-start` and `wiki-workerEa-pre`, then timed out at `booting…`. Classify this receipt as **outer-sees-and-handle-sees-ready, workerEa-callback does not receive a watched protocol message**; it rules out an outer-wrapper-versus-handle delivery gap for `ready` while leaving the `ea` delivery path open. The dedicated path is confirmed because no `?holder` parameter was used.
+
 ''Projection follow-up, source audit rather than a reproduced product red.'' `tw5-projection.ts` adds render IDs to a module-level map without retiring detached nodes. The unknown-ID control proves only unknown-ID handling. Next, render a valid target, detach it, send its former ID, and test that no handler fires; retain a live-target positive control. Also tighten the witness's frame ordering and worker-error attribution: a same-worker frame alone does not establish causation, and an unrelated worker fault must not convict the unknown-ID probe. Preserve named state transitions and the disabled-message control. Ensure CI supplies the generated TW5 core so the retained-reveal fixture executes rather than skips.
 
 W3 closes under its named actions and measured limits. D3 gains source wiring, with hosted execution still owed. C4 boot stalls, W5's node-disk leg, full Python-suite health and admitted relay proof remain separate debts. The deeper scouts below retain their historical measurements rather than claiming a fresh full audit.
@@ -601,6 +603,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qhc_l9RQX1ieSVmwoCV7EQbQIMvMBXRkXJyeADOAgXI
+<<^ code="&#x0003;">>ni:///sha-256;f2S6oz64RNme0nrucuaYh1ChbFViPKRexb8iXUhAH6A
 
 <<^ code="&#x0004;" -> to="?">>
