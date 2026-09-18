@@ -135,6 +135,9 @@ async function testC4TraceHookIsOptIn() {
   const source = await readFile(LEAF, "utf8");
   assert.match(source, /const BOOT_TRACE = process\.env\.LEAF_BOOT_TRACE === "1"/);
   assert.match(source, /async function observeKelRead\(context, page\)/);
+  assert.match(source, /function watchPage\(context, page\)/);
+  assert.match(source, /context\.on\("requestfailed"/);
+  assert.match(source, /context\.on\("response"/);
   assert.match(source, /await context\.route\(\/\\\.\(\?:\[cm\]\?\[jt\]sx\?\)\(\?:\\\?\.\*\)\?\$\//);
   assert.match(source, /if \(!BOOT_TRACE \|\| source\.includes\("__laresC4BootTrace"\)\) return source/);
   for (const marker of [

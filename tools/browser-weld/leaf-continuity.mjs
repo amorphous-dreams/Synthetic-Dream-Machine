@@ -75,7 +75,7 @@ async function liveReading(page) {
 }
 
 /** Keep a small terminal tail: a boot timeout must expose a concrete browser cause. */
-function watchPage(page) {
+function watchPage(context, page) {
   const diagnostics = [];
   const bootTrace = [];
   pageDiagnostics.set(page, diagnostics);
@@ -87,6 +87,16 @@ function watchPage(page) {
   });
   page.on("pageerror", (error) => diagnostics.push(`pageerror: ${error.message}`));
   page.on("requestfailed", (request) => diagnostics.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText ?? "unknown"}`));
+  // Worker module fetches belong to the context rather than the document page.
+  // Keep failed and non-success script receipts beside the page's terminal tail.
+  context.on("requestfailed", (request) => {
+    if (request.resourceType() === "script") diagnostics.push(`context-script-failed: ${request.url()} — ${request.failure()?.errorText ?? "unknown"}`);
+  });
+  context.on("response", (response) => {
+    if (response.request().resourceType() === "script" && response.status() >= 400) {
+      diagnostics.push(`context-script-response: ${response.status()} ${response.url()}`);
+    }
+  });
   if (BOOT_TRACE) {
     page.on("worker", (worker) => {
       const marker = `worker:spawn ${worker.url()}`;
@@ -238,7 +248,7 @@ function assertKel(label, reading, expected) {
 async function ordinaryWalk() {
   return withProfile(async (context) => {
     const page = await context.newPage();
-    watchPage(page);
+    watchPage(context, page);
     const logs = [];
     page.on("console", (message) => logs.push(message.text()));
     page.on("pageerror", (error) => logs.push(`pageerror: ${error.message}`));
@@ -276,7 +286,7 @@ async function ordinaryWalk() {
 async function faultWalk() {
   return withProfile(async (context) => {
     const page = await context.newPage();
-    watchPage(page);
+    watchPage(context, page);
     let replacements = 0;
     await page.goto(appUrl(), { waitUntil: "domcontentloaded" });
     await liveReading(page);
@@ -308,8 +318,8 @@ async function faultWalk() {
 async function malformedAnchorWalk() {
   return withProfile(async (context) => {
     const page = await context.newPage();
-    watchPage(page);
-    const finishObservation = await observeKelRead(page);
+    watchPage(context, page);
+    const finishObservation = await observeKelRead(context, page);
     await page.goto(appUrl(), { waitUntil: "domcontentloaded" });
     const offline = await liveReading(page);
     const offlineKel = assertKel("malformed-anchor offline founding", offline);
