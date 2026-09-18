@@ -1,5 +1,3 @@
-<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->
-
 # The Emergence Pre-Registration — vows before the re-run
 
 *Written 2026-07-13, BEFORE the beds rebuild under the compression re-founding

@@ -1,5 +1,3 @@
-<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->
-
 # The RUN Arc — witnessing the dreaming-Markov-blanket on real data
 
 *The handoff from the enact-flow (the instruments, built + witnessed on synthetic data) to the crossing (the RUN over real, genuinely-independent planes). Written at the S5 ruling, 2026-07-05.*

@@ -214,25 +214,11 @@ BOM — where an outside consumer requires one, and the declaration follows it.
 
 `<<~moves prologue -> admits/a-foreign-header on/byte-zero if/an-outside-reader-requires-it do/yield-the-slot>>`
 
-### And the FORM follows what that reader can carry
+### And the FORM stands bare
 
-The same outside reader that claims byte zero also decides how a declaration may LOOK to it. A `.mem`
-or a `.tid` answers to this grammar alone, so its declaration stands bare on its own line. A `.md`
-answers to a MARKDOWN READER TOO, and a bare `<<!DOCTYPE …>>` reaches that reader as visible text at
-the top of the page — a declaration doing its work for one reader by defacing the page for the other.
-
-So a carrier that shows its own source declares inside a comment its other reader already hides:
-
-```
-<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->
-```
-
-**THE CORPUS KEPT THIS LAW BEFORE ANYONE WROTE IT.** Four of four markdown carriers wear the
-comment form, with no counter-example anywhere. The form reads as a FUNCTION OF THE FILE and never as
-a spelling choice: wearing the wrong one for your kind fails, and wearing the right one passes,
-whichever it happens to be.
-
-`<<~moves declaration -> takes/the-form-its-other-reader-can-carry if/a-second-reader-renders-the-file do/declare-where-that-reader-hides>>`
+A declaration stands bare on its own line in every carrier this grammar reads. A carrier answers
+to this grammar alone, so its declaration stands where the grammar reads it, and nothing asks it to
+hide inside a comment.
 
 The order stands fixed:
 
@@ -1019,6 +1005,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - `"lar:///ha.ka.ba/lares/api/pono/kapu"`
 - `"lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
 
-<<^ code="&#x0003;">>ni:///sha-256;muw67vJ-eDCCm4dS-KIONFTUoRQpKiknAMUG9_aGhbU
+<<^ code="&#x0003;">>ni:///sha-256;PMpv-MjPKZheRJSm4BAVzFRZFsbQhQDwJVHQkwDwQFs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,5 +1,3 @@
-<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->
-
 <<^ code="&#x0001;" namespace="ॐ ँ" ? -> lar:///ha.ka.ba/sdm/handoff/talk-story-next>>
 ```toml iam
 uri-path  = "ha.ka.ba/sdm/handoff/talk-story-next"

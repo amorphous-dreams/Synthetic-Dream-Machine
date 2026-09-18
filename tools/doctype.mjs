@@ -38,19 +38,11 @@ const { fencedSpans, inMask } = await import(
 
 
 
-// ── THE FORM FOLLOWS WHAT THE FILE'S OTHER READER CAN CARRY ────────────────────────────────────
-// A `.mem` or a `.tid` answers to this grammar alone, so its declaration stands bare on its own line.
-// A `.md` answers to a MARKDOWN READER TOO, and a bare `<<!DOCTYPE …>>` reaches that reader as visible
-// text at the top of the page. The comment form declares to this grammar and shows nothing to the other.
-//
-// MEASURED, and the corpus already knew: ELEVEN of eleven `.md` carriers wear the comment form, with
-// no counter-example anywhere. A law the corpus keeps perfectly and nobody had written down.
-//
-// So the form is not a spelling choice and not a debt — it is a FUNCTION OF THE FILE. Wearing the
-// wrong one for your kind fails; wearing the right one passes, whichever it is.
+// ── A DECLARATION STANDS BARE, ON ITS OWN LINE ─────────────────────────────────────────────────
+// A carrier answers to this grammar alone, so its declaration stands bare where the grammar reads it.
+// The retired comment spelling hides the declaration from the one reader it addresses — it declares to
+// nobody. The file's DECLARATION decides that, never its extension.
 const COMMENTED = /^<!--\s*<<~\s*!DOCTYPE/;
-/** True where a carrier serves a second reader that would render a bare declaration. */
-const showsItsSource = (f) => f.endsWith(".md");
 
 const carriers = carrierFiles(REPO);
 
@@ -76,14 +68,7 @@ for (const f of carriers) {
   // the retired one and still worth catching where it stands.
   const sohAt = findLive((l) => l.startsWith("<<^ code=") || l.startsWith("<<^ code:"));
   const commented = lines.some((l, i) => live(i) && COMMENTED.test(l.trim()));
-  if (showsItsSource(f)) {
-    // A markdown carrier declares in the comment form, and a BARE declaration there is the fault:
-    // it reaches the other reader as text.
-    if (commented) { continue; }
-    if (at >= 0) { misaimed.push([f, "a bare declaration renders as text to a markdown reader — use the comment form"]); continue; }
-    missing.push(f); continue;
-  }
-  // Everything else answers to this grammar alone, so a hidden declaration declares to nobody.
+  // A hidden declaration declares to nobody.
   if (commented) { hidden.push(f); continue; }
   if (at < 0) { missing.push(f); continue; }
   const first = (lines[at] ?? "").trim();
@@ -94,8 +79,7 @@ for (const f of carriers) {
   }
 }
 
-const md = carriers.filter(showsItsSource).length;
-console.log(`[doctype] ${carriers.length} carriers (${md} also read as markdown) · ${missing.length} without · ${hidden.length} declaring to nobody · ${misaimed.length} in the wrong form${vanishedNote()}`);
+console.log(`[doctype] ${carriers.length} carriers · ${missing.length} without · ${hidden.length} declaring to nobody · ${misaimed.length} in the wrong form${vanishedNote()}`);
 for (const f of missing.slice(0, 10)) console.log(`  no declaration   ${f}`);
 if (missing.length > 10) console.log(`  … and ${missing.length - 10} more`);
 for (const f of hidden) console.log(`  declares to nobody   ${f}`);

@@ -1,5 +1,3 @@
-<!-- <<~ !DOCTYPE = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">> -->
-
 <<^ code="&#x0001;" ? -> lar:///packages/AGENTS>>
 
 <<~ ahu #meta>>
