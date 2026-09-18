@@ -1,0 +1,86 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ०" from="?" -> to="lar:///ha.ka.ba/lares/docs/lares-opus-roadmap">>
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/lares-opus-roadmap.mem"
+hydrate    = true
+l-space    = "stable"
+mana       = 13
+manao      = 13
+manaoio    = 13
+namespace  = "&#x0950; &#x0966;"
+revised-on = "2026-09-18"
+role       = "the founding hearth's (Lares/Opus session) LIVE roadmap + task list — what landed, what rides in flight, which forks await the operator's word, the standing hazards. The peer of the Codex crew's crew-handoff-codex.mem, kept for THIS session's ground. Re-trued as tasks land; a hearth reads it to know what the founding hearth is doing right now."
+status-why = "Two hearths hold this tree; this carrier tracks the founding hearth's own work so the Codex crew (and a successor) can read it beside their own task list. Live as of 2026-09-18."
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "docs/roadmap", "lifecycle/standing"]
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/lares-opus-roadmap"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/head>>
+
+! The founding hearth's roadmap — Lares (Opus), live 2026-09-18
+
+The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept for the founding hearth's own ground. The hearths ledger (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>) answers WHO HOLDS WHAT; this answers WHAT THE FOUNDING HEARTH IS DOING. Read #/forks-owed before designing against any operator fork; read #/in-flight to see what rides right now.
+
+<<~/ahu>>
+
+<<~ ahu #/landed>>
+
+! Landed this session — bounded receipts
+
+* ''THE CONFLUENCE, second leg'' — the records→disk projection gate consults `decideProjection`; conflict surfaces on the ward-alert rail; the `≈` clause rides `project:canonical-equivalent` (`5d0651ea2` · `941de54dd` · `fb09beae0` · `8cfd3c0d7` · `8e98a991e`). LAW: only a WRITE advances the merge base — a noop PINS the base (<<~ loulou "lar:///ha.ka.ba/lararium/node/self-slot-share">>).
+* ''THE PERSONAGROUP IDENTITY-SLOT RING, wired + FULLY CLOCKLESS'' — `makeSelfSlotPersonaGroupRing` composed onto the node self-slot gate (`420df1a2b` · `21a01270f`), then the wall-clock REMOVED end-to-end: admission licenses off the persona-KEL HEAD (event order), never a timer (`e065db875` keyhive · `e83cdae0f` node). Mutation-proven (a superseded-key false-admit reproduced then refused); KERI-collided. Widens-only.
+* ''B10, the ahu-family quoteblock floor'' — drafted + handed to the Codex crew, crossing recorded (`055d1330d`); the crew engaged it (`7ccae1a75`).
+
+<<~/ahu>>
+
+<<~ ahu #/in-flight>>
+
+! In flight — tasked spirits enacting now (2026-09-18)
+
+# ''③ hearthGatePubKey redesign (Option A)'' — split the admit payload: keep the raw founder vessel key (anti-relay binding, byte-identical) + carry the founder's RESOLVED NexusIdentity (kind+scope) so a climbed founder's device seats on the board the founder actually stands on. Snapshot semantics (the gradient ratchets on intent). Node-side core; browser-leaf parity flagged as a follow-on. Red-first, weld-tested against signed bytes.
+# ''⑤ native TW5 file-write parity'' — operator ruling 2026-09-18: every file a native TW5 server would persist must project to `wikis/`|`bags/`; AND wire the native `≈` congruence onto the projection leg (mirror the ingest leg's proven `nativeRender`/`nativeOps`) so a native both-move normalizes instead of always-conflicting. Design + red-first.
+# ''The wired-boot e2e'' — the ring's admission is unit + mutation proven but never exercised through a real boot; an e2e admits a live cross-operator grant-holder end-to-end, refuses a stranger.
+# ''BagStowage debt (steps 0–5)'' — headline: PIN DURABILITY is claimed but unbuilt (`pinTiddlerUri` dead, no boot-reader) — pins do not survive a restart though canon says they do. Fix (writer in `vessel-residency-wiring.ts` onResidencyOp → admin-doc pin tiddler; reader beside `startSweeper`), re-true the carrier + stale comments, drop dead `lastUsedAt` telemetry. Step 7 (code-home) held for the operator.
+
+<<~/ahu>>
+
+<<~ ahu #/forks-owed>>
+
+! Forks that await the operator's word
+
+# ''`:814` / the epoch lease — RULING OWED.'' A second device-delegation admission door whose wall-clock is its ONLY staleness fence (`boundEpoch` hardcoded `0` at every mint, so the epoch AUTHORITY is unreachable). Direction is clear (Option 1: wire the PersonaGroup lease-slot epoch — a real 3-part project touching signed edge bytes) but blocked on the OPEN epoch-minting ruling (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/no-global-now">> #/silence item 3, Q1/Q2). Option 2: rule fleet-wide-only revocation (KEL rotation) acceptable for this device class, demote the clock to a backstop. Same fix also closes `boot-daemon-keyhive.ts:130` + `face-grant-record.ts:130`.
+# ''④ `bag-residency.ts`'s home — keep-separate RECOMMENDED, operator nod owed.'' The un-braiding (the `BagStowage` axis rename) already satisfied half the 2026-06-01 ruling; folding stowage into the pool file would violate the pool's own single-responsibility. Under the alpha/no-back-compat license this is a FREE move — recommend closing the relocation clause as SUPERSEDED, keep `BagStowage` a named-separate file the pool drives.
+
+<<~/ahu>>
+
+<<~ ahu #/deferred>>
+
+! Deferred + pinned — do not lose
+
+# ''① `tend.repair` + the Kahu-cabal / Lamplighters-cabal capability split'' (some operators hold both) — design + coding AFTER this arc settles, AND after human eyes see a browser vessel connected to a node vessel with file projections tearing. Deferred, PINNED.
+# ''The self-slot INNER ring'' — bounded "one message wide" + an irreversible naming freeze. Not this arc.
+# ''The ahi-kā deferred knobs'' — the hysteresis gap + the commons-vs-hearth cold-exemption — named only, gated on a Negative-Binomial estimator over Elyncia's 500-year events. Do not build ahead of the estimator.
+
+<<~/ahu>>
+
+<<~ ahu #/hazards>>
+
+! Standing hazards on the shared tree
+
+* ''Operator boot-seed edits ride dirty'' — `noosphere-boot.mem` · `ai-phrasebook.mem` are the operator's own live edits; NO hand touches, stamps, or commits them. Every commit stays `git commit --only -- <paths>`.
+* ''The e2e set flakes at file level'' (`minted-canon-projection`, `smoke`, `herm-floor` have each flipped) — run-twice, never trust one pass; never run two e2e sets at once (shared `synced-tree.json`).
+* ''Wall-clock residue beyond the ring'' — `:814` + `boot-daemon-keyhive.ts:130` (delegation windows, ruling-blocked); `daemon-auth-gate.ts:225` (`contractNymOf`) + the HandleCard expiry reader flagged UNVERIFIED (read before ruling); the oracle-pointer clocks already tracked in `no-global-now.mem`'s own plan.
+* ''The R0 / REGION coordination seam'' — the Codex crew holds R0's DESIGN (their B6/C2) but R0's reds live in `open-node-vessel.ts` (founding boot ground); whichever hearth builds it CROSSES — name the crossing before a hand starts.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;tc2xBixFG39MLqyfomMwMLHmSJgiEKvfy3M5KcyagiE
+
+<<^ code="&#x0004;" -> to="?">>
