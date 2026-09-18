@@ -17,11 +17,24 @@ import { runDeviceAdmitEdge, type DeviceAdmitEdgeInput } from "./ceremony-core.j
 import type { DeviceAdmitPayload } from "./index.js";
 
 /** Re-admission input — the admit-edge input, but the signer is the quorum-RECONSTRUCTED root, never a
- *  live-held seed. Only the branded `ReadmissionSecret` reaches the signer. */
-export interface ReadmitEdgeInput extends Omit<DeviceAdmitEdgeInput, "signerSeed"> {
+ *  live-held seed. Only the branded `ReadmissionSecret` reaches the signer.
+ *
+ *  `boundEpoch` is REQUIRED here, unlike `DeviceAdmitEdgeInput` where it is optional (there, an absent
+ *  read floors to 0 — the correct GENESIS value at a self-stood founding, `ceremony-core.ts`'s
+ *  `runFoundingCeremony`, which has no lease slots to read yet). A READMIT is never a founding: the
+ *  PersonaGroup already exists and may have rolled its lease epoch since. A silent `?? 0` here would
+ *  mint a re-admitted device maximally stale with no caller-visible signal — it would simply be denied
+ *  at the first `expectedEpoch`-checking door (`verifyDeviceDelegation`, `device-delegation.ts:183-185`)
+ *  with no clue why. Requiring the field here pushes that failure to COMPILE TIME instead: the caller
+ *  (today `recovery-keel.ts`'s `reconstructAndReadmit`, or its future CLI door) must read the live lease
+ *  the same way `device-admit.ts` does (`leaseEpochPrefix` → per-writer slot values → `effectiveLeaseEpoch`)
+ *  before it can even construct this input. */
+export interface ReadmitEdgeInput extends Omit<DeviceAdmitEdgeInput, "signerSeed" | "boundEpoch"> {
   /** The PersonaGroup root, RECONSTRUCTED from a recovery Quorum (mesh: reconstructFromQuorum). The
    *  brand is the gate: re-admission cannot be minted from a bare Uint8Array. */
   readonly reconstructedRoot: ReadmissionSecret;
+  /** The PersonaGroup's CURRENT lease epoch at readmit time — REQUIRED (see interface doc above). */
+  readonly boundEpoch: number;
 }
 
 /**

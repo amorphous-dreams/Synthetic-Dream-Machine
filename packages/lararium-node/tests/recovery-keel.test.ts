@@ -40,10 +40,15 @@ beforeAll(async () => {
   const pk = await ed25519.getPublicKeyAsync(ROOT);
   ROOT_PREFIX = personaPrefixOf(`0x${Buffer.from(pk).toString("hex")}`, "");
 });
-const readmitFields = (joineeVerifyingKey: string) => ({
+// `boundEpoch` defaults to 0 here ONLY because every existing test below never rolls the group's lease —
+// 0 reads correctly fresh in that case. `ReadmitEdgeInput.boundEpoch` (keyhive recovery-core.ts) is a
+// REQUIRED field precisely so a caller cannot omit this the way this default quietly could; the describe
+// block below ("the readmitted edge binds the PRESENT lease epoch") is the vector that would catch a
+// caller who forgot to thread a LIVE read.
+const readmitFields = (joineeVerifyingKey: string, boundEpoch = 0) => ({
   joineeVerifyingKey, personaKelPrefix: ROOT_PREFIX, hearthTrueName: PLACE,
   personaGroupDocIdHex: "aa".repeat(32), personaGroupAgentIdHex: "bb".repeat(32),
-  meshCabalDocIdHex: "cc".repeat(32), syncUrl: null,
+  meshCabalDocIdHex: "cc".repeat(32), syncUrl: null, boundEpoch,
 });
 
 describe("recovery-keel — found → device drowns → recover → re-admit", () => {
@@ -82,6 +87,45 @@ describe("recovery-keel — found → device drowns → recover → re-admit", (
     const payload = await reconstructAndReadmit([founding.deviceShare, founding.escrowShare], readmitFields(freshDeviceKey()));
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+  });
+});
+
+describe("recovery-keel — the readmitted edge binds the PRESENT lease epoch, not a stale one", () => {
+  // `:814` (6b0910fbc) wired `expectedEpoch` into every LIVE admission door — a readmitted edge that binds
+  // a STALE `boundEpoch` is denied at that door, silently, with no signal at mint time. This block proves
+  // the mint-time signal exists (via the REQUIRED `boundEpoch` field) and that the byte-level consequence
+  // (`verifyDeviceDelegation`'s `expectedEpoch` fence) reads exactly as the follow-on predicted.
+  const rootDid = async (): Promise<string> => `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
+
+  test("RED-shape (now GREEN because the type forces it): a readmit minted with boundEpoch:0 against a ROLLED group is denied", async () => {
+    const founding = splitRootAtFounding(ROOT, seededRng(7));
+    const surviving = [founding.recordedCodeShare, founding.escrowShare];
+    // The group rolled to epoch 2 sometime after founding (a face-join regrant, a device loss elsewhere —
+    // any live-lease event `effectiveLeaseEpoch` folds). A readmit that binds `boundEpoch: 0` (the
+    // founding-genesis floor, never re-read) is what a caller gets if it forgets to thread a live lease read.
+    const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
+    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 2 });
+    expect(verdict.ok).toBe(false);
+    expect(verdict.ok === false && verdict.reason).toMatch(/lease stale|boundEpoch/i);
+  });
+
+  test("CONTROL: the identical readmit against an UN-ROLLED group (expectedEpoch: 0) verifies fine", async () => {
+    const founding = splitRootAtFounding(ROOT, seededRng(7));
+    const surviving = [founding.recordedCodeShare, founding.escrowShare];
+    const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 0));
+    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 0 });
+    expect(verdict.ok).toBe(true);
+  });
+
+  test("a readmit that THREADS the live (rolled) epoch verifies against the SAME rolled group", async () => {
+    const founding = splitRootAtFounding(ROOT, seededRng(7));
+    const surviving = [founding.recordedCodeShare, founding.escrowShare];
+    // The caller read the live lease (2) before minting — exactly the pattern device-admit.ts's own
+    // `leaseEpochPrefix` → `effectiveLeaseEpoch` composition would produce, threaded by hand here since no
+    // CLI door exists yet to do the daemon-doc read itself.
+    const payload = await reconstructAndReadmit(surviving, readmitFields(freshDeviceKey(), 2));
+    const verdict = await verifyDeviceDelegation(payload.deviceEdge, await rootDid(), { expectedEpoch: 2 });
+    expect(verdict.ok).toBe(true);
   });
 });
 

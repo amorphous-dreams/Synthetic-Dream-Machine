@@ -31,6 +31,15 @@ export { splitRootAtFounding, type FoundingShares } from "@lararium/mesh";
  * the keyhive edge-signer to the core flow: the core reconstructs the branded ReadmissionSecret, this
  * wrapper signs the re-admit edge with it, and the core zeroizes it the instant this returns. The device-
  * share is ABSENT after device loss; recovery rides {recorded-code, escrow}.
+ *
+ * `readmit.boundEpoch` is REQUIRED (`ReadmitEdgeInput`, keyhive `recovery-core.ts`) — a readmit is never a
+ * founding, so there is no honest 0 to float to. NO CALLER LIVES HERE YET that reads the daemon doc, so a
+ * future CLI door (a `lares device-readmit` verb or similar) wiring this MUST read the PersonaGroup's live
+ * lease epoch itself before calling — the exact composition `device-admit.ts`'s `runDeviceAdmit` already
+ * runs at its admit door: `leaseEpochPrefix(personaGroupDocIdHex)` → filter the daemon doc's tiddler map to
+ * that prefix → `effectiveLeaseEpoch(leaseSlotValues)`. That door does not exist today (this file has no
+ * live CLI consumer — `reconstructAndReadmit` is presently exercised only by `recovery-keel.test.ts`); this
+ * comment is the wiring's future caller's reminder, not a restatement of a read this file performs.
  */
 export async function reconstructAndReadmit(
   quorumShares: readonly RecoveryShare[],
