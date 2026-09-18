@@ -177,9 +177,11 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 ! Set A — mechanical, enumerable, a worked example stands
 
-!! A1 · The board reads keyed on a vessel key — 12 sites, 7 files
+!! A1 · The board reads keyed on a vessel key — CLOSED 2026-09-18
 
 ''What it is.'' A per-Nexus deterministic board addressed by the vessel's OWN verifying key (`await loadVesselVerifyingKey(dir)`) instead of by the resolved Nexus island. A Nexus holds no key of its own, so the charter's genesis epoch — a KERI AID every holder derives alike — names the island; `nodeNexusIsland` composes that resolution (`packages/lararium-node/src/nexus-standing.ts:80`).
+
+''CLOSED — receipt `0b085461c`, notified across hearths by `de5f0f2d6`.'' The six in-scope node modules now resolve `nodeNexusIsland({ ownVesselKey: nexusPubkey })` before addressing their per-Nexus board. The new `packages/lararium-node/tests/cli-verbs-read-the-resolved-island.test.ts` sweeps the named board doors after stripping comments, pins their counts against vacuity, retains the deliberate own-board carriage read, and retains the two no-board invite sites. Its red-first cabal-vouch reversion red, restoration green, and workspace typecheck form the source receipt. The paths stood unheld; this held carrier records the completion.
 
 ''RULED, twice, and the two rulings answer different questions.''
 
@@ -190,7 +192,7 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 ''Read the weld before touching a site'' — `packages/lararium-node/tests/device-admit-reads-the-resolved-island.test.ts:150-171`. It asserts the composed resolver EXISTS AND EXPORTS on the module that owns it (''a token-only weld cannot tell a rename from a deletion''), asserts the door composes it, then sweeps every `personaKelBoardDocUrl(` ARGUMENT for a raw vessel key. ''It strips comments first, and that is a measured trap, never tidiness'': the docblock above `admitBoardIsland` NAMES the old spelling in order to explain why it was wrong, and the sweep matched that prose and red over code already correct. And it pins its own strip against vacuity — `expect(code, "the comment strip ate the file — the sweep below would pass vacuously").toMatch(/personaKelBoardDocUrl\(/)`.
 
-''The sites that stand, every one spelled `const nexusPubkey = await loadVesselVerifyingKey(<dir>)``, and every one under `packages/lararium-node/src/` — none under `packages/lares-cli/src/`.''
+''The sites that stood before the closure.'' The table records the raw-key audit that located the work. Its spellings no longer describe the live calls; the closure receipt above and its WELD test describe the standing source.
 
 |!# |!file:line |!board / consumer |
 |1 |`src/commands/handle.ts:73` |`whoBoardDocUrl(nexusPubkey)` (`:74`) |
@@ -210,7 +212,7 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 * ''Sites 6 and 7 read NO board.'' They stamp the vessel key as the Nexus IDENTITY into an invite and an invite policy decision — the same defect class, a different consequence. Curing them by the board recipe reads as a category error.
 * ''Every site sits CORRECT for an un-climbed vessel by construction'' — `nodeNexusIsland` returns the own key at the `own` notch. So a behavioural vector over a vessel that never climbed greens on the defect. Stage a CLIMBED founder or measure nothing.
-* ''`nodeNexusIsland` stands imported by exactly ONE src file'' (`device-admit.ts:30`). Nothing else composes it yet, so a cure is a wire, never a call.
+* ''The former one-import reading is historical.'' Before `0b085461c`, only `device-admit.ts` composed `nodeNexusIsland`; the closure wires the six in-scope modules and the WELD names them. A reader must not reopen a completed wire because this older audit sentence survived it.
 * Two further `loadVesselVerifyingKey` reads in `nexus-contract.ts` (`:200` as `nym`, `:409` as `ownKey`) read no island and belong OUT of the sweep.
 
 !! A2 · The two-vessel-mesh genesis fixture
@@ -603,6 +605,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f2S6oz64RNme0nrucuaYh1ChbFViPKRexb8iXUhAH6A
+<<^ code="&#x0003;">>ni:///sha-256;D_c0nwBRz4zy94VP8Fi_xQNqrJeA3ntW6OAsutTPUhM
 
 <<^ code="&#x0004;" -> to="?">>
