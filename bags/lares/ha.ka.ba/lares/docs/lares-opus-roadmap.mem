@@ -72,6 +72,36 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 <<~/ahu>>
 
+<<~ ahu #/crossroads-syntax>>
+
+! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-18
+
+The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT.
+
+''Landed (condensed):''
+* ''The opener namespace'' — `{{ << (( < <$ <%` share one tag family, a link's `[[` keeps its own, a call reads as a widget does; seven floors re-seated carrying their ruling (`32291b2`).
+* ''The darkness witness'' — every line of every construct the host builds, judged MISS or LOST; 41 lines over 71 carriers declared OWED (`819d8e6`).
+* ''Five instrument holes closed'' — the oracle's walk keeps what a pragma nests (`3680592`) · a delimiter claim answers to the tightest cover (`0ba7540`) · corpus overreach gated (`7266646`) · swallow-witness names the regions its probe cannot ask (`f70f1de`) · the bracket witness reads VS Code's unmatched red (`72318ac`). 566 tests, 47 gates.
+* ''The corpus trued'' — the markdown host retired, `doctype` keyed on the declaration rather than the extension (PARENT `10061cc9d` · `3224409c3`).
+
+''In flight — tasked spirits:''
+* ''The zero-cost batch'' (worktree `feature/zero-cost-batch`) — fourteen red-first fixes and rulings; landed so far: the `\widget` pragma latch (`ef7028b`), the filtered transclusion's styled suffix (`0f61824`). Carries the heading ruling, one scheme spelling, and a price for the name inside `((`.
+* ''The TOML fence'' (worktree `feature/toml-fence`) — `toml.tmbundle@e82b64c` vendored under `source.toml.tw5-syntax` with a TOML 1.1 patch, `ini` fences on VS Code's `source.ini`, and a guard so an unterminated string cannot hold the fence open. A review and an aftermath pass follow.
+
+''Forward paths:''
+# ''Merge and look'' — batch first, then TOML, gates after each; refresh the bench; the operator's eyes-on pass.
+# ''The carrier truth pass'' — each carrier states what TiddlyWiki reads: `tables.spans` (a `b` suffix the host lacks, a row-opening `<`), `blocks.tables` labels, `pragmas.signatures` (a `((…))` default only a `\procedure` reads), the bare `\rules` in `tiddlywiki5.pragma.tw`, pragmas below content in `spans.multiline`; the new `tables.nesting` and `tables.malformed` carriers.
+# ''Retire the owed ledgers'' — darkness (41), brackets (3), and the OWED rulings in `expected-divergence`: a list item after a closing html line, adjacent code runs, `<![CDATA[`, and the verdicts TiddlyWiki never passes (`ambiguous-ampersand`, the two `html.deprecated` verdicts).
+# ''Rulings still owed'' — one ruling for italic AND inline code across lines; the tag blank-line bound; the MVV attribute's whitespace (the batch returns the trace); the name inside `((`.
+# ''Instruments still owed'' — a stale check for `expected-divergence` (its rulings serve four runs, so idleness needs their union); the ablation witness for AST shape the tables spirit proposed.
+# ''The reader-distinction ranking'' — write which distinctions a reader needs most, in order, before the next palette session.
+# ''TOML 1.1 in full'' — a hand port of the sublimehq grammar, the only one covering it.
+# ''Ship'' — on the operator's word: `release/3.0.0` → tag → cut on merge to `main`, then the parent's submodule pointer.
+
+''Hazards:'' two worktrees edit one grammar file, so merge in order and re-run every gate after each merge · the parent tree carries another writer's open work, so every commit stays `git commit --only`.
+
+<<~/ahu>>
+
 <<~ ahu #/hazards>>
 
 ! Standing hazards on the shared tree
@@ -88,6 +118,6 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pVcxpyvPEj3_aQtHDbjLvMOAv4c0sUEuv2hA6e3wbmE
+<<^ code="&#x0003;">>ni:///sha-256;JIgyVfkii3W0X9YtUMUI44ArgnFunoLttZF5zIqxqcc
 
 <<^ code="&#x0004;" -> to="?">>
