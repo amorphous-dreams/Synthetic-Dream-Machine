@@ -30,6 +30,7 @@ import { larDataDir } from "../vessel-paths.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -129,7 +130,8 @@ export async function runCabalVouch(opts: CabalVouchOptions, now = Date.now()): 
   );
 
   const nexusPubkey = await loadVesselVerifyingKey();
-  const boardUrl    = vouchBoardDocUrl(nexusPubkey);
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const boardUrl    = vouchBoardDocUrl(boardIsland);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
     ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);

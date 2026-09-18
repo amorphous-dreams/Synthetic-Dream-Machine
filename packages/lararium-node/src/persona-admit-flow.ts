@@ -29,6 +29,7 @@ import {
   type KeyringEnvelope, type EnrollmentSecret,
 } from "@lararium/mesh";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
+import { nodeNexusIsland } from "./nexus-standing.js";
 import { larDataDir } from "./vessel-paths.js";
 import {
   recordAdmittedPersona, stashEnrollmentSecret, peekEnrollmentSecrets, takeEnrollmentSecret,
@@ -145,8 +146,9 @@ async function render(carriage: string): Promise<HopRender> {
 export async function makeLocalPersonaKelHeadResolver(dir?: string): Promise<(prefix: string) => Promise<string | null>> {
   const dataDir = dir ?? larDataDir();
   const nexusPubkey = await loadVesselVerifyingKey();
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   const repo = new Repo({ storage: new NodeFSStorageAdapter(dataDir) });
-  const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+  const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   return async (prefix: string): Promise<string | null> => {
     const chain = personaKelChainForPrefix(board.doc(), prefix);
     if (!chain || chain.length === 0) return null;

@@ -40,6 +40,7 @@ import {
   listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
   loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 
 /** A ban target reads clean only at the exact ed25519 verifying-key length — a stray value never bans. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -140,7 +141,8 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
   const selected = await selectHeldQuorumSigners(roster);
 
   const nexusPubkey = await loadVesselVerifyingKey();
-  const boardUrl    = kapaeAntigenDocUrl(nexusPubkey);
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const boardUrl    = kapaeAntigenDocUrl(boardIsland);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:kapae-antigen");
@@ -192,9 +194,10 @@ export async function runNexusKapaeList(opts: { sealHome: string; storageDir?: s
   const roster     = foundingRoster(readNexusDoc(opts.sealHome));
 
   const nexusPubkey = await loadVesselVerifyingKey();
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
-    const handle  = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(nexusPubkey), "board:kapae-antigen");
+    const handle  = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(boardIsland), "board:kapae-antigen");
     const entries = antigenEntriesFromBoard(handle.doc());
     const folded  = await foldAntigenSet(entries, roster, makeMultiSigQuorumVerifier());
     return {

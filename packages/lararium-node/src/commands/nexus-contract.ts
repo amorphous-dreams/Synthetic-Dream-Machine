@@ -43,6 +43,7 @@ import {
   listPersonaRoots, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
   loadVesselVerifyingKey, loadVesselSigningSeed,
 } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -229,7 +230,8 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   }
 
   const nexusPubkey = await loadVesselVerifyingKey();
-  const boardUrl    = carriageDocUrl(nexusPubkey);
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const boardUrl    = carriageDocUrl(boardIsland);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");

@@ -28,6 +28,7 @@ import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import {
   loadPersonaGroupRootSeed, loadVesselVerifyingKey, makeNodePublicHandleStore, loadActivePersonaIndex,
 } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 
 export interface HandlePublishOptions {
   /** The display name the world reads — "Guru-Josh", "The Dread Pirate Roberts". */
@@ -71,7 +72,8 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
   const handleIndex = opts.handleIndex ?? (await loadActivePersonaIndex()) ?? 0;
   const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const nexusPubkey = await loadVesselVerifyingKey();
-  const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(nexusPubkey), "board:who-face");
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(boardIsland), "board:who-face");
   const store       = await makeNodePublicHandleStore();
 
   const card = await publishHandleFromDaemonDoc({
@@ -126,7 +128,8 @@ async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?
   const handleIndex = handleIndexOpt ?? (await loadActivePersonaIndex()) ?? 0;
   const seed        = await loadPersonaGroupRootSeed(handleIndex);
   const nexusPubkey = await loadVesselVerifyingKey();
-  const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(nexusPubkey), "board:who-face");
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const board       = await materializeSharedLarDoc(repo, whoBoardDocUrl(boardIsland), "board:who-face");
   const store       = await makeNodePublicHandleStore();
 
   const record = await store.load(handleIndex);
@@ -230,7 +233,8 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
     const personaKelPrefix = prefixEntry?.tiddler?.text ?? null;
     if (!personaKelPrefix) throw new Error("[lares handle burn] no persona-KEL prefix on the daemon doc — cannot prove the owner; use `--self`.");
     const nexusPubkey  = await loadVesselVerifyingKey();
-    const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+    const boardIsland  = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+    const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
     const personaChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
     const headOpKeyDid = personaChain ? await headOpKey(personaChain, { verifyQuorums: true }) : null;
     const resolved     = await resolveOwnerBurnHand({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });
@@ -271,7 +275,8 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   const personaKelPrefix = prefixEntry?.tiddler?.text ?? null;
   if (!personaKelPrefix) throw new Error("[lares handle rotate] no persona-KEL prefix on the daemon doc — a face is owned by its persona; cannot authorize a rotation.");
   const nexusPubkey  = await loadVesselVerifyingKey();
-  const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+  const boardIsland  = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const kelBoard     = await materializeSharedLarDoc(face.repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   const personaChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   const headOpKeyDid = personaChain ? await headOpKey(personaChain, { verifyQuorums: true }) : null;
   const resolved     = await resolveOwnerBurnHand({ personaKelPrefix, headOpKeyDid, rootSeed: face.seed });

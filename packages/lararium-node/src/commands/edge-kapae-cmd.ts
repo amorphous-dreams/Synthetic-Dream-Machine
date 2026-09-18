@@ -33,6 +33,7 @@ import { daemonBagsDir } from "../lares-config.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
+import { nodeNexusIsland } from "../nexus-standing.js";
 
 export class EdgeKapaeError extends Error {}
 
@@ -85,7 +86,8 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   }
 
   const nexusPubkey = await loadVesselVerifyingKey();
-  const boardUrl    = edgeKapaeBoardDocUrl(nexusPubkey);
+  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
+  const boardUrl    = edgeKapaeBoardDocUrl(boardIsland);
   const repo        = new Repo({ storage: new NodeFSStorageAdapter(storageDir) });
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
     ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
