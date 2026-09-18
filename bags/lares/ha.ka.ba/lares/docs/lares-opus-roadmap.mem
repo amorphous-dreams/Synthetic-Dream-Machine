@@ -40,6 +40,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''③ hearthGatePubKey → anchor-scope (Option A)'' — the admit payload split: the gate key stays the dial (anti-relay, byte-identical, weld-verified NOT in the signed image), the founder's resolved island kind+scope ride beside it, so a CLIMBED founder's device seats on the charter board it actually stands on (`aa15cfb3b`). Red-first + revert-verify (exactly 1 test reds under the charter-branch mutation). Browser-leaf parity rides on as a follow-on.
 * ''⑤ native TW5 file-write parity'' — completeness was ALREADY there (`tw5-file-info.ts` faithfully ports TW5's file-info cascade; foreign-titled tiddlers project end-to-end); the native `≈` congruence now rides the projection leg so a native both-move NORMALIZES instead of always-conflicting (`011c9d683`).
 * ''BagStowage debt cleared + ④ RESOLVED'' — the PIN-DURABILITY correctness hole FIXED: pins now survive a restart (writer → admin-doc tiddler, reader before `startSweeper`, on BOTH node + browser; `d8f3c7a7a`, red-first + revert-verify). Stale comments re-trued (`e58a45b6a`); dead `lastUsedAt` crud dropped (`72638ed82`, grep-proven zero readers). Fork ④: the 2026-06-01 relocation clause CLOSED as superseded, keep-separate ruled (`dacae83b8`).
+* ''`:814` epoch lease (Option 1)'' — device-delegation admission now licenses off the PersonaGroup LEASE EPOCH (clockless), not a wall-clock: `expectedEpoch` threaded through `verifyEdgeAgainstPersonaKel` into all THREE doors (`verifyPeer` · the Binding Gate · face-grant); `boundEpoch` minted REAL at device-admit (was hardcoded `0`); a stale-lease device DENIED, re-presents via the existing regrant (`6b0910fbc`). Red-first + revert-verify (3 proofs + a source-weld); `boundEpoch` weld-confirmed signed-in (a device cannot forge its epoch). One fix, three doors.
 
 <<~/ahu>>
 
@@ -56,8 +57,7 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 ! Forks that await the operator's word
 
-# ''`:814` / the epoch lease — RULED 2026-09-18: OPTION 1, enacting'' ("more work now, less churn later"). Wire the PersonaGroup lease-slot epoch (`leaseEpochPrefix(faceGroup())` / `effectiveLeaseEpoch`, the same resource `:543` uses) as the device-delegation staleness AUTHORITY: `verifyEdgeAgainstPersonaKel` gains `expectedEpoch` → `verifyDeviceDelegation`; stop minting `boundEpoch: 0` (`ceremony-core.ts:393,641`) — mint against the live lease epoch (this changes the signed edge image; an alpha-legal re-mint); thread the lease read into `verifyPeer` (`:814`) + `bootDaemonKeyhive` (`:130`) + `face-grant-record.ts:130` — ONE fix, three doors. A rolled-past device re-presents via the existing face-join regrant. Red-first + weld-test (boundEpoch IS signed).
-# ''④ `bag-residency.ts`'s home — RESOLVED + LANDED 2026-09-18: KEEP-SEPARATE'' (`dacae83b8`). The 2026-06-01 relocation clause CLOSED as superseded by the un-braiding; `BagStowage` stays a named-separate file the pool drives. (Moved to #/landed.)
+''Both forks the operator owed are RULED and LANDED (see #/landed): `:814` → Option 1 (`6b0910fbc`), ④ → keep-separate (`dacae83b8`). No open operator forks remain — only the deferred+pinned items in #/deferred and the small follow-ons in #/hazards.''
 
 <<~/ahu>>
 
@@ -79,10 +79,11 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 * ''The e2e set flakes at file level'' (`minted-canon-projection`, `smoke`, `herm-floor` have each flipped) — run-twice, never trust one pass; never run two e2e sets at once (shared `synced-tree.json`).
 * ''Wall-clock residue beyond the ring'' — `:814` + `boot-daemon-keyhive.ts:130` (delegation windows, ruling-blocked); `daemon-auth-gate.ts:225` (`contractNymOf`) + the HandleCard expiry reader flagged UNVERIFIED (read before ruling); the oracle-pointer clocks already tracked in `no-global-now.mem`'s own plan.
 * ''The R0 / REGION coordination seam'' — the Codex crew holds R0's DESIGN (their B6/C2) but R0's reds live in `open-node-vessel.ts` (founding boot ground); whichever hearth builds it CROSSES — name the crossing before a hand starts.
-* ''`dist/` is STALE against ③ + ⑤ + native-parity source'' (2026-09-18) — the ③ spirit deferred `pnpm -r build` (a sibling e2e held dist live). Run `pnpm -r build` (mesh→tw5→node) before any e2e or live daemon boot against these changes; do NOT rebuild while an e2e spirit runs (it shares dist).
+* ''`dist/` is STALE against ③ + ⑤ + native-parity source'' (2026-09-18) — run `pnpm -r build` (mesh→tw5→node) before any e2e or live daemon boot; do NOT rebuild while an e2e runs (shared dist). (The e2e spirit rebuilds the chain as part of its red/green cycle.)
+* ''Two small follow-ons surfaced, both `more-work-now` candidates'' — (a) `recovery-keel.ts`'s `runReadmitEdge` (a 4th caller of `runDeviceAdmitEdge`) still mints `boundEpoch ?? 0`, so a recovery-readmitted device reads maximally stale if the group rolled since founding — the consistent completion of `:814` (backward-compatible today). (b) `identityDir()` in `node-vessel-identity.ts` IGNORES its `dataDir` param (reads `LAR_ROOT`/XDG only) — an isolation footgun a caller passing a dir would be bitten by.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jkmQ7BmeriTuW9COSGip6X04AhjTeiTljGPV3GjYUeM
+<<^ code="&#x0003;">>ni:///sha-256;XqRxyjmaZhXwoFGG3Y-qOtJxoK_EuVJ_aWUdMhiRwOw
 
 <<^ code="&#x0004;" -> to="?">>
