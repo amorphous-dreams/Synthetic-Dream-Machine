@@ -123,6 +123,17 @@ describe("normalizeMemeSource — child-slot roots", () => {
     expect(r.text).toContain("<<~ ahu #shown>>");
   });
 
+  test("a slot held inside a longer fence stays as authored past a shorter fence line it holds", () => {
+    const held = "````\n```shown-opener\n<<~ ahu #held-after>>\n````";
+    const r = normalizeMemeSource(SLOT_HEAD(held));
+    expect(r.text).toContain("<<~ ahu #held-after>>");
+  });
+
+  test("control — the same slot outside any fence roots", () => {
+    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu #held-after>>\n\nb\n\n<<~/ahu>>"));
+    expect(r.text).toContain("<<~ ahu #/held-after>>");
+  });
+
   test("idempotent — root then re-run leaves it put", () => {
     const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu #head>>\n\nbody\n\n<<~/ahu>>")).text;
     expect(normalizeMemeSource(once).changed).toBe(false);
@@ -151,6 +162,18 @@ describe("normalizeMemeSource — sigil close spacing", () => {
     // `params=<<params>> >>` tightened would read `>>>>` and the reader would take the wrong close
     const src = CLOSE_HEAD("").replace("body", "<<has mu name=<<name>> params=<<params>> >>");
     expect(normalizeMemeSource(src).text).toContain("params=<<params>> >>");
+  });
+
+  test("a close shown inside a fence keeps its space — held text moves no byte", () => {
+    const src = CLOSE_HEAD("").replace("body", "````\n<<~ ahu #shown >>\n```\ninner\n```\n<<~/ahu >>\n````");
+    const { text } = normalizeMemeSource(src);
+    expect(text).toContain("<<~ ahu #shown >>");
+    expect(text).toContain("<<~/ahu >>\n````");
+  });
+
+  test("a close shown inside an inline code span keeps its space", () => {
+    const src = CLOSE_HEAD("").replace("body", "write `<<~/ahu >>` to close");
+    expect(normalizeMemeSource(src).text).toContain("`<<~/ahu >>`");
   });
 
   test("a close crossing a newline is left alone — a sigil closes on the line it opens", () => {

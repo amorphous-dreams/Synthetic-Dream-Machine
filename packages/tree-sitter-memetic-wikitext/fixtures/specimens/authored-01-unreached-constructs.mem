@@ -1,10 +1,30 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/specimens/authored-01-unreached-constructs">>
+```toml meta
+cacheable = false
+file-path = "packages/tree-sitter-memetic-wikitext/fixtures/specimens/authored-01-unreached-constructs.mem"
+l-space   = "stable"
+role      = "a parity specimen for the carrier grammar — the constructs no live meme exercises, held whole so the fold reads their spellings byte for byte, including the spaced ahu closes the writer no longer emits"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/testbed/specimens/authored-01-unreached-constructs"
+```
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/held>>
+```toml meta
+type = "text/x-memetic-wikitext"
+```
+
+````
 title: authored-01-unreached-constructs
 role: specimen — the constructs no live meme exercises
 type: text/x-memetic-wikitext
 
-<<~ ahu #open-and-close>>
+<<~ ahu #open-and-close >>
 An ahu whose open and close each fold to their own kind.
-<<~/ahu>>
+<<~/ahu >>
 
 \procedure ~Named(~Arg:"default")
 the pragma body
@@ -37,3 +57,10 @@ a fenced block whose opener carries an info string
 """
 a hard-break block holds its lines verbatim
 """
+````
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;5Ths-ekrUGO1NTTL3XieljWT3U0TaBdTmpQ1qEWumho
+
+<<^ code="&#x0004;" -> to="?">>

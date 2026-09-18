@@ -231,9 +231,12 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   // every carrier that passes through leaves tight. The match shape is the one clause 3 states: a
   // sigil closes on the line it opens, and a match crossing a newline reaches from a bare `<<` in
   // prose to the next sigil and rewrites everything between.
+  // A close SHOWN inside a fence or a code span is held text, and held text moves no byte.
   {
     let tightened = 0;
-    text = text.replace(/<<([^\n>]*(?:>(?!>)[^\n>]*)*)>>/g, (whole, inner: string) => {
+    const mask = fencedSpans(text);
+    text = text.replace(/<<([^\n>]*(?:>(?!>)[^\n>]*)*)>>/g, (whole, inner: string, offset: number) => {
+      if (inMask(mask, offset)) return whole;
       const trimmed = inner.replace(/[ \t]+$/, "");
       if (trimmed === inner) return whole;
       tightened += 1;
@@ -265,10 +268,14 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   {
     const lines = text.split("\n");
     const stack: Array<string | null> = [];
-    let fenced = false, rooted = 0;
+    // The fence mask pairs a fence with its own length, so a shorter fence line a longer fence
+    // holds opens nothing.
+    const mask = fencedSpans(text);
+    let rooted = 0, offset = 0;
     const next = lines.map((line) => {
-      if (line.startsWith("```")) { fenced = !fenced; return line; }
-      if (fenced) return line;
+      const start = offset;
+      offset += line.length + 1;
+      if (inMask(mask, start)) return line;
       if (/^<<(?:~\/ahu|\/fragment)\s*>>/.test(line)) { stack.pop(); return line; }
       const m = /^<<(~ ?ahu|fragment) #\/?([a-z0-9/-]+)(.*)$/i.exec(line);
       if (!m) return line;
