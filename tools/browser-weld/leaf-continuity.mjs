@@ -203,7 +203,7 @@ async function observeKelRead(context, page) {
   let observations = 0;
   // The daemon starts in a Worker. Context routing reaches its module requests;
   // page routing observes the document graph but can leave that island opaque.
-  await context.route("**/*.js*", async (route) => {
+  await context.route(/\.(?:[cm]?[jt]sx?)(?:\?.*)?$/, async (route) => {
     const response = await route.fetch();
     const type = response.headers()["content-type"] ?? "";
     if (!/javascript/.test(type)) return route.fulfill({ response });
