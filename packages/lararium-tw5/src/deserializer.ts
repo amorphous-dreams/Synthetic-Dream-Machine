@@ -141,7 +141,7 @@ export function memeticWikitextDeserializer(
   );
 
   // ◇ Route — each carrier-close → parseMemeText → split ahu slots → batch.
-  // Pre-SOH content (DOCTYPE comment + leading prose) sits OUTSIDE
+  // Pre-SOH content (the declaration + leading prose) sits OUTSIDE
   // ev.fullText because MemeStreamParser frames on SOH/ETX. Capture
   // everything before the first SOH as `prologue` on the first carrier's
   // parent and everything after the last ETX/EOT as `postamble` on the
@@ -154,8 +154,8 @@ export function memeticWikitextDeserializer(
   // SOH carrier sentinels begin with `<<^` then optional namespace glyphs
   // (⊙, ॐ ँ, …) then the SOH control-char reference directly — the same
   // shape the namespace extractor below reads. Anchoring on the SOH/SOH2
-  // codes avoids matching unrelated `<<~ !DOCTYPE …>>` comments,
-  // a speaking-head sigil, or later STX/ETX sentinels — an
+  // codes avoids matching the declaration, a speaking-head sigil,
+  // or later STX/ETX sentinels — an
   // any-control-char form swallows the whole header into `prologue` whenever
   // the SOH carries a namespace it cannot see.
   const sohM = maskedExec(text, SOH_PREFIX_RE);

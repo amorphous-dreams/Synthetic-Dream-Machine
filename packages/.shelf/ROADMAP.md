@@ -274,7 +274,7 @@ Invariants:
 - Federated promotion conflict handling between lararia.
 - Subduction evaluation for lararium↔lararium federation once shared operator-vessel parity exists.
 - Speculative RE execution, rollback, metered/gas execution.
-- Wikifier polish: DOCTYPE comment and dash-table round-trip diffs.
+- Wikifier polish: DOCTYPE and dash-table round-trip diffs.
 - `\sigil` pragma full implementation (parameter schema, pattern, close-pattern, handler field) — may fold into SharktoothSigil tiddler authoring flow directly.
 - `~kau` Keyhive UCAN resource + UUID write-back — deferred to action tiddlers when Keyhive WASM lands; widget render path complete.
 

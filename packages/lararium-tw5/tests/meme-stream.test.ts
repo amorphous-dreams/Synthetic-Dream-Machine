@@ -16,6 +16,7 @@
 
 import { describe, test, expect } from "vitest";
 import { MemeStreamParser } from "../src/meme-stream.js";
+import { DECLARATION } from "@lararium/mesh/carrier-type";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -24,7 +25,7 @@ import { MemeStreamParser } from "../src/meme-stream.js";
 const URI = "lar:///ha.ka.ba/lares/api/mu";
 
 const FULL_CARRIER = [
-  `<!-- <<~ !DOCTYPE = ${URI}>> -->`,
+  DECLARATION,
   ``,
   `<<^ code="&#x0001;" from=? -> to=${URI}>>`,
   ``,

@@ -10,7 +10,7 @@
  * the structure plane; its node TYPES match the runnable twin
  * `structure_router.parse_sigils` (Python), so the two agree on the AST:
  *
- *   source_file · doctype_comment · pranala_header · pranala · ahu_block ·
+ *   source_file · doctype · pranala_header · pranala · ahu_block ·
  *   sharktooth_sigil(→ sigil_name, arg*) · text
  *
  * Build (when a tree-sitter CLI + cc are present — NOT required for the structure
@@ -37,7 +37,7 @@ module.exports = grammar({
 
     _item: ($) =>
       choice(
-        $.doctype_comment,
+        $.doctype,
         $.ahu_block,
         $.pranala_header,
         $.pranala,
@@ -45,9 +45,9 @@ module.exports = grammar({
         $.text,
       ),
 
-    // <!-- <<~ !DOCTYPE = lar:///…>> -->  (the meme's opening doctype edge)
-    doctype_comment: ($) =>
-      seq("<<~", optional("!"), "!DOCTYPE", field("sigil_name", alias("DOCTYPE", $.sigil_name)), /[^\n>]*/, ">>"),
+    // <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///…">>  (the meme's opening declaration)
+    doctype: ($) =>
+      seq("<<!", field("sigil_name", alias("DOCTYPE", $.sigil_name)), /[^\n>]*/, ">>"),
 
     // <<~ ? -> lar:///…>>  (the carrier→canonical edge; ? is a special self-token)
     pranala_header: ($) => seq("<<~", field("sigil_name", alias("?", $.sigil_name)), "->", /[^\n>]+/, ">>"),

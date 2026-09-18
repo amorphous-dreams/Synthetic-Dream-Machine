@@ -43,6 +43,7 @@ import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lararium/mesh/node";
 import { tagDigest, digestsEqual } from "@lararium/mesh/agile-digest";
+import { DECLARATION } from "@lararium/mesh/carrier-type";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
@@ -607,7 +608,7 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   // ka handles a single symbol; ba handles multiple space-separated symbols
   const heleumaMode = d.symbols.length === 1 ? "ka" : "ba";
 
-  const meme = `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+  const meme = `${DECLARATION}
 
 <<^ code="&#x0001;" ? -> lar:///${uriPath}>>
 \`\`\`toml meta

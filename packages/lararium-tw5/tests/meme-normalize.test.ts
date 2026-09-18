@@ -8,9 +8,10 @@
 
 import { describe, test, expect } from "vitest";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
+import { DECLARATION } from "@lararium/mesh/carrier-type";
 
 const HEAD = (soh: string, ns: string) =>
-  `<!-- <<~ !DOCTYPE = lar:///x>> -->\n\n${soh}\n` +
+  `${DECLARATION}\n\n${soh}\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   (ns === "" ? "" : `namespace = "${ns}"\n`) +
@@ -80,7 +81,7 @@ describe("normalizeMemeSource — SOH opener spacing", () => {
 
 // meta head with a register field, for the register-band class.
 const CLOSE_HEAD = (close: string) =>
-  `<!-- <<~ !DOCTYPE = lar:///x>> -->\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
+  `${DECLARATION}\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   "```\n\n<<^ code=\"&#x0002;\">>\n\n" +
@@ -88,7 +89,7 @@ const CLOSE_HEAD = (close: string) =>
   "<<^ code=\"&#x0003;\">>\n";
 
 const SLOT_HEAD = (body: string) =>
-  `<!-- <<~ !DOCTYPE = lar:///x>> -->\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
+  `${DECLARATION}\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   "```\n\n<<^ code=\"&#x0002;\">>\n\n" + body + "\n\n" +

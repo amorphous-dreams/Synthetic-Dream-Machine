@@ -67,3 +67,18 @@ a pranala edge sigil
 (source_file
   (pranala
     (sigil_name)))
+
+==================
+the doctype declaration
+==================
+
+<<!DOCTYPE "a-grammar" "lar:///a/grammar/spec">>
+<<~ ? -> lar:///ha.ka.ba/lares/api/corpus >>
+
+---
+
+(source_file
+  (doctype
+    (sigil_name))
+  (pranala_header
+    (sigil_name)))

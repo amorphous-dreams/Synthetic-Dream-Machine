@@ -16,7 +16,7 @@ from kumulipo_sections import (
     source_text_span,
 )
 
-_ENVELOPE_HEAD = """<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext >> -->
+_ENVELOPE_HEAD = """<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ &#x0001; ? -> lar:///ha.ka.ba/lares/library/hawaii/kumulipo/test >>
 ```toml meta

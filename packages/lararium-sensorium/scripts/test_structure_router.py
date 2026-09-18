@@ -45,7 +45,7 @@ def test_detect_kind_by_extension(name, expected):
 
 
 def test_detect_kind_promotes_memetic_by_doctype():
-    meme = b"<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext >> -->\n# x\n"
+    meme = b'<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n# x\n'
     assert sr.detect_kind("corpus.md", meme) == "memetic-wikitext"
 
 
@@ -122,13 +122,13 @@ def test_ahu_block_nests_inner_sigils():
 
 def test_doctype_and_pranala_header():
     src = (
-        "<!-- <<~ !DOCTYPE = lar:///x/memetic-wikitext >> -->\n"
+        '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n'
         "<<~ ? -> lar:///ha.ka.ba/lares/api/corpus >>\n"
     )
     tree = sr.parse_to_tree("memetic-wikitext", src.encode())
     types = [c["type"] for c in tree["children"]]
-    assert "comment" in types  # the doctype comment reads as a comment node
-    assert "sigil" in types    # the pranala header reads as a sigil (vocabulary rides the fold)
+    assert types[0] == "macrocall_block"  # the declaration reads as the macro call it is
+    assert "sigil" in types               # the pranala header reads as a sigil (vocabulary rides the fold)
 
 
 def test_memetic_routes_through_the_carrier():

@@ -22,7 +22,7 @@
  */
 
 import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from "fs";
-import { CARRIER_TYPE } from "../packages/lararium-mesh/src/carrier-type.js";
+import { CARRIER_TYPE, DECLARATION } from "../packages/lararium-mesh/src/carrier-type.js";
 import { join, dirname, basename, relative, resolve } from "path";
 
 const WORKSPACE = resolve(dirname(new URL(import.meta.url).pathname), "..");
@@ -161,7 +161,7 @@ function template(opts: {
   const uriPath  = `ha.ka.ba/${opts.uriScope}/${opts.uriVersion}/${opts.slug}`;
   const memeRel  = relative(WORKSPACE, memePathFor(opts.uriScope, opts.uriVersion, opts.slug));
   const sourceRel = relative(WORKSPACE, opts.sourceFile);
-  return `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>> -->
+  return `${DECLARATION}
 
 <<^ code="&#x0001;" ? -> lar:///${uriPath}>>
 \`\`\`toml iam

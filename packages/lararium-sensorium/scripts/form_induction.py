@@ -505,7 +505,7 @@ def house_seeds() -> list:
         {"seq": ["sigil", "sigil", "sigil"], "origin": "seed", "name_hint": "sigil-row"},
         # the ahu section block wrapping its opening sigil.
         {"seq": ["ahu_block", "sigil"], "origin": "seed", "name_hint": "ahu-block"},
-        # the entry bracket: the doctype comment + the pranala-header sigil.
+        # the entry bracket: a comment opening onto a sigil.
         {"seq": ["comment", "sigil"], "origin": "seed", "name_hint": "pranala-open"},
     ]
 
