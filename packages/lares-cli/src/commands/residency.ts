@@ -14,8 +14,11 @@
  * unpin demotes (the LRU may then evict if pressure rises). residency
  * prints the current pinned / wela / anu snapshot.
  *
- * Instrumentation stage: unpin demotes standing, but the LRU eviction path
- * stays unwired here, so unpin reports stats without evicting.
+ * unpin demotes standing synchronously, but does NOT force an immediate LRU
+ * trim: the collector's background sweeper (wired at boot, default tick
+ * 30s — bag-residency.ts's startSweeper/sweepOnce) is what actually evicts
+ * an over-cap unpinned bag, on its next tick. So unpin's own report never
+ * shows an eviction it just caused; a real one lands within one sweep tick.
  */
 
 import { vesselDid } from "../env.js";
@@ -45,8 +48,9 @@ export async function cmdUnpin(args: ParsedArgs): Promise<number> {
 /**
  * `lares register-cold <bag-url>` — mark a URL as known-but-not-loaded.
  * Oracle traversal calls this for URLs it discovers but doesn't need to
- * fetch yet. C.4 will wire hydrate-on-read so the first read through the
- * URL via composite triggers repo.find().
+ * fetch yet. Hydrate-on-read is wired: composite-store.ts's `attachResidency`
+ * hook bumps `residency.touch()` on every read that resolves through a
+ * layer, so the first read through this URL via composite hydrates it.
  */
 export async function cmdRegisterCold(args: ParsedArgs): Promise<number> {
   const url = args.positional[0];
