@@ -29,6 +29,7 @@ import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath, larSealHome } from "../vessel-paths.js";
 import { hearthDialTiddlers, readHearthDialPin } from "../hearth-dial-pin.js";
 import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
+import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "./device-admit.js";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors } from "../identity-anchors.js";
@@ -213,14 +214,20 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
       vesselVerifyingKey: operatorIdentity.verifyingKey,
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
-      // THE ISLAND, resolved by the SAME mesh ruling the boot composes (`nexusIdentity`) — never this
-      // vessel's own key. An admit hands over the hearth's gate key, so the joinee seats its inception on
-      // the board its HEARTH stands; the boot then reads that same board. Seeding one island and reading
-      // another HALTS the Binding Gate fail-closed at first boot, which reads as a broken vessel.
-      nexusPubkey: nexusScopeOrThrow(nexusIdentity({
-        anchorGateKey: payload.hearthGatePubKey ?? null,
-        ownVesselKey:  operatorIdentity.verifyingKey,
-      })),
+      // THE ISLAND. An admit carries a SNAPSHOT of the founder's own RESOLVED NexusIdentity — `kind` +
+      // `scope`, minted from the SAME `nexusIdentity` ruling the boot composes (device-admit.ts). A
+      // `charter` kind re-enters as a genesis epoch (every charter holder derives the identical scope);
+      // any other kind — `own`/`anchor`, and an absent kind on an older payload — resolves through the
+      // anchor branch keyed on the founder's own gate key, UNCHANGED from before this carry existed. So a
+      // climbed founder's device now seats where the founder itself stands, and an un-climbed founder's
+      // device is byte-identical to today. Seeding one island and reading another HALTS the Binding Gate
+      // fail-closed at first boot, which reads as a broken vessel.
+      nexusPubkey: admittedJoineeIsland({
+        hearthGatePubKey:  payload.hearthGatePubKey,
+        hearthIslandKind:  payload.hearthIslandKind,
+        hearthIslandScope: payload.hearthIslandScope,
+        ownVesselKey:      operatorIdentity.verifyingKey,
+      }),
     });
 
     // An admit lands a place AND a contracted face in one act — the contracting operator already signed
@@ -231,7 +238,10 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
       ...placeTiddlers(daemonUrl),
       ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
                       payload.personaGroupDocIdHex, payload.meshCabalDocIdHex),
-      ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey),
+      ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
+        kind:  payload.hearthIslandKind,
+        scope: payload.hearthIslandScope,
+      }),
     }), null, 2), "utf8");
     // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
     // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.
@@ -445,12 +455,22 @@ export async function runFoundTheFace(opts: FoundFaceOptions = {}): Promise<Foun
     // THE ISLAND, resolved by the SAME mesh ruling the boot composes — the charter this vessel holds, then
     // the hearth it dials, then its own key as a private nexus of one. A face seated on one board while the
     // boot walks another cannot reach a head, and the Binding Gate HALTS.
-    nexusPubkey: nexusScopeOrThrow(nexusIdentity({
-      genesisEpochCid: realmIdOfCharter(readNexusDoc(larSealHome())),
-      charterStands:   nexusCharterStands(larSealHome()),
-      anchorGateKey:   readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null,
-      ownVesselKey:    vesselIdentity.verifyingKey,
-    })),
+    //
+    // KIND-AWARE: this vessel may hold no charter of its own (it was ADMITTED, not founded on one) while
+    // its hearth dial pin still carries a `charter` snapshot from admit time (hearth-dial-pin.ts). That
+    // snapshot substitutes for `genesisEpochCid` ONLY when this vessel's own charter read is silent — an
+    // `own`/`anchor` pin changes nothing here, since its scope already IS the gate key `anchorGateKey`
+    // below carries.
+    nexusPubkey: (() => {
+      const hearthPin = readHearthDialPin(larBootstrapPath());
+      return nexusScopeOrThrow(nexusIdentity({
+        genesisEpochCid: realmIdOfCharter(readNexusDoc(larSealHome()))
+                            ?? (hearthPin?.islandKind === "charter" ? hearthPin.islandScope ?? null : null),
+        charterStands:   nexusCharterStands(larSealHome()),
+        anchorGateKey:   hearthPin?.gatePubKey ?? null,
+        ownVesselKey:    vesselIdentity.verifyingKey,
+      }));
+    })(),
     ...(priorVeilTag ? { veilTag: priorVeilTag } : {}),
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),

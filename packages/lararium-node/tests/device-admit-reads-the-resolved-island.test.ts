@@ -28,18 +28,19 @@
  *
  * Isolation: a fresh `mkdtemp` under `LAR_ROOT` + XDG_*; the operator's live vessel is unreachable.
  */
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
 import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, realmIdOfCharter } from "@lararium/mesh";
 
 import { writeNexusDoc, readNexusDoc, nexusCharterStands, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
-import { nodeNexusIsland, nodeNexusStandsAt } from "../src/nexus-standing.js";
+import { nodeNexusIsland, nodeNexusStandsAt, nodeNexusStanding, admittedJoineeIsland } from "../src/nexus-standing.js";
 import { admitBoardIsland } from "../src/commands/device-admit.js";
-import { larSealHome } from "../src/vessel-paths.js";
+import { larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
+import { hearthDialTiddlers, readHearthDialPin, HEARTH_ISLAND_KIND_TIDDLER } from "../src/hearth-dial-pin.js";
 
 /** A stand-in vessel verifying key — the spelling `loadVesselVerifyingKey` would hand back. */
 const OWN_KEY = "a1".repeat(32);
@@ -169,5 +170,170 @@ describe("device-admit resolves the island the boot resolved", () => {
     for (const m of code.matchAll(/personaKelBoardDocUrl\(([^)]*)\)/g)) {
       expect(m[1], `a board keyed on a raw vessel key: ${m[0]}`).not.toMatch(/VerifyingKey|vesselKey/i);
     }
+  });
+});
+
+/**
+ * `hearthGatePubKey → anchorGateKey` — a SECOND defect one layer downstream of the one above.
+ *
+ * The suite above pins that `device-admit` reads the founder's persona-KEL board at the RIGHT island
+ * (the board it snapshots the chain FROM). This suite pins the SEPARATE fact that the door then threw
+ * that resolution away when it CARRIED the payload: the wire only ever carried `hearthGatePubKey` (the
+ * founder's raw vessel key, on purpose — the anti-relay dial binding), and `init.ts` read that single
+ * field back as `anchorGateKey`, so a joinee ALWAYS resolved `kind: "anchor"` regardless of what the
+ * founder itself stood on. A CLIMBED founder (its own boot resolves `kind: "charter"`, `epoch0-…`) thus
+ * handed its joinee an island the founder does NOT stand on — two disjoint persona-KEL boards.
+ *
+ * Option A splits the payload: `hearthGatePubKey` stays byte-identical (still the raw vessel key, still
+ * what the V3 proof's anti-relay binding commits to); a SEPARATE `hearthIslandKind`/`hearthIslandScope`
+ * rides beside it, carrying the founder's resolved `kind`/`scope` as a SNAPSHOT. `init.ts` feeds that
+ * into `nexusIdentity` directly — the charter branch when `kind === "charter"`, else the pre-existing
+ * anchor-by-gate-key branch, unchanged.
+ *
+ * This suite measures the SEAM at `admittedJoineeIsland` (nexus-standing.ts) — the one function both
+ * `init.ts`'s admit-path and this test call, so a weld at the tail confirms `init.ts` actually composes
+ * it rather than restating the ruling inline (the exact defect class the file above already fought once).
+ */
+describe("device-admit carries the founder's RESOLVED island, not just its gate key", () => {
+  const OWN_KEY  = "a1".repeat(32);
+  const JOINEE   = "e5".repeat(32);
+  const CHARTER  = `epoch0-${"7a".repeat(32)}`;
+
+  const saved: Record<string, string | undefined> = {};
+  function setEnv(k: string, v: string | undefined): void {
+    if (!(k in saved)) saved[k] = process.env[k];
+    if (v === undefined) delete process.env[k]; else process.env[k] = v;
+  }
+
+  let root: string;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), "lares-admit-carry-"));
+    setEnv("LAR_ROOT", root);
+    setEnv("XDG_STATE_HOME", join(root, "state"));
+    setEnv("XDG_DATA_HOME", join(root, "state"));
+    setEnv("XDG_CONFIG_HOME", join(root, "config"));
+    setEnv("LAR_JOIN_GATE", undefined);
+  });
+  afterEach(() => {
+    for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  function climb(): void {
+    writeNexusDoc(larSealHome(), {
+      kind: NEXUS_DOC_DOMAIN,
+      threshold: 1,
+      sealEpochCid: CHARTER,
+      kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+    });
+  }
+
+  // ── RED ─────────────────────────────────────────────────────────────────────────────────────────
+  test("RED — a CLIMBED founder's carry seats the joinee on the CHARTER board, not the founder's vessel key", () => {
+    climb();
+    // The founder's own resolution — exactly what `runDeviceAdmit` computes and carries (device-admit.ts).
+    const founderIdentity = nodeNexusStanding({ ownVesselKey: OWN_KEY });
+    expect(founderIdentity.kind, "the climb did not move the founder's own standing — the rig is vacuous").toBe("charter");
+    expect(founderIdentity.scope).toBe(CHARTER);
+
+    // The CARRY, exactly as device-admit.ts builds it: hearthGatePubKey stays the raw vessel key
+    // (untouched — the anti-relay binding), hearthIslandKind/Scope ride beside it.
+    const carried = {
+      hearthGatePubKey:  OWN_KEY,
+      hearthIslandKind:  founderIdentity.kind,
+      hearthIslandScope: founderIdentity.scope,
+    };
+
+    // THE FAULT THIS CURES: forcing `anchorGateKey := hearthGatePubKey` alone (the OLD read) would
+    // resolve `kind: "anchor"`, `scope: OWN_KEY` — never the charter. The joinee must instead resolve
+    // the CHARTER island the founder itself stands on.
+    const joineeIsland = admittedJoineeIsland({ ...carried, ownVesselKey: JOINEE });
+    expect(joineeIsland, "the joinee seated on the founder's raw vessel key, not the charter it stands on")
+      .toBe(CHARTER);
+    expect(personaKelBoardDocUrl(joineeIsland)).toBe(personaKelBoardDocUrl(founderIdentity.scope));
+  });
+
+  // ── CONTROL ─────────────────────────────────────────────────────────────────────────────────────
+  test("CONTROL — an UN-CLIMBED founder's carry is unchanged: the joinee still seats on the gate key", () => {
+    expect(nexusCharterStands(larSealHome()), "the rig seated a charter — this control tests nothing").toBe(false);
+    const founderIdentity = nodeNexusStanding({ ownVesselKey: OWN_KEY });
+    expect(founderIdentity.kind).toBe("own");
+    expect(founderIdentity.scope).toBe(OWN_KEY);
+
+    const carried = {
+      hearthGatePubKey:  OWN_KEY,
+      hearthIslandKind:  founderIdentity.kind,
+      hearthIslandScope: founderIdentity.scope,
+    };
+    const joineeIsland = admittedJoineeIsland({ ...carried, ownVesselKey: JOINEE });
+    // Byte-identical to the OLD (pre-fix) resolution at this notch: the gate key IS the scope here.
+    expect(joineeIsland).toBe(OWN_KEY);
+    expect(joineeIsland).toBe(carried.hearthGatePubKey);
+  });
+
+  // ── An OLDER payload (no island carried) is unchanged too — the new fields are strictly additive ──
+  test("CONTROL — a payload with NO hearthIslandKind/Scope resolves exactly as before this carry existed", () => {
+    const joineeIsland = admittedJoineeIsland({ hearthGatePubKey: OWN_KEY, ownVesselKey: JOINEE });
+    expect(joineeIsland).toBe(OWN_KEY);
+  });
+
+  // ── The full round trip through the hearth-dial-pin (what a REAL `init.ts --admit` persists) ──────
+  test("the pin round-trips kind+scope through the bootstrap file, kind-aware on read-back", () => {
+    mkdirSync(dirname(larBootstrapPath()), { recursive: true });
+    const packed = {
+      tiddlers: hearthDialTiddlers("wss://hearth.example/ws", OWN_KEY, { kind: "charter", scope: CHARTER }),
+    };
+    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify(packed) }), "utf8");
+    const pin = readHearthDialPin(larBootstrapPath());
+    expect(pin?.gatePubKey).toBe(OWN_KEY);
+    expect(pin?.islandKind).toBe("charter");
+    expect(pin?.islandScope).toBe(CHARTER);
+  });
+
+  // ── FAIL-CLOSED: a torn island half refuses the WHOLE pin, exactly as a torn sync/gate half does ──
+  test("a torn island half (kind present, scope malformed) refuses the whole pin, never a silent drop", () => {
+    mkdirSync(dirname(larBootstrapPath()), { recursive: true });
+    const good = hearthDialTiddlers("wss://hearth.example/ws", OWN_KEY);
+    const torn = {
+      ...good,
+      [HEARTH_ISLAND_KIND_TIDDLER]: { title: HEARTH_ISLAND_KIND_TIDDLER, text: "charter", kind: "hearth-door" },
+      // scope deliberately absent — one half of the pair, torn.
+    };
+    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: torn }) }), "utf8");
+    expect(readHearthDialPin(larBootstrapPath()), "a torn island half must fail the WHOLE pin closed").toBeNull();
+  });
+
+  // ── REVERT-VERIFY: forcing kind:"anchor" regardless (the OLD behavior) reds the climbed-founder case ──
+  test("REVERT-VERIFY — forcing kind:\"anchor\" regardless reproduces the old defect (must NOT equal CHARTER)", () => {
+    climb();
+    const founderIdentity = nodeNexusStanding({ ownVesselKey: OWN_KEY });
+    expect(founderIdentity.kind).toBe("charter");
+    // The MUTATION: pretend the carry always forced "anchor", exactly as the pre-fix `init.ts` did.
+    const mutated = admittedJoineeIsland({
+      hearthGatePubKey:  OWN_KEY,
+      hearthIslandKind:  "anchor",       // ← forced, ignoring the founder's true kind
+      hearthIslandScope: OWN_KEY,
+      ownVesselKey:      JOINEE,
+    });
+    expect(mutated, "the mutation should reproduce the OLD, broken behavior").toBe(OWN_KEY);
+    expect(mutated, "REVERT-VERIFY: the mutated read must NOT reach the charter board — proving the real fix is load-bearing")
+      .not.toBe(CHARTER);
+  });
+
+  // ── THE WELD · `init.ts` must COMPOSE `admittedJoineeIsland`, not restate the ruling inline ────────
+  test("WELD — `init.ts`'s admit-path composes `admittedJoineeIsland` and carries hearthIslandKind/Scope", async () => {
+    const { readFileSync } = await import("node:fs");
+    const initSrc  = readFileSync(new URL("../src/commands/init.ts", import.meta.url), "utf8");
+    const admitSrc = readFileSync(new URL("../src/commands/device-admit.ts", import.meta.url), "utf8");
+    const standingSrc = readFileSync(new URL("../src/nexus-standing.ts", import.meta.url), "utf8");
+    expect(standingSrc, "the composed resolver stands").toMatch(/export function admittedJoineeIsland\(/);
+    expect(initSrc, "init.ts composes the shared resolution rather than restating it").toMatch(/admittedJoineeIsland\(/);
+    expect(admitSrc, "device-admit.ts carries the resolved kind").toMatch(/hearthIslandKind/);
+    expect(admitSrc, "device-admit.ts carries the resolved scope").toMatch(/hearthIslandScope/);
+    // The old defect's own spelling must not survive as the ONLY read: init.ts must not force
+    // `anchorGateKey` straight off `hearthGatePubKey` outside of `admittedJoineeIsland`'s own body.
+    const code = initSrc.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    expect(code, "init.ts still forces anchorGateKey off hearthGatePubKey directly in the admit path")
+      .not.toMatch(/anchorGateKey:\s*payload\.hearthGatePubKey/);
   });
 });

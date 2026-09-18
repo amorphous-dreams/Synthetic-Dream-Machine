@@ -55,14 +55,49 @@ export function nodeNexusStandsAt(opts: {
   /** The bootstrap the hearth dial pin rides in. Defaults to this vessel's own. */
   readonly bootstrapPath?: string;
 }): NexusIdentityAt {
-  const sealHome = opts.sealHome ?? larSealHome();
+  const sealHome  = opts.sealHome ?? larSealHome();
   const hearthPin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
+  const ownGenesis       = realmIdOfCharter(readNexusDoc(sealHome));
+  const ownCharterStands = nexusCharterStands(sealHome);
+  // A vessel admitted onto a climbed founder holds no charter RECORD of its own (`ownGenesis`/
+  // `ownCharterStands` both read empty/false) — its admit instead carried a SNAPSHOT of the founder's
+  // resolved island (hearth-dial-pin.ts: `islandKind`/`islandScope`). Substitute the pinned genesis ONLY
+  // when this vessel's own read is silent, and ONLY for a `charter` pin: an `own`/`anchor` pin's scope
+  // already IS the gate key the `anchorGateKey` branch below carries, so nothing changes there. Gating on
+  // "own read silent" preserves the torn-charter refusal — `ownCharterStands: true` with an unreadable
+  // `ownGenesis` still reads torn, never falls back to a pin that could paper over a genuine tear.
+  const pinnedGenesis = (!ownGenesis && !ownCharterStands && hearthPin?.islandKind === "charter")
+    ? hearthPin.islandScope
+    : null;
   return {
-    genesisEpochCid: realmIdOfCharter(readNexusDoc(sealHome)),
-    charterStands:   nexusCharterStands(sealHome),
+    genesisEpochCid: ownGenesis ?? pinnedGenesis ?? null,
+    charterStands:   ownCharterStands,
     anchorGateKey:   opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? null,
     ownVesselKey:    opts.ownVesselKey,
   };
+}
+
+/**
+ * The island an ADMITTED JOINEE resolves for its inception, from the payload its admit carried — the
+ * founder's RESOLVED NexusIdentity at mint time (`kind`/`scope`, hearth-dial-pin.ts), fed through the
+ * SAME `nexusIdentity` ruling the boot composes: a `charter` kind re-enters as a genesis epoch (every
+ * charter holder derives the identical scope, by construction); any other kind — today `own`/`anchor`,
+ * and an absent kind on an older payload — resolves through the anchor branch exactly as before, keyed
+ * on the founder's own gate key. That is not a fallback of convenience: at every point on the gradient
+ * below a charter, the founder's device IS the anchor its joinee dials (the fleet model), so the gate
+ * key already names the right board there.
+ */
+export function admittedJoineeIsland(opts: {
+  readonly hearthGatePubKey?:  string | null | undefined;
+  readonly hearthIslandKind?:  string | null | undefined;
+  readonly hearthIslandScope?: string | null | undefined;
+  readonly ownVesselKey:       string;
+}): string {
+  return nexusScopeOrThrow(
+    opts.hearthIslandKind === "charter" && opts.hearthIslandScope
+      ? nexusIdentity({ genesisEpochCid: opts.hearthIslandScope, ownVesselKey: opts.ownVesselKey })
+      : nexusIdentity({ anchorGateKey: opts.hearthGatePubKey ?? null, ownVesselKey: opts.ownVesselKey }),
+  );
 }
 
 /** The resolved standing — the `kind`, the `scope`, and the `reading` an operator sees in a log line. */

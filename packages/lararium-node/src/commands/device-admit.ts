@@ -27,13 +27,25 @@ import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
-import { nodeNexusIsland } from "../nexus-standing.js";
+import { nodeNexusIsland, nodeNexusStanding } from "../nexus-standing.js";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 
 export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
-/** The payload as CARRIED: the keyhive's `DeviceAdmitPayload` plus the hearth's gate key (the dial's binding). */
-export type CarriedAdmitPayload = DeviceAdmitPayload & { readonly hearthGatePubKey?: string };
+/**
+ * The payload as CARRIED: the keyhive's `DeviceAdmitPayload` plus the hearth's gate key (the dial's
+ * binding) and the founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed
+ * founder's joinee seats where the founder actually stood rather than where its raw vessel key falls.
+ */
+export type CarriedAdmitPayload = DeviceAdmitPayload & {
+  readonly hearthGatePubKey?: string;
+  /** How the founder's island resolved at admit time — never `torn` (a torn founder refuses before
+   *  minting: `admitBoardIsland` throws). Absent on an older payload; a reader without it falls back to
+   *  the pre-existing anchor-by-gate-key behavior, unchanged for `own`/`anchor` founders. */
+  readonly hearthIslandKind?:  "own" | "anchor" | "charter" | "explicit";
+  /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
+  readonly hearthIslandScope?: string;
+};
 
 /**
  * THE ISLAND THIS DOOR READS A PER-NEXUS BOARD AT — the founder's own, resolved exactly as its BOOT
@@ -203,20 +215,34 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // THE PIN NAMES THE DIAL (hearth-dial-pin.ts). The founder's gate key IS its vessel key — the anti-relay
   // binding the joinee's V3 proof commits to. It rides the payload beside `syncUrl` so the joinee's bootstrap
   // can carry both and its boot can dial with no `LAR_JOIN_*` set by hand.
-  // ⚠ THE PIN CARRIES THE VESSEL KEY ON PURPOSE, AND A CONSEQUENCE STANDS OPEN ONE LAYER OUT.
-  // The gate key is the anti-relay binding the joinee's V3 proof COMMITS TO, so it must stay the
-  // founder's own vessel key — the charter island would break that commitment and is not a fix.
+  // ⚠ THE PIN CARRIES THE VESSEL KEY ON PURPOSE — UNCHANGED. The gate key is the anti-relay binding the
+  // joinee's V3 proof COMMITS TO, so it must stay the founder's own vessel key; the charter island would
+  // break that commitment and is not a substitute for it.
   //
-  // THE OPEN LOOP, NAMED RATHER THAN QUIETLY CURED: the joinee consumes this as its `anchorGateKey`
-  // (`init.ts`), so it resolves `kind: "anchor"` and seats its inception on a board keyed on the
-  // FOUNDER'S VESSEL KEY. A founder that has CLIMBED to a charter therefore hands its device an
-  // island the founder does not itself stand on — the founder's boot reads `epoch0-…`, the device
-  // reads the vessel key, and the two sit on DISJOINT persona-KEL boards. `init.ts`'s own comment
-  // states the invariant this breaks ("An admit hands over the hearth's gate key, so the joinee
-  // seats its inception on the board its HEARTH stands"), which is false for a climbed hearth.
-  // Splitting the DIAL binding from the ISLAND the pin implies is a ruling about the wire, not a
-  // read to correct here; the board read above is fixed, this is left standing and visible.
-  const carried: CarriedAdmitPayload = { ...payload, hearthGatePubKey: founderVesselKey.toLowerCase() };
+  // THE LOOP THIS CLOSES (Option A — split the payload): the gate key alone used to be the ONLY thing the
+  // joinee read to resolve its board (`init.ts` forced `anchorGateKey := hearthGatePubKey`), so it always
+  // resolved `kind: "anchor"` — never `charter` — even when the founder itself stands on a charter island.
+  // `founderIdentity` below is the SAME resolution `boardIsland` above already composed (`admitBoardIsland`
+  // → `nodeNexusIsland` → `nodeNexusStanding`, the one canonical read); it names WHICH board the founder
+  // actually stands on, and rides beside the dial key rather than being inferred from it. `init.ts` feeds
+  // `kind`/`scope` into `nexusIdentity` directly (the charter branch when `kind === "charter"`), so a
+  // climbed founder's device now seats on the board the founder itself stands on.
+  //
+  // SNAPSHOT, DELIBERATELY: this freezes the founder's resolved board AT ADMIT TIME. A founder that climbs
+  // AFTER admitting does not retroactively move an already-admitted device — that device re-admits by a
+  // new act. Live re-resolution here would reintroduce a reachability/global-now dependency this design
+  // sheds; `admitBoardIsland` already refuses (throws) on a torn founder before this point is ever reached,
+  // so `founderIdentity.kind` is never `"torn"` here — the guard below is a defensive type-narrow, not a
+  // path this admit can actually take.
+  const founderIdentity = nodeNexusStanding({ ownVesselKey: founderVesselKey });
+  const carried: CarriedAdmitPayload = {
+    ...payload,
+    hearthGatePubKey: founderVesselKey.toLowerCase(),
+    ...(founderIdentity.kind !== "torn" ? {
+      hearthIslandKind:  founderIdentity.kind,
+      hearthIslandScope: founderIdentity.scope,
+    } : {}),
+  };
   const json = JSON.stringify(carried, null, 2);
   if (opts.outPath) {
     writeFileSync(opts.outPath, json, "utf8");
