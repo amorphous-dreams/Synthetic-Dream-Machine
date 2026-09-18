@@ -173,7 +173,7 @@ beforeAll(async () => {
   // ceremony stay photograph-inert, and why `runDeviceAdmit` refuses to run without that key.
   // `generateOrLoadVesselIdentity` reads through on a second call, so B's `runInit` below loads this
   // same identity rather than minting a second one.
-  const vesselB = await generateOrLoadVesselIdentity();
+  const vesselB = await withLarRoot(VESSEL_B.root, () => generateOrLoadVesselIdentity());
 
   // Step 3 — A's PersonaGroup root signs B's edge
   await withLarRoot(VESSEL_A.root, () => runDeviceAdmit({
