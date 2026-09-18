@@ -85,14 +85,14 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 * ''Five instrument holes closed'' — the oracle's walk keeps what a pragma nests (`3680592`) · a delimiter claim answers to the tightest cover (`0ba7540`) · corpus overreach gated (`7266646`) · swallow-witness names the regions its probe cannot ask (`f70f1de`) · the bracket witness reads VS Code's unmatched red (`72318ac`). 566 tests, 47 gates.
 * ''The corpus trued'' — the markdown host retired, `doctype` keyed on the declaration rather than the extension (PARENT `10061cc9d` · `3224409c3`).
 
-''In flight — tasked spirits:''
-* ''The zero-cost batch'' (worktree `feature/zero-cost-batch`) — fourteen red-first fixes and rulings; landed so far: the `\widget` pragma latch (`ef7028b`), the filtered transclusion's styled suffix (`0f61824`). Carries the heading ruling, one scheme spelling, and a price for the name inside `((`.
-* ''The TOML fence'' (worktree `feature/toml-fence`) — `toml.tmbundle@e82b64c` vendored under `source.toml.tw5-syntax` with a TOML 1.1 patch, `ini` fences on VS Code's `source.ini`, and a guard so an unterminated string cannot hold the fence open. A review and an aftermath pass follow.
+''Merged onto `release/3.0.0` (2026-09-18):'' the zero-cost batch — thirteen red-first fixes and rulings (`9d3fbc3`); TOML 1.1 through the private `source.toml.tw5-syntax`, sublimehq's grammar hand-ported, `ini` on `source.ini`, the fence guarded (`3d39456`); the instruments — divergence-staleness over every overreach run, sibling-aware ruling matching, the ablation witness as a gate (`d037501`). 590 tests, 49 gates. Darkness 41 → 22, rulings 136 → 111. The comment-form DOCTYPE retired from the whole tree; six pre-ruling fixtures ride typed-ahu carriers (PARENT `4dd44e74d` · `6b1dd63a1`).
 
 ''Forward paths:''
-# ''Merge and look'' — batch first, then TOML, gates after each; refresh the bench; the operator's eyes-on pass.
+# ''Look'' — the bench serves the merged tree; the operator's eyes-on pass, which decides the ship.
 # ''The carrier truth pass'' — each carrier states what TiddlyWiki reads: `tables.spans` (a `b` suffix the host lacks, a row-opening `<`), `blocks.tables` labels, `pragmas.signatures` (a `((…))` default only a `\procedure` reads), the bare `\rules` in `tiddlywiki5.pragma.tw`, pragmas below content in `spans.multiline`; the new `tables.nesting` and `tables.malformed` carriers.
 # ''Retire the owed ledgers'' — darkness (41), brackets (3), and the OWED rulings in `expected-divergence`: a list item after a closing html line, adjacent code runs, `<![CDATA[`, and the verdicts TiddlyWiki never passes (`ambiguous-ampersand`, the two `html.deprecated` verdicts).
+# ''Stopped on their price, awaiting a ruling'' — one scheme spelling (two floors fall, one by 3; the in-link half alone costs 0) · italic and inline code across lines by a blank-line bound (overreach and the attribute ceiling fail) · tags across blank lines with quoted values yielding (swallow-witness unasked 18 → 52, still-reach below its floor, and the yielding value leaves the tag open over the heading).
+# ''The ablation witness's neutral letter'' — a replacement letter can BUILD markup (`[imgx ]]` opens an image reading into the next line), so a MISS it reports needs tracing; the witness owes a test that discounts structure its own replacement creates.
 # ''Rulings still owed'' — one ruling for italic AND inline code across lines; the tag blank-line bound; the MVV attribute's whitespace (the batch returns the trace); the name inside `((`.
 # ''Instruments still owed'' — a stale check for `expected-divergence` (its rulings serve four runs, so idleness needs their union); the ablation witness for AST shape the tables spirit proposed.
 # ''The reader-distinction ranking'' — write which distinctions a reader needs most, in order, before the next palette session.
@@ -121,6 +121,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LCDMbvjCjCWvQKycRpJuu03KNx4-Lp2qeCKnDOSP81s
+<<^ code="&#x0003;">>ni:///sha-256;1_9zZT9zoHV_EGEfs0BPeneKCR0_lgm3B5l4kSBmchg
 
 <<^ code="&#x0004;" -> to="?">>
