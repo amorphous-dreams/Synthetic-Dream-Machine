@@ -125,6 +125,29 @@ export interface LarDiskProjectorOptions {
    * writing through them.
    */
   readonly canonicalizeFn?: (uri: string, diskText: string) => string | null;
+  /**
+   * WHAT THE DISK BYTES SAY, for a NATIVE (non-memetic) carrier — `render(parse(diskBody,
+   * diskMeta))` through TW5's own deserializer/renderer, mirroring `canonicalizeFn` onto
+   * the family `action-handler.ts`'s LOAD leg already trusts (its `nativeRender`
+   * congruence). Feeds the SAME `decideProjection` canonical-equivalence clause
+   * `canonicalizeFn` feeds; the two never run on the same carrier (one keys on
+   * `file.ext === MEME_EXT`, the other on every other extension).
+   *
+   * Returns `null` for anything this shore cannot trustworthily canonicalize — a bundle
+   * (more than one deserialized member, or a foreign-titled member), a malformed disk
+   * file, an unregistered filetype. Null reads as the standoff here exactly as it does
+   * for the memetic clause (the null-as-default inversion: absence is never equivalence).
+   *
+   * Absent, OR the carrier is binary (base64-encoded) → no native congruence is asked —
+   * a binary round trip carries no reformatting to normalize, only a byte-for-byte
+   * identity the echo gate above already answers.
+   */
+  readonly canonicalizeNativeFn?: (
+    uri: string,
+    ext: string,
+    diskBody: string,
+    diskMeta: string | undefined,
+  ) => { readonly body: string; readonly metaBody?: string } | null;
   /** Optional readiness map — lights `disk-projector` after first flush. */
   readonly readinessMap?: ReadinessMap;
   /** Write a .json sidecar next to each .md for peek debugging. */
@@ -264,6 +287,9 @@ export class LarDiskProjector {
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly onConflict: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
+  private readonly canonicalizeNativeFn:
+    | ((uri: string, ext: string, diskBody: string, diskMeta: string | undefined) => { readonly body: string; readonly metaBody?: string } | null)
+    | undefined;
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree | undefined;
@@ -278,6 +304,7 @@ export class LarDiskProjector {
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
     this.canonicalizeFn = opts.canonicalizeFn;
+    this.canonicalizeNativeFn = opts.canonicalizeNativeFn;
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
     this.syncedTree   = opts.syncedTree;
@@ -656,17 +683,30 @@ export class LarDiskProjector {
     if (!bodyPending) {
       const onDisk  = this.diskCarrierText(candidate, metaPath, isBinary);
       // WHAT THE DISK SAYS, folded exactly as `obsHash` folds the render — so the gate's
-      // `≈` compares like with like. The congruence is the MEMETIC family's, so the view
-      // exists only for a `.mem` carrier; every other filetype hands the gate null, which
-      // reads as the standoff, never as equivalence.
-      const canonicalText = onDisk !== null && file.ext === MEME_EXT && this.canonicalizeFn
-        ? this.canonicalizeFn(tiddlerUri, onDisk.body)
-        : null;
+      // `≈` compares like with like. TWO congruences, ONE clause: a `.mem` carrier reads
+      // through the MEMETIC family's view (`canonicalizeFn`); every other TEXT filetype
+      // reads through the NATIVE view (`canonicalizeNativeFn`, mirroring the ingest leg's
+      // `nativeRender`) — a binary (base64) carrier asks neither, since a byte-for-byte
+      // round trip carries no reformatting to normalize (only the identity the echo gate
+      // above already answers). Absent from either door hands the gate null, which reads
+      // as the standoff, never as equivalence.
+      const diskCanonicalHash = (() => {
+        if (onDisk === null) return null;
+        if (file.ext === MEME_EXT) {
+          const canonicalText = this.canonicalizeFn ? this.canonicalizeFn(tiddlerUri, onDisk.body) : null;
+          return canonicalText === null ? null : carrierHash(canonicalText, onDisk.meta);
+        }
+        if (!isBinary && this.canonicalizeNativeFn) {
+          const canonical = this.canonicalizeNativeFn(tiddlerUri, file.ext, onDisk.body, onDisk.meta);
+          return canonical === null ? null : carrierHash(canonical.body, canonical.metaBody);
+        }
+        return null;
+      })();
       const decision = decideProjection({
         diskHash:    onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta),
         syncedHash:  this.syncedTree?.get(syncedTreeKey(bagId, tiddlerUri)) ?? null,
         recordsHash: obsHash,
-        diskCanonicalHash: canonicalText === null ? null : carrierHash(canonicalText, onDisk?.meta),
+        diskCanonicalHash,
       });
       if (decision.kind === "noop") return;
       if (decision.kind === "conflict") {

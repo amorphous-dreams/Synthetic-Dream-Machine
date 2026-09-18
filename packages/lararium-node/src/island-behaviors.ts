@@ -11,7 +11,7 @@
  */
 
 import type { IslandMsg_Manifest } from "@lararium/mesh";
-import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium } from "@lararium/tw5";
+import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
@@ -87,6 +87,14 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // barrel drags wasm the plugin build cannot bundle, and this is the same congruence the
   // ingest leg reads), so exactly one implementation of `≈` stands in the tree.
   canonicalizeFn: canonicalizeCarrierText,
+  // THE NATIVE CONGRUENCE, MIRRORED FROM THE INGEST LEG: `action-handler.ts`'s LOAD
+  // path already runs a native carrier through the SAME `decideIngest` triangle via its
+  // `nativeRender` closure (deserialize disk bytes + merge `.meta` + render back through
+  // `renderCarrier`) — a wiring gap over proven code, not a fresh design. `makeTw5Deserializer`
+  // closes over this island's own booted `$tw`, so the projecting leg reads native carrier
+  // text through the exact same TW5 registry the ingest leg does.
+  canonicalizeNativeFn: (uri, ext, diskBody, diskMeta) =>
+    canonicalizeNativeCarrierText(makeTw5Deserializer(ctx.tw5), uri, ext, diskBody, diskMeta),
   syncedTree,
   });
   return projector.start(ctx.tw5);
