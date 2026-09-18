@@ -96,6 +96,8 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 
 ''C4 worker boundary, 2026-09-17.'' Fresh local leaves on ports 5191 through 5195 again reach `host:manifest-post` after the 1,500 ms ready fallback and remain `booting…` through the leaf's 90,000 ms bound. The host trace sees worker creation, but no `ready`, `breath`, `ea`, native worker error, or opt-in worker-entry receipt. The explicit `c4trace=1` reaches the Vite Worker URL. Context-level script receipts report neither a failed nor a non-success worker-graph response. Therefore the current evidence locates the red before `daemon.worker.ts` runs, in module evaluation or a message boundary that has not yet yielded a discriminating witness. It does not establish a runtime cure; retain the `ready`/manifest ordering and pursue an evaluation witness before changing it.
 
+''C4 transform control, 2026-09-17.'' `05d1be68c` drives the same isolated module Worker once with untouched bytes and once through `instrumentBootSource`. Untouched reaches `worker-entry → ready`; transformed reaches every named trace phase and `ready`. Chromium and the runner checks pass. This clears the transform in isolation only; compare the two routes against Vite's actual served Worker graph before treating it as the live C4 cause.
+
 ''Projection follow-up, source audit rather than a reproduced product red.'' `tw5-projection.ts` adds render IDs to a module-level map without retiring detached nodes. The unknown-ID control proves only unknown-ID handling. Next, render a valid target, detach it, send its former ID, and test that no handler fires; retain a live-target positive control. Also tighten the witness's frame ordering and worker-error attribution: a same-worker frame alone does not establish causation, and an unrelated worker fault must not convict the unknown-ID probe. Preserve named state transitions and the disabled-message control. Ensure CI supplies the generated TW5 core so the retained-reveal fixture executes rather than skips.
 
 W3 closes under its named actions and measured limits. D3 gains source wiring, with hosted execution still owed. C4 boot stalls, W5's node-disk leg, full Python-suite health and admitted relay proof remain separate debts. The deeper scouts below retain their historical measurements rather than claiming a fresh full audit.
@@ -591,6 +593,6 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fzkD_6XIShkdaKYdnLUkbjPnYb2hUiXWhEmHsxrPPP4
+<<^ code="&#x0003;">>ni:///sha-256;oUdB-dUku7J2FD-Fvqg7CSU1pUszOYmWgjlvPuI7b9g
 
 <<^ code="&#x0004;" -> to="?">>
