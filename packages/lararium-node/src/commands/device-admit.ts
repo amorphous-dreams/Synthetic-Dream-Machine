@@ -46,11 +46,15 @@ export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive"
  * nowhere above it. A founder that CLIMBED to a charter reads the PRIVATE board beneath its charter
  * island while its own boot reads the charter board.
  *
- * AND IT WORKED ONLY BECAUSE A CARRY COPIES. `carryPersonaKelUpTheGradient` writes the destination
- * and never unlinks the source, so the lower board kept its chain and the wrong-key read still found
- * one. The correctness sat on copy semantics in another package; when that goes, this door throws
- * "persona-KEL chain … absent from the local board — run `lares vessel found --force`", a message
- * pointing at a torn founding over a founding that is sound.
+ * AND THE RESOLVED KEY ALONE DOES NOT SUFFICE — THE BOARD ITSELF MUST CARRY THE CHAIN TOO. Founding
+ * seats a climbed founder's inception on the island BELOW, and this door never boots through
+ * `open-node-vessel.ts` (it opens the store directly and exits — the module docblock above says so).
+ * So `runDeviceAdmit` carries the chain itself: right before it reads the board at `boardIsland`, it
+ * calls the SAME `carryPersonaKelUpTheGradient` the boot calls, fed by `nodeNexusIslandsBelow` off
+ * this identical resolution — never a second, hand-built ranking. A sound climbed founding therefore
+ * admits cleanly with no daemon restart between the climb and this call. "persona-KEL chain … absent
+ * from the local board" now names only an identifier no island in the gradient ever seated — a
+ * genuinely torn founding — and never fires over a founding that stands sound.
  *
  * ══ THE FLEET FRAMING IS KEPT, DELIBERATELY ══════════════════════════════════════════════════════
  *
@@ -163,22 +167,20 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const founderVesselKey = await loadVesselVerifyingKey();
   const boardIsland      = admitBoardIsland(founderVesselKey);
-  // ── CARRY ON READ — this door never boots, so the boot-time carry never runs for it ──────────────
+  // ── CARRY ON READ — a store-direct door names its own sources rather than trusting a boot to have run ──
   // `open-node-vessel.ts` carries the pinned chain onto the resolved island right before its OWN board
-  // read, at every boot. `device-admit` opens the store directly and exits (see the docblock at the
-  // top of this file) — it never boots through that seam. So the ordinary walk `vessel found` →
-  // `persona new 0` → `nexus rite cabal` → `device-admit`, with NO daemon ever restarted in between,
-  // reaches a charter board nothing has carried onto yet, and the read below would throw over a
-  // founding that never tore.
+  // read, at every boot. This door NEVER boots (module docblock above: it opens the store directly and
+  // exits), so the ordinary walk `vessel found` → `persona new 0` → `nexus rite cabal` → `device-admit`
+  // reaches this line with no daemon restart between the climb and the call. Composing the carry HERE,
+  // fed by `nodeNexusIslandsBelow` off the identical resolution `admitBoardIsland` above already ran,
+  // lets a sound climbed founding admit with no restart owed — the resolution names one ranking,
+  // and both reads of it stay that one ranking.
   //
-  // The cure composes the IDENTICAL mesh function the boot calls, fed by `nodeNexusIslandsBelow` — the
-  // same `nodeNexusStandsAt` disk/environment read `admitBoardIsland` above already resolved through,
-  // so this can never name a different ranking than the one this door itself stands on. This is a
-  // carry-ON-READ at the one seam this door already names, not a hook sprinkled onto the rite that
-  // moved the island — an already-climbed vessel's FIRST device-admit call carries it exactly as an
-  // already-climbed vessel's first BOOT would. Idempotent and never-descending for the same reasons
-  // the boot's carry is (`persona-kel-climb.ts`): a destination that already carries the chain writes
-  // nothing, and a vessel standing at the bottom of the gradient supplies no sources.
+  // This mirrors the boot's own seam rather than sprinkling a carry onto the rite that moved the
+  // island: a store-direct door names ITS sources at the point it reads, a booted daemon names them at
+  // the point it boots, and neither enumerates the rites that can move an island. `persona-kel-climb.ts`
+  // states the carry's own idempotence and gradient-only direction; this call inherits both by
+  // composing the same function rather than a second implementation of it.
   await carryPersonaKelUpTheGradient({
     repo, nexusPubkey: boardIsland, prefix: personaKelPrefix,
     priorIslands: nodeNexusIslandsBelow({ ownVesselKey: founderVesselKey }),
@@ -186,7 +188,10 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const kelBoard   = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!personaKelChain || personaKelChain.length === 0) {
-    throw new Error(`[lares device-admit] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — run \`lares vessel found --force\`.`);
+    // The carry above already walked every island BELOW this one and found nothing to move — so this
+    // names an identifier no island in the gradient ever seated (a genuinely torn founding), never a
+    // sound climbed founder still waiting on a carry: the line above already ran that carry.
+    throw new Error(`[lares device-admit] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from ${boardIsland.slice(0, 18)}… and every island below it — the identifier was never seated — run \`lares vessel found --force\`.`);
   }
 
   await repo.flush();

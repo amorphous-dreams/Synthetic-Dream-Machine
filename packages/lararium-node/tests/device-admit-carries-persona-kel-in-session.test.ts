@@ -4,20 +4,20 @@
  * ── THE GAP `carryPersonaKelUpTheGradient` LEFT, MEASURED AT THE DOOR THAT ACTUALLY THROWS ─────────
  * `device-admit-reads-the-resolved-island.test.ts` pins that `admitBoardIsland` resolves the RIGHT
  * KEY once a founder climbs — `91ce09afb`'s cure. But resolving the right key only helps if that
- * island's BOARD carries the chain, and the ONLY place anything carries it is `open-node-vessel.ts`'s
+ * island's BOARD carries the chain, and the ONLY place anything carries it sits at `open-node-vessel.ts`'s
  * boot, which `lares device-admit` never runs: `device-admit.ts`'s own docblock says it opens the
  * store directly and exits (Node adapter, no daemon boot). So the ordinary walk —
  *
  *     lares vessel found → lares persona new 0 → lares nexus rite cabal → lares device-admit
  *
  * — with NO daemon ever booted in between (nothing here starts one; `nexus rite cabal` and
- * `device-admit` are both store-direct doors, exactly like the fleet harness's `found:` callback in
+ * `device-admit` both run as store-direct doors, exactly like the fleet harness's `found:` callback in
  * `tests/harness/instance.ts:478-495`) reaches the charter board with nothing ever carried onto it,
  * and `device-admit` throws "persona-KEL chain … absent from the local board — run
  * `lares vessel found --force`" over a founding that never tore.
  *
- * DIAGNOSIS: this is a PRODUCT gap, not a harness artifact. `device-admit` is store-direct in every
- * environment — the harness's shortcut is not a shortcut here, it is the real shape of this door.
+ * DIAGNOSIS: this names a PRODUCT gap, not a harness artifact. `device-admit` runs store-direct in
+ * every environment — the harness's shortcut carries no shortcut here; it matches this door's real shape.
  *
  * ── THE CURE, HONORING THE RULING ────────────────────────────────────────────────────────────────
  * `project_nexus_gradient_stand_then_connect.md` forbids a rite-time hook ("the path nobody
@@ -25,7 +25,7 @@
  * already derives it by calling `carryPersonaKelUpTheGradient` right before its own board read. This
  * cure composes the IDENTICAL call at device-admit's board read — the one seam this door already
  * names (`admitBoardIsland` / `nexus-standing.ts`) — so the carry runs "on read," not "on rite." A
- * second call site of the SAME function is not a second cure; `nodeNexusIslandsBelow` (added beside
+ * second call site of the SAME function forms no second cure; `nodeNexusIslandsBelow` (added beside
  * `nodeNexusIsland`) keeps it a re-derivation of the one stated ranking, never a restated copy.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/device-admit
@@ -115,7 +115,7 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
     const chain = personaKelChainForPrefix(board.doc(), cer.personaKelPrefix);
     expect(chain, "the charter board must be empty here — this IS the halt device-admit throws on").toBeNull();
 
-    // And the chain is NOT actually lost — it stands on the island below, exactly as the ruling notes
+    // And nothing actually loses the chain — it stands on the island below, exactly as the ruling notes
     // ("a carry copies … the board below keeps its chain").
     const ownBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(ownKey), "board:persona-kel");
     expect(personaKelChainForPrefix(ownBoard.doc(), cer.personaKelPrefix), "the founding board still holds it").not.toBeNull();
@@ -143,8 +143,8 @@ describe("device-admit carries persona-KEL in-session, with no daemon boot betwe
     expect(chain![0]!.prefix).toBe(cer.personaKelPrefix);
   }, 60_000);
 
-  // ── CONTROL — an un-climbed vessel's admit is byte-for-byte unchanged ────────────────────────────
-  test("CONTROL — an un-climbed vessel needs no carry: priorIslands is empty and the board already carries it", async () => {
+  // ── CONTROL — an un-climbed vessel's admit stays byte-for-byte unchanged ─────────────────────────
+  test("CONTROL — an un-climbed vessel needs no carry: priorIslands holds nothing and the board already carries it", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(23));
     const boardIsland = admitBoardIsland(ownKey);
     expect(boardIsland).toBe(ownKey);
