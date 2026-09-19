@@ -75,32 +75,28 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 <<~ ahu #/crossroads-syntax>>
 
-! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-18
+! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-19
 
-The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT.
+The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT. `release/3.0.0` stands at `43da965`; the bench serves it.
 
 ''Landed (condensed):''
-* ''The opener namespace'' — `{{ << (( < <$ <%` share one tag family, a link's `[[` keeps its own, a call reads as a widget does; seven floors re-seated carrying their ruling (`32291b2`).
-* ''The darkness witness'' — every line of every construct the host builds, judged MISS or LOST; 41 lines over 71 carriers declared OWED (`819d8e6`).
-* ''Five instrument holes closed'' — the oracle's walk keeps what a pragma nests (`3680592`) · a delimiter claim answers to the tightest cover (`0ba7540`) · corpus overreach gated (`7266646`) · swallow-witness names the regions its probe cannot ask (`f70f1de`) · the bracket witness reads VS Code's unmatched red (`72318ac`). 566 tests, 47 gates.
-* ''The corpus trued'' — the markdown host retired, `doctype` keyed on the declaration rather than the extension (PARENT `10061cc9d` · `3224409c3`).
+* ''The opener namespace'' — `{{ << < <$ <%` share one tag family, a link's `[[` keeps its own (`32291b2`); `((x))` leaves the family and wears the name `<<x>>` wears (`d760e24`).
+* ''The instruments'' — darkness, bracket, ablation and divergence-staleness witnesses, each a gate; a scope-suffix invariant holds every declared name to its grammar's own suffix (`9acb662`).
+* ''Two readers'' — every gate answers under the fork (`dev/sdm-integration`) for local work and the pinned 5.4.1 for CI; a ledger entry names the one reader it explains (`8fce38c`, `4549f40`).
+* ''The grammar trued to the host'' — a whitespace-only line closes a paragraph, CDATA painted no more (TiddlyWiki builds none), adjacent code runs close as the host re-scans, a closing-tag line hands the next line back to a list (`bc92897`, `43f49cf`); the carriers state what the host builds, two new table carriers (`93ea2ba`, `e3b697c`).
+* ''The palette'' — a URL scheme paints `scheme://` as one unit, the bare autolink on its own per-scheme name and an in-link target on `entity.name.scheme.$1.tiddlywiki5` over `isLinkExternal`'s ten schemes (`6372f40`, `f1d733b`); a filter reads as parts — bounds as punctuation, prefixes as `storage.modifier`, one operator spelling, a multi-valued operand apart from a variable (`c20e029`); a widget attribute reads `meta.attribute.widget.<name>` (`7a7afed`); a `.multids` file routes every body through its header's `type` (`a270bfc`).
+* ''The record'' — `wikilink vs transclusion` re-seats 51 → 55 beside the ruling that raised it (`32291b2`); the TextMate ceiling record carries the operator's bound ruling: an inline code run, the emphasis marks and html start tags keep their line or blank-line bound on purpose, the gap a whole-document reader such as tree-sitter fills.
+* ''PARENT'' — normalize reads the fence mask in every clause, so held text moves no byte (`622f8bd15`, `c7eeca113`); the fold's pin names a byte move before a fold change (`d8b969710`).
 
-''Merged onto `release/3.0.0` (2026-09-18):'' the zero-cost batch — thirteen red-first fixes and rulings (`9d3fbc3`); TOML 1.1 through the private `source.toml.tw5-syntax`, sublimehq's grammar hand-ported, `ini` on `source.ini`, the fence guarded (`3d39456`); the instruments — divergence-staleness over every overreach run, sibling-aware ruling matching, the ablation witness as a gate (`d037501`). 590 tests, 49 gates. Darkness 41 → 22, rulings 136 → 111. The comment-form DOCTYPE retired from the whole tree; six pre-ruling fixtures ride typed-ahu carriers (PARENT `4dd44e74d` · `6b1dd63a1`).
+''Standing counts:'' 49 gates hold under both readers · 111 divergence rulings · darkness 11 owed · ablation 329 owed · brackets 0 owed · legibility 0 fallen over 820 pairs · MIGRATION 460 → 587 names, 126 gone, 253 new.
 
 ''Forward paths:''
-# ''Look'' — the bench serves the merged tree; the operator's eyes-on pass, which decides the ship.
-# ''The carrier truth pass'' — each carrier states what TiddlyWiki reads: `tables.spans` (a `b` suffix the host lacks, a row-opening `<`), `blocks.tables` labels, `pragmas.signatures` (a `((…))` default only a `\procedure` reads), the bare `\rules` in `tiddlywiki5.pragma.tw`, pragmas below content in `spans.multiline`; the new `tables.nesting` and `tables.malformed` carriers.
-# ''Retire the owed ledgers'' — darkness (41), brackets (3), and the OWED rulings in `expected-divergence`: a list item after a closing html line, adjacent code runs, `<![CDATA[`, and the verdicts TiddlyWiki never passes (`ambiguous-ampersand`, the two `html.deprecated` verdicts).
-# ''Stopped on their price, awaiting a ruling'' — one scheme spelling (two floors fall, one by 3; the in-link half alone costs 0) · italic and inline code across lines by a blank-line bound (overreach and the attribute ceiling fail) · tags across blank lines with quoted values yielding (swallow-witness unasked 18 → 52, still-reach below its floor, and the yielding value leaves the tag open over the heading).
-# ''The ablation witness's neutral letter'' — a replacement letter can BUILD markup (`[imgx ]]` opens an image reading into the next line), so a MISS it reports needs tracing; the witness owes a test that discounts structure its own replacement creates.
-# ''Rulings still owed'' — one ruling for italic AND inline code across lines; the tag blank-line bound; the MVV attribute's whitespace (the batch returns the trace); the name inside `((`.
-# ''Instruments still owed'' — a stale check for `expected-divergence` (its rulings serve four runs, so idleness needs their union); the ablation witness for AST shape the tables spirit proposed.
-# ''The reader-distinction ranking'' — write which distinctions a reader needs most, in order, before the next palette session.
-# ''TOML 1.1 in full'' — a hand port of the sublimehq grammar, the only one covering it.
+# ''Look'' — the operator's eyes-on pass over what changed its look: an indented widget line, `((x))` beside `<<x>>`, URL schemes in prose and in links, filters as parts, widget attribute names in the scope inspector, the `tables.nesting` and `tables.malformed` carriers, a typed `.multids`. The pass decides the ship.
+# ''Strikethrough, awaiting a ruling'' — the honest name `markup.strikethrough` alone (VS Code Markdown's own) drops 12 pairs below their floors across the 65 themes; the stacked name stands meanwhile.
+# ''Owed, no ruling needed'' — the `still.js` tool-vs-test disagreement (unreproduced after the walk sorted); the `.js`-embedded wikitext the widget-attribute scan skipped.
 # ''Ship'' — on the operator's word: `release/3.0.0` → tag → cut on merge to `main`, then the parent's submodule pointer.
 
-''Pinned — approved, enact on the next quiet window (a Sonnet spirit):''
-* ''The tree-sitter four-backtick fence'' — `packages/tree-sitter-memetic-wikitext/grammar.js` `fenced_block` closes a fence at ANY triple-backtick line, so it reads inside a four-backtick fence that `fence-mask` holds as one block. Six held-text carriers and 73 `bags/` carriers that quote examples in four-backtick fences parse without error nodes yet lose the block. The cure: a fence closes only on a run at least as long as its opener (the rule `fence-mask` already keeps), red-first against a four-backtick specimen holding a triple-backtick line; then regenerate the committed `src/parser.c` with the package's own generator and re-bake the corpus folds (`gate:fold`, `gate:fold-ts`, `specimens-0.1.0.json`), each re-pin traced to the fence. Operator-approved 2026-09-18.
+''Future grammar projects (the ceiling record holds each):'' italic, bold and inline code across lines, and html start tags across blank lines — a whole-document reader carries them where a stream grammar keeps its bound on purpose.
 
 ''Hazards:'' two worktrees edit one grammar file, so merge in order and re-run every gate after each merge · the parent tree carries another writer's open work, so every commit stays `git commit --only`.
 
@@ -124,6 +120,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KNhniULirMqrgjZAXGnKrkAdeOpgZJYnotg-iGM7bkQ
+<<^ code="&#x0003;">>ni:///sha-256;qcg0dyB97Xl5Tu3ZAmD8dKj6gCdJ1n4gsQbpwLJn_30
 
 <<^ code="&#x0004;" -> to="?">>
