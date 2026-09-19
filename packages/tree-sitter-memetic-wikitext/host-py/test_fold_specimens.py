@@ -30,6 +30,7 @@ never a gate on every push over content edited for unrelated reasons.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 
@@ -83,6 +84,21 @@ def _walk(node, visit) -> None:
         _walk(node["body"], visit)
 
 
+def _pin_check(name: str, data: bytes, pinned: dict) -> None:
+    """Compare a specimen's bytes against its pin BEFORE its fold, so a byte move names itself
+    (`bytes moved`) rather than reading as a suspected grammar or fold regression. Only once the
+    bytes match the pin does a hash mismatch mean anything about the fold at all."""
+    assert hashlib.sha256(data).hexdigest() == pinned["sha256"], (
+        f"{name}: bytes moved — sha256 no longer matches the pin. The specimen's TEXT changed, "
+        f"which says nothing yet about the fold; re-bake with `python host-py/bake_specimens.py "
+        f"--write` if the edit is intended."
+    )
+    assert mf.structural_hash(mf.fold(data)) == pinned["hash"], (
+        f"{name}: bytes match the pin, but the fold does not — a grammar or fold change, not a "
+        f"specimen edit. Intended (re-bake in the same commit) or a regression (fix it)."
+    )
+
+
 # ── the regression sentinel — frozen ground ──────────────────────────────────────────────────────
 @pytest.mark.parametrize("name", _specimens())
 def test_specimen_folds_to_its_pinned_hash(name):
@@ -95,11 +111,27 @@ def test_specimen_folds_to_its_pinned_hash(name):
         f"gates — re-bake with `python host-py/bake_specimens.py` or add it deliberately."
     )
     data = _ground(name)
-    assert mf.structural_hash(mf.fold(data)) == pinned[name]["hash"], (
-        f"{name} folds differently than pinned. The specimen has NOT changed unless this commit "
-        f"changed it, so this reads as a grammar or fold change — intended (re-bake in the same "
-        f"commit) or a regression (fix it)."
-    )
+    _pin_check(name, data, pinned[name])
+
+
+def test_a_byte_change_names_itself_before_the_fold_is_blamed():
+    """RED-FIRST CONTROL for `_pin_check`. A specimen edit and a fold regression used to collide on
+    one hash and one message; the byte hash must sort them BEFORE the fold ever runs on the mutant.
+
+    Control: the real specimen's unchanged bytes pass both checks. Red: flipping its last byte must
+    fail on the byte-hash assertion, carrying 'bytes moved' — never the fold message — because the
+    fold on a one-byte mutant is not the thing under test here."""
+    name = _specimens()[0]
+    with open(_SPECIMEN_MANIFEST, encoding="utf-8") as fh:
+        pinned = json.load(fh)["specimens"][name]
+    data = _ground(name)
+
+    _pin_check(name, data, pinned)  # control: unchanged bytes name nothing
+
+    mutated = data[:-1] + bytes([data[-1] ^ 0x01])
+    with pytest.raises(AssertionError, match="bytes moved") as exc:
+        _pin_check(name, mutated, pinned)
+    assert "fold" not in str(exc.value).split("bytes moved")[0]
 
 
 def test_every_pinned_specimen_still_exists():

@@ -12,6 +12,7 @@
  */
 import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { loadArtifact } from "./loader.mjs";
 import { fold, structuralHash } from "./fold.mjs";
@@ -27,6 +28,7 @@ const manifest = JSON.parse(await readFile(
 
 const artifact = await loadArtifact();
 const drifted = [];
+const moved = [];
 const missing = [];
 let matched = 0;
 
@@ -38,7 +40,14 @@ for (const [name, want] of Object.entries(manifest.specimens)) {
     missing.push(name); // a specimen the manifest names must stand beside it
     continue;
   }
-  const got = structuralHash(fold(heldBytes(new Uint8Array(data)), artifact));
+  const ground = heldBytes(new Uint8Array(data));
+  // The byte hash first: a moved specimen names itself here, before its fold is ever suspected.
+  const bytesGot = createHash("sha256").update(ground).digest("hex");
+  if (want.sha256 && bytesGot !== want.sha256) {
+    moved.push(`${name}  ts:${bytesGot.slice(0, 16)}  py:${want.sha256.slice(0, 16)}`);
+    continue;
+  }
+  const got = structuralHash(fold(ground, artifact));
   if (got === want.hash) matched += 1;
   else drifted.push(`${name}  ts:${got.slice(0, 16)}  py:${want.hash.slice(0, 16)}`);
 }
@@ -48,7 +57,12 @@ const onDisk = (await readdir(SPECIMEN_DIR)).filter((f) => f.endsWith(".mem"));
 const unpinned = onDisk.filter((f) => !(f in manifest.specimens));
 
 console.log(`host-ts parity vs specimens-${version}: `
-  + `${matched} match · ${drifted.length} drift · ${missing.length} missing`);
+  + `${matched} match · ${drifted.length} drift · ${moved.length} bytes moved · ${missing.length} missing`);
+if (moved.length) {
+  console.error("BYTES MOVED — the specimen's own text no longer matches the pin, which says nothing yet about the fold. Re-bake if intended:");
+  for (const line of moved) console.error(`  ${line}`);
+  process.exit(1);
+}
 if (drifted.length) {
   console.error("DRIFT — the ts fold does not match the pinned hash. Either the hosts disagree, or a specimen moved without a re-bake:");
   for (const line of drifted) console.error(`  ${line}`);
