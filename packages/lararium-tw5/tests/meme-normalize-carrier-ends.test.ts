@@ -83,3 +83,29 @@ describe("the writer emits the ends already named", () => {
     expect(out).toMatch(/-> to="\?">>/);
   });
 });
+
+describe("a framing sigil shown inside a fence is held text, and held text moves no byte", () => {
+  const fenced = (inner: string) => ["````", inner, "````"].join("\n");
+
+  test("a held opener keeps its positional ends", () => {
+    const src = fenced('<<^ code="&#x0001;" ? -> lar:///a.b.c/x>>');
+    expect(norm(src)).toBe(src);
+  });
+
+  test("a held closer keeps its positional end", () => {
+    const src = fenced('<<^ code="&#x0004;" -> ?>>');
+    expect(norm(src)).toBe(src);
+  });
+
+  test("a held opener standing ahead of the carrier's own keeps its spelling", () => {
+    const shown = fenced("<<^ &#x0001; ? -> lar:///shown>>");
+    const src = `${shown}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///a.b.c/x">>`;
+    expect(norm(src).startsWith(shown)).toBe(true);
+  });
+
+  test("control — the same ends outside any fence take their names", () => {
+    const out = norm(`${fenced("held")}\n\n<<^ code="&#x0001;" ? -> lar:///a.b.c/x>>\n\n<<^ code="&#x0004;" -> ?>>`);
+    expect(out).toContain('<<^ code="&#x0001;" from="?" -> to="lar:///a.b.c/x">>');
+    expect(out).toContain('<<^ code="&#x0004;" -> to="?">>');
+  });
+});

@@ -203,7 +203,9 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   // ── 1. SOH opener (namespace embed + spacing) ────────────────────────────
   const nsRaw = metaNamespace(text);
   const want = nsRaw === null ? "" : decodeEntities(nsRaw).trim();
-  const soh = SOH_OPENER_RE.exec(text);
+  // The carrier's own opener stands outside every fence; an opener SHOWN in a fence ahead of it holds.
+  const sohMask = fencedSpans(text);
+  const soh = [...text.matchAll(new RegExp(SOH_OPENER_RE.source, "g"))].find((m) => !inMask(sohMask, m.index!));
   if (soh) {
     // BOTH SPELLINGS READ, ONE SPELLING WRITES. A head stating named params reads from them; a head
     // from before the params carries its namespace as bare glyphs in front of the control entity, and
@@ -293,15 +295,20 @@ export function normalizeMemeSource(src: string): NormalizeResult {
   }
 
   // ── 5. Framing ends (positional → named) ─────────────────────────────────
+  // A framing sigil SHOWN inside a fence or a code span is held text, and keeps its spelling.
   let ends = 0;
-  text = text.replace(FRAME_OPEN_ENDS, (_m, head: string, arrow: string, target: string, tail: string) => {
+  const openMask = fencedSpans(text);
+  text = text.replace(FRAME_OPEN_ENDS, (m: string, head: string, arrow: string, target: string, tail: string, offset: number) => {
+    if (inMask(openMask, offset)) return m;
     ends += 1;
     // QUOTED IS CANONICAL — TiddlyWiki's own parser reads every control sigil, and a quoted value is
     // the form it types without a special case. A target arriving already quoted keeps its one pair.
     const bare = target.replace(/^"(.*)"$/, "$1");
     return `${head}from="?"${arrow}to="${bare}"${tail}`;
   });
-  text = text.replace(FRAME_CLOSE_ENDS, (_m, head: string, tail: string) => {
+  const closeMask = fencedSpans(text);
+  text = text.replace(FRAME_CLOSE_ENDS, (m: string, head: string, tail: string, offset: number) => {
+    if (inMask(closeMask, offset)) return m;
     ends += 1;
     return `${head}to="?"${tail}`;
   });
