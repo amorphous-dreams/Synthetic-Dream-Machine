@@ -28,7 +28,8 @@ import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload, type CarriedAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
-import { nodeNexusIsland, nodeNexusStanding } from "../nexus-standing.js";
+import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
+import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 
 export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive";
@@ -162,6 +163,26 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const founderVesselKey = await loadVesselVerifyingKey();
   const boardIsland      = admitBoardIsland(founderVesselKey);
+  // ── CARRY ON READ — this door never boots, so the boot-time carry never runs for it ──────────────
+  // `open-node-vessel.ts` carries the pinned chain onto the resolved island right before its OWN board
+  // read, at every boot. `device-admit` opens the store directly and exits (see the docblock at the
+  // top of this file) — it never boots through that seam. So the ordinary walk `vessel found` →
+  // `persona new 0` → `nexus rite cabal` → `device-admit`, with NO daemon ever restarted in between,
+  // reaches a charter board nothing has carried onto yet, and the read below would throw over a
+  // founding that never tore.
+  //
+  // The cure composes the IDENTICAL mesh function the boot calls, fed by `nodeNexusIslandsBelow` — the
+  // same `nodeNexusStandsAt` disk/environment read `admitBoardIsland` above already resolved through,
+  // so this can never name a different ranking than the one this door itself stands on. This is a
+  // carry-ON-READ at the one seam this door already names, not a hook sprinkled onto the rite that
+  // moved the island — an already-climbed vessel's FIRST device-admit call carries it exactly as an
+  // already-climbed vessel's first BOOT would. Idempotent and never-descending for the same reasons
+  // the boot's carry is (`persona-kel-climb.ts`): a destination that already carries the chain writes
+  // nothing, and a vessel standing at the bottom of the gradient supplies no sources.
+  await carryPersonaKelUpTheGradient({
+    repo, nexusPubkey: boardIsland, prefix: personaKelPrefix,
+    priorIslands: nodeNexusIslandsBelow({ ownVesselKey: founderVesselKey }),
+  });
   const kelBoard   = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
   const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!personaKelChain || personaKelChain.length === 0) {
