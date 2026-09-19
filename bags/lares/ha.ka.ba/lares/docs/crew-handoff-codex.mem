@@ -480,6 +480,17 @@ The web surface therefore holds interface capabilities: it can present a frame, 
 
 This arc completes when the present DOM/Vite package is explicitly `web`; browser carries no Vite/page-DOM concern; web build and asset reachability have receipts; focused browser and web tests cover their respective seams; and each planned future platform has a declared host/attach story. C4's named red remains independent evidence: this reorganization neither cures nor masks it. Stop before inventing a generic renderer, a mobile vessel, or a cross-platform authority model without a discriminating second implementation.
 
+!! E6 · Approved red-first sequence — test, re-home, then rename
+
+''Operator approval, 2026-09-18:'' improve the holistic browser/web coverage; make the narrow re-homes in both directions; then migrate the present package to `@lararium/web`. The sequence holds one rule: a page surface composes a browser vessel; it does not found a second authority.
+
+# First add a name-and-artifact contract. It must name every executable old package/path reference while excluding historical changelog and receipt prose deliberately. Its weakening control leaves one root filter, Docker/probe path, or weld working-directory reference unchanged and must report that exact survivor. Build the web artifact in an isolated directory; a static-harness test must read `/`, a Vite worker asset, `genesis/island.genesis.json`, and a manifest-named CAS blob as their expected bytes rather than an HTML fallback. Suppress the Vite copy or route a CAS request through the SPA fallback to make the control red.
+# Repair the Docker browser-probe claim before widening it. Today `LAR_VESSEL_WS` reaches only the probe's log; the page opens `/` without `?relay=` and the `leaf` scenario validates carriage parsing without a live browser consuming it. Split offline floor/worker proof from relay-attempt proof, then add the real founder-profile → carriage → fresh-browser-profile admission proof on the normal browser-weld surface. A missing/corrupt relay or carriage must red its named vector while offline boot stays green. C4 remains an independent gate and its present red may make a live page vector unavailable; retain the named failure rather than retrying it green.
+# Re-home browser → web: `wiki-coherence-sink.ts` and its DOM-sink witness move to the web surface. The browser vessel keeps `CoherenceFrameWithRev` as an emitted frame and never accepts `HTMLElement`. Re-home web → browser: the browser vessel issues its own public identity receipt; the web surface renders it, removing the shell's preliminary identity open before `openBrowserVessel`. Do not move Vite worker shims: Vite owns generated URLs and WASM/module-worker bundling while browser owns the worker bodies.
+# Perform the mechanical migration only after those controls stand: `packages/lararium-app` → `packages/lararium-web`; `@lararium/app` → `@lararium/web`; root dev and Make filters; weld runner; browser probe defaults; Compose's internal `LAR_APP_*` vocabulary → `LAR_WEB_*`; Docker build/copy paths; package-local test-artifact ignore; workspace lock importer; live package doctrine and user-facing smoke instructions. Preserve old names in historical receipts rather than rewriting history.
+# The Dockerfile's copied web output remains an explicit fork. `packages/lararium-node/src/main.ts` presently owns a WS-only server; no evidence says it serves those copied static files. An image-level request must establish a genuine static-serving route. If none stands, name that Docker copy stage stale or introduce a separate static-serving shore by a later explicit decision; do not grant static-host authority to Node by convenience.
+# After each migration commit, run the narrow package test/typecheck/build, the name/artifact controls, browser-weld runner control, and the relevant reserved Docker browser leg. Then re-scan executable references, normalize the living carriers, and make a separate aftermath commit only when the sweep changes a carrier or source.
+
 <<~/ahu>>
 
 <<~ ahu #/completed>>
@@ -650,6 +661,6 @@ This arc completes when the present DOM/Vite package is explicitly `web`; browse
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xHEScYW-qGQDNZY2ePCEIOcp91koUalgDEDvbROuwTk
+<<^ code="&#x0003;">>ni:///sha-256;qwAOcLLvSXafpIafooCacuT6a_g5YzUXo5MTaU_9dTo
 
 <<^ code="&#x0004;" -> to="?">>
