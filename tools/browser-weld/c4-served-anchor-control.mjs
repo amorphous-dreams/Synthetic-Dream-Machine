@@ -25,6 +25,7 @@ const ANCHORS = {
 const MARKERS = ["worker:manifest-received", "worker:pre-first-breath", "worker:pre-ea"];
 const SHORE_ANCHOR = /listen:\s*\(onMessage\)[\s\S]{0,180}onMessage\(e\.data\)/;
 const SHORE_MARKER = "worker:shore-manifest-inbound";
+const SHORE_REGISTER_MARKER = "worker:shore-listener-register";
 
 function workerAnchorStatus(source) {
   return Object.fromEntries(Object.entries(ANCHORS).map(([name, pattern]) => [name, pattern.test(source)]));
@@ -84,6 +85,7 @@ await context.route(/\.(?:[cm]?[jt]sx?)(?:\?.*)?$/, async (route) => {
       source: executableSource,
       anchor: true,
       injectedMarker: transformed.includes(`\"${SHORE_MARKER}\"`),
+      injectedRegistrationMarker: transformed.includes(`\"${SHORE_REGISTER_MARKER}\"`),
       transformed: transformed !== source,
     });
   return route.fulfill({ response, body: transformed });
@@ -115,9 +117,11 @@ try {
   assert.equal(SHORE_ANCHOR.test(weakenedShoreSource), false, JSON.stringify({ shore: weakenedShoreSource.slice(0, 500) }));
   const weakenedShoreTransformed = instrumentBootSource(weakenedShoreSource);
   assert.equal(weakenedShoreTransformed.includes(`"${SHORE_MARKER}"`), false, JSON.stringify({ shore: weakenedShoreSource.slice(0, 500) }));
+  assert.equal(weakenedShoreTransformed.includes(`"${SHORE_REGISTER_MARKER}"`), false, JSON.stringify({ shore: weakenedShoreSource.slice(0, 500) }));
   assert.equal(positive.transformed, true, JSON.stringify({ workerSources }));
   for (const marker of MARKERS) assert.equal(positive.injectedMarkers[marker], true, JSON.stringify({ workerSources }));
   assert.equal(positiveShore.injectedMarker, true, JSON.stringify({ shoreSources }));
+  assert.equal(positiveShore.injectedRegistrationMarker, true, JSON.stringify({ shoreSources }));
   const { source: _source, ...positiveReceipt } = positive;
   const { source: _shoreSource, ...positiveShoreReceipt } = positiveShore;
 
@@ -125,7 +129,7 @@ try {
     valid: true,
     positive: { ...positiveReceipt, workerGraphUrl: positive.url },
     shore: { ...positiveShoreReceipt, shoreGraphUrl: positiveShore.url },
-    deliberateWeakening: { anchors: weakened, valid: allAnchorsPresent(weakened), preEaInjected: weakenedTransformed.includes('"worker:pre-ea"'), shoreAnchor: SHORE_ANCHOR.test(weakenedShoreSource), shoreMarkerInjected: weakenedShoreTransformed.includes(`"${SHORE_MARKER}"`) },
+    deliberateWeakening: { anchors: weakened, valid: allAnchorsPresent(weakened), preEaInjected: weakenedTransformed.includes('"worker:pre-ea"'), shoreAnchor: SHORE_ANCHOR.test(weakenedShoreSource), shoreMarkerInjected: weakenedShoreTransformed.includes(`"${SHORE_MARKER}"`), shoreRegistrationMarkerInjected: weakenedShoreTransformed.includes(`"${SHORE_REGISTER_MARKER}"`) },
     scriptErrors,
   }));
 } finally {

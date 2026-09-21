@@ -149,6 +149,7 @@ async function testC4TraceHookIsOptIn() {
     "raw.type === \"breath\"", "raw.type === \"ea\"", "worker:startup-error",
     "worker:manifest-received", "worker:manifest-rejected", "worker:manifest-accepted",
     "worker:shore-manifest-inbound",
+    "worker:shore-listener-register",
     "worker:pre-first-breath", "worker:pre-ea",
     "host:awaitIslandMsg-raw", "host:awaitIslandMsg-guard-accepted",
     "host:awaitIslandMsg-guard-rejected", "host:awaitIslandMsg-expected-match",
@@ -231,6 +232,17 @@ async function testC4TraceInstrumentsWorkerShoreInbound() {
 
   const weakened = instrumentBootSource(source.replace("onMessage(e.data)", "onMessage(e.other)"));
   assert.doesNotMatch(weakened, /worker:shore-manifest-inbound/);
+}
+
+async function testC4TraceInstrumentsWorkerShoreRegistration() {
+  const source = `const host = {
+  listen: (onMessage) => self.addEventListener("message", (e) => onMessage(e.data)),
+};`;
+  const transformed = instrumentBootSource(source);
+  assert.match(transformed, /worker:shore-listener-register/);
+
+  const weakened = instrumentBootSource(source.replace('self.addEventListener("message"', 'self.addEventListener("other"'));
+  assert.doesNotMatch(weakened, /worker:shore-listener-register/);
 }
 
 async function testIndependentDriversAndArtifacts() {
@@ -328,6 +340,7 @@ await testC4TraceAnchorsStillStand();
 await testC4TraceInstrumentsCompiledAwaitIslandMsg();
 await testC4TraceInstrumentsManifestHandleDispatch();
 await testC4TraceInstrumentsWorkerShoreInbound();
+await testC4TraceInstrumentsWorkerShoreRegistration();
 await testIndependentDriversAndArtifacts();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();

@@ -314,10 +314,13 @@ function instrumentBootSource(source) {
   // successful native handle post from a message that actually reaches the Worker shore.
   body = body.replace(
     /listen: \(onMessage\) => self\.addEventListener\("message", \(e\) => onMessage\(e\.data\)\),/,
-    `listen: (onMessage) => self.addEventListener("message", (e) => {
+    `listen: (onMessage) => {
+      try { self.postMessage({ __laresC4BootTrace: "worker:shore-listener-register" }); } catch {}
+      return self.addEventListener("message", (e) => {
       if (e.data && e.data.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:shore-manifest-inbound" }); } catch {} }
       onMessage(e.data);
-    }),`,
+      });
+    },`,
   );
 
   // The worker's caught startup rejection normally stays in the worker console. A test-only marker
