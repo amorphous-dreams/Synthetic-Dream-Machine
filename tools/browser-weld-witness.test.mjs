@@ -153,6 +153,7 @@ async function testC4TraceHookIsOptIn() {
     "host:awaitIslandMsg-guard-rejected", "host:awaitIslandMsg-expected-match",
     "host:awaitIslandMsg-resolve",
     "host:worker-handle-listen", "host:worker-handle-dispatch",
+    "host:worker-handle-manifest-dispatch",
     "host:daemon-workerEa-callback",
   ]) {
     assert.match(source, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `missing C4 marker ${marker}`);
@@ -204,6 +205,20 @@ async function testC4TraceInstrumentsCompiledAwaitIslandMsg() {
 
   const weakened = instrumentBootSource(source.replaceAll("isIslandToVesselMsg(raw)", "isIslandToVesselMsg(other)"));
   assert.doesNotMatch(weakened, /host:awaitIslandMsg-(?:raw|resolve)/);
+}
+
+async function testC4TraceInstrumentsManifestHandleDispatch() {
+  const source = `function browserWorkerHandle(w) {
+  return {
+    post: (msg, transfer) => w.postMessage(msg, (transfer ?? [])),
+    listen: (cb) => { const fn = (e) => cb(e.data); w.addEventListener("message", fn); return () => w.removeEventListener("message", fn); },
+  };
+}`;
+  const transformed = instrumentBootSource(source);
+  assert.match(transformed, /host:worker-handle-manifest-dispatch/);
+
+  const weakened = instrumentBootSource(source.replace('post: (msg, transfer) => w.postMessage(msg, (transfer ?? [])),', 'post: (msg, transfer) => w.send(msg, (transfer ?? [])),'));
+  assert.doesNotMatch(weakened, /host:worker-handle-manifest-dispatch/);
 }
 
 async function testIndependentDriversAndArtifacts() {
@@ -299,6 +314,7 @@ async function testSignalReapsTheViteProcessGroup() {
 await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
 await testC4TraceInstrumentsCompiledAwaitIslandMsg();
+await testC4TraceInstrumentsManifestHandleDispatch();
 await testIndependentDriversAndArtifacts();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();

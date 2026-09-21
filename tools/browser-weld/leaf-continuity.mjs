@@ -275,6 +275,14 @@ function instrumentBootSource(source) {
   // registration and report only protocol type/version at dispatch; the callback remains unchanged.
   if (body.includes("function browserWorkerHandle") && body.includes("w.addEventListener(\"message\", fn)")) {
     body = body.replace(
+      /post: \(msg, transfer\) => w\.postMessage\(msg, \(transfer \?\? \[\]\)\),/,
+      `post: (msg, transfer) => {
+        const result = w.postMessage(msg, (transfer ?? []));
+        if (msg && msg.type === "manifest") console.log("[C4 boot] host:worker-handle-manifest-dispatch");
+        return result;
+      },`,
+    );
+    body = body.replace(
       /listen: \(cb\) => \{/,
       `listen: (cb) => {
       const __laresC4ListenId = ((globalThis.__laresC4ListenId ??= 0) + 1);

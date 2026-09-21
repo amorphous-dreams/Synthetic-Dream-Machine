@@ -93,6 +93,7 @@ async function runCase(browser, mode) {
   const transformedScripts = [];
   const awaitIslandMsgSources = [];
   const workerHandleSources = [];
+  const workerHandleManifestMarkerSources = [];
   const daemonWorkerEaSources = [];
   const consoleErrors = [];
   const scriptReceipts = [];
@@ -168,6 +169,7 @@ async function runCase(browser, mode) {
     if (mode === "instrumented" && source.includes("browserWorkerHandle") && source.includes("w.addEventListener(\"message\", fn)")) workerHandleSources.push(url);
     if (mode === "instrumented" && source.includes("const workerEa") && source.includes("worker.listen(h)")) daemonWorkerEaSources.push(url);
     if (mode === "instrumented" && isDaemonWorkerUrl(url)) transformed = addEarliestWorkerMarker(transformed);
+    if (mode === "instrumented" && transformed.includes("host:worker-handle-manifest-dispatch")) workerHandleManifestMarkerSources.push(url);
     if (transformed !== source) transformedScripts.push(url);
     return route.fulfill({ response, body: transformed });
   });
@@ -210,6 +212,7 @@ async function runCase(browser, mode) {
     transformedScripts: transformedScripts.length,
     awaitIslandMsgSources,
     workerHandleSources,
+    workerHandleManifestMarkerSources,
     daemonWorkerEaSources,
     workerOutcomes: {
       constructed: outcome("constructed"),
@@ -254,6 +257,7 @@ async function runCase(browser, mode) {
         awaitIslandMsgResolve: hostOutcome("awaitIslandMsg-resolve"),
         workerHandleListen: hostOutcome("worker-handle-listen"),
         workerHandleDispatch: hostOutcome("worker-handle-dispatch"),
+        workerHandleManifestDispatch: hostOutcome("worker-handle-manifest-dispatch"),
         daemonWorkerEaCallback: hostOutcome("daemon-workerEa-callback"),
       },
     },
@@ -274,6 +278,8 @@ try {
   assert.ok(unchanged.worker.length > 0, JSON.stringify({ unchanged, instrumented }));
   assert.ok(instrumented.worker.length > 0, JSON.stringify({ unchanged, instrumented }));
   assert.ok(instrumented.transformedScripts > 0, JSON.stringify({ unchanged, instrumented }));
+  assert.ok(instrumented.workerHandleSources.length > 0, JSON.stringify({ unchanged, instrumented }));
+  assert.ok(instrumented.workerHandleManifestMarkerSources.length > 0, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.workerOutcomes.constructed.length > 0, true, JSON.stringify({ unchanged, instrumented }));
   assert.equal(instrumented.workerOutcomes.constructed.length > 0, true, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.workerOutcomes.rawReady.length > 0, true, JSON.stringify({ unchanged, instrumented }));
@@ -284,6 +290,8 @@ try {
   assert.equal(instrumented.workerOutcomes.hostManifestPost[0].transferCount > 0, true, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.workerOutcomes.earlyMarker.length, 0, JSON.stringify({ unchanged, instrumented }));
   assert.equal(instrumented.workerOutcomes.earlyMarker.length > 0, true, JSON.stringify({ unchanged, instrumented }));
+  assert.equal(unchanged.workerOutcomes.hostChain.workerHandleManifestDispatch.length, 0, JSON.stringify({ unchanged, instrumented }));
+  assert.ok(instrumented.workerOutcomes.hostChain.workerHandleManifestDispatch.length > 0, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.terminal, instrumented.terminal, JSON.stringify({ unchanged, instrumented }));
   const namedOutcomes = (result) => Object.fromEntries(Object.entries(result.workerOutcomes).map(([name, value]) => [name, Array.isArray(value) ? value.length : value]));
   console.log(JSON.stringify({
