@@ -650,6 +650,62 @@ persona/document possession rather than infer it from an advertised stack. Fourt
 Herm whole-set public-blob proof still need their reserved mesh execution; neither follows from a Web
 build or a static-byte process.
 
+''E8 household-Nexus production Scrum — operator-approved, 2026-09-21.'' The DreamNet reread re-frames
+E8 around one household’s local mesh: Node-surface Herms or Lararia carry infrastructure availability;
+each family device carries a sovereign Web-surface peer with its own key, local causal state, isolated
+TW5 Workers and explicitly delegated document authority. FLOW/carriage and WHO/read authority remain
+orthogonal. The Nexus records contracted operators, never a user-device roster. A public crossroads/library
+belongs to the Herm floor and stays retained by a Lararium lift; it may project verified Web bootstrap
+bytes without gaining persona, document, admission or merge authority. A separate static process may
+operate that projection, but it names an operational adapter rather than another vessel kind.
+
+''Sprint 0 — capability map and canon reconciliation, 16 points.'' Re-true active DreamNet/package memes:
+the persona-less relay/public-library floor reads Herm; persona plus document ownership lights Lararium.
+Distinguish held relay intent from currently expressed inbound reach so a Web peer loses no sovereignty
+through browser substrate limits. Trace public crossroads/library, bulb/read, seed/manifest/CAS sources and
+refusals; require explicit Web, relay and optional oracle origins instead of deriving a shared deployment
+from `LAR_PUBLIC_URL`. Red controls reject a static route that touches a private bag, route-derived authority,
+or implicit origin equivalence.
+
+''Sprint 1 — genesis production bundle and binary retirement, 20 points.'' Retire `island.bin` and
+`island.cid*` only after a mesh verifier consumes `genesis/seed.json`, `genesis/manifest.json` and
+`genesis/cas/<cid>`. Tests reconstruct deterministic Automerge bytes from the seed where they need the old
+witness; runtime boot never does. Port quine/M3/blob/verb fixtures, replace sidecar reads with manifest CIDs,
+then delete binary outputs, old readers, cleanup hooks and stale docs. Controls require byte-identical
+reconstruction during migration, and red on altered seed, CID, absent CAS blob, HTML fallback, or residual
+binary reader.
+
+''Sprint 2 — public-library adapter, 20 points.'' A Node-owned narrow adapter accepts a prepared
+Herm/Lararium public-library projection, never the generic filesystem, private stores or persona vault. It
+answers exact index, hashed asset, Worker, seed, manifest and CAS bytes; it refuses missing immutable paths
+without SPA fallback. Relay, oracle and bulb retain separately declared route/capability controls. A response
+ledger names the projection and adapter while granting no identity.
+
+''Sprint 3 — explicit household composition, 18 points.'' Mesh owns a platform-neutral declaration of
+held peer caps, process subsets and explicit origins; Node/Web read their own portions. Support a declared
+same-origin household face and a declared split-origin local-waystone face. Neither form derives authority
+from a hostname or moves a device’s key/document relation. Invalid omitted/mismatched/private projections
+refuse closed.
+
+''Sprint 4 — multi-device household proof, 20 points.'' Stand one public-library/relay Node Herm, one
+persona-bearing Node Lararium, and fresh PC/tablet/phone Web peers. Prove local identity, IDB/OPFS, Worker
+execution and locally held state under relay/oracle loss; exercise one explicit delegated crossing; reject
+forged caps, private public-library reads and user-roster writes. Reserve Docker names/volumes before mesh
+execution; a real secure-context device run follows the local control.
+
+''Sprint 5 — bounded-reach readiness, 13 codebase points.'' Consume declared bounded-reach endpoints
+without letting DNS grant caps; test declared-origin loss and real secure-context behavior. DNS provider,
+ACME, CAA, resolver, certificate and origin-governance work remain crossed to Claude/Lares. Gaia needs a
+household that continues through WAN loss; Elyncia needs a waystone that guides reach while never becoming a
+hearth’s soul, roster or archive.
+
+''Scrum discipline.'' One active integration surface per five-day sprint; each story carries Gaia/Elyncia
+need, named transition, positive and deliberate-weakening controls, and refusal/loss behavior. No global
+clock enters authority or order; TW5 stays worker-isolated; no CRDT/non-CRDT outcome gets silently chosen.
+Each major commit receives a three-pass aftermath/evergreen/L-Prime/reality-alpha sweep and a cleanup commit
+when that sweep changes artifacts. D3 hosted receipt, A3 public-blob proof, relay-admission mesh proof, D4
+QR and DNS governance retain their separate lanes.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
@@ -898,6 +954,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vhASJyab_DJGf7wMizsJ56AD9BEijIGMQ1fbCO8aFxA
+<<^ code="&#x0003;">>ni:///sha-256;PIg5xri0jtrcSlurC9WpRCRtoT3moOT9uujAVet5D58
 
 <<^ code="&#x0004;" -> to="?">>
