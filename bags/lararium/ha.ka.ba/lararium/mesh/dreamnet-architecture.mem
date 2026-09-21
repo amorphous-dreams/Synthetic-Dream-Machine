@@ -486,7 +486,7 @@ Each door of the tiered gate now names a built mechanism, so the abstract split 
 
 ''The browser clears the WHO/INFRA doors only from a secure context'' — `crypto.subtle` + OPFS demand `https`/`localhost`, so a phone reaches the doors through a DNS-01 trusted name on the kahu domain, not a bare LAN IP (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>).
 
-''The one door not yet stood LIVE in a vessel:'' the relay-forward CARRIAGE loop (`serveCasWire` over the authenticated relay). Every piece — seal producer, member gate, relay, discovery, keyring — stands built and green in isolation; no running vessel yet assembles the serving loop. So cross-operator SEALED sync stays fail-closed until that loop lands — correctly denying a private plane it cannot yet carry, never a bug. the split-gate is ruled and its doors built; the live carriage loop is the one owed assembly, and the whole family breath waits on that single wiring.
+''RE-TRUED: the relay-forward CARRIAGE loop now stands LIVE.'' `carriage-serve-loop.ts` dials a carriage relay over an authenticated WS channel and answers members' `want-block`s on a clean poll interval — //"this closes the LIVE-WIRE: a member over the relay carries a sealed ciphertext; a stranger draws Mu"// (`packages/lararium-node/src/carriage-serve-loop.ts:1-3`, quote license). It is wired into boot at `open-node-vessel.ts:737-739` (`startCarriageServeLoop`, gated INERT-UNTIL-CONFIGURED: no `carriageRelayUrl` ⇒ zero carriage socket, boot behaves exactly as before). The split-gate is ruled, its doors built, and the serving loop this section once named as the sole owed assembly is landed. ''What the loop does NOT yet close'': `heraldry.mem`'s own order-note (2026-09-13) found an e2e still red because a Herm holds no carriage CLIENT — nothing yet makes a Herm FETCH the bytes it would serve, only serve what a member asks of it. The serve side stands; the fetch leg is the item now named at #/settled-vs-unbuilt.
 
 <<~ set hud="aim" drift-ward="? “the relay-forward gate admits by lease + cost” — the crossing-cost calibration (siege-gate, Sybil-filter">>
 
@@ -565,7 +565,7 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 ''A SIBLING TASK, currently being guarded.'' The crossroads WHO-pointer leak (#/golden-principles, deliberate-announce-never-a-boot-side-effect) is not a re-opening of the keying ruling — the keying is correct — but a projection-filter gap one layer up, at the unconditional disk mirror. It surfaced 2026-09-18 and awaits the operator's word on the fix (a projection guard gating the mirror on `nexusIdentity.kind === "charter"`, a dev-isolation `LAR_BAGS` convention, or a `.gitignore` backstop).
 
-''What this re-truing found STALE in the prior text, and why it changed.'' The prior meme's #/gate-model section still names the relay-forward carriage loop (`serveCasWire`) as the one door not yet stood live — that claim is UNVERIFIED against current canon in this pass (no source read here confirms or refutes it) and is left ''as-is, unconfirmed'' rather than re-asserted or silently dropped. Everything else the two-axis topology, the relay floor, the infra/social axes, the shore, the addressing/CAS/routing substrate, and the transport-kernel sections state was CHECKED against the sources cited above and reads CURRENT — no changes were needed there beyond the additions above.
+''What this re-truing found STALE in the prior text, and confirmed the fix for.'' The prior #/gate-model text named the relay-forward carriage loop (`serveCasWire`) as the one door not yet stood live in any vessel. That claim is now STALE and re-trued in place: `packages/lararium-node/src/carriage-serve-loop.ts` (landed `63d24d040`, "the fetch door opens over Socket B for the fleet") wires `startCarriageServeLoop` into `open-node-vessel.ts:737-739`, inert until a `carriageRelayUrl` configures it. The serve side of the loop is LIVE; the Herm's own carriage-CLIENT FETCH leg is the piece that remains unbuilt (`heraldry.mem`'s order-note, carried forward above). Everything else the two-axis topology, the relay floor, the infra/social axes, the shore, the addressing/CAS/routing substrate, and the transport-kernel sections state was CHECKED against the sources cited above and reads CURRENT — no changes were needed there beyond the additions above.
 
 <<~/ahu>>
 
@@ -602,6 +602,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W_9fRU5EUXDthZ6H5NQAu1DSLn47Sf3JjsGskbQg6kg
+<<^ code="&#x0003;">>ni:///sha-256;EgyCNs8xyifaUWU0t1k9xIQvewB8bWOJSH2Pc3TRPY8
 
 <<^ code="&#x0004;" -> to="?">>
