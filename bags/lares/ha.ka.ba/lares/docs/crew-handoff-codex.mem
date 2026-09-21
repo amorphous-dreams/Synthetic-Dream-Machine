@@ -446,7 +446,7 @@ The crossing driver's prior `|| true` reset `PIPESTATUS` on a quiet failure: a f
 
 ''Operator ruling, 2026-09-18:'' reserve `app` for generic application-surface composition. The present Vite and DOM deployable becomes `web`. This starts with a full scout and a reorganization plan; no package directory, import, worker route, runtime authority, or artifact route moves under this item alone. The current Vite shore continues to build while its exact successor is measured.
 
-The intended codebase reaches Node, PC and tablet browsers, native Android/iOS/tablets, Mudlet, Unreal, and later vessels. `packages/AGENTS.md` presently calls `@lararium/browser` the browser vessel shore and `@lararium/app` the browser app shell. The names overfill that distinction: the latter is one web page's Vite, DOM, admission, and projection adapter, not generic application composition.
+The intended codebase reaches Node, PC and tablet browsers, native Android/iOS/tablets, Mudlet, Unreal, and later vessels. `packages/AGENTS.md` calls `@lararium/browser` the browser vessel shore and `@lararium/web` the browser web surface. The names preserve the distinction: the latter carries one web page's Vite, DOM, admission, and projection adapter, while `app` remains reserved for generic application composition.
 
 !! E1 · One codebase, many nameless vessel entities
 
@@ -461,13 +461,13 @@ Every proposed target MUST answer one question before code begins: does it host 
 | `@lararium/mesh` | URI, capability, identity, transport, store, residency and island-protocol contracts | DOM, platform storage, or a running vessel |
 | `@lararium/tw5` | isolated TW5 VM and island machinery | a main-thread engine or platform UI authority |
 | `@lararium/browser` | a browser vessel's WebCrypto, IndexedDB/OPFS, Worker/MessageChannel, WebSocket, secure-context and browser-identity floor; `openBrowserVessel` returns the vessel's bounded input and projection seams | Vite, page DOM, React/canvas, or a static host's authority |
-| current `@lararium/app`, renamed `@lararium/web` | Vite artifact and worker URLs, genesis asset reachability, web-page mount/frame, DOM/Shadow-DOM projection adapter, DOM input/click return, admission-carrier reading, oracle read-face and PWA affordances | CRDT truth, private identity custody, worker-engine ownership, or network authority |
+| `@lararium/web` | Vite artifact and worker URLs, genesis asset reachability, web-page mount/frame, DOM/Shadow-DOM projection adapter, DOM input/click return, admission-carrier reading, oracle read-face and PWA affordances | CRDT truth, private identity custody, worker-engine ownership, or network authority |
 
 The web surface therefore holds interface capabilities: it can present a frame, translate local DOM gestures into bounded intent, observe a projection or public read face, and carry a URL admission offer to the local vessel. The browser vessel holds the browser-native capabilities that let that local entity persist, identify, host workers and communicate. The browser vessel may expose a web adapter seam; it does not become the web page. The web page may start or observe a browser vessel; it does not become its source of truth.
 
 !! E3 · Full scout before the rename
 
-# Inventory every `@lararium/app` and `@lararium/browser` import, export, test, script, Docker/weld route, Vite worker URL, genesis/CAS asset path, generated artifact and prose claim. Classify each as neutral contract, platform-vessel capability, web build artifact, or DOM surface behavior. Re-derive counts at execution time; no present count becomes a standing fact.
+# Inventory every `@lararium/web` and `@lararium/browser` import, export, test, script, Docker/weld route, Vite worker URL, genesis/CAS asset path, generated artifact and prose claim. Classify each as neutral contract, platform-vessel capability, web build artifact, or DOM surface behavior. Re-derive counts at execution time; no present count becomes a standing fact.
 # Write one bounded story each for web, native mobile, Mudlet and Unreal. Each story declares sovereign-vessel versus attached-surface, the capabilities supplied by that platform, the projection it consumes, the intent it emits, and where failure is visible. Surface any ownership conflict to the operator before a cross-hearth or cross-model merge.
 # Only then rename the present package and workspace identity to `@lararium/web`, updating imports, scripts, Docker/weld routes, documentation and asset routes together. Pin the web build's worker and genesis/CAS URLs with reachability tests. A static host remains a distribution shore, never a vessel authority.
 # Reduce the browser public seam to platform-vessel construction and declared callbacks. Keep page status, query/hash/session handling and DOM projection on the web shore. Keep the worker VM isolated. Do not make a general `@lararium/surface` package until two materially different renderers require and test the same intent contract; current HTML/CSS projection remains a DOM adapter, not a claimed universal renderer.
@@ -490,7 +490,7 @@ This arc completes when the present DOM/Vite package is explicitly `web`; browse
 # First add a name-and-artifact contract. It must name every executable old package/path reference while excluding historical changelog and receipt prose deliberately. Its weakening control leaves one root filter, Docker/probe path, or weld working-directory reference unchanged and must report that exact survivor. Build the web artifact in an isolated directory; a static-harness test must read `/`, a Vite worker asset, `genesis/island.genesis.json`, and a manifest-named CAS blob as their expected bytes rather than an HTML fallback. Suppress the Vite copy or route a CAS request through the SPA fallback to make the control red.
 # Repair the Docker browser-probe claim before widening it. Today `LAR_VESSEL_WS` reaches only the probe's log; the page opens `/` without `?relay=` and the `leaf` scenario validates carriage parsing without a live browser consuming it. Split offline floor/worker proof from relay-attempt proof, then add the real founder-profile → carriage → fresh-browser-profile admission proof on the normal browser-weld surface. A missing/corrupt relay or carriage must red its named vector while offline boot stays green. C4 remains an independent gate and its present red may make a live page vector unavailable; retain the named failure rather than retrying it green.
 # Re-home browser → web: `wiki-coherence-sink.ts` and its DOM-sink witness move to the web surface. The browser vessel keeps `CoherenceFrameWithRev` as an emitted frame and never accepts `HTMLElement`. Re-home web → browser: the browser vessel issues its own public identity receipt; the web surface renders it, removing the shell's preliminary identity open before `openBrowserVessel`. Do not move Vite worker shims: Vite owns generated URLs and WASM/module-worker bundling while browser owns the worker bodies.
-# Perform the mechanical migration only after those controls stand: `packages/lararium-app` → `packages/lararium-web`; `@lararium/app` → `@lararium/web`; root dev and Make filters; weld runner; browser probe defaults; Compose's internal `LAR_APP_*` vocabulary → `LAR_WEB_*`; Docker build/copy paths; package-local test-artifact ignore; workspace lock importer; live package doctrine and user-facing smoke instructions. Preserve old names in historical receipts rather than rewriting history.
+# ''TAKEN — `e87694441` + `5c2064f9c`, 2026-09-21.'' The mechanical migration now stands: `packages/lararium-web`; `@lararium/web`; root dev and Make filters; weld runner; browser probe defaults; Compose's `LAR_WEB_*` vocabulary; Docker build/copy paths; package-local test-artifact ignore; workspace lock importer; live package doctrine and user-facing smoke instructions. Historical receipts preserve the old name; the retired tree has no live path.
 # The Dockerfile's copied web output remains an explicit fork. `packages/lararium-node/src/main.ts` presently owns a WS-only server; no evidence says it serves those copied static files. An image-level request must establish a genuine static-serving route. If none stands, name that Docker copy stage stale or introduce a separate static-serving shore by a later explicit decision; do not grant static-host authority to Node by convenience.
 # After each migration commit, run the narrow package test/typecheck/build, the name/artifact controls, browser-weld runner control, and the relevant reserved Docker browser leg. Then re-scan executable references, normalize the living carriers, and make a separate aftermath commit only when the sweep changes a carrier or source.
 
@@ -524,6 +524,21 @@ crossing ledger carries the exact paths and the red-first receipt.
 ! Completed increments — bounded receipts
 
 ''Completion follows the item, never every adjacent capability.'' C4 and D1 keep their labels and evidence here; residual work stays at #/next-steps or its active set. An implemented subcomponent does not retire its containing arc.
+
+!! E6 · Web shore migration completion
+
+''TAKEN — `e87694441` + `5c2064f9c`, 2026-09-21.'' The present Vite/DOM surface now lives at
+`@lararium/web` / `packages/lararium-web`. The live root, Make, Docker, Compose, browser probe,
+artifact control, weld runner, workspace lock, smoke instructions, package doctrine, and current
+capability carriers use the web name. The browser vessel retains platform authority; the web surface
+retains DOM, Vite, worker URL, admission-carrier, and projection duties. The Dockerfile copies the web
+artifact but `lararium-node` still lacks a general static HTTP handler, so static serving remains held.
+The independent C4 relay/admission red remains untouched.
+
+''Receipts:'' the live executable name scan reports 1,697 files with no old package references; the
+focused web tool suite passes 2 files / 3 tests; focused Chromium phone-seat and coherence passes 2
+files / 9 tests; browser build, web typecheck/build, artifact reachability, and browser-weld runner
+control pass. Docker mesh execution remains unrun because it tears down named volumes.
 
 !! W3 · Named browser actions and retained reveal completion
 
@@ -687,6 +702,6 @@ crossing ledger carries the exact paths and the red-first receipt.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H_AalnVHVDXCCASvUBiBz8L1-1eZRuKRk8D76QupLBM
+<<^ code="&#x0003;">>ni:///sha-256;XVwziHg_TbYNkg9q3ASdOHDgV7cgYO_A3n7jzpzpEgk
 
 <<^ code="&#x0004;" -> to="?">>
