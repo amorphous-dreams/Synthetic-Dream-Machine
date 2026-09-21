@@ -6,7 +6,7 @@
  * genesis CAS holds (the engine + plugins) NEVER sweeps. The proofs, over a real temp CAS dir:
  *   · land a pointer → referenced 1 → the sweep keeps the blob,
  *   · DROP the bag → referenced 0 → sweep with grace 0 → the file is gone,
- *   · CONTROL: a genesis-manifest blob never sweeps, unreferenced or not,
+ *   · CONTROL: a seed-derived genesis blob never sweeps, unreferenced or not,
  *   · CONTROL: a blob referenced by TWO bags survives DROP of one,
  *   · the grace holds: an unreferenced blob younger than the grace stays,
  *   · a name that is not a sha256 hex cid is never touched (the dir may hold sidecars),
@@ -301,45 +301,50 @@ test("the pace cell reads 0 before any reading, then the last pace, and ignores 
 });
 
 /**
- * A TORN MANIFEST MUST NOT READ AS AN ABSENT ONE — the protect set is a DELETION guard.
+ * A TORN SEED MUST NOT READ AS AN ABSENT ONE — the protect set is a DELETION guard.
  *
- * `readGenesisManifest` answers null for both "no manifest here" and "a manifest here that reads torn",
+ * `readGenesisSeed` answers null for both "no seed here" and "a seed here that reads torn",
  * and the sweep's caller folded that null to an empty protect set (`?.blobs ?? []`). An empty protect set
  * does not mean "protect nothing pending" — it means "confirmed: nothing needs protecting", and the sweep
- * acts on it by deleting. So a manifest that will not parse silently strips the engine and plugin blobs of
+ * acts on it by deleting. So a seed that will not parse silently strips the engine and plugin blobs of
  * the one guard that keeps them, and the vessel eats its own genesis once they age past the grace.
  *
- * The ABSENT case keeps its empty set: a vessel carrying no manifest protects nothing because it holds no
+ * The ABSENT case keeps its empty set: a vessel carrying no seed protects nothing because it holds no
  * genesis blobs, and refusing there would break a legitimate shape.
  */
-describe("the genesis protect set, when the manifest will not read", () => {
+describe("the genesis protect set, when the seed will not read", () => {
   let genesisDir = "";
   beforeEach(() => { genesisDir = mkdtempSync(join(tmpdir(), "lares-genesisdir-")); });
   afterEach(() => { rmSync(genesisDir, { recursive: true, force: true }); });
 
-  test("★ a manifest that STANDS and reads torn answers `unreadable` — never an empty protect set ★", () => {
-    writeFileSync(join(genesisDir, "manifest.json"), "{ not json at all", "utf8");
+  test("★ a seed that STANDS and reads torn answers `unreadable` — never an empty protect set ★", () => {
+    writeFileSync(join(genesisDir, "seed.json"), "{ not json at all", "utf8");
     expect(genesisProtectSet(genesisDir)).toBe("unreadable");
   });
 
-  test("★ a manifest carrying the WRONG format reads unreadable too — a shape guard, not a parse guard ★", () => {
-    writeFileSync(join(genesisDir, "manifest.json"), JSON.stringify({ format: "something-else", blobs: [] }), "utf8");
+  test("★ a seed carrying the WRONG format reads unreadable too — a shape guard, not a parse guard ★", () => {
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify({ format: "something-else", blobs: [] }), "utf8");
     expect(genesisProtectSet(genesisDir)).toBe("unreadable");
   });
 
-  test("CONTROL — an ABSENT manifest still answers an empty set: that vessel holds no genesis blobs", () => {
+  test("CONTROL — an ABSENT seed still answers an empty set: that vessel holds no genesis blobs", () => {
     const set = genesisProtectSet(genesisDir);
     expect(set).not.toBe("unreadable");
     expect([...(set as ReadonlySet<string>)]).toEqual([]);
   });
 
-  test("CONTROL — a WELL-FORMED manifest answers its blob cids, so the guard still guards", () => {
-    // The FORMAT rides the constant, never a hand-typed twin — a literal here drifts the day the format moves.
-    const manifest = { format: GENESIS_CAS_MANIFEST_FORMAT, engineCid: "e", grammarCid: "g", pluginsCid: "p",
-      blobs: [{ cid: "aa", id: "x", mimeType: "application/json", version: "1" }] };
-    writeFileSync(join(genesisDir, "manifest.json"), JSON.stringify(manifest), "utf8");
+  test("CONTROL — a WELL-FORMED seed answers its blob cids, so the guard still guards", () => {
+    const cid = "a".repeat(64);
+    const seed = { format: "lararium-genesis-seed/v1", actorSeed: "actor", schemaVersion: "1",
+      blobs: { x: { id: "x", sha256: cid, mimeType: "application/json", version: "1" } },
+      tiddlers: {
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": { tiddler: { cid: "g" } },
+        "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins": { tiddler: { cid: "p" } },
+      } };
+    writeFileSync(join(genesisDir, "seed.json"), JSON.stringify(seed), "utf8");
     const set = genesisProtectSet(genesisDir);
     expect(set).not.toBe("unreadable");
-    expect([...(set as ReadonlySet<string>)]).toEqual(["aa"]);
+    expect([...(set as ReadonlySet<string>)]).toEqual([cid]);
   });
 });

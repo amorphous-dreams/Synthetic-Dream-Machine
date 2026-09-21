@@ -26,7 +26,7 @@ import {
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf,
-  materializeGenesisIsland,
+  materializeGenesisIsland, genesisCasManifestFromSeed,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
@@ -36,7 +36,7 @@ import {
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
-  type GenesisCasManifest, type GenesisSeed,
+  type GenesisSeed,
   type BootInvite, type BootInvitePolicy,
 }                                            from "@lararium/mesh";
 import { runBrowserBootInviteSpend }         from "./browser-boot-invite-burn.js";
@@ -166,10 +166,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    * reloads the persisted oracle doc by find-first, a peer syncs it — neither needs the seed.
    */
   genesisSeed?:    GenesisSeed;
-  /** Genesis CAS manifest (manifest.json) — names the engine + plugin blob files. With
-   *  genesisCasBaseUrl, first boot fetches genesis/cas/<cid> over HTTP into the OPFS CAS. */
-  genesisCasManifest?:  GenesisCasManifest;
-  /** Base URL the genesis static host serves (manifest + cas/ live under it). */
+  /** Base URL the genesis static host serves (seed + cas/ live under it). */
   genesisCasBaseUrl?:   string;
   /** Relay gate URL (ws://host:port/ws) to dial for the node↔browser spore crossing. When set (and
    *  a founding card is cached), the vessel composes the V3 leaf transport (LarWSClientAdapter) and
@@ -336,7 +333,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     wikiId,
     idbName = "lares:vessel", displayName, onPhase,
     genesisSeed,
-    genesisCasManifest, genesisCasBaseUrl,
+    genesisCasBaseUrl,
     daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
     meshLeaf, admit,
     bootInvite, bootInvitePolicy, inviteNexusPubkey,
@@ -826,10 +823,11 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         // Populate the OPFS CAS — the worker pulls engine + plugin bytes by CID from here
         // (the breath path), never CRDT-syncing the bytes over the port. The genesis CRDT now
         // carries METADATA only; the bytes ship as genesis/cas/<cid> files. Fetch them over HTTP
-        // by manifest (the browser face of the node mirrorGenesisCasFs). Once in OPFS they
-        // persist (write-once-read-many), so later/replica boots need no manifest.
-        if (genesisCasManifest && genesisCasBaseUrl) {
-          await fetchGenesisCasToOpfs(genesisCasManifest, genesisCasBaseUrl);
+        // by the seed-derived inventory (the browser face of the node mirrorGenesisCasFs). Once in OPFS they
+        // persist (write-once-read-many), so later/replica boots need no separate inventory file.
+        if (genesisCasBaseUrl) {
+          const casManifest = genesisCasManifestFromSeed(genesisSeed);
+          await fetchGenesisCasToOpfs(casManifest, genesisCasBaseUrl);
         }
         return { islandHandle, coreHash, bootstrap: social };
       },

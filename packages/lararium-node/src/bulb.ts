@@ -22,7 +22,7 @@
 
 import { readFileSync } from "node:fs";
 import { sha256HexBytesSync, utf8Bytes, type GenesisSeed, type GenesisCasManifest } from "@lararium/mesh";
-import { readGenesisSeed, readGenesisManifest, genesisCasDir } from "./genesis-artifact.js";
+import { readGenesisSeed, readGenesisCasManifest, genesisCasDir } from "./genesis-artifact.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 
 /** The bulb-manifest format tag — a puller refuses an unknown one (fail-closed). */
@@ -111,12 +111,12 @@ export function assembleBulb(manifest: BulbManifest, getBlob: (cid: string) => U
  * social bootstrap rides `bootstrapPath`, NAMED rather than reached for, because the two live in
  * different homes now (a shared seed, a per-vessel address book) and a function that names one target
  * while resolving the other from ambient state is the shape every confused-deputy bug wears. Reads the plain-data seed (seed.json),
- * the CAS manifest (manifest.json), every genesis/cas/<cid> blob, and the vessel's social bootstrap,
+ * its derived logical CAS inventory, every genesis/cas/<cid> blob, and the vessel's social bootstrap,
  * PINNED to the passed charter chain-head epoch. Returns null when the genesis is absent/malformed (nothing to serve).
  */
 export function readBulbArtifact(genesisDir: string, sealEpochCid: string | null, bootstrapPath: string): BulbArtifact | null {
   const seed        = readGenesisSeed(genesisDir);
-  const casManifest = readGenesisManifest(genesisDir);
+  const casManifest = readGenesisCasManifest(genesisDir);
   if (!seed || !casManifest) return null;
   const casDir = genesisCasDir(genesisDir);
   const casEntries = casManifest.blobs.map((b) => {

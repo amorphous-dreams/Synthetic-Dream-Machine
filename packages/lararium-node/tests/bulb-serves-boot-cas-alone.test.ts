@@ -5,8 +5,8 @@
  * holding the pointer fetches them by cid. The bulb is the one content-addressed READ-FACE the house
  * serves over the public floor today — so the question is whether it serves an ARBITRARY public blob
  * a hearth staged, or the boot CAS alone. Measured here against the real read-face: the bulb answers
- * `GET /bulb/<cid>.bin` from the genesis manifest's blobs ONLY (`bulb-read-face.ts` builds `blobByCid`
- * off `buildBulb(bulb)`); a blob sitting in the same vessel's `cid/` dir, absent from the manifest,
+ * `GET /bulb/<cid>.bin` from the seed-derived genesis blobs ONLY (`bulb-read-face.ts` builds `blobByCid`
+ * off `buildBulb(bulb)`); a blob sitting in the same vessel's `cid/` dir, absent from the inventory,
  * draws 404 "unknown or stale bulb cid". A boot blob draws 200 with its own bytes (the CONTROL).
  */
 import { afterEach, describe, test, expect } from "vitest";

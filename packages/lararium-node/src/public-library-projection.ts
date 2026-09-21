@@ -4,17 +4,15 @@
  * separate composition act.
  *
  * The web root contributes only index.html and the explicitly supplied Vite
- * asset routes. The genesis root contributes seed.json, manifest.json, and
- * the manifest-named CAS files. No directory scan can widen this projection.
+ * asset routes. The genesis root contributes seed.json and the seed-derived
+ * CAS files. No directory scan can widen this projection.
  */
 
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { isAbsolute, join, sep } from "node:path";
 import {
-  GENESIS_CAS_MANIFEST_FORMAT,
-  validateGenesisBundleCoherence,
-  type GenesisCasManifest,
+  genesisCasManifestFromSeed,
   type GenesisSeed,
 } from "@lararium/mesh";
 import type { PublicLibraryFile, PublicLibraryProjection } from "./public-library-adapter.js";
@@ -22,7 +20,7 @@ import type { PublicLibraryFile, PublicLibraryProjection } from "./public-librar
 export interface PublicLibraryProjectionInputs {
   /** Absolute root of the prepared @lararium/web artifact. */
   readonly webArtifactRoot: string;
-  /** Absolute root of the prepared seed/manifest/cas bundle. */
+  /** Absolute root of the prepared seed/CAS bundle. */
   readonly genesisBundleRoot: string;
   /** Exact Vite `/assets/...` routes selected by the prepared artifact record. */
   readonly assetRoutes: readonly string[];
@@ -75,25 +73,20 @@ function jsonObject(bytes: Uint8Array, label: string): Record<string, unknown> {
   return parsed as Record<string, unknown>;
 }
 
-function manifestCids(seedBytes: Uint8Array, manifestBytes: Uint8Array): readonly string[] {
+function seedCids(seedBytes: Uint8Array): readonly string[] {
   const seed = jsonObject(seedBytes, "seed.json");
-  const manifest = jsonObject(manifestBytes, "manifest.json");
+  let manifest;
   try {
-    validateGenesisBundleCoherence(seed as unknown as GenesisSeed, manifest as unknown as GenesisCasManifest);
+    manifest = genesisCasManifestFromSeed(seed as unknown as GenesisSeed);
   } catch (error) {
-    fail(`genesis bundle coherence failed: ${error instanceof Error ? error.message : String(error)}`);
+    fail(`genesis seed derivation failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-  if (manifest.format !== GENESIS_CAS_MANIFEST_FORMAT) {
-    fail("manifest.json has the wrong format");
-  }
-  const blobs = (manifest as { blobs?: unknown }).blobs;
-  if (!Array.isArray(blobs) || blobs.length === 0) fail("manifest.json has no CAS blobs");
-  const cids = blobs.map((entry) => {
-    const cid = entry && typeof entry === "object" ? (entry as { cid?: unknown }).cid : undefined;
-    if (typeof cid !== "string" || !CID.test(cid)) fail(`manifest names a noncanonical CID: ${String(cid)}`);
+  const cids = manifest.blobs.map((entry: { readonly cid: string }) => {
+    const cid = entry.cid;
+    if (!CID.test(cid)) fail(`seed names a noncanonical CID: ${String(cid)}`);
     return cid;
   });
-  if (new Set(cids).size !== cids.length) fail("manifest names a duplicate CID");
+  if (new Set(cids).size !== cids.length) fail("seed-derived inventory names a duplicate CID");
   return cids;
 }
 
@@ -127,13 +120,12 @@ export function buildPublicLibraryProjection(
   for (const route of routes) assets.set(route, file(routeFile(webRoot, route), assetType(route)));
 
   const seedBytes = exactFile(genesisRoot, "seed.json", "seed.json");
-  const manifestBytes = exactFile(genesisRoot, "manifest.json", "manifest.json");
-  const cids = manifestCids(seedBytes, manifestBytes);
+  const cids = seedCids(seedBytes);
   const cas = new Map<string, PublicLibraryFile>();
   for (const cid of cids) {
     const bytes = exactFile(genesisRoot, `cas/${cid}`, `CAS ${cid}`);
     const actual = createHash("sha256").update(bytes).digest("hex");
-    if (actual !== cid) fail(`CAS bytes do not match manifest CID ${cid}`);
+    if (actual !== cid) fail(`CAS bytes do not match seed-derived inventory CID ${cid}`);
     cas.set(cid, file(bytes, "application/octet-stream"));
   }
 
@@ -141,7 +133,6 @@ export function buildPublicLibraryProjection(
     index: file(indexBytes, "text/html; charset=utf-8"),
     assets,
     genesisSeed: file(seedBytes, "application/json"),
-    genesisManifest: file(manifestBytes, "application/json"),
     cas,
   };
 }

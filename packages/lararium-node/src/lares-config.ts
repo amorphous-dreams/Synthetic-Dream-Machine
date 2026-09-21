@@ -28,7 +28,7 @@ import type { ExplicitOriginComposition } from "./lan-address.js";
 export interface LaresResourceRoots {
   /** The daemon's holdings tree — overrides `<corpus>/bags`. */
   readonly bags?:    string;
-  /** The tracked genesis seed dir (seed.json + manifest.json + cas/) — overrides `<corpus>/genesis`. */
+  /** The tracked genesis seed dir (seed.json + cas/) — overrides `<corpus>/genesis`. */
   readonly genesis?: string;
   /** The genesis CAS-SOURCE dir (the tracked `genesis/cas/<cid>` blobs) — overrides `<genesis>/cas`.
    *  NOT the runtime vessel cas (that is vessel STATE — see `LaresVesselState.cas`). */
@@ -147,7 +147,7 @@ export function daemonCorpusRoot(): string {
 }
 
 /** The genesis dir — `LAR_GENESIS` → `config.resources.genesis` → `<corpus>/genesis`. Tracked seed
- *  (seed.json + manifest.json + cas/ — the tracked bundle; the bootstrap rides the vessel store). */
+ *  (seed.json + cas/ — the tracked bundle; the bootstrap rides the vessel store). */
 export function daemonGenesisDir(cfg: LaresConfig = loadLaresConfig()): string {
   return process.env["LAR_GENESIS"] ?? cfg.resources?.genesis ?? join(daemonCorpusRoot(), "genesis");
 }

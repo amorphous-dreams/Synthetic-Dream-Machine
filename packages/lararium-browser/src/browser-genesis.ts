@@ -7,7 +7,7 @@
  * find-first from IndexedDB — node-parity, no binary import, no merge-into-
  * stale reconcile. This file keeps ONLY the genuinely-
  * browser byte SOURCE: the OPFS content-addressed store (engine + plugin bytes by CID,
- * fetched over HTTP by manifest, read by the worker via resolveByCid).
+ * fetched over HTTP by the seed-derived inventory, read by the worker via resolveByCid).
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-genesis
  */
@@ -16,6 +16,7 @@ import {
   cidV1Sha256,
   casBlobEntries, type CasBlobLike,
   type GenesisCasManifest,
+  sha256HexBytesSync,
 } from "@lararium/mesh";
 
 // ── OPFS content-addressed store (CAS) — engine + plugin bytes by CID ──────────
@@ -53,12 +54,13 @@ export async function writeBlobsToCasOpfs(
 }
 
 /**
- * Fetch each CAS blob named by the genesis manifest over HTTP (`baseUrl`/cas/<cid>)
+ * Fetch each CAS blob named by the seed-derived logical inventory over HTTP (`baseUrl`/cas/<cid>)
  * and write it to the OPFS CAS — the browser face of the byte SOURCE the genesis CRDT
  * no longer carries (mirrors the node `mirrorGenesisCasFs`). The genesis static host
- * serves genesis/cas/<cid> + manifest.json; the worker later resolves each by
- * the SAME cid via readCasBlobFromOpfs. write-if-absent (content-addressed, immutable).
- * Returns the count written. No-ops silently if OPFS is unavailable.
+ * serves genesis/seed.json + genesis/cas/<cid>; the worker later resolves each by
+ * the SAME cid via readCasBlobFromOpfs. Existing files are re-verified before reuse;
+ * fetched bytes are verified before they enter OPFS. A missing, unavailable, or
+ * tampered named byte rejects boot. Returns the count written.
  */
 export async function fetchGenesisCasToOpfs(
   manifest: GenesisCasManifest,
@@ -66,26 +68,27 @@ export async function fetchGenesisCasToOpfs(
 ): Promise<number> {
   let written = 0;
   const base = baseUrl.replace(/\/$/, "");
-  try {
-    const root = await navigator.storage.getDirectory();
-    const cas  = await root.getDirectoryHandle(OPFS_CAS_DIR, { create: true });
-    for (const { cid } of manifest.blobs) {
-      try { await cas.getFileHandle(cid); continue; } catch { /* absent → fetch below */ }
-      const res = await fetch(`${base}/cas/${cid}`);
-      if (!res.ok) throw new Error(`[browser-genesis] genesis CAS fetch ${cid} → HTTP ${res.status}`);
-      const bytes = new Uint8Array(await res.arrayBuffer());
-      const fileH = await cas.getFileHandle(cid, { create: true });
-      const w = await (fileH as FileSystemFileHandle & {
-        createWritable(): Promise<FileSystemWritableFileStream>;
-      }).createWritable();
-      await w.write(bytes.slice());
-      await w.close();
-      written += 1;
+  const root = await navigator.storage.getDirectory();
+  const cas  = await root.getDirectoryHandle(OPFS_CAS_DIR, { create: true });
+  for (const { cid } of manifest.blobs) {
+    let existing: Uint8Array | null = null;
+    try { existing = await readCasFileBytes(await cas.getFileHandle(cid)); } catch { /* absent → fetch below */ }
+    if (existing && sha256HexBytesSync(existing) === cid) continue;
+    const res = await fetch(`${base}/cas/${cid}`);
+    if (!res.ok) throw new Error(`[browser-genesis] genesis CAS fetch ${cid} → HTTP ${res.status}`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (sha256HexBytesSync(bytes) !== cid) {
+      throw new Error(`[browser-genesis] genesis CAS fetch ${cid} failed content-address verification`);
     }
-    console.log(`[browser-genesis] OPFS CAS: fetched ${written} blob(s) by CID from ${base}/cas`);
-  } catch (err) {
-    console.warn(`[browser-genesis] genesis CAS fetch incomplete: ${err instanceof Error ? err.message : String(err)}`);
+    const fileH = await cas.getFileHandle(cid, { create: true });
+    const w = await (fileH as FileSystemFileHandle & {
+      createWritable(): Promise<FileSystemWritableFileStream>;
+    }).createWritable();
+    await w.write(bytes.slice());
+    await w.close();
+    written += 1;
   }
+  console.log(`[browser-genesis] OPFS CAS: fetched ${written} blob(s) by CID from ${base}/cas`);
   return written;
 }
 

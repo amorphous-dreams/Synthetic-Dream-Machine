@@ -21,7 +21,7 @@
  * another door. `plugins` stands first because the region already exists and already gets folded.
  */
 
-import { readGenesisPluginsCid, readGenesisManifest } from "@lararium/node";
+import { readGenesisPluginsCid, readGenesisCasManifest } from "@lararium/node";
 import { refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -55,7 +55,7 @@ const PUBLISH_USAGE: readonly string[] = [
  */
 function publishPlugins(args: ParsedArgs): number {
   const pluginsCid = readGenesisPluginsCid();
-  const manifest = readGenesisManifest();
+  const manifest = readGenesisCasManifest();
 
   if (args.flags["apply"]) {
     console.error("nexus publish plugins --apply — HELD (the offering's payload lands next).");

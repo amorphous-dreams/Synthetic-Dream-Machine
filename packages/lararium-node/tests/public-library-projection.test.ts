@@ -25,16 +25,12 @@ function fixture(): { web: string; genesis: string; cid: string } {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-plugins": { tiddler: { cid: regionCids.plugins } },
     },
   }));
-  writeFileSync(join(genesis, "manifest.json"), JSON.stringify({
-    format: "lararium-genesis-cas/v1", engineCid: regionCids.engine, grammarCid: regionCids.grammar,
-    pluginsCid: regionCids.plugins, blobs: [{ cid, id: blob.id, version: blob.version, mimeType: blob.mimeType }],
-  }));
   writeFileSync(join(genesis, "cas", cid), cas);
   return { web, genesis, cid };
 }
 
 describe("buildPublicLibraryProjection — explicit prepared roots", () => {
-  test("reads only index, named assets/worker, seed, manifest, and manifest-named CAS", () => {
+  test("reads only index, named assets/worker, seed, and seed-named CAS", () => {
     const f = fixture();
     const projection = buildPublicLibraryProjection({
       webArtifactRoot: f.web, genesisBundleRoot: f.genesis,

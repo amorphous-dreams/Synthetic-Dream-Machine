@@ -23,7 +23,7 @@ import { TW5Engine }       from "@lararium/tw5";
 import type { TW5TiddlerFields } from "@lararium/tw5";
 import type { LarDoc } from "@lararium/mesh";
 import { ENGINE_CORE_ID, GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
-import { readGenesisManifest, genesisCasDir } from "../src/genesis-artifact.js";
+import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { readCasBlobFromFs } from "../src/node-cas.js";
 import { GENESIS_SEED, loadGenesisBytes } from "../tests/genesis-test-source.js";
 
@@ -67,9 +67,9 @@ async function main(): Promise<void> {
   // 3. Extract TW5 core blob + compiled plugin blob — from the CAS plane.
   //    The CRDT carries METADATA only; the bytes ride genesis/cas/<cid> (G-CAS slice 1).
   // ------------------------------------------------------------------
-  const manifest = readGenesisManifest();
+  const manifest = readGenesisCasManifest();
   if (!manifest) {
-    throw new Error(`[quine] genesis CAS manifest (manifest.json) absent — re-run build:genesis`);
+    throw new Error(`[quine] genesis seed absent or malformed — re-run build:genesis`);
   }
   const casDir = genesisCasDir();
   const coreEntry = doc.blobs?.[ENGINE_CORE_ID];

@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildGenesisDoc,
+  genesisCasManifestFromSeed,
   validateGenesisBundleCoherence,
   type GenesisInputs,
   type GenesisPluginEntry,
@@ -30,6 +31,26 @@ const inputs = (): GenesisInputs => ({
 });
 
 describe("genesis seed/CAS manifest coherence", () => {
+  it("derives the exact logical CAS inventory from seed alone", () => {
+    const artifact = buildGenesisDoc(inputs());
+    expect(genesisCasManifestFromSeed(artifact.seed)).toEqual(artifact.casManifest);
+    const mutatedOracle = { ...artifact.seed, tiddlers: { ...artifact.seed.tiddlers, unrelated: { tiddler: { cid: "forged" } } } };
+    expect(genesisCasManifestFromSeed(mutatedOracle)).toEqual(artifact.casManifest);
+  });
+
+  it("refuses malformed seed inventory instead of widening or emptying it", () => {
+    const artifact = buildGenesisDoc(inputs());
+    const [id, original] = Object.entries(artifact.seed.blobs)[0]!;
+    expect(() => genesisCasManifestFromSeed({
+      ...artifact.seed,
+      blobs: { ...artifact.seed.blobs, [id]: { ...original, sha256: "not-a-cid" } },
+    })).toThrow(/noncanonical SHA-256/);
+    expect(() => genesisCasManifestFromSeed({
+      ...artifact.seed,
+      tiddlers: { ...artifact.seed.tiddlers, "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": undefined },
+    })).toThrow(/region witness/);
+  });
+
   it("accepts the seed and manifest emitted by a real artifact", () => {
     const artifact = buildGenesisDoc(inputs());
 

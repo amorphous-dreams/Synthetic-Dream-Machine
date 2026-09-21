@@ -78,7 +78,6 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     const bulb = fixtureBulb();
     mkdirSync(genesisCasDir(genesisDir), { recursive: true });
     writeFileSync(join(genesisDir, "seed.json"),  JSON.stringify(bulb.seed));
-    writeFileSync(join(genesisDir, "manifest.json"), JSON.stringify(bulb.casManifest));
     writeFileSync(join(genesisDir, "social-bootstrap.json"), JSON.stringify(bulb.bootstrap));
     writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
 

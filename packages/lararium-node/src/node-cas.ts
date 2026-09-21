@@ -59,10 +59,10 @@ export function writeCasEntriesFs(
 
 /**
  * Mirror a genesis artifact's CAS files (genesis/cas/<cid>) into a runtime CAS dir,
- * driven by the manifest — the node face of the byte SOURCE. The manifest names
+ * driven by the seed-derived inventory — the node face of the byte SOURCE. The inventory names
  * genesis/cas/ files as the byte source; the CID a worker later requests stays the
  * same regardless of source. Idempotent (content-addressed). Returns
- * count copied; throws if a manifest-named source file is absent (corrupt genesis).
+ * count copied; throws if a seed-named source file is absent (corrupt genesis).
  */
 export function mirrorGenesisCasFs(
   manifest:      GenesisCasManifest,
@@ -195,7 +195,7 @@ export interface CasSweepResult {
   readonly swept:     string[];
   /** Held by a reference or the grace. */
   readonly kept:      string[];
-  /** Held by the genesis manifest. */
+  /** Held by the seed-derived genesis inventory. */
   readonly protected: string[];
   /** Held by a STANDING pin (unreferenced or not) — the Librarian's forty. */
   readonly pinned:    string[];
@@ -300,7 +300,7 @@ export interface InstallCasSweepOptions {
   readonly casDir:     string;
   /** The live records the composite holds — `composite.entries()`; the reference count derives from them. */
   readonly references: () => Promise<Iterable<CasReferenceEntry>> | Iterable<CasReferenceEntry>;
-  /** The genesis manifest's cids — never swept. */
+  /** The seed-derived genesis cids — never swept. */
   readonly protect:    ReadonlySet<string>;
   /** The standing pins beside the CAS (`readCasPins`) — read at each sweep, never cached. */
   readonly pins:       () => readonly PinCap[];

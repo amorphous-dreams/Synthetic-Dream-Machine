@@ -28,13 +28,14 @@ export function assertWebArtifactReachability({ distRoot, genesisRoot }) {
   if (!worker) throw new Error("missing Vite worker asset");
   if (readFileSync(worker).equals(readFileSync(indexPath))) throw new Error("worker asset is the SPA index fallback");
   assertBytes("genesis seed", join(dist, "genesis/seed.json"), join(genesis, "seed.json"));
-  const manifestPath = join(dist, "genesis/manifest.json");
-  assertBytes("genesis manifest", manifestPath, join(genesis, "manifest.json"));
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
-  const blob = manifest.blobs?.[0];
-  if (!blob?.cid) throw new Error("genesis manifest has no CAS blob");
-  assertBytes(`CAS blob ${blob.cid}`, join(dist, `genesis/cas/${blob.cid}`), join(genesis, `cas/${blob.cid}`));
-  return { worker, casCid: blob.cid };
+  const seed = JSON.parse(readFileSync(join(genesis, "seed.json"), "utf8"));
+  const blobs = Object.values(seed.blobs ?? {});
+  if (blobs.length === 0) throw new Error("genesis seed has no CAS blobs");
+  for (const blob of blobs) {
+    if (!blob?.sha256) throw new Error("genesis seed has a blob without sha256");
+    assertBytes(`CAS blob ${blob.sha256}`, join(dist, `genesis/cas/${blob.sha256}`), join(genesis, `cas/${blob.sha256}`));
+  }
+  return { worker, casCids: blobs.map((blob) => blob.sha256) };
 }
 
 if (process.argv[1]?.endsWith("web-artifact-reachability.mjs")) {
@@ -43,7 +44,7 @@ if (process.argv[1]?.endsWith("web-artifact-reachability.mjs")) {
       distRoot: process.argv[2] ?? "packages/lararium-web/dist",
       genesisRoot: process.argv[3] ?? "genesis",
     });
-    console.log(`[web-artifact] green: worker=${result.worker} cas=${result.casCid}`);
+    console.log(`[web-artifact] green: worker=${result.worker} cas=${result.casCids.join(",")}`);
   } catch (error) {
     console.error(`[web-artifact] RED\n${error.message}`);
     process.exitCode = 1;

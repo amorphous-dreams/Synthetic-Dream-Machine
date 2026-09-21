@@ -83,7 +83,7 @@ function shipHearthEngine(genesisDir: string): void {
 }
 
 mkdirSync(FOUNDER.storage, { recursive: true });
-if (!existsSync(join(BUILT_GENESIS, "manifest.json"))) {
+if (!existsSync(join(BUILT_GENESIS, "seed.json"))) {
   throw new Error(
     `[persona-ring-cross-operator-admit] no hearth engine at ${BUILT_GENESIS} — ` +
       "run `pnpm --filter @lararium/node build:genesis` first (CI's `pnpm -r build` covers it).",

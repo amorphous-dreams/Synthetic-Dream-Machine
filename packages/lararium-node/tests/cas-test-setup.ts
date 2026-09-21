@@ -5,7 +5,7 @@
  * Two faces, one plane:
  *   · setupCasFromGenesis — a real island worker pulls the engine + plugin bytes by CID from
  *     the local CAS (the CRDT plane carries no bytes). A full-boot test mirrors the genesis CAS
- *     files (genesis/cas/<cid>, indexed by manifest.json) into a temp fs CAS, gives the
+ *     files (genesis/cas/<cid>, indexed by the immutable seed) into a temp fs CAS, gives the
  *     pool a storageRoot (each island's nodefs storage a child of it, deriving `<storageRoot>/cas`),
  *     and passes the plugin CIDs (from the genesis doc's blob METADATA) — the loader-path proof
  *     without the live daemon.
@@ -20,7 +20,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { pluginCidsFromIslandBlobs, type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
-import { readGenesisManifest, genesisCasDir } from "../src/genesis-artifact.js";
+import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { standNexusKeyring } from "../src/nexus-convergence-secret-store.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
@@ -36,14 +36,14 @@ export interface CasSetup {
 
 /**
  * Mirror the genesis CAS files into a temp fs CAS and derive the pool inputs. The
- * bytes come from genesis/cas/<cid> (via manifest.json), the plugin CIDs from
+ * bytes come from genesis/cas/<cid> (via the seed-derived inventory), the plugin CIDs from
  * the genesis doc's blob metadata. `genesisDir` defaults to the repo's genesis/ dir.
  */
 export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir?: string): CasSetup {
   const storageDir = mkdtempSync(join(tmpdir(), "lar-cas-test-"));
-  const manifest = readGenesisManifest(genesisDir);
+  const manifest = readGenesisCasManifest(genesisDir);
   if (!manifest) {
-    throw new Error("[cas-test-setup] genesis CAS manifest absent — run: pnpm --filter @lararium/node build:genesis");
+    throw new Error("[cas-test-setup] genesis seed absent or malformed — run: pnpm --filter @lararium/node build:genesis");
   }
   mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), casDirForStorage(storageDir));
   return {

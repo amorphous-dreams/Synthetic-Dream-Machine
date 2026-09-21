@@ -667,17 +667,17 @@ refusals; require explicit Web, relay and optional oracle origins instead of der
 from `LAR_PUBLIC_URL`. Red controls reject a static route that touches a private bag, route-derived authority,
 or implicit origin equivalence.
 
-''Sprint 1 — genesis production bundle and binary retirement, 20 points.'' Retire `island.bin` and
-`island.cid*` only after a mesh verifier consumes `genesis/seed.json`, `genesis/manifest.json` and
-`genesis/cas/<cid>`. Tests reconstruct deterministic Automerge bytes from the seed where they need the old
-witness; runtime boot never does. Port quine/M3/blob/verb fixtures, replace sidecar reads with manifest CIDs,
-then delete binary outputs, old readers, cleanup hooks and stale docs. Controls require byte-identical
-reconstruction during migration, and red on altered seed, CID, absent CAS blob, HTML fallback, or residual
-binary reader.
+''Sprint 1 — genesis production bundle and binary retirement, TAKEN 2026-09-21.'' The immutable production
+bundle is `genesis/seed.json` plus exact `genesis/cas/<cid>` bytes. Tests reconstruct deterministic
+Automerge bytes from the seed where they need the old witness; runtime boot never does. `island.bin`,
+`island.cid*`, and the staged `manifest.json` file are retired. A strict seed projection supplies the logical
+inventory where bulb/public wires need it. Controls require byte-identical reconstruction during migration,
+and red on altered seed, malformed seed, absent/tampered CAS byte, HTML fallback, residual binary reader, or
+residual physical-manifest consumer.
 
 ''Sprint 2 — public-library adapter, 20 points.'' A Node-owned narrow adapter accepts a prepared
 Herm/Lararium public-library projection, never the generic filesystem, private stores or persona vault. It
-answers exact index, hashed asset, Worker, seed, manifest and CAS bytes; it refuses missing immutable paths
+answers exact index, hashed asset, Worker, seed and seed-named CAS bytes; it refuses missing immutable paths
 without SPA fallback. Relay, oracle and bulb retain separately declared route/capability controls. A response
 ledger names the projection and adapter while granting no identity.
 
@@ -725,22 +725,24 @@ authority. The right collapse therefore makes the immutable *seed* canonical and
 it; it does not make a `bundle.json` envelope, revive byte-bearing CRDTs, or project arbitrary live Oracle
 changes into CAS membership.
 
-''Next integration slice — seed-canonical genesis projection, 13 points.'' Red-first, add one
-platform-neutral `genesisCasManifestFromSeed(seed)` projection and prove it byte-equal to the build's
-current manifest. Rewire Node CAS mirroring/protection, Browser OPFS fetch, bulb construction and Web's
-public artifact preparation to consume that projection. Keep `manifest.json` temporarily only as a generated
-static/public convenience if the route benefits from it; no consumer may treat it as independently authored.
-The red controls boot Node and Browser from seed plus CAS with no manifest input; reject a tampered CAS byte;
-and prove a deliberately mutated *live* Oracle document cannot widen the immutable genesis CAS set. Reorder
-reload so a persisted deterministic Oracle is sought before `seed.json` becomes required; seed absence only
-refuses a true first boot. Gaia's operator can relight a local vessel from its founding material during an
-offline restart. Elyncia's traveler can kindle from public fire while the mutable shrine never silently
-rewrites which fire may execute.
+''Seed-canonical collapse — TAKEN in the integrated working tree, 2026-09-21.'' The direct-consumer
+audit found no external alpha consumer and no independent manifest fact, but it did find live in-tree
+readers in Node boot/CAS protection, bulb construction, CLI publication, public projection, Browser OPFS
+fetch, Web artifact preparation, and build/tool seams. The slice replaces every reader with the one strict,
+platform-neutral `genesisCasManifestFromSeed(seed)` projection, then deletes the physical
+`genesis/manifest.json`. `GenesisCasManifest` remains a logical in-memory wire value for the bulb and public
+projection; it no longer names a second file or authority. The public adapter explicitly refuses the retired
+route. The seed plus exact `cas/<cid>` bytes are the complete immutable production bundle. The mutable,
+synchronized Oracle remains deliberately outside that byte allowlist. Controls cover seed-derived inventory
+closure, altered seed, malformed seed, tampered/missing CAS bytes, Node sweep fail-closed behavior, Browser
+OPFS verification, public-route refusal, bulb round-trip, and quine boot. Gaia's operator can relight a
+local vessel from founding material during an offline restart. Elyncia's traveler can kindle from public fire
+while the mutable shrine never silently rewrites which fire may execute.
 
 ''Following integration slice — public-library composition, 12 points.'' Begin red-first from the existing
 prepared projection: a configured composition root must obtain an explicit built-Web asset inventory, explicit
 Web and genesis roots, and an explicit public-library capability before it mounts the adapter. The witness
-must attribute `/`, a worker asset, `seed.json`, `manifest.json`, and one CAS member to that adapter;
+must attribute `/`, a worker asset, `seed.json`, and one seed-named CAS member to that adapter;
 separately prove relay/oracle/bulb routes retain their own owners. Weakening the asset inventory, root
 separation, hash check, or private-path refusal must turn red. Gaia's household steward needs a local page
 and its public bootstrap bytes to remain inspectable when WAN reach falls. Elyncia's waystone needs to
@@ -1029,6 +1031,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zk93GGMyV3Or9xPvXDejq2_yEIlLBvWiCfk5N-BVsM8
+<<^ code="&#x0003;">>ni:///sha-256;sjwsmpbmF_UCoxZk2RlYljUQF170AiQ_rXabxzt-pyY
 
 <<^ code="&#x0004;" -> to="?">>

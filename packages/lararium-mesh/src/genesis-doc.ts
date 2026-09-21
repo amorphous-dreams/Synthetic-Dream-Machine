@@ -23,7 +23,6 @@ import { canonicalJsonBytes } from "./crypto.js";
 import type { AutomergeUrl, BinaryDocumentId } from "@automerge/automerge-repo";
 import { cidV1Sha256, sha256HexBytesSync, sha256BytesSync, utf8Bytes } from "./crypto.js";
 import {
-  buildGenesisCasManifest,
   GENESIS_CAS_MANIFEST_FORMAT,
   type GenesisCasManifest,
 } from "./cas.js";
@@ -256,6 +255,63 @@ export interface GenesisSeed {
   readonly schemaVersion: string;
   readonly blobs:         Record<string, LarBlobEntry>;
   readonly tiddlers:      Record<string, unknown>;
+}
+
+const GENESIS_BLOB_CID = /^[0-9a-f]{64}$/;
+
+/**
+ * Derive the logical CAS inventory from the immutable seed.
+ *
+ * The inventory remains a useful in-memory bulb/public-wire payload, but it is
+ * no longer a second boot file.  This function is deliberately strict: a seed
+ * with a malformed blob row, duplicate CID, or missing region witness cannot
+ * quietly turn into an empty or widened CAS set.
+ */
+export function genesisCasManifestFromSeed(seed: GenesisSeed): GenesisCasManifest {
+  if (!seed || seed.format !== GENESIS_SEED_FORMAT) {
+    throw new Error(`[genesis-derive] unsupported seed format: ${String(seed?.format)}`);
+  }
+  if (!seed.blobs || typeof seed.blobs !== "object" || Array.isArray(seed.blobs)) {
+    throw new Error("[genesis-derive] seed blobs must be an object");
+  }
+  const rows = Object.entries(seed.blobs)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([id, blob]) => {
+      if (!blob || typeof blob !== "object") throw new Error(`[genesis-derive] blob ${id} is not an object`);
+      if (blob.id !== id) {
+        throw new Error(`[genesis-derive] blob map key/id mismatch for ${id}: declared=${String(blob.id)}`);
+      }
+      if (typeof blob.sha256 !== "string" || !GENESIS_BLOB_CID.test(blob.sha256)) {
+        throw new Error(`[genesis-derive] blob ${id} has a noncanonical SHA-256 CID`);
+      }
+      if (typeof blob.mimeType !== "string" || blob.mimeType.length === 0) {
+        throw new Error(`[genesis-derive] blob ${id} has no MIME type`);
+      }
+      if (typeof blob.version !== "string" || blob.version.length === 0) {
+        throw new Error(`[genesis-derive] blob ${id} has no version`);
+      }
+      return { cid: blob.sha256, id, mimeType: blob.mimeType, version: blob.version };
+    });
+  const cids = new Set<string>();
+  for (const row of rows) {
+    if (cids.has(row.cid)) throw new Error(`[genesis-derive] duplicate blob CID: ${row.cid}`);
+    cids.add(row.cid);
+  }
+  const regionCid = (name: string, title: string): string => {
+    const record = seed.tiddlers?.[title] as { tiddler?: { cid?: unknown } } | undefined;
+    const cid = record?.tiddler?.cid;
+    if (typeof cid !== "string" || cid.length === 0) {
+      throw new Error(`[genesis-derive] ${name} region witness is absent or empty: ${title}`);
+    }
+    return cid;
+  };
+  return {
+    format: GENESIS_CAS_MANIFEST_FORMAT,
+    engineCid: regionCid("engine", GENESIS_CID_ENGINE_TIDDLER),
+    grammarCid: regionCid("grammar", GENESIS_CID_GRAMMAR_TIDDLER),
+    pluginsCid: regionCid("plugins", GENESIS_CID_PLUGINS_TIDDLER),
+    blobs: rows,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -659,10 +715,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
     { cid: coreSha, bytes: inputs.coreBlob },
     ...inputs.plugins.map((p) => ({ cid: p.sha256, bytes: p.blob })),
   ];
-  const casManifest = buildGenesisCasManifest(engineCid, grammarCid, pluginsCid, [
-    { id: ENGINE_CORE_ID, sha256: coreSha, mimeType: "application/javascript", version: coreVersion },
-    ...inputs.plugins.map((p) => ({ id: p.id, sha256: p.sha256, mimeType: p.mimeType, version: p.version })),
-  ]);
+  const casManifest = genesisCasManifestFromSeed(seed);
 
   return { bytes, sha256, cid, engineCid, grammarCid, pluginsCid, casManifest, casEntries, seed };
 }

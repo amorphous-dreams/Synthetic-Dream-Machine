@@ -14,14 +14,14 @@ cd "$(dirname "$0")/.."
 REPO="$(pwd)"
 
 # 1. Build the genesis island (the TW5 engine CID) if absent.
-if [ ! -f "$REPO/genesis/manifest.json" ]; then
+if [ ! -f "$REPO/genesis/seed.json" ]; then
   echo "[found] building genesis island…"
   pnpm --filter @lararium/node build:genesis
 fi
 
 # 2. Give the isolated root its own genesis bundle — init reads it from LAR_ROOT/genesis.
 mkdir -p "$DIR/genesis"
-cp "$REPO"/genesis/seed.json "$REPO"/genesis/manifest.json "$DIR/genesis/"
+cp "$REPO"/genesis/seed.json "$DIR/genesis/"
 cp -r "$REPO"/genesis/cas "$DIR/genesis/" 2>/dev/null || true   # the CAS substrate (engine/plugin blobs by CID)
 
 # 3. Found identity + social-bootstrap into the isolated root (non-interactive, idempotent).

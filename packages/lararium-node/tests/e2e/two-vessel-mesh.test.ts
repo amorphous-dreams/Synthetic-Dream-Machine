@@ -85,7 +85,7 @@ mkdirSync(VESSEL_A.storage, { recursive: true });
 mkdirSync(VESSEL_B.storage, { recursive: true });
 
 // Fail here, naming the build, rather than three imports deep inside the founding ceremony.
-if (!existsSync(join(BUILT_GENESIS, "manifest.json"))) {
+if (!existsSync(join(BUILT_GENESIS, "seed.json"))) {
   throw new Error(
     `[two-vessel-mesh] no hearth engine at ${BUILT_GENESIS} — ` +
       "run `pnpm --filter @lararium/node build:genesis` first (CI's `pnpm -r build` covers it).",

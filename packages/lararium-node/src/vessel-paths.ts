@@ -460,7 +460,7 @@ export function larBootstrapPath(): string {
 }
 
 // NOTE: genesis/ stays CORPUS-relative (larRoot / the repo) and now holds TRACKED SEED ALONE — the baked
-// bundle (seed.json, manifest.json, cas/), identical for every vessel and safe to copy.
+// bundle (seed.json, cas/), identical for every vessel and safe to copy.
 
 // ── Transient runtime (tmpfs) ────────────────────────────────────────────────────────────────────
 

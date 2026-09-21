@@ -4,7 +4,7 @@
  * The intake core (validate → import → verify, CID reconcile) lives ONCE in
  * @lararium/mesh `genesis-intake`; this file
  * keeps only what genuinely belongs to node:
- *   - the fs byte source (genesis/seed.json + manifest.json + cas/)
+ *   - the fs byte source (genesis/seed.json + cas/)
  *   - mintLaresIfAbsent — the operator's node genesis office (gate by placement)
  *   - reconcileWellKnownTiddlers — runtime oracle tiddler writer
  */
@@ -25,7 +25,7 @@ import {
   tiddlerText,
   emptyLarDoc,
   materializeGenesisIsland,
-  GENESIS_CAS_MANIFEST_FORMAT,
+  genesisCasManifestFromSeed,
   GENESIS_SEED_FORMAT,
   type GenesisCasManifest,
   type GenesisSeed,
@@ -43,11 +43,10 @@ function defaultGenesisDir(): string {
 }
 
 function genesisArtifactPaths(genesisDir?: string): {
-  manifest: string; seed: string; casDir: string;
+  seed: string; casDir: string;
 } {
   const root = genesisDir ?? defaultGenesisDir();
   return {
-    manifest:   join(root, "manifest.json"),       // the CAS manifest (engine + plugin cids)
     seed:       join(root, "seed.json"),           // the PLAIN-DATA oracle seed (the boot artifact)
     casDir:     join(root, "cas"),                 // the byte SOURCE: genesis/cas/<cid> files
   };
@@ -74,39 +73,30 @@ export function genesisCasDir(genesisDir?: string): string {
   return genesisArtifactPaths(genesisDir).casDir;
 }
 
-/**
- * Read the genesis CAS manifest (manifest.json) — the index of which
- * `genesis/cas/<cid>` files belong to this artifact. Returns null when absent
- * (a pre-slice-1 genesis with embedded blobs) or malformed.
- */
-export function readGenesisManifest(genesisDir?: string): GenesisCasManifest | null {
-  const { manifest } = genesisArtifactPaths(genesisDir);
-  try {
-    const parsed = JSON.parse(readFileSync(manifest, "utf8")) as GenesisCasManifest;
-    if (parsed?.format !== GENESIS_CAS_MANIFEST_FORMAT) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+/** Derive the logical CAS inventory from seed.json; no manifest file is read. */
+export function readGenesisCasManifest(genesisDir?: string): GenesisCasManifest | null {
+  const seed = readGenesisSeed(genesisDir);
+  if (!seed) return null;
+  try { return genesisCasManifestFromSeed(seed); } catch { return null; }
 }
 
 /**
- * The genesis blobs the CAS sweep must NEVER delete — or `"unreadable"` when a manifest STANDS at this
+ * The genesis blobs the CAS sweep must NEVER delete — or `"unreadable"` when a seed STANDS at this
  * home and will not read.
  *
  * THE PROTECT SET GOVERNS A DELETION, so its empty value carries weight. An empty set does not say
  * "protection pending"; it says "nothing here needs protecting", and the sweep acts on that by deleting.
- * Folding a torn manifest into an empty set therefore strips the engine and plugin blobs of the one guard
+ * Folding a torn seed into an empty set therefore strips the engine and plugin blobs of the one guard
  * that keeps them, and the vessel eats its own genesis once they age past the grace.
  *
- * The ABSENT case keeps its empty set on purpose: a vessel carrying no manifest holds no genesis blobs, so
- * protecting nothing states a fact rather than losing one. Only a manifest that stands and refuses to read
+ * The ABSENT case keeps its empty set on purpose: a vessel carrying no seed holds no genesis blobs, so
+ * protecting nothing states a fact rather than losing one. Only a seed that stands and refuses to read
  * answers `"unreadable"`, and a caller holding that answer must not sweep at all.
  */
 export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "unreadable" {
-  const { manifest } = genesisArtifactPaths(genesisDir);
-  if (!existsSync(manifest)) return new Set<string>();
-  const read = readGenesisManifest(genesisDir);
+  const { seed } = genesisArtifactPaths(genesisDir);
+  if (!existsSync(seed)) return new Set<string>();
+  const read = readGenesisCasManifest(genesisDir);
   if (read === null) return "unreadable";
   return new Set(read.blobs.map((b) => b.cid));
 }
@@ -116,15 +106,15 @@ export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "u
 // ---------------------------------------------------------------------------
 
 export function readGenesisEngineCid(genesisDir?: string): string | undefined {
-  return readGenesisManifest(genesisDir)?.engineCid;
+  return readGenesisCasManifest(genesisDir)?.engineCid;
 }
 export function readGenesisPluginsCid(genesisDir?: string): string | undefined {
-  return readGenesisManifest(genesisDir)?.pluginsCid;
+  return readGenesisCasManifest(genesisDir)?.pluginsCid;
 }
 /** The GRAMMAR region — the required memetic-wikitext grammar alone; kāhuli's fast ratchet. Held apart
  *  from `pluginsCid`, which names only THIS operator's own collection. */
 export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
-  return readGenesisManifest(genesisDir)?.grammarCid;
+  return readGenesisCasManifest(genesisDir)?.grammarCid;
 }
 
 /** The engine content-CID (slow ratchet) — the hearth's stable true-name (G-D3). */

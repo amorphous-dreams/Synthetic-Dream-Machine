@@ -22,8 +22,7 @@ export interface PublicLibraryProjection {
   /** Exact `/assets/<vite-name>` routes, including worker assets. */
   readonly assets: ReadonlyMap<string, PublicLibraryFile>;
   readonly genesisSeed: PublicLibraryFile;
-  readonly genesisManifest: PublicLibraryFile;
-  /** Exact manifest-named public CAS members, keyed by their 64-hex CID. */
+  /** Exact seed-named public CAS members, keyed by their 64-hex CID. */
   readonly cas: ReadonlyMap<string, PublicLibraryFile>;
 }
 
@@ -34,7 +33,7 @@ export interface PublicLibraryMount {
 const INDEX_ROUTE = "/";
 const ASSET_ROUTE = /^\/assets\/([A-Za-z0-9._-]+)$/;
 const SEED_ROUTE = "/genesis/seed.json";
-const MANIFEST_ROUTE = "/genesis/manifest.json";
+const RETIRED_MANIFEST_ROUTE = "/genesis/manifest.json";
 const CAS_ROUTE = /^\/genesis\/cas\/([0-9a-f]{64})$/;
 
 function refuse(res: ServerResponse, message = "public library member unavailable"): void {
@@ -69,7 +68,7 @@ export function publicLibraryRequestHandler(
       return true;
     }
     const pathname = new URL(rawUrl, "http://localhost").pathname;
-    const owns = pathname === INDEX_ROUTE || pathname === SEED_ROUTE || pathname === MANIFEST_ROUTE ||
+    const owns = pathname === INDEX_ROUTE || pathname === SEED_ROUTE || pathname === RETIRED_MANIFEST_ROUTE ||
       pathname.startsWith("/assets/") || pathname.startsWith("/genesis/cas/");
     if (!owns) return false;
     if (req.method !== "GET" && req.method !== "HEAD") {
@@ -79,7 +78,7 @@ export function publicLibraryRequestHandler(
     }
     if (pathname === INDEX_ROUTE) { serve(res, projection.index, req.method, "no-store"); return true; }
     if (pathname === SEED_ROUTE) { serve(res, projection.genesisSeed, req.method, "no-store"); return true; }
-    if (pathname === MANIFEST_ROUTE) { serve(res, projection.genesisManifest, req.method, "no-store"); return true; }
+    if (pathname === RETIRED_MANIFEST_ROUTE) { refuse(res, "retired genesis manifest route"); return true; }
     const asset = pathname.match(ASSET_ROUTE);
     if (asset) {
       const file = projection.assets.get(`/assets/${asset[1]}`);

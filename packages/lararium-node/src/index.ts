@@ -412,6 +412,6 @@ export { vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers 
 export type { VaultCarrier } from "./vault-carriers.js";
 export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
-export { readGenesisManifest, genesisProtectSet, genesisCasDir,
+export { readGenesisCasManifest, genesisProtectSet, genesisCasDir,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID, GENESIS_GRAMMAR_CID, GENESIS_PLUGINS_CID } from "./genesis-artifact.js";

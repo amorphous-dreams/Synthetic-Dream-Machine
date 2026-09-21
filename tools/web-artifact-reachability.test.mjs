@@ -8,19 +8,18 @@ let root;
 afterEach(() => { if (root) rmSync(root, { recursive: true, force: true }); });
 
 describe("built web artifact reachability", () => {
-  test("checks index, worker, genesis, and manifest-named CAS bytes", () => {
+  test("checks index, worker, genesis seed, and seed-named CAS bytes", () => {
     root = mkdtempSync(join(tmpdir(), "lararium-web-artifact-"));
     const dist = join(root, "dist"); const genesis = join(root, "genesis");
     mkdirSync(join(dist, "assets"), { recursive: true });
     mkdirSync(join(dist, "genesis", "cas"), { recursive: true }); mkdirSync(join(genesis, "cas"), { recursive: true });
     writeFileSync(join(dist, "index.html"), "<html>web</html>");
     writeFileSync(join(dist, "assets", "wiki.worker-abc.js"), "worker");
-    writeFileSync(join(genesis, "seed.json"), "{\"seed\":1}");
-    writeFileSync(join(genesis, "manifest.json"), JSON.stringify({ blobs: [{ cid: "cid-a" }] }));
+    writeFileSync(join(genesis, "seed.json"), JSON.stringify({ blobs: { core: { sha256: "cid-a" } } }));
     writeFileSync(join(genesis, "cas", "cid-a"), "cas-bytes");
-    for (const file of ["seed.json", "manifest.json"]) writeFileSync(join(dist, "genesis", file), readFileSync(join(genesis, file)));
+    writeFileSync(join(dist, "genesis", "seed.json"), readFileSync(join(genesis, "seed.json")));
     writeFileSync(join(dist, "genesis", "cas", "cid-a"), "cas-bytes");
-    expect(assertWebArtifactReachability({ distRoot: dist, genesisRoot: genesis }).casCid).toBe("cid-a");
+    expect(assertWebArtifactReachability({ distRoot: dist, genesisRoot: genesis }).casCids).toEqual(["cid-a"]);
     writeFileSync(join(dist, "genesis", "cas", "cid-a"), "<html>web</html>");
     expect(() => assertWebArtifactReachability({ distRoot: dist, genesisRoot: genesis })).toThrow(/CAS blob/);
   });

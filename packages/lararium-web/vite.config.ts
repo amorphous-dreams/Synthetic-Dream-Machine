@@ -8,7 +8,7 @@ const GENESIS_DIR = resolve(import.meta.dirname, "../../genesis");
 /**
  * Serve `genesis/` at `/genesis` — in the dev server AND into the build.
  *
- * The seed and the manifest ride in as JSON imports, so the bundler carries them. The CAS BLOBS do not:
+ * The seed rides in as a JSON import, so the bundler carries it. The CAS BLOBS do not:
  * the vessel FETCHES them at runtime from `/genesis/cas/<cid>`, and nothing routed that. `server.fs.allow`
  * grants vite permission to READ a path; it does not create a route. So the request fell through to the
  * SPA fallback and the vessel was handed `index.html` — 2.5 KB of HTML where 2.4 MB of TiddlyWiki core
@@ -79,7 +79,7 @@ export default defineConfig({
   server: {
     host: true,        // also bind LAN — the home / intranet serving topology
     port: 5173,
-    // genesis/seed.json + manifest.json live at the repo root
+    // genesis/seed.json lives at the repo root
     // (outside this package); allow it.
     fs: { allow: [".", "../..", "../../genesis"] },
   },
