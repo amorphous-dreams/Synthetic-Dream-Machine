@@ -20,6 +20,8 @@
     "idiomorph": "0.7.4"
   },
   "devDependencies": {
+    "@vitest/browser": "4.1.11",
+    "@vitest/browser-playwright": "4.1.11",
     "@keyhive/keyhive": "0.1.0-alpha.8",
     "@lararium/keyhive": "workspace:*",
     "vite": "8.2.2",

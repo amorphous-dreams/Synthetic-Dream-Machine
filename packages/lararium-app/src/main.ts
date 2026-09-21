@@ -17,7 +17,7 @@
  * always runs here; the origin is a static host, never an authority.
  */
 import {
-  openBrowserVessel, generateOrLoadBrowserVesselIdentity,
+  openBrowserVessel,
   parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
@@ -60,7 +60,6 @@ const sharedHolderUrl = (() => {
   return u;
 })();
 
-const IDB = "lares:vessel";
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
 
@@ -273,17 +272,6 @@ async function bootVessel(): Promise<void> {
     phasesEl.appendChild(d);
   };
 
-  // The sovereign identity (born local; the key beneath the veil). Idempotent + same
-  // idbName, so this is the very key openBrowserVessel will boot under.
-  let did = "—";
-  try {
-    const id = await generateOrLoadBrowserVesselIdentity(IDB);
-    did = didFromVerifyingKey(id.verifyingKey);
-    // The vessel states its own key ON THE PAGE, before the boot that may or may not reach a relay. A key
-    // readable only from a devtools console reaches an operator at a laptop and nobody at a phone.
-    mountAdmitSurface(id.verifyingKey);
-  } catch { /* surfaced via boot status if it also fails */ }
-
   set("status", "booting…");
   // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
   const relayUrl = new URLSearchParams(location.search).get("relay") ?? undefined;
@@ -313,10 +301,6 @@ async function bootVessel(): Promise<void> {
         "         Add the node vessel's key:  &gate=<hex from the node's boot banner>",
       );
     }
-    // The operator cannot admit a stranger it cannot name. This vessel is the only place its own key
-    // exists, so it says it — with the command that turns it into an admission.
-    console.log(`[vessel] this leaf's key: ${did}`);
-    console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
@@ -354,6 +338,14 @@ async function bootVessel(): Promise<void> {
       ...(admit ? { admit } : {}),
       ...(meshLeaf ? { meshLeaf } : {}),
     });
+    // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
+    // by that opening instead of opening the key store a second time just to paint it.
+    const did = didFromVerifyingKey(result.identity.verifyingKey);
+    mountAdmitSurface(result.identity.verifyingKey);
+    if (relayUrl) {
+      console.log(`[vessel] this leaf's key: ${did}`);
+      console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
+    }
     _sendDomEvent = result.sendDomEvent;        // arm the interactivity RETURN leg — the click half
     _sendDomInput = result.sendDomInput;        //   … and the text half
     // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY

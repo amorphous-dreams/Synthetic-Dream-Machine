@@ -25,8 +25,7 @@ export { burnFaceBrowser, attestFaceBrowser, resolveOwnerBurnHandBrowser } from 
 export { composeBrowser } from "./browser-caps.js";
 export type { BrowserVesselOptions, BrowserVesselResult } from "./open-browser-vessel.js";
 
-export { mountCoherenceIndicator } from "./wiki-coherence-sink.js";
-export type { CoherenceIndicatorSink, CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
+export type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 
 export {
   generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, loadBrowserDeviceKey,

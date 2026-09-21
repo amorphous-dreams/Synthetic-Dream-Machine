@@ -54,7 +54,7 @@ import {
 }                                            from "@lararium/tw5";
 import type { WikiSenseSupervisor }          from "@lararium/tw5";
 import type { CoherenceStatus } from "@lararium/tw5";
-import type { CoherenceFrameWithRev } from "./wiki-coherence-sink.js";
+import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload } from "@lararium/keyhive";
@@ -69,6 +69,7 @@ import {
   makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
   openVesselIdb, idbGet, idbPut,
 }                                            from "./browser-vessel-identity.js";
+import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
 import { personaPanelStateArgs }             from "./persona-panel-state.js";
 import { BrowserVesselIslandPool }           from "./browser-vessel-island-pool.js";
 import { publishHandleBrowser }              from "./browser-handle-publish.js";
@@ -227,7 +228,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   onProjection?:   (frame: { html: string; css: string; rev: number }) => void;
   /** Coherence-nalu sink: a `coherence:frame` (the wiki's own consistency-radius read as an indicator
    *  frame) from the hot wiki island. The app applies it to a DOM coherence indicator via
-   *  {@link mountCoherenceIndicator} — the sensorium's self-reading made visible over the tiddler-view. */
+   *  The web surface's DOM sink may render it over the tiddler-view. */
   onCoherence?:    (frame: CoherenceFrameWithRev) => void;
   /**
    * Mesh-LEAF standing — the browser carries-in the FLOW-map as a LEAF: it navigates
@@ -259,6 +260,8 @@ export const DAEMON_SURFACE_ID = "daemon";
 
 /** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
+  /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
+  identity: BrowserVesselIdentity;
   /** True when a genesis update was detected + merged on this boot (browser substrate). */
   engineUpdated: boolean;
   /**
@@ -1307,6 +1310,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   }, [...meshExtraCaps, ...whoExtraCaps]);
 
   return {
+    identity: vesselIdentity,
     pool: result.pool,
     repo,
     store: result.assembly.composite,
