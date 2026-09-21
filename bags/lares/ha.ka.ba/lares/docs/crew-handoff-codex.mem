@@ -722,6 +722,15 @@ Its observed order is listener → ready → manifest transfer → shore inbound
 `ea`. C4 is CLOSED. A browser TW5-core compatibility warning and an unavailable development oracle
 pointer occur after `ea` and remain separately named; relay admission remains outside C4.
 
+''C4 browser-bridge aftermath — `3be15658b`, 2026-09-21.'' The post-`ea` TW5 warning was a separate
+browser Worker host-bridge defect: its outer bridge misreported the Worker as Node-shaped and gave widget
+module resolution the builtin-rejecting require shim. The browser branch now resolves through the TW5
+module table, limits capability shims to an explicit builtin allowlist, and restores its temporary
+compatibility shim after the synchronous module turn. Focused bridge controls (4/4), TW5/browser/web
+typecheck/build, and a fresh full five-vector C4 witness pass. C4 remains CLOSED. The development oracle
+pointer refusal is correctly visible local-first degradation; its availability/configuration travels by
+crossing to the Claude/Lares deployment hearth and grants no oracle authority to the web peer.
+
 !! D1 · Python-suite CI wiring; full-run receipt still owed
 
 ''TAKEN 2026-09-15 — `24366c5f6` (`lar:///the-sensorium.reaches-the-python-suite`).'' The `test` job now installs `pytest` into the holder venv and runs `~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q`. Its regression vector lives at `packages/lararium-sensorium/scripts/test_ci_sensorium_suite.py`: it REDDED first because the workflow named no sensorium-holder step, then GREENED only after that exact venv invocation landed. Re-derived collection: 990 cases before this vector's one added case; do not preserve the old 962-function number as a CI total.
@@ -862,6 +871,6 @@ pointer occur after `ea` and remain separately named; relay admission remains ou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QnhXwAy_gm30aLKmS-xGJtyfOh8JiOvekq5BSdG-XF8
+<<^ code="&#x0003;">>ni:///sha-256;vgArncNwNR_W_j84vwOgGiWn0Lhl4PAx_hgL0Vr2q5o
 
 <<^ code="&#x0004;" -> to="?">>

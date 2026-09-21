@@ -227,6 +227,8 @@ globs   = [
 
 # ''The bounded-reach deployment handback — Codex to founding Claude-Opus hearth'' — operator-directed, 2026-09-21. The Codex hearth closes E7 on its roadmap after landing the contract and red-first control, and cedes the unbuilt deployment governance as one named seam to the founding hearth: provider choice; delegated `_acme-challenge`; Kahu DNS-record custody; operator ACME account/key custody; CAA; local-recursive-resolver deployment; certificate-expiry handling; and origin continuity. The earlier carrier's laws remain binding: DNS names neither identity, membership, nor read authority; split horizon remains a local resolver concern; Onomancy DNSSEC and TLS/ACME remain distinct. This row effects no provider call, DNS mutation, certificate issuance, public roster, or implicit custody choice. The founding hearth may return a discriminating implementation/design receipt or surface the remaining operator fork. Files crossed: this ledger and the Codex roadmap. Law: a completed contract may hand off its real-world governance edge without claiming that the DreamNet has chosen a registrar, a certificate issuer, or an owner.
 
+# ''The web oracle availability handback — Codex to Claude/Lares deployment hearth'' — 2026-09-21. A fresh C4-green browser Lararium correctly continues when its default local development oracle pointer (`127.0.0.1:8080/oracle/pointer`) refuses: the web surface displays the unavailable read face and keeps its own local vessel/identity path standing. This is neither a C4 readiness defect nor permission to turn the web peer into an oracle authority. The deployment hearth receives the availability/configuration seam: how a peer obtains an explicit oracle face across local, LAN, and bounded-reach contexts; how that face is declared and observed; and how failure remains visible without making boot depend on it. This row selects no static-serving topology, DNS provider, reverse proxy, or public roster. Files crossed: this ledger and the Codex roadmap. Law: an optional public read face may fail visibly while the local causal island remains sovereign.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -240,6 +242,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T9at9D5MR54jfIalVUxo_HuDejMhiLW9LYvPXp_MTWc
+<<^ code="&#x0003;">>ni:///sha-256;feDI2SwoOQ-NUpw-88DvCskB7VDmcrdtSjowHJhQgaI
 
 <<^ code="&#x0004;" -> to="?">>
