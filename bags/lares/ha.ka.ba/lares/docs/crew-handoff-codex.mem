@@ -111,6 +111,17 @@ The strengthened browser witness asserts named Open→Recent selection, unknown-
 
 ''C4 listener-fanout witness, 2026-09-18.'' The instrumented dedicated-worker route now names the served `browserWorkerHandle` source and daemon-core `workerEa` source explicitly. It recorded three native-handle registrations and three `ready` dispatches, while the outer Worker wrapper also recorded raw `ready`; no `ea`, `breath`, or `fault` reached the daemon `workerEa` callback. The route reached `open-browser-vessel-start` and `wiki-workerEa-pre`, then timed out at `booting…`. Classify this receipt as **outer-sees-and-handle-sees-ready, workerEa-callback does not receive a watched protocol message**; it rules out an outer-wrapper-versus-handle delivery gap for `ready` while leaving the `ea` delivery path open. The dedicated path is confirmed because no `?holder` parameter was used.
 
+''C4 long served-graph boundary, 2026-09-21.'' `027fe2701` first made the test-only transform recognize
+compiled multiline `awaitIslandMsg` while its deliberate weakened guard anchor proves no false receipt.
+On a fresh owned Vite port with a 90-second bound, unchanged and instrumented routes both reached worker
+entry, WASM start/ready, kernel-import start, host manifest post, native `ready`, and kernel imported.
+The instrumented route additionally reached three handle-listener registrations, three ready dispatches,
+and `wiki-workerEa-pre`; both routes remained `booting…`. Neither route emitted `worker:pre-ea`, native
+`ea`, daemon `workerEa`, `awaitIslandMsg`, resolution/rejection, projection, or live paint. The red now
+stands before the observed send marker, not at an established listener or guard fault. Next validate that
+the served compiled worker contains and transforms the worker-side manifest/pre-`ea` anchors; only then
+can a repeat distinguish an absent anchor from a path that never reaches `sendEa`.
+
 ''Projection follow-up, source audit rather than a reproduced product red.'' `tw5-projection.ts` adds render IDs to a module-level map without retiring detached nodes. The unknown-ID control proves only unknown-ID handling. Next, render a valid target, detach it, send its former ID, and test that no handler fires; retain a live-target positive control. Also tighten the witness's frame ordering and worker-error attribution: a same-worker frame alone does not establish causation, and an unrelated worker fault must not convict the unknown-ID probe. Preserve named state transitions and the disabled-message control. Ensure CI supplies the generated TW5 core so the retained-reveal fixture executes rather than skips.
 
 W3 closes under its named actions and measured limits. D3 gains source wiring, with hosted execution still owed. C4 boot stalls, W5's node-disk leg, full Python-suite health and admitted relay proof remain separate debts. The deeper scouts below retain their historical measurements rather than claiming a fresh full audit.
@@ -829,6 +840,6 @@ admission, and Docker mesh evidence remain separate debts.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yAQfkbV_mm6I85MvwXTaRM496Mu4_1Q2vC9vhKtpC1w
+<<^ code="&#x0003;">>ni:///sha-256;bc62EsmrpOt999qw17ZaqUK4xeINNToJ3zFKgIgXdZc
 
 <<^ code="&#x0004;" -> to="?">>
