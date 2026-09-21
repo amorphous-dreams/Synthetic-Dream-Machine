@@ -536,6 +536,22 @@ not evidence that Node serves web bytes and not a reason to revive the deferred 
 serve-target manifest against the workspace that stands, then repeat the isolated image request matrix
 before selecting a static-serving topology.
 
+''E8 wave 2 — the image boundary, 2026-09-21.'' `b76eea460` repaired only the `serve` target's stale
+manifest against the current Node/web closure. `docker build --target serve` is green. An isolated,
+loopback-only, no-volume probe found `lararium-node` answering `/oracle/pointer` and the bulb read faces
+with `200 application/json`; `/`, a web worker asset, a genesis manifest, and a deliberately missing
+path all timed out with zero bytes. The copied `@lararium/web` output therefore remains an unserved
+artifact in this image, while its independent artifact receipt remains green. This establishes Node's
+relay/read-face responsibility and does not select a static-serving shore.
+
+''E8 three-pass aftermath — 2026-09-21.'' The build-closure pass rebuilt the target and confirmed its
+runtime closure and exclusion of stale MCP, TLDraw, and baked `lares/` source inputs. The delivery pass
+repeated the probe with a unique loopback container, tmpfs-only overrides for declared volume paths, and
+no interaction with the existing `tw5-bench-live` process or its volume; a prior `ECONNRESET` did not
+reproduce, and the canonical absent-static routes consistently timed out. The evergreen pass found no
+false static-serving claim, generated residue, or L-Prime/global-now drift. Both declared volume paths
+remain deployment semantics: probes must override them explicitly. No aftermath cleanup change was due.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
@@ -543,6 +559,11 @@ before selecting a static-serving topology.
 # Keep `lararium-node` as a vessel/relay and oracle host unless an explicit later ruling grants it static
   distribution duties. The clean alternatives are a separate static-serving process or a named stale-copy
   retirement; neither outcome turns distribution into vessel authority.
+# Before an operator selects that outcome, scout the concrete composition seams: a static shore beside the
+  Node vessel, removal of unserved copied web bytes, and a named deployment wrapper. For each, name the
+  Gaia and Elyncia operator need, capability boundary, startup/failure behavior, asset integrity witness,
+  and the red-first deliberate weakening. The scout may recommend a default, but must leave the topology
+  ruling with the operator.
 # Keep live relay/admission proof on its own track. `LAR_VESSEL_WS` remains probe-log input today. After
   a mesh reservation, a founder-profile → carriage → fresh-browser-profile witness must pass a relay URL
   to the page and surface a browser-observable receipt. C4's present red remains independent and may
@@ -740,6 +761,6 @@ down named volumes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d97gxWN7UOEbPecqvAnVIoNrN8I6OD3bREs8g8YYjas
+<<^ code="&#x0003;">>ni:///sha-256;Z6z1X1pBlsi4tQhyHrsL-pSNFeI6QVdVoKK6sM9zCvY
 
 <<^ code="&#x0004;" -> to="?">>
