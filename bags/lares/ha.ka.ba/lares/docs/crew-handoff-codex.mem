@@ -529,6 +529,13 @@ artifact receipt proves the bytes a static harness reads. The Docker image still
 do not compose into an image-serving claim. This next wave measures the image boundary first and names a
 separate static-serving shore only when that measurement warrants one.
 
+''E8 wave 1 — RED before any HTTP request, 2026-09-21.'' `docker build --target serve` stopped before
+creating an image: the Dockerfile still names absent `packages/lararium-tldraw`, `packages/lararium-mcp`,
+and root `lares/` paths. The workspace holds none of those paths. This is a stale build-manifest defect,
+not evidence that Node serves web bytes and not a reason to revive the deferred MCP surface. Repair the
+serve-target manifest against the workspace that stands, then repeat the isolated image request matrix
+before selecting a static-serving topology.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
@@ -733,6 +740,6 @@ down named volumes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1NmFFdHMe9qYhz9XFFVKhyOAYvZVYsCZ2w9l1nZtGls
+<<^ code="&#x0003;">>ni:///sha-256;d97gxWN7UOEbPecqvAnVIoNrN8I6OD3bREs8g8YYjas
 
 <<^ code="&#x0004;" -> to="?">>
