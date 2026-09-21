@@ -318,12 +318,12 @@ describe("the genesis protect set, when the manifest will not read", () => {
   afterEach(() => { rmSync(genesisDir, { recursive: true, force: true }); });
 
   test("★ a manifest that STANDS and reads torn answers `unreadable` — never an empty protect set ★", () => {
-    writeFileSync(join(genesisDir, "island.manifest.json"), "{ not json at all", "utf8");
+    writeFileSync(join(genesisDir, "manifest.json"), "{ not json at all", "utf8");
     expect(genesisProtectSet(genesisDir)).toBe("unreadable");
   });
 
   test("★ a manifest carrying the WRONG format reads unreadable too — a shape guard, not a parse guard ★", () => {
-    writeFileSync(join(genesisDir, "island.manifest.json"), JSON.stringify({ format: "something-else", blobs: [] }), "utf8");
+    writeFileSync(join(genesisDir, "manifest.json"), JSON.stringify({ format: "something-else", blobs: [] }), "utf8");
     expect(genesisProtectSet(genesisDir)).toBe("unreadable");
   });
 
@@ -337,7 +337,7 @@ describe("the genesis protect set, when the manifest will not read", () => {
     // The FORMAT rides the constant, never a hand-typed twin — a literal here drifts the day the format moves.
     const manifest = { format: GENESIS_CAS_MANIFEST_FORMAT, engineCid: "e", grammarCid: "g", pluginsCid: "p",
       blobs: [{ cid: "aa", id: "x", mimeType: "application/json", version: "1" }] };
-    writeFileSync(join(genesisDir, "island.manifest.json"), JSON.stringify(manifest), "utf8");
+    writeFileSync(join(genesisDir, "manifest.json"), JSON.stringify(manifest), "utf8");
     const set = genesisProtectSet(genesisDir);
     expect(set).not.toBe("unreadable");
     expect([...(set as ReadonlySet<string>)]).toEqual(["aa"]);

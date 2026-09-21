@@ -3,7 +3,7 @@
  * every tracked tree.
  *
  * WHY IT STANDS APART FROM `cas`. The runtime CAS holds DERIVED blobs — engine builds, plugin bundles —
- * which regenerate from `genesis/island.bin`, so `reset` pares them freely and its own comment licenses the
+ * which regenerate from the plain-data genesis seed, so `reset` pares them freely and its own comment licenses the
  * pare on exactly that premise. An ACQUIRED body regenerates from nothing. Housing the two together would
  * put a corpus nobody can rebuild inside a directory documented as safe to destroy. Two names, two
  * durabilities, and the difference visible in the path — the same cut the Nexus seal took when it left the

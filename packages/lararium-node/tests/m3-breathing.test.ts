@@ -13,7 +13,7 @@
  *     → IslandMsg_Event { verb: "MOVE", listenable: "InteractedWithEvent", fromUri }
  *     → vessel VesselIslandPool.onWorkerEvent
  *
- * Uses the real compiled node-wiki-island.js + genesis/island.bin.
+ * Uses the real compiled node-wiki-island.js + the seed.json reconstruction witness.
  * Failures are pono alignment intent vectors — they name the exact broken link
  * in the pipeline above.
  *
@@ -21,8 +21,7 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { readFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { Repo } from "@automerge/automerge-repo";
 import {
@@ -38,17 +37,16 @@ import {
 } from "@lararium/mesh";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
 import { setupCasFromGenesis } from "./cas-test-setup.js";
+import { GENESIS_SEED, loadGenesisBytes } from "./genesis-test-source.js";
 
 // ── Artifact gates ─────────────────────────────────────────────────────────
 
-const __dir       = dirname(fileURLToPath(import.meta.url));
-const GENESIS_BIN = join(__dir, "../../../genesis/island.bin");
 const ISLAND_JS   = new URL("../dist/src/node-wiki-island.js", import.meta.url);
 
-const missingGenesis = !existsSync(GENESIS_BIN);
+const missingGenesis = !existsSync(GENESIS_SEED);
 const missingIsland  = !existsSync(fileURLToPath(ISLAND_JS));
 const skipReason =
-  missingGenesis ? "genesis/island.bin absent — run: pnpm --filter lararium/node build:genesis" :
+  missingGenesis ? "genesis/seed.json absent — run: pnpm --filter lararium/node build:genesis" :
   missingIsland  ? "dist/src/node-wiki-island.js absent — run: pnpm --filter lararium/node build"  :
   false;
 
@@ -99,7 +97,7 @@ describe.skipIf(skipReason)(
       "wiki tiddler verb:MOVE fires IslandMsg_Event via real TW5 reaction-router — no fixture injection",
       async () => {
         // ── Load genesis ──────────────────────────────────────────────────
-        const genesisBytes = new Uint8Array(readFileSync(GENESIS_BIN));
+        const genesisBytes = loadGenesisBytes();
         const genesisDoc   = automergeLoad<LarDoc>(genesisBytes);
         const coreHash     = (genesisDoc.blobs?.[ENGINE_CORE_ID]?.sha256 as string | undefined) ?? null;
 

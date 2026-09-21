@@ -20,6 +20,10 @@
  *   LAR_ROOT     — alternate repo root for all mirror paths (default: monorepo root).
  *                  Set to an isolated test dir so promote/sync writes never touch
  *                  canonical packages/ or wikis/ paths.
+ *   LAR_PUBLIC_URL   — explicit relay reach face only; never promoted to Web/oracle.
+ *   LAR_WEB_ORIGIN   — explicit Web-surface origin (or set origins.web in config.json).
+ *   LAR_ORACLE_ORIGIN — explicit oracle/read-face origin (or set origins.oracle in config.json).
+ *   LAR_SAME_ORIGIN  — true/false explicit declaration that all three origins are equal.
  *
  * Bootstrap:
  *   The boot prints the catalog Automerge URL to stdout.
@@ -31,7 +35,7 @@ import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
-import { deriveReachFaces, wsUrlForOrigin, crossingUrl, webOriginForFace, type InterfaceTable } from "./lan-address.js";
+import { deriveReachFaces, wsUrlForOrigin, crossingUrl, originCompositionForFace, type ExplicitOriginComposition, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
@@ -53,14 +57,14 @@ import type { AutomergeUrl }            from "@automerge/automerge-repo";
 import { join } from "path";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
-import { loadLaresConfig } from "./lares-config.js";
+import { loadLaresConfig, originDeclaration } from "./lares-config.js";
 
 
 // ---------------------------------------------------------------------------
 // CLI / env config
 // ---------------------------------------------------------------------------
 
-function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding } {
+function parseArgs(): { port: number; storageDir: string; genesisDir: string; wikiId: string; rootDir: string; catalogUrl: string | null; askedStanding: AskedStanding; origins: ExplicitOriginComposition } {
   const args = process.argv.slice(2);
   const get  = (flag: string, env: string, fallback: string) => {
     const i = args.indexOf(flag);
@@ -88,6 +92,7 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
     rootDir,
     catalogUrl: process.env["LAR_CATALOG"] ?? null,
     askedStanding,
+    origins: originDeclaration(cfg),
   };
 }
 
@@ -126,7 +131,7 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
 }
 
 async function main(): Promise<void> {
-  const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding } = parseArgs();
+  const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
 
   // Mesh standing — derived ONCE for either cap-stack, shared by the herm + lararium
   // branches. Every vessel stands a node on the routing chart: LAR_PUBLIC_URL = its REACHABLE http
@@ -142,13 +147,19 @@ async function main(): Promise<void> {
 
   // The reach-faces this vessel answers on. The listen below binds 0.0.0.0, so the vessel answers on
   // every interface the host holds; the banner names them all. A phone on the house network reads a
-  // LAN line and types it; `localhost` on that phone names the phone. LAR_WEB_PORT names where the
-  // Vite web surface answers in development; the web surface and relay ride the SAME host.
-  const webPort = Number.parseInt(process.env["LAR_WEB_PORT"] ?? "5173", 10);
+  // LAN line and types it; `localhost` on that phone names the phone. Web/oracle reach are explicit
+  // composition inputs; the relay declaration never promotes itself to either surface.
   const reachFaces = deriveReachFaces({
     port,
     declaredUrl: process.env["LAR_PUBLIC_URL"] ?? null,
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
+  });
+  const originCompositions = reachFaces.map((face) => {
+    try {
+      return originCompositionForFace(face, origins);
+    } catch (err) {
+      throw new Error(`[lararium] origin composition refused for ${face.origin}: ${err instanceof Error ? err.message : String(err)}`);
+    }
   });
 
   // WS server — path-scoped to /ws only. Non-WS requests get no handler (socket destroyed
@@ -360,7 +371,7 @@ async function main(): Promise<void> {
   console.log(`[lararium] lararium: ${result.larariumDocUrl ?? "(none)"}`);
   console.log(`[lararium] daemon:   ${result.daemon.daemonHandle.url}`);
   const bootDocFragment = result.oracleDocUrl ?? result.catalogHandleUrl ?? "";
-  for (const f of reachFaces) console.log(`[lararium] ws:       ${wsUrlForOrigin(f.origin)}#${bootDocFragment}   (${f.kind})`);
+  for (const [i, f] of reachFaces.entries()) console.log(`[lararium] ws:       ${wsUrlForOrigin(originCompositions[i]!.relayOrigin)}#${bootDocFragment}   (${f.kind})`);
 
   // THE CROSSING, spoken aloud. A leaf's V3 proof commits to the GATE'S key, and the leaf must hold that
   // key OUT-OF-BAND — the challenge carries it on the wire, but trusting it there would let any relay
@@ -374,8 +385,9 @@ async function main(): Promise<void> {
   const gateIdentity = await generateOrLoadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
-  for (const f of reachFaces) {
-    console.log(`[lararium]   ${crossingUrl({ webOrigin: webOriginForFace(f, webPort), wsUrl: wsUrlForOrigin(f.origin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
+  for (const [i, f] of reachFaces.entries()) {
+    const composition = originCompositions[i]!;
+    console.log(`[lararium]   ${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
   }
   console.log("[lararium]   (a leaf still needs an ADMIT — the leaf's page shows its own key + the `lares device-admit` line to run here)");
 

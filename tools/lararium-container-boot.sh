@@ -8,7 +8,7 @@ set -e
 : "${LAR_ROOT:?LAR_ROOT must be set}"
 
 mkdir -p "$LAR_ROOT/genesis"
-cp /app/genesis/island.* "$LAR_ROOT/genesis/" 2>/dev/null || true
+cp /app/genesis/seed.json /app/genesis/manifest.json "$LAR_ROOT/genesis/" 2>/dev/null || true
 cp -r /app/genesis/cas  "$LAR_ROOT/genesis/" 2>/dev/null || true   # the CAS substrate (engine/plugin blobs by CID — re-genesis)
 # The genesis seed carries the ISLAND ALONE. The social bootstrap — one vessel's address book — lives
 # in that vessel's own store (<lares>/vessel), so no copy of a seed can hand a container someone

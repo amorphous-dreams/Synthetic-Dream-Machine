@@ -43,7 +43,7 @@ describe("clearTargets — the one wipe-list spelling", () => {
     expect(byPath.get(larDataDir())).toBe(true);
     expect(byPath.get(larProjectionDir())).toBe(true);
     expect(byPath.get(join(root, "genesis", "cas"))).toBe(true);
-    expect(byPath.get(join(root, "genesis", "island.bin"))).toBe(false);
+    expect(byPath.get(join(root, "genesis", "seed.json"))).toBe(false);
   });
 
   test("★ NO wipe target reaches the SHRINE — the ruling's whole claim, held here ★", () => {

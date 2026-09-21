@@ -5,7 +5,7 @@
  * Two faces, one plane:
  *   · setupCasFromGenesis — a real island worker pulls the engine + plugin bytes by CID from
  *     the local CAS (the CRDT plane carries no bytes). A full-boot test mirrors the genesis CAS
- *     files (genesis/cas/<cid>, indexed by island.manifest.json) into a temp fs CAS, gives the
+ *     files (genesis/cas/<cid>, indexed by manifest.json) into a temp fs CAS, gives the
  *     pool a storageRoot (each island's nodefs storage a child of it, deriving `<storageRoot>/cas`),
  *     and passes the plugin CIDs (from the genesis doc's blob METADATA) — the loader-path proof
  *     without the live daemon.
@@ -36,7 +36,7 @@ export interface CasSetup {
 
 /**
  * Mirror the genesis CAS files into a temp fs CAS and derive the pool inputs. The
- * bytes come from genesis/cas/<cid> (via island.manifest.json), the plugin CIDs from
+ * bytes come from genesis/cas/<cid> (via manifest.json), the plugin CIDs from
  * the genesis doc's blob metadata. `genesisDir` defaults to the repo's genesis/ dir.
  */
 export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir?: string): CasSetup {

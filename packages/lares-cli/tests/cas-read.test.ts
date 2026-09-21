@@ -49,7 +49,7 @@ describe("lares bag cas — blobs · referenced · unreferenced · bytes, refere
     writeFileSync(join(bagDir, "photo.tid"), `_is_skinny: yes\ntextCid: ${cidOf(held)}\ntitle: lar:///t.w.b/photo\ntype: image/png\n\n`);
     const genesisDir = join(ROOT, "genesis");
     mkdirSync(genesisDir, { recursive: true });
-    writeFileSync(join(genesisDir, "island.manifest.json"), JSON.stringify({
+    writeFileSync(join(genesisDir, "manifest.json"), JSON.stringify({
       format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
       blobs: [{ cid: cidOf(core), id: "tiddlywikicore", mimeType: "application/javascript", version: "1" }],
     }));
@@ -103,7 +103,7 @@ describe("★ the genesis manifest's three answers reach the report ★", () => 
 
   test("CONTROL — a WELL-FORMED manifest still marks its blobs protected", () => {
     const f = mk("wellformed");
-    writeFileSync(join(f.genesisDir, "island.manifest.json"), JSON.stringify({
+    writeFileSync(join(f.genesisDir, "manifest.json"), JSON.stringify({
       format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
       blobs: [{ cid: cidOf(f.core), id: "tiddlywikicore", mimeType: "application/javascript", version: "1" }],
     }));
@@ -115,7 +115,7 @@ describe("★ the genesis manifest's three answers reach the report ★", () => 
 
   test("★ MANIFEST STANDS AND WILL NOT READ — protection reads UNKNOWN, never false ★", () => {
     const f = mk("torn");
-    writeFileSync(join(f.genesisDir, "island.manifest.json"), "{ this is not json");
+    writeFileSync(join(f.genesisDir, "manifest.json"), "{ this is not json");
     const r = readCas(f);
     expect(r.protectionKnown, "the vessel cannot tell, and says so").toBe(false);
     expect(r.entries.find((e) => e.cid === cidOf(f.core))?.protected).toBe("unknown");
@@ -124,7 +124,7 @@ describe("★ the genesis manifest's three answers reach the report ★", () => 
 
   test("the human report names the unknown instead of printing a protected count of zero", () => {
     const f = mk("torn-render");
-    writeFileSync(join(f.genesisDir, "island.manifest.json"), "{ torn");
+    writeFileSync(join(f.genesisDir, "manifest.json"), "{ torn");
     const r = readCas(f);
     const line = casSummaryLine(r);
     expect(line).toMatch(/protected \(genesis\) UNKNOWN/);
@@ -133,7 +133,7 @@ describe("★ the genesis manifest's three answers reach the report ★", () => 
 
   test("CONTROL — a readable manifest's summary line still carries the count", () => {
     const f = mk("count-render");
-    writeFileSync(join(f.genesisDir, "island.manifest.json"), JSON.stringify({
+    writeFileSync(join(f.genesisDir, "manifest.json"), JSON.stringify({
       format: "lararium-genesis-cas/v1", engineCid: "", pluginsCid: "",
       blobs: [{ cid: cidOf(f.core), id: "tiddlywikicore", mimeType: "application/javascript", version: "1" }],
     }));

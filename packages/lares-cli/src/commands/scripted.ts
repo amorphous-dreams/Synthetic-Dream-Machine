@@ -98,14 +98,8 @@ export function clearTargets(): Array<{ path: string; recursive: boolean }> {
     // it dies with the docs it addresses rather than by this list remembering to name it. An address
     // book that outlived a clear would point at destroyed docs, which is why it sits outside the corpus.
     { path: larDataDir(), recursive: true },   // the vessel store (<lares>/vessel) + the bootstrap within
-    gen("island.bin"),
-    gen("island.sha256"),
-    gen("island.sha256-pre"),                  // the pre-split SHA sidecar — a clear target, so no stale digest survives
-    gen("island.cid"),
-    gen("island.cid-engine"),
-    gen("island.cid-grammar"),
-    gen("island.cid-plugins"),
-    gen("island.manifest.json"),               // G-CAS slice 1: the CAS index
+    gen("seed.json"),                          // plain-data genesis seed
+    gen("manifest.json"),                      // CAS index + region CIDs
     gen("cas", true),                          // G-CAS slice 1: the blob bytes
     // The projection watermark (synced-tree) must die WITH the store — a surviving watermark makes
     // a post-clear ingest read every bags/*.md as "unchanged" and the fresh empty docs stay empty,

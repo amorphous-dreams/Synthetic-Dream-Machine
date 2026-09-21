@@ -4,7 +4,7 @@
  * The oracle CRDT itself rides the ONE isomorphic intake (`materializeGenesisIsland`
  * in @lararium/mesh `genesis-intake`): the browser vessel materializes it FRESH from
  * the plain-data seed under the deterministic doc id, or reloads the persisted one by
- * find-first from IndexedDB — node-parity, no island.bin binary import, no merge-into-
+ * find-first from IndexedDB — node-parity, no binary import, no merge-into-
  * stale reconcile. This file keeps ONLY the genuinely-
  * browser byte SOURCE: the OPFS content-addressed store (engine + plugin bytes by CID,
  * fetched over HTTP by manifest, read by the worker via resolveByCid).
@@ -56,7 +56,7 @@ export async function writeBlobsToCasOpfs(
  * Fetch each CAS blob named by the genesis manifest over HTTP (`baseUrl`/cas/<cid>)
  * and write it to the OPFS CAS — the browser face of the byte SOURCE the genesis CRDT
  * no longer carries (mirrors the node `mirrorGenesisCasFs`). The genesis static host
- * serves genesis/cas/<cid> + island.manifest.json; the worker later resolves each by
+ * serves genesis/cas/<cid> + manifest.json; the worker later resolves each by
  * the SAME cid via readCasBlobFromOpfs. write-if-absent (content-addressed, immutable).
  * Returns the count written. No-ops silently if OPFS is unavailable.
  */

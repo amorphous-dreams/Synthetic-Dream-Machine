@@ -699,6 +699,68 @@ ACME, CAA, resolver, certificate and origin-governance work remain crossed to Cl
 household that continues through WAN loss; Elyncia needs a waystone that guides reach while never becoming a
 hearth’s soul, roster or archive.
 
+''E8 implementation receipt — shared tree, awaiting one integrated commit, 2026-09-21.'' Sprint 0's
+cap/public-library inventory now stands in `packages/AGENTS.md`: the Herm floor may carry the declared
+public-library projection, while persona/document authority remains a Lararium lift. Sprint 1 retires the
+tracked `island.bin`, sidecars and retired readers in favor of `seed.json`, `manifest.json` and
+manifest-named `cas/<cid>` members. The mesh now checks their shared blob identity and all three region
+witnesses; a filesystem closure control proves the canonical manifest names every retained genesis CAS
+member. Under the operator's early-alpha genesis ruling, four superseded, reproducible generated plugin
+members were deleted. Sprint 2 supplies a prepared projection builder and narrow HTTP adapter: explicit,
+separate Web-artifact and genesis roots; exact index, declared hashed assets, worker, seed, manifest and
+manifest-named verified CAS only; no generic directory serving. Sprint 3 supplies explicit same-origin or
+split Web/oracle declarations; relay reach remains `LAR_PUBLIC_URL` alone, and an omission refuses before
+the Node listener begins. Focused mesh, Node, Web, adapter and projection receipts are green. These edits
+remain one shared working-tree change set until the parent integration and full aftermath produce the
+commit receipt; they do not yet claim a mounted public-library composition or a multi-device proof.
+
+''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
+finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
+bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
+plain-data seed the full initial Oracle state. Today every manifest blob row projects exactly from
+`seed.blobs`, and every region CID projects from the seed's Oracle witness tiddlers. The present coherence
+validator is evidence of that duplication. The live synchronized Oracle also contains those facts, but it
+is mutable: it MUST NOT silently become the executable-byte allowlist, public bulb inventory, or worker
+authority. The right collapse therefore makes the immutable *seed* canonical and derives a manifest from
+it; it does not make a `bundle.json` envelope, revive byte-bearing CRDTs, or project arbitrary live Oracle
+changes into CAS membership.
+
+''Next integration slice — seed-canonical genesis projection, 13 points.'' Red-first, add one
+platform-neutral `genesisCasManifestFromSeed(seed)` projection and prove it byte-equal to the build's
+current manifest. Rewire Node CAS mirroring/protection, Browser OPFS fetch, bulb construction and Web's
+public artifact preparation to consume that projection. Keep `manifest.json` temporarily only as a generated
+static/public convenience if the route benefits from it; no consumer may treat it as independently authored.
+The red controls boot Node and Browser from seed plus CAS with no manifest input; reject a tampered CAS byte;
+and prove a deliberately mutated *live* Oracle document cannot widen the immutable genesis CAS set. Reorder
+reload so a persisted deterministic Oracle is sought before `seed.json` becomes required; seed absence only
+refuses a true first boot. Gaia's operator can relight a local vessel from its founding material during an
+offline restart. Elyncia's traveler can kindle from public fire while the mutable shrine never silently
+rewrites which fire may execute.
+
+''Following integration slice — public-library composition, 12 points.'' Begin red-first from the existing
+prepared projection: a configured composition root must obtain an explicit built-Web asset inventory, explicit
+Web and genesis roots, and an explicit public-library capability before it mounts the adapter. The witness
+must attribute `/`, a worker asset, `seed.json`, `manifest.json`, and one CAS member to that adapter;
+separately prove relay/oracle/bulb routes retain their own owners. Weakening the asset inventory, root
+separation, hash check, or private-path refusal must turn red. Gaia's household steward needs a local page
+and its public bootstrap bytes to remain inspectable when WAN reach falls. Elyncia's waystone needs to
+offer a verified glyph-book without gaining the shrine's persona, documents, or secret archive.
+
+''Following slice — real household composition, 16 points.'' With the mount receipt in hand, exercise one
+persona-less Herm floor and one persona-bearing Lararium lift against the same public-library projection.
+Use a fresh Browser/Web peer to prove isolated Worker execution, local IDB/OPFS persistence, local boot,
+and an explicit crossed relay relation. Deliberately refuse a private public-library path, a forged cap
+advertisement, an undeclared origin, and a lost relay/oracle face. Reserve Docker project and volumes before
+the mesh run. The proof names each peer's capabilities and observed state; it never writes a client/server
+story or a user-device roster.
+
+''Then — bounded reach and foreign vessels.'' Once the household proof holds, add secure-context and
+declared-origin loss controls for a Web device. Keep Android/iOS, Mudlet and Unreal as future vessels that
+consume the same mesh intent contracts, genesis topology and worker/island boundary through their own
+capability adapters. They enter only after their substrate can demonstrate the equivalent first-boot,
+local-CAS, isolated-engine, identity and explicit-crossing controls. DNS/ACME governance remains on the
+Claude crossing; its result supplies reach configuration, never identity or document authority.
+
 ''Scrum discipline.'' One active integration surface per five-day sprint; each story carries Gaia/Elyncia
 need, named transition, positive and deliberate-weakening controls, and refusal/loss behavior. No global
 clock enters authority or order; TW5 stays worker-isolated; no CRDT/non-CRDT outcome gets silently chosen.
@@ -954,6 +1016,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PIg5xri0jtrcSlurC9WpRCRtoT3moOT9uujAVet5D58
+<<^ code="&#x0003;">>ni:///sha-256;OmiqwFm0L9VBN605HU3XbgQV4J_jc4l27iJuxBK554M
 
 <<^ code="&#x0004;" -> to="?">>

@@ -11,34 +11,32 @@
  * And the loop-break invariant (#48): a verb tiddler WITHOUT the marker — the shape the
  * verb machinery's own invocation/outcome writes take — stays router-inert (no event).
  *
- * Uses the real compiled node-wiki-island.js + genesis blob.
+ * Uses the real compiled node-wiki-island.js + the seed.json reconstruction witness.
  * Requires: pnpm --filter @lararium/node build and build:genesis.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/verb-tiddler-dispatch
  */
 
 import { describe, test, expect } from "vitest";
-import { readFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { Repo } from "@automerge/automerge-repo";
 import { automergeLoad, ENGINE_CORE_ID, LARARIUM_BAG } from "@lararium/mesh";
 import type { LarDoc, IslandMsg_Event } from "@lararium/mesh";
 import { VesselIslandPool } from "../src/vessel-island-pool.js";
 import { setupCasFromGenesis } from "./cas-test-setup.js";
+import { GENESIS_SEED, loadGenesisBytes } from "./genesis-test-source.js";
 
 // ---------------------------------------------------------------------------
 // Build artifact guards
 // ---------------------------------------------------------------------------
 
-const __dir       = dirname(fileURLToPath(import.meta.url));
-const GENESIS_BIN = join(__dir, "../../../genesis/island.bin");
 const ISLAND_JS   = new URL("../dist/src/node-wiki-island.js", import.meta.url);
 
-const missingGenesis = !existsSync(GENESIS_BIN);
+const missingGenesis = !existsSync(GENESIS_SEED);
 const missingIsland  = !existsSync(fileURLToPath(ISLAND_JS));
 const skipReason =
-  missingGenesis ? "genesis/island.bin absent — run: pnpm --filter @lararium/node build:genesis" :
+  missingGenesis ? "genesis/seed.json absent — run: pnpm --filter @lararium/node build:genesis" :
   missingIsland  ? "dist/src/node-wiki-island.js absent — run: pnpm --filter @lararium/node build" :
   false;
 
@@ -100,7 +98,7 @@ describe.skipIf(skipReason)(
     "tiddler with verb field triggers IslandMsg_Event with payload.verb via reaction-router",
     async () => {
       const startedAt     = Date.now();
-      const genesisBytes  = new Uint8Array(readFileSync(GENESIS_BIN));
+      const genesisBytes  = loadGenesisBytes();
       const genesisDoc    = automergeLoad<LarDoc>(genesisBytes);
       const coreHash      = (genesisDoc.blobs?.[ENGINE_CORE_ID]?.sha256 as string | undefined) ?? null;
 
@@ -125,7 +123,7 @@ describe.skipIf(skipReason)(
       try {
         // Boot island — waits for ea (TW5 live, Repo synced).
         // Pass the fresh plugin tiddler so reaction-router.ts runs with current code,
-        // not the version baked into genesis/island.bin.
+        // not the version represented by the seed.json reconstruction witness.
         await pool.mountWiki(WIKI_ID, {
           coreHash,
           recipe:   { wikiSlug: "test" },
@@ -182,7 +180,7 @@ describe.skipIf(skipReason)(
     "a verb tiddler WITHOUT the dispatch marker fires nothing — the loop-break (#48)",
     async () => {
       const startedAt     = Date.now();
-      const genesisBytes  = new Uint8Array(readFileSync(GENESIS_BIN));
+      const genesisBytes  = loadGenesisBytes();
       const genesisDoc    = automergeLoad<LarDoc>(genesisBytes);
       const coreHash      = (genesisDoc.blobs?.[ENGINE_CORE_ID]?.sha256 as string | undefined) ?? null;
 

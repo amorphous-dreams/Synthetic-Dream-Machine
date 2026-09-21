@@ -4,8 +4,7 @@
  * The intake core (validate → import → verify, CID reconcile) lives ONCE in
  * @lararium/mesh `genesis-intake`; this file
  * keeps only what genuinely belongs to node:
- *   - the fs byte source (genesis/island.bin + sha256/cid sidecars)
- *   - GENESIS_CID — cached CIDv1 of the bundled artifact
+ *   - the fs byte source (genesis/seed.json + manifest.json + cas/)
  *   - mintLaresIfAbsent — the operator's node genesis office (gate by placement)
  *   - reconcileWellKnownTiddlers — runtime oracle tiddler writer
  */
@@ -25,7 +24,6 @@ import {
   mutableLarRecord,
   tiddlerText,
   emptyLarDoc,
-  cidV1Sha256FromHex,
   materializeGenesisIsland,
   GENESIS_CAS_MANIFEST_FORMAT,
   GENESIS_SEED_FORMAT,
@@ -45,25 +43,18 @@ function defaultGenesisDir(): string {
 }
 
 function genesisArtifactPaths(genesisDir?: string): {
-  bin: string; sha: string; cid: string; cidEngine: string; cidGrammar: string; cidPlugins: string;
   manifest: string; seed: string; casDir: string;
 } {
   const root = genesisDir ?? defaultGenesisDir();
   return {
-    bin: join(root, "island.bin"),
-    sha: join(root, "island.sha256"),
-    cid: join(root, "island.cid"),            // whole-doc forward CID (integrity)
-    cidEngine:  join(root, "island.cid-engine"),   // engine content-CID = the hearth true-name
-    cidGrammar: join(root, "island.cid-grammar"),  // grammar content-CID = kāhuli's fast ratchet (required grammar alone)
-    cidPlugins: join(root, "island.cid-plugins"),  // plugins content-CID = THIS operator's own collection
-    manifest:   join(root, "island.manifest.json"),// the CAS manifest (engine + plugin cids)
-    seed:       join(root, "island.genesis.json"), // the PLAIN-DATA oracle seed (the boot artifact)
+    manifest:   join(root, "manifest.json"),       // the CAS manifest (engine + plugin cids)
+    seed:       join(root, "seed.json"),           // the PLAIN-DATA oracle seed (the boot artifact)
     casDir:     join(root, "cas"),                 // the byte SOURCE: genesis/cas/<cid> files
   };
 }
 
 /**
- * Read the plain-data genesis seed (island.genesis.json) — the oracle doc's initial
+ * Read the plain-data genesis seed (seed.json) — the oracle doc's initial
  * state the boot MATERIALIZES fresh (slice 2: the genesis is data, not a baked
  * binary). Returns null when absent or malformed (a pre-slice-2 genesis).
  */
@@ -84,7 +75,7 @@ export function genesisCasDir(genesisDir?: string): string {
 }
 
 /**
- * Read the genesis CAS manifest (island.manifest.json) — the index of which
+ * Read the genesis CAS manifest (manifest.json) — the index of which
  * `genesis/cas/<cid>` files belong to this artifact. Returns null when absent
  * (a pre-slice-1 genesis with embedded blobs) or malformed.
  */
@@ -120,89 +111,33 @@ export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "u
   return new Set(read.blobs.map((b) => b.cid));
 }
 
-export function readGenesisSha256(genesisDir?: string): string | undefined {
-  const { sha } = genesisArtifactPaths(genesisDir);
-  try {
-    return readFileSync(sha, "utf8").trim();
-  } catch {
-    return undefined;
-  }
-}
-
-export function readGenesisCid(genesisDir?: string): string | undefined {
-  const { cid } = genesisArtifactPaths(genesisDir);
-  try {
-    const cidText = readFileSync(cid, "utf8").trim();
-    if (cidText) return cidText;
-  } catch {
-    // fall back to converting the advisory sha256 if the CID file is absent
-  }
-  const sha = readGenesisSha256(genesisDir);
-  if (!sha) return undefined;
-  try {
-    return cidV1Sha256FromHex(sha);
-  } catch {
-    return undefined;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// GENESIS_CID — cached CIDv1 derived at first call.
-// ---------------------------------------------------------------------------
-
-const _genesisCid = new Map<string, string | undefined>();
-
-export function GENESIS_CID(genesisDir?: string): string | undefined {
-  const key = genesisDir ?? defaultGenesisDir();
-  if (!_genesisCid.has(key)) _genesisCid.set(key, readGenesisCid(genesisDir));
-  return _genesisCid.get(key);
-}
-
 // ---------------------------------------------------------------------------
 // Region content-CIDs (G-D2 two ratchets; G-D3 engineCid = the hearth true-name).
 // ---------------------------------------------------------------------------
 
-function readSidecar(path: string): string | undefined {
-  try {
-    const t = readFileSync(path, "utf8").trim();
-    if (t) return t;
-  } catch { /* sidecar absent */ }
-  return undefined;
-}
-
 export function readGenesisEngineCid(genesisDir?: string): string | undefined {
-  return readSidecar(genesisArtifactPaths(genesisDir).cidEngine);
+  return readGenesisManifest(genesisDir)?.engineCid;
 }
 export function readGenesisPluginsCid(genesisDir?: string): string | undefined {
-  return readSidecar(genesisArtifactPaths(genesisDir).cidPlugins);
+  return readGenesisManifest(genesisDir)?.pluginsCid;
 }
 /** The GRAMMAR region — the required memetic-wikitext grammar alone; kāhuli's fast ratchet. Held apart
  *  from `pluginsCid`, which names only THIS operator's own collection. */
 export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
-  return readSidecar(genesisArtifactPaths(genesisDir).cidGrammar);
+  return readGenesisManifest(genesisDir)?.grammarCid;
 }
-
-const _engineCid  = new Map<string, string | undefined>();
-const _grammarCid = new Map<string, string | undefined>();
-const _pluginsCid = new Map<string, string | undefined>();
 
 /** The engine content-CID (slow ratchet) — the hearth's stable true-name (G-D3). */
 export function GENESIS_ENGINE_CID(genesisDir?: string): string | undefined {
-  const key = genesisDir ?? defaultGenesisDir();
-  if (!_engineCid.has(key)) _engineCid.set(key, readGenesisEngineCid(genesisDir));
-  return _engineCid.get(key);
+  return readGenesisEngineCid(genesisDir);
 }
 /** The grammar content-CID — kāhuli's fast ratchet, the REQUIRED grammar alone. */
 export function GENESIS_GRAMMAR_CID(genesisDir?: string): string | undefined {
-  const key = genesisDir ?? defaultGenesisDir();
-  if (!_grammarCid.has(key)) _grammarCid.set(key, readGenesisGrammarCid(genesisDir));
-  return _grammarCid.get(key);
+  return readGenesisGrammarCid(genesisDir);
 }
 /** The plugins content-CID — THIS operator's own collection, never the true-name and never a kāhuli tier. */
 export function GENESIS_PLUGINS_CID(genesisDir?: string): string | undefined {
-  const key = genesisDir ?? defaultGenesisDir();
-  if (!_pluginsCid.has(key)) _pluginsCid.set(key, readGenesisPluginsCid(genesisDir));
-  return _pluginsCid.get(key);
+  return readGenesisPluginsCid(genesisDir);
 }
 
 // ---------------------------------------------------------------------------
@@ -231,15 +166,15 @@ export function hearthTrueName(genesisDir?: string): string | undefined {
 // loadOrMaterializeOracle — the slice-2 boot path (no Automerge-binary seed)
 // ---------------------------------------------------------------------------
 //
-// No island.bin import, no merge-into-stale reconcile. The oracle island is a LIVE CRDT: reload it under the
+// No binary import, no merge-into-stale reconcile. The oracle island is a LIVE CRDT: reload it under the
 // deterministic id when persisted, else materialize it FRESH from the plain-data
-// seed (island.genesis.json). One call, no merge.
+// seed (seed.json). One call, no merge.
 
 export async function loadOrMaterializeOracle(repo: Repo, genesisDir?: string): Promise<DocHandle<LarDoc>> {
   const seed = readGenesisSeed(genesisDir);
   if (!seed) {
     throw new Error(
-      `[genesis-artifact] plain-data genesis seed (island.genesis.json) absent or malformed\n` +
+      `[genesis-artifact] plain-data genesis seed (seed.json) absent or malformed\n` +
       `  → run: pnpm --filter @lararium/node build:genesis`,
     );
   }

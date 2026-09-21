@@ -27,9 +27,9 @@ export function assertWebArtifactReachability({ distRoot, genesisRoot }) {
   const worker = filesUnder(join(dist, "assets")).find((path) => /(?:wiki|daemon)\.worker[-.]/.test(path));
   if (!worker) throw new Error("missing Vite worker asset");
   if (readFileSync(worker).equals(readFileSync(indexPath))) throw new Error("worker asset is the SPA index fallback");
-  assertBytes("genesis seed", join(dist, "genesis/island.genesis.json"), join(genesis, "island.genesis.json"));
-  const manifestPath = join(dist, "genesis/island.manifest.json");
-  assertBytes("genesis manifest", manifestPath, join(genesis, "island.manifest.json"));
+  assertBytes("genesis seed", join(dist, "genesis/seed.json"), join(genesis, "seed.json"));
+  const manifestPath = join(dist, "genesis/manifest.json");
+  assertBytes("genesis manifest", manifestPath, join(genesis, "manifest.json"));
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   const blob = manifest.blobs?.[0];
   if (!blob?.cid) throw new Error("genesis manifest has no CAS blob");

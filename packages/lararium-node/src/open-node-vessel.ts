@@ -948,7 +948,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     loadGenesis: async () => {
       // Slice 2: the oracle island is a LIVE CRDT under a DETERMINISTIC doc id — reload
       // it when persisted (operator writes intact), else MATERIALIZE it fresh from
-      // the plain-data seed (island.genesis.json). No Automerge-binary boot seed,
+      // the plain-data seed (seed.json). No Automerge-binary boot seed,
       // no merge-into-stale. The catalog registry's oracle pointer (written by assembleVessel)
       // serves as an advisory back-reference, not the identity mechanism.
       const islandHandle = await loadOrMaterializeOracle(repo, genesisDir);
@@ -969,13 +969,13 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
 
       // Populate the fs CAS — every island worker pulls engine + plugin bytes by CID from
       // this local CID plane, off the sync port. The genesis CRDT now carries METADATA only;
-      // the bytes ship as genesis/cas/<cid> files indexed by island.manifest.json. Mirror exactly
+      // the bytes ship as genesis/cas/<cid> files indexed by manifest.json. Mirror exactly
       // those into the runtime CAS the workers read via resolveByCid (the nodefs face of the
       // browser vessel's OPFS fetch — isomorphic by composition).
       const manifest = readGenesisManifest(genesisDir);
       if (!manifest) {
         throw new Error(
-          `[openNodeVessel] genesis CAS manifest (island.manifest.json) absent or malformed — re-run build:genesis`,
+          `[openNodeVessel] genesis CAS manifest (manifest.json) absent or malformed — re-run build:genesis`,
         );
       }
       const casWritten = mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), casDirForStorage(storageDir));
@@ -1922,7 +1922,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
     // keeps its empty set, because a vessel holding no manifest holds no genesis blobs to lose.
     const genesisProtect = genesisProtectSet(genesisDir);
     if (genesisProtect === "unreadable") {
-      console.warn("[cas-sweep] the genesis manifest stands but will not read — withholding the sweep. Nothing sweeps until it reads, so no genesis blob can age out unprotected. Repair or remove genesis/island.manifest.json.");
+      console.warn("[cas-sweep] the genesis manifest stands but will not read — withholding the sweep. Nothing sweeps until it reads, so no genesis blob can age out unprotected. Repair or remove genesis/manifest.json.");
     } else {
       installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
     }

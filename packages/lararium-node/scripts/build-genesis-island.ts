@@ -11,13 +11,13 @@
  *
  * Determinism invariant:
  *   actorSeed = sha256hex(sorted content hashes of all walked inputs).
- *   Two builds from identical source produce identical island.sha256.
+ *   Two builds from identical source produce identical seed/manifest/CAS bytes.
  *
  * Run via:  tsx scripts/build-genesis-island.ts
  * Or via:   pnpm --filter @lararium/node build:genesis
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync } from "fs";
 import { join, basename, resolve }                                          from "path";
 
 import { repoRoot } from "@lararium/mesh/node";
@@ -274,44 +274,43 @@ async function main(): Promise<void> {
   // Verify integrity before writing (recomputes + matches all three region CIDs).
   const counts = verifyGenesisArtifact(artifact);
 
-  // Layer C: write outputs. The CRDT (island.bin) carries blob METADATA only; the
-  // engine + plugin BYTES ship as content-addressed genesis/cas/<cid> files indexed
-  // by island.manifest.json (G-CAS slice 1). Two region sidecars (engine = the
-  // true-name, slow ratchet; plugins = fast ratchet) alongside the whole-doc sidecars.
+  // Layer C: write the production bundle. The deterministic Automerge bytes remain
+  // an in-memory verification witness; production carries plain seed data plus the
+  // manifest-indexed CAS plane. No binary or CID sidecar is a boot input anymore.
   mkdirSync(genesisDir, { recursive: true });
-  writeFileSync(join(genesisDir, "island.bin"),         artifact.bytes);
-  writeFileSync(join(genesisDir, "island.sha256"),      artifact.sha256     + "\n", "utf8");
-  writeFileSync(join(genesisDir, "island.cid"),         artifact.cid        + "\n", "utf8");
-  writeFileSync(join(genesisDir, "island.cid-engine"),  artifact.engineCid  + "\n", "utf8");
-  writeFileSync(join(genesisDir, "island.cid-grammar"), artifact.grammarCid + "\n", "utf8");
-  writeFileSync(join(genesisDir, "island.cid-plugins"), artifact.pluginsCid + "\n", "utf8");
 
   // The CAS manifest (deterministic, sorted by id) + the content-addressed blob files.
   writeFileSync(
-    join(genesisDir, "island.manifest.json"),
+    join(genesisDir, "manifest.json"),
     JSON.stringify(artifact.casManifest, null, 2) + "\n",
     "utf8",
   );
 
-  // The PLAIN-DATA oracle seed — THE boot artifact (slice 2). The boot materializes
-  // the oracle CRDT fresh from this JSON under the deterministic doc id; island.bin
-  // above survives only as a test fixture + determinism witness, no longer read at boot.
+  // The PLAIN-DATA oracle seed — THE boot artifact. The boot materializes the
+  // oracle CRDT fresh from this JSON under the deterministic doc id.
   writeFileSync(
-    join(genesisDir, "island.genesis.json"),
+    join(genesisDir, "seed.json"),
     JSON.stringify(artifact.seed, null, 2) + "\n",
     "utf8",
   );
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 
-  console.log(`[genesis] ✓ island.bin  ${(artifact.bytes.byteLength / 1024).toFixed(1)} KB  (metadata-only CRDT, bytes → CAS)`);
+  // The successor bundle is verified before this point. Remove only the retired
+  // binary/sidecar spellings so a rebuild cannot leave a second boot source behind.
+  for (const retired of [
+    "island.bin", "island.sha256", "island.sha256-pre", "island.cid",
+    "island.cid-engine", "island.cid-grammar", "island.cid-plugins",
+    "island.manifest.json", "island.genesis.json",
+  ]) rmSync(join(genesisDir, retired), { force: true });
+
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
-  console.log(`[genesis] ✓ island.manifest.json  ${artifact.casManifest.blobs.length} entries`);
-  console.log(`[genesis] ✓ island.genesis.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
+  console.log(`[genesis] ✓ manifest.json  ${artifact.casManifest.blobs.length} entries`);
+  console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);
   console.log(`[genesis] ✓ sha256=${artifact.sha256}  cid=${artifact.cid}`);
   console.log(`[genesis] ✓ engineCid=${artifact.engineCid}  grammarCid=${artifact.grammarCid}  pluginsCid=${artifact.pluginsCid}`);
-  console.log(`[genesis] wrote ${join(genesisDir, "island.bin")}`);
+  console.log(`[genesis] wrote ${join(genesisDir, "seed.json")} + ${join(genesisDir, "manifest.json")}`);
   console.log("[genesis] S5 gate A satisfied — blob metadata + three region witness tiddlers injected; bytes shipped to CAS.");
 }
 

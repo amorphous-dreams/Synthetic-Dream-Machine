@@ -35,6 +35,6 @@ describe("bagsFileToUri — loci reverse-derivation (full-path-inside-bag)", () 
     // an extension-less file is not a projected carrier file
     expect(bagsFileToUri(ROOT, "/srv/vessel/bags/sdm/ha.ka.ba/sdm/api/bare")).toBeNull();
     expect(bagsFileToUri(ROOT, "/elsewhere/bags/x/ha.ka.ba/bags/x/v1/y.mem")).toBeNull();
-    expect(bagsFileToUri(ROOT, "/srv/vessel/genesis/island.bin")).toBeNull();
+    expect(bagsFileToUri(ROOT, "/srv/vessel/genesis/seed.json")).toBeNull();
   });
 });

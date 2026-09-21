@@ -25,14 +25,14 @@ import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./ph
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 import { pullAndVerifyOracle, DOM_INPUT_MAX_CHARS, didFromVerifyingKey, type GenesisCasManifest, type GenesisSeed } from "@lararium/mesh";
 import { Idiomorph } from "idiomorph";
-// The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (island.genesis.json).
+// The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
 // The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
 // (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
-import genesisSeed from "../../../genesis/island.genesis.json";
+import genesisSeed from "../../../genesis/seed.json";
 // The genesis CRDT carries blob METADATA only; the engine + plugin BYTES ship as
 // content-addressed genesis/cas/<cid> files, indexed by this manifest. First boot fetches
 // them over HTTP into the OPFS CAS (the byte SOURCE the merge-conflict-free CRDT dropped).
-import genesisCasManifest from "../../../genesis/island.manifest.json";
+import genesisCasManifest from "../../../genesis/manifest.json";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
 // bundle's URL (a real /assets file). A standalone `new URL("./x.ts", import.meta.url)` passed
 // INDIRECTLY to the vessel got inlined as a `data:` URI, where the worker's dynamic imports

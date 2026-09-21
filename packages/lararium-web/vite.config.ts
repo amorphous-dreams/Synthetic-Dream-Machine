@@ -44,9 +44,9 @@ function serveGenesis(): Plugin {
 // Web-surface capabilities — Automerge WASM + module Web Workers + the genesis seed.
 // Config follows the Automerge "Vite" recipe (research-grounded 2026-06-25):
 //   - wasm()        : @automerge/automerge ships its core as .wasm
-// The genesis boot artifact is now island.genesis.json (the plain-data oracle seed,
+// The genesis boot artifact is now seed.json (the plain-data oracle seed,
 // materialize-fresh) — a native JSON import, so the old vite-plugin-arraybuffer (which
-// served the retired island.bin?uint8array binary import) is gone.
+// served the retired binary import) is gone.
 // automerge-wasm's top-level-await is handled by the esnext target (build + dev),
 // so vite-plugin-top-level-await is NOT needed (and dropping it removes the @swc/core
 // native build that snagged pnpm's pre-run deps-check).
@@ -79,7 +79,7 @@ export default defineConfig({
   server: {
     host: true,        // also bind LAN — the home / intranet serving topology
     port: 5173,
-    // genesis/island.genesis.json + island.manifest.json live at the repo root
+    // genesis/seed.json + manifest.json live at the repo root
     // (outside this package); allow it.
     fs: { allow: [".", "../..", "../../genesis"] },
   },

@@ -22,12 +22,13 @@ import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { larHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
+import type { ExplicitOriginComposition } from "./lan-address.js";
 
 /** Per-resource root overrides an operator may site in `~/.lares/config.json`. Each sites INDEPENDENTLY. */
 export interface LaresResourceRoots {
   /** The daemon's holdings tree — overrides `<corpus>/bags`. */
   readonly bags?:    string;
-  /** The tracked genesis seed dir (island.bin + bootstrap + cas/) — overrides `<corpus>/genesis`. */
+  /** The tracked genesis seed dir (seed.json + manifest.json + cas/) — overrides `<corpus>/genesis`. */
   readonly genesis?: string;
   /** The genesis CAS-SOURCE dir (the tracked `genesis/cas/<cid>` blobs) — overrides `<genesis>/cas`.
    *  NOT the runtime vessel cas (that is vessel STATE — see `LaresVesselState.cas`). */
@@ -43,11 +44,22 @@ export interface LaresVesselState {
   readonly cas?: string;
 }
 
+/** Explicit Web/relay/oracle reach composition. `LAR_PUBLIC_URL` remains the relay face only. */
+export interface LaresOriginConfig {
+  /** Declare that Web, relay, and oracle share the relay face's origin. */
+  readonly sameOrigin?: boolean;
+  /** The Web-surface origin. Required unless `sameOrigin` is true. */
+  readonly web?: string;
+  /** The oracle/read-face origin. Required unless `sameOrigin` is true. */
+  readonly oracle?: string;
+}
+
 /** The `~/.lares/config.json` shape. `resources` carries corpus-root overrides; `vessel` carries
  *  vessel-STATE overrides — the two kept apart so corpus and state never blur. */
 export interface LaresConfig {
   readonly resources?: LaresResourceRoots;
   readonly vessel?:    LaresVesselState;
+  readonly origins?:    LaresOriginConfig;
   /**
    * The boot-gate HINT (never a secret): `true` once the operator has SEALED the at-rest archive.
    * A boot that finds this set but no `LARES_ARCHIVE_PASSPHRASE` in the environment fails with a
@@ -91,6 +103,37 @@ export function loadLaresConfig(path: string = laresConfigPath()): LaresConfig {
   return parsed as LaresConfig;
 }
 
+function originBoolean(value: unknown, label: string): boolean | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value === "boolean") return value;
+  throw new Error(`[lares config] ${label} must be true or false`);
+}
+
+/**
+ * Resolve the explicit origin declaration once at the configuration shore.
+ *
+ * Environment values are ephemeral overrides of the per-daemon config. `LAR_PUBLIC_URL` deliberately
+ * does not participate here: it names the relay reach face and never becomes Web or oracle authority.
+ * Missing Web/oracle values remain missing so `originCompositionForFace` can refuse at the boot/banner edge.
+ */
+export function originDeclaration(cfg: LaresConfig = loadLaresConfig()): ExplicitOriginComposition {
+  const envSame = process.env["LAR_SAME_ORIGIN"];
+  const sameOrigin = envSame === undefined
+    ? originBoolean(cfg.origins?.sameOrigin, "origins.sameOrigin")
+    : (() => {
+        if (["1", "true", "yes"].includes(envSame.toLowerCase())) return true;
+        if (["0", "false", "no"].includes(envSame.toLowerCase())) return false;
+        throw new Error("[lares config] LAR_SAME_ORIGIN must be true or false");
+      })();
+  const webOrigin = process.env["LAR_WEB_ORIGIN"] ?? cfg.origins?.web;
+  const oracleOrigin = process.env["LAR_ORACLE_ORIGIN"] ?? cfg.origins?.oracle;
+  return {
+    ...(sameOrigin === undefined ? {} : { sameOrigin }),
+    ...(webOrigin === undefined ? {} : { webOrigin }),
+    ...(oracleOrigin === undefined ? {} : { oracleOrigin }),
+  };
+}
+
 // ── The composable daemon resource caps ───────────────────────────────────────────────────────────
 // Each resource sites INDEPENDENTLY: its OWN env var (ephemeral) → the config file (per-daemon) →
 // derives off the repo-relative corpus root (genesis artifacts stay checked-in by default). Precedence:
@@ -104,7 +147,7 @@ export function daemonCorpusRoot(): string {
 }
 
 /** The genesis dir — `LAR_GENESIS` → `config.resources.genesis` → `<corpus>/genesis`. Tracked seed
- *  (island.bin + cas/ — the seed alone; the bootstrap rides the vessel store). */
+ *  (seed.json + manifest.json + cas/ — the tracked bundle; the bootstrap rides the vessel store). */
 export function daemonGenesisDir(cfg: LaresConfig = loadLaresConfig()): string {
   return process.env["LAR_GENESIS"] ?? cfg.resources?.genesis ?? join(daemonCorpusRoot(), "genesis");
 }

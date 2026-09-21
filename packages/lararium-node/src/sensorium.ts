@@ -59,7 +59,7 @@ import { makeGraphCap, type GraphCap, type GraphCapOptions } from "./graph-cap.j
 /** The manifest schema version — bump only on a breaking shape change. */
 export const SENSORIUM_SCHEMA = 1 as const;
 
-/** The manifest filename a sensorium dir carries (a self-describing marker, like island.manifest.json). */
+/** The manifest filename a sensorium dir carries (a self-describing marker, unlike the genesis bundle). */
 export const SENSORIUM_MANIFEST = "manifest.json";
 
 /**

@@ -57,6 +57,21 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No TW5 VM runs on the main thread — every engine lives in a worker.
 
+### Public-library projection (P0 inventory)
+
+The Herm floor includes the scoped public crossroads/library projection; a Lararium retains that floor when its persona and document-owning caps stand. This is a capability projection, not a third vessel kind and not a client/server role. The same Node assembly may carry the projection beside relay and read-face capabilities, or an operator may place a separately attributable process around that projection without changing the peer's cap stack.
+
+The projection's lawful route classes are:
+
+| Route class | Projection | Must refuse |
+|---|---|---|
+| `/bulb/manifest`, `/bulb/pointer`, `/bulb/<cid>.bin` | Held, all-public bootstrap snapshot | CIDs outside the held bulb |
+| `/cas/<cid>` | Bytes named by a `public`-tier pointer in the Herm's own or declared realm books | Private/contract/undeclared pointers, missing bytes, guesses |
+| Flow/oracle read face | Read-only, content-addressed public snapshot; Herm FLOW-map mounting applies the public disclosure shore | Generic private bag or persona-document access |
+| Relay crossing | Sealed carriage | Plaintext sight, document authority, or route-derived admission |
+
+The `/cas` gate is derived from current public references and declared tiers; it never treats possession of bytes, a hostname, a process name, or a static route as persona, document, admission, or merge authority. Missing or disallowed material draws the same named refusal as an unknown public CID. The focused Herm re-share and realm-public controls are the source-backed red/green witness for this inventory.
+
 `@lararium/browser` carries browser-native capability atoms that parallel the shared keel through WebSocket egress, IndexedDB, WebCrypto, Workers, and `__stubs__` for browser-incompatible dependencies. It cooperates with `@lararium/web` inside one Web-surface device/context assembly. That assembly remains a DreamNet peer across a real island boundary; browser inability to accept inbound sockets names a substrate constraint, not reduced authority. No React, no canvas.
 
 `@lararium/web` carries Web-surface capability atoms: Vite, page DOM, worker URLs, admission carriers, web projection adapters, and an optional public `@oracle` read. Together with `@lararium/browser`, it composes the local Web device/context assembly; that peer can carry a Lararium stack when its persona and document-owning capabilities stand. Its origin may come from localhost, LAN, or a public host; static byte distribution supplies a projection capability and never an authority. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
@@ -108,7 +123,7 @@ Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MO
 The Node-surface assembly treats build, init, and runtime as strictly separated authorship moments. Browser and Web assemblies carry corresponding founding and runtime paths under their own substrate capabilities. No moment reaches into another's authority.
 
 ```text
-Build time    scripts/build-genesis-island.ts    content Tiga → genesis/island.bin (CID-verifiable)
+Build time    scripts/build-genesis-island.ts    content inputs → genesis/seed.json + manifest.json + cas/<cid> (deterministic Automerge bytes are a verification witness)
 Init time     lares vessel found  (was scripts/init-lararium.ts)    social Tiga + identity ceremony → genesis/social-bootstrap.json
 Runtime       openNodeVessel  /  openBrowserVessel          finds docs, wires layers; never authors social state
 ```
@@ -248,6 +263,6 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qB5JrEpkFtEjXD8TpQ6-_BprD-XQxDvzIs-6ogJw15U
+<<^ code="&#x0003;">>ni:///sha-256;O5jNl-AAxSFGXDLxd7OFnNPp2Xx6KWtT6G286zmE-j0
 
 <<^ code="&#x0004;" -> to="?">>

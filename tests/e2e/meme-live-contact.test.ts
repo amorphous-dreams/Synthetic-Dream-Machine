@@ -305,7 +305,7 @@ describe.skipIf(gaps.length > 0)("★ lares meme over a live rendezvous ★", ()
   }, 120_000);
 
   test("★ the staged boot wrote nothing into the shared tree — its genesis baked into its own root ★", () => {
-    expect(existsSync(join(lar.root, "genesis", "island.genesis.json"))).toBe(true);
+    expect(existsSync(join(lar.root, "genesis", "seed.json"))).toBe(true);
     expect(sharedTree()).toBe(treeBefore);
   });
 });

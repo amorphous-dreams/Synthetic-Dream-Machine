@@ -15,10 +15,10 @@ describe("built web artifact reachability", () => {
     mkdirSync(join(dist, "genesis", "cas"), { recursive: true }); mkdirSync(join(genesis, "cas"), { recursive: true });
     writeFileSync(join(dist, "index.html"), "<html>web</html>");
     writeFileSync(join(dist, "assets", "wiki.worker-abc.js"), "worker");
-    writeFileSync(join(genesis, "island.genesis.json"), "{\"seed\":1}");
-    writeFileSync(join(genesis, "island.manifest.json"), JSON.stringify({ blobs: [{ cid: "cid-a" }] }));
+    writeFileSync(join(genesis, "seed.json"), "{\"seed\":1}");
+    writeFileSync(join(genesis, "manifest.json"), JSON.stringify({ blobs: [{ cid: "cid-a" }] }));
     writeFileSync(join(genesis, "cas", "cid-a"), "cas-bytes");
-    for (const file of ["island.genesis.json", "island.manifest.json"]) writeFileSync(join(dist, "genesis", file), readFileSync(join(genesis, file)));
+    for (const file of ["seed.json", "manifest.json"]) writeFileSync(join(dist, "genesis", file), readFileSync(join(genesis, file)));
     writeFileSync(join(dist, "genesis", "cas", "cid-a"), "cas-bytes");
     expect(assertWebArtifactReachability({ distRoot: dist, genesisRoot: genesis }).casCid).toBe("cid-a");
     writeFileSync(join(dist, "genesis", "cas", "cid-a"), "<html>web</html>");

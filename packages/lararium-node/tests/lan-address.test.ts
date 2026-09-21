@@ -7,7 +7,8 @@
  */
 import { describe, test, expect } from "vitest";
 import {
-  lanIPv4Addresses, deriveReachFaces, wsUrlForOrigin, crossingUrl, webOriginForFace,
+  lanIPv4Addresses, deriveReachFaces, wsUrlForOrigin, crossingUrl, webOriginForFace, oracleOriginForFace,
+  originCompositionForFace,
   type InterfaceTable, type ReachFace,
 } from "../src/lan-address.js";
 
@@ -73,40 +74,69 @@ describe("the reach-faces a vessel answers on", () => {
   test("the crossing url dials the SAME host the web surface came from — a phone cannot reach the node's localhost", () => {
     const face: ReachFace = { kind: "lan", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
     const url = crossingUrl({
-      webOrigin: webOriginForFace(face, 5173),
+      webOrigin: webOriginForFace(face, 5173, {
+        webOrigin: "http://192.168.1.42:5173",
+        oracleOrigin: "http://192.168.1.42:8080",
+      }),
       wsUrl: wsUrlForOrigin(face.origin), gateKey: "ab12",
     });
     expect(url).toBe("http://192.168.1.42:5173/?relay=ws://192.168.1.42:8080/ws&gate=ab12");
     expect(url).not.toContain("localhost");
   });
 
-  // ── DNS-01: a configured LAR_PUBLIC_URL binds the web surface over https + the relay over wss under ONE name ──
+  // ── DNS-01: an explicit same-origin declaration binds Web + relay + oracle under ONE name ──
 
-  test("a declared TLS face advertises the WEB surface over https at its own name — no separate web port (a proxy fronts both)", () => {
+  test("a declared TLS face may explicitly declare one origin for Web + relay + oracle", () => {
     const declared: ReachFace = { kind: "declared", host: "enyalios.home.amorphousdreams.net", origin: "https://enyalios.home.amorphousdreams.net" };
-    // The proxy terminates TLS and serves the web surface at the SAME https origin — the web port is not appended.
-    expect(webOriginForFace(declared, 5173)).toBe("https://enyalios.home.amorphousdreams.net");
+    const composition = originCompositionForFace(declared, { sameOrigin: true });
+    expect(composition).toEqual({
+      webOrigin: "https://enyalios.home.amorphousdreams.net",
+      relayOrigin: "https://enyalios.home.amorphousdreams.net",
+      oracleOrigin: "https://enyalios.home.amorphousdreams.net",
+    });
+    expect(webOriginForFace(declared, 5173, { sameOrigin: true })).toBe("https://enyalios.home.amorphousdreams.net");
+    expect(oracleOriginForFace(declared, { sameOrigin: true })).toBe("https://enyalios.home.amorphousdreams.net");
     // The relay under the SAME name carries wss (mixed-content-safe from an https page).
     expect(wsUrlForOrigin(declared.origin)).toBe("wss://enyalios.home.amorphousdreams.net/ws");
     // The whole crossing URL: web surface over https, relay over wss, one name.
-    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173), wsUrl: wsUrlForOrigin(declared.origin), gateKey: "beef" }))
+    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173, { sameOrigin: true }), wsUrl: wsUrlForOrigin(declared.origin), gateKey: "beef" }))
       .toBe("https://enyalios.home.amorphousdreams.net/?relay=wss://enyalios.home.amorphousdreams.net/ws&gate=beef");
   });
 
-  test("UNSET LAR_PUBLIC_URL — loopback + LAN faces keep today's http://host:webPort web origin (inert)", () => {
-    const faces = deriveReachFaces({ port: 8080, interfaces: TABLE });   // no declaredUrl
-    expect(faces.map((f) => f.kind)).toEqual(["loopback", "lan", "lan"]);
-    // loopback → localhost on the web port over http; LAN → the interface host on the web port over http.
-    expect(webOriginForFace(faces[0]!, 5173)).toBe("http://localhost:5173");
-    expect(webOriginForFace(faces[1]!, 5173)).toBe("http://192.168.1.42:5173");
-    // The relay stays ws:// for a plain http face — unchanged.
-    expect(wsUrlForOrigin(faces[1]!.origin)).toBe("ws://192.168.1.42:8080/ws");
+  test("split household composition names Web and oracle independently from the relay", () => {
+    const face = deriveReachFaces({ port: 8080, interfaces: TABLE })[1]!;
+    const composition = originCompositionForFace(face, {
+      webOrigin: "http://192.168.1.42:5173",
+      oracleOrigin: "http://waystone.local:8081",
+    });
+    expect(composition).toEqual({
+      webOrigin: "http://192.168.1.42:5173",
+      relayOrigin: "http://192.168.1.42:8080",
+      oracleOrigin: "http://waystone.local:8081",
+    });
+    expect(oracleOriginForFace(face, { webOrigin: "http://web.local", oracleOrigin: "http://oracle.local" }))
+      .toBe("http://oracle.local");
   });
 
-  test("a declared http (non-TLS) face still rides its web port over http — https is not forced onto a plain declaration", () => {
-    // The whole point is that the SCHEME rides the declaration: an operator who declares http gets http+ws.
+  test("omitted Web/oracle declarations refuse instead of inferring equivalence from the relay", () => {
+    const face: ReachFace = { kind: "declared", host: "hearth.example", origin: "https://hearth.example" };
+    expect(() => webOriginForFace(face, 5173)).toThrow(/Web origin is undeclared/);
+    expect(() => originCompositionForFace(face, { oracleOrigin: "https://oracle.example" })).toThrow(/Web origin/);
+    expect(() => originCompositionForFace(face, { webOrigin: "https://web.example" })).toThrow(/oracle origin/);
+    expect(() => oracleOriginForFace(face, { webOrigin: "https://web.example" })).toThrow(/oracle origin/);
+    expect(() => originCompositionForFace(face, {})).toThrow(/Web origin/);
+  });
+
+  test("changing origins changes reachability strings only", () => {
     const declaredHttp: ReachFace = { kind: "declared", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
-    expect(webOriginForFace(declaredHttp, 5173)).toBe("http://192.168.1.42:8080");   // declared origin verbatim
+    const held = { caps: ["relay", "public-library"], identity: "did:key:z6Mk", document: "lar:///family/book" };
+    const before = JSON.stringify(held);
+    const first = originCompositionForFace(declaredHttp, { webOrigin: "http://web-a.local", oracleOrigin: "http://oracle-a.local" });
+    const second = originCompositionForFace(declaredHttp, { webOrigin: "http://web-b.local", oracleOrigin: "http://oracle-b.local" });
+    expect(first.webOrigin).not.toBe(second.webOrigin);
+    expect(first.oracleOrigin).not.toBe(second.oracleOrigin);
+    expect(first.relayOrigin).toBe(second.relayOrigin);
+    expect(JSON.stringify(held)).toBe(before);
     expect(wsUrlForOrigin(declaredHttp.origin)).toBe("ws://192.168.1.42:8080/ws");
   });
 });

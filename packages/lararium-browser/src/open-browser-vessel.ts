@@ -160,13 +160,13 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   idbName?:        string;
   displayName?:    string;
   /**
-   * The PLAIN-DATA genesis seed (island.genesis.json) — the oracle doc's initial state the
+   * The PLAIN-DATA genesis seed (seed.json) — the oracle doc's initial state the
    * boot MATERIALIZES fresh under the deterministic doc id (the node-parity materialize-fresh
-   * path; the retired island.bin binary import is gone). REQUIRED on first boot; a reboot
+   * path; the retired binary import is gone). REQUIRED on first boot; a reboot
    * reloads the persisted oracle doc by find-first, a peer syncs it — neither needs the seed.
    */
   genesisSeed?:    GenesisSeed;
-  /** Genesis CAS manifest (island.manifest.json) — names the engine + plugin blob files. With
+  /** Genesis CAS manifest (manifest.json) — names the engine + plugin blob files. With
    *  genesisCasBaseUrl, first boot fetches genesis/cas/<cid> over HTTP into the OPFS CAS. */
   genesisCasManifest?:  GenesisCasManifest;
   /** Base URL the genesis static host serves (manifest + cas/ live under it). */
@@ -810,13 +810,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // CRDT under the DETERMINISTIC doc id (oracleGenesisDocUrl): materializeGenesisIsland
       // does find-FIRST (a prior boot persisted it to IndexedDB → reload intact; a peer
       // synced it → adopt) ELSE materializes it fresh from the plain-data seed and imports
-      // it under that id. No island.bin binary import, no merge-into-stale reconcile. One
+      // it under that id. No binary import, no merge-into-stale reconcile. One
       // call, isomorphic with the node loadOrMaterializeOracle.
       loadGenesis: async () => {
         await writeBootKeys(idbName, bootKeyWrites);
         if (!genesisSeed) {
           throw new Error(
-            "[openBrowserVessel] genesis seed REQUIRED — pass genesisSeed (island.genesis.json); " +
+            "[openBrowserVessel] genesis seed REQUIRED — pass genesisSeed (seed.json); " +
             "a reboot reloads the persisted oracle doc by find-first, but first boot needs the seed",
           );
         }

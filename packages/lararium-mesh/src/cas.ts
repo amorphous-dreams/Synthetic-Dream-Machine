@@ -25,7 +25,7 @@ export interface CasBlobLike {
 
 // ── Genesis CAS manifest (the byte SOURCE the genesis doc no longer carries) ──
 //
-// The genesis CRDT (island.bin) holds blob METADATA only; the engine + plugin
+// The genesis CRDT (materialized only for verification) holds blob METADATA only; the engine + plugin
 // bytes ship as content-addressed `genesis/cas/<cid>` files. This manifest names
 // which files belong to a genesis artifact so the loader (node fs · browser OPFS)
 // mirrors exactly them into the runtime CAS the workers read via resolveByCid. The
@@ -60,7 +60,7 @@ export interface GenesisCasManifest {
 /**
  * Build a deterministic genesis CAS manifest from blob metadata + the three region
  * CIDs. Sorted by id so write-order never perturbs the serialized bytes — the
- * manifest JSON is byte-stable across re-bakes (mirrors island.bin determinism).
+ * manifest JSON is byte-stable across re-bakes; deterministic CRDT bytes remain a test witness only.
  */
 export function buildGenesisCasManifest(
   engineCid:  string,

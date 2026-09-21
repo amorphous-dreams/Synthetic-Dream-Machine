@@ -4,12 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import {
-  loadLaresConfig, daemonCorpusRoot, daemonGenesisDir, daemonBagsDir, daemonCasDir,
+  loadLaresConfig, originDeclaration, daemonCorpusRoot, daemonGenesisDir, daemonBagsDir, daemonCasDir,
   type LaresConfig,
 } from "../src/lares-config.js";
 
 // The env vars the resolvers read — saved + restored so one test never leaks into the next.
-const ENV_KEYS = ["LAR_ROOT", "LAR_GENESIS", "LAR_BAGS"] as const;
+const ENV_KEYS = ["LAR_ROOT", "LAR_GENESIS", "LAR_BAGS", "LAR_PUBLIC_URL", "LAR_WEB_ORIGIN", "LAR_ORACLE_ORIGIN", "LAR_SAME_ORIGIN"] as const;
 
 describe("lares-config — the per-daemon resource-override reader", () => {
   let dir: string;
@@ -56,6 +56,32 @@ describe("lares-config — the per-daemon resource-override reader", () => {
     const cfg = loadLaresConfig(writeConfig({ resources: { bags: "/srv/bags", genesis: "/srv/gen" } }));
     expect(cfg.resources?.bags).toBe("/srv/bags");
     expect(cfg.resources?.genesis).toBe("/srv/gen");
+  });
+
+  test("origin declaration reads explicit config values and leaves relay reach separate", () => {
+    const cfg: LaresConfig = {
+      origins: { web: "https://web.home", oracle: "https://oracle.home" },
+    };
+    expect(originDeclaration(cfg)).toEqual({ webOrigin: "https://web.home", oracleOrigin: "https://oracle.home" });
+  });
+
+  test("same-origin config is explicit and does not need Web/oracle copies", () => {
+    expect(originDeclaration({ origins: { sameOrigin: true } })).toEqual({ sameOrigin: true });
+  });
+
+  test("origin env values override config, while LAR_PUBLIC_URL has no role in Web/oracle declaration", () => {
+    process.env["LAR_PUBLIC_URL"] = "https://relay.home";
+    process.env["LAR_WEB_ORIGIN"] = "https://web.env";
+    process.env["LAR_ORACLE_ORIGIN"] = "https://oracle.env";
+    const declaration = originDeclaration({ origins: { web: "https://web.config", oracle: "https://oracle.config" } });
+    expect(declaration).toEqual({ webOrigin: "https://web.env", oracleOrigin: "https://oracle.env" });
+  });
+
+  test("invalid same-origin env/config values refuse instead of degrading", () => {
+    process.env["LAR_SAME_ORIGIN"] = "maybe";
+    expect(() => originDeclaration({})).toThrow(/LAR_SAME_ORIGIN must be true or false/);
+    delete process.env["LAR_SAME_ORIGIN"];
+    expect(() => originDeclaration({ origins: { sameOrigin: "yes" as unknown as boolean } })).toThrow(/origins\.sameOrigin must be true or false/);
   });
 
   // ── The composable caps: no-config → repo-relative; config → sited; env wins ─────────────────────

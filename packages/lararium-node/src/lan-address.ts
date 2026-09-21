@@ -9,9 +9,10 @@
  * (calling `os.networkInterfaces()`, printing the banner) lives at the boot shore in main.ts. That split
  * lets the whole derivation run under a fixed interface table in a test, with no host to depend on.
  *
- * `LAR_PUBLIC_URL` leads when the operator sets it: a declared reach-face names what the OPERATOR made
- * reachable (a tunnel, a reverse proxy, a name in DNS), which the interface table cannot see and must
- * never override.
+ * `LAR_PUBLIC_URL` leads when the operator sets it: a declared reach-face names the RELAY reachability
+ * the OPERATOR made (a tunnel, a reverse proxy, a name in DNS), which the interface table cannot see and
+ * must never override. It does not silently name the Web or oracle origin; those are explicit composition
+ * inputs below.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/lan-address
  */
@@ -61,7 +62,7 @@ export function lanIPv4Addresses(interfaces: InterfaceTable): string[] {
 
 /** One face the vessel answers on. `origin` carries an http origin; `host` carries the bare authority. */
 export interface ReachFace {
-  /** `declared` names LAR_PUBLIC_URL, `loopback` names localhost, `lan` names an interface address. */
+  /** `declared` names the relay reach face (usually LAR_PUBLIC_URL), `loopback` names localhost, `lan` names an interface address. */
   kind:   "declared" | "loopback" | "lan";
   host:   string;
   origin: string;
@@ -102,20 +103,69 @@ export function wsUrlForOrigin(origin: string): string {
   return origin.replace(/^http/, "ws").replace(/\/+$/, "") + "/ws";
 }
 
+/** Explicit origin composition supplied by the operator or deployment recipe. */
+export interface ExplicitOriginComposition {
+  /** Caller-declared Web origin; absent unless `sameOrigin` explicitly names the relay origin. */
+  readonly webOrigin?: string | null;
+  /** Caller-declared oracle/read-face origin; never inferred from the relay or Web origin. */
+  readonly oracleOrigin?: string | null;
+  /** Explicitly declare that Web, relay, and oracle share the relay face's origin. */
+  readonly sameOrigin?: boolean;
+}
+
+/** The three reachability strings; the values carry no cap, identity, document, or merge decisions. */
+export interface FaceOriginComposition {
+  readonly webOrigin: string;
+  readonly relayOrigin: string;
+  readonly oracleOrigin: string;
+}
+
+function explicitOrigin(value: string | null | undefined, label: string): string {
+  const origin = value?.trim().replace(/\/+$/, "");
+  if (!origin) throw new Error(`[origin composition] ${label} origin must be declared`);
+  return origin;
+}
+
 /**
- * The WEB origin a reach-face advertises — where the browser loads the static web surface from.
+ * Resolve a face's Web/relay/oracle origins from an explicit composition declaration.
  *
- * A DECLARED face (LAR_PUBLIC_URL) serves the web surface at its OWN name over its OWN scheme: an operator who set
- * `https://enyalios.home.amorphousdreams.net` fronts BOTH the web surface and the relay behind ONE reverse proxy
- * that terminates TLS, so the web surface rides that https origin directly — no separate web port. A loopback / LAN
- * face has no proxy: the static web surface answers on the dev/web port at the same host over http. So the declared
- * origin advertises the web surface over `https` (and its relay over `wss`, via wsUrlForOrigin), while the local
- * faces keep today's `http://host:webPort` behaviour unchanged.
+ * A relay face remains relay-only by default. The only legal shortcut is `sameOrigin: true`, which is
+ * an operator declaration that all three surfaces share that face. Otherwise Web and oracle origins
+ * must both be named independently. No port, hostname, `LAR_PUBLIC_URL`, cap, identity, document, or
+ * clock value is promoted across surfaces by this helper.
  */
-export function webOriginForFace(face: ReachFace, webPort: number): string {
-  if (face.kind === "declared") return face.origin.replace(/\/+$/, "");   // proxy serves the web surface at this name too
-  const host = face.host.replace(/:\d+$/, "");                            // drop the relay port; the web surface rides webPort
-  return `http://${host}:${webPort}`;
+export function originCompositionForFace(face: ReachFace, declaration: ExplicitOriginComposition): FaceOriginComposition {
+  const relayOrigin = explicitOrigin(face.origin, "relay");
+  if (declaration.sameOrigin === true) {
+    if (declaration.webOrigin?.trim() || declaration.oracleOrigin?.trim()) {
+      throw new Error("[origin composition] sameOrigin cannot be combined with separate Web/oracle origins");
+    }
+    return { webOrigin: relayOrigin, relayOrigin, oracleOrigin: relayOrigin };
+  }
+  return {
+    webOrigin: explicitOrigin(declaration.webOrigin, "Web"),
+    relayOrigin,
+    oracleOrigin: explicitOrigin(declaration.oracleOrigin, "oracle"),
+  };
+}
+
+/**
+ * The Web origin a reach-face advertises, from an explicit composition declaration.
+ *
+ * `webPort` remains in this migration-shaped signature so existing callers can move to the declaration
+ * without a package rename. It is deliberately never used to infer an origin; omitted declaration now
+ * refuses instead of treating a declared relay face as the Web surface.
+ */
+export function webOriginForFace(face: ReachFace, webPort: number, declaration?: ExplicitOriginComposition): string {
+  if (!declaration) {
+    throw new Error(`[origin composition] Web origin is undeclared; provide webOrigin or sameOrigin=true (webPort ${webPort} is not an origin declaration)`);
+  }
+  return originCompositionForFace(face, declaration).webOrigin;
+}
+
+/** Resolve the oracle/read-face origin without deriving it from the relay or Web origin. */
+export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOriginComposition): string {
+  return originCompositionForFace(face, declaration).oracleOrigin;
 }
 
 /**

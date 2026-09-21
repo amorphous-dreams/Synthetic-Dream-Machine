@@ -5,7 +5,7 @@
  * and the compiled plugin carries the full SharktoothSigil grammar tiddler set.
  *
  * Steps:
- *   1. Load genesis/island.bin
+ *   1. Load genesis/seed.json and materialize the test witness
  *   2. Verify genesis-cid self-ref tiddler
  *   3. Extract TW5 core blob + compiled plugin blob from the artifact
  *   4. Boot TW5Engine with compiled plugin preloaded
@@ -17,9 +17,7 @@
  */
 
 import { automergeLoad, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER } from "@lararium/mesh";
-import { repoRoot } from "@lararium/mesh/node";
-import { readFileSync, existsSync } from "fs";
-import { join }             from "path";
+import { existsSync } from "fs";
 
 import { TW5Engine }       from "@lararium/tw5";
 import type { TW5TiddlerFields } from "@lararium/tw5";
@@ -27,24 +25,23 @@ import type { LarDoc } from "@lararium/mesh";
 import { ENGINE_CORE_ID, GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
 import { readGenesisManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { readCasBlobFromFs } from "../src/node-cas.js";
+import { GENESIS_SEED, loadGenesisBytes } from "../tests/genesis-test-source.js";
 
 const LARES_TW5_PLUGIN_TITLE = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 
 // One root law: genesis lives at <root>/genesis (the repo IS the vessel).
-const GENESIS_BIN = join(repoRoot, "genesis/island.bin");
-
 async function main(): Promise<void> {
   console.log("[quine] genesis boot smoke");
 
   // ------------------------------------------------------------------
   // 1. Load the genesis artifact
   // ------------------------------------------------------------------
-  if (!existsSync(GENESIS_BIN)) {
+  if (!existsSync(GENESIS_SEED)) {
     throw new Error(
-      `[quine] genesis/island.bin not found.\n  → run: pnpm --filter @lararium/node build:genesis`,
+      `[quine] genesis/seed.json not found.\n  → run: pnpm --filter @lararium/node build:genesis`,
     );
   }
-  const genesisBytes = new Uint8Array(readFileSync(GENESIS_BIN));
+  const genesisBytes = loadGenesisBytes();
   const doc          = automergeLoad<LarDoc>(genesisBytes);
 
   const blobCount    = Object.keys(doc.blobs ?? {}).length;
@@ -72,7 +69,7 @@ async function main(): Promise<void> {
   // ------------------------------------------------------------------
   const manifest = readGenesisManifest();
   if (!manifest) {
-    throw new Error(`[quine] genesis CAS manifest (island.manifest.json) absent — re-run build:genesis`);
+    throw new Error(`[quine] genesis CAS manifest (manifest.json) absent — re-run build:genesis`);
   }
   const casDir = genesisCasDir();
   const coreEntry = doc.blobs?.[ENGINE_CORE_ID];

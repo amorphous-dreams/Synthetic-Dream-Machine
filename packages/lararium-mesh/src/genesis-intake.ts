@@ -98,7 +98,7 @@ export async function importGenesisIsland(
  *      and import it UNDER that same deterministic id, so the next boot finds it.
  *
  * Platform-blind: callers (node · browser) supply the seed from their own source
- * (island.genesis.json · bundle). The deterministic id makes the materialize safe to
+ * (seed.json · bundle). The deterministic id makes the materialize safe to
  * repeat across peers — byte-identical history under one shared address.
  */
 export async function materializeGenesisIsland(

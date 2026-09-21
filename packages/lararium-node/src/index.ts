@@ -39,9 +39,9 @@ export type { AcquireOutcome, AcquireOptions, LibraryVerdict } from "./library-s
 // sites bags/genesis/cas away from the repo-relative default; genesis artifacts stay checked-in by default).
 export {
   loadLaresConfig, laresConfigPath, daemonCorpusRoot, daemonGenesisDir, daemonBagsDir, daemonCasDir,
-  runtimeCasOverride,
+  runtimeCasOverride, originDeclaration,
 } from "./lares-config.js";
-export type { LaresConfig, LaresResourceRoots, LaresVesselState } from "./lares-config.js";
+export type { LaresConfig, LaresResourceRoots, LaresVesselState, LaresOriginConfig } from "./lares-config.js";
 
 // The SHEAF-TRUE sensorium primitive — a dir that `#has` fiber-caps (content/structure/form) with
 // bands + coupling as base-caps living IN the manifest. The filetree IS the composition.
@@ -240,7 +240,10 @@ export type { CasWireServerDeps, CasWireFetch } from "./cas-wire.js";
 export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistVesselCard } from "./node-vessel-identity.js";
 // The reach-face helpers — every http origin a vessel answers on + the ws:// dial each yields. Re-used by the
 // `lares herm` stand-up verb to print the carriage crossroads' dial URLs (host from the face, the relay's own port).
-export { deriveReachFaces, wsUrlForOrigin, type ReachFace, type InterfaceTable } from "./lan-address.js";
+export {
+  deriveReachFaces, wsUrlForOrigin, originCompositionForFace, webOriginForFace, oracleOriginForFace,
+  type ReachFace, type InterfaceTable, type ExplicitOriginComposition, type FaceOriginComposition,
+} from "./lan-address.js";
 // The active-persona selector — "put on a mask" at the identity layer (Plurality Pono). The persona-root
 // SET mints/loads the operator-root the `lares persona` door drives (founder-side custody).
 export { loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots } from "./node-vessel-identity.js";
@@ -363,6 +366,14 @@ export { listSealedCids } from "./cas-reshare.js";
 export { buildBulb, assembleBulb, readBulbArtifact, BULB_MANIFEST_FORMAT } from "./bulb.js";
 export type { BulbArtifact, BulbBlob, BulbManifest } from "./bulb.js";
 export { mountBulbReadFace } from "./bulb-read-face.js";
+export {
+  mountPublicLibraryReadFace, publicLibraryRequestHandler,
+} from "./public-library-adapter.js";
+export type {
+  PublicLibraryFile, PublicLibraryProjection, PublicLibraryMount,
+} from "./public-library-adapter.js";
+export { buildPublicLibraryProjection } from "./public-library-projection.js";
+export type { PublicLibraryProjectionInputs } from "./public-library-projection.js";
 export { bulbCap } from "./node-caps.js";
 export { pullBulb, kindleFromBulb, httpBulbTransport } from "./kindle.js";
 export type { BulbPullTransport, KindleResult } from "./kindle.js";

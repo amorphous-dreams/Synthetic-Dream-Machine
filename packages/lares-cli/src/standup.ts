@@ -53,12 +53,12 @@ export interface PlanStep {
  * satisfied vs would run, by file presence alone. No side effects.
  */
 export function planFounding(ctx: FoundContext): PlanStep[] {
-  const islandBin = join(ctx.root, "genesis", "island.bin");
+  const genesisSeed = join(ctx.root, "genesis", "seed.json");
   return [
     { step: "build", present: existsSync(NODE_DIST_MAIN), wouldRun: "pnpm install && pnpm -r build" },
     { step: "mempalace", present: checkMempalaceIntegration().ok, wouldRun: "git submodule update --init + pip install -e ./mempalace" },
     { step: "init", present: existsSync(ctx.bootstrap), wouldRun: "lares vessel found (keypair load-or-create; founding ceremony only if absent)" },
-    { step: "genesis", present: existsSync(islandBin), wouldRun: "build-genesis (BUILD-IF-ABSENT; never rebuilds a founded shrine)" },
+    { step: "genesis", present: existsSync(genesisSeed), wouldRun: "build-genesis (BUILD-IF-ABSENT; never rebuilds a founded shrine)" },
   ];
 }
 

@@ -229,6 +229,8 @@ globs   = [
 
 # ''The web oracle availability handback — Codex to Claude/Lares deployment hearth'' — 2026-09-21. A fresh C4-green browser Lararium correctly continues when its default local development oracle pointer (`127.0.0.1:8080/oracle/pointer`) refuses: the web surface displays the unavailable read face and keeps its own local vessel/identity path standing. This is neither a C4 readiness defect nor permission to turn the web peer into an oracle authority. The deployment hearth receives the availability/configuration seam: how a peer obtains an explicit oracle face across local, LAN, and bounded-reach contexts; how that face is declared and observed; and how failure remains visible without making boot depend on it. This row selects no static-serving topology, DNS provider, reverse proxy, or public roster. Files crossed: this ledger and the Codex roadmap. Law: an optional public read face may fail visibly while the local causal island remains sovereign.
 
+# ''The seed-and-public-library composition crossing — operator-directed, 2026-09-21.'' The active Codex Lares takes a bounded integration seam on the founding hearth's genesis and Node boot ground: `packages/lararium-mesh/src/genesis-doc.ts`, `packages/lararium-node/scripts/build-genesis-island.ts`, `packages/lararium-node/src/genesis-artifact.ts`, and `packages/lararium-node/src/open-node-vessel.ts`. The cut retires the checked-in binary genesis artifact and its sidecars in favor of a plain-data seed, an exact CAS inventory and manifest-named CAS bytes; it adds a coherence witness, then prepares a public-library projection without mounting a generic static root. The operator expressly rules this an early-alpha genesis point with no external consumers, authorizing removal of four reproducible, unlisted historical generated CAS members. The composition preserves the founding hearth's rules: immutable executable bytes remain outside CRDT sync, TW5 remains worker-isolated, a live synchronized Oracle does not silently widen the executable/public CAS allowlist, identity/document authority remains absent from public serving, and no clock decides order or authority. The next Codex slice will make seed canonical and derive the inventory under red-first controls; it does not infer a merge result, alter the held Nexus design, select DNS/ACME governance, or claim a mounted household deployment. Receipts: mesh coherence 18/18; Node focused 35/35 plus public-library HTTP 6/6; Web typecheck/build and expected-byte artifact reachability green. Law: when a shared boot source changes representation, the crossing names which fact stays canonical before either hearth's next build treats a generated projection as an independent authority.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -242,6 +244,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;feDI2SwoOQ-NUpw-88DvCskB7VDmcrdtSjowHJhQgaI
+<<^ code="&#x0003;">>ni:///sha-256;pyBQJHI1TFchEU7RqSfdRrMOiWoG4DUIKO5LeZ9bg4k
 
 <<^ code="&#x0004;" -> to="?">>

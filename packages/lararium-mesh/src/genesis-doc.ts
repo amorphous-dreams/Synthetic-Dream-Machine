@@ -22,7 +22,11 @@ import { stringifyAutomergeUrl } from "@automerge/automerge-repo";
 import { canonicalJsonBytes } from "./crypto.js";
 import type { AutomergeUrl, BinaryDocumentId } from "@automerge/automerge-repo";
 import { cidV1Sha256, sha256HexBytesSync, sha256BytesSync, utf8Bytes } from "./crypto.js";
-import { buildGenesisCasManifest, type GenesisCasManifest } from "./cas.js";
+import {
+  buildGenesisCasManifest,
+  GENESIS_CAS_MANIFEST_FORMAT,
+  type GenesisCasManifest,
+} from "./cas.js";
 import {
   ORACLE_DOC_URI,
   LARARIUM_DOC_URI,
@@ -187,7 +191,7 @@ export interface GenesisInputs {
 /**
  * GenesisArtifact — output of buildGenesisDoc().
  *
- * bytes: the final island.bin content.
+ * bytes: the deterministic Automerge verification witness (never a shipped boot file).
  * sha256: hex hash of the final bytes (forward integrity over the finished doc).
  * cid: CIDv1 raw-sha256 of the final bytes (forward integrity).
  * engineCid: content-CID of the engine region (TW5 core + version) — the hearth
@@ -214,7 +218,7 @@ export interface GenesisArtifact {
   /**
    * The CAS manifest — the byte SOURCE the genesis doc no longer embeds. Names
    * every `genesis/cas/<cid>` file (engine + plugins) so the loader mirrors exactly
-   * them into the runtime CAS. Write it beside island.bin as island.manifest.json.
+   * them into the runtime CAS. Write it beside seed.json as manifest.json.
    */
   readonly casManifest: GenesisCasManifest;
   /**
@@ -224,10 +228,9 @@ export interface GenesisArtifact {
   readonly casEntries:  readonly { readonly cid: string; readonly bytes: Uint8Array }[];
   /**
    * The PLAIN-DATA genesis seed — the oracle doc's initial state as JSON (no Automerge
-   * bytes). The build sink writes it to `island.genesis.json`; the boot MATERIALIZES
+   * bytes). The build sink writes it to `seed.json`; the boot MATERIALIZES
    * the oracle CRDT fresh from it under the deterministic doc id (slice 2). This is
-   * the boot artifact now — the Automerge `bytes`/island.bin survive only as a test
-   * fixture + determinism witness, no longer read at boot.
+   * the boot artifact now; the Automerge `bytes` survive only as a test witness.
    */
   readonly seed:        GenesisSeed;
 }
@@ -264,6 +267,96 @@ export const GENESIS_CID_ENGINE_TIDDLER  = `${ORACLE_DOC_URI}/genesis-cid-engine
 /** The REQUIRED grammar's own epoch — held apart from an operator's plugin collection. */
 export const GENESIS_CID_GRAMMAR_TIDDLER = `${ORACLE_DOC_URI}/genesis-cid-grammar`;
 export const GENESIS_CID_PLUGINS_TIDDLER = `${ORACLE_DOC_URI}/genesis-cid-plugins`;
+
+/**
+ * Validate the structural relationship between the two genesis planes.
+ *
+ * This is deliberately a coherence check, not an authority rule: the seed remains independently
+ * consumable as oracle state and the manifest remains independently consumable as a CAS inventory.
+ * Matching fields prove that two artifacts describe the same composition; they do not make either
+ * plane authoritative over the other, confer a capability, or turn one file into an alias of the other.
+ * Rich seed metadata that has no manifest counterpart is intentionally not compared here.
+ *
+ * Throws when a shared blob identity or a region witness differs. Platform-neutral and side-effect free.
+ */
+export function validateGenesisBundleCoherence(
+  seed: GenesisSeed,
+  manifest: GenesisCasManifest,
+): void {
+  if (seed.format !== GENESIS_SEED_FORMAT) {
+    throw new Error(`[genesis-coherence] unsupported seed format: ${String(seed.format)}`);
+  }
+  if (manifest.format !== GENESIS_CAS_MANIFEST_FORMAT) {
+    throw new Error(`[genesis-coherence] unsupported manifest format: ${String(manifest.format)}`);
+  }
+
+  const seedRows = Object.entries(seed.blobs)
+    .map(([mapId, blob]) => ({
+      id: mapId,
+      declaredId: blob.id,
+      cid: blob.sha256,
+      mimeType: blob.mimeType,
+      version: blob.version,
+    }))
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const manifestRows = [...manifest.blobs]
+    .map((blob) => ({
+      id: blob.id,
+      declaredId: blob.id,
+      cid: blob.cid,
+      mimeType: blob.mimeType,
+      version: blob.version,
+    }))
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+
+  for (const [index, seedRow] of seedRows.entries()) {
+    if (seedRow.declaredId !== seedRow.id) {
+      throw new Error(
+        `[genesis-coherence] seed blob map key/id mismatch for ${seedRow.id}: ` +
+        `declared=${seedRow.declaredId}`,
+      );
+    }
+    const manifestRow = manifestRows[index];
+    if (!manifestRow) {
+      throw new Error(`[genesis-coherence] manifest is missing seed blob ${seedRow.id}`);
+    }
+    for (const field of ["id", "cid", "mimeType", "version"] as const) {
+      if (seedRow[field] !== manifestRow[field]) {
+        throw new Error(
+          `[genesis-coherence] blob identity mismatch for ${seedRow.id}: ` +
+          `${field} seed=${String(seedRow[field])} manifest=${String(manifestRow[field])}`,
+        );
+      }
+    }
+  }
+  if (manifestRows.length > seedRows.length) {
+    const extra = manifestRows[seedRows.length]!;
+    throw new Error(`[genesis-coherence] manifest has blob absent from seed: ${extra.id}`);
+  }
+
+  const seedWitness = (title: string): string => {
+    const record = seed.tiddlers[title] as { tiddler?: { cid?: unknown } } | undefined;
+    const cid = record?.tiddler?.cid;
+    if (typeof cid !== "string" || cid.length === 0) {
+      throw new Error(`[genesis-coherence] seed region witness is absent or empty: ${title}`);
+    }
+    return cid;
+  };
+  const regions = [
+    ["engine", GENESIS_CID_ENGINE_TIDDLER, manifest.engineCid],
+    ["grammar", GENESIS_CID_GRAMMAR_TIDDLER, manifest.grammarCid],
+    ["plugins", GENESIS_CID_PLUGINS_TIDDLER, manifest.pluginsCid],
+  ] as const;
+  for (const [name, title, manifestCid] of regions) {
+    const seedCid = seedWitness(title);
+    if (seedCid !== manifestCid) {
+      throw new Error(
+        `[genesis-coherence] ${name} region witness mismatch: ` +
+        `seed=${seedCid} manifest=${manifestCid}`,
+      );
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // The oracle deterministic doc id (slice 2: materialize-fresh, no shipped binary)
@@ -520,7 +613,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
  * Deterministic: pinned actor (`seed.actorSeed`), `time: 0`, sorted key order — two
  * peers materialize byte-identical history, so they may share one deterministic doc
  * id safely. Called at BOOT (open-node-vessel) to seed a fresh oracle doc, and by the
- * build (back-compat island.bin + the verifier). The genesis ships as `seed`, never
+ * verifier. The genesis ships as `seed`, never
  * as these bytes.
  */
 export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
@@ -540,7 +633,7 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
 
 /**
  * buildGenesisDoc() — construct the genesis artifact: the plain-data seed (the boot
- * artifact), the deterministic Automerge bytes (back-compat island.bin + verifier),
+ * artifact), the deterministic Automerge bytes (verifier only),
  * the three region CIDs, and the CAS manifest + blob entries (the CID plane).
  *
  * Platform-neutral. No filesystem, no DOM. Accepts assembled byte inputs.
@@ -590,6 +683,9 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
 export function verifyGenesisArtifact(
   artifact: GenesisArtifact,
 ): { blobCount: number; tiddlerCount: number } {
+  // The seed and CAS manifest remain independent planes; this witness only proves their shared
+  // identity fields and region pointers describe one build before the CRDT is reloaded.
+  validateGenesisBundleCoherence(artifact.seed, artifact.casManifest);
   const doc = automergeLoad<LarDoc>(artifact.bytes);
 
   const core = doc.blobs?.[ENGINE_CORE_ID];
