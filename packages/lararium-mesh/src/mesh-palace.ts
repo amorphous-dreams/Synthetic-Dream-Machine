@@ -87,6 +87,26 @@ export const WIRE_CAPS = {
 
 export type WireCap = keyof typeof WIRE_CAPS;
 
+/**
+ * The held cap that backs each wire cap. A wire advertisement is a projection of a capability the
+ * vessel actually carries; it is never an authority grant by itself. Keeping this relation beside
+ * the vocabulary makes the public `bulb.seed` shore structurally unable to become `tuber.author` or
+ * `tuber.store` merely because an untrusted record names that wire cap.
+ */
+const WIRE_CAP_HOLDER: Readonly<Record<WireCap, Cap>> = {
+  "rhizome.forward": "rhizome",
+  "stolon.admit":    "stolon",
+  "tuber.author":    "tuber",
+  "tuber.store":     "tuber",
+  "bulb.seed":       "bulb",
+  "corm.renew":      "corm",
+};
+
+/** Keep only wire caps backed by a cap the vessel holds. Order and duplicates are preserved. */
+export function expressedCapsBackedByHeld(held: readonly Cap[], expressed: readonly WireCap[]): WireCap[] {
+  return expressed.filter((wireCap) => held.includes(WIRE_CAP_HOLDER[wireCap]));
+}
+
 // ── The bag + URI builders ─────────────────────────────────────────────────
 
 /** The mesh-palace bag — `lar:///ha.ka.ba/bags/meshpalace`. */
@@ -168,11 +188,12 @@ export function dialEntryToRecord(e: DialEntry, authority: string): LarTiddlerRe
 }
 
 export function vesselCapStackToRecord(v: VesselCapStack, authority: string): LarTiddlerRecord {
+  const expressed = expressedCapsBackedByHeld(v.held, v.expressed);
   return mutableLarRecord(vesselUri(v.vesselId), {
     kind: "vessel",
     vesselId: v.vesselId,
     held: v.held.join(" "),
-    expressed: v.expressed.join(" "),
+    expressed: expressed.join(" "),
   }, authority);
 }
 
@@ -224,7 +245,7 @@ export function recordToVesselCapStack(rec: LarTiddlerRecord | null | undefined)
   const expressed = (strField(rec, "expressed") ?? "")
     .split(/\s+/)
     .filter((c): c is WireCap => c in WIRE_CAPS);
-  return { vesselId, held, expressed };
+  return { vesselId, held, expressed: expressedCapsBackedByHeld(held, expressed) };
 }
 
 export function recordToRoutingSlot(rec: LarTiddlerRecord | null | undefined): RoutingSlot | null {

@@ -164,6 +164,24 @@ describe("the cap vocabulary", () => {
     expect(isVesselCap("tuber")).toBe(true);
     expect(isCap("relay")).toBe(false);   // "relay" is the machinery; "rhizome" is the cap
   });
+
+  test("a public bulb/distribution stack cannot express document authority it does not hold", () => {
+    const distributionOnly: VesselCapStack = {
+      vesselId: "web-peer",
+      held: ["bulb"],
+      expressed: ["bulb.seed"],
+    };
+    const forged = vesselCapStackToRecord({
+      ...distributionOnly,
+      expressed: ["bulb.seed", "tuber.author"],
+    });
+
+    // Positive: the web peer may express its public bootstrap/distribution projection.
+    expect(recordToVesselCapStack(vesselCapStackToRecord(distributionOnly))?.expressed)
+      .toEqual(["bulb.seed"]);
+    // Deliberate weakening: a forged public distribution record cannot smuggle in document authority.
+    expect(recordToVesselCapStack(forged)?.expressed).toEqual(["bulb.seed"]);
+  });
 });
 
 describe("greedy geometric routing — the native-disk chart", () => {
