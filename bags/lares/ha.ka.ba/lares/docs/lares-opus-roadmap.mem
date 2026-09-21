@@ -78,26 +78,27 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 <<~ ahu #/crossroads-syntax>>
 
-! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-19
+! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-20
 
-The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT. `release/3.0.0` stands at `43da965`; the bench serves it.
+The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT. `release/3.0.0` stands at `49e230a`; the bench serves it.
+
+''The release, as it tells itself:'' `CHANGELOG.md` tells what 3.0.0 grants a reader — colours that answer to TiddlyWiki's own parser, tiddlers read in the language their type names, editing that closes brackets and selects whole titles, how it looks in a theme, what it costs, and what a line-at-a-time grammar keeps out of reach on purpose. `LEDGER-3.0.0.md` holds the record under it: 375 entries under Breaking, Reads more like TiddlyWiki, Naming, and Tooling and process (`49e230a`).
 
 ''Landed (condensed):''
-* ''The opener namespace'' — `{{ << < <$ <%` share one tag family, a link's `[[` keeps its own (`32291b2`); `((x))` leaves the family and wears the name `<<x>>` wears (`d760e24`).
-* ''The instruments'' — darkness, bracket, ablation and divergence-staleness witnesses, each a gate; a scope-suffix invariant holds every declared name to its grammar's own suffix (`9acb662`).
-* ''Two readers'' — every gate answers under the fork (`dev/sdm-integration`) for local work and the pinned 5.4.1 for CI; a ledger entry names the one reader it explains (`8fce38c`, `4549f40`).
-* ''The grammar trued to the host'' — a whitespace-only line closes a paragraph, CDATA painted no more (TiddlyWiki builds none), adjacent code runs close as the host re-scans, a closing-tag line hands the next line back to a list (`bc92897`, `43f49cf`); the carriers state what the host builds, two new table carriers (`93ea2ba`, `e3b697c`).
-* ''The palette'' — a URL scheme paints `scheme://` as one unit, the bare autolink on its own per-scheme name and an in-link target on `entity.name.scheme.$1.tiddlywiki5` over `isLinkExternal`'s ten schemes (`6372f40`, `f1d733b`); a filter reads as parts — bounds as punctuation, prefixes as `storage.modifier`, one operator spelling, a multi-valued operand apart from a variable (`c20e029`); a widget attribute reads `meta.attribute.widget.<name>` (`7a7afed`); a `.multids` file routes every body through its header's `type` (`a270bfc`).
-* ''The record'' — `wikilink vs transclusion` re-seats 51 → 55 beside the ruling that raised it (`32291b2`); the TextMate ceiling record carries the operator's bound ruling: an inline code run, the emphasis marks and html start tags keep their line or blank-line bound on purpose, the gap a whole-document reader such as tree-sitter fills.
+* ''The opener namespace'' — `{{ << < <$ <%` share one tag family, a link's `[[` keeps its own (`32291b2`); `((x))` wears the name `<<x>>` wears (`d760e24`).
+* ''The instruments'' — darkness, bracket, ablation and divergence-staleness witnesses, each a gate; a scope-suffix invariant holds every declared name to its grammar's own suffix (`9acb662`); every gate stands collided against a fault planted in a sandbox.
+* ''Two readers'' — every gate answers under the fork (`dev/sdm-integration`) for local work and the pinned 5.4.1 for CI (`8fce38c`, `4549f40`).
+* ''The grammar trued to the host'' — paragraph, CDATA, adjacent code runs, a closing-tag line handing back to a list, the carriers stating what the host builds (`bc92897`, `43f49cf`, `93ea2ba`).
+* ''The palette'' — URL schemes as one unit (`6372f40`, `f1d733b`); filters read as parts (`c20e029`); widget attributes name themselves (`7a7afed`); `.multids` routes by its header type (`a270bfc`); struck text names itself and takes a comment's ink, a cue in all 65 bundled themes (`568f8ce`).
+* ''The record'' — the release's lead count welded to MIGRATION, so prose cannot drift from the certified 127 gone and 254 new; the swallow and still narration settled into its ledgers (`fc2d621`); the ceiling record carries the operator's bound ruling for cross-line emphasis and blank-line tags.
+* ''The carrier spec'' — the STX sigil seats beside the SOH so the frame wraps all content, the `toml meta` fence included; the grammar reads both seatings identically (`03774a0`).
 * ''PARENT'' — normalize reads the fence mask in every clause, so held text moves no byte (`622f8bd15`, `c7eeca113`); the fold's pin names a byte move before a fold change (`d8b969710`).
 
-''Standing counts:'' 49 gates hold under both readers · 111 divergence rulings · darkness 11 owed · ablation 329 owed · brackets 0 owed · legibility 0 fallen over 820 pairs · MIGRATION 460 → 587 names, 126 gone, 253 new.
+''Standing counts:'' 49 gates hold under both readers · 111 divergence rulings · darkness 11 owed · ablation 329 owed · brackets 0 owed · legibility 0 fallen over 820 pairs · no construct reads as body text above the bar of 16 themes · MIGRATION 460 → 587 names, 127 gone, 254 new.
 
 ''Forward paths:''
-# ''Look'' — the operator's eyes-on pass over what changed its look: an indented widget line, `((x))` beside `<<x>>`, URL schemes in prose and in links, filters as parts, widget attribute names in the scope inspector, the `tables.nesting` and `tables.malformed` carriers, a typed `.multids`. The pass decides the ship.
-# ''Strikethrough, awaiting a ruling'' — the honest name `markup.strikethrough` alone (VS Code Markdown's own) drops 12 pairs below their floors across the 65 themes; the stacked name stands meanwhile.
-# ''Owed, no ruling needed'' — the `still.js` tool-vs-test disagreement (unreproduced after the walk sorted); the `.js`-embedded wikitext the widget-attribute scan skipped.
-# ''Ship'' — on the operator's word: `release/3.0.0` → tag → cut on merge to `main`, then the parent's submodule pointer.
+# ''Look'' — the operator's eyes-on pass over the merged bench, and one read of the CHANGELOG story as the marketplace shows it. The pass decides the ship.
+# ''Ship'' — on the operator's word: tag `release/3.0.0`, cut on merge to `main`, then the parent's submodule pointer.
 
 ''Future grammar projects (the ceiling record holds each):'' italic, bold and inline code across lines, and html start tags across blank lines — a whole-document reader carries them where a stream grammar keeps its bound on purpose.
 
@@ -123,6 +124,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9FJhMS6JE1pfrE7o6XjGRXN3-XeGrkPfiecFao8cj6k
+<<^ code="&#x0003;">>ni:///sha-256;spSN1zYYW7Q9b7I-vvsUd1PACSkF8Drna9yNAvtD5PM
 
 <<^ code="&#x0004;" -> to="?">>
