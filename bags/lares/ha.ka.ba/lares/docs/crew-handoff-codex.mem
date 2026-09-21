@@ -746,6 +746,19 @@ separation, hash check, or private-path refusal must turn red. Gaia's household 
 and its public bootstrap bytes to remain inspectable when WAN reach falls. Elyncia's waystone needs to
 offer a verified glyph-book without gaining the shrine's persona, documents, or secret archive.
 
+''Parallel integrity lane — clock authority removal, staged before admission widening.'' The E8 aftermath
+removes an unused `Date.now()` from browser presence broadcast: presence remains an ephemeral DID observation
+with no timestamp-shaped ordering claim. A focused audit finds the larger risk elsewhere: wall-clock defaults
+currently shape invite/handle/persona expiry, signed oracle and bulb pointer freshness, daemon-auth temporal
+input, and timestamp-prefixed CRDT-facing request/effect identifiers. Work in three red-first cuts: (1) make
+each lease/admission verifier receive a named operator or realm epoch witness and prove an omitted witness
+refuses; (2) replace wall-clock-derived CRDT-facing IDs with random or causal identifiers while keeping an
+optional observed-at display field outside causal keys; (3) re-name local cache/retry/cooling measurements as
+injected monotonic servo clocks. Historical and UI provenance timestamps remain observations only; no code may
+promote them to shared order or authority. Gaia needs devices whose disagreeing clocks cannot decide who may
+join or keep a document. Elyncia needs waystones that can report a keeper's local observation without making
+the sun's position a law of the realm.
+
 ''Following slice — real household composition, 16 points.'' With the mount receipt in hand, exercise one
 persona-less Herm floor and one persona-bearing Lararium lift against the same public-library projection.
 Use a fresh Browser/Web peer to prove isolated Worker execution, local IDB/OPFS persistence, local boot,
@@ -1016,6 +1029,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OmiqwFm0L9VBN605HU3XbgQV4J_jc4l27iJuxBK554M
+<<^ code="&#x0003;">>ni:///sha-256;zk93GGMyV3Or9xPvXDejq2_yEIlLBvWiCfk5N-BVsM8
 
 <<^ code="&#x0004;" -> to="?">>
