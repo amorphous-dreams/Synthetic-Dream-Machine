@@ -552,6 +552,20 @@ reproduce, and the canonical absent-static routes consistently timed out. The ev
 false static-serving claim, generated residue, or L-Prime/global-now drift. Both declared volume paths
 remain deployment semantics: probes must override them explicitly. No aftermath cleanup change was due.
 
+''E8 serving-shore scout — 2026-09-21.'' The built web surface carries an index, hashed worker assets,
+genesis manifests, and manifest-named CAS blobs; its artifact witness verifies bytes and rejects an SPA
+fallback. Node answers relay/oracle/bulb faces, while current Compose profiles expose and healthcheck only
+that Node image. The surface accepts explicit oracle, relay, mesh, and genesis URLs, but no production
+composition owns those seams. Three lawful shapes stand: a separate static shore beside Node; retiring
+unserved web bytes from the Node image; or a named deployment wrapper that composes the two processes.
+For Gaia, a local/LAN operator needs independently observable page delivery and local Node sovereignty
+through uplink loss. For Elyncia, the waystone presents the sealed pattern while the hearth retains the
+daemon and household sovereignty; either failure must name its crossing. The scout recommends the named
+wrapper built from a separate static-shore primitive, but holds the ruling: operator-managed composition
+or a repository-owned production wrapper. The next implementation starts only after that ruling, with a
+process-attributed index/worker/genesis/CAS witness, a separate Node oracle witness, explicit URLs, and
+deliberate weak routes/configuration that go red.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
@@ -761,6 +775,6 @@ down named volumes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Z6z1X1pBlsi4tQhyHrsL-pSNFeI6QVdVoKK6sM9zCvY
+<<^ code="&#x0003;">>ni:///sha-256;zOugf0G1Mn1OIjg0qsmTqZOQfBau8JDmYi-L4uDAysU
 
 <<^ code="&#x0004;" -> to="?">>
