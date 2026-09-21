@@ -1,5 +1,5 @@
 /**
- * lararium-web — the browser-lararium web surface.
+ * lararium-web — the Web-surface assembly.
  *
  * This package owns page composition and the visible projection edge: it resolves served Worker assets,
  * opens the browser vessel, paints returned frames, and relays named DOM events and bounded input back to
@@ -8,7 +8,7 @@
  */
 
 /**
- * @lararium/web — the browser-lararium web surface.
+ * @lararium/web — DOM, Vite, and projection capability atoms for the Web-surface assembly.
  *
  * A sovereign causal island boots in the browser (its own key, IndexedDB, genesis
  * bytes) and — when a read-face is reachable — reads the public oracle read-face (the node-less

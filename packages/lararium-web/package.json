@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Lararium web surface \u2014 boots or attaches to a sovereign browser vessel and (when reachable) reads the public @oracle read-face. Location-agnostic: served from localhost / LAN / elyncia.app, the vessel always runs local; the origin is a static host, never an authority.",
+  "description": "Lararium web surface — composes DOM, Vite, and projection capabilities with browser-native capabilities in one local Web device/context peer; when reachable, it reads the public @oracle face. Location-agnostic: served from localhost / LAN / elyncia.app, static distribution never grants authority.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

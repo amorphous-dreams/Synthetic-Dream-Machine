@@ -1,7 +1,7 @@
 {
-  "name": "Lararium \u2014 browser vessel",
+  "name": "Lararium \u2014 Web vessel",
   "short_name": "Lararium",
-  "description": "A sovereign browser vessel: your own key, your own island, reaching the household hearth.",
+  "description": "A sovereign Web device/context peer: your own key, your own island, reaching DreamNet peers.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

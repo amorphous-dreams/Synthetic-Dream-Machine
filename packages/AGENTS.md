@@ -1,4 +1,4 @@
-<<^ code="&#x0001;" ? -> lar:///packages/AGENTS>>
+<<^ code="&#x0001;" from="?" -> to="lar:///packages/AGENTS">>
 
 <<~ ahu #meta>>
 
@@ -33,7 +33,7 @@ retain       = true
 
 ## Network Topology (canonical)
 
-**Lararium** — one operator's infrastructure: a `lararium-node` process + browser peers + devices. The household shrine. Smallest unit.
+**Lararium** — an operator-held DreamNet peer whose device-and-context composes the persona and document-owning capability stack. A Node-surface or Web-surface assembly can carry that stack; package or process names never confer it. A persona-less assembly can instead hold the Herm floor. Lararia, Herms, and other named-capability peers meet across explicit crossings without a client/server rank.
 
 **Nexus** — a confederated mesh of Lararia sharing a stable internal sync network. Named by community + place (e.g. "Floating Library of Mu, PNW Branch"). The Nexus keypair carries the confederation.
 
@@ -55,11 +55,11 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/tw5` carries TiddlyWiki runtime integration: the TW5 VM surface, the island layer, the memetic-wikitext machinery, the verb pipeline, TW5-side stores, and the TW5 wikirules/macros/modules/filters. Holds zero `@automerge` dependencies. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
-`@lararium/node` carries local Lararium host duties: the host and vessel boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, and the oracle read-face. One `lararium-node` process = one Lararium (household shrine). The running server **finds**; it never seeds social state. No TW5 VM ever runs on the main thread — every engine lives in a worker.
+`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No TW5 VM runs on the main thread — every engine lives in a worker.
 
-`@lararium/browser` carries browser Lararium peer duties, paralleling `@lararium/node` with browser-native capabilities (WebSocket, IndexedDB, WebCrypto), plus `__stubs__` for browser-incompatible deps. The browser vessel is a genuine remote peer: it speaks WS to a node's relay across a real island boundary. No React, no canvas.
+`@lararium/browser` carries browser-native capability atoms that parallel the shared keel through WebSocket egress, IndexedDB, WebCrypto, Workers, and `__stubs__` for browser-incompatible dependencies. It cooperates with `@lararium/web` inside one Web-surface device/context assembly. That assembly remains a DreamNet peer across a real island boundary; browser inability to accept inbound sockets names a substrate constraint, not reduced authority. No React, no canvas.
 
-`@lararium/web` carries the browser-lararium web surface — composes a sovereign browser vessel and, when reachable, reads the public `@oracle` read-face. It owns Vite, page DOM, worker URLs, admission carriers, and web projection adapters. Location-agnostic: served from localhost, LAN, or a public host, the vessel always runs local; the origin is a static host, **never an authority**. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
+`@lararium/web` carries Web-surface capability atoms: Vite, page DOM, worker URLs, admission carriers, web projection adapters, and an optional public `@oracle` read. Together with `@lararium/browser`, it composes the local Web device/context assembly; that peer can carry a Lararium stack when its persona and document-owning capabilities stand. Its origin may come from localhost, LAN, or a public host; static byte distribution supplies a projection capability and never an authority. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
 
 `@lararium/keyhive` carries the capability layer — a pre-alpha integration of `@keyhive/keyhive` WASM bindings. One Keyhive Doc = one bag (1:1). The access axis carries the four Keyhive-native verbs (`pull` / `read` / `edit` / `admin`). Cap-event home and γ-with-operator-α-mirror sync stay in design flux — touch with care.
 
@@ -105,7 +105,7 @@ Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MO
 
 ## Boot Sequence — three causal moments
 
-The Lararium node treats build, init, and runtime as strictly separated authorship moments. No moment reaches into another's authority.
+The Node-surface assembly treats build, init, and runtime as strictly separated authorship moments. Browser and Web assemblies carry corresponding founding and runtime paths under their own substrate capabilities. No moment reaches into another's authority.
 
 ```text
 Build time    scripts/build-genesis-island.ts    content Tiga → genesis/island.bin (CID-verifiable)
@@ -139,7 +139,7 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 **Browser code SHOULD NOT** import Node-shaped disk paths. If `fs`, `path`, `vm`, or Node crypto enter a browser bundle, surface the shore. Use the `@lararium/browser/__stubs__` pattern for browser-incompatible deps.
 
-**Namespace boundary.** `@lararium/*` = runtime stack (mesh, tw5, node, browser, app, keyhive, mempalace). `@lares/*` = operator-facing surface (cli). `@dreamdeck/*` = app/canvas layer (none active yet). Do not cross these on convenience.
+**Namespace boundary.** `@lararium/*` = runtime stack (mesh, tw5, node, browser, web, keyhive, mempalace). `@lararium/app` remains reserved for a later generic application surface. `@lares/*` = operator-facing surface (cli). `@dreamdeck/*` = canvas layer (none active yet). Do not cross these on convenience.
 
 **TW5 derived child tiddlers SHOULD** roundtrip through parent carriers without losing decorators, sigils, TOML, or sibling slots. Any fallback reconstruction counts as a ka spot until a test covers it.
 
@@ -183,7 +183,7 @@ pnpm test:tw5-flow         # placeholder — residency-action flow scripts pendi
 pnpm test:flows            # top-level integration flows
 ```
 
-Build all package outputs when generated files, barrels, bundle shores, TW5 vendor assets, or app integration change:
+Build all package outputs when generated files, barrels, bundle shores, TW5 vendor assets, or web integration change:
 
 ```sh
 pnpm -r --filter './packages/**' build
@@ -203,7 +203,7 @@ Watch these current weak spots:
 
 * **Automerge v2.5.6 API law.** `repo.find()` rejects on unavailable; use the `allowableStates` pattern. `shutdown()` → `flush()`. The workspace pins `@automerge/automerge-repo` to `2.5.5` via overrides.
 * **Keyhive pre-alpha.** `@keyhive/keyhive@0.0.0-alpha.58b` — WASM bindings move under us. Cap-event home and γ-with-operator-α-mirror sync stay in design flux.
-* **Browser TW5 boot shim.** `global is not defined` still fires inside TW5's core boot eval under some browser paths. The `browser-m3-breathing` test currently fails on that surface.
+* **Browser worker bridge.** The former frozen-bundle M3 fixture no longer measures the runtime; the current worker bridge resolves browser modules through the TW5 module table. Keep browser-worker changes covered by the live bridge and C4 controls rather than reviving a checked-in bundle.
 * **`child[1]` bag URI law.** Sigils above `child[1]` MUST NOT carry bag tags. Treat any violation as a structural error.
 * **`@lararium/tw5` barrel** can expose Node-shaped disk/TW5 boot imports to browser bundles. Audit barrel changes against the browser build.
 * **Child-carrier reconstruction** produces lossy fallback paths when surgical slot replacement misses. Tests cover the happy paths; the fallback path lacks coverage.
@@ -248,6 +248,6 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>
+<<^ code="&#x0003;">>ni:///sha-256;qB5JrEpkFtEjXD8TpQ6-_BprD-XQxDvzIs-6ogJw15U
 
-<<^ code="&#x0004;" -> ?>>
+<<^ code="&#x0004;" -> to="?">>

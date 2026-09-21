@@ -41,7 +41,7 @@ function serveGenesis(): Plugin {
   };
 }
 
-// Browser-lararium web surface — Automerge WASM + module Web Workers + the genesis seed.
+// Web-surface capabilities — Automerge WASM + module Web Workers + the genesis seed.
 // Config follows the Automerge "Vite" recipe (research-grounded 2026-06-25):
 //   - wasm()        : @automerge/automerge ships its core as .wasm
 // The genesis boot artifact is now island.genesis.json (the plain-data oracle seed,

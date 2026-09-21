@@ -627,6 +627,29 @@ The three aftermath passes found no nominal vessel, package, client/server, glob
 or generated-residue drift. This closes the capability-advertisement seam; it does not claim an image
 serves web bytes, prove Herm blindness through a live composition root, or establish relay admission.
 
+''E8 vessel-map aftermath — 2026-09-21.'' A source walk follows the shared keel from
+`composeCoreVessel` through `composeBrowser`, `composeHerm` / `composeLararium`, and the Node and browser
+openers. Node and Web assemblies each carry the same intent-level keel, worker-isolated TW5 execution,
+local identity and document paths; their substrate atoms differ without creating a peer rank. Node adds
+local process, filesystem, relay-ingress, UDS, disk-projection and read-face atoms. The Web device/context
+combines browser storage, WebCrypto, Workers and relay egress from `@lararium/browser` with DOM, Vite,
+projection and optional oracle-read atoms from `@lararium/web`. Browser lack of inbound socket acceptance
+names a substrate limit, never a loss of peer sovereignty. `packages/AGENTS.md` and Web metadata now name
+these package boundaries as capability suppliers rather than vessel kinds, retire the stale Node-process
+definition of Lararium, and retire the obsolete frozen-bundle `global` warning. The focused live browser
+verb witness passes 1/1; Web typecheck and production build pass.
+
+''What the walk leaves OPEN.'' First, the mesh's `VesselCapStack` only names generic carriage and wire
+claims; no shared runtime inventory presently tells an operator which Node-, browser-, and Web-surface
+atoms one assembled peer holds. Design that inventory before adding a nominal vessel type, and make its
+receipts prove that a declaration grants no authority. Second, Node presently owns the implemented
+bulb/read public face while Web supplies artifacts and projection; E8 still needs an operator-selected
+public-distribution composition and the red-first, process-attributed image witness. Third, the wire-cap
+weld rejects forged `tuber` advertisement, but a later authority witness still needs to prove live
+persona/document possession rather than infer it from an advertised stack. Fourth, relay admission and
+Herm whole-set public-blob proof still need their reserved mesh execution; neither follows from a Web
+build or a static-byte process.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
@@ -649,6 +672,10 @@ serves web bytes, prove Herm blindness through a live composition root, or estab
   a mesh reservation, a founder-profile → carriage → fresh-browser-profile witness must pass a relay URL
   to the page and surface a browser-observable receipt. C4's present red remains independent and may
   leave that vector red without invalidating the offline web artifact receipt.
+# After an E8 delivery selection, design one machine-readable, intent-level effective-capability inventory
+  across Node and Web assemblies. It must report held substrate and authority atoms without turning package
+  names into vessel kinds, and its controls must show that a forged or merely advertised atom grants
+  neither persona nor document authority.
 # The three-pass aftermath after `e87694441`/`5c2064f9c`/`74a984ec8` found two living ''app shell''
   residues and landed `ebd0ed91b`. It re-ran the 1,697-file name scan, web artifact receipt, focused
   controls, browser-weld source control, and 95/713 source-pointer scan green. No global-now logic,
@@ -871,6 +898,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vgArncNwNR_W_j84vwOgGiWn0Lhl4PAx_hgL0Vr2q5o
+<<^ code="&#x0003;">>ni:///sha-256;vhASJyab_DJGf7wMizsJ56AD9BEijIGMQ1fbCO8aFxA
 
 <<^ code="&#x0004;" -> to="?">>
