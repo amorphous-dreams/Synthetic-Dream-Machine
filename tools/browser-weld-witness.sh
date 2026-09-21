@@ -60,7 +60,7 @@ vite_announced_local_url() {
   grep -F "Local:" "$LOG" | grep -F "http://localhost:$PORT/" >/dev/null
 }
 
-app_answers() {
+web_answers() {
   curl -sf --connect-timeout 1 --max-time 2 "http://localhost:$PORT/" >/dev/null 2>&1
 }
 
@@ -75,7 +75,7 @@ for _ in $(seq 1 "$READY_ATTEMPTS"); do
   fi
   # An unrelated server can answer this port. Require Vite's own startup
   # announcement from our log before probing the port at all.
-  if vite_announced_local_url && app_answers; then
+  if vite_announced_local_url && web_answers; then
     # The child can die just after either proof, so accept only the pair while
     # the Vite session leader still lives.
     sleep "$READY_SETTLE_SECONDS"
@@ -90,9 +90,9 @@ for _ in $(seq 1 "$READY_ATTEMPTS"); do
 done
 if [ "$ready" -ne 1 ]; then
   if [ "$server_exited" -eq 1 ]; then
-    echo "browser-weld: app process exited before readiness on :$PORT — vite log follows"
+    echo "browser-weld: web process exited before readiness on :$PORT — vite log follows"
   else
-    echo "browser-weld: the app never answered on :$PORT — vite log follows"
+    echo "browser-weld: the web surface never answered on :$PORT — vite log follows"
   fi
   tail -12 "$LOG"
   exit 1
@@ -103,11 +103,11 @@ status=0
 echo "browser-weld: starting Weld driver"
 if [ -n "$ARTIFACT_DIR" ]; then
   # L-Prime artifact boundary: keep Weld's receipt separate from Vite's log.
-  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs 2>&1 | tee "$ARTIFACT_DIR/weld.log"
+  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs 2>&1 | tee "$ARTIFACT_DIR/weld.log"
   weld_pipeline=(${PIPESTATUS[@]})
   weld_status="${weld_pipeline[0]}"
 else
-  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
+  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/weld.mjs
   weld_status=$?
 fi
 echo "browser-weld: Weld driver exited $weld_status"
@@ -115,11 +115,11 @@ echo "browser-weld: Weld driver exited $weld_status"
 echo "browser-weld: starting C4 leaf driver"
 if [ -n "$ARTIFACT_DIR" ]; then
   # L-Prime artifact boundary: keep C4's receipt separate from Weld's log.
-  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs 2>&1 | tee "$ARTIFACT_DIR/c4.log"
+  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs 2>&1 | tee "$ARTIFACT_DIR/c4.log"
   c4_pipeline=(${PIPESTATUS[@]})
   c4_status="${c4_pipeline[0]}"
 else
-  WELD_APP_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs
+  WELD_WEB_URL="http://localhost:$PORT" node tools/browser-weld/leaf-continuity.mjs
   c4_status=$?
 fi
 echo "browser-weld: C4 leaf driver exited $c4_status"

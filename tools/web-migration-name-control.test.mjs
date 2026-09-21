@@ -11,12 +11,12 @@ describe("web migration executable-name control", () => {
   test("catches the stale root filter, weld directory, and Docker vocabulary", () => {
     root = mkdtempSync(join(tmpdir(), "lararium-web-name-"));
     mkdirSync(join(root, "tools"));
-    writeFileSync(join(root, "tools", "root.sh"), 'pnpm --filter @lararium/app dev\n');
+    writeFileSync(join(root, "tools", "root.sh"), 'pnpm --filter @lararium/app dev --with-app\n');
     writeFileSync(join(root, "tools", "weld.sh"), 'cd packages/lararium-app\n');
-    writeFileSync(join(root, "tools", "compose.yml"), 'LAR_APP_PORT: "5173"\n');
+    writeFileSync(join(root, "tools", "compose.yml"), 'LAR_APP_PORT: "5173" WELD_APP_URL=http://localhost:5173 appOriginForFace serveApp\n');
     expect(() => assertNoExecutableOldNames(root, [
       "tools/root.sh", "tools/weld.sh", "tools/compose.yml",
-    ])).toThrow(/root\.sh.*@lararium\/app|weld\.sh.*lararium-app|compose\.yml.*LAR_APP_PORT/s);
+    ])).toThrow(/root\.sh.*@lararium\/app|root\.sh.*with-app|weld\.sh.*lararium-app|compose\.yml.*LAR_APP_PORT|compose\.yml.*WELD_APP_URL|compose\.yml.*appOriginForFace|compose\.yml.*serveApp/s);
   });
 
   test("passes once the three named surfaces use web", () => {

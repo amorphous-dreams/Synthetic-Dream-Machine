@@ -48,7 +48,7 @@ const PUBLISH_USAGE: readonly string[] = [
  * causing it.
  *
  * THE REGION READER STAYS NODE-BOUND ON PURPOSE. The three vessel classes take genesis three deliberately
- * different ways — the app statically imports the seed at bundle time, a browser vessel receives one
+ * different ways — the web surface statically imports the seed at bundle time, a browser vessel receives one
  * already materialized, and a node vessel reads the baked artifact off disk. Lifting this read behind one
  * injected abstraction would launder that real difference into a false uniformity; the OFFERING itself
  * (the signed record and its announce, landing next) carries no such split and belongs in mesh.

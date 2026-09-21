@@ -8,7 +8,7 @@
  * browser has it. Measured: Chromium at `http://localhost` reads `isSecureContext=true`, holds
  * `crypto.subtle`, and mints Ed25519.
  *
- * So this probe serves the app from 127.0.0.1 and drives Chromium at it. In the mesh the container
+ * So this probe serves the web surface from 127.0.0.1 and drives Chromium at it. In the mesh the container
  * shares its operator's network namespace, which is what makes `localhost` name the operator's own
  * vessel — no certificate, and no stub standing where the wall is.
  *
@@ -61,13 +61,13 @@ const MIME: Record<string, string> = {
   ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
 };
 
-/** Serve the built app on the loopback — the ORIGIN is the whole point, so it never binds outward. */
-function serveApp(): Promise<() => void> {
+/** Serve the built web surface on the loopback — the ORIGIN is the whole point, so it never binds outward. */
+function serveWeb(): Promise<() => void> {
   const handler = (q: IncomingMessage, s: ServerResponse): void => {
     const rel = (q.url ?? "/").split("?")[0]!;
     const file = rel === "/" || rel === "" ? "index.html" : rel.replace(/^\//, "");
     const path = join(WEB_DIR, file);
-    // A single-page app answers its own routes; anything unfound falls back to the shell.
+    // A single-page web surface answers its own routes; anything unfound falls back to the shell.
     const served = existsSync(path) && !path.endsWith("/") ? path : join(WEB_DIR, "index.html");
     try {
       s.writeHead(200, { "content-type": MIME[extname(served)] ?? "application/octet-stream" });
@@ -202,7 +202,7 @@ async function main(): Promise<number> {
     console.error(`[browser-vessel] no web artifact at ${WEB_DIR} — run \`pnpm --filter @lararium/web build\``);
     return 2;
   }
-  const stop = await serveApp();
+  const stop = await serveWeb();
   let browser: Browser | undefined;
   try {
     browser = await chromium.launch({ args: ["--no-sandbox"] });   // container: no user namespace

@@ -3,7 +3,7 @@
  *
  * ── THE SEAM ────────────────────────────────────────────────────────────────────────────────────
  * One verb, four postures, four handlers. The default reads `--observe`, `--init`, `--install`,
- * `--admit` and the four surface flags; `--foreground` reads four other things; `--with-app` reads
+ * `--admit` and the four surface flags; `--foreground` reads four other things; `--with-web` reads
  * NOTHING AT ALL. So a flag typed beside the wrong posture vanishes — no warning, exit 0, and a
  * reader who watched the command succeed believes it did what they asked.
  *
@@ -35,7 +35,7 @@ describe("posture-plan — a dropped flag names itself", () => {
   });
 
   it("★ `--observe` refuses beside EVERY acting posture, never just the first ★", () => {
-    for (const acting of ["foreground", "with-app", "restart"]) {
+    for (const acting of ["foreground", "with-web", "restart"]) {
       expect(posturePlan(["observe", acting]).refuse).not.toBe(null);
     }
   });
@@ -47,11 +47,11 @@ describe("posture-plan — a dropped flag names itself", () => {
     expect(p.dropped).toContain("init");
   });
 
-  it("★ `--with-app` drops the most, and says the most ★", () => {
+  it("★ `--with-web` drops the most, and says the most ★", () => {
     // It reads its args not at all, so even `--port` goes. A person aiming a second vessel at
-    // another port with `--with-app` gets 8080 and no word about it.
-    const p = posturePlan(["with-app", "init", "claude"]);
-    expect(p.posture).toBe("with-app");
+    // another port with `--with-web` gets 8080 and no word about it.
+    const p = posturePlan(["with-web", "init", "claude"]);
+    expect(p.posture).toBe("with-web");
     expect(p.dropped).toEqual(expect.arrayContaining(["init", "claude"]));
   });
 
@@ -69,10 +69,10 @@ describe("posture-plan — a dropped flag names itself", () => {
   });
 
   it("★ two postures at once resolve by the door's own order, and say which won ★", () => {
-    // `standVessel` tests with-app first, then restart, then foreground. A person who typed two
+    // `standVessel` tests with-web first, then restart, then foreground. A person who typed two
     // gets one, and the plan names it rather than leaving them to read the dispatcher.
-    const p = posturePlan(["with-app", "foreground"]);
-    expect(p.posture).toBe("with-app");
+    const p = posturePlan(["with-web", "foreground"]);
+    expect(p.posture).toBe("with-web");
     expect(p.shadowed).toContain("foreground");
   });
 });

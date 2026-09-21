@@ -224,10 +224,10 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
   /** URL of the compiled browser wiki Worker script. */
   workerScriptUrl?: URL;
   /** Projection-nalu sink: a `projection:frame` (rendered HTML+CSS) from the hot wiki island.
-   *  The app applies it to a shadow root — the live wiki made visible. */
+   *  The web surface applies it to a shadow root — the live wiki made visible. */
   onProjection?:   (frame: { html: string; css: string; rev: number }) => void;
   /** Coherence-nalu sink: a `coherence:frame` (the wiki's own consistency-radius read as an indicator
-   *  frame) from the hot wiki island. The app applies it to a DOM coherence indicator via
+   *  frame) from the hot wiki island. The web surface applies it to a DOM coherence indicator via
    *  The web surface's DOM sink may render it over the tiddler-view. */
   onCoherence?:    (frame: CoherenceFrameWithRev) => void;
   /**
@@ -1066,7 +1066,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // Wearing moves only the selector pointer; the worker BINDS the worn persona at boot
       // (`readWornPersonaMount` reads the selector and re-pins the mount), so the switch lands on the
       // next reboot —
-      // rebootRequired names that for the app shell (the reboot itself is the caller's act).
+      // rebootRequired names that for the web shell (the reboot itself is the caller's act).
       registry.register("persona-wear", async (args) => {
         const index = Number(args["index"]);
         if (!Number.isSafeInteger(index) || index < 0) throw new Error("persona-wear: valid `index` required");

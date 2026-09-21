@@ -31,7 +31,7 @@ import { createServer }  from "http";
 import { networkInterfaces }             from "os";
 import WebSocket                         from "isomorphic-ws";
 import { resolve }                       from "path";
-import { deriveReachFaces, wsUrlForOrigin, crossingUrl, appOriginForFace, type InterfaceTable } from "./lan-address.js";
+import { deriveReachFaces, wsUrlForOrigin, crossingUrl, webOriginForFace, type InterfaceTable } from "./lan-address.js";
 import { openNodeVessel, openNodeHerm, type AskedStanding } from "./open-node-vessel.js";
 import { standAs } from "@lararium/mesh";
 import { randomBytes } from "node:crypto";
@@ -375,7 +375,7 @@ async function main(): Promise<void> {
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
   for (const f of reachFaces) {
-    console.log(`[lararium]   ${crossingUrl({ appOrigin: appOriginForFace(f, webPort), wsUrl: wsUrlForOrigin(f.origin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
+    console.log(`[lararium]   ${crossingUrl({ webOrigin: webOriginForFace(f, webPort), wsUrl: wsUrlForOrigin(f.origin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
   }
   console.log("[lararium]   (a leaf still needs an ADMIT — the leaf's page shows its own key + the `lares device-admit` line to run here)");
 

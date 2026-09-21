@@ -13,7 +13,7 @@
  * vector would buy a shorter file and cost the diagnosis, which is the whole reason to run it.
  *
  * The vectors also split by PREREQUISITE, and that split does diagnostic work on its own:
- *   W1-W3 need only a browser — the app boots a sovereign island, "no node attached". A red here is
+ *   W1-W3 need only a browser — the web surface boots a sovereign island, "no node attached". A red here is
  *         browser-side and cannot be a crossing fault.
  *   W4-W5 need a node vessel — a red here cannot be a DOM fault, because W1-W3 already passed.
  *
@@ -22,7 +22,7 @@
  */
 import { chromium } from "playwright";
 
-const APP = process.env.WELD_APP_URL ?? "http://localhost:5173";
+const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const SETTLE_MS = Number(process.env.WELD_SETTLE_MS ?? 15_000);
 
 let failures = 0, gaps = 0;
@@ -149,22 +149,22 @@ const main = async () => {
     await installWorkerTrace(page);
 
   console.log(`\n\x1b[1mBROWSER WELD — a tiddler edited in a browser, followed to the node's disk\x1b[0m`);
-  console.log(`  app: ${APP}\n`);
+  console.log(`  web: ${WEB}\n`);
 
-  // ── W0 · the app answers at all ───────────────────────────────────────────────────────────────
+  // ── W0 · the web surface answers at all ───────────────────────────────────────────────────────
   // Not a seam — a precondition. Separated so "the dev server is down" never reads as "the render leg
   // is broken", which is the misdiagnosis a combined vector would hand us.
   try {
-    await page.goto(APP, { waitUntil: "domcontentloaded", timeout: 20_000 });
-    ok("W0 app-answers", "the shell loaded");
+    await page.goto(WEB, { waitUntil: "domcontentloaded", timeout: 20_000 });
+    ok("W0 web-answers", "the shell loaded");
   } catch (e) {
-    bad("W0 app-answers", `no app at ${APP} — ${String(e).slice(0, 90)}`);
+    bad("W0 web-answers", `no web surface at ${WEB} — ${String(e).slice(0, 90)}`);
     return finish();
   }
 
   // ── W1 · the vessel boots to a live sovereign island ──────────────────────────────────────────
-  // The app writes its own verdict into #status / #vessel. Reading ITS words rather than inferring
-  // from the DOM keeps this vector honest about what the app itself claims.
+  // The web surface writes its own verdict into #status / #vessel. Reading ITS words rather than inferring
+  // from the DOM keeps this vector honest about what the web surface itself claims.
   const status = await until(async () => {
     const t = await page.evaluate(() => document.getElementById("vessel")?.textContent ?? "");
     return t.includes("live") ? t : null;

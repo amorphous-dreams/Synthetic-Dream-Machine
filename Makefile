@@ -4,7 +4,7 @@
 help:
 	@echo "Development:"
 	@echo "  make install       Install all workspace dependencies"
-	@echo "  make build         Build all packages (core → tw5 → tldraw → node → app → mcp)"
+	@echo "  make build         Build all workspace packages, including the web surface"
 	@echo "  make test          Run all package test suites"
 	@echo "  make typecheck     Run tsc --noEmit across all packages"
 	@echo "  make serve         Build then run node relay peer on :4321 (catalog URL printed to console)"

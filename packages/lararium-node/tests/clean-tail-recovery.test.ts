@@ -62,7 +62,7 @@ describe("moveTornTailAside", () => {
 /**
  * The spawn crosses out of the parent's loader: `spawn(process.execPath, [childPath, …])`
  * starts a bare node, so `childPath` MUST name a real `.js` on disk. Running from the TS
- * SOURCE (`tsx src/main.ts` — the `pnpm dev` / `vessel stand --with-app` path) resolves the
+ * SOURCE (`tsx src/main.ts` — the `pnpm dev` / `vessel stand --with-web` path) resolves the
  * sibling under `src/`, where only the `.ts` lives; the compiled twin under `dist/src/` carries
  * the child. A path that misses makes every doc exit 1 and read as `aborted`, condemning sound
  * data — so the resolver either names an existing file or throws a build instruction.

@@ -7,7 +7,7 @@
  */
 import { describe, test, expect } from "vitest";
 import {
-  lanIPv4Addresses, deriveReachFaces, wsUrlForOrigin, crossingUrl, appOriginForFace,
+  lanIPv4Addresses, deriveReachFaces, wsUrlForOrigin, crossingUrl, webOriginForFace,
   type InterfaceTable, type ReachFace,
 } from "../src/lan-address.js";
 
@@ -70,43 +70,43 @@ describe("the reach-faces a vessel answers on", () => {
     expect(wsUrlForOrigin("https://hearth.example")).toBe("wss://hearth.example/ws");
   });
 
-  test("the crossing url dials the SAME host the app came from — a phone cannot reach the node's localhost", () => {
+  test("the crossing url dials the SAME host the web surface came from — a phone cannot reach the node's localhost", () => {
     const face: ReachFace = { kind: "lan", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
     const url = crossingUrl({
-      appOrigin: appOriginForFace(face, 5173),
+      webOrigin: webOriginForFace(face, 5173),
       wsUrl: wsUrlForOrigin(face.origin), gateKey: "ab12",
     });
     expect(url).toBe("http://192.168.1.42:5173/?relay=ws://192.168.1.42:8080/ws&gate=ab12");
     expect(url).not.toContain("localhost");
   });
 
-  // ── DNS-01: a configured LAR_PUBLIC_URL binds the app over https + the relay over wss under ONE name ──
+  // ── DNS-01: a configured LAR_PUBLIC_URL binds the web surface over https + the relay over wss under ONE name ──
 
-  test("a declared TLS face advertises the APP over https at its own name — no separate app port (a proxy fronts both)", () => {
+  test("a declared TLS face advertises the WEB surface over https at its own name — no separate web port (a proxy fronts both)", () => {
     const declared: ReachFace = { kind: "declared", host: "enyalios.home.amorphousdreams.net", origin: "https://enyalios.home.amorphousdreams.net" };
-    // The proxy terminates TLS and serves the app at the SAME https origin — the app port is not appended.
-    expect(appOriginForFace(declared, 5173)).toBe("https://enyalios.home.amorphousdreams.net");
+    // The proxy terminates TLS and serves the web surface at the SAME https origin — the web port is not appended.
+    expect(webOriginForFace(declared, 5173)).toBe("https://enyalios.home.amorphousdreams.net");
     // The relay under the SAME name carries wss (mixed-content-safe from an https page).
     expect(wsUrlForOrigin(declared.origin)).toBe("wss://enyalios.home.amorphousdreams.net/ws");
-    // The whole crossing URL: app over https, relay over wss, one name.
-    expect(crossingUrl({ appOrigin: appOriginForFace(declared, 5173), wsUrl: wsUrlForOrigin(declared.origin), gateKey: "beef" }))
+    // The whole crossing URL: web surface over https, relay over wss, one name.
+    expect(crossingUrl({ webOrigin: webOriginForFace(declared, 5173), wsUrl: wsUrlForOrigin(declared.origin), gateKey: "beef" }))
       .toBe("https://enyalios.home.amorphousdreams.net/?relay=wss://enyalios.home.amorphousdreams.net/ws&gate=beef");
   });
 
-  test("UNSET LAR_PUBLIC_URL — loopback + LAN faces keep today's http://host:appPort app origin (inert)", () => {
+  test("UNSET LAR_PUBLIC_URL — loopback + LAN faces keep today's http://host:webPort web origin (inert)", () => {
     const faces = deriveReachFaces({ port: 8080, interfaces: TABLE });   // no declaredUrl
     expect(faces.map((f) => f.kind)).toEqual(["loopback", "lan", "lan"]);
-    // loopback → localhost on the app port over http; LAN → the interface host on the app port over http.
-    expect(appOriginForFace(faces[0]!, 5173)).toBe("http://localhost:5173");
-    expect(appOriginForFace(faces[1]!, 5173)).toBe("http://192.168.1.42:5173");
+    // loopback → localhost on the web port over http; LAN → the interface host on the web port over http.
+    expect(webOriginForFace(faces[0]!, 5173)).toBe("http://localhost:5173");
+    expect(webOriginForFace(faces[1]!, 5173)).toBe("http://192.168.1.42:5173");
     // The relay stays ws:// for a plain http face — unchanged.
     expect(wsUrlForOrigin(faces[1]!.origin)).toBe("ws://192.168.1.42:8080/ws");
   });
 
-  test("a declared http (non-TLS) face still rides its app port over http — https is not forced onto a plain declaration", () => {
+  test("a declared http (non-TLS) face still rides its web port over http — https is not forced onto a plain declaration", () => {
     // The whole point is that the SCHEME rides the declaration: an operator who declares http gets http+ws.
     const declaredHttp: ReachFace = { kind: "declared", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
-    expect(appOriginForFace(declaredHttp, 5173)).toBe("http://192.168.1.42:8080");   // declared origin verbatim
+    expect(webOriginForFace(declaredHttp, 5173)).toBe("http://192.168.1.42:8080");   // declared origin verbatim
     expect(wsUrlForOrigin(declaredHttp.origin)).toBe("ws://192.168.1.42:8080/ws");
   });
 });

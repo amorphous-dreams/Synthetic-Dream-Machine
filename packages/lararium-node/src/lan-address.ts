@@ -103,27 +103,27 @@ export function wsUrlForOrigin(origin: string): string {
 }
 
 /**
- * The APP origin a reach-face advertises — where the browser loads the static app from.
+ * The WEB origin a reach-face advertises — where the browser loads the static web surface from.
  *
- * A DECLARED face (LAR_PUBLIC_URL) serves the app at its OWN name over its OWN scheme: an operator who set
- * `https://enyalios.home.amorphousdreams.net` fronts BOTH the app and the relay behind ONE reverse proxy
- * that terminates TLS, so the app rides that https origin directly — no separate app port. A loopback / LAN
- * face has no proxy: the static app answers on the dev/app port at the same host over http. So the declared
- * origin advertises the app over `https` (and its relay over `wss`, via wsUrlForOrigin), while the local
- * faces keep today's `http://host:appPort` behaviour unchanged.
+ * A DECLARED face (LAR_PUBLIC_URL) serves the web surface at its OWN name over its OWN scheme: an operator who set
+ * `https://enyalios.home.amorphousdreams.net` fronts BOTH the web surface and the relay behind ONE reverse proxy
+ * that terminates TLS, so the web surface rides that https origin directly — no separate web port. A loopback / LAN
+ * face has no proxy: the static web surface answers on the dev/web port at the same host over http. So the declared
+ * origin advertises the web surface over `https` (and its relay over `wss`, via wsUrlForOrigin), while the local
+ * faces keep today's `http://host:webPort` behaviour unchanged.
  */
-export function appOriginForFace(face: ReachFace, appPort: number): string {
-  if (face.kind === "declared") return face.origin.replace(/\/+$/, "");   // proxy serves the app at this name too
-  const host = face.host.replace(/:\d+$/, "");                            // drop the relay port; the app rides appPort
-  return `http://${host}:${appPort}`;
+export function webOriginForFace(face: ReachFace, webPort: number): string {
+  if (face.kind === "declared") return face.origin.replace(/\/+$/, "");   // proxy serves the web surface at this name too
+  const host = face.host.replace(/:\d+$/, "");                            // drop the relay port; the web surface rides webPort
+  return `http://${host}:${webPort}`;
 }
 
 /**
- * Build the crossing URL a leaf opens: the app origin, the relay it dials, and the GATE key its V3 proof
- * commits to. The relay rides the SAME name the app came from — a phone that loaded the app over a LAN
+ * Build the crossing URL a leaf opens: the web origin, the relay it dials, and the GATE key its V3 proof
+ * commits to. The relay rides the SAME name the web surface came from — a phone that loaded the web surface over a LAN
  * address cannot dial `localhost` (which on that phone names the phone), and a browser on a TLS name cannot
  * dial a `ws://` relay from an `https://` page (mixed content), so a declared face carries `wss` throughout.
  */
-export function crossingUrl(opts: { appOrigin: string; wsUrl: string; gateKey: string }): string {
-  return `${opts.appOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}&gate=${opts.gateKey}`;
+export function crossingUrl(opts: { webOrigin: string; wsUrl: string; gateKey: string }): string {
+  return `${opts.webOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}&gate=${opts.gateKey}`;
 }

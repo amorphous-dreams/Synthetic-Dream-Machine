@@ -3,7 +3,7 @@
  *
  * The PATH tools below stand in for Vite, curl, and the browser drivers.  They
  * let this test prove runner ownership and result handling without starting an
- * app, Chromium, or Docker.
+ * web surface, Chromium, or Docker.
  */
 import assert from "node:assert/strict";
 import { access, chmod, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -18,7 +18,7 @@ const OPEN_VESSEL = join(REPO, "packages/lararium-browser/src/open-browser-vesse
 const OPEN_CORE = join(REPO, "packages/lararium-mesh/src/open-vessel-core.ts");
 const DAEMON_CORE = join(REPO, "packages/lararium-tw5/src/daemon-vm-core.ts");
 const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worker.ts");
-const APP_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
+const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
@@ -157,12 +157,12 @@ async function testC4TraceHookIsOptIn() {
 }
 
 async function testC4TraceAnchorsStillStand() {
-  const [vessel, openCore, daemon, worker, appMain] = await Promise.all([
+  const [vessel, openCore, daemon, worker, webMain] = await Promise.all([
     readFile(OPEN_VESSEL, "utf8"),
     readFile(OPEN_CORE, "utf8"),
     readFile(DAEMON_CORE, "utf8"),
     readFile(DAEMON_WORKER, "utf8"),
-    readFile(APP_MAIN, "utf8"),
+    readFile(WEB_MAIN, "utf8"),
   ]);
   for (const [label, source, pattern] of [
     ["corpus-ready", openCore, /emit\("corpus-ready"\);/g],
@@ -174,7 +174,7 @@ async function testC4TraceAnchorsStillStand() {
     ["worker WASM init", worker, /await initKeyhiveWasm\(\);/g],
     ["worker kernel import", worker, /await import\("@lararium\/browser\/browser-daemon-island"\);/g],
     ["worker trace gate", worker, /searchParams\.get\("c4trace"\) !== "1"/g],
-    ["worker trace route", appMain, /daemonWorkerUrl\.searchParams\.set\("c4trace", "1"\);/g],
+    ["worker trace route", webMain, /daemonWorkerUrl\.searchParams\.set\("c4trace", "1"\);/g],
   ]) {
     assert.equal(source.match(pattern)?.length ?? 0, 1, `${label} trace anchor drifted`);
   }
@@ -224,7 +224,7 @@ async function testForeignPortCannotPassReadiness() {
     const { done } = run("bash", [RUNNER], { cwd: REPO, env: harness.env });
     const result = await done;
     assert.notEqual(result.status, 0, result.output);
-    assert.match(result.output, /app process exited before readiness/i);
+    assert.match(result.output, /web process exited before readiness/i);
     assert.equal(await exists(harness.calls), false, result.output);
   } finally {
     await harness.dispose();
@@ -237,7 +237,7 @@ async function testDelayedForeignPortCannotPassViteReadiness() {
     const { done } = run("bash", [RUNNER], { cwd: REPO, env: harness.env });
     const result = await done;
     assert.notEqual(result.status, 0, result.output);
-    assert.match(result.output, /app never answered/i);
+    assert.match(result.output, /web surface never answered/i);
     assert.equal(await exists(harness.curlCalls), false, result.output);
     assert.equal(await exists(harness.calls), false, result.output);
   } finally {

@@ -260,7 +260,7 @@ export async function runInit(opts: InitOptions = {}): Promise<InitResult> {
     console.log(`  PersonaGroup ${payload.personaGroupDocIdHex.slice(0, 20)}…`);
     console.log(`  signer pin   ${payload.signerDid.slice(0, 20)}…`);
     console.log(`  hearth-name  ${payload.hearthTrueName.slice(0, 20)}…  (binding: device × hearthTrueName)`);
-    console.log("[lares vessel found --admit] done — joined the PersonaGroup. Start with: lares vessel stand --with-app");
+    console.log("[lares vessel found --admit] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
     return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
   }
 

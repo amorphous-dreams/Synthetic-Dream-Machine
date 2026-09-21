@@ -48,7 +48,7 @@ import { cmdRebirth } from "./rebirth.js";
 import { cmdWire } from "./wire.js";
 import { cmdVesselCard } from "./vessel-card.js";
 import {
-  cmdStandForeground, cmdStandWithApp, cmdClear, cmdRestart, cmdRiteRebuild, cmdRiteRefresh,
+  cmdStandForeground, cmdStandWithWeb, cmdClear, cmdRestart, cmdRiteRebuild, cmdRiteRefresh,
 } from "./scripted.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
@@ -70,11 +70,11 @@ const withFlag = (args: ParsedArgs, key: string, value = true): ParsedArgs =>
  * `vessel stand` — the ENTRY POINT, and the one sub-door that carries modes.
  *
  * Standing a vessel runs ONE motion with several postures, and each posture rides a flag:
- * `--foreground` chooses who owns the terminal, `--with-app` adds the Vite face beside it, `--restart`
+ * `--foreground` chooses who owns the terminal, `--with-web` adds the Vite face beside it, `--restart`
  * clears the port first. None of them names a different motion.
  *
  * THEY DO, HOWEVER, REACH IT THROUGH FOUR PROGRAMS, and each program reads a different slice of the
- * command line — `cmdStandWithApp` reads none of it. `posturePlan` holds that difference so a flag
+ * command line — `cmdStandWithWeb` reads none of it. `posturePlan` holds that difference so a flag
  * the chosen posture cannot carry names itself, and `--observe` refuses rather than performing the
  * act it vowed to withhold.
  */
@@ -85,7 +85,7 @@ async function standVessel(args: ParsedArgs): Promise<number> {
   if (plan.refuse !== null) { console.error(`lares vessel stand: ${plan.refuse}`); return 2; }
   for (const line of posturePlanNotice(plan)) console.error(`lares vessel stand: ${line}`);
 
-  if (a.flags["with-app"])    return cmdStandWithApp(a);
+  if (a.flags["with-web"])    return cmdStandWithWeb(a);
   if (a.flags["restart"])     {
     // `--clear` reads as the operator's word for the wipe; the handler beneath spells it `fresh`.
     return cmdRestart(a.flags["clear"] ? withFlag(a, "fresh") : a);
@@ -179,7 +179,7 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
   // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
   // its card; the founding mints one and nothing surfaced it.
   card: { summary: "print this vessel's ContactCard — the artifact another operator needs to relate to it", run: cmdVesselCard },
-  stand: { summary: "bring the daemon up and report — [--foreground] [--with-app] [--restart [--clear]]", run: standVessel },
+  stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart [--clear]]", run: standVessel },
   // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring
   // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.
   wire:  { summary: "point every AI surface on this machine at this vessel — idempotent, re-aims drift",  run: (a) => cmdWire(under(a)) },

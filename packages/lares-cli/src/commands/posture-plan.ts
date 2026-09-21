@@ -19,20 +19,20 @@
  */
 
 /** The postures, in the order `standVessel` tests them — first match wins, the rest shadow. */
-export const POSTURES = ["with-app", "restart", "foreground", "report"] as const;
+export const POSTURES = ["with-web", "restart", "foreground", "report"] as const;
 export type Posture = (typeof POSTURES)[number];
 
 /**
  * What each posture's handler actually reads.
  *
- * Measured from the handlers, not from their documentation: `cmdStandWithApp` takes `_args` and
+ * Measured from the handlers, not from their documentation: `cmdStandWithWeb` takes `_args` and
  * defers to `pnpm dev`, so it reads NOTHING — its own port and root included.
  */
 const READS: Record<Posture, readonly string[]> = {
   "report":     ["observe", "init", "install", "admit", "claude", "codex", "copilot", "vscode", "port", "root", "json"],
   "foreground": ["wiki", "port", "root", "debug", "json"],
   "restart":    ["port", "clear", "fresh", "wiki", "root", "debug", "json"],
-  "with-app":   [],
+  "with-web":   [],
 };
 
 /** Flags this door defines. A name outside the union belongs to arg parsing, never to a posture. */

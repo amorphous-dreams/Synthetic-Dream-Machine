@@ -131,7 +131,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",
-      "stand --with-app     node + Vite app together",
+      "stand --with-web     node + Vite web surface together",
       "stand --restart [--clear]   free the port first, optionally wiping the store",
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --install      found the vessel before standing it — stays inside LAR_ROOT",

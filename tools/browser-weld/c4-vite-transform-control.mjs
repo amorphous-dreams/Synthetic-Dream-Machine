@@ -3,13 +3,13 @@
  *
  * The isolated control proves that the trace transform can preserve a small
  * Worker. This witness carries the unchanged and transformed source through
- * Vite's actual app graph. It names only what the browser reports: Worker
+ * Vite's actual web graph. It names only what the browser reports: Worker
  * spawn, trace markers, browser errors, and the bounded terminal surface.
  *
  * No readiness branch, manifest order, or Worker behavior changes here. The
  * route belongs to this browser island and disappears with its context.
  *
- * Direct run: stand Vite on an owned port, then set WELD_APP_URL to that URL.
+ * Direct run: stand Vite on an owned port, then set WELD_WEB_URL to that URL.
  * The JSON result keeps host/Worker receipts and script responses together;
  * this witness does not write the runner's vite.log/weld.log/c4.log artifacts.
  */
@@ -19,7 +19,7 @@ import { chromium } from "playwright";
 process.env.LEAF_BOOT_TRACE = "1";
 const { instrumentBootSource } = await import("./leaf-continuity.mjs");
 
-const APP = process.env.WELD_APP_URL ?? "http://localhost:5173";
+const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const CONTROL_TIMEOUT_MS = Number(process.env.C4_VITE_CONTROL_MS ?? 8_000);
 
 function isJavaScript(response) {
@@ -172,7 +172,7 @@ async function runCase(browser, mode) {
     return route.fulfill({ response, body: transformed });
   });
 
-  const target = new URL(APP);
+  const target = new URL(WEB);
   target.searchParams.set("c4trace", "1");
   try {
     await page.goto(target.href, { waitUntil: "domcontentloaded" });

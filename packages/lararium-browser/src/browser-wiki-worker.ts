@@ -9,8 +9,8 @@
  *
  * DOM types do not appear in this file (BA-1). `self` is the sole platform surface.
  *
- * (Filename kept as browser-wiki-worker for the app's external spawn URL; the
- * browser-wiki-island suffix-rename awaits app-side coordination.)
+ * (Filename kept as browser-wiki-worker for the web surface's external spawn URL; the
+ * browser-wiki-island suffix-rename awaits web-side coordination.)
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-wiki-worker
  */

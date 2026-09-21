@@ -1,7 +1,7 @@
 /**
  * browser leaf continuity — C4's held-out live walk.
  *
- * A real Chromium profile runs the app, first without an anchor and then with a
+ * A real Chromium profile runs the web surface, first without an anchor and then with a
  * valid gate key. The browser's IndexedDB survives document replacement, which
  * makes this the ordinary field walk rather than a synthetic Repo exercise.
  *
@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 
-const APP = process.env.WELD_APP_URL ?? "http://localhost:5173";
+const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
 const ANCHOR = "4a".repeat(32);
 const BOOT_MS = Number(process.env.LEAF_BOOT_MS ?? 90_000);
 const BOOT_TRACE = process.env.LEAF_BOOT_TRACE === "1";
@@ -26,8 +26,8 @@ const pageBootTrace = new WeakMap();
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const say = (kind, text) => console.log(`  ${kind.padEnd(8)} ${text}`);
 
-function appUrl(gate) {
-  const url = new URL(APP);
+function webUrl(gate) {
+  const url = new URL(WEB);
   if (gate) url.searchParams.set("gate", gate);
   if (BOOT_TRACE) url.searchParams.set("c4trace", "1");
   return url.href;
@@ -388,14 +388,14 @@ async function ordinaryWalk() {
     page.on("pageerror", (error) => logs.push(`pageerror: ${error.message}`));
     const finishObservation = await observeKelRead(context, page);
 
-    await page.goto(appUrl(), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
     const offline = await liveReading(page);
     if (!/^0x[0-9a-f]{64}$/i.test(offline.did)) throw new Error(`offline boot reported no vessel key: ${offline.did || "empty"}`);
     const offlineKel = assertKel("offline founding", offline);
     say("ok", "C4.1 offline leaf founded with a persistent browser identity");
 
     const anchoredAt = logs.length;
-    await page.goto(appUrl(ANCHOR), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl(ANCHOR), { waitUntil: "domcontentloaded" });
     const anchored = await liveReading(page);
     const anchorLogs = logs.slice(anchoredAt).join("\n");
     if (anchored.did !== offline.did) throw new Error("anchor configuration changed the browser vessel identity");
@@ -422,7 +422,7 @@ async function faultWalk() {
     const page = await context.newPage();
     watchPage(context, page);
     let replacements = 0;
-    await page.goto(appUrl(), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
     await liveReading(page);
 
     await page.route("**/*.js*", async (route) => {
@@ -439,7 +439,7 @@ async function faultWalk() {
       return route.fulfill({ response, body: source.replace(call, "await Promise.resolve({ carried: 0, from: null });") });
     });
 
-    await page.goto(appUrl(ANCHOR), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl(ANCHOR), { waitUntil: "domcontentloaded" });
     const refusal = await refusedReading(page);
     if (replacements !== 1) throw new Error(`C4 fault route replaced ${replacements} carry calls, expected one`);
     if (!/persona-KEL chain.*absent.*Binding Gate/i.test(refusal)) {
@@ -454,15 +454,15 @@ async function malformedAnchorWalk() {
     const page = await context.newPage();
     watchPage(context, page);
     const finishObservation = await observeKelRead(context, page);
-    await page.goto(appUrl(), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
     const offline = await liveReading(page);
     const offlineKel = assertKel("malformed-anchor offline founding", offline);
-    await page.goto(appUrl("not-a-hex-gate"), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl("not-a-hex-gate"), { waitUntil: "domcontentloaded" });
     const refusal = await refusedReading(page);
     if (!/\[nexus\] the island reads TORN, so no board may be addressed — an admission RECORD stands at this vessel and the anchor key it names reads as no key at all/i.test(refusal)) {
       throw new Error(`malformed anchor did not stop at nexusScopeOrThrow: ${refusal}`);
     }
-    await page.goto(appUrl(ANCHOR), { waitUntil: "domcontentloaded" });
+    await page.goto(webUrl(ANCHOR), { waitUntil: "domcontentloaded" });
     const recovered = await liveReading(page);
     if (recovered.did !== offline.did) throw new Error("valid anchor retry after malformed input changed the browser vessel identity");
     assertKel("valid anchor retry after malformed input", recovered, offlineKel);

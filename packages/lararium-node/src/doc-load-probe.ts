@@ -41,7 +41,7 @@ const DEFAULT_TIMEOUT_MS = 30_000;
  * The spawn crosses out of whatever loader the parent runs under: `spawn(process.execPath, …)`
  * starts plain node with no TypeScript hook, so the argv path must name a real `.js` on disk.
  * A parent running from `dist/` finds its sibling directly. A parent running the TS SOURCE
- * (`tsx src/main.ts`, the `pnpm dev` / `vessel stand --with-app` path) sees `import.meta.url`
+ * (`tsx src/main.ts`, the `pnpm dev` / `vessel stand --with-web` path) sees `import.meta.url`
  * point at `src/`, whose `.js` sibling exists only under `dist/src/` — so the source layout
  * maps to its compiled twin here.
  *

@@ -10,7 +10,7 @@
 #   qa-smoke   — stdio smoke tests against built image
 #
 # Usage:
-#   make docker-dev          # hot-reload serve + app
+#   make docker-dev          # hot-reload serve + web surface
 #   make docker-qa           # QA browser test on :4321
 #   make docker-prod         # production serve
 #   docker compose --profile mcp-qa up

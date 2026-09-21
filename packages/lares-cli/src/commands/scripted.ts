@@ -69,8 +69,8 @@ export async function cmdStandForeground(args: ParsedArgs): Promise<number> {
   return runCommand("node", [distMain, ...extraArgs], NODE_PKG);
 }
 
-/** `lares vessel stand --with-app` — boot node + Vite app concurrently (full dev experience). */
-export async function cmdStandWithApp(_args: ParsedArgs): Promise<number> {
+/** `lares vessel stand --with-web` — boot node + Vite web surface concurrently (full dev experience). */
+export async function cmdStandWithWeb(_args: ParsedArgs): Promise<number> {
   // Defer to the workspace-root `pnpm dev` script which already wires
   // `concurrently -n node,vite`. Touching that orchestration here would
   // duplicate config that's better kept at one site.
