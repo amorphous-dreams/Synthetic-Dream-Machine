@@ -759,6 +759,12 @@ many independent Nexuses may stand without changing the shared genesis or conver
   immutable seed strictly derives any source-backed fetch inventory. Mesh controls prove persisted reload and
   first-breath refusal; Node and Browser verify missing/tampered local CAS before workers begin. Gaia's household
   device restarts from what it actually holds. Elyncia's waystone remembers its shrine without inventing a new fire.
+# ''Aftermath — `3607a1d9f`, 2026-09-21.'' The retiring spelling has no route, negative control, build-cleanup
+  list, stale-name filter, or retirement-named test left in the active genesis surface. The living genesis meme
+  now names `seed.json` plus exact CAS as the whole bundle. Mesh, Node, Browser, Web and CLI typechecks passed;
+  focused genesis/public-library controls passed 34 tests; the browser OPFS control passed 4; and the quine boot
+  passed. Two consecutive deterministic builds produced the same seed digest. The residual package Vite warning
+  concerns a future config-loader default and does not affect this startup contract.
 # ''One shared startup contract test family.'' Drive Node filesystem, Web bundle/HTTP/OPFS, and bulb pull through
   the same vectors: malformed seed, altered region witness, absent byte, wrong byte hash, duplicate/widened byte,
   first materialization, and persisted reload. Keep substrate setup at each shore; place assertions about causal
@@ -1064,6 +1070,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yN_lcUjgMjZr6Uo0oU0GW7qs7UYlNb0_kW2u09AVW9M
+<<^ code="&#x0003;">>ni:///sha-256;PlZneFPJcrMgtgHRBONNaRYJINwI7_igxLxA0hwlRgo
 
 <<^ code="&#x0004;" -> to="?">>
