@@ -84,7 +84,7 @@ desc  = "The wiki doc starts empty; the corpus doc carries its own seeded conten
 ```toml #ISLAND_2_GENESIS_ROOT
 id    = "ISLAND_2_GENESIS_ROOT"
 label = "Genesis artifact is the causal root of the engine island"
-desc  = "@phase: S2+  The engine island boots from genesis/island.bin — an Automerge.save() binary embedded at build time. No peer reads engine content from a filesystem path at runtime. A peer whose artifact is absent or whose grammar tiddler hash diverges MUST halt."
+desc  = "@phase: S5  First boot materializes the deterministic oracle island from immutable genesis/seed.json. The engine and plugin bytes ride only as exact genesis/cas/<cid> members named by that seed; Node, Web, and bulb shores obtain them through their own declared storage or transport caps. A missing or malformed seed, absent required byte, or CID mismatch MUST halt. No seeding shore gains authority from supplying public bytes."
 ```
 
 ```toml #ISLAND_3_AUTHORITY_FIRST
@@ -204,7 +204,7 @@ desc  = "Grammar bootstrap reads raw carrier text from the grammar tiddler (.tex
 ```toml #CODEC_EX_PRE_S2_COLD_BOOT
 id    = "CODEC_EX_PRE_S2_COLD_BOOT"
 label = "Pre-S2 cold-boot filesystem read"
-desc  = "@remove: S2  Until genesis/island.bin exists, the node peer reads lares/memes/api/pono/memetic-wikitext.md at cold-boot to seed the engine doc. Transitional exception to ISLAND_2_GENESIS_ROOT. Disappears when build-genesis-island.ts ships."
+desc  = "@retired: S5  Before the plain-data seed, cold boot read lararium source text directly. `build-genesis-island.ts` replaced that transition; current first boot reads only immutable seed/CAS material through its declared shore."
 ```
 
 ```toml #CODEC_EX_BINARY_BLOBS
@@ -303,7 +303,7 @@ desc  = "The genesis artifact establishes the zero point. Every live doc is a ca
 ```toml #GEN_2_CONTENT_ADDRESSED
 id    = "GEN_2_CONTENT_ADDRESSED"
 label = "Genesis identity is content-addressed, not server-assigned"
-desc  = "The genesis DocUrl derives from the content bytes via Automerge's document identity. The CID stored in genesis/island.sha256 provides independent verifiability. Knowing the CID is sufficient to verify any copy; no server or registry is authoritative."
+desc  = "The deterministic oracle DocUrl derives from materializing the immutable seed. The seed-derived CAS CIDs independently verify every required byte. Knowing the seed and CIDs is sufficient to verify a copy; no server or registry is authoritative."
 ```
 
 ```toml #GEN_3_IMMUTABLE_SEED
@@ -326,8 +326,8 @@ desc  = "@phase: S5 — proved Sprint 5. The genesis artifact carries the TW5 en
 
 ```toml #PEER_1_BOOT_SYMMETRY
 id    = "PEER_1_BOOT_SYMMETRY"
-label = "All peers import the same genesis bytes; no privileged seeder"
-desc  = "Node peer, browser peer, and worker all call repo.import(genesisBytes) with the same Uint8Array baked into the bundle. No peer holds a seeding role. The CRDT merge protocol handles divergence from genesis forward; no peer is authoritative by virtue of being first."
+label = "All peers materialize the same seed; no privileged seeder"
+desc  = "Node, Web, browser-worker, and bulb-kindled peers materialize the same immutable seed under one deterministic Oracle DocUrl and verify the exact CAS bytes it names. Their storage and transport caps differ; none gains a seeding role or authority by supplying public boot material. CRDT sync handles divergence from genesis forward."
 ```
 
 ```toml #PEER_2_OPERATIONAL_DIVERGENCE
@@ -358,6 +358,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D25kb6VEDNZE37ru-KiCDj18l9OtgFj-I_v8LK2bQYM
+<<^ code="&#x0003;">>ni:///sha-256;XDsLx3s0pDVDRmCd4V9wpN5aMFII1xyUDt5WvNKg1Y4
 
 <<^ code="&#x0004;" -> to="?">>

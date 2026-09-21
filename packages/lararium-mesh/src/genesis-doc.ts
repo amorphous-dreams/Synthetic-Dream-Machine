@@ -215,9 +215,9 @@ export interface GenesisArtifact {
   /** The PLUGINS region — this operator's OWN collection, layered on the required base. Moves alone. */
   readonly pluginsCid: string;
   /**
-   * The CAS manifest — the byte SOURCE the genesis doc no longer embeds. Names
-   * every `genesis/cas/<cid>` file (engine + plugins) so the loader mirrors exactly
-   * them into the runtime CAS. Write it beside seed.json as manifest.json.
+   * The logical CAS inventory derived strictly from `seed`. It names every
+   * `genesis/cas/<cid>` file for build, bulb, and public-wire work; it is never
+   * a second genesis file.
    */
   readonly casManifest: GenesisCasManifest;
   /**
@@ -327,11 +327,10 @@ export const GENESIS_CID_PLUGINS_TIDDLER = `${ORACLE_DOC_URI}/genesis-cid-plugin
 /**
  * Validate the structural relationship between the two genesis planes.
  *
- * This is deliberately a coherence check, not an authority rule: the seed remains independently
- * consumable as oracle state and the manifest remains independently consumable as a CAS inventory.
- * Matching fields prove that two artifacts describe the same composition; they do not make either
- * plane authoritative over the other, confer a capability, or turn one file into an alias of the other.
- * Rich seed metadata that has no manifest counterpart is intentionally not compared here.
+ * This is deliberately an integrity check, not an authority rule: callers compare a seed against a
+ * transient logical inventory at a build or wire boundary. Matching fields prove the inventory was
+ * derived from that seed; they do not confer a capability. Rich seed metadata with no CAS counterpart
+ * is intentionally not compared here.
  *
  * Throws when a shared blob identity or a region witness differs. Platform-neutral and side-effect free.
  */

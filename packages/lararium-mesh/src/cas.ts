@@ -58,23 +58,6 @@ export interface GenesisCasManifest {
 }
 
 /**
- * Build a deterministic genesis CAS manifest from blob metadata + the three region
- * CIDs. Sorted by id so write-order never perturbs the serialized bytes — the
- * manifest JSON is byte-stable across re-bakes; deterministic CRDT bytes remain a test witness only.
- */
-export function buildGenesisCasManifest(
-  engineCid:  string,
-  grammarCid: string,
-  pluginsCid: string,
-  blobs:      readonly { readonly id: string; readonly sha256: string; readonly mimeType: string; readonly version: string }[],
-): GenesisCasManifest {
-  const entries = blobs
-    .map((b) => ({ cid: b.sha256, id: b.id, mimeType: b.mimeType, version: b.version }))
-    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return { format: GENESIS_CAS_MANIFEST_FORMAT, engineCid, grammarCid, pluginsCid, blobs: entries };
-}
-
-/**
  * The engine's plugin-tiddler CIDs from an island doc's blobs — every non-engine
  * JSON blob, by sha256. The daemon AND every wiki island resolve these by CID from
  * the local CAS (the breath path), never CRDT-syncing the bytes. One derivation,

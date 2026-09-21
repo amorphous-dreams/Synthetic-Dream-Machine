@@ -78,7 +78,7 @@ export async function cmdStandWithWeb(_args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares vessel clear` — wipe the vessel store (`<lares>/vessel`) + bootstrap artifact, then re-init.
+ * `lares vessel clear` — wipe the vessel store (`<lares>/vessel`) + genesis seed/CAS artifacts, then re-init.
  *
  * Operator-confirmation gate: the wipe refuses without `--force`, so destruction stays a
  * deliberate second act.
@@ -99,7 +99,6 @@ export function clearTargets(): Array<{ path: string; recursive: boolean }> {
     // book that outlived a clear would point at destroyed docs, which is why it sits outside the corpus.
     { path: larDataDir(), recursive: true },   // the vessel store (<lares>/vessel) + the bootstrap within
     gen("seed.json"),                          // plain-data genesis seed
-    gen("manifest.json"),                      // CAS index + region CIDs
     gen("cas", true),                          // G-CAS slice 1: the blob bytes
     // The projection watermark (synced-tree) must die WITH the store — a surviving watermark makes
     // a post-clear ingest read every bags/*.md as "unchanged" and the fresh empty docs stay empty,

@@ -44,7 +44,7 @@ function fixtureBulb(): BulbArtifact {
   };
   const artifact = buildGenesisDoc(inputs);
   return {
-    seed: artifact.seed, casManifest: artifact.casManifest, casEntries: artifact.casEntries,
+    seed: artifact.seed, casEntries: artifact.casEntries,
     bootstrap: { note: "all-public boot pointers" }, sealEpochCid: "epoch-fixture-cid",
   };
 }
@@ -93,6 +93,14 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     const reassembled = assembleBulb(manifest, back);
     expect(reassembled.seed.actorSeed).toBe(bulb.seed.actorSeed);
     expect(reassembled.casEntries.length).toBe(bulb.casEntries.length);
+
+    // The seed is the only CAS inventory authority: a partial or widened fire never builds.
+    expect(() => buildBulb({ ...bulb, casEntries: bulb.casEntries.slice(1) }))
+      .toThrow(/seed-derived inventory/);
+    expect(() => buildBulb({
+      ...bulb,
+      casEntries: [...bulb.casEntries, { cid: sha256HexBytesSync(utf8Bytes("unrelated")), bytes: utf8Bytes("unrelated") }],
+    })).toThrow(/seed-derived inventory/);
 
     // A tampered blob fails the content-address (secret-free integrity).
     expect(() => assembleBulb(manifest, (cid) => (cid === manifest.seedCid ? utf8Bytes("tampered") : back(cid))))

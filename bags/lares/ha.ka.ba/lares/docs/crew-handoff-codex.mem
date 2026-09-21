@@ -702,8 +702,9 @@ hearth’s soul, roster or archive.
 ''E8 implementation receipt — shared tree, awaiting one integrated commit, 2026-09-21.'' Sprint 0's
 cap/public-library inventory now stands in `packages/AGENTS.md`: the Herm floor may carry the declared
 public-library projection, while persona/document authority remains a Lararium lift. Sprint 1 retires the
-tracked `island.bin`, sidecars and retired readers in favor of `seed.json`, `manifest.json` and
-manifest-named `cas/<cid>` members. The mesh now checks their shared blob identity and all three region
+tracked `island.bin`, sidecars and retired readers in favor of the then-staged `seed.json`, `manifest.json` and
+manifest-named `cas/<cid>` members. The later seed-canonical collapse below retires that transitional manifest.
+The mesh now checks their shared blob identity and all three region
 witnesses; a filesystem closure control proves the canonical manifest names every retained genesis CAS
 member. Under the operator's early-alpha genesis ruling, four superseded, reproducible generated plugin
 members were deleted. Sprint 2 supplies a prepared projection builder and narrow HTTP adapter: explicit,
@@ -738,6 +739,38 @@ closure, altered seed, malformed seed, tampered/missing CAS bytes, Node sweep fa
 OPFS verification, public-route refusal, bulb round-trip, and quine boot. Gaia's operator can relight a
 local vessel from founding material during an offline restart. Elyncia's traveler can kindle from public fire
 while the mutable shrine never silently rewrites which fire may execute.
+
+''Isomorphic startup-core OODA receipt — integrated working tree, 2026-09-21.'' The core is now one relation,
+not a Node or Web hierarchy: **verified immutable seed → strict logical inventory → exact CAS bytes →
+reload-or-materialize deterministic Oracle → compose the local #has-cap stack**. `@lararium/mesh` owns the
+platform-neutral Oracle intake (`materializeGenesisIsland`) and the seed-to-inventory projection.
+`@lararium/node` supplies filesystem/CAS storage; `@lararium/browser` supplies OPFS and worker execution;
+`@lararium/web` supplies the bundled seed, DOM, and Vite asset shore; a bulb supplies public seed/CAS bytes to
+a newly sovereign peer. Each shore differs by capability, not causal rank. The bulb protocol now reads the
+seed before requesting fire and carries no duplicate `casManifestCid` or `casCids`; builder and assembler reject
+missing, widened, duplicate, or hash-mismatched bytes. `lares vessel clear` no longer names the retired physical
+manifest. A Nexus remains a separately addressed confederation capability keyed by its own crossing material;
+many independent Nexuses may stand without changing the shared genesis or converting any peer into a client.
+
+''Startup-core next cuts — human-scale Scrum.''
+# ''Restart versus first-breath contract.'' Make the isomorphic intake explicitly distinguish a locally reloaded
+  Oracle from a true first materialization. A persisted Oracle may stand without consulting a seed; a missing
+  local CAS still requires a declared immutable byte source before a worker can run. Red controls cover persisted
+  Oracle with seed absent, first boot with seed absent, persisted Oracle with a missing CAS member, and a mutable
+  Oracle attempting to name a new byte. Gaia's household device restarts from what it actually holds. Elyncia's
+  waystone remembers its shrine without inventing a new fire.
+# ''One shared startup contract test family.'' Drive Node filesystem, Web bundle/HTTP/OPFS, and bulb pull through
+  the same vectors: malformed seed, altered region witness, absent byte, wrong byte hash, duplicate/widened byte,
+  first materialization, and persisted reload. Keep substrate setup at each shore; place assertions about causal
+  identity and byte membership in mesh. A generic platform-I/O abstraction is not owed unless that test family
+  exposes repeated policy rather than merely different storage operations.
+# ''Multiple-Nexus household proof.'' Stand at least two independent Nexus keys with Node and Web peers. Prove each
+  peer resolves only its declared WHO/FLOW boards, retains local causal state through the other Nexus's absence,
+  and cannot turn shared genesis, a public-library face, relay reach, or a DNS name into cross-Nexus authority.
+  This is a mesh reservation and composition proof, not a new vessel type.
+# ''Public-library composition and bounded reach.'' Complete E8's explicit public-library mount and its
+  process-attributed Web/worker/seed/CAS receipts; then run the reserved multi-device household vector. Bounded
+  DNS/origin work remains crossed to the Claude/Lares crew and may describe reach only, never grant a cap.
 
 ''Following integration slice — public-library composition, 12 points.'' Begin red-first from the existing
 prepared projection: a configured composition root must obtain an explicit built-Web asset inventory, explicit
@@ -1031,6 +1064,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sjwsmpbmF_UCoxZk2RlYljUQF170AiQ_rXabxzt-pyY
+<<^ code="&#x0003;">>ni:///sha-256;TSKxXQcXBs9kpOCC9RuchCE9VFLVj0mPBor5YrSPdE8
 
 <<^ code="&#x0004;" -> to="?">>

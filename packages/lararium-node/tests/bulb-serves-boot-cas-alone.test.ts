@@ -29,7 +29,7 @@ function fixtureBulb(): BulbArtifact {
     plugins: [{ id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0", sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob }],
   };
   const a = buildGenesisDoc(inputs);
-  return { seed: a.seed, casManifest: a.casManifest, casEntries: a.casEntries, bootstrap: {}, sealEpochCid: null };
+  return { seed: a.seed, casEntries: a.casEntries, bootstrap: {}, sealEpochCid: null };
 }
 
 describe("the bulb read-face serves the BOOT CAS alone — an operator's staged blob draws 404", () => {

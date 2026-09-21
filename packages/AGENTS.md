@@ -123,7 +123,7 @@ Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MO
 The Node-surface assembly treats build, init, and runtime as strictly separated authorship moments. Browser and Web assemblies carry corresponding founding and runtime paths under their own substrate capabilities. No moment reaches into another's authority.
 
 ```text
-Build time    scripts/build-genesis-island.ts    content inputs → genesis/seed.json + manifest.json + cas/<cid> (deterministic Automerge bytes are a verification witness)
+Build time    scripts/build-genesis-island.ts    content inputs → genesis/seed.json + cas/<cid> (the CAS inventory derives strictly from the seed; deterministic Automerge bytes are a verification witness)
 Init time     lares vessel found  (was scripts/init-lararium.ts)    social Tiga + identity ceremony → genesis/social-bootstrap.json
 Runtime       openNodeVessel  /  openBrowserVessel          finds docs, wires layers; never authors social state
 ```

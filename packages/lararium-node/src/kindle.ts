@@ -33,7 +33,7 @@ import {
   emptyLarDoc, IDENTITIES_NAMESPACE,
   type LarDoc,
 } from "@lararium/mesh";
-import { assembleBulb, type BulbArtifact, type BulbManifest } from "./bulb.js";
+import { assembleBulb, bulbSeedInventory, type BulbArtifact, type BulbManifest } from "./bulb.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 
@@ -46,17 +46,17 @@ export interface BulbPullTransport {
 }
 
 /**
- * PULL a bulb over a transport: fetch the manifest, then every named blob, then `assembleBulb` (which re-verifies
- * `sha256(bytes) == cid` on each — a tampered/absent blob throws, never a partial bulb). Secret-free, content-address
- * integrity only. Returns the reconstructed bulb, ready to kindle.
+ * PULL a bulb over a transport: fetch and verify its seed first, derive every required CAS CID, then fetch the
+ * bootstrap and exact fire bytes. `assembleBulb` verifies each byte again. Secret-free, content-address integrity
+ * only. Returns the reconstructed bulb, ready to kindle.
  */
 export async function pullBulb(transport: BulbPullTransport): Promise<BulbArtifact> {
   const manifest = await transport.getJson(BULB_MANIFEST_ROUTE) as BulbManifest;
-  const cids = [manifest.seedCid, manifest.bootstrapCid, manifest.casManifestCid, ...manifest.casCids];
   const cache = new Map<string, Uint8Array>();
-  for (const cid of cids) {
-    if (cache.has(cid)) continue;
-    cache.set(cid, await transport.getBytes(bulbBlobRoute(cid)));
+  cache.set(manifest.seedCid, await transport.getBytes(bulbBlobRoute(manifest.seedCid)));
+  const { inventory } = bulbSeedInventory(manifest, (cid) => cache.get(cid) ?? null);
+  for (const cid of [manifest.bootstrapCid, ...inventory.blobs.map((blob) => blob.cid)]) {
+    if (!cache.has(cid)) cache.set(cid, await transport.getBytes(bulbBlobRoute(cid)));
   }
   return assembleBulb(manifest, (cid) => cache.get(cid) ?? null);
 }
