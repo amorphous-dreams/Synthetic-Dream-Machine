@@ -92,7 +92,7 @@ composes the visible host surface around that vessel and remains a separate laye
 
 All TW5-engine DOM references that attach a rendered TW5 surface collect in one named file:
 `tw5-browser-surface.ts` (in `@lararium/tw5`). This is the TW5 projection adapter boundary: it contains
-RootTemplate compatibility and TW5's real-DOM attachment compromises. The app shell may use page DOM to
+RootTemplate compatibility and TW5's real-DOM attachment compromises. The web surface may use page DOM to
 compose its host surface and relay interaction; that page DOM does not become TW5 authority or a second
 engine. Every entry in the Adapter class above must route through this file. No worker-side TW5 authority
 may import from `window`, `document`, or `HTMLElement` without an explicit migration entry here.
@@ -140,6 +140,6 @@ Delete or quarantine these patterns. Each deletion happens after the replacement
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;whxPoRSmzB7h8F6oquQlsWGKP1m2KTT5_HlchOWaH8o
+<<^ code="&#x0003;">>ni:///sha-256;-Xff8MWKQB0yOT0anJ33NVMqvaDvspMj7qmZms05n-o
 
 <<^ code="&#x0004;" -> to="?">>

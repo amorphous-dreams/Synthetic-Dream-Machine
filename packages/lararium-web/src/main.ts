@@ -3,7 +3,7 @@
  *
  * This package owns page composition and the visible projection edge: it resolves served Worker assets,
  * opens the browser vessel, paints returned frames, and relays named DOM events and bounded input back to
- * the worker island. It does not own TW5 state or run a second engine in the page. Direct app-shell tests
+ * the worker island. It does not own TW5 state or run a second engine in the page. Direct web-surface tests
  * remain small; the browser vessel and TW5 seams carry their own focused coverage.
  */
 
