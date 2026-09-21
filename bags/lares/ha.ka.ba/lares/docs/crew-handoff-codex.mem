@@ -519,6 +519,35 @@ crossing ledger carries the exact paths and the red-first receipt.
 
 <<~/ahu>>
 
+<<~ ahu #/e8-web-delivery-truth>>
+
+!! E8 · Web delivery truth — name the serving shore before widening the proof
+
+''Operator-directed after the 2026-09-21 web migration aftermath:'' `@lararium/web` now builds and its
+artifact receipt proves the bytes a static harness reads. The Docker image still copies those bytes while
+`lararium-node` exposes WS and oracle routes without a general static HTTP handler. The two observations
+do not compose into an image-serving claim. This next wave measures the image boundary first and names a
+separate static-serving shore only when that measurement warrants one.
+
+# Make an image-level HTTP witness red before it changes any serving code. It must identify the process
+  answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
+  worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
+  reject a socket close, an oracle response, or an HTML fallback where a worker/blob belongs.
+# Keep `lararium-node` as a vessel/relay and oracle host unless an explicit later ruling grants it static
+  distribution duties. The clean alternatives are a separate static-serving process or a named stale-copy
+  retirement; neither outcome turns distribution into vessel authority.
+# Keep live relay/admission proof on its own track. `LAR_VESSEL_WS` remains probe-log input today. After
+  a mesh reservation, a founder-profile → carriage → fresh-browser-profile witness must pass a relay URL
+  to the page and surface a browser-observable receipt. C4's present red remains independent and may
+  leave that vector red without invalidating the offline web artifact receipt.
+# The three-pass aftermath after `e87694441`/`5c2064f9c`/`74a984ec8` found two living ''app shell''
+  residues and landed `ebd0ed91b`. It re-ran the 1,697-file name scan, web artifact receipt, focused
+  controls, browser-weld source control, and 95/713 source-pointer scan green. No global-now logic,
+  duplicate package tree, or generated residue entered the web shore. The next wave starts from that
+  receipt rather than re-performing the package rename.
+
+<<~/ahu>>
+
 <<~ ahu #/completed>>
 
 ! Completed increments — bounded receipts
@@ -538,7 +567,9 @@ The independent C4 relay/admission red remains untouched.
 ''Receipts:'' the live executable name scan reports 1,697 files with no old package references; the
 focused web tool suite passes 2 files / 3 tests; focused Chromium phone-seat and coherence passes 2
 files / 9 tests; browser build, web typecheck/build, artifact reachability, and browser-weld runner
-control pass. Docker mesh execution remains unrun because it tears down named volumes.
+control pass. `ebd0ed91b` follows three explicit aftermath/evergreen/L-Prime passes and re-trues two
+living ''app shell'' residues as ''web surface.'' Docker mesh execution remains unrun because it tears
+down named volumes.
 
 !! W3 · Named browser actions and retained reveal completion
 
@@ -702,6 +733,6 @@ control pass. Docker mesh execution remains unrun because it tears down named vo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XVwziHg_TbYNkg9q3ASdOHDgV7cgYO_A3n7jzpzpEgk
+<<^ code="&#x0003;">>ni:///sha-256;1NmFFdHMe9qYhz9XFFVKhyOAYvZVYsCZ2w9l1nZtGls
 
 <<^ code="&#x0004;" -> to="?">>
