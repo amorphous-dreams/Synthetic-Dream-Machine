@@ -19,7 +19,6 @@ import {
   LIFECYCLE_STAGES,
   readCarrierLifecycle,
   checkCarrierLifecycle,
-  RETIRED_META_KEYS,
 } from "../src/carrier-lifecycle.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
 import { carrierFiles } from "../src/carrier-files.js";
@@ -140,37 +139,20 @@ describe("carrier-lifecycle — the tag family carries the stage", () => {
   });
 });
 
-describe("carrier-lifecycle — the retired keys", () => {
-  test("status and retain name themselves retired", () => {
-    expect([...RETIRED_META_KEYS]).toEqual(["retain", "status"]);
-  });
-
-  test("normalize WARNS on status and leaves the bytes alone", () => {
-    const src = carrier([`status = "standing"`, `tags   = ["lifecycle/standing"]`]);
-    const res = normalizeMemeSource(src);
-    expect(res.flags).toContain("`status` retired — the stage rides `tags`");
-    expect(res.text).toContain(`status = "standing"`);
-  });
-
-  test("normalize WARNS on retain", () => {
-    const res = normalizeMemeSource(carrier([`retain = true`, `tags   = ["api/pono/meme"]`]));
-    expect(res.flags).toContain("`retain` retired — the disposition rides the `lifecycle/*` tag");
-  });
-
-  /** `cacheable` instructs the API server behind the Lares. No house code reads it and none may. */
-  test("CONTROL — cacheable draws no warning", () => {
-    const res = normalizeMemeSource(carrier([`cacheable = true`, `tags      = ["api/pono/meme"]`]));
+describe("carrier-lifecycle — operator metadata stays unconstrained", () => {
+  test("status and retain travel through normalize without a lifecycle reading", () => {
+    const res = normalizeMemeSource(carrier([`status = "standing"`, `retain = true`, `tags = ["api/pono/meme"]`]));
     expect(res.flags).toEqual([]);
+    expect(res.text).toContain(`status = "standing"`);
+    expect(res.text).toContain(`retain = true`);
   });
 });
 
 describe("carrier-lifecycle — a domain field is not a carrier's own key", () => {
   /**
    * A CARRIER'S FIELDS RIDE THE TOP-LEVEL BLOCK ALONE. `open-phases.mem` describes two authority
-   * modes in a `[[authority-modes]]` array-of-tables and gives each one a `status` of its own — a
-   * DOMAIN field naming what that mode holds, nothing to do with the carrier's standing. A reader
-   * scanning the whole fence reads it as the carrier's key and reports a retirement that is not
-   * there. `alignMetaTomlColumns` already stops at the first `[`; so does this.
+   * modes in a `[[authority-modes]]` array-of-tables and gives each one a `status` of its own.
+   * Domain fields sit outside the carrier lifecycle reader's scope.
    */
   test("a `status` beneath a [table] header belongs to the table, never to the carrier", () => {
     const src = carrier([
@@ -180,19 +162,7 @@ describe("carrier-lifecycle — a domain field is not a carrier's own key", () =
       `mode   = "keyhive"`,
       `status = "stub — pending encrypted group sync"`,
     ]);
-    expect(readCarrierLifecycle(src).retiredKeys).toEqual([]);
     expect(normalizeMemeSource(src).flags).toEqual([]);
-  });
-
-  test("CONTROL — the same key ABOVE the header is the carrier's own, and retires", () => {
-    const src = carrier([
-      `status = "standing"`,
-      `tags   = ["api/pono/meme"]`,
-      ``,
-      `[[authority-modes]]`,
-      `mode = "keyhive"`,
-    ]);
-    expect(readCarrierLifecycle(src).retiredKeys).toEqual(["status"]);
   });
 });
 

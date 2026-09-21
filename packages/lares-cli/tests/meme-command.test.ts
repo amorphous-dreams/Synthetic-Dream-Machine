@@ -512,14 +512,13 @@ describe("lares meme check — the stage law, enforced only where the tag stands
     expect(out.done()).toMatch(/no harvest-to/);
   });
 
-  test("`status` and `retain` read as retired keys, and the bytes stay put", async () => {
+  test("`status` and `retain` pass through check unchanged", async () => {
     const file = tmpFile(governed(["lifecycle/standing"], "", [`status = "standing"`, "retain = true"]));
     const before = readFileSync(file, "utf8");
     const out = say();
-    await cmdMeme(memeArgs(["check", file]));
+    expect(await cmdMeme(memeArgs(["check", file]))).toBe(0);
     const text = out.done();
-    expect(text).toMatch(/`status` retired — the stage rides `tags`/);
-    expect(text).toMatch(/`retain` retired/);
+    expect(text).not.toMatch(/retired/);
     expect(readFileSync(file, "utf8")).toBe(before);
   });
 });

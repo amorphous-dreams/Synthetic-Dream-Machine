@@ -296,8 +296,6 @@ export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
 // THE STAGE A GOVERNED CARRIER STANDS IN — read off `tags`, so a filter answers it in the wiki.
 export {
   LIFECYCLE_STAGES,
-  RETIRED_META_KEYS,
-  RETIRED_KEY_NOTES,
   readCarrierTags,
   readCarrierLifecycle,
   checkCarrierLifecycle,

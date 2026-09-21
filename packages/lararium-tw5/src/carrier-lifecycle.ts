@@ -37,22 +37,6 @@ export const LIFECYCLE_STAGES = ["designed", "standing", "folded", "harvest", "r
 
 export type LifecycleStage = (typeof LIFECYCLE_STAGES)[number];
 
-/**
- * The meta keys the stage replaced, sorted.
- *
- * `status` fused two axes into one key and no code ever read it; `retain` carried a disposition
- * office the tree never wired (measured: zero readers across `packages/(star)/src`). Both retire to ONE
- * SPELLING — the tag. `status-why` STAYS: the witness sentence is the half a tag cannot carry, and
- * `cacheable` STAYS because it instructs the API server behind the Lares rather than this house.
- */
-export const RETIRED_META_KEYS = ["retain", "status"] as const;
-
-/** Each retired key beside the sentence a normalize run hands the author who still writes it. */
-export const RETIRED_KEY_NOTES: ReadonlyArray<readonly [string, string]> = [
-  ["retain", "`retain` retired — the disposition rides the `lifecycle/*` tag"],
-  ["status", "`status` retired — the stage rides `tags`"],
-];
-
 export interface CarrierLifecycle {
   /** The stage the carrier stands in, or `null` where it declines the ladder. */
   readonly stage: LifecycleStage | null;
@@ -62,19 +46,15 @@ export interface CarrierLifecycle {
   readonly kinds: readonly string[];
   /** The living bag a `harvest` carrier folds into, as written. */
   readonly harvestTo: string | null;
-  /** Which retired keys the carrier still writes. */
-  readonly retiredKeys: readonly string[];
 }
 
 /**
  * A CARRIER'S OWN FIELDS RIDE THE TOP-LEVEL BLOCK ALONE, and everything beneath the first `[table]`
  * header belongs to the table.
  *
- * `open-phases.mem` describes two authority modes in a `[[authority-modes]]` array and gives each one
- * a `status` naming what THAT MODE holds — a domain field with nothing to say about the carrier's
- * standing. A reader scanning the whole fence takes it for the carrier's key and reports a retirement
- * that is not there. `alignMetaTomlColumns` already stops at the first `[` for exactly this reason;
- * one law, and now one spelling of it.
+ * `open-phases.mem` describes authority modes in a `[[authority-modes]]` array. Fields below that
+ * header belong to the table rather than the carrier's root record. `alignMetaTomlColumns` follows
+ * the same boundary.
  */
 export function metaTopLevelBlock(body: string): string {
   const lines = body.split("\n");
@@ -134,7 +114,6 @@ export function readCarrierLifecycle(text: string): CarrierLifecycle {
     stages,
     kinds,
     harvestTo: metaValue(body, "harvest-to"),
-    retiredKeys: RETIRED_META_KEYS.filter((k) => metaValue(body, k) !== null),
   };
 }
 

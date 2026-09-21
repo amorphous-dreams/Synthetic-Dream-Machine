@@ -13,10 +13,8 @@ manao             = 13
 manaoio           = 12
 namespace         = "&#x2299;"
 pattern-integrity = true
-retain            = true
 revised-on        = "2026-09-12"
 role              = "syncer-back-parity — the STOCK TW5 syncer's whole back-parity flow measured live against a plain server carrying the packed plugin. Six flows as a table (root save · slot-child save · delete · poll · the revision/bag stamps · the `$:/` filter), each with the wire exchange it issued, what the client charm reaches and the three things it cannot, the native delete door that carries the group-leaves-together law onto stock's own delete path, and the leans left open."
-status            = "standing"
 status-why        = "every row reads off a live contact: `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts`, 8/8 on the fork (5.5.0-prerelease) and 8/8 on pristine `tiddlywiki@5.4.1` — every former `test.fails` a plain passing vector after the roundtable's phases 0·1·4·2·3 (2026-09-12); seam (b) stands with its refutation measured; (f) stays stock's own posture"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity"
@@ -194,6 +192,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jfG89tkXE8zP3tIQsC8amUQ6idk3DIFOaMyTxwiiVKk
+<<^ code="&#x0003;">>ni:///sha-256;9F3isBSzSsSQ5AAaa0b1nUyp-_kku20FZbNH7XAAA6E
 
 <<^ code="&#x0004;" -> to="?">>

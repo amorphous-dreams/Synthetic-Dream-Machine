@@ -17,7 +17,6 @@ mana      = 17
 manao     = 17
 manaoio   = 17
 namespace = "ॐ ँ"
-retain    = true
 reflexive = true
 l-space   = "stable"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -163,6 +162,6 @@ Named empty seats, held open: ''value/preference'' (nothing yet reads what the n
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tx1l6vJIKPRCyR1xSPLAx8Alzu1dgdqNOxlFHU3Cw_M
+<<^ code="&#x0003;">>ni:///sha-256;f9tz0Ae9MjyD-uaRRx91OAfwd7vl4PXRyFy6sy7vnYk
 
 <<^ code="&#x0004;" -> to="?">>

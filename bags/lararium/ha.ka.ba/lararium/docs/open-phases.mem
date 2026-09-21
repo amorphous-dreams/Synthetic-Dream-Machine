@@ -90,13 +90,11 @@ fields = ["message: string"]
 [[authority-modes]]
 mode   = "local-dev"
 fields = ["roomId: string", "receiptHash: string", "issuedAt: string"]
-status = "standing"
 status-why = "a live ledger of open phases rather than a design"
 
 [[authority-modes]]
 mode   = "keyhive"
 fields = ["graph: unknown", "peer?: string", "group?: string", "document?: string"]
-status = "stub — pending encrypted group sync (Brooklyn/Beelay)"
 
 # Keyhive promotion shore law:
 # Canon crossing must NOT mutate lares/ directly from a live edit path.
@@ -115,6 +113,6 @@ status = "stub — pending encrypted group sync (Brooklyn/Beelay)"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TDecTQ0aULcPRpaN6MDA4QAV8Es0LfB1dMos6iQRcbE
+<<^ code="&#x0003;">>ni:///sha-256;7ARUE9eru-ayqRMWOz0FtYuEo2WNp_7LsxSziqFAOs4
 
 <<^ code="&#x0004;" -> to="?">>

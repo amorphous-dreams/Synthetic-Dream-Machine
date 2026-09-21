@@ -11,8 +11,8 @@
  * ── BOTH FORMS READ AT ONE VINTAGE ──────────────────────────────────────────────────────────────
  * The comparison holds the sweep commit against its parent, never against whatever the shelf carries
  * today. A gate reading the live file measures every later edit as a render move: a carrier whose meta
- * block lost a retired key renders differently from its ancestor for a reason that has nothing to do
- * with a quoted positional, and the gate then reports a migration break over an unrelated sweep. What
+ * block changes renders differently from its ancestor for a reason that has nothing to do with a
+ * quoted positional, and the gate then reports a migration break over an unrelated sweep. What
  * this proves is a property of ONE commit, so it reads both sides of that commit and nothing else.
  */
 import { beforeAll, describe, expect, test } from "vitest";
