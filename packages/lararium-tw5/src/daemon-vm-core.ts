@@ -5,7 +5,7 @@
  * skeleton from open-daemon-vm.ts (node) ⇆ open-browser-daemon-vm.ts (browser):
  * composite wiring, MessageChannel sync, ea-promise + breath watchdog, the delegation
  * loop, manifest delivery, placeVerb/mountMainVerbs/dispose. The platform
- * divergence remains as a two-member host shore (spawnWorker + newSyncChannel);
+ * divergence remains as a three-member host shore (spawnWorker + newSyncChannel + awaitReady);
  * the resolved daemon doc handle is passed in by the caller (the two platforms
  * resolve it with genuinely different strategies — node merge-on-late-arrival,
  * browser find-or-create — so that stays a wrapper concern, not the core's).
@@ -133,6 +133,8 @@ type VesselMessagePort = IslandMsg_Manifest["syncPort"];
 export interface DaemonVmHost {
   spawnWorker(scriptUrl: URL): VesselWorkerHandle;
   newSyncChannel(): { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
+  /** Browser workers register their inbound shore before signaling ready; Node omits the handshake. */
+  awaitReady?: boolean;
 }
 
 export interface DaemonVmCoreOptions {
@@ -546,9 +548,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // The browser kernel posts mkReady only AFTER its message listener registers (late —
   // after the worker shim's keyhive base64-WASM init + chain import). Posting the manifest
   // before that delivers it to the worker's event loop while no listener exists → it's
-  // DROPPED, and the kernel then waits forever (no breath, no fault). So wait for ready,
-  // then post; node omits ready → a short timeout proceeds. Deferred (not awaited) so the
-  // synchronous return holds — workerEa resolves once the worker boots off this manifest.
+  // DROPPED, and the kernel then waits forever (no breath, no fault). Browser hosts therefore
+  // wait for ready; Node omits the handshake and posts immediately. Deferred (not awaited)
+  // so the synchronous return holds — workerEa resolves once the worker boots off this manifest.
   // ISOMORPHIC crossroads plane: the daemon renders the public oracle plane on ANY vessel (node or browser). One
   // shore, both wrappers funnel through here — so splice the crossroads bag into the recipe (resolves via the oracle plane's
   // pointer, or skips gracefully when a vessel hasn't registered it) + registerBags (so keyhive can access it).
@@ -567,12 +569,14 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     ...(pluginCids?.length ? { pluginCids } : {}),
     ...(diskMirrors?.length ? { diskMirrors } : {}),
   });
-  void new Promise<void>((resolve) => {
-    let settled = false;
-    const finish = (): void => { if (!settled) { settled = true; resolve(); } };
-    worker.listen((raw: unknown) => { if (isIslandToVesselMsg(raw) && raw.type === "ready") finish(); });
-    setTimeout(finish, 1500);
-  }).then(() => { worker.post(manifestMsg, [syncPort]); });
+  const manifestGate = host.awaitReady
+    ? new Promise<void>((resolve) => {
+        worker.listen((raw: unknown) => {
+          if (isIslandToVesselMsg(raw) && raw.type === "ready") resolve();
+        });
+      })
+    : Promise.resolve();
+  void manifestGate.then(() => { worker.post(manifestMsg, [syncPort]); });
 
   return {
     daemonHandle,

@@ -101,6 +101,7 @@ export async function openBrowserDaemonVm(
   const host: DaemonVmHost = {
     newSyncChannel: browserNewSyncChannel,
     spawnWorker:    spawnWorker ?? browserSpawnWorker,
+    awaitReady:     true,
   };
 
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the

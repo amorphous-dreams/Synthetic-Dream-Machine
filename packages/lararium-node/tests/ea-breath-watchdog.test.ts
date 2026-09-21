@@ -61,7 +61,7 @@ describe("openDaemonVmCore — the ea-breath watchdog", () => {
     for (const c of cleanups.splice(0)) await c();
   });
 
-  function openCore(eaSilenceMs: number, eaStallMs?: number) {
+  function openCore(eaSilenceMs: number, eaStallMs?: number, awaitReady = false) {
     const repo        = new Repo({ sharePolicy: async () => true });
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
     const personaHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -70,6 +70,7 @@ describe("openDaemonVmCore — the ea-breath watchdog", () => {
 
     const host: DaemonVmHost = {
       spawnWorker: () => fw.handle,
+      ...(awaitReady ? { awaitReady: true } : {}),
       newSyncChannel: () => {
         const { port1, port2 } = new MessageChannel();
         ports.push(port1, port2);
@@ -160,24 +161,28 @@ describe("openDaemonVmCore — the ea-breath watchdog", () => {
 
   test("manifest timing witness — Node fallback posts without ready", async () => {
     vi.useFakeTimers();
-    const { fw } = openCore(60_000);
+    // Deliberate weakening: a Node host omits the browser-only readiness contract, so its
+    // manifest remains an immediate post and the platform's existing no-ready behavior survives.
+    const { fw } = openCore(60_000, undefined, false);
 
-    // Node workers omit ready; the compatibility fallback remains observable and bounded.
+    // Node workers omit ready; immediate delivery is the intentional platform composition.
     await vi.advanceTimersByTimeAsync(1_500);
 
     expect(fw.events).toEqual(["post:manifest"]);
   });
 
-  test("manifest timing witness — delayed browser ready records the current red ordering", async () => {
+  test("manifest timing contract — a browser shore never posts before ready", async () => {
     vi.useFakeTimers();
-    const { fw } = openCore(60_000);
+    const { fw } = openCore(60_000, undefined, true);
 
-    // A cold browser worker can take longer than the compatibility fallback. This test deliberately
-    // records the present behavior without changing it: the manifest posts before delayed ready.
+    // A browser Worker must have its shore listener before the transferred manifest crosses. The
+    // current compatibility fallback violates that contract at 1.5s; this is the red-first witness.
     await vi.advanceTimersByTimeAsync(1_500);
+    expect(fw.events).toEqual([]);
+
     fw.emit(mkReady());
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(fw.events).toEqual(["post:manifest", "emit:ready"]);
+    expect(fw.events).toEqual(["emit:ready", "post:manifest"]);
   });
 });
