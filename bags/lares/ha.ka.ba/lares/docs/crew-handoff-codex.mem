@@ -566,18 +566,33 @@ or a repository-owned production wrapper. The next implementation starts only af
 process-attributed index/worker/genesis/CAS witness, a separate Node oracle witness, explicit URLs, and
 deliberate weak routes/configuration that go red.
 
+''E8 cap-stack reorientation — operator ruling, 2026-09-21.'' The prior scout used ''Node vessel'' as
+shorthand and thereby drew a false entity boundary. `@lararium/node` provides pieces of the shared keel;
+it does not name a vessel kind. Every nameless entity begins at the Herm floor. With no persona seated,
+its active stack is a relay/Herm: immune daemon, own mesh-palace and bulb, blind carriage, and scoped
+public read, with no operator document authority. When a persona exists to own documents, that same
+entity lights the Lararium stack: sovereign document/tuber and scoped read/identity capabilities join
+the relay floor. These two composed stacks serve DreamNet's whole need; package, process, browser, and
+device names never replace them. Static byte distribution is a shore/process capability that either stack
+may express where its declared public authority permits. It must not be mistaken for a third vessel kind
+or for an authority split that forces every deployment into two entities.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
   reject a socket close, an oracle response, or an HTML fallback where a worker/blob belongs.
-# Keep `lararium-node` as a vessel/relay and oracle host unless an explicit later ruling grants it static
-  distribution duties. The clean alternatives are a separate static-serving process or a named stale-copy
-  retirement; neither outcome turns distribution into vessel authority.
-# Before an operator selects that outcome, scout the concrete composition seams: a static shore beside the
-  Node vessel, removal of unserved copied web bytes, and a named deployment wrapper. For each, name the
-  Gaia and Elyncia operator need, capability boundary, startup/failure behavior, asset integrity witness,
-  and the red-first deliberate weakening. The scout may recommend a default, but must leave the topology
-  ruling with the operator.
+# Treat `@lararium/node` as an implementation package for relay/oracle/bulb capabilities, not as a
+  vessel. A Herm expresses blind carriage and public faces without a persona or operator document cap; a
+  Lararium adds persona-held document sovereignty while retaining its relay floor. The named process that
+  serves static bytes belongs to the selected entity's expressed public-distribution capability and must
+  expose no implicit document/read authority.
+# Reframe the deployment scout around composition roots, not a Node-versus-static entity split. For a
+  Herm and for a persona-bearing Lararium, name which caps each process wires, what a package's process
+  may serve, and which declared capability admits static public bytes. The red-first witness must prove
+  the entity's public bytes and Node-provided read faces independently; it must also prove that a Herm
+  cannot acquire operator documents and that a Lararium's document authority never follows from merely
+  serving web bytes. An optional repository wrapper may compose processes for one entity; it never
+  creates a new vessel class or silently grants a cap.
 # Keep live relay/admission proof on its own track. `LAR_VESSEL_WS` remains probe-log input today. After
   a mesh reservation, a founder-profile → carriage → fresh-browser-profile witness must pass a relay URL
   to the page and surface a browser-observable receipt. C4's present red remains independent and may
@@ -775,6 +790,6 @@ down named volumes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zOugf0G1Mn1OIjg0qsmTqZOQfBau8JDmYi-L4uDAysU
+<<^ code="&#x0003;">>ni:///sha-256;3saTZXWbz6odT2ndFMJ4UTq4f0tLxn1vJa_LlvX2Yrs
 
 <<^ code="&#x0004;" -> to="?">>
