@@ -171,16 +171,36 @@ describe("the cap vocabulary", () => {
       held: ["bulb"],
       expressed: ["bulb.seed"],
     };
-    const forged = vesselCapStackToRecord({
+    const encodedForged = vesselCapStackToRecord({
       ...distributionOnly,
-      expressed: ["bulb.seed", "tuber.author"],
+      expressed: ["bulb.seed", "tuber.author", "tuber.store"],
     });
+    const forgedWire = {
+      ...encodedForged,
+      tiddler: { ...encodedForged.tiddler, expressed: "bulb.seed tuber.author tuber.store" },
+    };
 
-    // Positive: the web peer may express its public bootstrap/distribution projection.
+    // Encode control: the web peer may express its public bootstrap/distribution projection only.
+    expect(encodedForged.tiddler.expressed).toBe("bulb.seed");
+    // Decode control: even a hand-forged wire record cannot smuggle document authority through.
+    expect(recordToVesselCapStack(forgedWire)?.expressed).toEqual(["bulb.seed"]);
+    // Positive: a valid Herm stack keeps its relay expression while retaining no expressed authority.
+    const herm: VesselCapStack = {
+      vesselId: "herm-peer",
+      held: ["rhizome", "tuber", "bulb"],
+      expressed: ["rhizome.forward"],
+    };
+    expect(recordToVesselCapStack(vesselCapStackToRecord(herm, AUTH))).toEqual(herm);
+    // Positive: a persona-bearing Lararium may express its held document caps.
+    const lararium: VesselCapStack = {
+      vesselId: "lararium-peer",
+      held: ["rhizome", "tuber", "bulb", "corm"],
+      expressed: ["rhizome.forward", "tuber.author", "tuber.store", "bulb.seed", "corm.renew"],
+    };
+    expect(recordToVesselCapStack(vesselCapStackToRecord(lararium, AUTH))).toEqual(lararium);
+    // Existing positive: the web peer may express its public bootstrap/distribution projection.
     expect(recordToVesselCapStack(vesselCapStackToRecord(distributionOnly))?.expressed)
       .toEqual(["bulb.seed"]);
-    // Deliberate weakening: a forged public distribution record cannot smuggle in document authority.
-    expect(recordToVesselCapStack(forged)?.expressed).toEqual(["bulb.seed"]);
   });
 });
 
