@@ -59,7 +59,7 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/browser` carries browser Lararium peer duties, paralleling `@lararium/node` with browser-native capabilities (WebSocket, IndexedDB, WebCrypto), plus `__stubs__` for browser-incompatible deps. The browser vessel is a genuine remote peer: it speaks WS to a node's relay across a real island boundary. No React, no canvas.
 
-`@lararium/app` carries the browser-lararium app shell — boots a sovereign browser vessel and, when reachable, reads the public `@oracle` read-face. Location-agnostic: served from localhost, LAN, or a public host, the vessel always runs local; the origin is a static host, **never an authority**.
+`@lararium/web` carries the browser-lararium web surface — composes a sovereign browser vessel and, when reachable, reads the public `@oracle` read-face. It owns Vite, page DOM, worker URLs, admission carriers, and web projection adapters. Location-agnostic: served from localhost, LAN, or a public host, the vessel always runs local; the origin is a static host, **never an authority**. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
 
 `@lararium/keyhive` carries the capability layer — a pre-alpha integration of `@keyhive/keyhive` WASM bindings. One Keyhive Doc = one bag (1:1). The access axis carries the four Keyhive-native verbs (`pull` / `read` / `edit` / `admin`). Cap-event home and γ-with-operator-α-mirror sync stay in design flux — touch with care.
 

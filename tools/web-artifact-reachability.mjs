@@ -40,7 +40,7 @@ export function assertWebArtifactReachability({ distRoot, genesisRoot }) {
 if (process.argv[1]?.endsWith("web-artifact-reachability.mjs")) {
   try {
     const result = assertWebArtifactReachability({
-      distRoot: process.argv[2] ?? "packages/lararium-app/dist",
+      distRoot: process.argv[2] ?? "packages/lararium-web/dist",
       genesisRoot: process.argv[3] ?? "genesis",
     });
     console.log(`[web-artifact] green: worker=${result.worker} cas=${result.casCid}`);

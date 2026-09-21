@@ -82,8 +82,8 @@ These files are the highest-value source-module memes:
 @lararium/mesh    src/causal-island.ts    — causal island doctrine + AuthorityFirstGuard
 @lararium/mesh    src/live-protocol.ts    — wire protocol types + ReactionGraph
 @lararium/tw5     src/lararium-tw5.ts     — TW5 integration facade
-@lararium/app     src/LarariumPanel.tsx   — HUD + TW5 panel component
-@lararium/app     src/LarariumShell.tsx   — shell root
+@lararium/web     src/main.ts             — web surface root and vessel composition
+@lararium/web     src/wiki-coherence-sink.ts — DOM projection adapter
 ```
 
 <<~/ahu>>
@@ -107,6 +107,6 @@ The `write-source-memes.ts` script MUST:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U1O3LdW1zvL9xDHyIy57_MJFJ7AZVr9TZ-UaVJoY1fg
+<<^ code="&#x0003;">>ni:///sha-256;d7r1F3osCODXhuJwhGGAC5y9X3LeWv1Xjfgw9FBnjcg
 
 <<^ code="&#x0004;" -> to="?">>

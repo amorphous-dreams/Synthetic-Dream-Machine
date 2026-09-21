@@ -39,8 +39,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { join, extname, resolve } from "node:path";
 import { chromium, type Browser, type Page, type Worker } from "playwright";
 
-const APP_DIR   = process.env["LAR_APP_DIR"]  ?? resolve("packages/lararium-app/dist");
-const APP_PORT  = Number.parseInt(process.env["LAR_APP_PORT"] ?? "5173", 10);
+const WEB_DIR   = process.env["LAR_WEB_DIR"]  ?? resolve("packages/lararium-web/dist");
+const WEB_PORT  = Number.parseInt(process.env["LAR_WEB_PORT"] ?? "5173", 10);
 /** The operator's vessel this browser belongs to — reached over the shared namespace. */
 const VESSEL_WS = process.env["LAR_VESSEL_WS"] ?? "ws://localhost:8080/ws";
 const LABEL     = process.env["LAR_BROWSER_LABEL"] ?? "browser";
@@ -66,9 +66,9 @@ function serveApp(): Promise<() => void> {
   const handler = (q: IncomingMessage, s: ServerResponse): void => {
     const rel = (q.url ?? "/").split("?")[0]!;
     const file = rel === "/" || rel === "" ? "index.html" : rel.replace(/^\//, "");
-    const path = join(APP_DIR, file);
+    const path = join(WEB_DIR, file);
     // A single-page app answers its own routes; anything unfound falls back to the shell.
-    const served = existsSync(path) && !path.endsWith("/") ? path : join(APP_DIR, "index.html");
+    const served = existsSync(path) && !path.endsWith("/") ? path : join(WEB_DIR, "index.html");
     try {
       s.writeHead(200, { "content-type": MIME[extname(served)] ?? "application/octet-stream" });
       s.end(readFileSync(served));
@@ -79,7 +79,7 @@ function serveApp(): Promise<() => void> {
   const srv = createServer(handler);
   // Close the OPEN connections too: the island keeps the page's keep-alive sockets warm, and `close()`
   // alone waits on them — a probe that had already printed its verdict then never exited.
-  return new Promise((ok) => srv.listen(APP_PORT, "127.0.0.1", () => ok(() => { srv.closeAllConnections(); srv.close(); })));
+  return new Promise((ok) => srv.listen(WEB_PORT, "127.0.0.1", () => ok(() => { srv.closeAllConnections(); srv.close(); })));
 }
 
 interface Reading {
@@ -198,8 +198,8 @@ async function readFace(page: Page): Promise<FaceReading | null> {
 }
 
 async function main(): Promise<number> {
-  if (!existsSync(join(APP_DIR, "index.html"))) {
-    console.error(`[browser-vessel] no app at ${APP_DIR} — run \`pnpm --filter @lararium/app build\``);
+  if (!existsSync(join(WEB_DIR, "index.html"))) {
+    console.error(`[browser-vessel] no web artifact at ${WEB_DIR} — run \`pnpm --filter @lararium/web build\``);
     return 2;
   }
   const stop = await serveApp();
@@ -208,7 +208,7 @@ async function main(): Promise<number> {
     browser = await chromium.launch({ args: ["--no-sandbox"] });   // container: no user namespace
     const page = await browser.newPage();
     page.on("pageerror", (e) => console.error(`[browser-vessel] page: ${e.message}`));
-    await page.goto(`http://localhost:${APP_PORT}/`, { waitUntil: "domcontentloaded" });
+    await page.goto(`http://localhost:${WEB_PORT}/`, { waitUntil: "domcontentloaded" });
 
     const r = await readContext(page);
     console.log(`[browser-vessel:${LABEL}] origin ${r.origin}`);

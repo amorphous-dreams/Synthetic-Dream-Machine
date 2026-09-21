@@ -1,0 +1,18 @@
+{
+  "name": "Lararium \u2014 browser vessel",
+  "short_name": "Lararium",
+  "description": "A sovereign browser vessel: your own key, your own island, reaching the household hearth.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d0f14",
+  "theme_color": "#0d0f14",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg%20xmlns=\"http://www.w3.org/2000/svg\"%20viewBox=\"0%200%20128%20128\"%3E%3Crect%20width=\"128\"%20height=\"128\"%20rx=\"24\"%20fill=\"#0d0f14\"/%3E%3Cpath%20d=\"M24%2060%20L64%2024%20L104%2060%20Z\"%20fill=\"#c9d1d9\"/%3E%3Crect%20x=\"34\"%20y=\"60\"%20width=\"60\"%20height=\"44\"%20fill=\"#11151c\"%20stroke=\"#c9d1d9\"%20stroke-width=\"4\"/%3E%3Crect%20x=\"56\"%20y=\"76\"%20width=\"16\"%20height=\"28\"%20fill=\"#d29922\"/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -19,12 +19,18 @@ export const OLD_NAME_PATTERNS = [
 
 const EXECUTABLE_EXTENSIONS = new Set([".cjs", ".js", ".mjs", ".json", ".sh", ".ts", ".tsx", ".yml", ".yaml"]);
 const HISTORICAL_SEGMENTS = ["/history/", "/receipts/", "/handoff/"];
+// This one file deliberately carries old names inside isolated weakening fixtures. The explicit test
+// calls `assertNoExecutableOldNames` with those fixture paths, so excluding the file from the live
+// census keeps the production scan broad while leaving the negative control executable.
+const FIXTURE_FILES = new Set(["tools/web-migration-name-control.test.mjs"]);
 
 export function executablePaths(repoRoot) {
   const listed = execFileSync("git", ["ls-files", "-z"], { cwd: repoRoot }).toString("utf8");
   return listed.split("\0").filter(Boolean).filter((file) => {
     const normalized = `/${file}`;
-    return EXECUTABLE_EXTENSIONS.has(extname(file)) && !HISTORICAL_SEGMENTS.some((segment) => normalized.includes(segment));
+    return EXECUTABLE_EXTENSIONS.has(extname(file))
+      && !HISTORICAL_SEGMENTS.some((segment) => normalized.includes(segment))
+      && !FIXTURE_FILES.has(file);
   });
 }
 

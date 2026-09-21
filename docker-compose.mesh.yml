@@ -125,7 +125,7 @@ services:
     environment:
       LAR_BROWSER_LABEL: "browser-a"
       LAR_VESSEL_WS:     "ws://localhost:8080/ws"   # lararium-a, over the shared namespace
-      LAR_APP_PORT:      "5173"
+      LAR_WEB_PORT:      "5173"
     network_mode: "service:lararium-a"
     command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/browser-vessel.ts"]
     depends_on: [lararium-a]
@@ -138,7 +138,7 @@ services:
     environment:
       LAR_BROWSER_LABEL: "browser-b"
       LAR_VESSEL_WS:     "ws://localhost:8080/ws"   # lararium-b
-      LAR_APP_PORT:      "5173"
+      LAR_WEB_PORT:      "5173"
     network_mode: "service:lararium-b"
     command: ["sh", "-c", "node_modules/.bin/tsx packages/lararium-node/probes/browser-vessel.ts"]
     depends_on: [lararium-b]

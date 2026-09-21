@@ -17,8 +17,8 @@ const LEAF = join(REPO, "tools/browser-weld/leaf-continuity.mjs");
 const OPEN_VESSEL = join(REPO, "packages/lararium-browser/src/open-browser-vessel.ts");
 const OPEN_CORE = join(REPO, "packages/lararium-mesh/src/open-vessel-core.ts");
 const DAEMON_CORE = join(REPO, "packages/lararium-tw5/src/daemon-vm-core.ts");
-const DAEMON_WORKER = join(REPO, "packages/lararium-app/src/workers/daemon.worker.ts");
-const APP_MAIN = join(REPO, "packages/lararium-app/src/main.ts");
+const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worker.ts");
+const APP_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 

@@ -55,7 +55,7 @@ importers:
 
   ftls: {}
 
-  packages/lararium-app:
+  packages/lararium-web:
     dependencies:
       '@automerge/automerge':
         specifier: 3.4.1

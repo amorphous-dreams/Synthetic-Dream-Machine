@@ -142,9 +142,9 @@ async function main(): Promise<void> {
 
   // The reach-faces this vessel answers on. The listen below binds 0.0.0.0, so the vessel answers on
   // every interface the host holds; the banner names them all. A phone on the house network reads a
-  // LAN line and types it; `localhost` on that phone names the phone. LAR_APP_PORT names where the
-  // static app answers (the vite dev server by default) — the app and the relay ride the SAME host.
-  const appPort = Number.parseInt(process.env["LAR_APP_PORT"] ?? "5173", 10);
+  // LAN line and types it; `localhost` on that phone names the phone. LAR_WEB_PORT names where the
+  // Vite web surface answers in development; the web surface and relay ride the SAME host.
+  const webPort = Number.parseInt(process.env["LAR_WEB_PORT"] ?? "5173", 10);
   const reachFaces = deriveReachFaces({
     port,
     declaredUrl: process.env["LAR_PUBLIC_URL"] ?? null,
@@ -375,7 +375,7 @@ async function main(): Promise<void> {
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
   for (const f of reachFaces) {
-    console.log(`[lararium]   ${crossingUrl({ appOrigin: appOriginForFace(f, appPort), wsUrl: wsUrlForOrigin(f.origin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
+    console.log(`[lararium]   ${crossingUrl({ appOrigin: appOriginForFace(f, webPort), wsUrl: wsUrlForOrigin(f.origin), gateKey: gateIdentity.verifyingKey })}   (${f.kind})`);
   }
   console.log("[lararium]   (a leaf still needs an ADMIT — the leaf's page shows its own key + the `lares device-admit` line to run here)");
 

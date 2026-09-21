@@ -81,7 +81,7 @@ touching the browser vessel surface. Four classifications:
 
 `packages/lararium-browser/` carries the browser vessel: local persistence, worker lifecycle, browser
 capabilities, projection return legs, and the host-side vessel composition. This inventory describes its
-current migration boundary; it is no longer an empty destination. The page shell in `@lararium/app`
+current migration boundary; it is no longer an empty destination. The page shell in `@lararium/web`
 composes the visible host surface around that vessel and remains a separate layer.
 
 <<~/ahu>>
@@ -140,6 +140,6 @@ Delete or quarantine these patterns. Each deletion happens after the replacement
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;34ZlH1j2gKP2DnULH4iFha4jEhi2fWBI4PlAabANy64
+<<^ code="&#x0003;">>ni:///sha-256;whxPoRSmzB7h8F6oquQlsWGKP1m2KTT5_HlchOWaH8o
 
 <<^ code="&#x0004;" -> to="?">>

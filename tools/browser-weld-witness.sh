@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# browser-weld-witness — stand the app, drive a REAL browser, follow an edit toward the node's disk.
+# browser-weld-witness — stand the web surface, drive a REAL browser, follow an edit toward the node's disk.
 #
 # ── WHY IT STANDS ALONE ─────────────────────────────────────────────────────────────────────────
 # `lararium-browser`'s suite already runs in Chromium, but every vector there is package-scoped: it
@@ -47,11 +47,11 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-echo "browser-weld: standing the app on :$PORT"
+echo "browser-weld: standing the web surface on :$PORT"
 # Keep the session leader as $VITE_PID, not the launcher subshell. `npx` may
 # leave a Vite child behind, and a PID-only cleanup would then leak the server.
 (
-  cd packages/lararium-app
+  cd packages/lararium-web
   exec setsid npx vite --port "$PORT" --strictPort
 ) >"$LOG" 2>&1 &
 VITE_PID=$!

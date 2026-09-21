@@ -4,8 +4,8 @@
 #
 # Stages:
 #   deps         — install workspace deps (layer-cached)
-#   build        — tsc compile all packages + vite build app
-#   serve        — lararium-node HTTP+WS server (web app + Automerge sync)
+#   build        — tsc compile all packages + vite build web surface
+#   serve        — lararium-node WS server (web artifact copied for a held static-route decision)
 #   mcp-runtime  — minimal stdio MCP server
 #
 # Auth env vars (all optional — graceful fallback to local-dev):
@@ -29,7 +29,7 @@ COPY packages/lararium-mesh/package.json    packages/lararium-mesh/
 COPY packages/lararium-tw5/package.json     packages/lararium-tw5/
 COPY packages/lararium-tldraw/package.json  packages/lararium-tldraw/
 COPY packages/lararium-node/package.json    packages/lararium-node/
-COPY packages/lararium-app/package.json     packages/lararium-app/
+COPY packages/lararium-web/package.json     packages/lararium-web/
 COPY packages/lararium-mcp/package.json     packages/lararium-mcp/
 
 RUN pnpm install --frozen-lockfile
@@ -44,12 +44,14 @@ COPY lares/     lares/
 
 # Build all packages in dependency order, then the browser app.
 RUN pnpm -r build
-RUN pnpm --filter @lararium/app build
+RUN pnpm --filter @lararium/web build
 
 # ---------------------------------------------------------------------------
-# Stage 3: serve — lararium-node HTTP+WS server
+# Stage 3: serve — lararium-node WS server; static web serving remains unproven
 #
-# Serves the browser app, Automerge meme-sync WebSocket, and auth endpoints.
+# The image carries the built web artifact beside the Automerge meme-sync WebSocket.
+# `packages/lararium-node/src/main.ts` currently exposes WS/oracle behavior without a
+# general static HTTP handler, so this copy does not claim to serve `/`.
 # lares/ is always mounted at runtime — never baked in.
 # ---------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-slim AS serve
@@ -67,8 +69,8 @@ COPY --from=build /app/packages/lararium-tldraw/dist        ./packages/lararium-
 COPY --from=build /app/packages/lararium-tldraw/package.json ./packages/lararium-tldraw/package.json
 COPY --from=build /app/packages/lararium-node/dist          ./packages/lararium-node/dist
 COPY --from=build /app/packages/lararium-node/package.json  ./packages/lararium-node/package.json
-COPY --from=build /app/packages/lararium-app/dist           ./packages/lararium-app/dist
-COPY --from=build /app/packages/lararium-app/public         ./packages/lararium-app/public
+COPY --from=build /app/packages/lararium-web/dist           ./packages/lararium-web/dist
+COPY --from=build /app/packages/lararium-web/public         ./packages/lararium-web/public
 
 # lares/ mounted at runtime — never baked in
 VOLUME /app/lares
