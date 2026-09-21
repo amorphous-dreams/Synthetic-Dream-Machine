@@ -1,19 +1,20 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/lares-viales.mem"
+l-space   = "stable:@elyncia"
 mana      = 14
 manao     = 14
 manaoio   = 13
 role      = "the Lares Viales / Hermai — wayfarer-lares and crossroads-markers of the leylines; the fiction of the minimal blind-carriage node (cap-model at @lararium/mesh/vessel-caps#lares-viales)"
-l-space   = "stable:@elyncia"
+title     = "lar:///ha.ka.ba/elyncia/concepts/lares-viales"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/lares-viales"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Lares Viales ~ the Wayfarers of the Leylines
 
@@ -61,6 +62,6 @@ The cap-model names this minimal stack exactly — the ''same keel as the temple
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nWFtZr3BUGxBAs5JRtqdRzst3tXQJAkOPUPuOlSHd1k
+<<^ code="&#x0003;">>ni:///sha-256;4T3uu2nwssJGUm-52r4e33IYb0NxzEIzNW5ccFlkRx8
 
 <<^ code="&#x0004;" -> to="?">>

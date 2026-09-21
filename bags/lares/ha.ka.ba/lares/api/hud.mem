@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/hud">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/hud.mem"
@@ -12,13 +14,14 @@ manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "lararium HUD instrument law — the turn-frame sigil panel, the attention + loop gauges, the ward and register surfacing"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/hud"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/hud"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -118,6 +121,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8TCsrcaM5Msgi0iFQTPy2V-NfzSvkH7xdrOGQ1a0K1Q
+<<^ code="&#x0003;">>ni:///sha-256;xws3an3xzrrwsb5jtbHKBXnqQZpBpqGqwenE0s8RdIg
 
 <<^ code="&#x0004;" -> to="?">>

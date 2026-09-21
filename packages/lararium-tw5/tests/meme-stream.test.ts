@@ -3,7 +3,7 @@
  *
  * Carrier framing uses HTML-entity control sigils:
  *   &#x0001; SOH  — opens a carrier, declares lar:/// URI
- *   &#x0002; STX  — header → body boundary (TOML #meta lives in header)
+ *   &#x0002; STX  — header → body boundary (root TOML #meta begins the body)
  *   &#x0003; ETX  — body done (carrier close)
  *   &#x0004; EOT  — carrier exit (optional tail)
  *
@@ -29,18 +29,18 @@ const FULL_CARRIER = [
   ``,
   `<<^ code="&#x0001;" from=? -> to=${URI}>>`,
   ``,
+  `<<^ code="&#x0002;">>`,
+  ``,
   "```toml meta",
   `uri-path = "ha.ka.ba/lares/api/mu"`,
   `type     = "text/memetic-wikitext+tiddlywiki"`,
   "```",
   ``,
-  `<<^ code="&#x0002;">>`,
-  ``,
-  `<<~ ahu #spine>>`,
+  `<<~ ahu #/spine>>`,
   `Core invariants.`,
   `<<~/ahu>>`,
   ``,
-  `<<~ ahu #edges>>`,
+  `<<~ ahu #/edges>>`,
   `<<~ pranala ? -> lar:///AGENTS family=control role=implements>>`,
   `<<~/ahu>>`,
   ``,
@@ -84,17 +84,17 @@ describe("MemeStreamParser — full carrier", () => {
   test("ahu-child carries slot name and body text", () => {
     const events  = new MemeStreamParser().push(FULL_CARRIER);
     const spine   = events.find(
-      (e) => e.kind === "ahu-child" && (e as { slot: string }).slot === "#spine",
+      (e) => e.kind === "ahu-child" && (e as { slot: string }).slot === "#/spine",
     ) as { slot: string; bodyText: string } | undefined;
     expect(spine).toBeDefined();
     expect(spine?.bodyText).toContain("Core invariants");
   });
 
-  test("TOML #meta prelude stays in the header — not emitted as ahu-child body", () => {
+  test("root TOML #meta stays in the root body — not emitted as ahu-child body", () => {
     const events   = new MemeStreamParser().push(FULL_CARRIER);
     const children = events.filter((e) => e.kind === "ahu-child");
     const slots    = children.map((e) => (e as { slot: string }).slot);
-    expect(slots).not.toContain("#meta");
+    expect(slots).not.toContain("#/meta");
   });
 });
 

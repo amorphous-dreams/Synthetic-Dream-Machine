@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/blob-carriage.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-12"
 role              = "blob-carriage — the binaries tension RULED: TYPED TIDDLER (bytes ride the tiddler) vs POINTER TIDDLER (the tiddler carries a reference, the bytes live on a plane the reference names). Reads the house as built (THE BLOB LAW in `content-handle.ts` · the pointer · `_lar_cas` · `cid/` vs `@cad` · the raw-bytes CID · the whole-file projection beside a `.meta` · the automerge wall), the field whole (TW5's own `_canonical_uri` + MWS + external-attachments · IPFS/IPLD · AT-proto blobs · Matrix media · git-LFS · Automerge · Solid · Nostr NIP-94/96 · Willow · Obsidian/Logseq), the golden principles they converge on, the pattern-integrity rhymes and where each held or broke, the three held cases (live streams · gameart.net-scale packs · authorized photo galleries), THE BLOB LAW as ruled and enacted, and the questions that stand open."
 status-why        = "ruled 2026-09-11 and ENACTED — all seven clauses under #/proposed-law stand in code with a red-first witness each; clause 7 (GC/PIN) landed 2026-09-12 as `graceForTier` over the realm's ahi-kā baseline + PIN `{cid,tier,holder,expiry}` honoured by `casSweep` (`a3f70ecc9`), with no production caller of `casSweep` yet. The operator's rulings ride verbatim under #/questions"
 tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/blob-carriage"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/blob-carriage"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/tension>>
 
@@ -223,6 +226,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UODsJ0sNyd9X5RlY-79CqoROMjMOzqiQFVpxiPBCQIo
+<<^ code="&#x0003;">>ni:///sha-256;SChu5hFidfxaUmIs5AzLZIzVSZpVY0vUEEZuBgiEabs
 
 <<^ code="&#x0004;" -> to="?">>

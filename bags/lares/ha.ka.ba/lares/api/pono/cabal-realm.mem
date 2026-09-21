@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/cabal-realm.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-08-10"
 role              = "cabal-realm — a CabalGroup read as an IMAGINED REALM on the DreamNet: the superset of the members' shared infrastructure, imagined as one shared expanse (a hearth beside, not a category above). It carries no DID of its own — a Place bears identity, a vessel names the metal running the code, a realm names what the members jointly imagine and maintain. Named-not-ruled, alive by its epoch, dissolving to anu when unfed. The tie-break rides the realm's epoch (BeeKEM); malice rides Plane-B convergent-removal. GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling 2026-08-09): the Ostrom principles govern the realm — the virtual relationship-place — while infrastructure authority (who runs the metal, who holds the archive passphrase, who lights a Herm, who signs a kāpae) sits on the vessel and the charter. Neither substitutes for the other"
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/cabal-realm"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/cabal-realm"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -215,6 +216,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;s8cGBl5SD0Z8fwREtYNh-QQECtN-Bl-6qnhNNK8Gjxc
+<<^ code="&#x0003;">>ni:///sha-256;0BpPcW-R19Y8KppFH4j9TeWLE2vfnu4lbIwoZuIahWQ
 
 <<^ code="&#x0004;" -> to="?">>

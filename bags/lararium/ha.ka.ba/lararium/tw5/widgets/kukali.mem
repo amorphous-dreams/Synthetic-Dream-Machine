@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kukali.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the kukali wait sigil — \\procedure ~kukali i
 source-file   = "packages/lararium-tw5/tiddlers/sigil-kukali.tid"
 source-symbol = "~kukali"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/kukali"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/kukali"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/kukali"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -58,6 +59,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-kukali.tid` with 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WYxw0YbwCT9m0JZ9PiaWcwWxII49kxk-xrSqXMk0OPg
+<<^ code="&#x0003;">>ni:///sha-256;mqUW5B316KmqZBT178E87C30V-0aAwgwshztsH40XtY
 
 <<^ code="&#x0004;" -> to="?">>

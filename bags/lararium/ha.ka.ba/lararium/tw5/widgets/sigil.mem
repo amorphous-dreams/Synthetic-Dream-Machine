@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/sigil">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/sigil.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the ~ sigil dispatch — the lar-sigil wikirule
 source-file   = "packages/lararium-tw5/src/wikirules/lar-sigil.ts"
 source-symbol = "matchCompoundSigilAt findNextMatch"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/sigil"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/sigil"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/sigil"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -79,6 +80,6 @@ A sigil form the rule cannot recognize renders as `<span class="lar-sigil-degrad
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1ihl-OcCj54b0xC9cQ1uX7WbIkP3Jh5ZcKj-arbj8W4
+<<^ code="&#x0003;">>ni:///sha-256;Q_OnimZjy48N4OORwAYG5EGdAx8DfeBP1OVd4DZke0c
 
 <<^ code="&#x0004;" -> to="?">>

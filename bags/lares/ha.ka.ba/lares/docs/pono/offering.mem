@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="🎁" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/offering">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/offering.mem"
@@ -13,13 +15,14 @@ revised-on = "2026-09-13"
 role       = "the OFFERING as a LAMPLIGHTER capability, collided with the software-supply-chain field. Names three caps that never ratchet — `offer` (sign + announce a collection by CID on the crossroads) · `carry` (a Herm re-shares announced blobs by hash) · `witness` (an append-only record of announcements, ordered never timed) — and the ONE kahu cap that installs: `nexus kahuli grammar --from <offering-cid>`, the receiver's own hand. Carries the security table (freeze · rollback · mix-and-match · handle-squat · maintainer takeover · dependency confusion · captured Union · withdrawal) with the house's answer and the gap where none stands; what `--apply` MUST and MUST NOT do; the anti-roster proof; the gift frame and its two failure modes. Every house claim carries its file:line; every field claim carries quote · link · date."
 status-why = "DESIGN, ahead of code. The record + the recompute + the antigen stand BUILT (`dcec1ef0b`, `6df13cffc`); `--apply` stands HELD at `nexus-publish.ts:60-66`; the announce record kind, the taker's door, and all three caps stand UNBUILT, named red-by-red at #/plan. The field collision ran 2026-09-13 against Sigstore · SLSA · in-toto · TUF · npm provenance · sum.golang.org · CT · Nix · Guix · F-Droid · Debian · Tor, and against the 2016-2026 incident record."
 tags       = ["docs/pono/talk-story", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/offering"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/charge>>
 
@@ -453,6 +456,6 @@ Ordered so each step's red stands alone. Spirit-hours name a tasked spirit's wal
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R8Sh0i4BLx2EQQT5PYqdtg_I_nNF_gMA3kKB9J-Lnd4
+<<^ code="&#x0003;">>ni:///sha-256;3BNOus9PCYvxx5Mdx9uIcDNsaxrbuHreS6v1vptkMXA
 
 <<^ code="&#x0004;" -> to="?">>

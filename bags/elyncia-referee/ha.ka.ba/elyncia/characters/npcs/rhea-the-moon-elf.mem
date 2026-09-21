@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "kapu"
 role      = "referee NPC (Freyja's authorship) — L7 Combat-Rogue/Artificer, the Dragoness's intelligence-mistress; Menzoberranzan fall, blight-hardened prosthetics, Neo-Thracian network"
+title     = "lar:///ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/rhea-the-moon-elf"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -56,6 +57,6 @@ Since her arrival she has ''trained a cadre of agents'' and runs a ''small intel
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MfRgikke1BbPYVJV76pALCqjcFSmPTsLjmF1Z6rpI1Q
+<<^ code="&#x0003;">>ni:///sha-256;cAWIJNEYFt-v2UmgoUzNdOc1rjO3n9jIW2gcZj-1ffo
 
 <<^ code="&#x0004;" -> to="?">>

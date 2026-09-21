@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/canvas/rooms">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/canvas/rooms.mem"
@@ -9,13 +11,14 @@ manao     = 16
 manaoio   = 16
 role      = "lararium canvas room registry — default rooms, portals, layout types"
 tags      = ["lar:///ha.ka.ba/lares/api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/tw5/canvas/rooms"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/canvas/rooms"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -133,6 +136,6 @@ label      = "← System"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x_Z96ixm8ogh31AEJ_wdSSUf9h5Ch35gHSUo9TeP4Hs
+<<^ code="&#x0003;">>ni:///sha-256;n5VtBEXMROfTgyVfLY9pI-kkpKc--T67sB2OcRnm-zM
 
 <<^ code="&#x0004;" -> to="?">>

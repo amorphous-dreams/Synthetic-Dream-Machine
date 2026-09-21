@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/sa-display">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/sa-display.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 16
 role      = "docs room for shared-situation-awareness framing, prospective display theory, and research grounding behind lar signal"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/signal/sa-display"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/sa-display"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -118,6 +119,6 @@ Per-position stance modifier glyph design remains in motion; current record-form
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jwe4OAcynBWk2acWQvLYvauyFJRjM59E7YKfbwN3Vdg
+<<^ code="&#x0003;">>ni:///sha-256;74dJD2PhXSEbdZz_H3XmOORS8aHxUH9R1phPfb2aF4w
 
 <<^ code="&#x0004;" -> to="?">>

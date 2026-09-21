@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/components/tag">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/templates/components/tag.mem"
@@ -9,13 +11,14 @@ mana      = 14
 manao     = 17
 manaoio   = 15
 role      = "root template meme for component memes — an addressed facet a module #has (domain/function/hook/posture)"
+title     = "lar:///ha.ka.ba/sdm/templates/components/tag"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/components/tag"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Template — Component
 
@@ -68,6 +71,6 @@ A component earns its address by serving a filter query. Tags start as TOML head
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;77RJ7jkThG7IgIhmZ8ojwNotzucwUnfOiWxjNEM2JJ0
+<<^ code="&#x0003;">>ni:///sha-256;JQkX4Eg1J0OXkmJDNh20_tvuPSJue6TGdidZiIPHKvg
 
 <<^ code="&#x0004;" -> to="?">>

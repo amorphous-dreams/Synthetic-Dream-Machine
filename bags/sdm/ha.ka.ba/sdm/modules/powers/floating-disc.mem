@@ -1,23 +1,26 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/powers/floating-disc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "Floating Disc"
 file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/floating-disc.mem"
+l-space   = "sdm"
 mana      = 15
 manao     = 17
 manaoio   = 16
 role      = "Power module: Floating Disc — a stuckforce disc that hauls cargo and tilts into a barrier"
 tags      = ["components/domain/stuckforce", "components/function/cargo", "components/function/barrier", "components/hook/sustained", "mount-points/trait"]
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/modules/powers/floating-disc"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/floating-disc"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Floating Disc
 
@@ -87,6 +90,6 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Bcj2XqmYlcoCVORwqexErJwQenuYpzMySWVRnHB3fJ0
+<<^ code="&#x0003;">>ni:///sha-256;shMZDJnwZo5t_mIw5XDk3beMeRK0de13T7r4L8grA_0
 
 <<^ code="&#x0004;" -> to="?">>

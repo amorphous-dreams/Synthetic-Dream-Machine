@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: TOPIC A — IS THE MYCELIUM ANALOGY LOAD-BEARING OR DECORATIVE?. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-is-the-mycelium-analogy-load-bearing-60097e"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -355,6 +356,6 @@ Named failures and their diagnosed causes: **Gopher** (outcompeted on net value 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N7vx00s3UwddwogBLGchj--rvtz5hXE4HFR1z5Ff4sw
+<<^ code="&#x0003;">>ni:///sha-256;sFZ4_cHBA4oYuCqhSUggdft3KQJlPrxcxPru6HGS8iI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/a-broken-world/spine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/books/a-broken-world/spine.mem"
@@ -11,11 +13,10 @@ manaoio   = 12
 rating    = "ano"
 role      = "spine — Elyncia 01, A Broken World: the walk through the history, the Curse of Iron, and the gazetteer; chunks live at their topical addresses"
 tags      = ["ha.ka.ba/elyncia/books/index"]
+title     = "lar:///ha.ka.ba/elyncia/books/a-broken-world/spine"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/a-broken-world/spine"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -65,6 +66,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AjOnChDl96yze3FHqxK9YUPVOdF5uQjFPe6ZBCGTz4w
+<<^ code="&#x0003;">>ni:///sha-256;N4OT5UlY2m79VnakWnshQ4En05M8ZjP2PVYhCcpYD1w
 
 <<^ code="&#x0004;" -> to="?">>

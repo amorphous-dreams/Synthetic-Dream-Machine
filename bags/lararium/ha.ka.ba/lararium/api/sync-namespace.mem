@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/sync-namespace">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/api/sync-namespace.mem"
@@ -14,13 +16,14 @@ revision-note = "minted 2026-06-06 — extracted from lar-uri #path-taxonomy TW5
 role          = "load-bearing invariant — the sync boundary admits any valid TW5 tiddler; the $:/ system plane stays browser-local by the system filters; a lar: title marks a placed, address-bearing carrier"
 status-why    = "the namespace design; no source carries it yet"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/designed"]
+title         = "lar:///ha.ka.ba/lararium/api/sync-namespace"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/core-claim>>
 
@@ -97,6 +100,6 @@ This dual-distribution shape names a ''packaging convention, not a namespace exc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;K05BM-PXcndM0ZPO-paV5rNqgMN9oszH3HwA4-0J4iY
+<<^ code="&#x0003;">>ni:///sha-256;VfusY0GFFibMzjnEnTfEUKcSUVrHPmvPA_MZU4jy3pQ
 
 <<^ code="&#x0004;" -> to="?">>

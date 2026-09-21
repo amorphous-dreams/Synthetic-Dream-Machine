@@ -6,8 +6,8 @@
  * that lost its address was invisible to all three at once: seventeen carriers sat outside every gate
  * while each gate called itself corpus-wide.
  *
- * The gradient reading is the one that opens those. It fails on a FAULT and never on a KIND — a bag
- * descriptor carries no body frame because it holds no meme's text, and that is the shape it should be.
+ * The gradient reading is the one that opens those. Every input reads as a carrier; its marks and
+ * faults state how completely it arrives. A bag declaration and its prose live inside its checked body.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
@@ -29,15 +29,15 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";
 
 const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>";
-/** The head sigil as the CORPUS writes it — the far side is a named `to=` field, and every carrier
- *  names it (639 when measured, 724 now; the test below asks the corpus rather than this number).
+/** The head sigil as the CORPUS writes it — the far side is a named `to=` field, and corpus carriers
+ *  name it (the test below asks the corpus rather than carrying a stale count).
  *  A fixture in the bare form is legal grammar and measures a shape no file has. */
 const head = (uri: string, ns = "") =>
   `<<^ code="&#x0001;"${ns ? ` namespace="${ns}"` : ""} from=? -> to=${uri}>>`;
 
-describe("carrier-shape — the kind a file declares, and what that kind owes", () => {
+describe("carrier-shape — every source reads as a carrier, with its marks and faults", () => {
   /**
-   * THE ARROW CARRIES A `>`, and a head scan that forgets it reads every carrier as unframed. Measured:
+   * THE ARROW CARRIES A `>`, and a head scan that forgets it lowers every carrier below its frame floor. Measured:
    * a first cut of this reader reported all 617 corpus files headless and faulted 610 of them.
    */
   test("a head sigil is found through its own bearing arrow", () => {
@@ -46,7 +46,7 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
     expect(shape.marks.headUri).toBe("lar:///ha.ka.ba/x/y");
   });
 
-  /** The bare form stays legal, so the reader must not REQUIRE the field it now strips. */
+  /** The bare form stays legal, so the reader reads its far-side address positionally. */
   test("an unnamed far side reads the same address", () => {
     const bare = `${DECL}\n\n<<^ code="&#x0001;" ? -> lar:///ha.ka.ba/x/y>>\n`;
     expect(readCarrierShape(bare).marks.headUri).toBe("lar:///ha.ka.ba/x/y");
@@ -79,34 +79,29 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
     expect(readCarrierShape(taught).marks.meta, "a quoted declaration counted as the file's own").toBe(false);
   });
 
-  test("the kind reads from what a file DECLARES, never from where it rests", () => {
-    const of = (meta: string) => readCarrierShape(`${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\n${meta}\n\`\`\`\n`).kind;
-    expect(of('uri-path = "ha.ka.ba/x/y"')).toBe("carrier");
-    expect(of('bag = "lares"')).toBe("descriptor");
-    expect(of('collection = "kumulipo"')).toBe("shelf");
-    expect(readCarrierShape(`${DECL}\n\nbare prose\n`).kind).toBe("unframed");
+  test("every source remains a carrier while its declaration fields vary", () => {
+    const of = (meta: string) => readCarrierShape(`${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\n${meta}\n\`\`\`\n`).marks;
+    expect(of('uri-path = "ha.ka.ba/x/y"').uriPath).toBe("ha.ka.ba/x/y");
+    expect(of('bag = "lares"').bag).toBe("lares");
+    expect(of('collection = "kumulipo"').uriPath).toBeNull();
+    expect(readCarrierShape(`${DECL}\n\nbare prose\n`).faults.length).toBeGreaterThan(0);
   });
 
-  /**
-   * THE FAULT THAT MADE EVERY OTHER GATE BLIND: a head that names an address the declaration never
-   * states. The file renders, round-trips, and is skipped by every corpus walk keyed on `uri-path`.
-   */
-  test("a head that names an address the declaration never states reads as the fault it is", () => {
-    const shelf = readCarrierShape(`${DECL}\n\n${head("lar:///ha.ka.ba/library/x")}\n\`\`\`toml meta\ncollection = "x"\n\`\`\`\n`);
-    expect(shelf.kind).toBe("shelf");
-    expect(shelf.faults.join(" ")).toContain("every corpus gate skips it");
+  test("a carrier may state an address in its head and distinct indexing fields in its TOML", () => {
+    const shape = readCarrierShape(`${DECL}\n\n${head("lar:///ha.ka.ba/library/x")}\n\`\`\`toml meta\ncollection = "x"\n\`\`\`\n`);
+    expect(shape.marks).toMatchObject({ headUri: "lar:///ha.ka.ba/library/x", uriPath: null });
   });
 
-  test("a bag descriptor carrying no body frame stands at its floor, not below it", () => {
+  test("a bag-declaring carrier carries the complete frame that seals its declaration and prose", () => {
     const d = readCarrierShape(
-      `${DECL}\n\n${head("lar:///ha.ka.ba/bags/lares")}\n\`\`\`toml meta\nbag = "lares"\n\`\`\`\n\nprose\n\n<<^ code="&#x0004;" -> to=?>>\n`,
+      `${DECL}\n\n${head("lar:///ha.ka.ba/bags/lares")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nbag = "lares"\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`,
     );
-    expect(d.kind).toBe("descriptor");
-    expect(d.faults, "a descriptor faulted for lacking a body it never holds").toEqual([]);
+    expect(d.marks).toMatchObject({ stx: true, etx: true, eot: true });
+    expect(d.faults).toEqual([]);
   });
 
-  /** The corpus itself: no file may sit below the floor of the kind it declares. */
-  test("every carrier in the corpus stands at its kind's floor", () => {
+  /** The corpus itself: every carrier stands at its full floor. */
+  test("every carrier in the corpus stands at its full floor", () => {
     const files = carrierFiles(REPO);
     const below = files
       .map((f) => [f, readCarrierShape(readFileSync(path.join(REPO, f), "utf8"))] as const)
@@ -123,8 +118,8 @@ describe("carrier-shape — the kind a file declares, and what that kind owes", 
    * handed these.
    *
    * Thirty-nine stand: 36 `.md` from before the corpus poured, two `.tid`, one `.py`. Two of the `.md` carry
-   * a head sigil and are the glyph-definition drafts `period-forms` keeps verbatim, so they read as
-   * `shelf` rather than `unframed` — the law and the reading agree without either being told.
+   * a head sigil and are the glyph-definition drafts `period-forms` keeps verbatim. Their file
+   * extension leaves them outside this carrier walk.
    *
    * A CEILING, not a floor: converting one lowers it, and a new uncarried file raises it. ''Lower it
    * whenever it can go lower'' — a ceiling left slack absorbs the next gap silently, which is what the
@@ -303,9 +298,9 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
       }
       if (after === text) continue;
       moved++;
-      const now = readCarrierShape(after);
-      if (now.marks.eot !== before.marks.eot || now.marks.head !== before.marks.head) {
-        drifted.push(`${f} — eot ${before.marks.eot}→${now.marks.eot}, head ${before.marks.head}→${now.marks.head}`);
+      const afterShape = readCarrierShape(after);
+      if (afterShape.marks.eot !== before.marks.eot || afterShape.marks.head !== before.marks.head) {
+        drifted.push(`${f} — eot ${before.marks.eot}→${afterShape.marks.eot}, head ${before.marks.head}→${afterShape.marks.head}`);
       }
     }
     // A substitution that reached nothing would report a perfectly clean run.

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/child-grade-decision.mem"
@@ -14,13 +16,14 @@ revised-on = "2026-09-13"
 role       = "child-grade-decision — the DECISION SURFACE for syncer seam (b), the ungated child: what a slot child IS as a record, what the word GRADE names mechanically, the two forks the operator was handed with the losing case for each written as hard as the winning one, the THIRD instrument neither fork names, the consequence ladder with the door that closes behind each choice, three humans who see the divergence, and the collision against law the house already ruled. It presents; it does not rule."
 status-why = "the operator, asked to rule seam (b) — does a child's save grade against its OWN authored text, or does a child read UNGRADED by law — answered `needs more technical context, tiddler ontology, consequences`; a tasked spirit built the surface rather than the verdict, every claim in #/measured collided against the running code on 2026-09-13"
 tags       = ["docs/pono/decision-surface", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/child-grade-decision"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/child-grade-decision"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/meme">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ground>>
 
@@ -394,6 +397,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;y6ekrO2ju4-4gsVEZebsMScjkqdONcrTTCviJEaTeRc
+<<^ code="&#x0003;">>ni:///sha-256;kYuEBZ9pokSgMB8r1ifjZPBXPN1D_d_RA3xHEIuqa0g
 
 <<^ code="&#x0004;" -> to="?">>

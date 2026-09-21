@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: TOPIC A — The onboarding-cost question. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/topic-a-the-onboarding-cost-question-1c7848"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -414,6 +415,6 @@ Also not retrieved: **Notary** root rotation semantics. No findings.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ecm1SFSeI10BXcka37QqESihJRc36MPzunT1qfpQ9-w
+<<^ code="&#x0003;">>ni:///sha-256;col7STQJjQ1eAJzV4ywpCsEMlughchFipG5E-MrNW2U
 
 <<^ code="&#x0004;" -> to="?">>

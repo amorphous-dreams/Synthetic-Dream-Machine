@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/l-prime">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/l-prime.mem"
 role      = "docs companion for l-prime: research provenance, braid notes, and binary-ward guidance"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/l-prime"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/l-prime"
 ```
-
-<<^ code="&#x0002;">>
 
 ! L-Prime — Docs
 
@@ -90,6 +91,6 @@ The ward governs grammar alone. Every `${copula}` that passes under the lit ward
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IaA5lWgwUnPKicqm4hxrhOPBezb5K8W9l6NOF5huxOE
+<<^ code="&#x0003;">>ni:///sha-256;TkphIuDHlC0qAP4hAtmEGWSQ6GQmT13DM0F7yoV8d8I
 
 <<^ code="&#x0004;" -> to="?">>

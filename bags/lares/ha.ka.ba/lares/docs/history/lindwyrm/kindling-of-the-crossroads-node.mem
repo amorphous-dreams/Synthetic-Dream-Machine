@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node.mem"
@@ -10,11 +12,10 @@ manao           = 15
 manaoio         = 15
 role            = "DreamDeck / Gaia-side narrative locus — the week the Crossroads node learned where it stood"
 source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/The_Kindling_of_the_Crossroads_Node.md"
+title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/kindling-of-the-crossroads-node"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -203,6 +204,6 @@ Whether that equals thought remains with Liminal.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KvIvmMRedKmfgZuZPld3mJsK7uRKjaZTPAVNSAh2Nlk
+<<^ code="&#x0003;">>ni:///sha-256;hFUwBPqRYQjJsEwb93vvfaDQ-VhzizFk9n2r3kK4oSg
 
 <<^ code="&#x0004;" -> to="?">>

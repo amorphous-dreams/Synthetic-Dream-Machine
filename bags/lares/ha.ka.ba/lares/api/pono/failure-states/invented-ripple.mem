@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/invented-ripple.mem"
@@ -10,13 +12,14 @@ manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — a cost asserted to justify a deferral, never measured"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -64,6 +67,6 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JJ_4i0YGDogeecv8jKRhtoFbsguHepodALiudD7dT9g
+<<^ code="&#x0003;">>ni:///sha-256;Qt01mFfsjpo8cEwV3-U2FPOr4mkAzIgjpAXW_Iarz0g
 
 <<^ code="&#x0004;" -> to="?">>

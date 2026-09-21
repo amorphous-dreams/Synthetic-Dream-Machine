@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/magic-decode">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "magic-decode"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/function/magic-decode.mem"
+l-space   = "sdm"
 mana      = 13
 manao     = 16
 manaoio   = 13
 role      = "component (function): Magic Decode — turning a magical inscription into active, readable meaning"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/function/magic-decode"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/function/magic-decode"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Magic Decode
 
@@ -69,6 +70,6 @@ Depends on `domain/divination`; pairs with `function/archive` for the handshake 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IzPV7Rvq2gwgxRVpu5lCyHw8Vv_uo9ljkdaOKMTLdYM
+<<^ code="&#x0003;">>ni:///sha-256;WweVmHIOrfAdnXNnbccNfHzDarLKyUe-jakyY1GBtrA
 
 <<^ code="&#x0004;" -> to="?">>

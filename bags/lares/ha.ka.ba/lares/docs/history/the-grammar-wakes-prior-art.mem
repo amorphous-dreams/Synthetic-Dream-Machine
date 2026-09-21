@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art.mem"
@@ -10,11 +12,10 @@ manao         = 17
 manaoio       = 17
 render-target = "docs"
 role          = "side-car to the genesis arc — the 8-system prior-art comparison battery and 7 open design tests that shaped kahea/ahu/loulou design pressure and the W3C lineage verdict. Reference, not narrative."
+title         = "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-grammar-wakes-prior-art"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -119,6 +120,6 @@ The W3C research additionally surfaced: the grammar still lacks its own canonica
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WbY3usjhP2cW5gyqjWMBr--WhHDHe7fLa0rMH_Rxo0A
+<<^ code="&#x0003;">>ni:///sha-256;1gYLGD98t20ycf0FTTmCWD-H04DEpldJAYtf79giGiA
 
 <<^ code="&#x0004;" -> to="?">>

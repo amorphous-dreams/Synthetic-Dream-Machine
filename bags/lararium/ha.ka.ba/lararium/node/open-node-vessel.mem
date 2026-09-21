@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/open-node-vessel">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/open-node-vessel.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 15
 role        = "invariant law: the Node vessel factory — a thin opener over the composable keel. ONE preparation, TWO doors: a HEARTH lifting the caps a face carries, and a CROSSROADS serving an HTTP floor with no wiki and no pool. The node vessel holds NO semantic privilege — roads, docks and sync only; live VM state lives in sovereign islands."
 source-file = "packages/lararium-node/src/open-node-vessel.ts"
+title       = "lar:///ha.ka.ba/lararium/node/open-node-vessel"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/open-node-vessel"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -55,6 +56,6 @@ second Node into code that claims isomorphism.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>
 
-<<^ code="&#x0003;">>ni:///sha-256;D0JHt8fljiDo5Aa-h59riiR4KXfSCvvNrNgyVULbv2M
+<<^ code="&#x0003;">>ni:///sha-256;MpVtrONPx-TLnHtAak2ENdZmO0vS3g1TQZCX4opN9YQ
 
 <<^ code="&#x0004;" -> to="?">>

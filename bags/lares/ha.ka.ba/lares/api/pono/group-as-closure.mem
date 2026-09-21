@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⬡" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/group-as-closure">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/group-as-closure.mem"
@@ -12,6 +14,7 @@ namespace  = "&#x2B21;"
 role       = "group-as-closure: a group names no central object — it names the reciprocal-edge closure over signed, typed, lar:-named individual edges, EVALUATED never instantiated; quorum = a composed threshold subject; eviction = kāpae on the membership stack; maps PersonaGroup/Plurality/Kowloon-Admins onto #has-stack composition; PROPOSED, mostly unbuilt"
 status-why = "design intent, mostly unbuilt by its own status line"
 tags       = ["api/pono/meme", "api/pono/orichalcum-capabilities", "api/pono/causal-islands", "api/pono/lararium-identity", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/api/pono/group-as-closure"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/group-as-closure"
 written    = "2026-06-29"
@@ -19,7 +22,7 @@ written    = "2026-06-29"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -197,6 +200,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LtAN6JrlOAyymUvytHOLuFqMuCpcBEhKgxmrN6NxISU
+<<^ code="&#x0003;">>ni:///sha-256;Rpy-8XDR8I5vTCNqZFQuam4bg_riR___P9zx0Vg3uys
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,21 +1,24 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/epic/powers-composition-rewrite.mem"
+l-space   = "sdm"
 mana      = 19
 manao     = 19
 manaoio   = 18
 role      = "epic plan: SDM+ Powers as navigable composition space"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/epic/powers-composition-rewrite"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/epic/powers-composition-rewrite"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Epic — Powers Composition Rewrite
 
@@ -775,6 +778,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lT8LUpEcUnVrt5FhxDmlpSzHrGTTJ8wtEZtRp-KqRBQ
+<<^ code="&#x0003;">>ni:///sha-256;UbrsloIiDolYSoVR1vY923-KL5I0HeRUD_BPE05fKws
 
 <<^ code="&#x0004;" -> to="?">>

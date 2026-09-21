@@ -1,7 +1,7 @@
 /**
  * Child declared type (regression guard) — a child slot that declares its OWN meta `type`
  * (e.g. text/markdown) keeps it through deserialization; an undeclared child defaults to
- * the memetic dialect. Guards the clobber where a hardcoded memetic `type` spread AFTER the
+ * memetic carrier family. Guards the clobber where a hardcoded memetic `type` spread AFTER the
  * parsed meta fields erased a child's declared type.
  */
 import { describe, expect, test } from "vitest";

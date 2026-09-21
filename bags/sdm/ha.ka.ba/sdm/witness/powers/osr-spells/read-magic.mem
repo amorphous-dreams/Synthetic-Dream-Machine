@@ -1,19 +1,20 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/read-magic.mem"
+l-space   = "sdm"
 mana      = 11
 manao     = 16
 manaoio   = 17
 role      = "OSR spell witness for Read Magic — Basic/Expert/Rules-Cyclopedia provenance, cold-load"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/read-magic"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/witness/powers/osr-spells/read-magic"
 ```
-
-<<^ code="&#x0002;">>
 
 ! OSR Witness — Read Magic
 
@@ -90,6 +91,6 @@ The spellcaster may read — not speak — magical words or runes on scrolls and
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MvvP5D15oVC-efbCz0jIDZIH0Xj-aV3zhHJQiLZIozU
+<<^ code="&#x0003;">>ni:///sha-256;ptlDEaCJDIjvek_Hv1PmViZ9Wpm1auoxIBzT-F8QQ14
 
 <<^ code="&#x0004;" -> to="?">>

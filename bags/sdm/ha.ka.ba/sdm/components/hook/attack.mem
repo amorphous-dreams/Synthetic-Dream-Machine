@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/attack">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "attack"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/attack.mem"
+l-space   = "sdm"
 mana      = 14
 manao     = 16
 manaoio   = 13
 role      = "component (hook): Attack — resolves against Defense rather than as a save"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/hook/attack"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/hook/attack"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Attack
 
@@ -69,6 +70,6 @@ Composes with offensive functions and any domain. Rarely sits on `domain/divinat
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3pibfWD3mkXhcTuYrxAFp8xAqTs1xvOSjEiUslh3ojg
+<<^ code="&#x0003;">>ni:///sha-256;I5QVcW47jet4obsyBcBlet8mbf3SP_W-3Lj2RXbQpsg
 
 <<^ code="&#x0004;" -> to="?">>

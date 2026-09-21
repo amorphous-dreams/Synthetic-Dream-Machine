@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/open-vessel">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/open-vessel.mem"
@@ -11,11 +13,10 @@ manao       = 16
 manaoio     = 14
 role        = "The Vessel — one clean composable web3-protocol design: a vessel composes from sovereign protocol participations named by its KEEL (VesselKeel); openVesselCore owns the sequence, the keel supplies the substrate atoms; role rides as a capability bundle, never a platform. `recipe` names the pinned wiki's composition and nothing else."
 source-file = "packages/lararium-mesh/src/open-vessel-core.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/open-vessel"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/open-vessel"
 ```
-
-<<^ code="&#x0002;">>
 
 ! The Vessel — One Composable Web3 Design
 
@@ -166,6 +167,6 @@ argument. What stays open sits one level out: a live-daemon exercise of the full
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
 
-<<^ code="&#x0003;">>ni:///sha-256;0iTLAp0l7kiC6df1HaDmh2eohKzOxctrOGZYi4mB0mI
+<<^ code="&#x0003;">>ni:///sha-256;C-iZgRoasgxFfYE7wCGWomyaCh8wwJjFe8aXMNQov1A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/render-pipeline.mem"
@@ -12,13 +14,14 @@ namespace     = "&#x2299;"
 role          = "render pipeline law: render axes (stage/surface/mode/engine), three render modes, lar-render-mode dispatch, template cascade, causal island boundary, meme-ast in @lararium/tw5"
 source-symbol = "RenderMode RENDER_MODES RENDER_MODE_REACTION_WIRE"
 tags          = ["api/pono/meme", "api/pono/memetic-wikitext"]
+title         = "lar:///ha.ka.ba/lares/api/pono/render-pipeline"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/render-pipeline"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -255,6 +258,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cgL8eQi_gVA8qzbXs8p7EEbzWyKMJN4vfPXP9DQVqdA
+<<^ code="&#x0003;">>ni:///sha-256;5sYS49HmOzuxGYge5UwRlp-IvIvOGVeEr7Z3gpeKKM8
 
 <<^ code="&#x0004;" -> to="?">>

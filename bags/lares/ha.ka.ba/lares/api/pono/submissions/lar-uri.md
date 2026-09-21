@@ -404,5 +404,4 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 ## Edges
 
 - `"lar:///ha.ka.ba/lares/api/pono/lar-uri"`
-- `"lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL"`
 - `"lar:///ha.ka.ba/lares/docs/pono/identity-stack"`

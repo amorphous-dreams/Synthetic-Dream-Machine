@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/has">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/has.mem"
@@ -11,6 +13,7 @@ manaoio   = 15
 namespace = "&#x2299;"
 role      = "the has sigil — one relation in three slots: an ENTITY, a NAME, and what that name HOLDS. Names the copula-free predicate the corpus authors rows with; states the quoting law and the text law that decide what a slot receives; routes the relations has refuses (sequence, crossing, grade) to their own verbs"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has"]
+title     = "lar:///ha.ka.ba/lares/api/pono/has"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/has"
 written   = "2026-09-09"
@@ -18,7 +21,7 @@ written   = "2026-09-09"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -218,6 +221,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IN0amkot9F_ILw7gOsapMaHs5YBxfSurxLtTc4w_C_A
+<<^ code="&#x0003;">>ni:///sha-256;nRukZqRYLBX5HZfyljJEtHnX97BrxLkBiQ6hwmU4L6M
 
 <<^ code="&#x0004;" -> to="?">>

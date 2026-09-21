@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚷" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/lararium-identity.mem"
@@ -13,6 +15,7 @@ namespace  = "&#x26B7;"
 role       = "the identity architecture stated whole — the two-axis split (the WHO/social axis vessel-key→PersonaGroup→CabalGroup ⊥ the INFRA/carriage axis relay→Lararium→Nexus→DreamNet), the per-vessel key as the user×vessel bond, the delegation EDGE as the relationship, and the encrypt-from-start temporary keying that mocks Keyhive/BeeKEM/Beelay with nested Automerge docs behind a four-port swap surface; PROPOSED — one dissent kept open at #provenance"
 status-why = "the vessel identity core stands live on both platforms"
 tags       = ["api/pono/meme", "api/pono/causal-islands", "api/pono/orichalcum-capabilities", "api/pono/loci", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/api/pono/lararium-identity"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lararium-identity"
 written    = "2026-06-23"
@@ -20,7 +23,7 @@ written    = "2026-06-23"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -579,6 +582,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QkuxJ80-XvvnRtW8adCVbb5p5QX3-4D2a5RpqPH4SBU
+<<^ code="&#x0003;">>ni:///sha-256;MSZZRfxCYwxStIoPI6VOnS3K0_nI1daQa1ru5NgUfGQ
 
 <<^ code="&#x0004;" -> to="?">>

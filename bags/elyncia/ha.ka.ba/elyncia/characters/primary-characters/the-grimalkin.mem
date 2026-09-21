@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin.mem"
@@ -10,11 +12,10 @@ manao     = 11
 manaoio   = 10
 rating    = "ano"
 role      = "hallmark companion — Patches the Grimalkin, Kai ʻĀ's mount (Level 2): female long-hair calico Maine Coon of Gaia, manifested Elyncian as grimalkin lynx-kaiju; voice and meeting-story still Kai's to tell"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/the-grimalkin"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -76,6 +77,6 @@ walking. Whether hers reads as familiar, mount, partner, or all three at once be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j0UKuEJdcsi7SglbUujISGi-wwkBKYp8zwE9iNSSt9I
+<<^ code="&#x0003;">>ni:///sha-256;ClH-DNur8W-M0H-paPXLeubmvlf-qp2l4OzewG50gvc
 
 <<^ code="&#x0004;" -> to="?">>

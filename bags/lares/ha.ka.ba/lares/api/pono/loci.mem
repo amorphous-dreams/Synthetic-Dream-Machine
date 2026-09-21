@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/loci.mem"
@@ -9,13 +11,14 @@ manao     = 17
 manaoio   = 13
 namespace = "&#x2299;"
 role      = "loci law (kānāwai): the mandatory component — address authority, bags/ siting derivation, relative-name qualification office, address stability, canon-MOVE rule"
+title     = "lar:///ha.ka.ba/lares/api/pono/loci"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/loci"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -201,6 +204,6 @@ Convention fails when:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ke4UaSSq2Cl_liFjcbrcw819XKqxqXW9_bBTwuxIAfA
+<<^ code="&#x0003;">>ni:///sha-256;TZhh57My9EVIepcgHc6DdkZzOq_Ppf5PZ4kFxodBc5g
 
 <<^ code="&#x0004;" -> to="?">>

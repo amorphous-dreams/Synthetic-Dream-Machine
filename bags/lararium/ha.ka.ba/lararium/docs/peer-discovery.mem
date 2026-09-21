@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/peer-discovery">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-discovery.mem"
@@ -9,11 +11,10 @@ manao     = 18
 manaoio   = 17
 role      = "Web3 peer discovery doctrine — cold bootstrap, six-tier ladder, DID service endpoints, social-graph discovery, Keyhive add-member"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/peer-coordination", "lar:///ha.ka.ba/lares/api/pono/local-first", "lar:///ha.ka.ba/lararium/tw5/lar-uri-namespace", "lar:///ha.ka.ba/lararium/tw5/lararium-doc-stack"]
+title     = "lar:///ha.ka.ba/lararium/docs/peer-discovery"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/peer-discovery"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Peer Discovery Doctrine
 
@@ -289,6 +290,6 @@ state stays local-first, no-global-now enacted rather than breached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3eqLYdK6v1F1QD3-O23PcZDbTNDYadOr29W8c3NaMkA
+<<^ code="&#x0003;">>ni:///sha-256;gKIYHN29NEe8FbEimgTHo4FGkUEgmKXTc6gGICrSvBk
 
 <<^ code="&#x0004;" -> to="?">>

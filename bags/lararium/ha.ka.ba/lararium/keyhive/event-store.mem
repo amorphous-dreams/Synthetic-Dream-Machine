@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/event-store">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/event-store.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 12
 role        = "invariant law: EventStore — durable persistence for Keyhive ops, and the island slice a boot may load without losing decryptability. Names why an event carries an island, which events carry NONE and must co-load with every slice, and why causality needs no sorting here."
 source-file = "packages/lararium-keyhive/src/event-store.ts"
+title       = "lar:///ha.ka.ba/lararium/keyhive/event-store"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/event-store"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -54,6 +55,6 @@ caller that has not reasoned about slices gets the whole record rather than a si
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;BD3KG5ucVE9DYz2fgKrusU3VjZzn8OSod4EX_jDd55E
+<<^ code="&#x0003;">>ni:///sha-256;bFZFp181RDGacs2G5Pydb1gk8L8wqKbupI10JqCSgrU
 
 <<^ code="&#x0004;" -> to="?">>

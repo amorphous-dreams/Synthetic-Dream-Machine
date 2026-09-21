@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/projection-nalu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/projection-nalu.mem"
@@ -12,6 +14,7 @@ manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "THE projection-nalu pattern integrity — the shared form behind the three nalus (node→disk · browser→DOM · chat→mempalace): a sovereign SOURCE's state, carried by a gated wave, flushed to a substrate SINK (role=capability≠platform). Names the TWO CONSERVED gate-families (accumulate/durable vs coalesce/transient — keep distinct), the per-family SERVO (#servo: accumulate shrinks depth / coalesce GROWS window / display stays frame-pinned — role=physics≠uniformity), the runtime has-stack CELLS (#cells: every nalu rides a nameless sovereign causal island composed from #has caps — composeIsland), the facets a 3-domain rhyme survey surfaced (flush-reducer · trigger-taxonomy · fill-adaptive · priced-deferral · negotiated-schedule), the failure-guards (supercooling · hiatus), and the spine vocabulary. Enacted: mesh/projection-nalu.ts (CoalesceGate/KeyedCoalesceGate + maxWaitMs auditTime progress-guarantee, the receive-livelock cure) + the 5th shore meme-provider.ts (_changesetGate, the Automerge doc/bag boundary, ≥10-URI onChangeset coalesce, markSyncComplete flushes before onSyncComplete) + gate-tuning (deriveGate/adaptGate/adaptWindow, the servo two-loop, home at @lares/api/pono/servo) + the accumulate sibling CaptureNalu + tw5/island-caps (composeIsland/hasCapture)."
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/projection-nalu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/projection-nalu"
 written   = "2026-06-26"
@@ -19,7 +22,7 @@ written   = "2026-06-26"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/nalu">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -178,6 +181,6 @@ The DOM nalu (`tw5-projection.ts`) draws `CoalesceGate`; the disk nalu (`disk-pr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5hMQUVsolXAQUY1U-NbCeaR1VI5EyfpEr7MnynC2Rsk
+<<^ code="&#x0003;">>ni:///sha-256;8UsIGUEX-wTtTwZkd3DMwbNV5wTib_Uy5iIukk-Ip8I
 
 <<^ code="&#x0004;" -> to="?">>

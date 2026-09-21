@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kau">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kau.mem"
@@ -10,13 +12,14 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "device placement/instantiation — set down with intention, own URI, own context"
 tags      = ["api/pono/meme", "api/lararium/widgets/kau", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kau"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kau"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -118,6 +121,6 @@ This maps directly to the Ink & Switch island model: each automerge object opera
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-ALCxCS0PZXd4mEV2Nn1DqukEV1Mg5llmCUXAkPQ3Ig
+<<^ code="&#x0003;">>ni:///sha-256;2tLC3zf0jBb1qg0AI6rmUAVIAhnwYR4CbVXe6SMHQh0
 
 <<^ code="&#x0004;" -> to="?">>

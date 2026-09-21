@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/order-of-amaranth">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/order-of-amaranth.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "faction meme — the Order of Amaranth: sanctuary law, iron convoys under the unfading flower, field medicine, the livery and the sacrament"
+title     = "lar:///ha.ka.ba/elyncia/factions/order-of-amaranth"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/order-of-amaranth"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -55,6 +56,6 @@ honey into sacred shapes, shared and eaten.)//
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3Z-2rZj5V_Su6uEAlgEhvU-uMcuLJti6exnnIQy36NA
+<<^ code="&#x0003;">>ni:///sha-256;FSGcq7vAXmsb3PoTs7Lze4V8TZUE--60_Vi136Japuw
 
 <<^ code="&#x0004;" -> to="?">>

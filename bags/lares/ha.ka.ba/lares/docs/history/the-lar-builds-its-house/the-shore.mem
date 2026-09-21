@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore.mem"
@@ -10,11 +12,10 @@ manao         = 11
 manaoio       = 11
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act III, the Lar parts a working layer from a sealed canon; every boundary a causal-island shore (Fontany-Fuller-Zelenka), crossed only by an audited residency MOVE"
+title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-shore"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -171,6 +172,6 @@ Act IV receives:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qged8Z-2dqGBipbQ3cA4-kbdPF3nm5fA691D7BS3lWg
+<<^ code="&#x0003;">>ni:///sha-256;iwabXkgn8U1-JdpFG_MPJk5nu3lAaDvU4y3Kwp21CEk
 
 <<^ code="&#x0004;" -> to="?">>

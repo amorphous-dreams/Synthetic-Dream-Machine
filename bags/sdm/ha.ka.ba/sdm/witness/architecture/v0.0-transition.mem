@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/architecture/v0.0-transition">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/witness/architecture/v0.0-transition.mem"
@@ -9,11 +11,10 @@ mana      = 12
 manao     = 17
 manaoio   = 16
 role      = "architecture witness: what the v0.0 prototype contained and why it retired into the v0.1 composition model"
+title     = "lar:///ha.ka.ba/sdm/witness/architecture/v0.0-transition"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/witness/architecture/v0.0-transition"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Architecture Witness — v0.0 Transition
 
@@ -66,6 +67,6 @@ The edge taxonomy collapsed to one flat verb (`#has`, no family/role) for compos
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sVP4YaCkNZdRCvyamg1WVC7AonryuNyd8TM3np_NVGo
+<<^ code="&#x0003;">>ni:///sha-256;fAdDzLEZ8omQVGvMYrhC0Nbdb0mMRFPDYCE5Xj5Nkbo
 
 <<^ code="&#x0004;" -> to="?">>

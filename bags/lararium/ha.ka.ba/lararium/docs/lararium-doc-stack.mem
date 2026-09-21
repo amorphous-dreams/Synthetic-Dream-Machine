@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/lararium-doc-stack.mem"
@@ -11,11 +13,10 @@ revised-on    = "2026-06-10"
 revision-note = "demoted from Synthesis-Canon: the six-layer Catalog/Corpus model predates IslandGrants + recipe-watch (boot = first reconcile); terms swept room→wiki 2026-06-10"
 role          = "research-era doc-stack model (six-layer) — structurally PRE-keel-cut; superseded for current law by recipe + island-protocol (IslandGrants) + wiki-layer-ontology; retained for boot-sequence and export round-trip teaching"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/local-first", "lar:///ha.ka.ba/lararium/tw5/peer-coordination"]
+title         = "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/lararium-doc-stack"
 ```
-
-<<^ code="&#x0002;">>
 
 > ''Supersession note (2026-06-10).'' This meme records the research-era six-layer model. The current composition law lives at `lar:///ha.ka.ba/lararium/mesh/recipe` (stored composition shape), `lar:///ha.ka.ba/lararium/mesh/island-protocol` (IslandGrants — typed ocap manifest; library layers resolve island-side from @catalog, boot = first reconcile), and `lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology` (the layer stack and its laws). Read what follows as lineage, not law.
 
@@ -155,6 +156,6 @@ infrastructure rather than rolling a separate exporter.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FZs5V1dTdoQc58elb9jS-eRQHHrN0Zl1NT5apv5Jwgk
+<<^ code="&#x0003;">>ni:///sha-256;8Zw2byp0NxXX8-pWD-CljWEELjgnGwg8YA8Z8eThPeM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -7,9 +7,8 @@
  * fence closes. Five readers demanded exactly one space; the deserializer admitted `[ \t]+`.
  *
  * So a carrier written with two spaces DESERIALIZED WITH ITS FIELDS and read `meta:false` to the
- * shape reader — kind `shelf` when a head stood, `unframed` when none did. The file held its
- * identity at one gate and lost it at every other, which is the instrument-lie the gradient exists
- * to surface and instead produced.
+ * shape reader. The file held its identity at one gate and lost it at every other, which is the
+ * instrument-lie the gradient exists to surface and instead produced.
  *
  * ── THE LAW ─────────────────────────────────────────────────────────────────────────────────────
  * RECOGNITION IS PERMISSIVE, CANON IS STRICT, DEVIATION IS LOUD. A reader admits `[ \t]+` between
@@ -154,7 +153,6 @@ describe("a deviant spelling is ADMITTED and then FAULTED", () => {
     const shape = readCarrierShape(carrier(open));
     // ADMITTED — the file keeps its identity, or the fault is just a rejection wearing a nicer name.
     expect(shape.marks.meta, "a deviant spelling must still be READ").toBe(true);
-    expect(shape.kind).toBe("carrier");
     // FAULTED — and the fault states the canon, so a repair reads off the finding.
     expect(shape.faults.join(" | ")).toMatch(/meta fence/i);
     expect(shape.faults.join(" | ")).toContain(META_OPEN_CANON);

@@ -379,8 +379,7 @@ describe("project --to mem reads the composition it just rendered", () => {
     const code = await cmdMeme(memeArgs(["project", "lar:///t/two-heads"], { to: "mem" }, { json: true }));
     spy.mockRestore();
     const reply = JSON.parse(lines.find((l) => l.startsWith("{")) ?? "{}") as { ok?: boolean; data?: Record<string, unknown> };
-    const shape = reply.data?.["shape"] as { kind?: string; faults?: string[] } | undefined;
-    expect(shape?.kind).toBe("carrier");
+    const shape = reply.data?.["shape"] as { faults?: string[] } | undefined;
     expect(shape?.faults?.join(" ")).toMatch(/2 text frames stand where the grammar admits one/);
     // `ok` names whether the ACT landed; the exit code names what the READING found. Two facts, two
     // channels — the same custody ⊥ secret-kind separation, one altitude along.

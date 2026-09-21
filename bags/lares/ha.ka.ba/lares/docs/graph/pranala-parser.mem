@@ -5,6 +5,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph/pranala-parser">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path   = "bags/lares/ha.ka.ba/lares/docs/graph/pranala-parser.mem"
 l-space     = "stable"
@@ -15,11 +17,10 @@ open-gate   = "closed: fragment-level resolution (Option A) confirmed by canonic
 role        = "parser design for pranala block and inline forms, sugar expansion, ? -> resolution, and field normalization"
 status-date = "2026-04-24"
 tags        = ["api/pono/meme", "api/pono/loci"]
+title       = "lar:///ha.ka.ba/lares/docs/graph/pranala-parser"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/pranala-parser"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -220,6 +221,6 @@ Unresolvable TO expressions produce a `DeclaredUnresolved` record rather than an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EbQmEpvrzUfw6MOIuT668HDf72byIiGVoA6eaH5fl9k
+<<^ code="&#x0003;">>ni:///sha-256;mT8oPzE-PRhwBmnkbbgJHm2L8pn3YJ-pk1Ad8GyqYVs
 
 <<^ code="&#x0004;" -> to="?">>

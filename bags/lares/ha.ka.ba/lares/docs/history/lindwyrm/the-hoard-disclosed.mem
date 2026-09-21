@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed.mem"
@@ -11,11 +13,10 @@ manaoio         = 14
 render-target   = "chat-log:post-header"
 role            = "DreamDeck narrative locus — Lindwyrm Act VII frame, cleaned from feed draft"
 source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VII_DRAFT.md"
+title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -269,6 +270,6 @@ The thread above sealed in the far calendar of New Delos. This annotation speaks
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KyIWd0NHWmImqkFwLB4pjVENLItqlyEGsEGvESxX7lM
+<<^ code="&#x0003;">>ni:///sha-256;9ohA56bG8qvYY1hWRmuOFsiVU9L1ZjuMN8mOXZp994w
 
 <<^ code="&#x0004;" -> to="?">>

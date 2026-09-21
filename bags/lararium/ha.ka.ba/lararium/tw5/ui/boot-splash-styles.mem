@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/boot-splash-styles">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/boot-splash-styles.mem"
@@ -9,11 +11,10 @@ manao     = 17
 manaoio   = 16
 role      = "CSS for Lararium boot-splash banner — visible while causal islands warm"
 tags      = ["$:/tags/Stylesheet"]
+title     = "lar:///ha.ka.ba/lararium/tw5/ui/boot-splash-styles"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/ui/boot-splash-styles"
 ```
-
-<<^ code="&#x0002;">>
 
 .lar-boot-banner {
   position: fixed;
@@ -63,6 +64,6 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/boot-splash-styles"
   font-size: .85rem;
 }
 
-<<^ code="&#x0003;">>ni:///sha-256;WVgDsTZvMnJXJtSkPx27l_qInwrWJ99bp_NWwU42z-s
+<<^ code="&#x0003;">>ni:///sha-256;DC3wokN_jjik48NyciueECrD_zat2HNLU96MrC68B24
 
 <<^ code="&#x0004;" -> to="?">>

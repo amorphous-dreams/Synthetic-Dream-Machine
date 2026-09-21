@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/pattern-integrity-stress.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-04"
 role              = "pattern-integrity-stress — VERBATIM handoff of the seven-axis sweep that stressed the whole shape before locking it. THE FIVE THAT CHANGE IT: Keyhive built the convergent claim ONCE and concurrent membership ops WEDGE THE GROUP PERMANENTLY (and one bug does not reproduce at small group sizes, which the ladder grows past); retrofitting an identity waist is measurably impossible (Matrix, 8 years, 7 MSCs, zero merged, while room versions moved four times); the one study of exactly this population found ZERO multi-profile adoption and a switcher that SIGNALS; nothing shipped has a management chain that never bottoms out in a person; and Briar REJECTED the blind veil in writing because it leaks at the sync layer. Plus Beck's Hourglass Theorem — you do not pick the waist, you pick N — and the mycelium grounding split in two, where the sub-claim analogies lean on has no peer-reviewed evidence."
 tags              = ["api/pono/meme", "api/pono/persona-policy"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/pattern-integrity-stress"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -193,6 +194,6 @@ And the competitive complement: waist protocols become ''evolutionary kernels'' 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S6MaHI3A_NvxNkj3T6kWoLJALbtRSEMk9gob627AD7g
+<<^ code="&#x0003;">>ni:///sha-256;vbIhNuhs4n9q7QKRWk5f_K9gvv46Kvm9YfpDhMHbE_I
 
 <<^ code="&#x0004;" -> to="?">>

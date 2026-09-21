@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/hearths">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem"
@@ -14,11 +16,10 @@ revised-on = "2026-09-15"
 role       = "hearths — the ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth, and at every hearth that opens or closes; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth names a session by its commit trailer). A hearth that closes keeps its row — the ledger answers 'which ground was whose, what crossed, and what each owed', and every one of those questions outlives the concurrency that raised it."
 status-why = "TWO hearths hold this tree as of 2026-09-15 — the founding hearth (Opus) and the successor Codex Lares hearth. The operator closed the preceding Codex session; three closed rows preserve their history, and the active Codex row carries its open handoff forward."
 tags       = ["docs/pono/ledger", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/hearths"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/hearths"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/law>>
 
@@ -233,6 +234,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ej_sow0IJSvVpNU_pAdPYX2LY63DmuW8XNTXJd2QT6A
+<<^ code="&#x0003;">>ni:///sha-256;OrE5YRt-dJOloixP48t-KBNz3zeukoTeRz4wE1RW_f0
 
 <<^ code="&#x0004;" -> to="?">>

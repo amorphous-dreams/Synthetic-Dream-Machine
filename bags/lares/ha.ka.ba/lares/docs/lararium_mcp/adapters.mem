@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path       = "bags/lares/ha.ka.ba/lares/docs/lararium_mcp/adapters.mem"
 l-space         = "stable"
@@ -11,11 +13,10 @@ role            = "canonical submodule adapter and sidecar integration contract 
 source-consumes = ["packages/lares-core/memes/docs/mcp/SUBMODULE_ADAPTER_INTERFACE.md", "packages/lares-core/memes/docs/mcp/SUBMODULE_INTEGRATION_MATRIX.md", "packages/lares-core/memes/docs/mcp/mempalace.md", "packages/lares-core/memes/docs/mcp/subtasks/MCP-SUBTASK-007_MEMPALACE_LANE.md"]
 status-date     = "2026-04-23"
 tags            = ["api/pono/meme", "api/pono/loci"]
+title           = "lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/lararium_mcp/adapters"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -221,6 +222,6 @@ The following remain blocked until explicit policy lands:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BiVetTFQOjbOsczL91emn3SRR9nl1ozx12Ashqlan5M
+<<^ code="&#x0003;">>ni:///sha-256;6BtUGLuDMvqettTKMcfHuQ3Hjnpm2iCZTC3i4Dz5Zqo
 
 <<^ code="&#x0004;" -> to="?">>

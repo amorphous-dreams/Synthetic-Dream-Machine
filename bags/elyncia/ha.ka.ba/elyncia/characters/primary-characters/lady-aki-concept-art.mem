@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki concept-art package — true body, public glamour, threshold reveal, palette, negative directions"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-concept-art"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -218,6 +219,6 @@ When Aki walks into a settlement:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YDC4ci5POQ_w7Ig_HcNA2mue-84xFQ_o09qxDXQ6Ef0
+<<^ code="&#x0003;">>ni:///sha-256;_UvThPSiU_uX5K_osvEtPCr496oZiq6M311u_-XuQ1s
 
 <<^ code="&#x0004;" -> to="?">>

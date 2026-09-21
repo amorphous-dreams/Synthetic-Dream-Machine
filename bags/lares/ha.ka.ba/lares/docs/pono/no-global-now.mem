@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⏳" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/no-global-now">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/no-global-now.mem"
@@ -14,13 +16,14 @@ revised-on = "2026-09-13"
 role       = "no-global-now — the clockless lease's INTENT, mined from the house's own conversations and carriers rather than re-derived. What the operator has said about No Global Now, every instance dated; the Fork-4 ruling in its own words (SAFETY = corm-fencing + ITC · LIVENESS = φ-accrual · WITNESS = Roughtime); what SUPERSESSION names in the house's words and which mechanism the ruling seats as the validity gate; whether an `expiry` field survives, and in which of three shapes the house already spells it (backstop · rolls · named wall floor); whether the FENCE reads mandatory in the ruling's own text; where the operator's intent stands SILENT and this carrier declines to fill it; five pattern-integrity rhymes the house already carries; and the plan for the two gap-tests `e2da729e4` pinned, red-by-red. Mining pass — no code, no test and no existing carrier moved."
 status-why = "MINED, not ruled. Every operator sentence carries its date and its transcript; every house claim carries a file:line or a carrier line; every gap names the test that pins it. The two cures stay UNBUILT and #/questions names what only the operator answers."
 tags       = ["docs/pono/talk-story", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/no-global-now"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/charge>>
 
@@ -328,6 +331,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OjlSaIWKyfA5w8nWb5O3b7H8TcTRPRceBGLpy08zEGA
+<<^ code="&#x0003;">>ni:///sha-256;H-mwzOHOsvVo5F3ddkcj9ReAgzBvUOltOz5hh_HlRcs
 
 <<^ code="&#x0004;" -> to="?">>

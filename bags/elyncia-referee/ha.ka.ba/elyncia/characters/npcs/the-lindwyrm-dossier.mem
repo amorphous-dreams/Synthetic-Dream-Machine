@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 13
 rating    = "kapu"
 role      = "NPC dossier, referee view — the Lindwyrm behind the public face: the summit as recruitment engine, the intelligence apparatus, the long game of the mesh; the deepest seals stay in the operator's own seats, pointed at and never carried here"
+title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-dossier"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -99,6 +100,6 @@ dragon builds meshes. These live referee-side of even this bag — the operator'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P37xESAwoTv3Z_OslLJBRTf71TolcYTQnUxwQblNIa0
+<<^ code="&#x0003;">>ni:///sha-256;vOIRDon2H3T3uVWx8sSBP_YeDMFhvAESYHBV5JQ6bXs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/live-equivocation">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/live-equivocation.mem"
@@ -13,11 +15,10 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "live-equivocation — the exposure the federated-mesh collision named (Fork C, 2026-09-09): detection catches a live-key equivocator but cannot PREVENT it, and KERI has no admin recovery for a live current+next capture, so that case falls only to recovery-quorum — which the roadmap built last. Recovery and detection are each other's blind spot; pull recovery FORWARD beside the sensorium. This meme LOGS the exposure for later research spirits to resolve with outside negentropy + load-bearing fiction user stories, and frames Elyncia's DreamNet as the first QA world."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/live-equivocation"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/live-equivocation"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -117,6 +118,6 @@ to refresh.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IJWE1SiUcFFtZHj3eKZ1HW1at8L-bBk32_lkLHQZGpE
+<<^ code="&#x0003;">>ni:///sha-256;t3aweALjEMLL-3Pm63lLsIKi11zjmy05yTClvXjSx6Y
 
 <<^ code="&#x0004;" -> to="?">>

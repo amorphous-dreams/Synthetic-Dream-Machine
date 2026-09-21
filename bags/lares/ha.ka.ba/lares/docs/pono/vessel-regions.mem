@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/vessel-regions">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = false
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/vessel-regions.mem"
@@ -12,11 +14,10 @@ revised-on = "2026-09-12"
 role       = "the region plan for open-node-vessel.ts — the file read as seven regions with their shared mutable cells named, what each could become as a module the browser vessel composes too, the red that pins the boot order BEFORE any line moves, and spirit-hours per region. A plan, never a patch: nothing here moves a line."
 status-why = "the founding hearth owes this plan to the meme hearth (docs/pono/hearths); measured 2026-09-12 against the file at 2177 lines"
 tags       = ["docs/pono/plan", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/vessel-regions"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/vessel-regions"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/the-reading>>
 
@@ -137,6 +138,6 @@ A tasked spirit's walk at this codebase's grain, never a human's. ''The reds com
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GXswyPJmQRYh208TsJHI6segAYdA41U8HbWJK0zo5YE
+<<^ code="&#x0003;">>ni:///sha-256;QJyANPl-SqDekLXRKQJtmhni2A-0nCU4UfD4VLBHd_Q
 
 <<^ code="&#x0004;" -> to="?">>

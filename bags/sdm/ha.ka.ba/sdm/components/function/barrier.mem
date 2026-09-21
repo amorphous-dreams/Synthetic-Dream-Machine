@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/barrier">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "barrier"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/function/barrier.mem"
+l-space   = "sdm"
 mana      = 13
 manao     = 16
 manaoio   = 12
 role      = "component (function): Barrier — raising a physical or force wall"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/function/barrier"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/function/barrier"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Barrier
 
@@ -69,6 +70,6 @@ Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wal
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h8Ba0GhmPpGnp468NLo_wGjQtSZhNHjW4QuEFgLh0dY
+<<^ code="&#x0003;">>ni:///sha-256;0AkVa3-CLm8gzHiHLhOEtzMbmkk-ETB6RTedddvhtpI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/wikitext-paint-research">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path = "bags/lares/ha.ka.ba/lares/docs/wikitext-paint-research.mem"
 l-space   = "stable"
 role      = "the grammar research shelf: how a TextMate grammar PAINTS, measured against canon by a research swarm 2026-09-10/11 — scope naming, delimiter treatment, vocabulary size, token share, the loudness dial, typography and perception. Binds as kupono intent: the base tiddlywiki wikitext grammar aligns to THIS before any memetic-wikitext refactor stands on top of it"
+title     = "lar:///ha.ka.ba/lares/docs/wikitext-paint-research"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/wikitext-paint-research"
 written   = "2026-09-11"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/shelf>>
 
@@ -732,6 +733,6 @@ decisions this shelf settles for the base first.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uMTxGDG3hykPX3UWkuZn--Sz-uZcUkUmUhwHqvux9h8
+<<^ code="&#x0003;">>ni:///sha-256;9oi4aBN-UrNtxGz1mP8VAQkQ8awEmL2QN7fKyOK5r78
 
 <<^ code="&#x0004;" -> to="?">>

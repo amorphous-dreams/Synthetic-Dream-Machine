@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/degraded-states">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/degraded-states.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 17
 role      = "canonical vocabulary for named degraded-node states: failure modes, operator correction handles, and recovery patterns"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/degraded-states"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/degraded-states"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/provenance>>
 
@@ -210,6 +211,6 @@ The operator naming a degraded state constitutes correction input, not accusatio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CAInHZ4A650VDw2bIkGT46ODYNQXeizkkDResK4WIAg
+<<^ code="&#x0003;">>ni:///sha-256;XrCsEgsbiwT4vRMGzq00DM_FzteV-3tlnYoMuFAWupY
 
 <<^ code="&#x0004;" -> to="?">>

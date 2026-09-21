@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/chao">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/mu/chao.mem"
@@ -12,13 +14,14 @@ manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/mu/chao"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/chao"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -153,6 +156,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IlwkZdBUM1NkYXcFzf8isVxp3rGx9y_qtdYmLWzyY3M
+<<^ code="&#x0003;">>ni:///sha-256;HstPTvaabNpOfJpK5CvIW0qvWTE9RoxeeqfWkCOVYoI
 
 <<^ code="&#x0004;" -> to="?">>

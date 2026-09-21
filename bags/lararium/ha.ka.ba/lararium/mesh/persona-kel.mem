@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/persona-kel">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/persona-kel.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 15
 role        = "invariant law: the persona-KEL — a stable identifier PREFIX the operational key rotates BENEATH, so continuity rides the LOG, never the key. Names the armed inception + rolling recovery commitment, Fork-B threshold-attest (nothing reconstructs), the provisional/veto contest folded structurally, the board as an additive per-Nexus CRDT, the frozen-for-alpha status, and duplicity-detection as the dual of a registry."
 source-file = "packages/lararium-mesh/src/persona-kel.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/persona-kel"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/persona-kel"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -143,6 +144,6 @@ fold, the quorum, the veto — never on the board's liveness.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;zPT1fUXdCEfouiBQWRYL9dCzr6No2LqrZ6Dleit-vtE
+<<^ code="&#x0003;">>ni:///sha-256;fjqs5TdNu6xd94jXLVniQqJQShVAIxrLA3OFXdV7mh8
 
 <<^ code="&#x0004;" -> to="?">>

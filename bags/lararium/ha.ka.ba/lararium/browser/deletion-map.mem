@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/browser/deletion-map">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/browser/deletion-map.mem"
@@ -9,11 +11,10 @@ mana      = 18
 manao     = 18
 manaoio   = 17
 role      = "Inventory of web2/singleton residue in the browser shore: classify, quarantine, migrate, or delete"
+title     = "lar:///ha.ka.ba/lararium/browser/deletion-map"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/browser/deletion-map"
 ```
-
-<<^ code="&#x0002;">>
 
 ! lararium-browser Deletion Map
 
@@ -76,9 +77,12 @@ touching the browser vessel surface. Four classifications:
 | `TW5WorkerProxy` | Constitutional | Already designed for browser use. Core of S2 worker boot. Migrates to `@lararium/browser` as the browser worker runtime; `@lararium/tw5` keeps it as the shared proxy class. |
 | `WorkerFactory` type | Constitutional | Caller supplies the island constructor. Browser factory goes in `@lararium/browser`; node factory stays in `@lararium/node`. |
 
-!!! No source files yet in packages/lararium-browser/
+!!! The browser shore now has source
 
-The package directory exists and is empty. All new source files start here; no legacy code carries into it.
+`packages/lararium-browser/` carries the browser vessel: local persistence, worker lifecycle, browser
+capabilities, projection return legs, and the host-side vessel composition. This inventory describes its
+current migration boundary; it is no longer an empty destination. The page shell in `@lararium/app`
+composes the visible host surface around that vessel and remains a separate layer.
 
 <<~/ahu>>
 
@@ -86,11 +90,12 @@ The package directory exists and is empty. All new source files start here; no l
 
 !! Named Adapter Boundary
 
-All surviving DOM/page references collect in one named file: `tw5-browser-surface.ts` (in `@lararium/tw5`).
-
-This file remains the ''one adapter boundary'' that contains all remaining RootTemplate and DOM compromises.
-Every entry in the Adapter class above must route through this file.
-No other file in the browser vessel path may import from `window`, `document`, or `HTMLElement` without an explicit migration entry here.
+All TW5-engine DOM references that attach a rendered TW5 surface collect in one named file:
+`tw5-browser-surface.ts` (in `@lararium/tw5`). This is the TW5 projection adapter boundary: it contains
+RootTemplate compatibility and TW5's real-DOM attachment compromises. The app shell may use page DOM to
+compose its host surface and relay interaction; that page DOM does not become TW5 authority or a second
+engine. Every entry in the Adapter class above must route through this file. No worker-side TW5 authority
+may import from `window`, `document`, or `HTMLElement` without an explicit migration entry here.
 
 Future HUD surfaces (canvas, UE, Mudlet) bypass this file entirely — they use the island authority's projection interface directly.
 
@@ -135,6 +140,6 @@ Delete or quarantine these patterns. Each deletion happens after the replacement
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RN4xrfAIBfvV8yezocrE7dmiU6SXe8-eYSH-PlJg-fw
+<<^ code="&#x0003;">>ni:///sha-256;34ZlH1j2gKP2DnULH4iFha4jEhi2fWBI4PlAabANy64
 
 <<^ code="&#x0004;" -> to="?">>

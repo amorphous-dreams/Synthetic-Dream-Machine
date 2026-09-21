@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri-namespace.mem"
@@ -9,11 +11,10 @@ manao     = 18
 manaoio   = 18
 role      = "lar: URI authority map — hostless vs hostful, domain namespaces, Quine sync candidates"
 tags      = ["api/pono/meme", "api/pono/local-first"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/lar-uri-namespace"
 ```
-
-<<^ code="&#x0002;">>
 
 ! lar: URI Namespace Doctrine
 
@@ -115,6 +116,6 @@ a network hop for DID resolution but the content itself is local (CRDT store).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZXL7zSMqQa4StpbKjDp3iLNvIaZYoP8g-yqziK-q3ZE
+<<^ code="&#x0003;">>ni:///sha-256;IsWkmSIHprwZ491kvAuwPLVXbyI01X84wbLGjqUzgc8
 
 <<^ code="&#x0004;" -> to="?">>

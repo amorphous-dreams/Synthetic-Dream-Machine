@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/lists/components">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/lists/components.mem"
@@ -8,11 +10,10 @@ mana      = 13
 manao     = 16
 role      = "TW5 procedure: render the current tiddler's has-stack as clickable tag-pills (stack filter; captions from definition memes)"
 tags      = ["$:/tags/Global"]
+title     = "lar:///ha.ka.ba/lararium/lists/components"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/lists/components"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -41,6 +42,6 @@ uri-path  = "ha.ka.ba/lararium/lists/components"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TT5ui7rTk_R3itC7t1fp0oExKiQbuWz64NNaC3k8OH8
+<<^ code="&#x0003;">>ni:///sha-256;Swmur-fULzw8anzPnNlVX_U1FswX2Qubg5g9uU97bVc
 
 <<^ code="&#x0004;" -> to="?">>

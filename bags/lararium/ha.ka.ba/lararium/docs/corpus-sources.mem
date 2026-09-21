@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/corpus-sources">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/corpus-sources.mem"
@@ -12,11 +14,10 @@ role          = "invariant law: how a vessel DISCOVERS its corpora — a catalog
 source-symbol = "loadCatalogCorpora"
 status-date   = "2026-04-30"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lararium/docs/corpus-sources"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/corpus-sources"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -111,6 +112,6 @@ A setting-only table composes: lares + elyncia + room.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8cKIYLXXXGn37rlSdB5ABGgZcFwXg2DKhvE7VfhTf0k
+<<^ code="&#x0003;">>ni:///sha-256;5n0jL6uX0R-LZjEJVWfeFuptfumIgLLF_FhTZqpeAvY
 
 <<^ code="&#x0004;" -> to="?">>

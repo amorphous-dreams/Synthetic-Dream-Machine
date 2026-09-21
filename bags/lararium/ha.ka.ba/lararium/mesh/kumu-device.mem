@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/kumu-device">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/kumu-device.mem"
@@ -13,11 +15,10 @@ role        = "type-level device contract: KumuDeviceSpec, KumuListenable, KumuS
 source-file = "packages/lararium-mesh/src/kumu-device.ts"
 status-date = "2026-05-28"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lararium/mesh/kumu-device"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/kumu-device"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -195,6 +196,6 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8MmKj4XIhy_whXThW6K2N2lwQ_-zmzfj7qMAct0UXVY
+<<^ code="&#x0003;">>ni:///sha-256;4yOMbc-5ry5px9kdjqz0K7Hh8ru-MmIpkxkdnuiRnhI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hoolele">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/hoolele.mem"
@@ -11,11 +13,10 @@ namespace   = "&#x2299;"
 role        = "unstructured escape-hatch sigil — hoolele as the flight that does not return; Verse spawn: new task root, outlives creating scope, explicit Cancel() required; English alias: \\spawn; completes the six-operator concurrency ontology"
 status-date = "2026-05-15"
 tags        = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hoolele"]
+title       = "lar:///ha.ka.ba/lares/api/pono/hoolele"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/hoolele"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -151,6 +152,6 @@ work below it (CRDT, network) uses `hoolele`-style spawn semantics in TS.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k-_GvI-p14UFZyF5wK3UvvnVzH2wWYqjPW5V9tBr_l0
+<<^ code="&#x0003;">>ni:///sha-256;qx0dhvlfCzkv-casyMkKq4pMaQ6x0NLxX17x2NLFfl4
 
 <<^ code="&#x0004;" -> to="?">>

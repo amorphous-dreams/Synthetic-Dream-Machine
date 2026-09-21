@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/lele">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/lele.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the lele side-flow sigil — \\procedure ~lele 
 source-file   = "packages/lararium-tw5/tiddlers/sigil-lele.tid"
 source-symbol = "~lele"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/lele"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/lele"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/lele"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -56,6 +57,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-lele.tid` with `l
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;soghlH5p1SnPQrRAA3Q767tVvrfDNz66LsdiXJTyvCs
+<<^ code="&#x0003;">>ni:///sha-256;_sU_1dXLVCvUlbs6EDPh2K6Kd1vM-s81sg-DFppl0cY
 
 <<^ code="&#x0004;" -> to="?">>

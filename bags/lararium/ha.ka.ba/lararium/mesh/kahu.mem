@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/kahu.mem"
@@ -9,11 +11,10 @@ mana      = 17
 manao     = 16
 manaoio   = 16
 role      = "protocol governance concept: kahu as grammar-guardian role in DreamNet topology"
+title     = "lar:///ha.ka.ba/lararium/mesh/kahu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/kahu"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Kahu
 
@@ -189,6 +190,6 @@ Dreams Cabal's membership — no subsequent runtime authority transfer required.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s2g9mSINSx3dFcIdfN4dMRO8jPb1c0r0TYbXjKtB0vY
+<<^ code="&#x0003;">>ni:///sha-256;LE03h9CHMwyqCrVyn8O6V8w8nT4phQbexi1-Q0knJ8c
 
 <<^ code="&#x0004;" -> to="?">>

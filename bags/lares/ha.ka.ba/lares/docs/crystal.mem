@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/crystal">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/crystal.mem"
@@ -10,13 +12,14 @@ manao     = 16
 manaoio   = 16
 role      = "parent docs shelf for archive crystals, continuity mechanisms, prospective MemPalace work, and MCP-backed session carry"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/crystal"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/crystal"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -49,6 +52,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uMJYp-OQoinHIRlE5MaxVX3Hz9CLoRYJm5B5d_wqVu8
+<<^ code="&#x0003;">>ni:///sha-256;oXSeUkNTQ6FPOZCpPwAvlOfWogqCDNrZPLGz7W9Iu00
 
 <<^ code="&#x0004;" -> to="?">>

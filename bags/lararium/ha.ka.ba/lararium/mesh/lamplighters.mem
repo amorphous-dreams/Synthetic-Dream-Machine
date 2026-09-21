@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚚" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/lamplighters">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem"
@@ -11,6 +13,7 @@ manaoio   = 14
 namespace = "&#x269A;"
 role      = "the Lamplighters' Union (the MECHANISM half; the faction carrier holds the Elyncia reading) and the OFFICE (kuleana) that seats a civic standing — who tends a faceless crossroads, what authority a tender holds, and how that authority ends. Carries the immune coupling (PRESENTATION ⊥ CONDEMNATION: tenders present, only a quorum condemns), the ZERO-WEIGHT ruling on presentation (a count of presenters needs a roster, and a roster carries a global now), the REACH split on tending caps (never a claimed body-location), and DEATH-AND-REBIRTH on physical touch. Grounded 2026-08-14 against Tor bad-relays, Ethereum slashing, CT, TUF, PeerReview, EigenTrust's Sybil collapse, the IPMI/BMC record, TCG physical-presence and FIDO user-presence. Holds ONE open question the operator has not ruled: whether island-admin tending reaches the herm's own signing key."
 tags      = ["mesh/identity-classes", "mesh/carry-contract", "mesh/epoch-binding-surfaces", "api/pono/waking-floor", "api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/mesh/lamplighters"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/lamplighters"
 written   = "2026-08-14"
@@ -18,7 +21,7 @@ written   = "2026-08-14"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -401,6 +404,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;srL7rLfTyvH1wLRbZpdGbkA_fVOZv8SrgQd4RQOAzls
+<<^ code="&#x0003;">>ni:///sha-256;m3NX4KPnt66DmIHGMJo7QbJQF1OhH283bidkj-FiJcc
 
 <<^ code="&#x0004;" -> to="?">>

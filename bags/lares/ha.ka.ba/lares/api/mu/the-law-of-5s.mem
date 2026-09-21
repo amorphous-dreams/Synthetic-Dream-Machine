@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 body-sha256   = "19f27816a8ab295a4bb00080242f0b0592d078c3d2b514cd946da1f396a5454e"
 cacheable     = true
@@ -15,13 +17,14 @@ namespace     = "&#x0950; &#x0901;"
 role          = "OODA-HA loop boot, Catma nav terminal, syad handoff shelf"
 source-symbol = "LADDER_5 OODA_HA_5 SCOPE_5 SCOPE_TO_LADDER RATING_5 STAGE_5 STAGE_BAND_MID RATING_COLOR"
 tags          = ["api/pono/meme", "api/pono/loci"]
+title         = "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-law-of-5s"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -200,6 +203,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xAbUec1jnTXJi5TIakTEyZ3B6o1nM5S_lHJNDHzbEe0
+<<^ code="&#x0003;">>ni:///sha-256;1o85qgE7S-tQuBJWsiNNYWydIAl9Gxt0bqlOsR5D2FQ
 
 <<^ code="&#x0004;" -> to="?">>

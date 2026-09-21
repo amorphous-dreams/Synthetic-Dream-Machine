@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/quine-principles">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/quine-principles.mem"
@@ -12,11 +14,10 @@ namespace   = "&#x2299;"
 role        = "invariant doctrine: quine principles P1-P4; TiddlyWiki vs Smalltalk comparison; if-it-CAN-live-in-the-wiki-it-MUST rule; IPLD bridge; Heleuma anchor system"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lares/api/pono/quine-principles"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/quine-principles"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -270,6 +271,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jDoX_UNkKaO3NIz-xiHxC7shQL3n8zE5LL6hrbYU0tg
+<<^ code="&#x0003;">>ni:///sha-256;BNKTEPjTDYSYx2Et-sS3jws7mXk7_oJ_kLTDFv4B5Tc
 
 <<^ code="&#x0004;" -> to="?">>

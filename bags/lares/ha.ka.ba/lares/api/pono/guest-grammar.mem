@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/guest-grammar">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar.mem"
@@ -10,13 +12,14 @@ manaoio   = 14
 namespace = "&#x2299;"
 role      = "guest-grammar invariant law for explicit admission, hana worksite use, and host-guest boundary discipline"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/guest-grammar"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/guest-grammar"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -131,6 +134,6 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CEU8cEnWh4oso5OAowrRvdeR8rMnz1qIU_KVykAwl_A
+<<^ code="&#x0003;">>ni:///sha-256;DsALrkpRL8VwBRp99x0IUxhxwswXC6l_l3ICt66iGzI
 
 <<^ code="&#x0004;" -> to="?">>

@@ -61,6 +61,6 @@ describe.skipIf(wikiSkip)(`a booted wiki executes the laws from the library${ski
     }
     const src = readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"), "utf8");
     expect((laws["verifyBcc"] as (t: string) => string)(src)).toBe("ok");
-    expect((laws["readCarrierShape"] as (t: string) => { kind: string })(src).kind).toBe("carrier");
+    expect((laws["readCarrierShape"] as (t: string) => { faults: readonly string[] })(src).faults).toEqual([]);
   });
 });

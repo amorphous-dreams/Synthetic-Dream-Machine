@@ -92,6 +92,20 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
   const registeredHeads = grammarHeadsOf(grammar);
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
+    // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
+    // shared shape; carrier decomposition retains the authored worksite spelling for projection.
+    if (source.startsWith("<<fragment", pos)) {
+      const open = /^<<fragment\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+[^>]+)?\s*>>/.exec(source.slice(pos));
+      if (open) {
+        const close = source.indexOf("<</fragment>>", pos + open[0].length);
+        this.matchPos = pos;
+        this.matchEnd = close >= 0 ? close + "<</fragment>>".length : pos + open[0].length;
+        const bodyEnd = close >= 0 ? close : this.matchEnd;
+        this.attrs = { __compound__: "ahu", p1: open[1]!, __body__: source.slice(pos + open[0].length, bodyEnd),
+          __verbatim__: source.slice(pos, pos + open[0].length) };
+        return pos;
+      }
+    }
     // pranala: permanent JS exception — <<~ pranala FROM -> TO>> arrow syntax with
     // keyword attrs (from/to/slot/family/role/body) is structurally distinct from
     // <<~ WORD ARGS>>. The ~ dispatcher's p1–p5 positional interface cannot carry
@@ -131,6 +145,24 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     //          <<~ kahea lar:///uri>>, <<~ loulou lar:///uri>>, <<~ kau …>>
     const compound = matchCompoundSigilAt(source, pos, childSlotNames);
     if (compound) {
+      // `ahu` owns rooted fragment paths only. A bare `#name` resembles a slot closely enough to
+      // deserve the gradient's partial rung, but it MUST NOT reach the ahu procedure and mint a
+      // child address through compatibility normalization. Keep the authored span visible; where a
+      // matching closer stands, carry its whole body as the one degraded receipt.
+      const bareAhuSlot = (compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
+        /^#[\w-]+(?:\/[\w-]+)*$/.test(compound.p1);
+      if (bareAhuSlot) {
+        const closeEnd = compound.closeKey
+          ? findCloseEnd(source, compound.closeKey, compound.end, closers)
+          : null;
+        this.matchPos = pos;
+        this.matchEnd = closeEnd ?? compound.end;
+        this.attrs = {
+          __literal__: source.slice(pos, this.matchEnd),
+          __degraded__: "partial",
+        };
+        return pos;
+      }
       // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
       // The matcher reports the STRUCTURAL close key — a child slot or a compound head — because
       // those it can read off the call's own shape. Every OTHER block sigil declares its closer on

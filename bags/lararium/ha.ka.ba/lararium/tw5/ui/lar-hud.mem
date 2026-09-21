@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/lar-hud">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/ui/lar-hud.mem"
@@ -9,11 +11,10 @@ manao     = 18
 manaoio   = 18
 role      = "LarHUD doctrine — VSCode-style right-docked TW5 wiki panel; flex-sibling push model; 3-state machine"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lararium/tw5/ui"]
+title     = "lar:///ha.ka.ba/lararium/tw5/ui/lar-hud"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/ui/lar-hud"
 ```
-
-<<^ code="&#x0002;">>
 
 ! LarHUD — Dockable TW5 Wiki Frame
 
@@ -124,6 +125,6 @@ as a flex sibling unaffected by tldraw's internal layout changes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oTa78xd2EMgu8jz7sV_51edlkc9SQu6az3M-HBIMbwg
+<<^ code="&#x0003;">>ni:///sha-256;oeJym8QP55dBYLl4d-KMVHI6ZRja8WiVHvcs6bkJInM
 
 <<^ code="&#x0004;" -> to="?">>

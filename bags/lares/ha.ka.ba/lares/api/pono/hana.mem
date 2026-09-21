@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hana">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/hana.mem"
 namespace = "&#x2299;"
 role      = "bounded guest-grammar block — hana as work/action container; grammar-key selects the interpreter; English alias: \\task"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hana"]
+title     = "lar:///ha.ka.ba/lares/api/pono/hana"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hana"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -64,6 +65,6 @@ A hana block body MUST be valid input for the named grammar interpreter.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EL0Z5P6X9oa1O1XW-I6KCBGEvENUXKpUNO9opL8Bsi0
+<<^ code="&#x0003;">>ni:///sha-256;ED2CXVxGih5_cxuYqIEh-WRR47tPXvEnhob7iOAl3ZU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/composite-store">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/composite-store.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 14
 role        = "invariant law: CompositeStore — a recipe-ordered overlay of store layers under standard TW5 recipe law. Reads fan out and the highest priority wins; every write routes to ONE designated writable store. Names the async-layer hazard a caller must order around, and why a subscriber must read origin."
 source-file = "packages/lararium-mesh/src/composite-store.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/composite-store"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/composite-store"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -64,6 +65,6 @@ empty bag rather than as a missed window'' — the failure this note exists to n
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
 
-<<^ code="&#x0003;">>ni:///sha-256;cHdwfWpgzPFk7f-NL7AweV0wpLtjyUb4Lgf5k8_vwog
+<<^ code="&#x0003;">>ni:///sha-256;W6QaZGMMD_zmfSxlnxoqGImf8kAq3UdMoHLdVaSsXRM
 
 <<^ code="&#x0004;" -> to="?">>

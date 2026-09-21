@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/action-handler">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/api/action-handler.mem"
@@ -14,13 +16,14 @@ source-file = "packages/lararium-tw5/src/action-handler.ts"
 status-date = "2026-06-01"
 status-why  = "the TW5 action handler stands live"
 tags        = ["api/residency-model", "lifecycle/standing"]
+title       = "lar:///ha.ka.ba/lararium/api/action-handler"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/api/action-handler"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -114,6 +117,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hFQC2RllbLBbRkZTgnklCENdzhr24Yw5-tHOWambyfA
+<<^ code="&#x0003;">>ni:///sha-256;eaeHGzawDpciadfCtBEHBbpSnlgi3Qwa8JFScCFeN2c
 
 <<^ code="&#x0004;" -> to="?">>

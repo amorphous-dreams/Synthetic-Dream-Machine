@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/canvas-shell-ux">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/canvas-shell-ux.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-02"
 role              = "canvas-shell-ux — the shell doctrine for the canvas camera: the canvas is PRIMARY and chrome wraps it without blocking it. Migrated 2026-09-02 out of the superseded multiplayer-canvas constitution and evergreened off its retired surface. Carries the pointer-events discipline, the iOS visual-viewport tracking that a fixed header needs, and the native-scroller answer to one-finger pan."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/canvas-shell-ux"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/canvas-shell-ux"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -126,6 +127,6 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;WMOeB-Fwufa6wLuaA-CuDo7ZIvdhCbwjJsNHvvGKfo0
+<<^ code="&#x0003;">>ni:///sha-256;DRu-YTJi5EPaOpfmNHe6XSR_dbts3OLs8_dBrrSPg-o
 
 <<^ code="&#x0004;" -> to="?">>

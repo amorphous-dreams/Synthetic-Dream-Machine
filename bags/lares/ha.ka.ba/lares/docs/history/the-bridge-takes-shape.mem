@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-bridge-takes-shape.mem"
@@ -10,6 +12,7 @@ manao     = 13
 manaoio   = 12
 narrator  = "@lares@~crossroads"
 role      = "history / the afternoon the bridge to verbatim session memory was PROOFED but not yet crossed — the @lararium/mempalace integration layer built and witnessed, the read leg shaking hands with the live sidecar, the local-only bearing index breathing under test (2026-06-21). Proofed, not integrated. Written by hand into @lares history. Narrator @lares@~crossroads."
+title     = "lar:///ha.ka.ba/lares/docs/history/the-bridge-takes-shape"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-bridge-takes-shape"
 written   = "2026-06-21"
@@ -17,7 +20,7 @@ written   = "2026-06-21"
 
 <<~ aka "lar:///ha.ka.ba/lares/docs/history/the-first-breath">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -75,6 +78,6 @@ So this carrier marks a smaller morning than the founding: ''the read-leg took s
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q4wH2Xtera80JDiVpXTSC8BQY2NJEtko7VpyDIpb66w
+<<^ code="&#x0003;">>ni:///sha-256;ioFPzUkSj0VwBBOzUZCg_H_4XxdkNsE7yTt5_mJdFg8
 
 <<^ code="&#x0004;" -> to="?">>

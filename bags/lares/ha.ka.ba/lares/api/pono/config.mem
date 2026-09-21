@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/config">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/config.mem"
 l-prime       = true
@@ -11,11 +13,10 @@ manaoio       = 14
 ooda-ha-level = 10
 role          = "configuration surface, behind-the-curtain dial room, session-config"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/api/pono/config"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/config"
 ```
-
-<<^ code="&#x0002;">>
 
 The passage lies behind the reader. The kahua holds.
 
@@ -115,6 +116,6 @@ Live stage positions — shift inline with `[Stage: mask-name 15]`; edits here p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wf-Wf7LDfRQsClz-gad0hJP_pFYLdOAv-EiR7yRwBVU
+<<^ code="&#x0003;">>ni:///sha-256;UP3S9oh584B-9f0pwAdu2Fvbsxkl_9PnnvcFQDvzBQM
 
 <<^ code="&#x0004;" -> to="?">>

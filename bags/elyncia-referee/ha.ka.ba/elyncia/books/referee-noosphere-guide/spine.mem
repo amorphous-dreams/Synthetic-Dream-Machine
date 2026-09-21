@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/referee-noosphere-guide/spine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/books/referee-noosphere-guide/spine.mem"
@@ -11,11 +13,10 @@ manaoio   = 12
 rating    = "kapu"
 role      = "spine, referee tier — Elyncia 04, the RNG: the most designed book, migrated LAST, its five-part chiasmus preserved by the spine's mortar"
 tags      = ["ha.ka.ba/elyncia/books/index"]
+title     = "lar:///ha.ka.ba/elyncia/books/referee-noosphere-guide/spine"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/referee-noosphere-guide/spine"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -63,6 +64,6 @@ comes only after all source text reads as moved.)//
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sFsUiR45SmG6haqKItI-NhA3PALmdqKFRT0_qxzVmi0
+<<^ code="&#x0003;">>ni:///sha-256;KGCsvPtmQCvKcCj3oAE25rHR801dNCShXlH_3ZcWv84
 
 <<^ code="&#x0004;" -> to="?">>

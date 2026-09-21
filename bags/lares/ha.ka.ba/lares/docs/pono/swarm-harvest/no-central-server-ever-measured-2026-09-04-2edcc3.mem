@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 'NO CENTRAL SERVER, EVER' — MEASURED, 2026-09-04. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/no-central-server-ever-measured-2026-09-04-2edcc3"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -316,6 +317,6 @@ Individual instances: **Hachyderm took 30,000 users in 30 days** on four donated
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jtVVfR3EvsK5MuimhHN3b0_SBtrCSc9cm4g1SB0n1js
+<<^ code="&#x0003;">>ni:///sha-256;YE3FxV4TnAVICZ3ekJBtWthaELdcJOxbTAFosaOHVtM
 
 <<^ code="&#x0004;" -> to="?">>

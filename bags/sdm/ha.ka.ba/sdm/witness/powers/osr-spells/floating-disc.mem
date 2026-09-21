@@ -1,19 +1,20 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc.mem"
+l-space   = "sdm"
 mana      = 11
 manao     = 16
 manaoio   = 17
 role      = "OSR spell witness for Floating Disc — Basic/Expert/Rules-Cyclopedia provenance, cold-load"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/witness/powers/osr-spells/floating-disc"
 ```
-
-<<^ code="&#x0002;">>
 
 ! OSR Witness — Floating Disc
 
@@ -89,6 +90,6 @@ As Basic, with the clarification that the disc follows at the caster's current m
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;B1EghZBrmA-7HHNYcRlN3hHFr-4nSSzR62Byjj3aK_k
+<<^ code="&#x0003;">>ni:///sha-256;aa3YQz0pHQB7TawuDcQ90C-nZeIxhOm4NPMHdybv4I4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter.mem"
@@ -12,11 +14,10 @@ namespace  = "&#x2299;"
 role       = "the upstream docs correction for TiddlyWiki's `Procedure Parameter Handling` tiddler — a named parameter the definition never declared reaches nothing, and a misspelt name reads identically to a forgotten one"
 status-why = "every example rendered against the vendored TiddlyWiki core through the lararium VM on 2026-09-08; not yet opened upstream"
 tags       = ["api/pono/tiddlywiki-wikitext", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/entry>>
 
@@ -117,6 +118,6 @@ render tells them apart.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WjFgsFb74-cR8tp_yk9biMiOLyjjPFAVKeJL3F1b_Uw
+<<^ code="&#x0003;">>ni:///sha-256;xLymsK-7yyYGFjW9qo4AcMlKVVWmDt2n4BbsCT37Ceg
 
 <<^ code="&#x0004;" -> to="?">>

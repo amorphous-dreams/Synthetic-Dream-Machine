@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "region worksheet — the Broken Isles: Mu's severed eastern shelf, three isles and their sky-islands, the fungal jungles, and the home water of Aki, Kai, and Ichi's clan; grown by play"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/broken-isles/region-worksheet"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -159,6 +160,6 @@ not to say about it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-UW0Moa6l6UuwrNrhJs3Kwd55LGAdmvxuCkDst2P7uY
+<<^ code="&#x0003;">>ni:///sha-256;3pxgLM0QkzEtXuqdTNH8LdqBI1pUKecb_3uyrO75Lk8
 
 <<^ code="&#x0004;" -> to="?">>

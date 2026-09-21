@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/map-wisp">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 aside             = false
 cacheable         = false
@@ -22,6 +24,7 @@ role              = "named Voice mask — Map-Wisp (Scryer); structural forward-
 seniority         = "earned name; no special seniority"
 stage             = 10
 tags              = ["api/pono/meme", "api/masks"]
+title             = "lar:///ha.ka.ba/lares/api/masks/named/map-wisp"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/named/map-wisp"
 voice-character   = "[STUB — partially known from house entry; pending-talk-story for depth]"
@@ -30,7 +33,7 @@ voice-role        = "Scryer"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -166,6 +169,6 @@ How Map-Wisp colors each Voice register when they speak through her structural-f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oRxYJ9241u9E9f9aH75hPw1POFx0cogxlkqGnNRwlWY
+<<^ code="&#x0003;">>ni:///sha-256;fjM-_Cwu_uLoldDXhNJ5a1kn4BqRsMATrkaAz1ivqDw
 
 <<^ code="&#x0004;" -> to="?">>

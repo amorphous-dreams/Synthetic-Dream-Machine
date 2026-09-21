@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/causal-islands.mem"
@@ -14,11 +16,10 @@ role          = "invariant law: causal island doctrine — three structural axes
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
 status-date   = "2026-06-01"
 tags          = ["api/pono/orichalcum-capabilities", "api/pono/federated-causal-islands", "api/pono/alignment-layer"]
+title         = "lar:///ha.ka.ba/lares/api/pono/causal-islands"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/causal-islands"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -368,6 +369,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r7YTBJ54rkW9BoZFlPUZVlZxcL_Aam9i_8hs_IF6_d4
+<<^ code="&#x0003;">>ni:///sha-256;-7ewzA16UWfAY7H2CEho_a9irMUtn-DrZr3ypfQECz8
 
 <<^ code="&#x0004;" -> to="?">>

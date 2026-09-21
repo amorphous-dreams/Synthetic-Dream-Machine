@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/crossroads">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/crossroads.mem"
@@ -9,13 +11,14 @@ mana      = 5
 manao     = 5
 manaoio   = 4
 role      = "attractor: @crossroads — the public/infrastructure oracle plane (ring-1); third leg of the three-plane oracle model; UNBUILT, this meme holds the bearing"
+title     = "lar:///ha.ka.ba/lararium/docs/crossroads"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/crossroads"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/attractor>>
 
@@ -100,6 +103,6 @@ Who writes @crossroads (community authority shape), how Nexus-level federation d
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;181UIcOFZORBZyWQdtQK7mF-uT_LpNZWG2smCR0hENw
+<<^ code="&#x0003;">>ni:///sha-256;bqWbSe73rsb0gNht1WZJgwAZiLqVVqtUgDuiH1SG0Kg
 
 <<^ code="&#x0004;" -> to="?">>

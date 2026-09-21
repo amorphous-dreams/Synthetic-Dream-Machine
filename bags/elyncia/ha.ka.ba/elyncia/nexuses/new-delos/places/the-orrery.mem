@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 12
 rating    = "ano"
 role      = "place, High Delos — the Orrery: the Reach-tier instrument mapping where Elyncia's pattern reached into neighboring worlds; access unruled"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/the-orrery"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -35,6 +36,6 @@ and the Painter's establishing boards stands noted).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j_yimQU-Nj6eSKiIv8Z6RXRAeRXR_yT1i_49v1lBCVw
+<<^ code="&#x0003;">>ni:///sha-256;x5S712O2e0xpr1lM4-EFEi_9np5iqxdhF5kJ_V03B2o
 
 <<^ code="&#x0004;" -> to="?">>

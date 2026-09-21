@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 16
 role      = "parent docs shelf for lararium-side signal framing, extracted README residue, and branch routing"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/signal"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -169,6 +172,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EJjV3gPXeINZYkaqav-mDcEnZU0EYcuJr3sj2Ql2Xg0
+<<^ code="&#x0003;">>ni:///sha-256;WNK-UE6DVluEP28R22go77vpu__MAv7w076STZ4n6V4
 
 <<^ code="&#x0004;" -> to="?">>

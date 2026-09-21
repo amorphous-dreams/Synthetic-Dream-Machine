@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout.mem"
@@ -13,6 +15,7 @@ namespace  = "&#x2695;"
 role       = "the MEASURED scout of the realm/nexus word-blur, taken under the operator's 2026-09-13 ruling (NEXUS keys the public/crossroads plane; 'realm' as pet-name serves cabal-private docs and resources). REPORT ONLY — no rename lands from this carrier. It carries four things: the structural fact that both words presently name ONE value (the charter's genesis epoch cid) while a second `realm` names a DIFFERENT id space entirely; the realm-named/Nexus-shaped sites; the nexus-named/realm-shaped sites; and the UN-RENAMEABLE SET — every signing domain, HKDF info, doc-url seed, hash-feeding lar URI, persisted record key and wire field where the word rides inside bytes that are already signed or already addressed. NEXUS_DOC_DOMAIN heads that set: it is a content-address PREIMAGE, so re-spelling it renames every island, every board, every realm doc and every charter at once."
 status-why = "scouted 2026-09-13 against the tree; no rename attempted, and the ranked plan awaits the operator"
 tags       = ["mesh/cabal-realm", "mesh/nexus-topology", "mesh/lar-uris", "api/pono/cabal-realm", "lifecycle/standing", "kind/reading"]
+title      = "lar:///ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
 written    = "2026-09-13"
@@ -20,7 +23,7 @@ written    = "2026-09-13"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -207,6 +210,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nXZFk9aICgPkVUChI9S7dxKOfU7QpL_0jOrJOkBI9e8
+<<^ code="&#x0003;">>ni:///sha-256;n2vW2h-cRJ18IBWKLDZ2QbvRBPyNeqDQ_gx--qotJNY
 
 <<^ code="&#x0004;" -> to="?">>

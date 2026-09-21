@@ -353,8 +353,7 @@ function readNamed(f: string): string {
  * carrier wants its frame CLOSED by a hand; `checkSpan` answers null and this door adds no mark. The
  * normalize loop names the tear aloud rather than passing it in silence.
  *
- * UNFRAMED GETS NOTHING EITHER, for a different reason: no span stands, so nothing is stampable. The
- * corpus's six `<bag>/meta.mem` descriptors sit here.
+ * A SOURCE WITH NO COMPLETE FRAME gets nothing either: no bounded span stands, so nothing is stampable.
  *
  * ANCHORED AT THE SPAN, never a whole-file replace: `ni:///…` reads as prose in a carrier that
  * discusses checks, and a global swap would rewrite the lesson along with the stamp. A mismatch REPLACES
@@ -367,7 +366,7 @@ function restamp(text: string): string {
   if (standing !== "mismatch" && standing !== "unchecked") return text;
   const span = checkSpan(text);
   const want = bccOf(text);
-  // A torn frame and an unframed file both answer null here — neither bounds a span to attest to.
+  // A torn frame and a source without a complete frame both answer null here — neither bounds a span to attest to.
   if (!span || !want) return text;
   return standing === "mismatch"
     ? text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want)
@@ -448,7 +447,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     }
 
     // THE CHECK COVERS THE BODY, SO IT IS PART OF BEING CANONICAL. Framing rides inside the checked
-    // span: canonicalizing a carrier and leaving its old check standing hands the next door a carrier
+    // span: canonicalizing a carrier and leaving its prior check standing hands the next door a carrier
     // this gesture just made non-canonical. STAMPED AFTER FRAMING, never before: the bytes the check
     // covers are the ones normalize leaves.
     // A TORN FRAME FAILS THE READ-ALONE SEAT, and says why. Reported BEFORE the no-change exit, because
@@ -506,41 +505,41 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
 }
 
 /**
- * The gradient reading: one line per file, the kind it declares and what that kind still owes.
+ * The gradient reading: one line per file, the marks each carrier carries and what it still owes.
  *
- * Prints a per-kind tally even when nothing faults, because a run that read nothing must never look
+ * Prints a carrier tally even when nothing faults, because a run that read nothing must never look
  * like a run that found nothing — the failure this whole reading exists to catch.
  */
 function surveyGradient(files: string[]): number {
-  const byKind = new Map<string, number>();
+  let carriers = 0;
+  let sidecarMembers = 0;
   let faulted = 0;
 
   // THE SIDECAR PAIR IS A CARRIER IN TWO FILES. A content file with a `.meta` beside it declares
-  // itself in the sidecar, so its own bytes carry no frame and never should — reading it as unframed
-  // would fault the one shape the projector mints for a non-memetic filetype. This is the one kind a
-  // reader cannot name from bytes alone, so it is settled here, where the file list is known.
+  // itself in the sidecar, so the paired content bytes carry their metadata beside them. This pairing
+  // reads from the named file list rather than from either file's bytes alone.
   const declared = new Set(files.filter((f) => f.endsWith(".meta")).map((f) => f.slice(0, -".meta".length)));
 
   for (const f of files) {
     if (declared.has(f) || f.endsWith(".meta")) {
-      byKind.set("sidecar", (byKind.get("sidecar") ?? 0) + 1);
+      sidecarMembers++;
       continue;
     }
     const shape = readCarrierShape(readNamed(f));
-    byKind.set(shape.kind, (byKind.get(shape.kind) ?? 0) + 1);
+    carriers++;
     if (shape.faults.length === 0) continue;
     faulted++;
-    console.log(`${shape.kind}: ${f}`);
+    console.log(`carrier: ${f}`);
     for (const fault of shape.faults) console.log(`  ⚠ ${fault}`);
   }
 
-  const tally = [...byKind].sort().map(([k, n]) => `${k} ${n}`).join(" · ");
-  console.log(`gradient: ${files.length} read — ${tally}`);
+  const sidecars = sidecarMembers > 0 ? ` · sidecar member ${sidecarMembers}` : "";
+  console.log(`gradient: ${files.length} read — carrier ${carriers}${sidecars}`);
   if (faulted === 0) {
-    console.log("every file stands at its kind's floor.");
+    console.log("every carrier stands at its full floor.");
     return 0;
   }
-  console.log(`${faulted} file(s) below their kind's floor.`);
+  console.log(`${faulted} carrier(s) below the full floor.`);
   return 1;
 }
 
@@ -688,7 +687,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   // the child's bytes read as a legal carrier, the root's bytes read as a legal carrier, and the two
   // together carry TWO text frames where only the first verifies. A guest's paste GRADES CLEAN at every
   // content instrument in the tree (`child-grade-decision.mem` #/measured row 11) and the shape reading
-  // catches it (row 13) — and until now that reading had ONE production caller, the `--gradient` survey.
+  // catches it (row 13) — the `--gradient` survey carries the same reading.
   // So the cost routed from the actor's present to a stranger's future: four months on, a reader on
   // another peer meets a carrier with two heads and no author left to ask.
   //
@@ -709,10 +708,10 @@ async function memeProject(args: ParsedArgs): Promise<number> {
       uri, to: plan.to, contentType: outcome.output["contentType"],
       ...(out ? { out, ...(typeof meta === "string" ? { outMeta: `${out}.meta` } : {}) } : { text }),
       ...(typeof meta === "string" ? { meta } : {}),
-      // The reading rides the machine channel whole — kind AND faults — so an agent reads the same
+      // The reading rides the machine channel whole — carrier status AND faults — so an agent reads the same
       // verdict a person does. Absent for every target whose render is not a carrier: an html page has
       // no carrier shape, and inventing one would be a reading over bytes the question does not fit.
-      ...(shape ? { shape: { kind: shape.kind, check: shape.marks.check, faults: shape.faults } } : {}),
+      ...(shape ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
     },
     // The rendered text alone reaches stdout, so `lares meme project <uri> --to html > file` carries it.
     // THE READING GOES TO STDERR, and that placement is load-bearing: stdout is the operator's artifact
@@ -721,7 +720,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
     human: () => {
       if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text);
       if (!shape || shape.faults.length === 0) return;
-      console.error(`\n⚠ the composed carrier stands below its kind's floor (${shape.kind}, check ${shape.marks.check}):`);
+      console.error(`\n⚠ the composed carrier stands below its full floor (check ${shape.marks.check}):`);
       for (const fault of shape.faults) console.error(`  ⚠ ${fault}`);
       console.error("  the bytes above are what the island composed — read the fault before you carry them anywhere.");
     },
@@ -754,9 +753,9 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   //
   // MY EXIT DISCIPLINE AGREES WITH `--gradient`, and the reported divergence does not reproduce:
   // `meme check --gradient` over a faulted file exits 1, measured on the built binary. The "exits 0 while
-  // printing 1 file(s) below their kind's floor" reading came from `$?` after a pipe, which reports the
+  // printing 1 carrier(s) below the full floor" reading came from `$?` after a pipe, which reports the
   // LAST stage's status — the instrument lie, not a defect in the door. `surveySitting` keeps 0 by its own
-  // ruling (a candidate is a state, not a fault); a carrier below its kind's floor IS a fault, so it
+  // ruling (a candidate is a state, not a fault); a carrier below the full floor IS a fault, so it
   // exits non-zero here exactly as it does there.
   return shape && shape.faults.length > 0 ? 1 : 0;
 }

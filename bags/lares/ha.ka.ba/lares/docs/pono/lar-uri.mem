@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 17
 role      = "canon documentation surface — full spec prose, examples, and appendices for the lar: URI scheme"
 tags      = ["api/pono/meme", "api/pono/loci", "api/pono/lar-uri"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/lar-uri"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -451,11 +454,10 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/identity-stack">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GeOOIva8n08CTHZWbd_QB9qaviNiPtJ1JR9oLHHSTzU
+<<^ code="&#x0003;">>ni:///sha-256;q0MdtnDHceqafDUeclEUX4kdOR4qsWQUom3VhljlaE0
 
 <<^ code="&#x0004;" -> to="?">>

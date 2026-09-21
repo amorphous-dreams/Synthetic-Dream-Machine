@@ -1,21 +1,24 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/docs/composition-model">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/docs/composition-model.mem"
+l-space   = "sdm"
 mana      = 15
 manao     = 18
 manaoio   = 14
 role      = "operator/dev doctrine: the Powers composition model — entity + module + component + mount-point, one flat #has verb, pattern/instance two-layer split"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/docs/composition-model"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/composition-model"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Composition Model — Operator / Dev Doc
 
@@ -131,6 +134,6 @@ Full lineage table lives in the epic. See edges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_wvst8WvTt0pixUmTlUWQmJ4SN_2-THUkFXlGPj_K08
+<<^ code="&#x0003;">>ni:///sha-256;UmDSmCcY_VspcXwhnP3V8gjPV4ybaxI8FihHy6Oir7Q
 
 <<^ code="&#x0004;" -> to="?">>

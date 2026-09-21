@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/corpus-conformance">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/corpus-conformance.mem"
@@ -14,13 +16,14 @@ pattern-integrity = true
 revised-on        = "2026-09-06"
 role              = "corpus-conformance — the design for a run that answers whether a corpus obeys the grammar a NAMED seed-state declares. Ten shell witnesses and nine corpus-walking predicates already stand; nothing binds them to a seed-state, nothing emits one verdict, and nothing keeps a record. Names the five law classes, the drift reading the record makes possible, the failure discipline a run inherits from tonight's four instrument-lies, and what a conformance claim MUST NOT say."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/corpus-conformance"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/the-claim>>
 
@@ -207,6 +210,6 @@ moved.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q05Vr-D_Nz8J-4VL3zCWG2gXlkPHP_ajWITcWu-jd-o
+<<^ code="&#x0003;">>ni:///sha-256;umRlGv-wbpv36h1Cwq3SXe2caxNyrNiqzT8m35kn1TM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/otakiage">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/otakiage.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-12"
 role              = "otakiage — the LIFECYCLE the house's carriers stand in, ruled and enacted. Five stages ride a TAG FAMILY on governed memes only (`lifecycle/designed · standing · folded · harvest · retiring`) so a filter answers the stage in the wiki and the stage RENDERS; a KIND rides `kind/rite` beside it; a carrier carrying no `lifecycle/*` tag stands UNGOVERNED and the gate asks nothing of it. `status` and `retain` retire as keys, `status-why` stays as the witness sentence, `cacheable` stays as an instruction to the API server behind the Lares. The six transitions as rites, each with a who, a witness and a record; the fire — what burns, what never burns, and the CALL that fires it, never a schedule; the harvest room as the rite walked it end to end; the siblings (kapu · tombstone) that take a carrier OUT of the fire's reach; the pattern-integrity rhymes with the Shinto return-rite, the Zettelkasten/evergreen ladders and the archive/tombstone disciplines, and where each rhyme breaks. Every house claim carries a file:line or a measurement dated 2026-09-12; every field claim carries a URL, the date the page shows, and the page's own words."
 status-why        = "RULED AND ENACTED 2026-09-12 (operator; the ruling stands verbatim at #/the-lifecycle). The tag family, the `meme check` stage law and `lares meme sitting` stand in code with a red-first witness each (`packages/lararium-tw5/src/carrier-lifecycle.ts`, `tests/carrier-lifecycle.test.ts`, `tests/meme-lifecycle-tag.test.ts`, `packages/lares-cli/tests/meme-command.test.ts`); 54 carriers took their tags (16 designed · 32 standing · 6 kind/rite) and 657 dropped the retired keys; the harvest room `bags/lares-history` was read whole, eight paragraphs lifted, five edges welded and all 51 files burned, dangling edges 198 -> 175. The carrier STAYS `designed` because it still argues its own crossing: it sits in `docs/pono` and moves to `api/pono/otakiage` only when the operator rules that crossing, which #/questions still puts to them — and the promotion receipt that crossing wants remains the declared blocker at `docs/pono/canon-boundary:97`"
 tags              = ["api/pono/meme", "lifecycle/designed"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/otakiage"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/charge>>
 
@@ -471,6 +474,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3ZGRoioC1K7KE0LS22o9rldA4mEp7gaQARQDnAXBdOg
+<<^ code="&#x0003;">>ni:///sha-256;OKp5Uh-RS0-8gpo_5XaV0mREwk4WgKjx_Qb9WTa2PCI
 
 <<^ code="&#x0004;" -> to="?">>

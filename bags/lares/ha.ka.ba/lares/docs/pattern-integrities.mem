@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pattern-integrities">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path = "bags/lares/ha.ka.ba/lares/docs/pattern-integrities.mem"
 l-space   = "stable"
@@ -8,12 +10,11 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 role      = "the research shelf: prior art, golden principles, anti-patterns for the seven stack integrities — field-grounded by nine research spirits, 2026-06-11/12; binds as kupono intent (builds implement THESE, never improvisation)"
+title     = "lar:///ha.ka.ba/lares/docs/pattern-integrities"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pattern-integrities"
 written   = "2026-06-12"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/shelf>>
 
@@ -100,6 +101,6 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RLbu7oqpmxUvCAdVD6WWpVjlL6L8xEvHEp8PF32siCg
+<<^ code="&#x0003;">>ni:///sha-256;aCKvoQWCILSDNDRhC41oKIB1PVbt5Uvs0NEE3w6G_iM
 
 <<^ code="&#x0004;" -> to="?">>

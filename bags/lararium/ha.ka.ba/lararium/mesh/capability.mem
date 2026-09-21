@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/capability">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/capability.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 13
 role        = "invariant law: the capability protocol — a provider-neutral authority shore. Mesh owns the SHAPE, adapters prove it. Names the binary gate, the opaque presenter, the refusal that explains itself, and what this interface deliberately does NOT decide."
 source-file = "packages/lararium-mesh/src/capability.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/capability"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/capability"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -66,6 +67,6 @@ reader a check they could then fail to find.
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;cQTijkeMG6noyHTYpp4F4idCpbQvuT_kCdoBI2g_tsU
+<<^ code="&#x0003;">>ni:///sha-256;_W-8UnKgp_SxLhBvUhzC2GBnaLB24R3E3xIYyu5GWD0
 
 <<^ code="&#x0004;" -> to="?">>

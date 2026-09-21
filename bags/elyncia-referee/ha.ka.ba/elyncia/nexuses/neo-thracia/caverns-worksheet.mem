@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "kapu"
 role      = "referee worksheet — the Caverns of Neo-Thracia: geography canon, water-road law, watershed villages, guide Burdens"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -254,6 +255,6 @@ Each result yields: ''texture'' (3–5 sensory lines) · ''movement modifier'' �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L49XR11Hz5ACrvUk1c6qFLzwi5yywmiiT6M8DBMfzrY
+<<^ code="&#x0003;">>ni:///sha-256;IsRPScfBEAjsW7W1VowZGnNWKLWylycqt97Yc1rOZ2I
 
 <<^ code="&#x0004;" -> to="?">>

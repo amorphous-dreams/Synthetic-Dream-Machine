@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/the-empty-subject.mem"
@@ -10,13 +12,14 @@ manaoio   = 14
 namespace = "&#x2299;"
 role      = "craft failure law — a gate that RAN, measured NOTHING, and reported SUCCESS. The detector question a hand asks before building any instrument (if its subject vanished tomorrow, would this go red?), the three sanctioned cure shapes, and the measured instances that paid for the law."
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -134,6 +137,6 @@ Each cure below planted its red, quoted it, and reverted it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NxJSNatdW-LFj0De_pk5VEN3iSmjrxudwu_oLqdBqeQ
+<<^ code="&#x0003;">>ni:///sha-256;JJK1EmRXblzu0hBRUO1xIQEOJoB4RUyGk5J926-3mEo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/memetic-wikitext.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 14
 role      = "extended documentation surface for memetic-wikitext: examples, authoring profiles, boundary notes, migration residue, and the W3C/prior-art lineage verdicts behind the submission spec"
 tags      = ["api/pono/meme", "api/pono/loci", "api/pono/memetic-wikitext"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/memetic-wikitext"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/memetic-wikitext"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -192,6 +193,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4eDVzym1IidBGw5Yzf85691UWn5Q-_njz9CD8CoXHeE
+<<^ code="&#x0003;">>ni:///sha-256;E8YCsBIC1KHFSF_NQrLflA6GH1aETmxWOfLVPvxtamc
 
 <<^ code="&#x0004;" -> to="?">>

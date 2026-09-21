@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/specimens/wild-02-pragma">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "packages/tree-sitter-memetic-wikitext/fixtures/specimens/wild-02-pragma.mem"
 l-space   = "stable"
 role      = "a parity specimen for the carrier grammar — a meme written before the framing ruling, held whole so the fold reads its pre-ruling text byte for byte"
+title     = "lar:///ha.ka.ba/lares/testbed/specimens/wild-02-pragma"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/testbed/specimens/wild-02-pragma"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/held>>
 ```toml meta
@@ -100,6 +101,6 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gDoO6B5Mw5NsYjTD_AqsCdy_mMDLsq5KX7n-iYlQlCA
+<<^ code="&#x0003;">>ni:///sha-256;FCknIwDcgU2bFnUytCdCdzGgDGedsBMleZMnUMMHC1A
 
 <<^ code="&#x0004;" -> to="?">>

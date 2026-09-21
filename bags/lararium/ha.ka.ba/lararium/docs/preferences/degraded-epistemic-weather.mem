@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 17
 role      = "staging docs shelf for named epistemic failure-weather, collapse patterns, and possible short-invariant promotion targets"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/degraded-epistemic-weather"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -74,6 +75,6 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FftpF-XdkWbfkdaWhC6O2WGODfz7IUEhsoV_vVL64d0
+<<^ code="&#x0003;">>ni:///sha-256;3lnOX0n2ONAoleiZE2dUOZLtoXVJwgXhrpJoOQEJUAk
 
 <<^ code="&#x0004;" -> to="?">>

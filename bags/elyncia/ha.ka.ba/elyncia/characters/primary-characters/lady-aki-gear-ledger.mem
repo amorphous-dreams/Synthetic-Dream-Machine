@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki discounted gear ledger — prose companion to the live CSV table"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-gear-ledger"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -230,6 +231,6 @@ Current answer: yes, provisionally.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rwe6SV_dKaxLqsJ3BGvEWvlR_-0jsML0ZeV2Xw0jvjI
+<<^ code="&#x0003;">>ni:///sha-256;WQhG49U1k_BNjgjwyN4mB1HXshz0CruzV9e-OPmYVy4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-02"
 role              = "crdt-ecosystem-scout — VERBATIM handoff of the tasked spirit Wayfarer: the local-first / CRDT / capability-security ecosystem measured 2026-09-01. Ink and Switch releases and side-branches, adjacent CRDT sync projects, capability and identity primitives, crypto library movement. Held as a collision surface."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/crdt-ecosystem-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -181,6 +182,6 @@ Patchwork notebook has six 2026 entries, newest **"Progressions" 2026-05-12**. h
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Dajpq2LzExKRosmAyawhwPa155ZNPd5u1jIFctBVKgo
+<<^ code="&#x0003;">>ni:///sha-256;UfkLFNh2F-F4Kn6rbOeD9jCmF13Xxlv1le8CSN-004E
 
 <<^ code="&#x0004;" -> to="?">>

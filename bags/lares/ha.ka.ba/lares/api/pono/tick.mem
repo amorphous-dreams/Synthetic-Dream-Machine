@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tick">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/tick.mem"
 namespace = "&#x2299;"
 role      = "device lifecycle hook — run-block-once-per-nalu; Verse OnSimulate(StagedUpdates) entry point; DEFERRED to UE6 ~2027"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick"]
+title     = "lar:///ha.ka.ba/lares/api/pono/tick"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/tick"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -36,6 +37,6 @@ Concurrency runtime (async-first sprint) is a prerequisite. Grammar registration
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dTXgW4tI-x94hDlxRcgqI0nCvwUPqc2_OO1QNT1Wxgw
+<<^ code="&#x0003;">>ni:///sha-256;Bv8Ys3XBmcLTLIaxmgNR1WGDAjOpyvpy1J9nBzwfmAw
 
 <<^ code="&#x0004;" -> to="?">>

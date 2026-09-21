@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls.mem"
@@ -11,11 +13,10 @@ manaoio       = 13
 render-target = "chat-log:post-header"
 role          = "DreamDeck narrative locus — Act II of the Lindwyrm hoard story"
 source        = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture#/act-ii-daemon"
+title         = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/lindwyrm/daemon-in-the-walls"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -197,6 +198,6 @@ Act III receives:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8ftdUGwYnVygrt4hp0YEpoUZon2ICsj87Nn4dykJVug
+<<^ code="&#x0003;">>ni:///sha-256;he3IneRWKzTrv6Vljta91r6mL1LpbZRME3ClI-Qrmvc
 
 <<^ code="&#x0004;" -> to="?">>

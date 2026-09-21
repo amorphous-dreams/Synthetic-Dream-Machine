@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb.mem"
@@ -10,11 +12,10 @@ manao       = 17
 manaoio     = 16
 role        = "ViewTemplate: slot badge + parent link shown at top of any ahu child tiddler"
 tags        = ["$:/tags/ViewTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
+title       = "lar:///ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb"
 ```
-
-<<^ code="&#x0002;">>
 
 \whitespace trim
 <$list filter="[all[current]has[ahu-slot]]" variable="_" emptyMessage="">
@@ -34,6 +35,6 @@ uri-path    = "ha.ka.ba/lararium/tw5/ui/ahu-breadcrumb"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0P0Ycf5rZjn3BlR278cYflVP7QLRSk5tAj2zCIvlUg4
+<<^ code="&#x0003;">>ni:///sha-256;80EBZTIbW58jif8mi7qcA_L9tfeH10qBTF4XUiVRHjs
 
 <<^ code="&#x0004;" -> to="?">>

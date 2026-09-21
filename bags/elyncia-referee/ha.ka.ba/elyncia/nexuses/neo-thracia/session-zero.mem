@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "kapu"
 role      = "referee doc — Session Zero notes for the Neo-Thracia campaign arc"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -179,6 +180,6 @@ Bring three agreements to the first session:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1OKtVPdL90RrtrkuDSloqHtVK9bbEPvLNZw2hdKS3dA
+<<^ code="&#x0003;">>ni:///sha-256;58LPhnePDS_UH03YtRxSYj1SNiEH9ep-5kINQXj38Hg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lele">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/lele.mem"
 namespace = "&#x2299;"
 role      = "structured fire-and-continue sigil — lele as Verse branch; English alias: branch; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-lele"]
+title     = "lar:///ha.ka.ba/lares/api/pono/lele"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/lele"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -62,6 +63,6 @@ A lele edge MUST NOT wait for a response from the target.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UudJYBs8fxkVTpuSasVuJw9d5f5IQ3Zo_LdLOVoFYNw
+<<^ code="&#x0003;">>ni:///sha-256;gxB7Kl3eccR4mGFSM0_QgHcP9ds8JqkTgI8pRRUteWQ
 
 <<^ code="&#x0004;" -> to="?">>

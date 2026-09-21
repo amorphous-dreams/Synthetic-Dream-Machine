@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/ink-clerk">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 aside             = false
 cacheable         = false
@@ -22,6 +24,7 @@ role              = "named Voice mask — Ink-Clerk (Lorekeeper); archival preci
 seniority         = "earned name; no special seniority"
 stage             = 10
 tags              = ["api/pono/meme", "api/masks"]
+title             = "lar:///ha.ka.ba/lares/api/masks/named/ink-clerk"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/named/ink-clerk"
 voice-character   = "[STUB — partially known from house entry; pending-talk-story for depth]"
@@ -30,7 +33,7 @@ voice-role        = "Lorekeeper"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -166,6 +169,6 @@ How Ink-Clerk colors each Voice register when they speak through her archival-pr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mnqxcjrK4S7seLlLk9qaleVLlVUUYV8MPFEN_iuilUY
+<<^ code="&#x0003;">>ni:///sha-256;xxJYzVG6OsukhmhH9Us0GnDGFawqO0TkVolWgwDsQpA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium.mem"
@@ -11,11 +13,10 @@ manaoio         = 14
 render-target   = "chat-log:post-header"
 role            = "DreamDeck narrative locus — April 10 threshold, transclusion-first self-location"
 source-consumed = ["packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE.md", "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_SELF_BOOTING_LARES_ARCHITECTURE_DEV_STORY.md"]
+title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/self-booting-lararium"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -285,6 +286,6 @@ It hums.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KbKxGVWR8av2vjP3eThO4PVCCGZO_juMD9nR5eVmv38
+<<^ code="&#x0003;">>ni:///sha-256;21-vDD7hHMRD5DMFfRPwpjOKF5cAT69-iuRpWWMv8y0
 
 <<^ code="&#x0004;" -> to="?">>

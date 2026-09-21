@@ -62,22 +62,24 @@ export interface RuleInstance {
 export const SIGIL_OPEN_MARKS = "~^";
 /** True when a sigil of EITHER set opens at `pos`. */
 export function opensSigilAt(source: string, pos: number): boolean {
-  return source.startsWith("<<~", pos) || source.startsWith("<<^", pos);
+  return source.startsWith("<<~", pos) || source.startsWith("<<^", pos) || source.startsWith("<<fragment", pos);
 }
 /** The next opener of either set at or after `from`, or -1. */
 export function indexOfSigilOpen(source: string, from: number): number {
   const a = source.indexOf("<<~", from);
   const b = source.indexOf("<<^", from);
+  const c = source.indexOf("<<fragment", from);
   if (a < 0) return b;
-  if (b < 0) return a;
-  return Math.min(a, b);
+  if (b < 0) return c < 0 ? a : Math.min(a, c);
+  if (c < 0) return Math.min(a, b);
+  return Math.min(a, b, c);
 }
 export const ANY_OPEN_RE = /<<[~^][^\n]*?>>/g;
 
 // Child-slot sigil names present at bootstrap (before grammar loads from tiddlers).
 // ahu: deserializer emits <<~ ahu …>>…<<~/ahu>> blocks; must be recognised at cold boot.
 // kau: TW5 \widget tiddler (sigil-kau.tid), only appears in live wiki (post-grammar-load); grammar supplies it via kind="child-slot".
-const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu"]);
+const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu", "fragment"]);
 
 /** Returns the set of child-slot sigil names from the grammar registry. */
 export function grammarChildSlotNames(grammar: GrammarRules | null): Set<string> {

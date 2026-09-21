@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/holo">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/holo.mem"
 namespace = "&#x2299;"
 role      = "cancelling-race sigil — holo as full sprint; Verse race: first wins, losers and their entire subtrees cancelled recursively; English alias: \\race; async-first concurrency sprint pending"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-holo"]
+title     = "lar:///ha.ka.ba/lares/api/pono/holo"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/holo"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -74,6 +75,6 @@ A holo block MUST NOT resume the containing flow until one child flow completes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PSXnor-ioMMa3w7niVfrWesLrzdDcdOOVUAFS9_Cy8U
+<<^ code="&#x0003;">>ni:///sha-256;pu17Frx-Jnzm9g1QvRoCcUE1euawDLhVTnpCM4C_2MQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem"
@@ -13,6 +15,7 @@ namespace  = "&#x2695;"
 role       = "OPERATOR-LOCKED (2026-08-08) bridge doctrine + the reach-vault design ledger: the vessel holds FOREIGN credentials in confidence so a human posts to Bluesky/Kowloon/elsewhere FROM their wiki — Lararium as force-multiplier. The load-bearing split: a foreign credential buys REACH, never IDENTITY, so custody of one never touches the sovereign plane. Four locks — BRIDGE (never present-as-actor, never cap-translation) · OUTWARD-ONLY · MAILBOX-not-seat · DID-method-compatible first. The reach chain TRUNCATES at CONTRACT (a world-readable credential stops being one) and never federates. Names the honeypot hazard and the far-side revocation asymmetry. DESIGN RULINGS: COMPOSE-AND-REQUEST (the glass drafts, the hearth posts — a browser holds no credential) · the vault reads as a cap-tiered BAG so the truncation falls out of a FLOOR the keystone already meets against · a per-service MANIFEST declares edit/thread/length/media/expiry · content-addressed EMIT RECEIPTS carrying the emitting vessel · health-per-credential, never a retry loop. OPEN: OAuth refresh makes the vault non-passive (research+testing owed) · the persona-binding privacy tension at high account cardinality · the CONTRACT floor oracle · credential onboarding · Kowloon actor-key custody."
 status-why = "operator-locked, unbuilt"
 tags       = ["mesh/cap-tier", "mesh/membership-doctrine", "mesh/secure-context", "mesh/attestation-plane", "api/disk-projection", "api/pono/orichalcum-capabilities", "api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/reach-plane"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/reach-plane"
 written    = "2026-08-08"
@@ -20,7 +23,7 @@ written    = "2026-08-08"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -280,6 +283,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XuinkcthP84099mk-THYfm0TacZQ3hZsvbB76hPAqrU
+<<^ code="&#x0003;">>ni:///sha-256;Mf8GPJJWHCl1mEo81SeargqID94sDcFD1rPH9FA-xCI
 
 <<^ code="&#x0004;" -> to="?">>

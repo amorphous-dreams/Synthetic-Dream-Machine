@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/social-tiddlers">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/social-tiddlers.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 12
 role        = "invariant law: the social plane's tiddler shapes and typed readers — @identities, @circles, @sessions. TIDDLER-FIRST: every principal, circle, session and presence record lives IN tiddlers, so a TW5 field filter queries them directly. Names the three entities, what a reader refuses, the Keyhive-mirroring fields, and the audit trail that never decreases."
 source-file = "packages/lararium-mesh/src/social-tiddlers.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/social-tiddlers"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/social-tiddlers"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -60,6 +61,6 @@ and a map of FFZ clocks. It names live attention rather than durable membership.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rq81AvwVReTQy8SjWK6A4YGuCMlSjfi688VWYXhUTbM
+<<^ code="&#x0003;">>ni:///sha-256;Abqkdk_uif7GYNfaT8dsc8YvQ3lKH2Al4CIJfTawbD8
 
 <<^ code="&#x0004;" -> to="?">>

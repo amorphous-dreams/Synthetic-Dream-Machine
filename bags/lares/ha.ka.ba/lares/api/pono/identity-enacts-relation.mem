@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/identity-enacts-relation.mem"
@@ -11,13 +13,14 @@ manaoio       = 11
 revision-note = "PROVISIONAL — the constructor, the declared partition, declaration ⊥ gauge, fluid-not-frozen rank, and the vocabulary. Operator-ruled spans marked RULED; the rest reads PROPOSED and unbuilt"
 role          = "the identity plane's ontology: identity ENACTS a relation; a mutual hold constitutes a scale RELATIVE TO A DECLARED PARTITION; the declaration, the measurement and the decision stand as three artifacts with three owners; rank runs fluid, never frozen, and a lift EXPIRES. Expands lararium-identity's five-scale axis with what makes a scale real"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/identity-enacts-relation"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -308,6 +311,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3uVHD9JK-kKOiMp2_Wygn0wCufaKrJypkhP228s4tIE
+<<^ code="&#x0003;">>ni:///sha-256;EcMTv-69fXYPi1F6t-qEg07RsZsefawX9D2Hgh4J4dc
 
 <<^ code="&#x0004;" -> to="?">>

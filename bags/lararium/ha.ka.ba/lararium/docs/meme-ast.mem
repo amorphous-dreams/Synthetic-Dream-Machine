@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/meme-ast">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 body-sha256   = "a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/meme-ast.mem"
@@ -13,11 +15,10 @@ role          = "heleuma ka: isomorphic memetic-wikitext AST parser bundle"
 source-symbol = "parseMemeText"
 status-date   = "2026-05-01"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/heleuma/ka"]
+title         = "lar:///ha.ka.ba/lararium/docs/meme-ast"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/meme-ast"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -58,6 +59,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;He1t2y3TvtjiSVO3CnMmYqvH5-vpMcgb_193RztwRcI
+<<^ code="&#x0003;">>ni:///sha-256;NZLYx68mPHs0vetl1hXHtcW_cjIOkrLW-Mxb5r9FWGU
 
 <<^ code="&#x0004;" -> to="?">>

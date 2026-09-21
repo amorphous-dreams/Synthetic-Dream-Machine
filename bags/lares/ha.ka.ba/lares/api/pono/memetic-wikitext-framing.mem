@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem"
@@ -14,13 +16,14 @@ revision-note = "stood up at the split: the transmission-frame half of the langu
 role          = "submittable specification for the memetic carrier frame — the declaration register, the SOH/STX/ETX/EOT control set, the ni:/// block check, canonical form, carriage, the health gradient, and frame security. The language it frames rides the sibling memetic-wikitext spec; the address rides lar-uri"
 status-why    = "submission-draft"
 tags          = ["lifecycle/standing"]
+title         = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/abstract>>
 
@@ -91,7 +94,7 @@ The key words ''MUST'', ''MUST NOT'', ''REQUIRED'', ''SHALL'', ''SHALL NOT'', ''
 | ''slot'' | a named parameter a given mark carries; the mark decides which slots apply. |
 | ''declaration'' | a `<<!WORD>>` statement read before content, selecting or constraining the grammar (#/declaration-register). |
 | ''namespace'' | the resonance glyph a carrier's heading states, naming which layer authored it (#/resonance). |
-| ''heading'' | the zone between SOH and STX: the identity block and the carrier-level bindings (#/authoring). |
+| ''heading'' | the SOH routing zone: the frame identity and transport-level bindings; authorial root metadata is body content (#/authoring). |
 | ''block check'' | a check computed over the framed span, carried adjacent to ETX (#/control-set). |
 | ''carrier reader'' | a processor reading and minting the frame: marks, declaration, boundary normalization, the check. |
 | ''consumer'' | a processor admitting carriers to a bag; the verdict obligations (#/the-touchstone) bind here. |
@@ -270,7 +273,7 @@ never performing a move the renderer runs. A `!WORD` that acts belongs in the sp
 
 !! The Carrier Spine — Four Required Sigils
 
-A carrier travels as one framed transmission. It opens on a heading that names the place (''SOH''), enters its text (''STX''), ends its text (''ETX''), and closes the transmission, releasing it forward (''EOT''). A framed carrier stands all four, in this order; a carrier MAY arrive unframed, and the projection mints the frame (#/authoring).
+A carrier travels as one framed transmission. It opens on a heading that names the place (''SOH''), enters its text (''STX''), ends its text (''ETX''), and closes the transmission, releasing it forward (''EOT''). A complete carrier stands all four, in this order; a carrier arriving with absent marks reads at its corresponding gradient, and the projection mints the complete frame (#/authoring).
 
 | Sigil | Form | Role | Byte | Kapu byte |
 |---|---|---|---|---|
@@ -281,17 +284,19 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 
 ''Kapu'' names the restricted, admin-only trust tier (#/trust-tiers); the kapu byte column gives each mark's substitute code in that tier.
 
-''The frame — heading, then text.'' The protocol law pins the zones: SOH opens the ''heading'', STX opens the ''text''. The heading holds the toml meta slot and nothing else; the text holds the body.
+''The frame — routing, then document.'' The protocol law pins the zones: SOH opens the routing heading, STX opens the checked document body. The root `toml meta` block opens the authored body after STX, alongside local metadata blocks inside `ahu` and `fragment`.
 
-```
+````
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///URI">>   SOH · open heading
-  ‹toml meta slot — the identity heading›
-  <<~ aka "lar:///…RFC-2119">>                          (optional carrier-level binding)
+  ‹routing only — authorial identity begins after STX›
 <<^ code="&#x0002;">>                                 STX · open text (body)
+  ```toml meta                                              root tiddler fields
+  ```
+  <<~ aka "lar:///…RFC-2119">>                            authored relation
   # title · ## sections · #edges                       the text (body)
 <<^ code="&#x0003;">>                                 ETX · close text
 <<^ code="&#x0004;" -> to="?">>                            EOT · release
-```
+````
 
 ''The mark names the control byte.'' Each sigil states its C0 control character as a named `code:` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX and ETX carry that one param and nothing else — each opens or closes the text and states no bearing.
 
@@ -422,9 +427,10 @@ The `bcc` slot carries a check over the framed span. Normatively:
 * ''Computed, never stored.'' A writer computes the check over the body it has assembled; a reader
   recomputes it over the bytes in front of it. Two computations of one fact, never a copy of one — a
   stored derivation goes stale the moment the thing it derives from moves.
-* ''The heading stays outside.'' The span opens at STX, so the identity block sits above it: sorted keys,
-  aligned equals, entity-escaped glyphs and child inheritance all churn the meta without touching the
-  check. A carrier whose heading re-canonicalised still verifies.
+* ''The routing heading stays outside; authorial identity does not.'' The span opens at STX, so the root
+  TOML fields, authored prose, and nested fragment metadata all ride inside the check. A carrier whose
+  parent fields change MUST receive a new check; only DOCTYPE, SOH routing, and transport carriage remain
+  outside this integrity span.
 * ''A carrier holding no check reads `unchecked`, never `mismatch`.'' Absence of a check and a failed
   check stand as different facts (#/bearing-arrow), and a reader that collapsed them would be useless exactly
   where it matters. The caller decides what an unchecked carrier may do; it still parses.
@@ -528,12 +534,13 @@ SOH substitutes DC1 (`0x11`) and EOT substitutes DC4 (`0x14`) in kapu-tier carri
 An author writes content and identity; a carrier carries framing. The two divide cleanly, and a
 processor MUST keep the division:
 
-!!! The identity heading, by position
+!!! The root identity block, by position
 
-A labelled ```` ```toml meta ```` fence states identity. Which identity it states reads by POSITION:
+A labelled ```` ```toml meta ```` fence states identity. The root fence MUST stand immediately after STX;
+each nested `ahu` or `fragment` fence stands immediately inside its own worksite. Which identity it states reads by POSITION:
 
-# The fence that OPENS a carrier heads the ''carrier'' — its address, its namespace, its register.
-# Every LATER fence heads the ''worksite it sits in'' — that slot's own register, its own confidence —
+# The fence immediately after STX names the ''carrier'' — its title, address, namespace, and register.
+# Every fence immediately inside a worksite names that worksite — its own register, its own confidence —
   and it overrides what the carrier declared without reaching back up.
 # Neither reaches into the other.
 
@@ -545,14 +552,14 @@ itself on every later pass.
 
 A carrier reads in three zones, and the middle one had no name:
 
-# ''The identity heading'' — the labelled `toml meta` fence. What the meme IS.
-# ''The carrier bindings'' — between the heading and STX. `<<~ aka "lar:///…">>` binds a reference at
-  carrier level; `<<~ kahea ahu #/…>>` mounts a slot. These read as AUTHORED structure, not framing:
-  they state what the carrier holds before its body opens.
-# ''The body'' — between STX and ETX. Optional, and holding prose, ahu slots, both, or nothing.
+# ''The routing heading'' — the SOH zone. It carries only frame identity, bearing, and transport bindings.
+# ''The root identity block'' — the labelled `toml meta` fence immediately after STX. It declares the
+  parent tiddler’s fields.
+# ''The authored body'' — after root TOML and before ETX. It may carry prose, relations, ahu slots, or
+  nothing; `<<~ aka …>>` and `<<~ kahea ahu …>>` both stand here.
 
-A processor MUST keep the three apart on projection. Folding the bindings into the body moves an
-authored declaration below a mark that says the text has begun.
+A processor MUST keep the three apart on projection. Moving an authored declaration into the routing
+heading removes it from the checked document and violates its own root-field/body placement.
 
 !!! The placement law
 
@@ -560,7 +567,7 @@ authored declaration below a mark that says the text has begun.
 the tiddler.'' A promise, never a prohibition — and it replaces every list of names an author may not use.
 
 |!class |!holds |!because |
-|on the tiddler |meta fields · zone content · effect-record fields |the author sees it, so the author may edit it, from either surface |
+|on the tiddler |meta fields · body content · effect-record fields |the author sees it, so the author may edit it, from either surface |
 |another tiddler |relations · indexes · recipes |a relation between things belongs to no one thing |
 |the envelope |kāpae · authority · change-id · schema-version · the bag cap-reference |facts about the record's replication, not its content |
 |nowhere |`slot` · `fragment-parent` · `file-path` · the block check |derived on demand; a second copy can disagree once both admit edits |
@@ -585,7 +592,7 @@ rather than two spellings of a similar one.
 
 A carrier MAY arrive with no frame at all — an author saving prose from an editor, a render surface
 writing a tiddler back. A conforming processor MUST accept it and MUST MINT the frame on projection:
-SOH with the namespace the meta declares, STX, ETX, EOT. Refusing an unframed file makes the grammar the
+SOH with the namespace the meta declares, STX, ETX, EOT. Refusing a carrier with absent frame marks makes the grammar the
 author's problem; mangling one corrupts canon quietly.
 
 !!! The projection settles
@@ -730,11 +737,10 @@ nothing decorates rather than protects, the standing RFC 9580 demoted OpenPGP's 
   reads as refusal to admit — the only defense a bare digest affords against stripping, since whoever
   can rewrite a carrier can rewrite or remove the check beside it.
 
-''What the check cannot answer.'' The span opens at STX, so the declaration, the heading, and the meta
-block stand OUTSIDE it: a carrier's address, media type, and grammar-selector can move while the check
-holds. The verdict answers one question — did the text survive carriage — and a reader MUST NOT take an
-`ok` as covering bytes the span excludes. Heading integrity belongs to an outer layer, a seal or a
-signature, never to this mark.
+''What the check cannot answer.'' The span opens at STX, so the declaration and SOH routing heading stand
+OUTSIDE it: a carrier's grammar selector and transport bearing can move while the check holds. The root
+TOML metadata is inside the span and therefore is covered. The verdict answers one question — did the
+document bytes survive carriage — and a reader MUST NOT take an `ok` as covering bytes the span excludes.
 
 ### What stands, and what waits
 
@@ -881,20 +887,20 @@ A carrier that lost its address gets skipped by every instrument that walks the 
 check witness, the coordinate witness, the round-trip witness — each at `if (!uri) continue`. Seventeen
 carriers once sat outside all three at once while every one of them reported itself as corpus-wide.
 
-So a carrier's health reads as a **gradient**, never a verdict. A reader names the KIND a file declares
-itself to be, and the marks that kind requires and lacks. The kind reads from the DECLARATION, never
-from the path: where a file rests says where it rests; what it IS, it states.
+So a carrier's health reads as a **gradient**, never a verdict. Every `.mem` source reads as a carrier;
+the reader names the marks it carries and the marks it lacks. `uri-path` names a meme address and `bag`
+names a bag declaration inside that shared carrier shape.
 
-<<~ scale kind "carrier ~ declares `uri-path` — a meme; wants the whole frame and a check -> descriptor ~ declares `bag` — a bag declaring itself; a body frame would claim it holds a meme's text -> shelf ~ declares neither, and its head names an address the declaration omits — the fault that makes a file invisible -> unframed ~ no head at all; bytes wearing an extension">>
+<<~ scale carrier "complete ~ DOCTYPE + SOH + root TOML + STX + ETX + block check + EOT stand in order -> graded ~ each absent or displaced mark remains visible to the operator -> addressed ~ `uri-path` names a meme -> bag-declaring ~ `bag` names a bag's self-description; its fields and prose travel in the same checked body">>
 
-`lares normalize --gradient` reads it. It fails on a **fault** and never on a **kind**: a descriptor
-carrying no body frame stands exactly where it should, and a content file declaring itself in a `.meta`
-beside it carries no frame of its own — the one kind a reader cannot name from bytes, settled where the
-file list stands known.
+`lares meme check --gradient` reads it. It reports each carrier's missing or displaced marks and fails
+on a fault. A bag-declaring carrier carries STX, ETX, EOT, and a block check so its authoritative fields
+and prose share one integrity scope. A content file declaring itself in a `.meta` beside it travels as a
+sidecar pair, settled where the file list stands known.
 
 ### The graph a carrier points into
 
-A carrier can be whole and point at nothing. `lares normalize --edges` takes that second reading: which
+A carrier can be whole and point at nothing. `lares meme check --edges` takes that second reading: which
 addresses these carriers name, and which of them any carrier holds. **Run it either side of a move** —
 equal counts prove the weld held, a rise names what broke.
 
@@ -1061,6 +1067,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3V6u_VQ6RHvBJI42EPXXemKXTSp2QSmfaDGNQXbPbbU
+<<^ code="&#x0003;">>ni:///sha-256;G0SQSh7MTMmLMfiaVw-Z2fLPPkZQObT4PVHF_i5SMRs
 
 <<^ code="&#x0004;" -> to="?">>

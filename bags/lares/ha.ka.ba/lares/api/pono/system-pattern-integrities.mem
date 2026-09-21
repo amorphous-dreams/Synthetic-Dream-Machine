@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/system-pattern-integrities.mem"
@@ -13,13 +15,14 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "FFZ pono constitutional law — MIND, ISLAND, AUTHORITY, CODEC, SYSTEM, PENTADIC, GENESIS, and PEER pattern-integrities for the Lararium causal-island system; attention-scale register names Pulse/Beat/Measure/Arc/Theme grounded in PENTA_2_CLOCK_ALIGNMENT"
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/system-pattern-integrities"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -355,6 +358,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7aRg5032oSwCKrshDqJ-424R6mZ2orkRqN42dLdmKCM
+<<^ code="&#x0003;">>ni:///sha-256;D25kb6VEDNZE37ru-KiCDj18l9OtgFj-I_v8LK2bQYM
 
 <<^ code="&#x0004;" -> to="?">>

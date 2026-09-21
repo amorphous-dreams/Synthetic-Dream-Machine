@@ -64,8 +64,9 @@ const STX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>`);
 const ETX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`);
 // EOT: entity form OR return-throat (<<~ -> ?>>)
 const EOT_RE  = new RegExp(`<<[~^](?:${INNER}${frameAlt("EOT")}${INNER}|\\s*->\\s*\\?)\\s*>>`);
-const AHU_OPEN_RE  = /<<~(?:[^>\n]|>(?!>))*\bahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)\s*>>/;
-const AHU_CLOSE_RE = /<<~\s*\/\s*ahu\s*>>/;
+// `fragment` is an English surface alias for the same rooted ahu worksite event.
+const AHU_OPEN_RE  = /<<(?:~(?:[^>\n]|>(?!>))*\bahu|fragment)\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/;
+const AHU_CLOSE_RE = /<<(?:~\s*\/\s*ahu|\/fragment)\s*>>/;
 
 type Hit = { index: number; end: number; cap: string | undefined };
 

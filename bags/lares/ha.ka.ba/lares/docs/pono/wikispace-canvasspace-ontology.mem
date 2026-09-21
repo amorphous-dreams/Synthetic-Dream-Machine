@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology.mem"
@@ -10,13 +12,14 @@ manao     = 16
 manaoio   = 15
 role      = "doctrine: one meme-graph model, two surface projections (Story-River + DreamDOM canvas); graph-primacy; view-state as its own lar-URI-addressed region; the nine families classified by surface; transclusion's surface-split. CARRIES THE SURFACE CORRECTION (2026-09-02): the canvas camera is a DOM-HOSTING DreamDOM document, never a rasterising OffscreenCanvas, and TLDraw is a STUDIED model rather than a named dependency — its licence forbids the deployment shape this house is"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -245,6 +248,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6FOb2Vl3NyoHxzxTBNVsn-ZneVGSwFCIrvo5XR703lk
+<<^ code="&#x0003;">>ni:///sha-256;Rl9bNCPwy3xxz_y20Bqc32_a2R06TOGbwoHYrvxfQoc
 
 <<^ code="&#x0004;" -> to="?">>

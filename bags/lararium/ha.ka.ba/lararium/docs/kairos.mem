@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/kairos">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/kairos.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 16
 role      = "KAIROS as an instrument — the iterative posture reviewer that surfaces drift to one operator; gate, budget, check anatomy, decay, trust ledger"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/kairos"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/kairos"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -320,6 +321,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VkUXzBQaw7s35g6j5CI5vPR1hwFNfS3H0Hc6r_LQgw4
+<<^ code="&#x0003;">>ni:///sha-256;Q8f6bV_MEo3zYqJbdd1mAzSgu5sfDj5_2akZca97kAc
 
 <<^ code="&#x0004;" -> to="?">>

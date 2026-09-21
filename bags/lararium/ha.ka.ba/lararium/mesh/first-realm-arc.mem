@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/first-realm-arc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/first-realm-arc.mem"
@@ -11,13 +13,14 @@ manaoio       = 11
 revision-note = "the founding ARC the runbook's command-sequence does not carry: one vessel, one realm fed, a fleet gathered, a second operator founding their own and then DWELLING IN the first. Names the three stretches where the runbook stops and the code does not yet reach"
 role          = "the first realm's founding arc, end to end — what gets founded, what gets FED, what joins, and in which order. Distinguishes the four different joins that all read as //joining// in plain speech and run as four different acts in the model"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lararium/mesh/first-realm-arc"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/first-realm-arc"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -124,6 +127,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3r-DRj_YNDy-zhYD5skkpO24Vi1p_err23HAtzCzCtk
+<<^ code="&#x0003;">>ni:///sha-256;LbwZSxdGSiGMI5SFe5i9NHW2LzMNXQGht_0RAuz9ZKg
 
 <<^ code="&#x0004;" -> to="?">>

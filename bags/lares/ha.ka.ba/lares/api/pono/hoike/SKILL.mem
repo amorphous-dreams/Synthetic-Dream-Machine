@@ -12,6 +12,8 @@ description: File or reopen a hoike (\testimony) — a kept record of a conteste
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hoike/SKILL">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/hoike/SKILL.mem"
@@ -22,11 +24,10 @@ manaoio    = 16
 role       = "practice face of hoike — triggers, the five steps, three worked examples; law lives at the parent meme"
 status-why = "a skill definition — a procedure invoked, never a thing built"
 tags       = ["kind/rite"]
+title      = "lar:///ha.ka.ba/lares/api/pono/hoike/SKILL"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/hoike/SKILL"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/practice>>
 
@@ -109,6 +110,6 @@ Read the three together and the grammar teaches itself: dissent gets a name and 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q1-_NyhGjDWJLddmV-P-n5crgy1bYgsTob9N_CaN04o
+<<^ code="&#x0003;">>ni:///sha-256;xP03mIICZxnACYyKRoUNwNmEUkBR49rE_y_208C_oRs
 
 <<^ code="&#x0004;" -> to="?">>

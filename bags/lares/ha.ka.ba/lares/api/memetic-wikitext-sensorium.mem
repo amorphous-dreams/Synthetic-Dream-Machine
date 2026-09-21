@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/memetic-wikitext-sensorium.mem"
@@ -11,6 +13,7 @@ manao     = 14
 manaoio   = 13
 namespace = "&#x0950; &#x0901;"
 role      = "the memetic-wikitext SENSORIUM — the design-of-record for the CONCRETE instance of the neither-top, co-located-peers pattern. A nameless nested entity that `#has` TWO PEER sub-sensoria — FORMAL (memes-on-disk = grammar/liturgy) ⋈ INFORMAL (chat-sessions = pidgin) — with NEITHER on top: `coupling.children=[formal, informal]`, the coupling plane reading the DIRECTED formal↔informal flow (does liturgy inform chat, or chat crystallize into liturgy? — both directions, neither assumed) via the mesh keel's `coupleMesh` (whiten→couple→χ²-gate). THE LOAD-BEARING INSIGHT: the co-location is FRACTAL — the SAME neither-top-co-located-peers pattern recurs at TWO scales, (a) STRATUM: red-sigil-register ⋈ black-prose co-located (skeletal-tier + association-graph), (b) CORPUS: formal-liturgical ⋈ informal-pidgin co-located (peer sub-sensoria + coupling edge) — so ONE structure serves both: the reader written for the stratum IS the shape composed for the corpus. THE READER (crucible: do NOT build a new parser): the meme-ast island scanner (disjoint-match, dodges the no-overlap limit) + a tree-sitter INJECTION config (sigil grammar into the <<~…>> ranges — injections model the disjoint partition natively) + a source-CID-pinned STANDOFF stratum-tag table (per byte-range {span, tag: black|red|base, source-CID}); strata ASSOCIATE to a SKELETAL TIER (the prose/char stream) via association edges (autosegmental — NOT position-identity). TWO AXES: span (the aperture-ladder — the GRAIN / FFZ membership address reads it, never a frequency band) × channel (red/black classifier — categorical); a control-sigil at fine grain reads as a CROSS-GRAIN signal, never forced to an outer level. THE LI/KI SPLIT (理/氣): content/structure/form RESTRICT into the LI chain (pattern — what recurs, the grammar, the shape, computed from the moment's OWN span); the KI readings EXTEND (boundary · coupling · standing — flow needing data OUTSIDE the span), COUPLING the live centre here (the directed formal↔informal read). Enacted in packages/lararium-node/src/memetic-wikitext-sensorium.ts."
+title     = "lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/memetic-wikitext-sensorium"
 written   = "2026-07-01"
@@ -18,7 +21,7 @@ written   = "2026-07-01"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -173,6 +176,6 @@ identically across the TS/py shore: the li-reader on one bank, the ki-model on t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7nm8n99phuWQALiY27EDky16bDqMjqjGzu6FgKXIzjw
+<<^ code="&#x0003;">>ni:///sha-256;Rt_HXwphE6qCFFp_YCkoptnMg8TG1n6LQeAq31JxbnU
 
 <<^ code="&#x0004;" -> to="?">>

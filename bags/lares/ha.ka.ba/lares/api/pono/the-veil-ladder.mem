@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/the-veil-ladder.mem"
@@ -13,11 +15,10 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "the-veil-ladder — the WHO-plane as myth-as-infrastructure: a self on the DreamNet is a LADDER of veils (throwaway anon → lived anon → pledged Handle), climbed by choice, held by feeding; reputation born bottom-up, rep⊥anonymity reconciled by rotation, trust distributed on the FLOW-map, defended by immune systems. ShadowTalk pre-SIN ⊕ Mage Digital Web ⊕ Earthdawn True-Names, made literal."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/the-veil-ladder"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -140,6 +141,6 @@ For the citizen with ''no quorum yet'', the floor is a ''standalone recorded cod
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 
-<<^ code="&#x0003;">>ni:///sha-256;aA-15XTpePKVNOlcQIz_o3qd0xfDvU901On7gxUQXfQ
+<<^ code="&#x0003;">>ni:///sha-256;njXYmT-9lpXsMW_tYK2g6t3WWJVTG9PPBjiOkMKOLCo
 
 <<^ code="&#x0004;" -> to="?">>

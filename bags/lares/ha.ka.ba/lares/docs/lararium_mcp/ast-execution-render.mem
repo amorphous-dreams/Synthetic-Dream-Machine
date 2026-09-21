@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path       = "bags/lares/ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render.mem"
 l-space         = "stable"
@@ -11,11 +13,10 @@ role            = "canonical AST envelope, pranala graph-plane, execution graph,
 source-consumes = ["packages/lares-core/memes/docs/mcp/TW_FILTER_BOUNDARY.md", "packages/lares-core/memes/docs/mcp/AST_ENVELOPE.md", "packages/lares-core/memes/docs/mcp/TW_AST_MAPPING.md", "packages/lares-core/memes/docs/mcp/PRANALA_ALIGNMENT.md", "packages/lares-core/memes/docs/mcp/EXECUTION_GRAPH_SCHEMA.md", "packages/lares-core/memes/docs/mcp/RENDER_PROJECTION_CONTRACT.md"]
 status-date     = "2026-04-23"
 tags            = ["api/pono/meme", "api/pono/loci"]
+title           = "lar:///ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -232,6 +233,6 @@ These remain planned surfaces; current server focuses on carrier resources, inde
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N4nKhyOO0JwRlhklC-x8mq7cRt9r-Q2M_JzhjMmDbyg
+<<^ code="&#x0003;">>ni:///sha-256;tLlrOto7pXVYISUvXgNb93Qr8AyoPUKmySm_fYkzFhA
 
 <<^ code="&#x0004;" -> to="?">>

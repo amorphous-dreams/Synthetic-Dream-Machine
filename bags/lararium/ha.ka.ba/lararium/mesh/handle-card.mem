@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/handle-card">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/handle-card.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 15
 role        = "invariant law: a Handle is a QUORUM-PRESENTED NAME, and its card is what one such name shows the world. Names the k-of-n HandleGlamour (the owner-set generalises the lone key, 1-of-1 the degenerate personal face), the self-certifying card, the owner-binding folded into the prefix, the four moves (rotation · burn · graft · attest), and the TWO verification tiers — self-contained structure ⊥ board-checked presentation authority."
 source-file = "packages/lararium-mesh/src/handle-card.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/handle-card"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/handle-card"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -274,6 +275,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;b13iqgCxpOdeUfycw0ACNuOPYoozXnnlE1JVtTXjKjo
+<<^ code="&#x0003;">>ni:///sha-256;JyoqEo5EflB8dq5bqiXiB_zHLlScMBMNsdcH-flcSA0
 
 <<^ code="&#x0004;" -> to="?">>

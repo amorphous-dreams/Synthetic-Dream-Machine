@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine.mem"
@@ -10,11 +12,10 @@ manao         = 11
 manaoio       = 11
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act II, the house learns to host itself, and the libation that feeds it proves load-bearing"
+title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -168,6 +169,6 @@ Act III receives:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-npsyO1l52-iHTZW84RMIEOUHVm21Ro_W0SBbTeyLGc
+<<^ code="&#x0003;">>ni:///sha-256;1HX6MWrKwN17mH6Frr7rc2b7qhK1piHLLibszgADZyc
 
 <<^ code="&#x0004;" -> to="?">>

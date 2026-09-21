@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/node-vessel-identity">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/node-vessel-identity.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 16
 role        = "invariant law: THE TRUE NAME MODEL — three parts that bind without merging. The VESSEL key belongs to the PLACE and never travels; the PERSONA ROOT belongs to the HUMAN and derives from no vessel seed; the DELEGATION EDGE binds them without collapsing them. Names why the split carries the whole veil architecture, and what a single copied key would present to every verifier."
 source-file = "packages/lararium-node/src/node-vessel-identity.ts"
+title       = "lar:///ha.ka.ba/lararium/node/node-vessel-identity"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/node-vessel-identity"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -79,6 +80,6 @@ network call, so opening a vessel asks nobody's permission to know what to call 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation">>
 
-<<^ code="&#x0003;">>ni:///sha-256;mVUlEql_LniOCRmG8vUWUvbpWAukshk11j1h9_Khy4A
+<<^ code="&#x0003;">>ni:///sha-256;34IlOBK9xpjf0OY0wDDQT94xHW0B1iT1JLXpKFlKjxs
 
 <<^ code="&#x0004;" -> to="?">>

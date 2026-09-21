@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/federated-causal-islands.mem"
@@ -11,11 +13,10 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "invariant law: Fontany-Fuller-Zelenka non-simultaneous apprehension as ontological basis; causal island tiers 0–3; authority-first sync order; edge-island identity, lifecycle, relay semantics"
 tags      = ["api/pono/pranala"]
+title     = "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/federated-causal-islands"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -381,6 +382,6 @@ causal-island-may = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YJXi0aiYpDYj_TPK7JwLE-gQqQhk1gr-5kbO7F4vYR8
+<<^ code="&#x0003;">>ni:///sha-256;8Txfonpf3hOOXjqo8i3J5xYm7rKpwl-7RQN1_oG5ZFc
 
 <<^ code="&#x0004;" -> to="?">>

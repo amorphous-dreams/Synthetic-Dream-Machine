@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/rust-toolchain">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/rust-toolchain.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-02"
 role              = "rust-toolchain — standing the toolchain that builds our nakama forks (keyhive, subduction, onomancy) to wasm locally, so a fix can be READ, PATCHED, PROVEN and DONATED rather than waited for. Carries the measured pins (1.90.0 / 1.91.0, per-repo via rust-toolchain.toml), the emitter (wasm-pack over three targets plus a slim post-step), the two paths (rustup for working, nix for donation parity), and the law that a locally-built wasm which diverges from the published package is a FLAG-DAY against our own mesh."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/rust-toolchain"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/rust-toolchain"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -134,6 +135,6 @@ So, MUST:
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
-<<^ code="&#x0003;">>ni:///sha-256;zy5sRHfyMOIJqe5_U_Gh7cKVLeCzXO5OJPjJJFYiPOU
+<<^ code="&#x0003;">>ni:///sha-256;96xnDwuVdl42Ijui29SjxlgaOfLVOlWPe14Dzh3tEIc
 
 <<^ code="&#x0004;" -> to="?">>

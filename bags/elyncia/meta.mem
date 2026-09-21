@@ -1,11 +1,14 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/bags/elyncia">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 bag        = "elyncia"
 cap-tier   = "public"
 home       = "repository"
 repository = "synthetic-dream-machine"
+title      = "lar:///ha.ka.ba/bags/elyncia"
 type       = "text/memetic-wikitext+tiddlywiki"
 ```
 
@@ -17,5 +20,7 @@ TIGHTENS against the structural floor, so a declaration cannot open what the cry
 clone carries it) · `ley` (nowhere durable — it lives while the mesh carries it).
 
 A repository home names a REGISTERED id, never a path: the bag names WHAT, each vessel resolves WHERE.
+
+<<^ code="&#x0003;">>ni:///sha-256;khN-VDw6K-FgmyVON6Db71svzZ2FIzAzHjCEv7w2lOc
 
 <<^ code="&#x0004;" -> to="?">>

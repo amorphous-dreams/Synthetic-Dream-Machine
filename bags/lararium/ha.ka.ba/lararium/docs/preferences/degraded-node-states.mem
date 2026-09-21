@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/degraded-node-states">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/degraded-node-states.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 17
 role      = "docs concept room for named failure modes, collapse patterns, and diagnostic language in the recovered Lares stack"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/preferences/degraded-node-states"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/degraded-node-states"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -77,6 +78,6 @@ A fuller future recovery may sort the old failure lexicon by domain.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qGHuv1rJ-CF6KqZCkk4VDPUVb4PGAvH3d68GgSIn61I
+<<^ code="&#x0003;">>ni:///sha-256;7PNfsGzwN2ZKeKW6MOmt40HsJ12vIZM3J8cyjcu9I5g
 
 <<^ code="&#x0004;" -> to="?">>

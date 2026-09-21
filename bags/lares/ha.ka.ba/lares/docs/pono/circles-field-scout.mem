@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/circles-field-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/circles-field-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-04"
 role              = "circles-field-scout — VERBATIM handoff of the tasked spirit sent after Joshua Ellis's identity writing and CIRCLES as inversion-of-control over the social graph. Carries the one reproducible regularity (sender-side audience tools collapse into reader-side TOPIC filters — people curate topics, never audiences), the ActivityPub finding that names Kowloon's trade exactly, the negative measurement of reader-side curation at scale, the ~97-99% default-stickiness pair, and the spirit's OWN retraction of a fabricated relay. The retraction travels with the claims."
 tags              = ["api/pono/meme", "docs/pono/circles-kowloon"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/circles-field-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/circles-field-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -168,6 +169,6 @@ The spirit retracts these outright after failing to re-fetch them:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6bq1LSdmSibXiIFw_F52k-BLQ5-6HbfwRfhSI8sgjtw
+<<^ code="&#x0003;">>ni:///sha-256;QBalbt3zIJZ9sNGWhLYQNHx0OaDKt6P9-m7oFqH57yk
 
 <<^ code="&#x0004;" -> to="?">>

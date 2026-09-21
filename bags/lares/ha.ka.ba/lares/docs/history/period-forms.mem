@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/period-forms">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/period-forms.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 role      = "how to read an early carrier's HUD — which instrument forms carry as testimony and MUST NOT be modernized in place"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/history/period-forms"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/period-forms"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/law>>
 
@@ -69,6 +70,6 @@ glyph-definition drafts and the `lares-*.instructions` files.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;K3V73QAQWp9DNTh40TF_plKvOx9n88EDKWneUxqapwE
+<<^ code="&#x0003;">>ni:///sha-256;nxSDI2tGlG-L9m8batqWQF0gv3Zfq2T4wF2U4zoj6Jc
 
 <<^ code="&#x0004;" -> to="?">>

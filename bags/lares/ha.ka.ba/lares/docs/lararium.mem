@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/lararium.mem"
@@ -10,13 +12,14 @@ manao     = 16
 manaoio   = 16
 role      = "parent docs shelf for lararium voice-work, old all-in-one AGENTS ingests, agent preferences, and house-presence materials where Mischief-Muse and the others can rest and ressurect"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/lararium"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/lararium"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -70,6 +73,6 @@ The rooms may deepen later without moving the seat again.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lOY15ognAihQDHeqDhYTXpm45bcrnL5eNyth_tzRXE0
+<<^ code="&#x0003;">>ni:///sha-256;d4lA-uikkv_tsXHrI1Ssk-_pWVCuvjwFBkaNkSxRbz0
 
 <<^ code="&#x0004;" -> to="?">>

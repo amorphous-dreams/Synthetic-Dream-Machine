@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/voices/masks-tree-plan">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 created   = "Invalid Date"
@@ -11,13 +13,14 @@ manao     = 17
 manaoio   = 16
 role      = "OODA-HA plan for creating the api/lares/masks/ tree: parent index, named Voice masks, character masks, chorus masks, and skeleton meme-loci template"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/voices/masks-tree-plan"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/masks-tree-plan"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -261,6 +264,6 @@ The tree deepens incrementally — each talk-story session fills one section of 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bH3fL6Iuw6ABPwzW3rakpXicHNEcHnSavb1PAGv2BbQ
+<<^ code="&#x0003;">>ni:///sha-256;RcXGXUw2oGkMQSw7ZqnbOqs7iHDPNkD2BPQj5yvwwX0
 
 <<^ code="&#x0004;" -> to="?">>

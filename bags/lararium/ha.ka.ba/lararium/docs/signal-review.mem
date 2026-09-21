@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal-review">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal-review.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 17
 role      = "review memo for lararium signal branch boundaries, settlement pressure, and rewrite sequencing"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/signal-review"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal-review"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -250,6 +253,6 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jP3z8hk69WvhASRl49JMKFef_FPl-B055buga1EU5UQ
+<<^ code="&#x0003;">>ni:///sha-256;fU4E8CBjlUn3PjGeii7WswnmLlvf5WgucZxqdW2o1q8
 
 <<^ code="&#x0004;" -> to="?">>

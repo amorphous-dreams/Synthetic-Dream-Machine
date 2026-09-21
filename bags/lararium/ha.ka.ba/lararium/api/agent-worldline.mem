@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/agent-worldline">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/agent-worldline.mem"
@@ -12,6 +14,7 @@ manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "the worldline keel — ONE model for a spawned spirit across three faces: NAME (a derived lineage-path handle, baptized at spawn, no registry, no daemon-crypto — descent IS the address), ATTRIBUTION (a reified prov:Delegation/Communication DAG, bi-temporal, keyed on trace-id·span-pair — who-drove-whom, and the SAME DAG read as the worldline's happened-before), TIME (the two-domain boundary — Automerge owns causal order INSIDE its docs/CRDTs; the worldline owns a per-handle FfzClock whose merge-topology carries its partial order and whose grain names rhythmic POSITION — a membership coordinate, where-in-the-cadence, NOT a freshness/decay scalar (manaoio serves the memes, never this clock); FfzClock NEVER rules inside Automerge). Folds the former agent-identity (mana 18) + agent-provenance (mana 19); the FfzClock primitive itself lives separate at mesh/ffz-clock as a domain-general pattern integrity"
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/agent-worldline"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/agent-worldline"
 written   = "2026-06-25"
@@ -19,7 +22,7 @@ written   = "2026-06-25"
 
 <<~ aka "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -415,6 +418,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cQSPaqdeg-RSVi0ghLs-7ShgiiEtRrmnmAawCSHVxak
+<<^ code="&#x0003;">>ni:///sha-256;ripms_-HpEPGlmq3XpvjW5z0g9MeBicKXR1T-Z3rwpY
 
 <<^ code="&#x0004;" -> to="?">>

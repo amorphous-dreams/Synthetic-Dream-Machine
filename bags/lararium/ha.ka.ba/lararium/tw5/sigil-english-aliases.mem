@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/sigil-english-aliases">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-english-aliases.mem"
@@ -9,11 +11,10 @@ manao     = 17
 manaoio   = 16
 role      = "design record: English alias sigil vocabulary — \\procedure, \\if, \\for, \\widget cross-refs to Hawaiian equivalents"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-if", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-widget"]
+title     = "lar:///ha.ka.ba/lararium/tw5/sigil-english-aliases"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/sigil-english-aliases"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -73,6 +74,6 @@ the canonical dispatch through the Hawaiian implementation.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aPF8KYJx7bEP1LEBXqobmmEa7o0o0wKqVq_MWo3F0qg
+<<^ code="&#x0003;">>ni:///sha-256;9HRJlZwWPLjhoVcC7Bwjt0BzbipgIvDmBbdVinmNVfY
 
 <<^ code="&#x0004;" -> to="?">>

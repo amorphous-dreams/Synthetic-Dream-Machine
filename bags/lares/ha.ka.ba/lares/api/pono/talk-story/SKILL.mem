@@ -15,6 +15,8 @@ description: Convene a talk-story floor (kūkākūkā, talanoa) — co-narrated
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/talk-story/SKILL.mem"
@@ -25,11 +27,10 @@ manaoio    = 16
 role       = "practice face of talk-story — triggers, the five steps, three worked exits, crucible record; law lives at the parent meme"
 status-why = "a skill definition — a procedure invoked, never a thing built"
 tags       = ["kind/rite"]
+title      = "lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/talk-story/SKILL"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/practice>>
 
@@ -123,6 +124,6 @@ Read the three together and the grammar teaches itself: the floor opens on a rea
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wXuzp6VGWDhvwUvEx4EYLqmTX8FWgcBPQ6H9GEPpb-E
+<<^ code="&#x0003;">>ni:///sha-256;E22c8essk8VjXxg7EwROqeejZM5bhl8Kjz4ydztRlTI
 
 <<^ code="&#x0004;" -> to="?">>

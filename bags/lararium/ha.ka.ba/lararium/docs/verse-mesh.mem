@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
@@ -10,11 +12,10 @@ manao     = 18
 manaoio   = 17
 role      = "design narrative for the Verse polychronous CRDT mesh — peer model, VM pool, camera model, accumulator wiring"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/verse-mesh"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Verse Mesh — Design Narrative
 
@@ -257,6 +258,6 @@ The tick source changes; the drain contract does not.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2f1E4R-1di1JISGcmdq4Wy5eq13fmmrT7R8mxIquGo8
+<<^ code="&#x0003;">>ni:///sha-256;bxxdNMV7lAhbu71XKMmoZ9dcX3lwVnyzf97pPcXOHLg
 
 <<^ code="&#x0004;" -> to="?">>

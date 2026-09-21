@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-module.mem"
@@ -9,11 +11,10 @@ manao     = 18
 manaoio   = 17
 role      = "a component a carrier wears: kernel-injectable TW5 module meme; capability gate for corpus-carried executable code"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/kapu"]
+title     = "lar:///ha.ka.ba/lararium/tw5/tw5-module"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/tw5-module"
 ```
-
-<<^ code="&#x0002;">>
 
 !! TW5 Module Interface
 
@@ -68,6 +69,6 @@ boots correctly in offline or cold-start conditions before the corpus is loaded.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MsRsu-cbIIBrRvQ3UMHSKrkfViERkkZmwrmuHXRYhWw
+<<^ code="&#x0003;">>ni:///sha-256;qbuwVULM0GWxGHD1Rrebo6hGBUOXVpAhZ9rKONNFBaE
 
 <<^ code="&#x0004;" -> to="?">>

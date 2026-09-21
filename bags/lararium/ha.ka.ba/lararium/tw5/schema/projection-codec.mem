@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/schema/projection-codec.mem"
@@ -11,11 +13,10 @@ manaoio     = 17
 role        = "invariant law: carrier-codec as projection layer; import and export paths between disk carrier format and canonical LarTiddlerRecord entries"
 status-date = "2026-04-30"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/schema/projection-codec"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -107,6 +108,6 @@ composeCarrierSlotBody(fields: Record<string, string>, text: string): string
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CqmzVpC8E-olvtG-P_IJ8Exgi3s13pR_d-Exyd4c5DE
+<<^ code="&#x0003;">>ni:///sha-256;4D5Kef8YevahPMV1aRq5t_tjwRtlCXSZ7V_7U010jD4
 
 <<^ code="&#x0004;" -> to="?">>

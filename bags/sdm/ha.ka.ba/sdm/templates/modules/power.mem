@@ -1,21 +1,24 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/modules/power">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/templates/modules/power.mem"
+l-space   = "sdm"
 mana      = 15
 manao     = 17
 manaoio   = 15
 role      = "root template meme for Power module memes — flat #has composition, lean playable default"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/templates/modules/power"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/modules/power"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Template — Power Module
 
@@ -86,6 +89,6 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bbLpgSO937_NYR1C6ubnlFy4TnW9EoPUlBCqKkBC_1o
+<<^ code="&#x0003;">>ni:///sha-256;rSFXNm6g7j6Q5rh0vEjE-DKJnnyyV3ASMQ7ZqH6kZCk
 
 <<^ code="&#x0004;" -> to="?">>

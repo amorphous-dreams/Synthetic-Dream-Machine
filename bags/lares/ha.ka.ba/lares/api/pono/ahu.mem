@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"
@@ -10,13 +12,14 @@ manaoio   = 18
 namespace = "&#x2299;"
 role      = "child-slot sigil — addressable worksite scope boundary; named ahu slots form the meme's tiddler structure"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu"]
+title     = "lar:///ha.ka.ba/lares/api/pono/ahu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ahu"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -48,11 +51,11 @@ and wikitext body.
 
 !! Law (Kānāwai)
 
-An ahu block MUST declare a slot name beginning with `#/`. The slash roots the path at the carrier, so a slot names the same string it addresses; a nested slot extends it (`#/parent/child`). A CONTROL slot carries structural metadata rather than addressable content and takes no root — it opens no child to address.
+An ahu block slot name MUST begin with `#/`. The slash roots the path at the carrier, so a slot names the same string it addresses; a nested slot extends it (`#/parent/child`). A bare `#name` belongs to no ahu slot grammar: a processor MUST preserve that source verbatim, surface a diagnostic to the operator, and MUST NOT normalize it or mint a child address from it. A CONTROL slot carries structural metadata rather than addressable content and takes no root — it opens no child to address.
 An ahu block MUST close with `<<~/ahu>>`.
-An ahu block MUST occupy a top-level scope; nesting MUST NOT occur.
+An ahu block MAY nest inside another ahu block. A nested slot extends its enclosing slot path (`#/parent/child`), while a top-level slot begins a path at the carrier root.
 An ahu slot MUST produce an independently addressable tiddler at `parentUri + slot`.
-A parent tiddler MUST reference each child slot via `<<~ kahea ahu #/slot>>` in its body.
+The tiddler representing an enclosing scope MUST reference each child slot via `<<~ kahea ahu #/slot>>` in its body.
 Child slot tiddlers MUST NOT duplicate the parent's meta TOML — they carry their own.
 
 The slot name `#/head` is conventional for the meme's primary content body.
@@ -80,7 +83,7 @@ Compound kahea-ahu summons form (in parent tiddler body after decomposition):
 
 Regex (open, canonical):
 ```
-/<<~[^>]*\bahu\s+(#[\w-]+)\s*>>/
+/<<~[^>]*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/
 ```
 
 Close tag: `<<~/ahu>>`
@@ -97,7 +100,7 @@ kind           = "child-slot"
 layer          = "block"
 default-family = null
 
-open-pattern  = '<<~[^>]*\bahu\s+(#[\w-]+)\s*>>'
+open-pattern  = '<<~[^>]*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>'
 close-pattern = '<<~\/ahu\s*>>'
 
 [captures]
@@ -115,6 +118,6 @@ slot = 1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kNIYZExtNGgXKGngvZbFhfjpiA58zMcT1pVcn_OlOD8
+<<^ code="&#x0003;">>ni:///sha-256;d3jsP4dPQxRJ2D1Ib7YBeyMqwAzrUcnE4SVVhO90Hqs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lararium/node/dev-loop">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/node/dev-loop.mem"
@@ -10,12 +12,11 @@ manao     = 16
 manaoio   = 16
 namespace = "&#x2299;"
 role      = "the dev loop: the idempotent CLI cures after a code change (refresh/reconcile/rebuild/fresh/serve/reset/wake) + WHERE vessel state lives vs corpus (the repo). Carries the SITING LAW: three words, no synonyms — lares names the SPIRITS, lararium names the HOUSE, lar names the NAMESPACE — so the spirits' vessel, identity, seal and hearth bags stand at <lares>, the acquired shelf and the sensoriums at <lararium>, and the watermarks alone at <state>. Under LAR_ROOT every directory names an XDG kind and the two houses nest inside the data kind. The reach taxonomy + the path law + the invariants the dev loop rests on."
+title     = "lar:///ha.ka.ba/lararium/node/dev-loop"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/node/dev-loop"
 written   = "2026-06-27"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -116,6 +117,6 @@ never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vpk8jQmae6CAtIug9NqAGZh4oMbYOkomskKdDZim-aM
+<<^ code="&#x0003;">>ni:///sha-256;tFpQFMt1gfTqSbYIfUpwdBqy3F5X6KoAnuJ-D7lZbQc
 
 <<^ code="&#x0004;" -> to="?">>

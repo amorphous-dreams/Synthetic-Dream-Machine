@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/ui/meme-edit-children">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/ui/meme-edit-children.mem"
@@ -10,11 +12,10 @@ manao      = 17
 manaoio    = 16
 role       = "EditTemplate: inline editors for non-body ahu slots; body slot edited via core EditTemplate/body"
 tags       = ["$:/tags/EditTemplate", "lar:///ha.ka.ba/lares/api/pono/meme"]
+title      = "lar:///ha.ka.ba/lararium/tw5/ui/meme-edit-children"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-edit-children"
 ```
-
-<<^ code="&#x0002;">>
 
 \whitespace trim
 
@@ -57,6 +58,6 @@ uri-path   = "ha.ka.ba/lararium/tw5/ui/meme-edit-children"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N74nOY8MJFbzxbjlwyaMRgQimZnmEQRYvFfkppoGUss
+<<^ code="&#x0003;">>ni:///sha-256;Xcrc_4vp5aNMNvL9CvRZbMKDjR9AJ4kKllpokJyjh14
 
 <<^ code="&#x0004;" -> to="?">>

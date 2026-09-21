@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/cabal-place">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/cabal-place.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 retires-to        = "ha.ka.ba/lares/api/pono/cabal-realm"
 role              = "RETIRE-RESIDUE — cabal-place carried the CabalGroup model until the operator reserved the word PLACE for the identity-bearing Lararium (the hearth that holds a DID). The whole substance moved forward to cabal-realm, which sharpens the same model as an IMAGINED REALM on the DreamNet — the superset of the members' shared infrastructure. Read cabal-realm; this address survives only to point there"
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/cabal-place"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/cabal-place"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -41,6 +42,6 @@ So ''cabal-place'' released the word ''place'' back to the hearth, and the model
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;liiolhsGbTo239h7K96ptTeXtZSYmChNR_6ZbZKq_94
+<<^ code="&#x0003;">>ni:///sha-256;9mHxX98d8zpoTbo3oTXoAWxkyKGDyn--8aPUpiy3ApM
 
 <<^ code="&#x0004;" -> to="?">>

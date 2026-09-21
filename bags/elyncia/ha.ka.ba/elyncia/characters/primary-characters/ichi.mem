@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/ichi.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "ano"
 role      = "Ichi — Powered Symbiote trait + Construct Golem; spore-daemon ashigaru armor, worn and autonomous modes, flexible Inner Fire slots"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/ichi"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/ichi"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -371,6 +372,6 @@ See ''Powered Symbiote'' (1 st).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-UM2R33rpy9JWfrHKaMtVv40RQE-EdGDSzXrubMDOUU
+<<^ code="&#x0003;">>ni:///sha-256;2YpExbTuTi1_KFcFRFKGjowQ3KDZNyYxGMFxXLOYKVU
 
 <<^ code="&#x0004;" -> to="?">>

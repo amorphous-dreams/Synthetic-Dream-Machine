@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/alignment-plan">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/alignment-plan.mem"
@@ -9,11 +11,10 @@ mana      = 19
 manao     = 18
 manaoio   = 18
 role      = "Package alignment law: mesh as isomorphic spine; dep graph and consistency rules for the monorepo"
+title     = "lar:///ha.ka.ba/lararium/mesh/alignment-plan"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/alignment-plan"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Package Alignment Plan
 
@@ -126,6 +127,6 @@ These items name known inconsistencies in the current tree. Each carries a resol
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jPUp6d_J1W4hxHbuZFVGKSYpxMhQ8Gp9ak4apgeRTO4
+<<^ code="&#x0003;">>ni:///sha-256;-va-UE6gpXbsbH54aw3pAi8PvE-1vzWDROoxZ4K4zEQ
 
 <<^ code="&#x0004;" -> to="?">>

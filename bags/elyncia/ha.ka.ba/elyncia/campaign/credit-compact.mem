@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/credit-compact">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/credit-compact.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "ano"
 role      = "campaign sidebar — the Lindwyrm's Neo-Thracia Expedition Credit Compact; the contract signed at the summit"
+title     = "lar:///ha.ka.ba/elyncia/campaign/credit-compact"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/credit-compact"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -63,6 +64,6 @@ They may:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;40g88l5e5IwNaQhfXKJmX-VOVhfL_iqVS5L8PWIrzVQ
+<<^ code="&#x0003;">>ni:///sha-256;s-RtVchLxFSXyzKW5nFIICYDUOWqrb5VAIs3VHUm2y0
 
 <<^ code="&#x0004;" -> to="?">>

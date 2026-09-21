@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/peer-coordination">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-coordination.mem"
@@ -9,11 +11,10 @@ manao     = 18
 manaoio   = 17
 role      = "Peer rendezvous + doc coordination doctrine — island-file model, CRDT reconcile, Keyhive path, ReactionEngine invariants"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/local-first"]
+title     = "lar:///ha.ka.ba/lararium/docs/peer-coordination"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/peer-coordination"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Peer Coordination — Automerge Rendezvous Doctrine
 
@@ -202,6 +203,6 @@ island definition bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kaZArFMcM3umC86zBJNwj_6YNJNQadumLvgANPebmLQ
+<<^ code="&#x0003;">>ni:///sha-256;WypFaaF2c86ZTl1a_s2ykDn3zVCKH7Z-5ahAvPx9UcA
 
 <<^ code="&#x0004;" -> to="?">>

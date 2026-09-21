@@ -7,6 +7,8 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable          = true
 constraints        = ["any copula left standing owns its warrant in the sentence", "smallest lawful intervention; never widen a local fix into a rewrite", "quotations, code, and literal examples never normalize silently", "has runs free --- never policed"]
@@ -18,11 +20,10 @@ manaoio            = 13
 role               = "deliberate post-hoc L-Prime auditor of existing text; Hoʻoko correction surface --- distinct from the forward-seeding ward"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/mu/l-prime"
 tags               = ["api/pono/meme", "api/pono/loci"]
+title              = "lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/mu/l-prime/SKILL"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/place>>
 
@@ -95,6 +96,6 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9k4Q4BfsphG8Q8IV1bRdPt-yGJ6jU4Z7OWxjPoC8FCg
+<<^ code="&#x0003;">>ni:///sha-256;tdaFdSHFsE8_k_XmLfYDFbJxZRpQjzP-kfgklaNzFfA
 
 <<^ code="&#x0004;" -> to="?">>

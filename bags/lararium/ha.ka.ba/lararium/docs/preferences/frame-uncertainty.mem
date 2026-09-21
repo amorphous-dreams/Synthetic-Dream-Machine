@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/frame-uncertainty">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/frame-uncertainty.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 17
 role      = "docs concept room for declaring interpretive forks before costly response commitment"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/preferences/frame-uncertainty"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/frame-uncertainty"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -66,6 +67,6 @@ Where the branch matters, the fork must surface.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jG0cvvReI5MUtz7l0xBD7EGEL4I-eEQnsB5pQIFnVrM
+<<^ code="&#x0003;">>ni:///sha-256;s6LsUEEHmXDeZA02HUitaBN7dp0a3ULsFRbOlflWr4s
 
 <<^ code="&#x0004;" -> to="?">>

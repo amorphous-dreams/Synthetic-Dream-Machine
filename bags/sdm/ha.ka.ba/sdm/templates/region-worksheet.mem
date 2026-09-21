@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/region-worksheet">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/templates/region-worksheet.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 11
 rating    = "meme"
 role      = "spine/skeleton holder — the region-worksheet practice: scale ladder, map-kinds, hex-entry law, travel loop; slots for verbatim SDM-06 and FTLS-04 chapter text land in #source before uplift"
+title     = "lar:///ha.ka.ba/sdm/templates/region-worksheet"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/region-worksheet"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -127,6 +128,6 @@ grain, blessed before moving:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bjDpVXlxbMYcgLMkacx1qksHm8bTQTQHuc7wQxcy_10
+<<^ code="&#x0003;">>ni:///sha-256;ZGp71fWcWdJxeDFCubG3Usg6QmNQperOZfhX86JqXa4
 
 <<^ code="&#x0004;" -> to="?">>

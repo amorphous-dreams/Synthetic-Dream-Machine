@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/island-protocol">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem"
@@ -10,11 +12,10 @@ revised-on    = "2026-06-12"
 revision-note = "ea-breath law lands: breath message (phase + monotonic progress) added island→vessel; watchdogs re-arm on breath, judge frozen evidence by stall budget, silence alone times out; mkBreath factory"
 role          = "island message envelope schema: all vessel ↔ causal-island message types, the nine-clause Island Sovereignty Law, IslandGrants (typed ocap manifest capabilities), and envelope factories"
 source-file   = "packages/lararium-mesh/src/island-protocol.ts"
+title         = "lar:///ha.ka.ba/lararium/mesh/island-protocol"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/island-protocol"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -112,6 +113,6 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0uueHGvvRzM8yRMicIjgPA8s-0_12G5BI0ALLTi_bhE
+<<^ code="&#x0003;">>ni:///sha-256;wzQ0zEzXqYoOpj72_vQBnkp44cbyZzqbz-9NQitCTNQ
 
 <<^ code="&#x0004;" -> to="?">>

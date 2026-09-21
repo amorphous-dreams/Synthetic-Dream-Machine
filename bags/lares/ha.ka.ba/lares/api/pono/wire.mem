@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wire">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/wire.mem"
@@ -9,6 +11,7 @@ manao     = 15
 manaoio   = 12
 role      = "wire law (kānāwai): the reified edge — one wire, one addressable entity; semantics worn as stack components; the verse-messaging and canvas substrate under the has-stack model"
 tags      = ["api/pono/has-stack"]
+title     = "lar:///ha.ka.ba/lares/api/pono/wire"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wire"
 written   = "2026-06-12"
@@ -16,7 +19,7 @@ written   = "2026-06-12"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -86,6 +89,6 @@ Co-projection applied to wires: the operator's mind originates; the carrier body
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZYjJSxAnT1ryEX5Y30ek3xQPSCCu_6PLG0sGsoNqRkM
+<<^ code="&#x0003;">>ni:///sha-256;HTnfztLZtVpR_vGym5lKOZxwx0dM5QV5zjV27fnEsy8
 
 <<^ code="&#x0004;" -> to="?">>

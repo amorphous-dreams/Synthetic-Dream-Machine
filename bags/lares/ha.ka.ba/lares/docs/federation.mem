@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/federation">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/federation.mem"
@@ -9,6 +11,7 @@ mana      = 14
 manao     = 14
 manaoio   = 13
 role      = "operator how-to: federate a second vessel into your PersonaGroup via lares vessel stand --admit — what github carries vs what travels out-of-band, the TRUE NAME MODEL (a distinct key per vessel, delegated in at the hearth's True Name) and the retired copy-the-key stopgap it supersedes, the witnessed procedure kept as record"
+title     = "lar:///ha.ka.ba/lares/docs/federation"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/federation"
 written   = "2026-06-21"
@@ -16,7 +19,7 @@ written   = "2026-06-21"
 
 <<~ aka "lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/what-travels>>
 
@@ -164,6 +167,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GBbAZKNvjHS-O92UBYcdNYXTLyviwfqS2n3bs8GqSJs
+<<^ code="&#x0003;">>ni:///sha-256;gi5wrwDvYXM4AhSUwqwjW4N7xeF4av5johpMzr9DenI
 
 <<^ code="&#x0004;" -> to="?">>

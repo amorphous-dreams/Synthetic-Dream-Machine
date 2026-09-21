@@ -17,8 +17,8 @@ import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 
 const URI = "lar:///t/face";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/face"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
-  slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/face"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => {
@@ -62,7 +62,6 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     expect(face.normalize(text)).toEqual(normalizeMemeSource(text));
     expect(face.normalize(face.normalize(text).text).text).toBe(face.normalize(text).text);
     const c = face.check(text);
-    expect(c.shape.kind).toBe("carrier");
     expect(c.check).toBe("unchecked");
     expect(c.bcc).toMatch(/^ni:\/\/\/sha-256;/);
     expect(c.edges).toEqual([]);
@@ -74,8 +73,8 @@ describe.skipIf(wikiSkip)(`$tw.lares.meme — the in-VM face${skipNote}`, () => 
     expect(out).toMatchObject({ uri: URI, to: "mem", contentType: CARRIER_TYPE });
     expect(out.text).toBe((await face.read(URI))!.text);
     const records = memeticWikitextDeserializer.call({ wiki: engine.wiki } as never, out.text, { title: URI }, CARRIER_TYPE) as Array<{ title: string }>;
-    // The content records; a carriage record (`#/$postamble`, the block-check slot) rides beside them.
-    expect(records.map((r) => r.title).filter((t) => !t.includes("#/$")).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
+    // Content records travel with carrier and worksite carriage records, whose final path segment begins `$`.
+    expect(records.map((r) => r.title).filter((t) => !t.includes("/$")).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
   });
 
   test("project → md: the submission pair the CLI emits", async () => {

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/entrance-block">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/entrance-block.mem"
@@ -10,6 +12,7 @@ manao       = 17
 namespace   = "&#x2299;"
 role        = "architectural invariant: the substrate COUPLES — one sovereign body per stream; entrance block as an actively-held shore; the coordinator's licence (gong, never conductor); r as alarm; the WAIT as a coupling channel"
 status-date = "2026-07-11"
+title       = "lar:///ha.ka.ba/lares/api/pono/entrance-block"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/entrance-block"
 ```
@@ -17,7 +20,7 @@ uri-path    = "ha.ka.ba/lares/api/pono/entrance-block"
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/nalu">>
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/causal-islands#/two-clocks">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/the-law>>
 
@@ -167,6 +170,6 @@ Every shared resource in the py fleet owes the same test: `content_io` · `struc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ytLPmQ-p5plGcdGErAiwsRAIgvZy5-58diJ5nf65r7k
+<<^ code="&#x0003;">>ni:///sha-256;qagx9UI91kQ3ZWMKNOFs3fpaK92lN2mhsWSugLOP1B8
 
 <<^ code="&#x0004;" -> to="?">>

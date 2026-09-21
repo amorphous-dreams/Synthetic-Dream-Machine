@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/filters/toml-field">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 body-sha256   = "be6b13cb4d87d73e9447e498196e8ab7d28344a46a5dc322727e4cba7d201158"
 cacheable     = true
@@ -11,11 +13,10 @@ module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/toml-field"
 role          = "filter operator: toml:field[value] — the TOML-field equality query, registered under the exported binding `toml`"
 source-file   = "packages/lararium-tw5/src/filters/toml-field.ts"
 source-symbol = "toml"
+title         = "lar:///ha.ka.ba/lararium/tw5/filters/toml-field"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/filters/toml-field"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -52,6 +53,6 @@ The module header inside the source carries the registration triple TW5 reads at
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8j6Z1CtmmNpdIhITommmlnCBYRzl4d8_6iBNh207FVM
+<<^ code="&#x0003;">>ni:///sha-256;H7LsG2NCB9sNS1fPPIKxENzWuuGReqwzLmGsUfT77aU
 
 <<^ code="&#x0004;" -> to="?">>

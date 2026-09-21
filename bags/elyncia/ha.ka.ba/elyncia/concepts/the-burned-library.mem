@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-burned-library">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-burned-library.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 13
 rating    = "ano"
 role      = "concept canon — the Burned Library: the Librarians' 500-year grammar, the Library of Alexander's l-space fire, the locked records, and the kahu kuleana of restoration"
+title     = "lar:///ha.ka.ba/elyncia/concepts/the-burned-library"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-burned-library"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -88,6 +89,6 @@ your exits memorized.// Some information they hold stays locked — not by the f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ERu4UDnAYVKkcWozRrvkAP9dlqIDRRBohqpLv8hnRVo
+<<^ code="&#x0003;">>ni:///sha-256;vbhPwOBSmqrbJeDvwxWe0CKCHKRJwi1e5xKShilIpAw
 
 <<^ code="&#x0004;" -> to="?">>

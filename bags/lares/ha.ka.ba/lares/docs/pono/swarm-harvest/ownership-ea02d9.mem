@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/ownership-ea02d9">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/ownership-ea02d9.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: Ownership. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/ownership-ea02d9"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/ownership-ea02d9"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -223,6 +224,6 @@ Three structural observations the evidence supports:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mtJlGhCdA478L3BaVCfghRtvAmBAbkpNKX-haLOJlaw
+<<^ code="&#x0003;">>ni:///sha-256;_GRNSG0vFf-hy8n9PucOD1xP1xaxzYMWA5W4aKCZ5nU
 
 <<^ code="&#x0004;" -> to="?">>

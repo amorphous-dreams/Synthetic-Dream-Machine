@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery.mem"
@@ -10,11 +12,10 @@ manao         = 16
 manaoio       = 15
 render-target = "docs"
 role          = "VERBATIM research-recovery handback (2026-09-11) — mined ~/.claude for the July-Aug engine-advance / nexus-shard-epoch research the operator recalled. Verdict: the coexistence-span was never DESIGNED, only SET UP — July built engine-watch.ts (offer/adopt), August ruled the slow/fast rejim + REFUTED per-node engine pinning + proved advancing the engine on a live mesh STRANDS every vessel (re-admission-only today). kahuli is the verb that fills that hole; the research says it must (a) reuse engine-watch.ts, (b) mint FORWARD-bindings not strand-and-re-admit, (c) never be a unilateral reset (the fleet-reset lever is unbuilt on purpose), (d) lift non-renewal from the lease axis onto the engine. The fuzzy-span-over-MANY-ratchets is NEW synthesis still owed (prior work has only the two-way slow/fast rejim). Captured word-for-word (MD transliterated to wikitext); releases the kahuli mu for settled parts."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-engine-advance-recovery"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -110,6 +111,6 @@ A later engine+grammar scout (2026-09-11) verified this recovery's claims agains
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vMSE_jwmlFdyYT-YhKWjlgZeBsAyv4AmGK9IVUiDXSM
+<<^ code="&#x0003;">>ni:///sha-256;-RIr9pwVLPs46QE-E556n_oPGvRH6zk4i8xbUFW_0Pc
 
 <<^ code="&#x0004;" -> to="?">>

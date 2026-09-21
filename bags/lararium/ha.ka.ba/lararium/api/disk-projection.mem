@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 approved-on   = "2026-06-02"
 cacheable     = true
@@ -16,13 +18,14 @@ revision-note = "the `disk-leaning` grading reads as GRAIN, never as a write doo
 role          = "load-bearing invariant — the node vessel's two on-disk projection surfaces: bags/ (seed/canon) vs wikis/ (projection/output); which bags mirror, which ride the sync mesh"
 status-why    = "the disk projector stands live; bags render to wikis"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
+title         = "lar:///ha.ka.ba/lararium/api/disk-projection"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/disk-projection"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/core-claim>>
 
@@ -208,6 +211,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lFYHf-DFTugDFPW_XDAWeoWfqczyNl5kV2zt4nRnrxc
+<<^ code="&#x0003;">>ni:///sha-256;L2n7NrGwmJKe1skUMNxL_xvyLv7Zd_osPKlHffzaMaM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 2. DNS — root system ~41 years; measured resolver centralization. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/2-dns-root-system-41-years-measured-resolver-c48256"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -220,6 +221,6 @@ Its conclusions: federation is **necessary but insufficient**; technical measure
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5K6_ULNFzhIchWSy2GlK3K-A_iGpVRMwaCb4fxBvrjM
+<<^ code="&#x0003;">>ni:///sha-256;k0ZPu8hUijC-ej_Fn0ZX8T4o_eUnpUWGHvPgtWiHsIs
 
 <<^ code="&#x0004;" -> to="?">>

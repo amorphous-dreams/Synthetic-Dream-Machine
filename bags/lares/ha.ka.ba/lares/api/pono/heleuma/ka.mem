@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ka">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ka.mem"
@@ -10,11 +12,10 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ka — soul/fire anchor; promotion-eligible compiled artifact with quine record and ceremony path"
 tags      = ["api/pono/heleuma"]
+title     = "lar:///ha.ka.ba/lares/api/pono/heleuma/ka"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ka"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -81,6 +82,6 @@ When `body-sha256` is present and all signal thresholds are met, `_bootModules()
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LiGCKuXYq_wngwK151IHb_2eeNRi3FMwMMGqdteyZBE
+<<^ code="&#x0003;">>ni:///sha-256;5Fb0jZgbc5BS8QztGGYwqlvvOL3wTepXC3t65d0akSs
 
 <<^ code="&#x0004;" -> to="?">>

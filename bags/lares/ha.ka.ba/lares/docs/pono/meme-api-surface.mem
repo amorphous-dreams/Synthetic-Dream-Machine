@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/meme-api-surface.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-12"
 role              = "meme-api-surface — ONE page for the work QA lab: a bare `tiddlywiki --listen` carrying the packed plugin. The paths, the methods, the headers (`ETag` · `If-Match` · `If-None-Match: *` · `Repr-Digest`), the status table, the two doors (the native gate's 422, the client charm, the backstop's one log line), the principal-table parity, the pristine claim with its version, the four skins' verb parity (route · daemon · CLI · MCP), and a curl walkthrough."
 status-why        = "every row here reads off a live contact: `packages/lararium-tw5/tests/meme-routes.e2e.test.ts` 17/17 against the fork (5.5.0-prerelease) and 17/17 against a pristine `npm pack tiddlywiki@5.4.1` (the witness landed at `f144ed242`; the `pristine-upstream` CI job invokes it and greps the contact line for the pinned version). The listing (`memes.json` · `meme-list`) and the delete twins (`meme-delete` · `lares meme delete` · `meme_delete`) RULED 2026-09-12; the daemon registration of the two new verbs stands with the keyhive owner"
 tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/meme-api-surface"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/lab>>
 
@@ -221,6 +224,6 @@ The same walk through the other skins: `lares meme put lar:///t/x --file x.mem` 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;X-v1dhnrqYBAeFmXutExg7MVa5u2q3rTt1DVefwWX1g
+<<^ code="&#x0003;">>ni:///sha-256;E98syl1KhrEk7Ia61Cc3_bD72MS-KKmea5uXUQB76mw
 
 <<^ code="&#x0004;" -> to="?">>

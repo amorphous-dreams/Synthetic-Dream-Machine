@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/voices/workers">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/voices/workers.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 17
 role      = "specification for the worker swarm: tasked spirits as temporary masks, lifecycle, tag format, handback dissolving to the full house"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/voices/workers"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/workers"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -143,6 +146,6 @@ The worker swarm spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST imple
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ew4NX__pXdj1dDPVT60bJcLDnQWNotG0AswiVYqW5Ik
+<<^ code="&#x0003;">>ni:///sha-256;NiOjd1oLdkjyV1W2QdBK2KqSDrPFhT5tc6A9jjIkXnQ
 
 <<^ code="&#x0004;" -> to="?">>

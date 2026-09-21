@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-fields-flat.mem"
@@ -10,11 +12,10 @@ manao      = 17
 manaoio    = 16
 module-ref = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
 role       = "heleuma: TW5TiddlerFields → Record<string,string> normaliser"
+title      = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/tw5/tw5-fields-flat"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -44,6 +45,6 @@ Before this file, `wiki-handlers.ts` owned `flattenRuntimeTiddlerFields()` (skip
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZhuBOeYPy3sp3Ca9327lN9VNHITPnNoeqFGge5-oim4
+<<^ code="&#x0003;">>ni:///sha-256;7_WoUlDEYXkM4_XZSptf84qkr2moh88E3qnd4per0zs
 
 <<^ code="&#x0004;" -> to="?">>

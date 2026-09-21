@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/local-first.mem"
@@ -12,11 +14,10 @@ namespace   = "&#x2299;"
 role        = "invariant doctrine: 7 local-first ideals (Ink & Switch) + Keyhive/Beelay alignment matrix; server-as-peer law; Fuller non-simultaneous Universe = causal island"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lares/api/pono/local-first"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/local-first"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -261,6 +262,6 @@ Beelay's sync protocol operates below this boundary — transparent to the meme 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uCcVX0qu7XQ75SdTr2s_gW8-RAqEtORTmYun9Qrby7I
+<<^ code="&#x0003;">>ni:///sha-256;8viGYxCNUowOAnpPKph-LB-CXP7BMG0wTfdEQbRjNRc
 
 <<^ code="&#x0004;" -> to="?">>

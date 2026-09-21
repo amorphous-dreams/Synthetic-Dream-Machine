@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/widget">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/widget.mem"
@@ -10,11 +12,10 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "\\widget pragma-alias sigil — declares a named ~widget callable via the ~ dispatcher; operator extension point"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-widget"]
+title     = "lar:///ha.ka.ba/lares/api/pono/widget"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/widget"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -68,6 +69,6 @@ the body uses TW5 widget syntax (`<$...>`) and `\procedure` when the body is pur
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZuU0bfF-xWKO_tmyr0zygnOHUDWBU_EfjanZNQO_YFE
+<<^ code="&#x0003;">>ni:///sha-256;mRF6UkuMoBCBX_epOi5KWP1HSP_ZC7G4q2hSa7wFT5g
 
 <<^ code="&#x0004;" -> to="?">>

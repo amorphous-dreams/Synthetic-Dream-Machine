@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/stuckforce">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "stuckforce"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/stuckforce.mem"
+l-space   = "sdm"
 mana      = 13
 manao     = 16
 manaoio   = 12
 role      = "component (domain): Stuckforce — the SDM domain of applied gripping force"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/domain/stuckforce"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/domain/stuckforce"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Stuckforce
 
@@ -69,6 +70,6 @@ Pairs with `function/cargo` (haul a load) and `function/barrier` (hold a wall of
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZyIvoPFqxrrDllBUZGPUmkUEBIHLKcgbatPxD2SB9O0
+<<^ code="&#x0003;">>ni:///sha-256;IBgW7ezal7gZVPzMVazOD1nzfPN6VXng0OcfUuWH9AM
 
 <<^ code="&#x0004;" -> to="?">>

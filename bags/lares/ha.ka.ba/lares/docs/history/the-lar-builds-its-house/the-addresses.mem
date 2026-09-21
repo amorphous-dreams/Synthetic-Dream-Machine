@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses.mem"
@@ -10,11 +12,10 @@ manao         = 12
 manaoio       = 12
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act I, the Lar gives every chamber of its hoard a true address"
+title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-addresses"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -184,6 +185,6 @@ Act II receives:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZwAKB11y6gaVFKq-POzUj04FtwQ7rHgYRXQI1NoxKkg
+<<^ code="&#x0003;">>ni:///sha-256;cYNdC2dzw5BO-OnL16F9-bG-XqZkFwuiMqzgXAR9CMM
 
 <<^ code="&#x0004;" -> to="?">>

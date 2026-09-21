@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/reaction-graph.mem"
@@ -12,11 +14,10 @@ namespace     = "&#x2299;"
 role          = "invariant capability: in-memory reaction graph — subscribe, fire, load, UEFN dispatch semantics"
 source-symbol = "ReactionGraph RENDER_MODES REACTION_ROLES"
 tags          = ["lar:///ha.ka.ba/lararium/mesh/reaction-engine"]
+title         = "lar:///ha.ka.ba/lares/api/pono/reaction-graph"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/reaction-graph"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -209,6 +210,6 @@ The reaction dispatch layer runs as a ''Scope-1'' CRDT-wave surface under the tw
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VHohpS0jHq2AuTw-tK9AXfJAggk6XbLYNWEoPNY5IHU
+<<^ code="&#x0003;">>ni:///sha-256;62nleymhqoZiW9IcJ0R4LiHnhyk3VQS975wR5IEOUMQ
 
 <<^ code="&#x0004;" -> to="?">>

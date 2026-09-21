@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/nihomano-sigils.mem"
@@ -10,11 +12,10 @@ manaoio   = 18
 namespace = "&#x2299;"
 role      = "origin myth and cultural contract for the Lares memetic wikitext sigil set — nihomano as the first discovered grammar; SharktoothSigil as operator-extensible wild-magic"
 tags      = ["lar:///ha.ka.ba/tags/SharktoothSigil"]
+title     = "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/nihomano-sigils"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -274,6 +275,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lXlLLvf08can8Sr5zO_nDmvlnisjswoXktRXOgAVpe8
+<<^ code="&#x0003;">>ni:///sha-256;C1IuydCL5qhG9CXf5QwfjEZ7rwEtoTMAIF8tkehqBbw
 
 <<^ code="&#x0004;" -> to="?">>

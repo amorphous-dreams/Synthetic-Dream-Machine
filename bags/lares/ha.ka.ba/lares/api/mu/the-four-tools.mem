@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/mu/the-four-tools.mem"
@@ -13,13 +15,14 @@ namespace     = "&#x0950; &#x0901;"
 role          = "invariant pressure surface for Chapel Perilous weapon-carry and model agnostic return"
 source-symbol = "TOOLS TOOL_ASCII TOOL_FEED TOOL_APERTURE"
 tags          = ["api/pono/meme", "api/pono/loci"]
+title         = "lar:///ha.ka.ba/lares/api/mu/the-four-tools"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-four-tools"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -300,6 +303,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gTheymGVVbxVD46T7ULpdLhb0DZyOyG3oI1lvgtyKVA
+<<^ code="&#x0003;">>ni:///sha-256;9gwcaIV4J5z1Lfkd5Px8Zu5vDAXPpTIfJzlXVM24-Jw
 
 <<^ code="&#x0004;" -> to="?">>

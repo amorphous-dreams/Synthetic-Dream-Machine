@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/x-tiddlywiki-filter.mem"
@@ -10,13 +12,14 @@ mana        = 18
 namespace   = "&#x2299;"
 role        = "pointer meme: x-tiddlywiki-filter is fully implemented by wikitext-filter; this meme routes to the canonical extension"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lares/api/pono/x-tiddlywiki-filter"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/x-tiddlywiki-filter"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -127,6 +130,6 @@ interchangeable in `hana` blocks. Prefer `"wikitext-filter"` for new authoring.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Yn1jaifmmXC0hZFonl3Tk4bTHC83yU1uemUlmQYmjnQ
+<<^ code="&#x0003;">>ni:///sha-256;wrHU4ckBe2tF-19f81WdCAAKLvXIjBDKRJAY37D1jLU
 
 <<^ code="&#x0004;" -> to="?">>

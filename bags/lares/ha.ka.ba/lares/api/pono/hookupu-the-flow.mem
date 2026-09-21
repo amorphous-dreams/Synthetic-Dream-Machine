@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hookupu-the-flow">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/hookupu-the-flow.mem"
@@ -11,13 +13,14 @@ manaoio       = 9
 revision-note = "PROVISIONAL — the flow-medium: a bounded expiring non-transferable offering laid at a place. The giver-bound hypothesis stands REFUTED; the receiver-side cap is the only lever with measured success"
 role          = "the flow-medium — hookupu, an offering laid down at a place rather than given to a person. A flow refills; a stock accumulates, and pricing an obligation converts a relation into a heritable estate. Carries the concentration findings and what each cost to learn"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/api/pono/hookupu-the-flow"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/hookupu-the-flow"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -115,6 +118,6 @@ Not coincidence: the Handle already reads as ''the only one that ever federates'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EcNYbNyWkal1aQ9xRSOA9IRMCtHHdkBuGoIoXY3nnTk
+<<^ code="&#x0003;">>ni:///sha-256;oZuiSboE6cprnbYu8VyCJaIqy7YxPmqnAkwSWOBgwpE
 
 <<^ code="&#x0004;" -> to="?">>

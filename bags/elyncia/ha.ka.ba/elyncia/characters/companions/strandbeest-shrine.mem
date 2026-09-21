@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "ano"
 role      = "companion sheet — the Faerie-Ring Strandbeest Shrine: walking hokora, mycelium sails, Mother Spore ring"
+title     = "lar:///ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/companions/strandbeest-shrine"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -334,6 +335,6 @@ The strandbeest legs lock into aggressive posture — stabbing, sweeping, and tr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QYKZHgQSORUeWHaY2LiCDOxXlh9ckRdhAAZWMHGHYq4
+<<^ code="&#x0003;">>ni:///sha-256;RK2htBf7moxII_r0fRDOCgmyYDzKn4ksq-FzFdfD1no
 
 <<^ code="&#x0004;" -> to="?">>

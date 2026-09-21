@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph/artifacts">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path   = "bags/lares/ha.ka.ba/lares/docs/graph/artifacts.mem"
 l-space     = "stable"
@@ -10,11 +12,10 @@ manaoio     = 16
 role        = "content-addressed artifact contract for boot closure compilation — SHA256 scheme, three artifact classes, compaction rules, cache compatibility"
 status-date = "2026-04-24"
 tags        = ["api/pono/meme", "api/pono/loci"]
+title       = "lar:///ha.ka.ba/lares/docs/graph/artifacts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/artifacts"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -305,6 +306,6 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4Ya4j4nU5gNmDAALwgHWZ7db5nwVQDhQq-mT1NoogLw
+<<^ code="&#x0003;">>ni:///sha-256;frWRHmh1eSk2qU_7gFtj59_PmCrGFWUUUFGKL6enO3k
 
 <<^ code="&#x0004;" -> to="?">>

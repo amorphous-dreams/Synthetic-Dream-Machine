@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/outbound-bridge.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-12"
 role              = "outbound-bridge — the scout of the one wire the island never got: a live `$tw.wiki` change → `IslandAdaptor.saveTiddler`/`deleteTiddler`. TW5's own outbound law (syncer · syncadaptor contract · SyncFilter · throttle · the changeCount echo law), what the island holds in its place, the seam file:line, the ONE contract both must satisfy, the two roads (ride the stock syncer · keep the direct listener) costed and unruled, the daemon wiki's disk mirror and the residency MOVE measured, and the reds that wait on each seam."
 status-why        = "RULED 2026-09-11 and BUILT on Road B (`packages/lararium-tw5/src/outbound-bridge.ts`, commit `b2fd7af55`): one `change` listener the kernel holds, the echo law a SET filled at `enqueueNalu`'s door, the five clauses green in `outbound-bridge.test.ts` and B1 green in `tests/e2e/outbound-bridge.e2e.test.ts`; the daemon mirror (B2) and the crossroads stand; the reach plane stays locked. The stories that set the intent ride at `scale-stories-basket-one#/the-bridge` — a naming of WHERE the intent got told, carrying no loulou and no dependency: the ruling and its witness stand in this carrier, so the sentence survives that floor's ending and wants no re-point"
 tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ground>>
 
@@ -167,6 +170,6 @@ CONTROLS standing green beside them: the anchor put lands in the daemon's wiki a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vkoLhdmmmFTdttZ3f2TeGGMedlmgBgLfv8RJ_GYbJso
+<<^ code="&#x0003;">>ni:///sha-256;NKwp5O43LJsasLRuzI247z_xuxoYFn2_6b7nuVk5ozk
 
 <<^ code="&#x0004;" -> to="?">>

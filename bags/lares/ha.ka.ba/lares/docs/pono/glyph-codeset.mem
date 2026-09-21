@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/glyph-codeset">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/glyph-codeset.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 16
 role      = "nine-category glyph codeset: Unicode ranges, semantic roles, authority matrix, UCAN attenuation, parsing pseudocode, validation rules, three-layer encoding"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/glyph-codeset"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/glyph-codeset"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -328,6 +329,6 @@ Round-trip fidelity: Storage → Interchange → Storage MUST produce identical 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1KqaVkzz9oh1ujXarRvfggo1gQqYgxizsaGmciG3WtA
+<<^ code="&#x0003;">>ni:///sha-256;y8Cni19HcDSsBVEhl2V8_7waLnx7FZda_-cLzaHzlcU
 
 <<^ code="&#x0004;" -> to="?">>

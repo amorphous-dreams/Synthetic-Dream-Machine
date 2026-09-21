@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/function">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/function.mem"
@@ -10,11 +12,10 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "function pragma-alias sigil — declares a named TW5 filter function (TW5 5.3+); leaf-only"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-function"]
+title     = "lar:///ha.ka.ba/lares/api/pono/function"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/function"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -68,6 +69,6 @@ TW5 native equivalent:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4jsV9hNiWf_F_I5KaCTz6YTTILZjTFOFH-hHEyXRzj0
+<<^ code="&#x0003;">>ni:///sha-256;kzygk36ZzGsU_9OWkXBMcw3ww-YOIQ8x7deX6jbze-8
 
 <<^ code="&#x0004;" -> to="?">>

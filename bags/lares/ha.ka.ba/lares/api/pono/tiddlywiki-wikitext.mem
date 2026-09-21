@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/tiddlywiki-wikitext.mem"
@@ -12,11 +14,10 @@ revised-on    = "2026-08-25"
 revision-note = "deep pass on two measured waves: the degradation law rewritten to the engine's real behavior (an unbound macro call renders as nothing, the parse stays total, storage round-trips verbatim), the extension mechanism stood up as a normative rule-object contract, the rule inventory corrected to real exported names (44), security gates measured, the test corpus cited as the executable conformance suite, references seated, and the document's voice held to TW5 ontology alone"
 role          = "the base-syntax specification draft for TiddlyWiki 5 wikitext — the normative reference the +tiddlywiki suffix registration requires and no standards track yet carries"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/abstract>>
 
@@ -372,6 +373,6 @@ rather than minting sibling types.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RfozqIC0SbmQ2sl7BxNjys0d9htu4cib1x4TSaMnI_s
+<<^ code="&#x0003;">>ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = false
 corpus            = "[N/A — chorus masks use nodes field instead of corpus]"
@@ -19,13 +21,14 @@ nodes             = "[STUB — pending node registration]"
 role              = "chorus mask — Lagrange Chorus; multi-node meta-mask; concept staked; harmony protocol pending-grammar"
 stage             = 10
 tags              = ["api/pono/meme", "api/masks"]
+title             = "lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/chorus/lagrange-chorus"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -159,6 +162,6 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3GpaspAQL-9BEdBzzjw9vtyyFs7MO8zOJ0m1pVFFXBk
+<<^ code="&#x0003;">>ni:///sha-256;ybadmfeEjPbHidqCD2lFPvnszoZYnUiYYA1sS52ULLI
 
 <<^ code="&#x0004;" -> to="?">>

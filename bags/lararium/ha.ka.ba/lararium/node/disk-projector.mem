@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/disk-projector">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 8
 role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the coalesce servo's set-point semantics. Surface law, granularity and routing live at api/disk-projection."
 source-file = "packages/lararium-node/src/disk-projector.ts"
+title       = "lar:///ha.ka.ba/lararium/node/disk-projector"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/node/disk-projector"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -75,6 +76,6 @@ a real cost target against a measured reconcile.
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
 
-<<^ code="&#x0003;">>ni:///sha-256;X1YKWdQfzPFXmrtvdbMgAMY0L6c129Gq3dpQwa1VqVQ
+<<^ code="&#x0003;">>ni:///sha-256;JzLXv3ts3U9E3JrMAgbG3XkRBKyrCoO5tLp9uYtwPtU
 
 <<^ code="&#x0004;" -> to="?">>

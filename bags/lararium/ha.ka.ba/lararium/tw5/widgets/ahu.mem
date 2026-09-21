@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/ahu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/ahu.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the ahu child-slot sigil — \\widget ~ahu in s
 source-file   = "packages/lararium-tw5/tiddlers/sigil-ahu.tid"
 source-symbol = "~ahu"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/ahu"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/ahu"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/ahu"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -83,6 +84,6 @@ A section with nothing under it says the same nothing for three different facts,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9CPGHhI-RtnQLAcYnpRhng1OjX8yIh66Tlg1FFKydPc
+<<^ code="&#x0003;">>ni:///sha-256;UB4ug15YLQVHq7FSxcN_CwQ8YohK114y3DoLAmJMvhY
 
 <<^ code="&#x0004;" -> to="?">>

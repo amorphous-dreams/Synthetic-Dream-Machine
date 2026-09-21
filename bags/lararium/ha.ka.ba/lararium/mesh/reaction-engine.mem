@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/reaction-engine.mem"
@@ -11,11 +13,10 @@ manaoio     = 16
 namespace   = "&#x0950; &#x0901;"
 role        = "canonical pipeline invariant: five-layer reactive architecture from CRDT patch to observable outcome — nalu, live-query, IslandMsg_Event, CRDT-as-distributed-promise"
 status-date = "2026-05-28"
+title       = "lar:///ha.ka.ba/lararium/mesh/reaction-engine"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/reaction-engine"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -168,6 +169,6 @@ One wave. All observers. Same synchronous context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;osJEcCmo1ut8_pVFoQecU0clFpi5opqnbxmEQgUR9cA
+<<^ code="&#x0003;">>ni:///sha-256;QuXbgWKDUzlVMhVhQdsP6BEvXiBJAkU2diIzwax8yHI
 
 <<^ code="&#x0004;" -> to="?">>

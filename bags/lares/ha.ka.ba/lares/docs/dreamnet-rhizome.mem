@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/dreamnet-rhizome">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/dreamnet-rhizome.mem"
@@ -9,12 +11,11 @@ mana      = 15
 manao     = 15
 manaoio   = 14
 role      = "the integrating read: the DreamNet as a rhizome grown UP from the anon floor (must-fall-back) through additive overlays (known-user · operator · cabal · nexus), launched at TWO surfaces that run one stack at two admission dials — amorphousdreams.net (closed beta, the Amorphous Dreams Cabal) and elyncia.app (open beta, the public mesh)"
+title     = "lar:///ha.ka.ba/lares/docs/dreamnet-rhizome"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/dreamnet-rhizome"
 written   = "2026-07-14"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/the-ground>>
 
@@ -74,6 +75,6 @@ The identity-privacy hardening (per-handle vessel credential · scope-exclusive 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 
-<<^ code="&#x0003;">>ni:///sha-256;qUA7baJ1Hl8VME55oOA8QaVlytfmu-U0xk708FL1ccs
+<<^ code="&#x0003;">>ni:///sha-256;vYHy-_NvJ38ljn3Ymbh3ARsLhCp8R6PpCb3uzEozFis
 
 <<^ code="&#x0004;" -> to="?">>

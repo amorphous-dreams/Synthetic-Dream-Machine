@@ -1,23 +1,26 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/modules/powers/shield-ward">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "Shield Ward"
 file-path = "bags/sdm/ha.ka.ba/sdm/modules/powers/shield-ward.mem"
+l-space   = "sdm"
 mana      = 14
 manao     = 17
 manaoio   = 15
 role      = "Power module: Shield Ward — a skin-close abjuration barrier that filters incoming attacks"
 tags      = ["components/domain/abjuration", "components/function/ward", "components/function/barrier", "components/hook/imbued", "mount-points/trait"]
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/modules/powers/shield-ward"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/shield-ward"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Shield Ward
 
@@ -89,6 +92,6 @@ On a botched or breached ward, choose one: it flares and reveals the operator; g
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cSn10J26MPSnqecfVRffwrBsxYVpkVJzh3MtPUcnjQk
+<<^ code="&#x0003;">>ni:///sha-256;64xwIoPOpdWs2-R-s4DPfe6O2B9AHBc8nOP2KEUp2Z8
 
 <<^ code="&#x0004;" -> to="?">>

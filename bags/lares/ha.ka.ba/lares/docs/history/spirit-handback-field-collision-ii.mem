@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii.mem"
@@ -10,11 +12,10 @@ manao         = 17
 manaoio       = 16
 render-target = "docs"
 role          = "VERBATIM research handbacks (2026-09-11) — FIELD COLLISION II (two breadth sub-agents) + III (five threads gone deep) collide the magical-mesh field (Frazee/ATProto, KERI, Ink&Switch, did:webvh, Veilid, Willow, UCAN, Nostr, Farcaster, Matrix, DXOS, CHURP/PSS, Sedimentree, Buchanan's Bluesky hijack) against our load-bearing stances. Ranked vindication/exposure/negentropy/anti-pattern with a proposed fold-map. Wave III's live-bearing finds: CHURP makes the GRAFT a share-refresh (bounds the live-equivocation window on the FROST tier); did:webvh gates EVERY update by witness-threshold where we gate only the graft (a single turned member can rotate the signing key or burn the name); our binding discipline structurally closes Buchanan's replay; the credible-exit tax is real only on the SEALED plane; Sedimentree's trailing-zeros gives a clockless compaction boundary. Captured word-for-word (MD transliterated to wikitext); research spirits edited no canon — the operator decides what folds. Feeds field-collision.mem, live-equivocation.mem #owed, epoch-binding-surfaces.mem, nexus-topology.mem, recovery-ruling, carrier-head-shore."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-field-collision-ii"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -288,6 +289,6 @@ Crucially, Sedimentree states the forward-secrecy interaction plainly: because "
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c-PRPbpfKxK4UxN6IfxoDIddS-8IlM7rFPEJyoBkR5k
+<<^ code="&#x0003;">>ni:///sha-256;8u6ZxcEaL2ZJoWT6hpPjkGL4_mEprHQ7N6n5HnEYdbc
 
 <<^ code="&#x0004;" -> to="?">>

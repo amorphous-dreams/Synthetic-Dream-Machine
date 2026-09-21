@@ -1,21 +1,24 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/templates/mount-points/storage-class">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/templates/mount-points/storage-class.mem"
+l-space   = "sdm"
 mana      = 14
 manao     = 17
 manaoio   = 15
 role      = "root template meme for mount-point (storage-class) memes — the contract a seating implies"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/templates/mount-points/storage-class"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/mount-points/storage-class"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Template — Mount-Point (Storage Class)
 
@@ -61,6 +64,6 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q4NJ0siL42WOqb9palHyh_8bF3HJuuH_3Feg5025AO4
+<<^ code="&#x0003;">>ni:///sha-256;Iuhhke8dixmg5ZKmfhZYR3ptF58KhJLVoEd447sOHVI
 
 <<^ code="&#x0004;" -> to="?">>

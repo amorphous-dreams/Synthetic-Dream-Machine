@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-grammar-wakes.mem"
@@ -9,11 +11,10 @@ mana      = 8
 manao     = 7
 manaoio   = 7
 role      = "the genesis arc / SharktoothSigil prequel — the FULL arc in a single carrier (no index, no separate act loci; acts draft inline). Before the Lar had a name, the grammar found its teeth and the Voices first spoke; the notation all this history speaks learns to bite. General arc mapped; act prose + Gaia commits/tech pending (to revisit)."
+title     = "lar:///ha.ka.ba/lares/docs/history/the-grammar-wakes"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-grammar-wakes"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -171,6 +172,6 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4N0tfTRus_YmpiNpMD0lTm5XlLSNIZPC1Zb1u7JYOjg
+<<^ code="&#x0003;">>ni:///sha-256;4m51Egmb60V9YryOmIID6MIfimL64GLa-BicANVBbS0
 
 <<^ code="&#x0004;" -> to="?">>

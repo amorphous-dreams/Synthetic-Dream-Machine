@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-syad-perspectives/README.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 17
 role      = "extracted syad source shelf, archive-consumed derivation store, register-metaphysics provenance locus"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives/README"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -187,6 +190,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RZSYa4CFbGnBaMAgYkgYqO702_ckpFdln9eLmwA_AXE
+<<^ code="&#x0003;">>ni:///sha-256;mIgl0fQrfyrEYmHMa1M2RjWQRx0JmNTOtdqzOP4RbUE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/papalohe">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/papalohe.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the papalohe reaction-edge sigil — \\widget ~
 source-file   = "packages/lararium-tw5/tiddlers/sigil-papalohe.tid"
 source-symbol = "~papalohe"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/papalohe"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/papalohe"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/papalohe"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -59,6 +60,6 @@ The declaration rides in `packages/lararium-tw5/tiddlers/sigil-papalohe.tid` wit
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FrD4ZuwwnpUGed69HliwhWE5Q_vieeUX7rooKZBPzek
+<<^ code="&#x0003;">>ni:///sha-256;rZQwKrUZe6Mk-bTrlWWNq1TOh1rOZsw6zk8cjMoDuo0
 
 <<^ code="&#x0004;" -> to="?">>

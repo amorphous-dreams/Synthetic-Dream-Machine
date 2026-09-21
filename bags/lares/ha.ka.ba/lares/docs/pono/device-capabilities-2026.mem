@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/device-capabilities-2026.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-11"
 role              = "device-capabilities-2026 — a field scout over the 2026 device and browser capability field, read from the standards bodies, the vendors' own release notes and intent threads, the standards-positions repos, MDN/caniuse, and the WICG/W3C/WHATWG repos, each claim dated and linked; every capability mapped onto the house seat it rides, could ride, or floors without (file:line on the house side). Names what the 'browser-only filesystem agreement' the operator points at actually consists of, the vendor refusals as FLOORS the cap-stack falls to, the six device seats (phone · tablet · desktop browser · node · Mudlet · Unreal), the pattern-integrity rhymes and where each breaks, five ranked moves, and the questions only the operator answers."
 status-why        = "read 2026-09-11 against the field as it stands that day (Safari 26.6 · Chrome 149 · Firefox 151 · Interop 2026 · the WHATWG File System and Storage Living Standards updated 2026-03-15); no code, test, or existing carrier changed — the moves under #/moves ride as invitations with file:line, none enacted"
 tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/device-capabilities-2026"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/charge>>
 
@@ -221,6 +224,6 @@ Ranked substrate → face → gatherings (GROUNDS BEFORE WINS); none enacted her
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gHcdW5ITz8Z9-543sETMic0YSOY1I1K31i9WJwokmzs
+<<^ code="&#x0003;">>ni:///sha-256;7MFOMTZFHCBkWEQsWmddaAPsj-JwZ10fAx98EdBPzTk
 
 <<^ code="&#x0004;" -> to="?">>

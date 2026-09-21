@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting.mem"
@@ -10,13 +12,14 @@ manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — deriving from context what the graph already holds, at the cost of the derivation"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -68,6 +71,6 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ayZdBAKaWjm4Bb8OnI5b6uWlfI9d43qAEqsuW2TJgBk
+<<^ code="&#x0003;">>ni:///sha-256;jGpJJ7KjDD2bSSqXg8mzkjpOKdlHtK5WS2qqBgig1T0
 
 <<^ code="&#x0004;" -> to="?">>

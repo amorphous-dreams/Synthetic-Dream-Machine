@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/sigil-procedure">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-procedure.mem"
@@ -9,11 +11,10 @@ manao     = 16
 manaoio   = 16
 role      = "design record: \\procedure pragma-alias sigil — pono(right) to TW5 procedure definition and call patterns, wehe cross-ref, declaration form"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure"]
+title     = "lar:///ha.ka.ba/lararium/tw5/sigil-procedure"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/sigil-procedure"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -72,6 +73,6 @@ the body runs through the pragma handler (TW5 parse-time, not render-time).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ai2_uHwYSeG_06Xdqqk8EasP7HAbzE8vT_YKwM8oVjw
+<<^ code="&#x0003;">>ni:///sha-256;inm0iuULfslg97jV7RCD-yUWADdzOY8tYKQFWMY-I9M
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dreamdom-prior-art.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-02"
 role              = "dreamdom-prior-art — the VERBATIM handoff of the tasked spirit Loom, sent to the field with the DreamDOM architecture stated whole and the diagnosis withheld. Held unedited as a COLLISION SURFACE: prior art (WorkerDOM, remote-dom, LiveView, Turbo/idiomorph, Blazor, Figma/Docs/Photoshop, Flutter/Qt/Unity, partytown/RSC), golden principles, anti-patterns, measurement instruments, and the negative result that no prior art exists for TW5 off the main thread. Preserved rather than summarised because the detail IS the asset — a smoothed reading collides against nothing."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-prior-art"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/dreamdom-prior-art"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -251,6 +252,6 @@ Every delta-based system in the corpus must queue; you can drop precisely becaus
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
 
-<<^ code="&#x0003;">>ni:///sha-256;4QFn3iUiWG68GagXIYXA2bB9Wl9BycRsXzNI9BBqz_w
+<<^ code="&#x0003;">>ni:///sha-256;GlbMVcXJyZAryO6bsd6a0aujnNg6XdGJMDg7tWwUlOk
 
 <<^ code="&#x0004;" -> to="?">>

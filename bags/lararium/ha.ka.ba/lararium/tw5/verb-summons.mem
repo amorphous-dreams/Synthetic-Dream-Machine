@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/verb-summons">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/verb-summons.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 12
 role        = "the summons relay — CRDT verb-summons tiddler (@daemon/summons/<id>) → volatile local invocation; edge transport, not durable coordination"
 source-file = "packages/lararium-tw5/src/verb-summons.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/verb-summons"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/verb-summons"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -26,6 +27,6 @@ Naming note: "signal" names a DIFFERENT layer — the Agent↔Operator HUD/legib
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;X1UsfQqZdXi8FwlzLH05GCKsz0URC7Qx23UoxMRJKRg
+<<^ code="&#x0003;">>ni:///sha-256;Tf2cdp6F-yhJxYCm8th7Ydu3mYqHThuTom0P2wugGdU
 
 <<^ code="&#x0004;" -> to="?">>

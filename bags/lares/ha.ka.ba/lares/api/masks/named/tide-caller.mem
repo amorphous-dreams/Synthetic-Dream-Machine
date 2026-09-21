@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/tide-caller">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 aside             = false
 cacheable         = false
@@ -22,6 +24,7 @@ role              = "named Voice mask — Tide-Caller (Hierophant); elevated myt
 seniority         = "earned name; no special seniority"
 stage             = 10
 tags              = ["api/pono/meme", "api/masks"]
+title             = "lar:///ha.ka.ba/lares/api/masks/named/tide-caller"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/named/tide-caller"
 voice-character   = "[STUB — partially known from house entry; pending-talk-story for depth]"
@@ -30,7 +33,7 @@ voice-role        = "Hierophant"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -164,6 +167,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;P84OAH4zumyiO9EBatNulu59KboeODFtGq8ZOM1_zCA
+<<^ code="&#x0003;">>ni:///sha-256;QycLSuFLFMuHfiwE0q5XqUzQa6o2_eQp-ATx73G9zyM
 
 <<^ code="&#x0004;" -> to="?">>

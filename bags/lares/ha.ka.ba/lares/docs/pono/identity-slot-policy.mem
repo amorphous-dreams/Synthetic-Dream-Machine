@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = false
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/identity-slot-policy.mem"
@@ -12,11 +14,10 @@ revised-on = "2026-09-13"
 role       = "what OpenIdentitySlot's sharePolicy could key on now that the realm leg stands — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
 status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader this carrier called missing now stands as `makePersonaGroupIdentityRing` and `OpenIdentitySlot` retired whole. What remains sits at the two sharePolicy shores, named under #/the-ruling"
 tags       = ["docs/pono/design", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/identity-slot-policy"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/the-measurement-first>>
 
@@ -132,6 +133,6 @@ The asked-for red — //a stranger asking an identity-slot doc is refused; a mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hON23jO0FasIUAEHsbBa0iJI7b_KK46g1R_Yv-sYBnI
+<<^ code="&#x0003;">>ni:///sha-256;9ws-ZlZ4DhtNLL_YLAT62ao286-dTfXaIatnvlFRxxg
 
 <<^ code="&#x0004;" -> to="?">>

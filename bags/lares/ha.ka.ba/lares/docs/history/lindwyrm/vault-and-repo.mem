@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo.mem"
@@ -11,11 +13,10 @@ manaoio       = 13
 render-target = "chat-log:post-header"
 role          = "DreamDeck narrative locus — Act I of the Lindwyrm hoard story"
 source        = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture#/act-i-vault-repo"
+title         = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/lindwyrm/vault-and-repo"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -200,6 +201,6 @@ Act II receives:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2cdMkza07TV4fY3CwB8BuPNLOZgC7gUO5R0UW9j7cnI
+<<^ code="&#x0003;">>ni:///sha-256;PgnfUtBNpHlzCI_TCoyug5UU9_mDLMbFgyBYMLnBxbY
 
 <<^ code="&#x0004;" -> to="?">>

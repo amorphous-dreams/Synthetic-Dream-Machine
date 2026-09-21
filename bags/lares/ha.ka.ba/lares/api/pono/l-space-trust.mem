@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/l-space-trust.mem"
@@ -10,13 +12,14 @@ manaoio   = 14
 namespace = "&#x2299;"
 role      = "invariant law for shared lar l-space precedence across system memes and live exchange records"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/l-space-trust"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -88,6 +91,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;g1GHsN4iYQeoxu7SqjJ6g7bpSGnrGgtHnDVsM9wfICc
+<<^ code="&#x0003;">>ni:///sha-256;SaDYjewb0UMstlWeW2dp1cae1qtfHUSBQyuj-lI1cxw
 
 <<^ code="&#x0004;" -> to="?">>

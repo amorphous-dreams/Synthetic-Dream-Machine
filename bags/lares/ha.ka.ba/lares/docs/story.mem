@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/story">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/story.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 15
 role      = "parent docs shelf for Lindwyrm, Elyncia, origin-story, and other narrative scaffolds that inform but do not govern the live stack"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/story"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/story"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
@@ -54,6 +55,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7taRS5SNcn3-PcXNnnaoGWhCAnuWny3jdngNs8NW0ro
+<<^ code="&#x0003;">>ni:///sha-256;sysKFSGfq2L10R7MGF3VmJxc5R6fQleAYNZzWiIvNnE
 
 <<^ code="&#x0004;" -> to="?">>

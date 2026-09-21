@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium_mcp/local-clients">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path       = "bags/lares/ha.ka.ba/lares/docs/lararium_mcp/local-clients.mem"
 l-space         = "stable"
@@ -11,11 +13,10 @@ role            = "canonical local client exposure contract for Lararium MCP"
 source-consumes = ["packages/lares-core/memes/docs/mcp/sprints/SPRINT-02_LOCAL_CLIENTS.md", "packages/lares-core/memes/docs/mcp/stories/MCP-STORY-202_HYDRATION_PROMPTS.md", "packages/lares-core/memes/docs/mcp/stories/MCP-STORY-203_PORTABILITY_TOOLS.md", "packages/lares-core/memes/docs/mcp/stories/MCP-STORY-401_VSCODE_COPILOT.md", "packages/lares-core/memes/docs/mcp/stories/MCP-STORY-402_CLAUDE_CODE.md", "packages/lares-core/memes/docs/mcp/stories/MCP-STORY-403_CODEX.md"]
 status-date     = "2026-04-23"
 tags            = ["api/pono/meme", "api/pono/loci"]
+title           = "lar:///ha.ka.ba/lares/docs/lararium_mcp/local-clients"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/lararium_mcp/local-clients"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -126,6 +127,6 @@ Tool annotations: `readOnlyHint: true`, `destructiveHint: false`, `idempotentHin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LdInXRyUxpt4nKf6JbJyNQCPma482kKZSP2gWjQMdjM
+<<^ code="&#x0003;">>ni:///sha-256;b8qaEAUxl35xl-eZe0dmKqWcGv4evHvQg1zT3VxhINs
 
 <<^ code="&#x0004;" -> to="?">>

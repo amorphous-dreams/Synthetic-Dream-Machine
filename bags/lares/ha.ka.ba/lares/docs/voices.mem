@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/voices">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/voices.mem"
@@ -10,13 +12,14 @@ manao     = 18
 manaoio   = 18
 role      = "specification for the three-layer lararium voice-house: the Thirteen, Voice house law, worker swarm, and mask layer"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/voices"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -248,6 +251,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;93hdY2YcrgukATeh7MF3snY6oXUulNc8lQveQqwbTA0
+<<^ code="&#x0003;">>ni:///sha-256;LNwIuzZFRyhB8XGmckgZh5Pi-nrzwfzhuxIdOmhQyLM
 
 <<^ code="&#x0004;" -> to="?">>

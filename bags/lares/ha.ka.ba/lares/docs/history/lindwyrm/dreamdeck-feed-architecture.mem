@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture.mem"
@@ -11,11 +13,10 @@ manaoio         = 14
 render-target   = "chat-log:post-header"
 role            = "format and cast architecture locus for Lindwyrm DreamDeck feed narrative"
 source-consumed = ["packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_STORY_SHAPE.md", "packages/lares-core/memes/docs/story/lindwyrm/LINDWYRM_STORY_SHAPE.md"]
+title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/dreamdeck-feed-architecture"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -274,6 +275,6 @@ The Lindwyrm did not build the DreamNet from destiny. She wanted to watch //The 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EEFwGRQ_v9I1-d5zNtDrRtxfofGlIiH3zL-E5_auHIU
+<<^ code="&#x0003;">>ni:///sha-256;7oGwTwbTaPOdKVWCF-H7_2v0aagYhTKZgLaYKwW9mh0
 
 <<^ code="&#x0004;" -> to="?">>

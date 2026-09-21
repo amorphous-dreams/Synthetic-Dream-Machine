@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ba">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ba.mem"
@@ -10,11 +12,10 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ba — psyche/path anchor; quine-only trace record with no runtime corpus path"
 tags      = ["api/pono/heleuma"]
+title     = "lar:///ha.ka.ba/lares/api/pono/heleuma/ba"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ba"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -58,6 +59,6 @@ It SHALL NOT declare `body-sha256` without `source-symbol`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XawiyeJKrAB4EI6Xoc_NcA5Q7_4MYbAVb5qhtz2F8rw
+<<^ code="&#x0003;">>ni:///sha-256;LVuxMLqOWNBG5N_E2comCWVR4dPq4hxKU1WETb-mm1o
 
 <<^ code="&#x0004;" -> to="?">>

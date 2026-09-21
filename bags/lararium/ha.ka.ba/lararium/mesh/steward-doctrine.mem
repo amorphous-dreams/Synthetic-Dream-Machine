@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/steward-doctrine.mem"
@@ -9,11 +11,10 @@ mana      = 15
 manao     = 14
 manaoio   = 14
 role      = "PROPOSED design intent: the Amorphous Dreams cabal as steward-not-ruler — founders/maintainers who hold repair authority WITHOUT becoming rulers, legitimacy flowing from being BOUND (k-of-n threshold, constitution outside reach, forkable) not from being trusted; the board verdict separates a threshold-signed steward SOURCE from a verify-only public READ plane"
+title     = "lar:///ha.ka.ba/lararium/mesh/steward-doctrine"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/steward-doctrine"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Steward Doctrine ~ the cabal that engineers its own inability to rule
 
@@ -107,6 +108,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4e931GvHyiNMn3-niWFE5MO87bTAPcV5LZ9blXIIGT4
+<<^ code="&#x0003;">>ni:///sha-256;t7if3A-YCad_l-yjU-067ZFR6oKCZ8EGSDacLSPsawQ
 
 <<^ code="&#x0004;" -> to="?">>

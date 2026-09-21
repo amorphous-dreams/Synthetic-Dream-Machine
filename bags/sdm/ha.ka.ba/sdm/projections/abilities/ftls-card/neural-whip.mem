@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip.mem"
+l-space   = "sdm"
 mana      = 14
 manao     = 17
 manaoio   = 15
 role      = "FTLS card projection: Neural Whip — playable surface with clickable component pills"
 tags      = ["components/domain/stuckforce", "components/function/restrain", "components/hook/attack", "mount-points/trait"]
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/projections/abilities/ftls-card/neural-whip"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Neural Whip — FTLS Card
 
@@ -56,6 +57,6 @@ A neural tentacle of stuckforce lashes out and strikes ''against Defense'' — n
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;42cF8lL1ABgDFlKywQNZfKSu7N4jpq3DCklJmN6QKPA
+<<^ code="&#x0003;">>ni:///sha-256;ng3WEADtqN68RB1ps3NSX1Aqt0lXXstJL9xymt4_UdM
 
 <<^ code="&#x0004;" -> to="?">>

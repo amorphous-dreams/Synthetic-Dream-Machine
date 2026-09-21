@@ -16,7 +16,7 @@ const URI = "lar:///test.resilient.parses";
 describe("meme-ast resilient recovery", () => {
 
   test("a clean parse records no failures and emits no Error nodes", () => {
-    const r = parseMemeText(URI, "<<~ ahu #x>>\n\nbody\n\n<<~/ahu>>");
+    const r = parseMemeText(URI, "<<~ ahu #/x>>\n\nbody\n\n<<~/ahu>>");
     expect(r.failures).toEqual([]);
     expect(r.nodes.some((n) => n.kind === "Error")).toBe(false);
   });
@@ -32,7 +32,7 @@ describe("meme-ast resilient recovery", () => {
   });
 
   test("an unclosed frame force-closes marked `repaired` + recorded, never silently", () => {
-    const r = parseMemeText(URI, "<<~ ahu #x>>\n\nunclosed body to EOF");
+    const r = parseMemeText(URI, "<<~ ahu #/x>>\n\nunclosed body to EOF");
     expect(r.failures.some((f) => f.reason === "unclosed-frame")).toBe(true);
     const ahu = r.nodes.find((n) => n.kind === "Ahu") as { recoveredAs?: string; standing?: number } | undefined;
     expect(ahu).toBeDefined();
@@ -46,10 +46,10 @@ describe("meme-ast resilient recovery", () => {
     // → inert (standing 2); without a declaration it defaults to "repaired" (standing 9, above).
     const grammar = { sigils: [{
       name: "ahu", kind: "context", recoverAs: "water",
-      openPattern: "<<~\\s*ahu\\s+(#[\\w-]+)\\s*>>",
+      openPattern: "<<~\\s*ahu\\s+(#\\/[\\w-]+)\\s*>>",
       closePattern: "<<~\\/ahu\\s*>>",
     }], families: [] } as unknown as GrammarRules;
-    const r = parseMemeText(URI, "<<~ ahu #x>>\n\nbody to EOF", grammar);
+    const r = parseMemeText(URI, "<<~ ahu #/x>>\n\nbody to EOF", grammar);
     const recovered = r.nodes.find((n) => (n as { recoveredAs?: string }).recoveredAs) as
       { recoveredAs?: string; standing?: number } | undefined;
     expect(recovered).toBeDefined();

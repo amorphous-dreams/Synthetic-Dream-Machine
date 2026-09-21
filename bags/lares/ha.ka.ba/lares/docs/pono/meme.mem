@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/meme">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/meme.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 15
 role      = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/meme"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/meme"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -125,6 +126,6 @@ Research backlog and subtype-specific detail should deepen into their own outwar
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ONM0Zt7IzRaAorhFEMYcVpnkff3_84pMnTFsh0IiMe8
+<<^ code="&#x0003;">>ni:///sha-256;P4pQbs9kNMkJz95zbLxnV2g1IH4F_ClFSA-rIyW1ZGM
 
 <<^ code="&#x0004;" -> to="?">>

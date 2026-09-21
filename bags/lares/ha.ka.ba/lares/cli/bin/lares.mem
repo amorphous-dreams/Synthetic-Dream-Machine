@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/cli/bin/lares">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/cli/bin/lares.mem"
 l-space   = "lararium"
 mana      = 10
 role      = "operator-CLI dispatch entry — every operator-facing ceremony routes through this binary"
+title     = "lar:///ha.ka.ba/lares/cli/bin/lares"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/cli/bin/lares"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -26,6 +27,6 @@ Architecture invariants this entry preserves: web2 smell test (no HTTP/RPC dispa
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8LL6JqpbciTDarfMZ7KumynMcqOEQF_OEQG1IdiF2Xc
+<<^ code="&#x0003;">>ni:///sha-256;6hse5pO-zk2-JxxPgdarTbKkKi9xO0ZugfowyRrx9TA
 
 <<^ code="&#x0004;" -> to="?">>

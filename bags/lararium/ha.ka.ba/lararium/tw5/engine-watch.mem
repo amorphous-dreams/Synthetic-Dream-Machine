@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/engine-watch">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/engine-watch.mem"
@@ -11,11 +13,10 @@ revised-on    = "2026-06-15"
 revision-note = "EW-5 SEATED (was held-open): engine-genesis update = operator(admin) on @oracle, peers federate read-only; the fold rides the RECONCILE rite. EW-6 added: boot warns, never auto-folds (relocates the boot auto-merge to the rite). Watch subscribes to @oracle (the runtime island), split from the @lararium corpus."
 role          = "engine-watch — island-side engine-epoch drift detection; a waiting engine surfaces as an alert the island writes itself; carries the seated engine-update authority (EW-5/6)"
 source-file   = "packages/lararium-tw5/src/engine-watch.ts"
+title         = "lar:///ha.ka.ba/lararium/tw5/engine-watch"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/engine-watch"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/change-classes>>
 
@@ -129,6 +130,6 @@ each island adopts the roll in; kāhuli is the mesh-scale act that offers it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x4XGvOT9PITGk8jq6VPnB_by5_XVhCcNaE4VFo_hhaI
+<<^ code="&#x0003;">>ni:///sha-256;si6M0-KNcfaihTYVZU8V0I4PJSzlAQEulF8NR35k8_o
 
 <<^ code="&#x0004;" -> to="?">>

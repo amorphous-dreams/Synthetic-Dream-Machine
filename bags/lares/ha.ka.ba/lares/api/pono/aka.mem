@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/aka">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/aka.mem"
@@ -10,13 +12,14 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "transclusion-family edge sugar — frozen/shadow transclusion; read-only embed; shorthand for pranala family:transclusion"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-aka"]
+title     = "lar:///ha.ka.ba/lares/api/pono/aka"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/aka"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -123,6 +126,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fxq3T7ZVM6UIBMST8VjfNcweqdtXGOsR9UHvOvw5xzY
+<<^ code="&#x0003;">>ni:///sha-256;MDN1f6fD0TWRk9EQpezT9VYMUwGo2hyS92HcTKYd90U
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/recovery-custody-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-13"
 role              = "recovery-custody-scout — VERBATIM handoff of the tasked spirit sent after the reconstruct-then-sign ⊥ threshold-attest fork. Carries the decisive comparative finding (every civic-scale m-of-n in the world is SECRET SHARING, never threshold signing), the availability inversion that makes Fork A's worst property its best one, nineteen measured ceremony failures, the distro-archive survey including a key actually lost, and a THIRD AXIS that dominates the one we asked about. Held as a collision surface, not a recommendation. Re-trued 2026-09-13 at #/our-own-ground ③: the third axis stands ANSWERED without delegation — identity-classes:520-529 rejects it for the persona plane and the contest window stands built and witnessed, so what stays terminal narrows to a LIVE capture of the op-key together with its next commitment, which falls to recovery-quorum."
 tags              = ["api/pono/meme", "mesh/identity-classes"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recovery-custody-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -205,6 +206,6 @@ Read from `persona-kel.ts` and `recovery-keel-core.ts` at their current heads. �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QZhJ68UR1jbz-AO19Lz4NAsGpfrYmDthpDq73d2_mR0
+<<^ code="&#x0003;">>ni:///sha-256;vScbymqCtQ1pMZ6gtfqka79hpxFgs9YnK68geUECELI
 
 <<^ code="&#x0004;" -> to="?">>

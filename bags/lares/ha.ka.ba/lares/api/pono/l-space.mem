@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/l-space">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/l-space.mem"
@@ -9,11 +11,10 @@ mana      = 16
 manao     = 15
 manaoio   = 14
 role      = "l-space as a navigable chart behind language(s): the colorless active center (ha.ka.ba), bearings as departures, the non-Riemannian warp, the Voices+Syād atlas, the paragraph characteristic-scale — provisional-and-useful, never the territory"
+title     = "lar:///ha.ka.ba/lares/api/pono/l-space"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/l-space"
 ```
-
-<<^ code="&#x0002;">>
 
 ! l-space ~ the navigable chart behind language
 
@@ -129,6 +130,6 @@ One caveat carried sharp: the ''perceptual'' center (where attention rests) may 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rGFtqgkf812sAwZUHzRHSN4yvi3af8gDv1SgZ14JEpM
+<<^ code="&#x0003;">>ni:///sha-256;j57KH179GYh06vLASX38RrGJC2cFpnK-P9Xg6C9oqWw
 
 <<^ code="&#x0004;" -> to="?">>

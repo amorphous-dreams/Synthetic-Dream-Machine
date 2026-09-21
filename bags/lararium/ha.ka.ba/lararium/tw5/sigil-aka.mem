@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/sigil-aka">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/sigil-aka.mem"
@@ -9,11 +11,10 @@ manao     = 16
 manaoio   = 15
 role      = "design record: ~aka sigil — shadow transclusion, template mechanism, preview image plan"
 tags      = ["node/disk-projector"]
+title     = "lar:///ha.ka.ba/lararium/tw5/sigil-aka"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/sigil-aka"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -113,6 +114,6 @@ could include thumbnail + og-title in the handshake). Hold open.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j6qC9BNL5CJqka1oMStwyVs4CWVXjRzFdsj66FoPOLo
+<<^ code="&#x0003;">>ni:///sha-256;z93wPQC7vRIogflzbRzdnF-nC_GE7nB24Ehv6rsgSIY
 
 <<^ code="&#x0004;" -> to="?">>

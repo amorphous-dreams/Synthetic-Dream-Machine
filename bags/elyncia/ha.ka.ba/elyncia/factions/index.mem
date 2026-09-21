@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/index">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/index.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "faction roster index for Elyncia worldbuilding — the House of Masks summit guest-list stands as its first enactment; per-faction memes grow beside this index as canon deepens"
+title     = "lar:///ha.ka.ba/elyncia/factions/index"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/index"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -88,6 +89,6 @@ Derived from the court-dragon alignment canon, never invented whole:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AXncckSiCetphjlpvvvkl2TTRTxR9-jluteL_JOVEy4
+<<^ code="&#x0003;">>ni:///sha-256;USuo0bRBd-cxaIt33qQUlbEdjouBk35EQ6PooNOFiZ4
 
 <<^ code="&#x0004;" -> to="?">>

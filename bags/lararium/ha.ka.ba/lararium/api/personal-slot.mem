@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/personal-slot">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 approved-on = "2026-06-01"
 cacheable   = true
@@ -15,6 +17,7 @@ proposed-on = "2026-05-30"
 role        = "the @personal recipe slot (cross-device viewing state, PersonaGroup × recipe-fingerprint scoped) and its admin-doc-stored binding map — one ledger"
 status-why  = "the @personal slot stands; S7.7 cross-device remains"
 tags        = ["lar:///ha.ka.ba/lares/api/lararium/wiki-recipe", "lifecycle/standing"]
+title       = "lar:///ha.ka.ba/lararium/api/personal-slot"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/api/personal-slot"
 uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
@@ -22,7 +25,7 @@ uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/problem>>
 
@@ -503,6 +506,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eKDPdqjuKClUcKuaBb6BUp85EQczRLS6fZy_8MkTgYU
+<<^ code="&#x0003;">>ni:///sha-256;OSiQNpjv7P2Tb1ZNROl2-xQP9AOG9LqJVhSA19N6Beo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 12
 rating    = "ano"
 role      = "region worksheet — the New Delos Nexus in four strata: High Delos, Low Delos, the Underdark, and the outer seas/islands/shores; seeded from gazetteer canon, grown by play"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/region-worksheet"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -194,6 +195,6 @@ First-Breaking cult fragment? Where do the smuggling wars actually land their ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cIxDjIkM65TYVQSgOie4kO8U9NyrRBroo4PEJvu_0Z0
+<<^ code="&#x0003;">>ni:///sha-256;WDWigz0yUkxsUQ2RZbOZGfo544sHZ3kcTbpIvdg3mRI
 
 <<^ code="&#x0004;" -> to="?">>

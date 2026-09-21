@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/handler-args">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/node/handler-args.mem"
@@ -9,11 +11,10 @@ mana      = 17
 manao     = 17
 manaoio   = 16
 role      = "heleuma: command-handler argument coercers + requestId factory"
+title     = "lar:///ha.ka.ba/lararium/node/handler-args"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/node/handler-args"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -36,6 +37,6 @@ These helpers carry no side effects or platform assumptions. They could become a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ymdwQUGTNBzQnCSFwHrsM0S4fWmhlOILO4ZHKvys5f8
+<<^ code="&#x0003;">>ni:///sha-256;ClDbe_njo-m_thAdlgsbJ49NBRgEdHpzyAFmnVfSzj0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -80,7 +80,7 @@ describe("Phase 0 · the leans collided", () => {
     expect([...declared("<<~ ahu #/b>>\nbody\n<<~/ahu>>")]).toEqual(["#/b"]);
     expect([...declared("<<~ ahu #/a>>\n<<~ ahu #/c>>\nx\n<<~/ahu>>\n<<~/ahu>>")].sort())
       .toEqual(["#/a", "#/c"]);
-    // The plain dialect reads the same — two spellings, one structure.
+    // The English spelling reads the same — two spellings, one structure.
     expect([...declared("<<fragment #/b>>\nbody\n<</fragment>>")]).toEqual(["#/b"]);
   });
 

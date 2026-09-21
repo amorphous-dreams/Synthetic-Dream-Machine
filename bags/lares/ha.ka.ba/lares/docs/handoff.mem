@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/handoff">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/handoff.mem"
@@ -10,6 +12,7 @@ mana      = 14
 manao     = 14
 manaoio   = 13
 role      = "live handoff — the next vector and the ground it stands on; updated at each phase boundary, never archived in place; history lives in git, research in pattern-integrities, law in api/ memes"
+title     = "lar:///ha.ka.ba/lares/docs/handoff"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/handoff"
 written   = "2026-06-19"
@@ -17,7 +20,7 @@ written   = "2026-06-19"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/shift-2026-09-13-meme-hearth>>
 
@@ -656,6 +659,6 @@ re-entry: closed — the floor convened and the held review condition met; the c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oBxg-5zneJU7d1YHEewtqFoyhZjXlmg0RTMRsvPdsBc
+<<^ code="&#x0003;">>ni:///sha-256;8x0fH5oUNlhEoYqv5lBfvnwdeAx14c0kf1-78_5ZqAg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/base-doc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/base-doc.mem"
@@ -9,11 +11,10 @@ mana        = 9
 manao       = 9
 role        = "the LarDoc record/blob shapes + the bag→doc oracle resolve-and-write-back primitive (resolveOracleDoc) + blob descriptor addressing"
 source-file = "packages/lararium-mesh/src/base-doc.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/base-doc"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/base-doc"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -59,6 +60,6 @@ plane-blind — it writes wherever the handed registry handle points. //(Caller/
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L4SbtQmQ_OBVWZ1JW65aBnC9sQ5GSR3V1Wuejz7tnyE
+<<^ code="&#x0003;">>ni:///sha-256;iLuQbupnASu2kXyF_bjPCQbY9d2wNMeeD_fOyRj5P2c
 
 <<^ code="&#x0004;" -> to="?">>

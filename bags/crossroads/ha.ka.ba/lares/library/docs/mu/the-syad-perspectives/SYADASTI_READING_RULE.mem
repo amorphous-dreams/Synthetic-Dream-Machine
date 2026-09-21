@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/crossroads/ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.mem"
 l-space   = "stable"
 role      = "session discovery — the Syadasti Reading Rule: Register measures confidence within the active stance's evaluation frame, not universal truth-weight; the full derivation chain"
+title     = "lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE"
 ```
-
-<<^ code="&#x0002;">>
 
 ! The Syadasti Reading Rule — Session Discovery Document
 
@@ -149,6 +150,6 @@ The HUD tag is therefore a ''memory prosthetic'' — it carries calibration forw
 
 //Syād — perhaps, from a certain standpoint. The emoji are the syād.//
 
-<<^ code="&#x0003;">>ni:///sha-256;TUIiSLwy-xxizS1GQY5CiO0GESMeAzZ2StfKUrdwmU0
+<<^ code="&#x0003;">>ni:///sha-256;kiv9n-sf9sEMOmHO3jFrFOk09lUwVRdTnyz0yhAq4SI
 
 <<^ code="&#x0004;" -> to="?">>

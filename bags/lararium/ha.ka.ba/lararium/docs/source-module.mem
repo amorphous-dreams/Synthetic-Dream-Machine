@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/source-module">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/source-module.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 15
 role      = "capability meme for source-module carrier: package TypeScript source files emitted as memes into the graph"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/docs/source-module"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/source-module"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -106,6 +107,6 @@ The `write-source-memes.ts` script MUST:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rkT27WdlcAZlRigPEkHnNh1eaNXi5s6_NJ7vq5jMDjg
+<<^ code="&#x0003;">>ni:///sha-256;U1O3LdW1zvL9xDHyIy57_MJFJ7AZVr9TZ-UaVJoY1fg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/library/discordia">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 bytes      = 694457
 collection = "discordia"
 entries    = 5
 namespace  = "&#x2299;"
+title      = "lar:///ha.ka.ba/lares/library/discordia"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/library/discordia"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Library — discordia
 
@@ -31,6 +32,6 @@ Each row carries the RFC-6920 anchor a stranger checks with no tooling of ours.
 
 Reference this collection as `library:discordia` — a name that travels, never a path.
 
-<<^ code="&#x0003;">>ni:///sha-256;EqwaMNd3euXQGDZy3GdQ0p7On9Ax4SAE_ampT8Vn9l4
+<<^ code="&#x0003;">>ni:///sha-256;UxBA471mfFKy2pjOMCJ92wgIWWRvStHPjKnbaoAv8uo
 
 <<^ code="&#x0004;" -> to="?">>

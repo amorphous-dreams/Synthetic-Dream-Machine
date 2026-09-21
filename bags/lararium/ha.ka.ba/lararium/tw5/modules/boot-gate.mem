@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/boot-gate.mem"
 heleuma       = "ha"
@@ -13,11 +15,10 @@ source-file   = "packages/lararium-tw5/src/tw5-module-gate.ts"
 source-symbol = "bootTrustedModules"
 status-date   = "2026-04-30"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/heleuma/ha"]
+title         = "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -67,6 +68,6 @@ After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8Xe5Z54VQf-m4Q2LKC98bzfGTfn77L8S5QmIJLV2y3g
+<<^ code="&#x0003;">>ni:///sha-256;50_kDy5KbKhTPlPiyPXqA-oYyqSQoKgBwjjetuqFeyM
 
 <<^ code="&#x0004;" -> to="?">>

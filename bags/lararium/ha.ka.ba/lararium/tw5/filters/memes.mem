@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/filters/memes">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/filters/memes.mem"
@@ -9,11 +11,10 @@ module-ref    = "lar:///ha.ka.ba/lararium/tw5/filters/memes"
 role          = "filter operator: memes[] — the collection source that emits every lar: URI title the wiki holds"
 source-file   = "packages/lararium-tw5/src/filters/memes.ts"
 source-symbol = "memes"
+title         = "lar:///ha.ka.ba/lararium/tw5/filters/memes"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/filters/memes"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -49,6 +50,6 @@ The module header inside the source carries the registration triple TW5 reads at
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mfNpQ06eh3ITR5-NjdPYtCLNd6ZcMNNeRoH4ihhoawo
+<<^ code="&#x0003;">>ni:///sha-256;_zgUA-BZdkEmPSr50Iowy1xeB0ATJSjna9LZmJH0ETU
 
 <<^ code="&#x0004;" -> to="?">>

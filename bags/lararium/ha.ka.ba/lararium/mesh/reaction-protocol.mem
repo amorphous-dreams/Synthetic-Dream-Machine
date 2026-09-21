@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/reaction-protocol">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/reaction-protocol.mem"
@@ -13,11 +15,10 @@ role        = "invariant: within-island reaction dispatch substrate — Reaction
 source-file = "packages/lararium-mesh/src/reaction-graph.ts"
 status-date = "2026-05-28"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lararium/mesh/reaction-protocol"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/reaction-protocol"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -169,6 +170,6 @@ appears in production paths.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zaCYOa6zcA1UHXjafXWupfC0j7WQkfUhaGwtLlJZQPs
+<<^ code="&#x0003;">>ni:///sha-256;C71O01nVVx4oxNgH3YbNi1dGHuUDQC9X3TEgP8kLuP8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/meme-provider">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/docs/meme-provider.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 15
 role        = "invariant law: MemeProvider — the coalescing fan-out between an Automerge DocHandle and typed projections. Names why coalescing exists at all, the three scales and the threshold between them, the storm gate that keeps a flood from starving re-projection, and the per-island sync-complete ordering. Isomorphic, zero Automerge import."
 source-file = "packages/lararium-mesh/src/meme-provider.ts"
+title       = "lar:///ha.ka.ba/lararium/docs/meme-provider"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/docs/meme-provider"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -82,6 +83,6 @@ the reference, and the law below it stays the part a reader needs anyway.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/enaction">>
 
-<<^ code="&#x0003;">>ni:///sha-256;M0DimTvPXgAidsm8lsvwrEYOWIyEDrr08aTs-Iyh04o
+<<^ code="&#x0003;">>ni:///sha-256;rPfxqZgn6QUxRTt5DxrsPhpHIO_KlyFg0-8Dbg2_-Cc
 
 <<^ code="&#x0004;" -> to="?">>

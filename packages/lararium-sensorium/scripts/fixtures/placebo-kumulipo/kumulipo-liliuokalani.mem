@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-liliuokalani">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/kumulipo-liliuokalani.mem"
 l-space   = "stable"
 role      = "the Kumulipo ablation's placebo leg, Liliʻuokalani carrier — envelope and wā markers verbatim, order-1 babble where the chant stood; held whole as the text the testbed reads"
+title     = "lar:///ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-liliuokalani"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-liliuokalani"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/held>>
 ```toml meta
@@ -4147,6 +4148,6 @@ LONOIKAMAKAHIKI KA-I-IMAMAO.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;z_Cm-hCTf7x3LHN7DIiChoPSmr9PreoFQlMKWIzJ9tI
+<<^ code="&#x0003;">>ni:///sha-256;CORFTt6LBIUapFCFjxS14qmcaZhS-wi06HL1iFoxyAs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/scale-stories-basket-one.mem"
@@ -14,13 +16,14 @@ revised-on = "2026-09-13"
 role       = "scale-stories-basket-one — eight open design loops (the outbound bridge · the fleet fetch door · the shared bag · the later grant · grace and pin · the phone seat · the two doors · one plugin or two) told twice each, at the household scale and at the faerie-folk / Gaia scale, so the operator can feel the pono intent before ruling. Every tension names its house file:line; every story stays inside Elyncia's public canon (bags/elyncia, the four books) and names in-world people only; each slot closes on what the stories reveal and the lean they point at, held open. Stories rule nothing; the operator rules."
 status-why = "a talk-story floor written by a tasked spirit on the operator's charge (Basket 1 rulings need human/faerie-folk scale contexts); the operator ruled on every slot on 2026-09-11 (moʻolelo at #/exit) and on the realm leg on 2026-09-12 (moʻolelo inside #/the-shared-bag, with the four why-sentences and the held heraldry ruling); the enactments ride their own commits. WITNESS: the last held lean — the heraldry read — landed at `96fac1df9` and `docs/pono/heraldry.mem` carries the ruling with its quote license, so NO lean stands open. Reads `lifecycle/standing` and NOT `folded`: the rite demands zero inbound loulou and a fold target in every slot, and this floor carries SIX inbound carriers with no slot yet folded. TWO BLOCKERS CLEARED 2026-09-13 — slot 8's ruling (`one bundle, the caps decide what rings`) now stands whole at `docs/pono/recipe-layer-model#/one-bundle`, so every slot has an inheritor; and the `otakiage` edge resolved WITHOUT a re-point, because a stage that ends in deletion cannot be evidenced by a pointer (the law now stands at `otakiage#/examples`). WHAT REMAINS: four of the six inbound carriers QUOTE this floor's mo'olelo verbatim under licence — re-aiming one would leave its citation naming a hole — so they read as CONFIRMED LICENCES and no weld is owed there; the two bare edges (`hearths:182`, `offering:449`) BOTH stand HANDED BACK and unwelded, because sibling hands hold those two carriers this watch — the exact rows they need ride at #/fold-readiness; and `packages/lararium-mesh/tests/ahi-ka.test.ts:141` reads this file off disk and asserts its quoted ratios, a tie only code can cut. The FOLD readiness stands measured at #/fold-readiness, REPORTED and not executed; otakiage#/the-fire rules that the operator alone calls the fire"
 tags       = ["docs/pono/talk-story", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/scale-stories-basket-one"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ground>>
 
@@ -444,6 +447,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;awp9Te5LLGAYKGuAFYXeqguIgDGQ6FKJ_3RKpNXS82Y
+<<^ code="&#x0003;">>ni:///sha-256;zIVcbfWBgYTrTmQOrXKJ78AS95BKU9s3VaoJpe9cfTM
 
 <<^ code="&#x0004;" -> to="?">>

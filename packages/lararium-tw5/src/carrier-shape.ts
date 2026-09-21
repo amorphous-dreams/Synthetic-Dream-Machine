@@ -8,21 +8,13 @@
  * skip it forever at `if (!uri) continue` — the gate reporting 601 of 618 while calling itself
  * corpus-wide.
  *
- * So the reading is a GRADIENT, not a verdict. This names which marks a carrier carries, which KIND
- * that makes it, and which marks that kind requires and lacks.
+ * So the reading is a GRADIENT, not a verdict. Every `.mem` source reads as a carrier; its marks name
+ * how completely that carrier arrives.
  *
- * ── THE FOUR KINDS, AS THE CORPUS ACTUALLY HOLDS THEM ───────────────────────────────────────────
- * · `carrier`    — declares `uri-path`: a meme. Wants the whole frame and a block check.
- * · `descriptor` — declares `bag`: a bag's own declaration, not a meme. It names WHO may read the
- *                  bag and WHERE its bytes rest, so it carries a head and a declaration and stops.
- *                  A body frame here would claim it holds a meme's text, which it does not.
- * · `shelf`      — declares neither, but its head names an address: a library index. The head knows
- *                  where it stands and the declaration does not say so, which is exactly the fault
- *                  that makes it invisible.
- * · `unframed`   — no head at all. Bytes with a `.mem` extension.
- *
- * The kind reads from the DECLARATION, never from the path: a file's location says where it rests,
- * and what it IS is a thing it states.
+ * ── ONE CARRIER, MANY MARKS ─────────────────────────────────────────────────────────────────────
+ * `uri-path` names a meme address. `bag` names a bag declaration. Both are authored fields within the
+ * same carrier shape. DOCTYPE, SOH, root TOML, STX, ETX, EOT, and the block check establish the full
+ * transmission; absent marks surface as gradient faults.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
@@ -36,7 +28,7 @@ import { META_OPEN_RE, META_OPEN_CANON, isCanonicalMetaOpen } from "./meta-fence
 // THE CODE SET COMES FROM THE DECLARATION; THESE SCANS STAY THIS READER'S OWN (frame-marks.ts).
 // A frame sigil never crosses a line, and `>>` closes it only when a second bracket follows — the
 // arrow's own `>` rides as content, and a tail scanned as `[^>\n]*` would stop at it and read the
-// whole corpus unframed. The alternation groups NON-capturing, so nothing here indexes a group that
+// whole corpus below its frame floor. The alternation groups NON-capturing, so nothing here indexes a group that
 // moves. Interpolated ONCE, at module scope: `readCarrierShape` runs on the ingest path.
 const INNER  = "(?:[^>\\n]|>(?!>))*";
 const STX_RE = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>`, "g");
@@ -57,12 +49,9 @@ export interface CarrierMarks {
   readonly check:   "ok" | "mismatch" | "unchecked" | "torn";
 }
 
-export type CarrierKind = "carrier" | "descriptor" | "shelf" | "unframed";
-
 export interface CarrierShape {
-  readonly kind:   CarrierKind;
   readonly marks:  CarrierMarks;
-  /** What this kind requires and this file lacks. Empty means the file stands at its kind's floor. */
+  /** What the carrier requires and this source lacks. Empty means the carrier stands at its full floor. */
   readonly faults: readonly string[];
 }
 
@@ -76,8 +65,8 @@ function marked(text: string, re: RegExp): boolean {
  *
  * READ THROUGH THE MASK, like the `meta` mark beside it. A flat `.exec` took the FIRST block in the
  * bytes, so a carrier whose head sat above a ````-quoted lesson answered with the LESSON'S address:
- * `marks.meta` read false at its own mask while `marks.uriPath` read `ha.ka.ba/not/this`, and a shelf
- * could present as a carrier bearing an address no file owns. No corpus file stood that way — the two
+ * `marks.meta` read false at its own mask while `marks.uriPath` read `ha.ka.ba/not/this`, and a carrier
+ * could present as bearing an address no file owns. No corpus file stood that way — the two
  * readings were measured over all 724 and never disagreed — so this closes a hole rather than a wound.
  */
 function metaValue(text: string, spans: readonly MaskSpan[], key: string): string | null {
@@ -103,7 +92,7 @@ export function readCarrierShape(text: string): CarrierShape {
   // A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS. That reads TiddlyWiki's own
   // `reUnquotedAttribute` (core/modules/parsers/parseutils.js), which admits `(?:>(?!>))|[^\s>"']` inside
   // an unquoted value — so a bearing arrow, a comparison, any bracket at all rides as content. A tail
-  // scanned as `[^>\n]*` stops at the first one and the sigil never closes, and the corpus reads unframed.
+  // scanned as `[^>\n]*` stops at the first one and the sigil never closes, lowering the carrier's frame grade.
   // The PREFIX still stops at `&`: a namespace written as entities would otherwise be read as the
   // control code, which is the quietest way this frame has broken.
   const headM = maskedExec(text, carrierMarkPattern("head", "g"), spans);
@@ -117,12 +106,9 @@ export function readCarrierShape(text: string): CarrierShape {
     uriPath: metaValue(text, spans, "uri-path"),
     bag:     metaValue(text, spans, "bag"),
     // THE ARROW'S FAR SIDE IS A NAMED FIELD, and reading the token after `->` takes the name with it.
-    // Every carrier in the corpus names that side, so an unnamed read returned `to=lar:///…` on all of
-    // them — 639 when this was measured, 724 now — while the only vector for it built its fixture
-    // without the name and stayed green. A count in prose goes stale the week it is written; the
-    // reading it records does not, and the corpus test beside it is what actually holds the line. The
-    // name stays OPTIONAL in the grammar — `? -> lar:///x` is the positional spelling normalize
-    // converts — and it is stripped where present.
+    // Corpus carriers name that side, while the bare form remains a legal grammar spelling. The corpus
+    // test beside this reader holds the shared interpretation. `? -> lar:///x` supplies the far-side
+    // address positionally, and normalization writes the named form.
     // AND THE ADDRESS COMES FROM THE SHORE, which strips the quote pair and refuses a torn head.
     headUri: headM ? (matchCarrierHead(headM[0])?.uri ?? null) : null,
     stx:     marked(text, STX_RE),
@@ -130,14 +116,6 @@ export function readCarrierShape(text: string): CarrierShape {
     eot:     marked(text, EOT_RE),
     check:   verifyBcc(text),
   };
-
-  // KIND READS THE DECLARATION FIRST. A descriptor that also carried a uri-path would name itself two
-  // things at once, so `bag` wins and the collision surfaces as a fault rather than a silent pick.
-  const kind: CarrierKind =
-    !marks.head            ? "unframed"
-    : marks.bag !== null   ? "descriptor"
-    : marks.uriPath !== null ? "carrier"
-    : "shelf";
 
   const faults: string[] = [];
   if (!marks.doctype) faults.push("no declaration — nothing names the grammar that reads it");
@@ -153,24 +131,10 @@ export function readCarrierShape(text: string): CarrierShape {
     faults.push(`meta fence opens \`${openLine}\` — canon is \`${META_OPEN_CANON}\`, one space and nothing after`);
   }
 
-  if (kind === "descriptor" && marks.uriPath !== null) {
-    faults.push("declares both `bag` and `uri-path` — a bag and a meme are different things");
+  if (!marks.meta) faults.push("no meta block — the carrier declares no identity");
+  for (const [have, name] of [[marks.stx, "STX"], [marks.etx, "ETX"], [marks.eot, "EOT"]] as const) {
+    if (!have) faults.push(`no ${name} — the body has no ${name === "EOT" ? "release" : "bound"}`);
   }
-  if (kind === "shelf") {
-    faults.push(
-      marks.headUri
-        ? `the head names ${marks.headUri} and the declaration states no uri-path — every corpus gate skips it`
-        : "no uri-path and no head address — the file names nowhere",
-    );
-  }
-  if (kind === "carrier" || kind === "unframed") {
-    if (!marks.meta) faults.push("no meta block — the carrier declares no identity");
-    for (const [have, name] of [[marks.stx, "STX"], [marks.etx, "ETX"], [marks.eot, "EOT"]] as const) {
-      if (!have) faults.push(`no ${name} — the body has no ${name === "EOT" ? "release" : "bound"}`);
-    }
-  }
-  // A descriptor closes on EOT with no body between; only the release is required of it.
-  if (kind === "descriptor" && !marks.eot) faults.push("no EOT — the declaration never releases");
   if (marks.check === "mismatch") faults.push("block check does not match the body it follows");
   // A torn frame reads as a truncated transmission, never as an unchecked one — the conflation would
   // let a file cut ahead of its closer pass as lawful absence-of-check.
@@ -191,5 +155,5 @@ export function readCarrierShape(text: string): CarrierShape {
     if (outside > 0) faults.push(`${outside} block(s) stand ahead of the text frame — the check covers a span that is not the body`);
   }
 
-  return { kind, marks, faults };
+  return { marks, faults };
 }

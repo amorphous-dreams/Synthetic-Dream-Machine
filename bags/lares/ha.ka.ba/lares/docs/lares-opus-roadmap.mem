@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ०" from="?" -> to="lar:///ha.ka.ba/lares/docs/lares-opus-roadmap">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/lares-opus-roadmap.mem"
@@ -14,13 +16,14 @@ revised-on = "2026-09-18"
 role       = "the founding hearth's (Lares/Opus session) LIVE roadmap + task list — what landed, what rides in flight, which forks await the operator's word, the standing hazards. The peer of the Codex crew's crew-handoff-codex.mem, kept for THIS session's ground. Re-trued as tasks land; a hearth reads it to know what the founding hearth is doing right now."
 status-why = "Two hearths hold this tree; this carrier tracks the founding hearth's own work so the Codex crew (and a successor) can read it beside their own task list. Live as of 2026-09-18."
 tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "docs/roadmap", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/lares-opus-roadmap"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/lares-opus-roadmap"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -120,6 +123,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qcg0dyB97Xl5Tu3ZAmD8dKj6gCdJ1n4gsQbpwLJn_30
+<<^ code="&#x0003;">>ni:///sha-256;9FJhMS6JE1pfrE7o6XjGRXN3-XeGrkPfiecFao8cj6k
 
 <<^ code="&#x0004;" -> to="?">>

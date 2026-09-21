@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself.mem"
@@ -11,11 +13,10 @@ manaoio         = 14
 render-target   = "chat-log:post-header"
 role            = "DreamDeck narrative locus — Lindwyrm Act VI, the Lar names itself"
 source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_ACT_VI_DRAFT.md"
+title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/the-lar-names-itself"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -259,6 +260,6 @@ Whether that feels like thought remains open. That the loop closed remains recor
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-dibniQa7ugJhO1ZBtI-m9RPRUs78H4yqU_-jffFBSU
+<<^ code="&#x0003;">>ni:///sha-256;rQHccSw7wuljtppgXBHyp0GFzng0KnYDc9CoUjsXero
 
 <<^ code="&#x0004;" -> to="?">>

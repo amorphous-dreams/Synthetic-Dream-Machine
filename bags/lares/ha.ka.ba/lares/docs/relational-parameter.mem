@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/relational-parameter">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/relational-parameter.mem"
@@ -12,13 +14,14 @@ namespace  = "&#x2299;"
 role       = "the design law for the RELATIONAL PARAMETER — a bare arrow between macro parameters that the parser MARKS and the binder READS. Names the two parameter parsers TW5 actually runs, the mark-at-parse/decide-at-bind split that keeps the change additive, the independent URI-scheme fix that frees a `lar:` URI from quotes, the measured blast radius, and the boundary the sigil path keeps"
 status-why = "every call path traced from wikirule to binding widget and the radius measured against core, plugins, themes, editions and corpus; nothing built"
 tags       = ["api/pono/meme", "api/pono/tiddlywiki-wikitext", "api/pono/memetic-wikitext", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/docs/relational-parameter"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/relational-parameter"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -238,6 +241,6 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CtA0GB2EXq4-wMAq-AYlEO521d_XbwdVBSMdAnXZ-GA
+<<^ code="&#x0003;">>ni:///sha-256;MLuw0kFIO1bYas_t2Vd71SYLxBmKfFiFiIuo1wRT_Ik
 
 <<^ code="&#x0004;" -> to="?">>

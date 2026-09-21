@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/illyria/region-worksheet.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 12
 rating    = "ano"
 role      = "region worksheet — the Illyrian Regions: the sinking realm, the Accursed Mountains and the caldera, the drowned coast, the deep strata; grown by play"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/illyria/region-worksheet"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/illyria/region-worksheet"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -84,6 +85,6 @@ lowest tide.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FF_pEKMsI1kxb_Bk7hpbOMiaY1plykoPTPbXaNoAbug
+<<^ code="&#x0003;">>ni:///sha-256;vFqB5JC1HmbivXd2J-v8K8tLCzN2EcopjxJy0QixQws
 
 <<^ code="&#x0004;" -> to="?">>

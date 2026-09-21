@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci/meta">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/loci/meta.mem"
 mana      = 15
@@ -9,11 +11,10 @@ manaoio   = 14
 namespace = "&#x2299;"
 role      = "root metadata law (kānāwai), field-set authority, and reduction charter"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/loci/meta"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/loci/meta"
 ```
-
-<<^ code="&#x0002;">>
 
 ! IAM
 
@@ -215,6 +216,6 @@ Signs of gain:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EfelbJkQo1AbxnXLaAepXHyyTRLGWnG9esgeFjw74kw
+<<^ code="&#x0003;">>ni:///sha-256;Qd0lkoTG5Wo1zlVoFLnHSyJpvJ-4Seuk3OqkBmR4MS4
 
 <<^ code="&#x0004;" -> to="?">>

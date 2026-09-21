@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/mu/the-syad-perspectives.mem"
@@ -13,13 +15,14 @@ namespace     = "&#x0950; &#x0901;"
 role          = "syad reading invariant --- five naya standpoints licensing the saptabhaṅgī predications; stance-conditioned confidence law"
 source-symbol = "STANCES SYAD_7 STANCE_LICENSES SATIRIST_OPERATIONAL"
 tags          = ["api/pono/meme", "api/pono/loci"]
+title         = "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-syad-perspectives"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -303,6 +306,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pN3WEkiSg-qXRaRML8wbF36fJjTxZ0IG1b6vO5F6HiQ
+<<^ code="&#x0003;">>ni:///sha-256;mikjWZ112nqfpMl40O_luitrtc7VTfD-4Ap8fWeYUBo
 
 <<^ code="&#x0004;" -> to="?">>

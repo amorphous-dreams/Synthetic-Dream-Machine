@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path  = "bags/lares/ha.ka.ba/lares/docs/history/dreamnet-memewiki.mem"
 l-space    = "archive"
@@ -10,11 +12,10 @@ manaoio    = 12
 north-star = "Boot a memetic-wikitext kernel in Node, resume it in a browser, and bridge it to Kowloon, TLDraw and MemPalace without any of them holding authority over the memetic core."
 role       = "the consolidation that staged the memetic-wikitext kernel — four scratch notes folded into one OODA-HA worksite, judged against what stands"
 tags       = ["api/pono/meme"]
+title      = "lar:///ha.ka.ba/lares/docs/history/dreamnet-memewiki"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/history/dreamnet-memewiki"
 ```
-
-<<^ code="&#x0002;">>
 
 ! DreamNet MemeWiki — the consolidation that staged the kernel
 
@@ -462,6 +463,6 @@ Leave the unresolved items visible and bounded. Hidden residue is how architectu
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7hzas02twdN_WMRigQOlxfbP4Z8pm7Ku59Dlas4bcLA
+<<^ code="&#x0003;">>ni:///sha-256;D9w_-PSpZtdWfSUWZm51960YJnKtcdnBFmh2SS7UcJQ
 
 <<^ code="&#x0004;" -> to="?">>

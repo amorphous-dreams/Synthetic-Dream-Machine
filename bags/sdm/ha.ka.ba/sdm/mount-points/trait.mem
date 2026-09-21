@@ -1,22 +1,25 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/trait">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "trait"
 file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/trait.mem"
+l-space   = "sdm"
 mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "mount-point: Trait — Power engraved in body, mind, or aura"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/mount-points/trait"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/trait"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Mount-Point — Trait
 
@@ -84,6 +87,6 @@ Past capacity, additional patterns become Burdens (−1 to all rolls each) or wa
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wjA7jWP9pnhzSCw5SZPRGq6ZcmMaPg04GxijK8hKtPs
+<<^ code="&#x0003;">>ni:///sha-256;arFsrSukphP4C90FGA11somCV4yyb11w9z2LzVTObwU
 
 <<^ code="&#x0004;" -> to="?">>

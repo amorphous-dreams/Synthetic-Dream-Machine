@@ -1,12 +1,13 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext">>
+<<^ code="&#x0002;">>
+
 ```toml meta
+title    = "lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext"
 type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/api/pono/submissions/memetic-wikitext"
 ```
-
-<<^ code="&#x0002;">>
 
 - `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
@@ -550,11 +551,11 @@ carrier states first ([FRAMING] #declaration-register):
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/example">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 … bare toml-meta slot: identity payload (uri-path, type, role, register) …
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 Body text, with a live embed: <<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme">>.
@@ -647,6 +648,6 @@ A canvas reaction wire (flow surface):
 - `"lar:///ha.ka.ba/lares/api/mu/the-law-of-5s"`
 - `"lar:///ha.ka.ba/lares/api/pono/attention-scale"`
 
-<<^ code="&#x0003;">>ni:///sha-256;ctELheZcB5Tfr8JkcTrDtYVcgNyHJ0sZcYOCZ9NpvhM
+<<^ code="&#x0003;">>ni:///sha-256;lbiNGC6vK1tDV5ollYqONiokbVxbMJPme2Sfrx004SI
 
 <<^ code="&#x0004;" -> to="?">>

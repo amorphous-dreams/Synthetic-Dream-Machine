@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 body-sha256     = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 cacheable       = true
@@ -12,12 +14,11 @@ module-type     = "library"
 role            = "the module AGGREGATE the boot gate defines: the one library tiddler tw5-module-gate hands to tw.modules.define after any gated module injects"
 source-file     = "packages/lararium-tw5/src/tw5-module-gate.ts"
 tags            = ["tw5/tw5-module", "lar:///ha.ka.ba/lares/api/pono/meme"]
+title           = "lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules"
 tw5-module-name = "lararium-tw5-modules"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lararium/tw5/modules/tw5-modules"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/source>>
 
@@ -41,6 +42,6 @@ The sigil declarations and render templates that make up the wikitext surface tr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0T9i6zmFT8GfYjn0zWN8dTXsNJr0nn6J9oU6MyfZIko
+<<^ code="&#x0003;">>ni:///sha-256;7SQNfrAQjhUk6n0bSARvoSsN-EOMx_G7ec3O4vCjveA
 
 <<^ code="&#x0004;" -> to="?">>

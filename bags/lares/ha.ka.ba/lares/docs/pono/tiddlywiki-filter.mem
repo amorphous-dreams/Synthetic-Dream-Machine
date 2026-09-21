@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/tiddlywiki-filter.mem"
 role      = "docs companion for x-tiddlywiki-filter: examples, guidance, reminders, and deferred scope notes"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/tiddlywiki-filter"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/tiddlywiki-filter"
 ```
-
-<<^ code="&#x0002;">>
 
 ! X-TiddlyWiki-Filter — Docs
 
@@ -157,6 +158,6 @@ A future parser meme and render-pipeline meme should absorb these when they are 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pa3N6JHH5O7Edou_YcDEu0CtVSbaKTIZJUNgNCW9bfk
+<<^ code="&#x0003;">>ni:///sha-256;Ozrl26r5a5Di0oB8XtNphy1Yt92mt_ftFZ8qdjMV7B8
 
 <<^ code="&#x0004;" -> to="?">>

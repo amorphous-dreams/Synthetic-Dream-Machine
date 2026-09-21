@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/catalog-doc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/catalog-doc.mem"
@@ -11,11 +13,10 @@ manaoio       = 17
 role          = "catalog island doc schema — hallway doc naming all rooms, corpora, recipes, snapshots, projection receipts"
 source-symbol = "CatalogDoc"
 status-date   = "2026-05-01"
+title         = "lar:///ha.ka.ba/lararium/docs/catalog-doc"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/catalog-doc"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -127,6 +128,6 @@ fields = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bPKc_7-aLV4i16hK7j4E3kogiw1qzgn3d03_nxpMfvE
+<<^ code="&#x0003;">>ni:///sha-256;esnyHWNtHwMAicOw7fOTflEen3fA_Wba6iccvA-1LDE
 
 <<^ code="&#x0004;" -> to="?">>

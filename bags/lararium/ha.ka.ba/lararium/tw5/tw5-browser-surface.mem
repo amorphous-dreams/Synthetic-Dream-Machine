@@ -1,28 +1,31 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-browser-surface.mem"
 l-space     = "lararium"
 mana        = 17
-role        = "Named adapter boundary: the ONE file allowed to hold DOM/RootTemplate references in the lararium-browser shore"
+role        = "Named TW5 projection adapter: the file holding TW5 DOM/RootTemplate references at the browser shore"
 source-file = "packages/lararium-tw5/src/tw5-browser-surface.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/tw5-browser-surface"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
 !! Contract
 
-`tw5-browser-surface.ts` defines the ''named adapter boundary'' for the lararium-browser vessel.
+`tw5-browser-surface.ts` defines the ''named TW5 projection adapter'' for the browser vessel.
 
-It carries all `HTMLElement`, `shadowRoot`, and `window.document` references that the
-TW5-to-browser projection requires. No other file in the browser vessel path may import
-these types without an explicit entry in `deletion-map.md`.
+It carries the `HTMLElement`, `shadowRoot`, and `window.document` references required to attach
+TW5's worker-produced projection to a host-owned surface. The `@lararium/app` page shell may use
+its own DOM for composition and interaction relays; that shell does not own TW5 state or run a second
+engine. No worker-side TW5 authority may import these types without an explicit entry in
+`deletion-map.md`.
 
 ''What it owns:''
 
@@ -51,6 +54,6 @@ these types without an explicit entry in `deletion-map.md`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nduLcy-2gp3wIgZ5RSZnIKCfWny9jwpAK-WbA8faNOo
+<<^ code="&#x0003;">>ni:///sha-256;tBu6ARKU352ZAeoVrAZpQqO1QD6ySdUTTTsXfhGq2rg
 
 <<^ code="&#x0004;" -> to="?">>

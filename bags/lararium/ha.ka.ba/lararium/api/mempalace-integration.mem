@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/mempalace-integration">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/mempalace-integration.mem"
@@ -12,13 +14,14 @@ manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "the pono model for mempalace as the lararium's memory-library — tensegrity, the @daemon shore, the lar_ net, the surfaces, the boundary"
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/mempalace-integration"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -131,6 +134,6 @@ lares harvest --all                                      # sweep every transcrip
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vvyOW3KUVeez9D9AaEwi25qG4UkAB7f0PSNyGzcg2Bw
+<<^ code="&#x0003;">>ni:///sha-256;yyB8v66iiiy3-1xYMJXHnB2xE_JsmXbWns1aJHUChCs
 
 <<^ code="&#x0004;" -> to="?">>

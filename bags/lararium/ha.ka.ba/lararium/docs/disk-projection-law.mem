@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/disk-projection-law">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/disk-projection-law.mem"
@@ -10,11 +12,10 @@ mana          = 10
 manao         = 10
 manaoio       = 10
 role          = "pointer: the disk-projection law lives at api/disk-projection — carrier-whole at rest"
+title         = "lar:///ha.ka.ba/lararium/docs/disk-projection-law"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/disk-projection-law"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/pointer>>
 
@@ -30,6 +31,6 @@ The full, load-bearing statement — surfaces, bag roles, projection routing, th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;86oowsJmzSdZeiMPtsQizX6Ucrd92S2XC3riRl92Pr8
+<<^ code="&#x0003;">>ni:///sha-256;Z6mVcVsOqHpGFNFTnz3ZuTcNW6X2xcjr8_qubdwWjZY
 
 <<^ code="&#x0004;" -> to="?">>

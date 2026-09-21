@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-back-parity.mem"
@@ -17,13 +19,14 @@ role              = "syncer-back-parity — the STOCK TW5 syncer's whole back-pa
 status            = "standing"
 status-why        = "every row reads off a live contact: `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts`, 8/8 on the fork (5.5.0-prerelease) and 8/8 on pristine `tiddlywiki@5.4.1` — every former `test.fails` a plain passing vector after the roundtable's phases 0·1·4·2·3 (2026-09-12); seam (b) stands with its refutation measured; (f) stays stock's own posture"
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/syncer-back-parity"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ground>>
 
@@ -191,6 +194,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ACOET10jBDBGNWMpKHhxtZB72QQeEYsovtNp5l-FmOg
+<<^ code="&#x0003;">>ni:///sha-256;jfG89tkXE8zP3tIQsC8amUQ6idk3DIFOaMyTxwiiVKk
 
 <<^ code="&#x0004;" -> to="?">>

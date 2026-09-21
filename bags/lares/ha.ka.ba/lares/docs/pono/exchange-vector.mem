@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/exchange-vector">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/exchange-vector.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 13
 role      = "docs sister for exchange vector law — record form, HUD example, and pattern-training guidance"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/exchange-vector"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/exchange-vector"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -104,6 +105,6 @@ Long-term, the server should validate the vector and render the HUD from the par
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w6OBExB1JKlf_ipP84ty7CqmOq4Hzvu8zPP_bee64FU
+<<^ code="&#x0003;">>ni:///sha-256;sokvpO3621rfW-I4idb7Se_PNyMMdxuV1ag1PATm62Q
 
 <<^ code="&#x0004;" -> to="?">>

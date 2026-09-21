@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/strandbeests">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/strandbeests.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "concept canon — the strandbeests of the Datum shores: wind-walking kinetic life, self-domestication by Mycelial-Mother-Culture symbiosis, the great beests as walking dry-coral reefs, and the platform economy of the Fungus Folk"
+title     = "lar:///ha.ka.ba/elyncia/concepts/strandbeests"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/strandbeests"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -98,6 +99,6 @@ Full event: [[strandbeest-shrine|lar:///ha.ka.ba/elyncia/characters/companions/s
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wvr2Hg6lRjzEF1PPdT_Tq6B5oz0PTrk2OPxaVkr4KD0
+<<^ code="&#x0003;">>ni:///sha-256;bjFiyIH-7uQW37hJBcfo3Z8dUq4HKdEbIrRyRLXKHHI
 
 <<^ code="&#x0004;" -> to="?">>

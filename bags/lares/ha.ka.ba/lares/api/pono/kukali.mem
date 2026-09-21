@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kukali">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kukali.mem"
@@ -10,13 +12,14 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "reactive wait posture inside a causal island — Verse suspends analogue; execution yields until named papalohe trigger fires"
 tags      = ["api/pono/reaction-graph", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kukali"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kukali"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kukali"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -145,6 +148,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A5VYQJGPFYZvZQDrhBKvbHMY9jJYjM7gPSVix_hPCK4
+<<^ code="&#x0003;">>ni:///sha-256;tvelYGBe3o4-lFsUjX5uhbi4sQ4W0ozYYMHBrUIvvU4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -2,22 +2,17 @@
  * meta-fence — the ONE opener every reader of a `toml meta` block reads.
  *
  * ── WHY ONE ─────────────────────────────────────────────────────────────────────────────────────
- * The opener was spelled seven ways across the tree and the spellings differed on four axes: the
- * separator between `toml` and `meta`, what may trail the label, whether the line is anchored, and
- * how the fence closes. Five readers demanded exactly one space; the deserializer admitted one or
- * more spaces or tabs. A carrier written with two spaces therefore DESERIALIZED WITH ITS FIELDS and
- * read `meta:false` to the shape reader — `shelf` where a head stood, `unframed` where none did. One
- * file, two identities, and the gradient that exists to surface such a split produced it instead.
+ * A meta opener has four independent surfaces: the separator between `toml` and `meta`, trailing
+ * whitespace, line anchoring, and the fence close. Every reader reaches this one recognition rule,
+ * so a carrier with admitted whitespace keeps one reading across deserialization and shape checks.
  *
  * ── RECOGNITION IS PERMISSIVE · CANON IS STRICT · DEVIATION IS LOUD ─────────────────────────────
  * A reader ADMITS `[ \t]+` between `toml` and `meta` and `[ \t]*` after it. Strictness here would be
  * the worse fault: a carrier spelled with two spaces would fall out of `carrierFiles` and go
- * invisible to every corpus gate at once, which is exactly how seventeen carriers once sat outside
- * all of them. A loud fault beats a hidden file.
+ * invisible to every corpus gate. A loud fault beats a hidden file.
  *
- * The CANON is exactly one space and nothing trailing — how every emitter writes it and how 733 of
- * 733 openers in the corpus stand. `readCarrierShape` faults a deviation so `meme-normalize` has
- * something to repair and the gradient has something to report.
+ * The CANON is exactly one space and nothing trailing. `readCarrierShape` faults a deviation so
+ * `meme-normalize` has a repair it can name and the gradient has a fact it can report.
  *
  * NEVER `\s`. An opener does not cross a newline: `\s+` before the label makes ```toml\nmeta a
  * match, and `\s*` after it swallows the blank line beneath the opener into the opener itself,

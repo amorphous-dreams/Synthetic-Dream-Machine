@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/genesis-doc.mem"
@@ -12,13 +14,14 @@ manaoio     = 18
 role        = "Genesis & the two planes: a thin @oracle pointer-doc + a CID manifest + CAS blobs. The @oracle is a SOFT-coupled served pointer on the CRDT epoch plane, atop the immutable CID plane."
 source-file = "packages/lararium-mesh/src/genesis-doc.ts"
 tags        = ["mesh/alignment-plan", "mesh/dreamnet-architecture"]
+title       = "lar:///ha.ka.ba/lararium/mesh/genesis-doc"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/genesis-doc"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
-<<^ code="&#x0002;">>
+
 
 ! Genesis & the Two Planes
 
@@ -205,6 +208,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kDMg_1zylyG5eBZk33k_Jq3FQjKktMIhwyXCzc84HuI
+<<^ code="&#x0003;">>ni:///sha-256;L93e8KVSABQi7CZjdsJIMT6p3Ek3l2trnOnS4Idavjg
 
 <<^ code="&#x0004;" -> to="?">>

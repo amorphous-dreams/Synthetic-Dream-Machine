@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 hydrate   = false
 mana      = 18
 manao     = 18
 manaoio   = 18
+title     = "lar:///ha.ka.ba/lararium/api/graceful-parsing"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/graceful-parsing"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -429,6 +430,6 @@ behind that — correction by degree, never a binary gate — lives at [[living-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;onElf8YTF2BVOKFw_QvE8aGqljS7SxtkDjVbQjd2AV8
+<<^ code="&#x0003;">>ni:///sha-256;UKsTLZFNJhYofx9hvRGTd6Zbfh9m37EX3W3zeZxSgek
 
 <<^ code="&#x0004;" -> to="?">>

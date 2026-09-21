@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/tw5-deserializer">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/tw5-deserializer.mem"
 last-reviewed = "2026-07-18"
@@ -10,11 +12,10 @@ manaoio       = 16
 role          = "design doc: TW5 tiddlerdeserializer module (module-type auto-collection) for text/memetic-wikitext"
 source        = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
 status-date   = "2026-04-30"
+title         = "lar:///ha.ka.ba/lararium/docs/tw5-deserializer"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/tw5-deserializer"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/overview>>
 
@@ -30,7 +31,7 @@ The canonical source rests at `lar:///ha.ka.ba/lararium/tw5/modules/deserializer
 
 !! Split Model
 
-The entry `memeticWikitextDeserializer(text, fields)` streams the raw text through `MemeStreamParser` (single-meme, multi-meme, and partial carriers all flow), then routes each carrier-close event through `splitMemeToTiddlers` → `splitRecursive`. The parent tiddler carries all meta TOML fields merged into its TW5 fields; each `<<~ ahu #/slot>>` block becomes a child tiddler holding its body bytes authoritatively, the parent keeping a `<<~ kahea ahu #/slot>>` reference in its place. Prologue, preamble, header-text and postamble ride RECORDS of their own at derived addresses (`…#$prologue`, `…#slot/$preamble`) — each holds its bytes in a `text`, because a TW5 field cannot carry a newline across a `.tid` projection and a value that survives in one format only cannot travel. The frame splices them by POSITION, never by marker, so the recompose inverse (`expandMemeRefs`) round-trips the carrier byte-for-byte. Scalar carriage — `$slot`, `$fragment-parent`, `$carrier-soh` — stays on fields (see lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/the-carriage).
+The entry `memeticWikitextDeserializer(text, fields)` streams the raw text through `MemeStreamParser` (single-meme, multi-meme, and partial carriers all flow), then routes each carrier-close event through `splitMemeToTiddlers` → `splitRecursive`. The root tiddler reads its complete authorial TOML block immediately after STX; each `<<~ ahu #/slot>>` or `<<fragment #/slot>>` block becomes a child tiddler holding its body bytes authoritatively, the parent keeping a `<<~ kahea ahu #/slot>>` reference in its place. Legacy pre-STX root metadata is recoverable only with a visible diagnostic; the emitter never recreates it. Transport prologue/postamble may ride records of their own, while scalar carriage — `$slot`, `$fragment-parent`, `$carrier-soh` — stays on fields (see lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/the-carriage). The STX–ETX check covers root TOML and all authored content.
 
 A split failure never truncates: `safeSplitMeme` falls back to one verbatim tiddler flagged `lar_parse_degraded`, and grades the parse via `parseMemeText().failures` into `lar_parse_failures` — degradation surfaces legibly rather than dropping bytes.
 
@@ -48,6 +49,6 @@ The paired `carrier-filetype` startup module registers `.mem` as `text/memetic-w
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qwDIBjoyjdReX94GzxUl8kvek5pFiFy_kg3Sq_XMUJ4
+<<^ code="&#x0003;">>ni:///sha-256;ZWmGIlrtJF2OfkO0Astyw6wKHYbW2GHQ32NPDS9_ab0
 
 <<^ code="&#x0004;" -> to="?">>

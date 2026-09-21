@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem"
@@ -13,6 +15,7 @@ revised-on = "2026-08-10"
 role       = "the membership doctrine — the privacy invariant of the whole public-facing mesh: the Nexus tracks operator CONTRACTS, never user IDENTITIES. An operator contract carries pubkey + accepts-carriage + charter-epoch and NOTHING more; users SOFT-ATTACH and leave no roster trace; invites are sealed BURNABLE capabilities spent-on-boot that leave no record. We choose to not have the user table. Operator-ruled 2026-07-21. SECOND CONDITION ruled 2026-08-09: belonging carries TWO conditions — the contract AND agreement with the grammar vectors traded on that Nexus. Agreement rides KEYED, never audited (the MLS RFC 9420 `confirmation_tag` shape): a peer that disagrees cannot produce the binding, so no roster row is needed to record who agrees — the second condition adds NO table and lands back on the no-roster ruling."
 status-why = "operator-ruled and enforced at the members-registry"
 tags       = ["mesh/carry-contract", "mesh/identity-classes", "api/pono/persona-policy", "api/pono/cabal-realm", "api/pono/causal-islands", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/mesh/membership-doctrine"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/membership-doctrine"
 written    = "2026-07-21"
@@ -20,7 +23,7 @@ written    = "2026-07-21"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! The Membership Doctrine ~ track contracts, never identities
 
@@ -198,6 +201,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qbXhlA3tsHSDgpL_A90tWSd4BPsE7WlZJtB5JrG-zSM
+<<^ code="&#x0003;">>ni:///sha-256;bgiOBDpnV8cCYsqRS19VSGxz-BtKdKIeUDoEixOYVMI
 
 <<^ code="&#x0004;" -> to="?">>

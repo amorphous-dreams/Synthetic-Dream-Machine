@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/compaction-handlers">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/compaction-handlers.mem"
@@ -9,11 +11,10 @@ mana        = 12
 manao       = 12
 role        = "bag-compact + rotate-recipe — DXOS-style snapshot-restart on a bag; the only local-first mechanism that bounds CRDT history"
 source-file = "packages/lararium-tw5/src/compaction-handlers.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/compaction-handlers"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/compaction-handlers"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/disambiguation>>
 
@@ -129,6 +130,6 @@ is free recovery until growth on a long-lived high-churn bag actually bites
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eiS5t3hB7ieHY5NBUQYrGERihfJlSuRy37X-00yMt4c
+<<^ code="&#x0003;">>ni:///sha-256;Fndqc3aPrIdaU3mRBe58x2npLgMbMLx-yd969A1Iu7w
 
 <<^ code="&#x0004;" -> to="?">>

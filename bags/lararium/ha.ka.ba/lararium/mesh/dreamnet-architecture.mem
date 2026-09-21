@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem"
@@ -9,11 +11,10 @@ mana      = 17
 manao     = 16
 manaoio   = 15
 role      = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel"
+title     = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
 ```
-
-<<^ code="&#x0002;">>
 
 ! DreamNet Architecture
 
@@ -482,6 +483,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aqgAdna2TspBn7FKsBvK9BTmMj7LWH3ntc4DW_coehs
+<<^ code="&#x0003;">>ni:///sha-256;_Wfk-Pdg04yWhov0ErfEiMOZXLQCBzmx-9taFiU0FRQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lararium/api/ingest-canon">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/ingest-canon.mem"
@@ -11,12 +13,11 @@ manao     = 18
 manaoio   = 18
 namespace = "&#x2299;"
 role      = "THE locked golden path for {any chat + telemetry} → ingest → nalu → mempalace: one Kappa path, born-annotated single-write, per-exchange drawers, the writeback demoted to version-gated re-derivation and joined to the single-writer lock. 9 cited decisions + the build/retire migration."
+title     = "lar:///ha.ka.ba/lararium/api/ingest-canon"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/ingest-canon"
 written   = "2026-06-27"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -187,6 +188,6 @@ linonetwo's tw-react + TidGi):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8ExAtE7OMmBl7IrjtZpvpjO-YMgmofV8LByhW06QYXI
+<<^ code="&#x0003;">>ni:///sha-256;D6B7GTgTDLpSf_4c-AxSikAxFFL1wGiw4Hzas_d8pOY
 
 <<^ code="&#x0004;" -> to="?">>

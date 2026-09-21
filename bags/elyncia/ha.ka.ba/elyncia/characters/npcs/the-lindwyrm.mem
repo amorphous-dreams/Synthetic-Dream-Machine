@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 rating    = "ano"
 role      = "NPC, public view — the Lindwyrm of New Delos: Patroness, embodied immortal, founder of the League of Free Cities, reluctant infrastructure matriarch"
+title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -84,6 +85,6 @@ only as much as suits her.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JgL1m9XPBYIJ64zUmFS4DWjKVEWhoFCM3byIQUyl99U
+<<^ code="&#x0003;">>ni:///sha-256;5kFO2BoSbIgMcupeorEWwuDv6LCYOnnArDLZ5mrLQIo
 
 <<^ code="&#x0004;" -> to="?">>

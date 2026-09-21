@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/vessel-caps.mem"
@@ -9,11 +11,10 @@ mana      = 16
 manao     = 15
 manaoio   = 14
 role      = "the vessel cap-stack model: a vessel = a composed #has-stack of caps (CARRIAGE{rhizome,stolon} ⊥ VESSEL{tuber,bulb,corm}), ECS-shaped, declared by handshake, carriage self-elected — any vessel meshes by declaring caps"
+title     = "lar:///ha.ka.ba/lararium/mesh/vessel-caps"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/vessel-caps"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Vessel Caps ~ a vessel is its composed cap-stack
 
@@ -195,6 +196,6 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jbxm0RpKFYRI08viquls_0iMv2ibvIc6UH1lgjQReDY
+<<^ code="&#x0003;">>ni:///sha-256;87L-3HGVpdq0Hfj6tNA0Cmocur_RuaDPNsmBTj9t9ws
 
 <<^ code="&#x0004;" -> to="?">>

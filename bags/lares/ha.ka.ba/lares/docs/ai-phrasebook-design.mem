@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/ai-phrasebook-design">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/ai-phrasebook-design.mem"
@@ -12,13 +14,14 @@ namespace  = "&#x2299;"
 role       = "the design law for the AI frozen phrasebook — the everyday-register twin of the noosphere boot seed. Names the DIALECT boundary (the sharktooth marks the Lararium sigil namespace; the phrasebook declines it and rides the inherited TW5 macro namespace the superset law already admits), the inline-declaration rule that keeps its marks from vanishing on a foreign host, the ROOT law that seats each seed at the address its own anatomy names, the standing law that keeps the twin active by default under a one-turn lift, the two-register alias law, the joint-enactment rule that lets the twin GOVERN rather than explain, the flow law and its four ruled asymmetries, and the verb test every rename passes before it ships"
 status-why = "the design stands; the phrasebook at latent.attention.relation/agents/api/ai-phrasebook carries it section for section across seventeen shared positions, two ruled drops, the open slot at position 18, and a ruled cardinality divergence at position 11 — thirteen Voices standing as five move-sets"
 tags       = ["api/pono/meme", "api/pono/memetic-wikitext", "api/pono/tiddlywiki-wikitext", "api/pono/lar-uri", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lares/docs/ai-phrasebook-design"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/ai-phrasebook-design"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -689,6 +692,6 @@ into a preferred text and a companion, by habit rather than by ruling.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8TIg2655cc3H_CR8VFAhQ77IQd9Qy4ustD8QuBBMvjY
+<<^ code="&#x0003;">>ni:///sha-256;57O53skaAYzaRSLtj97jU8bWPVU4mqh5tL6Awn4IViM
 
 <<^ code="&#x0004;" -> to="?">>

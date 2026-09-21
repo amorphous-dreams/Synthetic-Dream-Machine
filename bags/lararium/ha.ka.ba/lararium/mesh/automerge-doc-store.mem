@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/automerge-doc-store">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/automerge-doc-store.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe automerge-doc-store.ts"
 source-file = "packages/lararium-mesh/src/automerge-doc-store.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/automerge-doc-store"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/automerge-doc-store"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -20,6 +21,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<^ code="&#x0003;">>ni:///sha-256;B563HqFGu9g3Ebq1XijNMX78WDXOBlQiQmqq9sunizY
 
 <<^ code="&#x0004;" -> to="?">>

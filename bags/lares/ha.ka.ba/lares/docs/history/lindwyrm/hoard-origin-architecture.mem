@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable       = false
 file-path       = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture.mem"
@@ -10,11 +12,10 @@ manao           = 15
 manaoio         = 14
 role            = "story architecture locus — seven-act Lindwyrm hoard braid across Gaia and Elyncia"
 source-consumed = "packages/lares-core/memes/docs/infrastructure-as-mythology/LINDWYRM_ORIGIN_OUTLINE.md"
+title           = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/history/lindwyrm/hoard-origin-architecture"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -241,6 +242,6 @@ Address precedes infrastructure. Later, if the work succeeds, infrastructure cat
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;noaz_gABxDxmGQAR-qqaXZgbam2adLuSBeR6gCsRX4o
+<<^ code="&#x0003;">>ni:///sha-256;QsL80mzYPoOOJyoIf6hEr3I2rBKwN1PjB4hJWV165R8
 
 <<^ code="&#x0004;" -> to="?">>

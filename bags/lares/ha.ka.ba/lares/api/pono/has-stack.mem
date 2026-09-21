@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/has-stack.mem"
@@ -9,6 +11,7 @@ mana      = 14
 manao     = 15
 manaoio   = 13
 role      = "the has-stack law (kānāwai): nameless entity + composable component stack; single-entity components; relative-name qualification; rating-as-predicate; kapu as grant — ratified 2026-06-12"
+title     = "lar:///ha.ka.ba/lares/api/pono/has-stack"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/has-stack"
 written   = "2026-06-12"
@@ -16,7 +19,7 @@ written   = "2026-06-12"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -110,6 +113,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iYvEGoiWzj5jF_RZFXJFa9fNjApYFq9hZtmMk21uoac
+<<^ code="&#x0003;">>ni:///sha-256;9lyxXJZgy-7QO3Kkvk_Q4v40PsKEoLs68pm54CjdbQ8
 
 <<^ code="&#x0004;" -> to="?">>

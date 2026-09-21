@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 body-sha256   = "d689443fc704d96b7c2e3802de2f76541b33cd3f9fe422199387a4bd1ce74b21"
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/deserializer.mem"
@@ -13,11 +15,10 @@ role          = "heleuma ka: TW5 tiddlerdeserializer for text/memetic-wikitext"
 source-symbol = "*"
 status-date   = "2026-05-01"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/heleuma/ka"]
+title         = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/deserializer"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -59,6 +60,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ktf4d-vjlw3p3K_NHJqaUOWdSp_NdcUDTQ5_0KjS5BY
+<<^ code="&#x0003;">>ni:///sha-256;HpuzwY5B3v_Cw-_YVcxdXrGux_3UwFve-w0DjDncboY
 
 <<^ code="&#x0004;" -> to="?">>

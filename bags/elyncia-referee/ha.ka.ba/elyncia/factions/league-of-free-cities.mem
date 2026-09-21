@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/league-of-free-cities">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/factions/league-of-free-cities.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "kapu"
 role      = "faction meme, referee view — the League of Free Cities: the Confederation the Lindwyrm declared over the new DreamNet; structure, members, tensions, and the summit's politics"
+title     = "lar:///ha.ka.ba/elyncia/factions/league-of-free-cities"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/league-of-free-cities"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -81,6 +82,6 @@ have defined each other's borders ever since.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;J850NWcIdfSUovdNoBdcEwG01bTR9BlzPyYvd4jbThQ
+<<^ code="&#x0003;">>ni:///sha-256;BiM1NyXdqPCS5S2s29Ag39Mkbad_Y-fLMo9HuJB5frc
 
 <<^ code="&#x0004;" -> to="?">>

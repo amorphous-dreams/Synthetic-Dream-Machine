@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/campaign/salt-stair-booth.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 12
 rating    = "kapu"
 role      = "the Salt-Stair booth thread — outline, style guide, and the verbatim scene transcript with interpretive segues; rides kapu at rest (referee-side), the player-facing render extracts the open strata only"
+title     = "lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/salt-stair-booth"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -621,6 +622,6 @@ pilgrim or the perfect gathering-vessel, and the masks he meets will have opinio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bxq4lLZ26cek6GFHjeF06DORM215V6VL-MzXEM9ZihE
+<<^ code="&#x0003;">>ni:///sha-256;vR0H7SmS0dyBc03CrWrvFBFEqoAN4J3FlK22HkHtskE
 
 <<^ code="&#x0004;" -> to="?">>

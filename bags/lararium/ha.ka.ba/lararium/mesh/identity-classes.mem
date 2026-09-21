@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/identity-classes.mem"
@@ -13,6 +15,7 @@ revised-on = "2026-08-10"
 role       = "the identity-class topology (USER / OPERATOR / KAHU / HERM) mapped across RUNS · CARRIES · IDENTITY-CLASS (KERI transferable/non-transferable/delegated/none-civic) · RECOVERS — plus READING-B recovery: a RANDOM recovery root authorizes a SIGNED rotation that seats a FRESH operational key and SUPERSEDES the old, never resurrects it. Continuity anchors on the persona-KEL (the identifier prefix), never on the operational private key. Operator-ruled 2026-07-20; the persona-KEL indirection + the reconstruct-vs-attest fork ride ahead of code. HERM refined (operator ruling): a Herm holds a PLACE DID (a somewhere — addressable, vouchable) and NO operator DID — no local human key rests at a crossroads to steal; being-as-place ⊥ being-as-person. HERM RE-READ 2026-08-10: the word carries TWO readings that must not fuse — a STANDING (the class a crossroads vessel keeps) and a PASSAGE (the floor EVERY vessel stands on before an operator lights the hearth fire). The floor reads HARDENED, never degraded. SEATED ⊥ RAISED: `personaSlotCeiling(\"herm\") === 0` bars a SEATED persona root, and a raise seats nothing — raised caps ride the recogniser's own keys and always fall back to the floor. The KAHU row splits by layer: layer ① runs a node vessel, layer ③ holds a seat in the charter k-of-n; one person often holds both, and the design must name them apart. FOUNDING SPLITS 2026-08-14: a founding stands a PLACE (@daemon, the vessel own Keyhive individual, the hearth-true-name) and THEN a FACE (PersonaGroup, social planes, device edge, persona-KEL, and the MeshCabal) — a cabal holds members and its members read as PersonaGroups, so it rides with the face. The OFFICE (kuleana) names the civic standing between HERM and OPERATOR: a Herm that gained AUTHORITY caps without a PERSONA cap. A quorum SEATS an office and never sits in its renewal path, and it opens on an OFFICE key rather than any human root."
 status-why = "the SUBSTRATE stands"
 tags       = ["mesh/vessel-caps", "mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/founding-runbook", "mesh/charter-chain", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/mesh/identity-classes"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/identity-classes"
 written    = "2026-07-20"
@@ -20,7 +23,7 @@ written    = "2026-07-20"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Identity Classes ~ who runs, who carries, who rotates
 
@@ -642,6 +645,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I8YiDKVnMRQpcj9fTIkxRickkfgldjNcakkmTroc1b8
+<<^ code="&#x0003;">>ni:///sha-256;gQdmETCRw69LWyqWpVs5BBNSqy088uMwE-DfltLsrxk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -285,7 +285,7 @@ export {
   positionalsOf, schemeShapedPositionals, lostPositionals,
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
-export type { CarrierShape, CarrierKind, CarrierMarks } from "./carrier-shape.js";
+export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";
 // THE ONE OPENER of a `toml meta` block. Seven spellings stood before it, differing on the separator,
 // the trailing run, the line anchor and the close — so a carrier written with two spaces deserialized
 // with its fields and read `meta:false` everywhere else. Recognition is permissive so no carrier goes

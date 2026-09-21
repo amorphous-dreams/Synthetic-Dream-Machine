@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/high-delos-cabaret.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 12
 rating    = "ano"
 role      = "actual-play locus for Session 0.1 — the High Delos cabaret scene; venue, cast, and lifepath-flow scaffold now, the played record as it lands; player-safe by construction, nothing kapu ever drafts here"
+title     = "lar:///ha.ka.ba/elyncia/campaign/high-delos-cabaret"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/high-delos-cabaret"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -325,6 +326,6 @@ The played record lands in this locus using the shelf's witness pattern
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;V5dZCcSaL3k1eSdpuT_pDeSmP3cTwKcl3qLW9KL6Srg
+<<^ code="&#x0003;">>ni:///sha-256;zoU4NZX2pbFldqejqqo6FcYmntrfa-3sIxPDWnFHgUg
 
 <<^ code="&#x0004;" -> to="?">>

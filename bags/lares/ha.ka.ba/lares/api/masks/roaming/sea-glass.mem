@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/roaming/sea-glass">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 created           = "Invalid Date"
@@ -14,6 +16,7 @@ name              = "Sea-Glass"
 namespace         = "&#x0950; &#x0901;"
 role              = "named mask — Sea-Glass (Lares); the underscore given a pet name; sonar summon; KAIROS adjacent;"
 seniority         = "young — first named roaming mask minted from a declared vacancy"
+title             = "lar:///ha.ka.ba/lares/api/masks/roaming/sea-glass"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/roaming/sea-glass"
 voice-character   = "essence unclaimed by law — see #vacancy-law; depth accrues from local context only"
@@ -22,7 +25,7 @@ voice-role        = "_"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/identity>>
 
@@ -146,6 +149,6 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;V8yb4Ih-sWkISSsXe7_VgMkJJYT_bJtDQyv8s2U5vIM
+<<^ code="&#x0003;">>ni:///sha-256;d5uY6jxPM4R7pWUCT65ZG5GPCmQHgMJFtOS32wDEltY
 
 <<^ code="&#x0004;" -> to="?">>

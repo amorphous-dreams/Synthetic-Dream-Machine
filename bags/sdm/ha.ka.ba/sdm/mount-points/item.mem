@@ -1,22 +1,25 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/item">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "item"
 file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/item.mem"
+l-space   = "sdm"
 mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "mount-point: Item — Power stored in an object; container sub-rule for albums/codices"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/mount-points/item"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/item"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Mount-Point — Item
 
@@ -86,6 +89,6 @@ Past 7 + Strength carried slots, use a container item to compress many Powers in
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x27YlqsxORymy85EEifZYBW3z2r_m0WUQMMOjTlbKVs
+<<^ code="&#x0003;">>ni:///sha-256;g3m5yYAqvkQLqhJd_039nsCsgXHHlLM5DYoDP6SoL-M
 
 <<^ code="&#x0004;" -> to="?">>

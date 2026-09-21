@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/recipe-layer-model.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-13"
 role              = "recipe-layer-model — the recipe layer stack under the operator's rulings (canon bags ← named wiki bag ← drafts ← volatile): the layers EXACTLY as three composites mount them, the cascade that routes a tiddler by KIND, what fleet-syncs and what stays on the device, the disk legs for meme and non-meme files, the ONE slot-doc resolver and its floor, the two meme-verb laws, the record ↔ mount convergence, the TW5 surfaces the house rides, the ONE-BUNDLE ruling (the route skins and the in-VM face ship as one plugin; the caps decide what rings) with its three grounds, and what remains open. Read whole; every claim carries a file:line."
 status-why        = "enacted under five operator rulings, red-first, each move witnessed (mesh · tw5 · keyhive · the two-vessel e2e); what remains stands named under #/one-model. HOLDS the Basket-One slot-8 ruling since 2026-09-13 — `one bundle, the caps decide what rings` (operator, 2026-09-11), quoted verbatim at #/one-bundle with its reasoning, rehomed here off `scale-stories-basket-one#/one-plugin-or-two` because that floor TOLD the ruling and no carrier HELD it; this one already carries the cap-decides-behaviour rulings the clause instantiates (#/questions: the cap-stack falls to the floor, never reds) and already inventories what the TW5 side ships (#/tw5-surfaces)"
 tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ruling>>
 
@@ -299,6 +302,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0WX5FN8m_mhTzWItM5k3YxRmOgBnAIfq0xV1X8S5Fwg
+<<^ code="&#x0003;">>ni:///sha-256;G7vIzYFIjG1hGAdIxFgoFzhppEHpdEGYrSMnq_jIV6I
 
 <<^ code="&#x0004;" -> to="?">>

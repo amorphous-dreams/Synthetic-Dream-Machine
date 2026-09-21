@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/siege-resilience.mem"
@@ -9,11 +11,10 @@ mana      = 15
 manao     = 14
 manaoio   = 14
 role      = "PROPOSED design intent: how the mesh survives a persistent 500-year adversary (the necrospire) in an isolated nexus + the maintainer repair-kit — TWO CLOCKS (authority refresh ⊥ flow self-heal); outrun a creeping adversary by RESETTING the clock (proactive secret sharing) not winning the static fight; the delegate's verbs (re-key/re-share/evict/heal-partition/recover-from-fork/re-genesis); self-stabilization + immune-system + VSM shape, run autonomously at each shrine tier"
+title     = "lar:///ha.ka.ba/lararium/mesh/siege-resilience"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/siege-resilience"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Siege Resilience ~ how the mesh outlasts the necrospire
 
@@ -241,6 +242,6 @@ Forward references (intent attractors, unbuilt): [[oracle-governance|lar:///ha.k
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BXsHw-1FFk_wkO4wskXxHJ-WDMqF7h0Dn-nHmgtRCN0
+<<^ code="&#x0003;">>ni:///sha-256;IulVkTiIVwRRBluqxQR5i_VRDLl_mUyCFHyiV57Mszc
 
 <<^ code="&#x0004;" -> to="?">>

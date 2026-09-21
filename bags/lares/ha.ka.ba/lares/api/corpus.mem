@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/corpus">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/corpus.mem"
@@ -11,6 +13,7 @@ manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "the lares-corpus — the design-of-record for the EPHEMERAL astral-multipalace CLI (`lares corpus`) + the corpus-self-learns-its-planes tool-stack + the build SCRUM. ONE move: `compose_palace(caps)` instantiated EPHEMERALLY over any text/code corpus — the mempalace machina generalized into a sensorium-for-FORM. The structure plane is ALREADY corpus-general (content-free shape vectors); content is stock (nomic); the new ground is FORM — the corpus's OWN learned grammar, induced blind, named LAST. THE CAPS: content=stock embedder · structure=our content-free structurepalace encoder + a tree-sitter parse-ROUTER (+ a thin grammar for our own <<~…>> sigils) · bands=RETIRED as a plane — what survives is the GRAIN (the FFZ membership-tree address, a prefix code stored inside li) + the BOUNDARY tree engine (ecp::e.divisive's nested multivariate changepoint hierarchy, which IS the membership tree, with per-chunk cosine-drift the boundary signal); the wavelet spine, the EWT/ssqueezepy servo, and per-band BOCPD retire with the frequency-ladder framing · form=the induction stack (TreeMiner + PrefixSpan/BIDE + c2xg constructicon, EM-iterated, MDL-stopped, LLM-names-LAST) · coupling=the base-cap H¹-gated fusion over child sub-sensoria (read on demand; fuse vs hold-open, never a silent average). THE CLI: dep-free arg-walker kept; SETUP wires all five organs via ONE shared palaceOrgans() registry (one enumerator, two consumers — setup + teardown can't drift); `lares corpus run` ephemeral-DEFAULT modeled on `docker run --rm` + nix-shell + mktemp/trap-EXIT (open→ingest→analyze→DISSOLVE, --keep lands it); scratch instances = a 4th mempalace instance under ~/.lares/.corpus/<id>/, resolved-never-ambient, registered into the teardown sweep. THE GATE: heleuma-anchored — when the CLI help-registry text drifts from this meme, the audit trips. RESONANCES: aperture-ladder=the grain tree (Pulse·Beat·Measure·Arc·Theme as containment LEVELS, not frequency bands) · boundary=ecp changepoint tree · Canon-vs-Provisional=resampling-consensus · MDL-stop=our MDL lifted to grammar · nameless-discipline=miners-surface/LLM-names-last. LIVE boundary signal: the per-chunk cosine-drift over content embeddings reads a regime-turn (Measure=cosine-drop), witnessed against the baseline before it locks Canon. The validation baseline (a known-grammar gold-standard corpus, our-tools-vs-ground-truth) rides a placeholder — a corpus-finder spirit selects it; the coordinator appends."
+title     = "lar:///ha.ka.ba/lares/api/corpus"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/corpus"
 written   = "2026-06-30"
@@ -18,7 +21,7 @@ written   = "2026-06-30"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -513,6 +516,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qKyd-flnHHz9BwrgiNy7ZTmS4U8CovZH49uLM6dXg0w
+<<^ code="&#x0003;">>ni:///sha-256;S_GlyNlMgONDcnyD28dd1LWI3mJ9KsMvMcQIra4Rn-c
 
 <<^ code="&#x0004;" -> to="?">>

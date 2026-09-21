@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/persona-circle.mem"
@@ -13,11 +15,10 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "persona-circle — the identity model (WHO-plane), re-cut on two axes: COMPOSITION (bottom-up emergent Circles: vessel~veil binding → handle-Circle → me-Circle) ⊥ DISCLOSURE (veiled↔known, a per-join dial). Two-key atom (vessel-key device-minted ⊥ veiled-user-key); the persona side derives one-seed ed25519-HD; key-layer unlinkability only"
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/persona-circle"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/persona-circle"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -223,6 +224,6 @@ And the substrate itself, by canon, has ''no forward-secrecy and no retroactive 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
 
-<<^ code="&#x0003;">>ni:///sha-256;8j37rs7fU-1ILYkPvPh3OtNqeU6BtXTPJdz4-w5rzqM
+<<^ code="&#x0003;">>ni:///sha-256;ffzEClQOHCYvgfnpuEC4irbYh974IkTyZ2cp56zPBtM
 
 <<^ code="&#x0004;" -> to="?">>

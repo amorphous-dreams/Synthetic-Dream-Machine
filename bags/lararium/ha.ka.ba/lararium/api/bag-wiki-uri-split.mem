@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 content-type = "text/memetic-wikitext+tiddlywiki"
 file-path    = "bags/lararium/ha.ka.ba/lararium/api/bag-wiki-uri-split.mem"
@@ -8,11 +10,10 @@ mana         = 17
 role         = "the bag / wiki / cid kind-plane law — the three surfaces a lar: URI names, the edit/publish shore, and the isomorphic wiki core"
 status-why   = "the minters carry the split (bagUri · wikiUri · cidUri · wikiSlotUri); the per-wiki slot binding stands half-enacted — the island keys draft per (PersonaGroup × fingerprint), the host keys it per vessel DID (recipe-layer-model#/the-blur)"
 tags         = ["lifecycle/standing"]
+title        = "lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split"
 type         = "text/memetic-wikitext+tiddlywiki"
 uri-path     = "ha.ka.ba/lararium/api/bag-wiki-uri-split"
 ```
-
-<<^ code="&#x0002;">>
 
 ! The Bag / Wiki / CID Kind-Planes
 
@@ -86,6 +87,6 @@ Two registries, cleanly separated:
 
 `@oracle` names the runtime system island, and the node's public read-face serves ''the oracle doc itself'' as a content-addressed snapshot (`GET /oracle/pointer` · `GET /oracle/<cid>.bin`, `exportOracleSnapshot`) — the Two-Faced Substrate's read plane, which a cold Lararium pulls to kindle its engine by CID. `lares`/`lararium` are ordinary catalog-registered operator bags carrying corpus, reached through a recipe's `libraryBags` rather than through the oracle floor — the local operator owns them until a Cabal ownership layer stands.
 
-<<^ code="&#x0003;">>ni:///sha-256;uZEbSEJ2xqQuDpJB2sW2jcCQt-RQ5GpLa3DJhkI2H7c
+<<^ code="&#x0003;">>ni:///sha-256;SvaWkVSZP_a7Wa__yDKVCuOC6Vf19O5JshRdtzpbosg
 
 <<^ code="&#x0004;" -> to="?">>

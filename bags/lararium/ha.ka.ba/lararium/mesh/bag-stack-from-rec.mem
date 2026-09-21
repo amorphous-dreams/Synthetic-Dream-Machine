@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/bag-stack-from-rec">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/bag-stack-from-rec.mem"
@@ -9,11 +11,10 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 role      = "heleuma: bag-stack extractor from a recipe LarTiddlerRecord"
+title     = "lar:///ha.ka.ba/lararium/mesh/bag-stack-from-rec"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/bag-stack-from-rec"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -34,6 +35,6 @@ parseBagStack(typeof recipeRec.tiddler["bag-stack"] === "string"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rgvB8UwpBNgvnT_OTPG8hWcuPytZIuRJhmELyDv-8HY
+<<^ code="&#x0003;">>ni:///sha-256;c8BtDo8yivrZJq9VKu8G05RaDyDct5AkAsGSjuNp6I4
 
 <<^ code="&#x0004;" -> to="?">>

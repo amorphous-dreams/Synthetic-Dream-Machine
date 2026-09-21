@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/managed-identity-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-04"
 role              = "managed-identity-scout — VERBATIM handoff of the tasked spirit sent after the ABUSE SURFACE of managed identity. TWO HEADLINE ANSWERS: nobody has built an exit the manager cannot block, anywhere; and when management goes structural the AUTHORIZATION GRAPH becomes the abuse surface while malware falls to a rounding error. Carries the three separable properties no shipped system holds together, the measured 89%-dual-use surface, the five-year exit gap, the one normative text with zero implementations, and the finding that lands hardest on Ruling 2b — NOBODY VERIFIES WHO THE MANAGER IS."
 tags              = ["api/pono/meme", "api/pono/persona-policy"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/managed-identity-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -167,6 +168,6 @@ A coercive-control statute names //"monitoring a person via online communication
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OOHOaRbyJSXMoj58rcXgFhy2Pz2AkR8ET4E-IPZ6VDc
+<<^ code="&#x0003;">>ni:///sha-256;XGTeDurDeeIBEzyNz9qTu6Haj5EHJ8tJAwnBAzeeezc
 
 <<^ code="&#x0004;" -> to="?">>

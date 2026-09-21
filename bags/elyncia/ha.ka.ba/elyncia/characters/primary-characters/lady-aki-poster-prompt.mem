@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "ano"
 role      = "Lady Aki poster-sheet render prompt — palette and mood lines for image generation"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/lady-aki-poster-prompt"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -51,6 +52,6 @@ No spider legs on Ichi. No tall ritual hat. No generic witch hat. No polished fi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZpKvyyfsP0QrOoBVV06gK-3_oYpGmbDxMUHcoaF8Vaw
+<<^ code="&#x0003;">>ni:///sha-256;TH6ohJ9tcc_78eomya4YaYx2PdmOKJq7o534ai9FVko
 
 <<^ code="&#x0004;" -> to="?">>

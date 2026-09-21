@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kahea.mem"
@@ -10,13 +12,14 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "transclusion-family edge sugar — live transclusion; subscription-fresh embed; dual form: URI edge and name-call invocation"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahea"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kahea"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kahea"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -148,6 +151,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RajSvg-c1raI905gr1tfvLkDdj9jqy4POsxunl-PdoM
+<<^ code="&#x0003;">>ni:///sha-256;7oK5C8GD7fqrlBuoVzKVT09-6qW-yMo-OrXzVuhEiL4
 
 <<^ code="&#x0004;" -> to="?">>

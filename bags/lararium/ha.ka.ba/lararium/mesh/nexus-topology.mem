@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/nexus-topology.mem"
@@ -13,6 +15,7 @@ namespace  = "&#x2695;"
 role       = "the DEPLOYMENT topology under the two-axis mesh, and the CIVIC-SCALE TLS ledger (researched 2026-08-08): which public name serves which Nexus, at which layer, for whose glass. The first Nexus at *.amorphousdreams.net and the second at *.elyncia.net; elyncia.app RESERVED for the mobile surface, where the TLD's own HSTS preload makes every name under it a SECURE CONTEXT BY CONSTRUCTION — a load-bearing property against the crypto.subtle wall, never a branding choice. Three serving layers (household LAN via split-horizon · a contracted operator's own LAN under delegated challenge labels · the cloud shelf for the general internet), and the law that holds them together: a Nexus name grants RENDEZVOUS, never IDENTITY, so every layer stays severable. RENEWAL INVERTS: a central renewal queue IS a roster, so each operator holds their own key and account and the blessing rides a DNS record, never a certificate — EAB does NOT carry this (CA-to-customer only); the BR Parent/Subordinate ACME Account exception names it but no CA implements it; dns-persist-01 sits staging-only; GTS dns-account-01 stands LIVE. Rate limits cap ONBOARDING RATE, not fleet size (ARI renewals exempt, overrides inherit). A child CAA record REPLACES its parent whole, so a shared wildcard and per-operator pinning cannot coexist. The offline-serving window shrinks 60d to 43d (2027-02-10) to 30d (2028-02-16). NO expiry safety net exists — the mesh carries its own witness, alarmed at ~80% elapsed. Two gates already live: multi-perspective validation (the public authoritative view answers the whole internet unfiltered) and mandatory DNSSEC at the delegation boundary."
 status-why = "the names stand registered; the serving layers stand unbuilt"
 tags       = ["mesh/secure-context", "mesh/attestation-plane", "mesh/dreamnet-architecture", "mesh/reach-plane", "api/network-edge", "api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/nexus-topology"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/nexus-topology"
 written    = "2026-08-08"
@@ -20,7 +23,7 @@ written    = "2026-08-08"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -216,6 +219,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R_Gz7TWLMfFCplBZ-bsDYvK7Cfbw4JC5-ibqJBuT8Z4
+<<^ code="&#x0003;">>ni:///sha-256;Sxs4GjM6GJKz3uInzWh6CXLgN994IxOuURL9qgmEdNU
 
 <<^ code="&#x0004;" -> to="?">>

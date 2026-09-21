@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable    = false
 file-path    = "bags/lares/ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle.mem"
@@ -13,11 +15,10 @@ source-lines = "1-57"
 source-path  = "packages/lares-core/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md"
 tags         = ["api/pono/meme"]
 target-mask  = "lar:///ha.ka.ba/lares/api/masks/named/mischief-muse"
+title        = "lar:///ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle"
 type         = "text/memetic-wikitext+tiddlywiki"
 uri-path     = "ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -112,6 +113,6 @@ Use this witness carrier for provenance.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h9MwLTVfTFRl6LYj3gxKLH7bv7aVHzKmvHfs0sX-Wx4
+<<^ code="&#x0003;">>ni:///sha-256;Ohba_Oo8FnMVTGMyuMKh3dP7Nlmg62jQMwxxvcO5sJQ
 
 <<^ code="&#x0004;" -> to="?">>

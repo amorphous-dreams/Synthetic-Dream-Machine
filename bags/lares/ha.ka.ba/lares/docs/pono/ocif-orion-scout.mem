@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/ocif-orion-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/ocif-orion-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-02"
 role              = "ocif-orion-scout — VERBATIM handoff of the tasked spirit Threadneedle: OCIF read at source and RUN, the measured round-trip loss, the absent conformance layer, and Orion Reed's technical models. Held as a collision surface."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/ocif-orion-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/ocif-orion-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -1082,6 +1083,6 @@ The format itself is sufficient. §Extension Mechanism grants a URI-identified p
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Jyvv9ULB0EBe42bybMpT6SExz1RDcwbdHgAPH4p0zvE
+<<^ code="&#x0003;">>ni:///sha-256;U9LWfPQvSfqf579ywcOAGfRkBr5opsyyECK1Dau1814
 
 <<^ code="&#x0004;" -> to="?">>

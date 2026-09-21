@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/keyhive-provider.mem"
@@ -10,11 +12,10 @@ manao       = 16
 manaoio     = 15
 role        = "isomorphic keyhive ceremony provider: founding, device-admit, and apply-admit functions; three-gate identity lattice"
 source-file = "packages/lararium-keyhive/src/keyhive-provider.ts"
+title       = "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/keyhive-provider"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Keyhive Provider
 
@@ -130,6 +131,6 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wcCkm_a9AL8zHDH8biMQCRqXhWD6EK9RqmauYqq98aQ
+<<^ code="&#x0003;">>ni:///sha-256;POEsHtQqCkSas6bjYglDZErQAWDVQjpwDGIpfVAYoaQ
 
 <<^ code="&#x0004;" -> to="?">>

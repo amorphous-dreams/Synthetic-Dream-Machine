@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 hydrate   = true
@@ -8,13 +10,14 @@ l-space   = "stable"
 mana      = 14
 manao     = 15
 manaoio   = 14
+title     = "lar:///ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -248,6 +251,6 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ghLPWRhHVrj21patIlW-3ZZZcso_YrwCoxDtPw-7mmA
+<<^ code="&#x0003;">>ni:///sha-256;iMymDjfecyd2phWpywBi_nT00CSSh4-1FO6k8QGO8Xg
 
 <<^ code="&#x0004;" -> to="?">>

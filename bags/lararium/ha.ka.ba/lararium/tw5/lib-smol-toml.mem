@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/lib-smol-toml">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/lib-smol-toml.mem"
@@ -8,11 +10,10 @@ mana      = 17
 manao     = 16
 manaoio   = 16
 role      = "TW5 library tiddler: smol-toml TOML parser, spec-compliant, ~26 kB, sync, no WASM"
+title     = "lar:///ha.ka.ba/lararium/tw5/lib-smol-toml"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/lib-smol-toml"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -70,6 +71,6 @@ component properties, and tick-scoped state in a WYSIWYG-friendly field structur
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p-LnmhBNNSX-enVTv4wsimrzB2krVFbH0JBg_L3WUZE
+<<^ code="&#x0003;">>ni:///sha-256;76DqY0rezUm8ZZyWyt_TThnTrJGd4LVzUdtzfICfznU
 
 <<^ code="&#x0004;" -> to="?">>

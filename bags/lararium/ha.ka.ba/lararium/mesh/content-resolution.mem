@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/content-resolution.mem"
@@ -11,6 +13,7 @@ manaoio    = 14
 role       = "the converged DreamNet content-resolution design — large bodies leave the CRDT: skinny TW5 handle + bytes in the cid/ KIND-plane addressed by the three-plane oracle model (public @crossroads plaintext ni:// / private @catalog ciphertext / system @oracle CID-floor) + resolveByCid over three gates + DHT-free discovery; doubly-grounded (2 research waves ∪ @oracle/convergent-mesh canon)"
 status-why = "the design-north; NOT built"
 tags       = ["api/pono/convergent-mesh", "mesh/oracle-governance", "api/pono/causal-islands", "api/pono/orichalcum-capabilities", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/content-resolution"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/content-resolution"
 written    = "2026-07-19"
@@ -18,7 +21,7 @@ written    = "2026-07-19"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -296,6 +299,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6b8-uYfrNisvKjt-WmqnTZ3NMh4_r1n6b-bs_MSZHsE
+<<^ code="&#x0003;">>ni:///sha-256;yL0I5bP0vm-ZAyIw4wVfYcXjA-bYwleR17yie2V3zN8
 
 <<^ code="&#x0004;" -> to="?">>

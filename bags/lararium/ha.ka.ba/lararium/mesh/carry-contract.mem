@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/carry-contract.mem"
@@ -12,6 +14,7 @@ namespace  = "&#x2695;"
 role       = "the carry-contract: revocation reframed as an IMMUNE SYSTEM (no firewall exists in no-global-now). Kapae = the propagating antigen riding the always-carried public/infra planes; a Kapae'd authn/z gets MU. Three carry tiers — MANDATORY (operator↔kahu: @oracle+@crossroads+Kapae, always) · BILATERAL (operator↔operator: cabal/shared) · PRIVATE (home). Carry ⊥ read ⊥ contract; carry-generous is safe because the BeeKEM read-floor makes every carry-mistake unreadable. Operator-ruled 2026-07-20; substrate built, the contract design-intent."
 status-why = "the SUBSTRATE stands"
 tags       = ["mesh/dreamnet-architecture", "mesh/oracle-governance", "mesh/siege-resilience", "api/pono/cabal-realm", "api/pono/causal-islands", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lararium/mesh/carry-contract"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/carry-contract"
 written    = "2026-07-20"
@@ -19,7 +22,7 @@ written    = "2026-07-20"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! The Carry Contract ~ the Nexus immune system
 
@@ -179,6 +182,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xlt9yYZrz4g36kdQgfrJYe1gwUkKgQf8xW6ANbYFhfU
+<<^ code="&#x0003;">>ni:///sha-256;l4s-YQYSEQDVzIXQclO2e5k9L60ZbAOg_5wik8iklOU
 
 <<^ code="&#x0004;" -> to="?">>

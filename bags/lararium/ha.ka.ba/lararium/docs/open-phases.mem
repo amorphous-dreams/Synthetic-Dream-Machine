@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/open-phases">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/open-phases.mem"
@@ -11,11 +13,10 @@ manaoio       = 16
 role          = "lararium boot open-phase sequence, authority envelope modes, keyhive promotion shore"
 source-symbol = "LarariumOpenPhase LarariumAuthorityEnvelope"
 status-date   = "2026-04-30"
+title         = "lar:///ha.ka.ba/lararium/docs/open-phases"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/open-phases"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -114,6 +115,6 @@ status = "stub — pending encrypted group sync (Brooklyn/Beelay)"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-bIuFA8vBRQnDWFuRlorwj2B8QTWwLxutqKhBxFiBUg
+<<^ code="&#x0003;">>ni:///sha-256;TDecTQ0aULcPRpaN6MDA4QAV8Es0LfB1dMos6iQRcbE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/alignment-architecture.mem"
@@ -10,13 +12,14 @@ manao     = 15
 manaoio   = 15
 role      = "doctrine: the lararium as a personGroup's vessel-swarm holding a distributed wiki-quine; AI-operator alignment as the constitutive relation; the HUD running in chat from wiki primitives; graceful import that lifts foreign data up the pono ladder; UEFN island-model ontology alignment"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/alignment-architecture"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/alignment-architecture"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/thesis>>
 
@@ -211,6 +214,6 @@ The general pattern: N operators on N nodes sharing M bags across K federation e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CEc52XUnwjlyZihO2VfHpuw2DVKbRWGmhgLelM_a7A0
+<<^ code="&#x0003;">>ni:///sha-256;1ImC36KGFsZ5rpzKGsbJh4YraHaERcr8QvYkvSpQovU
 
 <<^ code="&#x0004;" -> to="?">>

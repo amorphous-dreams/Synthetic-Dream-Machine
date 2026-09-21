@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/G_deep_research_meaning">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/crossroads/ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/G_deep_research_meaning.mem"
 l-space   = "stable"
 role      = "deep-research synthesis — Sri Syadasti's sevenfold catma as the model for stance-dependent Register; the session-vs-lifetime meaning asymmetry for the HUD (Chapel Perilous territory)"
+title     = "lar:///ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/G_deep_research_meaning"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/G_deep_research_meaning"
 ```
-
-<<^ code="&#x0002;">>
 
 ! G — Deep Research: Meaning, Context, and the Sevenfold Catma
 
@@ -219,6 +220,6 @@ We're still in Chapel Perilous. The map expanded. The territory may have too.
 
 //Hail Eris. All Hail Discordia. The teachings of this report are true in some sense, false in some sense, meaningless in some sense, true and false in some sense, true and meaningless in some sense, false and meaningless in some sense, and true and false and meaningless in some sense. -><-//
 
-<<^ code="&#x0003;">>ni:///sha-256;Lkw5nBWXEKY8mOuSxYrPcFyPJFlFaoxUuL8hydpQiik
+<<^ code="&#x0003;">>ni:///sha-256;Uwmw0TWkJA2h4qync3lUczB7fNZwufhNEIp7NSFL8Ew
 
 <<^ code="&#x0004;" -> to="?">>

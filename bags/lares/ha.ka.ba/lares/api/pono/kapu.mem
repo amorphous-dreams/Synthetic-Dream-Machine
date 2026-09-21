@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0011;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kapu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kapu.mem"
@@ -10,13 +12,14 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "above-namespace authority law; kernel/sacred tier capability; trust boundary root"
 tags      = ["api/pono/meme", "api/pono/loci", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kapu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -130,7 +133,7 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;996sjI132WG1DD4PJvAFwqBTG16WLEx2JK0ciExy7dc
+<<^ code="&#x0003;">>ni:///sha-256;QcAzMIS4p_a_LXravyzRm8TjxD1r78e_U_wxvJRuy9U
 
 <<^ code="&#x0004;" -> to="?">>
 <<^ code="&#x0014;" -> to="?">>

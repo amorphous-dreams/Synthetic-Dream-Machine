@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/field-collision">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/field-collision.mem"
@@ -13,11 +15,10 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "field-collision — the outside field collided against our three models (identity-as-relation · no-global-now · carriage-not-registry), 2026-09-08: prior art that BUILT our shape, golden principles we must hold, measured anti-patterns, deep pattern-integrities, and the standing tensions the field leaves open (moderation, beneficial-ownership). The CONIKS #1-exposure RESOLVED at primary source."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/field-collision"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/field-collision"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -124,6 +125,6 @@ The identity roadmap thrown at the deployed federated / p2p field. Each survivor
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
 
-<<^ code="&#x0003;">>ni:///sha-256;kF0igloNZvlm1KoYLekNRx_aSTqFobaS9mtXXYqNBes
+<<^ code="&#x0003;">>ni:///sha-256;ra4wPd1VVAQPx0F1xeg651beFKfJvHX1ZWP3QVhV9_8
 
 <<^ code="&#x0004;" -> to="?">>

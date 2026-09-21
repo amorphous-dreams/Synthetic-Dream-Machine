@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/verb-tiddler.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 14
 role        = "the verb/summons/outcome task surface — verb (invocation), summons (edge transport), outcome (result); LANGUAGE-protocol register internal, the UCAN Invocation/Receipt/Task ontology held as boundary projection for lineage + interop"
 source-file = "packages/lararium-mesh/src/verb-tiddler.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/verb-tiddler"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/verb-tiddler"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -58,6 +59,6 @@ Audit/ledger note: durable residency audit lives at `@<bag>/ledger/residency/<ev
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PtoZJE-ykNIBGLeu6-vPggeYYVmK32sWCuUlGVBlvz0
+<<^ code="&#x0003;">>ni:///sha-256;e_2lM9hMbu6CjKWj2vQJEaL8MunPcVf831uaMiPzxwg
 
 <<^ code="&#x0004;" -> to="?">>

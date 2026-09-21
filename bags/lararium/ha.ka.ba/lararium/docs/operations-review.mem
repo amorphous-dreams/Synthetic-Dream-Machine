@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/operations-review">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/operations-review.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 16
 role      = "OODA-HA extraction plan for lararium interaction protocols — frame-uncertainty, talk story, session init, and related surfaces"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/operations-review"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/operations-review"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/provenance>>
 
@@ -294,6 +295,6 @@ After the extraction pass closes, these questions remain for a future consolidat
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6vm91AYmZeTMp9E0qvBn3MoV3mPmpMcxUFSis8lak6U
+<<^ code="&#x0003;">>ni:///sha-256;tNkLQ43syTTjcWuUDHMkWKnjCRI0EJr-qahVSRBmdvc
 
 <<^ code="&#x0004;" -> to="?">>

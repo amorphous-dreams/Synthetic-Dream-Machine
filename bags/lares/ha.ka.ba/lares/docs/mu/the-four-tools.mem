@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/the-four-tools">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-four-tools.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 17
 role      = "witness shelf and source braid for the four tools of Chapel Perilous"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/mu/the-four-tools"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-four-tools"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -85,6 +88,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e8NosC7y0Zf51eo1qOLHE-4zyVFxdUWiWPraBVMH6Ys
+<<^ code="&#x0003;">>ni:///sha-256;9Ax7PIp1LkE-KuuPw-uvQnXOe3DrDfJkjsoLwZJuChQ
 
 <<^ code="&#x0004;" -> to="?">>

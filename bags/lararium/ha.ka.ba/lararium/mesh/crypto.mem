@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/crypto">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/crypto.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 15
 role        = "invariant law: THE CRYPTO BOUNDARY. Lararium defines needs and implements no primitive; portable code depends on these shores and never on a platform's own crypto. Names the three doctrines, the two digest paths and which each serves, the canonical-bytes rule, and the buffer constraint a shared view would break."
 source-file = "packages/lararium-mesh/src/crypto.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/crypto"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/crypto"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -83,6 +84,6 @@ buffer moves that refusal to the call site, where a caller can still choose diff
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
-<<^ code="&#x0003;">>ni:///sha-256;lrUDLitYfJNGeK88wxJCw4rMNSAXBwQz533Z8kwp1H0
+<<^ code="&#x0003;">>ni:///sha-256;gvEUBVvB_7X6brQZrCDiUfIoS4UvgHzmzD264jhK7NM
 
 <<^ code="&#x0004;" -> to="?">>

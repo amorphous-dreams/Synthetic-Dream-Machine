@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kahawai">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kahawai.mem"
 namespace = "&#x2299;"
 role      = "conditional branch-continuation sigil — elif form; Hawaiian alias for elif; a second stream joining the flow"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahawai"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kahawai"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kahawai"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -72,6 +73,6 @@ English alias forms:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rhd-janTpaxBzPM2WSggyp3b4QEwz8SAGtPUL5841Qc
+<<^ code="&#x0003;">>ni:///sha-256;dycaPfMc6lnN945AAIKA98ngjF77ZSwFiuguND7KeAk
 
 <<^ code="&#x0004;" -> to="?">>

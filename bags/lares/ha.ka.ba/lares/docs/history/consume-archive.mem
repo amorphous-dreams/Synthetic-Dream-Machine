@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/consume-archive">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/consume-archive.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 13
 role      = "where the early research landed — which scratch note became which doctrine, and what the consume pass could not recover"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/history/consume-archive"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/consume-archive"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -161,6 +162,6 @@ Every file below was read before it burned. Where a row names living carriers, t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TFSB4_CPbDyAhcwXuVkYZ0ilgzZok0aYjqNvPz_896A
+<<^ code="&#x0003;">>ni:///sha-256;MJmxGrdfIpdB8XqZ7ccRb8kfA0ciWfyLLjqt5UidSR8
 
 <<^ code="&#x0004;" -> to="?">>

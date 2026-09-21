@@ -7,6 +7,8 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci/SKILL">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 constraints        = ["S1: the canonical loci remains the stable-address capability law", "S2: derivation algorithm runs in full step order without skipping", "S3: resolved and declared-unresolved stay distinct; neither collapses into the other", "S4: rating commitment stays truthful; a path hit never overrides honest unresolved tension", "S5: file-siting mutations and opener changes cross as distinct bounded Hoʻoko transactions", "S6: aftermath names all declared-unresolved addresses; none silently disappear"]
 covers             = ["lar:///ha.ka.ba/lares/api/pono/loci"]
@@ -17,11 +19,10 @@ manaoio            = 13
 role               = "agent-facing procedural surface for loci routing and rating passes"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/loci"
 tags               = ["api/pono/meme", "api/pono/loci"]
+title              = "lar:///ha.ka.ba/lares/api/pono/loci/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/pono/loci/SKILL"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Loci / SKILL
 
@@ -222,6 +223,6 @@ Then widen: does the stack describe itself coherently after the pass? An Afterma
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XdSuLNG2A6XAaG_NJq0VzGnsqenob_h0aYbEelogQpw
+<<^ code="&#x0003;">>ni:///sha-256;Rc9wQs9QS1EMD_-962H8iKDssa21ErJY2G4ZHlG7xr0
 
 <<^ code="&#x0004;" -> to="?">>

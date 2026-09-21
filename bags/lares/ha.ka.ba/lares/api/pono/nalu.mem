@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/nalu.mem"
@@ -10,11 +12,10 @@ manao       = 17
 namespace   = "&#x2299;"
 role        = "architectural invariant: nalu as changeset delivery wave — the pulse below the grammar; maps TW5 refresh(changedTiddlers) ↔ Verse OnSimulate(StagedUpdates) ↔ in-wiki nalu engine; yin-collapse law"
 status-date = "2026-05-30"
+title       = "lar:///ha.ka.ba/lares/api/pono/nalu"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/nalu"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -280,6 +281,6 @@ edges encoded with FRU orientation assumptions need migration. See `uefn-scene.m
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JPzscYIiTsGt-IOTLYZylM3mjxts7HraWjjmK52DvZo
+<<^ code="&#x0003;">>ni:///sha-256;uhIOjsv2BhWR4kyR0Ol3D1sDC8I-8HCkbSKwmWWGeCA
 
 <<^ code="&#x0004;" -> to="?">>

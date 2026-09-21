@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/guest-grammar">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/guest-grammar.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 14
 role      = "extended documentation surface for guest-grammar examples, ownership notes, fixture seeds, and migration residue"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/guest-grammar"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/guest-grammar"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -93,6 +94,6 @@ The current shape keeps:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FkYiZyKfSLRai-n1I8E3hlpXL74U7_vQU-8hUvvXivc
+<<^ code="&#x0003;">>ni:///sha-256;qbpXEsHxgGS_S9Vzd4JDOHcVwC1sHZzF2st4doKH4Zo
 
 <<^ code="&#x0004;" -> to="?">>

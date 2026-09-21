@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/docs/story/dreamdeck/README">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/crossroads/ha.ka.ba/lares/library/docs/story/dreamdeck/README.mem"
 l-space   = "stable"
 role      = "epic backlog DECK-* — DREAMDECK / elyncia.app integration: tldraw session canvas, Kowloon ActivityPub feeds, DreamDeck threads; S5 sprint target, seeded not begun"
+title     = "lar:///ha.ka.ba/lares/library/docs/story/dreamdeck/README"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/library/docs/story/dreamdeck/README"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Epic: DREAMDECK — DreamDeck Integration
 
@@ -57,6 +58,6 @@ Full backlog lives in `ELYNCIA_APP_SEEDS.md`. Short form:
 
 //"Oh," she says. "So that's what it was."//
 
-<<^ code="&#x0003;">>ni:///sha-256;WGWxgcwOJUH3xCHSUNO9RybjeU3RvoGtQuf-cxDotdI
+<<^ code="&#x0003;">>ni:///sha-256;BZSJJ27UbcIftBPy51tDPRHC--GxDHnbIqD6S4MDeaI
 
 <<^ code="&#x0004;" -> to="?">>

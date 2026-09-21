@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = false
 file-path   = "bags/lares/ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing.mem"
@@ -10,11 +12,10 @@ manao       = 16
 manaoio     = 16
 role        = "adversarial witness stream with literal quotes for distributed failure, authz automation, websocket abuse cases, and formal verification corpus"
 status-date = "2026-05-25"
+title       = "lar:///ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -78,6 +79,6 @@ Source: https://github.com/tlaplus/Examples
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3HtSIs0UbArw7n_RtB56P5-fXfSvXG7mIwUFmbf6EkE
+<<^ code="&#x0003;">>ni:///sha-256;V46L1PdCVKtDDohyyEFRR6tj9IYiKPevXKV_zsa-ZLQ
 
 <<^ code="&#x0004;" -> to="?">>

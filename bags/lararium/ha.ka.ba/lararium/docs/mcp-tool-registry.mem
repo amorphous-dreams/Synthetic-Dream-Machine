@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/mcp-tool-registry">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/mcp-tool-registry.mem"
@@ -11,11 +13,10 @@ manaoio       = 16
 role          = "SUPERSEDED — MCP tool registry: ten tools + two prompts, OODA-HA phase map, input schemas, env guards"
 source-symbol = "lararium-hud lararium-canvas lararium-read lararium-inspect lararium-query lararium-edges lararium-draft lararium-write lararium-fire lararium-receipt lararium-align lararium-explain_uri"
 status-date   = "2026-04-30"
+title         = "lar:///ha.ka.ba/lararium/docs/mcp-tool-registry"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/mcp-tool-registry"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -158,6 +159,6 @@ inputs      = ["uri: string"]
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3JUoXXOedoyTYJFKuSL0eBovtmgxOtrW0lPexKRRTNc
+<<^ code="&#x0003;">>ni:///sha-256;TZOwopzjAg-syVLrA5PK-y19s_SMuBO1kunHIMg89i0
 
 <<^ code="&#x0004;" -> to="?">>

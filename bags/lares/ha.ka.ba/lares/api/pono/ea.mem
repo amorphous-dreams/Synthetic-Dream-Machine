@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ea">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/ea.mem"
@@ -10,11 +12,10 @@ manao     = 15
 namespace = "&#x2299;"
 role      = "ontology invariant: ea — sovereignty, breath, life — the declaration pattern for any self-standing causal island group or node on the DreamNet"
 tags      = ["lar:///ha.ka.ba/lararium/mesh/island-protocol"]
+title     = "lar:///ha.ka.ba/lares/api/pono/ea"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/ea"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -112,6 +113,6 @@ The web2 concept of a "heartbeat" (a server-side liveness ping) shares the //liv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O84T5_1ImE5h8k1whoBMzmKwVHt6rGBftWVUvAzj8WM
+<<^ code="&#x0003;">>ni:///sha-256;6mqKeYTYnPU4c-SHRXhAqY_-Hes_k7-Lmacp2ffk-SU
 
 <<^ code="&#x0004;" -> to="?">>

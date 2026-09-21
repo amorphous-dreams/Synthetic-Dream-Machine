@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 13
 rating    = "kapu"
 role      = "referee worksheet — Neo-Thracia region: tilt-history, zones, guide roster, watershed canon"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -262,6 +263,6 @@ Purpose: turn metaphysics into handles: rift types, necro-fog effects, iron-curs
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XesNa8q9XIDH8IOmLUkmHOG4DU4lLAovNcsdmgZOwtM
+<<^ code="&#x0003;">>ni:///sha-256;5UwKZXRT58GYoJxt65_XkyXHT6olRwGtsR73H6-s7_4
 
 <<^ code="&#x0004;" -> to="?">>

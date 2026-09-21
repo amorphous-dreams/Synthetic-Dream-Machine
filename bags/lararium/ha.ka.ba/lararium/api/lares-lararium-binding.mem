@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/lares-lararium-binding">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/lares-lararium-binding.mem"
@@ -12,6 +14,7 @@ manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "the true lares↔lararium binding — a thin-client→warm-daemon Unix-domain-socket channel for the co-located CLI, WS kept for remote mesh peers; transport (UDS) / authority (capability-bearing UCAN-shape verb-summons) / record (CRDT outcome receipt) decoupled; peer-cred for presence + Ed25519 for authority; drops the measured ~0.4–0.5s/command connect+sync tax (misplaced replica-spin, never transport; the oft-cited 3s = the connect timeout ceiling — corrected on first measurement). Win is real for cheap verbs (status 0.82s→0.40s), negligible against a holder-bound verb like recall"
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/lares-lararium-binding"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/lares-lararium-binding"
 written   = "2026-06-25"
@@ -19,7 +22,7 @@ written   = "2026-06-25"
 
 <<~ aka "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -165,6 +168,6 @@ the `status` residency probe passes a non-did `requestedBy` and cap-errors quiet
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3TPKVoeUUG9uYRmDZz9_e2PsWUs9TQM62nunL8UZok0
+<<^ code="&#x0003;">>ni:///sha-256;w5O50jITrnbp9A29IDsIvw5E1wO5amFRp9_gEtc64-I
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="≋" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/lararium-memory.mem"
@@ -12,6 +14,7 @@ manaoio   = 14
 namespace = "&#x224B;"
 role      = "the memory model stated whole — two axes (sovereign↔meshed · lived↔distilled) crossing into four cells that unfold to five registers (the Seat doubling by mind-kind — Law-of-5s), held by two peers (operator: RAM + DreamDeckSurface · node: RAM + Agent.MEMORY) over one shared mesh (mempalace the PLACE memory · quine the ley-line-mesh memory); the CLI a mutual-hold instrument on the edges into the @daemon seat; carries the GroundedVow binding, the two drains, capture-before-wire, and register-dressed recall"
 tags      = ["api/pono/meme", "api/pono/causal-islands", "api/pono/local-first", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/lararium-memory"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/lararium-memory"
 written   = "2026-06-24"
@@ -19,7 +22,7 @@ written   = "2026-06-24"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -274,6 +277,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hWteMF5ULm3K64YgHiJqd9o14WVntHWXc3PXxEiwDnM
+<<^ code="&#x0003;">>ni:///sha-256;lkCAYhi6-jLH2A44_oEwHfuM5l30xfZYgiGTeAljWjM
 
 <<^ code="&#x0004;" -> to="?">>

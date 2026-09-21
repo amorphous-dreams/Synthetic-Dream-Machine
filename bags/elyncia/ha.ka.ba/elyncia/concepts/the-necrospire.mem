@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-necrospire">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-necrospire.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 rating    = "ano"
 role      = "concept canon — the Necrospire: the Oort needle, the Pale Emperor's prison bound onto it, the aeons adrift, the fall, and the caldera in the Accursed Mountains"
+title     = "lar:///ha.ka.ba/elyncia/concepts/the-necrospire"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-necrospire"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -65,6 +66,6 @@ sinking.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ANtrKuDb7YhCesuBJEfDR0NcdEOqrIhblaQny5fN1gk
+<<^ code="&#x0003;">>ni:///sha-256;n3zxpoTOrfQfHOE8HLicj6TgnAsr_HHv07pH1uIXfp4
 
 <<^ code="&#x0004;" -> to="?">>

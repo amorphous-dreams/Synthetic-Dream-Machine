@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/sync-adaptor.mem"
 heleuma       = "ha"
@@ -13,11 +15,10 @@ source-file   = "packages/lararium-tw5/src/island-adaptor.ts"
 source-symbol = "IslandAdaptor"
 status-date   = "2026-09-12"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/heleuma/ha"]
+title         = "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -85,6 +86,6 @@ The map stays volatile: one adaptor, one session.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5XYSo8qygS2tq7hBnM3rrVoctqDd7k9axChzBXU5pYw
+<<^ code="&#x0003;">>ni:///sha-256;p1y69qAyzYGQakbqSh76bYprb_UQOeWs644i-s85hmQ
 
 <<^ code="&#x0004;" -> to="?">>

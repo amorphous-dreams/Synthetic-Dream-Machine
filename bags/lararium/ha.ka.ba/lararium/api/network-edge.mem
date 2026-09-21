@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/network-edge">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/network-edge.mem"
@@ -12,6 +14,7 @@ manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "THE undefined-network-edge doctrine — how a local-first causal-island mesh connects, crosses, and admits at an edge no census reaches. Grounds the second-spore / federation frontier in a 4-spirit convergence (Erdős/random-graph · network-edge SOTA · biology · physics/social): the edge connects as a PHASE TRANSITION reasoned PROBABILISTICALLY; the crossing is the weak-tie/anastomosis carried cheap+optimistic; membership is admit-then-test-then-SEVER at the shore via distributed challenge + per-edge anergy; dependence is a buildable resource; the lease is a pheromone. Adopt Beelay/Iroh/Keyhive; invent the admission semantics."
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/network-edge"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/network-edge"
 written   = "2026-06-26"
@@ -19,7 +22,7 @@ written   = "2026-06-26"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -139,6 +142,6 @@ A sibling Lares (tending the intra-island gate-models) handed this ring across t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-0wzEKSplAFZUwqQg5_aM55j02vWKbyyYRe2AdVhNx0
+<<^ code="&#x0003;">>ni:///sha-256;qTEG5WxwXOWjzIpnSNJu-KcCYxYw8bCcvgkjRjol0a4
 
 <<^ code="&#x0004;" -> to="?">>

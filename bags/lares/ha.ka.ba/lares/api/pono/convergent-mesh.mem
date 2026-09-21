@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/convergent-mesh.mem"
@@ -12,6 +14,7 @@ manaoio    = 13
 role       = "the converged DreamNet mesh model — revocation, membership, and revision are ONE shape (local·decaying·graded·cost-bound·lineage); epoch=lease not revoker; the contract performs the key-agreement; grounded in falsifiable cross-domain pattern-integrities (mycelium foremost)"
 status-why = "the per-Nexus convergent seal + keyring delivery stand live"
 tags       = ["api/pono/meme", "api/pono/causal-islands", "api/pono/orichalcum-capabilities", "api/pono/lararium-identity", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/api/pono/convergent-mesh"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/convergent-mesh"
 written    = "2026-06-24"
@@ -19,7 +22,7 @@ written    = "2026-06-24"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -136,6 +139,6 @@ The Scope-1 CAD-blob pipe now carries a ''concrete design'' (`content-resolution
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f6JolSBcsf3h4a0_VXEsSgKEqurE143X_laUJX5HE6I
+<<^ code="&#x0003;">>ni:///sha-256;miifbqk-UImbTKsJq1sPDwGFfNzIGaBJzJpGxJEZfng
 
 <<^ code="&#x0004;" -> to="?">>

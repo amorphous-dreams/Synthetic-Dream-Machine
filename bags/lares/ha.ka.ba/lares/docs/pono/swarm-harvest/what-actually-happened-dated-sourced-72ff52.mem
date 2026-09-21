@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: WHAT ACTUALLY HAPPENED (dated, sourced). Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/what-actually-happened-dated-sourced-72ff52"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -182,6 +183,6 @@ https://www.iana.org/dnssec/procedures/ksk-operator/KSK_Key_Management_Procedure
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tKc95KcCeuxT_f_MgTMWqca7drSEOh1item2OPmcxzQ
+<<^ code="&#x0003;">>ni:///sha-256;GPT68EN1KJZR_f7zewUnBz1X3g-H17sopj8wYZ0FV5o
 
 <<^ code="&#x0004;" -> to="?">>

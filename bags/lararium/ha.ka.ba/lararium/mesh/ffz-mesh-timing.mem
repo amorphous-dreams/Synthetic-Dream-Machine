@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/ffz-mesh-timing">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/ffz-mesh-timing.mem"
@@ -11,6 +13,7 @@ manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "PROVISIONAL CANON: the FFZ MESH-timing law — how a magically-federated mesh of causal-island Nexuses keeps time with NO global now. The 'e vs φ' binary dissolved (Mu): the mesh rides THREE orthogonal axes, none a single shared constant. (1) e≈2.718 owns RATE/DECAY/STRUCTURE (lease decay e^-t/λ, gossip log-mixing, hyperbolic-exponential routing, tier-spacing) — realization renewal-randomized + secret-phase. (2) The DESYNC axis owns NO GLOBAL CONSTANT — a pairwise-incommensurability invariant (each island its own cadence, neighbors mutually irrational/coprime; φ_d-plastic-ρ / cicada-coprime / Kuramoto-dispersion as LOCAL tools), proven adversarially-NECESSARY by multi-node FlipIt. (3) Integer/harmonic for OPT-IN authenticated coupling. PRIMARY clock = the proactive-refresh EPOCH (corm-lease), paced to the adversary's creep (PSS). PRECONDITION = defender-refresh-cost < adversary-compromise-cost (FlipIt dropout; the siege-cost dial). Rests on 8 libations: distsys, network-science, biology/stigmergy, KAM/Kuramoto, low-discrepancy, Buzsáki, Mu/relativity, security/FlipIt-PSS-MTD. The grammar's intra-clock φ (band-orthogonality) stays untouched."
+title     = "lar:///ha.ka.ba/lararium/mesh/ffz-mesh-timing"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/ffz-mesh-timing"
 written   = "2026-06-29"
@@ -18,7 +21,7 @@ written   = "2026-06-29"
 
 <<~ aka "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -131,6 +134,6 @@ Eight independent domains converge on a single shape — ''three axes, no global
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Pl-u_CZsP6Wr4-qEkDsqUr2D4uh5kMPknnuX8ZBY5J4
+<<^ code="&#x0003;">>ni:///sha-256;C_LFf5EPxNV_CMicXMtM3hvtKSEfYXFnNEmmDyvwQWM
 
 <<^ code="&#x0004;" -> to="?">>

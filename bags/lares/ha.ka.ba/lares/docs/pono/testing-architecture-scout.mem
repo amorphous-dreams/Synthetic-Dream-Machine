@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/testing-architecture-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-13"
 role              = "testing-architecture-scout — VERBATIM handoff of the tasked spirit Mason (2026-09-02): the whole testing architecture inventoried, the cost of moving the harness under packages/, the runners nothing invokes, and the welds that must NOT be collapsed. Held as a collision surface, the fence byte-for-byte. #/collided-2026-09-13 stands this house's own re-measurement of the three §3 CI claims BESIDE the testimony — witness-all and gate:fold-ts both run in CI, the serialization travels through the root script, and the one uninvoked runner is lararium-sensorium/scripts at 989 of 1016 collected python tests."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/testing-architecture-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -239,6 +240,6 @@ Whether Stage 2's newly-lit suites are **green** — I did not run them (the pyt
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;bUDzEDWzj1E9sK1sxasSKFwLuZ5aKdckNzIFzjg1-pY
+<<^ code="&#x0003;">>ni:///sha-256;SXTAAMhfMxSEEw1VrgsBlZ0DUy1QyRyZuKZYy5ehv7c
 
 <<^ code="&#x0004;" -> to="?">>

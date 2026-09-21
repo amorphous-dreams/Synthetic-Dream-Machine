@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/parser">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/parser.mem"
@@ -11,13 +13,14 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "parser law: MemeticParser subclass contract, lar-sigil dispatch model, grammar self-hosting, sigil kinds, closure law, C0 control-sigil roles"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"]
+title     = "lar:///ha.ka.ba/lares/api/pono/parser"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/parser"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -192,11 +195,13 @@ Parser MUST reject ad-hoc closure spellings as canonical. A noncanonical closer 
 
 !! Meta Block
 
-The ''toml meta slot'' (`#meta`) carries the canonical identity payload for a meme — a bare `` ```toml meta `` fence after the SOH opener, not an `<<~ ahu>>` wrapper (see `memetic-wikitext-framing#carrier-spine`).
+The ''toml meta slot'' (`#meta`) carries the canonical identity payload for a meme — a bare `` ```toml meta `` fence immediately after the STX body opener, not an `<<~ ahu>>` wrapper (see `memetic-wikitext-framing#carrier-spine`).
 
 Canonical form:
 ````text
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/path/to/meme">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 uri-path  = "..."
 file-path = "..."
@@ -284,6 +289,6 @@ trigger = "end of stream"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gLU-9btOErtnrqylDNsVk-so1xKZReOCggy8BlQc0w8
+<<^ code="&#x0003;">>ni:///sha-256;hmxPpOn2T_8Dzo2IJMLidoulKhU627f_odQJEQVobBw
 
 <<^ code="&#x0004;" -> to="?">>

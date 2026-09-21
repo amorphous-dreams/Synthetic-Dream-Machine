@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-reachable-worlds.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 rating    = "ano"
 role      = "concept canon — the other worlds as real, reachable, and dream-mirrored: the Loom's stitches and its offcuts, the four arrival channels, and the referee law for what washes up"
+title     = "lar:///ha.ka.ba/elyncia/concepts/the-reachable-worlds"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-reachable-worlds"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -150,6 +151,6 @@ settled pet-name for the tideline of worlds yet.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hR1Z24sy2jL_xYc-LmVeAup8sQ0TiN1vWxBjmWTf9vI
+<<^ code="&#x0003;">>ni:///sha-256;M6DdkrEISc7tmKvGsjXduQD5I0az0AKnVsoel5qvjME
 
 <<^ code="&#x0004;" -> to="?">>

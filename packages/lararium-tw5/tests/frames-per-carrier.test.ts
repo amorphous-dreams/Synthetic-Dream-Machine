@@ -142,8 +142,8 @@ describe("what the corpus witnesses can and cannot see", () => {
    *
    * So the skip gets counted rather than left implicit. The count was a ceiling of 17 while the reason
    * for each was unknown; every one of those has since been named or retired, and what remains is a
-   * KIND rather than a residue: a bag declares itself and holds no meme's text, so it carries no
-   * `uri-path` and never should.
+   * KIND rather than a residue: a bag declares itself, so it carries no `uri-path` and never should.
+   * Its own declaration and prose still stand inside a full checked descriptor carrier.
    *
    * The reading tightens to match. Not "no more than N go unwalked", but "every file a corpus walk
    * skips is a bag declaring itself" — an invariant a new gap breaks, where a ceiling would have

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/kai-a.mem"
@@ -10,11 +12,10 @@ manao     = 12
 manaoio   = 11
 rating    = "ano"
 role      = "primary character — Kai ʻĀ, the prismatic elf warrior-ranger kaiju-stalker (Kai's PC); build approved, lifepath open for Session 0.1 talk-story"
+title     = "lar:///ha.ka.ba/elyncia/characters/primary-characters/kai-a"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/primary-characters/kai-a"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -84,6 +85,6 @@ stays a table question.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_ag7Ud0mv17PI2wEwrxIvL3rXlZnf66w-XVLgdXcCBA
+<<^ code="&#x0003;">>ni:///sha-256;itwFmgFzmf5rmUwb4uqtFYWQaNYtTNM0ZJaS-hspER4
 
 <<^ code="&#x0004;" -> to="?">>

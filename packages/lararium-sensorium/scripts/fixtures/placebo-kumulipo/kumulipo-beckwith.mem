@@ -1,16 +1,17 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-beckwith">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/kumulipo-beckwith.mem"
 l-space   = "stable"
 role      = "the Kumulipo ablation's placebo leg, Beckwith carrier — envelope and wā markers verbatim, order-1 babble where the chant stood; held whole as the text the testbed reads"
+title     = "lar:///ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-beckwith"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/testbed/placebo/kumulipo/kumulipo-beckwith"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/held>>
 ```toml meta
@@ -11770,6 +11771,6 @@ LUOMALA, KATHERINE. Maui-of-a-Thousand-Tricks: His Oceanic and occasionally sent
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nWa8SQqnzMc5XpmWFEOqkYcPXzRz95pEOsaiB5cXMPI
+<<^ code="&#x0003;">>ni:///sha-256;6EnM4MjOjRmuDs-V3iGXz9FvS6Au70w5Mx5slRuF3Nw
 
 <<^ code="&#x0004;" -> to="?">>

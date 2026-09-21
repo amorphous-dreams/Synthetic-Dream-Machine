@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/procedure">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/procedure.mem"
@@ -10,11 +12,10 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "English alias pointer — \\procedure redirects to wehe; canonical spec lives at pono/wehe"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure"]
+title     = "lar:///ha.ka.ba/lares/api/pono/procedure"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/procedure"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -29,6 +30,6 @@ Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fhmLFOR6nV_vMGB4wTn8a3Jl_1gRbFLYhDyOD5x5_AA
+<<^ code="&#x0003;">>ni:///sha-256;C-ucQIQb0wh4rZr6OyZCEEOLFZ47Ues1sXs1BMxH4P0
 
 <<^ code="&#x0004;" -> to="?">>

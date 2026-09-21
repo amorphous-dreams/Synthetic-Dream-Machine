@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/readiness-keys">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/readiness-keys.mem"
@@ -12,11 +14,10 @@ role          = "lararium progressive readiness vocabulary — named shrine-ligh
 source-symbol = "READINESS_KEYS"
 status-date   = "2026-05-01"
 tags          = ["docs/readiness-keys"]
+title         = "lar:///ha.ka.ba/lararium/docs/readiness-keys"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/readiness-keys"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -95,6 +96,6 @@ dynamic-forms = ["corpus:<id>", "projection:<id>"]
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x4tkHDxmrDvmdm8bnc-UfderZQol3by-KmxSWnuMOBU
+<<^ code="&#x0003;">>ni:///sha-256;cdjgz4KLCrLO4C9zFChl5tGbyvA6QY4r4hZBvEYShdI
 
 <<^ code="&#x0004;" -> to="?">>

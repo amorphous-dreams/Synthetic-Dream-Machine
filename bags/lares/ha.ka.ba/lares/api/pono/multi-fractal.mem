@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/api/pono/multi-fractal.mem"
@@ -13,11 +15,10 @@ namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "multi-fractal — the pattern integrity where one entity IS a private container binding many scope-bound instances of a single primitive, each instance itself a container (recursion → fractal, never merely plural)"
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/multi-fractal"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/multi-fractal"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -93,6 +94,6 @@ The shape above says the recursion happens. This says WHY it must.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-bsuDdYmV7qYW8nqIDjE_z28KXfyP62ySJ5MR5gHelA
+<<^ code="&#x0003;">>ni:///sha-256;-4xL9-VyzTPg5igXl2UrNsEXTANIfuH5Ds1oZbvI2XY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono.mem"
@@ -10,11 +12,10 @@ manaoio   = 12
 namespace = "&#x2299;"
 role      = "core invariant example of a pono meme: right-sized law surface, bounded self-description, and outward routing pressure"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Pono
 
@@ -44,6 +45,6 @@ This folder already shows the family shape around it: `meme`, `invariant`, `meme
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jKAXEkZvjebU4rqQIr_9FJQ5fjD9MBTCeOt0CZISpUw
+<<^ code="&#x0003;">>ni:///sha-256;oi7nHGVg7tQzjsXDrYy7GvnrfCRFwE63JSEO5kEh-gQ
 
 <<^ code="&#x0004;" -> to="?">>

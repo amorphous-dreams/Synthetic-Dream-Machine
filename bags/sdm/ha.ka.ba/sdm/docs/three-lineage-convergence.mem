@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/docs/three-lineage-convergence">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/docs/three-lineage-convergence.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 12
 rating    = "meme"
 role      = "design research — the three-lineage convergence: Ars Magica's verb×form grammar, Mage's rated spheres, and the SDM thirteen; what each lens teaches the conversion program"
+title     = "lar:///ha.ka.ba/sdm/docs/three-lineage-convergence"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/three-lineage-convergence"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -90,6 +91,6 @@ Three magic-system designs, independently derived across four decades, factor ma
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lNW9sGY7-tCQvO--zEHLm9nCXUpKXRglg9WJ2axLbRI
+<<^ code="&#x0003;">>ni:///sha-256;63eGJZIwIAa1pTRPEoDWJ0kgAtGwyFNRkxgKWmPOQtA
 
 <<^ code="&#x0004;" -> to="?">>

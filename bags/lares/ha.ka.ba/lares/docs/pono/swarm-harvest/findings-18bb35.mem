@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/findings-18bb35">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/findings-18bb35.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: FINDINGS. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/findings-18bb35"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/findings-18bb35"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -289,6 +290,6 @@ Note the twin: **Emby CVE-2021-25827 (X-Forwarded-For → local IP → login byp
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ikzFTAujdscSwPbxgyp93N9dVuZ_ppuhDJAwqBuyR6Y
+<<^ code="&#x0003;">>ni:///sha-256;XANojVTWbT7XXS3lzgu8qsNtAE-48eIyy_ujDWv8wkU
 
 <<^ code="&#x0004;" -> to="?">>

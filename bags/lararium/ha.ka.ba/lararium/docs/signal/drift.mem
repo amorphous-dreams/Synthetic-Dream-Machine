@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/drift">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/drift.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 16
 role      = "docs room for governing-field drift, recovery protocol pressure, and projection-error handling across lararium signal surfaces"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/signal/drift"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/drift"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -58,6 +59,6 @@ The in-span loop surfacing rides the `OODA-HA` Level (`lar:///ha.ka.ba/lares/api
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OaMnrImVk44DyCKN0uvA1Dp4LJKyWMsdomVLH24PNFY
+<<^ code="&#x0003;">>ni:///sha-256;ZSfowk2uByW9bng75l7HxhHlWAuN_JD0gRrl2C99Jag
 
 <<^ code="&#x0004;" -> to="?">>

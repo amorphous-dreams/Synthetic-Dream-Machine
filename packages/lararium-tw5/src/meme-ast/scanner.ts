@@ -84,8 +84,12 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // spec §5.3 + lar-uri.md §5.6, the URI fragment is a path within the meme;
   // nested ahu blocks produce child tiddlers at `parentUri#/parent/child`
   // rather than dedicated `#parent#child` URIs (single-hash invariant).
-  { sigilName: "ahu", regex: /<<~(?:[^>]|>(?!>))*\bahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)"?)?\s*>>/g, eventType: "open"  },
+  { sigilName: "ahu", regex: /<<~(?:[^>]|>(?!>))*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)"?)?\s*>>/g, eventType: "open"  },
   { sigilName: "ahu", regex: /<<~\/ahu\s*>>/g,                                                          eventType: "close" },
+  // English alias: the AST carries shared intent and rooted slot grammar; carrier decomposition
+  // retains the authored worksite spelling separately for byte-preserving projection.
+  { sigilName: "fragment", canonicalName: "ahu", regex: /<<fragment\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)?"?)?\s*>>/g, eventType: "open" },
+  { sigilName: "fragment", canonicalName: "ahu", regex: /<<\/fragment\s*>>/g, eventType: "close" },
   // Pranala — block before inline (block wins at same position)
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },

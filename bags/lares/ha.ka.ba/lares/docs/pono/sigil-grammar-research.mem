@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/sigil-grammar-research.mem"
@@ -9,11 +11,10 @@ mana      = 17
 manao     = 16
 role      = "research doc: Hawaiian-inspired control sigil grammar — naming rationale, precedent alignment, parser notes, open questions"
 tags      = ["api/pono/memetic-wikitext"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/sigil-grammar-research"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/sigil-grammar-research"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/purpose>>
 
@@ -414,6 +415,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qdJAqV5WrWZtsfRkCDRzaDxOvJ-Z4dLOuRe9KO73a7w
+<<^ code="&#x0003;">>ni:///sha-256;h4N_Z0u810pS7_LGpYjU1YQHcV7IgdqCr4bqgKZ57G4
 
 <<^ code="&#x0004;" -> to="?">>

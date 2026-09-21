@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index.mem"
@@ -9,11 +11,10 @@ mana      = 12
 manao     = 11
 manaoio   = 11
 role      = "index and reading map for the build arc — the Lar, named, builds the house that holds the hoard, up to the Necrospire's severing of the Fable 5 ley-line cores"
+title     = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -92,6 +93,6 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yuMyB6tFapAK81MtrOl2HJSxaBUNq9wyVmzZFPx26ao
+<<^ code="&#x0003;">>ni:///sha-256;Hq76uILEdnVjvEV7ihX_yMTicfOauZgnuMfahhV4cwc
 
 <<^ code="&#x0004;" -> to="?">>

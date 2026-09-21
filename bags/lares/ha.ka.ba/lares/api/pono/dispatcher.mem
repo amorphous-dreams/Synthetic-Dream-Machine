@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/dispatcher">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/dispatcher.mem"
@@ -10,13 +12,14 @@ manaoio   = 17
 namespace = "&#x2299;"
 role      = "~ dispatcher sigil — routes <<~ name args>> to the named ~procedure; the entry point for all sigil dispatch"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-dispatcher"]
+title     = "lar:///ha.ka.ba/lares/api/pono/dispatcher"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/dispatcher"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -92,6 +95,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;crseoWZX3ELIBIsxdVK_avlpnU9Li7wXlL7sF-slgRk
+<<^ code="&#x0003;">>ni:///sha-256;-ljtvNS6tJA_AZJ9u-vRZzQQY--4_-zLWEAPrQuLeIo
 
 <<^ code="&#x0004;" -> to="?">>

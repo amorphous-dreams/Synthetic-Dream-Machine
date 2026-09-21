@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem"
@@ -12,11 +14,10 @@ namespace   = "&#x2299;"
 role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lares/api/pono/vm-projection-bus"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/vm-projection-bus"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -184,6 +185,6 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fK6FoRLSGiFmVpvCh3iD6SSL6eETEEs5wuKge0q7HlI
+<<^ code="&#x0003;">>ni:///sha-256;ewdUQ2gN6HveILLUVcj74kN40jO3HFMXuomlCiohAV8
 
 <<^ code="&#x0004;" -> to="?">>

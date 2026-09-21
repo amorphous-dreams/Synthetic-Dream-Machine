@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/tiddler-carriage.mem"
@@ -15,13 +17,14 @@ revised-on        = "2026-09-13"
 role              = "tiddler-carriage — the operator's one sentence carried to the mesh and MEASURED: a tiddler stands as a CRDT record and syncs by the share policy; a peer FETCHES the bytes a CID names on request, never syncing them with the record. The fleet crossing of a pointer (record crosses, bytes stay), the cross-operator crossing (the bulb serves the boot CAS alone), the seam where a fetch attaches (file:line), PIN and RELEASE built red-first (the derived reference count · the sweep · the genesis control), the PIN cap's shape held, and the questions only the operator answers."
 status-why        = "RULED 2026-09-11 and BUILT: the fetch door stands as `makeCidResolver(localRead, portTransit, cacheWriteThrough)` over Socket B with the gate reading the FLEET class (`63d24d040`), composed fleet-then-Herm (`85360ee2e`: C fetches A's public blob through the Herm's `/cas/<cid>` with A dark, three vessels staged); PIN at cid grain and grace per tier in ROLLS off the realm's own clock (`a3f70ecc9` · `8929a160d`), the stowage cooling on the same cell (`20d1569db`). Held loud: the Herm's board receiving a pointer A lands in a public bag (A's crossroads doc keys on A's key) — the federation gate's next seam — AND THE HERM'S OWN HALF OF THE DOOR STANDS OPEN, MEASURED 2026-09-13: a Herm IS the crossroads relay and holds no carriage CLIENT, so `publicCasShore.read` reads local bytes alone and nothing in the product ever makes a Herm FETCH the body it would re-share. `tests/e2e/herm-reshares-public-blob` ⑤b plants the body by hand precisely because nothing else does."
 tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/tiddler-carriage"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/law>>
 
@@ -133,6 +136,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZTvjDmMkDpwltJ7r5HhMSpRUrWeLBVjENybvcOXav7U
+<<^ code="&#x0003;">>ni:///sha-256;T9gFuXtHuia_2-_9u8LVutCi7VPmeKiYXuzZc2pw5LQ
 
 <<^ code="&#x0004;" -> to="?">>

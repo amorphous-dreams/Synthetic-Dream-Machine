@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/provenance">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/provenance.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 16
 role      = "docs room for lararium signal lineage, archive witness, source shelves, and migration residue that still pressures the branch"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/signal/provenance"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/provenance"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -138,6 +139,6 @@ Three-word attitude root `w1.w2.w3`: heading · angle · carried dynamic; noun �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x50OkN6c5m2ByIbmwsUm5SkHoRS6wYNAw_Qdh-8ZZ5g
+<<^ code="&#x0003;">>ni:///sha-256;lsSW07lVu3GtkqN2GYJROPcWRuPy_w4AD8-hM00i0lU
 
 <<^ code="&#x0004;" -> to="?">>

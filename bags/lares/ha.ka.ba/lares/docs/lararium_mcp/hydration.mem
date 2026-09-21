@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path       = "bags/lares/ha.ka.ba/lares/docs/lararium_mcp/hydration.mem"
 l-space         = "stable"
@@ -11,11 +13,10 @@ role            = "canonical hydration closure, edge taxonomy, artifact, resolve
 source-consumes = ["packages/lares-core/memes/docs/mcp/BOOT_LOCI_INVENTORY.md", "packages/lares-core/memes/docs/mcp/EDGE_TAXONOMY.md", "packages/lares-core/memes/docs/mcp/HYDRATION_ARTIFACT_CONTRACT.md"]
 status-date     = "2026-04-23"
 tags            = ["api/pono/meme", "api/pono/loci"]
+title           = "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/docs/lararium_mcp/hydration"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -169,6 +170,6 @@ Minimal boot should remain small enough to avoid compaction.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c7tQraV7l5-KLo4oJjVHsh_2aSp3-y1rAJY0RvySyeI
+<<^ code="&#x0003;">>ni:///sha-256;6BVZt19p54pATg6kArjR9oNQtLLEjT-PNAk9Ja_k7rA
 
 <<^ code="&#x0004;" -> to="?">>

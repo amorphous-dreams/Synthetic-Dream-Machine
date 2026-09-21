@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc.mem"
+l-space   = "sdm"
 mana      = 14
 manao     = 17
 manaoio   = 15
 role      = "FTLS card projection: Floating Disc — playable surface with clickable component pills"
 tags      = ["components/domain/stuckforce", "components/function/cargo", "components/function/barrier", "components/hook/sustained", "mount-points/trait"]
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/projections/powers/ftls-card/floating-disc"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Floating Disc — FTLS Card
 
@@ -56,6 +57,6 @@ A concave disc of stuckforce, 1m across, hovering at waist height. It bears a lo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WA3K1FbwUNyjYmiZD8tF5N7Mn-TO5W3KfTxAl9sl_4g
+<<^ code="&#x0003;">>ni:///sha-256;D3TQeQscQj58yX9hjUv-BEoQuuCGpt4vhuy10Ah5Hl4
 
 <<^ code="&#x0004;" -> to="?">>

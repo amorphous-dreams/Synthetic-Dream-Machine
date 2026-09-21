@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem"
@@ -12,13 +14,14 @@ namespace  = "&#x2299;"
 role       = "submission-grade specification for the lar: URI scheme — abstract, ABNF, five-planes reading (Provisional), resolution model, conformance, scheme registration, security; sibling submission to memetic-wikitext"
 status-why = "submission-draft"
 tags       = ["api/pono/meme", "api/pono/loci", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/api/pono/lar-uri"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/abstract>>
 
@@ -46,7 +49,7 @@ This document holds ''submission-draft'' maturity. The scheme law, path taxonomy
 
 ''Scope.'' This specification covers the syntax of the `lar:` URI scheme, the path taxonomy and slot discipline, the kind-plane surface rule (the kind-plane segment names a CRDT surface; a bare `child[1]` names a meme namespace), and the resolution model. It governs how an address gets ''written and resolved'', and stops at identity; what the named unit ''means'' beyond its identity lives elsewhere.
 
-''Out of scope.'' The content carried at a `lar:` address, and the markup that authors it, ride the sibling `memetic-wikitext` specification (Normative Reference [MWT]). The typed-edge grammar rides [PRANALA]. The operational addressing discipline lives at `lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL`.
+''Out of scope.'' The content carried at a `lar:` address, and the markup that authors it, ride the sibling `memetic-wikitext` specification (Normative Reference [MWT]). The typed-edge grammar rides [PRANALA].
 
 ''Relation to the memetic-wikitext specification.'' Memetic-wikitext treats a `lar:` URI as an opaque content identity and defers its internal structure here. The two specifications form ''one dual submission'': [MWT] names the markup; this document names the address. They SHALL cross-reference normatively.
 
@@ -518,7 +521,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri/SKILL">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/sync-namespace">>
 
@@ -526,6 +528,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EQuimcZ-SuI_yw8vKxjksWRE_zQLc5WNgH1EqCOmFe8
+<<^ code="&#x0003;">>ni:///sha-256;CGFrnW_t5Kgz-iXKaS9yHkknCRkBllIvg47IrQP2f70
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/grandmother-spider">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/grandmother-spider.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 rating    = "ano"
 role      = "concept canon — Grandmother Spider as one Persona of the Arcana wearing three masks (void-weaver, treaty-architect, cult-mother); and what the Mother Spore is NOT"
+title     = "lar:///ha.ka.ba/elyncia/concepts/grandmother-spider"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/grandmother-spider"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -83,6 +84,6 @@ debts do not reduce to one.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ccGXDcKFIflv8cYnilpkOB9Qn4rdaztrcSJaK32PlS4
+<<^ code="&#x0003;">>ni:///sha-256;BcGM7LcS5NK53oku5psBab1JHOBGD6ZWt_p6UlrOIuE
 
 <<^ code="&#x0004;" -> to="?">>

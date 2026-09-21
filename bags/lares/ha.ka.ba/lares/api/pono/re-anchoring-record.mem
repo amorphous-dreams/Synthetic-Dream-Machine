@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/re-anchoring-record">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/re-anchoring-record.mem"
@@ -11,13 +13,14 @@ manaoio       = 12
 revision-note = "the artifact that records THAT a re-anchoring happened and never what made it valid. Carries the three mechanisms that survive alignment with prior art, the six classes that refuse, and the rulings each refusal breaks"
 role          = "the re-anchoring record — one artifact folded two ways: an EVENT on write, accrued DEPTH on read. Holds the un-thresholded attestor bundle, the grounds-free boundary, and the attester⊥minter split, each with its shipped prior art and what it cost to align"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/api/pono/re-anchoring-record"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/re-anchoring-record"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -132,6 +135,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tA1EPOrehRFYOL_my3rUHp4KhRyk9R1Tlo7NR6S6Y3s
+<<^ code="&#x0003;">>ni:///sha-256;5jMd3DDowLujOUmzhNo37_SREQbgeWhTYBEBDqXKFFo
 
 <<^ code="&#x0004;" -> to="?">>

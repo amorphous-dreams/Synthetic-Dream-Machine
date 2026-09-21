@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/capability-provider.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 14
 role        = "invariant law: CapabilityProvider — the narrow interface over Keyhive's pre-alpha API. States exactly WHAT the gate answers and what it declines to, the archive restore a joinee owes itself, the torn-tolerant boot replay, and the lazy island materialization. The four-verb access axis stands as a MODEL, never a second gate."
 source-file = "packages/lararium-keyhive/src/capability-provider.ts"
+title       = "lar:///ha.ka.ba/lararium/keyhive/capability-provider"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/keyhive/capability-provider"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -84,6 +85,6 @@ already sits resident, so an access shore may call it every time without cost.
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;4x5CBRLkTitCBl5AQYmrLORuTKh6iKKqU4n2QnuPzfU
+<<^ code="&#x0003;">>ni:///sha-256;1XncJzEJcF059mOVOZEU-Jt8yxra9xYfJr1F6zbBZZ8
 
 <<^ code="&#x0004;" -> to="?">>

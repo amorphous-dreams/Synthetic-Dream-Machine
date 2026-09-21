@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite.mem"
@@ -10,13 +12,14 @@ manaoio   = 14
 namespace = "&#x2299;"
 role      = "invariant bug law for preventing live session claims from masquerading as canon"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -79,6 +82,6 @@ If the node records the claim and marks promotion pressure separately, boundary 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nnrjZ6JhVmqw7jkliL1UQ8nCdlGmOLklqYtvpifTgDc
+<<^ code="&#x0003;">>ni:///sha-256;YnUY6F1DRtdjRUASmcLsTXOmyJSh5mXx343Sq2rwq8k
 
 <<^ code="&#x0004;" -> to="?">>

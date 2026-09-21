@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal.mem"
@@ -10,11 +12,10 @@ manao         = 15
 manaoio       = 14
 render-target = "docs"
 role          = "VERBATIM spirit handback (2026-09-11) — face-join re-grant of pre-seat bindings: a re-delegate is NECESSARY but NOT SUFFICIENT, keyhive reads forward-only so pre-seat content must be RE-SEALED (KeyhiveProvider.reSealBag). Measured on the real provider (DecryptError under re-delegate-only). Captured word-for-word (MD transliterated to wikitext); refines project-face-join-and-plane-law claim 2. Landed 024210396."
+title         = "lar:///ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/spirit-handback-face-join-reseal"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -113,6 +114,6 @@ I did not commit.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NpO9NvAh4jRwiU8tLm8FSvrQEaTDw-Yjl0pNh85riMI
+<<^ code="&#x0003;">>ni:///sha-256;AZPZvScORjtPechW5hs0egyEhazLGwKPs0g5-dqMX44
 
 <<^ code="&#x0004;" -> to="?">>

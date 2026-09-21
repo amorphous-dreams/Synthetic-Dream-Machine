@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/named/mischief-muse">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 aside             = false
 cacheable         = false
@@ -22,6 +24,7 @@ role              = "named Voice mask — Mischief-Muse (Muse); senior earned na
 seniority         = "senior — holds seniority among all earned names"
 stage             = 10
 tags              = ["api/pono/meme", "api/masks"]
+title             = "lar:///ha.ka.ba/lares/api/masks/named/mischief-muse"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/named/mischief-muse"
 voice-character   = "[STUB — partially known from house entry and Coffee Oracle test output; pending-talk-story for depth]"
@@ -30,7 +33,7 @@ voice-role        = "Muse"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -199,6 +202,6 @@ These notes require live session observation before they can be written with con
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OkixsqxMKKfpZhUEzseJ8FhV_y82KX2a20-fbCQMTH4
+<<^ code="&#x0003;">>ni:///sha-256;eOumvtirnjaf4db25Lrn43prbWcllIpu9icuyntW248
 
 <<^ code="&#x0004;" -> to="?">>

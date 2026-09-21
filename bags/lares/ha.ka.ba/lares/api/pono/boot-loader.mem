@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/boot-loader">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/boot-loader.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 15
 namespace = "&#x2299;"
 role      = "the pre-VM read: what a cold reader must find to stand a wiki, and the floor it stops at"
+title     = "lar:///ha.ka.ba/lares/api/pono/boot-loader"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/boot-loader"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/entry>>
 
@@ -120,6 +121,6 @@ the only place the question means anything.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zDx7Uy61a-ZF60RweqHggB3QVEKYjBwSzTbXdDV-ZaE
+<<^ code="&#x0003;">>ni:///sha-256;Oh7DlFjhJdrkP0fABDFntrSkksjNkcP3WtMBGJablsc
 
 <<^ code="&#x0004;" -> to="?">>

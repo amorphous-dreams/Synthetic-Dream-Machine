@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/lar-vessel.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 14
 role        = "invariant law: LarVessel — the ONE local runtime vessel class for browser, Node, worker and device. Capability declares a hostful SURFACE, never authority; receipt law rather than process role decides whether a local effect may write. Names the NONE default, the three presets, what the identity slot admits today, and where the vessel's reach stops."
 source-file = "packages/lararium-mesh/src/lar-vessel.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/lar-vessel"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/lar-vessel"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -94,6 +95,6 @@ names.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/island-protocol">>
 
-<<^ code="&#x0003;">>ni:///sha-256;cBANT9SuHnSuHlGNfeW9RtOzOd0hUJcR7LFZ8F8-ogg
+<<^ code="&#x0003;">>ni:///sha-256;RBKZ1LAnjcgN38FoQzJ6KnlkM45MQxEHzC8ApVS3Rt0
 
 <<^ code="&#x0004;" -> to="?">>

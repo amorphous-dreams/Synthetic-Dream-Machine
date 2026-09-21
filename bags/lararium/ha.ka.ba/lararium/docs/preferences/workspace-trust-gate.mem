@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/workspace-trust-gate.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 18
 role      = "docs concept room for trust checkpoints before costly shell, git, and workspace actions"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/workspace-trust-gate"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -67,6 +68,6 @@ The workspace trust gate explains when the node must pause anyway.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wx6CEvUjYK4Ss69pw-_dhV9m6NtDL7arDh4nSzcHdt8
+<<^ code="&#x0003;">>ni:///sha-256;aU4mzUB7YmhA-278CnF5vhlFURsGks1tVmq4XDXXVaY
 
 <<^ code="&#x0004;" -> to="?">>

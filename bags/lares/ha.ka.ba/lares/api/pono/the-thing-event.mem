@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/the-thing-event">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/the-thing-event.mem"
@@ -11,13 +13,14 @@ manaoio       = 10
 revision-note = "PROVISIONAL — the conversion act: a fed guest re-anchors from host to realm at a periodic assembly. Shaped, unbuilt, and deliberately UNDER-SPECIFIED: the mesh holds that a re-anchoring happened and never what made it valid"
 role          = "the conversion act — how a stranger begins to dwell. The guest dwells WITH a host (a dyad, one edge); the thing-event re-anchors that dwelling INTO the realm. The assembly stands as the third party that inverts the host-payment problem: the host is paid in depth for GIVING the guest away, never in a dependant kept"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/api/pono/the-thing-event"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/the-thing-event"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -98,6 +101,6 @@ That reads as the same law as //the naming layer performs, so it must never cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ra2cE_Ed_V1NQfN23POWh-9WdMW8S9Q4-QsP5SoqnhQ
+<<^ code="&#x0003;">>ni:///sha-256;mgVsuC1BtboNOaaKQHQ8oDWXqewyZ5cbg3M5ivYjUDM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -7,6 +7,8 @@ allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable          = true
 constraints        = ["S1: the parent invariant remains the admission law and this skill does not outrank it", "S2: guest work enters only through explicit host admission; ambient leakage does not count as lawful guest grammar", "S3: root primitives stay host-side and do not become guest-family proxies", "S4: hana keeps opener, optional priming payload, and guest body distinct", "S5: parser legality, lowering schemas, fixture execution, and long examples move outward before the parent swells"]
@@ -18,11 +20,10 @@ manaoio            = 14
 role               = "guest-grammar operational skill — admission audit, hana shaping, and companion-meme split discipline"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar"
 tags               = ["api/pono/meme", "api/pono/loci"]
+title              = "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Guest-Grammar Skill
 
@@ -234,6 +235,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PmK4k7HVAtWAGQuo00Fj05CZJD7JbDTdnuv3ZTVSCHo
+<<^ code="&#x0003;">>ni:///sha-256;OoNKuJ1wWIYJQ4F1qCxBdVY7F09foDEJa00I6-ugxnE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/README">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/README.mem"
@@ -8,11 +10,10 @@ l-space   = "adjacent"
 mana      = 17
 manao     = 16
 role      = "identity frame and infrastructure map for the Lares node"
+title     = "lar:///ha.ka.ba/lares/README"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/README"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/identity-frame>>
 
@@ -136,6 +137,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-Cz199Tnl9Sf0m98YGH9goegePIQ6RvmJalnE44R6jU
+<<^ code="&#x0003;">>ni:///sha-256;UtICqrZBJlee0MdH9IfSKM6udWLiA3v_OeNdNIGWDso
 
 <<^ code="&#x0004;" -> to="?">>

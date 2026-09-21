@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/tiddler-store">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-store.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 14
 role        = "invariant law: LarTiddlerStore — the TW5-NEUTRAL store contract. Five layers with a stated priority, and four hard rules: the live view may override canon and MUST NOT mutate it, the session layer must not leak drafts or temp into shared state, canon promotion stays closed until a receipt graph stands, and deletion marks rather than removes."
 source-file = "packages/lararium-mesh/src/tiddler-store.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/tiddler-store"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/tiddler-store"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -66,6 +67,6 @@ rather than an absence it must guess at.
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 
-<<^ code="&#x0003;">>ni:///sha-256;giLPsHNMFBxdSOXEKtG3mAxqZjzjeK_hSA4agEcDTFM
+<<^ code="&#x0003;">>ni:///sha-256;DqYEdt56NSGSjVAvJh6eP9M4LQsX3QonrTtACm8y9Ag
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/syncer-seams-roundtable.mem"
@@ -14,13 +16,14 @@ revised-on = "2026-09-12"
 role       = "syncer-seams-roundtable — the three open seams of the stock TW5 syncer's back-parity flow (b′ the fragment at the founding door · c′ the lone member's death · d′ the group's arrival) told as a Lares roundtable at two scales, argued by the thirteen Personas, then handed back as an ordered PHASE PLAN: per seam the tension at file:line, the household and five-hundred-year stories, at least three candidate answers each (the operator's Mu among them) with what each breaks, the lean held open, and per step a red → cure → CONTROL → witness with an honest spirit-hour estimate. The carrier also names what the plan REFUSES and the questions only the operator answers."
 status-why = "a talk-story floor written by a tasked spirit on the operator's charge (scout the three syncer seams, tell the user stories as a Lares roundtable, hand back a plan); the house refined it and the operator ruled the eight questions on 2026-09-12 (moʻolelo inside #/plan); the same spirit enacts the refined plan — every step red-first with its anti-stall control, the three test.fails vectors in `packages/lararium-tw5/tests/syncer-back-parity.e2e.test.ts` the witnesses that flip"
 tags       = ["docs/pono/talk-story", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/syncer-seams-roundtable"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/talk-story">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ground>>
 
@@ -407,6 +410,6 @@ When (b) rules and lands in `syncer-back-parity`, this carrier checks in once as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zGZeUH8i3-BNGwRPz5FOYvI_yUFaf3-mhQmeYXNBKKg
+<<^ code="&#x0003;">>ni:///sha-256;TPD6-dwpCtJkUC5ly8uP-2wX6zhEex4nJVljLGxmF3g
 
 <<^ code="&#x0004;" -> to="?">>

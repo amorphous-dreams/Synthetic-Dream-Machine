@@ -1,12 +1,13 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing">>
+<<^ code="&#x0002;">>
+
 ```toml meta
+title    = "lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing"
 type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing"
 ```
-
-<<^ code="&#x0002;">>
 
 - `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
@@ -244,7 +245,7 @@ never performing a move the renderer runs. A `!WORD` that acts belongs in the sp
 
 ## The Carrier Spine — Four Required Sigils
 
-A carrier travels as one framed transmission. It opens on a heading that names the place (**SOH**), enters its text (**STX**), ends its text (**ETX**), and closes the transmission, releasing it forward (**EOT**). A framed carrier stands all four, in this order; a carrier MAY arrive unframed, and the projection mints the frame (#/authoring).
+A carrier travels as one framed transmission. It opens on a heading that names the place (**SOH**), enters its text (**STX**), ends its text (**ETX**), and closes the transmission, releasing it forward (**EOT**). A complete carrier stands all four, in this order; a carrier arriving with absent marks reads at its corresponding gradient, and the projection mints the complete frame (#/authoring).
 
 | Sigil | Form | Role | Byte | Kapu byte |
 |---|---|---|---|---|
@@ -555,7 +556,7 @@ rather than two spellings of a similar one.
 
 A carrier MAY arrive with no frame at all — an author saving prose from an editor, a render surface
 writing a tiddler back. A conforming processor MUST accept it and MUST MINT the frame on projection:
-SOH with the namespace the meta declares, STX, ETX, EOT. Refusing an unframed file makes the grammar the
+SOH with the namespace the meta declares, STX, ETX, EOT. Refusing a carrier with absent frame marks makes the grammar the
 author's problem; mangling one corrupts canon quietly.
 
 ### The projection settles
@@ -841,20 +842,20 @@ A carrier that lost its address gets skipped by every instrument that walks the 
 check witness, the coordinate witness, the round-trip witness — each at `if (!uri) continue`. Seventeen
 carriers once sat outside all three at once while every one of them reported itself as corpus-wide.
 
-So a carrier's health reads as a **gradient**, never a verdict. A reader names the KIND a file declares
-itself to be, and the marks that kind requires and lacks. The kind reads from the DECLARATION, never
-from the path: where a file rests says where it rests; what it IS, it states.
+So a carrier's health reads as a **gradient**, never a verdict. Every `.mem` source reads as a carrier;
+the reader names the marks it carries and the marks it lacks. `uri-path` names a meme address and `bag`
+names a bag declaration inside that shared carrier shape.
 
-<<~ scale kind "carrier ~ declares `uri-path` — a meme; wants the whole frame and a check -> descriptor ~ declares `bag` — a bag declaring itself; a body frame would claim it holds a meme's text -> shelf ~ declares neither, and its head names an address the declaration omits — the fault that makes a file invisible -> unframed ~ no head at all; bytes wearing an extension">>
+<<~ scale carrier "complete ~ DOCTYPE + SOH + root TOML + STX + ETX + block check + EOT stand in order -> graded ~ each absent or displaced mark remains visible to the operator -> addressed ~ `uri-path` names a meme -> bag-declaring ~ `bag` names a bag's self-description; its fields and prose travel in the same checked body">>
 
-`lares normalize --gradient` reads it. It fails on a **fault** and never on a **kind**: a descriptor
-carrying no body frame stands exactly where it should, and a content file declaring itself in a `.meta`
-beside it carries no frame of its own — the one kind a reader cannot name from bytes, settled where the
-file list stands known.
+`lares meme check --gradient` reads it. It reports each carrier's missing or displaced marks and fails
+on a fault. A bag-declaring carrier carries STX, ETX, EOT, and a block check so its authoritative fields
+and prose share one integrity scope. A content file declaring itself in a `.meta` beside it travels as a
+sidecar pair, settled where the file list stands known.
 
 ### The graph a carrier points into
 
-A carrier can be whole and point at nothing. `lares normalize --edges` takes that second reading: which
+A carrier can be whole and point at nothing. `lares meme check --edges` takes that second reading: which
 addresses these carriers name, and which of them any carrier holds. **Run it either side of a move** —
 equal counts prove the weld held, a rise names what broke.
 
@@ -1005,6 +1006,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - `"lar:///ha.ka.ba/lares/api/pono/kapu"`
 - `"lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
 
-<<^ code="&#x0003;">>ni:///sha-256;PMpv-MjPKZheRJSm4BAVzFRZFsbQhQDwJVHQkwDwQFs
+<<^ code="&#x0003;">>ni:///sha-256;hbqAG0ybgjNb0io0lmqJnD8W415u_EHhRebCKt3RO_Q
 
 <<^ code="&#x0004;" -> to="?">>

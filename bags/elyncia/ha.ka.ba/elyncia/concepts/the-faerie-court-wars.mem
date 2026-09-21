@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-faerie-court-wars.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 rating    = "ano"
 role      = "concept canon — the Faerie Court Wars, YOLD ~3195-4200: the clan wars of the settlement age that raised Neo-Thracia; and the era-ladder law that makes this span and the imperial one open ground for pattern-integrities"
+title     = "lar:///ha.ka.ba/elyncia/concepts/the-faerie-court-wars"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-faerie-court-wars"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -146,6 +147,6 @@ Court Wars carries no default register; it carries the register of the front it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4LsqykkmhNgtHHvtEKcIRHaUjAf2gk4ESl1OjzQyFLg
+<<^ code="&#x0003;">>ni:///sha-256;EdV9WjZXT3TNc17gxTvmHifQq4RNI8ZmfaarBLqvkkc
 
 <<^ code="&#x0004;" -> to="?">>

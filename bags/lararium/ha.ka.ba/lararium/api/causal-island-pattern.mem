@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/causal-island-pattern">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/causal-island-pattern.mem"
@@ -12,6 +14,7 @@ manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "THE MAP — the validated unified pattern integrity of a Lares causal island, carried with high confidence forward. A two-swarm + four-foundational-domain validation (control-theory · autopoiesis · category-theory · process-philosophy) confirms it as a genuine Fuller pattern integrity, named 6 ways (homeostat=self-stabilizing-system=rate-distortion-encoder=operational-closure+structural-coupling+precariousness=autopoietic-monad=open-system-in-categorical-systems-theory). THE MASTER CUT: AUTHORITY(safety) ⊥ FLOW(liveness) — the 5 surface-invariants collapse to this spine. Marks which invariants are UNIVERSAL (no-global-now=sheaf/H¹ · grown=structural-drift · couple-then-decouple) vs OUR DESIGN VOWS (two-poles · pacing⊥credential). The Ashby requisite-variety floor bounds no-global-now; SOC is a HAZARD (target a margin below); the fuse must NEVER merge interiors."
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/causal-island-pattern"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/causal-island-pattern"
 written   = "2026-06-26"
@@ -19,7 +22,7 @@ written   = "2026-06-26"
 
 <<~ aka "lar:///ha.ka.ba/lararium/api/network-edge">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -122,6 +125,6 @@ The high-confidence bearings for the build (when the forks unblock):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;g5Bnus6-IWUALttw9Zrn7YWebrEWXkH_JsJBnXUq434
+<<^ code="&#x0003;">>ni:///sha-256;NQLIrmZpJD6NjaEbXWAkZv7nEzCPN6VP476q-_bkCh0
 
 <<^ code="&#x0004;" -> to="?">>

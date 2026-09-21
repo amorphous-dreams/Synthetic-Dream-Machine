@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/one-name-one-relation">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/one-name-one-relation.mem"
@@ -10,11 +12,10 @@ mana      = 17
 manao     = 16
 manaoio   = 15
 role      = "One name carries one relation — the three relations a lar: name may carry (holding · meeting · being), the identity ladder each layer sits on, and why a name carrying two of them fuses two things a reader cannot tell apart"
+title     = "lar:///ha.ka.ba/lares/api/pono/one-name-one-relation"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/one-name-one-relation"
 ```
-
-<<^ code="&#x0002;">>
 
 ! One Name, One Relation
 
@@ -151,6 +152,6 @@ Three moves, smallest first, each standing on its own.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-uris">>
 
-<<^ code="&#x0003;">>ni:///sha-256;QlpeCzZsxcs5dPRzvAhug50COviDZ_3JLDhwr4aCFMg
+<<^ code="&#x0003;">>ni:///sha-256;1saiqjTxCDCENNHTHEtV4UrvxXtu4AoumpE5qs3qcoI
 
 <<^ code="&#x0004;" -> to="?">>

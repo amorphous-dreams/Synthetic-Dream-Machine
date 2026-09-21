@@ -1,22 +1,25 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/mount-points/structure">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "structure"
 file-path = "bags/sdm/ha.ka.ba/sdm/mount-points/structure.mem"
+l-space   = "sdm"
 mana      = 8
 manao     = 17
 manaoio   = 6
 role      = "mount-point: Structure (Site) — Power bound to a place; absorbs the former Location class; mobility is a flat component"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/mount-points/structure"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/structure"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 ! Mount-Point — Structure (Site)
 
@@ -91,6 +94,6 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ayhokcOlM5bL_5n9_kPK11ySxWYNBtmW5hbf10T6eEM
+<<^ code="&#x0003;">>ni:///sha-256;iWFPm0z0sjmG4w_QzNn3ms4yLKwOMaDJTSal1KI4a1o
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wai">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/wai.mem"
@@ -10,13 +12,14 @@ manaoio   = 16
 namespace = "&#x2299;"
 role      = "wikispace conditional block-container — the TW5 `\\if` filter cascade; first non-empty filter renders its body; the water cascade with kahawai (`elseif`) + mukuwai (`else`); content selection on the document surface"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-wai"]
+title     = "lar:///ha.ka.ba/lares/api/pono/wai"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wai"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -116,6 +119,6 @@ close-pattern = '<<~\/wai\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IaTvcdFiW7WsGhd216NnwkMUVPALI8vzll7udtNv5DI
+<<^ code="&#x0003;">>ni:///sha-256;-uwYGsBUq-fL6POi6D-vtZ_lEhHjHxJGcfJNeJxgl4c
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/subduction-onomancy-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/subduction-onomancy-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-02"
 role              = "subduction-onomancy-scout — VERBATIM handoff of the tasked spirit Onomast: a deep read of Ink and Switch's onomancy (a local-first name system) and subduction (peer-to-peer sync for hash-linked data), at source. Signed-vs-attached, derive(store now decisions), Sedimentree, and the wall-clock collision with a clockless lease model. Held as a collision surface."
 tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/subduction-onomancy-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/subduction-onomancy-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -306,6 +307,6 @@ Subduction relays learn the `SedimentreeId`, the full causal DAG shape, per-comm
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;L8lu8N6BeZnHS8LJSxoEw7XjMEE0r2EbO80br4l-ipo
+<<^ code="&#x0003;">>ni:///sha-256;2LwxWBMKPKO3LOAGRxNaxwz0JdewC9xEaYQQPGI5w3U
 
 <<^ code="&#x0004;" -> to="?">>

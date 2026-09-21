@@ -19,17 +19,15 @@ import { fencedSpans, maskedExecAll } from "./fence-mask.js";
  * Slot identifier — supports nested fragment paths via `/`-separated
  * segments per memetic-wikitext spec §nested-ahu and lar-uri.md §5.6.
  *
- * `<<~ ahu #parent/child/grandchild>>` opens a slot whose URI reads
+ * `<<~ ahu #/parent/child/grandchild>>` opens a slot whose URI reads
  * `parentURI#/parent/child/grandchild` — single-hash invariant; the
  * fragment-path is the addressable hierarchy.
  *
- * TWO SPELLINGS, ONE STRUCTURE. The sharktooth house opens `<<~ ahu #slot>>`; a carrier written in the
- * plain dialect, for a reader who steps into no sharktooth namespace, opens `<<fragment #slot>>`. Both
- * name the same thing — a meme holding tiddlers — so both scan here rather than in two readers that
- * would drift apart. The leading `#/` and a bare `#` both read; the address minted from either carries
- * the slash.
+ * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens `<<~ ahu #/slot>>`; an English carrier opens
+ * `<<fragment #/slot>>`. Both name a meme holding tiddlers and scan through this
+ * shared reader. A bare `#slot` belongs to neither child-slot grammar.
  */
-export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/?[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
+export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
 /**
@@ -56,7 +54,7 @@ export interface AhuBlock {
   readonly bodyEnd:   number;
   /** Position just after the closing `>>` (end of full block) */
   readonly closeEnd:  number;
-  /** Slot identifier with leading `#`, e.g. `#thesis` or `#/parent/child` */
+  /** Rooted slot identifier, e.g. `#/thesis` or `#/parent/child` */
   readonly slot:      string;
 }
 
@@ -117,7 +115,7 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
 export function collectAhuSlots(text: string): Set<string> {
   const mask = fencedSpans(text);
   const slots = new Set<string>();
-  // Spelled as the address mints it, so a disk `#a` and a render `#/a` compare as one slot.
+  // The scanner admits only the rooted spelling that the address mints.
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
     if (!isAhuDeclaration(m[0])) continue;
     slots.add(composeSlotPath("", m[1] ?? "#"));
@@ -128,9 +126,9 @@ export function collectAhuSlots(text: string): Set<string> {
 /**
  * Compose a fragment-path slot identifier under an enclosing prefix.
  *
- *   composeSlotPath("",          "#thesis")   → "#/thesis"         (root child, a PATH)
- *   composeSlotPath("#parent",   "#child")    → "#/parent/child"   (one nested, a PATH)
- *   composeSlotPath("#/a/b",     "#c")        → "#/a/b/c"          (two nested)
+ *   composeSlotPath("",          "#/thesis")  → "#/thesis"         (root child, a PATH)
+ *   composeSlotPath("#/parent",  "#/child")   → "#/parent/child"   (one nested, a PATH)
+ *   composeSlotPath("#/a/b",     "#/c")       → "#/a/b/c"          (two nested)
  *
  * TWO GRAMMARS SHARE THE FRAGMENT SPACE, PARTED BY THE FIRST CHARACTER — the split JSON Schema
  * draws between a JSON Pointer (`#/$defs/x`) and an `$anchor` (`#x`), reached here for the same

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/graph">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 file-path        = "bags/lares/ha.ka.ba/lares/docs/graph.mem"
 l-space          = "stable"
@@ -11,11 +13,10 @@ research-sources = ["Bazel depsets and Skyframe (Google 2024)", "Buck2 architect
 role             = "spine for the pranala-edge DAG graph redesign — research synthesis, committed decisions, child locus map"
 status-date      = "2026-04-24"
 tags             = ["api/pono/meme", "api/pono/loci"]
+title            = "lar:///ha.ka.ba/lares/docs/graph"
 type             = "text/memetic-wikitext+tiddlywiki"
 uri-path         = "ha.ka.ba/lares/docs/graph"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/ooda-ha>>
 
@@ -172,6 +173,6 @@ Phases 1, 3, and 4 may proceed independently.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eOvUpQVN8YL99yyOrs3wFuXs4ojQ5dW7pZxYbHr4qZA
+<<^ code="&#x0003;">>ni:///sha-256;wynty0T3Z9LdQu_-cahXTHyOL7mgSeBUP6NOk5pIC1I
 
 <<^ code="&#x0004;" -> to="?">>

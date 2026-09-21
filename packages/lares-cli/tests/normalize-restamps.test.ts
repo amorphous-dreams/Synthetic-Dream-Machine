@@ -19,11 +19,11 @@
  * zero legitimately want to stand unchecked: the option reads real in the grammar and unexercised in
  * the corpus.
  *
- * TWO CASES STAY UNSTAMPED, and for different reasons:
+ * TWO FRAME CONDITIONS RECEIVE NO STAMP, and each names a distinct condition:
  *   · TORN — the frame opens and never closes, so a digest would cover bytes the grammar never bounded.
  *     Torn wants the frame closed first, and the door says so rather than passing in silence.
- *   · UNFRAMED — no span stands at all, so nothing is stampable either way. The corpus's six
- *     `<bag>/meta.mem` bag descriptors sit here, and the new law reaches none of them.
+ *   · ABSENT — no bounded span stands, so no check has a body to attest. Each bag-declaring carrier
+ *     carries a complete checked frame.
  *
  * ⚠ THE COST: this forecloses deliberately authoring an unchecked FRAMED carrier — the BSC
  * trusted-link case `block-check.ts` cites, where a block ran without a BCC by choice. One line to
@@ -130,29 +130,27 @@ describe("meme normalize — the check follows the body", () => {
     expect(out).toMatch(/torn/i);
   });
 
-  test("CONTROL: an UNFRAMED file gets no check — no span stands, so nothing is stampable", () => {
-    // True under both the old law and the new, and for a reason unrelated to minting: with no STX/ETX
-    // there is no span for a check to cover, so `checkSpan` answers null and the door has nothing to
-    // attest to. This is the case the corpus's six `<bag>/meta.mem` bag descriptors stand in.
+  test("CONTROL: a source without a complete frame gets no check — no span stands, so nothing is stampable", () => {
+    // With no STX/ETX there is no span for a check to cover, so `checkSpan` answers null and the door has nothing to
+    // attest to. A bag-declaring carrier does carry a span; this input arrives without one.
     const bare = path.join(dir, "bare.mem");
     writeFileSync(bare, "plain text, no frame, no check\n");
     meme("normalize", bare);
     expect(readFileSync(bare, "utf8")).not.toMatch(/ni:\/\/\//);
   });
 
-  test("★ CORPUS: the six unstamped bag descriptors stay untouched — a door that stamped manifests would regress ★", () => {
-    // Measured: 701 `.mem` stand under `bags/`, all tracked; SIX carry no `ni:///` trailer, and all six
-    // are `<bag>/meta.mem` bag descriptors declaring no `uri-path`, no STX and no ETX. Unframed by
-    // construction, so the new law reaches none of them.
-    const descriptors = ["sdm", "crossroads", "elyncia", "lares", "elyncia-referee", "lararium"]
+  test("★ CORPUS: the six bag-declaring carriers stand fully framed, sealed, and canonical ★", () => {
+    // A bag-declaring carrier has no `uri-path`, and its self-description remains authored content. Its STX–ETX
+    // body and BCC make that content independently inspectable and preserve a single carrier law.
+    const bagCarriers = ["sdm", "crossroads", "elyncia", "lares", "elyncia-referee", "lararium"]
       .map((bag) => path.join(REPO, "bags", bag, "meta.mem"));
-    for (const src of descriptors) {
+    for (const src of bagCarriers) {
       const copy = path.join(dir, `meta-${path.basename(path.dirname(src))}.mem`);
       copyFileSync(src, copy);
       const before = readFileSync(copy, "utf8");
-      expect(verifyBcc(before), `${src} carries a frame`).toBe("unchecked");
+      expect(verifyBcc(before), `${src} must carry a checked bag-declaring body`).toBe("ok");
       meme("normalize", copy);
-      expect(readFileSync(copy, "utf8"), `${src} was stamped`).toBe(before);
+      expect(readFileSync(copy, "utf8"), `${src} drifted under normalization`).toBe(before);
     }
     // SIX binary spawns; the default 5s budget is the parallel suite's, not this law's.
   }, 30_000);

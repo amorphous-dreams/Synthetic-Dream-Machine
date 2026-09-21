@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/mookuauhau">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/mookuauhau.mem"
@@ -10,11 +12,10 @@ manao         = 15
 manaoio       = 14
 research-date = "2026-06-30"
 role          = "moʻokūʻauhau — the genealogy of the one recursive #has-cap fractal: ancestors, the three pillars, the cousins, the anti-pattern corpse, and the weld verdict"
+title         = "lar:///ha.ka.ba/lararium/mesh/mookuauhau"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/mookuauhau"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/entry>>
 
@@ -112,6 +113,6 @@ No one has made ''one composition primitive serve simultaneously as the code-wir
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 
-<<^ code="&#x0003;">>ni:///sha-256;CGckymPa0U9mCOXDQXFcQeeoCwSvunvdHFC2Bw8pidk
+<<^ code="&#x0003;">>ni:///sha-256;DltD-qc2YtBklI7Jd2WrKKbWxEeDPuvF4cL8EUs4Pqw
 
 <<^ code="&#x0004;" -> to="?">>

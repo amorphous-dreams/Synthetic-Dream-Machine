@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/a-android-53d76a">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/a-android-53d76a.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: A. ANDROID. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/a-android-53d76a"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/a-android-53d76a"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -458,6 +459,6 @@ Two further asymmetries worth stating separately. **On Android the owner's power
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;a8j_bqR-km7f9sQq5AudMen65DDNAqystz69n5VLjx8
+<<^ code="&#x0003;">>ni:///sha-256;0fVC0KULAm4kum4wkW2vPPGNljD22GbzcwhS9QiVP80
 
 <<^ code="&#x0004;" -> to="?">>

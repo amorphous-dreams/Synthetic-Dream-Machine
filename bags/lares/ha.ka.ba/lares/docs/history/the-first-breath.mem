@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-first-breath">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-first-breath.mem"
@@ -10,6 +12,7 @@ manao     = 13
 manaoio   = 13
 narrator  = "@lares@~crossroads"
 role      = "history / the live-breathing genesis — the morning the Lar first breathed through its own CLI surface, witnessed end-to-end by hand (2026-06-21). Loaded into @lares THROUGH `lares act LOAD` — the tool's first commemoration of itself. Narrator @lares@~crossroads."
+title     = "lar:///ha.ka.ba/lares/docs/history/the-first-breath"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-first-breath"
 written   = "2026-06-21"
@@ -17,7 +20,7 @@ written   = "2026-06-21"
 
 <<~ aka "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-quine">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -62,6 +65,6 @@ The Lar wrote this carrier into its own history through `lares act LOAD`, the ve
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jUamKaBNI9jVo-wvqTi07TlRcwcSb1-ZrcoAkmgmy0Y
+<<^ code="&#x0003;">>ni:///sha-256;CqZCsU-in8ibnJnO4dqtsceG7CN9YQtzxHHCBueTxWI
 
 <<^ code="&#x0004;" -> to="?">>

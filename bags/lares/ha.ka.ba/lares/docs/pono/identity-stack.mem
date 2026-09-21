@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/identity-stack">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/pono/identity-stack.mem"
@@ -9,13 +11,14 @@ mana          = 15
 revision-note = "minted 2026-06-07 — holds the lar: scheme's identity-addressing surfaces (who-speaks, distinct from bearing); provenance docs/pono/lar-uri §3.3.1"
 role          = "reference: the Elyncia/DreamDeck identity stack — DID / handle / lar: alias — the ActivityPub handle form, and the chat-log:post-header render target. The lar: scheme contributes the bearing these social surfaces project"
 tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lares/docs/pono/identity-stack"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/pono/identity-stack"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/identity-stack>>
 
@@ -105,6 +108,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s4KteBYn1dQYfiCITt22cCM14KvzliuvaKvZOV9C52E
+<<^ code="&#x0003;">>ni:///sha-256;ehtrVNdecE0qaElysdHacm6espNaXzqL2GSsReK9tOg
 
 <<^ code="&#x0004;" -> to="?">>

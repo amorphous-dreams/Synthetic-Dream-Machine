@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/gorgonne-diaspora.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "faction meme — the Gorgonne Diaspora Cabals: the far-roaming serpent-folk of the sea-roads; appearance canon, gaze-courtesy, shipboard culture"
+title     = "lar:///ha.ka.ba/elyncia/factions/gorgonne-diaspora"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/gorgonne-diaspora"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -54,6 +55,6 @@ rigged with cloth, and a crew's toasts run in rounds, in sequence, by rank.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SswlFG-wpzCGMMYpFotsm6tlJpR0QfH5viSG8Bx1UOc
+<<^ code="&#x0003;">>ni:///sha-256;tj5wIaTI7KA1UcuzHEOxFuAzw-HXND_95Ch1pd_sias
 
 <<^ code="&#x0004;" -> to="?">>

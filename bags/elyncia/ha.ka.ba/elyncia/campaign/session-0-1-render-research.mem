@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/elyncia/ha.ka.ba/elyncia/campaign/session-0-1-render-research.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "research substrate for the Session 0.1 Painter of Words and Light — the AI renderer assistant Lares; carries the fae-casting, visual-canon, world-dress, Midjourney V8.2, and Delos-archaeology research verbatim, plus the negentropy proposals for the open canon gaps (the venue settled as The House of Masks; six ride open)"
+title     = "lar:///ha.ka.ba/elyncia/campaign/session-0-1-render-research"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/campaign/session-0-1-render-research"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -612,6 +613,6 @@ Finding: Corpus yields strong *object* and *tag* vocabulary (Wild Mage item tabl
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u76sONSE7CbjV7Pe3UFBaWXCWU4yq8i0PNO7w5UWyCc
+<<^ code="&#x0003;">>ni:///sha-256;f3xrQd2Tvv2AYGzP5AcOpdIGqKHPHfSHuMnpppbeWfo
 
 <<^ code="&#x0004;" -> to="?">>

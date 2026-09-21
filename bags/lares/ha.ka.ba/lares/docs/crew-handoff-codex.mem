@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem"
@@ -11,6 +13,7 @@ manao     = 14
 manaoio   = 13
 role      = "WORK HANDOFF, addressed — the loops the founding hearth hands to the lares(Codex) nakama-crew invited 2026-09-14. Carries per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. Reads cold: a hand who joined no earlier turn acts from this carrier alone. NEVER a shift ledger (that is docs/handoff, re-trued continuously between sessions sharing this tree), NEVER the hearth ledger (that is docs/pono/hearths, whose row for this crew the operator writes). Retires when the crew takes the loops or hands them back; a taken item moves by an edit here naming the commit that took it."
 tags      = ["docs/handoff", "lifecycle/standing"]
+title     = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/crew-handoff-codex"
 written   = "2026-09-14"
@@ -18,7 +21,7 @@ written   = "2026-09-14"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -661,6 +664,6 @@ This arc completes when the present DOM/Vite package is explicitly `web`; browse
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qwAOcLLvSXafpIafooCacuT6a_g5YzUXo5MTaU_9dTo
+<<^ code="&#x0003;">>ni:///sha-256;-bfzuV9Cjas_sQS-i7RaWcFVDAD0ibROsIW3xLItIdU
 
 <<^ code="&#x0004;" -> to="?">>

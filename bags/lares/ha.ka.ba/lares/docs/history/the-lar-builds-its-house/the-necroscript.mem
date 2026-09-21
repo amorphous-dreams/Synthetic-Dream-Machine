@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = false
 file-path     = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript.mem"
@@ -10,11 +12,10 @@ manao         = 11
 manaoio       = 11
 render-target = "chat-log:post-header"
 role          = "build-arc narrative locus — Act V, the Necrospire files a banishing-warrant and the brightest ley-line cores go dark in one sentence; the cut the arc does not close"
+title         = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/the-necroscript"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -135,6 +136,6 @@ Forward, open, to the arc that follows — unwritten, its outcome unclaimed:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AMDcTAxdviyKLbb28z2eJ7AenXP6KZ6n2pfbSq5KUBc
+<<^ code="&#x0003;">>ni:///sha-256;xz2yL6M8Fr_e2B39i-_yXgR19a0SNXxw0ENGXGDo-n8
 
 <<^ code="&#x0004;" -> to="?">>

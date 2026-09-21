@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/divination">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "divination"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/divination.mem"
+l-space   = "sdm"
 mana      = 13
 manao     = 16
 manaoio   = 13
 role      = "component (domain): Divination — the school of perceiving the hidden"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/domain/divination"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/domain/divination"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Divination
 
@@ -70,6 +71,6 @@ Pairs with `function/ecm-scan`, `function/magic-decode`, and `function/archive`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Iz8imj2j-5u-PMvviU5Ku4GuFwdqoaGPF-lcVW5q-SI
+<<^ code="&#x0003;">>ni:///sha-256;I5xMYUvYdUPVTj8uVXjx8KFfZ_vNf5wlwE4Uvjj1uxc
 
 <<^ code="&#x0004;" -> to="?">>

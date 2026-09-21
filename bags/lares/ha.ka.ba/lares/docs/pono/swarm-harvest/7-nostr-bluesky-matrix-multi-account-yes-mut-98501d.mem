@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 7. NOSTR · BLUESKY · MATRIX — multi-account yes, mutual blindness no. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/7-nostr-bluesky-matrix-multi-account-yes-mut-98501d"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -306,6 +307,6 @@ Briar's FAQ is the only place any of these projects writes the general law down,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v2H6ExprtZmjC_ul2fBl5T7Lz_npZ6YNbuVTRcToaRI
+<<^ code="&#x0003;">>ni:///sha-256;2V72J5gvlb7vXI1Ms-Hiie5YlQrWroOt2vHUn5OLLlk
 
 <<^ code="&#x0004;" -> to="?">>

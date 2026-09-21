@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/vendor/claude-code-harness">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/api/vendor/claude-code-harness.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 16
 role      = "vendor declaration: the Claude Code harness — its extension seams, their contracts and stability grades, the design law it publishes, and where a sovereign system owns its own ground"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/vendor/claude-code-harness"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/vendor/claude-code-harness"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/about>>
 
@@ -195,6 +196,6 @@ built against them tests behaviour, never a schema.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NtcWsZqhFaZx9W-pWVkLjSSMGtY4Pb5dmZD46LgcpBQ
+<<^ code="&#x0003;">>ni:///sha-256;m4P6pJEpMp7Y1eD_gX1oxa7eRqYCakFXykd4Fv-7gg8
 
 <<^ code="&#x0004;" -> to="?">>

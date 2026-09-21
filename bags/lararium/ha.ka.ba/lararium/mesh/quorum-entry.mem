@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/quorum-entry.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 13
 role        = "invariant law: the ONE canonical byte-image every quorum-signed steward entry signs over — shared beneath the Kapae antigen board and the members set. Names the subtraction, the domain-stays-first-and-required separation, and the deliberate refusal to carry a verdict (fold + quorum stay board-local, so a shared verifier cannot turn admission into conscription)."
 source-file = "packages/lararium-mesh/src/quorum-entry.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/quorum-entry"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/quorum-entry"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -72,6 +73,6 @@ declines every judgment about them.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;7owXhy6EeP_KBr3fpRXpJ9GzKiobBniUyCsz2meazmY
+<<^ code="&#x0003;">>ni:///sha-256;oWxd8vmaz82AA9fZdtX3Bwt_SWv2P1HQggaAhS61F44
 
 <<^ code="&#x0004;" -> to="?">>

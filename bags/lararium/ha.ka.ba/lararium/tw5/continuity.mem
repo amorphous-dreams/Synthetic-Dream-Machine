@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/continuity">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/tw5/continuity.mem"
@@ -12,13 +14,14 @@ manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/tw5/continuity"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/continuity"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -81,6 +84,6 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RAQQW5YGOpewWRJzWj9CD1OuEzfyG_XmWOhME-p0hno
+<<^ code="&#x0003;">>ni:///sha-256;dFbGvu7rRlkfOh4FOOmFZBXYQFnxaPRCszOVfFOBfOY
 
 <<^ code="&#x0004;" -> to="?">>

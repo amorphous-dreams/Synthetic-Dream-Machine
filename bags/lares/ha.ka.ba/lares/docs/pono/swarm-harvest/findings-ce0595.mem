@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/findings-ce0595">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/findings-ce0595.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: FINDINGS. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/findings-ce0595"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/findings-ce0595"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -233,6 +234,6 @@ The AI Act names the *system* as a machine but every accountable role — all se
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DB73PIAfKnubNer1LDJN210-nyUPuXMSP4Qh6KUcqbU
+<<^ code="&#x0003;">>ni:///sha-256;yxmsBntOp7wzIWZvDOg4QfQClFv8zJFTb5juQ98k9OA
 
 <<^ code="&#x0004;" -> to="?">>

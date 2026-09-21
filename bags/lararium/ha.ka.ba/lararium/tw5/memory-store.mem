@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/memory-store">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/memory-store.mem"
@@ -9,11 +11,10 @@ mana        = 17
 manao       = 17
 role        = "MemoryTiddlerStore — in-memory LarTiddlerStore, body of the @temp slot in every WikiRecipe"
 source-file = "packages/lararium-tw5/src/memory-store.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/memory-store"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/memory-store"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -138,6 +139,6 @@ same change record any AutomergeDocStore would emit.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;77lmCJ9bk_ZJJ2w-3PZHffJmibZCjJghK-W8UaXA5so
+<<^ code="&#x0003;">>ni:///sha-256;30GWd-qahc0gvqvbFWF4ShfmmYAHrSYAkqmTCgJDtJI
 
 <<^ code="&#x0004;" -> to="?">>

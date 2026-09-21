@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed.mem"
@@ -10,11 +12,10 @@ manao     = 14
 manaoio   = 13
 rating    = "ano"
 role      = "image-design seed — the Lindwyrm in the Patrick Nagel register: the verbatim prompt block, what the renders returned, and the witness law that keeps her form unfixed"
+title     = "lar:///ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/characters/npcs/the-lindwyrm-nagel-seed"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -122,6 +123,6 @@ column of small unreadable type down the left margin.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hsXZPV1FRbFLRMyPAyk2qk4E36UxfvsOjSkbrDa_Ewk
+<<^ code="&#x0003;">>ni:///sha-256;QijXfdrAT99lfQHhzkF3a_5MddfUDTRfQMwtSNV2ls4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/toml">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/toml.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the toml data fence — sigil-toml.tid declares
 source-file   = "packages/lararium-tw5/src/toml-ast.ts"
 source-symbol = "parseTaploFields"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/toml"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/toml"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/toml"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -55,6 +56,6 @@ A triple-backtick fence opening with the language token `toml` declares data ins
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mL9_6hi0vxjq2P40o8kB4jpjRFLh-R1qdb_5Y9W-y8w
+<<^ code="&#x0003;">>ni:///sha-256;jVPspZkZwWDoANik4ROj5Jx7X_6vd200B7mSOk3rcJM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/factions/lamplighters-union">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/factions/lamplighters-union.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 13
 rating    = "ano"
 role      = "faction meme — the Lamplighters' Union: herm-tenders of the dark roads, holders of the offworld lamp-infrastructure that reaches the void lanes, the Lagrange Chorus, Grandmother Spider — and the Lamplights"
+title     = "lar:///ha.ka.ba/elyncia/factions/lamplighters-union"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/factions/lamplighters-union"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -56,6 +57,6 @@ company repairing a broken Nexus one herm at a time.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JE18iMV_kU_lJ2V3INYJNkNAqqgR9JeQD19sJomrAjY
+<<^ code="&#x0003;">>ni:///sha-256;QNtI3nKDc-3igdWtDfAP5UfCpZ0g1G27mrsyOmaboC4
 
 <<^ code="&#x0004;" -> to="?">>

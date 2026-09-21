@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/concepts/the-fae-clans">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/concepts/the-fae-clans.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 rating    = "ano"
 role      = "concept canon — the fae clans of Elyncia, humans among them: the staged portal arrivals of the post-First-Breaking age, the clan taxonomy, and the Neo-Thracian conceit"
+title     = "lar:///ha.ka.ba/elyncia/concepts/the-fae-clans"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/concepts/the-fae-clans"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -123,6 +124,6 @@ and reads as an outrage to anyone who does not.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HFt6UKtgqLLpTz-ZQt7smhqoPwECsdinuYCwGrfbdSk
+<<^ code="&#x0003;">>ni:///sha-256;9J0lAT41xEqL5drdWlfleH18GB_u8VsgAZhOGLbsM3s
 
 <<^ code="&#x0004;" -> to="?">>

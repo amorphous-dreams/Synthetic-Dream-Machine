@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⚜" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/heraldry">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/heraldry.mem"
@@ -14,13 +16,14 @@ revised-on = "2026-09-13"
 role       = "heraldry — the design the 2026-09-12 ruling owes: ANY nameless thing on the DreamNet (a cabal · an infra vessel · a veiled persona) MAY publish a Handle, a public Face. Names the three nameless shapes and what each already holds in code; the MANTLE (a True Name worn in turn — what the KEL's graft threshold guarantees, and why a 1-of-1 cabal Handle reads as a person wearing a mantle's name); the HERM CARD (a self-certifying card owned by the Herm's own DEVICE-MINTED vessel key, carrying no persona root and no read cap) and the CARRIAGE contract that seats it in a realm's PUBLIC registrations; what heraldry must never become; and the plan red-by-red. The wall this meets in code stands quoted at handle-publish.ts:37-41 — 'a face belongs to its persona, never itself'. Every claim carries its file:line."
 status-why = "STEPS 1-4 BUILT, AND STEP 4's OWN CLAIM REFUTED BY MEASURING IT. Steps 1-3 stand (`ba5475561` `a33cee0f3` `7271d4574`), and the 2026-09-13 announce ruling landed on top (`10c878d1d`: the @crossroads announce carries the doc url at the PUBLIC tier alone, `publicRealmBooksFromDoc` folds the board back, `announcedRealmBooks` is the carrier's shore lane). e2e (~) STILL READS test.fails: a crossroads board keys on the VESSEL's OWN verifying key, so the keeping hearth announces where only it reads (`[herm] announce lane: 0 PUBLIC book(s) on the board`), and ~b plants the body in the Herm's cid/ to prove the INDEX half, not the byte half, is what withholds. The order note below is wrong about steps 1-4 and says so in its own slot. Steps 5-6 unbuilt."
 tags       = ["docs/pono/handoff", "mesh/handle-card", "mesh/identity-classes", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/heraldry"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/heraldry"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/ruling>>
 
@@ -246,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hdlO7rjLm7DmRVi1ZL7amiOL6TqlkfYwIHbZWNVTA0c
+<<^ code="&#x0003;">>ni:///sha-256;o6DbNNEBkt9XbRz3hwEz1SUCQPin6n-kpaFNdpEdseQ
 
 <<^ code="&#x0004;" -> to="?">>

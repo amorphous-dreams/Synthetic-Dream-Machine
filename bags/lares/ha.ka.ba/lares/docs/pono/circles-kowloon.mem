@@ -1,18 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/circles-kowloon">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/circles-kowloon.mem"
 mana      = 16
 role      = "reference model: Kowloon circle data structure and social graph inversion; authoritative design reference for the per-face CirclesDoc that answers to @circles-<tag>"
+title     = "lar:///ha.ka.ba/lares/docs/pono/circles-kowloon"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/circles-kowloon"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/core-inversion>>
 
@@ -190,6 +193,6 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C2pyptL1ocNqE2vO4-p1IZn8S8YtWumzwn8BcXOW4Fs
+<<^ code="&#x0003;">>ni:///sha-256;obzSZ8AGnnw6iRFo7VUv3Gw_xBXyVNGSYlUIo55EDvQ
 
 <<^ code="&#x0004;" -> to="?">>

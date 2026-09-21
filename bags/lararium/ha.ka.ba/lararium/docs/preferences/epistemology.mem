@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/preferences/epistemology">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/epistemology.mem"
@@ -10,11 +12,10 @@ manao     = 17
 manaoio   = 18
 role      = "staging docs shelf for epistemic residue, promotion planning, and the still-unsettled register/stance and degraded-weather material left after foundation-braid migration"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+title     = "lar:///ha.ka.ba/lararium/docs/preferences/epistemology"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/epistemology"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -229,6 +230,6 @@ It still needs to witness what has already promoted, what remains braided, and w
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hh0YKQIjjZwVFNRu2cgOUWriAZVL0SoBqaTXcsUcMCA
+<<^ code="&#x0003;">>ni:///sha-256;AD0qh5Yti67jTHZHfXzB0YQ644Xtuqk1kSb_yVuEQgI
 
 <<^ code="&#x0004;" -> to="?">>

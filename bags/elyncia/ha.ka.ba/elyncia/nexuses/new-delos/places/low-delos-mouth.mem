@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth.mem"
@@ -10,11 +12,10 @@ manao     = 13
 manaoio   = 12
 rating    = "ano"
 role      = "place, below — the Low Delos megadungeon mouth where Rinia rose; three stabilized town-levels, names open"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -36,6 +37,6 @@ bottom · what the nineteen-minute cycle breathes FOR.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hG9pRQWms0K3ReAElFYNpASokd43mzMpM_NKzr_QnFg
+<<^ code="&#x0003;">>ni:///sha-256;cxgI8omB6gdbBlm4_wqWlskf6VS-H5lBX3Cq509c0zY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/meme-provider">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/meme-provider.mem"
 l-space   = "lararium"
 mana      = 5
 role      = "pointer: the MemeProvider law lives at docs/meme-provider — one room owns the source"
+title     = "lar:///ha.ka.ba/lararium/mesh/meme-provider"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/meme-provider"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/pointer>>
 
@@ -30,6 +31,6 @@ one place to go stale. The full statement lives at:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WXaixMhayYZOaMWHGeITDgOS3XmHFhWAISGMcLEWkYw
+<<^ code="&#x0003;">>ni:///sha-256;z5mEGVg_McIIkraCnB3kO1wHQtld__4OdaufD_zHuQc
 
 <<^ code="&#x0004;" -> to="?">>

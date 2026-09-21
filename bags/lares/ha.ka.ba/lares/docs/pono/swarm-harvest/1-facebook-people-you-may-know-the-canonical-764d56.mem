@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56.mem"
@@ -11,11 +13,10 @@ manaoio   = 10
 namespace = "&#x2299;"
 role      = "swarm-harvest — the three largest messages this research spirit wrote, held VERBATIM. Its own opening heading: 1. FACEBOOK 'People You May Know' — the canonical veil leak. Fenced so its sigil-shaped text reads as content, never as grammar."
 tags      = ["api/pono/meme", "docs/pono/swarm-harvest"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest/1-facebook-people-you-may-know-the-canonical-764d56"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -187,6 +188,6 @@ Two strong measured cases, both about **the unguessable handle turning out to be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zilsQ00Z8SmWtc93nwkOWAicPZjwMARLmMxoBy45Q04
+<<^ code="&#x0003;">>ni:///sha-256;Oa_JEhv4ceWarP_3oXaAN2s007UtYjx9FC01ZnSp_DQ
 
 <<^ code="&#x0004;" -> to="?">>

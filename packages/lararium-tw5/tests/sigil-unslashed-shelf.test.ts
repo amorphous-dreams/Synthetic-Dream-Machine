@@ -113,7 +113,7 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
     expect(bootstrap, "the scanner carries no ahu open scan").toBeTruthy();
     const tidRe = new RegExp(declared!), bootRe = new RegExp(bootstrap!);
     const cases: ReadonlyArray<readonly [string, boolean]> = [
-      ["<<~ ahu #/a>>", true], ["<<~ ahu #a>>", true], ["<<~ ahu #/a/b>>", true], ["<<~ ahu #a/b>>", true],
+      ["<<~ ahu #/a>>", true], ["<<~ ahu #a>>", false], ["<<~ ahu #/a/b>>", true], ["<<~ ahu #a/b>>", false],
       ["<<~ ahu #/a -> lar:///t/elsewhere>>", true],
       ["<<~ ahu #>>", false], ["<<~ ahu # a>>", false], ["<<~ ahu>>", false],
     ];

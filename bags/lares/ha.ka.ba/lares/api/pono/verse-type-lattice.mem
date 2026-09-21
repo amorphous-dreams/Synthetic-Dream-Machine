@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/verse-type-lattice">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/pono/verse-type-lattice.mem"
@@ -10,11 +12,10 @@ manao       = 17
 namespace   = "&#x2299;"
 role        = "canonical: Verse type lattice — any/false/void/comparable hierarchy; persistable constraint universe; effects bit-vector (6 families); edge-label semantics for pranala type annotations"
 status-date = "2026-05-15"
+title       = "lar:///ha.ka.ba/lares/api/pono/verse-type-lattice"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/verse-type-lattice"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -189,6 +190,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9Lzvp350WCZqQe-s4FRB9Cbmt5u17yyVO5aSQ6NTFY8
+<<^ code="&#x0003;">>ni:///sha-256;GaAac2m-xondvJgySHr8f0QWYaauyMPcpQ4K0ymtqqI
 
 <<^ code="&#x0004;" -> to="?">>

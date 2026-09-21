@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/cold-boot-ceremony">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/cold-boot-ceremony.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 3
 role        = "self-documentation: TODO describe cold-boot-ceremony.ts"
 source-file = "packages/lararium-tw5/src/cold-boot-ceremony.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/cold-boot-ceremony"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/tw5/cold-boot-ceremony"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -20,6 +21,6 @@ TODO: describe the load-bearing surface this file owns.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ICvTNcyMIER_32YyCF4YWgNNCHx2sLeaEdjUKQ9y7Ns
+<<^ code="&#x0003;">>ni:///sha-256;dQ0elTnc_fnLPlELV9KIXpMEau6okAmND0jnYdc6Jys
 
 <<^ code="&#x0004;" -> to="?">>

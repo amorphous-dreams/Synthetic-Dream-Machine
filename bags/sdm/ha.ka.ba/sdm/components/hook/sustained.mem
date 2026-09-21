@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/hook/sustained">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "sustained"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/hook/sustained.mem"
+l-space   = "sdm"
 mana      = 14
 manao     = 16
 manaoio   = 13
 role      = "component (hook): Sustained — requires ongoing concentration; distraction deactivates"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/hook/sustained"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/hook/sustained"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Sustained
 
@@ -69,6 +70,6 @@ Common on `function/barrier`, `function/ward`, `function/cargo`, and `domain/stu
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;My3LwkPCI7usSUqIiA27pT4E0Ie4xkXAx1iadVmepl0
+<<^ code="&#x0003;">>ni:///sha-256;o95OpLwJDjjhwIFxBAlVFVYTqxOHVyvzFNfLeRAFutk
 
 <<^ code="&#x0004;" -> to="?">>

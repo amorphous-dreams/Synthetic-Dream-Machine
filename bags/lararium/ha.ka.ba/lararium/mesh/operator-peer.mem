@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/operator-peer.mem"
@@ -11,11 +13,10 @@ manao     = 19
 manaoio   = 18
 role      = "Canonical operator-vessel contract: two-lane VM pool law, shared command/receipt surface, ea sovereignty model"
 tags      = ["mesh/lar-vessel", "mesh/causal-island"]
+title     = "lar:///ha.ka.ba/lararium/mesh/operator-peer"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/operator-peer"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Operator-Vessel Contract
 
@@ -244,6 +245,6 @@ identical ea rights.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VOEHpXkC4f0XYBd6_1XH3dGoJkfCs6pMc1n5ngRqRSs
+<<^ code="&#x0003;">>ni:///sha-256;2O66BlNyf0qdJksa_O0TrLVOTwqyHuCPyOY_VzrvG44
 
 <<^ code="&#x0004;" -> to="?">>

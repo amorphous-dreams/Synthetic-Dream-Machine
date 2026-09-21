@@ -77,7 +77,7 @@ export { fencedSpans, inMask, maskedExec, maskedExecAll } from "./meme-ast/fence
 import { parseTaploFields } from "./toml-ast.js";
 import { shoreDiagnostic } from "./meme-ast/diagnostics.js";
 import { classifyPostamble } from "./block-check.js";
-import { bccOfSpan } from "./carrier-check.js";
+import { bccOfSpan, verifyBcc } from "./carrier-check.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
 
@@ -160,12 +160,8 @@ export function memeticWikitextDeserializer(
   // the SOH carries a namespace it cannot see.
   const sohM = maskedExec(text, SOH_PREFIX_RE);
   const sohIdx = sohM ? sohM.index : -1;
-  // THE FRAME OWNS THE DECLARATION; the field keeps only what stands BEYOND it. `prologue` predates the
-  // declaration existing as a register, so it stored a line the emitter now mints — 4,015 copies of it
-  // across the corpus, because the field is copied onto every record of a carrier.
-  //
-  // Stripping it here retires the mint-suppression below with it: a check that existed only to avoid
-  // doubling what this field stored.
+  // THE FRAME OWNS THE DECLARATION; `prologue` carries bytes beyond it. This keeps the declaration in
+  // one frame position instead of copying it onto every record of a carrier.
   const prologueRaw = (closes.length > 0 && sohIdx > 0) ? text.slice(0, sohIdx) : "";
   const prologue = prologueRaw.replace(/^<<!DOCTYPE[^>\n]*>>\n?\n?/m, "");
   // ETX/EOT closer end: walk to find the last close-sentinel and use the
@@ -241,13 +237,8 @@ export function memeticWikitextDeserializer(
     if (sohCode === "0011" && tiddlers.length > 0) {
       tiddlers[0]!["$carrier-soh"] = "0011";
     }
-    // WHICH SPELLING OPENED THE SECTIONS — the carrier's own, kept so the render hands it back.
-    // A plain-dialect carrier opens `<<fragment #slot>>`; the sharktooth house opens `<<~ ahu #slot>>`.
-    // Both scan as structure (ahu-scan), and a projection that emitted one spelling for both would
-    // rewrite a carrier into a namespace its reader never stepped into.
-    if (tiddlers.length > 0 && /<<fragment\s+#/.test(text) && !/<<~[^>\n]*\bahu\s+#/.test(text)) {
-      tiddlers[0]!["$carrier-dialect"] = "fragment";
-    }
+    // `ahu` and `fragment` lower through one intent path. Each child record carries its authored
+    // worksite spelling, and recomposition returns that surface.
     // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else.
     //
     // ETX ends the text; the slot after it carries the block check, never payload (block-check.ts
@@ -430,27 +421,26 @@ function splitMemeToTiddlers(
   // (the header-routed wrap left the body slot empty
   // and stacked blank lines). A degraded SOH-carrier missing its STX keeps the
   // header reading (its meta still parses; the gradient grades the miss).
-  // ONE MODEL FOR EVERY CARRIER: the identity heading, then the body. NO STX MEANS ALL BODY, heading or
-  // no heading — a carrier stating identity and nothing framed is a meme whose body the author left
-  // short, not a second kind of document. The body stands OPTIONAL and may hold prose, ahu slots, both,
-  // or nothing; a meme maps to several tiddlers and a tiddler's own text may stand empty.
+  // ONE MODEL FOR EVERY CARRIER: routing outside, authored document inside. NO STX MEANS ALL BODY — a
+  // carrier that supplies identity without framing has left its document boundary short, rather than
+  // declared a second document kind. The body may hold prose, ahu slots, both, or nothing; one meme may
+  // project to several tiddlers while one tiddler’s text remains empty.
   //
   // Reading a heading-only carrier as ALL HEADER routed its prose into `header-text` and left the body
   // slot empty, so the projection minted an empty STX/ETX pair beside the author's own EOT — a carrier
   // that never round-tripped, in a shape nothing measured, because both witnesses skip a carrier that
   // states no `uri-path` and these were exactly the carriers that stated none.
   const bare = !stxM;
-  // AN AUTHORED META IS A HEADING, FRAME OR NO FRAME. The frame is the carrier's business; identity is
-  // the AUTHOR'S, and an operator who opens a file with a labelled `toml meta` fence has stated one.
-  // Reading a bare doc as ALL BODY buried that fence in the text and minted a near-empty heading beside
-  // it, so the projection wrote TWO meta blocks and dropped every field the author declared — silently,
-  // and stably, because the malformed result round-trips against itself.
+  // AN AUTHORED META FENCE OPENS THE ROOT DOCUMENT, FRAME OR NO FRAME. The frame belongs to the carrier;
+  // the author writes the root fields. Reading a bare document as undifferentiated text buried that fence
+  // and caused projection to mint two metadata blocks while dropping declared fields — silently and
+  // repeatably.
   //
   // THE FENCE MUST OPEN THE FILE TO COUNT, because every OTHER meta block belongs to the ahu tiddler it
-  // sits in. A slot's fence is that slot's own identity heading — its `register`, its `confidence`, its
-  // own address — and `extractSlotStructure` lifts it onto the child record where it overrides whatever
-  // the parent declared. One law, read by position: the opening fence heads the carrier, each later
-  // fence heads its slot, and neither reaches into the other.
+  // sits in. A slot’s fence carries its local metadata — `register`, `confidence`, and address — and
+  // `extractSlotStructure` projects it onto the child record where it overrides inherited fields. One
+  // positional law holds: the opening root fence names the carrier, each later local fence names its
+  // slot, and neither reaches into the other.
   const leadingMeta = bare ? findMetaFence(stripped, false) : null;
   const authoredHead = leadingMeta && stripped.slice(0, leadingMeta.start).trim() === ""
     ? leadingMeta
@@ -484,21 +474,36 @@ function splitMemeToTiddlers(
   const metaPos = _metaCandidate && headerRegion.slice(0, _metaCandidate.start).trim() === ""
     ? _metaCandidate
     : null;
-  const rootToml   = metaPos?.content ?? null;
-  const rootFieldsRaw = rootToml ? fieldifyToml(rootToml, warnings, uri) : {};
-  const { __arrayKeys: _, ...rootFields } = rootFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
+  const headerRootToml = metaPos?.content ?? null;
+  const headerFieldsRaw = headerRootToml ? fieldifyToml(headerRootToml, warnings, uri) : {};
+  const { __arrayKeys: _, ...headerFields } = headerFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
 
-  // Split header into pre-meta prose and post-meta-pre-STX content.
-  // pre-meta: operator prose between SOH and the meta block (e.g. a framing note).
-  // post-meta: aka refs, header ahu slots — structure that belongs before STX on disk.
-  // When a root meta exists: preMeta = prose before meta; postMeta = content after meta.
-  // When no root meta but top-level ahu blocks exist: route full headerRegion through
-  // postMetaContent so splitRecursive can find the blocks; preMetaContent stays empty.
-  // When no root meta and no blocks: preMetaContent holds the prose verbatim.
-  const preMetaContent  = metaPos
-    ? headerRegion.slice(0, metaPos.start)
-    : (_rootMetaTopBlocks.length > 0 ? "" : headerRegion);
-  // Strip one leading \n from post-meta content: extractRootTomlWithPos's regex
+  // Root TOML is the first authored construct after STX, exactly as a fragment's local TOML block is
+  // the first construct after its opener. A root block standing before STX contributes to the recovery
+  // reading; projection places the complete root document inside STX–ETX.
+  const bodyRootCandidate = stxM
+    ? findMetaFence(bodyRegion, false)
+    : null;
+  const bodyRootMeta = bodyRootCandidate && bodyRegion.slice(0, bodyRootCandidate.start).trim() === ""
+    ? bodyRootCandidate
+    : null;
+  const bodyFieldsRaw = bodyRootMeta ? fieldifyToml(bodyRootMeta.content, warnings, uri) : {};
+  const { __arrayKeys: __bodyArrayKeys, ...bodyFields } = bodyFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
+  if (metaPos) warnings.push(`${uri}: root TOML metadata stands before STX; the carrier body begins at STX`);
+  if (headerRootToml && bodyRootMeta) warnings.push(`${uri}: duplicate root TOML metadata appears before and after STX`);
+  const rootFields = { ...headerFields, ...bodyFields };
+  const rootTitle = rootFields.title;
+  if (rootTitle !== undefined && String(rootTitle) !== uri) {
+    warnings.push(`${uri}: root TOML title "${String(rootTitle)}" does not match SOH target "${uri}"`);
+  }
+  if (rootFields["uri-path"] !== undefined) {
+    const expectedPath = uri.startsWith("lar:///") ? uri.slice(7) : uri;
+    if (String(rootFields["uri-path"]) !== expectedPath) {
+      warnings.push(`${uri}: root TOML uri-path "${String(rootFields["uri-path"])}" does not match SOH target path "${expectedPath}"`);
+    }
+  }
+
+  // Strip one leading \n from the pre-frame post-meta content: extractRootTomlWithPos's regex
   // consumes the closing ``` and its \n, but the source's blank line between the
   // meta fence and the next header content (aka/ahu refs) lives here. The template
   // emits \n\n after the closing ```, so the stored field must not also start with \n.
@@ -506,31 +511,29 @@ function splitMemeToTiddlers(
     ? stripLeadingNewlines(headerRegion.slice(metaPos.end))
     : (_rootMetaTopBlocks.length > 0 ? headerRegion : "");
 
-  // Recurse separately so the STX boundary is preserved in the parent's fields:
-  //   header-text = post-meta pre-STX content (with ahu blocks → kahea refs)
-  //   text        = post-STX body
-  const { children: headerChildren, rewrittenText: headerRewritten } =
-    splitRecursive(uri, "", postMetaContent, warnings);
+  // Authored content standing before STX joins the root body in the recovery reading. Projection
+  // places root TOML and authored content after STX.
+  const preFrameContent = metaPos ? postMetaContent : headerRegion;
+  const bodyWithoutRootMeta = bodyRootMeta ? stripLeadingNewlines(bodyRegion.slice(bodyRootMeta.end)) : bodyRegion;
+  // The recovery body joins pre-frame and framed authored content before child worksite extraction.
+  const recoveredBody = stripEdgeNewlines(
+    [preFrameContent, bodyWithoutRootMeta].filter((s) => s.trim() !== "").join("\n\n"),
+  );
   const { children: bodyChildren, rewrittenText: bodyRewritten } =
-    splitRecursive(uri, "", bodyRegion, warnings);
+    splitRecursive(uri, "", recoveredBody, warnings);
 
   const normalizedBodyRewritten = stripEdgeNewlines(bodyRewritten);
 
-  const allChildren = [...headerChildren, ...bodyChildren];
+  const allChildren = bodyChildren;
 
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
     title: uri,
-    type:  CARRIER_TYPE,
+    type:  rootFields.type ?? CARRIER_TYPE,
     text:  normalizedBodyRewritten,
   };
-  const parentCarriage = [
-    ...carriageRecord(uri, "preamble",    preMetaContent.trim()   ? preMetaContent   : ""),
-    ...carriageRecord(uri, "header-text", headerRewritten.trim() ? headerRewritten : ""),
-  ];
-
-  const result: TiddlerFields[] = [parent, ...parentCarriage, ...allChildren];
+  const result: TiddlerFields[] = [parent, ...allChildren];
 
   // ── THE WARNING TIDDLER IS THE ENVELOPE, AND IT HOLDS MORE THAN THIS ────────────────────────────
   //
@@ -582,9 +585,8 @@ function splitRecursive(
     rewritten += text.slice(cursor, block.openStart);
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
     const childUri      = rootUri + childSlotPath;
-    // ONE SLOT, ONE ADDRESS. The opener admits `#a` and `#/a`; the record stands at `#/a`. The ref the
-    // parent keeps and the `$slot` the child carries spell the slot the way the address does, so a
-    // reader pairing them by name — the live render's link above all — needs no second spelling.
+    // ONE SLOT, ONE ADDRESS. The scanner admits the rooted spelling only; the record, parent ref, and
+    // `$slot` carry that same spelling, so a reader needs no compatibility normalization.
     const slot          = composeSlotPath("", block.slot);
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
     const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings);
@@ -595,7 +597,7 @@ function splitRecursive(
     // a fragment record never owns a disk file; its carrier root does.
 
     allChildren.push({
-      // Default dialect; a child slot's OWN declared meta `type` (e.g. text/markdown) rides in
+      // Default carrier type; a child slot's OWN declared meta `type` (e.g. text/markdown) rides in
       // childStructure.fields and OVERRIDES this default via the spread — a typed child keeps its
       // type instead of losing it to the memetic-wikitext hardcode. (The parent carrier stays
       // memetic by construction — this deserializer runs because the carrier IS memetic.)
@@ -608,6 +610,8 @@ function splitRecursive(
       "$slot":            slot,
     });
     allChildren.push(
+      ...carriageRecord(childUri, "worksite-open", text.slice(block.openStart, block.bodyStart)),
+      ...carriageRecord(childUri, "worksite-close", text.slice(block.bodyEnd, block.closeEnd)),
       ...carriageRecord(childUri, "preamble",  childStructure.preamble  ?? ""),
       ...carriageRecord(childUri, "postamble", childStructure.postamble ?? ""),
     );
@@ -709,7 +713,7 @@ function extractSlotStructure(
   // The slot grammar mirrors AHU_OPEN_RE: a rooted slot path (`#/a/b/c`)
   // addresses a nested fragment and MUST round-trip whole — a `#[\w-]+`-only
   // match clipped the path at the first `/`, orphaning the slot's body.
-  const refRe = /<<~\s*kahea\s+ahu\s+#\/?[\w-]+(?:\/[\w-]+)*\s*>>/g;
+  const refRe = /<<~\s*kahea\s+ahu\s+#\/[\w-]+(?:\/[\w-]+)*\s*>>/g;
   let lastEnd = -1;
   for (const m of maskedExecAll(remainder, refRe)) {
     lastEnd = m.index + m[0].length;
@@ -749,7 +753,9 @@ function fieldifyToml(
   const out: TiddlerFields & { __arrayKeys?: string[] } = {};
   const arrayKeys: string[] = [];
   for (const [k, v] of Object.entries(parsed)) {
-    if (k === "title") { warnings.push(`${context}: "title" in TOML ignored (derived from URI)`); continue; }
+    // `title` is carried in the root authorial block so identity can be checked against SOH. The
+    // record title remains the canonical SOH-derived key; a mismatch is diagnosed by the caller.
+    if (k === "title") { out[k] = String(v); continue; }
     if (k === "text")  { warnings.push(`${context}: "text" in TOML ignored (derived from body)`); continue; }
     if (Array.isArray(v)) { out[k] = (v as unknown[]).map(String); arrayKeys.push(k); }
     else                  { out[k] = String(v); }
@@ -851,7 +857,7 @@ export type FieldsReader = (title: string) => TiddlerFields | undefined;
 // so this set holds those two and their record-stratum siblings and nothing else. The grammar's OWN
 // carriage — the prologue, the preamble, the header text, the slot a fragment fills, the parent it
 // hangs from, the bytes trailing the frame — rides the `$…` namespace TW5 keeps for a host, which
-// `emitMetaToml` drops wholesale. An author who writes `postamble` or `slot` now gets an ordinary
+  // `emitMetaToml` drops wholesale. An author writing `postamble` or `slot` receives an ordinary
 // custom field that round-trips like any other, because the grammar stopped standing on those words.
 //
 // That move also closed a hole the name-list could not: `preamble` and `carrier-sila` were read as
@@ -861,14 +867,14 @@ export type FieldsReader = (title: string) => TiddlerFields | undefined;
 const META_DENY: ReadonlySet<string> = new Set([
   // The host's two, and the record stratum they arrive with. TiddlyWiki restricts no field name;
   // MultiWikiServer overwrites `title` and `revision` on every read.
-  "title", "text", "modified", "revision",
+  "text", "modified", "revision",
   // The skinny handle's pointer internals (content-handle): a recomposed carrier carries its body
   // inline, so a `_canonical_uri` or `_integrity` re-emitted here would lie about the bytes beneath it.
   ...HANDLE_ONLY_FIELDS,
 ]);
 // Authored identity re-emits: the deny-set
 // holds MACHINE stamps only. `type` re-emits verbatim — the carrier
-// self-describes its dialect at rest (TW5's content-type field shares the
+// self-describes its content type at rest (TW5's content-type field shares the
 // name exactly; round trip = identity). `namespace` re-emits as explicit
 // Unicode escapes — glyphs render on the SOH line, the TOML lists their
 // codepoints. `created` re-emits because 11 corpus carriers author it as a
@@ -882,11 +888,11 @@ const META_DENY: ReadonlySet<string> = new Set([
 // derived from the title, and `file-path` on a child is the burned
 // fragment-file leak (carrier-whole at rest — a fragment never owns a file).
 // Everything ELSE the author wrote re-emits verbatim (deny holds MACHINE
-// stamps only): `type` self-describes the child's dialect, `namespace`,
+// stamps only): `type` self-describes the child's content family, `namespace`,
 // `created`, `source-file`, `tags` all round-trip = identity, exactly as on
 // the parent — a child that authored them keeps them.
 const CHILD_META_DENY: ReadonlySet<string> = new Set([
-  ...META_DENY, "uri-path", "file-path",
+  ...META_DENY, "title", "uri-path", "file-path",
 ]);
 
 function fmtTomlValue(v: string | string[]): string {
@@ -984,7 +990,7 @@ function emitMetaToml(fields: TiddlerFields, deny: ReadonlySet<string>, parentFi
  * values that never carry a newline, and a record for each would cost the native filter surface and buy
  * nothing. The split runs scalar-or-multiline, never reserved-or-free.
  */
-export const CARRIAGE_PARTS = ["prologue", "preamble", "header-text", "postamble"] as const;
+export const CARRIAGE_PARTS = ["prologue", "preamble", "header-text", "postamble", "worksite-open", "worksite-close"] as const;
 export type CarriagePart = (typeof CARRIAGE_PARTS)[number];
 
 /**
@@ -1020,14 +1026,14 @@ function carriageText(reader: FieldsReader, carrierUri: string, part: CarriagePa
   return r && typeof r["text"] === "string" ? (r["text"] as string) : "";
 }
 
-const KAHEA_AHU_REF_RE = /<<~\s*kahea\s+ahu\s+(#\/?[\w-]+(?:\/[\w-]+)*)\s*>>/g;
+const KAHEA_AHU_REF_RE = /<<~\s*kahea\s+ahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/g;
 
 /**
  * Splice child definition blocks back over their kahea markers, full depth.
  * Quoted markers (fenced/inline-code) stay verbatim — the operator SHOWS
  * the grammar there, the recompose never expands inside the mask.
  */
-function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: string, text: string, parentFields: TiddlerFields, dialect: string): string {
+function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: string, text: string, parentFields: TiddlerFields): string {
   const mask = fencedSpans(text);
   return text.replace(KAHEA_AHU_REF_RE, (marker, slot: string, offset: number) => {
     if (inMask(mask, offset)) return marker;
@@ -1036,7 +1042,7 @@ function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: strin
     if (!child) return marker;   // missing child: keep the marker — honest residue, never invented bytes
     // Diff the child against ITS parent; recurse with the child as the next level's parent.
     const meta   = emitMetaToml(child, CHILD_META_DENY, parentFields);
-    const inner = expandRefs(reader, rootUri, slotPath, String(child["text"] ?? ""), child, dialect);
+    const inner = expandRefs(reader, rootUri, slotPath, String(child["text"] ?? ""), child);
     const pre   = carriageText(reader, rootUri + slotPath, "preamble");
     const post  = carriageText(reader, rootUri + slotPath, "postamble");
     // The meta block sits FLUSH against the ahu sigil line (mirroring the parent carrier's SOH+meta) —
@@ -1057,12 +1063,12 @@ function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: strin
       // the single blank line; a filled one opens on the sigil-then-blank spacing.
       opened = rest ? `\n\n${rest}` : "";
     }
-    // The opener spells the slot as the address does, whatever spelling the ref record still carries —
-    // so the canonical render reaches its fixed point in one fold from any record state.
+    // Both spellings reach one worksite record shape. Worksite carriage bytes hold authored delimiters;
+    // an absent carriage uses the shared ahu opener and closer.
     const spelt = composeSlotPath("", slot);
-    return dialect === "fragment"
-      ? `<<fragment ${spelt}>>${opened}\n\n<</fragment>>`
-      : `<<~ ahu ${spelt}>>${opened}\n\n<<~/ahu>>`;
+    const open = carriageText(reader, rootUri + slotPath, "worksite-open");
+    const close = carriageText(reader, rootUri + slotPath, "worksite-close");
+    return `${open || `<<~ ahu ${spelt}>>`}${opened}\n\n${close || "<<~/ahu>>"}`;
   });
 }
 
@@ -1091,7 +1097,6 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
   // the grammar leaves here too, instead of surviving as a literal no reader still scans for.
   const MARK = (name: string): string => frameMark(FRAME_BY_NAME[name]!)!.code;
   const sohCode = f["$carrier-soh"] === "0011" ? MARK("SOH2") : MARK("SOH");
-  const dialect = typeof f["$carrier-dialect"] === "string" ? (f["$carrier-dialect"] as string) : "ahu";
   // THE ENDS TAKE NAMES; THE ARROW KEEPS ITS SHAPE. `from="?" -> to="uri"` reads "this carrier
   // resolves toward that address", the spelling `pranala` and `lares aim` already write. The ARROW
   // stays an unnamed positional — that is what carries the relation, and quoting reaches only the two
@@ -1113,14 +1118,19 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
   // together. What the author wrote ABOVE the declaration still rides in `prologue` and emits first.
   out += `${DECLARATION}\n\n`;
   out += `<<^ code="${sohCode}"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${memeUri}">>\n`;
-  out += carriageText(reader, memeUri, "preamble");
-  if (meta) out += "```toml meta\n" + meta + "```\n\n";
-  out += expandRefs(reader, memeUri, "", carriageText(reader, memeUri, "header-text"), f, dialect);
-  // THE SPAN OPENS HERE. The check covers STX-open through ETX-close inclusive, so the emitter marks
-  // where the body begins and computes over the bytes it has actually assembled — never over a field.
+  // THE SPAN OPENS HERE. Root metadata and authored content travel inside the document body; the root
+  // follows the same metadata/body pattern as an ahu/fragment worksite, and the BCC seals parent fields.
   const spanStart = out.length;
   out += `<<^ code="${MARK("STX")}">>\n\n`;
-  out += expandRefs(reader, memeUri, "", String(f.text ?? ""), f, dialect);
+  if (meta) out += "```toml meta\n" + meta + "```\n\n";
+  // Root carriage content joins the body before the root text, keeping every authored byte within
+  // the STX–ETX span.
+  const carriedRootContent = [
+    carriageText(reader, memeUri, "preamble"),
+    expandRefs(reader, memeUri, "", carriageText(reader, memeUri, "header-text"), f),
+  ].filter((s) => s.trim() !== "").join("\n\n");
+  if (carriedRootContent) out += carriedRootContent + "\n\n";
+  out += expandRefs(reader, memeUri, "", String(f.text ?? ""), f);
   // ETX takes its block check adjacent, per the received framing (STX -> text -> ETX -> BCC); the
   // attestation block follows and ETB terminates it.
   //
@@ -1163,6 +1173,18 @@ export function deserializeCarrier(
 ): { records: TiddlerFields[]; diagnostics: MemeDiagnostic[] } {
   const records = memeticWikitextDeserializer(text, fields);
   const diagnostics: MemeDiagnostic[] = [];
+  const bcc = verifyBcc(text);
+  if (bcc === "mismatch") {
+    diagnostics.push({
+      from: 0, to: text.length, severity: "error", source: "memetic-wikitext",
+      code: "block-check-mismatch", message: "ni:/// block check does not match the STX–ETX body, including root TOML metadata",
+    });
+  } else if (bcc === "torn") {
+    diagnostics.push({
+      from: 0, to: text.length, severity: "error", source: "memetic-wikitext",
+      code: "block-check-torn", message: "STX stands without ETX; carrier body is torn",
+    });
+  }
   for (const record of records) {
     // CONTENT PAST ETX REFUSES — the NAK the block check was always for. The text ends at ETX and the
     // slot below it carries the check alone, so anything written there reaches no reader and no render

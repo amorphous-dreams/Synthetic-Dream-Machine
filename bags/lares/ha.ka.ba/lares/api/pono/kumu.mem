@@ -1,17 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kumu">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kumu.mem"
 namespace = "&#x2299;"
 role      = "element-type declaration pragma — kumu as structural root; declares named grammar node type; English aliases: \\type \\typos"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kumu"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kumu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kumu"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -66,6 +67,6 @@ A kumu declaration MUST register a type definition only, producing no render out
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wCIXI8vOJ22gNKweHCt6CCG2wWB8kVVC6FZqyRBJXuU
+<<^ code="&#x0003;">>ni:///sha-256;t-XjFDulrHOoiUwU6jl2ZQWcfhkAHHva0d7HMWrPki0
 
 <<^ code="&#x0004;" -> to="?">>

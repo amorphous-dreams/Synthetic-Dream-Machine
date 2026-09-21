@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/live-session-overwrite.mem"
@@ -10,11 +12,10 @@ manao     = 16
 manaoio   = 13
 role      = "docs sister for Live-Session Overwrite — bug anatomy, test vector, and mitigation notes"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/live-session-overwrite"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -100,6 +101,6 @@ A passing test records the jello claim as session evidence and refuses silent ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GkaZDntLKu5gPr0vlf7mQQja9IrBZDPMPqnb-b2jk5s
+<<^ code="&#x0003;">>ni:///sha-256;AX50B5nqnaMCQiNFIDmr3H6wd4YBB7TjMQAmwtPvvQY
 
 <<^ code="&#x0004;" -> to="?">>

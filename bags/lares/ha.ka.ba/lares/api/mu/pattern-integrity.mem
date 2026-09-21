@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lares/ha.ka.ba/lares/api/mu/pattern-integrity.mem"
@@ -12,11 +14,10 @@ namespace   = "&#x0950; &#x0901;"
 role        = "invariant doctrine: Fuller's 5 pattern integrities applied to Lararium — tensegrity, wave/water, synergy, ephemeralization, trim tab"
 status-date = "2026-05-02"
 tags        = ["api/pono/meme"]
+title       = "lar:///ha.ka.ba/lares/api/mu/pattern-integrity"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/mu/pattern-integrity"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -220,6 +221,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jXEBzhNYb8BkOR2BgR7C46UJgd739wmjbBapfFBQq6U
+<<^ code="&#x0003;">>ni:///sha-256;TnAkWG9cGtoRjCdLjQqWROqSHjQULbVOascTiibH7Sk
 
 <<^ code="&#x0004;" -> to="?">>

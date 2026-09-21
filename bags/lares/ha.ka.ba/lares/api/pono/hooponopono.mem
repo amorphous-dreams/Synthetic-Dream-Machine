@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/hooponopono.mem"
@@ -10,13 +12,14 @@ manaoio   = 15
 namespace = "&#x2299;"
 role      = "canon residency-MOVE ceremony; harmony restoration law for the live-session → canon-bag crossing"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/hooponopono"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hooponopono"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -111,6 +114,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Lol6SlRF_Yivj4_oCyEEVAZto3tkdfvoNmLWR0OPCZM
+<<^ code="&#x0003;">>ni:///sha-256;EgRSq2q82lZ3S_NwasgA6-N19JHyrDc0iUS93cfGHlo
 
 <<^ code="&#x0004;" -> to="?">>

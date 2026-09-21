@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/reality-tunnels">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/mu/reality-tunnels.mem"
@@ -10,13 +12,14 @@ manao     = 17
 manaoio   = 17
 role      = "staging docs shelf for reality tunnels, catma, and observer-position pressure behind Mu-facing invariants"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/mu/reality-tunnels"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/reality-tunnels"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/meme-header>>
 
@@ -86,6 +89,6 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UKCn1BUleNJ4y9clan-FezYYYLVyr8Lk9q4tijScNUc
+<<^ code="&#x0003;">>ni:///sha-256;qQGQbJLNoI62ELkXa_0-93FyjrAHIK0SVYj_tlUk7Dc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,19 +1,20 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/sdm/ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip.mem"
+l-space   = "sdm"
 mana      = 11
 manao     = 16
 manaoio   = 17
 role      = "UVG bestiary witness for Neural Whip — Cave Octopus provenance, cold-load"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/witness/abilities/uvg-bestiary/neural-whip"
 ```
-
-<<^ code="&#x0002;">>
 
 ! UVG Witness — Neural Whip
 
@@ -65,6 +66,6 @@ The v0.1 ''Neural Whip'' module abstracts the creature's signature tentacle into
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5F6XS4Yt48PNdV9sITPn-eNDv6Z2Jzjm_UALLVxy7VU
+<<^ code="&#x0003;">>ni:///sha-256;Gd9PhKTyQXAbQjDEWuHMLWvg3Yuy5GSfgxqtjDHhNVc
 
 <<^ code="&#x0004;" -> to="?">>

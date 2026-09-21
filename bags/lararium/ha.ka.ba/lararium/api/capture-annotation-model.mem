@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/api/capture-annotation-model.mem"
@@ -12,6 +14,7 @@ manaoio   = 17
 namespace = "&#x0950; &#x0901;"
 role      = "THE holistic capture & annotation model — the implement-from keel that fills mempalace's holes (multi-agent topology · subagent/swarm capture · gradient annotation · ephemeral noise · agent identity). Ties lar-telemetry + agent-worldline + lararium-memory into one layered spec: capture (surfaces·shores·verbatim-always/gradient-eventual) → annotation (lar_* instrument readings, gradient-not-verdict) → multi-agent (identity·provenance·relationship spawn-graph) → ephemeral (lares ephemeral launcher·blind dir·hardening). Carries the operator rulings ledger + the implementation backlog (built/specified/blocked)."
 tags      = ["api/pono/meme", "api/lararium"]
+title     = "lar:///ha.ka.ba/lararium/api/capture-annotation-model"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/capture-annotation-model"
 written   = "2026-06-25"
@@ -19,7 +22,7 @@ written   = "2026-06-25"
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/entry>>
 
@@ -340,6 +343,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hrezuu8e8LSIWOOHJWRdOgwLpQAQBRhVw8STpTZBXUY
+<<^ code="&#x0003;">>ni:///sha-256;PTBbE3H1fcXJYW5kGV9wrdXzq8TT7ns7TdjdC1NWqG0
 
 <<^ code="&#x0004;" -> to="?">>

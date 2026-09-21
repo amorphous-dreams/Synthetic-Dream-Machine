@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 approved-on   = "2026-06-01"
 cacheable     = true
@@ -16,13 +18,14 @@ revision-note = "warm (mahana) tier CUT after adversarial+kupono+YIN research; t
 role          = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands"
 status-why    = "rides the residency substrate; the tier read stands with it"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci", "lifecycle/standing"]
+title         = "lar:///ha.ka.ba/lararium/api/residency-tiers"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/core-claim>>
 
@@ -147,6 +150,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8YZGbL8SQEz-Vh4VLPqyVf7-ck_lNc1b1irrgMf6q3s
+<<^ code="&#x0003;">>ni:///sha-256;slD4JQ4PBSkUkqGJJEe-vCosA4CZPmYRnLk8xjAGokk
 
 <<^ code="&#x0004;" -> to="?">>

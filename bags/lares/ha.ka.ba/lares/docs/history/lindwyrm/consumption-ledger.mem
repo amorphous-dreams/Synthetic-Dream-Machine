@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger.mem"
@@ -10,11 +12,10 @@ manao     = 15
 manaoio   = 14
 mode      = "narrate-to-self"
 role      = "consumption ledger for Lindwyrm / DreamDeck narrative loci migration"
+title     = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/lindwyrm/consumption-ledger"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/meme-header>>
 
@@ -109,6 +110,6 @@ Likely next slices:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-3XXrHaWY9mpd6pOA-Chyqnv1TpEYhm66-vUjIblcM8
+<<^ code="&#x0003;">>ni:///sha-256;vPm2CnemVnBo9awvCNKVwm1hX0etlXlNw2iN3_BmXT4
 
 <<^ code="&#x0004;" -> to="?">>

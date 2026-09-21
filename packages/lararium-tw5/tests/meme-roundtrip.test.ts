@@ -85,12 +85,12 @@ const TEACHING_URI = "lar:///ha.ka.ba/lares/memory/fence-teaching";
 const TEACHING = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="${"&#x0001;"}" from="?" -> to="${TEACHING_URI}">>
+<<^ code="${"&#x0002;"}">>
+
 \`\`\`toml meta
 uri-path = "ha.ka.ba/lares/memory/fence-teaching"
 type     = "text/memetic-wikitext+tiddlywiki"
 \`\`\`
-
-<<^ code="${"&#x0002;"}">>
 
 <<~ ahu #/lesson>>
 
@@ -117,7 +117,7 @@ mana = 99
 
 After the fence, the carrier still runs.
 
-<<^ code="${"&#x0003;"}">>ni:///sha-256;MoC-Ppi6r8eWUzSDUSukM9IOHAqx--HbHXVHiVtlb5Y
+<<^ code="${"&#x0003;"}">>ni:///sha-256;gY7Pb7B8CUhNPZ0hYLk2VaFxdAhwGynrP0jfQyiK5hU
 
 <<^ code="${"&#x0004;"}" -> to="?">>
 `;

@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable         = true
 file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/dyad-ladder-scout.mem"
@@ -14,11 +16,10 @@ pattern-integrity = true
 revised-on        = "2026-09-03"
 role              = "dyad-ladder-scout — VERBATIM handoff of the tasked spirit sent after the human-device DYAD model across the scale ladder (local · household · community · Region, Regions interacting). THE LOAD-BEARING NEGATIVE: nobody has built person-device dyadic identity, anywhere, at any scale — every instance in four literatures frames the edge person-to-person or process-to-process. THE LAW: every deployed system marketing no-single-key grew exactly ONE human-held secret, rate-limited rather than entropic, and none publish how often it survives. Plus the convergent shape four teams reached (your model with the person-node deleted), the W3C reviewers ruling a copied key cannot be retrofitted device-bound, Sovrin dissolved for ECONOMIC reasons, the UI-bound adversary, and the authority-survives-memory-does-not boundary."
 tags              = ["api/pono/meme", "mesh/identity-classes"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/dyad-ladder-scout"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/dyad-ladder-scout"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -325,6 +326,6 @@ Confirmed ''unresolved rather than absent'': Khera / Drèze primary sources and 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eNayvI7wC8kwKuZbjiSMFn6goDx6L7mbvLdHK_w3EeU
+<<^ code="&#x0003;">>ni:///sha-256;Pqv6adkL8XOvvG5bNbJ1FGmX687iwhu0hDu4MPPAH7s
 
 <<^ code="&#x0004;" -> to="?">>

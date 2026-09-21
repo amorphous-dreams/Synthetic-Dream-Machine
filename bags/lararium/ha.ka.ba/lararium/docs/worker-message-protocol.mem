@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/worker-message-protocol">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lararium/ha.ka.ba/lararium/docs/worker-message-protocol.mem"
@@ -10,13 +12,14 @@ manao     = 16
 manaoio   = 14
 role      = "the P.3 Worker-thread message protocol — the structured-clone boundary, the schema-versioned envelope (GP-1..6), and the three boundary message types; for operator + agent review"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/docs/worker-message-protocol"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/worker-message-protocol"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -112,6 +115,6 @@ These three types cover the full P.3 boundary surface. Lock them before shipping
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CWkY17VayXNsOVj4HDp_G2O4FIXYOvy8htADcw78KmQ
+<<^ code="&#x0003;">>ni:///sha-256;kQq5jx-Lic8veYirHlW8-rvR9Y13Q_vihfW4dQ0B3VU
 
 <<^ code="&#x0004;" -> to="?">>

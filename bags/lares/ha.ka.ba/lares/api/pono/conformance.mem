@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/conformance">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/conformance.mem"
@@ -10,13 +12,14 @@ manaoio   = 12
 namespace = "&#x2299;"
 role      = "invokable lens --- conformance-checks external content against the OODA-HA reference loop"
 tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/api/pono/conformance"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/conformance"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -118,6 +121,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0sWZ6TUg2H0b9XL0My8UiPnaBEDSZvIMeb6zosYXf04
+<<^ code="&#x0003;">>ni:///sha-256;LoF5bG-10pOfzBUhXzE5UbfrAnDa_ST4f5614WdoraE
 
 <<^ code="&#x0004;" -> to="?">>

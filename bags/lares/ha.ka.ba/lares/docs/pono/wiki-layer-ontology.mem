@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = false
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wiki-layer-ontology.mem"
@@ -10,13 +12,14 @@ manao     = 14
 manaoio   = 13
 role      = "doctrine: the wiki layer stack in OCI-aligned nouns — library layers / write layer / instance mounts; named⇒shareable vs typed-slot⇒owned; only the write layer crosses (motion rides ACTION verbs, never VCS verbs); writes flow through the layer's own wiki; recipe DAG; the wiki-as-bag quine; transitive closure held open; the ALPHA TRANSITION (#/alpha-transition) — why the tree does not yet wear the shore: `bags/` survives because the substrate gets paved, three roles ride it and only the hand-edit door retires, the standing carriers stay put, the window carries the risk and the weld lands last"
 tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -338,6 +341,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rTOOXUGrOr0uuVGwbb-N10lGkvGQnp0brByB59XK3cY
+<<^ code="&#x0003;">>ni:///sha-256;bCrn2rO3e0WgoHdpIhos0nfZ53XkJCwOlkTnqL11XO4
 
 <<^ code="&#x0004;" -> to="?">>

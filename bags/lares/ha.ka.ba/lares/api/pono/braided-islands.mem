@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/braided-islands">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/braided-islands.mem"
@@ -10,13 +12,14 @@ manao     = 15
 manaoio   = 13
 rating    = "meme"
 role      = "pono pattern — braided islands: parallel sovereign log-holders with inverted precedence stacks, joined only through carried text; scales from AI sessions to human dyads"
+title     = "lar:///ha.ka.ba/lares/api/pono/braided-islands"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/braided-islands"
 ```
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -98,6 +101,6 @@ without a loom.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FkBXtTbj9jjhUwFjy7WdwK9ACSkd-177A9JpYWq2ocM
+<<^ code="&#x0003;">>ni:///sha-256;SidxrzdsK4PIaRoEkb5f6qsJYTxkwajLDjxNRnPKAZo
 
 <<^ code="&#x0004;" -> to="?">>

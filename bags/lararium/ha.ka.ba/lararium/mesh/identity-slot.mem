@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/identity-slot">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/identity-slot.mem"
@@ -8,11 +10,10 @@ l-space     = "lararium"
 mana        = 14
 role        = "invariant law: IdentitySlot — the minimum surface a vessel needs from an identity provider. Names the DID namespace, the determinism a derived actor owes, the quine split (the class in TypeScript, the CONFIG as lar: tiddlers), and exactly which layer an EMPTY slot leaves ungated — the interface ships no default implementation — plus which gates stand elsewhere and which reader answers a slot doc's verdict."
 source-file = "packages/lararium-mesh/src/identity-slot.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/identity-slot"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/identity-slot"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -92,6 +93,6 @@ island's store), and on the browser shore admitting a relay peer at all.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;pHU8bYh6arbLqdiN8zM8wNxQc9cvauV-m43OBBfmH9A
+<<^ code="&#x0003;">>ni:///sha-256;h-FOVsG5GdzqwZiLFH2p_QBU4qGp_U1TJUB1DClrUZY
 
 <<^ code="&#x0004;" -> to="?">>

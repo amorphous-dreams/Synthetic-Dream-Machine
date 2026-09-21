@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/index">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/history/lindwyrm/index.mem"
@@ -9,11 +11,10 @@ mana      = 16
 manao     = 16
 manaoio   = 16
 role      = "index and reading map for the Lindwyrm story arc — mythologized dev narrative of the Lararium's first self-naming"
+title     = "lar:///ha.ka.ba/lares/docs/history/lindwyrm/index"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/lindwyrm/index"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 
@@ -63,6 +64,6 @@ Acts I, II, VI, and VII stand here as discrete narrative loci. The arc's middle 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vItH3f7jcnQ2Cmx8K5VAECKPBGvfITpbdnG9Y1Bluwc
+<<^ code="&#x0003;">>ni:///sha-256;Dv_8lIsqaL4hEIPG8kgZ5nInufXOn7XXZYNx4LE3NRs
 
 <<^ code="&#x0004;" -> to="?">>

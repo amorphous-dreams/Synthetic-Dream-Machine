@@ -112,7 +112,7 @@ describe("normalizeMemeSource — child-slot roots", () => {
     expect(r.text).not.toContain("<<~ ahu #/ha-fields>>");
   });
 
-  test("the plain dialect roots the same way", () => {
+  test("the English spelling roots the same way", () => {
     const r = normalizeMemeSource(SLOT_HEAD("<<fragment #head>>\n\nbody\n\n<</fragment>>"));
     expect(r.text).toContain("<<fragment #/head>>");
   });

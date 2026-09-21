@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/pranala">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/pranala.mem"
@@ -11,11 +13,10 @@ role          = "render surface: the pranala edge sigil — \\widget ~pranala in
 source-file   = "packages/lararium-tw5/tiddlers/sigil-pranala.tid"
 source-symbol = "~pranala"
 tags          = ["lar:///ha.ka.ba/lares/api/pono/pranala"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/pranala"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/tw5/widgets/pranala"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/contract>>
 
@@ -67,6 +68,6 @@ The shipped template renders a `<span class="lar-pranala">` carrying `data-from`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cqT47bXZcYYRzKYv61WFtxB4RT0Fk3WE79quwLrpbzw
+<<^ code="&#x0003;">>ni:///sha-256;kAOLF8kNn01fhJB6mtvPQvS0rABXwjvYliyPZSB5MH8
 
 <<^ code="&#x0004;" -> to="?">>

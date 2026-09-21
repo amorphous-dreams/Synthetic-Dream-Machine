@@ -279,7 +279,7 @@ export function normalizeMemeSource(src: string): NormalizeResult {
       offset += line.length + 1;
       if (inMask(mask, start)) return line;
       if (/^<<(?:~\/ahu|\/fragment)\s*>>/.test(line)) { stack.pop(); return line; }
-      const m = /^<<(~ ?ahu|fragment) #\/?([a-z0-9/-]+)(.*)$/i.exec(line);
+      const m = /^<<(~ ?ahu|fragment) #\/([a-z0-9/-]+)(.*)$/i.exec(line);
       if (!m) return line;
       const leaf = m[2]!.split("/").pop()!;
       const path = [...stack.filter(Boolean), leaf].join("/");

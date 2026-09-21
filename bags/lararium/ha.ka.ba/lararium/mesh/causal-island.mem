@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/causal-island">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/causal-island.mem"
@@ -11,11 +13,10 @@ manao       = 17
 manaoio     = 16
 role        = "Causal-island ontological law: the four-tier boundary model, the ACCESS axis (a MODEL, never a checked tier — the live gate is binary), and the share-substrate-not-sovereignty law that governs co-located vessels"
 source-file = "packages/lararium-mesh/src/island-protocol.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/causal-island"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/causal-island"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Causal Island — Ontological Law
 
@@ -139,6 +140,6 @@ Related (project tiddlers): [[project_no_vm_on_main_thread]], [[feedback_isomorp
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6-kvg-fWAU-Iery7CE2J1SslNObuluiU5qJTcE58Ozg
+<<^ code="&#x0003;">>ni:///sha-256;M1HPr_m8F0x9iGLD_bYPeRQfD3sl4ih8whwO5BEQXbQ
 
 <<^ code="&#x0004;" -> to="?">>

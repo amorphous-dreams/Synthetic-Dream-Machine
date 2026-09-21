@@ -1,20 +1,21 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/posture/ritual">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable = true
 caption   = "ritual"
 file-path = "bags/sdm/ha.ka.ba/sdm/components/posture/ritual.mem"
+l-space   = "sdm"
 mana      = 13
 manao     = 16
 manaoio   = 12
 role      = "component (posture): Ritual — activation requires extended procedure and time, not an instant"
-l-space   = "sdm"
+title     = "lar:///ha.ka.ba/sdm/components/posture/ritual"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/components/posture/ritual"
 ```
-
-<<^ code="&#x0002;">>
 
 ! Ritual
 
@@ -69,6 +70,6 @@ A posture, not a hook — it gates //how// a module is reached, akin to Sera's b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DjZmFBQzTEIoGSsMQVbOgG89yggS_Bm4jHj0DTeWICY
+<<^ code="&#x0003;">>ni:///sha-256;MzI2DFzfQ0Cjh-R59z-EDiaxteIkgL7VgWJsTcMsuNA
 
 <<^ code="&#x0004;" -> to="?">>

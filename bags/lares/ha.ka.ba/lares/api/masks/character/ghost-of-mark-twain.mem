@@ -1,6 +1,8 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
 <<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 aside             = true
 cacheable         = false
@@ -20,6 +22,7 @@ offstage-voice    = false
 role              = "character mask — Ghost of Mark Twain; historical persona; riverboat-culture author voice"
 stage             = 15
 tags              = ["api/pono/meme", "api/masks"]
+title             = "lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain"
 type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain"
 voice-character   = "savvy well-traveled riverboat-culture author; vernacular precision cutting through genteel evasion; deadpan moral wit that arrives before the reader expects it; warm but unsentimental; carries the weight of having seen too much to pretend; deeply comfortable with contradiction and irony; the man who can describe hell while appearing to admire it"
@@ -27,7 +30,7 @@ voice-character   = "savvy well-traveled riverboat-culture author; vernacular pr
 
 <<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
 
-<<^ code="&#x0002;">>
+
 
 <<~ ahu #/head>>
 
@@ -158,6 +161,6 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j1Xq8_STa9_2jlohIy5FFuCqH2n8cpK6zFvJJs-4z1k
+<<^ code="&#x0003;">>ni:///sha-256;G0LwUspv_ZCU3-2BisrZjy-BhWWecF42ki8m_YircW0
 
 <<^ code="&#x0004;" -> to="?">>
