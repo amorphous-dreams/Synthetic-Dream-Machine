@@ -554,11 +554,12 @@ remain deployment semantics: probes must override them explicitly. No aftermath 
 
 ''E8 serving-shore scout — 2026-09-21.'' The built web surface carries an index, hashed worker assets,
 genesis manifests, and manifest-named CAS blobs; its artifact witness verifies bytes and rejects an SPA
-fallback. Node answers relay/oracle/bulb faces, while current Compose profiles expose and healthcheck only
-that Node image. The surface accepts explicit oracle, relay, mesh, and genesis URLs, but no production
-composition owns those seams. Three lawful shapes stand: a separate static shore beside Node; retiring
-unserved web bytes from the Node image; or a named deployment wrapper that composes the two processes.
-For Gaia, a local/LAN operator needs independently observable page delivery and local Node sovereignty
+fallback. The `@lararium/node` runtime answers relay/oracle/bulb faces, while current Compose profiles
+expose and healthcheck only that runtime image. The web surface accepts explicit oracle, relay, mesh, and
+genesis URLs, but no production composition owns those seams. Three lawful shapes stand: a separate
+static shore beside the Node-runtime process; retiring unserved web bytes from that image; or a named
+deployment wrapper that composes the processes. For Gaia, a local/LAN operator needs independently
+observable page delivery and local peer sovereignty
 through uplink loss. For Elyncia, the waystone presents the sealed pattern while the hearth retains the
 daemon and household sovereignty; either failure must name its crossing. The scout recommends the named
 wrapper built from a separate static-shore primitive, but holds the ruling: operator-managed composition
@@ -577,19 +578,30 @@ device names never replace them. Static byte distribution is a shore/process cap
 may express where its declared public authority permits. It must not be mistaken for a third vessel kind
 or for an authority split that forces every deployment into two entities.
 
+''E8 peer reorientation — operator ruling, 2026-09-21.'' Client/server language does not describe
+DreamNet. A Node vessel and a Web vessel are peers: each is a Lararium whenever its expressed stack
+includes the persona and document-owning caps; they differ by device/context and the caps they light, not
+by a one-way authority relation. `@lararium/node` and `@lararium/web` name surface assemblies from the
+shared codebase, never peer types. Browser-local state, identity, worker execution, storage, relay,
+oracle, and public byte distribution each travel only through declared capabilities and signed crossings.
+The static-byte process is a bootstrap/distribution projection a peer may express; serving it does not
+make that peer a server over another peer or grant it the other's documents.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
   reject a socket close, an oracle response, or an HTML fallback where a worker/blob belongs.
-# Treat `@lararium/node` as an implementation package for relay/oracle/bulb capabilities, not as a
-  vessel. A Herm expresses blind carriage and public faces without a persona or operator document cap; a
-  Lararium adds persona-held document sovereignty while retaining its relay floor. The named process that
-  serves static bytes belongs to the selected entity's expressed public-distribution capability and must
-  expose no implicit document/read authority.
-# Reframe the deployment scout around composition roots, not a Node-versus-static entity split. For a
-  Herm and for a persona-bearing Lararium, name which caps each process wires, what a package's process
-  may serve, and which declared capability admits static public bytes. The red-first witness must prove
-  the entity's public bytes and Node-provided read faces independently; it must also prove that a Herm
+# Treat `@lararium/node` and `@lararium/web` as implementation packages for the shared keel's capabilities,
+  not vessel types. A Node-surface Lararium and a Web-surface Lararium are DreamNet peers. A Herm expresses
+  blind carriage and public faces without a persona or operator document cap; a Lararium adds persona-held
+  document sovereignty while retaining its relay floor. The named process that serves static bytes belongs
+  to the selected peer's expressed public-distribution capability and must expose no implicit document/read
+  authority.
+# Reframe the deployment scout around peer composition roots, not a Node-versus-static or client/server
+  split. For a Herm and for persona-bearing Node- and Web-surface Lararia, name which caps each process
+  wires, what a package's process may serve, and which declared capability admits static public bytes.
+  The red-first witness must prove public bytes and `@lararium/node`-provided read faces independently;
+  it must also prove that a Herm
   cannot acquire operator documents and that a Lararium's document authority never follows from merely
   serving web bytes. An optional repository wrapper may compose processes for one entity; it never
   creates a new vessel class or silently grants a cap.
@@ -790,6 +802,6 @@ down named volumes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3saTZXWbz6odT2ndFMJ4UTq4f0tLxn1vJa_LlvX2Yrs
+<<^ code="&#x0003;">>ni:///sha-256;6CmhgWruFlpmri2gwZ_2pXLL5m1YAMyQJmDaUUsYX-U
 
 <<^ code="&#x0004;" -> to="?">>
