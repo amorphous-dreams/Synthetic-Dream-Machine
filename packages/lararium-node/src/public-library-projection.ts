@@ -29,7 +29,6 @@ export interface PublicLibraryProjectionInputs {
 const ASSET_ROUTE = /^\/assets\/(?!\.{1,2}$)([A-Za-z0-9._-]+)$/;
 const WORKER_ASSET = /(?:^|\/)(?:daemon|wiki|shared-holder)\.worker[-.][A-Za-z0-9._-]+$/;
 const CID = /^[0-9a-f]{64}$/;
-const STALE_BINARY = /(?:^|\/)(?:island\.bin|island\.cid(?:-[A-Za-z0-9._-]+)?|island\.genesis\.json|island\.manifest\.json)$/;
 
 function fail(message: string): never {
   throw new Error(`[public-library-projection] ${message}`);
@@ -61,7 +60,7 @@ function assetType(route: string): string {
 }
 
 function routeFile(root: string, route: string): Uint8Array {
-  if (!ASSET_ROUTE.test(route) || STALE_BINARY.test(route)) fail(`noncanonical or stale asset route: ${route}`);
+  if (!ASSET_ROUTE.test(route)) fail(`noncanonical asset route: ${route}`);
   return exactFile(root, route.slice(1), `asset ${route}`);
 }
 
@@ -105,7 +104,6 @@ export function buildPublicLibraryProjection(
   if (routes.length !== inputs.assetRoutes.length) fail("assetRoutes contains a duplicate route");
   for (const route of routes) {
     if (!ASSET_ROUTE.test(route)) fail(`noncanonical asset route: ${route}`);
-    if (STALE_BINARY.test(route)) fail(`stale binary-era asset route: ${route}`);
   }
   if (!routes.some((route) => WORKER_ASSET.test(route))) fail("assetRoutes must name a prepared worker asset");
 

@@ -16,6 +16,8 @@ import {
   validateGenesisBytes,
   importGenesisIsland,
   reconcileGenesisCid,
+  materializeGenesisIsland,
+  genesisCasCidsFromOracle,
 } from "../src/genesis-intake.js";
 import {
   emptyLarDoc,
@@ -27,8 +29,22 @@ import {
   cidV1Sha256,
   type LarDoc,
 } from "../src/index.js";
+import { GENESIS_SEED_FORMAT, oracleGenesisDocUrl } from "../src/genesis-doc.js";
 
 const CORE_BYTES = new TextEncoder().encode("fake-tw5-core");
+
+const RESTART_SEED = {
+  format: GENESIS_SEED_FORMAT,
+  actorSeed: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  schemaVersion: "0.1",
+  blobs: {
+    [ENGINE_CORE_ID]: { id: ENGINE_CORE_ID, version: "test", sha256: "1".repeat(64), mimeType: "application/javascript" },
+    [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: {
+      id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "test", sha256: "2".repeat(64), mimeType: "application/javascript",
+    },
+  },
+  tiddlers: {},
+} as const;
 
 function blobEntry(id: string, payload: string) {
   return {
@@ -52,6 +68,21 @@ describe("genesis-intake — the one intake core", () => {
     repos.push(r);
     return r;
   }
+
+  test("restart reloads the persisted oracle without consulting seed input", async () => {
+    const repo = newRepo();
+    const first = await materializeGenesisIsland(repo, RESTART_SEED, "first-breath");
+    const restarted = await materializeGenesisIsland(repo, undefined, "restart");
+
+    expect(restarted.url).toBe(first.url);
+    expect(restarted.url).toBe(oracleGenesisDocUrl());
+    expect(genesisCasCidsFromOracle(restarted.doc()!)).toEqual(["1".repeat(64), "2".repeat(64)]);
+  });
+
+  test("first breath without seed refuses before an oracle or worker can stand", async () => {
+    await expect(materializeGenesisIsland(newRepo(), undefined, "first-breath"))
+      .rejects.toThrow(/oracle seed required for first materialization/);
+  });
 
   /** Author a genesis-shaped doc and export its bytes. */
   async function genesisBytes(mutate?: (d: LarDoc) => void): Promise<Uint8Array> {

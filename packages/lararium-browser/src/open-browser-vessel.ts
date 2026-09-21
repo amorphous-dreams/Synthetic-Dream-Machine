@@ -26,7 +26,7 @@ import {
   ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
   BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeUri, recipeHostFacets, type WikiActivationCap,
   carriageStack, deriveMeshLeaf,
-  materializeGenesisIsland, genesisCasManifestFromSeed,
+  materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
   personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
   deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
@@ -87,6 +87,7 @@ const BROWSER_WIKI_PIN_BUDGET     = 1;
 const FOUNDING_PERSONA_INDEX = 0;
 import {
   fetchGenesisCasToOpfs,
+  readCasBlobFromOpfs,
 }                                            from "./browser-genesis.js";
 import {
   openBrowserDaemonVm,
@@ -803,7 +804,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       catalogHandle,
       waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
 
-      // Genesis REQUIRED — the node-parity materialize-fresh path. The oracle island is a LIVE
+      // Genesis is required only for a first materialization or a source-backed byte fetch. The oracle island is a LIVE
       // CRDT under the DETERMINISTIC doc id (oracleGenesisDocUrl): materializeGenesisIsland
       // does find-FIRST (a prior boot persisted it to IndexedDB → reload intact; a peer
       // synced it → adopt) ELSE materializes it fresh from the plain-data seed and imports
@@ -811,12 +812,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // call, isomorphic with the node loadOrMaterializeOracle.
       loadGenesis: async () => {
         await writeBootKeys(idbName, bootKeyWrites);
-        if (!genesisSeed) {
-          throw new Error(
-            "[openBrowserVessel] genesis seed REQUIRED — pass genesisSeed (seed.json); " +
-            "a reboot reloads the persisted oracle doc by find-first, but first boot needs the seed",
-          );
-        }
         const islandHandle = await materializeGenesisIsland(repo, genesisSeed, "browser-genesis");
         const coreHash = islandHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.sha256 ?? null;
         if (!coreHash) throw new Error("[openBrowserVessel] genesis island missing ENGINE_CORE_ID blob metadata");
@@ -825,9 +820,23 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         // carries METADATA only; the bytes ship as genesis/cas/<cid> files. Fetch them over HTTP
         // by the seed-derived inventory (the browser face of the node mirrorGenesisCasFs). Once in OPFS they
         // persist (write-once-read-many), so later/replica boots need no separate inventory file.
-        if (genesisCasBaseUrl) {
-          const casManifest = genesisCasManifestFromSeed(genesisSeed);
-          await fetchGenesisCasToOpfs(casManifest, genesisCasBaseUrl);
+        const casManifest = genesisSeed ? genesisCasManifestFromSeed(genesisSeed) : undefined;
+        const casCids = casManifest
+          ? casManifest.blobs.map(({ cid }) => cid)
+          : genesisCasCidsFromOracle(islandHandle.doc()!);
+        // The seed is the immutable authorization for a remote CAS fetch. A persisted
+        // mutable Oracle may name continuity members for a local restart, but it may
+        // never widen the remote byte request.
+        if (genesisCasBaseUrl && casManifest) await fetchGenesisCasToOpfs(casManifest, genesisCasBaseUrl);
+        const missing = (await Promise.all(casCids.map(async (cid) => {
+          const bytes = await readCasBlobFromOpfs(cid);
+          return bytes && sha256HexBytesSync(bytes) === cid ? null : cid;
+        }))).filter((cid): cid is string => cid !== null);
+        if (missing.length > 0) {
+          throw new Error(
+            `[openBrowserVessel] genesis CAS member(s) unavailable: ${missing.join(", ")} — ` +
+            "provide the immutable genesis seed/CAS source before starting a worker",
+          );
         }
         return { islandHandle, coreHash, bootstrap: social };
       },

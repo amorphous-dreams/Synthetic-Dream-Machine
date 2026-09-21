@@ -46,7 +46,7 @@ export function mutableLarRecord(
  * the bytes themselves live in the content-addressed store (CAS), keyed by sha256,
  * NEVER in the CRDT. The optional `blob` field carries inline bytes only for ad-hoc
  * bags (images, attachments not yet promoted to the CAS); the genesis engine + plugin
- * bytes ship as `genesis/cas/<cid>` files + a manifest, so the genesis CRDT holds
+ * bytes ship as `genesis/cas/<cid>` files named by the immutable seed, so the genesis CRDT holds
  * metadata only and the merge-conflict-on-bytes class vanishes structurally.
  * Each blob MUST have a descriptor tiddler at blobDescriptorUri(id).
  */

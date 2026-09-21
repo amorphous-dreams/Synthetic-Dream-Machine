@@ -162,13 +162,7 @@ export function hearthTrueName(genesisDir?: string): string | undefined {
 
 export async function loadOrMaterializeOracle(repo: Repo, genesisDir?: string): Promise<DocHandle<LarDoc>> {
   const seed = readGenesisSeed(genesisDir);
-  if (!seed) {
-    throw new Error(
-      `[genesis-artifact] plain-data genesis seed (seed.json) absent or malformed\n` +
-      `  → run: pnpm --filter @lararium/node build:genesis`,
-    );
-  }
-  return materializeGenesisIsland(repo, seed, "genesis-artifact");
+  return materializeGenesisIsland(repo, seed ?? undefined, "genesis-artifact");
 }
 
 // ---------------------------------------------------------------------------

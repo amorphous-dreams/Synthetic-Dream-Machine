@@ -47,7 +47,8 @@ import {
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault, type PlaneEntry,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
-  climbNexusBoards,
+  climbNexusBoards, sha256HexBytesSync,
+  genesisCasCidsFromOracle,
 }                                       from "@lararium/mesh";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
@@ -973,13 +974,26 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       // those into the runtime CAS the workers read via resolveByCid (the nodefs face of the
       // browser vessel's OPFS fetch — isomorphic by composition).
       const manifest = readGenesisCasManifest(genesisDir);
-      if (!manifest) {
-        throw new Error(
-          `[openNodeVessel] genesis seed absent or malformed — re-run build:genesis`,
-        );
+      const runtimeCas = casDirForStorage(storageDir);
+      if (manifest) {
+        const casWritten = mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), runtimeCas);
+        if (casWritten > 0) console.log(`[openNodeVessel] fs CAS: mirrored ${casWritten} blob(s) by CID from genesis/cas`);
+      } else {
+        // A persisted oracle permits restart without seed.json, but the worker may not
+        // start on CRDT metadata alone. Every named member must already stand in the
+        // local content-addressed store; otherwise an immutable source is owed.
+        const cids = genesisCasCidsFromOracle(islandHandle.doc()!);
+        const missing = cids.filter((cid) => {
+          const bytes = readCasBlobFromFs(cid, runtimeCas);
+          return bytes === null || sha256HexBytesSync(bytes) !== cid;
+        });
+        if (missing.length > 0) {
+          throw new Error(
+            `[openNodeVessel] persisted oracle names missing CAS member(s): ${missing.join(", ")} — ` +
+            "provide the immutable genesis seed/CAS source before starting a worker",
+          );
+        }
       }
-      const casWritten = mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), casDirForStorage(storageDir));
-      if (casWritten > 0) console.log(`[openNodeVessel] fs CAS: mirrored ${casWritten} blob(s) by CID from genesis/cas`);
 
       // Bootstrap URLs: the vessel's own social bootstrap (init node — authoritative),
       // falling back to the island oracle (replica vessels).

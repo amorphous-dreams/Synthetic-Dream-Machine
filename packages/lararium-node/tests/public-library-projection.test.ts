@@ -40,7 +40,7 @@ describe("buildPublicLibraryProjection — explicit prepared roots", () => {
     expect([...projection.cas.keys()]).toEqual([f.cid]);
   });
 
-  test("rejects missing files, mismatched CAS bytes, stale names, traversal, and private routes", () => {
+  test("rejects missing files, mismatched CAS bytes, traversal, and private routes", () => {
     const f = fixture();
     const base = { webArtifactRoot: f.web, genesisBundleRoot: f.genesis };
     expect(() => buildPublicLibraryProjection({ ...base, assetRoutes: ["/assets/index-abc.js"] })).toThrow(/worker/);
@@ -50,7 +50,6 @@ describe("buildPublicLibraryProjection — explicit prepared roots", () => {
     expect(() => buildPublicLibraryProjection({ ...base, assetRoutes: ["/assets/..", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
     expect(() => buildPublicLibraryProjection({ ...base, assetRoutes: ["/assets/foo%2Fbar.js", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
     expect(() => buildPublicLibraryProjection({ ...base, assetRoutes: ["/assets/foo/bar.js", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
-    expect(() => buildPublicLibraryProjection({ ...base, assetRoutes: ["/assets/island.bin", "/assets/wiki.worker-def.js"] })).toThrow(/stale/);
     const outside = mkdtempSync("/tmp/lararium-public-library-outside-"); roots.push(outside);
     writeFileSync(join(outside, "escape.js"), "outside");
     symlinkSync(join(outside, "escape.js"), join(f.web, "assets/escape.js"));

@@ -17,7 +17,7 @@
  * Or via:   pnpm --filter @lararium/node build:genesis
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, rmSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
 import { join, basename, resolve }                                          from "path";
 
 import { repoRoot } from "@lararium/mesh/node";
@@ -276,7 +276,7 @@ async function main(): Promise<void> {
 
   // Layer C: write the production bundle. The deterministic Automerge bytes remain
   // an in-memory verification witness; production carries plain seed data plus the
-  // seed-derived CAS plane. No binary or manifest/CID sidecar is a boot input anymore.
+  // seed-derived CAS plane.
   mkdirSync(genesisDir, { recursive: true });
 
   // The PLAIN-DATA oracle seed — THE boot artifact. The boot materializes the
@@ -288,15 +288,6 @@ async function main(): Promise<void> {
   );
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
-
-  // The successor bundle is verified before this point. Remove only the retired
-  // binary/sidecar spellings so a rebuild cannot leave a second boot source behind.
-  for (const retired of [
-    "manifest.json",
-    "island.bin", "island.sha256", "island.sha256-pre", "island.cid",
-    "island.cid-engine", "island.cid-grammar", "island.cid-plugins",
-    "island.manifest.json", "island.genesis.json",
-  ]) rmSync(join(genesisDir, retired), { force: true });
 
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
   console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);

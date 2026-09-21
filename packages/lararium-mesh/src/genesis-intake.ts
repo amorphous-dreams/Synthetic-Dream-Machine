@@ -103,7 +103,7 @@ export async function importGenesisIsland(
  */
 export async function materializeGenesisIsland(
   repo:  Repo,
-  seed:  GenesisSeed,
+  seed:  GenesisSeed | undefined,
   label: string,
 ): Promise<DocHandle<LarDoc>> {
   const url = oracleGenesisDocUrl();
@@ -127,6 +127,11 @@ export async function materializeGenesisIsland(
   }
 
   // 2. first boot: materialize fresh from the plain-data seed, import under the id.
+  if (!seed) {
+    throw new Error(
+      `[${label}] oracle seed required for first materialization — no persisted oracle doc was found`,
+    );
+  }
   const bytes = materializeGenesisDoc(seed);
   validateGenesisBytes(bytes, label);
   const docId  = interpretAsDocumentId(url) as DocumentId;
@@ -145,6 +150,33 @@ export async function materializeGenesisIsland(
     `blobs=${Object.keys(doc.blobs ?? {}).length}  tiddlers=${Object.keys(doc.tiddlers ?? {}).length}`,
   );
   return handle;
+}
+
+/**
+ * Read the CAS member names carried by an already-persisted oracle.
+ *
+ * This is a restart continuity witness only: callers MUST use it to verify local
+ * CAS bytes or to request those exact bytes from a separately declared immutable
+ * source. It never turns mutable oracle metadata into permission to invent bytes.
+ */
+export function genesisCasCidsFromOracle(doc: LarDoc): readonly string[] {
+  const entries = Object.values(doc.blobs ?? {});
+  if (entries.length === 0) {
+    throw new Error("[genesis-intake] persisted oracle carries no CAS member metadata");
+  }
+  const cids = entries.map((entry) => {
+    if (!entry || typeof entry.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(entry.sha256)) {
+      throw new Error(`[genesis-intake] persisted oracle carries a malformed CAS member (${String(entry?.id)})`);
+    }
+    return entry.sha256;
+  });
+  if (!cids.includes(doc.blobs?.[ENGINE_CORE_ID]?.sha256 ?? "")) {
+    throw new Error(`[genesis-intake] persisted oracle is missing TW5 core CAS metadata (${ENGINE_CORE_ID})`);
+  }
+  if (new Set(cids).size !== cids.length) {
+    throw new Error("[genesis-intake] persisted oracle carries duplicate CAS member CIDs");
+  }
+  return [...cids].sort();
 }
 
 export interface GenesisReconcileResult {

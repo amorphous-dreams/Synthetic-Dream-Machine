@@ -16,7 +16,7 @@ const projection: PublicLibraryProjection = {
     ["/assets/wiki.worker-def.js", bytes("self.postMessage('worker')", "application/javascript")],
   ]),
   genesisSeed: bytes('{"seed":"public"}', "application/json"),
-  cas: new Map([[CID, bytes("manifest-named-cas", "application/octet-stream")]]),
+  cas: new Map([[CID, bytes("seed-named-cas", "application/octet-stream")]]),
 };
 
 let server: Server | undefined;
@@ -56,7 +56,7 @@ describe("public-library adapter — prepared Herm/Lararium projection", () => {
       ["/", "<!doctype html><title>web</title>", "text/html"],
       ["/assets/wiki.worker-def.js", "self.postMessage('worker')", "application/javascript"],
       ["/genesis/seed.json", '{"seed":"public"}', "application/json"],
-      [`/genesis/cas/${CID}`, "manifest-named-cas", "application/octet-stream"],
+      [`/genesis/cas/${CID}`, "seed-named-cas", "application/octet-stream"],
     ] as const) {
       const response = await fetch(`${origin}${path}`);
       expect(response.status, path).toBe(200);
@@ -76,7 +76,7 @@ describe("public-library adapter — prepared Herm/Lararium projection", () => {
     const origin = await start();
     for (const path of [
       "/assets/missing-worker.js", `/genesis/cas/${"b".repeat(64)}`,
-      "/genesis/missing.json", "/genesis/manifest.json", "/private/document.json", "/oracle/pointer.html",
+      "/genesis/missing.json", "/private/document.json", "/oracle/pointer.html",
     ]) {
       const response = await fetch(`${origin}${path}`);
       // Unowned routes are left for other faces; this bare server has no other face and closes them.

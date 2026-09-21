@@ -4,7 +4,7 @@
  * The production source is seed.json + cas/<cid>. The
  * deterministic Automerge document is reconstructed only here as an integrity
  * witness. Each assertion is deliberately weakened by the failure it names:
- * altered seed, wrong CAS bytes, or a resurrected binary-era output.
+ * altered seed or wrong CAS bytes.
  */
 import { describe, expect, test } from "vitest";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -21,15 +21,9 @@ import { readGenesisCasManifest, readGenesisSeed } from "../src/genesis-artifact
 const GENESIS_DIR = join(repoRoot, "genesis");
 
 describe("production genesis bundle — seed + CAS", () => {
-  test("canonical bundle stands and retired binary/sidecar outputs are absent", () => {
+  test("canonical bundle holds only its seed and CAS roots", () => {
     expect(existsSync(join(GENESIS_DIR, "seed.json"))).toBe(true);
-    expect(existsSync(join(GENESIS_DIR, "manifest.json"))).toBe(false);
     expect(existsSync(join(GENESIS_DIR, "cas"))).toBe(true);
-    for (const retired of [
-      "island.bin", "island.sha256", "island.sha256-pre", "island.cid",
-      "island.cid-engine", "island.cid-grammar", "island.cid-plugins",
-      "island.genesis.json", "island.manifest.json",
-    ]) expect(existsSync(join(GENESIS_DIR, retired)), retired).toBe(false);
   });
 
   test("altering seed data changes the deterministic witness", () => {

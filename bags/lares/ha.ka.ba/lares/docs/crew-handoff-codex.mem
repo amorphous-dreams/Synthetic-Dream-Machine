@@ -732,11 +732,11 @@ readers in Node boot/CAS protection, bulb construction, CLI publication, public 
 fetch, Web artifact preparation, and build/tool seams. The slice replaces every reader with the one strict,
 platform-neutral `genesisCasManifestFromSeed(seed)` projection, then deletes the physical
 `genesis/manifest.json`. `GenesisCasManifest` remains a logical in-memory wire value for the bulb and public
-projection; it no longer names a second file or authority. The public adapter explicitly refuses the retired
-route. The seed plus exact `cas/<cid>` bytes are the complete immutable production bundle. The mutable,
-synchronized Oracle remains deliberately outside that byte allowlist. Controls cover seed-derived inventory
-closure, altered seed, malformed seed, tampered/missing CAS bytes, Node sweep fail-closed behavior, Browser
-OPFS verification, public-route refusal, bulb round-trip, and quine boot. Gaia's operator can relight a
+projection; it no longer names a second file or authority. No public adapter route or build cleanup tombstone
+keeps the retired spelling alive. The seed plus exact `cas/<cid>` bytes are the complete immutable production
+bundle. The mutable, synchronized Oracle remains deliberately outside that byte allowlist. Controls cover
+seed-derived inventory closure, altered seed, malformed seed, tampered/missing CAS bytes, Node sweep fail-closed
+behavior, Browser OPFS verification, bulb round-trip, and quine boot. Gaia's operator can relight a
 local vessel from founding material during an offline restart. Elyncia's traveler can kindle from public fire
 while the mutable shrine never silently rewrites which fire may execute.
 
@@ -753,12 +753,12 @@ manifest. A Nexus remains a separately addressed confederation capability keyed 
 many independent Nexuses may stand without changing the shared genesis or converting any peer into a client.
 
 ''Startup-core next cuts — human-scale Scrum.''
-# ''Restart versus first-breath contract.'' Make the isomorphic intake explicitly distinguish a locally reloaded
-  Oracle from a true first materialization. A persisted Oracle may stand without consulting a seed; a missing
-  local CAS still requires a declared immutable byte source before a worker can run. Red controls cover persisted
-  Oracle with seed absent, first boot with seed absent, persisted Oracle with a missing CAS member, and a mutable
-  Oracle attempting to name a new byte. Gaia's household device restarts from what it actually holds. Elyncia's
-  waystone remembers its shrine without inventing a new fire.
+# ''Restart versus first-breath contract — TAKEN.'' The shared intake distinguishes a locally reloaded Oracle
+  from a true first materialization. A persisted Oracle can reopen without a seed, but seedless restart accepts
+  only local, hash-valid CAS members; it never uses mutable Oracle metadata to request remote bytes. A supplied
+  immutable seed strictly derives any source-backed fetch inventory. Mesh controls prove persisted reload and
+  first-breath refusal; Node and Browser verify missing/tampered local CAS before workers begin. Gaia's household
+  device restarts from what it actually holds. Elyncia's waystone remembers its shrine without inventing a new fire.
 # ''One shared startup contract test family.'' Drive Node filesystem, Web bundle/HTTP/OPFS, and bulb pull through
   the same vectors: malformed seed, altered region witness, absent byte, wrong byte hash, duplicate/widened byte,
   first materialization, and persisted reload. Keep substrate setup at each shore; place assertions about causal
@@ -1064,6 +1064,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TSKxXQcXBs9kpOCC9RuchCE9VFLVj0mPBor5YrSPdE8
+<<^ code="&#x0003;">>ni:///sha-256;yN_lcUjgMjZr6Uo0oU0GW7qs7UYlNb0_kW2u09AVW9M
 
 <<^ code="&#x0004;" -> to="?">>
