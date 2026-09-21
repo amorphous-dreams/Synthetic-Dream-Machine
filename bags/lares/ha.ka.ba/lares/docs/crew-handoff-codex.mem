@@ -595,6 +595,15 @@ oracle, and public byte distribution each travel only through declared capabilit
 The static-byte process is a bootstrap/distribution projection a peer may express; serving it does not
 make that peer a server over another peer or grant it the other's documents.
 
+''E8 peer-cap weld and aftermath — 2026-09-21.'' `52e64eb91` makes mesh-palace wire advertisement a
+projection of the held cap stack at both encode and decode: an untrusted bulb-only distribution record
+may express `bulb.seed`, never `tuber.author` or `tuber.store`. `4bdd44a37` supplies separate forged
+encode and hand-forged decode controls; valid Herm relay and persona-bearing Lararium stacks round-trip
+unchanged. The full mesh suite passed 262 files / 2,418 tests with 18 skips, and mesh typecheck passed.
+The three aftermath passes found no nominal vessel, package, client/server, global-now, documentation,
+or generated-residue drift. This closes the capability-advertisement seam; it does not claim an image
+serves web bytes, prove Herm blindness through a live composition root, or establish relay admission.
+
 # Make an image-level HTTP witness red before it changes any serving code. It must identify the process
   answering `/`, distinguish a missing/static-fallback response from the built web index, and read one
   worker and one genesis/CAS asset by their expected bytes. A deliberate weakening must make the witness
@@ -810,6 +819,6 @@ down named volumes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w2v-8yUI8AAMc8c9qr41QA4FwrRH-KUnGGAzwOjHRsM
+<<^ code="&#x0003;">>ni:///sha-256;rvCob5dSBR1hZzxinKWwHd1oDNKMHgrus2UEHhI3leg
 
 <<^ code="&#x0004;" -> to="?">>
