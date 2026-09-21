@@ -4,7 +4,7 @@
 #
 # Stages:
 #   deps         — install workspace deps (layer-cached)
-#   build        — tsc compile all packages + vite build web surface
+#   build        — compile the Node runtime dependency graph + Vite web surface
 #   serve        — lararium-node WS server (web artifact copied for a held static-route decision)
 #   mcp-runtime  — minimal stdio MCP server
 #
@@ -25,12 +25,15 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* tsconfig.base.json ./
+COPY TiddlyWiki5/package.json                         TiddlyWiki5/
+COPY packages/lararium-browser/package.json            packages/lararium-browser/
+COPY packages/lararium-keyhive/package.json            packages/lararium-keyhive/
+COPY packages/lararium-mempalace/package.json          packages/lararium-mempalace/
 COPY packages/lararium-mesh/package.json    packages/lararium-mesh/
+COPY packages/lararium-sensorium/package.json           packages/lararium-sensorium/
 COPY packages/lararium-tw5/package.json     packages/lararium-tw5/
-COPY packages/lararium-tldraw/package.json  packages/lararium-tldraw/
 COPY packages/lararium-node/package.json    packages/lararium-node/
 COPY packages/lararium-web/package.json     packages/lararium-web/
-COPY packages/lararium-mcp/package.json     packages/lararium-mcp/
 
 RUN pnpm install --frozen-lockfile
 
@@ -40,11 +43,14 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 
 COPY packages/ packages/
-COPY lares/     lares/
+COPY TiddlyWiki5/ TiddlyWiki5/
+COPY bags/       bags/
+COPY genesis/    genesis/
 
-# Build all packages in dependency order, then the browser app.
-RUN pnpm -r build
-RUN pnpm --filter @lararium/web build
+# Build only the current Node host and its transitive workspace dependencies, then the web surface.
+# The deferred mcp-runtime stays outside this target's build graph.
+RUN pnpm --filter @lararium/node... build
+RUN pnpm --filter @lararium/web... build
 
 # ---------------------------------------------------------------------------
 # Stage 3: serve — lararium-node WS server; static web serving remains unproven
@@ -61,16 +67,27 @@ WORKDIR /app
 COPY --from=build /app/node_modules                         ./node_modules
 COPY --from=build /app/package.json                         ./package.json
 COPY --from=build /app/pnpm-workspace.yaml                  ./pnpm-workspace.yaml
+COPY --from=build /app/packages/lararium-mesh/node_modules ./packages/lararium-mesh/node_modules
 COPY --from=build /app/packages/lararium-mesh/dist          ./packages/lararium-mesh/dist
 COPY --from=build /app/packages/lararium-mesh/package.json  ./packages/lararium-mesh/package.json
+COPY --from=build /app/packages/lararium-tw5/node_modules  ./packages/lararium-tw5/node_modules
 COPY --from=build /app/packages/lararium-tw5/dist           ./packages/lararium-tw5/dist
 COPY --from=build /app/packages/lararium-tw5/package.json   ./packages/lararium-tw5/package.json
-COPY --from=build /app/packages/lararium-tldraw/dist        ./packages/lararium-tldraw/dist
-COPY --from=build /app/packages/lararium-tldraw/package.json ./packages/lararium-tldraw/package.json
+COPY --from=build /app/packages/lararium-keyhive/node_modules ./packages/lararium-keyhive/node_modules
+COPY --from=build /app/packages/lararium-keyhive/dist       ./packages/lararium-keyhive/dist
+COPY --from=build /app/packages/lararium-keyhive/package.json ./packages/lararium-keyhive/package.json
+COPY --from=build /app/packages/lararium-mempalace/node_modules ./packages/lararium-mempalace/node_modules
+COPY --from=build /app/packages/lararium-mempalace/dist     ./packages/lararium-mempalace/dist
+COPY --from=build /app/packages/lararium-mempalace/package.json ./packages/lararium-mempalace/package.json
+COPY --from=build /app/packages/lararium-node/node_modules ./packages/lararium-node/node_modules
 COPY --from=build /app/packages/lararium-node/dist          ./packages/lararium-node/dist
 COPY --from=build /app/packages/lararium-node/package.json  ./packages/lararium-node/package.json
+COPY --from=build /app/packages/lararium-sensorium/node_modules ./packages/lararium-sensorium/node_modules
+COPY --from=build /app/packages/lararium-sensorium/dist    ./packages/lararium-sensorium/dist
+COPY --from=build /app/packages/lararium-sensorium/package.json ./packages/lararium-sensorium/package.json
 COPY --from=build /app/packages/lararium-web/dist           ./packages/lararium-web/dist
 COPY --from=build /app/packages/lararium-web/public         ./packages/lararium-web/public
+COPY --from=build /app/genesis                             ./genesis
 
 # lares/ mounted at runtime — never baked in
 VOLUME /app/lares
