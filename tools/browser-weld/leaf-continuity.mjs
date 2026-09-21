@@ -241,9 +241,9 @@ function instrumentBootSource(source) {
 
   // The workerEa subscriber lives in the separately served mesh module. Keep this anchor explicit:
   // a host-side cap receipt cannot prove that awaitIslandMsg saw or accepted the same message.
-  if (body.includes("awaitIslandMsg") && body.includes("isIslandToVesselMsg(raw)")) {
+  if (/function\s+awaitIslandMsg\s*\(/.test(body) && body.includes("isIslandToVesselMsg(raw)")) {
     body = body.replace(
-      /if \(!isIslandToVesselMsg\(raw\)\) return;/,
+      /if\s*\(!isIslandToVesselMsg\(raw\)\)\s*return;/,
       `const __laresC4Watched = raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault");
       const __laresC4Guard = isIslandToVesselMsg(raw);
       if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-raw " + JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null, guard: __laresC4Guard, expected: opts.expectedType }));
@@ -259,15 +259,15 @@ function instrumentBootSource(source) {
       `if (opts.resetOnTypes?.includes(raw.type)) { if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-breath-reset");`,
     );
     body = body.replace(
-      /if \(raw\.type !== opts\.expectedType\) return;/,
+      /if\s*\(raw\.type !== opts\.expectedType\)\s*return;/,
       `if (raw.type !== opts.expectedType) return;
       if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-expected-match");`,
     );
     body = body.replace(
-      /cleanup\(\);\n      resolve\(raw as T\);/,
+      /cleanup\(\);\s*resolve\(raw(?: as T)?\);/,
       `cleanup();
       if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-resolve");
-      resolve(raw as T);`,
+      resolve(raw);`,
     );
   }
 

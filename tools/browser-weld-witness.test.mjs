@@ -20,6 +20,9 @@ const DAEMON_CORE = join(REPO, "packages/lararium-tw5/src/daemon-vm-core.ts");
 const DAEMON_WORKER = join(REPO, "packages/lararium-web/src/workers/daemon.worker.ts");
 const WEB_MAIN = join(REPO, "packages/lararium-web/src/main.ts");
 
+process.env.LEAF_BOOT_TRACE = "1";
+const { instrumentBootSource } = await import("./browser-weld/leaf-continuity.mjs");
+
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
 function run(command, args, options) {
@@ -180,6 +183,29 @@ async function testC4TraceAnchorsStillStand() {
   }
 }
 
+async function testC4TraceInstrumentsCompiledAwaitIslandMsg() {
+  const source = `export function awaitIslandMsg(opts) {
+  return new Promise((resolve) => {
+    opts.subscribe((raw) => {
+      if (!isIslandToVesselMsg(raw))
+        return;
+      if (raw.type !== opts.expectedType)
+        return;
+      cleanup();
+      resolve(raw);
+    });
+  });
+}`;
+  const transformed = instrumentBootSource(source);
+  assert.match(transformed, /host:awaitIslandMsg-raw/);
+  assert.match(transformed, /host:awaitIslandMsg-guard-accepted/);
+  assert.match(transformed, /host:awaitIslandMsg-expected-match/);
+  assert.match(transformed, /host:awaitIslandMsg-resolve/);
+
+  const weakened = instrumentBootSource(source.replaceAll("isIslandToVesselMsg(raw)", "isIslandToVesselMsg(other)"));
+  assert.doesNotMatch(weakened, /host:awaitIslandMsg-(?:raw|resolve)/);
+}
+
 async function testIndependentDriversAndArtifacts() {
   for (const testCase of [
     { env: { FAKE_WELD_STATUS: "1" }, expectedStatus: 1, weldStatus: 1, c4Status: 0 },
@@ -272,6 +298,7 @@ async function testSignalReapsTheViteProcessGroup() {
 
 await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
+await testC4TraceInstrumentsCompiledAwaitIslandMsg();
 await testIndependentDriversAndArtifacts();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();
