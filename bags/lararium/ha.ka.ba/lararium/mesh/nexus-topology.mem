@@ -116,6 +116,24 @@ The 50-new-certificates-per-registered-domain-per-week ceiling ''does'' draw one
 
 ''The Public Suffix List refuses the rate-limit motive outright'' and accepts the ''mutually-untrusting subdomain delegation'' argument instead — which every comparable platform entered on. Its gate (registration with two or more years remaining, no service-level agreement on timing) makes submission ''a founding-time act''.
 
+!!! The bounded reach contract ~ the local DNS token has five separate shores
+
+The operator-facing "local DNS token" now has a precise design home as a ''bounded reach grant''
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>). It is a scoped contract over one
+operator subtree and one Nexus charter epoch, never a bearer secret and never a public operator roster.
+The grant keeps five capabilities apart: carriage, local recursive-resolver policy, bounded origin
+attestation, self-certifying identity, and Onomancy's DNSSEC binding. A name grants rendezvous only;
+the node or document key answers who; an explicit capability contract answers membership and read.
+
+''The custody wording wants a fork, not an inference.'' This carrier has said both that the operator
+receives a delegated `_acme-challenge` label and that the civic Kahu holds contracted operators' DNS
+records in trust. Those can describe different record classes, but deployment MUST choose and measure
+the custody path: either the Kahu delegates challenge evidence while the operator owns the ACME account
+and service key, or the operator supplies account-bound evidence for Kahu publication in trust. Neither
+shape grants apex write. CAA remains its own constraint: first-hit replacement and wildcard lookup
+semantics mean a shared wildcard and per-operator account pinning cannot be assumed to compose. The
+provider/account/CAA choice stays OPEN until a named provider and governance act settle it.
+
 <<~/ahu>>
 
 <<~ ahu #/the-caa-collision>>
@@ -210,6 +228,7 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
@@ -219,6 +238,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sxs4GjM6GJKz3uInzWh6CXLgN994IxOuURL9qgmEdNU
+<<^ code="&#x0003;">>ni:///sha-256;9OkoFb6jmB7OuUC8TQWVpwxqKTnS7MHpPoaStZ1P2Kk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -286,6 +286,7 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-price">>
@@ -294,6 +295,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lidyHRiJcAJcLNzgbzrMwavl3x2FD5fH4s_pw0NUf7E
+<<^ code="&#x0003;">>ni:///sha-256;wt6zo2fu_JcGQnN3p5F4-PHgRmCerEsY43n3tQK2-Qg
 
 <<^ code="&#x0004;" -> to="?">>

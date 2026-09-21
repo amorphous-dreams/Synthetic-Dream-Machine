@@ -494,6 +494,29 @@ This arc completes when the present DOM/Vite package is explicitly `web`; browse
 # The Dockerfile's copied web output remains an explicit fork. `packages/lararium-node/src/main.ts` presently owns a WS-only server; no evidence says it serves those copied static files. An image-level request must establish a genuine static-serving route. If none stands, name that Docker copy stage stale or introduce a separate static-serving shore by a later explicit decision; do not grant static-host authority to Node by convenience.
 # After each migration commit, run the narrow package test/typecheck/build, the name/artifact controls, browser-weld runner control, and the relevant reserved Docker browser leg. Then re-scan executable references, normalize the living carriers, and make a separate aftermath commit only when the sweep changes a carrier or source.
 
+!! E7 · Bounded reach contracts — design and evidence before deployment
+
+''Operator approval, 2026-09-21:'' local operators may contract into the DreamNet domains through a
+bounded reach grant for their own LAN and a bounded origin. The design lives in
+`lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract`: five capabilities stay distinct — carriage,
+local recursive-resolver policy, origin attestation, self-certifying identity, and Onomancy DNSSEC
+binding. Its acceptance stories begin exactly with ''Operators on Gaia (Earth circa 2026) SHALL need''
+and ''Operators on Elyncia (Orichalcum Mythpunk RPG) SHALL need''; each proves uplink-down local work,
+exit without loss of self, no public roster, and no identity claim from a name.
+
+# A bounded-reach control reads the meme's named `toml bounded-reach-control` block. Its positive witness
+  keeps rendezvous, local split horizon, public authoritative DNS, Onomancy, and TLS/ACME separate; its
+  deliberate weakened fixtures red when DNS receives identity/membership/read authority, split horizon
+  moves to public authoritative DNS, or Onomancy and TLS/ACME collapse into one role.
+# Re-tru the current topology wording: delegated `_acme-challenge`, Kahu-held records, operator-owned
+  ACME account/key, and CAA semantics remain an explicit custody/provider fork. No deployment work may
+  infer a provider behavior or create a roster from the fork.
+# Keep DNS-provider selection, ACME issuance, CAA publication, resolver deployment, certificate-expiry
+  implementation, and origin-continuity integration held until the operator settles that fork.
+
+''Receipt:'' the bounded-reach design and control stand landed; unbuilt deployment remains held. The
+crossing ledger carries the exact paths and the red-first receipt.
+
 <<~/ahu>>
 
 <<~ ahu #/completed>>
@@ -664,6 +687,6 @@ This arc completes when the present DOM/Vite package is explicitly `web`; browse
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-bfzuV9Cjas_sQS-i7RaWcFVDAD0ibROsIW3xLItIdU
+<<^ code="&#x0003;">>ni:///sha-256;H_AalnVHVDXCCASvUBiBz8L1-1eZRuKRk8D76QupLBM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,264 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/bounded-reach-contract.mem"
+l-space    = "lararium"
+mana       = 14
+manao      = 14
+manaoio    = 13
+role       = "the bounded reach contract: a local operator contracts into one DreamNet DNS subtree without taking identity, membership, read, or apex-zone authority"
+status-why = "design and red-first consistency control; DNS-provider, ACME, and deployment implementation remain held"
+tags       = ["mesh/reach-plane", "mesh/attestation-plane", "mesh/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/bounded-reach-contract"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<~ ahu #/head>>
+
+! Bounded Reach Contract ~ a signpost leased without leasing the self
+
+''PROPOSED — design intent with an authored consistency control; no DNS provider, ACME issuance path,
+or deployment route stands built.'' This meme gives the local operator's "DNS token" a precise name:
+the ''bounded reach grant''. It is a bilateral, scoped capability contract, never a bearer token that
+floats free of its holder, subtree, Nexus charter epoch, or ending.
+
+The contract lets an operator make a local LAN service discoverable through a memorable DreamNet name
+and earn a browser-trusted origin certificate for that bounded subtree. A name remains rendezvous only;
+the operator's self-certifying key remains identity; a separate membership or content capability says
+what peers may join or read. A local resolver may answer a local question without making that answer a
+global fact.
+
+<<~/ahu>>
+
+<<~ ahu #/capability-matrix>>
+
+!! Five capabilities, five holders
+
+|!capability |!holder |!scope |!permits |!does not permit |
+|Nexus carriage contract |two sovereign operators |one agreed charter epoch and transit relation |blind relay carriage under the contract |DNS writes, identity, membership, or content read |
+|LAN resolver policy |the local operator |one causal LAN and its resolver view |name → private address for local clients |public DNS answers, ACME authorization, or a global roster |
+|bounded origin-attestation grant |Nexus/Kahu plus the contracted operator |one operator subtree and one charter epoch |the named DNS-01/account-bound issuance and renewal acts, if the chosen CA supports them |apex write, another operator's subtree, peer identity, membership, or content read |
+|self-certifying node/document identity |the vessel or operator |the key and its signed delegation graph |prove continuity and sign authored facts |a memorable DNS name, LAN address, or certificate issuer deciding standing |
+|Onomancy DNSSEC binding |DNSSEC zone plus the document's binding record |one public `@name` |point a memorable name at an existing self-certifying document |TLS issuance, LAN resolution, membership, content read, or identity creation |
+
+''A public name grants RENDEZVOUS only.'' The public authoritative view names where a traveler may
+knock. It never names who the traveler is, who belongs to the Nexus, or what bytes the traveler may
+read. A browser's origin attestation proves the serving origin to the browser; it does not prove the
+peer behind the origin.
+
+<<~/ahu>>
+
+<<~ ahu #/grant-shape>>
+
+!! The grant carries bounded evidence
+
+The contract's signed or otherwise jointly witnessed record SHOULD carry these fields. A future
+implementation MAY encode them differently, but it MUST preserve their meanings and boundaries:
+
+```text
+subject         = operator's public ACME-account identity
+nexus           = one Nexus charter epoch link
+subtree         = one bounded public hostname subtree
+actions         = DNS-01 / account-bound issuance / renewal only
+origin-scope    = one narrow wildcard or equivalent subtree scope
+publication     = public DNS evidence only; no public operator roster
+ending          = non-renewal or explicit causal withdrawal
+identity        = external to the grant; node/document keys remain sovereign
+```
+
+The Kahu or Nexus governance hand performs the rare admission and withdrawal act. The operator holds
+their ACME account key, certificate private key, and ordinary renewal path. A quorum belongs on the rare
+grant act, never on every frequent renewal. The grant blesses a record or bounded challenge relation,
+never a certificate held by the Kahu.
+
+The word ''token'' therefore names an operator-facing metaphor only. The protocol object reads as a
+scoped contract whose holder, action, subtree, epoch, and ending remain inspectable. It MUST NOT be
+serializable into an unscoped bearer secret.
+
+<<~/ahu>>
+
+<<~ ahu #/lifecycle>>
+
+!! Lifecycle ~ contract first, renewal local, withdrawal severable
+
+# ''Propose.'' The operator and Nexus name the subject, subtree, charter epoch, permitted action set,
+  local resolver responsibility, and withdrawal/expiry behavior. The proposal says which party holds
+  each DNS record and which CA behavior remains an unresolved fork.
+# ''Admit.'' The rare Kahu act publishes or authorizes only the bounded evidence required by the chosen
+  challenge path. It does not copy the operator's private key, create a roster, or mint the operator's
+  node identity.
+# ''Serve.'' The local recursive resolver may answer the operator's LAN with a private address while
+  the public authoritative view answers the general internet consistently and unfiltered. The same
+  hostname can therefore resolve differently by causal island without either answer becoming universal.
+# ''Renew.'' The operator's own account and key perform ordinary renewal. A certificate's validity is a
+  named Web2 bridge and a local witness; it does not order CRDT facts, decide membership, or settle an
+  identity dispute. No global wall-clock fact enters mesh ordering.
+# ''Withdraw.'' The rare authority removes or declines the bounded evidence. Future issuance or renewal
+  fails after the relevant record disappears; already-issued certificates retain their ordinary validity
+  window. Keys, documents, peer relations, and local stories remain with the operator.
+# ''Exit.'' The operator can leave the Nexus, move the name to another reach shore, or stand a Nexus of
+  their own while retaining the self-certifying document and its signed continuity. A lost signpost is
+  a reach loss, never a self loss.
+
+<<~/ahu>>
+
+<<~ ahu #/dns-boundaries>>
+
+!! Two DNS views and one named governance fork
+
+''Split horizon belongs to the local recursive resolver.'' A LAN resolver may return a private address
+for its own clients. The public authoritative DNS view MUST answer the whole internet consistently and
+remain available to multi-perspective validation and DNSSEC validation. Assigning split horizon to the
+authoritative view would make DNS-01 nondeterministic and would turn a local causal answer into a false
+global claim.
+
+The current topology says both that an operator receives a delegated `_acme-challenge` label and that
+the civic Kahu holds the contracted operator's DNS records in trust. Those statements can describe two
+different record classes, but they do not yet settle the production contract. The following fork stays
+OPEN and MUST receive a provider-specific, governance-approved ruling before deployment work:
+
+* ''Fork A — challenge delegation.'' The Kahu retains the public authoritative zone and delegates only
+  the challenge evidence for a bounded subtree. The operator owns the ACME account and service key;
+  the chosen CA must support the account-bound challenge shape without granting apex or sibling scope.
+* ''Fork B — Kahu-published evidence.'' The operator supplies signed or account-bound challenge data,
+  while the Kahu publishes it in trust. This preserves zone custody but adds a recurring Kahu service
+  obligation and needs a precise proof that the Kahu cannot impersonate the operator's account.
+
+CAA does not silently resolve the fork. RFC 8659's first CAA answer replaces the parent set, and the
+wildcard lookup strips `*.` before climbing. A shared wildcard and per-operator account pinning can
+therefore collide; a delegated operator cannot simply publish the apex holder's CAA policy. The design
+must choose the exact CA/account/CAA combination—or explicitly hold CAA as an admission constraint—after
+the provider behavior and custody responsibilities receive a separate red-first measurement.
+
+''No implementation claim follows.'' `dns-account-01`, `dns-persist-01`, ACME Parent/Subordinate
+Account language, and any provider-specific API remain research inputs until a named provider and
+governance hand settle this fork. No code may infer that a `_acme-challenge` delegation grants CAA,
+apex write, identity, membership, or read capability.
+
+<<~/ahu>>
+
+<<~ ahu #/evidence-boundaries>>
+
+!! Evidence says what was witnessed
+
+|!evidence |!it can establish |!it cannot establish |
+|local resolver answer |this LAN's current name → address view |a public DNS truth, identity, or global reachability |
+|public authoritative DNS + DNSSEC |public name/record integrity during its validation window |peer identity, membership, content read, or permanent availability |
+|ACME/TLS certificate |a CA-validated origin for a hostname during certificate validity |the operator's node key, document identity, membership, or content authority |
+|Onomancy `_onomancy.<name>` binding |a DNSSEC-attested pointer to an existing document key |a certificate, an A/AAAA answer, a LAN route, or a new identity |
+|operator key/document signature |continuity of the self-certifying document and its delegation graph |public reachability, CA trust, or Nexus membership by itself |
+|carriage contract |the named transit relation and its blind-carriage scope |a right to inspect, alter, or join the carried content |
+
+The evidence remains local and composable. A verifier MAY hold all six readings at once; it MUST retain
+their provenance and MUST surface disagreement rather than merge the readings into an authority the
+individual evidence never carried.
+
+<<~/ahu>>
+
+<<~ ahu #/gaia-story>>
+
+!! Operators on Gaia (Earth circa 2026) SHALL need
+
+Operators on Gaia (Earth circa 2026) SHALL need to place a Lararium on a household LAN, give its family
+devices a memorable DreamNet signpost, and keep the household able to work when the uplink fails. Success
+means the local recursive resolver still returns the private service address, the browser continues to
+serve the last valid HTTPS origin, the vessel's self-certifying key and local documents remain available,
+and no remote DNS response is required for local work. Failure means a public DNS outage is treated as
+the loss of the household's identity, or a browser is forced to wait on a cloud resolver before it can
+open its own local story.
+
+Operators SHALL need to withdraw or leave a contracted subtree without losing self. Success means the
+next renewal or admission attempt no longer receives the withdrawn evidence, while existing documents,
+keys, local projections, and peer relations remain inspectable and portable. Failure means withdrawal
+deletes a key, strands local content, or leaves a stale public roster asserting that the operator still
+belongs. The household SHALL need no public list of every operator: a verifier sees only the DNS evidence
+needed for the bounded name. A name SHALL never itself claim identity; the operator's node/document key
+answers who, and the DNS name answers where.
+
+<<~/ahu>>
+
+<<~ ahu #/elyncia-story>>
+
+!! Operators on Elyncia (Orichalcum Mythpunk RPG) SHALL need
+
+Operators on Elyncia (Orichalcum Mythpunk RPG) SHALL need to tend a shrine, crossroads, or traveling
+Lararium whose DreamNet signpost can disappear while the shrine's own mythic self persists. Success means
+a Lamplighter can guide a local party through a darkened uplink by the shrine's local resolver, the shrine
+continues to feed its isolated TW5 islands and render its known stories, and a traveler can later verify
+the same document key after the public signpost returns or moves. Failure means the Kahu's name becomes the
+shrine's soul, a fallen crossroads erases the shrine's history, or an outside DNS answer pretends to know
+which spirits belong within its walls.
+
+Operators SHALL need to contract a bounded reach through a Nexus without turning the mythic road into a
+registry of souls. Success means a Kahu can admit or withdraw one named road and its origin attestation,
+while the shrine's sealed stories, self-certifying document, local companions, and bilateral carriage
+compacts survive exit. A public name remains a waystone; Onomancy may point that waystone at an existing
+document, while TLS may reassure a browser that it reached the serving origin. Neither names a spirit,
+grants membership, or opens a story's read gate. Failure means a waystone seizure changes a character's
+identity, a resolver's answer creates a membership claim, or a certificate's expiry reorders the shrine's
+causal history.
+
+<<~/ahu>>
+
+<<~ ahu #/consistency-control>>
+
+!! RED-first authored invariant
+
+The bounded-reach control below is a small declaration seam, not a second memetic parser. It reads only
+this meme's named `toml bounded-reach-control` block and checks the authored capability values. The
+positive control proves that the document keeps DNS rendezvous, local split horizon, public authoritative
+DNS, Onomancy, and TLS/ACME in distinct roles. Its weakened fixtures deliberately replace the local
+resolver, name, or Onomancy/TLS value and MUST red. The seam therefore checks the invariant the design
+claims, rather than counting suggestive words across unrelated prose.
+
+```toml bounded-reach-control
+name-grant           = "rendezvous-only"
+split-horizon-owner  = "local-recursive-resolver"
+authoritative-view   = "public-global-unfiltered"
+identity-source      = "self-certifying-key"
+membership-source    = "explicit-capability-contract"
+read-source          = "explicit-capability-contract"
+onomancy-role        = "dnssec-binding-to-existing-document"
+tls-acme-role        = "origin-attestation-only"
+```
+
+<<~/ahu>>
+
+<<~ ahu #/held>>
+
+!! Unbuilt holds
+
+This wave lands design and consistency evidence only. DNS provider selection, ACME issuance, CAA
+publication, resolver deployment, certificate-expiry implementation, public roster policy, and origin
+continuity tests remain held. The ACME/CAA custody fork above must receive an operator-visible ruling
+before any deployment path opens.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/books/the-lares-dreamnet/spine">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_7ZURssjDmvDa7fu6XsNv4QozTz75Av19-ml9t-zbs8
+
+<<^ code="&#x0004;" -> to="?">>

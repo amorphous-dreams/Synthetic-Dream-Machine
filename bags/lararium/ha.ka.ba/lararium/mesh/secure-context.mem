@@ -206,6 +206,7 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
@@ -217,6 +218,6 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yzXspr8ixXSiMzdiWxu1YWNzItV4JIdKiKnD4c3ejcY
+<<^ code="&#x0003;">>ni:///sha-256;XdP6fxrLxEC7j-F4922cnjp6v2VBXOdTeErJbavA9sk
 
 <<^ code="&#x0004;" -> to="?">>
