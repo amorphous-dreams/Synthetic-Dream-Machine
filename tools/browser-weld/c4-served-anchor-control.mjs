@@ -2,8 +2,8 @@
  * C4 served Worker graph anchor control.
  *
  * This is a source boundary witness, before the longer boot comparison: it proves that
- * the compiled Worker graph contains the kernel's manifest/pre-ea anchors and that the
- * trace route can inject the corresponding markers.  It deliberately does not wait for
+ * the compiled Worker graph contains the kernel and browser-shore anchors and that the
+ * trace route can inject the corresponding markers. It deliberately does not wait for
  * ea, retry boot, or change a readiness decision.
  */
 import assert from "node:assert/strict";
@@ -23,6 +23,8 @@ const ANCHORS = {
   sendEa: /handler\.sendEa\s*\(\s*msg\.wikiUri\s*\)\s*;/,
 };
 const MARKERS = ["worker:manifest-received", "worker:pre-first-breath", "worker:pre-ea"];
+const SHORE_ANCHOR = /listen:\s*\(onMessage\)[\s\S]{0,180}onMessage\(e\.data\)/;
+const SHORE_MARKER = "worker:shore-manifest-inbound";
 
 function workerAnchorStatus(source) {
   return Object.fromEntries(Object.entries(ANCHORS).map(([name, pattern]) => [name, pattern.test(source)]));
@@ -40,6 +42,7 @@ const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] }
 const context = await browser.newContext();
 const page = await context.newPage();
 const workerSources = [];
+const shoreSources = [];
 const scriptErrors = [];
 
 page.on("pageerror", (error) => scriptErrors.push(error.message));
@@ -48,22 +51,41 @@ context.on("requestfailed", (request) => {
 });
 
 await context.route(/\.(?:[cm]?[jt]sx?)(?:\?.*)?$/, async (route) => {
-  const response = await route.fetch();
+  let response;
+  try {
+    response = await route.fetch();
+  } catch {
+    return;
+  }
   if (!isJavaScript(response)) return route.fulfill({ response });
-  const source = await response.text();
+  let source;
+  try {
+    source = await response.text();
+  } catch {
+    return;
+  }
   // Vite's inline source map can carry the original TypeScript text, so never
   // mistake a decoded-map mention for executable served graph code.
   const executableSource = source.replace(/\n\/\/# sourceMappingURL=.*$/s, "");
   const anchors = workerAnchorStatus(executableSource);
-  if (!executableSource.includes("runSovereignKernel")) return route.fulfill({ response });
+  const isKernel = executableSource.includes("runSovereignKernel");
+  const isShore = SHORE_ANCHOR.test(executableSource);
+  if (!isKernel && !isShore) return route.fulfill({ response });
   const transformed = instrumentBootSource(source);
-  workerSources.push({
-    url: route.request().url(),
-    source: executableSource,
-    anchors,
-    injectedMarkers: Object.fromEntries(MARKERS.map((marker) => [marker, transformed.includes(`\"${marker}\"`)])),
-    transformed: transformed !== source,
-  });
+  if (isKernel) workerSources.push({
+      url: route.request().url(),
+      source: executableSource,
+      anchors,
+      injectedMarkers: Object.fromEntries(MARKERS.map((marker) => [marker, transformed.includes(`\"${marker}\"`)])),
+      transformed: transformed !== source,
+    });
+  if (isShore) shoreSources.push({
+      url: route.request().url(),
+      source: executableSource,
+      anchor: true,
+      injectedMarker: transformed.includes(`\"${SHORE_MARKER}\"`),
+      transformed: transformed !== source,
+    });
   return route.fulfill({ response, body: transformed });
 });
 
@@ -76,25 +98,34 @@ try {
     scriptErrors.push(`navigation: ${error instanceof Error ? error.message : String(error)}`);
   }
   const until = Date.now() + WAIT_MS;
-  while (workerSources.length === 0 && Date.now() < until) await new Promise((resolve) => setTimeout(resolve, 100));
+  while ((workerSources.length === 0 || shoreSources.length === 0) && Date.now() < until) await new Promise((resolve) => setTimeout(resolve, 100));
 
   // Deliberate weakening: the same detector must reject a compiled graph with one
   // required worker anchor removed; otherwise absence and non-reach are conflated.
   const positive = workerSources.find((record) => allAnchorsPresent(record.anchors) && /\/sovereign-kernel\.js(?:\?.*)?$/.test(record.url));
   assert.ok(positive, JSON.stringify({ workerSources, scriptErrors }, null, 2));
+  const positiveShore = shoreSources.find((record) => /\/browser-sovereign-island-model\.js(?:\?.*)?$/.test(record.url));
+  assert.ok(positiveShore, JSON.stringify({ shoreSources, scriptErrors }, null, 2));
   const weakenedSource = positive.source.replace(/handler\.sendEa\s*\(\s*msg\.wikiUri\s*\)\s*;/, "");
   const weakened = workerAnchorStatus(weakenedSource);
   assert.equal(allAnchorsPresent(weakened), false, JSON.stringify({ weakened }));
   const weakenedTransformed = instrumentBootSource(weakenedSource);
   assert.equal(weakenedTransformed.includes('"worker:pre-ea"'), false, JSON.stringify({ weakened }));
+  const weakenedShoreSource = positiveShore.source.replace(/onMessage\(e\.data\)/, "onMessage(e.other)");
+  assert.equal(SHORE_ANCHOR.test(weakenedShoreSource), false, JSON.stringify({ shore: weakenedShoreSource.slice(0, 500) }));
+  const weakenedShoreTransformed = instrumentBootSource(weakenedShoreSource);
+  assert.equal(weakenedShoreTransformed.includes(`"${SHORE_MARKER}"`), false, JSON.stringify({ shore: weakenedShoreSource.slice(0, 500) }));
   assert.equal(positive.transformed, true, JSON.stringify({ workerSources }));
   for (const marker of MARKERS) assert.equal(positive.injectedMarkers[marker], true, JSON.stringify({ workerSources }));
+  assert.equal(positiveShore.injectedMarker, true, JSON.stringify({ shoreSources }));
   const { source: _source, ...positiveReceipt } = positive;
+  const { source: _shoreSource, ...positiveShoreReceipt } = positiveShore;
 
   console.log(JSON.stringify({
     valid: true,
     positive: { ...positiveReceipt, workerGraphUrl: positive.url },
-    deliberateWeakening: { anchors: weakened, valid: allAnchorsPresent(weakened), preEaInjected: weakenedTransformed.includes('"worker:pre-ea"') },
+    shore: { ...positiveShoreReceipt, shoreGraphUrl: positiveShore.url },
+    deliberateWeakening: { anchors: weakened, valid: allAnchorsPresent(weakened), preEaInjected: weakenedTransformed.includes('"worker:pre-ea"'), shoreAnchor: SHORE_ANCHOR.test(weakenedShoreSource), shoreMarkerInjected: weakenedShoreTransformed.includes(`"${SHORE_MARKER}"`) },
     scriptErrors,
   }));
 } finally {

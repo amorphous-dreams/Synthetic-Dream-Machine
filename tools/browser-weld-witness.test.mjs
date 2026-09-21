@@ -148,6 +148,7 @@ async function testC4TraceHookIsOptIn() {
     "host:worker-spawn", "worker:ready", "host:ready-fallback", "host:manifest-post",
     "raw.type === \"breath\"", "raw.type === \"ea\"", "worker:startup-error",
     "worker:manifest-received", "worker:manifest-rejected", "worker:manifest-accepted",
+    "worker:shore-manifest-inbound",
     "worker:pre-first-breath", "worker:pre-ea",
     "host:awaitIslandMsg-raw", "host:awaitIslandMsg-guard-accepted",
     "host:awaitIslandMsg-guard-rejected", "host:awaitIslandMsg-expected-match",
@@ -219,6 +220,17 @@ async function testC4TraceInstrumentsManifestHandleDispatch() {
 
   const weakened = instrumentBootSource(source.replace('post: (msg, transfer) => w.postMessage(msg, (transfer ?? [])),', 'post: (msg, transfer) => w.send(msg, (transfer ?? [])),'));
   assert.doesNotMatch(weakened, /host:worker-handle-manifest-dispatch/);
+}
+
+async function testC4TraceInstrumentsWorkerShoreInbound() {
+  const source = `const host = {
+  listen: (onMessage) => self.addEventListener("message", (e) => onMessage(e.data)),
+};`;
+  const transformed = instrumentBootSource(source);
+  assert.match(transformed, /worker:shore-manifest-inbound/);
+
+  const weakened = instrumentBootSource(source.replace("onMessage(e.data)", "onMessage(e.other)"));
+  assert.doesNotMatch(weakened, /worker:shore-manifest-inbound/);
 }
 
 async function testIndependentDriversAndArtifacts() {
@@ -315,6 +327,7 @@ await testC4TraceHookIsOptIn();
 await testC4TraceAnchorsStillStand();
 await testC4TraceInstrumentsCompiledAwaitIslandMsg();
 await testC4TraceInstrumentsManifestHandleDispatch();
+await testC4TraceInstrumentsWorkerShoreInbound();
 await testIndependentDriversAndArtifacts();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();

@@ -309,6 +309,17 @@ function instrumentBootSource(source) {
     );
   }
 
+  // Worker-shore receipt: this is immediately before the browser host shore forwards an
+  // inbound Worker message into the kernel's host.listen callback. It distinguishes a
+  // successful native handle post from a message that actually reaches the Worker shore.
+  body = body.replace(
+    /listen: \(onMessage\) => self\.addEventListener\("message", \(e\) => onMessage\(e\.data\)\),/,
+    `listen: (onMessage) => self.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:shore-manifest-inbound" }); } catch {} }
+      onMessage(e.data);
+    }),`,
+  );
+
   // The worker's caught startup rejection normally stays in the worker console. A test-only marker
   // crosses the same worker message boundary, so the host can distinguish it from pre-worker silence.
   if (body.includes('registerWorkerErrorRelay("daemon-worker");')) {

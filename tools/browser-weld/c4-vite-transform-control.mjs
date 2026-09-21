@@ -222,6 +222,7 @@ async function runCase(browser, mode) {
       manifestReceived: outcome("marker").filter((receipt) => receipt.phase === "worker:manifest-received"),
       manifestRejected: outcome("marker").filter((receipt) => receipt.phase === "worker:manifest-rejected"),
       manifestAccepted: outcome("marker").filter((receipt) => receipt.phase === "worker:manifest-accepted"),
+      shoreManifestInbound: outcome("marker").filter((receipt) => receipt.phase === "worker:shore-manifest-inbound"),
       preFirstBreath: outcome("marker").filter((receipt) => receipt.phase === "worker:pre-first-breath"),
       breath: outcome("message").filter((receipt) => receipt.type === "breath"),
       preEa: outcome("marker").filter((receipt) => receipt.phase === "worker:pre-ea"),
@@ -290,6 +291,7 @@ try {
   assert.equal(instrumented.workerOutcomes.hostManifestPost[0].transferCount > 0, true, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.workerOutcomes.earlyMarker.length, 0, JSON.stringify({ unchanged, instrumented }));
   assert.equal(instrumented.workerOutcomes.earlyMarker.length > 0, true, JSON.stringify({ unchanged, instrumented }));
+  assert.equal(unchanged.workerOutcomes.shoreManifestInbound.length, 0, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.workerOutcomes.hostChain.workerHandleManifestDispatch.length, 0, JSON.stringify({ unchanged, instrumented }));
   assert.ok(instrumented.workerOutcomes.hostChain.workerHandleManifestDispatch.length > 0, JSON.stringify({ unchanged, instrumented }));
   assert.equal(unchanged.terminal, instrumented.terminal, JSON.stringify({ unchanged, instrumented }));
