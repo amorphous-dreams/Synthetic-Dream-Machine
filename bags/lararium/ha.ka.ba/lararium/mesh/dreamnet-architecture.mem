@@ -4,16 +4,17 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = true
-file-path = "bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem"
-l-space   = "lararium"
-mana      = 17
-manao     = 16
-manaoio   = 15
-role      = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel"
-title     = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/dreamnet-architecture.mem"
+l-space    = "lararium"
+mana       = 17
+manao      = 16
+manaoio    = 15
+revised-on = "2026-09-20"
+role       = "DreamNet two-axis mesh topology: INFRA (relay-floor → lararium → nexusGroup → DreamNet) ⊥ SOCIAL (vessel-key → personaGroup-veiled → cabalGroup), the two axes crossing at the vessel. Re-trued 2026-09-20 against the board-keying ruling (`91ce09afb`+`c6cfe5b8d`), the seven per-Nexus boards, the crossroads/offering/heraldry canon, and the registry-filter + causal-islands laws."
+title      = "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
 ```
 
 ! DreamNet Architecture
@@ -21,7 +22,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/dreamnet-architecture"
 A hundred thousand Lararia. Each one a different operator. Each one a different charter,
 different ontology, different pono surface. Somehow not isolated — they form a mesh.
 Not by sharing data (local-first means local-first). By sharing ''structure'': the same `lar:///` scheme, the same mana/manao/manaoio grammar, the same
-mempalace wing patterns — so
+sensoriums (mempalace++) wing patterns — so
 the gardens recognize each other even when they cannot read each other.
 
 ''A protocol, not a platform. A grammar, not a database.''
@@ -223,6 +224,66 @@ The law of the shore: ''membership decides read; the nexus decides reach.'' A ca
 
 <<~/ahu>>
 
+<<~ ahu #/the-planes>>
+
+!! The Planes — seven boards, one per Nexus, and where a bag actually lives
+
+''Every shared plane a Nexus carries keys on the NEXUS, never on a vessel'' (#/the-nexus-keying-spine). Two of the seven derive their addresses ''deterministically'' from the Nexus's own key, so no vessel advertises a URL and no two vessels mint competing boards: `crossroadsDocUrl(nexusPubkey)` and `whoBoardDocUrl(nexusPubkey)` each hash a seed string through `deterministicDocUrl` (`packages/lararium-mesh/src/deterministic-doc.ts:1-13,26-32`, quote license: //"a Nexus's crossroads doc and its WHO board each derive a deterministic URL from the nexus-pubkey, so two browsers on one island resolve the identical board WITHOUT any node advertising its URL"//). The other five — antigen (kapae), carriage, vouch, edge-kāpae, persona-KEL — ride the same per-Nexus scope through their own registries.
+
+Each board carries a distinct read/write posture, and a climb between Nexuses (#/the-nexus-keying-spine) treats them by THREE different verbs, never one (`packages/lararium-mesh/src/nexus-identity.ts:230-266`, quote license):
+
+<<~ has Board crossroads "posture/WRITE-OPEN, READ-FILTERED reads/announced notice·tombstone·kāpae folds, order-independent (`lar:///ha.ka.ba/lararium/docs/crossroads` #/kūkala) on-climb/RE-ANNOUNCE — 'it carries no signature a reader could re-check, so a copied row would launder a lapsed, equivocated or FOREIGN-REALM registration; the projection is recomputed from the realm doc's counted registrations instead' (nexus-identity.ts:250-252)">>
+<<~ has Board WHO "posture/WRITE-OPEN, READ-CERTIFIED — 'the board gates nothing; the recogniser decides standing' (handle-announce.ts:18-19) on-climb/DELIBERATELY NEITHER — 'a boot-time announce would DISCLOSE a face the operator published only to a private nexus of one; disclosure stays an act' (nexus-identity.ts:253-255)">>
+<<~ has Board kapae-antigen "posture/quorum-signed DENY, monotone, tightens only on-climb/CARRY, VERBATIM — 'an empty deny set RE-ADMITS a Kapae'd presenter; the quorum epoch check makes the carry self-limiting' (nexus-identity.ts:246-247)">>
+<<~ has Board carriage "posture/quorum-countersigned SHARED contract record (members{}), never a roster of who-belongs on-climb/DELIBERATELY NEITHER — 'an allow wants a fresh consent at the new epoch, and a roster of who belongs is the one register the laws forbid' (nexus-identity.ts:255-256)">>
+<<~ has Board vouch "posture/unfederated, per-vessel view on-climb/DELIBERATELY NEITHER — 'a carried PARTIAL replica would become the whole board and price crossings off one vessel's view — the honest cure is federating it' (nexus-identity.ts:256-257)">>
+<<~ has Board edge-kāpae "posture/shadow board, outside the federation gate on-climb/CARRY, VERBATIM — 'an empty shadow board LOWERS EVERY SHADOW, and the board sits outside the federation gate, so no peer replica heals it' (nexus-identity.ts:247-249)">>
+<<~ has Board persona-KEL "posture/the identity chain itself on-climb/CARRY, VERBATIM — 'the gate REFUSES rather than degrades, so a moved board took the vessel down rather than thinning it' (`carryPersonaKelUpTheGradient`, nexus-identity.ts:245-246)">>
+
+''"Degrades gracefully" was the wrong reading for two of the seven'' — persona-KEL and antigen fail closed rather than thinning (nexus-identity.ts:244-247, quote license, ''landed'' — `nexus-board-climb`, `persona-kel-climb`). Crossroads re-announces rather than copies (no signature survives a copy). WHO, carriage, and vouch stay ''deliberately neither carried nor re-announced'' on a climb — each crossing a line the design refuses to cross by accident (disclosure, membership-roster, and federation-scope, respectively).
+
+!!! Realm bags — CABAL ⊥ REALM ⊥ NEXUS, never fused
+
+A bag two operators keep ''through a relation'' is not a Nexus-wide public shelf and not a private vessel bag — it is a ''realm'' bag, a third plane the cabal/realm/nexus split keeps apart (`packages/lararium-mesh/src/realm-bag.ts:1-6`, quote license): //"the CABAL is the collective, the REALM its shared CRDT and resources, the NEXUS the hardware. A bag two households keep is stuff held in common — it belongs to the REALM plane."// Its doc id ''derives from the charter'' — the same genesis-epoch address the Nexus itself keys on (`realm-bag.ts:8-9`: //"the GENESIS epoch of the seal lineage… the realm's NAME, so every member computes one address from the charter alone"//). The registration record names `{ realmId, bagUri, docUrl, keptBy, readTier }`, signed ''n-of-n'' by every steward it names (`realm-bag.ts:12-14`); what @crossroads ever carries about it is `{ bagUri, keptBy }` — //"that a ford stands here and who keeps it — never the doc, never a tiddler, never the read cap"// (`realm-bag.ts:19-20`). Read rides CONTRACT (`{your-fleet ∪ a-cabal}`, cap-tier.ts), never PUBLIC.
+
+!!! Handles — a Face, never a registry of faces
+
+Any nameless thing on the DreamNet — infra, persona, or cabal — may publish a Handle, a self-certifying card recognised by its own key (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> #/ruling, operator 2026-09-12, quote license: //"any nameless thing on the DreamNet — infra, persona, or cabal — may publish a Handle, a public Face/Heraldry"//). A Face ''may be worn in turn'' (a mantle — a k-of-n graft threshold that keeps one turned hand from stealing the name), and it ''must never become'' //"a registry of who wears what — the heraldry says this is the ford-keepers' arms, never these are the ford-keepers"// (`heraldry.mem` #/ruling). The card lands as a namespaced tiddler in a synced doc via `handle-announce.ts`, which is ''NEXUS-SCOPED, NEVER GLOBAL'': //"there is no global DreamNet registry of Handles, because there is no global now: a Handle federates exactly as far as its announce doc syncs, and crossing to another Nexus RE-ANNOUNCES"// (`handle-announce.ts:12-16`, quote license). Three nameless shapes already hold this shape in code — cabal (owner-set = `keptBy`, the stewards' persona prefixes), infra vessel (owner-set = the Herm's own device-minted Place DID, 1-of-1), veiled persona (owner-set = the persona-KEL prefix, the case already live via `lares handle publish`) — differing by ''what holds the presenting key'', never by tier (`heraldry.mem` #/the-three-nameless).
+
+!!! Cap tiers
+
+Every bag declares its sealing posture as self-describing, tighten-only data over one chain of set-inclusion: `VEIL{this-vessel} ⊂ PERSONAGROUP{your-fleet} ⊂ CONTRACT{your-fleet ∪ a-cabal} ⊂ PUBLIC{world}` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">> #/the-chain). The gate enforces the ''meet'' of the declaration against the crypto floor, so a declaration only ever tightens, never loosens (operator-ruled 2026-07-21; the floor stands wired live, the declared-source shore stands unlit — `cap-tier.mem` #/head).
+
+<<~/ahu>>
+
+<<~ ahu #/the-nexus-keying-spine>>
+
+!! The Nexus-Keying Spine — boards key on the charter, never on a vessel
+
+''RULED WHOLE and CURED, 2026-09-18.'' A per-Nexus board once keyed on a Nexus-carrying vessel's OWN verifying key — which satisfies one operator's own fleet and silently ''splits the island across two contracted operators'', because each resolves a board only it can see (`packages/lararium-mesh/src/nexus-identity.ts:9-16`, quote license). The cure: ''a Nexus holds no key, so no vessel's key may name it.'' The ruling landed at `91ce09afb` (`the-island.names.no-vessel`, 2026-09-13) and `c6cfe5b8d` (2026-09-03, //"one crossroads serves ONE Nexus… no confederation-wide floor exists, by design"//, <<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">> #/open), and the source itself declares closure at `packages/lararium-node/src/open-node-vessel.ts:2272-2277` — quote license: //"THE FORK THIS ONCE NAMED STANDS RULED AND CURED… `p.nexusPubkey` now resolves through `nexusIdentity`."//
+
+!!! The name — a KERI AID
+
+`genesisSealEpochCid` content-addresses the charter's seated key-set and threshold — ''prior art: a KERI Autonomic Identifier'', "cryptographically derived from its very first key event" (`nexus-identity.ts:4-7`, quote license). Every charter holder derives the identical value from public material; it names no vessel and survives rotation because the genesis sits at the head of the lineage rather than its end (`nexus-identity.ts:38-41`).
+
+!!! The three-state gradient
+
+<<~ has State own "reads/a STATED FACT holds/no charter, no anchor — resolves under the vessel's OWN key does/'a private nexus of one — a stated fact, and stage one of a normal lifecycle' (nexus-identity.ts:179-185)">>
+<<~ has State charter "reads/a STATED FACT, and it OUTRANKS an anchor holds/a genesis-epoch cid this vessel holds and can read does/resolves the shared island every charter holder derives alike (nexus-identity.ts:149-155)">>
+<<~ has State torn "reads/a LOST FACT — never confused with 'own' holds/material that SHOULD name an island reads as none (a charter stands and cannot be read; an admission record stands and its key is malformed) does/REFUSES rather than addressing — `nexusScopeOrThrow` throws, because 'a board addressed by a malformed scope mints clean and empty, and a vessel alone on one cannot tell that from agreement' (nexus-identity.ts:156-165, 172-198)">>
+
+''The gradient ratchets on INTENT, never on accident'' (nexus-identity.ts:163-164, quote license): //"a vessel CLIMBS it by connecting and never DESCENDS it by a failure."// A `torn` reading is deliberately kept apart from `own` — the pin-reader law applied to a Nexus scope: //"'this vessel stands in no Nexus' and 'this vessel's Nexus reads TORN' are UNLIKE FACTS, and a result that folds them together hands every caller one scope and lets a single `??` invert fail-closed into fail-open"// (`nexus-identity.ts:77-81`).
+
+!!! The resolution order
+
+`nexusIdentity()` resolves in exactly this order (`nexus-identity.ts:138-186`): ''explicit scope'' (a caller that already knows its island) ?? ''charter genesis'' (a readable `genesisSealEpochCid`, refusing TORN if the genesis is present but unreadable) ?? ''anchor'' (the gate key of a confederation this vessel dials, refusing TORN if an admission record stands but the key is malformed) ?? ''own'' (the vessel's own key, as a private nexus of one). A charter always outranks an anchor because "it names a relation this vessel consented to, where an anchor names only a relay it reaches" (`nexus-identity.ts:152-154`), and neither can outrank a term that structurally cannot exist for a leaf vessel (`nexus-identity.ts:27-36`).
+
+!!! What landed, 2026-09-18
+
+The A1 sweep wired all 12 CLI-verb board-read sites through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring `device-admit.ts`'s worked example (`0b085461c`, red-first, WELD sweep 8→10 green); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). Behind it, `ac9a645ba` cured a real product gap the board-keying fork exposed once measured: the only KEL-chain migration (`carryPersonaKelUpTheGradient`) ran only at daemon boot, so a store-direct sequence (`persona new 0` then `nexus rite cabal` with no restart) left `admitBoardIsland` reading a charter-island board nothing had written. The cure carries ''ON READ'' at device-admit's own seam, reusing the boot's own idempotent climb (`lares-opus-roadmap.mem` #/the-board-keying-fork, 2026-09-18).
+
+<<~/ahu>>
+
 <<~ ahu #/node-addressing>>
 
 !! Addressing — the Pose (bearing names · the dial-record dials)
@@ -361,6 +422,38 @@ A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies
 
 <<~/ahu>>
 
+<<~ ahu #/publication-and-discovery>>
+
+!! Publication & Discovery — the offering, the crossroads announce, the handle card
+
+''The lamplighter carries the basket; the kahu decides to plant'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/offering">> #/charge, operator 2026-09-13, quote license). `nexus publish` names a LAMPLIGHTER capability (`offer` · `carry` · `witness`) that never ratchets, distinct from the KAHU capability (`nexus kahuli grammar`) that installs. ''`--apply` MUST'' mint a signed offering naming a collection by its region cid and announce it on the crossroads plane, and it ''MUST NOT'' install anything, ratchet anything, reach another vessel, compile a list of offerings, or carry a second signing hand (`offering.mem` #/apply). Only the RECEIVING hearth's own `kāhuli grammar` ratchets, at the operator's own hand. ''Status, honestly'': the record + recompute + antigen fold stand BUILT (`dcec1ef0b`, `6df13cffc`); `--apply` itself stands HELD at `packages/lares-cli/src/commands/nexus-publish.ts:60-66`, and the announce record, the taker's `--from` door, and the `offer`/`carry`/`witness` cap names all stand UNBUILT (`offering.mem` meta `status-why`).
+
+''The crossroads announce'' — @crossroads carries a kūkala (a public cry: notice, tombstone, or kāpae) and //"names only that it exists"//, never the doc (<<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">> #/open, quote license). One crossroads serves ONE Nexus, by ruling (2026-09-03): ''no confederation-wide floor exists, by design''. Crossing costs a DECLARING ACT — bytes sitting in a vessel's mirror publish nothing; an act carries them across, and the declaration duplicates while the content never does (`crossroads.mem` #/open).
+
+''Handle announce cards'' ride the same law: WRITE-OPEN, READ-CERTIFIED (#/the-planes). The board gates nothing at write time — gating there would require a compiled who-may-announce set, which IS the rejected registry (`handle-announce.mem`/`handle-announce.ts:18-25`) — and standing arrives only from a READ verdict against the card's own chain.
+
+''Carriage, never a registry.'' Every one of these publication surfaces passes the registry filter's mechanical test (#/golden-principles) by being ''announced BY the subject, replicated causally, read as-of-last-sync'' — never compiled ABOUT subjects. The crossroads Handle-book "passes as self-announced cards only; a compiled index over the cards — however helpful its face — is the rejected registry" (`registry-filter.mem` #/the-test).
+
+''The return lane'' — CLOSED (`383301b4f`): a proposal written under a member's own nym replaced their counted registration, the fold dropped it, and a cached DENIED verdict never re-read after a co-sign refolded the plane. The fix fires `onRefold → reverdict` (`hearths.mem` #/crossings, "the return lane"). ''Still OWED'' behind it: the announce filter reads a peer's crossroads replica //as-of-last-sync//, and no vector yet walks a verdict against a replica that has NOT synced (`hearths.mem` #/owed-forward, re-derive: `grep -n "read/as-of-last-sync" bags/lares/ha.ka.ba/lares/docs/pono/offering.mem`).
+
+''Access ≠ load.'' Watching @crossroads or @catalog is an ACCESS capability, never a mounted layer (`crossroads.mem` #/constraints) — the same discipline the Nexus-keying spine and the carriage door both keep: reading that something exists never mounts it, and mounting never widens what it exists to reach.
+
+<<~/ahu>>
+
+<<~ ahu #/golden-principles>>
+
+!! The Golden Principles — what every plane above obeys
+
+''No-global-now / causal islands.'' ''"No-global-now stands as a HARD design parameter"'' (operator, 2026-09-06, quote license, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">> #/the-law). Federation reads as a presheaf of local causal-logs that is NOT a sheaf — the local sections need not glue to a global section, and that failure carries the content: //"'no global now' IS the gluing obstruction"// (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">> #/formal-model). The master cut rides above the gluing: ''AUTHORITY(safety) ⊥ FLOW(liveness)'' — flow may glue probabilistically and eventually, authority never. A vessel holds a snapshot of previously-synchronized state, never the whole distributed system "at once" (`causal-islands.mem` #/head).
+
+''The registry filter.'' ''"If a fork's downstream builds a 'global registry' of even ONE-NEXUS scope, the fork is REJECTED"'' (operator, 2026-09-06, quote license, `registry-filter.mem` #/the-law) — the rule fires at DESIGN time, so a rejected fork never reaches code. The mechanical test, run on every plane above: ''CARRIAGE (passes)'' — authored announced-BY-the-subject, replicated causally, read as-of-my-last-sync, not enumerable by construction; ''REGISTRY (rejected, at ANY scope)'' — compiled ABOUT subjects, replicated authoritatively, read as-of-truth, and its compilation IS the product (`registry-filter.mem` #/the-test). ''The shadow-case:'' a key reused across contexts compiles a registry in the correlations it leaves, with or without a table — "the test reads OUTPUT SHAPES, not tables" (`registry-filter.mem` #/the-test).
+
+''Deliberate-announce, never a boot-side-effect.'' A pointer written to disk by a boot path, rather than by a deliberate act, reads as an un-consented publication even when the plane it lands in is nominally public. This law is currently ''live in the open'': four untracked WHO-board pointers surfaced in the tracked `bags/crossroads` tree from throwaway dev-boot private-nexuses-of-one, because the crossroads doc mirrors to disk unconditionally with no filter separating curated content from an ephemeral per-boot board pointer (`lares-opus-roadmap.mem` #/crossroads-leak, surfaced 2026-09-18, ''fix awaits operator word''). The keying itself is correct (through `nexusIdentity`, not the cured raw-vessel-key defect) — the leak is a projection-filter gap one layer up, at the disk mirror, and it is the sibling of #/the-nexus-keying-spine's ruling rather than a re-opening of it.
+
+''Presentation ⊥ condemnation.'' A log records; it never judges. Certificate Transparency states the pattern twenty years before this stack re-derived it: //"the logs do not themselves prevent misissuance… monitors watch logs to check for correct behavior"// (RFC 9162, quote license, via `offering.mem` #/the-field ①). `offering-antigen.ts`'s own header carries the same split for offerings — presentation reads as evidence, condemnation as a separate quorum act, and the fold's parameter list carries no term for a tender at all (`offering.mem` #/pattern-integrity-rhymes). The crossroads kūkala carries the same separation one more time: a notice, a tombstone, and a kāpae are three DIFFERENT authorities — an author governs only their own cries, and only the Nexus's own kāpae outranks a cry (`crossroads.mem` #/kūkala).
+
+<<~/ahu>>
+
 <<~ ahu #/gate-model>>
 
 !! The Gate Model — One Door per Axis
@@ -457,10 +550,36 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
+<<~ ahu #/settled-vs-unbuilt>>
+
+!! Settled vs Unbuilt — the currency this re-truing exists to state
+
+''LANDED, 2026-09-18.'' The board-keying fork stands ''RULED WHOLE and CURED'' (#/the-nexus-keying-spine, `91ce09afb`+`c6cfe5b8d`; source declares closure at `open-node-vessel.ts:2272-2277`). The A1 sweep wired all 12 CLI-verb board reads through `nodeNexusIsland` (`0b085461c`). Device-admit gained carry-ON-READ so a store-direct rite-then-admit sequence no longer strands a board mid-climb (`ac9a645ba`+`fadd667f0`). ''`heraldry.mem`'s own #/order-note calling this "owed to the operator" is STALE BY TIMING'' — it was authored ~2 minutes before `91ce09afb` landed the same evening and never folded either ruling; a reader should not carry that note forward as open (`lares-opus-roadmap.mem` #/the-board-keying-fork).
+
+''NAMED-BUT-UNBUILT, in staged order:''
+
+<<~ has Owed carriage-client-fetch "what/the Herm carriage-CLIENT fetch leg — public-and-missing /cas/<cid> → fetch via hermCasTransit → write-through cid/ → serve status/STAGED, likely what flips e2e ⑦ green — plan is red-first on bulb-read-face.ts (miss→fetch→serve, CONTROL: private/contract miss does NOT fetch)">>
+<<~ has Owed board-migration "what/board-migration-on-connect for the boards beyond persona-KEL, PLUS the explicit DEPARTURE act status/PARTLY LANDED — the in-session case landed via carry-on-read; the broader climb + the sibling 'I left' act (distinguishing a deliberate departure from a torn-fence partition) stand UNBUILT (nexus-identity.ts:264-265)">>
+<<~ has Owed offering-doors "what/the offering announce record, the --apply mint+self-verify+announce, and the taker's kahuli-grammar --from door status/UNBUILT — the record, verify, and antigen fold stand built and unconsulted; nothing signs, announces, or reads an offering in production yet (offering.mem #/the-house-today, #/plan)">>
+<<~ has Owed crossroads-open "what/who writes @crossroads (community authority), how Nexus-level federation discovers it, whether it shards per-Nexus or DreamNet-wide status/DELIBERATELY OPEN — 'this meme MUST NOT pre-narrate them… the mechanism constrains; the outcomes emerge from use' (crossroads.mem #/open)">>
+
+''A SIBLING TASK, currently being guarded.'' The crossroads WHO-pointer leak (#/golden-principles, deliberate-announce-never-a-boot-side-effect) is not a re-opening of the keying ruling — the keying is correct — but a projection-filter gap one layer up, at the unconditional disk mirror. It surfaced 2026-09-18 and awaits the operator's word on the fix (a projection guard gating the mirror on `nexusIdentity.kind === "charter"`, a dev-isolation `LAR_BAGS` convention, or a `.gitignore` backstop).
+
+''What this re-truing found STALE in the prior text, and why it changed.'' The prior meme's #/gate-model section still names the relay-forward carriage loop (`serveCasWire`) as the one door not yet stood live — that claim is UNVERIFIED against current canon in this pass (no source read here confirms or refutes it) and is left ''as-is, unconfirmed'' rather than re-asserted or silently dropped. Everything else the two-axis topology, the relay floor, the infra/social axes, the shore, the addressing/CAS/routing substrate, and the transport-kernel sections state was CHECKED against the sources cited above and reads CURRENT — no changes were needed there beyond the additions above.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/offering">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/network-ring">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
@@ -483,6 +602,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_Wfk-Pdg04yWhov0ErfEiMOZXLQCBzmx-9taFiU0FRQ
+<<^ code="&#x0003;">>ni:///sha-256;W_9fRU5EUXDthZ6H5NQAu1DSLn47Sf3JjsGskbQg6kg
 
 <<^ code="&#x0004;" -> to="?">>
