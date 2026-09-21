@@ -15,6 +15,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readd
 import { join, dirname } from "node:path";
 import {
   pinnedCids, casReferences, graceForTier, tiersByGraceDescending, realmPace,
+  sha256HexBytesSync,
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
@@ -72,11 +73,21 @@ export function mirrorGenesisCasFs(
   mkdirSync(runtimeCasDir, { recursive: true });
   let copied = 0;
   for (const { cid } of manifest.blobs) {
-    const dst = join(runtimeCasDir, cid);
-    if (existsSync(dst)) continue;
     const src = join(genesisCasDir, cid);
     if (!existsSync(src)) {
       throw new Error(`[node-cas] genesis CAS file absent for cid ${cid} at ${src} — re-run build:genesis`);
+    }
+    const sourceBytes = new Uint8Array(readFileSync(src));
+    if (sha256HexBytesSync(sourceBytes) !== cid) {
+      throw new Error(`[node-cas] genesis CAS file failed content-address verification for cid ${cid} at ${src}`);
+    }
+    const dst = join(runtimeCasDir, cid);
+    if (existsSync(dst)) {
+      const localBytes = new Uint8Array(readFileSync(dst));
+      if (sha256HexBytesSync(localBytes) !== cid) {
+        throw new Error(`[node-cas] runtime CAS file failed content-address verification for cid ${cid} at ${dst}`);
+      }
+      continue;
     }
     copyFileSync(src, dst);
     copied += 1;

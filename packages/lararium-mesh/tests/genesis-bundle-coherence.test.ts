@@ -51,6 +51,32 @@ describe("genesis seed/CAS manifest coherence", () => {
     })).toThrow(/region witness/);
   });
 
+  it("refuses duplicate seed CIDs and a widened manifest", () => {
+    const artifact = buildGenesisDoc(inputs());
+    const [firstId, first] = Object.entries(artifact.seed.blobs)[0]!;
+    const duplicateSeed: GenesisSeed = {
+      ...artifact.seed,
+      blobs: {
+        ...artifact.seed.blobs,
+        "lar:///plugins/duplicate": { ...first, id: "lar:///plugins/duplicate" },
+      },
+    };
+    expect(() => genesisCasManifestFromSeed(duplicateSeed)).toThrow(/duplicate blob CID/);
+    expect(firstId).toBe(first.id);
+
+    const widenedManifest = {
+      ...artifact.casManifest,
+      blobs: [...artifact.casManifest.blobs, {
+        id: "lar:///plugins/widened",
+        cid: "22".repeat(32),
+        mimeType: "application/json",
+        version: "1.0",
+      }],
+    };
+    expect(() => validateGenesisBundleCoherence(artifact.seed, widenedManifest))
+      .toThrow(/manifest has blob absent from seed|blob identity mismatch/);
+  });
+
   it("accepts the seed and manifest emitted by a real artifact", () => {
     const artifact = buildGenesisDoc(inputs());
 
