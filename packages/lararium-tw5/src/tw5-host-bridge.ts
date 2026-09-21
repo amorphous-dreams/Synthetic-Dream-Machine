@@ -19,6 +19,15 @@ const TW5_NODE_BOOT_BUILTINS = new Set([
   "os",     "node:os",
   "url",    "node:url",
 ]);
+const TW5_BROWSER_BOOT_BUILTINS = new Set([
+  "crypto", "node:crypto",
+  "path",   "node:path",
+  "vm",     "node:vm",
+  "os",     "node:os",
+  "url",    "node:url",
+  "fs",     "node:fs",
+  "../package.json",
+]);
 
 export function normalizeCoreBootBlob(input?: TW5CoreBootInput): TW5CoreBootBlob | undefined {
   if (!input) return undefined;
@@ -348,7 +357,9 @@ export async function prepareHostBootInstance(
     // address (= the coreHash the kernel's integrity gate witnesses) rides along as its version.
     configureIslandRuntime(instance, coreBlob ? sha256HexBytesSync(coreBlob.bytes) : undefined);
 
-    return { instance, isBrowser: false };
+    // The VM itself is the third runtime, but the outer bridge still runs in a browser Worker:
+    // keep Node's require/module shims out of TW5's module evaluator.
+    return { instance, isBrowser: true };
   }
 
   const instance = loadTiddlyWikiFromBlob(coreBlob, await makeNodeBootEnv()).TiddlyWiki() as unknown as TW5Instance;
@@ -373,18 +384,47 @@ export async function bootWithHostBridge(
     const hostGlobal = globalThis as Record<string, unknown>;
     const savedRequire = hostGlobal["require"];
     const savedModule  = hostGlobal["module"];
+    const browserRequire = isBrowser
+      ? (id: string): Record<string, unknown> => {
+          const hostShim = (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] as
+            ((name: string) => Record<string, unknown>) | undefined;
+          if (hostShim && TW5_BROWSER_BOOT_BUILTINS.has(id)) return hostShim(id);
+          // The island keeps both platform flags clear so TW5 skips DOM/Node startup tails. Its
+          // module table still needs the browser branch while resolving one module: that branch
+          // delegates missing titles to the host resolver instead of the core's Node require.
+          const runtime = instance as unknown as { browser: boolean | null };
+          const priorBrowser = runtime.browser;
+          const priorWindow = hostGlobal["window"];
+          runtime.browser = true;
+          // TW5's browser fallback calls `window.require`. A Worker has no `window`, so lend the
+          // same narrow resolver only for this synchronous module-table turn.
+          if (priorWindow === undefined) hostGlobal["window"] = hostGlobal;
+          try { return instance.modules.execute(id); }
+          finally {
+            runtime.browser = priorBrowser;
+            if (priorWindow === undefined) delete hostGlobal["window"];
+            else hostGlobal["window"] = priorWindow;
+          }
+        }
+      : undefined;
     const nodeRequireShim = !isBrowser ? (instance as unknown as Record<string, unknown>)["__larariumRequireShim"] : undefined;
     const nodeModuleShim  = !isBrowser ? (instance as unknown as Record<string, unknown>)["__larariumModuleShim"]  : undefined;
-    if (!isBrowser) {
+    if (browserRequire) {
+      // TW5 module bodies use a direct `require` parameter. Browser Workers need that name,
+      // but its authority is the island's TW5 module table, never Node builtins.
+      hostGlobal["require"] = browserRequire;
+    } else {
       if (nodeRequireShim) hostGlobal["require"] = nodeRequireShim;
       if (nodeModuleShim)  hostGlobal["module"]  = nodeModuleShim;
     }
 
     instance.boot.boot(() => {
       restoreStdout?.();
-      if (!isBrowser) {
+      if (browserRequire || !isBrowser) {
         if (savedRequire === undefined) delete hostGlobal["require"];
         else hostGlobal["require"] = savedRequire;
+      }
+      if (!isBrowser) {
         if (savedModule === undefined) delete hostGlobal["module"];
         else hostGlobal["module"] = savedModule;
       }
