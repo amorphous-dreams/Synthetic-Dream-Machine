@@ -175,7 +175,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -990,7 +990,7 @@ export function mkManifest(
   coreHash: string | null = null,
   opts?: {
     storage?:        IslandStorageConfig;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
   },

@@ -1411,6 +1411,7 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       daemonAuth,
       storageDir,
       rootDir: rootDirOpt ?? repoRoot,
+      guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
 
     // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ───────────────
@@ -2081,7 +2082,14 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       // bags/crossroads like the other seed bags. Safe to project ONLY with the skinny-handle
       // rule in place (T3): a book too big for the CRDT lands as a skinny handle, and the
       // projector writes only its handle — the body stays in the cid/ CAS, never re-overflowing.
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(workerRootDir, "bags/crossroads"), scope: "crossroads" },
+      // THE CHARTER-ONLY MIRROR GUARD (crossroads WHO-board leak, 2026-09-20): a private-nexus-of-one
+      // or a dialed anchor still mints its per-Nexus WHO-handles pointer into the crossroads doc on
+      // first boot (who-face.ts), and without this flag every throwaway dev boot's pointer disk-mirrors
+      // alongside the real charter-backed library. Baked from the RESOLVED kind, once, here — never
+      // re-derived from the tiddler inside the projector (which crosses a worker boundary and carries
+      // no kind of its own).
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(workerRootDir, "bags/crossroads"), scope: "crossroads",
+        guardNexusHandles: nexusStanding.kind !== "charter" },
       // VIRTUAL BAGS. `working` (and `self` below) name LAYER COORDINATES, never bags on disk — a write
       // layer and a per-wiki canon authority the mount expands from the slug. They carry no `@` for the
       // same reason a bag does not: the SEGMENT and the FLAGS say what a name is, so the name says only

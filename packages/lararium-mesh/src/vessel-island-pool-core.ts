@@ -60,7 +60,7 @@ interface ColdSlot {
 
 type Slot = IslandSlot | ColdSlot;
 
-export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind }[];
+export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; guardNexusHandles?: boolean }[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
  *  recipe's `mirrorBags` (designation), then fill a per-wiki grant's bag + leaf

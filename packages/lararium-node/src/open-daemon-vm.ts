@@ -72,10 +72,20 @@ export interface DaemonVmOptions {
   rootDir?:          string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
+  /**
+   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): true unless this vessel's
+   * resolved `nexusIdentity().kind === "charter"`. The daemon wiki's own crossroads mirror grant
+   * (below) is baked with this flag so a private-nexus-of-one's or a dialed anchor's WHO-handles
+   * pointer never disk-mirrors, while the real charter-backed crossroads library still projects.
+   * Defaults true (guard ON) — a caller that never resolved a kind gets the SAFE reading, never the
+   * open one; only an explicit `false` (a proven charter) lifts it.
+   */
+  guardCrossroadsNexusHandles?: boolean;
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, rootDir, workerScriptUrl } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, rootDir, workerScriptUrl,
+          guardCrossroadsNexusHandles = true } = opts;
 
   // ── Daemon doc handle (node strategy: merge-on-late-arrival) ────────────────
   const daemonHandle = await resolveBootDoc<LarDoc>(
@@ -121,7 +131,8 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).
     ...(rootDir ? { diskMirrors: [
       { ...daemonWorkingMirror(rootDir), scope: "daemon" },
-      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(rootDir, "bags", "crossroads"), scope: "crossroads" },
+      { bagId: CROSSROADS_DOC_URI, mirrorRoot: join(rootDir, "bags", "crossroads"), scope: "crossroads",
+        guardNexusHandles: guardCrossroadsNexusHandles },
     ] } : {}),
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });

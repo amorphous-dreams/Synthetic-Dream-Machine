@@ -62,7 +62,7 @@ import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
+import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedCoalesceGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, WindowServo } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -572,6 +572,13 @@ export class LarDiskProjector {
   private async flush(bagId: string, tiddlerUri: string): Promise<void> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
+
+    // THE CHARTER-ONLY MIRROR GUARD (crossroads WHO-board leak, 2026-09-20): a per-Nexus WHO-face
+    // pointer never projects through a mirror grant baked from a NON-charter `nexusIdentity().kind`
+    // (own / anchor). The flag rides the grant (resolved once, at boot, on the main thread — never
+    // re-derived from the tiddler, which carries no kind of its own); this shore only tests the
+    // URI's SHAPE. Curated crossroads library content carries no such shape and always projects.
+    if (mirror.guardNexusHandles && isNexusHandlesUri(tiddlerUri)) return;
 
     // Projection FILTER ⊥ siting (lar-uri #five-planes): the siting function
     // carries every name; WHAT projects = carriers only. Ledger/observation

@@ -23,6 +23,17 @@ export interface BagMirrorConfig {
    * (dirname(candidate) === bagsDir exactly). Default: own subdir only.
    */
   readonly allowBagsRootFiles?: boolean;
+  /**
+   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): when true, a per-Nexus
+   * WHO-face pointer (`isNexusHandlesUri`) never projects through THIS mirror. Baked in at grant
+   * construction time from the RESOLVED `nexusIdentity().kind` — never re-derived from the tiddler
+   * itself, which carries no kind. A private-nexus-of-one (`own`) or a dialed anchor (`anchor`)
+   * mints this pointer into the crossroads doc on first boot (who-face.ts `resolveOracleDoc`), and
+   * without this guard every such boot's throwaway pointer disk-mirrors alongside the REAL
+   * charter-backed crossroads library content. Curated library carriers are untouched — the guard
+   * matches ONLY the handles-pointer shape, never the whole bag.
+   */
+  readonly guardNexusHandles?: boolean;
 }
 
 // ── Write confinement — the sovereign-island disk ward ─────────────────────
@@ -110,9 +121,11 @@ export function carrierBaseRelPath(uri: string): string | null {
  * metadata only — the siting function (`carrierBaseRelPath`) carries every
  * stable name whole; the mirrorRoot = the bag's residency dir.
  */
-export function namedBagMirror(bagId: string, scope: string, mirrorRoot: string): BagMirrorConfig {
+export function namedBagMirror(
+  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean,
+): BagMirrorConfig {
   void scope;
-  return { bagId, mirrorRoot };
+  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}) };
 }
 
 /**

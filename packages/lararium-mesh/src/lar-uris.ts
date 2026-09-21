@@ -430,6 +430,18 @@ export function nexusHandlesUri(nexusPubkey: string): string {
   return `${NEXUS_DOC_URI}/${nexusPubkey}/handles`;
 }
 
+/**
+ * Does this address name a per-Nexus WHO-face pointer — `bags/nexus/<pubkey>/handles`, exactly the
+ * shape `nexusHandlesUri` mints? Shape-only, on purpose: it tells a projector "this is a WHO-board
+ * pointer" without knowing WHICH pubkey or whether that pubkey resolves to a charter, an anchor, or
+ * a private nexus-of-one — the RESOLVED kind is a separate fact a caller must combine with this one
+ * (crossroads-charter-only-mirror). Keying on the URI shape alone would let a private-nexus-of-one's
+ * throwaway pointer through just because it LOOKS like a handles record.
+ */
+export function isNexusHandlesUri(uri: string): boolean {
+  return uri.startsWith(`${NEXUS_DOC_URI}/`) && uri.endsWith("/handles");
+}
+
 // ── Social plane doc-type aliases + empty constructors ────────────────────
 
 /** IdentitiesDoc — each principal = one tiddler at identityTiddlerUri(did). */
