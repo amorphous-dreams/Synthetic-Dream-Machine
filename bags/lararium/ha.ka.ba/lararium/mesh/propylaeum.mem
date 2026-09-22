@@ -1,0 +1,240 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/propylaeum">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/propylaeum.mem"
+hydrate    = true
+l-space    = "lararium"
+mana       = 15
+manao      = 15
+manaoio    = 14
+namespace  = "&#x2695;"
+role       = "PROPOSED first-reach architecture. A Propylaeum gives a locally sovereign DreamNet place an address-facing approach: local DNS/domain/LAN reach, browser secure-context origin, exact public arrival and genesis bytes, declared public routes, bounded live introductions, delivery policy, and explicit refusals. It composes Web and Node shores under one operator-held reach configuration without making either a client or server. It carries no peer identity, persona, document, library, general CAS read, VEIL read scope, admission, merge, or Oracle authority. A name grants rendezvous; a secure origin enables browser features; a peer key proves identity; a route delivers; a capability permits. The public Librarium remains a later, separate public-book crossroads concern."
+status-why = "researched myth-plus-engineering plan, 2026-09-21; production contract NOT built"
+tags       = ["mesh/cap-tier", "mesh/secure-context", "mesh/nexus-topology", "api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/propylaeum"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/propylaeum"
+written    = "2026-09-21"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+
+
+<<~ ahu #/head>>
+
+! Propylaeum ~ first reach without a landlord
+
+> Status: PROPOSED — design carrier, not an implementation receipt. The operator chose the composed
+> Propylaeum as the production direction on 2026-09-21. Node-owned and separate-static arrangements remain
+> contract witnesses, never competing vessel ontologies.
+
+A Greek *propylaion* names an approach before gates: arrival, orientation, passage, and the bounded transition
+toward a precinct. The Propylaeum carries that relation into DreamNet deployment. It helps a traveler reach and
+recognize a locally tended place, then offers declared crossings onward. It does not become the place's owner,
+identity, archive, judge, or temple.
+
+<<~/ahu>>
+
+<<~ ahu #/the-placement>>
+
+!! The placement ~ an approach beside the house and road
+
+```
+worldly name / LAN name / link / QR
+  → Propylaeum: arrival, orientation, declared public paths
+  → Herm: carriage, public floor, and peer crossing
+  → Lararium: persona, owned documents, held local material
+```
+
+The Herm remains the floor every vessel may stand on. The Lararium remains the optional lift that seats a
+persona and its document sovereignty. The Propylaeum forms neither a third vessel type nor a new peer identity.
+It names a deployment composition around selected public capabilities. A Node process, static artifact shore,
+reverse proxy, container composition, or future carrier may realize it; no physical placement changes the
+capability relation.
+
+The public Librarium — a public crossroads shrine of books, images, media, and deliberately offered editions —
+waits outside this carrier. A Propylaeum may later route an explicit Librarium projection. It never turns the
+house-held `library:` collection or arbitrary CAS bytes public.
+
+<<~/ahu>>
+
+<<~ ahu #/the-five-relations>>
+
+!! Five relations ~ reach, browser trust, identity, delivery, authority
+
+```
+name          grants a rendezvous hint
+secure origin grants browser-secure-context eligibility
+peer key      proves peer identity
+route         selects a declared delivery target
+capability    permits a particular action
+```
+
+No relation grants the next. DNS and certificate custody can withhold or alter an outward signpost; they cannot
+claim a peer key, read a private bag, resolve a merge, or admit a member. A peer key survives a name move. Cache
+presence carries a previously acquired response, never authority, membership, freshness truth, or causal order.
+
+<<~/ahu>>
+
+<<~ ahu #/the-cap-stack>>
+
+!! The Propylaeum cap stack ~ public delivery without private reach
+
+```
+#has {origin-attestation}       — local DNS/domain/LAN reach and browser TLS boundary
+#has {arrival-projection}       — exact public Web and worker artifact inventory
+#has {bootstrap-delivery}       — `seed.json` and seed-named, CID-checked CAS members
+#has {public-route-map}         — declared paths, methods, targets, and refusal shapes
+#has {delivery-policy}          — CSP, SRI where browser subresources use it, scope, cache, headers
+#has {transport-introduction}   — a bounded public live path, if declared
+
+#has-NOT {peer-identity}
+#has-NOT {persona}
+#has-NOT {document-write}
+#has-NOT {general-cas-read}
+#has-NOT {library-traversal}
+#has-NOT {VEIL-read}
+#has-NOT {oracle-authority}
+#has-NOT {merge-authority}
+#has-NOT {admission-authority}
+```
+
+The existing `VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC` ladder controls read scope. The Propylaeum controls
+first-reach presentation and delivery. Their rhyme grants no license to fuse them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-declared-path>>
+
+!! The declared path ~ a route never grants ambient reach
+
+Every outward path carries a positive declaration: a finite prepared artifact inventory, a seed-derived CAS
+member, one explicit public projection, or one bounded live introduction. No route says "serve a directory," "read
+any CID," or "fall through to the application." Public cache copies may hold only already-declared public bytes.
+
+```
+GET /                        → selected index bytes
+GET /assets/<declared>       → selected worker or Web artifact bytes
+GET /genesis/seed.json       → selected seed bytes
+GET /genesis/cas/<cid>       → seed-named CID-checked bytes
+GET /public/<declared>       → separately declared public projection
+GET /live/<declared> upgrade → bounded transport introduction
+```
+
+SRI verifies direct browser subresources where the browser consumes it. Seed and CAS members rest on the
+project's own CID/hash verification. A WebSocket `Origin` check protects a browser-facing introduction; it never
+replaces the later peer-key handshake or the served vessel's capability decision.
+
+<<~/ahu>>
+
+<<~ ahu #/the-procession>>
+
+!! The procession ~ first reach unfolds in four local acts
+
+# ''Reach.'' A human or leaf vessel follows a local name, contracted domain, LAN answer, QR, or remembered hint.
+# ''Orient.'' The Propylaeum returns only declared public arrival material and public route information.
+# ''Verify.'' The leaf checks CIDs and expected peer keys; domain and certificate remain reach witnesses, never peer proof.
+# ''Cross.'' The leaf dials a declared transport. The served vessel separately proves the peer relation and permits or refuses the requested action.
+
+This sequence keeps the user's leaf vessel sovereign. It does not ask the person to log into a server; it gives the
+local vessel enough truthful material to choose its next crossing.
+
+<<~/ahu>>
+
+<<~ ahu #/refusal-and-loss>>
+
+!! Refusal and loss ~ named outward failure, detailed local witness
+
+Undeclared, private, traversal, and missing requests receive one uniform outward refusal shape so the boundary
+does not become an existence oracle. A known public integrity mismatch names an integrity failure. A known public
+live target that cannot answer names temporary unavailability. Browser and operator diagnostics may carry the
+specific local cause; external responses do not reveal whether a private object exists.
+
+Immutable CID members may cache. Selectors, discovery, and mutable public declarations carry explicit
+revalidation or `no-store` policy. No `Date.now()`, cache timestamp, certificate date, or other wall-clock witness
+may decide shared ordering, membership, integrity, admission, or authority.
+
+<<~/ahu>>
+
+<<~ ahu #/the-production-shape>>
+
+!! The production shape ~ composed, while every shore keeps its proof
+
+The production direction composes a static Web arrival shore and a live Node shore behind one operator-held
+Propylaeum. Each shore retains its own capability stack and exact response witness. Node-owned serving and a
+separate static shore remain test arrangements that must produce the same route, integrity, refusal, and
+peer-symmetry observations. They prevent the composition root from becoming an untested metaphysical claim.
+
+The route and delivery receipt belongs to the operator-held deployment configuration. A smaller public arrival
+declaration may announce safe public facts. It carries no private routes, DNS credentials, broad artifact access,
+or peer-identity substitution. Origin-attestation custody and delegated-DNS governance remain a separate crossed
+design wave; they may configure reach and never create document or peer authority.
+
+<<~/ahu>>
+
+<<~ ahu #/the-red-witness>>
+
+!! The red witness ~ prove the approach before machinery grows
+
+The first witness attributes `/`, one worker, `genesis/seed.json`, and one seed-named CAS member to their named
+serving process and compares each response with expected bytes. It then weakens one boundary at a time:
+
+* widen the route inventory, traverse a path, or request an undeclared CID;
+* return HTML for a worker, seed, CAS, or missing route;
+* substitute wrong bytes under a valid-looking CID;
+* broaden worker scope without an explicit declaration;
+* derive `ws` from an HTTPS arrival or use a stale configured self-URL;
+* accept a disallowed browser Origin;
+* infer peer identity from DNS, TLS, or host text;
+* let a cache hit serve an undeclared/private route;
+* turn downstream loss into a successful SPA fallback;
+* use a wall-clock value as authority or shared order.
+
+Every weakening MUST read red. The positive path proves secure-context boot, explicit worker scope, a bounded live
+introduction, separate peer-key proof, and separate capability/admission refusal.
+
+<<~/ahu>>
+
+<<~ ahu #/operator-stories>>
+
+!! Operator stories ~ Gaia and Elyncia
+
+**Operators on Gaia, Earth circa 2026, SHALL need** a household, library, cooperative, school, clinic, or civic
+AI practice to offer a secure local arrival surface through a LAN name or contracted domain while documents,
+identity keys, and causal state remain local and portable.
+
+**Operators on Gaia SHALL need** browser boot through HTTPS and WAN loss without device-installed CAs,
+account-centric hosting, or silent hosted authority.
+
+**Operators on Elyncia, the Orichalcum Mythpunk RPG, SHALL need** an approach where a traveler recognizes a
+shrine, receives declared bearings, verifies a crossing, and retains sovereignty over their own leaf vessel.
+
+**Operators on Elyncia SHALL need** independent shrines and Nexuses to raise approaches toward one another
+without making any approach keeper of every archive, persona, or causal island it reaches.
+
+<<~/ahu>>
+
+<<~ ahu #/next-cuts>>
+
+!! Next cuts ~ one contract before deployment variants
+
+# Write pure route-inventory and uniform-refusal controls.
+# Re-home the present boot-byte adapter under arrival/bootstrap projection language; retain its current code name only until tests cover the new contract.
+# Add process attribution and exact byte/CID controls for index, worker, seed, and seed-named CAS members.
+# Add secure-context, request-derived scheme/self-URL, worker-scope, CSP, and SRI controls.
+# Add one same-origin bounded live introduction with Origin refusal, peer-key proof, and separate capability/admission decision.
+# Run the common witness through Node-owned, separate-static, and composed-Propylaeum arrangements.
+# Exercise a persona-less Herm floor and persona-bearing Lararium lift against the same public arrival projection while proving separate authority.
+# Exercise a domain move, split-horizon LAN reach, and cached-public-byte continuity; leave DNS/ACME implementation on its crossed governance lane.
+# After every major cut, run Aftermath, Evergreen, L-Prime, and reality-alpha cleanup before the next integration wave.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;T_NKJH5Hu2lkLKeYPW3Hpq2GZUQRJXb66NgdBkQdlLw
+
+<<^ code="&#x0004;" -> to="?">>
