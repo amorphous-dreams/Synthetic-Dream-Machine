@@ -790,6 +790,45 @@ separation, hash check, or private-path refusal must turn red. Gaia's household 
 and its public bootstrap bytes to remain inspectable when WAN reach falls. Elyncia's waystone needs to
 offer a verified glyph-book without gaining the shrine's persona, documents, or secret archive.
 
+''Prior-art receipt — topology-neutral boundary, 2026-09-21.'' L-Prime keeps the public-library
+capability as the byte-exposure cap: it names the exact prepared index, worker/assets, seed, and
+seed-named CAS bytes that a peer may expose. A route table and a process placement remain separate
+composition facts. The exposure cap, route table, or serving process yields neither persona/document
+authority nor relay admission or merge authority. The next wave SHALL build this one contract and its
+route-ownership witness; it SHALL NOT build three topology products. SRI (W3C,
+https://www.w3.org/TR/SRI/) verifies declared fetched bytes; CSP3 (W3C,
+https://www.w3.org/TR/CSP/) narrows fetch/execute destinations; Secure Contexts (W3C,
+https://www.w3.org/TR/secure-contexts/) makes authenticated transport a precondition for sensitive Web
+features, while DNS and port still describe reach; service workers remain origin-scoped browser workers,
+not Node authority.
+OCI's content-addressed image model (https://github.com/opencontainers/image-spec/blob/main/spec.md),
+Docker's selective multi-stage copy (https://docs.docker.com/build/building/multi-stage/), and Compose's
+independently replaceable services (https://docs.docker.com/reference/compose-file/services/) separate
+artifact carriage from runtime serving. RFC 8246 (https://www.rfc-editor.org/rfc/rfc8246) and RFC 9111
+(https://www.rfc-editor.org/rfc/rfc9111) support long-lived hashed members beside no-store selectors.
+Miller's robust-composition/capability account (https://erights.org/talks/thesis/markm-thesis.pdf)
+keeps authority in held references and composition, while Ink & Switch's local-first account
+(https://www.inkandswitch.com/essay/local-first/) keeps causal state and agency on the device. These
+sources ground pattern rhymes; they do not choose this deployment or create a runtime compatibility
+gate. Web artifact, seed, CAS, worker, and image identities SHALL travel as one deployment receipt for
+operator inspection, never as a version comparison that silently grants or refuses a cap.
+
+''The staged witness.'' First name route ownership and the selected shore; only then stage CSP, SRI,
+service-worker scope, CORS, TLS, and DNS controls. The red-first witness SHALL attribute `/`, one exact
+worker, `genesis/seed.json`, and one seed-named CAS member to the serving process; compare every response
+with the expected bytes; refuse missing, private, traversal, and undeclared routes without SPA fallback;
+retain the adapter's `no-store` selector and immutable hashed-member cache headers; and observe static,
+Node, relay, oracle, and WAN loss as named failures. A weakening that loses process attribution,
+returns HTML for a worker/seed/CAS route, widens the route table, or turns a loss into a successful
+fallback MUST read red. The witness carries no global-now claim. Gaia's household SHALL keep its local
+page, worker, genesis, and causal state usable through WAN loss. Elyncia's waystone SHALL carry the
+sealed glyph-book while the hearth keeps persona, documents, admission, and merge authority.
+
+''Operator-held topology fork.'' After the one contract and witness stand, the operator SHALL choose
+exactly one declared composition: (1) Node-owned public-library mount, (2) separate static shore, or
+(3) an operator wrapper composing Node and static shore. This receipt makes no recommendation among
+the three and SHALL NOT let the choice rewrite peer symmetry or capability ownership.
+
 ''Parallel integrity lane — clock authority removal, staged before admission widening.'' The E8 aftermath
 removes an unused `Date.now()` from browser presence broadcast: presence remains an ephemeral DID observation
 with no timestamp-shaped ordering claim. A focused audit finds the larger risk elsewhere: wall-clock defaults
@@ -1073,6 +1112,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZFe4soqdxGhWRWx9FV3Hj3VIrfjqdCnv5Xx6a0lOVKg
+<<^ code="&#x0003;">>ni:///sha-256;5ncCyt2GpmhsYGckHnQPAHCNOnQYx5Jg7qyGXryNJhI
 
 <<^ code="&#x0004;" -> to="?">>
