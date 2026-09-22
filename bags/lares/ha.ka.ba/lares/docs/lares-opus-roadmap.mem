@@ -78,11 +78,11 @@ The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept f
 
 <<~ ahu #/crossroads-syntax>>
 
-! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-20
+! The crossroads watch — the TW5-Syntax arc on `release/3.0.0`, live 2026-09-21
 
-The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT. `release/3.0.0` stands at `49e230a`; the bench serves it.
+The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding hearth's sections above do not reach. Commit hashes name the submodule unless marked PARENT. `release/3.0.0` stands at `8c5378b`; the bench serves it.
 
-''The release, as it tells itself:'' `CHANGELOG.md` tells what 3.0.0 grants a reader — colours that answer to TiddlyWiki's own parser, tiddlers read in the language their type names, editing that closes brackets and selects whole titles, how it looks in a theme, what it costs, and what a line-at-a-time grammar keeps out of reach on purpose. `LEDGER-3.0.0.md` holds the record under it: 375 entries under Breaking, Reads more like TiddlyWiki, Naming, and Tooling and process (`49e230a`).
+''The release, as it tells itself:'' `CHANGELOG.md` tells what 3.0.0 grants a reader — colours that answer to TiddlyWiki's own parser, tiddlers read in the language their type names, editing that closes brackets and selects whole titles, how it looks in a theme, what it costs, and what a line-at-a-time grammar keeps out of reach on purpose. `LEDGER-3.0.0.md` holds the record under it: 383 entries under Breaking, Reads more like TiddlyWiki, Naming, and Tooling and process (`8c5378b`).
 
 ''Landed (condensed):''
 * ''The opener namespace'' — `{{ << < <$ <%` share one tag family, a link's `[[` keeps its own (`32291b2`); `((x))` wears the name `<<x>>` wears (`d760e24`).
@@ -90,11 +90,13 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 * ''Two readers'' — every gate answers under the fork (`dev/sdm-integration`) for local work and the pinned 5.4.1 for CI (`8fce38c`, `4549f40`).
 * ''The grammar trued to the host'' — paragraph, CDATA, adjacent code runs, a closing-tag line handing back to a list, the carriers stating what the host builds (`bc92897`, `43f49cf`, `93ea2ba`).
 * ''The palette'' — URL schemes as one unit (`6372f40`, `f1d733b`); filters read as parts (`c20e029`); widget attributes name themselves (`7a7afed`); `.multids` routes by its header type (`a270bfc`); struck text names itself and takes a comment's ink, a cue in all 65 bundled themes (`568f8ce`).
-* ''The record'' — the release's lead count welded to MIGRATION, so prose cannot drift from the certified 127 gone and 254 new; the swallow and still narration settled into its ledgers (`fc2d621`); the ceiling record carries the operator's bound ruling for cross-line emphasis and blank-line tags.
+* ''The record'' — the release's lead count welded to MIGRATION, so prose cannot drift from the certified 110 gone and 245 new; MIGRATION answers for the base wikitext grammar alone, the memetic dialect owing none (`40dd4a0`); the swallow and still narration settled into its ledgers (`fc2d621`); the ceiling record carries the operator's bound ruling for cross-line emphasis and blank-line tags.
+* ''The harness'' — one walk and one ledger shape serve every gate, and CI runs one `gate-report --check` (`c89c8de`); the oracle memoizes its parses in-process, frozen and bounded, so a full gate run asks four times the parses it executes and finishes about a quarter faster, proven by a ten-mutant differential with the memo off and on (`c98e923`).
+* ''The definitions read as TiddlyWiki reads'' — the macrodef paren trap, literal dollars beside a `\define` contrast, the pragma zone and the missing-space pragma each stand in their own carrier; the substituted attribute string reads as `string.template`; an unclosed transclusion stops at the blank line; a `lar:` URI keeps its underline under every theme's tag rule; every `.mem` carrier stands normalized (`8c5378b`).
 * ''The carrier spec'' — the STX sigil seats beside the SOH so the frame wraps all content, the `toml meta` fence included; the grammar reads both seatings identically (`03774a0`).
 * ''PARENT'' — normalize reads the fence mask in every clause, so held text moves no byte (`622f8bd15`, `c7eeca113`); the fold's pin names a byte move before a fold change (`d8b969710`).
 
-''Standing counts:'' 49 gates hold under both readers · 111 divergence rulings · darkness 11 owed · ablation 329 owed · brackets 0 owed · legibility 0 fallen over 820 pairs · no construct reads as body text above the bar of 16 themes · MIGRATION 460 → 587 names, 127 gone, 254 new.
+''Standing counts:'' 49 gates hold under both readers · 111 divergence rulings · darkness 66 owed · ablation 331 owed · brackets 4 owed · legibility 0 fallen over 820 pairs · no construct reads as body text above the bar of 16 themes · MIGRATION 421 → 556 names, 110 gone, 245 new.
 
 ''Forward paths:''
 # ''Look'' — the operator's eyes-on pass over the merged bench, and one read of the CHANGELOG story as the marketplace shows it. The pass decides the ship.
@@ -124,6 +126,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;spSN1zYYW7Q9b7I-vvsUd1PACSkF8Drna9yNAvtD5PM
+<<^ code="&#x0003;">>ni:///sha-256;yAh8jrFvtfUZlccy0pra94uyENC9mlOXCyOdm-Qe8_Y
 
 <<^ code="&#x0004;" -> to="?">>
