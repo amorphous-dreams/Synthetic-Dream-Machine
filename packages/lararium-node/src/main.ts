@@ -58,6 +58,7 @@ import { join } from "path";
 import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { loadLaresConfig, originDeclaration } from "./lares-config.js";
+import { composePronaosFromEnv } from "./pronaos-composition.js";
 
 
 // ---------------------------------------------------------------------------
@@ -166,6 +167,9 @@ async function main(): Promise<void> {
   // by the upgrade gate below). No HTTP surface — catalog URL advertised via stdout.
   const httpServer = createServer();
   const wss = new WebSocket.Server({ noServer: true });
+  // The Pronaos lights only from two explicit operator inputs. No build-dir
+  // discovery occurs; absent inputs leave the existing Node faces unchanged.
+  const pronaos = composePronaosFromEnv({ httpServer, genesisDir });
 
   httpServer.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -331,6 +335,7 @@ async function main(): Promise<void> {
       hermShuttingDown = true;
       console.log(`[herm] ${sig} — graceful shutdown`);
       try {
+        pronaos?.dispose();
         hermUds.close();
         httpServer.close();
         await herm.dispose();          // read-face + daemon island flush, then the composed vessel
@@ -479,6 +484,7 @@ async function main(): Promise<void> {
     }, SHUTDOWN_BUDGET_MS);
     force.unref?.();
     try {
+      pronaos?.dispose();
       oracleReadFace?.dispose();
       uds.close();
       httpServer.close();

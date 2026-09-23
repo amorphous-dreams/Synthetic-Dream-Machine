@@ -3,8 +3,10 @@
 This directory contains a disposable, additive deployment harness. It exercises
 an NGINX carrier in front of a deliberately small WebSocket upstream and a
 prepared, read-only public projection. It does not claim to deploy the
-Lararium Node runtime: the current Node process does not mount the prepared
-public-library read face as one production HTTP listener yet.
+production Lararium Node composition. Node mounts a Pronaos shore only when
+both an explicit Web-artifact root and an explicit route inventory arrive; this
+harness does not exercise that composition and uses a deliberately small
+synthetic WebSocket upstream.
 
 The harness proves the carrier boundary:
 

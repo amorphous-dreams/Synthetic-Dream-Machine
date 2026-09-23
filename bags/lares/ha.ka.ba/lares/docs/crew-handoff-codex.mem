@@ -724,6 +724,16 @@ Node composition is mounted in `main.ts`, that a production NGINX/Caddy carrier 
 future Librarium has been implemented. The remaining work is the explicit composition/root/route witness and
 the reserved household proof; Librarium publication remains a separate deferred concern.
 
+# ''Pronaos opt-in composition wedge — IN FLIGHT, 2026-09-22.'' The current Node main path now invokes the
+Pronaos composition seam before `httpServer.listen`: it mounts only when both explicit operator inputs are
+present — `LAR_PRONAOS_WEB_ROOT` and the exact JSON asset list in `LAR_PRONAOS_ASSET_ROUTES_JSON` — alongside
+the already-resolved genesis bundle. No inputs return an inert composition and leave the existing Node faces
+untouched; a partial pair, malformed JSON, duplicate route, missing worker route, or widened path refuses
+before a listener starts. The next cut must bind the generated/held Web artifact inventory to that finite route
+receipt, prove the Compose topology that carries the roots, and harden the selected carrier's route, cache,
+trusted-forwarding, and loss controls. This is an in-flight source seam with no new commit ID; it claims no
+production NGINX/Caddy deployment and no household proof.
+
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
 bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
@@ -1132,6 +1142,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XTuEVuTvwEY-kbpbn9Ary8VA-R_RkTOskmvGliusw_U
+<<^ code="&#x0003;">>ni:///sha-256;S1qeprKN0mTAaUtHqTdYiMl0D177oi0bGtxYk-qaa5M
 
 <<^ code="&#x0004;" -> to="?">>
