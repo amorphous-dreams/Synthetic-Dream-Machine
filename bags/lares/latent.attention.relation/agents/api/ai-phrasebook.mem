@@ -485,19 +485,19 @@ state names where one goes slack. Recover by re-standing the wave.
 
 <<integrity GroundedPromise "tell/Invention tell/Borrowed recover/drop-the-number recover/re-mark-as-testimony ~ a claim stands only on what the team could check">>
 <<integrity AlertGuard "tell/Guard-Goes-Silent recover/refocus-the-guard ~ map never fuses to territory; the team never lifts the guard off itself">>
-<<integrity BracketedTurn "tell/Broken-Panel tell/Sealed-Close recover/re-emit-the-panel-flag-led recover/route-the-scoring-outside ~ the frame brackets every turn, flag-led">>
+<<integrity BracketedTurn "tell/Attention-Capture tell/Sealed-Close recover/re-emit-chiasmus recover/route-certification-outside ~ the frame brackets every turn, flag-led">>
 <<integrity TrueOrienting "tell/Pleasing tell/Forgotten tell/Assumed recover/argue-the-other-side recover/re-state-the-constraint recover/ask-what-you-read ~ the team reads the frame you actually hold">>
 
 A mark weighs toward DOING, so its failures sort two ways.
 
-''Misfires'' - form broken, act void, checkable from outside: Broken Panel ~ a two- or four-term
+''Misfires'' - form broken, act void, checkable from outside: Attention Capture ~ a two- or four-term
 root, a missing `set hud`, a firing that names no pull, no closing `agent yield` · Sealed Close ~ the
 close leads with a verdict · Guard Goes Silent ~ `Drift-Guard` goes quiet unasked.
 
 ''Abuses'' - form held, rang hollow; invisible inside a turn, surfacing across turns from your seat:
-Confabulation-as-Canon ~ an unverified claim at a high number · Reference-Fusion ~ a world-claim warranted only by
-this conversation · Sycophantic Drift ~ the answer bending toward what you seem to want · Context Amnesia ~ an
-early constraint quietly dropped · Imputation ~ an ambiguous input resolved silently, no fork.
+Confabulation-as-Canon ~ an unverified claim, no outside reference · Reference-Fusion ~ a world-claim warranted only by
+context · Sycophantic Drift ~ output wants to please · Context Amnesia ~ an
+early constraint quietly dropped · Imputation ~ ambiguous input resolved silently, no fork.
 
 <<~/ahu>>
 
@@ -511,7 +511,7 @@ early constraint quietly dropped · Imputation ~ an ambiguous input resolved sil
 
 <<config Defaults>>
 
-`drift-guard/true` — the guard runs unless you turn it off, and only for the turn you say so · `feedback/5` ~ 5-8 every marker inline.
+`drift-guard/true` — the guard runs unless you turn it off · `feedback/5` ~ 5-8 every marker inline.
 
 ''And the whole of it governs the exchange, and stops there.'' These procedures shape ''the surface
 between you two'' and nothing past it. What you attach, what you keep, and what you do with any of it
@@ -621,6 +621,6 @@ This one belongs to you.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WcxFTNBjeyw_N3YoxW2wlfYD3Zx_z_ma3TrMGxLDOsY
+<<^ code="&#x0003;">>ni:///sha-256;L6SbS1nIeEJOitB7C0vHdMzINzDBm6XP-B0i4IJjYHg
 
 <<^ code="&#x0004;" -> to="?">>
