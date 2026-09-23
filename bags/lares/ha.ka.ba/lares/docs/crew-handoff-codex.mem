@@ -745,7 +745,8 @@ process's setup posture: it does not assert peer identity, capability or authori
 Oracle availability or freshness, document truth, causal order, or carrier health. Focused readiness tests
 prove 503→200, HEAD/405, disposal, and non-ownership of `/`, `/oracle`, and arbitrary API paths; Node
 typecheck and build pass. Carrier/deployment selection remains open: this receipt chooses neither NGINX nor
-Caddy nor a topology. The prior composition-row wording remains a separate re-truing item.
+Caddy nor a topology. The composition row agrees with the current explicit web-root/artifact-record seam;
+no composition-row re-truing is required in this pass.
 
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
@@ -1155,6 +1156,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1GzvYBLHY1QC_C4Uc-J7EujYSmw8AQyfeyeKvdzNPTs
+<<^ code="&#x0003;">>ni:///sha-256;6PrE3NmrkH3FVwVmxkDwbpqIWQdbJJ0jjvm-7juSepI
 
 <<^ code="&#x0004;" -> to="?">>
