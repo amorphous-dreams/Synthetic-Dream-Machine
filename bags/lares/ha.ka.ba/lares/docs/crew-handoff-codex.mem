@@ -101,7 +101,9 @@ failure. MCP fixes remain operator-deferred.
 
 ''2026-09-22 wave receipt — bounded facts, not a topology or policy claim.'' `2e5b90ac1` adds an executable in-process Pronaos witness against the compiled composition and dispatcher. It checks exact index, Worker, seed, and CAS bytes plus content type, cache class, missing/private/traversal/undeclared refusal, POST refusal, and tampered-root/widened-receipt weakenings. It declares `originReach: false` and `liveDocker: false`: a reserved-host/container witness still owes process and origin attribution, actual Node faces, and loss behavior. `58f423ca0` adds a real-worker daemon restart harness: current NodeFS worker storage replays a marker without a sync peer; a memory-only worker rehydrates with a live vessel Repo; a missing store plus absent peer faults visibly; and a main-Repo tombstone converges. Thus offline worker-only restart is the exact persistence-policy fork, never debris to delete. The operator must decide whether that offline behavior is supported before production storage changes.
 
-''P1 research queue — no source change yet.'' First close existing silent epoch-fence omissions at device/face grant doors; a missing or unreachable authority epoch must not fall back to wall time. Next specify daemon PoP replay state using the existing connection nonce, audience, gate binding, and either durable challenge identity or a scoped resource epoch. Then audit contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting separately. Red controls include epoch omission, clock perturbation against identical causal inputs, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Operator choices remain: failure behavior for unavailable epoch evidence; owner of each scoped epoch; durable replay-state scope; whether current expiries are authority or local handoff/UX observations; and whether Keyhive identity-slot expiry belongs to this authority lane.
+''2026-09-23 characterization receipt — measured seams, no policy selection.'' `e8ab1609d` validates a finite Pronaos deployment receipt whose artifact reference stays distinct from operator, source, image, and run references; mismatched image, route/byte leakage, and identifier collapse refuse. It proves neither a live process nor an origin. `87142747e` adds an isolated NodeFS daemon-worker accounting witness: it reports the opaque document id, exact worker store path, snapshot/incremental chunks and bytes, owner island, load/replay duration as a local diagnostic, and honest absent heads when the bounded probe aborts. `8da8be9a6` completes its aftermath: current NodeFS exposes no authoritative compaction-generation metadata, so the receipt emits `null` with a precise reason and rejects fabricated or non-finite generations. `abddb5657` characterizes six P1 relations: delegation admits a signed edge when the caller omits `expectedEpoch`; daemon PoP and handle recognition pass when their optional local freshness witness is omitted; Cabal admission instead applies its `effectiveEpoch`; contract edge, persona admission, and Cabal expiry handling stand separately. These are testable facts, not authorization to select any unavailable/stale policy or to replace a causal relation with a wall clock.
+
+''P1 research queue — no runtime policy source change yet.'' First close existing silent epoch-fence omissions at device/face grant doors; a missing or unreachable authority epoch must not fall back to wall time. Next specify daemon PoP replay state using the existing connection nonce, audience, gate binding, and either durable challenge identity or a scoped resource epoch. The new characterization also holds contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting apart. Red controls include epoch omission, clock perturbation against identical causal inputs, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Operator choices remain: failure behavior for unavailable epoch evidence; owner of each scoped epoch; durable replay-state scope; whether current expiries are authority or local handoff/UX observations; and whether Keyhive identity-slot expiry belongs to this authority lane.
 
 !! ◇ First-class decision records — two open contracts, not implementation debris
 
@@ -131,10 +133,11 @@ offline continuity. D-VR-B preserves the smallest duplicate surface but makes a 
 product boundary. D-VR-C spends vocabulary and operator UX to buy a measured middle. The current `9d/` working
 layer bloat is evidence to characterize, not permission to delete or to introduce a new storage abstraction.
 
-''First action.'' Add accounting to the existing worker storage path before changing it: document id, heads,
-chunk kind, bytes, compaction generation, load/replay duration, and owner island. Re-run the seed that produced
-the ~3.8 MB working-layer document, then compare the same document set under the existing NodeFS, memory-only,
-and live-vessel paths. Keep CRDT compaction distinct from authority epochs: `bag compact` bounds history and
+''First action — first isolated receipt landed.'' `87142747e`/`8da8be9a6` add accounting to the existing
+worker storage path: document id, heads or an explicit unavailable marker, chunk kind, bytes, load/replay duration,
+and owner island. NodeFS currently exposes no authoritative compaction generation; the receipt records that absence
+rather than inferring one. Re-run the seed that produced the ~3.8 MB working-layer document, then compare the
+same document set under the existing NodeFS, memory-only, and live-vessel paths. Keep CRDT compaction distinct from authority epochs: `bag compact` bounds history and
 operator reclaim remains explicit (`lar:///ha.ka.ba/lararium/tw5/compaction-handlers`); an authority lease or
 charter epoch decides who may act (`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`). SQLite's journal is
 an analogy for crash-recovery ordering only, never a prescribed Automerge transaction layer.
@@ -232,8 +235,8 @@ collapse them into one global epoch or decide a CRDT/topology outcome silently.
 
 !!! ▶ Updated flowstate — enactment order after this scout
 
-# ''Characterize.'' Add accounting and red tests around the existing daemon storage path; no new storage
-  abstraction and no policy rewrite.
+# ''Characterize.'' Re-run the landed accounting against the ~3.8 MB seed and the memory-only/live-vessel paths;
+  carry NodeFS's named absent compaction generation forward. No new storage abstraction and no policy rewrite.
 # ''Choose.'' Hand D-VR's measured receipts to the operator, then record the selected restart promise and refusal
   vocabulary before changing persistence.
 # ''Prove the shore.'' Run the finite Pronaos artifact witness and the separate process/deployment ownership
@@ -1402,6 +1405,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5wyHJd9EYJ-BeUJmSxNlV7fzYpq3_583ld5DsQDE9KU
+<<^ code="&#x0003;">>ni:///sha-256;RDXdZDq-nOtKbw5mLqfIC4CKqxWmb3Fc2ONT6ycGgVg
 
 <<^ code="&#x0004;" -> to="?">>
