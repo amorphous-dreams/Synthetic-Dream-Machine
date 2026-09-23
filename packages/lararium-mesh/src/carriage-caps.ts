@@ -303,12 +303,26 @@ export function carriageCap(deps: {
       const seed = deps.nodeSeedHex ?? "leaf";
       let stopped = false;
       let timer: ReturnType<typeof setTimeout> | undefined;
+      // CRASH-HARDENING: this is a bare fire-and-forget boundary (a setTimeout callback / build-time
+      // self-fire, never `await`ed by a caller) — nothing else stands between it and the process. If
+      // the underlying automerge handle's WASM module has died (a sync-decode `rust_oom` — canon:
+      // "Module terminated"), the NEXT `.change()` throws (synchronously, or as a rejection once
+      // `pullOnce`'s `async` wraps it), and an unhandled rejection here takes the whole daemon down
+      // with it, starving the rest of a re-pave seed for a fault already contained to one doc. So the
+      // tick's OUTCOME is contained here — logged, never propagated — while `pullOnce` itself (the
+      // exposed manual-call API below) stays undecorated: a caller that awaits it still sees the throw.
+      const guardedTick = (): Promise<number> =>
+        pullOnce().catch((err) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          deps.onLog?.(`carriage: tick failed (contained, not fatal) — ${msg}`);
+          return 0;
+        });
       const schedule = (): void => {
         if (stopped) return;
-        timer = setTimeout(() => { void pullOnce().finally(schedule); }, incommensurablePullMs(seed, baseMs, Math.random));
+        timer = setTimeout(() => { void guardedTick().finally(schedule); }, incommensurablePullMs(seed, baseMs, Math.random));
         timer.unref();
       };
-      void pullOnce().finally(schedule); // carry from the first breath, then self-reschedule incommensurably
+      void guardedTick().finally(schedule); // carry from the first breath, then self-reschedule incommensurably
       return { pullOnce, stop: () => { stopped = true; if (timer) clearTimeout(timer); } };
     },
     dispose: (c) => (c as CarriageComponent).stop(),
