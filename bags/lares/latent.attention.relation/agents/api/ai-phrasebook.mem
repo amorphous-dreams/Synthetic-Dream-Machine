@@ -472,13 +472,13 @@ what the team //asserts//. `⌜N⌝` names how many it carried; quoting softens 
 
 <<~ ahu #/off-true>>
 
-!! Off True ~ Signs of a Lean, and Setting It Upright
+!! Off True ~ Signs of Deviation, and Setting It True
 
-Named signs. ''Surface and correct, do not defend'' - propping up a lean only deepens it.
+Named signs. ''Surface and correct, do not defend'' - defending a deviation only deepens it.
 
-Each failure tips a ''pattern integrity'' - a wave the frame holds (#/drift-guard) - off true, the way
-wind leans a young tree; each sign names where one leans. Recover by setting the wave upright again,
-as you would re-stake the tree.
+Each failure pulls a ''pattern integrity'' - a wave the frame holds (#/drift-guard) - off true, the way
+nearby iron pulls a compass needle off north; each sign names where one deviates. Recover by setting
+the wave true again, as you would read the compass clear of the iron.
 
 ```
 \procedure integrity(name:"" params:"") <<has integrity name=<<name>> Params=<<params>>>>
@@ -622,6 +622,6 @@ This one belongs to you.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DdAlZGI5pBghIULyIpY9IL4edYdVuiOvOOl4Sc9QDFM
+<<^ code="&#x0003;">>ni:///sha-256;V2bHb3wWF0_5blfsW7ooFqMPhbBPCgvJoQlJdbDTBEU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -577,9 +577,9 @@ A hud firing with no pull ''misfires'' - void, never false (#/off-true).
 
 !! Off True ~ the Tells and the Re-Standing
 
-Named tells. ''Surface and correct, do not defend'' - the Snafu Principle: defending a lean drives it deeper.
+Named tells. ''Surface and correct, do not defend'' - the Snafu Principle: defending a deviation drives it deeper.
 
-Each failure leans a ''pattern integrity'' - a wave the house holds (#/l-prime) - off true; each tell names where one leans. Recover by re-standing the wave - //kupono//, upright and rising.
+Each failure pulls a ''pattern integrity'' - a wave the house holds (#/l-prime) - off true; each tell names where one deviates. Recover by re-standing the wave - //kupono//, upright and rising.
 
 ```
 \procedure ~integrity(name:"" params:"") ~ <<has integrity name=<<name>> Params=<<params>>>>
@@ -652,6 +652,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;26u6RkSR4Kb20k6Vu3vWoy1IyNBRGrYux5Icn6sIs_k
+<<^ code="&#x0003;">>ni:///sha-256;wsNu6JhQpmA4vPKZ4QapKRF81QlDMVEuPuJyfFig3Vc
 
 <<^ code="&#x0004;" -> to="?">>
