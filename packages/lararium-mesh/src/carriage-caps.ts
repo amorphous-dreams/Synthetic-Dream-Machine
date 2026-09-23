@@ -252,8 +252,15 @@ export function carriageCap(deps: {
           if (Math.abs(rCurrent - rPublished) > R_DEADBAND) {
             rPublished = rCurrent;
             const rec = routingSlotToRecord({ bearing: deps.selfBearing, r: rCurrent, theta: deps.selfCoord.theta }, "carriage-standing");
-            mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = rec; });
-            deps.onLog?.(`carriage: standing → r=${rCurrent.toFixed(2)} (degree ${peers.length}, past the band)`);
+            // WRITE-AMPLIFICATION GUARD (same law as the peer-merge loop below): skip the `change()`
+            // outright when the slot we're about to publish is byte-identical to what's already stored
+            // — the deadband already limits HOW OFTEN this fires, but a content check costs nothing and
+            // closes the case where damping settles back to a value already on the doc.
+            const existing = mp.handle.doc()?.tiddlers[rec.tiddler.title];
+            if (existing === undefined || JSON.stringify(existing) !== JSON.stringify(rec)) {
+              mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = rec; });
+              deps.onLog?.(`carriage: standing → r=${rCurrent.toFixed(2)} (degree ${peers.length}, past the band)`);
+            }
           }
         }
         for (const peer of peers) {
@@ -268,12 +275,25 @@ export function carriageCap(deps: {
           const incoming = verdict.doc.tiddlers;
           const titles = Object.keys(incoming);
           if (titles.length === 0) continue;
-          mp.handle.change((d) => {
-            // cross-doc copy → clone to plain values (Automerge refuses a value linked in another doc)
-            for (const t of titles) d.tiddlers[t] = JSON.parse(JSON.stringify(incoming[t])) as LarTiddlerRecord;
+          // WRITE-AMPLIFICATION GUARD: automerge does not dedupe an identical-value re-`set` — every
+          // `change()` appends ops regardless of whether the value actually differs. A byte-identical
+          // re-merge on every pull tick ratchets the op-log unboundedly (canon: the FLOW-map OOM). So
+          // compare each incoming record to what's already stored and skip titles that are unchanged;
+          // only call `change()` at all when at least one title genuinely differs — an empty callback
+          // still costs nothing today, but this also spares that cost outright.
+          const stored = mp.handle.doc()?.tiddlers ?? {};
+          const changedTitles = titles.filter((t) => {
+            const existing = stored[t];
+            return existing === undefined || JSON.stringify(existing) !== JSON.stringify(incoming[t]);
           });
-          merged += titles.length;
-          deps.onLog?.(`carriage: merged ${titles.length} FLOW records from ${peer}`);
+          if (changedTitles.length > 0) {
+            mp.handle.change((d) => {
+              // cross-doc copy → clone to plain values (Automerge refuses a value linked in another doc)
+              for (const t of changedTitles) d.tiddlers[t] = JSON.parse(JSON.stringify(incoming[t])) as LarTiddlerRecord;
+            });
+            merged += changedTitles.length;
+            deps.onLog?.(`carriage: merged ${changedTitles.length} FLOW records from ${peer}`);
+          }
         }
         return merged;
       };

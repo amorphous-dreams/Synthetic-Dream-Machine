@@ -13,6 +13,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
+import { getHeads } from "@automerge/automerge";
 import { composeVessel, pullAndVerifyOracle, dialEntryToRecord, routingSlotToRecord, radialCoordinate, type MeshPalaceDoc, type CapModule } from "@lararium/mesh";
 import { mountFlowMapReadFace } from "../src/oracle-read-face.js";
 import { carriageCap, CAP, incommensurablePullMs, discoverPeers, dampedRadius, type MeshPalaceComponent } from "../src/node-caps.js";
@@ -48,11 +49,70 @@ describe("carriageCap — the composable Herm carries a peer's FLOW-map (pull �
     ]);
     const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
 
-    const merged = await carriage.pullOnce();
-    expect(merged).toBe(1);
+    // The carriage self-fires an initial pull at build time ("from the first breath" — see
+    // `void pullOnce().finally(schedule)`), so by the time this EXPLICIT call resolves the record may
+    // already have been carried by that auto-fire (and, post write-amplification-fix, this call then
+    // correctly merges 0 — see the dedicated test below). Assert the deterministic end-state rather
+    // than which call gets credit for it.
+    await carriage.pullOnce();
     expect(Object.keys(hermHandle.doc()?.tiddlers ?? {})).toContain(srcDial.tiddler.title); // CARRIES the source's record
 
     await vessel.dispose(); // reverse order → carriage stops its loop
+    srcFace.dispose();
+    await new Promise<void>((r) => srcServer.close(() => r()));
+  });
+
+  test("write-amplification cure: an IDENTICAL peer pull produces ZERO new automerge ops (a genuinely-changed record still writes)", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+
+    // SOURCE — a vessel serving one public dial over a real read-face.
+    const srcDial = dialEntryToRecord(
+      { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://src/p", scale: "dreamnet" }, "src");
+    const srcHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: { [srcDial.tiddler.title]: srcDial } });
+    const srcServer = createServer();
+    const srcPort = await listen(srcServer);
+    const srcFace = await mountFlowMapReadFace({ httpServer: srcServer, meshPalaceHandle: srcHandle, signerSeed: SEED_A, storageDir: tmp("src-amp-") });
+
+    const hermHandle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const vessel = await composeVessel([
+      meshpalaceProviding(hermHandle),
+      carriageCap({ peers: [`http://127.0.0.1:${srcPort}`], pullIntervalMs: 1_000_000 }), // no auto-repeat in-test
+    ]);
+    const carriage = vessel.get<{ pullOnce: () => Promise<number> }>(CAP.carriage)!;
+
+    // FIRST explicit tick. The carriage self-fires an initial pull at build time ("from the first
+    // breath"), so this explicit call may or may not be the one that lands the merge — assert the
+    // deterministic end-state (the record is carried), not which call gets credit for it.
+    await carriage.pullOnce();
+    expect(Object.keys(hermHandle.doc()?.tiddlers ?? {})).toContain(srcDial.tiddler.title);
+    const headsAfterFirst = getHeads(hermHandle.doc()!);
+
+    // SECOND tick — the SAME peer content, byte-identical. Today (pre-fix) this unconditionally
+    // clones + re-`change()`s the incoming record even though nothing differs, ratcheting the
+    // op-log. The cure: an unchanged record produces NO automerge ops, so the heads DO NOT move.
+    const merged2 = await carriage.pullOnce();
+    const headsAfterSecond = getHeads(hermHandle.doc()!);
+    expect(merged2).toBe(0);                              // nothing NEW to merge — a no-op tick
+    expect(headsAfterSecond).toEqual(headsAfterFirst);     // RED (pre-fix): heads advance on every tick
+
+    // CONTROL — a genuinely CHANGED record must still write (the guard must not suppress real changes).
+    const changedDial = dialEntryToRecord(
+      { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "a".repeat(64), endpoint: "ws://src/p-moved", scale: "dreamnet" }, "src");
+    srcHandle.change((d) => { d.tiddlers[changedDial.tiddler.title] = changedDial; });
+    // The read-face re-exports on its own "change" subscription (fire-and-forget async reissue) — poll
+    // until the peer's public snapshot actually carries the new title before pulling, so this control
+    // isn't racing that re-export.
+    for (let i = 0; i < 50; i++) {
+      const v = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${srcPort}`, { nowMs: Date.now() });
+      if (v.ok && v.doc && changedDial.tiddler.title in v.doc.tiddlers) break;
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    const merged3 = await carriage.pullOnce();
+    const headsAfterThird = getHeads(hermHandle.doc()!);
+    expect(merged3).toBe(1);                               // the changed endpoint DOES merge
+    expect(headsAfterThird).not.toEqual(headsAfterSecond);  // and the doc DOES advance
+
+    await vessel.dispose();
     srcFace.dispose();
     await new Promise<void>((r) => srcServer.close(() => r()));
   });
