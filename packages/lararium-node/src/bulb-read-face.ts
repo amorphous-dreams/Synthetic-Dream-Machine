@@ -216,9 +216,8 @@ export async function mountBulbReadFace(args: {
     const changed = manifestCid !== persisted.cid;
     const version = changed ? persisted.version + 1 : persisted.version;
     const prev    = changed ? persisted.lastPointerId : persisted.prevId;
-    const expiry  = Date.now() + BULB_POINTER_TTL_MS;
     // The pointer's snapshot names the manifest cid + heads = [] (the bulb is a flat content-address, no CRDT heads).
-    const ptr = await buildOraclePointer({ snapshot: { cid: manifestCid, heads: [], bytes: manifestBytes }, version, prev, expiry, signerSeed });
+    const ptr = await buildOraclePointer({ snapshot: { cid: manifestCid, heads: [], bytes: manifestBytes }, version, prev, signerSeed });
     pointer = ptr;
     if (changed) {
       const id = await oraclePointerId(ptr);

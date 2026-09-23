@@ -103,7 +103,7 @@ describe("carriageCap â€” the composable Herm carries a peer's FLOW-map (pull â†
     // until the peer's public snapshot actually carries the new title before pulling, so this control
     // isn't racing that re-export.
     for (let i = 0; i < 50; i++) {
-      const v = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${srcPort}`, { nowMs: Date.now() });
+      const v = await pullAndVerifyOracle<MeshPalaceDoc>(`http://127.0.0.1:${srcPort}`);
       if (v.ok && v.doc && changedDial.tiddler.title in v.doc.tiddlers) break;
       await new Promise((r) => setTimeout(r, 10));
     }

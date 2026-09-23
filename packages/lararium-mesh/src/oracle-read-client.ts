@@ -5,7 +5,7 @@
  * This is the second-spore primitive — the first cross-vessel contact the read-only
  * substrate enables. A reader (any vessel, anon) fetches a peer node's pointer +
  * content-addressed snapshot, VERIFIES before trusting (signature · anti-rollback ·
- * anti-equivocation · local-clock freshness · rehash == cid), and only then loads.
+ * anti-equivocation · rehash == cid), and only then loads.
  * Isomorphic: global `fetch` (Node 18+/browser) + `Automerge.load`; a browser vessel
  * reads exactly this way.
  *
@@ -49,8 +49,6 @@ export interface OraclePullOpts {
   readonly highWaterVersion?: number;
   /** The id of the last pointer this reader held — a `prev` that doesn't link it is a fork. */
   readonly lastPointerId?:    string;
-  /** The reader's local clock (default `Date.now()`). */
-  readonly nowMs?:            number;
   /** Injectable fetch (for tests). */
   readonly fetchImpl?:        typeof fetch;
 }
@@ -65,7 +63,6 @@ export async function pullAndVerifyOracle<T = unknown>(
   opts: OraclePullOpts = {},
 ): Promise<OraclePullResult<T>> {
   const f     = opts.fetchImpl ?? fetch;
-  const nowMs = opts.nowMs ?? Date.now();
   const base  = baseUrl.replace(/\/+$/, "");
 
   // 1. the signed pointer.
@@ -80,7 +77,6 @@ export async function pullAndVerifyOracle<T = unknown>(
 
   // 2. the reader rule — verify BEFORE trusting.
   const verdict = await verifyOraclePointer(pointer, {
-    nowMs,
     ...(opts.verifyingKey     !== undefined ? { verifyingKey:     opts.verifyingKey }     : {}),
     ...(opts.highWaterVersion !== undefined ? { highWaterVersion: opts.highWaterVersion } : {}),
     ...(opts.lastPointerId    !== undefined ? { lastPointerId:    opts.lastPointerId }    : {}),

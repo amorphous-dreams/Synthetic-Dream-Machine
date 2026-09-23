@@ -4,7 +4,7 @@
  * Proves the load-bearing properties of the read-only public substrate:
  *   - the read face is content-addressed (rehash verifies; tamper is a different name);
  *   - the pointer is signed, monotone (anti-rollback), lineage-linked (anti-equivocation),
- *     and freshness-leased against the LOCAL clock — and the reader rule NEVER throws.
+ *     and supersession-current against the causal frontier — and the reader rule NEVER throws.
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-oracle-plane
  */
 
@@ -20,8 +20,6 @@ import {
 
 const SEED   = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const OTHER  = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
-const NOW    = 1_000_000;
-const EXPIRY = NOW + 60_000;
 
 function mkDoc() {
   return A.from({ tiddlers: { "oracle": { text: "the constitution" } } });
@@ -51,51 +49,49 @@ describe("oracle-substrate — content-addressed read face", () => {
 });
 
 describe("oracle-substrate — the signed monotone pointer (reader rule)", () => {
-  async function mkPointer(version: number, prev: string | null, seed = SEED, expiry = EXPIRY) {
+  async function mkPointer(version: number, prev: string | null, seed = SEED) {
     const snap = await exportOracleSnapshot(mkDoc());
-    return buildOraclePointer({ snapshot: snap, version, prev, expiry, signerSeed: seed });
+    return buildOraclePointer({ snapshot: snap, version, prev, signerSeed: seed });
   }
 
   test("a well-formed, signed, fresh pointer verifies", async () => {
     const p = await mkPointer(1, null);
-    expect(await verifyOraclePointer(p, { nowMs: NOW })).toEqual({ ok: true });
+    expect(await verifyOraclePointer(p)).toEqual({ ok: true });
   });
 
   test("anti-rollback: a version below the high-water is refused", async () => {
     const p = await mkPointer(3, null);
-    const v = await verifyOraclePointer(p, { nowMs: NOW, highWaterVersion: 5 });
+    const v = await verifyOraclePointer(p, { highWaterVersion: 5 });
     expect(v.ok).toBe(false);
     expect(v.reason).toMatch(/rollback/);
   });
 
   test("anti-rollback: version at or above the high-water passes", async () => {
     const p = await mkPointer(5, null);
-    expect((await verifyOraclePointer(p, { nowMs: NOW, highWaterVersion: 5 })).ok).toBe(true);
+    expect((await verifyOraclePointer(p, { highWaterVersion: 5 })).ok).toBe(true);
   });
 
-  test("freshness: a pointer past its expiry on the local clock is stale", async () => {
+  test("supersession: a pointer remains current until a higher version is accepted", async () => {
     const p = await mkPointer(1, null);
-    const v = await verifyOraclePointer(p, { nowMs: EXPIRY + 1 });
-    expect(v.ok).toBe(false);
-    expect(v.reason).toMatch(/expired/);
+    expect(await verifyOraclePointer(p)).toEqual({ ok: true });
   });
 
   test("a tampered field breaks the signature", async () => {
     const p = await mkPointer(1, null);
     const forged = { ...p, version: 999 };
-    expect((await verifyOraclePointer(forged, { nowMs: NOW })).ok).toBe(false);
+    expect((await verifyOraclePointer(forged)).ok).toBe(false);
   });
 
   test("a malformed pointer is rejected, never thrown", async () => {
-    const bad = { cid: "nope", heads: [], version: -1, prev: null, expiry: 0, pub: "x", sig: "y" } as never;
-    const v = await verifyOraclePointer(bad, { nowMs: NOW });
+    const bad = { cid: "nope", heads: [], version: -1, prev: null, pub: "x", sig: "y" } as never;
+    const v = await verifyOraclePointer(bad);
     expect(v.ok).toBe(false);
   });
 
   test("pinned publisher: a pointer from another key is refused", async () => {
     const p = await mkPointer(1, null, OTHER);
     const ours = await mkPointer(1, null, SEED);
-    const v = await verifyOraclePointer(p, { nowMs: NOW, verifyingKey: ours.pub });
+    const v = await verifyOraclePointer(p, { verifyingKey: ours.pub });
     expect(v.ok).toBe(false);
     expect(v.reason).toMatch(/unpinned/);
   });
@@ -105,10 +101,10 @@ describe("oracle-substrate — the signed monotone pointer (reader rule)", () =>
     const id1 = await oraclePointerId(p1);
     const p2 = await mkPointer(2, id1);
     // lineage intact
-    expect((await verifyOraclePointer(p2, { nowMs: NOW, lastPointerId: id1 })).ok).toBe(true);
+    expect((await verifyOraclePointer(p2, { lastPointerId: id1 })).ok).toBe(true);
     // a fork: prev does not link what the reader last held
     const otherId = "f".repeat(64);
-    const v = await verifyOraclePointer(p2, { nowMs: NOW, lastPointerId: otherId });
+    const v = await verifyOraclePointer(p2, { lastPointerId: otherId });
     expect(v.ok).toBe(false);
     expect(v.reason).toMatch(/lineage/);
   });
@@ -131,44 +127,36 @@ describe("oracle-substrate — the signed monotone pointer (reader rule)", () =>
  *
  * MEASURED HERE, so the answer stops living in prose. The model is most of the way built: the pointer
  * already carries `version` (the corm-epoch) and `prev` (lineage), and the verify already refuses a
- * rollback and a fork. Two things still read the other way, and these tests PIN THE GAP rather than
- * pretend it away — each fails when the ruling lands, telling the next hand to update it.
+ * rollback and a fork. The pointer now follows the supersession ruling; local liveness remains
+ * an observer concern and never rejects a signed snapshot.
  */
 describe("the clockless lease model, as the oracle pointer actually stands", () => {
-  const seedPointer = async (over: Partial<{ version: number; expiry: number }> = {}) => {
+  const seedPointer = async (over: Partial<{ version: number }> = {}) => {
     const snap = await exportOracleSnapshot(mkDoc());
-    return buildOraclePointer({ snapshot: snap, version: over.version ?? 3, prev: null, expiry: over.expiry ?? EXPIRY, signerSeed: SEED });
+    return buildOraclePointer({ snapshot: snap, version: over.version ?? 3, prev: null, signerSeed: SEED });
   };
 
   test("★ SAFETY stands clock-free: rollback and fork refuse on the LOGICAL fields alone ★", async () => {
     const p = await seedPointer({ version: 3 });
     // A lower version than remembered refuses — the fencing high-water, no clock consulted.
-    const rolled = await verifyOraclePointer(p, { nowMs: NOW, highWaterVersion: 9 });
+    const rolled = await verifyOraclePointer(p, { highWaterVersion: 9 });
     expect(rolled.ok).toBe(false);
     if (!rolled.ok) expect(rolled.reason).toMatch(/rollback/i);
     // And the same pointer verifies when the high-water permits it — so the refusal was the FENCE.
-    await expect(verifyOraclePointer(p, { nowMs: NOW, highWaterVersion: 3 })).resolves.toEqual({ ok: true });
+    await expect(verifyOraclePointer(p, { highWaterVersion: 3 })).resolves.toEqual({ ok: true });
   });
 
-  test("★ THE GAP: validity still gates on a DURATION ELAPSING, where the ruling wants supersession ★", async () => {
-    const p = await seedPointer({ expiry: NOW + 10 });
-    // Nothing superseded this pointer — no higher version exists anywhere. It still reads dead, purely
-    // because a local clock advanced. The ruling replaces this branch with "live until a higher-Sequence
-    // record appears", keeping a soft grain hint as ADVICE.
-    const late = await verifyOraclePointer(p, { nowMs: NOW + 11 });
-    expect(late.ok).toBe(false);
-    if (!late.ok) expect(late.reason).toBe("expired");
-    // WHEN SUPERSESSION LANDS this flips to ok and the assertion above fails — that red means the ruling
-    // arrived, and the cure is to rewrite this test around supersession, never to loosen it.
+  test("★ THE RULING: no duration can stale an otherwise valid pointer ★", async () => {
+    const p = await seedPointer();
+    await expect(verifyOraclePointer(p)).resolves.toEqual({ ok: true });
   });
 
-  test("★ THE GAP: the FENCE is optional while the CLOCK gate is mandatory — backwards from warning (1) ★", async () => {
-    const p = await seedPointer({ version: 3, expiry: NOW + 60_000 });
-    // A reader that supplies NO high-water still verifies: the fence the model MANDATES can be skipped.
-    await expect(verifyOraclePointer(p, { nowMs: NOW })).resolves.toEqual({ ok: true });
-    // Meanwhile the clock gate cannot be skipped at all — there is no way to ask for a clock-free verdict.
-    const expired = await verifyOraclePointer(await seedPointer({ expiry: NOW - 1 }), { nowMs: NOW });
-    expect(expired.ok, "a clock-free verdict became reachable — the ruling may have landed").toBe(false);
+  test("★ THE FENCE: high-water remains the logical refusal boundary ★", async () => {
+    const p = await seedPointer({ version: 3 });
+    await expect(verifyOraclePointer(p)).resolves.toEqual({ ok: true });
+    await expect(verifyOraclePointer(p, { highWaterVersion: 4 })).resolves.toEqual({
+      ok: false, reason: "rollback (version below high-water)",
+    });
   });
 
   test("CONTROL — the pointer already CARRIES what supersession needs, so the cure adds no field", async () => {

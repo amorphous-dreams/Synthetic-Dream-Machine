@@ -30,15 +30,13 @@ import {
   type OracleSnapshot, type OraclePointer, type LarDoc,
 } from "@lararium/mesh";
 
-/** Freshness lease re-issued on every change (read against the reader's LOCAL clock). */
-const POINTER_TTL_MS = 5 * 60_000;
 /** Persists {version, lastPointerId} so the monotone counter survives a reboot. */
 const STATE_FILE = "oracle-pointer-state.json";
 
 interface PersistedPointerState {
   readonly version:       number;
   readonly lastPointerId: string | null;  // id of the current version's pointer (lineage anchor)
-  readonly prevId:        string | null;  // its prev — kept so a heartbeat re-signs the same identity
+  readonly prevId:        string | null;  // its prev — retained to reconstruct the current pointer after reboot
   readonly cid:           string | null;  // the last published content hash (detect a real change vs a reboot)
 }
 
@@ -78,20 +76,18 @@ export async function mountOracleReadFace(args: {
     if (Number.isInteger(raw.version) && raw.version >= 0) persisted = raw;
   } catch { /* first boot — start at 0 */ }
 
-  // Re-publish the pointer. A CONTENT change bumps the monotone version + advances the
-  // lineage; an EA (the breath — force, no content change) renews the freshness lease on
-  // the SAME version+prev — the pointer is a LEASE, so a static oracle doc must keep being
-  // fed or readers reject it stale (the gap the first live cross-vessel read surfaced).
-  async function reissue(force: boolean): Promise<void> {
+  // Publish the pointer. A CONTENT change bumps the monotone version + advances the
+  // lineage. An initial re-publish after reboot reconstructs the same causal pointer;
+  // there is no heartbeat and no wall-clock validity branch.
+  async function reissue(initial = false): Promise<void> {
     const doc = oracleHandle.doc();
     if (!doc) return;
     const snap = await exportSnapshot(doc);
     const changed = snap.cid !== persisted.cid;
-    if (!changed && !force) return;
+    if (!changed && !initial) return;
     const version = changed ? persisted.version + 1 : persisted.version;
     const prev    = changed ? persisted.lastPointerId : persisted.prevId;
-    const expiry  = Date.now() + POINTER_TTL_MS;
-    const ptr = await buildOraclePointer({ snapshot: snap, version, prev, expiry, signerSeed });
+    const ptr = await buildOraclePointer({ snapshot: snap, version, prev, signerSeed });
     snapshot = snap;
     pointer  = ptr;
     if (changed) {
@@ -109,10 +105,6 @@ export async function mountOracleReadFace(args: {
   await reissue(true);
   const onChange = (): void => { void reissue(false); };
   oracleHandle.on("change", onChange);
-  // Ea — the breath that renews the lease before it lapses, even with no content change
-  // (feed-the-Lar: a static oracle doc still breathes, so its pointer never reads stale).
-  const ea = setInterval(() => { void reissue(true); }, Math.floor(POINTER_TTL_MS / 2));
-  ea.unref();
 
   // The read-face is the PUBLIC read-only plane — it reads to ANY origin (a node-less
   // browser vessel on elyncia.app / localhost dev reads cross-origin). Open CORS is
@@ -160,7 +152,6 @@ export async function mountOracleReadFace(args: {
 
   return {
     dispose: () => {
-      clearInterval(ea);
       oracleHandle.off("change", onChange);
       if (unregister) unregister();
       else httpServer.off("request", onRequest);

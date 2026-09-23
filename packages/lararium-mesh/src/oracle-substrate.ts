@@ -9,7 +9,7 @@
  * session, no inbound frame to refuse. The thin signed pointer carries currency:
  * a reader rejects any version below its high-water (anti-rollback = the epoch-lease /
  * max-register), checks `prev` links the last head (anti-equivocation = causal
- * ancestry, gossiped), and trusts its LOCAL clock for `expiry` (no global now).
+ * ancestry, gossiped), and trusts its causal frontier for currency (no global now).
  * Real-time streaming (Hypercore, read-only by keypair) rides ABOVE this floor as the
  * named end-goal — deferred.
  *
@@ -45,7 +45,6 @@ export interface OraclePointer {
   readonly heads:   readonly string[];  // its automerge heads
   readonly version: number;             // monotone counter (anti-rollback)
   readonly prev:    string | null;      // id of the previous pointer (lineage), or null at genesis
-  readonly expiry:  number;             // ms epoch; freshness lease read against the LOCAL clock
   readonly pub:     string;             // signer verifying-key hex (self-describing)
   readonly sig:     string;             // ed25519 sig over the canonical signing string
 }
@@ -72,9 +71,8 @@ export async function verifyOracleSnapshotBytes(
 }
 
 /**
- * The pointer's IDENTITY string — the CONTENT fields only, NO expiry/sig. A lease
- * renewal (same content, fresh expiry + new sig) keeps the SAME identity, so the
- * lineage stays stable across heartbeats. Domain+version tagged, `|`-delimited, every
+ * The pointer's IDENTITY string — the content and causal fields, excluding only the
+ * signature. Domain+version tagged, `|`-delimited, every
  * field strict-charset so no separator can shift a boundary (device-delegation pattern).
  */
 function pointerIdentityString(p: Pick<OraclePointer, "cid" | "heads" | "version" | "prev" | "pub">): string {
@@ -89,17 +87,16 @@ function pointerIdentityString(p: Pick<OraclePointer, "cid" | "heads" | "version
 }
 
 /**
- * The SIGNED string — the identity PLUS the expiry lease, because the signature MUST
- * cover freshness (a peer must not be able to extend a stale pointer's life).
+ * The SIGNED string — the identity itself; the signature covers every pointer field
+ * except the signature.
  */
 function pointerSigningString(p: Omit<OraclePointer, "sig">): string {
-  return pointerIdentityString(p) + "|" + String(p.expiry);
+  return pointerIdentityString(p);
 }
 
 /**
  * The pointer's stable id — what the NEXT pointer names in its `prev` (the lineage
- * link). Computed over the IDENTITY (not expiry/sig), so renewing the lease never
- * forks the lineage; a changed content field (cid/version/prev) does change the id.
+ * link). A changed content field (cid/version/prev) changes the id.
  */
 export async function oraclePointerId(
   p: OraclePointer,
@@ -113,15 +110,11 @@ export async function buildOraclePointer(args: {
   readonly snapshot: OracleSnapshot;
   readonly version:  number;
   readonly prev:     string | null;
-  readonly expiry:   number;
   /** 32-byte ed25519 seed (the publisher's signing key — operator/node). */
   readonly signerSeed: Uint8Array;
 }): Promise<OraclePointer> {
   if (!Number.isInteger(args.version) || args.version < 0) {
     throw new Error(`oracle-pointer: version must be a non-negative integer, got ${args.version}`);
-  }
-  if (!Number.isFinite(args.expiry) || args.expiry <= 0) {
-    throw new Error(`oracle-pointer: expiry must be a positive POSIX-ms timestamp, got ${args.expiry}`);
   }
   const pub    = hex(await ed25519.getPublicKeyAsync(args.signerSeed));
   const fields: Omit<OraclePointer, "sig"> = {
@@ -129,7 +122,6 @@ export async function buildOraclePointer(args: {
     heads:   args.snapshot.heads,
     version: args.version,
     prev:    args.prev,
-    expiry:  args.expiry,
     pub,
   };
   const sig = hex(await ed25519.signAsync(utf8Bytes(pointerSigningString(fields)), args.signerSeed));
@@ -148,7 +140,8 @@ export interface PointerVerdict {
  *     reads as a ROLLBACK and gets refused (coordinator-free anti-rollback).
  *   - `lastPointerId`: the id of the last pointer this reader held; a `prev` that does
  *     not match it flags a LINEAGE break (an equivocation/fork to surface via gossip).
- *   - `nowMs`: the reader's LOCAL clock; past `expiry` reads as stale (no global now).
+ *   - a pointer remains current until a higher causal version supersedes it;
+ *     local observation/liveness policy stays outside this safety verdict.
  */
 export async function verifyOraclePointer(
   p: OraclePointer,
@@ -156,8 +149,7 @@ export async function verifyOraclePointer(
     readonly verifyingKey?:     string;
     readonly highWaterVersion?: number;
     readonly lastPointerId?:    string;
-    readonly nowMs:             number;
-  },
+  } = {},
 ): Promise<PointerVerdict> {
   // Shape — reject malformed input without throwing.
   if (!p || typeof p !== "object")                              return { ok: false, reason: "malformed pointer" };
@@ -165,7 +157,6 @@ export async function verifyOraclePointer(
   if (!HEX64_RE.test(p.pub))                                    return { ok: false, reason: "bad pub" };
   if (!SIG_RE.test(p.sig))                                      return { ok: false, reason: "bad sig format" };
   if (!Number.isInteger(p.version) || p.version < 0)            return { ok: false, reason: "bad version" };
-  if (!Number.isFinite(p.expiry))                               return { ok: false, reason: "bad expiry" };
   if (p.prev !== null && !HEX64_RE.test(p.prev))               return { ok: false, reason: "bad prev" };
   if (!Array.isArray(p.heads) || !p.heads.every((h) => HEX64_RE.test(h)))
     return { ok: false, reason: "bad heads" };
@@ -190,9 +181,6 @@ export async function verifyOraclePointer(
   // Anti-equivocation: a prev that does not link the last-known pointer is a fork.
   if (opts.lastPointerId !== undefined && p.prev !== opts.lastPointerId)
     return { ok: false, reason: "lineage break (prev does not link last pointer)" };
-
-  // Freshness lease — local clock only.
-  if (opts.nowMs >= p.expiry) return { ok: false, reason: "expired" };
 
   return { ok: true };
 }
