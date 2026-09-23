@@ -68,7 +68,7 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 * `lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing`
 * `lar:///ha.ka.ba/lararium/docs/preferences/identity-permissions`
 * `lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate`
-* `lar:///ha.ka.ba/lararium/docs/preferences/degraded-node-states`
+* `lar:///ha.ka.ba/lararium/docs/preferences/named-failure-modes`
 
 <<~/ahu>>
 
@@ -80,6 +80,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NspMYeOiKYlCIxuUzGQhP1yk-ufmJE9ZvxwBSDm6Vog
+<<^ code="&#x0003;">>ni:///sha-256;a5-T4OHowdDwbY55DeD4bQ-vWSC3kfR4LPUCgeV6RZY
 
 <<^ code="&#x0004;" -> to="?">>

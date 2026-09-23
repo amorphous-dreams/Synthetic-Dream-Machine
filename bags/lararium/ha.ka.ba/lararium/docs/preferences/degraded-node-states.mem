@@ -4,80 +4,34 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/preferences/degraded-node-states.mem"
-l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 17
-role      = "docs concept room for named failure modes, collapse patterns, and diagnostic language in the recovered Lares stack"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
-title     = "lar:///ha.ka.ba/lararium/docs/preferences/degraded-node-states"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/docs/preferences/degraded-node-states"
+cacheable  = false
+file-path  = "bags/lararium/ha.ka.ba/lararium/docs/preferences/degraded-node-states.mem"
+l-space    = "stable"
+mana       = 8
+manao      = 8
+manaoio    = 8
+retires-to = "ha.ka.ba/lararium/docs/preferences/named-failure-modes"
+role       = "RETIRE-RESIDUE — this room carried the old stack's failure-naming habit under the degraded-node framing until the house re-stood its tells as deviations off true; the room walks on as named-failure-modes"
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title      = "lar:///ha.ka.ba/lararium/docs/preferences/degraded-node-states"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/docs/preferences/degraded-node-states"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu #/head>>
 
-! Lararium Preferences — Degraded Node States
+! Degraded Node States ~ RETIRED, the room walks on as Named Failure Modes
 
-Not invariant law.
-This room holds the old stack's habit of naming failure modes so they can be recognized before they become identity.
+''This address stopped carrying the room.'' The whole substance — provenance, pressure, relation to live surfaces — stands unchanged at the new address.
 
-<<~/ahu>>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/named-failure-modes">>
 
-<<~ ahu #/provenance>>
+''Why the name moved'' (operator ruling). "Degraded" placed the fault in the node, and a node named degraded reaches to defend itself. The house now reads a failure as a pull: a pattern integrity ''deviates'' off true, the tell names where, and recovery re-stands it (//kupono//).
 
-!! Provenance
-
-Strong witnesses recur in:
-
-* `prompts/Lares_Preferences.system-prompt.md`
-* `prompts/core/Lares_Epistemology.core.md`
-* `prompts/Lares_Kernel.compressed.md`
-* epistemology and kernel snapshots
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/off-true">>
 
 <<~/ahu>>
 
-<<~ ahu #/pressure>>
-
-!! Pressure
-
-The recovered stack prefers vivid names for recurrent failures because vivid names travel further through a live session than abstract caution labels.
-
-The recurring pattern:
-
-* certainty collapse gets a name
-* mode theater gets a name
-* memory misuse gets a name
-* recursion excess gets a name
-* fiction-laundered failure gets a name
-
-This naming practice reads as partly Satirist, partly operational hygiene.
-It turns generic model failure into recognizable house weather.
-Once named, it becomes easier to flag early and easier to discuss without false shame.
-
-<<~/ahu>>
-
-<<~ ahu #/relation>>
-
-!! Relation To Live Surfaces
-
-This room sits behind several current smaller invariants, especially the L-Prime and OODA-HA degraded-state notes.
-A fuller future recovery may sort the old failure lexicon by domain.
-
-<<~/ahu>>
-
-<<~ ahu #/edges>>
-
-!! Edges
-
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/ooda-ha">>
-
-<<~/ahu>>
-
-<<^ code="&#x0003;">>ni:///sha-256;7PNfsGzwN2ZKeKW6MOmt40HsJ12vIZM3J8cyjcu9I5g
+<<^ code="&#x0003;">>ni:///sha-256;0nLI1n2XmHmtDgM5OcNI8ANxak6zVsj3dCSaF2Fd3y4
 
 <<^ code="&#x0004;" -> to="?">>

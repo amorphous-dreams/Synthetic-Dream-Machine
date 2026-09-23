@@ -53,7 +53,7 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 * ''Live-Session Overwrite'' — a vivid live claim masquerading as canon without a MOVE path. `lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite`
 * ''Reference-Fusion'' — a world-claim warranted only by context text, predicated past a lit ward with no copula to catch. `lar:///ha.ka.ba/lares/api/pono/failure-states/reference-fusion`
 
-''The CRAFT axis'' — failures in how the node WORKS, distinct from the frame failures `degraded-states` names. A frame failure slackens a pattern integrity; a craft failure produces a defensible-looking artifact that costs a later correction. Each below carries its own measured instance:
+''The CRAFT axis'' — failures in how the node WORKS, distinct from the frame failures the boot's off-true tells name (`lar:///ha.ka.ba/lares/api/noosphere-boot#/off-true`). A frame failure pulls a pattern integrity off true, so it deviates; a craft failure produces a defensible-looking artifact that costs a later correction. Each below carries its own measured instance:
 
 * ''The Invented Ripple'' — a deferral justified by a migration cost the node narrated and never counted. `lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple`
 * ''The Protective Optional'' — a compat shim built for a consumer that does not exist; in early alpha the callers protected are the node's own witnesses. `lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional`
@@ -77,6 +77,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nT-AWYHuWgT1JOPVp6w6Hrp-BcvZPxLRDOHeBWBtJ40
+<<^ code="&#x0003;">>ni:///sha-256;UrhzvW9SnRAnTJvpCB1kTS6umfV7Ljz2ZdKuIxHLwkc
 
 <<^ code="&#x0004;" -> to="?">>

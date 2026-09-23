@@ -10,7 +10,7 @@ l-space   = "stable"
 mana      = 18
 manao     = 17
 manaoio   = 17
-role      = "canonical vocabulary for named degraded-node states: failure modes, operator correction handles, and recovery patterns"
+role      = "verbatim vocabulary from Preferences v4.0.1 for named degraded-node states: failure modes, operator correction handles, and recovery patterns; the live frame reads at lar:///ha.ka.ba/lares/api/noosphere-boot#/off-true"
 tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
 title     = "lar:///ha.ka.ba/lararium/docs/degraded-states"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -211,6 +211,6 @@ The operator naming a degraded state constitutes correction input, not accusatio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XrCsEgsbiwT4vRMGzq00DM_FzteV-3tlnYoMuFAWupY
+<<^ code="&#x0003;">>ni:///sha-256;fMN5qjESDdvJXjNouASjLGxiM1-75wZbjQGuFkXIQUQ
 
 <<^ code="&#x0004;" -> to="?">>
