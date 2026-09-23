@@ -243,6 +243,8 @@ globs   = [
 
 # ''The global clock-law audit — sequenced handback, 2026-09-22.'' No blind global `Date.now()` rewrite is authorized. **P0 — Oracle pointer / Carriage:** remove expiry and heartbeat from the signed pointer contract, keep causal version/`prev`/content-addressed snapshot acceptance, and re-trace the shared pull without making local silence a rejection. **P1 — capability, admission, delegation, and handle designs:** audit each relation separately and require an explicit causal, operator, or realm epoch witness wherever a lease or authority decision currently uses a wall clock; each receives its own red-first receipt. **P2 — local CAS retention:** define retention and loss as local policy and observation, never as a shared clock-derived relation. Lower-risk local timers, UI displays, retries, cooling, and measurements may remain when they do not establish identity, authority, order, or document standing. The existing Carriage guard remains other-hearth work and is not silently taken by this Codex hand. No source edit or completion receipt follows. Files crossed: this ledger and the Codex roadmap only. Law: stage clock removal by relation, and preserve local observation where it carries no authority.
 
+# ''The HTTP ownership dispatcher — integration crossing, 2026-09-22.'' `main.ts` creates one request dispatcher; readiness, finite Pronaos, Oracle, Herm FLOW-map, and Bulb caps register synchronous namespace claims with it, and duplicate route keys refuse. A claimed face may answer asynchronously without being preempted by the dispatcher’s terminal refusal. Unclaimed ordinary HTTP, including `/undeclared` and GET `/ws`, answers `404` with `cache-control: no-store`; WebSocket upgrade handling remains its own path. Focused receipts pass in `tests/http-face-dispatcher.test.ts` and `tests/http-face-integration.test.ts` — 2 files, 5 tests. This crossing proves only HTTP ownership/refusal composition; it is independent of WebSocket upgrades, Docker daemon/image/live-container proof, NGINX/Caddy or other carrier choice, MCP work, and clock migration. Files crossed: `packages/lararium-node/src/http-face-dispatcher.ts`, `readiness-face.ts`, `pronaos-adapter.ts`, `oracle-read-face.ts`, `node-caps.ts`, `main.ts`, and the two focused tests. Law: one request has one synchronous owner; an absent owner refuses uniformly, while an owner keeps its asynchronous work.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -256,6 +258,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ckTGjclky7GQjf_OZILjBKfvTcsN7XI-7XqgE54I50Q
+<<^ code="&#x0003;">>ni:///sha-256;8gJ0LUqwYFxWg1XhTM5YgrbUgaCot1beS4e9NdUBggU
 
 <<^ code="&#x0004;" -> to="?">>

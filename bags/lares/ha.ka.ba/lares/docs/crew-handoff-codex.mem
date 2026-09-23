@@ -784,6 +784,16 @@ may remain as observations when they do not establish identity, authority, order
 existing Carriage guard remains other-hearth work and is not silently taken by this roadmap. No source edit,
 global migration, or completion receipt follows from this planning row.
 
+# ''HTTP ownership dispatcher — integration receipt, 2026-09-22.'' `main.ts` now creates one request
+dispatcher for the Node vessel. Readiness, the finite Pronaos, Oracle, Herm FLOW-map, and Bulb caps register
+synchronous namespace claims with it; duplicate route keys refuse registration. A claimed face may perform
+asynchronous handler work, but the dispatcher does not preempt it with a terminal refusal. Ordinary HTTP that
+no face claims — including `/undeclared` and ordinary GET `/ws` — receives `404` with `cache-control:
+no-store`. Focused receipts pass `tests/http-face-dispatcher.test.ts` and
+`tests/http-face-integration.test.ts`: 2 files, 5 tests. This integration is independent of WebSocket
+upgrade handling, Docker daemon/image/live-container proof, carrier choice, deferred MCP fixes, and the
+clock-law migration; it claims only synchronous HTTP ownership and uniform refusal.
+
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
 bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
@@ -1192,6 +1202,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EZMfer9xYP9Yk6WZwZ2bBZheSCcafqhFFMnS_5S7xPU
+<<^ code="&#x0003;">>ni:///sha-256;2HTlq2LMnWmRr0tjzWnq1EM785ed794izjLHeyMi2kY
 
 <<^ code="&#x0004;" -> to="?">>
