@@ -5,7 +5,7 @@
 # Stages:
 #   deps         — install workspace deps (layer-cached)
 #   build        — compile the Node runtime dependency graph + Vite web surface
-#   serve        — lararium-node WS server (web artifact copied for a held static-route decision)
+#   serve        — lararium-node peer with optional receipt-backed Pronaos arrival
 #   mcp-runtime  — minimal stdio MCP server
 #
 # Auth env vars (all optional — graceful fallback to local-dev):
