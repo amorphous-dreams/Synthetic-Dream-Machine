@@ -21,7 +21,7 @@ help:
 	@echo "  make docker-build  Build serve + mcp Docker images"
 	@echo "  make docker-dev    docker compose --profile dev (tsx watch)"
 	@echo "  make docker-qa     docker compose --profile qa (built, ports exposed)"
-	@echo "  make docker-prod   docker compose --profile prod (hardened, no ports)"
+	@echo "  make docker-prod   docker compose --profile prod (direct Node vessel, lares/ read-only)"
 	@echo "  make docker-smoke  docker compose --profile qa-smoke (stdio smoke tests)"
 
 # ---------------------------------------------------------------------------

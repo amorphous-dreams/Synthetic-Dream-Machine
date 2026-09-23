@@ -237,6 +237,8 @@ globs   = [
 
 # ''The Node process-readiness face — aftermath crossing, 2026-09-22.'' The Codex Lares records the bounded Node-only health seam: `/api/health` begins at `503 {"status":"starting"}` and turns `200 {"status":"ready"}` only after the selected Herm or Lararium branch has completed its UDS setup; GET/HEAD stand alone, unsupported methods refuse `405`, all responses carry `cache-control: no-store`, and shutdown disposes the face. The face owns no peer identity, capability or authority, Pronaos route, Oracle state or freshness, document truth, causal order, or carrier health, and it leaves `/`, `/oracle`, `/ws`, and arbitrary API paths to their existing owners. Focused readiness tests pass 2/2; Node typecheck and build pass. This crossing chooses no NGINX/Caddy, reverse proxy, Compose shape, or deployment topology. Files crossed: `packages/lararium-node/src/readiness-face.ts`, `packages/lararium-node/tests/readiness-face.test.ts`, the Node barrel, and `main.ts`; this ledger and the Codex roadmap record the aftermath. Audit receipt: the prior composition row matches the current explicit web-root/artifact-record seam, so no composition-row re-truing is required in this pass. Law: a process setup signal earns a narrow health face only when it refuses to impersonate identity, authority, content, or deployment truth.
 
+# ''The Pronaos QA runtime-wiring crossing — QA-only, 2026-09-22.'' The `serve` image copies the ignored Web receipt to `/app/pronaos-build/pronaos-artifact.json`; only `lararium-qa` supplies `LAR_PRONAOS_WEB_ROOT=/app/packages/lararium-web/dist` and `LAR_PRONAOS_ARTIFACT_RECORD=/app/pronaos-build/pronaos-artifact.json`. The daemon-free `tools/pronaos-runtime-wiring.mjs` witness checks the actual Dockerfile/Compose binding, validates the loaded finite receipt through Mesh, then hashes every named Web byte under its declared root. The focused witness passes the built receipt and deliberate moved/relocated, missing, invalid, and tampered weakenings. This crossing proves QA wiring and finite receipt/hash refusal only: no Docker daemon, image build, or live Node-container route ran; no NGINX/Caddy was selected; production direct-port policy is unchanged; and MCP work remains deferred. Files crossed: `Dockerfile`, `docker-compose.yml`, `tools/pronaos-runtime-wiring.mjs`, and its focused test. Law: a QA vessel may exercise a finite prepared shore only when the receipt, named bytes, and refusal controls cross together without pretending to prove deployment topology.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -250,6 +252,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W8IdauKqdlg-sCQ6Rl1d2uEcDsTlcyHa8N6uwV-e3JQ
+<<^ code="&#x0003;">>ni:///sha-256;0HaqbNg_s1orbI6pW4IOcl9Z4quWc2w8kbROfDh8kQg
 
 <<^ code="&#x0004;" -> to="?">>

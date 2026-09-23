@@ -748,6 +748,16 @@ typecheck and build pass. Carrier/deployment selection remains open: this receip
 Caddy nor a topology. The composition row agrees with the current explicit web-root/artifact-record seam;
 no composition-row re-truing is required in this pass.
 
+# ''Pronaos QA runtime-wiring — CLOSED QA-only, 2026-09-22.'' The `serve` image copies the Web build's
+ignored finite receipt to `/app/pronaos-build/pronaos-artifact.json`; only the `lararium-qa` Compose service
+supplies the two Pronaos inputs, `/app/packages/lararium-web/dist` and that receipt path. The daemon-free
+`tools/pronaos-runtime-wiring.mjs` witness checks the actual Dockerfile/Compose wiring, loads the prepared
+receipt, validates it through the Mesh contract, resolves each named file under the declared Web root, and
+recomputes every named SHA-256. Its focused test passes the actual built receipt plus positive and deliberate
+moved, missing, invalid, and tampered-input weakenings. This closes QA wiring and finite-receipt/hash coverage
+only: it proves no Docker daemon, image build, or live Node-container route; selects no NGINX/Caddy carrier;
+leaves the production direct-port policy unchanged; and leaves MCP fixes deferred.
+
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
 bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
@@ -1156,6 +1166,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6PrE3NmrkH3FVwVmxkDwbpqIWQdbJJ0jjvm-7juSepI
+<<^ code="&#x0003;">>ni:///sha-256;66_rhjH7o5i1Sr0IlRWZM_5f145w03-z9q9Mi8vxGV4
 
 <<^ code="&#x0004;" -> to="?">>

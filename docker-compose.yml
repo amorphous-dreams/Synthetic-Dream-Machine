@@ -56,7 +56,7 @@ services:
     ports:
       - "4321:4321"
 
-  # ─── qa — built serve image, browser QA on :4321 ───────────────────────────
+  # ─── qa — built Node vessel + explicit Pronaos composition, browser QA on :4321
   lararium-qa:
     profiles: [qa]
     build:
@@ -66,6 +66,10 @@ services:
     volumes: *serve-volumes-rw
     environment:
       NODE_ENV: qa
+      # The Web shore and its finite receipt are separate explicit inputs. This
+      # profile exercises Node's composed Pronaos; it remains a direct Node vessel.
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
       <<: *auth-env
     ports:
       - "4321:4321"
@@ -76,7 +80,7 @@ services:
       retries: 5
       start_period: 15s
 
-  # ─── prod — hardened, lares/ read-only, no debug ports ─────────────────────
+  # ─── prod — direct Node vessel, lares/ read-only, port policy unchanged ────
   lararium-prod:
     profiles: [prod]
     build:

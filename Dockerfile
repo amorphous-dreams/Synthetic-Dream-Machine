@@ -53,11 +53,11 @@ RUN pnpm --filter @lararium/node... build
 RUN pnpm --filter @lararium/web... build
 
 # ---------------------------------------------------------------------------
-# Stage 3: serve — lararium-node WS server; static web serving remains unproven
+# Stage 3: serve — lararium-node WS server with an optional explicit Pronaos shore
 #
-# The image carries the built web artifact beside the Automerge meme-sync WebSocket.
-# `packages/lararium-node/src/main.ts` currently exposes WS/oracle behavior without a
-# general static HTTP handler, so this copy does not claim to serve `/`.
+# The image carries the built web artifact and its finite Pronaos receipt beside the
+# Automerge meme-sync WebSocket. A profile must opt into the shore with the two exact
+# LAR_PRONAOS_* paths; copying bytes alone never widens Node's route ownership.
 # lares/ is always mounted at runtime — never baked in.
 # ---------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-slim AS serve
@@ -87,6 +87,7 @@ COPY --from=build /app/packages/lararium-sensorium/dist    ./packages/lararium-s
 COPY --from=build /app/packages/lararium-sensorium/package.json ./packages/lararium-sensorium/package.json
 COPY --from=build /app/packages/lararium-web/dist           ./packages/lararium-web/dist
 COPY --from=build /app/packages/lararium-web/public         ./packages/lararium-web/public
+COPY --from=build /app/.pronaos-build/pronaos-artifact.json ./pronaos-build/pronaos-artifact.json
 COPY --from=build /app/genesis                             ./genesis
 
 # lares/ mounted at runtime — never baked in
