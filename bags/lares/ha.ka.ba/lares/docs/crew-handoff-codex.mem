@@ -758,6 +758,20 @@ moved, missing, invalid, and tampered-input weakenings. This closes QA wiring an
 only: it proves no Docker daemon, image build, or live Node-container route; selects no NGINX/Caddy carrier;
 leaves the production direct-port policy unchanged; and leaves MCP fixes deferred.
 
+# ''Clock-law crossing — Oracle pointer freshness is an active violation, 2026-09-22.'' The current signed
+Oracle pointer still carries `expiry`: Node's `oracle-read-face.ts` and `bulb-read-face.ts` produce it from
+`Date.now()` and renew it on heartbeat intervals, while Mesh's `oracle-read-client.ts` defaults consumer
+verification to `Date.now()` and `oracle-substrate.ts` rejects a pointer after local expiry. The carriage
+peer-merge path also passes `Date.now()` at `carriage-caps.ts:272`. This violates the standing law even
+though each clock is local: a wall-clock observation is still deciding whether a signed shared pointer may
+be accepted. The early-alpha direction is to accept a signed causal version/`prev`/content-addressed
+snapshot lineage and remove expiry plus heartbeat from that contract; the unused Bulb pointer route and
+its persistence/renewal path should then be retired after a caller audit. `packages/lararium-mesh/src/
+carriage-caps.ts` is an active shared overlap between carriage and Oracle pulling, so it is a coordination
+boundary for the change, not a decision or merge result. Remaining liveness theorem: local silence or a
+missing heartbeat cannot reject a pointer that is otherwise valid — peer loss, partition, and slow delivery
+must remain explicit observations rather than causal invalidity. No source change is claimed by this crossing.
+
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
 bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
@@ -1166,6 +1180,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;66_rhjH7o5i1Sr0IlRWZM_5f145w03-z9q9Mi8vxGV4
+<<^ code="&#x0003;">>ni:///sha-256;Q5r6fS1pw5vHSRxyyEEqVpU_TQOMAg4RRZDhxTK9E2o
 
 <<^ code="&#x0004;" -> to="?">>

@@ -239,6 +239,8 @@ globs   = [
 
 # ''The Pronaos QA runtime-wiring crossing — QA-only, 2026-09-22.'' The `serve` image copies the ignored Web receipt to `/app/pronaos-build/pronaos-artifact.json`; only `lararium-qa` supplies `LAR_PRONAOS_WEB_ROOT=/app/packages/lararium-web/dist` and `LAR_PRONAOS_ARTIFACT_RECORD=/app/pronaos-build/pronaos-artifact.json`. The daemon-free `tools/pronaos-runtime-wiring.mjs` witness checks the actual Dockerfile/Compose binding, validates the loaded finite receipt through Mesh, then hashes every named Web byte under its declared root. The focused witness passes the built receipt and deliberate moved/relocated, missing, invalid, and tampered weakenings. This crossing proves QA wiring and finite receipt/hash refusal only: no Docker daemon, image build, or live Node-container route ran; no NGINX/Caddy was selected; production direct-port policy is unchanged; and MCP work remains deferred. Files crossed: `Dockerfile`, `docker-compose.yml`, `tools/pronaos-runtime-wiring.mjs`, and its focused test. Law: a QA vessel may exercise a finite prepared shore only when the receipt, named bytes, and refusal controls cross together without pretending to prove deployment topology.
 
+# ''The clock-law / Oracle pointer crossing — design handback, 2026-09-22.'' Existing pointer freshness remains load-bearing wall-clock behavior: `packages/lararium-node/src/oracle-read-face.ts` and `bulb-read-face.ts` produce signed `expiry` values with `Date.now()` and renew them on heartbeat intervals; `packages/lararium-mesh/src/oracle-read-client.ts` supplies `Date.now()` to consumer verification; `oracle-substrate.ts` rejects expired pointers; and the shared `packages/lararium-mesh/src/carriage-caps.ts` peer-merge path passes its own `Date.now()` into the pull. This violates the no-global-now law even though the clocks are local, because silence/freshness becomes acceptance authority. The proposed early-alpha direction removes expiry and heartbeat from the pointer contract and accepts only a signed causal version/`prev`/content-addressed snapshot lineage; the currently unused Bulb pointer route plus persistence/renewal path is a retirement candidate after caller audit. `carriage-caps.ts` is named as the active coordination boundary where the overlap must be talked through, not as a silently chosen merge. Remaining theorem: local silence cannot reject a valid pointer; peer loss, partition, and slow delivery remain observations, not causal invalidity. No source change or implementation receipt is claimed. Files crossed: this ledger and the Codex roadmap only. Law: a clock may report a local observation, never decide the standing of a signed causal relation.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -252,6 +254,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0HaqbNg_s1orbI6pW4IOcl9Z4quWc2w8kbROfDh8kQg
+<<^ code="&#x0003;">>ni:///sha-256;gHVH38hJm7tz1whF5vErjCccUsYfK_b5kKoxj30Y7gI
 
 <<^ code="&#x0004;" -> to="?">>
