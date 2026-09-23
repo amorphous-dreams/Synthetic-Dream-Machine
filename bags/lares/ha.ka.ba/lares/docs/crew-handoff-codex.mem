@@ -736,6 +736,17 @@ phase is deployment topology/readiness/carrier selection: bind the generated/hel
 and harden the selected carrier's route, cache, trusted-forwarding, and loss controls. This in-flight source
 seam claims no commit ID, production NGINX/Caddy deployment, Docker topology, or household proof.
 
+# ''Node process-readiness face — aftermath receipt, 2026-09-22.'' The readiness seam owns only exact
+`GET`/`HEAD /api/health` on the existing Node HTTP server. It answers `503 {"status":"starting"}` until
+the selected Herm or Lararium boot path has completed its local UDS setup, then answers
+`200 {"status":"ready"}`; unsupported methods answer `405`, and every response carries
+`cache-control: no-store`. The face disposes with the selected boot path. Its state reports only this
+process's setup posture: it does not assert peer identity, capability or authority, Pronaos delivery,
+Oracle availability or freshness, document truth, causal order, or carrier health. Focused readiness tests
+prove 503→200, HEAD/405, disposal, and non-ownership of `/`, `/oracle`, and arbitrary API paths; Node
+typecheck and build pass. Carrier/deployment selection remains open: this receipt chooses neither NGINX nor
+Caddy nor a topology. The prior composition-row wording remains a separate re-truing item.
+
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
 bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
@@ -1144,6 +1155,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hQi5ht_Ww9t_QElAfrKxT7c2nbi10lp9cNZZcliKzsw
+<<^ code="&#x0003;">>ni:///sha-256;1GzvYBLHY1QC_C4Uc-J7EujYSmw8AQyfeyeKvdzNPTs
 
 <<^ code="&#x0004;" -> to="?">>

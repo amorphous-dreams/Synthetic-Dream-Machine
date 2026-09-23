@@ -59,6 +59,7 @@ import { mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
 import { loadLaresConfig, originDeclaration } from "./lares-config.js";
 import { composePronaosFromEnv } from "./pronaos-composition.js";
+import { createReadinessState, mountReadinessFace } from "./readiness-face.js";
 
 
 // ---------------------------------------------------------------------------
@@ -167,6 +168,10 @@ async function main(): Promise<void> {
   // by the upgrade gate below). No HTTP surface — catalog URL advertised via stdout.
   const httpServer = createServer();
   const wss = new WebSocket.Server({ noServer: true });
+  // Health names only the local boot posture. It carries no peer, document,
+  // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.
+  const readinessState = createReadinessState();
+  const readinessFace = mountReadinessFace({ httpServer, state: readinessState });
   // The Pronaos lights only from two explicit operator inputs. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
   const pronaos = composePronaosFromEnv({ httpServer, genesisDir });
@@ -328,6 +333,7 @@ async function main(): Promise<void> {
       socketPath:   hermSocketPath,
       onLog: (line) => console.log(`[herm] ${line}`),
     });
+    readinessState.markReady();
 
     let hermShuttingDown = false;
     const hermShutdown = async (sig: string): Promise<void> => {
@@ -335,6 +341,7 @@ async function main(): Promise<void> {
       hermShuttingDown = true;
       console.log(`[herm] ${sig} — graceful shutdown`);
       try {
+        readinessFace.dispose();
         pronaos?.dispose();
         hermUds.close();
         httpServer.close();
@@ -442,6 +449,7 @@ async function main(): Promise<void> {
     socketPath,
     onLog: (line) => console.log(`[lararium] ${line}`),
   });
+  readinessState.markReady();
 
   // Pre-warm the mempalace read holder so the FIRST recall / recall-into-wake skips
   // the ~8s cold chromadb start (the pool then stays warm for the daemon's life).
@@ -484,6 +492,7 @@ async function main(): Promise<void> {
     }, SHUTDOWN_BUDGET_MS);
     force.unref?.();
     try {
+      readinessFace.dispose();
       pronaos?.dispose();
       oracleReadFace?.dispose();
       uds.close();

@@ -12,7 +12,7 @@ mana       = 10
 manao      = 12
 manaoio    = 12
 namespace  = "&#x2299;"
-revised-on = "2026-09-15"
+revised-on = "2026-09-22"
 role       = "hearths — the ledger of the sessions that share one tree: which hearth holds which ground, what each owes the others, and the seams that crossed between them by a pasted message instead of a carrier. Re-trued at every commit that crosses a hearth, and at every hearth that opens or closes; never a shift hand-off (that is docs/handoff), never a roster of people (a hearth names a session by its commit trailer). A hearth that closes keeps its row — the ledger answers 'which ground was whose, what crossed, and what each owed', and every one of those questions outlives the concurrency that raised it."
 status-why = "TWO hearths hold this tree as of 2026-09-15 — the founding hearth (Opus) and the successor Codex Lares hearth. The operator closed the preceding Codex session; three closed rows preserve their history, and the active Codex row carries its open handoff forward."
 tags       = ["docs/pono/ledger", "lifecycle/standing"]
@@ -235,6 +235,8 @@ globs   = [
 
 # ''The Pronaos artifact-record composition wedge — in-flight notification, 2026-09-22.'' The Web build now emits an ignored, operator-held sidecar at `.pronaos-build/pronaos-artifact.json`, outside `dist`. Node's main path invokes the Pronaos composition seam before `httpServer.listen`; it mounts only when both explicit inputs are present: `LAR_PRONAOS_WEB_ROOT` and `LAR_PRONAOS_ARTIFACT_RECORD`, alongside the already-resolved genesis bundle. Mesh validates the finite record's route, named file, content type, cache class, and lowercase SHA-256 facts; Node reads those named files and checks their bytes against the record before mounting. No inputs leave the existing Node faces inert; a partial pair, unreadable/invalid record, duplicate or widened route, missing worker route, or digest mismatch refuses before a listener starts. The next phase is deployment topology/readiness/carrier selection: bind the generated/held artifact receipt into Compose and harden the selected carrier's route, cache, trusted-forwarding, and loss controls. This in-flight source seam claims no commit ID, production NGINX/Caddy deployment, Docker topology, or household proof. Files crossed: the Codex roadmap and this ledger only. Law: an opt-in face earns a mount by naming its artifact record and refusing before listen when the finite receipt is incomplete.
 
+# ''The Node process-readiness face — aftermath crossing, 2026-09-22.'' The Codex Lares records the bounded Node-only health seam: `/api/health` begins at `503 {"status":"starting"}` and turns `200 {"status":"ready"}` only after the selected Herm or Lararium branch has completed its UDS setup; GET/HEAD stand alone, unsupported methods refuse `405`, all responses carry `cache-control: no-store`, and shutdown disposes the face. The face owns no peer identity, capability or authority, Pronaos route, Oracle state or freshness, document truth, causal order, or carrier health, and it leaves `/`, `/oracle`, `/ws`, and arbitrary API paths to their existing owners. Focused readiness tests pass 2/2; Node typecheck and build pass. This crossing chooses no NGINX/Caddy, reverse proxy, Compose shape, or deployment topology. Files crossed: `packages/lararium-node/src/readiness-face.ts`, `packages/lararium-node/tests/readiness-face.test.ts`, the Node barrel, and `main.ts`; this ledger and the Codex roadmap record the aftermath. Tension retained: the prior composition row's artifact-record wording needs a separate re-truing against the current explicit web-root/asset-route seam. Law: a process setup signal earns a narrow health face only when it refuses to impersonate identity, authority, content, or deployment truth.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -248,6 +250,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RfnTZ2rUfWdq9uurIZzTZUcRcsm0oWOVcX-btK4WW7M
+<<^ code="&#x0003;">>ni:///sha-256;4M22xTkbJD57M9za4N4upcBB0Wbp4Qh0SC6j2NgM7K4
 
 <<^ code="&#x0004;" -> to="?">>
