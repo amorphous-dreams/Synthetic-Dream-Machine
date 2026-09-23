@@ -222,4 +222,36 @@ describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () 
     expect(niCount).toBe(1);
     expect(verifyBcc(after)).toBe("ok");
   });
+
+  test("★ RED: a SHIFTED check followed by MORE real content (not just EOT) still gets REPLACED ★", () => {
+    // The corpus is not always a clean STX…ETX…EOT-end-of-file shape: a fixture that packs other
+    // frame codepoints, or a carrier with trailing material, legitimately carries MORE past the check
+    // than whitespace-then-EOT. `classifyPostamble` over the WHOLE tail then reads `foreign`, not
+    // `bcc` — so a fix that only reads the whole tail still falls through to the bare insert and
+    // reproduces the duplication `ni:///…NEW ni:///…OLD` right where the check stands, with the
+    // trailing content carried along untouched either way. Every check this grammar writes stands
+    // ALONE on the line right after the frame's close, though, so `restamp` must also read THAT line
+    // alone through the same classifier before it gives up and inserts.
+    const file = path.join(dir, "shifted-with-tail.mem");
+    const source = readFileSync(SOURCE, "utf8");
+    const span = checkSpan(source);
+    if (!span) throw new Error("fixture must carry a complete frame");
+    // Shift the check by one space AND append real trailing content after it — content a bare
+    // whole-tail `classifyPostamble` read cannot absorb into "bcc".
+    const shifted = source.slice(0, span.end) + " " + source.slice(span.end) + "\n<<~ loulou \"lar:///ha.ka.ba/lares/api/pono\">>\n";
+    writeFileSync(file, shifted);
+    expect(verifyBcc(shifted)).toBe("unchecked");
+    expect(classifyPostamble(shifted.slice(span.end)).kind, "the whole tail must read foreign — that is the case this test guards").toBe("foreign");
+
+    meme("normalize", file);
+    const after = readFileSync(file, "utf8");
+    const afterSpan = checkSpan(after);
+    if (!afterSpan) throw new Error("normalize must not tear the frame");
+    const postamble = after.slice(afterSpan.end);
+    const niCount = (postamble.match(/ni:\/\/\//g) ?? []).length;
+    expect(niCount, `postamble after normalize: ${JSON.stringify(postamble.slice(0, 200))}`).toBe(1);
+    expect(verifyBcc(after)).toBe("ok");
+    // The trailing content survived the re-stamp untouched.
+    expect(after).toContain('<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>');
+  });
 });

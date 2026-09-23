@@ -369,6 +369,17 @@ function readNamed(f: string): string {
  * still classifies `bcc` to it. The mint branch reads that classification: `bcc` means a check stands
  * and gets REPLACED (the check and the whitespace ahead of it, both consumed); anything else means the
  * slot is genuinely empty and gets the bare insert.
+ *
+ * THE WHOLE TAIL FIRST, THEN JUST ITS OWN LINE. `classifyPostamble` reads `bcc` only when the slot it is
+ * handed reduces to nothing but the check — true for the common case, a framed carrier ending right
+ * after its EOT. It is NOT true for a carrier that packs more than this one block into the file (a
+ * corpus fixture demonstrating other frame codepoints, trailing prose, another block entirely): there
+ * the tail past ETX carries real content beyond the check, `classifyPostamble` reads `foreign`, and the
+ * whole-tail reading alone would fall through to a bare insert and reproduce the duplication. Every
+ * check this grammar writes stands ALONE on the line right after the frame's close, though, so a second
+ * reading — `classifyPostamble` over just that first line — still catches it: `bcc` there means the
+ * check occupies its own line and gets replaced the same way, with everything past that line carried
+ * through untouched.
  */
 function restamp(text: string): string {
   const standing = verifyBcc(text);
@@ -381,13 +392,16 @@ function restamp(text: string): string {
     return text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want);
   }
   const after = text.slice(span.end);
-  const post = classifyPostamble(after);
-  if (post.kind === "bcc") {
-    // A check stands, but not adjacent — REPLACE it (and the whitespace `classifyPostamble` tolerated
-    // ahead of it) with the fresh mint glued to the span's close, rather than leaving it stranded beside
-    // a second, newly-adjacent one.
-    const trimmed = after.replace(/^\s+/, "");
-    const rest = trimmed.startsWith(post.digest) ? trimmed.slice(post.digest.length) : after;
+  const wholeTail = classifyPostamble(after);
+  const eol = after.indexOf("\n");
+  const ownLine = eol < 0 ? wholeTail : classifyPostamble(after.slice(0, eol));
+  const standingDigest = wholeTail.kind === "bcc" ? wholeTail.digest : ownLine.kind === "bcc" ? ownLine.digest : null;
+  if (standingDigest !== null) {
+    // A check stands somewhere in the slot — REPLACE it (and the whitespace ahead of it) with the fresh
+    // mint glued to the span's close, rather than leaving it stranded beside a second, newly-adjacent
+    // one. The digest is the check's own hash: unique enough in practice to locate unambiguously.
+    const at = after.indexOf(standingDigest);
+    const rest = at < 0 ? after : after.slice(at + standingDigest.length);
     return text.slice(0, span.end) + want + rest;
   }
   return text.slice(0, span.end) + want + after;
