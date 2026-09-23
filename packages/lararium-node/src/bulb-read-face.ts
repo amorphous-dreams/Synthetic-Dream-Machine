@@ -38,8 +38,6 @@ import { atomicWriteFileSync } from "./fs-atomic.js";
 import { buildBulb, type BulbArtifact, type BulbBlob, type BulbManifest } from "./bulb.js";
 import type { OracleReadFace } from "./oracle-read-face.js";
 
-/** The bulb pointer freshness lease (read against the puller's LOCAL clock). */
-const BULB_POINTER_TTL_MS = 5 * 60_000;
 /** Persists the monotone pointer version so it never regresses across a reboot (a reset would read as rollback). */
 const BULB_STATE_FILE = "bulb-pointer-state.json";
 
@@ -209,9 +207,8 @@ export async function mountBulbReadFace(args: {
 
   let pointer: OraclePointer | null = null;
 
-  // Re-publish the pointer. A manifest-cid CHANGE (a re-baked bulb) bumps the version + advances the lineage; an Ea
-  // breath (no change) renews the freshness lease on the SAME version — the pointer is a LEASE, so a static bulb
-  // must keep breathing or a puller rejects it stale (the corm-lease: frozen offline, advanced online).
+  // Publish the pointer from the manifest's causal version and lineage. An unchanged
+  // manifest remains valid until a higher signed version supersedes it.
   async function reissue(): Promise<void> {
     const changed = manifestCid !== persisted.cid;
     const version = changed ? persisted.version + 1 : persisted.version;
@@ -228,9 +225,6 @@ export async function mountBulbReadFace(args: {
     }
   }
   await reissue();
-  const ea = setInterval(() => { void reissue(); }, Math.floor(BULB_POINTER_TTL_MS / 2));
-  ea.unref();
-
   const CORS: Record<string, string> = {
     "access-control-allow-origin":  "*",
     "access-control-allow-methods": "GET, HEAD, OPTIONS",
@@ -277,7 +271,7 @@ export async function mountBulbReadFace(args: {
   };
   httpServer.on("request", onRequest);
 
-  return { dispose: () => { clearInterval(ea); httpServer.off("request", onRequest); } };
+  return { dispose: () => { httpServer.off("request", onRequest); } };
 }
 
 /** The bulb manifest a puller GETs first (re-exported so the kindle transport speaks the same type). */
