@@ -182,3 +182,54 @@ describe("normalizeMemeSource — sigil close spacing", () => {
     expect(normalizeMemeSource(src).text).toContain(wrapped);
   });
 });
+
+/**
+ * THE ONE DOOR — the operator's ruling. Every clause writes `text` through `ClauseSeat.apply`,
+ * and states its class AT THAT CALL SITE: never a list of clause names a caller keeps in sync
+ * elsewhere. A clause that declares nothing (a typo, a dynamically-registered clause, this test
+ * driving the door directly) reads as GRAMMAR — propose, never apply — because that is the one
+ * class this door may default to without moving a byte nobody asked to move.
+ */
+import { ClauseSeat } from "../src/meme-normalize.js";
+
+describe("ClauseSeat — the class declares itself on the clause, never a caller's list", () => {
+  test("★ RED: a clause with NO declared class moves no byte — it reads as a grammar preference ★", () => {
+    const seat = new ClauseSeat("hello", {});
+    // @ts-expect-error — the missing class is exactly the failure this door forecloses at runtime.
+    seat.apply(undefined, "goodbye", (applied: boolean) => (applied ? "applied" : "proposed"));
+    expect(seat.text, "an undeclared class must never silently apply").toBe("hello");
+    expect(seat.grammarChanged).toBe(true);
+    expect(seat.grammarNotes).toEqual(["proposed"]);
+    expect(seat.notes).toEqual([]);
+  });
+
+  test("CONTROL: an explicit frame class applies unconditionally", () => {
+    const seat = new ClauseSeat("hello", {});
+    seat.apply("frame", "goodbye", () => "frame note");
+    expect(seat.text).toBe("goodbye");
+    expect(seat.notes).toEqual(["frame note"]);
+    expect(seat.grammarChanged).toBe(false);
+  });
+
+  test("CONTROL: an explicit grammar class proposes by default and applies with { grammar: true }", () => {
+    const proposed = new ClauseSeat("hello", {});
+    proposed.apply("grammar", "goodbye", (applied) => (applied ? "applied" : "proposed"));
+    expect(proposed.text).toBe("hello");
+    expect(proposed.grammarNotes).toEqual(["proposed"]);
+
+    const applied = new ClauseSeat("hello", { grammar: true });
+    applied.apply("grammar", "goodbye", (a) => (a ? "applied" : "proposed"));
+    expect(applied.text).toBe("goodbye");
+    expect(applied.grammarNotes).toEqual(["applied"]);
+  });
+
+  test("a no-op call (next === text) reports nothing, on either class", () => {
+    const seat = new ClauseSeat("hello", { grammar: true });
+    seat.apply("frame", "hello", () => { throw new Error("must not be called on a no-op"); });
+    seat.apply("grammar", "hello", () => { throw new Error("must not be called on a no-op"); });
+    expect(seat.text).toBe("hello");
+    expect(seat.notes).toEqual([]);
+    expect(seat.grammarNotes).toEqual([]);
+    expect(seat.grammarChanged).toBe(false);
+  });
+});

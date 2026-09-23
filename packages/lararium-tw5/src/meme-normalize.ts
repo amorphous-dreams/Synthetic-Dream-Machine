@@ -194,19 +194,76 @@ export interface NormalizeResult {
   readonly grammarChanged: boolean;
 }
 
+/** A clause's authority, stated AT THE CLAUSE that writes — never a list a caller keeps in sync. */
+export type ClauseClass = "frame" | "grammar";
+
+/**
+ * THE ONE DOOR EVERY CLAUSE WRITES `text` THROUGH.
+ *
+ * The operator's ruling: the class DECLARES ITSELF ON THE CLAUSE, and a clause that declares
+ * nothing must never silently auto-apply. `text` stays private-in-spirit — every rewrite in
+ * `normalizeMemeSource` below goes through `apply()`, which asks the class FIRST. A clause that
+ * forgets to state one (a typo, a future dynamically-registered clause, code exercising this
+ * door directly) reads as `"grammar"` — PROPOSE, don't apply — because that is the one class
+ * this door may default to without moving a byte nobody asked to move. `"frame"` is never a
+ * default; it is only ever an explicit spelling at the call site.
+ *
+ * FRAME (the envelope the house mints and owns — DOCTYPE address, sigil spellings, child-slot
+ * roots, meta columns, the block check the CLI layers on top) carries exactly one right answer
+ * and applies unconditionally; its note lands in `notes`.
+ *
+ * GRAMMAR (authored bytes — today, only the named-parameter separator) is a PREFERENCE, never an
+ * answer: both spellings build the identical TiddlyWiki attribute at a CALL site (measured
+ * against the fork and pinned 5.4.1 — only the recorded `assignmentOperator` differs), while a
+ * DEFINITION's own parameter list refuses `=` outright (`\procedure kue(held="x")` reads the
+ * whole token `held="x"` as the parameter's NAME, no default — confirmed on both readers). So a
+ * grammar clause applies only when the caller opted in (`opts.grammar`); either way it flips
+ * `grammarChanged` and lands a note in `grammarNotes` — applied or proposed, the caller's
+ * `noteFor` supplies the wording for each.
+ */
+export class ClauseSeat {
+  text: string;
+  readonly notes: string[] = [];
+  readonly grammarNotes: string[] = [];
+  grammarChanged = false;
+
+  constructor(src: string, private readonly opts: NormalizeOptions) {
+    this.text = src;
+  }
+
+  /**
+   * Write `next` over `this.text` under `clauseClass` — a no-op (`next === this.text`) reports
+   * nothing on either class. `noteFor(applied)` supplies the note's wording: for a FRAME clause
+   * `applied` is always `true`; for a GRAMMAR clause it reflects whether `opts.grammar` let the
+   * write actually land.
+   */
+  apply(clauseClass: ClauseClass | undefined, next: string, noteFor: (applied: boolean) => string): void {
+    if (next === this.text) return;
+    // AN UNDECLARED CLASS READS AS GRAMMAR — the one direction a missing declaration can fail
+    // safely. `"frame"` is the only spelling that ever unlocks an unconditional write.
+    if (clauseClass === "frame") {
+      this.text = next;
+      this.notes.push(noteFor(true));
+      return;
+    }
+    this.grammarChanged = true;
+    const applied = Boolean(this.opts.grammar);
+    this.grammarNotes.push(noteFor(applied));
+    if (applied) this.text = next;
+  }
+}
+
 /**
  * Canonicalize a single-carrier meme source. Returns the normalized text, a
  * `changed` flag, and human-readable notes naming each transform applied.
  *
  * FRAME clauses (the envelope) always apply. GRAMMAR clauses (authored bytes) apply only when
  * `opts.grammar` is true — otherwise they are reported through `grammarNotes` and move no byte.
+ * Every rewrite below runs through `ClauseSeat.apply`, stating its class at the call site.
  */
 export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): NormalizeResult {
-  const notes: string[] = [];
   const flags: string[] = [];
-  const grammarNotes: string[] = [];
-  let grammarChanged = false;
-  let text = src;
+  const seat = new ClauseSeat(src, opts);
 
   // ── 0. The declaration names the grammar, then the address ───────────────
   //
@@ -214,22 +271,22 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // content drift in a round-trip witness — three library indexes arrived that way from two writers
   // that each spelled the line by hand. The one authority lives beside the type constant; a carrier
   // holding a shorter or older declaration takes it here, which is what a normalize gesture is for.
-  const decl = /^<<!DOCTYPE[^>\n]*>>/m.exec(text);
+  const decl = /^<<!DOCTYPE[^>\n]*>>/m.exec(seat.text);
   if (decl && decl[0] !== DECLARATION) {
-    text = text.slice(0, decl.index) + DECLARATION + text.slice(decl.index + decl[0].length);
-    notes.push("declaration: took the grammar's name before its address");
+    const next = seat.text.slice(0, decl.index) + DECLARATION + seat.text.slice(decl.index + decl[0].length);
+    seat.apply("frame", next, () => "declaration: took the grammar's name before its address");
     flags.push("declaration");
   }
   // ABSENCE RAISES NOTHING HERE. This gesture repairs what a carrier wrote; whether a `.mem` on disk
   // must carry a declaration at all is the doctype witness's question, and normalize also runs over
   // fragments and authoring drafts that legitimately carry no head.
 
-  // ── 1. SOH opener (namespace embed + spacing) ────────────────────────────
-  const nsRaw = metaNamespace(text);
+  // ── 1. SOH opener (namespace embed + spacing) — FRAME AUTHORITY ──────────
+  const nsRaw = metaNamespace(seat.text);
   const want = nsRaw === null ? "" : decodeEntities(nsRaw).trim();
   // The carrier's own opener stands outside every fence; an opener SHOWN in a fence ahead of it holds.
-  const sohMask = fencedSpans(text);
-  const soh = [...text.matchAll(new RegExp(SOH_OPENER_RE.source, "g"))].find((m) => !inMask(sohMask, m.index!));
+  const sohMask = fencedSpans(seat.text);
+  const soh = [...seat.text.matchAll(new RegExp(SOH_OPENER_RE.source, "g"))].find((m) => !inMask(sohMask, m.index!));
   if (soh) {
     // BOTH SPELLINGS READ, ONE SPELLING WRITES. A head stating named params reads from them; a head
     // from before the params carries its namespace as bare glyphs in front of the control entity, and
@@ -243,14 +300,14 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     // spacing and param order together, so one rewrite settles every drift the head can carry.
     const rebuilt = `${soh[1]} code="${code}"${want ? ` namespace="${want}"` : ""}`;
     if (soh[0]! !== rebuilt) {
-      text = text.slice(0, soh.index) + rebuilt + text.slice(soh.index + soh[0]!.length);
-      notes.push(have !== want
+      const next = seat.text.slice(0, soh.index) + rebuilt + seat.text.slice(soh.index + soh[0]!.length);
+      seat.apply("frame", next, () => have !== want
         ? (want ? `SOH namespace homed to "${want}" (from meta)` : `SOH namespace cleared (meta declares none)`)
         : `SOH opener spacing canonicalized`);
     }
   }
 
-  // ── 2. Sigil close spacing ───────────────────────────────────────────────
+  // ── 2. Sigil close spacing — FRAME AUTHORITY ──────────────────────────────
   //
   // BOTH SPELLINGS READ, ONE SPELLING WRITES — the same law the opener above carries. `lar-sigil`
   // matches a close with or without the space before `>>`, so a carrier written either way arrives;
@@ -258,10 +315,12 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // sigil closes on the line it opens, and a match crossing a newline reaches from a bare `<<` in
   // prose to the next sigil and rewrites everything between.
   // A close SHOWN inside a fence or a code span is held text, and held text moves no byte.
+  // TRAILING WHITESPACE CARRIES NO AUTHORED MEANING — no hand chooses "one space before `>>`" as
+  // a spelling — so this stays FRAME even though it touches every sigil, not only framing ones.
   {
     let tightened = 0;
-    const mask = fencedSpans(text);
-    text = text.replace(/<<([^\n>]*(?:>(?!>)[^\n>]*)*)>>/g, (whole, inner: string, offset: number) => {
+    const mask = fencedSpans(seat.text);
+    const next = seat.text.replace(/<<([^\n>]*(?:>(?!>)[^\n>]*)*)>>/g, (whole, inner: string, offset: number) => {
       if (inMask(mask, offset)) return whole;
       const trimmed = inner.replace(/[ \t]+$/, "");
       if (trimmed === inner) return whole;
@@ -269,7 +328,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
       return `<<${trimmed}>>`;
     });
     if (tightened > 0) {
-      notes.push(`sigil close spacing: ${tightened} close${tightened === 1 ? "" : "s"} tightened`);
+      seat.apply("frame", next, () => `sigil close spacing: ${tightened} close${tightened === 1 ? "" : "s"} tightened`);
     }
   }
 
@@ -277,27 +336,24 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   //
   // The memetic standard writes key=value; TiddlyWiki reads both spellings, so a carrier holding the colon
   // renders identically and only its spelling drifts. A DEFINITION stays untouched — a parameter list refuses
-  // `=` — and so does every scheme colon, which the quoted-value test excludes by shape.
+  // `=` (`\procedure kue(held="x")` reads the whole token `held="x"` as the parameter's NAME, no default —
+  // confirmed on both readers) — and so does every scheme colon, which the quoted-value test excludes by shape.
   //
-  // THIS IS A HAND'S SPELLING, NOT THE HOUSE'S ENVELOPE. Both spellings build the identical attribute
-  // (measured against the TiddlyWiki fork and pinned 5.4.1: only the recorded `assignmentOperator`
+  // THIS IS A HAND'S SPELLING, NOT THE HOUSE'S ENVELOPE. Both spellings build the identical attribute at a
+  // CALL site (measured against the TiddlyWiki fork and pinned 5.4.1: only the recorded `assignmentOperator`
   // differs), so rewriting it changes no reading — which is exactly why it must never apply unasked. The
   // house holds a PREFERENCE here, never an answer: it proposes (named per site, below) and only a hand
   // — or an explicit `--grammar` — disposes.
   {
-    const sep = normalizeParamSeparators(text);
+    const sep = normalizeParamSeparators(seat.text);
     if (sep.moved > 0) {
-      grammarChanged = true;
-      if (opts.grammar) {
-        text = sep.text;
-        grammarNotes.push(`named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} took the equals sign`);
-      } else {
-        grammarNotes.push(`named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} would take the equals sign — rerun with --grammar to apply`);
-      }
+      seat.apply("grammar", sep.text, (applied) => applied
+        ? `named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} took the equals sign`
+        : `named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} would take the equals sign — rerun with --grammar to apply`);
     }
   }
 
-  // ── 4. Child-slot roots ──────────────────────────────────────────────────
+  // ── 4. Child-slot roots — FRAME AUTHORITY ─────────────────────────────────
   //
   // A CHILD SLOT NAMES THE STRING IT ADDRESSES. The carrier mints `parentUri#/name`, so an open that
   // omits the slash says one thing and resolves another, and every reader pairing them by name carries
@@ -305,13 +361,13 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // sibling of its own parent, which reads as structure and addresses as none. No slot is exempt from a
   // root: every slot a carrier declares opens a child, and a child answers to an address.
   {
-    const lines = text.split("\n");
+    const lines = seat.text.split("\n");
     const stack: Array<string | null> = [];
     // The fence mask pairs a fence with its own length, so a shorter fence line a longer fence
     // holds opens nothing.
-    const mask = fencedSpans(text);
+    const mask = fencedSpans(seat.text);
     let rooted = 0, offset = 0;
-    const next = lines.map((line) => {
+    const rebuilt = lines.map((line) => {
       const start = offset;
       offset += line.length + 1;
       if (inMask(mask, start)) return line;
@@ -326,47 +382,57 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
       return out;
     });
     if (rooted > 0) {
-      text = next.join("\n");
-      notes.push(`child slot: ${rooted} open${rooted === 1 ? "" : "s"} rooted at the carrier`);
+      seat.apply("frame", rebuilt.join("\n"), () => `child slot: ${rooted} open${rooted === 1 ? "" : "s"} rooted at the carrier`);
     }
   }
 
-  // ── 5. Framing ends (positional → named) ─────────────────────────────────
+  // ── 5. Framing ends (positional → named) — FRAME AUTHORITY ───────────────
   // A framing sigil SHOWN inside a fence or a code span is held text, and keeps its spelling.
-  let ends = 0;
-  const openMask = fencedSpans(text);
-  text = text.replace(FRAME_OPEN_ENDS, (m: string, head: string, arrow: string, target: string, tail: string, offset: number) => {
-    if (inMask(openMask, offset)) return m;
-    ends += 1;
-    // QUOTED IS CANONICAL — TiddlyWiki's own parser reads every control sigil, and a quoted value is
-    // the form it types without a special case. A target arriving already quoted keeps its one pair.
-    const bare = target.replace(/^"(.*)"$/, "$1");
-    return `${head}from="?"${arrow}to="${bare}"${tail}`;
-  });
-  const closeMask = fencedSpans(text);
-  text = text.replace(FRAME_CLOSE_ENDS, (m: string, head: string, tail: string, offset: number) => {
-    if (inMask(closeMask, offset)) return m;
-    ends += 1;
-    return `${head}to="?"${tail}`;
-  });
-  if (ends > 0) notes.push(`framing ends: ${ends} sigil${ends === 1 ? "" : "s"} named from= and to=`);
+  {
+    let ends = 0;
+    const openMask = fencedSpans(seat.text);
+    let working = seat.text.replace(FRAME_OPEN_ENDS, (m: string, head: string, arrow: string, target: string, tail: string, offset: number) => {
+      if (inMask(openMask, offset)) return m;
+      ends += 1;
+      // QUOTED IS CANONICAL — TiddlyWiki's own parser reads every control sigil, and a quoted value is
+      // the form it types without a special case. A target arriving already quoted keeps its one pair.
+      const bare = target.replace(/^"(.*)"$/, "$1");
+      return `${head}from="?"${arrow}to="${bare}"${tail}`;
+    });
+    const closeMask = fencedSpans(working);
+    working = working.replace(FRAME_CLOSE_ENDS, (m: string, head: string, tail: string, offset: number) => {
+      if (inMask(closeMask, offset)) return m;
+      ends += 1;
+      return `${head}to="?"${tail}`;
+    });
+    if (ends > 0) {
+      seat.apply("frame", working, () => `framing ends: ${ends} sigil${ends === 1 ? "" : "s"} named from= and to=`);
+    }
+  }
 
-  // ── 6. Meta columns ──────────────────────────────────────────────────────
+  // ── 6. Meta columns — FRAME AUTHORITY ─────────────────────────────────────
   //
   // ONE COLUMN LAW, TWO RENDERERS. The disk projector re-emits a carrier's meta from its fields and
   // aligns the equals-signs to the longest key; a fence an author spelled a column wider read clean
   // here and moved under the projector, so the two renders disagreed on bytes no value changed.
   // The same law re-aligns the fence here, and the two renders agree by construction.
   {
-    const fence = metaFence(text);
+    const fence = metaFence(seat.text);
     if (fence) {
       const aligned = alignMetaTomlColumns(fence[2]!);
       if (aligned !== fence[2]!) {
-        text = text.slice(0, fence.index + fence[1]!.length) + aligned + text.slice(fence.index + fence[1]!.length + fence[2]!.length);
-        notes.push("meta columns: equals-signs aligned to the longest key");
+        const next = seat.text.slice(0, fence.index + fence[1]!.length) + aligned + seat.text.slice(fence.index + fence[1]!.length + fence[2]!.length);
+        seat.apply("frame", next, () => "meta columns: equals-signs aligned to the longest key");
       }
     }
   }
 
-  return { text, changed: text !== src, notes, flags, grammarNotes, grammarChanged };
+  return {
+    text: seat.text,
+    changed: seat.text !== src,
+    notes: seat.notes,
+    flags,
+    grammarNotes: seat.grammarNotes,
+    grammarChanged: seat.grammarChanged,
+  };
 }
