@@ -228,6 +228,7 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
@@ -238,6 +239,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9OkoFb6jmB7OuUC8TQWVpwxqKTnS7MHpPoaStZ1P2Kk
+<<^ code="&#x0003;">>ni:///sha-256;7hf5QWOZfWkVk3Wp3sJ2tGGEaPz4y0BJexrE5t7MobI
 
 <<^ code="&#x0004;" -> to="?">>

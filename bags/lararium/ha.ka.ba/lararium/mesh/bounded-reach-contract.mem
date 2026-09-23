@@ -247,6 +247,7 @@ before any deployment path opens.
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
@@ -259,6 +260,6 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_7ZURssjDmvDa7fu6XsNv4QozTz75Av19-ml9t-zbs8
+<<^ code="&#x0003;">>ni:///sha-256;cWNnmcEqL-w9_tI5FMaqdaX2DmW2k2Jk3Ekk4kh8AB0
 
 <<^ code="&#x0004;" -> to="?">>

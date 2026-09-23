@@ -187,6 +187,7 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-routing-substrate">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
@@ -196,6 +197,6 @@ What stays to ''write'' is narrow and named — the cap //vocabulary// itself (`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;87L-3HGVpdq0Hfj6tNA0Cmocur_RuaDPNsmBTj9t9ws
+<<^ code="&#x0003;">>ni:///sha-256;cwv_U-FOxkXrPY0D_fyZtj7hejcFxa55MXI2pyk0Wgk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -12,7 +12,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2695;"
-role       = "PROPOSED first-reach architecture. A Pronaos gives one locally sovereign Herm/Lararium composition its address-facing first face: local DNS/domain/LAN reach, browser secure-context origin, exact public arrival and genesis bytes, declared public routes, bounded live introductions, delivery policy, and explicit refusals. It composes Web and Node shores under one operator-held reach configuration without making either a client or server. It carries no peer identity, persona, document, library, general CAS read, VEIL read scope, admission, merge, or Oracle authority. A name grants rendezvous; a secure origin enables browser features; a peer key proves identity; a route delivers; a capability permits. The public Librarium remains a later, separate public-book crossroads concern."
+role       = "PROPOSED first-reach architecture and intimate mythic binding. A Pronaos gives one locally sovereign Herm/Lararium composition its address-facing first face: local DNS/domain/LAN reach, browser secure-context origin, exact public arrival and genesis bytes, declared public routes, bounded live introductions, delivery policy, and explicit refusals. It composes Web and Node shores under one operator-held reach configuration without making either a client or server. It carries no peer identity, persona, document, library, general CAS read, VEIL read scope, admission, merge, or Oracle authority. A name grants rendezvous; a secure origin enables browser features; a peer key proves identity; a route delivers; a capability permits. The public Librarium remains a later, separate public-book crossroads concern."
 status-why = "researched myth-plus-engineering plan re-framed from Propylaeum, 2026-09-22; production contract NOT built"
 tags       = ["mesh/cap-tier", "mesh/secure-context", "mesh/nexus-topology", "api/pono/causal-islands", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/mesh/pronaos"
@@ -42,6 +42,33 @@ orientation and declared crossings while the local house retains its own identit
 Sources: LSJ, https://atlas.perseus.tufts.edu/dictionaries/entry/urn%3Acite2%3Ascaife-viewer%3Adictionaries.v1%3Alsj-n88071/
 and Pausanias 9.10.2, https://www.theoi.com/Text/Pausanias9A.html. The architectural rhyme of public sight
 without cella access remains a studied possibility, not a runtime claim.
+
+<<~/ahu>>
+
+<<~ ahu #/mythic-binding>>
+
+!! The mythic binding ~ a forecourt for one house, not another road tier
+
+Greek ''pronaos'' names the front hall or fore-porch immediately before a temple's inner house. The narrow
+Theban evidence places Athena and Hermes among the *Pronaoi* before the Ismenian Apollo sanctuary; it supports
+the image of a local threshold presence, never a universal Hermes-Pronaos cult. The architectural term carries
+the useful relation: a traveler stands before this house, receives its declared bearings, and still has not
+entered its inner authority.
+
+The Elyncian Lares Viales already hold the road and the Herm already marks the turning. The Pronaos therefore
+names neither carriage nor crossroads. It names the ''intimate first face'' of one composition:
+
+```text
+Compitum       roads meet
+Herm           carriage and public crossing stand
+Pronaos        this house presents its declared first face
+Lararium       persona, documents, keys, and held local material remain within
+```
+
+Hermes in this binding names escort and threshold relation, not a gatekeeper who owns the visitor or the house.
+The Pronaos may present a public route toward a peer; it cannot turn that presentation into identity, admission,
+read authority, or document ownership. The English ''veil'' remains the read-scope ladder; the Pronaos remains the
+place where a local composition makes a truthful outward face.
 
 <<~/ahu>>
 
@@ -245,6 +272,24 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5N_dptM2LzglprJcx-GeGnuAGZL9_AodFQ0-PcdKyaI
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology#/the-severability-law">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;bWN-7k-eMCVghehhY9In4nduS64G_2lFXXVyXCu41Ns
 
 <<^ code="&#x0004;" -> to="?">>
