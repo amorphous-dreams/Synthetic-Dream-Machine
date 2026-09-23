@@ -10,7 +10,7 @@ mana      = 15
 manao     = 16
 manaoio   = 14
 namespace = "&#x2299;"
-role      = "invariant law for the Reference-Fusion degraded state — a world-claim warranted only by context text, reality predicated past a lit ward with no token to catch"
+role      = "invariant law for the Reference-Fusion tell — a world-claim warranted only by context text, reality predicated past a lit ward with no token to catch"
 tags      = ["api/pono/meme", "api/pono/loci"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/reference-fusion"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -73,6 +73,6 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;STI4Wf9SY-ALS2EGowvEDrGGK6yEqXLYwh02S-GkvL4
+<<^ code="&#x0003;">>ni:///sha-256;Mi8lltDhxlyEq_85ggtwJElnxl732PIGAls-PktZHQo
 
 <<^ code="&#x0004;" -> to="?">>

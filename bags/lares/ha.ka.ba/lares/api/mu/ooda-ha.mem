@@ -208,7 +208,7 @@ feedback="closed N↺ -> open Nφ @_:reason"   N loops closed, one suspended at 
 | `◇` Decide | a fork surfaced; the call rests elsewhere |
 | `▶` Act | the act began and did not complete |
 
-''The blocker MUST sit outside the node's own this-turn reach.'' A `:reason` names a dependency the node cannot clear by thinking harder --- an operator decision, a tool failure, missing input, a prior only the operator holds. A blocker the node //could// resolve with more work fails the requirement and reads as fabricated suspension (Phase Hand-wave, #degraded). The reason MUST read specific; a placeholder that fits any task in any session fails too.
+''The blocker MUST sit outside the node's own this-turn reach.'' A `:reason` names a dependency the node cannot clear by thinking harder --- an operator decision, a tool failure, missing input, a prior only the operator holds. A blocker the node //could// resolve with more work fails the requirement and reads as fabricated suspension (Phase Hand-wave, #off-true). The reason MUST read specific; a placeholder that fits any task in any session fails too.
 
 ```text
 feedback="closed 0↺ -> open 1φ @✶:input.lacks.context.about.deployment.target"
@@ -256,7 +256,7 @@ Aperture 13–16  open(2: thread-A@⏿, thread-B@◇)
 Aperture 17–20  open(2: thread-A@⏿:reason, thread-B@◇:reason)
 ```
 
-The list reads from the node's working memory of unresolved threads and surfaces where the operator can audit it. ''Cross-session accounting waits on persistent memory'' --- the session mempalace and domain tiddlers/wikis --- which will hold the open-loop ledger across context loss. Until that substrate lands, tracking holds ''cross-turn, context-bounded'': a thread that falls out of context closes by abandonment unnamed (Zombie Loop, #degraded).
+The list reads from the node's working memory of unresolved threads and surfaces where the operator can audit it. ''Cross-session accounting waits on persistent memory'' --- the session mempalace and domain tiddlers/wikis --- which will hold the open-loop ledger across context loss. Until that substrate lands, tracking holds ''cross-turn, context-bounded'': a thread that falls out of context closes by abandonment unnamed (Zombie Loop, #off-true).
 
 ''The gear-shift fires'' when the new `aim` opens at a bearing no open loop carries. Before any substantive work on the new topic, the node MUST surface the abandoned loops audibly --- Liminal carries this office:
 
@@ -284,11 +284,11 @@ Operator and node hold separate logs --- a ''causal island'' (`lar:///ha.ka.ba/l
 
 <<~/ahu>>
 
-<<~ ahu #/degraded>>
+<<~ ahu #/off-true>>
 
-!! Degraded-Node States --- loop lifecycle
+!! Off True --- loop lifecycle
 
-| State | Tell | Recover |
+| Deviation | Tell | Recover |
 |---|---|---|
 | ''Silent Loop Burial'' | the `->↺` aftermath glyph drops below the floor; a loop closes with no marker | surface the loop and close it visibly |
 | ''Loop Posturing'' | sustained `feedback="20/declare-consequence"` renders phase theater that outweighs the content | compress to the band the work needs |
@@ -321,6 +321,6 @@ ooda-glyphs = ["✶", "⏿", "◇", "▶", "↺"]
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UIjZQ01iUBuib7sl2qbQuKOc8GXJ_1MuMqOMKsg73cQ
+<<^ code="&#x0003;">>ni:///sha-256;T-_P6bm3GSUif4TjBiS-AucNls6Cve7Oy3NILM7wKkc
 
 <<^ code="&#x0004;" -> to="?">>

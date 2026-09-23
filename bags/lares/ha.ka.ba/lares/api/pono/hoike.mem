@@ -10,7 +10,7 @@ l-space    = "stable"
 mana       = 16
 manao      = 16
 manaoio    = 16
-role       = "canon law of the hoike layer — kept records of contested rulings: hoike (\\testimony), kue (\\dissent), saksi (\\witness); the eight laws, the witness law, degraded states, lineage"
+role       = "canon law of the hoike layer — kept records of contested rulings: hoike (\\testimony), kue (\\dissent), saksi (\\witness); the eight laws, the witness law, off-true tells, lineage"
 status-why = "the hoike testimony rite, filed rather than built"
 tags       = ["kind/rite"]
 title      = "lar:///ha.ka.ba/lares/api/pono/hoike"
@@ -80,11 +80,11 @@ A saksi composes into any record, not only a hoike: canon promotions, spirit dep
 
 <<~/ahu>>
 
-<<~ ahu #/degraded>>
+<<~ ahu #/off-true>>
 
-!! Degraded States
+!! Off True
 
-| state | tell | recover |
+| deviation | tell | recover |
 |-|-|-|
 | Manufactured Machloket | a fake dispute filed for texture | release it; the gate reads ≥ meme |
 | Zombie Hoike | keys never glanced; the record turns to sediment | touch-triggered key-glance on every file visit |
@@ -113,6 +113,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_sWStGqJBkk8g8mcOeB1MCsS6b7KKlh2JcOqXDgLkEs
+<<^ code="&#x0003;">>ni:///sha-256;TRoMbQE71h0ehK9EKh4Ed6xcQYoA2XaTRGWU7Kr1q-o
 
 <<^ code="&#x0004;" -> to="?">>

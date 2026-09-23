@@ -202,8 +202,8 @@ droppable red aside and never welds the number to the meaning.
 
 !!! A row that MOVES ACROSS ~ the transition (trigger · guard · effect)
 
-A relation that carries a thing //across// conditions — a phase change, a degraded-state
-recovery — moves as transition. The state-machine grammar runs verb-forward by nature: a
+A relation that carries a thing //across// conditions — a phase change, an off-true
+re-standing — moves as transition. The state-machine grammar runs verb-forward by nature: a
 transition names ''what fires it, what gates it, what it does'', and never pronounces the
 after welded to the before. The trigger does the work the dead water would have smuggled.
 
@@ -221,6 +221,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nRukZqRYLBX5HZfyljJEtHnX97BrxLkBiQ6hwmU4L6M
+<<^ code="&#x0003;">>ni:///sha-256;rR6cMI8oc8TQcbOsa5WDUnDR3Qjxp0OBb6Wc80jx5Wc
 
 <<^ code="&#x0004;" -> to="?">>

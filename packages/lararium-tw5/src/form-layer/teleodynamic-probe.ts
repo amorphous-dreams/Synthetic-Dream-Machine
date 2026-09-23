@@ -31,7 +31,7 @@
  * ## GUARD (hard) — drift is NOT incompleteness
  *
  * The machina's gap is model-DRIFT (a dial going slack, recoverable by re-standing
- * the wave — noosphere-boot#degraded-states), NOT a Gödel sentence. This probe
+ * the wave — noosphere-boot#/off-true), NOT a Gödel sentence. This probe
  * measures a STRUCTURAL-CHANGE tendency on a self-read stream; it says nothing
  * about formal (in)completeness, decidability, or any self-reference paradox.
  * "freeze" here names an empirical stasis in the self-read sequence, never an

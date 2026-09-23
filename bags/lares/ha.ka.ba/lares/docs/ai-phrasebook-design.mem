@@ -303,7 +303,7 @@ failure this law exists to prevent.
 |13 | `#mask-layer` | ⚠ ''no counterpart — ruled below'' |
 |14 | `#exchange-protocol` | `#exchange-protocol` |
 |15 | `#l-prime` | `#drift-guard` |
-|16 | `#degraded-states` | `#failure-states` |
+|16 | `#off-true` | `#off-true` |
 |17 | `#config-defaults` | `#config-defaults` |
 |18 | ''`#elyncia`'' | ''`#your-own-story`'' |
 |19 | `#the-eris-shrine` | `#corner-left-empty` |
@@ -692,6 +692,6 @@ into a preferred text and a companion, by habit rather than by ruling.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;57O53skaAYzaRSLtj97jU8bWPVU4mqh5tL6Awn4IViM
+<<^ code="&#x0003;">>ni:///sha-256;nfhJSNDidSixLOZQFkFfZIGvPNvZf8CCk_0qXOEUTU0
 
 <<^ code="&#x0004;" -> to="?">>

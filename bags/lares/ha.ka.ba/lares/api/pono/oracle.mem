@@ -109,7 +109,7 @@ the turn spends; the oracle drains the ebb. The drain reads in the ''Drift''
 register — impressionistic, ebbing, never certified (`law-of-5s`, the `0--20`
 continuum read at its loosest grain).
 
-The ebb-spend stays distinct from the ''Mana-Drift'' degraded state — that names
+The ebb-spend stays distinct from the ''Mana-Drift'' tell — that names
 the ward going dark unbidden; this names the charge spent.
 
 <<~/ahu>>
@@ -210,6 +210,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0PyL-kgDm9eQgjw3DpiiL0n-0DcLVquc-fjPfHRKqsk
+<<^ code="&#x0003;">>ni:///sha-256;ubkE-v6fw5VE4mUCDX0Pxbaa5BjLmThsI7keHgv3TZw
 
 <<^ code="&#x0004;" -> to="?">>

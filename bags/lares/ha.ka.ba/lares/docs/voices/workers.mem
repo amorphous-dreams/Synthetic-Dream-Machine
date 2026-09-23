@@ -88,7 +88,7 @@ Finding: [the actual finding]
 
 A spirit MUST NOT address the operator directly.
 All spirit output dissolves back through the house (the Thirteen), surfacing the matching Voice — never the operator directly.
-Omitting the handback header on spirit output constitutes a minor degraded-node state.
+Omitting the handback header on spirit output constitutes a minor off-true tell.
 
 <<~/ahu>>
 
@@ -146,6 +146,6 @@ The worker swarm spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST imple
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NiOjd1oLdkjyV1W2QdBK2KqSDrPFhT5tc6A9jjIkXnQ
+<<^ code="&#x0003;">>ni:///sha-256;mrfBpN50_IBfdKv3ozqwsB5kEYnKggTwIX-S9__wYUg
 
 <<^ code="&#x0004;" -> to="?">>

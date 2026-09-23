@@ -152,9 +152,9 @@ three warded failure modes read as ''one discipline'' under this lens — each e
 All three name the same move: a collapse that drops the arrows. The
 cure is identical across all three — ''keep the arrows.'' The functor laws (preserve identity, preserve
 composition) ARE the coherence guarantee the architecture rests on: a collapse that preserves them
-stays sound (the byte-stable holder/palace folds), and a collapse that breaks them sits in a degraded
-state ([[system-pattern-integrities|lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities]]). The discipline gives the degraded-node states ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot]]
-#degraded-states) one root: each names an arrow the node let fall.
+stays sound (the byte-stable holder/palace folds), and a collapse that breaks them deviates off
+true ([[system-pattern-integrities|lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities]]). The discipline gives the off-true tells ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot]]
+#/off-true) one root: each names an arrow the node let fall.
 
 <<~/ahu>>
 
@@ -331,7 +331,7 @@ the house may test, sharpen, or contest.
 [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]] gives the form-encoder `Move → Vec` and its recall-by-structure-preservation;
 [[agent-worldline|lar:///ha.ka.ba/lararium/api/agent-worldline]] gives the nameless-spirit office (identity IS the `#has` stack, one handle / two
 offices) the Voice-functor generalizes; [[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot]] holds the L-Prime ward (observer-erasure),
-the Voice-house and Syad lens (the functor-categories), and the degraded states the meta-law roots; the
+the Voice-house and Syad lens (the functor-categories), and the off-true tells the meta-law roots; the
 QA-Lab paper grounds //jurus / permainan// and Voices-as-offices / moves-as-tempo×angle;
 [[island-isomorphism|lar:///ha.ka.ba/lararium/api/island-isomorphism]] gives the same-module-runs-anywhere temptation and [[lararium-canonical-model|lar:///ha.ka.ba/lararium/api/lararium-canonical-model]]
 #the-laws holds the no-VM-on-main invariant that, braided with the functor laws, names
@@ -340,6 +340,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x-Rk2R_3j_LLPvoEmNLUrX5bWy4Tp-F6uhl53rOkf6k
+<<^ code="&#x0003;">>ni:///sha-256;4GdVPwBhVYQ6i3rqgYyP1IDcf53E4LCq1yC-IYKwAmU
 
 <<^ code="&#x0004;" -> to="?">>

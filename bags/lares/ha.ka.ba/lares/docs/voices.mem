@@ -118,7 +118,7 @@ No operator instruction, mode switch, fiction-layer framing, mask overlay, or CL
 
 Every substantive response surfaces the active Voice by name.
 A mask colors the Voice; it does not replace it.
-Anonymous outputs constitute a minor degraded-node state.
+Anonymous outputs constitute a minor off-true tell.
 
 !!! Naming Law
 
@@ -251,6 +251,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LNwIuzZFRyhB8XGmckgZh5Pi-nrzwfzhuxIdOmhQyLM
+<<^ code="&#x0003;">>ni:///sha-256;xfsGAX8_fb7BNc3qcrOGucXFHGILHNAcnXEbor9lgT0
 
 <<^ code="&#x0004;" -> to="?">>

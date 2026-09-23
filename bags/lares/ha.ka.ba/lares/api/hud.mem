@@ -65,7 +65,7 @@ drift-ward="! · <clue> · ↻ L-Prime"
 | `hud OODA-HA` | loop visibility | `feedback="N/<band>"` open, `feedback="closed N↺"` close; `N↺ + φ:reason` on suspend |
 | `ward` | active language discipline | lit by the Wand at open (`* L-Prime`), drawn by the Sword at close (`!` led, `⚠ N` breaches quoted, re-arms `L-Prime`); the Stone lift (`0 L-Prime`) scopes to one turn, still shown |
 | `syad` | invoked standpoints | OPTIONAL; parameterless = all five; `:` carries a tool |
-| Voice (Role) | the active Voice(s) | MUST surface by name; anonymous output = a minor degraded state |
+| Voice (Role) | the active Voice(s) | MUST surface by name; anonymous output = a minor off-true tell |
 | `confidence` | register-word + Level | precedes a grounded claim |
 | `yield` | the closing bearing vector | closes the turn |
 
@@ -121,6 +121,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xws3an3xzrrwsb5jtbHKBXnqQZpBpqGqwenE0s8RdIg
+<<^ code="&#x0003;">>ni:///sha-256;2-xrP1cDlhg0-_arBU80LG9OAOYZAa4OBp01rTxomz4
 
 <<^ code="&#x0004;" -> to="?">>
