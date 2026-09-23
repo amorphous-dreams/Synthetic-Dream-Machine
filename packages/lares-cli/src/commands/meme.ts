@@ -64,7 +64,7 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission } from "@lararium/tw5/meme-markdown";
 import {
-  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan,
+  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble,
   readCarrierLifecycle, checkCarrierLifecycle,
 } from "@lararium/tw5";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
@@ -357,9 +357,29 @@ function readNamed(f: string): string {
  *
  * ANCHORED AT THE SPAN, never a whole-file replace: `ni:///…` reads as prose in a carrier that
  * discusses checks, and a global swap would rewrite the lesson along with the stamp. A mismatch REPLACES
- * the stale trailer; an absent one INSERTS adjacent to the span's close, because `verifyBcc` demands
- * EXACT adjacency — the emitter writes the mark immediately after the ETX sigil, and a shifted check
- * reads as postamble content and verifies as nothing.
+ * the stale trailer, byte-anchored the same way.
+ *
+ * `unchecked` NAMES TWO SHAPES, and the mint branch has to tell them apart. `verifyBcc` demands EXACT
+ * adjacency — the emitter writes the mark immediately after the ETX sigil — so a check that stands but
+ * is even one byte off reads `unchecked` too, the same verdict a truly bare carrier reads. Minting
+ * unconditionally on `unchecked` therefore GLUED a fresh check to the span's close and left whatever
+ * already stood there untouched: a carrier whose check had merely drifted came out wearing two,
+ * `ni:///…NEW ni:///…OLD`. `classifyPostamble` (`block-check.ts`) is the reader that already draws this
+ * distinction — it tolerates the whitespace `verifyBcc` refuses, so a drifted-but-otherwise-intact check
+ * still classifies `bcc` to it. The mint branch reads that classification: `bcc` means a check stands
+ * and gets REPLACED (the check and the whitespace ahead of it, both consumed); anything else means the
+ * slot is genuinely empty and gets the bare insert.
+ *
+ * THE WHOLE TAIL FIRST, THEN JUST ITS OWN LINE. `classifyPostamble` reads `bcc` only when the slot it is
+ * handed reduces to nothing but the check — true for the common case, a framed carrier ending right
+ * after its EOT. It is NOT true for a carrier that packs more than this one block into the file (a
+ * corpus fixture demonstrating other frame codepoints, trailing prose, another block entirely): there
+ * the tail past ETX carries real content beyond the check, `classifyPostamble` reads `foreign`, and the
+ * whole-tail reading alone would fall through to a bare insert and reproduce the duplication. Every
+ * check this grammar writes stands ALONE on the line right after the frame's close, though, so a second
+ * reading — `classifyPostamble` over just that first line — still catches it: `bcc` there means the
+ * check occupies its own line and gets replaced the same way, with everything past that line carried
+ * through untouched.
  */
 function restamp(text: string): string {
   const standing = verifyBcc(text);
@@ -368,9 +388,23 @@ function restamp(text: string): string {
   const want = bccOf(text);
   // A torn frame and a source without a complete frame both answer null here — neither bounds a span to attest to.
   if (!span || !want) return text;
-  return standing === "mismatch"
-    ? text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want)
-    : text.slice(0, span.end) + want + text.slice(span.end);
+  if (standing === "mismatch") {
+    return text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want);
+  }
+  const after = text.slice(span.end);
+  const wholeTail = classifyPostamble(after);
+  const eol = after.indexOf("\n");
+  const ownLine = eol < 0 ? wholeTail : classifyPostamble(after.slice(0, eol));
+  const standingDigest = wholeTail.kind === "bcc" ? wholeTail.digest : ownLine.kind === "bcc" ? ownLine.digest : null;
+  if (standingDigest !== null) {
+    // A check stands somewhere in the slot — REPLACE it (and the whitespace ahead of it) with the fresh
+    // mint glued to the span's close, rather than leaving it stranded beside a second, newly-adjacent
+    // one. The digest is the check's own hash: unique enough in practice to locate unambiguously.
+    const at = after.indexOf(standingDigest);
+    const rest = at < 0 ? after : after.slice(at + standingDigest.length);
+    return text.slice(0, span.end) + want + rest;
+  }
+  return text.slice(0, span.end) + want + after;
 }
 
 /**

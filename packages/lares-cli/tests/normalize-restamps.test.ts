@@ -35,7 +35,7 @@ import { mkdtempSync, writeFileSync, readFileSync, copyFileSync } from "node:fs"
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { verifyBcc } from "@lararium/tw5";
+import { verifyBcc, checkSpan, classifyPostamble } from "@lararium/tw5";
 
 const REPO = path.resolve(new URL("../../..", import.meta.url).pathname);
 const BIN = path.join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
@@ -154,4 +154,104 @@ describe("meme normalize — the check follows the body", () => {
     }
     // SIX binary spawns; the default 5s budget is the parallel suite's, not this law's.
   }, 30_000);
+});
+
+/**
+ * `restamp`'s mint branch — a SHIFTED check must be REPLACED, never left beside a fresh mint.
+ *
+ * `verifyBcc` demands byte-exact adjacency (carrier-check.ts:177-193) — a check standing even one
+ * space after the frame's close reads `unchecked`, the same verdict a carrier with NO check at all
+ * reads. `restamp`'s mint branch used to treat both alikes: glue the fresh `ni:///…` to the frame's
+ * close and leave whatever already stood there untouched. For the truly-absent case that is correct.
+ * For a SHIFTED check it duplicates: the carrier ends up wearing two checks, `ni:///…NEW ni:///…OLD`,
+ * and every reader downstream of the frame now meets TWO `ni:///` occurrences where the grammar
+ * promises one.
+ *
+ * `classifyPostamble` (block-check.ts) already answers the distinction `restamp` was missing: it
+ * tolerates the whitespace `verifyBcc` refuses, so a shifted-but-otherwise-well-formed check reads
+ * `{ kind: "bcc" }` to it while `verifyBcc` still reads `unchecked`. That gap between the two readers
+ * IS the signal — `restamp` reads it and REPLACES rather than inserts.
+ */
+describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () => {
+  let dir: string;
+
+  beforeAll(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "lares-restamp-dup-"));
+  });
+
+  test("★ RED: a check standing ONE SPACE after the frame gets REPLACED, not duplicated ★", () => {
+    const file = path.join(dir, "shifted.mem");
+    const source = readFileSync(SOURCE, "utf8");
+    const span = checkSpan(source);
+    if (!span) throw new Error("fixture must carry a complete frame");
+    // Insert one space between the frame's close and the standing check — the check itself is
+    // untouched, only its adjacency to ETX is broken.
+    const shifted = source.slice(0, span.end) + " " + source.slice(span.end);
+    writeFileSync(file, shifted);
+    expect(verifyBcc(shifted), "the shift must read unchecked, not ok — that is the whole bug surface").toBe("unchecked");
+    expect(classifyPostamble(shifted.slice(span.end)).kind, "the shifted check must still classify as a standing bcc").toBe("bcc");
+
+    meme("normalize", file);
+    const after = readFileSync(file, "utf8");
+
+    // (a) exactly ONE ni:/// stands after the frame — no second, stranded check.
+    const afterSpan = checkSpan(after);
+    if (!afterSpan) throw new Error("normalize must not tear the frame");
+    const postamble = after.slice(afterSpan.end);
+    const niCount = (postamble.match(/ni:\/\/\//g) ?? []).length;
+    expect(niCount, `postamble after normalize: ${JSON.stringify(postamble.slice(0, 200))}`).toBe(1);
+
+    // (b) classifyPostamble on the text after the frame reads a single bcc, and it is the FRESH digest —
+    // not a foreign/duplicated slot, which is the second face of this defect: `meme check` calls a
+    // duplicated slot foreign, so a carrier `normalize` just "fixed" fails its own canonical check.
+    const post = classifyPostamble(postamble);
+    expect(post.kind, `postamble classified ${JSON.stringify(post)} — a duplicated slot reads foreign`).toBe("bcc");
+    expect(verifyBcc(after)).toBe("ok");
+  });
+
+  test("★ CONTROL: a check ALREADY glued adjacent re-stamps to a single check, before and after the fix ★", () => {
+    const file = path.join(dir, "adjacent-control.mem");
+    copyFileSync(SOURCE, file);
+    expect(verifyBcc(readFileSync(file, "utf8")), "the control fixture must start canonical").toBe("ok");
+
+    meme("normalize", file);
+    const after = readFileSync(file, "utf8");
+    const span = checkSpan(after);
+    if (!span) throw new Error("fixture must carry a complete frame");
+    const niCount = (after.slice(span.end).match(/ni:\/\/\//g) ?? []).length;
+    expect(niCount).toBe(1);
+    expect(verifyBcc(after)).toBe("ok");
+  });
+
+  test("★ RED: a SHIFTED check followed by MORE real content (not just EOT) still gets REPLACED ★", () => {
+    // The corpus is not always a clean STX…ETX…EOT-end-of-file shape: a fixture that packs other
+    // frame codepoints, or a carrier with trailing material, legitimately carries MORE past the check
+    // than whitespace-then-EOT. `classifyPostamble` over the WHOLE tail then reads `foreign`, not
+    // `bcc` — so a fix that only reads the whole tail still falls through to the bare insert and
+    // reproduces the duplication `ni:///…NEW ni:///…OLD` right where the check stands, with the
+    // trailing content carried along untouched either way. Every check this grammar writes stands
+    // ALONE on the line right after the frame's close, though, so `restamp` must also read THAT line
+    // alone through the same classifier before it gives up and inserts.
+    const file = path.join(dir, "shifted-with-tail.mem");
+    const source = readFileSync(SOURCE, "utf8");
+    const span = checkSpan(source);
+    if (!span) throw new Error("fixture must carry a complete frame");
+    // Shift the check by one space AND append real trailing content after it — content a bare
+    // whole-tail `classifyPostamble` read cannot absorb into "bcc".
+    const shifted = source.slice(0, span.end) + " " + source.slice(span.end) + "\n<<~ loulou \"lar:///ha.ka.ba/lares/api/pono\">>\n";
+    writeFileSync(file, shifted);
+    expect(verifyBcc(shifted)).toBe("unchecked");
+    expect(classifyPostamble(shifted.slice(span.end)).kind, "the whole tail must read foreign — that is the case this test guards").toBe("foreign");
+
+    meme("normalize", file);
+    const after = readFileSync(file, "utf8");
+    const afterSpan = checkSpan(after);
+    if (!afterSpan) throw new Error("normalize must not tear the frame");
+    const postamble = after.slice(afterSpan.end);
+    const niCount = (postamble.match(/ni:\/\/\//g) ?? []).length;
+    expect(niCount, `postamble after normalize: ${JSON.stringify(postamble.slice(0, 200))}`).toBe(1);
+    expect(verifyBcc(after)).toBe("ok");
+    // The trailing content survived the re-stamp untouched.
+    expect(after).toContain('<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>');
+  });
 });

@@ -304,3 +304,9 @@ export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
 // The check a carrier carries, and the span it covers. `meme normalize` re-stamps with these, so a
 // carrier whose framing it rewrites leaves the door holding a check that matches the body it follows.
 export { bccOf, verifyBcc, checkSpan } from "./carrier-check.js";
+// What stands in the slot after ETX, before EOT — the ONE reading `restamp` shares with `verifyBcc`
+// rather than re-deriving: a check that stands but is not byte-adjacent reads `unchecked` to the
+// strict verifier and `bcc` here, and that gap is exactly what tells a re-stamp to REPLACE the drifted
+// check instead of minting a second one beside it.
+export { classifyPostamble, BCC_RE } from "./block-check.js";
+export type { Postamble } from "./block-check.js";
