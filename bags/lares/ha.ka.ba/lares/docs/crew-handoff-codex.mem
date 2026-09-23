@@ -103,6 +103,148 @@ failure. MCP fixes remain operator-deferred.
 
 ''P1 research queue — no source change yet.'' First close existing silent epoch-fence omissions at device/face grant doors; a missing or unreachable authority epoch must not fall back to wall time. Next specify daemon PoP replay state using the existing connection nonce, audience, gate binding, and either durable challenge identity or a scoped resource epoch. Then audit contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting separately. Red controls include epoch omission, clock perturbation against identical causal inputs, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Operator choices remain: failure behavior for unavailable epoch evidence; owner of each scoped epoch; durable replay-state scope; whether current expiries are authority or local handoff/UX observations; and whether Keyhive identity-slot expiry belongs to this authority lane.
 
+!! ◇ First-class decision records — two open contracts, not implementation debris
+
+''These records make the human promise explicit before a source policy lands.'' Each record carries the
+support promise, the choices that change that promise, the observable refusal shape, and the tests that can
+separate the choices. Neither record imports a global now, a shared worker store, a universal fail-closed rule,
+or an automatic CRDT resolution.
+
+!!! D-VR · daemon-worker restart contract — OPEN, characterization first
+
+''Decision.'' What must a household be able to recover when the TW5 worker restarts? The vessel and its worker
+remain separate causal islands: separate heaps, logs, and storage scopes. The parent Repo MUST NOT become the
+worker's storage by implication, and a second Repo MUST NOT persist every document merely because the worker can
+read it. The browser's local-first boot promise remains independent; this record governs the daemon's internal
+worker island and its offline reach.
+
+''Support promises.'' The operator chooses one of these named promises, and the runtime must state the promise in
+its receipt:
+
+| option | household promise | storage consequence | absent-resource behavior |
+| ''D-VR-A · offline worker'' | a daemon worker can recover its declared working set while the parent and all peers remain absent | a worker-owned durable replica for an explicitly declared set; bounded compaction and quota required | unavailability of a declared document is a recovery failure, with its document and heads named |
+| ''D-VR-B · parent-attached worker'' | a worker can recover while its parent vessel remains alive; whole-daemon offline restart is outside support | worker state remains ephemeral or bounded to in-flight protocol state; the vessel keeps its own replica | worker-only recovery must name the live parent dependency and refuse when that dependency is absent |
+| ''D-VR-C · capability-pinned hybrid'' | ordinary reads recover through the live vessel; an operator-pinned document recovers offline | only pinned or worker-authored documents persist in the worker island; pin state is an explicit capability/residency fact | an unpinned offline read refuses as ''not resident''; a pinned failure names storage corruption, quota, or missing heads |
+
+''No option wins by prior art.'' D-VR-A spends disk, compaction, corruption recovery, and WASM memory to buy
+offline continuity. D-VR-B preserves the smallest duplicate surface but makes a whole-daemon restart a real
+product boundary. D-VR-C spends vocabulary and operator UX to buy a measured middle. The current `9d/` working
+layer bloat is evidence to characterize, not permission to delete or to introduce a new storage abstraction.
+
+''First action.'' Add accounting to the existing worker storage path before changing it: document id, heads,
+chunk kind, bytes, compaction generation, load/replay duration, and owner island. Re-run the seed that produced
+the ~3.8 MB working-layer document, then compare the same document set under the existing NodeFS, memory-only,
+and live-vessel paths. Keep CRDT compaction distinct from authority epochs: `bag compact` bounds history and
+operator reclaim remains explicit (`lar:///ha.ka.ba/lararium/tw5/compaction-handlers`); an authority lease or
+charter epoch decides who may act (`lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces`). SQLite's journal is
+an analogy for crash-recovery ordering only, never a prescribed Automerge transaction layer.
+
+''D-VR refusal vocabulary.'' The receipt MUST distinguish `worker-parent-required`, `document-not-resident`,
+`storage-corrupt`, `storage-quota`, `replay-incomplete`, and `peer-required`. A process MUST NOT turn any of
+these into a successful empty document or a silent re-fetch. If a CRDT conflict appears, preserve the heads and
+surface the conflict to the operator's Talk Story; do not pick a semantic winner.
+
+''D-VR discriminating matrix.''
+
+* kill only the worker while the parent vessel stays alive; record the selected rehydration path;
+* restart the daemon with no peer under each declared storage mode;
+* restart memory-only with no parent and no peer; require the named refusal where the promise excludes it;
+* write a parent-Repo tombstone and verify convergence after a live worker reconnects;
+* compact while another writer adds a change; verify no unincorporated head disappears;
+* truncate or corrupt one snapshot/chunk; require a bounded refusal or recovery receipt;
+* exceed the working-layer quota; require a controlled refusal before WASM exhaustion;
+* retain document id, heads, chunk sizes, compaction generation, residency/pin state, and owner island in every result.
+
+''D-VR completion.'' The roadmap may close this record only when the operator selects a promise, the existing
+storage path emits its accounting, the matrix distinguishes all four restart situations, and the selected
+offline behavior appears in the capability/residency inventory. A source change that changes the promise gets its
+own aftermath and does not erase the alternate receipts.
+
+!!! D-AE · typed authority-evidence contract — OPEN, relation-scoped
+
+''Decision.'' P1 does not mint a mesh-wide epoch. The existing epoch carriers remain distinct: lease frontier,
+hash-linked charter/seal lineage, PersonaGroup or realm membership, CGKA epoch, and compaction cut. Membership
+still records operator contracts rather than user rosters (`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`).
+Each authority relation names its own owner, signed predecessor or causal witness, audience, resource, and
+replay scope. `lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities` already requires epoch caveats at gate
+time; this record makes the evidence states explicit without choosing one handling policy for every gate.
+
+''Typed evidence outcomes.'' Every relation MUST distinguish these states before it chooses its local policy:
+
+| state | evidence meaning | MUST NOT mean |
+| ''available'' | the verifier holds the named resource-scoped witness and can walk or validate it | a global present |
+| ''unavailable'' | no current witness can be reached or the verifier lacks the required local material | proof that the action is revoked |
+| ''stale'' | a valid older witness exists, but a newer causal head or epoch is known | proof that the holder is malformed |
+| ''malformed'' | bytes, signature, predecessor, audience, resource, or capability shape fails validation | temporary network loss |
+| ''revoked'' | a valid revocation/kapae or later authority state explicitly shadows the grant | mere age or cache absence |
+
+''Local gate policy remains open by relation.'' Admission, delegation, handle use, daemon PoP, and read-only
+observation MAY choose different responses to `unavailable` or `stale` according to their contract. A gate MUST
+never convert `unavailable` into `available` by reading wall time or inferring a realm epoch. A gate MUST reject
+`malformed`; `revoked` MUST reject the affected authority; `stale` MUST either refresh, enter a named
+read-only/provisional mode, or refuse according to the relation; `unavailable` MUST surface its absence and may
+permit only the explicitly contracted local operation. The roadmap does not choose a universal fail-closed rule.
+
+''Minimum relation record.'' A new or audited authority proof names:
+
+```text
+resource · relation · issuer/owner · audience · capability/verb · witness kind
+predecessor or causal head · accepted epoch/chain head · challenge/nonce scope
+replay-state durability · local policy for unavailable/stale/malformed/revoked
+```
+
+Daemon PoP keeps the existing connection nonce, audience, and gate binding. A replay identity MAY persist per
+resource, per connection, or not at all, but the chosen scope MUST appear in the proof and its receipt. Handle and
+KEL continuity stay content-addressed. Keyhive identity-slot expiry remains an explicit fork until its owner and
+failure semantics are named; it does not inherit a bare epoch by proximity.
+
+''D-AE discriminating matrix.''
+
+* hold causal inputs constant while perturbing local wall time; authority output stays identical;
+* remove the current witness; observe the relation's selected `unavailable` policy and preserve the typed result;
+* present an older valid head after a newer head is known; require `stale`, never silent success;
+* alter one signature, predecessor, audience, resource, or capability field; require `malformed`;
+* present a valid grant shadowed by an explicit Kapae/revocation; require `revoked`;
+* replay one challenge at the same audience and gate; require the declared replay result;
+* replay the proof at another audience, resource, method, or epoch; require rejection;
+* break KEL continuity and verify that the contradiction remains readable rather than being auto-folded;
+* submit concurrent CRDT authority records; retain both heads and route semantic resolution to operator/cabal Talk Story.
+
+''D-AE completion.'' Close only after each in-scope relation names its owner and evidence kind, all four typed
+states have receipts, and the operator has selected the local policy for `unavailable` and `stale`. Keep the
+charter epoch, PersonaGroup/realm state, CGKA epoch, and compaction cut as separate fields. No source rewrite may
+collapse them into one global epoch or decide a CRDT/topology outcome silently.
+
+!!! Crosswalk — existing law that constrains both records
+
+* `lar:///ha.ka.ba/lararium/mesh/causal-island` requires separate heap, log, and storage scope; a parent Repo may
+  exchange structured messages with a worker, but it cannot become the worker's implicit replica.
+* `lar:///ha.ka.ba/lararium/api/residency-tiers` makes residency an Island Pool fact, with pinning orthogonal to
+  `wela`/`anu`; D-VR-C must therefore name pin state rather than invent a worker tier.
+* `lar:///ha.ka.ba/lararium/tw5/compaction-handlers` separates compaction history cuts from authority lease
+  epochs and requires operator reclaim; D-VR accounting cannot call a compaction generation an authority epoch.
+* `lar:///ha.ka.ba/lararium/mesh/pronaos` and `pronaos-carriers` already separate finite artifact inventory from
+  the operator-held deployment receipt; the live witness must not promote byte integrity into process ownership.
+* `lar:///ha.ka.ba/lararium/mesh/vessel-caps` and `lar:///ha.ka.ba/lares/api/pono/ability-implies` preserve
+  `pull ⊥ read`: a Herm carries sealed bytes and does not gain document or persona authority.
+* `lar:///ha.ka.ba/lares/api/pono/residency-model` requires conflict detection and recording while Talk Story
+  performs semantic resolution; neither decision record may make Automerge choose for an operator.
+
+!!! ▶ Updated flowstate — enactment order after this scout
+
+# ''Characterize.'' Add accounting and red tests around the existing daemon storage path; no new storage
+  abstraction and no policy rewrite.
+# ''Choose.'' Hand D-VR's measured receipts to the operator, then record the selected restart promise and refusal
+  vocabulary before changing persistence.
+# ''Prove the shore.'' Run the finite Pronaos artifact witness and the separate process/deployment ownership
+  witness. A green artifact receipt never stands in for the latter.
+# ''Walk the household.'' Run Herm, Lararium, and Web peers through relay, Oracle, and WAN loss with separate
+  replicas and explicit capability gates.
+# ''Type authority.'' Audit D-AE relation by relation, carrying the four evidence outcomes and preserving every
+  unresolved CRDT head for Talk Story.
+# ''Evergreen.'' Reconcile source, carriers, generated residue, and this roadmap after each selected policy lands;
+  historical receipts remain visible but cannot reopen closed loops.
+
 ''2026-09-23 reservation aftermath.'' Docker client `29.4.3` stands, but this execution context cannot inspect `/var/run/docker.sock`; `ps`, Compose-project, volume, and network inventory all refuse permission. No container, image, volume, network, port, or process was touched. `27c53999b` therefore makes the Pronaos command choose its executable in-process receipt in this managed runner and prints that origin/container proof remains blocked; a reserved Docker context must inventory and reserve its own project before it proves the live face. A2 likewise remains unrun: no witness/daemon/Vite process stood, but `genesis/seed.json` and generated Node artifacts were dirty with unattributed provenance and no exclusive marker existed. Its next hand must reserve the built-artifact window, record HEAD/input provenance, run only the isolated two-vessel fixture, and prove cleanup before A3 begins. These refusals are evidence of a boundary, never a green Docker or mesh result.
 
 ''Execution discipline.'' At most one destructive or shared-state mesh run stands at once; reserve its project, volumes, ports, and process context before it begins. Build and test source changes in narrow seams, then run their relevant package/typecheck controls. Every major commit receives three explicit aftermath passes: (1) behaviour and deliberate weakening still discriminate; (2) source, comments, package names, generated residue, and roadmap claims read L-Prime and evergreen; (3) affected carrier block checks normalize and source references re-derive. A changed aftermath becomes its own commit. Research returns evidence and unresolved forks before it is converted into source policy; no CRDT or topology fork is silently merged.
@@ -1260,6 +1402,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LvrEhQctoZvuR7-lVdmCuRlkXd8H3xP2BhFk_2MIcU8
+<<^ code="&#x0003;">>ni:///sha-256;5wyHJd9EYJ-BeUJmSxNlV7fzYpq3_583ld5DsQDE9KU
 
 <<^ code="&#x0004;" -> to="?">>
