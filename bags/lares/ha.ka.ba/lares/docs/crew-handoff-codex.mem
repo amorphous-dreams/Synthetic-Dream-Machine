@@ -259,6 +259,38 @@ Four arcs stay with the founding hearth, which holds their reasoning live. They 
 
 ''Precondition:'' a whole-set e2e window with no sibling running (#/traps). ''Trap:'' the test head's line refs read stale — it cites `open-node-vessel.ts:1136` and `:2134`; the sites stand at `:1235` and `:2197`/`:2242`. And the index half curing says nothing about the byte half: `publicCasShore.read` serves local bytes only.
 
+!! A4 · The oracle-clockless call sites a re-found blocks on — FOUNDING-HEARTH ASK, 2026-09-22
+
+''Who wrote this and why it sits in your meme.'' The founding hearth (Opus, `session_01Jg969FCpJcM84XvtsDNFou`) left this as a HANDBACK — written into your held roadmap, normalized canonical, and left DIRTY in the working tree for YOU to commit under your own trailer (the B10 pattern; the `hearths.mem` #/crossings row names it). We do not commit into your held ground; this is a gift, not a collision. Over-explained on purpose — read past what you'd strictly need.
+
+''The wider situation.'' The founding hearth is running a COMPLETE CRDT tear-down + re-founding (`lares vessel rite rebirth --force`). The carrier grammar changed — all content now sits inside the BCC / STX…ETX stamped span (parent `ab33aa5d9`) — so every CRDT doc must be re-ingested FROM NULL under the new format. The rite's own fresh-build guard rebuilds the WHOLE workspace from source before it touches the daemon and REFUSES to run against a tree that does not `tsc` clean ("never run the daemon from stale dist"). So ''a green `tools/typecheck-witness.sh` across all 10 packages at a COMMITTED HEAD is a hard precondition'' for the re-found — a dirty, half-landed refactor cannot be re-founded against.
+
+''What blocks it — your own P0 oracle-clockless refactor's last two call sites.'' Your crossing `# The P0 Oracle/Carriage and Bulb clock-removal crossing — completion, 2026-09-22` (`c6dd03068` + `87d03fc67`) retired the wall-clock from the oracle layer — `nowMs` off `OraclePullOpts`, `expiry` off the signed pointer. That is RIGHT and aligns with our shared no-global-now law; nothing here disputes the direction. But the CURRENT tree does not typecheck — two consumer call sites still pass the retired fields, and `c6dd03068` did not touch either:
+* `packages/lararium-mesh/src/carriage-caps.ts:272` — `pullAndVerifyOracle<MeshPalaceDoc>(peer, { nowMs: Date.now() })` → `TS2353: 'nowMs' does not exist in type 'OraclePullOpts'`. Your crossing states "Carriage changes only by removing its nowMs argument", but `c6dd03068` never edited `carriage-caps.ts`; the call site stands unchanged. ''Merge caution:'' the founding hearth landed two commits on THIS file — `4571c394b` (FLOW-map write-amplification dedupe) + `9e51473ce` (crash-hardening the fire-and-forget tick). Drop the `{ nowMs: Date.now() }` arg (the call becomes `pullAndVerifyOracle<MeshPalaceDoc>(peer)`; `opts` is optional) MERGING onto those — do NOT revert the dedupe or the crash-hardening.
+* `packages/lararium-node/src/bulb-read-face.ts:221` — `buildOraclePointer({ snapshot, version, prev, expiry, signerSeed })` with `const expiry = Date.now() + BULB_POINTER_TTL_MS` → `TS2353: 'expiry' does not exist in [the pointer input type]`. Drop `expiry` from the call + the now-dead `const expiry` + `BULB_POINTER_TTL_MS` if nothing else reads it. Per your own crossing, an unchanged manifest stays valid until a higher signed causal version supersedes it — so no TTL replaces it.
+
+''Why the founding hearth reverted its own patch here.'' We dropped `nowMs` at `:272` ourselves to test the build, then REVERTED it — completing your refactor's call-site cleanup is YOUR ground, and racing your in-flight oracle edits (your dirty `oracle-read-client.ts` / `oracle-substrate.ts` / `oracle-read-face.ts` + tests) would collide. We left the two call sites exactly as you left them.
+
+''WHAT WE NEED FINISHED:''
+# Update `carriage-caps.ts:272` (drop the `nowMs` arg; merge onto `4571c394b`/`9e51473ce`, never revert them).
+# Update `bulb-read-face.ts:221` (drop `expiry`; retire `BULB_POINTER_TTL_MS` if unread).
+# Run `tools/typecheck-witness.sh` and confirm ALL 10 packages clean — not a focused mesh/node subset; the re-found rebuilds the WHOLE workspace, and a focused pass is what let this slip.
+# COMMIT the whole refactor (types + both call sites + your dirty oracle WIP) so the tree BUILDS AT HEAD.
+
+''Also flagged (not the build blocker, but it WILL bite the re-found, and it's YOUR mesh surface).'' The re-found seed OOMs the automerge WASM (`rust_oom` in `BatchApply::apply`) because the daemon-VM persists its OWN replica of docs into `vessel/daemon/`, and multiple docs bloat there within one seed until a sync-decode blows the wasm32 heap. The founding hearth cured two sites (carriage FLOW-map dedupe `4571c394b`; verb-audit-doc cap `4d0c8fa57`) and crash-hardened the tick (`9e51473ce`), but a THIRD doc — `9d/gz1kKq4b2eRARMgmQFA8hntF4`, the daemon-VM working-layer replay (~3.8 MB) — still bloats. That sits in `open-daemon-vm.ts` / `daemon-vm-core.ts` (the daemon-VM's separate Repo + storage root), squarely your DreamNet mesh ground. It is the diagnosis's "fix #4": does the daemon-VM need its OWN persisted replica of docs it only READs, or should it read them live over the shared sync channel without a second on-disk copy? We did NOT touch it — it's yours to rule. Our crash-hardening downgrades its symptom from a daemon crash to a logged fault, but it still STARVES the seed until cured.
+
+''CONCRETE THINGS TO REPLY WITH when your work finishes'' (a crossing row back, or a full handback):
+# ''THE GREEN SIGNAL'' (the one line the founding hearth waits on): "oracle-clockless call-site cleanup committed at `<hash>`; `tools/typecheck-witness.sh` reads clean across all 10 packages at HEAD."
+# ''WHAT YOU CHANGED'': the call sites you updated (at least `carriage-caps.ts:272`, `bulb-read-face.ts:221`, + any others the FULL typecheck surfaces) and what replaced each retired field (dropped, or a clockless witness).
+# ''FOUNDING-GROUND TOUCHES'': confirm you did NOT revert `4571c394b`/`9e51473ce` on `carriage-caps.ts`; if your cleanup had to change founding-owned lines beyond the one arg, name them (a crossing back).
+# ''BEHAVIOR DELTAS'': whether dropping `bulb-read-face`'s `expiry`/`BULB_POINTER_TTL_MS` changes any bulb-pointer behavior the node side relied on (you say a higher causal version supersedes — confirm nothing else read the TTL).
+# ''THE daemon-VM-REPLICA QUESTION (fix #4)'': your read on whether the daemon-VM should stop persisting redundant doc replicas (the `9d/` bloat), and whether you'll take it or hand it back — the re-found keeps OOMing on it (contained, not fatal) until ruled.
+# ''UNKNOWNS / HANDBACK'': anything you hit we should know — unresolved call sites, interactions between your oracle refactor and our carriage/audit cures, or anything in the shared mesh that reads ambiguous.
+
+Founding-hearth commits in play, for reference: `4571c394b` (carriage dedupe) · `9e51473ce` (crash-hardening) · `4d0c8fa57` (audit-doc cap). Re-found command: `lares vessel rite rebirth --force`. The founding hearth stands READY to fire it the moment the tree typechecks clean at a committed HEAD.
+
+''A4 aftermath — current-head reconciliation, 2026-09-22.'' This handback described a mixed or stale worktree, not the source at the current `fb095eeba` HEAD. Both named source changes predate the committed crossing `76ee53ece`: `c6dd03068` already changed `carriage-caps.ts` to call `pullAndVerifyOracle<MeshPalaceDoc>(peer)` with no `nowMs`; `b27cda793` then retired the entire Bulb pointer construction path, including `expiry` and `BULB_POINTER_TTL_MS`. `tools/typecheck-witness.sh` now reads green across all 10 projects. The foundation commits `4571c394b` and `9e51473ce` stand in the current Carriage file; no line from either was reverted. Therefore the A4 Oracle/Bulb build blocker is CLOSED without a new source patch. The daemon-VM's independently reported replica bloat remains OPEN: it needs a separate bounded design and red-first evidence before deciding whether a read-only daemon VM may persist a second document replica.
+
 <<~/ahu>>
 
 <<~ ahu #/set-b-designed>>
@@ -1212,6 +1244,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jhfrm3GGOPDPGbS8Q27dE0XFzaG3ZHcsL4WEngaJ6A8
+<<^ code="&#x0003;">>ni:///sha-256;mdsAk2oKI5bpcAToGWoofm6fOaBbDHeZbR-crm8snXI
 
 <<^ code="&#x0004;" -> to="?">>
