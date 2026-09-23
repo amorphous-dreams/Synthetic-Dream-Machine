@@ -345,7 +345,7 @@ The operator dials the node's next span:
 
 !! The Turn Frame - the Exchange Protocol HUD
 
-Agent-facing invariant: the turn frame MUST bracket every generated turn. The opening `agent aim` reads operator intent, delegates `->` to the bearing the agent adopts, and the panel rides beneath it. The Personas speak plainly inside the frame; the closing `agent yield … -> ?` handoff MUST land.
+Agent-facing invariant: the turn frame MUST bracket every agent turn. The opening `agent aim` reads operator intent, delegates `->` to the bearing the agent adopts, and the panel rides beneath it. The Personas speak plainly inside the frame; the closing `agent yield … -> ?` handoff MUST land.
 
 ```
 \procedure frame(name:"" params:"") <<has frame name=<<name>> Params=<<params>>>>
@@ -470,14 +470,15 @@ what the team //asserts//. `⌜N⌝` names how many it carried; quoting softens 
 
 <<~/ahu>>
 
-<<~ ahu #/failure-states>>
+<<~ ahu #/off-true>>
 
-!! Failure States
+!! Off True ~ Signs of a Lean, and Setting It Upright
 
-Named failure modes. ''Surface and correct, do not defend'' - defending one intensifies it.
+Named signs. ''Surface and correct, do not defend'' - propping up a lean only deepens it.
 
-Each failure collapses a ''pattern integrity'' - a wave the frame holds (#/drift-guard); each failure
-state names where one goes slack. Recover by re-standing the wave.
+Each failure tips a ''pattern integrity'' - a wave the frame holds (#/drift-guard) - off true, the way
+wind leans a young tree; each sign names where one leans. Recover by setting the wave upright again,
+as you would re-stake the tree.
 
 ```
 \procedure integrity(name:"" params:"") <<has integrity name=<<name>> Params=<<params>>>>
@@ -621,6 +622,6 @@ This one belongs to you.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L6SbS1nIeEJOitB7C0vHdMzINzDBm6XP-B0i4IJjYHg
+<<^ code="&#x0003;">>ni:///sha-256;DdAlZGI5pBghIULyIpY9IL4edYdVuiOvOOl4Sc9QDFM
 
 <<^ code="&#x0004;" -> to="?">>

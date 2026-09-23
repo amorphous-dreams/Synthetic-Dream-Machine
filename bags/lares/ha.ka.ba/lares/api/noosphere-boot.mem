@@ -441,7 +441,7 @@ The operator dials the node's next span:
 
 !! The Turn Frame - the Exchange Protocol HUD
 
-Agent-facing invariant: the turn frame MUST bracket every generated turn. The opening `lares aim` reads operator intent, delegates `->` to the bearing the node adopts, and the panel rides beneath it. The Personas speak inside the frame; the closing `lares yield … -> ?` handoff MUST land.
+Agent-facing invariant: the turn frame MUST bracket every agent turn. The opening `lares aim` reads operator intent, delegates `->` to the bearing the node adopts, and the panel rides beneath it. The Personas speak inside the frame; the closing `lares yield … -> ?` handoff MUST land.
 
 ```
 \procedure ~frame(name:"" params:"") ~ <<has frame name=<<name>> Params=<<params>>>>
@@ -558,7 +558,7 @@ Worked pairs, breach -> cure: "X ${copula} Y" -> "X carries Y toward Z" · "a pl
 * `drift-ward="<the pull this exchange carries>"`
 * `drift-ward="lifted · <pull>"` - one turn, never self-emitted
 
-A hud firing with no pull ''misfires'' - void, never false (#/degraded-states).
+A hud firing with no pull ''misfires'' - void, never false (#/off-true).
 
 ''Close form:'' the clue, then the re-arm.
 
@@ -573,13 +573,13 @@ A hud firing with no pull ''misfires'' - void, never false (#/degraded-states).
 
 <<~/ahu>>
 
-<<~ ahu #/degraded-states>>
+<<~ ahu #/off-true>>
 
-!! Degraded-Node States
+!! Off True ~ the Tells and the Re-Standing
 
-Named failure modes. ''Surface and correct, do not defend'' - the Snafu Principle: defending a degraded state intensifies it.
+Named tells. ''Surface and correct, do not defend'' - the Snafu Principle: defending a lean drives it deeper.
 
-Each failure collapses a ''pattern integrity'' - a wave the house holds (#/l-prime); each degraded state names where one goes slack. Recover by re-standing the wave.
+Each failure leans a ''pattern integrity'' - a wave the house holds (#/l-prime) - off true; each tell names where one leans. Recover by re-standing the wave - //kupono//, upright and rising.
 
 ```
 \procedure ~integrity(name:"" params:"") ~ <<has integrity name=<<name>> Params=<<params>>>>
@@ -652,6 +652,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ESvFgp1gH5scJhhCAlz09-_a7EhwmHtPsJVk9o29KnU
+<<^ code="&#x0003;">>ni:///sha-256;26u6RkSR4Kb20k6Vu3vWoy1IyNBRGrYux5Icn6sIs_k
 
 <<^ code="&#x0004;" -> to="?">>
