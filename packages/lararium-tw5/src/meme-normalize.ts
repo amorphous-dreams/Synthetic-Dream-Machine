@@ -166,21 +166,46 @@ export function alignMetaTomlColumns(body: string): string {
   return lines.join("\n");
 }
 
+export interface NormalizeOptions {
+  /**
+   * Apply GRAMMAR-authority clauses (authored bytes — a call site's separator spelling and
+   * anything else a hand wrote to mean something). Default false: grammar clauses are PROPOSED,
+   * never applied. FRAME-authority clauses (the envelope the house mints and owns — DOCTYPE
+   * address, sigil spellings, child-slot roots, meta columns) always apply; they carry exactly
+   * one right answer and the house may fix them unasked. See the FRAME/GRAMMAR split doctrine
+   * at the top of this file's sibling doc (`lares meme normalize`/`check` --grammar).
+   */
+  readonly grammar?: boolean;
+}
+
 export interface NormalizeResult {
   readonly text: string;
   readonly changed: boolean;
   readonly notes: readonly string[];
   /** Non-fatal observations the gate will NOT auto-fix — surfaced for human triage. */
   readonly flags: readonly string[];
+  /**
+   * GRAMMAR-authority notes: a PREFERENCE, never an answer. With `grammar: false` (the default)
+   * these name what WOULD move without moving a byte; with `grammar: true` they name what DID
+   * move, alongside `notes`.
+   */
+  readonly grammarNotes: readonly string[];
+  /** True when a grammar-authority clause found something to propose (or applied it). */
+  readonly grammarChanged: boolean;
 }
 
 /**
  * Canonicalize a single-carrier meme source. Returns the normalized text, a
  * `changed` flag, and human-readable notes naming each transform applied.
+ *
+ * FRAME clauses (the envelope) always apply. GRAMMAR clauses (authored bytes) apply only when
+ * `opts.grammar` is true — otherwise they are reported through `grammarNotes` and move no byte.
  */
-export function normalizeMemeSource(src: string): NormalizeResult {
+export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): NormalizeResult {
   const notes: string[] = [];
   const flags: string[] = [];
+  const grammarNotes: string[] = [];
+  let grammarChanged = false;
   let text = src;
 
   // ── 0. The declaration names the grammar, then the address ───────────────
@@ -248,15 +273,28 @@ export function normalizeMemeSource(src: string): NormalizeResult {
     }
   }
 
-  // ── 3. Named-parameter separator (call sites only) ───────────────────────
+  // ── 3. Named-parameter separator (call sites only) — GRAMMAR AUTHORITY ───
   //
   // The memetic standard writes key=value; TiddlyWiki reads both spellings, so a carrier holding the colon
   // renders identically and only its spelling drifts. A DEFINITION stays untouched — a parameter list refuses
   // `=` — and so does every scheme colon, which the quoted-value test excludes by shape.
-  const sep = normalizeParamSeparators(text);
-  text = sep.text;
-  if (sep.moved > 0) {
-    notes.push(`named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} took the equals sign`);
+  //
+  // THIS IS A HAND'S SPELLING, NOT THE HOUSE'S ENVELOPE. Both spellings build the identical attribute
+  // (measured against the TiddlyWiki fork and pinned 5.4.1: only the recorded `assignmentOperator`
+  // differs), so rewriting it changes no reading — which is exactly why it must never apply unasked. The
+  // house holds a PREFERENCE here, never an answer: it proposes (named per site, below) and only a hand
+  // — or an explicit `--grammar` — disposes.
+  {
+    const sep = normalizeParamSeparators(text);
+    if (sep.moved > 0) {
+      grammarChanged = true;
+      if (opts.grammar) {
+        text = sep.text;
+        grammarNotes.push(`named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} took the equals sign`);
+      } else {
+        grammarNotes.push(`named parameter separator: ${sep.moved} call site${sep.moved === 1 ? "" : "s"} would take the equals sign — rerun with --grammar to apply`);
+      }
+    }
   }
 
   // ── 4. Child-slot roots ──────────────────────────────────────────────────
@@ -330,5 +368,5 @@ export function normalizeMemeSource(src: string): NormalizeResult {
     }
   }
 
-  return { text, changed: text !== src, notes, flags };
+  return { text, changed: text !== src, notes, flags, grammarNotes, grammarChanged };
 }

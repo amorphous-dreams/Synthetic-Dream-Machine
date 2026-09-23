@@ -5,8 +5,8 @@
  *   get <uri> [--recipe <slug> | --bag <slug>]
  *   list [--recipe <slug> | --bag <slug>] [--tree]
  *   delete <uri> [--recipe <slug> | --bag <slug>] [--if-match <hash>]
- *   normalize <file.mem ...>
- *   check <file.mem ...> [--gradient | --edges]
+ *   normalize <file.mem ...> [--grammar]
+ *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
  *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
  *
@@ -38,8 +38,16 @@
  * grammar's address and not its name takes the current one. The transform stays pure + idempotent
  * (`@lararium/tw5/meme-normalize`), and the block check re-stamps over the body it follows.
  *
- * `check` reads the same law and writes nothing: drift exits 1 (CI / pre-commit). Its two other readings
- * share the seat — read alone, write nothing — so they ride it as flags:
+ * TWO AUTHORITIES, ONE VERB, NEVER ONE CHANNEL. FRAME clauses (the envelope the house mints and owns —
+ * DOCTYPE address, sigil spellings, child-slot roots, meta columns, the block check) carry exactly one
+ * right answer and ALWAYS apply. GRAMMAR clauses (authored bytes — today, only the named-parameter
+ * separator: a call site's `:` vs `=`) are a PREFERENCE, never an answer — both spellings build the
+ * identical attribute — so they apply ONLY with `--grammar`; by default they are named per site
+ * ("N call site(s) would take the equals sign — rerun with --grammar to apply") and move no byte.
+ *
+ * `check` reads the same law and writes nothing: FRAME drift alone exits 1 (CI / pre-commit); GRAMMAR
+ * drift is reported as a named preference and never fails the gate. Its other readings share the seat —
+ * read alone, write nothing — so they ride it as flags:
  *   --gradient  how far down the ingest gradient each file sits: the KIND a file declares itself to be,
  *               and the marks that kind requires and lacks. Graceful parsing hides files — a carrier
  *               missing its address, declaration or body frame still parses, renders and round-trips,
@@ -444,8 +452,18 @@ function checkFiles(args: ParsedArgs): number {
  * refusal that would block a legitimate partial sweep.
  */
 function normalizeFiles(args: ParsedArgs, write: boolean): number {
-  const files = namedFiles(args, write ? "normalize" : "check");
+  // `--grammar` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
+  // separator) alongside the FRAME clauses that always apply. Default: grammar clauses are
+  // PROPOSED, named per site, and move no byte — parse-args eats a following bare token as the
+  // flag's value the same way `--gradient`/`--edges`/`--sitting` do, so recover it the same way.
+  const grammarOpt = args.options["grammar"];
+  const grammar = typeof grammarOpt === "string" ? true : Boolean(args.flags["grammar"]);
+  const files = [
+    ...(typeof grammarOpt === "string" ? args.positional.slice(1) : namedFiles(args, write ? "normalize" : "check")),
+    ...(typeof grammarOpt === "string" ? [grammarOpt] : []),
+  ];
   let drifted = 0;
+  let grammarDrifted = 0;
   let flagged = 0;
   let faulted = 0;
 
@@ -459,7 +477,17 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
 
   for (const f of files) {
     const src = readNamed(f);
-    const res = normalizeMemeSource(src);
+    const res = normalizeMemeSource(src, { grammar });
+
+    // GRAMMAR-authority drift reads and reports SEPARATELY from FRAME drift — a preference named
+    // aloud, never a failure. `res.grammarNotes` already carries the per-site "would take the
+    // equals sign — rerun with --grammar to apply" wording (or, with --grammar on, the applied
+    // wording) from the clause itself.
+    if (res.grammarChanged) {
+      grammarDrifted++;
+      console.log(`${grammar ? "grammar applied" : "grammar preference"}: ${f}`);
+      for (const gn of res.grammarNotes) console.log(`  ~ ${gn}`);
+    }
 
     // Flags surface whether or not the carrier rewrote — advisory triage the law will NOT auto-fix
     // (e.g. a register value off the band ladder).
@@ -524,17 +552,24 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
   }
 
   const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
-    + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "");
+    + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
+    + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with --grammar to apply"})` : "");
   if (drifted === 0) {
     console.log(`all ${files.length} carrier(s) canonical.${tail}`);
     // A STAGE FAULT FAILS THE READ-ALONE SEAT even where every byte reads canonical — the two say
     // different things, and a gate that passed a `folded` carrier still holding its argument would
-    // let the fire take a carrier whose content lives nowhere else.
+    // let the fire take a carrier whose content lives nowhere else. GRAMMAR drift NEVER fails this
+    // seat — a carrier keeping a deliberate spelling reads as a held preference, not a fault, so it
+    // never trips a CI gate or pre-commit hook forever.
     return write || faulted === 0 ? 0 : 1;
   }
   console.log(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
-  // Read alone, drift fails loud so a CI gate or pre-commit hook catches un-normalized carriers.
-  // Flags stay advisory (needs-triage), never a gate failure.
+  // Read alone, FRAME drift fails loud so a CI gate or pre-commit hook catches un-normalized
+  // carriers. Flags stay advisory (needs-triage); GRAMMAR drift is a preference, never a gate
+  // failure — `drifted` above counts only FRAME-authority changes (frame clauses + the block-check
+  // re-stamp), since a grammar-only carrier never enters this branch: `changed` on its result is
+  // false unless `--grammar` applied it, and its grammar note surfaces through the `grammar
+  // preference` line above regardless.
   return write ? 0 : 1;
 }
 

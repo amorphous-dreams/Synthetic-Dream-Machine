@@ -43,9 +43,9 @@ const BIN = path.join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
 const SOURCE = path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/prism.mem");
 
 /** `lares meme normalize <file>` writes; `lares meme check <file>` reads alone — the same law, two seats. */
-function meme(sub: "normalize" | "check", file: string): { out: string; code: number } {
+function meme(sub: "normalize" | "check", file: string, extra: readonly string[] = []): { out: string; code: number } {
   try {
-    return { out: execFileSync("node", [BIN, "meme", sub, file], { encoding: "utf8" }), code: 0 };
+    return { out: execFileSync("node", [BIN, "meme", sub, file, ...extra], { encoding: "utf8" }), code: 0 };
   } catch (e) {
     const err = e as { stdout?: string; status?: number };
     return { out: err.stdout ?? "", code: err.status ?? 1 };
@@ -253,5 +253,104 @@ describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () 
     expect(verifyBcc(after)).toBe("ok");
     // The trailing content survived the re-stamp untouched.
     expect(after).toContain('<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>');
+  });
+});
+
+/**
+ * FRAME drift vs GRAMMAR drift — the operator's finding.
+ *
+ * `normalize` used to hold two authorities in one verb: FRAME (the envelope the house mints and
+ * owns — DOCTYPE address, sigil spellings, child-slot roots, the block check) and GRAMMAR
+ * (authored bytes — a call site's `:` vs `=` separator). A FRAME mismatch has exactly one right
+ * answer, and the house may fix it unasked. A GRAMMAR mismatch is a PREFERENCE — both spellings
+ * build the identical attribute (measured against the TiddlyWiki fork and pinned 5.4.1: only the
+ * recorded `assignmentOperator` differs) — so rewriting it changes no reading and must never apply
+ * unasked. `normalize` silently took both, which is how a hand-authored `<<~ kue key:"…">>` call
+ * site in a grammar-demonstration fixture came out spelled `key="…"` nobody asked for.
+ *
+ * `--grammar` is the escape hatch: name it and the grammar clauses apply too, exactly as normalize
+ * always behaved before this split.
+ */
+describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two authorities", () => {
+  let dir: string;
+
+  /** A real carrier (so every FRAME mark reads), staled at a body byte (FRAME drift: the block
+   *  check goes stale) and carrying a freshly-injected colon call site (GRAMMAR drift). */
+  function bothDrifts(): string {
+    const source = readFileSync(SOURCE, "utf8");
+    const staled = source.replace("The node summons it.", "The node summons it, once.");
+    return staled.replace(
+      "<<~/ahu>>\n\n<<~ ahu #/operation>>",
+      '<<~/ahu>>\n\n<<~ kue voice:Mischief-Muse key:"a value carrying spaces" held:[[a bracketed value]]>>\n\n<<~ ahu #/operation>>',
+    );
+  }
+
+  beforeAll(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "lares-drift-class-"));
+  });
+
+  test("★ RED: normalize re-stamps the FRAME check and leaves the GRAMMAR call site BYTE-IDENTICAL ★", () => {
+    const file = path.join(dir, "both-drift.mem");
+    const src = bothDrifts();
+    writeFileSync(file, src);
+    expect(verifyBcc(src), "the fixture's block check must stale").toBe("mismatch");
+    expect(src).toContain('voice:Mischief-Muse key:"a value carrying spaces" held:[[a bracketed value]]');
+
+    const { out } = meme("normalize", file);
+    const after = readFileSync(file, "utf8");
+
+    // FRAME: the check now matches the (still-colon) body it follows.
+    expect(verifyBcc(after)).toBe("ok");
+    // GRAMMAR: the colon call site moved NO byte.
+    expect(after).toContain('voice:Mischief-Muse key:"a value carrying spaces" held:[[a bracketed value]]');
+    expect(after).not.toContain('voice="Mischief-Muse"');
+    // AND normalize NAMES the site it declined to touch.
+    expect(out).toMatch(/would take the equals sign/);
+    expect(out).toMatch(/rerun with --grammar/);
+  });
+
+  test("★ RED: check on GRAMMAR-only drift exits ZERO and names the preference — never fails the gate ★", () => {
+    const file = path.join(dir, "grammar-only.mem");
+    const source = readFileSync(SOURCE, "utf8");
+    const src = source.replace(
+      "<<~/ahu>>\n\n<<~ ahu #/operation>>",
+      '<<~/ahu>>\n\n<<~ kue key:"a value carrying spaces">>\n\n<<~ ahu #/operation>>',
+    );
+    writeFileSync(file, src);
+    expect(verifyBcc(src), "the fixture must start with a MATCHING check — the only drift here is grammar").toBe("mismatch");
+    // Re-stamp it first so the ONLY remaining drift is the colon call site.
+    meme("normalize", file);
+    expect(verifyBcc(readFileSync(file, "utf8"))).toBe("ok");
+    expect(readFileSync(file, "utf8")).toContain('key:"a value carrying spaces"');
+
+    const { out, code } = meme("check", file);
+    expect(code).toBe(0);
+    expect(out).toMatch(/would take the equals sign/);
+  });
+
+  test("★ CONTROL: check on FRAME-only drift (a stale block check) still exits non-zero ★", () => {
+    const file = path.join(dir, "frame-only.mem");
+    const source = readFileSync(SOURCE, "utf8");
+    writeFileSync(file, source.replace("The node summons it.", "The node summons it, once."));
+    expect(verifyBcc(readFileSync(file, "utf8"))).toBe("mismatch");
+
+    const { out, code } = meme("check", file);
+    expect(code).toBe(1);
+    expect(out).toMatch(/would re-stamp/);
+  });
+
+  test("★ CONTROL: normalize --grammar applies BOTH, exactly as normalize always did before the split ★", () => {
+    const file = path.join(dir, "both-drift-grammar-flag.mem");
+    writeFileSync(file, bothDrifts());
+
+    meme("normalize", file, ["--grammar"]);
+    const after = readFileSync(file, "utf8");
+    expect(verifyBcc(after)).toBe("ok");
+    // `voice:Mischief-Muse` carries an UNQUOTED value, which the colon-param law never touches
+    // (it fires only ahead of a quoted or bracketed value) — so it stays colon-spelled under
+    // EITHER reading, and only the quoted/bracketed sites move.
+    expect(after).toContain('voice:Mischief-Muse key="a value carrying spaces" held=[[a bracketed value]]');
+    expect(after).not.toContain('key:"a value carrying spaces"');
+    expect(after).not.toContain("held:[[a bracketed value]]");
   });
 });

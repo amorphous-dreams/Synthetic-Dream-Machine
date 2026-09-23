@@ -204,6 +204,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
+      "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
+        "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
       "--to <mem|md|html|tid|json>   (project) the render target",
       "--out <path>       (project) the pair's directory (--to md) or the rendered file; stdout otherwise",
       "--title-base <uri> (project --to md) mount the pair under a shelf address",

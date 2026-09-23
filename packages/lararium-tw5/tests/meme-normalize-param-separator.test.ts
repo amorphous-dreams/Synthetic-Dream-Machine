@@ -15,12 +15,18 @@
  * A SCHEME COLON separates no parameter either. `lar:`, `ni:`, `https:` all pass the strict-identifier test that
  * guards TiddlyWiki's colon, so a rewrite keyed on the identifier alone would eat every address in the graph.
  * The colon separates a parameter only where a QUOTED value follows it — the one shape this moves.
+ *
+ * ── GRAMMAR AUTHORITY, NOT FRAME ─────────────────────────────────────────────────────────────────────────
+ * This clause rewrites AUTHORED bytes — a hand's spelling choice, not the house's envelope — so it applies
+ * only with `{ grammar: true }` (the split doctrine: `lares-cli/src/commands/meme.ts` — `--grammar`).
+ * These tests drive the clause directly, so they opt in explicitly; a caller who does NOT opt in gets the
+ * PROPOSAL alone (`grammarNotes`), covered by `packages/lares-cli/tests/normalize-restamps.test.ts`.
  */
 
 import { describe, test, expect } from "vitest";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
 
-const norm = (s: string) => normalizeMemeSource(s).text;
+const norm = (s: string) => normalizeMemeSource(s, { grammar: true }).text;
 
 describe("a named parameter is written key=value", () => {
   test("a call's colon parameter takes the equals sign", () => {
@@ -94,10 +100,13 @@ describe("a named parameter is written key=value", () => {
   });
 
   test("the transform reports itself and runs once", () => {
-    const r = normalizeMemeSource('<<~ kau greet(name:"world")>>');
+    const r = normalizeMemeSource('<<~ kau greet(name:"world")>>', { grammar: true });
     expect(r.changed).toBe(true);
-    expect(r.notes.join(" ")).toMatch(/param|separator|equals/i);
-    expect(normalizeMemeSource(r.text).text).toBe(r.text);
+    // GRAMMAR-authority notes land in `grammarNotes`, not `notes` — the split the house rules on:
+    // `notes` names what the envelope fixed unasked; `grammarNotes` names an authored spelling moved
+    // only because `--grammar`/`{ grammar: true }` asked for it.
+    expect(r.grammarNotes.join(" ")).toMatch(/param|separator|equals/i);
+    expect(normalizeMemeSource(r.text, { grammar: true }).text).toBe(r.text);
   });
 });
 
@@ -142,7 +151,7 @@ describe("★ a DEFINITION under any shelf spelling keeps its colon ★", () => 
   test("CONTROL: a call-side `param:value` still takes the equals sign; a call-side positional still quotes", () => {
     expect(norm('<<~ kahea greeting(name:"Operator")>>')).toBe('<<~ kahea greeting(name="Operator")>>');
     expect(norm('<<~ procedure-call x(a:"1")>>')).toBe('<<~ procedure-call x(a="1")>>');
-    const positional = normalizeMemeSource('<<~ loulou lar:///ha.ka.ba/x>>').text;
+    const positional = normalizeMemeSource('<<~ loulou lar:///ha.ka.ba/x>>', { grammar: true }).text;
     expect(positional).toMatch(/<<~ loulou "lar:\/\/\/ha\.ka\.ba\/x">>|<<~ loulou lar:\/\/\/ha\.ka\.ba\/x>>/);
   });
 
