@@ -64,7 +64,7 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission } from "@lararium/tw5/meme-markdown";
 import {
-  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan,
+  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble,
   readCarrierLifecycle, checkCarrierLifecycle,
 } from "@lararium/tw5";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
@@ -357,9 +357,18 @@ function readNamed(f: string): string {
  *
  * ANCHORED AT THE SPAN, never a whole-file replace: `ni:///…` reads as prose in a carrier that
  * discusses checks, and a global swap would rewrite the lesson along with the stamp. A mismatch REPLACES
- * the stale trailer; an absent one INSERTS adjacent to the span's close, because `verifyBcc` demands
- * EXACT adjacency — the emitter writes the mark immediately after the ETX sigil, and a shifted check
- * reads as postamble content and verifies as nothing.
+ * the stale trailer, byte-anchored the same way.
+ *
+ * `unchecked` NAMES TWO SHAPES, and the mint branch has to tell them apart. `verifyBcc` demands EXACT
+ * adjacency — the emitter writes the mark immediately after the ETX sigil — so a check that stands but
+ * is even one byte off reads `unchecked` too, the same verdict a truly bare carrier reads. Minting
+ * unconditionally on `unchecked` therefore GLUED a fresh check to the span's close and left whatever
+ * already stood there untouched: a carrier whose check had merely drifted came out wearing two,
+ * `ni:///…NEW ni:///…OLD`. `classifyPostamble` (`block-check.ts`) is the reader that already draws this
+ * distinction — it tolerates the whitespace `verifyBcc` refuses, so a drifted-but-otherwise-intact check
+ * still classifies `bcc` to it. The mint branch reads that classification: `bcc` means a check stands
+ * and gets REPLACED (the check and the whitespace ahead of it, both consumed); anything else means the
+ * slot is genuinely empty and gets the bare insert.
  */
 function restamp(text: string): string {
   const standing = verifyBcc(text);
@@ -368,9 +377,20 @@ function restamp(text: string): string {
   const want = bccOf(text);
   // A torn frame and a source without a complete frame both answer null here — neither bounds a span to attest to.
   if (!span || !want) return text;
-  return standing === "mismatch"
-    ? text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want)
-    : text.slice(0, span.end) + want + text.slice(span.end);
+  if (standing === "mismatch") {
+    return text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want);
+  }
+  const after = text.slice(span.end);
+  const post = classifyPostamble(after);
+  if (post.kind === "bcc") {
+    // A check stands, but not adjacent — REPLACE it (and the whitespace `classifyPostamble` tolerated
+    // ahead of it) with the fresh mint glued to the span's close, rather than leaving it stranded beside
+    // a second, newly-adjacent one.
+    const trimmed = after.replace(/^\s+/, "");
+    const rest = trimmed.startsWith(post.digest) ? trimmed.slice(post.digest.length) : after;
+    return text.slice(0, span.end) + want + rest;
+  }
+  return text.slice(0, span.end) + want + after;
 }
 
 /**
