@@ -15,7 +15,6 @@ export const BULB_ROUTE_PREFIX = "/bulb/";
 export const CAS_ROUTE_PREFIX  = "/cas/";
 
 export const BULB_MANIFEST_ROUTE = `${BULB_ROUTE_PREFIX}manifest`;
-export const BULB_POINTER_ROUTE  = `${BULB_ROUTE_PREFIX}pointer`;
 
 /** The content-addressed blob path for one cid. */
 export function bulbBlobRoute(cid: string): string {

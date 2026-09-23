@@ -784,6 +784,16 @@ may remain as observations when they do not establish identity, authority, order
 existing Carriage guard remains other-hearth work and is not silently taken by this roadmap. No source edit,
 global migration, or completion receipt follows from this planning row.
 
+# ''P0 clock-law completion — Oracle/Carriage `c6dd03068`, Bulb dead-renewal `87d03fc67`, 2026-09-22.''
+The Oracle pointer now carries no expiry, `nowMs`, or heartbeat: `c6dd03068` signs and verifies the causal
+snapshot relation through publisher signature, optional publisher pin, monotone version/high-water, `prev`
+lineage, and content-addressed snapshot rehash. Carriage changed only by dropping its `nowMs` argument; its
+separate guard remains intact. `87d03fc67` removes the dead Bulb renewal interval, so an unchanged manifest
+remains valid until a higher signed causal version supersedes it. Focused Mesh Oracle receipts pass 2 files /
+20 tests; focused Node Bulb, FLOW-map, and Carriage receipts pass 4 files / 12 tests; Mesh and Node
+typechecks pass. P0's clock-removal cut is complete. The Bulb `/bulb/pointer` route and persisted pointer
+state remain in progress for a separate retirement/cleanup decision; no route removal is claimed here.
+
 # ''HTTP ownership dispatcher — integration receipt, 2026-09-22.'' `main.ts` now creates one request
 dispatcher for the Node vessel. Readiness, the finite Pronaos, Oracle, Herm FLOW-map, and Bulb caps register
 synchronous namespace claims with it; duplicate route keys refuse registration. A claimed face may perform
@@ -1202,6 +1212,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2HTlq2LMnWmRr0tjzWnq1EM785ed794izjLHeyMi2kY
+<<^ code="&#x0003;">>ni:///sha-256;jhfrm3GGOPDPGbS8Q27dE0XFzaG3ZHcsL4WEngaJ6A8
 
 <<^ code="&#x0004;" -> to="?">>

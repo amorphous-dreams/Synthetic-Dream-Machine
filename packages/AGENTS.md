@@ -78,7 +78,7 @@ bounded, read-only material under their own route owners:
 
 | Route class | Projection | Must refuse |
 |---|---|---|
-| `/bulb/manifest`, `/bulb/pointer`, `/bulb/<cid>.bin` | Held, all-public bootstrap snapshot | CIDs outside the held bulb |
+| `/bulb/manifest`, `/bulb/<cid>.bin` | Held, all-public bootstrap snapshot | CIDs outside the held bulb; `/bulb/pointer` is retired |
 | `/cas/<cid>` | Bytes named by a `public`-tier pointer in the Herm's own or declared realm books | Private/contract/undeclared pointers, missing bytes, guesses |
 | FLOW/oracle read face | Read-only public snapshot and FLOW-map disclosure | Generic private bag or persona-document access |
 

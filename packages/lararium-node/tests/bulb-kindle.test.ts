@@ -113,7 +113,7 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     servers.push(httpServer);
     await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
     const port = (httpServer.address() as { port: number }).port;
-    await mountBulbReadFace({ httpServer, bulb, signerSeed: new Uint8Array(32).fill(7), storageDir: mkDir("herm") });
+    await mountBulbReadFace({ httpServer, bulb });
 
     // PULL over real HTTP — assembleBulb re-verifies content-address on every blob.
     const pulled = await pullBulb(httpBulbTransport(`http://127.0.0.1:${port}`));

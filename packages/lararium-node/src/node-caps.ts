@@ -111,14 +111,14 @@ export function flowMapReadFaceCap(deps: {
  *  HTTP floor (`/bulb/*`), ALL-PUBLIC, alongside the FLOW-map read-face. A stranger pulls it + kindles their OWN
  *  sovereign hearth (serve FIRE, never KEY). Requires substrate only (it reads the held artifact, mints nothing). */
 export function bulbCap(deps: {
-  httpServer: Server; bulb: BulbArtifact; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
+  httpServer: Server; bulb: BulbArtifact; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
   /** The Herm re-share shore (`/cas/<cid>` for PUBLIC-tier blobs this vessel holds); absent → the route refuses. */
   publicCas?: PublicCasShore;
 }): CapModule {
   return {
     id: CAP.bulb, requires: [CAP.substrate],
     build: async () => mountBulbReadFace({
-      httpServer: deps.httpServer, bulb: deps.bulb, signerSeed: deps.signerSeed, storageDir: deps.storageDir,
+      httpServer: deps.httpServer, bulb: deps.bulb,
       ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
       ...(deps.onLog ? { onLog: deps.onLog } : {}),
       ...(deps.publicCas ? { publicCas: deps.publicCas } : {}),
@@ -201,7 +201,7 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     // The BULB face rides the SAME public floor (a distinct `/bulb/` prefix) — present only when the Herm HOLDS a
     // bulb to hand. All-public boot material on the OPEN path; never the cad carriage (bulb ⊥ stolon, ledger #1).
     ...(d.bulb ? [bulbCap({
-      httpServer: d.httpServer, bulb: d.bulb, signerSeed: d.signerSeed, storageDir: d.storageDir,
+      httpServer: d.httpServer, bulb: d.bulb,
       ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
       ...(d.publicCas ? { publicCas: d.publicCas } : {}),

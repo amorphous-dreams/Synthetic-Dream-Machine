@@ -3,7 +3,6 @@
  *
  * Routes (GET-only, on the SAME HTTP server the FLOW-map read-face uses, under a distinct `/bulb/` prefix):
  *   GET /bulb/manifest    → the bulb manifest (cid index, JSON)
- *   GET /bulb/pointer     → a signed monotone pointer over the manifest cid (corm-lease freshness / anti-rollback)
  *   GET /bulb/<cid>.bin   → a content-addressed bulb blob (seed · bootstrap · cas-manifest · each engine/plugin blob)
  *   GET /cas/<cid>        → a PUBLIC-tier blob this Herm holds in its cleartext `cid/` (the Herm re-share, below)
  *
@@ -16,37 +15,21 @@
  *
  * PUBLIC-FLOOR ONLY. The bulb carries ALL-PUBLIC boot material, so it rides THIS floor exclusively — NEVER the cad
  * carriage (Socket B). Write-refusal holds by construction: only GET, bytes named by their own hash, no sync session.
- * The signed pointer is the corm-lease: served FROZEN offline (the static blob), the pointer's freshness lease
- * re-issues on the Ea breath so a live Herm advances it online (anti-rollback = the oracle-substrate max-register).
- *
- * SERVE FIRE, NEVER KEY. The bulb carries no signing key; the pointer's signer is the Herm's OWN publish key (it
- * signs WHERE-the-current-bulb-is, never the kindled hearth's identity — that key is minted on the cold device).
+ * SERVE FIRE, NEVER KEY. The bulb carries only public boot material; the kindled hearth's identity key is minted
+ * on the cold device.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/bulb-read-face
  */
 
 import type { Server, IncomingMessage, ServerResponse } from "node:http";
-import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_MANIFEST_ROUTE, BULB_POINTER_ROUTE, BULB_BLOB_RE, CAS_BLOB_RE } from "./bulb-routes.js";
-import { readFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { BULB_ROUTE_PREFIX, CAS_ROUTE_PREFIX, BULB_MANIFEST_ROUTE, BULB_BLOB_RE, CAS_BLOB_RE } from "./bulb-routes.js";
 import {
-  buildOraclePointer, oraclePointerId, sha256HexBytesSync, utf8Bytes, casReferences, publicRealmBooksFromDoc,
-  type OraclePointer, type CasReferenceEntry, type CapTier, type LarDoc,
+  sha256HexBytesSync, utf8Bytes, casReferences, publicRealmBooksFromDoc,
+  type CasReferenceEntry, type CapTier, type LarDoc,
 } from "@lararium/mesh";
 import { readCasBlobFromFs } from "./node-cas.js";
-import { atomicWriteFileSync } from "./fs-atomic.js";
 import { buildBulb, type BulbArtifact, type BulbBlob, type BulbManifest } from "./bulb.js";
 import type { OracleReadFace } from "./oracle-read-face.js";
-
-/** Persists the monotone pointer version so it never regresses across a reboot (a reset would read as rollback). */
-const BULB_STATE_FILE = "bulb-pointer-state.json";
-
-interface PersistedBulbPointerState {
-  readonly version:       number;
-  readonly lastPointerId: string | null;
-  readonly prevId:        string | null;
-  readonly cid:           string | null;   // the last published manifest cid (a real bulb change vs a reboot)
-}
 
 /** The public-CAS shore the read-face re-shares from: the bytes a cid names, and whether a PUBLIC pointer names it. */
 export interface PublicCasShore {
@@ -180,51 +163,23 @@ export function publicCasShore(opts: {
 }
 
 /**
- * Mount the bulb read-face. Content-addresses the bulb ONCE (the held snapshot is immutable), signs a monotone
- * pointer over the manifest cid, and re-issues the freshness lease on the Ea breath. Returns a disposable face.
+ * Mount the bulb read-face. Content-addresses the held snapshot once and serves its immutable manifest and blobs.
+ * The manifest is the arrival receipt; there is no second pointer route or persisted pointer state.
  */
 export async function mountBulbReadFace(args: {
   readonly httpServer: Server;
   readonly bulb:       BulbArtifact;
-  readonly signerSeed: Uint8Array;
-  readonly storageDir: string;
   readonly onLog?:     (line: string) => void;
   /** The Herm re-share shore; absent, `/cas/<cid>` answers the bulb's 404 for every cid. */
   readonly publicCas?: PublicCasShore;
 }): Promise<OracleReadFace> {
-  const { httpServer, bulb, signerSeed, storageDir, onLog, publicCas } = args;
+  const { httpServer, bulb, onLog, publicCas } = args;
   const { manifest, blobs } = buildBulb(bulb);
   const manifestBytes = utf8Bytes(JSON.stringify(manifest));
   const manifestCid   = sha256HexBytesSync(manifestBytes);
   const blobByCid = new Map<string, Uint8Array>(blobs.map((b: BulbBlob) => [b.cid, b.bytes]));
 
-  const statePath = join(storageDir, BULB_STATE_FILE);
-  let persisted: PersistedBulbPointerState = { version: 0, lastPointerId: null, prevId: null, cid: null };
-  try {
-    const raw = JSON.parse(readFileSync(statePath, "utf8")) as PersistedBulbPointerState;
-    if (Number.isInteger(raw.version) && raw.version >= 0) persisted = raw;
-  } catch { /* first boot — start at 0 */ }
-
-  let pointer: OraclePointer | null = null;
-
-  // Publish the pointer from the manifest's causal version and lineage. An unchanged
-  // manifest remains valid until a higher signed version supersedes it.
-  async function reissue(): Promise<void> {
-    const changed = manifestCid !== persisted.cid;
-    const version = changed ? persisted.version + 1 : persisted.version;
-    const prev    = changed ? persisted.lastPointerId : persisted.prevId;
-    // The pointer's snapshot names the manifest cid + heads = [] (the bulb is a flat content-address, no CRDT heads).
-    const ptr = await buildOraclePointer({ snapshot: { cid: manifestCid, heads: [], bytes: manifestBytes }, version, prev, signerSeed });
-    pointer = ptr;
-    if (changed) {
-      const id = await oraclePointerId(ptr);
-      persisted = { version, lastPointerId: id, prevId: prev, cid: manifestCid };
-      try { mkdirSync(storageDir, { recursive: true }); atomicWriteFileSync(statePath, JSON.stringify(persisted)); }
-      catch { /* quota — the in-memory pointer still serves this run */ }
-      onLog?.(`bulb read-face: v${version} manifest=${manifestCid.slice(0, 12)}… blobs=${blobs.length}`);
-    }
-  }
-  await reissue();
+  onLog?.(`bulb read-face: manifest=${manifestCid.slice(0, 12)}… blobs=${blobs.length}`);
   const CORS: Record<string, string> = {
     "access-control-allow-origin":  "*",
     "access-control-allow-methods": "GET, HEAD, OPTIONS",
@@ -255,11 +210,6 @@ export async function mountBulbReadFace(args: {
     if (pathname === BULB_MANIFEST_ROUTE) {
       res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
       res.end(Buffer.from(manifestBytes)); return;
-    }
-    if (pathname === BULB_POINTER_ROUTE) {
-      if (!pointer) { res.writeHead(503, CORS); res.end("no pointer yet"); return; }
-      res.writeHead(200, { ...CORS, "content-type": "application/json", "cache-control": "no-store" });
-      res.end(JSON.stringify(pointer)); return;
     }
     const m = pathname.match(BULB_BLOB_RE);
     const bytes = m ? blobByCid.get(m[1]!) : undefined;

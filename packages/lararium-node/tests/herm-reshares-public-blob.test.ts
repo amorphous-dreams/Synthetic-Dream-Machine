@@ -68,7 +68,7 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     const httpServer = createServer(); servers.push(httpServer);
     await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
     const port = (httpServer.address() as { port: number }).port;
-    await mountBulbReadFace({ httpServer, bulb, signerSeed: new Uint8Array(32).fill(7), storageDir, publicCas });
+    await mountBulbReadFace({ httpServer, bulb, publicCas });
 
     // C fetches A's public blob through the Herm.
     const pub = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
@@ -100,7 +100,7 @@ describe("the Herm re-shares a fleet peer's PUBLIC blob over its read-face while
     const httpServer = createServer(); servers.push(httpServer);
     await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
     const port = (httpServer.address() as { port: number }).port;
-    await mountBulbReadFace({ httpServer, bulb, signerSeed: new Uint8Array(32).fill(7), storageDir });
+    await mountBulbReadFace({ httpServer, bulb });
     const r = await fetch(`http://127.0.0.1:${port}/cas/${likenessCid}`);
     expect(r.status).toBe(404);
   });

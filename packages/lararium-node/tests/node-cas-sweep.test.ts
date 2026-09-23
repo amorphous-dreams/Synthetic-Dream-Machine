@@ -87,13 +87,13 @@ describe("casSweep — retain by reference, release by DROP, never the genesis",
   });
 
   test("a non-cid name in the dir is never touched; listCasBlobs reports cid + size", () => {
-    writeFileSync(join(casDir, "bulb-pointer-state.json"), "{}");
+    writeFileSync(join(casDir, "operator-sidecar.txt"), "{}");
     const b = blob("x");
     writeCasEntriesFs([b], casDir);
     age(b.cid);
     const r = casSweep({ casDir, references: new Map(), protect: new Set(), grace: 0 });
     expect(r.swept).toEqual([b.cid]);
-    expect(existsSync(join(casDir, "bulb-pointer-state.json"))).toBe(true);
+    expect(existsSync(join(casDir, "operator-sidecar.txt"))).toBe(true);
     writeCasEntriesFs([b], casDir);
     expect(listCasBlobs(casDir)).toEqual([{ cid: b.cid, size: 1 }]);
   });

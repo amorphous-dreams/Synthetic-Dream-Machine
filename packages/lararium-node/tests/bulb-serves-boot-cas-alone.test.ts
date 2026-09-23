@@ -53,7 +53,13 @@ describe("the bulb read-face serves the BOOT CAS alone — an operator's staged 
     const httpServer = createServer(); servers.push(httpServer);
     await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
     const port = (httpServer.address() as { port: number }).port;
-    await mountBulbReadFace({ httpServer, bulb, signerSeed: new Uint8Array(32).fill(7), storageDir });
+    await mountBulbReadFace({ httpServer, bulb });
+
+    // The bulb's manifest is the complete public arrival receipt. The retired pointer route has no alias.
+    const manifest = await fetch(`http://127.0.0.1:${port}/bulb/manifest`);
+    expect(manifest.status).toBe(200);
+    const pointer = await fetch(`http://127.0.0.1:${port}/bulb/pointer`);
+    expect(pointer.status).toBe(404);
 
     const bootCid = bulb.casEntries[0]!.cid;
     const control = await fetch(`http://127.0.0.1:${port}/bulb/${bootCid}.bin`);
