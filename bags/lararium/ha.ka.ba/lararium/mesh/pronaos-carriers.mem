@@ -467,12 +467,12 @@ carrier experiments, broad roots, copied configs, and unused proxy helpers shoul
 that proves the surviving descriptor. Keep one readable contract and one receipt per active carrier witness.
 
 The next integration wave should update the Pronaos roadmap with the carrier choice, red witness, generated-config
-receipt, and loss matrix. A cleanup wave must re-scan code, Compose, docs, and memes for `public-library` wording
-that accidentally names a Librarium rather than the bootstrap byte-exposure projection. The Librarium itself remains
+receipt, and loss matrix. A cleanup wave must re-scan code, Compose, docs, and memes for stale bootstrap-shore wording
+that accidentally names a Librarium rather than the Pronaos byte-exposure projection. The Librarium itself remains
 deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HfF5UH3M5yCzot6Wqg2cUEeU1Gsy9Kt9UGG7epY3mjU
+<<^ code="&#x0003;">>ni:///sha-256;Kzk8TuBSguPUKykEPQC3QbC7ORpcdezm1pYHSmaiF7s
 
 <<^ code="&#x0004;" -> to="?">>

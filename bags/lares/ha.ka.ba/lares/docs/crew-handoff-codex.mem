@@ -654,15 +654,15 @@ build or a static-byte process.
 E8 around one household’s local mesh: Node-surface Herms or Lararia carry infrastructure availability;
 each family device carries a sovereign Web-surface peer with its own key, local causal state, isolated
 TW5 Workers and explicitly delegated document authority. FLOW/carriage and WHO/read authority remain
-orthogonal. The Nexus records contracted operators, never a user-device roster. A public crossroads/library
-belongs to the Herm floor and stays retained by a Lararium lift; it may project verified Web bootstrap
+orthogonal. The Nexus records contracted operators, never a user-device roster. A finite Pronaos bootstrap
+arrival belongs to the Herm floor and stays retained by a Lararium lift; it may project verified Web bootstrap
 bytes without gaining persona, document, admission or merge authority. A separate static process may
 operate that projection, but it names an operational adapter rather than another vessel kind.
 
 ''Sprint 0 — capability map and canon reconciliation, 16 points.'' Re-true active DreamNet/package memes:
-the persona-less relay/public-library floor reads Herm; persona plus document ownership lights Lararium.
+the persona-less relay/Pronaos bootstrap floor reads Herm; persona plus document ownership lights Lararium.
 Distinguish held relay intent from currently expressed inbound reach so a Web peer loses no sovereignty
-through browser substrate limits. Trace public crossroads/library, bulb/read, seed/manifest/CAS sources and
+through browser substrate limits. Trace Herm public-read faces, Pronaos bootstrap arrival, bulb/read, seed/manifest/CAS sources and
 refusals; require explicit Web, relay and optional oracle origins instead of deriving a shared deployment
 from `LAR_PUBLIC_URL`. Red controls reject a static route that touches a private bag, route-derived authority,
 or implicit origin equivalence.
@@ -675,8 +675,8 @@ inventory where bulb/public wires need it. Controls require byte-identical recon
 and red on altered seed, malformed seed, absent/tampered CAS byte, HTML fallback, residual binary reader, or
 residual physical-manifest consumer.
 
-''Sprint 2 — public-library adapter, 20 points.'' A Node-owned narrow adapter accepts a prepared
-Herm/Lararium public-library projection, never the generic filesystem, private stores or persona vault. It
+''Sprint 2 — Pronaos bootstrap adapter, 20 points.'' A Node-owned narrow adapter accepts a prepared
+Herm/Lararium Pronaos bootstrap projection, never the generic filesystem, private stores or persona vault. It
 answers exact index, hashed asset, Worker, seed and seed-named CAS bytes; it refuses missing immutable paths
 without SPA fallback. Relay, oracle and bulb retain separately declared route/capability controls. A response
 ledger names the projection and adapter while granting no identity.
@@ -687,10 +687,10 @@ same-origin household face and a declared split-origin local-waystone face. Neit
 from a hostname or moves a device’s key/document relation. Invalid omitted/mismatched/private projections
 refuse closed.
 
-''Sprint 4 — multi-device household proof, 20 points.'' Stand one public-library/relay Node Herm, one
+''Sprint 4 — multi-device household proof, 20 points.'' Stand one Pronaos-bootstrap/relay Node Herm, one
 persona-bearing Node Lararium, and fresh PC/tablet/phone Web peers. Prove local identity, IDB/OPFS, Worker
 execution and locally held state under relay/oracle loss; exercise one explicit delegated crossing; reject
-forged caps, private public-library reads and user-roster writes. Reserve Docker names/volumes before mesh
+forged caps, private Pronaos-bootstrap reads and user-roster writes. Reserve Docker names/volumes before mesh
 execution; a real secure-context device run follows the local control.
 
 ''Sprint 5 — bounded-reach readiness, 13 codebase points.'' Consume declared bounded-reach endpoints
@@ -700,8 +700,8 @@ household that continues through WAN loss; Elyncia needs a waystone that guides 
 hearth’s soul, roster or archive.
 
 ''E8 implementation receipt — shared tree, awaiting one integrated commit, 2026-09-21.'' Sprint 0's
-cap/public-library inventory now stands in `packages/AGENTS.md`: the Herm floor may carry the declared
-public-library projection, while persona/document authority remains a Lararium lift. Sprint 1 retires the
+cap/Pronaos-bootstrap inventory now stands in `packages/AGENTS.md`: the Herm floor may carry the declared
+Pronaos bootstrap projection, while persona/document authority remains a Lararium lift. Sprint 1 retires the
 tracked `island.bin`, sidecars and retired readers in favor of the then-staged `seed.json`, `manifest.json` and
 manifest-named `cas/<cid>` members. The later seed-canonical collapse below retires that transitional manifest.
 The mesh now checks their shared blob identity and all three region
@@ -713,7 +713,16 @@ manifest-named verified CAS only; no generic directory serving. Sprint 3 supplie
 split Web/oracle declarations; relay reach remains `LAR_PUBLIC_URL` alone, and an omission refuses before
 the Node listener begins. Focused mesh, Node, Web, adapter and projection receipts are green. These edits
 remain one shared working-tree change set until the parent integration and full aftermath produce the
-commit receipt; they do not yet claim a mounted public-library composition or a multi-device proof.
+commit receipt; they do not yet claim a mounted Pronaos composition or a multi-device proof.
+
+# ''E8 Pronaos bootstrap rehome — CLOSED at `87dc42a06`, 2026-09-22.'' The commit completes the named
+adapter/projection rehome from the historical public-byte surface into `packages/lararium-node/src/pronaos-adapter.ts`
+and `pronaos-projection.ts`, with the matching mesh export and focused test names. This closes
+the roadmap's Pronaos bootstrap rehome item and retires its old source/test spelling without a compatibility
+alias. The commit records a reference witness and the carrier contract, but this row does not claim that
+Node composition is mounted in `main.ts`, that a production NGINX/Caddy carrier is mounted, or that the
+future Librarium has been implemented. The remaining work is the explicit composition/root/route witness and
+the reserved household proof; Librarium publication remains a separate deferred concern.
 
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
@@ -762,7 +771,7 @@ many independent Nexuses may stand without changing the shared genesis or conver
 # ''Aftermath — `3607a1d9f`, 2026-09-21.'' The retiring spelling has no route, negative control, build-cleanup
   list, stale-name filter, or retirement-named test left in the active genesis surface. The living genesis meme
   now names `seed.json` plus exact CAS as the whole bundle. Mesh, Node, Browser, Web and CLI typechecks passed;
-  focused genesis/public-library controls passed 34 tests; the browser OPFS control passed 4; and the quine boot
+  focused genesis/Pronaos-bootstrap controls passed 34 tests; the browser OPFS control passed 4; and the quine boot
   passed. Two consecutive deterministic builds produced the same seed digest. The residual package Vite warning
   concerns a future config-loader default and does not affect this startup contract.
 # ''One shared startup contract test family — first proof TAKEN, `277df3f09`.'' Mesh establishes first-breath
@@ -793,12 +802,12 @@ prepared projection: a configured composition root must obtain an explicit built
 Web and genesis roots, and an explicit public-byte exposure capability before it mounts the adapter. The witness
 must attribute `/`, a worker asset, `seed.json`, and one seed-named CAS member to that adapter; separately prove
 relay/oracle/bulb routes retain their own owners. Weakening the asset inventory, root separation, hash check,
-route inventory, or private-path refusal must turn red. The current code-level `public-library` spelling names
-this bootstrap byte-exposure adapter only; it does not name the deferred Librarium. Gaia's household steward
+route inventory, or private-path refusal must turn red. The Pronaos bootstrap adapter names this byte-exposure
+surface only; it does not name the deferred Librarium. Gaia's household steward
 needs a local page and its public bootstrap bytes to remain inspectable when WAN reach falls. Elyncia's waystone
 needs to offer a verified first glyph without gaining the shrine's persona, documents, or secret archive.
 
-''Prior-art receipt — topology-neutral boundary, 2026-09-21.'' L-Prime keeps the public-library
+''Prior-art receipt — topology-neutral boundary, 2026-09-21.'' L-Prime keeps the Pronaos bootstrap
 capability as the byte-exposure cap: it names the exact prepared index, worker/assets, seed, and
 seed-named CAS bytes that a peer may expose. A route table and a process placement remain separate
 composition facts. The exposure cap, route table, or serving process yields neither persona/document
@@ -854,9 +863,9 @@ join or keep a document. Elyncia needs waystones that can report a keeper's loca
 the sun's position a law of the realm.
 
 ''Following slice — real household composition, 16 points.'' With the mount receipt in hand, exercise one
-persona-less Herm floor and one persona-bearing Lararium lift against the same public-library projection.
+persona-less Herm floor and one persona-bearing Lararium lift against the same Pronaos bootstrap projection.
 Use a fresh Browser/Web peer to prove isolated Worker execution, local IDB/OPFS persistence, local boot,
-and an explicit crossed relay relation. Deliberately refuse a private public-library path, a forged cap
+and an explicit crossed relay relation. Deliberately refuse a private Pronaos-bootstrap path, a forged cap
 advertisement, an undeclared origin, and a lost relay/oracle face. Reserve Docker project and volumes before
 the mesh run. The proof names each peer's capabilities and observed state; it never writes a client/server
 story or a user-device roster.
@@ -1123,6 +1132,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ccr7KHYeGnT8Jiw_gnhQLjCgl7N6uE_gF6lQLouDwNY
+<<^ code="&#x0003;">>ni:///sha-256;XTuEVuTvwEY-kbpbn9Ary8VA-R_RkTOskmvGliusw_U
 
 <<^ code="&#x0004;" -> to="?">>

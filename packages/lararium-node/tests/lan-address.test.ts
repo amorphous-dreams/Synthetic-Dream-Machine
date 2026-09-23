@@ -129,7 +129,7 @@ describe("the reach-faces a vessel answers on", () => {
 
   test("changing origins changes reachability strings only", () => {
     const declaredHttp: ReachFace = { kind: "declared", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
-    const held = { caps: ["relay", "public-library"], identity: "did:key:z6Mk", document: "lar:///family/book" };
+    const held = { caps: ["relay", "pronaos"], identity: "did:key:z6Mk", document: "lar:///family/book" };
     const before = JSON.stringify(held);
     const first = originCompositionForFace(declaredHttp, { webOrigin: "http://web-a.local", oracleOrigin: "http://oracle-a.local" });
     const second = originCompositionForFace(declaredHttp, { webOrigin: "http://web-b.local", oracleOrigin: "http://oracle-b.local" });
