@@ -2,6 +2,7 @@ import { describe, test, expect } from "vitest";
 import type { CompositeStore, Verb, LarTiddlerRecord } from "@lararium/mesh";
 import { OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb } from "@lararium/mesh";
 import {
+  boundOutcomeOutput,
   dispatchVerb,
   patchVerb,
   placeVerb,
@@ -114,6 +115,68 @@ describe("verb-vm", () => {
     const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as Record<string, { ok: boolean; output?: Record<string, unknown> }>;
     expect(results[VERB_RESULT_KEY]?.ok).toBe(true);
     expect(results[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
+  });
+
+  // ── audit-doc write-amplification cure (dd4da8481 class, new site: the outcome/audit bag) ────────
+  describe("writeOutcome bounds an oversized per-carrier result array (the audit-doc OOM cure)", () => {
+    const bigCarriers = (n: number): Array<Record<string, unknown>> =>
+      Array.from({ length: n }, (_, i) => ({ uri: `lar:///ha.ka.ba/bags/x/carrier-${i}`, decision: i % 3 === 0 ? "add" : "tombstone" }));
+
+    test("RED (pre-fix behavior, now GREEN): a 214-carrier ingest result stores a BOUNDED summary, not the full list", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation();
+      const carriers = bigCarriers(214);
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done",
+        result: { sourceUri: "lar:///ha.ka.ba/bags/x", toBag: "lar:///ha.ka.ba/bags/y", changeId: "c1", carriers },
+      });
+
+      const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as
+        Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+      const output = results[VERB_RESULT_KEY]?.output;
+      // the stored field is NOT the 214-entry array — it's a bounded summary object
+      expect(Array.isArray(output?.["carriers"])).toBe(false);
+      const summary = output?.["carriers"] as { boundedArrayCount: number; tallies: Record<string, number>; sha256: string; sample: unknown[] };
+      expect(summary.boundedArrayCount).toBe(214);
+      expect(summary.tallies["add"]).toBe(Math.ceil(214 / 3));
+      expect(summary.tallies["tombstone"]).toBe(214 - Math.ceil(214 / 3));
+      expect(typeof summary.sha256).toBe("string");
+      expect(summary.sha256.length).toBeGreaterThan(0);
+      expect(summary.sample.length).toBeLessThanOrEqual(3);
+      // the serialized doc body is now bounded, not proportional to N
+      expect(String(daemon.writes[0]?.tiddler.results).length).toBeLessThan(2_000);
+      // scalar sibling fields ride through untouched
+      expect(output?.["sourceUri"]).toBe("lar:///ha.ka.ba/bags/x");
+      expect(output?.["changeId"]).toBe("c1");
+    });
+
+    test("CONTROL — a small carrier list (at/under the cap) still records FAITHFULLY, full detail intact", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-small", title: `${VERB_URI_PREFIX}req-small` });
+      const carriers = bigCarriers(5);
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done",
+        result: { sourceUri: "lar:///ha.ka.ba/bags/x", toBag: "lar:///ha.ka.ba/bags/y", changeId: "c2", carriers },
+      });
+
+      const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as
+        Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+      const output = results[VERB_RESULT_KEY]?.output;
+      expect(Array.isArray(output?.["carriers"])).toBe(true);
+      expect((output?.["carriers"] as unknown[]).length).toBe(5);
+      expect((output?.["carriers"] as Array<{ uri: string }>)[0]?.uri).toBe(carriers[0]?.uri);
+    });
+
+    test("boundOutcomeOutput — pure unit: caps only arrays past the threshold, leaves the rest alone", () => {
+      const small = boundOutcomeOutput({ items: [1, 2, 3], note: "x" }, 32);
+      expect(small["items"]).toEqual([1, 2, 3]);
+      const big = boundOutcomeOutput({ items: Array.from({ length: 33 }, (_, i) => i), note: "x" }, 32);
+      expect(Array.isArray(big["items"])).toBe(false);
+      expect((big["items"] as { boundedArrayCount: number }).boundedArrayCount).toBe(33);
+      expect(big["note"]).toBe("x"); // non-array fields untouched
+    });
   });
 
   test("dispatchVerb marks running, writes outcome, then removes the volatile invocation on success", async () => {
