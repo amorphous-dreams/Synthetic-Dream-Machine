@@ -241,6 +241,8 @@ globs   = [
 
 # ''The clock-law / Oracle pointer crossing — design handback, 2026-09-22.'' Existing pointer freshness remains load-bearing wall-clock behavior: `packages/lararium-node/src/oracle-read-face.ts` and `bulb-read-face.ts` produce signed `expiry` values with `Date.now()` and renew them on heartbeat intervals; `packages/lararium-mesh/src/oracle-read-client.ts` supplies `Date.now()` to consumer verification; `oracle-substrate.ts` rejects expired pointers; and the shared `packages/lararium-mesh/src/carriage-caps.ts` peer-merge path passes its own `Date.now()` into the pull. This violates the no-global-now law even though the clocks are local, because silence/freshness becomes acceptance authority. The proposed early-alpha direction removes expiry and heartbeat from the pointer contract and accepts only a signed causal version/`prev`/content-addressed snapshot lineage; the currently unused Bulb pointer route plus persistence/renewal path is a retirement candidate after caller audit. `carriage-caps.ts` is named as the active coordination boundary where the overlap must be talked through, not as a silently chosen merge. Remaining theorem: local silence cannot reject a valid pointer; peer loss, partition, and slow delivery remain observations, not causal invalidity. No source change or implementation receipt is claimed. Files crossed: this ledger and the Codex roadmap only. Law: a clock may report a local observation, never decide the standing of a signed causal relation.
 
+# ''The global clock-law audit — sequenced handback, 2026-09-22.'' No blind global `Date.now()` rewrite is authorized. **P0 — Oracle pointer / Carriage:** remove expiry and heartbeat from the signed pointer contract, keep causal version/`prev`/content-addressed snapshot acceptance, and re-trace the shared pull without making local silence a rejection. **P1 — capability, admission, delegation, and handle designs:** audit each relation separately and require an explicit causal, operator, or realm epoch witness wherever a lease or authority decision currently uses a wall clock; each receives its own red-first receipt. **P2 — local CAS retention:** define retention and loss as local policy and observation, never as a shared clock-derived relation. Lower-risk local timers, UI displays, retries, cooling, and measurements may remain when they do not establish identity, authority, order, or document standing. The existing Carriage guard remains other-hearth work and is not silently taken by this Codex hand. No source edit or completion receipt follows. Files crossed: this ledger and the Codex roadmap only. Law: stage clock removal by relation, and preserve local observation where it carries no authority.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -254,6 +256,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gHVH38hJm7tz1whF5vErjCccUsYfK_b5kKoxj30Y7gI
+<<^ code="&#x0003;">>ni:///sha-256;ckTGjclky7GQjf_OZILjBKfvTcsN7XI-7XqgE54I50Q
 
 <<^ code="&#x0004;" -> to="?">>

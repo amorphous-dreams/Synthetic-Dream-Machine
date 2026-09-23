@@ -772,6 +772,18 @@ boundary for the change, not a decision or merge result. Remaining liveness theo
 missing heartbeat cannot reject a pointer that is otherwise valid — peer loss, partition, and slow delivery
 must remain explicit observations rather than causal invalidity. No source change is claimed by this crossing.
 
+# ''Global clock-law audit — sequenced roadmap, 2026-09-22.'' The audit proceeds in dependency order, with
+no blind global `Date.now()` rewrite authorized. **P0 — Oracle pointer / Carriage:** remove expiry and
+heartbeat from the signed pointer contract, retain causal version/`prev`/snapshot acceptance, and re-trace
+the `carriage-caps.ts` pull without making silence a rejection. **P1 — capability, admission, delegation,
+and handle designs:** audit each separate lease or authority contract and replace wall-clock acceptance with
+an explicit causal, operator, or realm epoch witness; each design gets its own red-first receipt. **P2 —
+local CAS retention:** specify retention and loss behavior as a local policy/observation, never as a shared
+clock-derived relation. Lower-risk local timers, UI freshness displays, retries, cooling, and measurements
+may remain as observations when they do not establish identity, authority, order, or document standing. The
+existing Carriage guard remains other-hearth work and is not silently taken by this roadmap. No source edit,
+global migration, or completion receipt follows from this planning row.
+
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
 bytes out of the CRDT and introduced the manifest as their practical inventory; `38c056233` made the
@@ -1180,6 +1192,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q5r6fS1pw5vHSRxyyEEqVpU_TQOMAg4RRZDhxTK9E2o
+<<^ code="&#x0003;">>ni:///sha-256;EZMfer9xYP9Yk6WZwZ2bBZheSCcafqhFFMnS_5S7xPU
 
 <<^ code="&#x0004;" -> to="?">>
