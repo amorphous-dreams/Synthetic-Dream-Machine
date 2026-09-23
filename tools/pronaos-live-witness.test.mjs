@@ -13,7 +13,7 @@ test("executes the compiled Pronaos composition and dispatcher without a socket"
 
 test("reserved-host process witness remains explicit and makes no Node-face claim", async (t) => {
   if (process.env.CODEX_SANDBOX_NETWORK_DISABLED === "1") {
-    t.skip("managed runner denies child TCP/filesystem sockets; run this process witness in a reserved host or Docker window");
+    t.skip("managed runner denies child process pipes; the daemon-free in-process witness remains runnable, while this process witness belongs in a reserved host or Docker window");
     return;
   }
   const result = await runPronaosLiveWitness();

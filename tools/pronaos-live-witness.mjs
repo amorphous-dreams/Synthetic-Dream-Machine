@@ -296,6 +296,10 @@ export async function runPronaosLiveWitness({
       PRONAOS_WITNESS_WEB_ROOT: resolve(webRoot),
       PRONAOS_WITNESS_ARTIFACT_RECORD: resolve(artifactRecord),
       PRONAOS_WITNESS_GENESIS_ROOT: resolve(genesisRoot),
+      // Managed runners may leave a TCP bind pending instead of returning
+      // EPERM/EACCES. Select the line transport before entering server.listen
+      // so the process witness remains bounded and honest about origin reach.
+      PRONAOS_WITNESS_TRANSPORT: process.env.CODEX_SANDBOX_NETWORK_DISABLED === "1" ? "stdio" : process.env.PRONAOS_WITNESS_TRANSPORT,
     },
   });
   let stderr = "";
@@ -344,7 +348,7 @@ async function childMain() {
   const dispatcher = mountHttpFaceDispatcher(server);
   let composition;
   let socketPath;
-  let transport = "tcp";
+  let transport = process.env.PRONAOS_WITNESS_TRANSPORT === "stdio" ? "stdio" : "tcp";
   try {
     composition = composePronaosFromEnv({
       httpServer: server,
@@ -355,7 +359,7 @@ async function childMain() {
         LAR_PRONAOS_ARTIFACT_RECORD: process.env.PRONAOS_WITNESS_ARTIFACT_RECORD,
       },
     });
-    try {
+    if (transport === "tcp") try {
       await new Promise((resolve, reject) => {
         server.once("error", reject);
         server.listen(0, "127.0.0.1", resolve);
@@ -424,8 +428,13 @@ async function childMain() {
 if (process.argv[2] === "--child") await childMain();
 else if (process.argv[1] && resolve(process.argv[1]) === TOOL) {
   try {
-    const result = await runPronaosLiveWitness();
-    console.log(`[pronaos-live] green: pid=${result.pid} transport=${result.transport} port=${result.port ?? "n/a"} routes=${result.routes.length}`);
+    // The managed runner can leave spawned-child pipes unresolved. Keep the
+    // command useful there by selecting the deterministic daemon-free witness;
+    // a reserved host/Docker window still runs the process/origin witness.
+    const result = process.env.CODEX_SANDBOX_NETWORK_DISABLED === "1"
+      ? await runPronaosInProcessWitness()
+      : await runPronaosLiveWitness();
+    console.log(`[pronaos-live] green: pid=${result.pid ?? "n/a"} transport=${result.transport} port=${result.port ?? "n/a"} routes=${result.routes.length}`);
     console.log(`[pronaos-live] Docker daemon/image/live-container reservation: not run (daemon-free witness; origin reach=${result.transport === "tcp" ? "loopback only" : "blocked by runner"})`);
   } catch (error) {
     console.error(`[pronaos-live] RED: ${error instanceof Error ? error.message : String(error)}`);
