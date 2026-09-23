@@ -67,10 +67,10 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/minting-over-a-retirement">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme-evolution-kupono">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jGpJJ7KjDD2bSSqXg8mzkjpOKdlHtK5WS2qqBgig1T0
+<<^ code="&#x0003;">>ni:///sha-256;ldR7THZTWfq5GSyp26rGhG7xz6k65JB51W9aVFz2F9s
 
 <<^ code="&#x0004;" -> to="?">>

@@ -58,7 +58,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 * ''The Invented Ripple'' — a deferral justified by a migration cost the node narrated and never counted. `lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple`
 * ''The Protective Optional'' — a compat shim built for a consumer that does not exist; in early alpha the callers protected are the node's own witnesses. `lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional`
 * ''The Table That Hides a Plane'' — two entities sharing a row when they ride different planes, so the table asserts //same kind// while every cell reads true. `lar:///ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane`
-* ''Minting Over a Retirement'' — a word seated beside one the graph already ruled, walking past the residue that says so. Greppable: `retires-to`. `lar:///ha.ka.ba/lares/api/pono/failure-states/minting-over-a-retirement`
 * ''Not Walking Before Minting'' — a finding derived at cost that the graph already held. A RETRIEVAL failure, never a knowledge one. `lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting`
 * ''Structure-Shaped Convention'' — a mechanism whose guarantee rides a register its substrate cannot enforce, so it reads structural and holds only by agreement. Greppable: name the enforcer, then ask who can seize it. `lar:///ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention`
 * ''The Empty Subject'' — a check that RAN, measured NOTHING, and reported SUCCESS: a gate pointed at an empty set, an absent subject, or a condition that cannot arise, returning the cleanest run it has ever produced. Greppable: run the matcher against the real corpus and read the count. `lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject`
@@ -77,6 +76,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UrhzvW9SnRAnTJvpCB1kTS6umfV7Ljz2ZdKuIxHLwkc
+<<^ code="&#x0003;">>ni:///sha-256;bkJwP83HoqyqM6Kb4XSFqX6pvb0ta6HoTEN2SwWT4sY
 
 <<^ code="&#x0004;" -> to="?">>

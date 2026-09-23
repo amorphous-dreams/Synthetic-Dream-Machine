@@ -69,10 +69,10 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/minting-over-a-retirement">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sF21hPyLok6tms1DYSFEM3GNgy_ZZslWKUoge2I0MDg
+<<^ code="&#x0003;">>ni:///sha-256;aV6bpWmVBV36aaR85gfQE7GUyAKcs7CchMxRwbHGPbo
 
 <<^ code="&#x0004;" -> to="?">>
