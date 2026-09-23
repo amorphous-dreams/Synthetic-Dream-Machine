@@ -7,6 +7,7 @@
  */
 
 import type { Server } from "node:http";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { readFileSync } from "node:fs";
 import {
   validatePronaosArtifactRecord,
@@ -66,6 +67,7 @@ function readArtifactRecord(pathname: string): PronaosArtifactRecord {
 export function composePronaosFromEnv(args: {
   readonly httpServer: Server;
   readonly genesisDir: string;
+  readonly dispatcher?: HttpFaceDispatcher;
   readonly env?: Readonly<Record<string, unknown>>;
 }): PronaosComposition | null {
   const config = parsePronaosCompositionConfig(args.env ?? process.env);
@@ -77,6 +79,6 @@ export function composePronaosFromEnv(args: {
     artifactRecord,
   };
   const projection = buildPronaosProjection(inputs);
-  const mount = mountPronaosReadFace(args.httpServer, projection);
+  const mount = mountPronaosReadFace(args.httpServer, projection, args.dispatcher);
   return { projection, mount, dispose: () => mount.dispose() };
 }

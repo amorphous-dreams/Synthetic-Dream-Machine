@@ -60,6 +60,7 @@ import { REPO_ROOT }   from "./node-host.js";
 import { loadLaresConfig, originDeclaration } from "./lares-config.js";
 import { composePronaosFromEnv } from "./pronaos-composition.js";
 import { createReadinessState, mountReadinessFace } from "./readiness-face.js";
+import { mountHttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 
 // ---------------------------------------------------------------------------
@@ -167,14 +168,15 @@ async function main(): Promise<void> {
   // WS server — path-scoped to /ws only. Non-WS requests get no handler (socket destroyed
   // by the upgrade gate below). No HTTP surface — catalog URL advertised via stdout.
   const httpServer = createServer();
+  const dispatcher = mountHttpFaceDispatcher(httpServer);
   const wss = new WebSocket.Server({ noServer: true });
   // Health names only the local boot posture. It carries no peer, document,
   // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.
   const readinessState = createReadinessState();
-  const readinessFace = mountReadinessFace({ httpServer, state: readinessState });
+  const readinessFace = mountReadinessFace({ httpServer, state: readinessState, dispatcher });
   // The Pronaos lights only from two explicit operator inputs. No build-dir
   // discovery occurs; absent inputs leave the existing Node faces unchanged.
-  const pronaos = composePronaosFromEnv({ httpServer, genesisDir });
+  const pronaos = composePronaosFromEnv({ httpServer, genesisDir, dispatcher });
 
   httpServer.on("upgrade", (req, socket, head) => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -259,6 +261,7 @@ async function main(): Promise<void> {
       wss,
       catalogUrl,
       httpServer,
+      dispatcher,
       meshSelf,
       ...(pullMs ? { pullIntervalMs: Number.parseInt(pullMs, 10) } : {}),
       onPhase:    (phase) => console.log(`[herm] phase → ${phase}`),
@@ -345,6 +348,7 @@ async function main(): Promise<void> {
         pronaos?.dispose();
         hermUds.close();
         httpServer.close();
+        dispatcher.dispose();
         await herm.dispose();          // read-face + daemon island flush, then the composed vessel
         await herm.repo.flush();
         console.log("[herm] shutdown complete — state flushed durably");
@@ -423,6 +427,7 @@ async function main(): Promise<void> {
       const signerSeed   = await loadVesselSigningSeed();
       oracleReadFace = await mountOracleReadFace({
         httpServer, oracleHandle, signerSeed, storageDir,
+        dispatcher,
         onLog: (line) => console.log(`[lararium] ${line}`),
       });
       console.log(`[lararium] oracle read-face: GET /oracle/pointer · /oracle/<cid>.bin`);
@@ -495,6 +500,7 @@ async function main(): Promise<void> {
       readinessFace.dispose();
       pronaos?.dispose();
       oracleReadFace?.dispose();
+      dispatcher.dispose();
       uds.close();
       httpServer.close();
       await result.repo.flush();                       // floor: durable NOW, before any worker handshake

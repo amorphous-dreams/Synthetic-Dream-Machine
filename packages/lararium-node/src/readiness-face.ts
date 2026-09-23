@@ -7,6 +7,7 @@
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 export type NodeReadiness = "starting" | "ready";
 
@@ -41,6 +42,7 @@ function answer(res: ServerResponse, state: ReadinessState, method: string): voi
 export function mountReadinessFace(args: {
   readonly httpServer: Server;
   readonly state: ReadinessState;
+  readonly dispatcher?: HttpFaceDispatcher;
 }): ReadinessFace {
   const onRequest = (req: IncomingMessage, res: ServerResponse): void => {
     const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
@@ -56,6 +58,12 @@ export function mountReadinessFace(args: {
     }
     answer(res, args.state, req.method);
   };
-  args.httpServer.on("request", onRequest);
-  return { dispose: () => args.httpServer.off("request", onRequest) };
+  const unregister = args.dispatcher?.register({
+    name: "readiness",
+    routeKeys: ["readiness:/api/health"],
+    owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname === "/api/health",
+    handle: onRequest,
+  });
+  if (!unregister) args.httpServer.on("request", onRequest);
+  return { dispose: () => unregister ? unregister() : args.httpServer.off("request", onRequest) };
 }

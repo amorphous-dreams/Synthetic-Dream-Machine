@@ -52,6 +52,7 @@ import {
 } from "@lararium/tw5";
 import { mountFlowMapReadFace, type OracleReadFace } from "./oracle-read-face.js";
 import { mountBulbReadFace, type PublicCasShore } from "./bulb-read-face.js";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { BulbArtifact } from "./bulb.js";
 
 /**
@@ -85,7 +86,7 @@ export const CAP = {
 /** read-face — serves the meshpalace PUBLIC FLOW-map over the HTTP server (the disclosure shore
  *  at the wire). Requires substrate + meshpalace (the doc it projects). Disposes the HTTP face. */
 export function flowMapReadFaceCap(deps: {
-  httpServer: Server; signerSeed: Uint8Array; storageDir: string; onLog?: (line: string) => void;
+  httpServer: Server; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
 }): CapModule {
   return {
     id: CAP.readFace, requires: [CAP.substrate, CAP.meshpalace],
@@ -96,6 +97,7 @@ export function flowMapReadFaceCap(deps: {
         meshPalaceHandle: mp.handle,
         signerSeed:       deps.signerSeed,
         storageDir:       deps.storageDir,
+        ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
         ...(deps.onLog ? { onLog: deps.onLog } : {}),
       });
     },
@@ -109,7 +111,7 @@ export function flowMapReadFaceCap(deps: {
  *  HTTP floor (`/bulb/*`), ALL-PUBLIC, alongside the FLOW-map read-face. A stranger pulls it + kindles their OWN
  *  sovereign hearth (serve FIRE, never KEY). Requires substrate only (it reads the held artifact, mints nothing). */
 export function bulbCap(deps: {
-  httpServer: Server; bulb: BulbArtifact; signerSeed: Uint8Array; storageDir: string; onLog?: (line: string) => void;
+  httpServer: Server; bulb: BulbArtifact; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
   /** The Herm re-share shore (`/cas/<cid>` for PUBLIC-tier blobs this vessel holds); absent → the route refuses. */
   publicCas?: PublicCasShore;
 }): CapModule {
@@ -117,6 +119,7 @@ export function bulbCap(deps: {
     id: CAP.bulb, requires: [CAP.substrate],
     build: async () => mountBulbReadFace({
       httpServer: deps.httpServer, bulb: deps.bulb, signerSeed: deps.signerSeed, storageDir: deps.storageDir,
+      ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
       ...(deps.onLog ? { onLog: deps.onLog } : {}),
       ...(deps.publicCas ? { publicCas: deps.publicCas } : {}),
     }),
@@ -140,6 +143,7 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly httpServer:     Server;
   readonly signerSeed:     Uint8Array;
   readonly storageDir:     string;
+  readonly dispatcher?:    HttpFaceDispatcher;
   /** This Herm's mesh standing — derived once via deriveMeshSelf. Present → it self-announces, self-peers,
    *  re-ranks by proximity + drifts r. Absent → a leaf that only carries what it pulls (no carriage dials). */
   readonly meshSelf?:      MeshSelf;
@@ -191,12 +195,14 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     }),
     flowMapReadFaceCap({
       httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir,
+      ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
     // The BULB face rides the SAME public floor (a distinct `/bulb/` prefix) — present only when the Herm HOLDS a
     // bulb to hand. All-public boot material on the OPEN path; never the cad carriage (bulb ⊥ stolon, ledger #1).
     ...(d.bulb ? [bulbCap({
       httpServer: d.httpServer, bulb: d.bulb, signerSeed: d.signerSeed, storageDir: d.storageDir,
+      ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
       ...(d.publicCas ? { publicCas: d.publicCas } : {}),
     })] : []),

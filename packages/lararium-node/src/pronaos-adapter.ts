@@ -11,6 +11,7 @@
  */
 
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 import {
   DEFAULT_PRONAOS_REFUSALS,
@@ -167,11 +168,28 @@ export function pronaosRequestHandler(
 export function mountPronaosReadFace(
   httpServer: Server,
   projection: PronaosProjection,
+  dispatcher?: HttpFaceDispatcher,
 ): PronaosMount {
   const onRequest = pronaosRequestHandler(projection);
   const listener = (req: IncomingMessage, res: ServerResponse): void => {
     void onRequest(req, res);
   };
-  httpServer.on("request", listener);
-  return { dispose: () => httpServer.off("request", listener) };
+  const owns = (req: IncomingMessage): boolean => {
+    const rawUrl = req.url ?? "/";
+    if (/%2e|%2f|%5c|%25/i.test(rawUrl) || rawUrl.includes("..")) {
+      return !(rawUrl === "/ws" || rawUrl.startsWith("/oracle") || rawUrl.startsWith("/bulb"));
+    }
+    const pathname = new URL(rawUrl, "http://localhost").pathname;
+    return pathname === "/" || pathname === "/manifest.webmanifest" ||
+      pathname === "/genesis/seed.json" || pathname.startsWith("/assets/") ||
+      pathname.startsWith("/genesis/cas/");
+  };
+  const unregister = dispatcher?.register({
+    name: "pronaos",
+    routeKeys: ["pronaos:/", "pronaos:/manifest", "pronaos:/genesis", "pronaos:/assets"],
+    owns,
+    handle: listener,
+  });
+  if (!unregister) httpServer.on("request", listener);
+  return { dispose: () => unregister ? unregister() : httpServer.off("request", listener) };
 }

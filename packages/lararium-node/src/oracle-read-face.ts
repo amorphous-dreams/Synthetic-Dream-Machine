@@ -18,6 +18,7 @@
  */
 
 import type { Server, IncomingMessage, ServerResponse } from "node:http";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import { readFileSync, mkdirSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { join } from "node:path";
@@ -56,6 +57,7 @@ export async function mountOracleReadFace(args: {
   readonly oracleHandle: DocHandle<unknown>;
   readonly signerSeed:   Uint8Array;
   readonly storageDir:   string;
+  readonly dispatcher?:   HttpFaceDispatcher;
   readonly onLog?:       (line: string) => void;
   /** Export fn — defaults to exportOracleSnapshot (the raw doc). A FLOW-map serve passes a shore
    *  variant (snapshotPublicFlowMap) so ONLY the public projection ever crosses the wire. */
@@ -148,13 +150,20 @@ export async function mountOracleReadFace(args: {
     res.writeHead(404, { ...CORS, "content-type": "text/plain" });
     res.end("unknown or stale oracle cid");
   };
-  httpServer.on("request", onRequest);
+  const unregister = args.dispatcher?.register({
+    name: "oracle",
+    routeKeys: ["oracle:/oracle"],
+    owns: (req) => new URL(req.url ?? "/", "http://localhost").pathname.startsWith(ORACLE_ROUTE_PREFIX),
+    handle: onRequest,
+  });
+  if (!unregister) httpServer.on("request", onRequest);
 
   return {
     dispose: () => {
       clearInterval(ea);
       oracleHandle.off("change", onChange);
-      httpServer.off("request", onRequest);
+      if (unregister) unregister();
+      else httpServer.off("request", onRequest);
     },
   };
 }
@@ -170,6 +179,7 @@ export function mountFlowMapReadFace(args: {
   readonly meshPalaceHandle: DocHandle<unknown>;
   readonly signerSeed:       Uint8Array;
   readonly storageDir:       string;
+  readonly dispatcher?:      HttpFaceDispatcher;
   readonly onLog?:           (line: string) => void;
 }): Promise<OracleReadFace> {
   return mountOracleReadFace({
@@ -177,6 +187,7 @@ export function mountFlowMapReadFace(args: {
     oracleHandle:   args.meshPalaceHandle,
     signerSeed:     args.signerSeed,
     storageDir:     args.storageDir,
+    ...(args.dispatcher ? { dispatcher: args.dispatcher } : {}),
     ...(args.onLog ? { onLog: args.onLog } : {}),
     exportSnapshot: (doc: unknown) => snapshotPublicFlowMap(doc as LarDoc),
   });

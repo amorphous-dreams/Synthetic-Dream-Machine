@@ -21,6 +21,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath } from "./vessel-paths.js";
 import { join }                         from "path";
 import type { Server }                  from "node:http";
+import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { DocHandle, AutomergeUrl, DocumentId } from "@automerge/automerge-repo";
 import { Repo }                         from "@automerge/automerge-repo";
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
@@ -250,6 +251,8 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   rootDir?: string;
   /** HTTP server the Herm's FLOW-map read-face serves over (required for openNodeHerm). */
   httpServer?: Server;
+  /** Optional sole request dispatcher for production face composition. */
+  dispatcher?: HttpFaceDispatcher;
   /** This vessel's mesh standing — derived once via deriveMeshSelf. Present → it self-announces,
    *  self-peers, re-ranks by proximity + drifts r (a Lararium carries ALONGSIDE its wiki-full core; a
    *  Herm IS its carriage). Absent → a leaf that only carries what it pulls. */
@@ -2299,6 +2302,7 @@ export async function openNodeHerm(opts: NodeVesselOptions): Promise<NodeHermRes
     repo:        p.repo,
     residency:   p.residency,
     httpServer:  opts.httpServer,
+    ...(opts.dispatcher ? { dispatcher: opts.dispatcher } : {}),
     signerSeed:  p.vesselSeed,
     storageDir:  opts.storageDir,
     ...(opts.meshSelf ? { meshSelf: opts.meshSelf } : {}),
