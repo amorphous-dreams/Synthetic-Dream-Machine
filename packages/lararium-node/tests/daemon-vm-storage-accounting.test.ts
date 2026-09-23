@@ -23,6 +23,8 @@ const PROBE = new URL("./fixtures/daemon-replay-probe.mjs", import.meta.url);
 // witness on that existing seam avoids adding a second production behavior.
 const MARKER = "lar:///ha.ka.ba/daemon-replay-probe/marker";
 const OWNER_ISLAND = "daemon-worker";
+const COMPACTION_GENERATION_UNAVAILABLE =
+  "NodeFS exposes snapshot/incremental blobs only; its existing seam exposes no authoritative compaction-generation metadata";
 
 type ChunkKind = "snapshot" | "incremental";
 
@@ -39,6 +41,9 @@ interface StorageAccounting {
   heads: readonly string[] | null;
   chunks: readonly StorageChunk[];
   bytes: number;
+  /** Null is deliberate: NodeFS has no authoritative generation field to read. */
+  compactionGeneration: number | null;
+  compactionGenerationReason: string | null;
   replayMs: number;
   loadStatus: ProbeResult["status"];
 }
@@ -75,6 +80,10 @@ async function accountDocument(storageRoot: string, documentId: string): Promise
     heads: probe.heads ?? null,
     chunks,
     bytes: chunks.reduce((sum, chunk) => sum + chunk.bytes, 0),
+    // Do not infer this from snapshot presence, filenames, or TW5 recipe
+    // generations. None is authoritative for the worker's CRDT storage.
+    compactionGeneration: null,
+    compactionGenerationReason: COMPACTION_GENERATION_UNAVAILABLE,
     replayMs,
     loadStatus: probe.status,
   };
@@ -88,6 +97,15 @@ function assertAccounting(report: Partial<StorageAccounting>, workerRoot: string
   }
   if (!Array.isArray(report.chunks)) throw new Error("accounting chunks are absent");
   if (typeof report.bytes !== "number" || report.bytes < 1) throw new Error("accounting bytes are absent");
+  if (report.compactionGeneration !== null) {
+    if (typeof report.compactionGeneration !== "number" || !Number.isFinite(report.compactionGeneration) || !Number.isInteger(report.compactionGeneration)) {
+      throw new Error("accounting compaction generation is non-finite or not an integer");
+    }
+    throw new Error("accounting compaction generation is ungrounded by the NodeFS seam");
+  }
+  if (report.compactionGenerationReason !== COMPACTION_GENERATION_UNAVAILABLE) {
+    throw new Error("accounting compaction generation lacks its precise unavailable reason");
+  }
   if (typeof report.replayMs !== "number" || !Number.isFinite(report.replayMs)) {
     throw new Error("accounting replay duration is absent");
   }
@@ -162,6 +180,8 @@ describe("daemon VM worker storage accounting", () => {
     expect(report.storagePath).toBe(docStorePath(workerRoot, report.documentId));
     expect(report.chunks.length).toBeGreaterThan(0);
     expect(report.bytes).toBeGreaterThan(0);
+    expect(report.compactionGeneration).toBeNull();
+    expect(report.compactionGenerationReason).toBe(COMPACTION_GENERATION_UNAVAILABLE);
     expect(report.replayMs).toBeGreaterThanOrEqual(0);
     expect(["ok", "load-error", "aborted", "timeout", "torn"]).toContain(report.loadStatus);
     // A bounded child abort is itself evidence: never invent heads after an
@@ -178,5 +198,9 @@ describe("daemon VM worker storage accounting", () => {
     expect(() => assertAccounting(withoutOwner, workerRoot)).toThrow(/owner island/);
     const wrongPath = { ...report, storagePath: join(storageRoot, "other-island", "wrong") };
     expect(() => assertAccounting(wrongPath, workerRoot)).toThrow(/storage path/);
+    const inventedGeneration = { ...report, compactionGeneration: 1, compactionGenerationReason: null };
+    expect(() => assertAccounting(inventedGeneration, workerRoot)).toThrow(/ungrounded/);
+    const nonFiniteGeneration = { ...report, compactionGeneration: Number.NaN };
+    expect(() => assertAccounting(nonFiniteGeneration, workerRoot)).toThrow(/non-finite/);
   }, 45_000);
 });
