@@ -13,6 +13,8 @@ import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { isAbsolute, join, sep } from "node:path";
 import {
   genesisCasManifestFromSeed,
+  validatePronaosArtifactRecord,
+  type PronaosArtifactRecord,
   type GenesisSeed,
 } from "@lararium/mesh";
 import {
@@ -21,7 +23,6 @@ import {
   type PronaosProjection,
 } from "./pronaos-adapter.js";
 
-const ASSET_ROUTE = /^\/assets\/(?!\.{1,2}$)([A-Za-z0-9._-]+)$/;
 const WORKER_ASSET = /(?:^|\/)(?:daemon|wiki|shared-holder)\.worker[-.][A-Za-z0-9._-]+$/;
 const CID = /^[0-9a-f]{64}$/;
 
@@ -43,26 +44,8 @@ function exactFile(root: string, relativePath: string, label: string): Uint8Arra
   return new Uint8Array(readFileSync(targetReal));
 }
 
-function optionalFile(root: string, relativePath: string): Uint8Array | undefined {
-  const target = join(root, relativePath);
-  if (!existsSync(target)) return undefined;
-  return exactFile(root, relativePath, relativePath);
-}
-
 function file(bytes: Uint8Array, contentType: string): PronaosFile {
   return { bytes, contentType };
-}
-
-function assetType(route: string): string {
-  if (route.endsWith(".js")) return "application/javascript";
-  if (route.endsWith(".css")) return "text/css";
-  if (route.endsWith(".wasm")) return "application/wasm";
-  return "application/octet-stream";
-}
-
-function routeFile(root: string, route: string): Uint8Array {
-  if (!ASSET_ROUTE.test(route)) fail(`noncanonical asset route: ${route}`);
-  return exactFile(root, route.slice(1), `asset ${route}`);
 }
 
 function jsonObject(bytes: Uint8Array, label: string): Record<string, unknown> {
@@ -99,8 +82,8 @@ export interface PronaosProjectionInputs {
   readonly webArtifactRoot: string;
   /** Absolute root of the prepared seed/CAS bundle. */
   readonly genesisBundleRoot: string;
-  /** Exact Vite `/assets/...` routes selected by the prepared artifact record. */
-  readonly webAssetRoutes: readonly string[];
+  /** Exact Vite artifact receipt produced by the Web build. */
+  readonly artifactRecord: PronaosArtifactRecord;
 }
 
 export function buildPronaosProjection(
@@ -109,27 +92,33 @@ export function buildPronaosProjection(
   const webRoot = rootOf("webArtifactRoot", inputs.webArtifactRoot);
   const genesisRoot = rootOf("genesisBundleRoot", inputs.genesisBundleRoot);
   if (webRoot === genesisRoot) fail("webArtifactRoot and genesisBundleRoot must remain explicit separate inputs");
-  if (inputs.webAssetRoutes.length === 0) fail("webAssetRoutes must name the prepared web assets");
-  const routes = [...new Set(inputs.webAssetRoutes)];
-  if (routes.length !== inputs.webAssetRoutes.length) fail("webAssetRoutes contains a duplicate route");
-  for (const route of routes) {
-    if (!ASSET_ROUTE.test(route)) fail(`noncanonical asset route: ${route}`);
-  }
-  if (!routes.some((route) => WORKER_ASSET.test(route))) fail("webAssetRoutes must name a prepared worker asset");
-
-  const indexBytes = exactFile(webRoot, "index.html", "web index");
+  validatePronaosArtifactRecord(inputs.artifactRecord);
+  const entries = new Map(inputs.artifactRecord.routes.map((entry) => [entry.path, entry]));
+  const root = entries.get("/");
+  if (!root) fail("artifact record must name /");
+  const indexBytes = exactFile(webRoot, root.file, "web index");
+  if (createHash("sha256").update(indexBytes).digest("hex") !== root.sha256) fail("web index does not match artifact receipt");
   const indexText = new TextDecoder().decode(indexBytes);
-  const manifestBytes = optionalFile(webRoot, "manifest.webmanifest");
+  const manifestEntry = entries.get("/manifest.webmanifest");
+  const manifestBytes = manifestEntry ? exactFile(webRoot, manifestEntry.file, "manifest.webmanifest") : undefined;
+  if (manifestEntry && createHash("sha256").update(manifestBytes!).digest("hex") !== manifestEntry.sha256) fail("manifest does not match artifact receipt");
   if (/href=["']\/manifest\.webmanifest["']/.test(indexText) && !manifestBytes) {
     fail("index.html references an absent manifest.webmanifest");
   }
   for (const referenced of indexText.matchAll(/\/assets\/([A-Za-z0-9._-]+)/g)) {
     const route = `/assets/${referenced[1]}`;
-    if (!routes.includes(route)) fail(`index.html references an unlisted asset: ${route}`);
+    if (!entries.has(route)) fail(`index.html references an unlisted asset: ${route}`);
   }
 
   const assets = new Map<string, PronaosFile>();
-  for (const route of routes) assets.set(route, file(routeFile(webRoot, route), assetType(route)));
+  for (const entry of inputs.artifactRecord.routes) {
+    if (!entry.path.startsWith("/assets/")) continue;
+    const bytes = exactFile(webRoot, entry.file, `asset ${entry.path}`);
+    const actual = createHash("sha256").update(bytes).digest("hex");
+    if (actual !== entry.sha256) fail(`asset ${entry.path} does not match artifact receipt`);
+    assets.set(entry.path, file(bytes, entry.contentType));
+  }
+  if (![...assets.keys()].some((route) => WORKER_ASSET.test(route))) fail("artifact record must name a prepared worker asset");
 
   const seedBytes = exactFile(genesisRoot, "seed.json", "seed.json");
   const cids = seedCids(seedBytes);

@@ -724,15 +724,17 @@ Node composition is mounted in `main.ts`, that a production NGINX/Caddy carrier 
 future Librarium has been implemented. The remaining work is the explicit composition/root/route witness and
 the reserved household proof; Librarium publication remains a separate deferred concern.
 
-# ''Pronaos opt-in composition wedge — IN FLIGHT, 2026-09-22.'' The current Node main path now invokes the
-Pronaos composition seam before `httpServer.listen`: it mounts only when both explicit operator inputs are
-present — `LAR_PRONAOS_WEB_ROOT` and the exact JSON asset list in `LAR_PRONAOS_ASSET_ROUTES_JSON` — alongside
-the already-resolved genesis bundle. No inputs return an inert composition and leave the existing Node faces
-untouched; a partial pair, malformed JSON, duplicate route, missing worker route, or widened path refuses
-before a listener starts. The next cut must bind the generated/held Web artifact inventory to that finite route
-receipt, prove the Compose topology that carries the roots, and harden the selected carrier's route, cache,
-trusted-forwarding, and loss controls. This is an in-flight source seam with no new commit ID; it claims no
-production NGINX/Caddy deployment and no household proof.
+# ''Pronaos artifact-record composition wedge — IN FLIGHT, 2026-09-22.'' The Web build now emits an ignored,
+operator-held sidecar at `.pronaos-build/pronaos-artifact.json`, outside `dist`. Node's main path invokes the
+Pronaos composition seam before `httpServer.listen`: it mounts only when both explicit inputs are present —
+`LAR_PRONAOS_WEB_ROOT` and `LAR_PRONAOS_ARTIFACT_RECORD` — alongside the already-resolved genesis bundle.
+Mesh validates the finite record's route, named file, content type, cache class, and lowercase SHA-256 facts;
+Node reads those named files and checks their bytes against the record before mounting. No inputs return an
+inert composition and leave the existing Node faces untouched; a partial pair, unreadable/invalid record,
+duplicate or widened route, missing worker route, or digest mismatch refuses before a listener starts. The next
+phase is deployment topology/readiness/carrier selection: bind the generated/held artifact receipt into Compose
+and harden the selected carrier's route, cache, trusted-forwarding, and loss controls. This in-flight source
+seam claims no commit ID, production NGINX/Caddy deployment, Docker topology, or household proof.
 
 ''Genesis topology decision — archaeology receipt, 2026-09-21.'' The binary → CAS → plain-data-seed walk
 finds a staged build-out, not two independent authority sources. `940a023e3` moved immutable engine/plugin
@@ -1142,6 +1144,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S1qeprKN0mTAaUtHqTdYiMl0D177oi0bGtxYk-qaa5M
+<<^ code="&#x0003;">>ni:///sha-256;hQi5ht_Ww9t_QElAfrKxT7c2nbi10lp9cNZZcliKzsw
 
 <<^ code="&#x0004;" -> to="?">>

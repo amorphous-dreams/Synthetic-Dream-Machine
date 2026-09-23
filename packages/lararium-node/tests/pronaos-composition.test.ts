@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { createServer, type Server } from "node:http";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import {
@@ -41,27 +41,47 @@ function fixture(): { web: string; genesis: string; cid: string } {
 }
 
 function envFor(f: ReturnType<typeof fixture>): Record<string, unknown> {
+  const record = {
+    schema: "lararium-pronaos-artifact/v1",
+    routes: [
+      ["/", "index.html", "text/html; charset=utf-8", "no-store"],
+      ["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json", "no-store"],
+      ["/assets/wiki.worker-def.js", "assets/wiki.worker-def.js", "application/javascript", "immutable"],
+    ].map(([path, file, contentType, cache]) => ({ path, file, contentType, cache,
+      sha256: createHash("sha256").update(readFileSync(join(f.web, file))).digest("hex") })),
+  };
   return {
     LAR_PRONAOS_WEB_ROOT: f.web,
-    LAR_PRONAOS_ASSET_ROUTES_JSON: JSON.stringify(["/assets/wiki.worker-def.js"]),
+    LAR_PRONAOS_ARTIFACT_RECORD: writeRecord(record),
   };
+}
+
+function writeRecord(record: object): string {
+  const path = join(roots[0]!, "artifact-record.json");
+  writeFileSync(path, JSON.stringify(record));
+  return path;
 }
 
 describe("Pronaos Node composition", () => {
   test("keeps no-config boot inert and rejects partial, malformed, duplicate, and non-string config", () => {
     expect(parsePronaosCompositionConfig({})).toBeNull();
     expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: "/tmp/web" })).toThrow(/supplied together/);
-    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_ASSET_ROUTES_JSON: "[]" })).toThrow(/supplied together/);
-    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: "/tmp/web", LAR_PRONAOS_ASSET_ROUTES_JSON: "{" })).toThrow(/valid JSON/);
-    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: "/tmp/web", LAR_PRONAOS_ASSET_ROUTES_JSON: "[]" })).toThrow(/at least one asset route/);
-    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: "/tmp/web", LAR_PRONAOS_ASSET_ROUTES_JSON: "[1]" })).toThrow(/exact strings/);
-    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: "/tmp/web", LAR_PRONAOS_ASSET_ROUTES_JSON: JSON.stringify(["/assets/a.js", "/assets/a.js"]) })).toThrow(/duplicate/);
-    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: 42, LAR_PRONAOS_ASSET_ROUTES_JSON: "[]" })).toThrow(/exact path/);
+    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_ARTIFACT_RECORD: "/tmp/record" })).toThrow(/supplied together/);
+    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: "/tmp/web", LAR_PRONAOS_ARTIFACT_RECORD: " " })).toThrow(/exact path/);
+    expect(() => parsePronaosCompositionConfig({ LAR_PRONAOS_WEB_ROOT: 42, LAR_PRONAOS_ARTIFACT_RECORD: "/tmp/record" })).toThrow(/exact path/);
   });
 
   test("does not mount without both explicit inputs", () => {
     const server = createServer(); servers.push(server);
     expect(composePronaosFromEnv({ httpServer: server, genesisDir: "/never-read", env: {} })).toBeNull();
+  });
+
+  test("refuses a stale artifact record before mounting", () => {
+    const f = fixture();
+    const server = createServer(); servers.push(server);
+    const env = envFor(f);
+    writeFileSync(join(f.web, "assets/wiki.worker-def.js"), "tampered");
+    expect(() => composePronaosFromEnv({ httpServer: server, genesisDir: f.genesis, env })).toThrow(/artifact receipt/);
   });
 
   test("mounts only exact Pronaos routes and leaves the Oracle face reachable", async () => {

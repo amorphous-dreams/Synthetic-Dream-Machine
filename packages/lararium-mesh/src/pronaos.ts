@@ -95,6 +95,26 @@ export interface PronaosRouteInventory {
   readonly refusals: PronaosRefusalPolicy;
 }
 
+/**
+ * The build handoff for a Web Pronaos.  This is deliberately separate from
+ * the public route inventory: the record names files held by the operator,
+ * while the carrier decides which of those files becomes publicly reachable.
+ */
+export interface PronaosArtifactEntry {
+  readonly path: string;
+  /** Relative to the explicitly supplied Web artifact root. */
+  readonly file: string;
+  readonly contentType: string;
+  readonly cache: PronaosCacheClass;
+  /** Lowercase SHA-256 of the held bytes. */
+  readonly sha256: string;
+}
+
+export interface PronaosArtifactRecord {
+  readonly schema: "lararium-pronaos-artifact/v1";
+  readonly routes: readonly PronaosArtifactEntry[];
+}
+
 export interface ValidatePronaosRouteInventoryOptions {
   /** Startup requires `/` and `/genesis/seed.json` by default. */
   readonly requireStartup?: boolean;
@@ -102,6 +122,8 @@ export interface ValidatePronaosRouteInventoryOptions {
 
 const CID_SEGMENT = /^[^/\\?#%\s]+$/;
 const OPAQUE_VALUE = /^\S+$/;
+const SHA256 = /^[0-9a-f]{64}$/;
+const ARTIFACT_FILE = /^(?:index\.html|manifest\.webmanifest|assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm))$/;
 
 function fail(message: string): never {
   throw new TypeError(`[pronaos] ${message}`);
@@ -188,6 +210,46 @@ function validateRefusals(refusals: PronaosRefusalPolicy): void {
       refusals.unavailable !== "unavailable") {
     fail("refusal policy must keep undeclared, private, and traversal uniform");
   }
+}
+
+function validateArtifactPath(path: unknown): asserts path is string {
+  validatePath(path);
+  if (path !== "/" && path !== "/manifest.webmanifest" && !/^\/assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm)$/.test(path)) {
+    fail(`artifact path is outside the finite Web surface: ${path}`);
+  }
+}
+
+/** Validate the operator-held Web build receipt without touching a filesystem. */
+export function validatePronaosArtifactRecord(record: PronaosArtifactRecord): void {
+  if (!record || record.schema !== "lararium-pronaos-artifact/v1" || !Array.isArray(record.routes)) {
+    fail("artifact record has an unknown schema or routes are not finite");
+  }
+  const paths = new Set<string>();
+  let hasRoot = false;
+  for (const entry of record.routes) {
+    if (!entry || typeof entry !== "object") fail("artifact entry must be an object");
+    validateArtifactPath(entry.path);
+    if (paths.has(entry.path)) fail(`artifact record contains duplicate route: ${entry.path}`);
+    paths.add(entry.path);
+    if (entry.path === "/") hasRoot = true;
+    if (typeof entry.file !== "string" || !ARTIFACT_FILE.test(entry.file) || entry.file.includes("..")) {
+      fail(`artifact file is not a canonical relative file: ${entry.file}`);
+    }
+    if (entry.path === "/" && entry.file !== "index.html") fail("root artifact must be index.html");
+    if (entry.path === "/manifest.webmanifest" && entry.file !== "manifest.webmanifest") {
+      fail("manifest route must be manifest.webmanifest");
+    }
+    const expectedType = entry.path === "/" ? "text/html; charset=utf-8" :
+      entry.path === "/manifest.webmanifest" ? "application/manifest+json" :
+      entry.path.endsWith(".css") ? "text/css" : entry.path.endsWith(".wasm") ? "application/wasm" : "application/javascript";
+    const expectedCache = entry.path === "/" || entry.path === "/manifest.webmanifest" ? "no-store" : "immutable";
+    if (entry.contentType !== expectedType) fail(`artifact ${entry.path} must use ${expectedType}`);
+    if (entry.cache !== expectedCache) fail(`artifact ${entry.path} must use ${expectedCache}`);
+    if (typeof entry.sha256 !== "string" || !SHA256.test(entry.sha256)) {
+      fail(`artifact ${entry.path} needs a lowercase SHA-256 digest`);
+    }
+  }
+  if (!hasRoot) fail("artifact record must name /");
 }
 
 /** Validate a finite, carrier-neutral Pronaos route inventory. */

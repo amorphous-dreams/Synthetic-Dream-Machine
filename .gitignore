@@ -72,6 +72,7 @@ mempalace.yaml
 entities.json
 .mesh-test/
 .swarm-run/
+.pronaos-build/
 
 # local dev corpus-root marker — opt-in per install, never ship to clones (#53)
 lar-dev-root.json

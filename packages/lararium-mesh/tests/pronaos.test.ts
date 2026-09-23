@@ -2,9 +2,21 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PRONAOS_REFUSALS,
   isPronaosRouteInventory,
+  validatePronaosArtifactRecord,
   validatePronaosRouteInventory,
   type PronaosRouteInventory,
 } from "../src/pronaos.js";
+
+const artifactRecord = () => ({
+  schema: "lararium-pronaos-artifact/v1" as const,
+  routes: [
+    { path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store" as const, sha256: "a".repeat(64) },
+    { path: "/manifest.webmanifest", file: "manifest.webmanifest", contentType: "application/manifest+json", cache: "no-store" as const, sha256: "b".repeat(64) },
+    { path: "/assets/worker.js", file: "assets/worker.js", contentType: "application/javascript", cache: "immutable" as const, sha256: "c".repeat(64) },
+    { path: "/assets/style.css", file: "assets/style.css", contentType: "text/css", cache: "immutable" as const, sha256: "d".repeat(64) },
+    { path: "/assets/engine.wasm", file: "assets/engine.wasm", contentType: "application/wasm", cache: "immutable" as const, sha256: "e".repeat(64) },
+  ],
+});
 
 const inventory = (): PronaosRouteInventory => ({
   refusals: DEFAULT_PRONAOS_REFUSALS,
@@ -19,6 +31,20 @@ const inventory = (): PronaosRouteInventory => ({
 });
 
 describe("Pronaos route inventory", () => {
+  it("accepts the exact artifact delivery facts", () => {
+    expect(() => validatePronaosArtifactRecord(artifactRecord())).not.toThrow();
+  });
+
+  it("refuses artifact route collisions, traversal, unknown files, bad digests, and weakened delivery facts", () => {
+    const value = artifactRecord();
+    expect(() => validatePronaosArtifactRecord({ ...value, routes: [...value.routes, value.routes[0]!] })).toThrow(/duplicate/);
+    expect(() => validatePronaosArtifactRecord({ ...value, routes: [{ ...value.routes[1]!, path: "/assets/../secret.js" }] })).toThrow(/canonical|outside|traversal/);
+    expect(() => validatePronaosArtifactRecord({ ...value, routes: [{ ...value.routes[1]!, path: "/assets/logo.svg", file: "assets/logo.svg" }] })).toThrow(/outside/);
+    expect(() => validatePronaosArtifactRecord({ ...value, routes: [{ ...value.routes[2]!, sha256: "A".repeat(64) }] })).toThrow(/lowercase/);
+    expect(() => validatePronaosArtifactRecord({ ...value, routes: [{ ...value.routes[2]!, contentType: "text/plain" }] })).toThrow(/application\/javascript/);
+    expect(() => validatePronaosArtifactRecord({ ...value, routes: [{ ...value.routes[3]!, cache: "no-store" }] })).toThrow(/immutable/);
+  });
+
   it("accepts the finite startup and bounded transport inventory", () => {
     expect(() => validatePronaosRouteInventory(inventory())).not.toThrow();
     expect(isPronaosRouteInventory(inventory())).toBe(true);

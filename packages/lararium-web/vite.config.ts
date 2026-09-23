@@ -1,9 +1,11 @@
 import { defineConfig, type Plugin } from "vite";
 import wasm from "vite-plugin-wasm";
-import { createReadStream, cpSync, existsSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { createReadStream, cpSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, normalize, resolve } from "node:path";
 
 const GENESIS_DIR = resolve(import.meta.dirname, "../../genesis");
+const PRONAOS_RECORD = resolve(import.meta.dirname, "../../.pronaos-build/pronaos-artifact.json");
 
 /**
  * Serve `genesis/` at `/genesis` — in the dev server AND into the build.
@@ -41,6 +43,42 @@ function serveGenesis(): Plugin {
   };
 }
 
+/**
+ * Hold the final Vite output as one explicit handoff receipt. The receipt is
+ * outside dist: it is an operator input to Node, never a public Web route.
+ */
+function emitPronaosArtifactRecord(): Plugin {
+  const routes: Array<{ path: string; file: string; contentType: string; cache: "immutable" | "no-store"; sha256: string }> = [];
+  const digest = (source: string | Uint8Array): string => createHash("sha256").update(source).digest("hex");
+  return {
+    name: "lararium:pronaos-artifact-record",
+    generateBundle(_options, bundle) {
+      routes.length = 0;
+      for (const output of Object.values(bundle)) {
+        const file = output.fileName;
+        const source = output.type === "asset" ? output.source : output.code;
+        if (!/^assets\/.+\.(?:m?js|css|wasm)$/.test(file)) continue;
+        const contentType = file.endsWith(".css") ? "text/css" : file.endsWith(".wasm") ? "application/wasm" : "application/javascript";
+        routes.push({ path: `/${file}`, file, contentType, cache: "immutable", sha256: digest(source) });
+      }
+    },
+    closeBundle() {
+      // Vite writes the HTML/public copy after generateBundle; these are the
+      // two known non-Rollup files, never a directory enumeration.
+      const index = resolve(import.meta.dirname, "dist/index.html");
+      if (existsSync(index)) routes.push({ path: "/", file: "index.html", contentType: "text/html; charset=utf-8", cache: "no-store", sha256: digest(readFileSync(index)) });
+      const manifest = resolve(import.meta.dirname, "dist/manifest.webmanifest");
+      if (existsSync(manifest)) {
+        const source = readFileSync(manifest);
+        routes.push({ path: "/manifest.webmanifest", file: "manifest.webmanifest", contentType: "application/manifest+json", cache: "no-store", sha256: digest(source) });
+      }
+      routes.sort((a, b) => a.path.localeCompare(b.path));
+      mkdirSync(resolve(import.meta.dirname, "../../.pronaos-build"), { recursive: true });
+      writeFileSync(PRONAOS_RECORD, `${JSON.stringify({ schema: "lararium-pronaos-artifact/v1", routes }, null, 2)}\n`);
+    },
+  };
+}
+
 // Web-surface capabilities — Automerge WASM + module Web Workers + the genesis seed.
 // Config follows the Automerge "Vite" recipe (research-grounded 2026-06-25):
 //   - wasm()        : @automerge/automerge ships its core as .wasm
@@ -51,7 +89,7 @@ function serveGenesis(): Plugin {
 // so vite-plugin-top-level-await is NOT needed (and dropping it removes the @swc/core
 // native build that snagged pnpm's pre-run deps-check).
 export default defineConfig({
-  plugins: [wasm(), serveGenesis()],
+  plugins: [wasm(), serveGenesis(), emitPronaosArtifactRecord()],
 
   // The worker is a SEPARATE rollup build — top-level plugins do NOT inherit, so wasm()
   // must be repeated for the worker to instantiate automerge's wasm. format "es" is

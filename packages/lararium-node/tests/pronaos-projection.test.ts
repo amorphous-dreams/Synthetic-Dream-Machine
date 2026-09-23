@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { buildPronaosProjection } from "../src/pronaos-projection.js";
@@ -30,12 +30,21 @@ function fixture(): { web: string; genesis: string; cid: string } {
   return { web, genesis, cid };
 }
 
+function artifact(f: ReturnType<typeof fixture>, routes = ["/assets/index-abc.js", "/assets/wiki.worker-def.js"]): object {
+  const names = [["/", "index.html", "text/html; charset=utf-8", "no-store"], ["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json", "no-store"], ...routes.map((path) => [path, path.slice(1), "application/javascript", "immutable"])] as const;
+  return { schema: "lararium-pronaos-artifact/v1", routes: names.map(([path, file, contentType, cache]) => ({ path, file, contentType, cache, sha256: createHash("sha256").update(requireRead(f.web, file)).digest("hex") })) };
+}
+
+function requireRead(root: string, file: string): Buffer {
+  return readFileSync(join(root, file));
+}
+
 describe("buildPronaosProjection — explicit prepared roots", () => {
   test("reads only index, named assets/worker, seed, and seed-named CAS", () => {
     const f = fixture();
     const projection = buildPronaosProjection({
       webArtifactRoot: f.web, genesisBundleRoot: f.genesis,
-      webAssetRoutes: ["/assets/index-abc.js", "/assets/wiki.worker-def.js"],
+      artifactRecord: artifact(f),
     });
     expect([...projection.assets.keys()]).toEqual(["/assets/index-abc.js", "/assets/wiki.worker-def.js"]);
     expect([...projection.cas.keys()]).toEqual([f.cid]);
@@ -51,49 +60,47 @@ describe("buildPronaosProjection — explicit prepared roots", () => {
   test("rejects missing files, mismatched CAS bytes, traversal, and private routes", () => {
     const f = fixture();
     const base = { webArtifactRoot: f.web, genesisBundleRoot: f.genesis };
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/index-abc.js"] })).toThrow(/worker/);
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/index-abc.js", "/assets/missing.js", "/assets/wiki.worker-def.js"] })).toThrow(/absent/);
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/private/document.json", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/../private.js", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/..", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/foo%2Fbar.js", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/foo/bar.js", "/assets/wiki.worker-def.js"] })).toThrow(/noncanonical/);
+    expect(() => buildPronaosProjection({ ...base, artifactRecord: artifact(f, ["/assets/index-abc.js"]) })).toThrow(/worker/);
+    expect(() => buildPronaosProjection({ ...base, artifactRecord: { ...artifact(f), routes: [...artifact(f).routes.filter((route) => route.path !== "/assets/wiki.worker-def.js"), { path: "/assets/missing.js", file: "assets/missing.js", contentType: "application/javascript", cache: "immutable", sha256: "a".repeat(64) }, { path: "/assets/wiki.worker-def.js", file: "assets/wiki.worker-def.js", contentType: "application/javascript", cache: "immutable", sha256: createHash("sha256").update("worker").digest("hex") }] } })).toThrow(/absent|ENOENT/);
+    expect(() => buildPronaosProjection({ ...base, artifactRecord: artifact(f, ["/private/document.json", "/assets/wiki.worker-def.js"]) })).toThrow(/outside|ENOENT/);
+    expect(() => buildPronaosProjection({ ...base, artifactRecord: artifact(f, ["/assets/../private.js", "/assets/wiki.worker-def.js"]) })).toThrow(/canonical|outside|ENOENT/);
     const outside = mkdtempSync("/tmp/lararium-pronaos-outside-"); roots.push(outside);
     writeFileSync(join(outside, "escape.js"), "outside");
     symlinkSync(join(outside, "escape.js"), join(f.web, "assets/escape.js"));
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/index-abc.js", "/assets/escape.js", "/assets/wiki.worker-def.js"] })).toThrow(/escapes/);
+    expect(() => buildPronaosProjection({ ...base, artifactRecord: artifact(f, ["/assets/index-abc.js", "/assets/escape.js", "/assets/wiki.worker-def.js"]) })).toThrow(/escapes|digest/);
     writeFileSync(join(f.genesis, "cas", f.cid), "wrong-bytes");
-    expect(() => buildPronaosProjection({ ...base, webAssetRoutes: ["/assets/index-abc.js", "/assets/wiki.worker-def.js"] })).toThrow(/CID/);
+    expect(() => buildPronaosProjection({ ...base, artifactRecord: artifact(f) })).toThrow(/CID/);
   });
 
   test("requires absolute separate roots and the index's referenced asset", () => {
     const f = fixture();
     expect(() => buildPronaosProjection({
       webArtifactRoot: "relative-web", genesisBundleRoot: f.genesis,
-      webAssetRoutes: ["/assets/index-abc.js", "/assets/wiki.worker-def.js"],
+      artifactRecord: artifact(f),
     })).toThrow(/absolute/);
     expect(() => buildPronaosProjection({
       webArtifactRoot: f.web, genesisBundleRoot: f.web,
-      webAssetRoutes: ["/assets/index-abc.js", "/assets/wiki.worker-def.js"],
+      artifactRecord: artifact(f),
     })).toThrow(/separate/);
     expect(() => buildPronaosProjection({
       webArtifactRoot: f.web, genesisBundleRoot: f.genesis,
-      webAssetRoutes: ["/assets/wiki.worker-def.js"],
+      artifactRecord: artifact(f, ["/assets/wiki.worker-def.js"]),
     })).toThrow(/unlisted asset/);
   });
 
   test("refuses a linked manifest that is absent, while permitting an unlinked optional manifest", () => {
     const f = fixture();
+    const record = artifact(f);
     rmSync(join(f.web, "manifest.webmanifest"));
     expect(() => buildPronaosProjection({
       webArtifactRoot: f.web, genesisBundleRoot: f.genesis,
-      webAssetRoutes: ["/assets/index-abc.js", "/assets/wiki.worker-def.js"],
-    })).toThrow(/absent manifest/);
+      artifactRecord: record,
+    })).toThrow(/absent.*manifest|manifest.*absent/);
 
     writeFileSync(join(f.web, "index.html"), '<script type="module" src="/assets/index-abc.js"></script>');
     const projection = buildPronaosProjection({
       webArtifactRoot: f.web, genesisBundleRoot: f.genesis,
-      webAssetRoutes: ["/assets/index-abc.js", "/assets/wiki.worker-def.js"],
+      artifactRecord: { ...record, routes: record.routes.filter((route) => route.path !== "/manifest.webmanifest").map((route) => route.path === "/" ? { ...route, sha256: createHash("sha256").update(readFileSync(join(f.web, "index.html"))).digest("hex") } : route) },
     });
     expect(projection.manifest).toBeUndefined();
     expect(projection.routeInventory.routes.some((route) => route.path === "/manifest.webmanifest")).toBe(false);

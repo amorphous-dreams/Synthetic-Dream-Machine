@@ -1,12 +1,17 @@
 /**
  * Node's explicit Pronaos composition seam.
  *
- * Configuration names a prepared Web root and a finite JSON route list. The
+ * Configuration names a prepared Web root and one finite build receipt. The
  * helper never discovers a build directory; the projection builder receives
  * only those named paths and the already-resolved genesis directory.
  */
 
 import type { Server } from "node:http";
+import { readFileSync } from "node:fs";
+import {
+  validatePronaosArtifactRecord,
+  type PronaosArtifactRecord,
+} from "@lararium/mesh";
 import {
   type PronaosMount,
   mountPronaosReadFace,
@@ -14,11 +19,11 @@ import {
 import { buildPronaosProjection, type PronaosProjectionInputs } from "./pronaos-projection.js";
 
 const WEB_ROOT = "LAR_PRONAOS_WEB_ROOT";
-const ASSET_ROUTES = "LAR_PRONAOS_ASSET_ROUTES_JSON";
+const ARTIFACT_RECORD = "LAR_PRONAOS_ARTIFACT_RECORD";
 
 export interface PronaosCompositionConfig {
   readonly webArtifactRoot: string;
-  readonly webAssetRoutes: readonly string[];
+  readonly artifactRecordPath: string;
 }
 
 export interface PronaosComposition {
@@ -32,31 +37,26 @@ export function parsePronaosCompositionConfig(
   env: Readonly<Record<string, unknown>>,
 ): PronaosCompositionConfig | null {
   const webRoot = env[WEB_ROOT];
-  const routesJson = env[ASSET_ROUTES];
-  if (webRoot === undefined && routesJson === undefined) return null;
-  if (webRoot === undefined || routesJson === undefined) {
-    throw new Error(`[pronaos-composition] ${WEB_ROOT} and ${ASSET_ROUTES} must be supplied together`);
+  const recordPath = env[ARTIFACT_RECORD];
+  if (webRoot === undefined && recordPath === undefined) return null;
+  if (webRoot === undefined || recordPath === undefined) {
+    throw new Error(`[pronaos-composition] ${WEB_ROOT} and ${ARTIFACT_RECORD} must be supplied together`);
   }
   if (typeof webRoot !== "string" || webRoot.length === 0 || webRoot.trim() !== webRoot) {
     throw new Error(`[pronaos-composition] ${WEB_ROOT} must be a non-empty exact path`);
   }
-  if (typeof routesJson !== "string" || routesJson.length === 0) {
-    throw new Error(`[pronaos-composition] ${ASSET_ROUTES} must contain a JSON list`);
+  if (typeof recordPath !== "string" || recordPath.length === 0 || recordPath.trim() !== recordPath) {
+    throw new Error(`[pronaos-composition] ${ARTIFACT_RECORD} must be a non-empty exact path`);
   }
+  return { webArtifactRoot: webRoot, artifactRecordPath: recordPath };
+}
+
+function readArtifactRecord(pathname: string): PronaosArtifactRecord {
   let parsed: unknown;
-  try { parsed = JSON.parse(routesJson); }
-  catch { throw new Error(`[pronaos-composition] ${ASSET_ROUTES} is not valid JSON`); }
-  if (!Array.isArray(parsed) || parsed.some((route) => typeof route !== "string" || route.length === 0 || route.trim() !== route)) {
-    throw new Error(`[pronaos-composition] ${ASSET_ROUTES} must be a list of exact strings`);
-  }
-  const routes = parsed as string[];
-  if (routes.length === 0) {
-    throw new Error(`[pronaos-composition] ${ASSET_ROUTES} must name at least one asset route`);
-  }
-  if (new Set(routes).size !== routes.length) {
-    throw new Error(`[pronaos-composition] ${ASSET_ROUTES} contains duplicate routes`);
-  }
-  return { webArtifactRoot: webRoot, webAssetRoutes: routes };
+  try { parsed = JSON.parse(readFileSync(pathname, "utf8")); }
+  catch (error) { throw new Error(`[pronaos-composition] artifact record cannot be read: ${error instanceof Error ? error.message : String(error)}`); }
+  validatePronaosArtifactRecord(parsed as PronaosArtifactRecord);
+  return parsed as PronaosArtifactRecord;
 }
 
 /**
@@ -70,10 +70,11 @@ export function composePronaosFromEnv(args: {
 }): PronaosComposition | null {
   const config = parsePronaosCompositionConfig(args.env ?? process.env);
   if (!config) return null;
+  const artifactRecord = readArtifactRecord(config.artifactRecordPath);
   const inputs: PronaosProjectionInputs = {
     webArtifactRoot: config.webArtifactRoot,
     genesisBundleRoot: args.genesisDir,
-    webAssetRoutes: config.webAssetRoutes,
+    artifactRecord,
   };
   const projection = buildPronaosProjection(inputs);
   const mount = mountPronaosReadFace(args.httpServer, projection);
