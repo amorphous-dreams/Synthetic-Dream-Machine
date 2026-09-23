@@ -367,13 +367,13 @@ export { buildBulb, assembleBulb, readBulbArtifact, BULB_MANIFEST_FORMAT } from 
 export type { BulbArtifact, BulbBlob, BulbManifest } from "./bulb.js";
 export { mountBulbReadFace } from "./bulb-read-face.js";
 export {
-  mountPublicLibraryReadFace, publicLibraryRequestHandler,
-} from "./public-library-adapter.js";
+  mountPronaosReadFace, pronaosRequestHandler, pronaosRouteInventoryForProjection,
+} from "./pronaos-adapter.js";
 export type {
-  PublicLibraryFile, PublicLibraryProjection, PublicLibraryMount,
-} from "./public-library-adapter.js";
-export { buildPublicLibraryProjection } from "./public-library-projection.js";
-export type { PublicLibraryProjectionInputs } from "./public-library-projection.js";
+  PronaosFile, PronaosProjection, PronaosPreparedProjection, PronaosMount,
+} from "./pronaos-adapter.js";
+export { buildPronaosProjection } from "./pronaos-projection.js";
+export type { PronaosProjectionInputs } from "./pronaos-projection.js";
 export { bulbCap } from "./node-caps.js";
 export { pullBulb, kindleFromBulb, httpBulbTransport } from "./kindle.js";
 export type { BulbPullTransport, KindleResult } from "./kindle.js";

@@ -1,22 +1,30 @@
 import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, test } from "vitest";
 import {
-  mountPublicLibraryReadFace, type PublicLibraryFile, type PublicLibraryProjection,
-} from "../src/public-library-adapter.js";
+  mountPronaosReadFace, pronaosRouteInventoryForProjection,
+  type PronaosFile, type PronaosPreparedProjection, type PronaosProjection,
+} from "../src/pronaos-adapter.js";
+import { sha256HexBytesSync } from "@lararium/mesh";
 
-const bytes = (text: string, contentType: string): PublicLibraryFile => ({
+const bytes = (text: string, contentType: string): PronaosFile => ({
   bytes: new TextEncoder().encode(text), contentType,
 });
 
-const CID = "a".repeat(64);
-const projection: PublicLibraryProjection = {
+const casFile = bytes("seed-named-cas", "application/octet-stream");
+const CID = sha256HexBytesSync(casFile.bytes);
+const prepared: PronaosPreparedProjection = {
   index: bytes("<!doctype html><title>web</title>", "text/html; charset=utf-8"),
   assets: new Map([
     ["/assets/index-abc.js", bytes("console.log('web')", "application/javascript")],
     ["/assets/wiki.worker-def.js", bytes("self.postMessage('worker')", "application/javascript")],
   ]),
+  manifest: bytes('{"name":"Lararium"}', "application/manifest+json"),
   genesisSeed: bytes('{"seed":"public"}', "application/json"),
-  cas: new Map([[CID, bytes("seed-named-cas", "application/octet-stream")]]),
+  cas: new Map([[CID, casFile]]),
+};
+const projection: PronaosProjection = {
+  ...prepared,
+  routeInventory: pronaosRouteInventoryForProjection(prepared),
 };
 
 let server: Server | undefined;
@@ -30,7 +38,7 @@ afterEach(async () => {
 
 async function start(): Promise<string> {
   server = createServer();
-  const mount = mountPublicLibraryReadFace(server, projection);
+  const mount = mountPronaosReadFace(server, projection);
   dispose = mount.dispose;
   // A real Node vessel has other listeners for /oracle and /bulb. This test
   // fallback stands in for their absent faces and proves unowned paths are
@@ -49,12 +57,13 @@ async function start(): Promise<string> {
   return `http://127.0.0.1:${address.port}`;
 }
 
-describe("public-library adapter — prepared Herm/Lararium projection", () => {
+describe("Pronaos adapter — prepared Herm/Lararium projection", () => {
   test("serves exact index, hashed asset/worker, seed, and CAS bytes", async () => {
     const origin = await start();
     for (const [path, expected, type] of [
       ["/", "<!doctype html><title>web</title>", "text/html"],
       ["/assets/wiki.worker-def.js", "self.postMessage('worker')", "application/javascript"],
+      ["/manifest.webmanifest", '{"name":"Lararium"}', "application/manifest+json"],
       ["/genesis/seed.json", '{"seed":"public"}', "application/json"],
       [`/genesis/cas/${CID}`, "seed-named-cas", "application/octet-stream"],
     ] as const) {
@@ -62,7 +71,7 @@ describe("public-library adapter — prepared Herm/Lararium projection", () => {
       expect(response.status, path).toBe(200);
       expect(response.headers.get("content-type"), path).toContain(type);
       const cache = response.headers.get("cache-control");
-      if (path === "/" || path === "/genesis/seed.json") {
+      if (path === "/" || path === "/manifest.webmanifest" || path === "/genesis/seed.json") {
         expect(cache, path).toBe("no-store");
       } else {
         expect(cache, path).toContain("public");
@@ -94,11 +103,22 @@ describe("public-library adapter — prepared Herm/Lararium projection", () => {
     // normalizer otherwise collapses the first encoded dot before Node sees it.
     const traversal = await fetch(`${origin}/assets/%252e%252e/private.json`);
     expect(traversal.status).toBe(404);
-    expect(await traversal.text()).toBe("public library path refused");
+    expect(await traversal.text()).toBe("Pronaos path refused");
     const post = await fetch(`${origin}/`, { method: "POST" });
     expect(post.status).toBe(405);
     // The request listener does not claim /ws; a future upgrade handler owns it.
     const wsFace = await fetch(`${origin}/ws`);
     expect(wsFace.status).toBe(404);
+  });
+
+  test("refuses a prepared projection whose receipt no longer matches its bytes", () => {
+    const bad: PronaosProjection = {
+      ...projection,
+      index: bytes("tampered", "text/html; charset=utf-8"),
+      routeInventory: projection.routeInventory,
+    };
+    const candidate = createServer();
+    expect(() => mountPronaosReadFace(candidate, bad)).toThrow(/does not match prepared projection bytes/);
+    candidate.close();
   });
 });

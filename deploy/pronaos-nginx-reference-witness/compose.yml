@@ -1,0 +1,26 @@
+name: ${COMPOSE_PROJECT_NAME:-lararium-pronaos-nginx-witness}
+
+services:
+  upstream:
+    image: node:24-alpine
+    working_dir: /witness
+    volumes:
+      - ./upstream.mjs:/witness/upstream.mjs:ro
+    command: ["node", "/witness/upstream.mjs"]
+    expose:
+      - "4321"
+    networks: [pronaos]
+
+  nginx:
+    image: nginx:1.29-alpine
+    depends_on: [upstream]
+    ports:
+      - "127.0.0.1:${PRONAOS_NGINX_PORT:-18432}:8080"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./public:/usr/share/nginx/html:ro
+    networks: [pronaos]
+
+networks:
+  pronaos:
+    driver: bridge

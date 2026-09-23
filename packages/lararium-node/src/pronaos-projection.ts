@@ -1,5 +1,5 @@
 /**
- * Build the public-library projection from two explicitly named artifact
+ * Build the Pronaos projection from two explicitly named artifact
  * roots. This is a preparation step only; mounting remains the caller's
  * separate composition act.
  *
@@ -15,23 +15,18 @@ import {
   genesisCasManifestFromSeed,
   type GenesisSeed,
 } from "@lararium/mesh";
-import type { PublicLibraryFile, PublicLibraryProjection } from "./public-library-adapter.js";
-
-export interface PublicLibraryProjectionInputs {
-  /** Absolute root of the prepared @lararium/web artifact. */
-  readonly webArtifactRoot: string;
-  /** Absolute root of the prepared seed/CAS bundle. */
-  readonly genesisBundleRoot: string;
-  /** Exact Vite `/assets/...` routes selected by the prepared artifact record. */
-  readonly assetRoutes: readonly string[];
-}
+import {
+  pronaosRouteInventoryForProjection,
+  type PronaosFile,
+  type PronaosProjection,
+} from "./pronaos-adapter.js";
 
 const ASSET_ROUTE = /^\/assets\/(?!\.{1,2}$)([A-Za-z0-9._-]+)$/;
 const WORKER_ASSET = /(?:^|\/)(?:daemon|wiki|shared-holder)\.worker[-.][A-Za-z0-9._-]+$/;
 const CID = /^[0-9a-f]{64}$/;
 
 function fail(message: string): never {
-  throw new Error(`[public-library-projection] ${message}`);
+  throw new Error(`[pronaos-projection] ${message}`);
 }
 
 function rootOf(label: string, value: string): string {
@@ -48,7 +43,13 @@ function exactFile(root: string, relativePath: string, label: string): Uint8Arra
   return new Uint8Array(readFileSync(targetReal));
 }
 
-function file(bytes: Uint8Array, contentType: string): PublicLibraryFile {
+function optionalFile(root: string, relativePath: string): Uint8Array | undefined {
+  const target = join(root, relativePath);
+  if (!existsSync(target)) return undefined;
+  return exactFile(root, relativePath, relativePath);
+}
+
+function file(bytes: Uint8Array, contentType: string): PronaosFile {
   return { bytes, contentType };
 }
 
@@ -90,36 +91,49 @@ function seedCids(seedBytes: Uint8Array): readonly string[] {
 }
 
 /**
- * Read the exact prepared public library. This function intentionally returns
+ * Read the exact prepared Pronaos. This function intentionally returns
  * bytes and route names only; it does not install an HTTP listener.
  */
-export function buildPublicLibraryProjection(
-  inputs: PublicLibraryProjectionInputs,
-): PublicLibraryProjection {
+export interface PronaosProjectionInputs {
+  /** Absolute root of the prepared @lararium/web artifact. */
+  readonly webArtifactRoot: string;
+  /** Absolute root of the prepared seed/CAS bundle. */
+  readonly genesisBundleRoot: string;
+  /** Exact Vite `/assets/...` routes selected by the prepared artifact record. */
+  readonly webAssetRoutes: readonly string[];
+}
+
+export function buildPronaosProjection(
+  inputs: PronaosProjectionInputs,
+): PronaosProjection {
   const webRoot = rootOf("webArtifactRoot", inputs.webArtifactRoot);
   const genesisRoot = rootOf("genesisBundleRoot", inputs.genesisBundleRoot);
   if (webRoot === genesisRoot) fail("webArtifactRoot and genesisBundleRoot must remain explicit separate inputs");
-  if (inputs.assetRoutes.length === 0) fail("assetRoutes must name the prepared web assets");
-  const routes = [...new Set(inputs.assetRoutes)];
-  if (routes.length !== inputs.assetRoutes.length) fail("assetRoutes contains a duplicate route");
+  if (inputs.webAssetRoutes.length === 0) fail("webAssetRoutes must name the prepared web assets");
+  const routes = [...new Set(inputs.webAssetRoutes)];
+  if (routes.length !== inputs.webAssetRoutes.length) fail("webAssetRoutes contains a duplicate route");
   for (const route of routes) {
     if (!ASSET_ROUTE.test(route)) fail(`noncanonical asset route: ${route}`);
   }
-  if (!routes.some((route) => WORKER_ASSET.test(route))) fail("assetRoutes must name a prepared worker asset");
+  if (!routes.some((route) => WORKER_ASSET.test(route))) fail("webAssetRoutes must name a prepared worker asset");
 
   const indexBytes = exactFile(webRoot, "index.html", "web index");
   const indexText = new TextDecoder().decode(indexBytes);
+  const manifestBytes = optionalFile(webRoot, "manifest.webmanifest");
+  if (/href=["']\/manifest\.webmanifest["']/.test(indexText) && !manifestBytes) {
+    fail("index.html references an absent manifest.webmanifest");
+  }
   for (const referenced of indexText.matchAll(/\/assets\/([A-Za-z0-9._-]+)/g)) {
     const route = `/assets/${referenced[1]}`;
     if (!routes.includes(route)) fail(`index.html references an unlisted asset: ${route}`);
   }
 
-  const assets = new Map<string, PublicLibraryFile>();
+  const assets = new Map<string, PronaosFile>();
   for (const route of routes) assets.set(route, file(routeFile(webRoot, route), assetType(route)));
 
   const seedBytes = exactFile(genesisRoot, "seed.json", "seed.json");
   const cids = seedCids(seedBytes);
-  const cas = new Map<string, PublicLibraryFile>();
+  const cas = new Map<string, PronaosFile>();
   for (const cid of cids) {
     const bytes = exactFile(genesisRoot, `cas/${cid}`, `CAS ${cid}`);
     const actual = createHash("sha256").update(bytes).digest("hex");
@@ -127,10 +141,12 @@ export function buildPublicLibraryProjection(
     cas.set(cid, file(bytes, "application/octet-stream"));
   }
 
-  return {
+  const prepared = {
     index: file(indexBytes, "text/html; charset=utf-8"),
     assets,
+    ...(manifestBytes ? { manifest: file(manifestBytes, "application/manifest+json") } : {}),
     genesisSeed: file(seedBytes, "application/json"),
     cas,
   };
+  return { ...prepared, routeInventory: pronaosRouteInventoryForProjection(prepared) };
 }

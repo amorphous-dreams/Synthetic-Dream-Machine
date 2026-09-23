@@ -30,8 +30,8 @@ written    = "2026-09-22"
 ! Pronaos ~ the house's first face, without a landlord
 
 > Status: PROPOSED — design carrier, not an implementation receipt. The operator chose the composed
-> Pronaos as the production direction on 2026-09-21. Node-owned and separate-static arrangements remain
-> contract witnesses, never competing vessel ontologies.
+> Pronaos as the production target on 2026-09-21. Node-owned and separate-static arrangements remain
+> contract witnesses, never competing vessel ontologies; no composed carrier deployment receipt stands here.
 
 Greek *pronaos* names the front hall or fore-porch immediately before a temple's inner house. Pausanias names
 Athena and Hermes among the *Pronaoi* standing before the Ismenian Apollo sanctuary at Thebes; that narrow
@@ -192,9 +192,10 @@ does not become an existence oracle. A known public integrity mismatch names an 
 live target that cannot answer names temporary unavailability. Browser and operator diagnostics may carry the
 specific local cause; external responses do not reveal whether a private object exists.
 
-Immutable CID members may cache. Selectors, discovery, and mutable public declarations carry explicit
-revalidation or `no-store` policy. No `Date.now()`, cache timestamp, certificate date, or other wall-clock witness
-may decide shared ordering, membership, integrity, admission, or authority.
+Integrity-addressable bytes may still carry `no-store`. Each route declares `immutable`, `revalidate`, or `no-store`
+as its delivery class; a CID or hash never infers an HTTP cache policy. Selectors, discovery, and mutable public
+declarations carry explicit revalidation or `no-store` policy. No `Date.now()`, cache timestamp, certificate date, or
+other wall-clock witness may decide shared ordering, membership, integrity, admission, or authority.
 
 <<~/ahu>>
 
@@ -219,7 +220,9 @@ design wave; they may configure reach and never create document or peer authorit
 !! The red witness ~ prove the approach before machinery grows
 
 The first witness attributes `/`, one worker, `genesis/seed.json`, and one seed-named CAS member to their named
-serving process and compares each response with expected bytes. It then weakens one boundary at a time:
+serving process, compares each response with expected bytes, and asserts the declared cache class independently of
+the integrity receipt. The current byte shore keeps `/` and `genesis/seed.json` `no-store`; selected assets and CAS
+members may receive `immutable` only through explicit route policy. It then weakens one boundary at a time:
 
 * widen the route inventory, traverse a path, or request an undeclared CID;
 * return HTML for a worker, seed, CAS, or missing route;
@@ -228,6 +231,7 @@ serving process and compares each response with expected bytes. It then weakens 
 * derive `ws` from an HTTPS arrival or use a stale configured self-URL;
 * accept a disallowed browser Origin;
 * infer peer identity from DNS, TLS, or host text;
+* infer an HTTP cache class from a CID or hash;
 * let a cache hit serve an undeclared/private route;
 * turn downstream loss into a successful SPA fallback;
 * use a wall-clock value as authority or shared order.
@@ -290,6 +294,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bWN-7k-eMCVghehhY9In4nduS64G_2lFXXVyXCu41Ns
+<<^ code="&#x0003;">>ni:///sha-256;fxySv96_y87XCJ8SWkS5w8U5ESoTwlOtHYmgYHiSR-0
 
 <<^ code="&#x0004;" -> to="?">>

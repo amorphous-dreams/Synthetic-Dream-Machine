@@ -315,17 +315,25 @@ The ''routing substrate'' that carries a sealed stream across the leylines — g
 
 !! The CAS Substrate ~ the blob floor beneath every doc
 
-Beneath the FLOW-map and the sovereign Automerge docs sits a ''content-addressed blob store'' (CAS) — bytes keyed by their own CID, immutable by construction (the ''true-name'' register made into a store, #node-addressing). Three blob kinds ride it:
+Beneath the FLOW-map and the sovereign Automerge docs sits a ''content-addressed blob store'' (CAS) — bytes keyed by
+their own CID, with byte identity fixed by the digest (the ''true-name'' register made into a store,
+#node-addressing). Byte identity and HTTP delivery caching remain separate; a digest never chooses `immutable`,
+`revalidate`, or `no-store`. Three blob kinds ride it:
 
 * ''engine-blob'' — the TW5 runtime, the ''interpreter'' every Automerge doc needs to render. //All docs fail without it// — a vessel that holds the docs but not the engine reads nothing back. So the CAS layer ''MUST flow through every vessel'' (Lararium and Herm alike), the one universal carriage even the leanest wayfarer serves (the Lares Viales reads `@oracle` engine-blob CIDs, vessel-caps#lares-viales).
 * ''plugin-blobs'' — the engine's extensions, content-addressed, composed atop the engine by CID.
 * ''byte-blobs'' — arbitrary sovereign payloads (attachments, media, sealed artifacts), each named by content.
 
-''Served via the read-face.'' `GET /oracle/<cid>.bin` ''IS the CAS serve'' — the same content-addressed read-face the Two-Faced Substrate already stands (#capability-layer; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">>). A hash-named blob refuses a write by its nature — no mutable surface, so the serve guards nothing.
+''Served via the read-face.'' The current Node oracle read-face answers `GET /oracle/<cid>.bin` as the CAS serve —
+the same content-addressed read-face the Two-Faced Substrate already stands (#capability-layer;
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">>). This documents a current
+Herm read face, not a composed Pronaos carrier or a general static HTTP surface. A hash-named blob refuses a write
+by its nature — no mutable surface, so the serve guards nothing; its response cache class remains an explicit
+delivery policy.
 
 Two tiers cross the read/sealed cut:
 
-* ''public tier'' — engine-blob + plugin-blobs, ''universal'', fetch-by-anyone, the same grammar floor every vessel verifies from cold (the genesis CID lineage, #grammar-as-shared-structure).
+* ''public tier'' — engine-blob + plugin-blobs, ''universal'', fetch-by-anyone, the same grammar floor every vessel verifies from cold (the genesis CID lineage, #grammar-as-shared-structure). Public read does not itself prescribe an HTTP cache class.
 * ''sealed tier'' — sovereign byte-blobs, encrypted to the cabal/persona read-set, carried blind by the relay (#/the-relay-floor).
 
 ''Cold-boot by CID.'' A cold Lararium ''bootstraps its engine by CID from a peer or a Herm'' — it fetches the engine-blob off the public floor, verifies by rehash, and stands its runtime before it decrypts a single sovereign doc. WITNESSED: the re-genesis carries the engine-blob ''by CID'' into the node vessel — the serde-skew dep-bump cure (`lares vessel rite rebuild`, commit 95edf181), the engine riding as content rather than a baked-in artifact. The ''cross-vessel cold-fetch'' (a Lararium pulling its engine off a peer/Herm) stands ''PROPOSED'', riding the same read-face the node already serves.
@@ -470,7 +478,7 @@ The earlier cap-wall — an anonymous vessel ''DENIED'' at the relay door — re
 
 A fresh browser spore dials in along one of ''three distinct crossings'', each clearing a different door:
 
-* ''anon → public-lararium'' — the ''veil'' path: public-read off the content-addressed floor (#/the-cas-substrate), no pledge, no admission; the relay-forward gate runs near-open. WITNESSED: an anon browser boots live against a public lararium and renders the public plane (the browser-wiki witness, commit 0c379598).
+* ''anon → public-lararium'' — the ''veil'' path: public-read off the content-addressed floor (#/the-cas-substrate), no pledge, no admission; the relay-forward gate runs near-open. WITNESSED: an anon browser boots live against a public lararium and renders the public plane (the browser-wiki witness, commit 0c379598). This older direct browser projection witness does not prove the current Pronaos target or an NGINX/Caddy carrier deployment.
 * ''anon → known'' — the ''guild-PLEDGE'': a member ''vouches'', minting a ''device-admit edge'' into the PersonaGroup (#/social-axis); the voucher ''co-pays and watches'' — their standing decays if the spore sours (the siege-gate `rb>c`, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>). ''No pledge → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with a vouch.
 * ''operator'' — ''runs-INFRA'', orthogonal to the two WHO crossings: a browser carrying the operator's own infrastructure standing reaches its own sovereign plane. The vertical-on-INFRA position (#/two-axis-topology), never a social tier.
 
@@ -603,6 +611,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m3jGsLpx8zqTYmEJck-vvgbfgYa_cGBHVUAqGTzcTbk
+<<^ code="&#x0003;">>ni:///sha-256;1iDeHG-A-p4HUcLxsRFuQTHiNraQ3Q1mZIsUE0-PUzI
 
 <<^ code="&#x0004;" -> to="?">>

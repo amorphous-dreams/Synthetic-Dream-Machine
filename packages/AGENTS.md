@@ -57,20 +57,46 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No TW5 VM runs on the main thread — every engine lives in a worker.
 
-### Public-library projection (P0 inventory)
+### Pronaos arrival/bootstrap projection (P0 inventory)
 
-The Herm floor includes the scoped public crossroads/library projection; a Lararium retains that floor when its persona and document-owning caps stand. This is a capability projection, not a third vessel kind and not a client/server role. The same Node assembly may carry the projection beside relay and read-face capabilities, or an operator may place a separately attributable process around that projection without changing the peer's cap stack.
+The Pronaos carries one local Herm/Lararium composition's finite first face. It may expose an exact index,
+worker/assets, optional install manifest, `genesis/seed.json`, and seed-named genesis CAS members. This remains a
+capability projection, never a third vessel kind or peer rank. The same Node assembly may carry it beside
+relay and Herm read-face capabilities, or an operator may place a separately attributable carrier around it without
+changing the peer's cap stack.
 
-The projection's lawful route classes are:
+| Route class | Projection | Must refuse |
+|---|---|---|
+| `/`, exact `/assets/<name>`, optional `/manifest.webmanifest` | Prepared Web arrival bytes | Unlisted assets, broad filesystem roots, SPA fallback |
+| `/genesis/seed.json` | Exact startup seed | Wrong bytes, mutation, private replacement |
+| `/genesis/cas/<cid>` | Exact seed-named genesis member | Non-seed CIDs, wrong bytes, traversal, guesses |
+
+### Herm public read faces (P0 inventory)
+
+The Herm floor may carry public read faces separately from the Pronaos arrival projection. These faces publish
+bounded, read-only material under their own route owners:
 
 | Route class | Projection | Must refuse |
 |---|---|---|
 | `/bulb/manifest`, `/bulb/pointer`, `/bulb/<cid>.bin` | Held, all-public bootstrap snapshot | CIDs outside the held bulb |
 | `/cas/<cid>` | Bytes named by a `public`-tier pointer in the Herm's own or declared realm books | Private/contract/undeclared pointers, missing bytes, guesses |
-| Flow/oracle read face | Read-only, content-addressed public snapshot; Herm FLOW-map mounting applies the public disclosure shore | Generic private bag or persona-document access |
-| Relay crossing | Sealed carriage | Plaintext sight, document authority, or route-derived admission |
+| FLOW/oracle read face | Read-only public snapshot and FLOW-map disclosure | Generic private bag or persona-document access |
 
-The `/cas` gate is derived from current public references and declared tiers; it never treats possession of bytes, a hostname, a process name, or a static route as persona, document, admission, or merge authority. Missing or disallowed material draws the same named refusal as an unknown public CID. The focused Herm re-share and realm-public controls are the source-backed red/green witness for this inventory.
+The future Librarium's public books, images, media, and deliberately offered editions remain a separate projection
+concern. None of these Herm read faces turns a house-held `library:` collection into a public shelf by implication.
+
+### Sealed Herm carriage (P0 inventory)
+
+The relay crossing carries sealed envelopes between explicit peers. It grants carriage and no plaintext sight,
+document authority, or route-derived admission. Relay carriage remains orthogonal to both Pronaos delivery and Herm
+public read faces.
+
+Across all three boundaries, byte identity, HTTP cache class, freshness observation, and authority remain separate.
+A CID or hash makes wrong bytes detectable; it never infers `immutable`, `revalidate`, or `no-store`. Each route/read
+face declares its delivery class. A cache hit never grants identity, membership, read scope, document authority,
+admission, or merge authority. The `/cas` gate remains derived from current public references and declared tiers;
+missing or disallowed material draws the same named refusal as an unknown public CID. The focused Herm re-share and
+realm-public controls remain the source-backed red/green witness for the Herm read-face boundary.
 
 `@lararium/browser` carries browser-native capability atoms that parallel the shared keel through WebSocket egress, IndexedDB, WebCrypto, Workers, and `__stubs__` for browser-incompatible dependencies. It cooperates with `@lararium/web` inside one Web-surface device/context assembly. That assembly remains a DreamNet peer across a real island boundary; browser inability to accept inbound sockets names a substrate constraint, not reduced authority. No React, no canvas.
 
@@ -263,6 +289,6 @@ When reporting back, use OODA-HA receipts: observe facts, orient boundary, decid
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O5jNl-AAxSFGXDLxd7OFnNPp2Xx6KWtT6G286zmE-j0
+<<^ code="&#x0003;">>ni:///sha-256;yQSwUj7oKEGutaBFGjMaji_JLIq7hT1m84APxDFoYRw
 
 <<^ code="&#x0004;" -> to="?">>

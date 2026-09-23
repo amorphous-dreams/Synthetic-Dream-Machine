@@ -1,0 +1,478 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/pronaos-carriers">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/pronaos-carriers.mem"
+hydrate    = true
+l-space    = "lararium"
+mana       = 15
+manao      = 15
+manaoio    = 14
+namespace  = "&#x2695;"
+role       = "carrier-neutral NGINX/Caddy pattern-integrity study for a Pronaos. Commodity carriers realize an operator-held first face; they do not become Herm, Lararium, Nexus, identity, or Librarium."
+status-why = "RESEARCHED design meme, 2026-09-22; no carrier integration built"
+tags       = ["mesh/pronaos", "mesh/secure-context", "mesh/reach-plane", "api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/pronaos-carriers"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/pronaos-carriers"
+written    = "2026-09-22"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<~ ahu #/head>>
+
+! NGINX and Caddy ~ commodity bodies for one Pronaos
+
+> Status: RESEARCHED DESIGN — no reverse-proxy replacement, package, or Compose integration stands here.
+> NGINX and Caddy can carry a Pronaos. The carrier changes; the Pronaos contract does not.
+
+The Pronaos names one Herm/Lararium composition's intimate first face. NGINX and Caddy already supply mature
+HTTP serving, TLS termination, static-byte delivery, reverse forwarding, logs, and WebSocket transport. They do
+not need a DreamNet replacement. A generated or hand-held carrier configuration realizes the Pronaos route
+receipt while the house keeps identity, documents, CAS, VEIL scope, Oracle, merge, and admission authority.
+
+The production direction remains a composed public Web shore plus a live Node shore under one operator-held
+arrival name. Node and Web remain peers with differentiated capability stacks. The carrier creates no client/server
+ontology; it provides an ordinary delivery body for a peer composition.
+
+<<~/ahu>>
+
+<<~ ahu #/related-carriers>>
+
+!! Related carriers ~ the carrier study rides existing law
+
+The common first-face contract lives in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>. Browser origin
+and DNS/ACME pressure lives in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>. Reach-plane custody
+and foreign transport remain in <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>. The active work handoff
+and its red-first ordering live in <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>.
+
+This meme adds carrier pattern knowledge. It does not replace those carriers or silently open their unresolved
+operator rulings.
+
+<<~/ahu>>
+
+<<~ ahu #/myth-and-boundary>>
+
+!! Myth and boundary ~ the carrier wears the forecourt's clothes
+
+```text
+Compitum   roads meet
+Herm       carriage and public crossing stand
+Pronaos    this house presents its declared first face
+Carrier    NGINX, Caddy, cloud ingress, or another delivery body realizes that face
+Lararium   persona, owned documents, held local material, and house authority remain within
+Librarium   deferred public crossroads of books, images, media, and offered editions
+```
+
+The carrier holds a deployment receipt and a finite public route inventory. It may serve a prepared Web artifact,
+seed, seed-named CAS members, public FLOW, or a declared live introduction. It never receives a general Lararium
+root, private bag mount, persona key, peer-identity authority, or arbitrary CAS path.
+
+The carrier's TLS certificate proves an origin to a browser only. The domain remains a rendezvous hint. The peer
+key proves peer identity. The route selects delivery. A capability permits an action. No relation silently grants
+the next one.
+
+<<~/ahu>>
+
+<<~ ahu #/common-contract>>
+
+!! Common contract ~ translate the same Pronaos receipt into either carrier
+
+The Pronaos descriptor carries finite, inspectable facts:
+
+```text
+origin / name binding             local DNS, contracted domain, or LAN name
+public artifact inventory         exact index, workers, assets, and integrity receipts
+bootstrap inventory               exact seed.json plus seed-named CID-checked members
+public route inventory             exact paths, methods, response classes, and refusal shape
+transport introduction            one bounded live target, if the operator declares one
+delivery policy                   CSP, SRI where applicable, cache, CORS, and headers
+trusted-hop policy                which carrier addresses may supply forwarded context
+process attribution               which prepared shore owns each response
+```
+
+The descriptor must compile or be reviewed before the carrier starts. A route never means "serve this directory",
+"read any CID", or "fall through to the application". The public root remains a dedicated read-only projection,
+separate from private bags, persona stores, Oracle files, and the full house CAS. A symlink or broad mounted root
+must not smuggle an inner house through a public file handler.
+
+Integrity addressing and delivery caching remain separate fields in the receipt. A seed, index, or CAS member may
+carry an integrity digest and a route witness while receiving `no-store`; content addressing makes wrong bytes
+detectable, but it does not prescribe a cache lifetime or revalidation policy. The carrier applies the declared
+cache class route by route.
+
+The carrier must return one outward refusal shape for missing, private, traversal, and undeclared paths, so the
+arrival surface does not become a private-object existence oracle. A known public integrity mismatch names an
+integrity failure. A known live target loss names temporary unavailability. Detailed diagnostics remain local to
+the operator and test witness.
+
+<<~/ahu>>
+
+<<~ ahu #/cache-law>>
+
+!! Cache law ~ integrity witnesses and delivery classes never fuse
+
+The current Node public byte witness demonstrates the separation concretely. Its exact index route `/` and exact
+`/genesis/seed.json` route answer `no-store`, while selected exact `/assets/<name>` and `/genesis/cas/<cid>` routes
+answer `public, immutable, max-age=31536000`. Those response classes come from the route adapter's explicit policy,
+not from the fact that a byte or CID can be hashed. The adapter's tests assert the distinction.
+
+The bulb and Oracle read-faces carry the same split: pointers and manifests answer `no-store`; selected snapshot or
+blob routes may answer `public, immutable` when their serving face declares that class. A future Pronaos descriptor
+must preserve the field rather than deriving it from `seed.json`, CID shape, or a filename.
+
+```text
+integrity receipt       wrong bytes can be detected
+cache class             carrier may retain or revalidate a response
+freshness observation   a local delivery fact, never causal order
+authority               a held capability, never a cache consequence
+```
+
+The first carrier witness must assert both dimensions independently:
+
+* `/` and `genesis/seed.json` return exact bytes plus `no-store`;
+* a selected hashed asset or CAS member returns its declared cache class;
+* a route declared `no-store` stays `no-store` through NGINX and Caddy;
+* changing a cache header never changes CID/hash verification;
+* a cache hit never expands the route inventory or private read scope;
+* an integrity mismatch never becomes a cache miss that silently falls through to another face.
+
+The implementation may later select different cache classes for the same kind of byte under a different operator
+policy. The receipt and witness must say which policy stands. No global clock decides any of these classes.
+
+<<~/ahu>>
+
+<<~ ahu #/nginx>>
+
+!! NGINX ~ explicit glass and mature operations
+
+NGINX gives an operator a deliberately explicit configuration language and a mature serving/proxy process. It
+serves static files from a configured root, terminates TLS with explicitly named certificates and keys, forwards
+selected routes, and emits access/error records. Its WebSocket tunnel requires explicit HTTP/1.1 upgrade handling;
+its default `proxy_read_timeout` closes an idle upstream after 60 seconds unless the operator chooses a different
+transport policy or the peer sends keepalive traffic.
+
+Official pattern receipts:
+
+* HTTPS certificate/key configuration: https://nginx.org/en/docs/http/configuring_https_servers.html
+* static roots and `try_files`: https://nginx.org/en/docs/http/ngx_http_core_module.html
+* WebSocket upgrade and idle timeout: https://nginx.org/en/docs/http/websocket.html
+* proxy headers and read timeout: https://nginx.org/en/docs/http/ngx_http_proxy_module.html
+
+NGINX's operational virtues:
+
+* explicit certificate custody and renewal integration;
+* broad adoption, stable deployment knowledge, and many existing observability paths;
+* clear separation between static locations and bounded upstream locations;
+* a good fit where an organization already runs NGINX and wants the Pronaos descriptor translated into its
+  existing edge configuration;
+* a good fit for a regional carrier fleet where operators already review configuration, reloads, and logs.
+
+Its costs:
+
+* ACME issuance and renewal need a separate, persisted tool or operator workflow;
+* WebSocket headers, trusted forwarding, timeout, and reload behavior require deliberate configuration;
+* a large configuration surface can hide an accidental broad root, fallback, or proxy route;
+* certificate and generated-route custody need explicit runbook and aftermath witnesses.
+
+The NGINX reference shape remains schematic until the red witness owns it:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name house.example;
+    ssl_certificate     /run/pronaos/cert.pem;
+    ssl_certificate_key /run/pronaos/key.pem;
+
+    # generated exact public locations; never the Lararium root
+    location = / { try_files /index.html =404; root /srv/pronaos/public; }
+    location = /genesis/seed.json { try_files /genesis/seed.json =404; root /srv/pronaos/public; }
+    location /live/ { proxy_pass http://lararium-node:8787; }
+}
+```
+
+The example names the shape, not permission to copy it unchanged. Generated locations need exact inventory,
+explicit headers, `Upgrade`/`Connection` handling for the live route, and a trusted-hop policy. A broad `location /`
+or SPA fallback would violate this meme's refusal law.
+
+<<~/ahu>>
+
+<<~ ahu #/caddy>>
+
+!! Caddy ~ approachable glass with automatic HTTPS
+
+Caddy gives an operator a human-oriented Caddyfile and a native JSON configuration/API. Its automatic HTTPS
+provisions and renews certificates for qualifying public names, redirects HTTP to HTTPS by default, and creates a
+local CA for local names when the operator arranges client trust. Its `reverse_proxy` supports WebSocket upgrade and
+bidirectional tunneling. Its `file_server` serves a configured filesystem and supports explicit path matchers,
+headers, logs, and metrics.
+
+Official pattern receipts:
+
+* automatic HTTPS and persistent certificate data: https://caddyserver.com/docs/automatic-https
+* reverse proxy, WebSocket, streaming, and reload behavior:
+  https://caddyserver.com/docs/caddyfile/directives/reverse_proxy
+* static file serving and its root/symlink warning:
+  https://caddyserver.com/docs/caddyfile/directives/file_server
+* trusted proxy ranges and forwarded headers: https://caddyserver.com/docs/caddyfile/options
+* Caddyfile route and handler ordering: https://caddyserver.com/docs/caddyfile/concepts
+
+Caddy's operational virtues:
+
+* a household can name a domain and receive ordinary ACME HTTPS without separately wiring a renewal daemon;
+* a concise configuration suits one laptop, a small household server, or an operator who wants a readable first
+  deployment;
+* reverse proxy, static delivery, response headers, access logs, and WebSocket handling live in one carrier;
+* a native API and JSON model can later receive a generated Pronaos descriptor without forcing a hand-edited file.
+
+Its costs:
+
+* ACME and local-CA state require a durable, protected data directory; a disposable container loses the carrier's
+  renewal and local trust state;
+* local HTTPS still needs client trust for Caddy's local CA; it does not dissolve the secure-context wall by itself;
+* a public DNS name, reachable ports, and DNS control still remain prerequisites for ordinary public ACME;
+* `file_server` does not create a security boundary: symbolic links can reach outside a root, so the public
+  projection must remain a dedicated tree with no private links;
+* Caddy's automatic defaults can conceal policy unless the operator records the adapted configuration and tests the
+  exact generated routes, headers, and refusal behavior.
+
+The reference shape remains schematic:
+
+```caddyfile
+house.example {
+    root * /srv/pronaos/public
+    @arrival path / /assets/exact-worker.js /genesis/seed.json /genesis/cas/<cid>
+    handle @arrival {
+        file_server
+    }
+    @live path /live/<declared>
+    reverse_proxy @live lararium-node:8787
+}
+```
+
+The public tree remains a prepared, read-only projection. No `browse`, broad root, `try_files` equivalent, or SPA
+fallback enters the production contract without a named route witness. The Caddyfile syntax supplies a carrier
+shape; the Pronaos descriptor still supplies positive route ownership, cache classes, trusted hops, and refusal.
+
+<<~/ahu>>
+
+<<~ ahu #/pattern-integrity-rhymes>>
+
+!! Pattern-integrity rhymes ~ borrow the body, preserve the law
+
+''Commodity carrier, sovereign application.'' NGINX and Caddy move bytes and forward requests. The served peer
+still verifies its own peer key and capability relation. A reverse proxy never becomes the remote peer merely because
+it holds a socket to that peer.
+
+''Name, origin, identity, delivery, authority.'' A DNS answer gives rendezvous. TLS gives a browser an origin
+boundary. A key proves identity. A route selects bytes. A capability permits action. NGINX's certificate and Caddy's
+ACME state therefore remain origin-attestation material, never peer identity.
+
+''Content address, then choose cache.'' A seed, index, or seed-named member may receive an integrity receipt while
+remaining `no-store`. A route may explicitly grant a selected immutable cache class to bytes whose serving contract
+allows it; content addressing alone never grants that class. Selectors, discovery, and mutable public declarations
+usually need explicit revalidation or `no-store`. Cache presence never proves membership, freshness truth, authority,
+or causal order.
+
+''Trusted forward, never forwarded trust.'' Both carriers can pass host, scheme, and client headers. The Node shore
+must trust those fields only from configured carrier hops, never from the incoming visitor. A caller-supplied
+`X-Forwarded-*` value must not rewrite the peer's self-URL, origin, or capability decision.
+
+''Transport introduction, then peer handshake.'' A browser `Origin` check protects a browser-facing WebSocket path.
+It does not authenticate a non-browser peer. The served vessel still performs its own key handshake and
+capability/admission decision after the carrier introduces the transport.
+
+''Local continuity, remote reach.'' A home carrier can disappear while leaf vessels retain local causal state and
+previously acquired public bytes. A regional Nexus can relay or cache selected public material without becoming a
+mandatory host or planetary authority. WAN recovery carries a later crossing; it does not rewrite the island.
+
+''Generated receipt, not magic config.'' The operator's route receipt should render to NGINX, Caddy, cloud ingress,
+or another carrier while preserving the same positive route inventory and red witnesses. The carrier choice remains
+deployment custody, not a protocol version gate or a hidden identity translation.
+
+<<~/ahu>>
+
+<<~ ahu #/selection>>
+
+!! Selection ~ choose the carrier by operator context, not mythology
+
+| deployment context | first carrier lean | reason | watch |
+| --- | --- | --- | --- |
+| one developer laptop | direct process, Caddy optional | shortest arrival experiment | localhost secure-context exception does not prove LAN HTTPS |
+| household laptop, NAS, or mini-server | Caddy | readable config and automatic public/local HTTPS path | persist ACME/local-CA data; keep public tree narrow |
+| household already running NGINX | NGINX | reuse trusted operations and explicit certificate custody | add ACME renewal, WebSocket, forwarding, and timeout witnesses |
+| small organization | existing NGINX or Caddy fleet | preserve local operations and one descriptor per house/domain | review generated routes, logs, secrets, and reload behavior |
+| regional Nexus | NGINX, Caddy, Envoy, or managed ingress | carrier fleet can relay/cache selected projections | Nexus remains a causal island and never owns member Lararia |
+| NAT-bound household | either carrier plus an outbound relay/tunnel | carrier handles local origin; relay handles reach | end-to-end peer key and capability proofs survive relay |
+| solar/planetary federation | many local carriers and Nexuses | no universal front door or global clock | discovery and relay remain hints and bounded capabilities |
+
+The alpha ruling should keep both NGINX and Caddy as supported carrier patterns in the design, while choosing one
+reference witness at implementation time. Caddy reads more pono for a first household path because automatic HTTPS
+and a readable file/proxy surface shorten the ceremony. NGINX reads more pono for an existing civic operations shore
+because explicit config, mature fleet practice, and separate certificate custody make the carrier's behavior easier to
+review. Neither choice deserves a new package until carrier emitters and lifecycle tests develop their own substantial
+surface.
+
+<<~/ahu>>
+
+<<~ ahu #/deployment-scales>>
+
+!! Deployment scales ~ one contract, many physical bodies
+
+''One household.'' A laptop or NAS runs a Node peer with durable private volumes and a carrier with a read-only
+Pronaos projection. Family leaf vessels reach a LAN name or contracted domain. WAN loss leaves the local house and
+already acquired public bytes usable.
+
+''Small organization.'' Several house peers share one carrier or several named Pronaea. Each Node keeps its own
+causal island, persona material, and document authority. The carrier exposes only the operator's declared public
+shore and bounded live introductions.
+
+''Regional Nexus.'' A regional mesh offers discovery hints, relay, and selected public cache. Member Lararia keep
+their own keys and local state. A regional carrier may lose reach without deciding a member's identity, membership,
+merge, or document truth.
+
+''Planetary/solar DreamNet.'' Many regional islands compose through declared crossings. No global carrier, route,
+wall clock, or merge authority needs to exist. A name may move or lapse; the peer key and local causal history stay
+with the vessel that holds them.
+
+The physical stack can read:
+
+```text
+carrier container / host process
+  ├─ read-only Pronaos public projection
+  └─ bounded internal route to Node peer
+
+Node peer container / host process
+  ├─ durable local causal state
+  ├─ private bags, persona, Oracle, and local CAS
+  └─ peer-key and capability decisions
+
+leaf vessels
+  ├─ own keys and local islands
+  └─ public projections and explicitly crossed relations
+```
+
+The carrier never mounts the whole Lararium. The Node peer never needs public port exposure when the carrier can
+forward a bounded internal target. A tunnel or relay may alter reachability and never receives the inner house's
+authority by that fact.
+
+<<~/ahu>>
+
+<<~ ahu #/gaia-elyncia>>
+
+!! Operator stories ~ Gaia and Elyncia
+
+**Operators on Gaia, Earth circa 2026, SHALL need** to raise a household Lararium from a laptop, NAS, or small
+server behind a familiar carrier without giving DNS, TLS, or cloud operations custody of their documents, identities,
+or local causal state.
+
+**Operators on Gaia SHALL need** a readable first deployment with secure browser boot, offline household continuity,
+explicit LAN/public-name reach, and a path to civic-scale operations that preserves the same route and capability law.
+
+**Operators on Elyncia, the Orichalcum Mythpunk RPG, SHALL need** a shrine whose forecourt can take the bodies
+already available in the world — household carrier, district edge, relay, regional Nexus — while the shrine's
+persona, archives, and local memories remain its own.
+
+**Operators on Elyncia SHALL need** a waystone that can vanish, move, or change keeper without changing the identity
+and causal history of the vessel that crossed it. A carrier offers the bearing; the traveler keeps their vessel.
+
+<<~/ahu>>
+
+<<~ ahu #/red-witness>>
+
+!! Red witness ~ prove the contract through both bodies
+
+The first witness should compile one finite route receipt to one carrier at a time. It must attribute `/`, one
+worker, `genesis/seed.json`, and one seed-named CAS member to the named public shore; compare every byte against the
+expected receipt; assert each route's declared cache class; and prove that the live route reaches only the named
+Node peer. The current adapter's positive matrix gives `/` and `genesis/seed.json` `no-store`, while selected worker
+and CAS members receive `public, immutable, max-age=31536000`; the Pronaos receipt may choose another class, but
+the witness must name it rather than infer it from a digest.
+
+Each weakening must read red:
+
+* mount the Lararium root or a broad CAS root into the carrier;
+* request an undeclared path, CID, or method;
+* return an SPA index for a missing worker, seed, CAS member, or private route;
+* substitute wrong bytes beneath a valid-looking CID;
+* accept arbitrary forwarded host, scheme, or client headers;
+* treat TLS certificate, DNS name, carrier socket, or cache hit as peer identity;
+* treat an integrity digest as permission to add `immutable` or remove `no-store`;
+* let a carrier rewrite a declared cache class, or let a cache hit answer an undeclared/private route;
+* accept a disallowed browser `Origin` or skip the later peer-key handshake;
+* let NGINX's idle timeout or Caddy's reload behavior silently redefine a live crossing;
+* lose Caddy's certificate data or NGINX's renewal state and call the carrier healthy;
+* let a carrier outage become a successful private fallback;
+* use a wall-clock value as authority, shared order, membership, freshness truth, or merge choice.
+
+The same positive and deliberate-weakening suite must run against a direct Node shore, a separate static shore,
+NGINX composition, Caddy composition, and later any managed edge. The physical carrier may change; the witness
+must preserve route ownership, integrity, refusal, peer symmetry, local continuity, and named loss behavior.
+
+<<~/ahu>>
+
+<<~ ahu #/open-and-deferred>>
+
+!! Open and deferred ~ keep the cut small
+
+* The first implementation carrier remains an operator ruling: Caddy for the household reference or NGINX for an
+  existing civic operations reference. The common descriptor and witness come first.
+* ACME/DNS delegation, split-horizon DNS, certificate renewal, and origin-attestation custody remain a distinct
+  reach-plane wave. A carrier can enact those policies but cannot decide their DreamNet authority.
+* NAT traversal may use an outbound relay or tunnel. The relay carries sealed transport and never becomes a peer,
+  Lararium, Librarium, or regional authority.
+* The public Librarium remains deferred. A carrier may later carry a deliberately offered Librarium projection; no
+  carrier gets to expose the house-held `library:` collection by default.
+* Android, iOS, Mudlet, Unreal, and future vessels consume the same Pronaos route and verification intent through
+  their own capability adapters. No carrier gets to flatten those vessel differences into a user/server story.
+* A dedicated `@lararium/pronaos` package remains unnecessary until descriptor emitters and carrier lifecycle tests
+  gain a genuinely independent surface. Begin in `@lararium/mesh`, with Node/Web/Browser adapters where their caps
+  already live.
+
+<<~/ahu>>
+
+<<~ ahu #/sources>>
+
+!! Sources ~ engineering receipts, not imported authority
+
+* NGINX HTTPS: https://nginx.org/en/docs/http/configuring_https_servers.html
+* NGINX WebSocket proxying: https://nginx.org/en/docs/http/websocket.html
+* NGINX proxy module: https://nginx.org/en/docs/http/ngx_http_proxy_module.html
+* NGINX core/static paths: https://nginx.org/en/docs/http/ngx_http_core_module.html
+* Caddy automatic HTTPS: https://caddyserver.com/docs/automatic-https
+* Caddy reverse proxy and WebSocket transport: https://caddyserver.com/docs/caddyfile/directives/reverse_proxy
+* Caddy static files and symlink boundary: https://caddyserver.com/docs/caddyfile/directives/file_server
+* Caddy trusted proxies: https://caddyserver.com/docs/caddyfile/options
+* Caddy route/config concepts: https://caddyserver.com/docs/caddyfile/concepts
+* RFC 7239 forwarded headers: https://www.rfc-editor.org/rfc/rfc7239.html
+* W3C Secure Contexts: https://www.w3.org/TR/secure-contexts/
+* W3C Subresource Integrity: https://www.w3.org/TR/SRI/
+* Ink & Switch local-first: https://www.inkandswitch.com/essay/local-first/
+
+These sources describe carrier mechanics and local-first pattern rhymes. They do not choose a DreamNet package,
+grant a capability, establish peer identity, or create a compatibility/version gate.
+
+<<~/ahu>>
+
+<<~ ahu #/aftercare>>
+
+!! Aftercare ~ Evergreen and L-Prime
+
+The early-alpha tree carries no outside consumer who needs a compatibility alias. When implementation lands, stale
+carrier experiments, broad roots, copied configs, and unused proxy helpers should retire in the same aftermath wave
+that proves the surviving descriptor. Keep one readable contract and one receipt per active carrier witness.
+
+The next integration wave should update the Pronaos roadmap with the carrier choice, red witness, generated-config
+receipt, and loss matrix. A cleanup wave must re-scan code, Compose, docs, and memes for `public-library` wording
+that accidentally names a Librarium rather than the bootstrap byte-exposure projection. The Librarium itself remains
+deferred and does not enter this carrier meme by implication.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;HfF5UH3M5yCzot6Wqg2cUEeU1Gsy9Kt9UGG7epY3mjU
+
+<<^ code="&#x0004;" -> to="?">>
