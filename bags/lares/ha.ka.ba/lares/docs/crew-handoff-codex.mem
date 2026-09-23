@@ -103,6 +103,8 @@ failure. MCP fixes remain operator-deferred.
 
 ''P1 research queue — no source change yet.'' First close existing silent epoch-fence omissions at device/face grant doors; a missing or unreachable authority epoch must not fall back to wall time. Next specify daemon PoP replay state using the existing connection nonce, audience, gate binding, and either durable challenge identity or a scoped resource epoch. Then audit contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting separately. Red controls include epoch omission, clock perturbation against identical causal inputs, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Operator choices remain: failure behavior for unavailable epoch evidence; owner of each scoped epoch; durable replay-state scope; whether current expiries are authority or local handoff/UX observations; and whether Keyhive identity-slot expiry belongs to this authority lane.
 
+''2026-09-23 reservation aftermath.'' Docker client `29.4.3` stands, but this execution context cannot inspect `/var/run/docker.sock`; `ps`, Compose-project, volume, and network inventory all refuse permission. No container, image, volume, network, port, or process was touched. `27c53999b` therefore makes the Pronaos command choose its executable in-process receipt in this managed runner and prints that origin/container proof remains blocked; a reserved Docker context must inventory and reserve its own project before it proves the live face. A2 likewise remains unrun: no witness/daemon/Vite process stood, but `genesis/seed.json` and generated Node artifacts were dirty with unattributed provenance and no exclusive marker existed. Its next hand must reserve the built-artifact window, record HEAD/input provenance, run only the isolated two-vessel fixture, and prove cleanup before A3 begins. These refusals are evidence of a boundary, never a green Docker or mesh result.
+
 ''Execution discipline.'' At most one destructive or shared-state mesh run stands at once; reserve its project, volumes, ports, and process context before it begins. Build and test source changes in narrow seams, then run their relevant package/typecheck controls. Every major commit receives three explicit aftermath passes: (1) behaviour and deliberate weakening still discriminate; (2) source, comments, package names, generated residue, and roadmap claims read L-Prime and evergreen; (3) affected carrier block checks normalize and source references re-derive. A changed aftermath becomes its own commit. Research returns evidence and unresolved forks before it is converted into source policy; no CRDT or topology fork is silently merged.
 
 !! ▶ Act — the next bounded measurement
@@ -1258,6 +1260,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_Qki1iW32qdPqyIM9XVcwz3kIuf_VtoB6Dqx5oG2BgE
+<<^ code="&#x0003;">>ni:///sha-256;LvrEhQctoZvuR7-lVdmCuRlkXd8H3xP2BhFk_2MIcU8
 
 <<^ code="&#x0004;" -> to="?">>
