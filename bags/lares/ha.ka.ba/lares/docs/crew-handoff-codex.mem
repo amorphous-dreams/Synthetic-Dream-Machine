@@ -105,6 +105,8 @@ failure. MCP fixes remain operator-deferred.
 
 ''2026-09-23 Yin receipt — stale authority and false-green residue retired.'' `f463f1547` removes the Node bag-tier reader's thirty-second wall-clock cache: a changed local manifest now governs the next capability read, with `public → contract` as the red-first regression. `139c5c6f8` makes an explicit empty daemon `storageDir` refuse rather than silently selecting memory-only storage; omission remains the only intentional memory-only spelling. `d67c2ccb4` replaces Pronaos's ambiguous `liveDocker`/`originReach` booleans with the observed proof states (`process`, `reach`, `docker`) and renames its command receipt `pronaos-witness`; a finite in-process witness cannot resemble a production delivery claim. These cuts preserve worker sovereignty, artifact/deployment separation, and all D-VR/D-AE/Herm-lighting forks.
 
+''2026-09-23 approved-seed receipt — A2 and genesis boot pass under named limits.'' The operator approved the current dirty `genesis/seed.json` as an input; its only local difference is the actor seed, and no command rewrote it. `pnpm --filter @lararium/node exec tsx scripts/test-quine.ts` loaded the current artifact (4 blobs, 13 tiddlers), booted the TW5 engine, and found all required grammar sigils. The opt-in two-vessel mesh fixture then passed 11/11 under separate temporary vessel roots; it ships the existing built genesis artifact into each root, consumes each `runInit` bootstrap, and leaves no child process. This confirms the ordinary A2 founding/admission receipt at the current input. It does not reproduce or explain the distinct `9d/…` ~3.8 MB daemon-working-layer replay, prove a reserved Docker topology, or choose D-VR.
+
 ''P1 research queue — no runtime policy source change yet.'' First close existing silent epoch-fence omissions at device/face grant doors; a missing or unreachable authority epoch must not fall back to wall time. Next specify daemon PoP replay state using the existing connection nonce, audience, gate binding, and either durable challenge identity or a scoped resource epoch. The new characterization also holds contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting apart. Red controls include epoch omission, clock perturbation against identical causal inputs, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Operator choices remain: failure behavior for unavailable epoch evidence; owner of each scoped epoch; durable replay-state scope; whether current expiries are authority or local handoff/UX observations; and whether Keyhive identity-slot expiry belongs to this authority lane.
 
 !! ◇ First-class decision records — two open contracts, not implementation debris
@@ -1407,6 +1409,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4ezJez5Vl8Cp40Na1NUrqNIi1IWXbp-ZhvzZZqd-XCo
+<<^ code="&#x0003;">>ni:///sha-256;TY0GV0QGx_Yz0wY3s74biPSId775BST77RmGB5nACTI
 
 <<^ code="&#x0004;" -> to="?">>
