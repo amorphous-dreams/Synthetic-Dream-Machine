@@ -27,7 +27,8 @@ describe("the lease-epoch fence's wiring", () => {
     const src = KEYHIVE_SRC("boot-daemon-keyhive.ts");
     expect(src).toMatch(/readonly expectedEpoch\?:\s*number/);
     // The forwarding call itself — expectedEpoch reaches verifyEdgeAgainstPersonaKel's opts.
-    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(input\.deviceEdge!,\s*chain,\s*\{[\s\S]{0,200}expectedEpoch/);
+    expect(src).toMatch(/if \(input\.expectedEpoch === undefined\)[\s\S]{0,220}current lease frontier unavailable/);
+    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(input\.deviceEdge!,\s*chain,\s*\{\s*expectedEpoch:\s*input\.expectedEpoch\s*\}/);
   });
 
   test("★ operator-daemon-behavior.ts threads expectedEpoch into verifyPeer's device-delegation door (:814-ish) ★", () => {

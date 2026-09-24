@@ -25,7 +25,6 @@ import type { EventRecord, EventStore } from "../src/event-store.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const b64 = (s: string): Uint8Array => new Uint8Array(Buffer.from(s, "base64"));
-const NOW = Date.parse("2026-08-17T12:00:00.000Z");
 const REAL_VARIANTS = ["PREKEY_ROTATED", "CGKA_OPERATION", "DELEGATED", "REVOKED"];
 const hexOf = (b: Uint8Array): string => Buffer.from(b).toString("hex");
 
@@ -74,7 +73,6 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
     personaGroupDocIdHex:   pg.docIdHex,
     personaGroupAgentIdHex: pg.agentIdHex,
     leaseEpoch:             0,
-    now:                    NOW,
   };
   const out = await runFaceJoin(phone, {
     kind:        "face-join/v1",

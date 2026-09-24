@@ -25,7 +25,6 @@ import { runFaceJoin, type FaceJoinContext } from "../src/face-join.js";
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const b64 = (s: string) => new Uint8Array(Buffer.from(s, "base64"));
-const NOW = Date.parse("2026-08-17T12:00:00.000Z");
 
 /** A leaf: its own device key, its own keyhive. A browser or a phone, never a node. */
 async function leaf(fill: number): Promise<KeyhiveProvider> {
@@ -60,7 +59,6 @@ const ctxFor = (rootDid: string, pg: { docIdHex: string; agentIdHex: string }): 
   personaGroupDocIdHex:   pg.docIdHex,
   personaGroupAgentIdHex: pg.agentIdHex,
   leaseEpoch:             0,
-  now:                    NOW,
 });
 
 /** Take a grant and become a member — what a leaf's own boot does with an outcome it reads back. */

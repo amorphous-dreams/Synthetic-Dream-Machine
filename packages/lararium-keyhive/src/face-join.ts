@@ -27,10 +27,9 @@
  * key the presented ContactCard carries. Nothing is looked up, so nothing can drift or be forged by writing to
  * a list. Three of the four checks read the edge alone and run BEFORE the card enters local state.
  *
- * FRESHNESS READS TWO INSTRUMENTS, AND ONLY ONE OF THEM DECIDES. The LEASE — a per-resource max-register epoch,
- * monotone and read locally — carries the authority: a grant bound below the current epoch reads stale. The
- * wall clock only backstops replay, because every device narrates its own "now" unreliably and no island holds
- * the other's. A gate that read the clock alone would rest a capability decision on that narration.
+ * FRESHNESS READS THE LEASE. The LEASE — a per-resource max-register epoch, monotone and read locally — carries
+ * the authority: a grant bound below the current epoch reads stale. Connection replay is handled by the summons
+ * transport and its fresh exchange; this gate does not turn a wall clock into authority.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/face-join
  */
@@ -139,11 +138,6 @@ export interface FaceJoinContext {
    * and admits the epoch-0 grants a founding issues.
    */
   readonly leaseEpoch: number;
-  /**
-   * THE REPLAY BACKSTOP — the caller's own clock in ms, never a truth. Each device narrates its own wall time
-   * unreliably, so this bounds a replay window (drift-tolerant) and decides nothing the lease decides.
-   */
-  readonly now: number;
 }
 
 /**
@@ -164,10 +158,8 @@ export async function gateFaceJoin(args: {
   if (edge?.kind !== "device-delegation") {
     return { ok: false, reason: "the summons carries no device-delegation edge" };
   }
-  // The signature check plus BOTH freshness readings: the lease decides, the clock only backstops replay.
-  // Reading the clock alone would seat the whole gate on each device's own unreliable narration of "now".
+  // The signature check plus the causal lease frontier: the current max-register decides authority.
   const verdict = await verifyDeviceDelegation(edge, ctx.personaRootDid, {
-    now: ctx.now,
     expectedEpoch: ctx.leaseEpoch,
   });
   if (!verdict.ok) {

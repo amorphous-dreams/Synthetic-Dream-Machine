@@ -578,7 +578,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               personaGroupDocIdHex:   faceGroup(),
               personaGroupAgentIdHex: faceAgent(),
               leaseEpoch:             effectiveLeaseEpoch(slots),
-              now:                    Date.now(),
               // The bags this vessel ALREADY delegated to its own face, re-granted so a fresh seat reaches them.
               // Naming only what we granted, at the access we granted, widens nobody's reach — it refreshes the
               // epoch on grants that already stand. `registerBags` IS that set, and `FACE_SEATS_AND_UNSEATS` IS the

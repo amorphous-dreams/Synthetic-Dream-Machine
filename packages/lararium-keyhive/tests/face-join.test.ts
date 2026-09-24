@@ -14,7 +14,6 @@ const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
 const JOINEE_KEY   = "6".repeat(64);
 const HEARTH       = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqwa";
-const NOW          = Date.parse("2026-08-16T12:00:00.000Z");
 
 /** The identifier a card derives ends in the raw verifying key — the relationship the Binding Gate leans on. */
 const cardIdFor = (key: string) => `0x${key}`;
@@ -53,7 +52,6 @@ async function ctxFor(): Promise<FaceJoinContext> {
     personaGroupDocIdHex: "ab".repeat(16),
     personaGroupAgentIdHex: "cd".repeat(16),
     leaseEpoch:           0,          // an unfed resource — the epoch a founding's grants bind to
-    now:                  NOW,
   };
 }
 
@@ -91,15 +89,14 @@ describe("the gate — a signature, never a list", () => {
     expect(p.calls.received).toBe(0);
   });
 
-  test("an EXPIRED edge → refused", async () => {
+  test("an edge's wall-clock label does not override the causal lease", async () => {
     const ctx = await ctxFor();
     const out = await runFaceJoin(
       fakeProvider(),
       summons(await edgeFor({ expiresAt: "2026-08-16T11:30:00.000Z" })),
       ctx,
     );
-    expect(out.ok).toBe(false);
-    if (!out.ok) expect(out.reason).toMatch(/expired/i);
+    expect(out.ok).toBe(true);
   });
 
   test("a VALID edge presented with somebody ELSE'S card → refused, and no seat is granted", async () => {

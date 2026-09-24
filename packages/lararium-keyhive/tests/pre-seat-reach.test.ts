@@ -17,7 +17,6 @@ import { runFaceJoin, type FaceJoinContext, type FaceJoinRegrant, type FaceJoinG
 const noopStore = { put: async () => {}, list: async () => [] };
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const b64 = (s: string) => new Uint8Array(Buffer.from(s, "base64"));
-const NOW = Date.parse("2026-08-17T12:00:00.000Z");
 
 async function leaf(fill: number): Promise<KeyhiveProvider> {
   const p = new KeyhiveProvider();
@@ -49,7 +48,6 @@ const ctxFor = (rootDid: string, pg: { docIdHex: string; agentIdHex: string }, r
   personaGroupDocIdHex: pg.docIdHex,
   personaGroupAgentIdHex: pg.agentIdHex,
   leaseEpoch: 0,
-  now: NOW,
   ...(regrant ? { regrant } : {}),
 });
 

@@ -90,7 +90,7 @@ beforeAll(async () => {
 
 describe("bootDaemonKeyhive", () => {
   test("clears Gate A + the Binding Gate, registers the daemon bag, and verifies operator admin", async () => {
-    const { keyhive, did } = await bootDaemonKeyhive(founded.bootArgs);
+    const { keyhive, did } = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
 
     expect(did).toMatch(/^0x/);
     expect(did.endsWith(founded.verifyingKey)).toBe(true);
@@ -142,9 +142,8 @@ describe("bootDaemonKeyhive", () => {
       await keyhive.dispose();
     });
 
-    test("CONTROL — omitting expectedEpoch skips the lease fence (unchanged prior behavior: wall-clock window only)", async () => {
-      const { keyhive } = await bootDaemonKeyhive(founded.bootArgs);
-      await keyhive.dispose();
+    test("RED — omitting expectedEpoch refuses rather than substituting a wall-clock window", async () => {
+      await expect(bootDaemonKeyhive(founded.bootArgs)).rejects.toThrow(/current lease frontier unavailable/);
     });
   });
 });

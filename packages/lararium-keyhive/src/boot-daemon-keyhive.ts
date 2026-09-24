@@ -53,10 +53,10 @@ export interface BootDaemonKeyhiveInput {
   /** This vessel's signed device-delegation edge (root→vessel) — the public, Beelay-free binding. */
   readonly deviceEdge?: DeviceDelegationTiddler;
   /** The PersonaGroup's CURRENT lease epoch, read by the caller off the live daemon replica
-   *  (`leaseEpochPrefix`/`effectiveLeaseEpoch` — the same fold `gateFaceJoin` runs). When present, the
-   *  Binding Gate ALSO enforces the lease: `deviceEdge.boundEpoch` below this epoch HALTS the boot (the
-   *  device's own edge has rolled stale — re-admit via a fresh face-join). Absent, the gate checks the
-   *  wall-clock window alone (the pre-epoch-wiring floor) — never a fabricated epoch. */
+   *  (`leaseEpochPrefix`/`effectiveLeaseEpoch` — the same fold `gateFaceJoin` runs). The Binding Gate
+   *  enforces the lease: `deviceEdge.boundEpoch` below this epoch HALTS the boot (the device's own edge has
+   *  rolled stale — re-admit via a fresh face-join). A persona-bound boot without this frontier refuses; it
+   *  cannot substitute a wall-clock window for causal authority. */
   readonly expectedEpoch?: number;
   /** OPTIONAL prior-identity Archive (a previous `exportArchive()`), persisted encrypted-at-rest. A joinee
    *  admitted into a PersonaGroup restores from it so its prekeys match the card the founder minted-to —
@@ -133,10 +133,10 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   if (chain.length === 0 || chain[0]!.prefix !== prefix) {
     throw new Error(`[daemon-keyhive] Binding Gate: persona-KEL pin/chain mismatch — the local chain does not head the pinned identifier ${prefix.slice(0, 20)}…`);
   }
-  const binding = await verifyEdgeAgainstPersonaKel(input.deviceEdge!, chain, {
-    now: Date.now(),
-    ...(input.expectedEpoch !== undefined ? { expectedEpoch: input.expectedEpoch } : {}),
-  });
+  if (input.expectedEpoch === undefined) {
+    throw new Error("[daemon-keyhive] Binding Gate: current lease frontier unavailable — refusing persona-bound boot");
+  }
+  const binding = await verifyEdgeAgainstPersonaKel(input.deviceEdge!, chain, { expectedEpoch: input.expectedEpoch });
   if (!binding.ok) {
     throw new Error(`[daemon-keyhive] Binding Gate: device-delegation edge failed verification against the persona-KEL head op-key. ${binding.reason ?? ""}`);
   }
