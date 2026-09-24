@@ -44,6 +44,12 @@ describe("the CLI sets its exit code and lets stdout drain", () => {
     expect(runCliBody()).toMatch(/exitCode\s*=/);
   });
 
+  it("★ the verdict waits behind the stdout pipe's ordered drain ★", () => {
+    const body = runCliBody();
+    expect(body).toMatch(/drainStdout/);
+    expect(body).toMatch(/await drainStdout\(\)/);
+  });
+
   it("★ runCli does NOT call process.exit — that is the byte-dropping call ★", () => {
     // The whole defect in one assertion. `process.exit()` here discards the undrained tail.
     expect(runCliBody()).not.toMatch(/process\.exit\s*\(/);

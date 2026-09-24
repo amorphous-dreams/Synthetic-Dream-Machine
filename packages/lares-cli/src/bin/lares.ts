@@ -22,6 +22,7 @@
 
 import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
+import { stdout }         from "node:process";
 import { parseArgs, type ParsedArgs } from "../parse-args.js";
 import { cmdHerm }                    from "../commands/herm.js";
 import { cmdDraft }                   from "../commands/draft.js";
@@ -244,9 +245,26 @@ const invokedAsScript = (() => {
  *
  * A caller that must stop the process NOW still may — this only governs the ordinary return.
  */
+/**
+ * Let writes already queued on stdout reach a pipe before publishing the process result.
+ *
+ * `exitCode` preserves the stream's natural drain, but the completion callback itself can run while a
+ * pipe still owns the answer. Waiting on one ordered zero-byte write makes that boundary explicit: the
+ * command's verdict and its bytes leave the island together. No wall clock or retry window participates.
+ */
+async function drainStdout(): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    stdout.write("", (error?: Error | null) => error ? reject(error) : resolve());
+  });
+}
+
 export function runCli(): void {
   dispatch(process.argv.slice(2)).then(
-    (code) => { process.exitCode = code; },
+    async (code) => {
+      try { await drainStdout(); }
+      catch (err) { console.error(err); process.exitCode = 1; return; }
+      process.exitCode = code;
+    },
     (err)  => { console.error(err); process.exitCode = 1; },
   );
 }
