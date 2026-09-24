@@ -55,6 +55,11 @@ const ASSET_ROUTE = /^\/assets\/([A-Za-z0-9._-]+)$/;
 const MANIFEST_ROUTE = "/manifest.webmanifest";
 const SEED_ROUTE = "/genesis/seed.json";
 const CAS_ROUTE = /^\/genesis\/cas\/([0-9a-f]{64})$/;
+// The finite Pronaos projection owns its whole public projection surface.
+// A separately mounted artifact carrier cannot safely overlap that surface;
+// sharing this dispatcher key makes the composition refuse before order can
+// choose a winner.
+const PRONAOS_PROJECTION_ROUTE_KEY = "pronaos:projection";
 
 function refuse(res: ServerResponse, message = "Pronaos member unavailable"): void {
   res.writeHead(404, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
@@ -120,10 +125,9 @@ export function mountPronaosPublicArtifact(
     try { onRequest(req, res); }
     catch { refuse(res, "Pronaos artifact unavailable"); }
   };
-  const routeKey = `pronaos:public-artifact:${publication.route.path}`;
   const unregister = dispatcher?.register({
     name: "pronaos-public-artifact",
-    routeKeys: [routeKey],
+    routeKeys: [PRONAOS_PROJECTION_ROUTE_KEY],
     owns: (req) => {
       try { return new URL(req.url ?? "/", "http://localhost").pathname === publication.route.path; }
       catch { return false; }
@@ -253,7 +257,7 @@ export function mountPronaosReadFace(
   };
   const unregister = dispatcher?.register({
     name: "pronaos",
-    routeKeys: ["pronaos:/", "pronaos:/manifest", "pronaos:/genesis", "pronaos:/assets"],
+    routeKeys: [PRONAOS_PROJECTION_ROUTE_KEY],
     owns,
     handle: listener,
   });
