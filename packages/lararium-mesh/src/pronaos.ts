@@ -1,3 +1,6 @@
+import { digestsEqual, parseDigest } from "./agile-digest.js";
+import { sha256HexBytesSync } from "./crypto.js";
+
 /**
  * The platform-blind Pronaos inventory.
  *
@@ -19,6 +22,7 @@ export type PronaosRouteKind = (typeof PRONAOS_ROUTE_KINDS)[number];
 
 /** Cache behavior belongs to delivery, never to authority or causal order. */
 export type PronaosCacheClass = "immutable" | "revalidate" | "no-store";
+const PRONAOS_CACHE_CLASSES: readonly PronaosCacheClass[] = ["immutable", "revalidate", "no-store"];
 
 /**
  * Refusal causes that a carrier may expose for an already-known route.
@@ -113,6 +117,61 @@ export interface PronaosArtifactEntry {
 export interface PronaosArtifactRecord {
   readonly schema: "lararium-pronaos-artifact/v1";
   readonly routes: readonly PronaosArtifactEntry[];
+}
+
+/** The one public action a persona-free Herm may receive from an operator. */
+export const PUBLIC_ARTIFACT_DELIVERY_ABILITY = "public-artifact:deliver" as const;
+
+/**
+ * These abilities are deliberately absent from `PublicArtifactPublication`.
+ * Keeping the refusal vocabulary beside the narrow grant makes an accidental
+ * widening visible at the type and test seams instead of hiding it in a
+ * carrier adapter.
+ */
+export const PUBLIC_ARTIFACT_FORBIDDEN_ABILITIES = [
+  "document-read",
+  "document-write",
+  "persona",
+  "admission",
+  "delegate",
+  "arbitrary-cas-read",
+] as const;
+
+export type PublicArtifactForbiddenAbility = (typeof PUBLIC_ARTIFACT_FORBIDDEN_ABILITIES)[number];
+
+/**
+ * An operator-authenticated, local publication of one finite artifact route.
+ *
+ * This is a publication record, not a CAS resolver or deployment receipt.  It
+ * names exactly one route and one digest; a carrier must be handed the bytes
+ * by its own platform layer and this module verifies those bytes before they
+ * leave the Pronaos boundary.  `authentication: "local-operator"` records the
+ * alpha trust boundary.  Cross-operator signed delegation is a later crossing
+ * and is intentionally not represented here.
+ */
+export interface PublicArtifactPublication {
+  readonly schema: "lararium-pronaos-public-artifact/v1";
+  readonly operator: {
+    readonly id: string;
+    readonly authentication: "local-operator";
+  };
+  /** Content identifier for the exact bytes; alpha accepts bare or sha256-tagged form. */
+  readonly artifactCid: string;
+  /** Independent integrity spelling for the same bytes; it must name sha256 and equal the CID. */
+  readonly integrity: string;
+  readonly route: {
+    readonly path: string;
+    readonly contentType: string;
+    readonly cache: PronaosCacheClass;
+  };
+  readonly ability: typeof PUBLIC_ARTIFACT_DELIVERY_ABILITY;
+}
+
+export interface PublicArtifactDelivery {
+  readonly path: string;
+  readonly artifactCid: string;
+  readonly contentType: string;
+  readonly bytes: Uint8Array;
 }
 
 export interface ValidatePronaosRouteInventoryOptions {
@@ -217,6 +276,87 @@ function validateArtifactPath(path: unknown): asserts path is string {
   if (path !== "/" && path !== "/manifest.webmanifest" && !/^\/assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm)$/.test(path)) {
     fail(`artifact path is outside the finite Web surface: ${path}`);
   }
+}
+
+function validatePublicArtifactDigest(value: unknown, label: string): asserts value is string {
+  let parsed: ReturnType<typeof parseDigest>;
+  try {
+    parsed = parseDigest(value as string);
+  } catch {
+    fail(`${label} must be a sha256 digest`);
+  }
+  if (parsed.algo !== "sha256" || parsed.hex.length !== 64) {
+    fail(`${label} must be a sha256 digest`);
+  }
+}
+
+/** Validate the narrow local-operator publication record before a carrier uses it. */
+export function validatePublicArtifactPublication(publication: PublicArtifactPublication): void {
+  if (!publication || publication.schema !== "lararium-pronaos-public-artifact/v1") {
+    fail("public artifact publication has an unsupported schema");
+  }
+  if (!publication.operator || typeof publication.operator.id !== "string" ||
+      publication.operator.id.length === 0 || publication.operator.id.trim() !== publication.operator.id ||
+      !OPAQUE_VALUE.test(publication.operator.id)) {
+    fail("public artifact publication needs a local operator id");
+  }
+  if (publication.operator.authentication !== "local-operator") {
+    fail("public artifact publication requires local-operator authentication");
+  }
+  if (publication.ability !== PUBLIC_ARTIFACT_DELIVERY_ABILITY) {
+    fail("public artifact publication grants only public-artifact:deliver");
+  }
+  if (!publication.route || typeof publication.route !== "object") {
+    fail("public artifact publication needs one declared route");
+  }
+  validateArtifactPath(publication.route.path);
+  if (typeof publication.route.contentType !== "string" || publication.route.contentType.length === 0 ||
+      publication.route.contentType.trim() !== publication.route.contentType) {
+    fail("public artifact publication needs a content type");
+  }
+  if (!PRONAOS_CACHE_CLASSES.includes(publication.route.cache)) {
+    fail("public artifact publication has an unknown cache class");
+  }
+  validatePublicArtifactDigest(publication.artifactCid, "public artifact CID");
+  validatePublicArtifactDigest(publication.integrity, "public artifact integrity");
+  if (!digestsEqual(publication.artifactCid, publication.integrity)) {
+    fail("public artifact CID and integrity must name the same bytes");
+  }
+}
+
+/**
+ * Verify and release exactly the bytes named by a local publication.
+ *
+ * The carrier supplies bytes; this function never opens a CAS, document,
+ * persona, admission, or delegation store.  A caller must present both the
+ * declared route and CID, so a publication cannot turn into an arbitrary
+ * public read path.
+ */
+export function deliverPublicArtifact(
+  publication: PublicArtifactPublication,
+  request: { readonly path: string; readonly artifactCid: string },
+  bytes: Uint8Array,
+): PublicArtifactDelivery {
+  validatePublicArtifactPublication(publication);
+  if (request.path !== publication.route.path) {
+    fail("public artifact route is not declared");
+  }
+  if (!digestsEqual(request.artifactCid, publication.artifactCid)) {
+    fail("public artifact CID is not declared");
+  }
+  if (!(bytes instanceof Uint8Array)) {
+    fail("public artifact bytes are not a Uint8Array");
+  }
+  const computed = sha256HexBytesSync(bytes);
+  if (!digestsEqual(computed, publication.artifactCid) || !digestsEqual(computed, publication.integrity)) {
+    fail("public artifact bytes fail integrity");
+  }
+  return {
+    path: publication.route.path,
+    artifactCid: publication.artifactCid,
+    contentType: publication.route.contentType,
+    bytes: bytes.slice(),
+  };
 }
 
 /** Validate the operator-held Web build receipt without touching a filesystem. */
