@@ -11,11 +11,9 @@
  * No wall-clock value participates in the assertion; bounded waits only stop a hung fixture.
  */
 import { afterEach, describe, expect, test } from "vitest";
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { docStorePath } from "../src/store-integrity.js";
-import { enumerateStoreDocs } from "../src/doctor.js";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, type IslandMsg_Event, type LarDoc } from "@lararium/mesh";
 import { openDaemonVm } from "../src/open-daemon-vm.js";
@@ -54,7 +52,6 @@ async function openProbe(
   daemonUrl: string,
   storageDir: string | undefined,
   noSync = false,
-  storageResidency: "parent-attached" | "resident" = "resident",
 ): Promise<{ core: Awaited<ReturnType<typeof openDaemonVm>>; events: IslandMsg_Event[] }> {
   const events: IslandMsg_Event[] = [];
   const core = await openDaemonVm({
@@ -63,7 +60,6 @@ async function openProbe(
     coreHash: null,
     grants: { islandUrl: daemonUrl, wikiUrl: daemonUrl },
     ...(storageDir ? { storageDir } : {}),
-    ...(storageDir ? { storageResidency } : {}),
     workerScriptUrl: probeUrl(noSync),
   });
   core.worker.listen((raw: unknown) => {
@@ -152,58 +148,5 @@ describe("daemon VM Repo persistence fork", () => {
     rmSync(join(storageRoot, "daemon"), { recursive: true, force: true });
     const refused = await openProbe(repo, daemon.url, storageRoot, true).catch((error: unknown) => ({ error }));
     if (!("error" in refused)) throw new Error(`missing-peer probe unexpectedly booted: ${JSON.stringify(refused.events)}`);
-  }, 45_000);
-
-  test("parent-attached storage requires the live peer and never falls back to an empty doc", async () => {
-    const storageRoot = mkdtempSync(join(tmpdir(), "daemon-parent-attached-"));
-    roots.push(storageRoot);
-    const repo = new Repo({ sharePolicy: async () => true });
-    repos.push(repo);
-    const daemon = repo.create<LarDoc>(emptyLarDoc());
-
-    const first = await openProbe(repo, daemon.url, storageRoot, false, "resident");
-    cores.push(first.core);
-    daemon.change((doc) => { doc.tiddlers[MARKER] = { title: MARKER, text: "resident" }; });
-    await waitFor(first.events, true);
-    await first.core.shutdown(2_000);
-    cores.splice(cores.indexOf(first.core), 1);
-
-    const refused = await openProbe(repo, daemon.url, storageRoot, true, "parent-attached")
-      .then((result) => ({ result }), (error: unknown) => ({ error }));
-    if ("result" in refused) throw new Error(`parent-attached unexpectedly booted: ${JSON.stringify(refused.result.events)}`);
-    const { error: refusedError } = refused;
-    expect(refusedError).toBeInstanceOf(Error);
-    expect(String(refusedError)).toMatch(/document-not-resident/);
-  }, 45_000);
-
-  test("a corrupt resident store refuses with a named storage result", async () => {
-    const storageRoot = mkdtempSync(join(tmpdir(), "daemon-corrupt-resident-"));
-    roots.push(storageRoot);
-    const repo = new Repo({ sharePolicy: async () => true });
-    repos.push(repo);
-    const daemon = repo.create<LarDoc>(emptyLarDoc());
-
-    const first = await openProbe(repo, daemon.url, storageRoot, false, "resident");
-    cores.push(first.core);
-    daemon.change((doc) => { doc.tiddlers[MARKER] = { title: MARKER, text: "corrupt-me" }; });
-    await waitFor(first.events, true);
-    await first.core.shutdown(2_000);
-    cores.splice(cores.indexOf(first.core), 1);
-
-    const documentId = enumerateStoreDocs(join(storageRoot, "daemon"))[0];
-    expect(documentId).toBeDefined();
-    const store = docStorePath(join(storageRoot, "daemon"), documentId!);
-    for (const kind of ["snapshot", "incremental"] as const) {
-      if (!existsSync(join(store, kind))) continue;
-      for (const name of readdirSync(join(store, kind), { withFileTypes: true })) {
-        if (name.isFile()) writeFileSync(join(store, kind, name.name), Buffer.from("torn"));
-      }
-    }
-
-    const refused = await openProbe(repo, daemon.url, storageRoot, true, "resident")
-      .then((result) => ({ result }), (error: unknown) => ({ error }));
-    if ("result" in refused) throw new Error(`corrupt resident unexpectedly booted: ${JSON.stringify(refused.result.events)}`);
-    expect(refused.error).toBeInstanceOf(Error);
-    expect(String(refused.error)).toMatch(/storage-corrupt/);
   }, 45_000);
 });

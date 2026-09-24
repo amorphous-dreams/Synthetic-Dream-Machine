@@ -152,25 +152,6 @@ describe("IslandStorageConfig — island-owned storage protocol", () => {
     if (msg.storage?.type === "nodefs") expect(msg.storage.dir).toBe("/data/wiki-sprint3");
     expect(isVesselToIslandMsg(msg)).toBe(true);
   });
-
-  test("nodefs storage names the recovery promise explicitly", () => {
-    const { port2: syncPort } = new MessageChannel();
-    const storage: IslandStorageConfig = {
-      type: "nodefs", dir: "/data/wiki-resident", residency: "resident",
-    };
-    const msg = mkManifest(
-      "lar:///test-resident",
-      syncPort as unknown as globalThis.MessagePort,
-      { wikiSlug: "test-resident" },
-      { islandUrl: "automerge:engine" },
-      null,
-      { storage },
-    );
-    syncPort.close();
-    expect(msg.storage?.type).toBe("nodefs");
-    if (msg.storage?.type === "nodefs") expect(msg.storage.residency).toBe("resident");
-    expect(isVesselToIslandMsg(msg)).toBe(true);
-  });
 });
 
 // ── GP-1: schema_version enforcement (unit) ────────────────────────────────

@@ -64,7 +64,6 @@ import {
   type StorageAdapterInterface,
   type LarDoc,
   type IslandMsg_Manifest,
-  type IslandStorageResidency,
   type IslandToVesselMsg,
   type SlotUri,
 } from "@lararium/mesh";
@@ -218,25 +217,22 @@ export function runSovereignKernel(
   const defer = (): Promise<void> =>
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
-  let _peerHeard = false;
-  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); _peerHeard = true; };
+  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); };
 
   async function _resolveSlot(
     repo: Repo,
     docUrl: string,
     slot: string,
     wikiUri: string,
-    storageResidency: IslandStorageResidency | undefined,
   ): Promise<DocHandle<LarDoc> | null> {
     const started = mono();
     // automerge-repo 2.6: find() resolves only when READY and REJECTS on an
     // unavailable VERDICT (the peer answered "don't have") — a genuine miss,
     // distinct from not-yet-arrived. undefined = still pending.
     let outcome: DocHandle<LarDoc> | null | undefined;
-    let failure: unknown;
     void repo.find<LarDoc>(docUrl as AutomergeUrl).then(
       (h) => { outcome = h; },
-      (error: unknown) => { failure = error; outcome = null; },
+      ()  => { outcome = null; },
     );
     // The silence budget clocks from max(last inbound message, THIS find's start):
     // slots that resolve from the island's own storage partition move no port
@@ -260,29 +256,8 @@ export function runSovereignKernel(
         `silence budget ${SLOT_SILENCE_TIMEOUT_MS}ms, hard cap ${SLOT_READY_HARD_CAP_MS}ms)`));
       return null;
     }
-    if (outcome) {
-      // A durable parent-attached store may contain a stale local copy, but it
-      // cannot authorize a worker-only read. Require a live sync witness before
-      // accepting that local resolution; an explicit resident store is the
-      // only worker-only recovery promise.
-      if (storageResidency === "parent-attached" && !_peerHeard) {
-        const waitStarted = mono();
-        while (!_peerHeard && mono() - waitStarted < SLOT_SILENCE_TIMEOUT_MS) {
-          await new Promise((res) => setTimeout(res, SLOT_POLL_MS));
-        }
-        if (!_peerHeard) {
-          _post(mkFault(wikiUri,
-            `slot ${slot} document-not-resident — parent-attached recovery requires a live sync peer for ${docUrl}`));
-          return null;
-        }
-      }
-      return outcome;
-    }
-    const failureText = failure instanceof Error ? failure.message : String(failure ?? "");
-    const reason = storageResidency === "resident" && !_peerHeard && failure
-      ? `storage-corrupt — resident document ${docUrl} could not be replayed (${failureText})`
-      : `document-not-resident — the peer answered WITHOUT doc ${docUrl} (unavailable verdict)`;
-    _post(mkFault(wikiUri, `slot ${slot} ${reason}`));
+    if (outcome) return outcome;
+    _post(mkFault(wikiUri, `slot ${slot} unavailable — the peer answered WITHOUT doc ${docUrl} (unavailable verdict, not a timeout)`));
     return null;
   }
 
@@ -299,7 +274,6 @@ export function runSovereignKernel(
     // between listeners): every inbound sync message marks the peer live, so the
     // slot wait measures true port-silence, never a wall deadline over a busy peer.
     _lastSyncHeardAt = mono();
-    _peerHeard = false;
     const tapPort = msg.syncPort as unknown as {
       addEventListener?: (t: string, h: () => void) => void;
       on?: (t: string, h: () => void) => void;
@@ -316,8 +290,7 @@ export function runSovereignKernel(
     // §6 — bytes travel via the lararium CRDT; manifest carries only integrity gate.
     // The engine grant resolves FIRST (engine bytes precede TW5 boot).
     tick("slots");
-    const storageResidency = msg.storage && "residency" in msg.storage ? msg.storage.residency : undefined;
-    const laraiumHandle = await _resolveSlot(_repo, msg.grants.islandUrl, ORACLE_BAG, msg.wikiUri, storageResidency);
+    const laraiumHandle = await _resolveSlot(_repo, msg.grants.islandUrl, ORACLE_BAG, msg.wikiUri);
     if (!laraiumHandle) return;
     _handles.set(ORACLE_BAG, laraiumHandle);
 
@@ -358,7 +331,7 @@ export function runSovereignKernel(
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
-      const handle = await _resolveSlot(_repo, docUrl, slot, msg.wikiUri, storageResidency);
+      const handle = await _resolveSlot(_repo, docUrl, slot, msg.wikiUri);
       if (!handle) return;     // fault already posted
       _handles.set(slot, handle);
       ready.push({ slot, handle });

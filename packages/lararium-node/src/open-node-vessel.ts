@@ -1427,10 +1427,6 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       },
       daemonAuth,
       storageDir,
-      // The daemon owns the vessel's worker-authored system plane. Make that
-      // recovery promise explicit; ordinary document reads still ride the
-      // live parent-attached sync shore when no resident grant exists.
-      storageResidency: "resident",
       rootDir: rootDirOpt ?? repoRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });
