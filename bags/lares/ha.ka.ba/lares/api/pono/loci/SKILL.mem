@@ -44,7 +44,7 @@ Loci SKILL opens the procedural stream here.
 * rating commitment stays truthful; a path hit never overrides unresolved tension
 * file-siting mutations and canon-MOVE opener changes cross as distinct bounded Hoʻoko transactions
 * aftermath names all declared-unresolved addresses
-* stable l-space: `lar:///ha.ka.ba/lares/` → `packages/lares-core/memes/`; all other `\w\.\w\.\w` roots → `lares/chapel-perilous-opens/{root}/`
+* disk siting rides the carrier walk (`listCarriers` over a bag directory); no path derives from a root, since `lar:` names and never fetches
 * `loci` eligibility requires `\w\.\w\.\w` root path segment; outside that pattern, MAY NOT implement
 * MCP resolution remains research backlog; no live resolver operates today
 
@@ -138,8 +138,8 @@ Do not infer `implements loci` without evidence.
 Decompose; classify resolution state.
 
 * step 1: match `^lar:\/\/[^\/]*\/(\w+\.\w+\.\w+)\/(.+)$`; extract `root` and `sub-path`; if no match, carrier ineligible — emit and stop; authority may be empty (`lar:///`) or full (`lar://alias:grant@host/`)
-* step 2: if `root == "ha.ka.ba"` → `packages/lares-core/memes/` + stem + `.md`; else → `lares/chapel-perilous-opens/` + root + `/` + stem + `.md`
-* step 3: file exists → RESOLVED; file absent → DECLARED-UNRESOLVED; emit forward reference
+* step 2: walk the carriers; a carrier whose `title` names the URI stands it
+* step 3: carrier found → RESOLVED; none found → DECLARED-UNRESOLVED; emit forward reference
 * read convention surfaces against the derivation result
 * hold RESOLVED and DECLARED-UNRESOLVED as distinct throughout
 
@@ -223,6 +223,6 @@ Then widen: does the stack describe itself coherently after the pass? An Afterma
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rc9wQs9QS1EMD_-962H8iKDssa21ErJY2G4ZHlG7xr0
+<<^ code="&#x0003;">>ni:///sha-256;yn2EfX2RRHju8mXaIP5_tO2ilHbx3LOtexpiN9pxXQY
 
 <<^ code="&#x0004;" -> to="?">>

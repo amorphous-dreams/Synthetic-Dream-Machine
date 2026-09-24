@@ -253,10 +253,10 @@ Inline shift: `[Voices: MaskName Voice1, Voice2]` — shifts foreground-voices f
 ''Mask definition file'' — canonical home in `lar:///ha.ka.ba/lares/api/masks/**`. Definition never travels.
 
 ```
-packages/lares-core/memes/api/lares/masks/
-  named/mischief-muse.md          -> lar:///ha.ka.ba/lares/api/masks/named/mischief-muse
-  character/ghost-of-mark-twain.md -> lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain
-  chorus/lagrange-chorus.md        -> lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus
+bags/lares/ha.ka.ba/lares/api/masks/
+  named/mischief-muse.mem          -> lar:///ha.ka.ba/lares/api/masks/named/mischief-muse
+  character/ghost-of-mark-twain.mem -> lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain
+  chorus/lagrange-chorus.mem        -> lar:///ha.ka.ba/lares/api/masks/chorus/lagrange-chorus
 ```
 
 ''LARES invocation (kahea)'' — session entry:
@@ -393,6 +393,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UuWbFkm9WPq3oALdNIPbIyNujxpkXU2oIp9DzmlQ-bU
+<<^ code="&#x0003;">>ni:///sha-256;sGZWA6HyjIDyDN7LPC0LvpTbdD3of2VTSh6n2RJdPA0
 
 <<^ code="&#x0004;" -> to="?">>

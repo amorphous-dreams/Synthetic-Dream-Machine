@@ -75,15 +75,12 @@ describe("carrier-edges — every address a carrier points at", () => {
    * A rise is only allowed to be absorbed here for the second reason, and only with the cause named;
    * absorbing the first one silently is how a ceiling stops measuring anything.
    *
-   * TWO READERS, TWO CORPORA (measured 2026-09-13): `lares meme check --edges $(git ls-files 'bags/*.mem')` reads
-   * 176 over bags/ alone; this test walks `carrierFiles` — every declared carrier, tiddlers and memory
-   * included — and reads 179. The ceiling here is THIS reader's number; lowering it to the CLI's would red on
-   * three edges the CLI never sees. 196 → 198, and the cause is the SECOND kind. The corpus finder learned to read the DECLARATION
-   * rather than a `bags/**` path, and the runtime kernel face at
-   * packages/lararium-tw5/tiddlers/memetic-wikitext.tid entered a corpus no reader had ever walked.
-   * Its four edges — three at `…/api/pono/invariant`, one at `lararium-node/MEME-STORE-FOUNDATIONS` —
-   * pointed at nothing before this test could see them, and two of them are offset by the uri-paths
-   * that same carrier now holds. Nothing broke; a blind spot closed.
+   * TWO READERS, TWO CORPORA: `lares meme check --edges $(git ls-files 'bags/*.mem')` reads 175 over bags/
+   * alone; this test walks `carrierFiles` — every declared carrier, tiddlers and memory included — and
+   * reads 178. The ceiling here is THIS reader's number; lowering it to the CLI's would red on the three
+   * edges the CLI never sees, which the runtime kernel face at
+   * packages/lararium-tw5/tiddlers/memetic-wikitext.tid carries (`…/api/pono/invariant`,
+   * `lararium-node/MEME-STORE-FOUNDATIONS`).
    */
   test("the corpus points at no more nothing than it already did", () => {
     const files = carrierFiles(REPO);
@@ -99,24 +96,14 @@ describe("carrier-edges — every address a carrier points at", () => {
     const dangling = texts.flatMap(readCarrierEdges)
       .filter((e) => e.address !== null && !held.has(e.address));
     expect(files.length).toBeGreaterThan(500);
-    // 2026-09-12: 201 -> 178. The harvest room emptied and went: `bags/lares-history` held 51 files
-    // whose own edges named addresses nothing answered, and three living carriers named into it. Each
-    // of those three welded onto the carrier that inherited the material — `docs/history/consume-archive`,
-    // `docs/pattern-integrities`, `docs/infrastructure-as-myth` — before the room burned, and the room's
-    // own 23 outbound danglers went with it. A CEILING ONLY EVER LOWERS, and it lowers by the same
-    // measurement either side of the change: `lares meme check --edges` read 198 before the rite and 175
-    // after, over the shelf; this reading adds the runtime kernel face and the fixtures the finder sees.
+    // A CEILING ONLY EVER LOWERS, and it lowers by the same measurement either side of a change:
+    // `lares meme check --edges` before and after. A broken edge gets repaired, never absorbed.
     //
-    // 178 -> 179, the SECOND kind again and named: `node/genesis-island.mem` teaches the carrier-gradient
-    // law by pointing at `lares/api/pono/carrier-gradient`, a carrier nobody has written — the law lives
-    // in `carrier-files.ts` and in the session record and has never had a `.mem` of its own. Its sibling
-    // edge in the same commit was the FIRST kind, a plain typo naming `lares/api/residency-model` where
-    // the carrier stands at `lararium/api/residency-model`, and that one was repaired rather than absorbed.
-    //
-    // Every remaining forward reference stands written down on purpose — `live-equivocation.mem` names
-    // `elyncia/characters/primary-characters/telarus`, `lararium/mesh/ahi-ka` and
-    // `lares/api/pono/recovery-registration`, three carriers nobody has written yet. A FORWARD REFERENCE
-    // IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(179);
+    // Every remaining forward reference stands written down on purpose — `node/genesis-island.mem`
+    // names `lares/api/pono/carrier-gradient` (the law lives in `carrier-files.ts`), and
+    // `live-equivocation.mem` names `elyncia/characters/primary-characters/telarus`,
+    // `lararium/mesh/ahi-ka` and `lares/api/pono/recovery-registration`, carriers nobody has written
+    // yet. A FORWARD REFERENCE IS INTENT RECORDED AHEAD OF ITS CARRIER.
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(178);
   });
 });

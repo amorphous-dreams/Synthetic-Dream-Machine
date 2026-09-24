@@ -35,7 +35,7 @@ Derivation remains recoverable here.
 
 !! Provenance
 
-Consumed from archive files and now shelved in this bundle:
+Consumed from these archive files:
 
 * `packages/lares-core/memes/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.md`
 * `packages/lares-core/memes/docs/mu/the-syad-perspectives/G_deep_research_meaning.md`
@@ -190,6 +190,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mIgl0fQrfyrEYmHMa1M2RjWQRx0JmNTOtdqzOP4RbUE
+<<^ code="&#x0003;">>ni:///sha-256;3UeTY8iYKtJeO6TtCzYR3Xo_YjduXYQhFessg5xjJhk
 
 <<^ code="&#x0004;" -> to="?">>

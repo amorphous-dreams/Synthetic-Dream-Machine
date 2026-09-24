@@ -301,11 +301,10 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph/traversal">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;frWRHmh1eSk2qU_7gFtj59_PmCrGFWUUUFGKL6enO3k
+<<^ code="&#x0003;">>ni:///sha-256;Ki567jVnzi68zYI79MUwufl5eOq-3X7fEySmBuCnYZU
 
 <<^ code="&#x0004;" -> to="?">>

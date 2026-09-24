@@ -140,9 +140,8 @@ Beneath both peers lies one mesh, two registers, named in Elyncian terms:
 ''  mempalace's exact base schema'' (ChromaDB `cid·document·embedding·metadata`,
   384-dim cosine) and extends it for the sibling palaces (`source_file` /
   `chunk_index` · `wing` / `room` · `lar_salience` / `frontier` · `lar_witnesses`
-  / `pubinfo` / `signer`). The read-only sidecar reach retires; ingest offloads
-  via @daemon coordinator verbs to the py nalu-gates (contract + retire-residue:
-  `lar:///ha.ka.ba/lares/docs/lararium_mcp/adapters#/contentpalace-inherits`).
+  / `pubinfo` / `signer`). Ingest offloads
+  via @daemon coordinator verbs to the py nalu-gates.
   //Note for the parent:// the @daemon-coordinator seat and the py-sensorium model
   named alongside this ruling belong to sibling swarm axes — this fold carries the
   mempalace/contentpalace schema-inheritance and the sidecar retirement alone.
@@ -277,6 +276,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lkCAYhi6-jLH2A44_oEwHfuM5l30xfZYgiGTeAljWjM
+<<^ code="&#x0003;">>ni:///sha-256;v3ICFu-jWlYyVSWUtrh8Ox7SARHoZttlcozLPh-SWeg
 
 <<^ code="&#x0004;" -> to="?">>

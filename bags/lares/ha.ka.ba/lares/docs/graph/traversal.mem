@@ -235,11 +235,10 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph/nodes">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/graph/artifacts">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/lararium_mcp/hydration">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qSekiiPiCR4AJu_KYCB5ntJJQUmjjdST-7VQaVrTDjk
+<<^ code="&#x0003;">>ni:///sha-256;O1xESGq54CxfgAApt7dDOMu7mzf_x1EdYNK0m1uNGy0
 
 <<^ code="&#x0004;" -> to="?">>

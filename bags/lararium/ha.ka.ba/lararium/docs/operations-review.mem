@@ -94,7 +94,7 @@ Secondary source: `FFZ_Chronometer_SPEC_OUTLINE.md` — Talk Story references at
 
 !!! Protocols not in Preferences that need sourcing
 
-* ''Talk Story'' appears in the FFZ chronometer spec and in the `Prompt_Architecture_Overview.md` reference to the Coffee Oracle test output (`Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — restored to `packages/lares-core/memes/docs/lararium/prompts/` from git history on 2026-04-23). The Talk Story protocol may carry more definition there. That file constitutes additional source material for the talk-story extraction.
+* ''Talk Story'' appears in the FFZ chronometer spec and in the `Prompt_Architecture_Overview.md` reference to the Coffee Oracle test output (`Lares_Test_Prompt_and_Output_Coffee_Oracle.md`). The Talk Story protocol may carry more definition there. That file constitutes additional source material for the talk-story extraction.
 
 <<~/ahu>>
 
@@ -228,7 +228,6 @@ This pass produces:
 !!! Concrete TODO List
 
 * [x] read `packages/lares-core/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` — gather Talk Story definition and any protocol detail not in FFZ spec
-* [ ] create `packages/lares-core/memes/docs/lararium/protocols/` directory
 * [ ] write `protocols/frame-uncertainty.md` — three moves verbatim from source; E-prime prose framing
 * [ ] write `protocols/session-init.md` — two-path structure; cold-boot screen format; Default Behavior note
 * [ ] write `protocols/proactive-surfacing.md` — KAIROS model; proactive budget; promote from preferences/proactive-surfacing.md
@@ -291,10 +290,9 @@ After the extraction pass closes, these questions remain for a future consolidat
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/degraded-states">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/docs/preferences/proactive-surfacing">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/voices-review">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tNkLQ43syTTjcWuUDHMkWKnjCRI0EJr-qahVSRBmdvc
+<<^ code="&#x0003;">>ni:///sha-256;0pyym21Rk61_E1BkSNTqdayo6mWiq9i2RhmMKKDitZI
 
 <<^ code="&#x0004;" -> to="?">>

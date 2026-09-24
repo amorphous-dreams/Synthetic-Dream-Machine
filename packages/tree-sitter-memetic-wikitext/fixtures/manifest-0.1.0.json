@@ -465,30 +465,6 @@
   "ha.ka.ba/lares/docs/lararium.mem": {
    "hash": "314b8d32c12dffeb9ee9b4974819a4bb947aad2864aac9c3149f6394d64887f9"
   },
-  "ha.ka.ba/lares/docs/lararium_mcp.mem": {
-   "hash": "64cffd2dcd0e6c9f84eadbd28144eb151c1e621675c64e50bf58f259a9d21a98"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/adapters.mem": {
-   "hash": "b5c581302a47b27fb4c57c4d55b2f30324d96cd91194efcbac004fcf9c626780"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/ast-execution-render.mem": {
-   "hash": "07a791247cf089e7a0e1ecc81aac7ceb13e77d3e1cf8bf3f7d798fa66413c51f"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/carrier-law.mem": {
-   "hash": "082cff709921755ccfcd9fb7db734483b654a76d4736b7b3716223911c645235"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/hydration.mem": {
-   "hash": "f4a0dd36d06d15528b10f780b3277f75245b9208e3e5641b91b5f7c184b64e82"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/local-clients.mem": {
-   "hash": "7fbd48cc7d58f7ab1e128ec32a89a0c65f87933b557ae462b09e4431d5afb18c"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/spine.mem": {
-   "hash": "121842eb7e944bb07fb5f39e8ce6acaea7cfe648b4bf2a3de53cb9ee6182f842"
-  },
-  "ha.ka.ba/lares/docs/lararium_mcp/sprint-ledger.mem": {
-   "hash": "3cb92a7efb5c610ad297636c2307eb3f7d3be22864bb5b20af267adf958abaf6"
-  },
   "ha.ka.ba/lares/docs/lares/alignment-architecture.mem": {
    "hash": "d25cde1c2da68416e74ce3e52a9180e05073a9ac74530cf185688229b2ddf90d"
   },

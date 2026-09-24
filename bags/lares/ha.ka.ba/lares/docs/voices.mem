@@ -233,7 +233,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 <<~ loulou "lar:///ha.ka.ba/lares/docs/voices/workers">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/voices/invariant-plan">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/voices-review">>
 
 <<~/ahu>>
 
@@ -251,6 +250,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xfsGAX8_fb7BNc3qcrOGucXFHGILHNAcnXEbor9lgT0
+<<^ code="&#x0003;">>ni:///sha-256;CEezRIFsiWxqFmMh71sNm7u_IMxJ7xxYi7jpIaZQtCI
 
 <<^ code="&#x0004;" -> to="?">>

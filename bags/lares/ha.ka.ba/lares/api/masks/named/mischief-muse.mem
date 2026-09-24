@@ -72,10 +72,6 @@ The corpus of self for Mischief-Muse accumulates from:
 
 The corpus grows through use. Each talk-story-dev pass deposits witness here.
 
-''Witness carrier:'' `lar:///ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle`
-
-''Source transcript:'' `packages/lares-core/memes/docs/lararium/prompts/Lares_Test_Prompt_and_Output_Coffee_Oracle.md` lines 1-57.
-
 Coffee Oracle records a coffee offering plus a request for the node to talk among itself. Mischief-Muse speaks first, midstream, and near closure. The transcript supports these corpus traits:
 
 * probability-aware lateral arrival
@@ -198,10 +194,9 @@ These notes require live session observation before they can be written with con
 <<~ loulou "lar:///ha.ka.ba/lares/api/masks">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/voices#/voice-house">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/voices/masks">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/voices/witnesses/mischief-muse-coffee-oracle">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eOumvtirnjaf4db25Lrn43prbWcllIpu9icuyntW248
+<<^ code="&#x0003;">>ni:///sha-256;7s-B4cOaGJQc5HtKzyY3sOmmgNy01gvucT-h-BJooBo
 
 <<^ code="&#x0004;" -> to="?">>

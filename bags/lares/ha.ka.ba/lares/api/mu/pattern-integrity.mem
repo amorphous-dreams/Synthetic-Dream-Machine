@@ -170,10 +170,9 @@ Every design decision that routes content through `lar:` URIs instead of filesys
 paths or HTTP URLs makes the whole content graph redirectable by changing what
 `lar:` resolves to:
 
-* Today: local filesystem under `packages/lares-core/`
-* Sprint 6: Automerge DocHandle (CRDT store)
-* Sprint N: Beelay content-addressed store
-* Sprint N+k: IPLD CID-addressed tiddlers
+* the disk projection under `bags/`
+* Automerge DocHandles (the CRDT store)
+* a content-addressed store (Beelay, IPLD CID-addressed tiddlers)
 
 No call sites change. Turn the trim tab (resolver); the ship follows.
 
@@ -221,6 +220,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TnAkWG9cGtoRjCdLjQqWROqSHjQULbVOascTiibH7Sk
+<<^ code="&#x0003;">>ni:///sha-256;KG56G4Q0vrpWt1WLKiJtg8qXbBS5Vp7Ejt59EoKdvTU
 
 <<^ code="&#x0004;" -> to="?">>

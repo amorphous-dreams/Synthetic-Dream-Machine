@@ -92,9 +92,9 @@ Voice character SHOULD include:
 Each mask lives as a meme file in the masks API tree. One canonical location; the definition never travels.
 
 ```
-packages/lares-core/memes/api/lares/masks/
-  ghost-of-mark-twain.md   → lar:///ha.ka.ba/lares/api/masks/ghost-of-mark-twain
-  friend-computer.md       → lar:///ha.ka.ba/lares/api/masks/friend-computer
+bags/lares/ha.ka.ba/lares/api/masks/
+  character/ghost-of-mark-twain.mem   → lar:///ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain
+  character/friend-computer.mem       → lar:///ha.ka.ba/lares/api/masks/character/friend-computer
 ```
 
 A mask meme file carries the canonical definition in its `#meta` block:
@@ -393,6 +393,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9AQc5SSVNprX9VFZs86S1F3JAE-GPh7LhX6_MkCeimc
+<<^ code="&#x0003;">>ni:///sha-256;Y_wKtMw7J6un52FrCfkYS7CozWEV3p4UajXfFK_qFZw
 
 <<^ code="&#x0004;" -> to="?">>
