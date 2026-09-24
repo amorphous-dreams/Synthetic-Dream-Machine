@@ -15,8 +15,11 @@ import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 
 import {
   DEFAULT_PRONAOS_REFUSALS,
+  deliverPublicArtifact,
   niUriSha256FromHex,
   sha256HexBytesSync,
+  validatePublicArtifactPublication,
+  type PublicArtifactPublication,
   validatePronaosRouteInventory,
   type PronaosRoute,
   type PronaosRouteInventory,
@@ -65,6 +68,70 @@ function serve(res: ServerResponse, file: PronaosFile, method: string, cacheCont
   });
   if (method === "HEAD") res.end();
   else res.end(Buffer.from(file.bytes));
+}
+
+function cacheControlForPublication(cache: PublicArtifactPublication["route"]["cache"]): string {
+  if (cache === "immutable") return "public, immutable, max-age=31536000";
+  if (cache === "revalidate") return "public, max-age=0, must-revalidate";
+  return "no-store";
+}
+
+/**
+ * Build the optional Herm public-artifact carrier face.
+ *
+ * The caller supplies one already-published byte buffer.  The handler never
+ * resolves a path, opens CAS, or consults a document/persona store: every
+ * response passes through the mesh publication's exact route and digest.
+ */
+export function pronaosPublicArtifactRequestHandler(
+  publication: PublicArtifactPublication,
+  bytes: Uint8Array,
+): (req: IncomingMessage, res: ServerResponse) => boolean {
+  validatePublicArtifactPublication(publication);
+  const route = publication.route.path;
+  return (req, res): boolean => {
+    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+    if (pathname !== route) return false;
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      res.writeHead(405, { "content-type": "text/plain; charset=utf-8", allow: "GET, HEAD" });
+      res.end("method not allowed");
+      return true;
+    }
+    const delivered = deliverPublicArtifact(
+      publication,
+      { path: pathname, artifactCid: publication.artifactCid },
+      bytes,
+    );
+    serve(res, { bytes: delivered.bytes, contentType: delivered.contentType }, req.method,
+      cacheControlForPublication(publication.route.cache));
+    return true;
+  };
+}
+
+/** Install the optional, exact public-artifact face on an existing Node server. */
+export function mountPronaosPublicArtifact(
+  httpServer: Server,
+  publication: PublicArtifactPublication,
+  bytes: Uint8Array,
+  dispatcher?: HttpFaceDispatcher,
+): PronaosMount {
+  const onRequest = pronaosPublicArtifactRequestHandler(publication, bytes);
+  const listener = (req: IncomingMessage, res: ServerResponse): void => {
+    try { onRequest(req, res); }
+    catch { refuse(res, "Pronaos artifact unavailable"); }
+  };
+  const routeKey = `pronaos:public-artifact:${publication.route.path}`;
+  const unregister = dispatcher?.register({
+    name: "pronaos-public-artifact",
+    routeKeys: [routeKey],
+    owns: (req) => {
+      try { return new URL(req.url ?? "/", "http://localhost").pathname === publication.route.path; }
+      catch { return false; }
+    },
+    handle: listener,
+  });
+  if (!unregister) httpServer.on("request", listener);
+  return { dispose: () => unregister ? unregister() : httpServer.off("request", listener) };
 }
 
 /**

@@ -369,7 +369,8 @@ export { buildBulb, assembleBulb, readBulbArtifact, BULB_MANIFEST_FORMAT } from 
 export type { BulbArtifact, BulbBlob, BulbManifest } from "./bulb.js";
 export { mountBulbReadFace } from "./bulb-read-face.js";
 export {
-  mountPronaosReadFace, pronaosRequestHandler, pronaosRouteInventoryForProjection,
+  mountPronaosReadFace, mountPronaosPublicArtifact, pronaosRequestHandler,
+  pronaosPublicArtifactRequestHandler, pronaosRouteInventoryForProjection,
 } from "./pronaos-adapter.js";
 export type {
   PronaosFile, PronaosProjection, PronaosPreparedProjection, PronaosMount,
