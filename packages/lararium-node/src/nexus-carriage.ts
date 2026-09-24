@@ -31,8 +31,8 @@
  * the floor and nothing above it (membership-doctrine: no device rides it), so the binding is a capability the
  * FACE CARRIES (#/the-carried-cap): the persona root signs a device edge naming the vessel key, the vessel presents
  * it in the wire's CONTRACT slot (never the fleet slot — that one chains to THIS hearth's KEL), the gate proves it
- * offline (`contractNymOf`) and keeps the nym it proves beside the identifier (`peerContractNymMap`), and the consult
- * reads that nym AHEAD of the raw wire key. The pin is the member set itself: a proven edge names a root, and the
+ * offline (`contractNymOf`) when its contract frontier is present and keeps the nym it proves beside the identifier
+ * (`peerContractNymMap`), and the consult reads that nym AHEAD of the raw wire key. The pin is the member set itself: a proven edge names a root, and the
  * root must stand CONTRACTED on this vessel's own board or the peer stays a STRANGER — "someone signed" alone
  * seats nobody. A peer presenting no contract edge resolves exactly as before (byte-identical).
  *
@@ -70,18 +70,22 @@ const NYM_RE = /^[0-9a-f]{64}$/;
 /**
  * The persona-root nym a CONTRACT edge proves for the vessel key at the wire — or null. The edge must name the
  * presented vessel key (`deviceVerifyingKey` = the Identifier's raw-key tail), verify under the root that signed
- * it, and stand fresh at `now`. No hearth binding and no lease here: the contract names the RELATION (the charter
- * epoch on the board) and the edge names the VESSEL; the hearth × lease binding belongs to the fleet credential.
+ * it, and stand at the caller's supplied contract lease frontier. No ambient clock is a witness here: the
+ * contract names the RELATION and the edge names the VESSEL; the hearth × lease binding belongs to the fleet
+ * credential. A caller without the relation frontier receives no nym and must keep the peer at the floor.
  * The root this answers is NOT yet trusted — the consult pins it against the contracted member set.
  */
 export async function contractNymOf(
-  edge: DeviceDelegationTiddler, presentedIdentHex: string, now: number,
+  edge: DeviceDelegationTiddler,
+  presentedIdentHex: string,
+  witness: { readonly expectedEpoch: number },
 ): Promise<string | null> {
+  if (!Number.isSafeInteger(witness.expectedEpoch) || witness.expectedEpoch < 0) return null;
   const vesselKey = presentedIdentHex.slice(-64).toLowerCase();
   if (!NYM_RE.test(vesselKey)) return null;
   if (typeof edge?.deviceVerifyingKey !== "string" || edge.deviceVerifyingKey.toLowerCase() !== vesselKey) return null;
   if (typeof edge.personaRootDid !== "string") return null;
-  const r = await verifyDeviceDelegation(edge, edge.personaRootDid, { now });
+  const r = await verifyDeviceDelegation(edge, edge.personaRootDid, { expectedEpoch: witness.expectedEpoch });
   if (!r.ok) return null;
   let nym: string;
   try { nym = verifyingKeyFromDid(edge.personaRootDid).toLowerCase(); } catch { return null; }

@@ -23,11 +23,11 @@
  *   2. The Repo's sharePolicy should call getIdentifierForSocket() to build
  *      PeerId → identifierHex entries when the adapter emits "peer-candidate".
  *   3. A CONTRACT edge riding the lar:auth (`contractEdge` — a cross-operator's own persona-root-signed edge over
- *      its own vessel key) is proved offline HERE (`contractNymOf`: pure ed25519 over public material, no
- *      keyhive) and the nym it proves lands in socketToContractNym. It never reaches the keyholder's fleet
- *      verifier — that slot chains to the pinned KEL and a foreign root would anergize the socket whole. The
- *      gate still decides nothing by it: admission stays the worker's verdict; a bad contract edge simply
- *      records no nym and the peer stands at the cross-operator floor exactly as before.
+ *      its own vessel key) is eligible for `contractNymOf`, but this gate has no contract-board frontier and
+ *      therefore records no nym. It never reaches the keyholder's fleet verifier — that slot chains to the pinned
+ *      KEL and a foreign root would anergize the socket whole. The gate still decides nothing by it: admission
+ *      stays the worker's verdict; an invalid or unwitnessed contract edge records no nym and the peer stands at
+ *      the cross-operator floor exactly as before.
  *
  * Security posture (alpha):
  *   - V3 proof-of-possession (ENFORCED): the gate emits its gate-binding key in
@@ -53,7 +53,6 @@ import {
   DAEMON_BAG_ID,
 } from "@lararium/mesh";
 import type { AuthVerifierShore, PeerClass } from "@lararium/mesh";
-import { contractNymOf } from "./nexus-carriage.js";
 
 const AUTH_TIMEOUT_MS       = 5_000;
 const MAX_PENDING           = 50;     // max concurrent unauthenticated connections
@@ -131,8 +130,9 @@ export class DaemonAuthGate extends EventEmitter {
 
   /**
    * The persona-root nym the peer's CONTRACT edge proved for this socket — undefined for a peer that presented
-   * none or one that failed to prove. Key it into the sharePolicy's `peerContractNymMap` from the same
-   * "peer-candidate" listener; the membership consult pins it against the contracted member set.
+   * none, one that failed to prove, or one whose contract frontier was unavailable. Key it into the sharePolicy's
+   * `peerContractNymMap` from the same "peer-candidate" listener only when defined; the membership consult pins
+   * it against the contracted member set. `undefined` is pending/refusal, never authorization.
    */
   getContractNymForSocket(socket: WebSocket): string | undefined {
     return this.socketToContractNym.get(socket);
@@ -220,10 +220,9 @@ export class DaemonAuthGate extends EventEmitter {
           if (!verdict.ok || !verdict.identifier) {
             resolve({ ok: false, reason: verdict.reason ?? (verdict.ok ? "verify-proxy returned no identifier" : "insufficient capability") });
           } else {
-            // The CONTRACT slot, proved offline against the identity the worker just admitted (header, step 3).
-            const contractNym = parsed.contractEdge
-              ? await contractNymOf(parsed.contractEdge, verdict.identifier, Date.now())
-              : null;
+            // The gate has no contract-board frontier of its own. Do not invent one from a wall clock:
+            // without the relation's accepted lease witness, the edge stays pending and grants no nym.
+            const contractNym = null;
             // Carry the self-slot class the keyholder vouched (absent → cross-operator at the gate).
             resolve({
               ok: true, identHex: verdict.identifier,

@@ -105,18 +105,18 @@ describe("the membership consult binds the wire key to the nym through the contr
     const keys      = await Promise.all(SEEDS.map(pubOf));
     const vesselKey = await pubOf(VESSEL_SEED);
     const edge      = await edgeFor(SEEDS[0]!, vesselKey);
-    expect(await contractNymOf(edge, `prefix:${vesselKey}`, NOW)).toBe(keys[0]);
+    expect(await contractNymOf(edge, `prefix:${vesselKey}`, { expectedEpoch: 0 })).toBe(keys[0]);
   });
 
   test("CONTROL — an edge naming ANOTHER vessel key, a tampered signature, an expired edge: no nym", async () => {
     const vesselKey = await pubOf(VESSEL_SEED);
     const otherKey  = await pubOf(OTHER_VESSEL_SEED);
     const edge      = await edgeFor(SEEDS[0]!, vesselKey);
-    expect(await contractNymOf(edge, `prefix:${otherKey}`, NOW)).toBeNull();                       // names another vessel
+    expect(await contractNymOf(edge, `prefix:${otherKey}`, { expectedEpoch: 0 })).toBeNull();       // names another vessel
     const flipped   = edge.signature.slice(0, -2) + (edge.signature.endsWith("00") ? "01" : "00");
     expect(edge.signature).not.toBe(flipped);                                                        // the bytes MOVED
-    expect(await contractNymOf({ ...edge, signature: flipped }, `prefix:${vesselKey}`, NOW)).toBeNull();
-    expect(await contractNymOf(edge, `prefix:${vesselKey}`, Date.parse("2027-01-01T00:00:00Z"))).toBeNull();
+    expect(await contractNymOf({ ...edge, signature: flipped }, `prefix:${vesselKey}`, { expectedEpoch: 0 })).toBeNull();
+    expect(await contractNymOf(edge, `prefix:${vesselKey}`, { expectedEpoch: 1 })).toBeNull();
   });
 
   test("a peer whose vessel key the contracted nym's edge names reads MEMBER; an unbound vessel key reads STRANGER; a kahu peer unchanged", async () => {
@@ -125,7 +125,7 @@ describe("the membership consult binds the wire key to the nym through the contr
     const otherKey  = await pubOf(OTHER_VESSEL_SEED);
     writeNexusDoc(bags, await seatedCharter(keys));   // the seated kahu ARE contracted members (the strict subset)
     const edge = await edgeFor(SEEDS[0]!, vesselKey);
-    const nym  = await contractNymOf(edge, `prefix:${vesselKey}`, NOW);
+    const nym  = await contractNymOf(edge, `prefix:${vesselKey}`, { expectedEpoch: 0 });
     expect(nym).toBe(keys[0]);
 
     const peerMap = new Map<string, string>([

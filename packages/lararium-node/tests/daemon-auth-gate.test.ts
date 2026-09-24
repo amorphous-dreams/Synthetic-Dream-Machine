@@ -351,8 +351,8 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
 
   // ── THE CONTRACT SLOT — a cross-operator's persona-root-signed edge over its OWN vessel key ─────────────
   // It never reaches the fleet verifier (that slot chains to THIS hearth's KEL and would anergize the socket
-  // whole); the gate proves it offline and keeps the nym it proves beside the identifier for the consult.
-  test("a lar:auth carrying a contractEdge: the gate keeps the proven nym for the socket; the shore sees NO fleet edge", async () => {
+  // whole). With no contract-board frontier armed, the edge remains pending and the gate keeps no nym.
+  test("a lar:auth carrying a contractEdge without a frontier: the gate keeps the strict floor; the shore sees NO fleet edge", async () => {
     const { buildDeviceDelegation } = await import("@lararium/mesh");
     const ed = await import("@noble/ed25519");
     const rootSeed   = new Uint8Array(32).fill(21);
@@ -377,7 +377,7 @@ describe("DaemonAuthGate — pre-sync auth exchange", () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0]!.edge).toBeUndefined();                                  // CONTROL: the fleet slot stays empty
-    expect(gate.getContractNymForSocket(serverSocket)).toBe(rootKey);        // THE RED
+    expect(gate.getContractNymForSocket(serverSocket)).toBeUndefined();      // no relation witness: pending, never authorized
     expect(gate.getIdentifierForSocket(serverSocket)).toBe(`prefix:${vesselKey}`);
     ws.close();
   });

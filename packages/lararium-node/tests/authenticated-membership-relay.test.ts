@@ -125,29 +125,46 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     ch.close();
   }, 15_000);
 
-  test("a STALE proof is refused — the relay leg enforces the same freshness window the daemon leg does", async () => {
+  test("an old signed proof stays connection-scoped — fresh challenge nonce defeats cross-connection replay", async () => {
     const gateSeed = new Uint8Array(32).fill(11);
     relay = await startAuthenticatedMembershipRelay(gateSeed);
     const peerSeed = new Uint8Array(32).fill(12);
     const peerPubKey = await pubOf(peerSeed);
 
-    // Hand-drive the handshake so the proof can carry a `ts` well outside the freshness window.
-    const closed = await new Promise<number>((resolve) => {
+    // Hand-drive the handshake so the proof can carry deliberately old signed metadata; the relay does not claim
+    // wall-clock freshness. The challenge nonce, not this ts, is the connection-scoped replay boundary.
+    const first = await new Promise<{ raw: WS; proof: { peerPubKey: string; ts: string; sig: string } }>((resolve, reject) => {
       const raw = new WS(`ws://127.0.0.1:${relay!.port}`);
+      let proof: { peerPubKey: string; ts: string; sig: string } | undefined;
+      raw.on("error", reject);
       raw.on("message", (data: RawData) => {
         const frame = JSON.parse(data.toString()) as { t: string; nonce?: string; gatePubKey?: string };
-        if (frame.t !== "challenge") return;
-        void (async () => {
-          const ts = new Date(Date.now() - 10 * 60_000).toISOString();   // ten minutes stale
+        if (frame.t === "challenge") void (async () => {
+          const ts = new Date(Date.now() - 10 * 60_000).toISOString();   // deliberately old signed metadata
           const sig = await ed25519SignerFromSeed(peerSeed)(
             authProofBytes({ nonce: frame.nonce!, gatePubKey: frame.gatePubKey!, peerPubKey, aud: MEMBERSHIP_RELAY_DOMAIN, ts }),
           );
-          raw.send(JSON.stringify({ t: "auth", peerPubKey, ts, sig }));
+          proof = { peerPubKey, ts, sig };
+          raw.send(JSON.stringify({ t: "auth", ...proof }));
         })();
+        else if (frame.t === "auth-ok" && proof) resolve({ raw, proof });
+      });
+    });
+    first.raw.close();
+
+    // The same signed proof cannot cross a fresh challenge: the nonce is part of the signed bytes. This proves
+    // connection-scoped replay protection without asserting cross-restart or wall-clock freshness.
+    const closed = await new Promise<number>((resolve, reject) => {
+      const raw = new WS(`ws://127.0.0.1:${relay!.port}`);
+      raw.on("error", reject);
+      raw.on("message", (data: RawData) => {
+        const frame = JSON.parse(data.toString()) as { t: string; nonce?: string; gatePubKey?: string };
+        if (frame.t !== "challenge") return;
+        raw.send(JSON.stringify({ t: "auth", ...first.proof }));
       });
       raw.on("close", (code: number) => resolve(code));
     });
-    expect(closed).toBe(4003);   // a validly-SIGNED but stale proof still fails closed
+    expect(closed).toBe(4003);
   }, 15_000);
 
   test("concurrent auth frames on ONE socket cannot race the binding — the attempt latches once", async () => {

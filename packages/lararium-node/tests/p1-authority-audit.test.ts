@@ -126,8 +126,8 @@ describe("P1 authority relations — characterization witness", () => {
     const edge = await delegation();
     const deviceKey = await pubOf(deviceSeed);
     const presentedIdentifier = `identifier:${deviceKey}`;
-    const nym = await contractNymOf(edge, presentedIdentifier, now);
-    const wrongVessel = await contractNymOf(edge, `identifier:${await pubOf(peerSeed)}`, now);
+    const nym = await contractNymOf(edge, presentedIdentifier, { expectedEpoch: 0 });
+    const wrongVessel = await contractNymOf(edge, `identifier:${await pubOf(peerSeed)}`, { expectedEpoch: 0 });
     auditRows.push({
       relation: "contract-edge",
       inputs: { presentedVesselKey: deviceKey, boundEpoch: edge.boundEpoch, gateNow: now },
