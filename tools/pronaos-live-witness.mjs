@@ -271,7 +271,12 @@ export async function runPronaosInProcessWitness({
     } finally {
       rmSync(scratch, { recursive: true, force: true });
     }
-    return { transport: "in-process", routes: ["/", expected.worker.path, "/genesis/seed.json", `/genesis/cas/${expected.cid}`], refusals: 4, liveDocker: false, originReach: false };
+    return {
+      transport: "in-process",
+      routes: ["/", expected.worker.path, "/genesis/seed.json", `/genesis/cas/${expected.cid}`],
+      refusals: 4,
+      proof: { process: "in-process", reach: "none", docker: "not-run" },
+    };
   } finally {
     composition.dispose();
     dispatcher.dispose();
@@ -328,7 +333,18 @@ export async function runPronaosLiveWitness({
       await fetchChecked(child, ready, route, undefined, { status: 404, notHtml: true });
     }
     await fetchChecked(child, ready, "/", undefined, { status: 405, notHtml: true, request: { method: "POST" } });
-    return { pid: ready.pid, port: ready.port, socketPath: ready.socketPath, transport: ready.transport, routes: ["/", expected.worker.path, "/genesis/seed.json", `/genesis/cas/${expected.cid}`], liveDocker: false, originReach: ready.transport === "tcp" };
+    return {
+      pid: ready.pid,
+      port: ready.port,
+      socketPath: ready.socketPath,
+      transport: ready.transport,
+      routes: ["/", expected.worker.path, "/genesis/seed.json", `/genesis/cas/${expected.cid}`],
+      proof: {
+        process: "child",
+        reach: ready.transport === "tcp" ? "loopback-only" : "none",
+        docker: "not-run",
+      },
+    };
   } catch (error) {
     const suffix = stderr.trim() ? `; child stderr: ${stderr.trim()}` : "";
     throw new Error(`${error instanceof Error ? error.message : String(error)}${suffix}`);
@@ -434,10 +450,10 @@ else if (process.argv[1] && resolve(process.argv[1]) === TOOL) {
     const result = process.env.CODEX_SANDBOX_NETWORK_DISABLED === "1"
       ? await runPronaosInProcessWitness()
       : await runPronaosLiveWitness();
-    console.log(`[pronaos-live] green: pid=${result.pid ?? "n/a"} transport=${result.transport} port=${result.port ?? "n/a"} routes=${result.routes.length}`);
-    console.log(`[pronaos-live] Docker daemon/image/live-container reservation: not run (daemon-free witness; origin reach=${result.transport === "tcp" ? "loopback only" : "blocked by runner"})`);
+    console.log(`[pronaos-witness] green: process=${result.proof.process} transport=${result.transport} port=${result.port ?? "n/a"} routes=${result.routes.length}`);
+    console.log(`[pronaos-witness] proof states: reach=${result.proof.reach} docker=${result.proof.docker}`);
   } catch (error) {
-    console.error(`[pronaos-live] RED: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`[pronaos-witness] RED: ${error instanceof Error ? error.message : String(error)}`);
     process.exitCode = 1;
   }
 }

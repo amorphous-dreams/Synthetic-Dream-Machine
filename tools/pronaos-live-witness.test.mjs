@@ -5,10 +5,9 @@ import { runPronaosInProcessWitness, runPronaosLiveWitness } from "./pronaos-liv
 test("executes the compiled Pronaos composition and dispatcher without a socket", async () => {
   const result = await runPronaosInProcessWitness();
   assert.equal(result.transport, "in-process");
-  assert.equal(result.originReach, false);
+  assert.deepEqual(result.proof, { process: "in-process", reach: "none", docker: "not-run" });
   assert.ok(result.routes.includes("/"));
   assert.ok(result.routes.some((route) => /worker/i.test(route)));
-  assert.equal(result.liveDocker, false);
 });
 
 test("reserved-host process witness remains explicit and makes no Node-face claim", async (t) => {
@@ -20,5 +19,7 @@ test("reserved-host process witness remains explicit and makes no Node-face clai
   assert.ok(Number.isInteger(result.pid));
   assert.ok(result.routes.includes("/"));
   assert.ok(result.routes.some((route) => /worker/i.test(route)));
-  assert.equal(result.liveDocker, false);
+  assert.equal(result.proof.process, "child");
+  assert.equal(result.proof.docker, "not-run");
+  assert.ok(["loopback-only", "none"].includes(result.proof.reach));
 });
