@@ -17,7 +17,8 @@
       ],
       "@lararium/tw5/*": [
         "./packages/lararium-tw5/*",
-        "./packages/lararium-tw5/src/*"
+        "./packages/lararium-tw5/src/*.ts",
+        "./packages/lararium-tw5/src/*/index.ts"
       ],
       "@lararium/mesh/meme-ast": [
         "./packages/lararium-mesh/src/meme-ast/index.ts"
