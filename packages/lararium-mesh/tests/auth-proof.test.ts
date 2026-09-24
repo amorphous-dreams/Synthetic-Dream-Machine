@@ -7,7 +7,7 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import {
-  authProofBytes, buildAuthResponse, verifyAuthProof, runPeerHandshake,
+  authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   ed25519SignerFromSeed, AUTH_PROOF_TTL_MS,
   mkLarChallenge, mkLarAuthOk, mkLarAuthDenied,
 } from "../src/auth-wire.js";
@@ -124,6 +124,25 @@ describe("verifyAuthProof (V3 verifier half — real Ed25519 keys)", () => {
     const priv = ed25519.utils.randomSecretKey();
     peerPub = hex(await ed25519.getPublicKeyAsync(priv));
     sign = async (bytes) => hex(await ed25519.signAsync(bytes, priv));
+  });
+
+  test("returns relation-scoped evidence for checked, unavailable, stale, malformed, and rejected proofs", async () => {
+    const { sig, ts } = await signedProof();
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts, now: Date.parse(ts) })).toMatchObject({
+      relation: "daemon-proof-of-possession", state: "checked-valid", cryptographicallyValid: true,
+    });
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts })).toMatchObject({
+      relation: "daemon-proof-of-possession", state: "unavailable", cryptographicallyValid: true,
+    });
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig, ts, now: Date.parse(ts) + AUTH_PROOF_TTL_MS + 1 })).toMatchObject({
+      relation: "daemon-proof-of-possession", state: "stale", cryptographicallyValid: false,
+    });
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: "xyz", sig, ts })).toMatchObject({
+      relation: "daemon-proof-of-possession", state: "malformed", cryptographicallyValid: false,
+    });
+    expect(await evaluateAuthProof({ ...challenge, peerPubKey: peerPub, sig: "ab".repeat(64), ts })).toMatchObject({
+      relation: "daemon-proof-of-possession", state: "rejected", cryptographicallyValid: false,
+    });
   });
 
   test("a genuine signature over the gate-bound proof clears", async () => {

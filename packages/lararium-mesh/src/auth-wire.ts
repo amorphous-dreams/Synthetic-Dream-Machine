@@ -28,6 +28,7 @@
 import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
+import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 
 export const AUTH_WIRE_VERSION = "1" as const;
 export type AuthWireVersion = typeof AUTH_WIRE_VERSION;
@@ -58,6 +59,8 @@ export interface AuthProofWire {
   sig:   string;
   ts:    string;
 }
+
+export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-possession">;
 
 /** Peer → Gate: identity assertion. */
 export interface LarAuthMsg {
@@ -268,16 +271,44 @@ export async function verifyAuthProof(parts: {
   now?:        number;  // verifier clock (ms); omit to skip the freshness window
   ttlMs?:      number;  // freshness half-width (default AUTH_PROOF_TTL_MS)
 }): Promise<{ ok: boolean; reason?: string }> {
+  const evidence = await evaluateAuthProof(parts);
+  return evidence.cryptographicallyValid
+    ? { ok: true }
+    : { ok: false, ...(evidence.reason ? { reason: evidence.reason } : {}) };
+}
+
+/**
+ * Read daemon proof evidence without turning a missing soft freshness witness
+ * into a cryptographic failure. The nonce, gate binding, peer key and exact
+ * audience are always covered by `authProofBytes`; this relation currently has
+ * no separate method/resource fields and therefore makes no claim about them.
+ */
+export async function evaluateAuthProof(parts: {
+  nonce: string;
+  gatePubKey: string;
+  peerPubKey: string;
+  aud: string;
+  ts: string;
+  sig: string;
+  now?: number;
+  ttlMs?: number;
+}): Promise<DaemonProofEvidence> {
+  const verdict = (state: DaemonProofEvidence["state"], cryptographicallyValid: boolean, reason?: string): DaemonProofEvidence => ({
+    relation: "daemon-proof-of-possession",
+    state,
+    cryptographicallyValid,
+    ...(reason ? { reason } : {}),
+  });
   // Shape guards — reject malformed key/sig material before touching crypto.
-  if (!/^[0-9a-fA-F]{64}$/.test(parts.peerPubKey))  return { ok: false, reason: "peerPubKey not 32-byte hex" };
-  if (!/^[0-9a-fA-F]{128}$/.test(parts.sig))        return { ok: false, reason: "sig not 64-byte hex" };
+  if (!/^[0-9a-fA-F]{64}$/.test(parts.peerPubKey))  return verdict("malformed", false, "peerPubKey not 32-byte hex");
+  if (!/^[0-9a-fA-F]{128}$/.test(parts.sig))        return verdict("malformed", false, "sig not 64-byte hex");
 
   // Freshness — bounded replay window once the nonce rotates.
   if (parts.now !== undefined) {
     const tsMs = Date.parse(parts.ts);
-    if (Number.isNaN(tsMs)) return { ok: false, reason: "ts not a valid timestamp" };
+    if (Number.isNaN(tsMs)) return verdict("malformed", false, "ts not a valid timestamp");
     const ttl = parts.ttlMs ?? AUTH_PROOF_TTL_MS;
-    if (Math.abs(parts.now - tsMs) > ttl) return { ok: false, reason: "proof outside freshness window" };
+    if (Math.abs(parts.now - tsMs) > ttl) return verdict("stale", false, "proof outside freshness window");
   }
 
   const proof = authProofBytes({
@@ -291,9 +322,12 @@ export async function verifyAuthProof(parts: {
   try {
     ok = await ed25519.verifyAsync(hexToBytes(parts.sig), proof, hexToBytes(parts.peerPubKey));
   } catch (err) {
-    return { ok: false, reason: err instanceof Error ? err.message : "ed25519 verify threw" };
+    return verdict("malformed", false, err instanceof Error ? err.message : "ed25519 verify threw");
   }
-  return ok ? { ok: true } : { ok: false, reason: "signature mismatch" };
+  if (!ok) return verdict("rejected", false, "signature mismatch");
+  return parts.now === undefined
+    ? verdict("unavailable", true, "verifier freshness witness unavailable")
+    : verdict("checked-valid", true);
 }
 
 /**

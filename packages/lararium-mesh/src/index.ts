@@ -56,6 +56,7 @@ export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
+export * from "./authority-verdict.js";
 export * from "./oracle-substrate.js";
 export * from "./oracle-read-client.js";
 export * from "./plugin-offering.js";
@@ -184,13 +185,13 @@ export {
   AUTH_WIRE_VERSION, AUTH_PROOF_TTL_MS,
   mkLarChallenge, mkLarAuth, mkLarAuthOk, mkLarAuthDenied,
   isLarChallengeMsg, isLarAuthMsg, isLarAuthOkMsg, isLarAuthDeniedMsg,
-  authProofBytes, buildAuthResponse, verifyAuthProof, runPeerHandshake,
+  authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, ed25519VerifyHex,
 } from "./auth-wire.js";
 export type {
   AuthWireVersion,
   LarChallengeMsg, LarAuthMsg, LarAuthOkMsg, LarAuthDeniedMsg, LarAuthWireMsg,
-  AuthProofWire, PeerHandshake, LeafIdentity,
+  AuthProofWire, PeerHandshake, LeafIdentity, DaemonProofEvidence,
 } from "./auth-wire.js";
 export { LarWSClientAdapter } from "./lar-ws-client-adapter.js";
 export type { LarWSClientOptions } from "./lar-ws-client-adapter.js";

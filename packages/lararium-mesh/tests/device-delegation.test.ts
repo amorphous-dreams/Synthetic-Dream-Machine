@@ -4,6 +4,7 @@ import { hex } from "../src/crypto.js";
 import {
   buildDeviceDelegation,
   verifyDeviceDelegation,
+  evaluateDeviceDelegation,
   type DeviceDelegationTiddler,
 } from "../src/device-delegation.js";
 
@@ -29,6 +30,26 @@ async function mint(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
 }
 
 describe("device-delegation — the signed capability edge (v2, post-verification)", () => {
+  it("returns relation-scoped evidence for checked, unavailable, stale, malformed, and rejected edges", async () => {
+    const edge = await mint(5);
+    const root = await opDidP;
+    expect(await evaluateDeviceDelegation(edge, root, { now: NOW, expectedEpoch: 5 })).toMatchObject({
+      relation: "device-face-delegation", state: "checked-valid", cryptographicallyValid: true,
+    });
+    expect(await evaluateDeviceDelegation(edge, root, { now: NOW })).toMatchObject({
+      relation: "device-face-delegation", state: "unavailable", cryptographicallyValid: true,
+    });
+    expect(await evaluateDeviceDelegation(edge, root, { now: NOW, expectedEpoch: 6 })).toMatchObject({
+      relation: "device-face-delegation", state: "stale", cryptographicallyValid: false,
+    });
+    expect(await evaluateDeviceDelegation({ ...edge, signature: "deadbeef" }, root)).toMatchObject({
+      relation: "device-face-delegation", state: "malformed", cryptographicallyValid: false,
+    });
+    expect(await evaluateDeviceDelegation(edge, `0x${"ff".repeat(32)}`)).toMatchObject({
+      relation: "device-face-delegation", state: "rejected", cryptographicallyValid: false,
+    });
+  });
+
   it("builds + verifies against the pinned root", async () => {
     const edge = await mint();
     expect(edge.kind).toBe("device-delegation");

@@ -29,6 +29,7 @@ import { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { hex, hexToBytes } from "./crypto.js";
 import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type LarDid } from "./lar-did.js";
+import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 
 export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
 /** Clock drift tolerance for the freshness window (matches the V3 auth-proof posture / UCAN ±60s). */
@@ -72,6 +73,8 @@ export interface DeviceDelegationTiddler {
   /** Ed25519 signature hex (128) over the canonical proof string, by the operator root. */
   readonly signature:           string;
 }
+
+export type DeviceDelegationEvidence = AuthorityEvidenceVerdict<"device-face-delegation">;
 
 
 type ProofFields = Pick<
@@ -152,15 +155,41 @@ export async function verifyDeviceDelegation(
   expectedOperatorDid: string,
   opts?: { now?: number; driftMs?: number; expectedEpoch?: number },
 ): Promise<{ ok: boolean; reason?: string }> {
+  const evidence = await evaluateDeviceDelegation(edge, expectedOperatorDid, opts);
+  return evidence.cryptographicallyValid
+    ? { ok: true }
+    : { ok: false, ...(evidence.reason ? { reason: evidence.reason } : {}) };
+}
+
+/**
+ * Read the device edge with an explicit relation-scoped evidence state.
+ *
+ * `expectedEpoch` is the authority witness. When it is absent, a valid
+ * signature is still reported as cryptographically valid, but the evidence is
+ * `unavailable`; callers that mutate authority must choose a named local
+ * refusal or pending path rather than treating omission as a current lease.
+ * The legacy `verifyDeviceDelegation` wrapper remains signature-compatible.
+ */
+export async function evaluateDeviceDelegation(
+  edge: DeviceDelegationTiddler,
+  expectedOperatorDid: string,
+  opts?: { now?: number; driftMs?: number; expectedEpoch?: number },
+): Promise<DeviceDelegationEvidence> {
+  const verdict = (state: DeviceDelegationEvidence["state"], cryptographicallyValid: boolean, reason?: string): DeviceDelegationEvidence => ({
+    relation: "device-face-delegation",
+    state,
+    cryptographicallyValid,
+    ...(reason ? { reason } : {}),
+  });
   const err = fieldError(edge);
-  if (err) return { ok: false, reason: err };
+  if (err) return verdict("malformed", false, err);
 
   // PIN — the edge's operator MUST be the trusted root (compare canonical key bytes).
   if (typeof expectedOperatorDid !== "string" || !DID_RE.test(expectedOperatorDid)) {
-    return { ok: false, reason: "expectedOperatorDid not 0x+32-byte lowercase hex" };
+    return verdict("malformed", false, "expectedOperatorDid not 0x+32-byte lowercase hex");
   }
   if (edge.personaRootDid !== expectedOperatorDid) {
-    return { ok: false, reason: "operator is not the pinned root" };
+    return verdict("rejected", false, "operator is not the pinned root");
   }
 
   // Freshness — bound replay even without synchronous revocation.
@@ -168,10 +197,10 @@ export async function verifyDeviceDelegation(
     const drift   = opts.driftMs ?? DELEGATION_CLOCK_DRIFT_MS;
     const issued  = Date.parse(edge.issuedAt);
     const expires = Date.parse(edge.expiresAt);
-    if (Number.isNaN(issued) || Number.isNaN(expires)) return { ok: false, reason: "unparseable time bounds" };
-    if (expires <= issued)              return { ok: false, reason: "expiresAt not after issuedAt" };
-    if (opts.now > expires + drift)     return { ok: false, reason: "delegation expired" };
-    if (opts.now < issued - drift)      return { ok: false, reason: "delegation not yet valid" };
+    if (Number.isNaN(issued) || Number.isNaN(expires)) return verdict("malformed", false, "unparseable time bounds");
+    if (expires <= issued)              return verdict("malformed", false, "expiresAt not after issuedAt");
+    if (opts.now > expires + drift)     return verdict("stale", false, "delegation expired");
+    if (opts.now < issued - drift)      return verdict("stale", false, "delegation not yet valid");
   }
 
   // Lease (non-renewal) — the epoch the grant binds to must not have rolled past. OPTIONAL
@@ -181,8 +210,8 @@ export async function verifyDeviceDelegation(
   // the Keyhive membership graph, never this counter.
   if (opts?.expectedEpoch !== undefined) {
     const bound = Number(edge.boundEpoch);
-    if (!Number.isFinite(bound))        return { ok: false, reason: "unparseable boundEpoch" };
-    if (bound < opts.expectedEpoch)     return { ok: false, reason: "delegation lease stale (resource epoch rolled past boundEpoch)" };
+    if (!Number.isFinite(bound))        return verdict("malformed", false, "unparseable boundEpoch");
+    if (bound < opts.expectedEpoch)     return verdict("stale", false, "delegation lease stale (resource epoch rolled past boundEpoch)");
   }
 
   try {
@@ -192,8 +221,11 @@ export async function verifyDeviceDelegation(
       hexToBytes(verifyingKeyFromDid(edge.personaRootDid)),
       { zip215: false },
     );
-    return ok ? { ok: true } : { ok: false, reason: "signature mismatch" };
+    if (!ok) return verdict("rejected", false, "signature mismatch");
+    return opts?.expectedEpoch === undefined
+      ? verdict("unavailable", true, "current resource epoch unavailable")
+      : verdict("checked-valid", true);
   } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : "ed25519 verify threw" };
+    return verdict("malformed", false, e instanceof Error ? e.message : "ed25519 verify threw");
   }
 }
