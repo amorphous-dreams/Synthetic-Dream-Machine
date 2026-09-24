@@ -109,16 +109,18 @@ failure. MCP fixes remain operator-deferred.
 
 ''2026-09-23 operator rulings — selected contracts enter red-first enactment.'' **D-VR-C** is selected: ordinary daemon-worker reads remain parent-attached; only explicit resident/pinned or worker-authored documents may recover from the worker's own storage scope, and unpinned worker-only access names `document-not-resident`. **D-AE** selects relation-scoped handling: malformed/revoked evidence refuses; stale or unavailable authority mutation names refusal or pending; stale handles may render only as labeled observation; daemon replay stays connection-scoped for alpha and restart demands a fresh handshake; contract/Cabal mutation requires a current accepted frontier. A persona-free Herm MAY hold a bounded public-delivery capability only for an exact artifact named by an explicit operator publication record; alpha holds that record locally with a digest, while signed cross-operator delegation waits for its first real crossing. The operator also approved and committed the current genesis actor seed at `fd0e12603`. These rulings do not join epochs, grant a public CID document authority, merge causal islands, or turn a carrier into a peer.
 
-''P1 enactment queue — selected policy, no runtime landing yet.'' First close existing silent epoch-fence omissions at device/face grant doors; a missing or unreachable authority epoch must return its named relation outcome rather than fall back to wall time. Next bind daemon PoP to its connection nonce, audience, gate, resource/request surface, and explicitly connection-scoped replay state; a restart takes a fresh handshake. The characterization holds contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting apart. Red controls include epoch omission, clock perturbation against identical causal inputs, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Remaining implementation detail: each relation names its owner and exact refusal/pending receipt; Keyhive identity-slot expiry remains separately scoped until its owner and failure semantics stand.
+''2026-09-23 selected-contract receipt — three seams landed, three compositions still owe proof.'' `8052198dc` gives the persona-free Herm floor one local-operator public-artifact publication record: exactly one route, one CID, an independent matching SHA-256 integrity value, and only `public-artifact:deliver`; byte mutation, route/CID substitution, non-local authentication, and widened authority refuse. It is a Mesh byte gate, not a Node carrier, CAS reader, deployment receipt, or persona surface. `bec20e721` adds relation-scoped evidence states (`checked-valid`, `unavailable`, `stale`, `malformed`, `revoked`, `rejected`) for device-face delegation and daemon proof-of-possession. Compatibility verifiers retain their Boolean surface for untouched callers, so the selected mutation policy still needs consumption at each authority door. `2a77929f3` makes the worker storage promise explicit: default durable daemon storage is `parent-attached`; production Node grants `resident` only to its worker-authored system plane; parentless parent-attached resolution names `document-not-resident`; a resident replay fault names `storage-corrupt`; no path creates an empty document. This does not yet introduce a general operator document-pin capability, quota receipt, or a reproduction of the historic 3.8 MB working-layer case.
 
-!! ◇ First-class decision records — two open contracts, not implementation debris
+''P1 enactment queue — typed seam landed; consuming gates come next.'' Replace Boolean-only mutation decisions at device/face grant doors with their selected relation verdict: malformed or revoked refuses; unavailable or stale produces the named refusal or pending receipt, never a wall-clock substitute. Then bind daemon PoP’s existing nonce, audience, and gate to the exact connection-scoped replay decision at each live gate; restart requires a fresh handshake. Contract/Cabal mutation must require its own current accepted frontier. The characterization keeps contract-edge admission, persona admission, handle-card freshness, and Cabal-vouch minting separate. Red controls include epoch omission, identical causal inputs under perturbed local clocks, replayed challenge/proof, epoch monotonicity, KEL continuity, and a ban on inferred realm epochs. Keyhive identity-slot expiry remains separately scoped until its owner and failure semantics stand.
 
-''These records make the human promise explicit before a source policy lands.'' Each record carries the
+!! ◇ First-class decision records — selected contracts, not implementation debris
+
+''These records make the human promise explicit while its selected source policy lands.'' Each record carries the
 support promise, the choices that change that promise, the observable refusal shape, and the tests that can
 separate the choices. Neither record imports a global now, a shared worker store, a universal fail-closed rule,
 or an automatic CRDT resolution.
 
-!!! D-VR · daemon-worker restart contract — OPEN, characterization first
+!!! D-VR-C · daemon-worker restart contract — ENACTING, capability-pinned hybrid
 
 ''Decision.'' What must a household be able to recover when the TW5 worker restarts? The vessel and its worker
 remain separate causal islands: separate heaps, logs, and storage scopes. The parent Repo MUST NOT become the
@@ -139,7 +141,7 @@ offline continuity. D-VR-B preserves the smallest duplicate surface but makes a 
 product boundary. D-VR-C spends vocabulary and operator UX to buy a measured middle. The current `9d/` working
 layer bloat is evidence to characterize, not permission to delete or to introduce a new storage abstraction.
 
-''First action — first isolated receipt landed.'' `87142747e`/`8da8be9a6` add accounting to the existing
+''First action — accounting and the first selected implementation landed.'' `87142747e`/`8da8be9a6` add accounting to the existing
 worker storage path: document id, heads or an explicit unavailable marker, chunk kind, bytes, load/replay duration,
 and owner island. NodeFS currently exposes no authoritative compaction generation; the receipt records that absence
 rather than inferring one. Re-run the seed that produced the ~3.8 MB working-layer document, then compare the
@@ -164,12 +166,12 @@ surface the conflict to the operator's Talk Story; do not pick a semantic winner
 * exceed the working-layer quota; require a controlled refusal before WASM exhaustion;
 * retain document id, heads, chunk sizes, compaction generation, residency/pin state, and owner island in every result.
 
-''D-VR completion.'' The roadmap may close this record only when the operator selects a promise, the existing
-storage path emits its accounting, the matrix distinguishes all four restart situations, and the selected
-offline behavior appears in the capability/residency inventory. A source change that changes the promise gets its
-own aftermath and does not erase the alternate receipts.
+''D-VR-C completion.'' The roadmap may close this record only when the existing storage path emits its accounting,
+the matrix distinguishes all four restart situations, a general explicit document-pin capability or a deliberate
+scope limit is recorded, and the selected offline behavior appears in the capability/residency inventory. A source
+change that changes the promise gets its own aftermath and does not erase the alternate receipts.
 
-!!! D-AE · typed authority-evidence contract — OPEN, relation-scoped
+!!! D-AE · typed authority-evidence contract — ENACTING, relation-scoped
 
 ''Decision.'' P1 does not mint a mesh-wide epoch. The existing epoch carriers remain distinct: lease frontier,
 hash-linked charter/seal lineage, PersonaGroup or realm membership, CGKA epoch, and compaction cut. Membership
@@ -181,18 +183,18 @@ time; this record makes the evidence states explicit without choosing one handli
 ''Typed evidence outcomes.'' Every relation MUST distinguish these states before it chooses its local policy:
 
 | state | evidence meaning | MUST NOT mean |
-| ''available'' | the verifier holds the named resource-scoped witness and can walk or validate it | a global present |
+| ''checked-valid'' | the verifier holds the named resource-scoped witness and can walk or validate it | a global present |
 | ''unavailable'' | no current witness can be reached or the verifier lacks the required local material | proof that the action is revoked |
 | ''stale'' | a valid older witness exists, but a newer causal head or epoch is known | proof that the holder is malformed |
 | ''malformed'' | bytes, signature, predecessor, audience, resource, or capability shape fails validation | temporary network loss |
 | ''revoked'' | a valid revocation/kapae or later authority state explicitly shadows the grant | mere age or cache absence |
 
-''Local gate policy remains open by relation.'' Admission, delegation, handle use, daemon PoP, and read-only
-observation MAY choose different responses to `unavailable` or `stale` according to their contract. A gate MUST
-never convert `unavailable` into `available` by reading wall time or inferring a realm epoch. A gate MUST reject
-`malformed`; `revoked` MUST reject the affected authority; `stale` MUST either refresh, enter a named
-read-only/provisional mode, or refuse according to the relation; `unavailable` MUST surface its absence and may
-permit only the explicitly contracted local operation. The roadmap does not choose a universal fail-closed rule.
+''Selected local gate policy.'' A mutation gate MUST reject `malformed` and `revoked`; it MUST return its named
+refusal or pending receipt for `stale` or `unavailable`. A stale handle MAY render only as a labelled observation.
+Daemon proof replay remains connection-scoped in alpha, and restart takes a fresh handshake. Contract and Cabal
+mutation require their own current accepted frontier. No gate may convert `unavailable` into `checked-valid` by
+reading wall time or inferring a realm epoch. These selected policies still need their owning gate receipts; no
+universal epoch or cross-relation fallback exists.
 
 ''Minimum relation record.'' A new or audited authority proof names:
 
@@ -219,8 +221,8 @@ failure semantics are named; it does not inherit a bare epoch by proximity.
 * break KEL continuity and verify that the contradiction remains readable rather than being auto-folded;
 * submit concurrent CRDT authority records; retain both heads and route semantic resolution to operator/cabal Talk Story.
 
-''D-AE completion.'' Close only after each in-scope relation names its owner and evidence kind, all four typed
-states have receipts, and the operator has selected the local policy for `unavailable` and `stale`. Keep the
+''D-AE completion.'' Close only after each in-scope relation names its owner and evidence kind, each applicable
+typed state has a receipt, and every mutation gate consumes the selected policy for `unavailable` and `stale`. Keep the
 charter epoch, PersonaGroup/realm state, CGKA epoch, and compaction cut as separate fields. No source rewrite may
 collapse them into one global epoch or decide a CRDT/topology outcome silently.
 
@@ -1411,6 +1413,6 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZfiuemFc8w85R6J4ulcAT6oSXOTU2L0Oa46JqlNUSIQ
+<<^ code="&#x0003;">>ni:///sha-256;1zfUDpEz4RixAYOOUcLyH58JWOyQN4cg9tufd7XzNb0
 
 <<^ code="&#x0004;" -> to="?">>
