@@ -26,6 +26,7 @@ import {
   type WikiRecipe,
   type IslandMsg_Manifest,
   type IslandGrants,
+  type IslandStorageResidency,
 } from "@lararium/mesh";
 import {
   openDaemonVmCore,
@@ -68,6 +69,12 @@ export interface DaemonVmOptions {
   daemonAuth?:        IslandMsg_Manifest["daemonAuth"];
   /** Optional storage dir for the daemon island's NodeFS Repo. */
   storageDir?:       string;
+  /**
+   * Recovery promise for the daemon island's own store. A durable path alone
+   * does not grant worker-only recovery: the caller must name `resident`.
+   * Omitted paths remain parent-attached/in-memory.
+   */
+  storageResidency?: IslandStorageResidency;
   /** The vessel root (`<root>/wikis/daemon/` receives the daemon wiki's working layer). */
   rootDir?:          string;
   /** Override the daemon island script URL (tests). */
@@ -84,7 +91,7 @@ export interface DaemonVmOptions {
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, rootDir, workerScriptUrl,
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, storageResidency, rootDir, workerScriptUrl,
           guardCrossroadsNexusHandles = true } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
@@ -116,7 +123,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     ...(libraryBags?.length ? { libraryBags } : {}),
   };
   const storage = storageDir
-    ? { type: "nodefs" as const, dir: join(storageDir, "daemon") }
+    ? { type: "nodefs" as const, dir: join(storageDir, "daemon"), residency: storageResidency ?? "parent-attached" as const }
     : undefined;
 
   const host: DaemonVmHost = {

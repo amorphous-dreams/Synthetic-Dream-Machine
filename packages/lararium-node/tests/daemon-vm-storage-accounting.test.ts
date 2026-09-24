@@ -154,6 +154,7 @@ describe("daemon VM worker storage accounting", () => {
       coreHash: null,
       grants: { islandUrl: daemon.url, wikiUrl: daemon.url },
       storageDir: storageRoot,
+      storageResidency: "resident",
       workerScriptUrl: PROBE,
     });
     cores.push(core);

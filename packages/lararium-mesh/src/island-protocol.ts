@@ -76,9 +76,19 @@ export type ProtocolVersion = typeof ISLAND_PROTOCOL_VERSION;
  * - `memory`  — ephemeral in-memory storage; cold boot or test path.
  */
 export type IslandStorageConfig =
-  | { type: "nodefs";  dir:    string }
-  | { type: "idb";     dbName: string }
+  | { type: "nodefs";  dir:    string; residency?: IslandStorageResidency }
+  | { type: "idb";     dbName: string; residency?: IslandStorageResidency }
   | { type: "memory" };
+
+/**
+ * The worker's recovery promise for its own storage partition.
+ *
+ * `parent-attached` keeps ordinary reads on the live vessel↔island sync shore;
+ * a worker-only restart must name `document-not-resident`. `resident` is an
+ * explicit operator-held residency grant for this island's own durable store.
+ * This is a policy witness, not a new storage tier and not a second Repo.
+ */
+export type IslandStorageResidency = "parent-attached" | "resident";
 
 // ── Recipe + bag resolution ────────────────────────────────────────────────
 //
