@@ -33,8 +33,27 @@ describe("the lease-epoch fence's wiring", () => {
   test("★ operator-daemon-behavior.ts threads expectedEpoch into verifyPeer's device-delegation door (:814-ish) ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
     // The live admission path reads a fresh lease epoch and forwards it into the SAME KEL-walk primitive.
-    expect(src).toMatch(/const expectedEpoch\s*=\s*epochCtx\s*\?\s*await readLeaseEpoch/);
-    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(edge,\s*kel\.chain,\s*\{[\s\S]{0,120}now:\s*Date\.now\(\)[\s\S]{0,200}expectedEpoch/);
+    expect(src).toMatch(/const expectedEpoch\s*=\s*await readLeaseEpoch\(epochCtx\.repo,\s*epochCtx\.oracleUrl\)/);
+    expect(src).toMatch(/verifyEdgeAgainstPersonaKel\(edge,\s*kel\.chain,\s*\{\s*expectedEpoch\s*\}/);
+  });
+
+  test("★ an unavailable lease frontier cannot become a successful device mutation ★", () => {
+    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
+    expect(src).toContain("device-delegation pending: current lease frontier unavailable");
+    expect(src).toMatch(/if \(expectedEpoch === null\) \{[\s\S]{0,220}current lease frontier unavailable/);
+  });
+
+  test("★ live daemon proof uses connection-bound nonce evidence, never Date.now ★", () => {
+    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
+    const start = src.indexOf("verifyPeer: async");
+    const end = src.indexOf("// ADMIN-CAP PATH", start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const proofGate = src.slice(start, end);
+    expect(proofGate).toContain("verifyAuthProof({");
+    expect(proofGate).toContain("nonce:      proof.nonce");
+    expect(proofGate).toContain("aud:        bagUrl");
+    expect(proofGate).not.toContain("now:        Date.now()");
   });
 
   test("★ operator-daemon-behavior.ts ALSO threads it into the boot-time bootDaemonKeyhive call (Binding Gate door) ★", () => {

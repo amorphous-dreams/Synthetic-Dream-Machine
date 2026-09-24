@@ -256,8 +256,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // device edge's `boundEpoch` checks against the epoch a FRESH join would license against — read fresh on
   // every call, never cached, so a roll after boot bites at the very next admission attempt, not just the
   // next reboot. Returns null (never a fabricated 0) when the epoch cannot be read — no PersonaGroup pinned,
-  // no oracle plane reachable, or a store fault — so the caller falls back to NO epoch fence rather than
-  // hard-denying admission on a read the vessel simply cannot make right now.
+  // no oracle plane reachable, or a store fault. A mutation gate MUST name that unavailable frontier rather
+  // than silently licensing from the signature and wall-clock window alone.
   const readLeaseEpoch = async (
     repo: IslandContext["repo"], oracleUrl: IslandContext["oracleUrl"],
   ): Promise<number | null> => {
@@ -805,7 +805,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           aud:        bagUrl,
           ts:         proof.ts,
           sig:        proof.sig,
-          now:        Date.now(),
         });
         proofVerified = r.ok;
         proofReason   = r.reason;
@@ -858,14 +857,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         }
         // FRESHNESS TAKES THE LEASE, NEVER THE CLOCK ALONE (same law as gateFaceJoin, :502-509). Read the
         // CURRENT PersonaGroup lease epoch fresh at this admission attempt — a device whose boundEpoch has
-        // rolled past denies HERE, and re-presents via the existing face-join regrant flow (:467-470). null
-        // (unreachable) omits the fence, leaving the wall-clock window as the only staleness check — the
-        // pre-epoch-wiring floor, never a false deny on a read the vessel cannot make right now.
-        const expectedEpoch = epochCtx ? await readLeaseEpoch(epochCtx.repo, epochCtx.oracleUrl) : null;
-        const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, {
-          now: Date.now(),
-          ...(expectedEpoch !== null ? { expectedEpoch } : {}),
-        });
+        // rolled past denies HERE, and re-presents via the existing face-join regrant flow (:467-470).
+        // An absent/unavailable frontier is an explicit refusal: this is a mutation gate, so a valid signature
+        // plus a soft wall-clock window cannot silently stand in for the current authority relation.
+        if (!epochCtx) {
+          return { ok: false, identifier: id, proofVerified, reason: "device-delegation pending: current lease frontier unavailable" };
+        }
+        const expectedEpoch = await readLeaseEpoch(epochCtx.repo, epochCtx.oracleUrl);
+        if (expectedEpoch === null) {
+          return { ok: false, identifier: id, proofVerified, reason: "device-delegation pending: current lease frontier unavailable" };
+        }
+        const delegation    = await verifyEdgeAgainstPersonaKel(edge, kel.chain, { expectedEpoch });
         const deviceMatches = edge.deviceDid === id;
         if (delegation.ok && deviceMatches && proofVerified) {
           // Admitted at the operator's-own-device tier — equivalent flow to admin (it IS the
