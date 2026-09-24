@@ -87,6 +87,13 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, rootDir, workerScriptUrl,
           guardCrossroadsNexusHandles = true } = opts;
 
+  // An explicitly supplied empty path must not silently downgrade the worker to
+  // memory-only storage. Omit `storageDir` when the caller intends the
+  // parent-attached/in-memory fork; a present path names a persistence intent.
+  if (storageDir !== undefined && storageDir.trim() === "") {
+    throw new Error("openDaemonVm: storageDir must be omitted for memory-only storage, not empty");
+  }
+
   // ── Daemon doc handle (node strategy: merge-on-late-arrival) ────────────────
   const daemonHandle = await resolveBootDoc<LarDoc>(
     repo, daemonUrl as AutomergeUrl,

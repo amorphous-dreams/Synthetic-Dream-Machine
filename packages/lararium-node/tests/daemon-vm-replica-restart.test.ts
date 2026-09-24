@@ -88,6 +88,21 @@ describe("daemon VM Repo persistence fork", () => {
     for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
   });
 
+  test("refuses an explicit empty storage path instead of silently choosing memory-only", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    repos.push(repo);
+    const daemon = repo.create<LarDoc>(emptyLarDoc());
+
+    await expect(openDaemonVm({
+      repo,
+      daemonUrl: daemon.url,
+      coreHash: null,
+      grants: { islandUrl: daemon.url, wikiUrl: daemon.url },
+      storageDir: "",
+      workerScriptUrl: probeUrl(true),
+    })).rejects.toThrow("storageDir must be omitted");
+  });
+
   test("separates persisted replay, peer-backed restart, and missing-peer refusal", async () => {
     const storageRoot = mkdtempSync(join(tmpdir(), "daemon-replay-"));
     roots.push(storageRoot);
