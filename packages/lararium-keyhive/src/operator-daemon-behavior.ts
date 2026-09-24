@@ -145,15 +145,21 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (typeof text !== "string") continue;
       let rec: FaceGrantRecord;
       try { rec = JSON.parse(text) as FaceGrantRecord; } catch { continue; }
-      if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
-      judgedGrants.add(rec.sig);
       // The founder's own edge leases too — read the SAME epoch the founder's door checks it against
-      // (readLeaseEpoch, shared). null (unreachable) omits the fence rather than blocking a take on a read fault.
+      // (readLeaseEpoch, shared). An unavailable frontier is a pending mutation, never a reason to
+      // let the signature and soft wall-clock window license the ingest. Keep the record unjudged so
+      // a later live attempt can retry after the causal shore returns.
       const expectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl);
+      if (typeof rec?.sig !== "string" || judgedGrants.has(rec.sig)) continue;
+      if (expectedEpoch === null) {
+        console.log(`[daemon] face-join grant pending (${title.slice(-16)}): current lease frontier unavailable — no binding moves`);
+        continue;
+      }
+      judgedGrants.add(rec.sig);
       const verdict = await verifyFaceGrantRecord(rec, {
         personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group,
         personaKel: daemonAuth.personaKel,   // the edge verifies under the KEL HEAD, never a frozen root — no clock
-        ...(expectedEpoch !== null ? { expectedEpoch } : {}),
+        expectedEpoch,
       });
       if (!verdict.ok) {
         console.log(`[daemon] face-join grant record REFUSED (${title.slice(-16)}): ${verdict.reason} — no binding moves`);

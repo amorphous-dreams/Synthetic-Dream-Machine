@@ -12,7 +12,7 @@
  * `gate-walk-wired.test.ts` proves the KEL-head walk itself is wired into these same three doors. This
  * weld proves the SECOND fence — the epoch — rides alongside it: a door that stops threading
  * `expectedEpoch` into its `verifyEdgeAgainstPersonaKel` (or `verifyFaceGrantRecord`) call regresses to
- * wall-clock-only licensing, silently, with no red anywhere else (the behavioral tests in
+ * witness-free licensing, silently, with no red anywhere else (the behavioral tests in
  * `persona-kel.test.ts` / `face-grant-record.test.ts` / `boot-daemon-keyhive.test.ts` prove the PRIMITIVE
  * enforces the fence when asked; this proves each DOOR still asks).
  */
@@ -66,6 +66,18 @@ describe("the lease-epoch fence's wiring", () => {
   test("★ operator-daemon-behavior.ts threads it into the joinee's grant-take (verifyFaceGrantRecord) ★", () => {
     const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
     expect(src).toMatch(/verifyFaceGrantRecord\(rec,\s*\{[\s\S]{0,300}expectedEpoch/);
+  });
+
+  test("★ an unavailable lease frontier cannot make a face-grant record mutate the joinee ★", () => {
+    const src = KEYHIVE_SRC("operator-daemon-behavior.ts");
+    const start = src.indexOf("const expectedEpoch = await readLeaseEpoch(ctx.repo, ctx.oracleUrl)");
+    const end = src.indexOf("const verdict = await verifyFaceGrantRecord", start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const grantTake = src.slice(start, end);
+    expect(grantTake).toMatch(/if \(expectedEpoch === null\) \{[\s\S]{0,400}face-join grant pending[\s\S]{0,200}current lease frontier unavailable/);
+    expect(grantTake).not.toMatch(/expectedEpoch !== null \? \{ expectedEpoch \}/);
+    expect(grantTake.indexOf("if (expectedEpoch === null)")).toBeLessThan(grantTake.indexOf("judgedGrants.add(rec.sig)"));
   });
 
   test("★ face-grant-record.ts forwards ctx.expectedEpoch into BOTH the KEL-head and pinned-root verify paths ★", () => {

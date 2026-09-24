@@ -101,8 +101,10 @@ export interface FaceGrantVerifyContext {
   /**
    * OPTIONAL PersonaGroup lease epoch (`effectiveLeaseEpoch` off the live daemon replica) the JOINEE holds
    * at verify time. Present, the founder's OWN edge must not read stale against it — the founder leases too,
-   * the same as any other device (FRESHNESS TAKES THE LEASE). Absent, the wall-clock window (`now`) stays
-   * the only staleness check — never a fabricated epoch when the joinee cannot read one.
+   * the same as any other device (FRESHNESS TAKES THE LEASE). An offline/read-only observer may omit this
+   * relation witness and receive only the verifier's cryptographic checks plus the optional soft clock window;
+   * a consuming mutation gate MUST supply it and refuse or remain pending when it cannot read the frontier.
+   * The verifier never fabricates an epoch when the joinee cannot read one.
    */
   readonly expectedEpoch?: number;
 }
