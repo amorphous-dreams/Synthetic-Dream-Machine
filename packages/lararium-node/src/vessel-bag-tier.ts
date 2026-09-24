@@ -31,27 +31,18 @@ export function bagNameFromBagUrl(bagUrl: string): string | null {
   return name;
 }
 
-/** How long one answer stands before the disk gets asked again. A manifest edit reaches the gate
- *  within this window without a vessel restart; the gate never waits on the disk twice in a burst. */
-const TIER_CACHE_MS = 30_000;
-
 /**
  * Build the gate's tier reader over this vessel's hearth.
  *
  * Hearth-only on purpose: a repository-homed bag's manifest lives wherever the repo does, and
  * resolving that wants the registry walk — the follow-on leg. Until it lands, a repo bag answers
- * null and the gate reads it VEIL: tighter than its declaration, never looser.
+ * null and the gate reads it VEIL: tighter than its declaration, never looser. The manifest is
+ * capability-bearing input, so every read observes the current local declaration. A wall-clock
+ * cache would make a stale tier authoritative for an arbitrary interval and would reintroduce
+ * precisely the implicit freshness policy this shore is meant to avoid.
  */
 export function makeBagTierReader(roots: BagHomeRoots = bagHomeRoots()): (bagUrl: string) => CapTier | null {
-  const cache = new Map<string, { tier: CapTier | null; at: number }>();
-  return (bagUrl: string): CapTier | null => {
-    const held = cache.get(bagUrl);
-    const now = Date.now();
-    if (held && now - held.at < TIER_CACHE_MS) return held.tier;
-    const tier = readTierFromHearth(bagUrl, roots);
-    cache.set(bagUrl, { tier, at: now });
-    return tier;
-  };
+  return (bagUrl: string): CapTier | null => readTierFromHearth(bagUrl, roots);
 }
 
 function readTierFromHearth(bagUrl: string, roots: BagHomeRoots): CapTier | null {

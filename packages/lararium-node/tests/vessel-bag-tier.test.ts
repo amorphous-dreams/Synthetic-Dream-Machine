@@ -74,6 +74,17 @@ describe("makeBagTierReader", () => {
     expect(tier("lar:///ha.ka.ba/bags/torn")).toBe("veil");
   });
 
+  test("re-reads a changed manifest instead of retaining a wall-clock capability decision", () => {
+    const { roots, hearth } = makeHearth();
+    declareBag(hearth, "changing", "public");
+    const tier = makeBagTierReader(roots);
+    const url = "lar:///ha.ka.ba/bags/changing";
+    expect(tier(url)).toBe("public");
+
+    declareBag(hearth, "changing", "contract");
+    expect(tier(url)).toBe("contract");
+  });
+
   test("a non-bag URL answers null", () => {
     const { roots } = makeHearth();
     const tier = makeBagTierReader(roots);
