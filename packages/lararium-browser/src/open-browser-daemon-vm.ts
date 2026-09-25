@@ -54,6 +54,8 @@ export interface BrowserDaemonVmOptions {
    * keyhive boot (Stage 1) — seed + sentinel hexes + bags to register.
    */
   daemonAuth?:       IslandMsg_Manifest["daemonAuth"];
+  /** D-VR-C: persist only the explicit daemon document in its owned scope. */
+  ownedDocument?:    boolean;
   /** URL of the compiled browser daemon island Worker script. */
   workerScriptUrl:  URL;
   /** The spawn seam. ABSENT → a dedicated module Worker at `workerScriptUrl` (today's path). PRESENT → the
@@ -65,6 +67,11 @@ export interface BrowserDaemonVmOptions {
 export { VerbTable };
 export type { VerbTable as BrowserVerbTable };
 export type { VerbReactor } from "@lararium/tw5";
+
+/** Stable browser storage namespace for the one explicit worker-owned document. */
+export function ownedDaemonDbName(daemonUrl: string): string {
+  return `lararium:daemon-owned:${encodeURIComponent(daemonUrl)}`;
+}
 
 export interface BrowserVerbPlacementRequest {
   verb:         string;
@@ -78,7 +85,7 @@ export interface BrowserVerbPlacementRequest {
 export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, workerScriptUrl, spawnWorker } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker } = opts;
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -100,6 +107,7 @@ export async function openBrowserDaemonVm(
 
   const host: DaemonVmHost = {
     newSyncChannel: browserNewSyncChannel,
+    ...(ownedDocument ? { newOwnedSyncChannel: browserNewSyncChannel } : {}),
     spawnWorker:    spawnWorker ?? browserSpawnWorker,
     awaitReady:     true,
   };
@@ -112,6 +120,10 @@ export async function openBrowserDaemonVm(
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
     ...(daemonAuth ? { daemonAuth } : {}),
+    ...(ownedDocument ? { ownedDocument: {
+      documentUrl: daemonUrl,
+      storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
+    } } : {}),
     workerScriptUrl,
   });
 }

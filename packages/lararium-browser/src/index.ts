@@ -49,7 +49,7 @@ export {
   genesisCidFromBytes,
 } from "./browser-genesis.js";
 
-export { openBrowserDaemonVm, VerbTable } from "./open-browser-daemon-vm.js";
+export { openBrowserDaemonVm, ownedDaemonDbName, VerbTable } from "./open-browser-daemon-vm.js";
 export type {
   BrowserDaemonVmOptions,
   BrowserVerbTable, VerbReactor, BrowserVerbPlacementRequest,
