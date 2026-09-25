@@ -16,6 +16,7 @@ test("binds the actual serve receipt and QA composition inputs", () => {
     }), {
       webRoot: "/app/packages/lararium-web/dist",
       artifactRecord: "/app/pronaos-build/pronaos-artifact.json",
+      profiles: ["qa", "prod"],
     });
 });
 
@@ -40,8 +41,11 @@ test("accepts a finite receipt when the named Web root and receipt are present",
 
 test("refuses missing/relocated QA inputs and invalid actual-contract fields", () => {
     const validDockerfile = "COPY --from=build /app/.pronaos-build/pronaos-artifact.json ./pronaos-build/pronaos-artifact.json";
-    const relocatedCompose = "\n  lararium-other:\n    environment:\n      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist\n      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json\n\n  lararium-qa:\n    environment:\n      NODE_ENV: qa\n    ports:\n\n  lararium-prod:\n";
+    const relocatedCompose = "\n  lararium-other:\n    environment:\n      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist\n      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json\n\n  lararium-qa:\n    environment:\n      NODE_ENV: qa\n    ports:\n\n  lararium-prod:\n    environment:\n      NODE_ENV: production\n      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist\n      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json\n    ports:\n";
     assert.throws(() => assertPronaosRuntimeConfiguration({ dockerfile: validDockerfile, compose: relocatedCompose }), /QA environment does not name/);
+
+    const qaOnlyCompose = "\n  lararium-qa:\n    environment:\n      NODE_ENV: qa\n      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist\n      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json\n    ports:\n\n  lararium-prod:\n    environment:\n      NODE_ENV: production\n    ports:\n";
+    assert.throws(() => assertPronaosRuntimeConfiguration({ dockerfile: validDockerfile, compose: qaOnlyCompose }), /PROD environment does not name/);
 
     root = mkdtempSync(join(tmpdir(), "lararium-pronaos-runtime-"));
     const webRoot = join(root, "web"); const artifactRecord = join(root, "pronaos-artifact.json");

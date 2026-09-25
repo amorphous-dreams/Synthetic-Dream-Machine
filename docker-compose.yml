@@ -90,6 +90,10 @@ services:
     volumes: *serve-volumes-ro
     environment:
       NODE_ENV: production
+      # Production carries the same explicit finite Pronaos inputs as QA.
+      # Copying the artifact alone never widens Node's route ownership.
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
       <<: *auth-env
     ports:
       - "4321:4321"

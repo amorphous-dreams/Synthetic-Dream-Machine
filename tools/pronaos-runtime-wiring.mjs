@@ -15,17 +15,21 @@ const RECORD_PATH = "/app/pronaos-build/pronaos-artifact.json";
 export function assertPronaosRuntimeConfiguration({ dockerfile, compose }) {
   const copy = `COPY --from=build /app/.pronaos-build/pronaos-artifact.json ./pronaos-build/pronaos-artifact.json`;
   if (!dockerfile.includes(copy)) throw new Error("serve image does not carry the Pronaos artifact receipt");
-  const qaStart = compose.indexOf("\n  lararium-qa:");
-  const qaEnd = compose.indexOf("\n  lararium-prod:", qaStart);
-  if (qaStart < 0 || qaEnd < 0) throw new Error("Compose has no isolated lararium-qa service block");
-  const qa = compose.slice(qaStart, qaEnd);
-  const environmentStart = qa.indexOf("\n    environment:");
-  const environmentEnd = qa.indexOf("\n    ports:", environmentStart);
-  if (environmentStart < 0 || environmentEnd < 0) throw new Error("QA service has no bounded environment block");
-  const environment = qa.slice(environmentStart, environmentEnd);
-  if (!environment.includes("\n      LAR_PRONAOS_WEB_ROOT: " + WEB_ROOT)) throw new Error("QA environment does not name the Web artifact root");
-  if (!environment.includes("\n      LAR_PRONAOS_ARTIFACT_RECORD: " + RECORD_PATH)) throw new Error("QA environment does not name the Pronaos artifact receipt");
-  return { webRoot: WEB_ROOT, artifactRecord: RECORD_PATH };
+  const profiles = ["qa", "prod"];
+  for (const profile of profiles) {
+    const start = compose.indexOf(`\n  lararium-${profile}:`);
+    const nextMarker = compose.indexOf("\n  lararium-", start + 1);
+    const next = nextMarker < 0 ? compose.length : nextMarker;
+    if (start < 0) throw new Error(`Compose has no bounded lararium-${profile} service block`);
+    const service = compose.slice(start, next);
+    const environmentStart = service.indexOf("\n    environment:");
+    const environmentEnd = service.indexOf("\n    ports:", environmentStart);
+    if (environmentStart < 0 || environmentEnd < 0) throw new Error(`${profile.toUpperCase()} service has no bounded environment block`);
+    const environment = service.slice(environmentStart, environmentEnd);
+    if (!environment.includes("\n      LAR_PRONAOS_WEB_ROOT: " + WEB_ROOT)) throw new Error(`${profile.toUpperCase()} environment does not name the Web artifact root`);
+    if (!environment.includes("\n      LAR_PRONAOS_ARTIFACT_RECORD: " + RECORD_PATH)) throw new Error(`${profile.toUpperCase()} environment does not name the Pronaos artifact receipt`);
+  }
+  return { webRoot: WEB_ROOT, artifactRecord: RECORD_PATH, profiles };
 }
 
 export function assertPronaosRuntimeInputs({ webRoot, artifactRecord }) {
