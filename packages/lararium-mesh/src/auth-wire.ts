@@ -62,6 +62,35 @@ export interface AuthProofWire {
 
 export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-possession">;
 
+/** A transient carriage relation presentation; it grants no authority until the receiver verifies its local fold. */
+export interface ContractRelationWitness {
+  readonly kind: "contract-relation-witness/v1";
+  readonly relation: "carriage";
+  readonly relationResource: string;
+  readonly targetNexusPubkey: string;
+  readonly sealEpochCid: string;
+  readonly memberVersion: number;
+  readonly personaRootDid: string;
+  readonly vesselVerifyingKey: string;
+  readonly deviceEdgeDigest: string;
+  readonly signature: string;
+}
+
+/** Structural guard only; signature and local charter/board authority remain unwired here. */
+export function isContractRelationWitness(v: unknown): v is ContractRelationWitness {
+  if (typeof v !== "object" || v === null) return false;
+  const x = v as Record<string, unknown>;
+  return x["kind"] === "contract-relation-witness/v1" && x["relation"] === "carriage" &&
+    typeof x["relationResource"] === "string" && x["relationResource"].length > 0 &&
+    typeof x["targetNexusPubkey"] === "string" && x["targetNexusPubkey"].length > 0 &&
+    typeof x["sealEpochCid"] === "string" && x["sealEpochCid"].length > 0 &&
+    typeof x["memberVersion"] === "number" && Number.isSafeInteger(x["memberVersion"]) && x["memberVersion"] >= 0 &&
+    typeof x["personaRootDid"] === "string" && x["personaRootDid"].length > 0 &&
+    typeof x["vesselVerifyingKey"] === "string" && x["vesselVerifyingKey"].length > 0 &&
+    typeof x["deviceEdgeDigest"] === "string" && x["deviceEdgeDigest"].length > 0 &&
+    typeof x["signature"] === "string" && x["signature"].length > 0;
+}
+
 /** Peer → Gate: identity assertion. */
 export interface LarAuthMsg {
   type:        "lar:auth";
@@ -91,6 +120,8 @@ export interface LarAuthMsg {
    * contracted member set. A peer that sends none behaves exactly as before.
    */
   contractEdge?: DeviceDelegationTiddler;
+  /** OPTIONAL transient relation witness; transport only until a local board verifier is wired. */
+  contractWitness?: ContractRelationWitness;
   version:     AuthWireVersion;
 }
 
@@ -124,12 +155,15 @@ export function isLarChallengeMsg(v: unknown): v is LarChallengeMsg {
 }
 
 export function isLarAuthMsg(v: unknown): v is LarAuthMsg {
-  return (
+  const ok = (
     typeof v === "object" && v !== null &&
     (v as Record<string, unknown>)["type"] === "lar:auth" &&
     typeof (v as Record<string, unknown>)["contactCard"] === "string" &&
     typeof (v as Record<string, unknown>)["nonce"] === "string"
   );
+  if (!ok) return false;
+  const witness = (v as Record<string, unknown>)["contractWitness"];
+  return witness === undefined || isContractRelationWitness(witness);
 }
 
 export function isLarAuthOkMsg(v: unknown): v is LarAuthOkMsg {
@@ -357,6 +391,8 @@ export async function buildAuthResponse(parts: {
   edge?:       DeviceDelegationTiddler;
   /** OPTIONAL contract edge — the cross-operator credential, in its own slot. */
   contractEdge?: DeviceDelegationTiddler;
+  /** OPTIONAL transient relation witness, carried beside `contractEdge`; transport grants no authority. */
+  contractWitness?: ContractRelationWitness;
 }): Promise<LarAuthMsg> {
   const proof = authProofBytes({
     nonce:      parts.nonce,
@@ -374,6 +410,7 @@ export async function buildAuthResponse(parts: {
     ts:          parts.ts,
     ...(parts.edge ? { edge: parts.edge } : {}),
     ...(parts.contractEdge ? { contractEdge: parts.contractEdge } : {}),
+    ...(parts.contractWitness ? { contractWitness: parts.contractWitness } : {}),
     version:     AUTH_WIRE_VERSION,
   };
 }
@@ -404,6 +441,8 @@ export interface PeerHandshake {
   edge?:       DeviceDelegationTiddler;
   /** OPTIONAL contract edge — a contracted operator presents its own root's edge over its vessel key. */
   contractEdge?: DeviceDelegationTiddler;
+  /** OPTIONAL transient carriage relation witness, presented beside `contractEdge`. */
+  contractWitness?: ContractRelationWitness;
   /** Clock for the response timestamp (default: now, ISO). */
   now?:        () => string;
 }
@@ -428,6 +467,7 @@ export async function runPeerHandshake(h: PeerHandshake): Promise<{ ok: boolean;
     sign:        h.sign,
     ...(h.edge ? { edge: h.edge } : {}),
     ...(h.contractEdge ? { contractEdge: h.contractEdge } : {}),
+    ...(h.contractWitness ? { contractWitness: h.contractWitness } : {}),
   });
   h.send(auth);
   const verdict = await h.recv();
@@ -454,4 +494,6 @@ export interface LeafIdentity {
   /** OPTIONAL contract edge — a self-founded operator presents its OWN root's edge over its vessel key to a
    *  hearth it contracted with; the fleet slot above stays empty on that dial. */
   contractEdge?: DeviceDelegationTiddler;
+  /** OPTIONAL transient carriage relation witness; the receiving gate must verify locally before use. */
+  contractWitness?: ContractRelationWitness;
 }

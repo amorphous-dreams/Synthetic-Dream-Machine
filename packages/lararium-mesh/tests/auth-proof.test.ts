@@ -9,10 +9,10 @@ import * as ed25519 from "@noble/ed25519";
 import {
   authProofBytes, buildAuthResponse, verifyAuthProof, evaluateAuthProof, runPeerHandshake,
   ed25519SignerFromSeed, AUTH_PROOF_TTL_MS,
-  mkLarChallenge, mkLarAuthOk, mkLarAuthDenied,
+  mkLarChallenge, mkLarAuthOk, mkLarAuthDenied, isLarAuthMsg, isContractRelationWitness,
 } from "../src/auth-wire.js";
 import { hex } from "../src/crypto.js";
-import type { LarAuthMsg } from "../src/auth-wire.js";
+import type { ContractRelationWitness, LarAuthMsg } from "../src/auth-wire.js";
 
 const base = {
   nonce:      "ab12cd",
@@ -20,6 +20,14 @@ const base = {
   peerPubKey: "peer-pk-hex",
   aud:        "lar:///ha.ka.ba/bags/daemon",
   ts:         "2026-06-07T00:00:00Z",
+};
+
+const relationWitness: ContractRelationWitness = {
+  kind: "contract-relation-witness/v1", relation: "carriage",
+  relationResource: "lar:///nexus/carriage/00", targetNexusPubkey: "00".repeat(32),
+  sealEpochCid: "sha256-epoch", memberVersion: 2,
+  personaRootDid: "0x" + "11".repeat(32), vesselVerifyingKey: "22".repeat(32),
+  deviceEdgeDigest: "sha256-edge", signature: "33".repeat(64),
 };
 
 describe("authProofBytes (V3 proof-of-possession)", () => {
@@ -59,6 +67,19 @@ describe("buildAuthResponse (V3 peer half)", () => {
     await buildAuthResponse({ ...parts, sign: (b) => { cap.push(b); return "x"; } });
     await buildAuthResponse({ ...parts, gatePubKey: "other-gate", sign: (b) => { cap.push(b); return "x"; } });
     expect(cap[0]).not.toEqual(cap[1]);
+  });
+
+  test("carries a transient contract witness without interpreting authority", async () => {
+    let plainSigned: Uint8Array | undefined;
+    let witnessedSigned: Uint8Array | undefined;
+    await buildAuthResponse({ ...parts, sign: (bytes) => { plainSigned = bytes; return "x"; } });
+    await buildAuthResponse({ ...parts, contractWitness: relationWitness, sign: (bytes) => { witnessedSigned = bytes; return "x"; } });
+    expect(witnessedSigned).toEqual(plainSigned); // relation evidence is not folded into daemon PoP
+    const msg = await buildAuthResponse({ ...parts, contractWitness: relationWitness, sign: () => "x" });
+    expect(msg.contractWitness).toEqual(relationWitness);
+    expect(isContractRelationWitness(msg.contractWitness)).toBe(true);
+    expect(isLarAuthMsg(JSON.parse(JSON.stringify(msg)))).toBe(true);
+    expect(isLarAuthMsg({ ...msg, contractWitness: { ...relationWitness, memberVersion: -1 } })).toBe(false);
   });
 });
 
