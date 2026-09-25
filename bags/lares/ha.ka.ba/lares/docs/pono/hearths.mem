@@ -252,6 +252,8 @@ globs   = [
 
 # ''The next-three-receipts first handback — Codex Luna swarm, 2026-09-24.'' `2960e13a2` puts the D-VR-C physical absence claim under a bounded worker fixture: worker-authored P writes files under P's exact document prefix; ordinary parent-attached O currently also writes a snapshot under O's exact prefix. The desired O-absence control is deliberately expected-red, while the present one-Repo/one-adapter weakening passes. The current island kernel constructs one Repo with one adapter, so a storage filter after persistence cannot cure this; a document-owned Repo/storage scope or a per-document storage substrate remains a design cut. Contract scout returns an independent stop: the local carriage fold's charter CID and member version cannot substitute for the device edge's numeric lease epoch. A future relation witness needs target Nexus/resource, accepted charter head, member version, persona root, vessel key, device-edge digest, and persona-root signature, verified beside the target's local board fold. `de403ae14` adds a read-only Docker reservation preflight with daemon/config/project/volume/network/port refusals before mutation; its tests pass, but this executor cannot reach Docker or bind local TCP, so it claims no live container/origin/loss behavior. Files crossed: two bounded test/tool receipts and this ledger/roadmap update. Law: a truthful expected-red or substrate refusal carries more authority than a fabricated green.
 
+# ''The D-VR-C topology crossing — Codex Luna cartography, 2026-09-24.'' The selected physical boundary requires two scoped crossings, not two Repos on one unscoped port. The ordinary worker Repo keeps the existing parent relay and carries no durable worker store. A named worker-owned document receives its own manifest capability, dedicated port, dedicated adapter/root, and parent-side document routing. The scope admits the named P and refuses ordinary O, while the original relay continues parent-attached O continuity. The implementation proof must cover P/O physical absence, both directions of the two sync legs, parent-absent behavior, O→P routing refusal, and teardown of both ports. No code claims this boundary yet; the existing expected-red remains its instrument. Law: a separate heap and adapter do not establish custody until the message relation separates too.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -265,6 +267,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EEQjDycLza79-YFlgzUzG9Ki9a9kbRd9hlG4qoQcA4w
+<<^ code="&#x0003;">>ni:///sha-256;YguJ__00nNkJdfAZpcqs8V3heXQzWE2HrGn8mRZ5NIQ
 
 <<^ code="&#x0004;" -> to="?">>
