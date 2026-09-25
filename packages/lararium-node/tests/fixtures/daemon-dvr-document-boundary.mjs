@@ -16,6 +16,7 @@ const ORDINARY_MARKER = "lar:///ha.ka.ba/dvr-boundary/ordinary";
 const PINNED_MARKER = "lar:///ha.ka.ba/dvr-boundary/pinned";
 
 let repo = null;
+let ownedRepo = null;
 let wikiUri = null;
 
 function event(payload) {
@@ -40,24 +41,52 @@ async function open(msg) {
   repo = new Repo(opts);
 
   try {
-    const ordinary = await repo.findWithProgress(msg.grants.wikiUrl).whenReady();
+    const ordinary = await repo.findWithProgress(msg.grants.islandUrl).whenReady();
     if (!ordinary.doc()?.tiddlers?.[ORDINARY_MARKER]) {
       throw new Error("ordinary parent-attached document did not arrive");
     }
 
     // P is created by the worker. Its URL and records are intentionally
     // private to this worker fixture; the parent receives only the witness.
-    const pinned = repo.create({
+    if (msg.ownedDocument) {
+      const ownedOpts = {
+        shareConfig: {
+          announce: async (_peer, id) => id === msg.ownedDocument.documentUrl.replace("automerge:", ""),
+          access: async (_peer, id) => id === msg.ownedDocument.documentUrl.replace("automerge:", ""),
+        },
+        network: [new MessageChannelNetworkAdapter(msg.ownedDocument.syncPort)],
+      };
+      if (msg.ownedDocument.storage?.type === "nodefs") {
+        ownedOpts.storage = new NodeFSStorageAdapter(msg.ownedDocument.storage.dir);
+      }
+      ownedRepo = new Repo(ownedOpts);
+    }
+    let ordinaryOwnedRefused = true;
+    if (ownedRepo) {
+      try {
+        await ownedRepo.findWithProgress(ordinary.url).whenReady();
+        ordinaryOwnedRefused = false;
+      } catch { /* the owned crossing must refuse ordinary O */ }
+    }
+    const pinned = msg.ownedDocument
+      ? await ownedRepo.findWithProgress(msg.ownedDocument.documentUrl).whenReady()
+      : repo.create({
       tiddlers: {
         [PINNED_MARKER]: { title: PINNED_MARKER, text: "worker-authored" },
       },
     });
+    if (!msg.ownedDocument) {
+      pinned.change((doc) => { doc.tiddlers[PINNED_MARKER] = { title: PINNED_MARKER, text: "worker-authored" }; });
+    }
+    else pinned.change((doc) => { doc.tiddlers[PINNED_MARKER] = { title: PINNED_MARKER, text: "worker-authored" }; });
     await repo.flush();
+    await ownedRepo?.flush();
     event({
       pinnedUrl: pinned.url,
       ordinaryUrl: ordinary.url,
       pinnedPresent: Boolean(pinned.doc()?.tiddlers?.[PINNED_MARKER]),
       ordinaryPresent: Boolean(ordinary.doc()?.tiddlers?.[ORDINARY_MARKER]),
+      ordinaryOwnedRefused,
     });
     parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri });
   } catch (error) {
@@ -73,7 +102,7 @@ parentPort.on("message", (msg) => {
   }
   if (msg.type === "teardown") {
     void (async () => {
-      try { await repo?.flush(); } catch { /* the red witness is on disk */ }
+      try { await repo?.flush(); await ownedRepo?.flush(); } catch { /* the red witness is on disk */ }
       parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
     })();
   }

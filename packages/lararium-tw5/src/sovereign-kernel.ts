@@ -120,6 +120,7 @@ export function runSovereignKernel(
   };
 
   let _repo:      Repo | null                    = null;
+  let _ownedRepo: Repo | null                   = null;
   let _handles:   Map<string, DocHandle<LarDoc>> = new Map();
   let _composite: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
@@ -283,7 +284,22 @@ export function runSovereignKernel(
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("message", _markSyncHeard);
     else tapPort.on?.("message", _markSyncHeard);
     const storageAdapter = host.storage(msg);
-    _repo = makeIslandRepo({ ...(storageAdapter ? { storage: storageAdapter } : {}), syncPort: msg.syncPort });
+    _repo = makeIslandRepo({
+      ...(storageAdapter ? { storage: storageAdapter } : {}),
+      syncPort: msg.syncPort,
+      ...(msg.ownedDocument ? { denyDocument: msg.ownedDocument.documentUrl } : {}),
+    });
+    if (msg.ownedDocument) {
+      const ownedManifest = msg.ownedDocument.storage
+        ? { ...msg, storage: msg.ownedDocument.storage, syncPort: msg.ownedDocument.syncPort }
+        : { ...msg, syncPort: msg.ownedDocument.syncPort };
+      const ownedStorage = host.storage(ownedManifest);
+      _ownedRepo = makeIslandRepo({
+        ...(ownedStorage ? { storage: ownedStorage } : {}),
+        syncPort: msg.ownedDocument.syncPort,
+        documentScope: msg.ownedDocument.documentUrl,
+      });
+    }
 
     _composite = new CompositeStore();
 
@@ -310,7 +326,7 @@ export function runSovereignKernel(
       if (slot === wikiSlotUri(slug, "draft"))    return msg.grants.draftUrl    ?? null;
       if (slot === wikiSlotUri(slug, "working"))  return msg.grants.workingUrl  ?? null;
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
-      if (slot === wikiBagUri(slug))              return msg.grants.wikiUrl ?? null;
+      if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
       // System bags (lares, lararium) resolve from the oracle doc's well-known
       // tiddlers — the system plane the island already holds. User library
@@ -331,7 +347,10 @@ export function runSovereignKernel(
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
-      const handle = await _resolveSlot(_repo, docUrl, slot, msg.wikiUri);
+      const handle = await _resolveSlot(
+        slot === wikiBagUri(slug) && _ownedRepo ? _ownedRepo : _repo,
+        docUrl, slot, msg.wikiUri,
+      );
       if (!handle) return;     // fault already posted
       _handles.set(slot, handle);
       ready.push({ slot, handle });
@@ -461,11 +480,18 @@ export function runSovereignKernel(
       try { await _repo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] teardown flush failed: ${String(err)}`); }
     }
+    if (_ownedRepo) {
+      try { await _ownedRepo.flush(); }
+      catch (err) { console.warn(`[sovereign-kernel] owned-document flush failed: ${String(err)}`); }
+    }
 
     _handles.clear();
     _composite = null;
     _ctx       = null;
+    try { _ownedRepo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
+    try { _repo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
     _repo      = null;
+    _ownedRepo = null;
 
     host.post(mkTeardownAck());
   }

@@ -68,6 +68,8 @@ export interface DaemonVmOptions {
   daemonAuth?:        IslandMsg_Manifest["daemonAuth"];
   /** Optional storage dir for the daemon island's NodeFS Repo. */
   storageDir?:       string;
+  /** D-VR-C: persist only the explicit daemon document in its owned scope. */
+  ownedDocument?:    boolean;
   /** The vessel root (`<root>/wikis/daemon/` receives the daemon wiki's working layer). */
   rootDir?:          string;
   /** Override the daemon island script URL (tests). */
@@ -84,7 +86,7 @@ export interface DaemonVmOptions {
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, rootDir, workerScriptUrl,
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, rootDir, workerScriptUrl,
           guardCrossroadsNexusHandles = true } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
@@ -121,6 +123,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
 
   const host: DaemonVmHost = {
     newSyncChannel: nodeNewSyncChannel,
+    ...(ownedDocument ? { newOwnedSyncChannel: nodeNewSyncChannel } : {}),
     spawnWorker:    (url) => nodeSpawnWorker(url),
   };
 
@@ -132,7 +135,11 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
     ...(daemonAuth ? { daemonAuth } : {}),
-    ...(storage   ? { storage }   : {}),
+    ...(storage && !ownedDocument ? { storage } : {}),
+    ...(ownedDocument ? { ownedDocument: {
+      documentUrl: daemonUrl,
+      storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
+    } } : {}),
     // The daemon wiki projects to `<root>/wikis/daemon/` — the grant every wiki's working slot gets —
     // and designates the public system bag it holds, so a residency MOVE out of its working layer
     // into crossroads publishes under `<root>/bags/crossroads/` (the node's grant meets a designation).

@@ -19,6 +19,14 @@ export interface IslandRepoConfig {
   storage?: StorageAdapterInterface;
   /** The transferred MessagePort the island syncs over. */
   syncPort: MessagePort;
+  /** Optional single document scope. Other docs are refused at this crossing. */
+  documentScope?: string;
+  /** Refuse this document while carrying all other documents on the crossing. */
+  denyDocument?: string;
+}
+
+function documentIdOf(url: string): string {
+  return url.startsWith("automerge:") ? url.slice("automerge:".length) : url;
 }
 
 /** Construct an island's sovereign Repo over its transferred syncPort. */
@@ -26,7 +34,14 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
   return new Repo({
     ...(cfg.storage ? { storage: cfg.storage } : {}),
     network: [new MessageChannelNetworkAdapter(cfg.syncPort)],
-    sharePolicy: async () => true,
+    ...((cfg.documentScope || cfg.denyDocument) ? { shareConfig: {
+          announce: async (_peerId, documentId) => cfg.documentScope
+            ? documentId === documentIdOf(cfg.documentScope)
+            : documentId !== documentIdOf(cfg.denyDocument!),
+          access: async (_peerId, documentId) => cfg.documentScope
+            ? documentId === documentIdOf(cfg.documentScope)
+            : documentId !== documentIdOf(cfg.denyDocument!),
+        } } : {}),
   });
 }
 
@@ -36,6 +51,9 @@ export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
  * Network-adapter construction is a CRDT concern owned by mesh — callers compose
  * this through the facade rather than importing @automerge/* themselves.
  */
-export function attachMessageChannelSync(repo: Repo, mainPort: MessagePort): void {
-  repo.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(mainPort));
+export function attachMessageChannelSync(repo: Repo, mainPort: MessagePort, onPeer?: (peerId: string) => void): () => void {
+  const adapter = new MessageChannelNetworkAdapter(mainPort);
+  if (onPeer) adapter.on("peer-candidate", ({ peerId }) => onPeer(peerId));
+  repo.networkSubsystem.addNetworkAdapter(adapter);
+  return () => adapter.disconnect();
 }

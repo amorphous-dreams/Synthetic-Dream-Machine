@@ -80,6 +80,14 @@ export type IslandStorageConfig =
   | { type: "idb";     dbName: string }
   | { type: "memory" };
 
+/** A single worker-owned document crossing. This is deliberately one scope,
+ * rather than a storage registry: the first D-VR-C cut owns the daemon doc. */
+export interface IslandOwnedDocumentScope {
+  documentUrl: string;
+  syncPort: MessagePort;
+  storage?: IslandStorageConfig;
+}
+
 // ── Recipe + bag resolution ────────────────────────────────────────────────
 //
 // The manifest carries a WikiRecipe (the slot structure, vessel-independent)
@@ -166,6 +174,8 @@ export interface IslandMsg_Manifest {
    * Absent or `{ type: "memory" }` = ephemeral relay-only Repo (test / cold-boot path).
    */
   storage?: IslandStorageConfig;
+  /** Optional bounded worker-owned document crossing (D-VR-C). */
+  ownedDocument?: IslandOwnedDocumentScope;
   /** MessagePort for island-side Repo ↔ vessel Repo sync. MUST be transferred. */
   syncPort: MessagePort;
   /**
@@ -990,6 +1000,7 @@ export function mkManifest(
   coreHash: string | null = null,
   opts?: {
     storage?:        IslandStorageConfig;
+    ownedDocument?:  IslandOwnedDocumentScope;
     diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
@@ -1005,6 +1016,7 @@ export function mkManifest(
     syncPort,
   };
   if (opts?.storage)             msg.storage     = opts.storage;
+  if (opts?.ownedDocument)       msg.ownedDocument = opts.ownedDocument;
   if (opts?.diskMirrors?.length) msg.diskMirrors = opts.diskMirrors;
   if (opts?.daemonAuth)           msg.daemonAuth   = opts.daemonAuth;
   if (opts?.pluginCids?.length)  msg.pluginCids  = opts.pluginCids;

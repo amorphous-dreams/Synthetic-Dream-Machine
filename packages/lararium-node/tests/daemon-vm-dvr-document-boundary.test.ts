@@ -15,6 +15,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync, statSync } from "node:fs"
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { emptyLarDoc, type IslandMsg_Event, type LarDoc } from "@lararium/mesh";
 import { openDaemonVm } from "../src/open-daemon-vm.js";
 import { docStorePath } from "../src/store-integrity.js";
@@ -81,7 +82,7 @@ describe("D-VR-C document-owned physical boundary", () => {
     for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
   });
 
-  async function runProbe(): Promise<{ workerRoot: string; pinnedId: string; ordinaryId: string; pinnedFiles: string[]; ordinaryFiles: string[] }> {
+  async function runProbe(owned = false): Promise<{ workerRoot: string; pinnedId: string; ordinaryId: string; pinnedFiles: string[]; ordinaryFiles: string[]; ordinaryOwnedRefused: boolean }> {
     const storageRoot = mkdtempSync(join(tmpdir(), "daemon-dvr-document-boundary-"));
     roots.push(storageRoot);
     const repo = new Repo({ sharePolicy: async () => true });
@@ -91,12 +92,14 @@ describe("D-VR-C document-owned physical boundary", () => {
       doc.tiddlers[ORDINARY_MARKER] = { title: ORDINARY_MARKER, text: "parent-attached" };
     });
     const events: IslandMsg_Event[] = [];
+    const daemon = repo.create<LarDoc>(emptyLarDoc());
     const core = await openDaemonVm({
       repo,
-      daemonUrl: ordinary.url,
+      daemonUrl: daemon.url,
       coreHash: null,
-      grants: { islandUrl: ordinary.url, wikiUrl: ordinary.url },
+      grants: { islandUrl: ordinary.url, wikiUrl: daemon.url },
       storageDir: storageRoot,
+      ...(owned ? { ownedDocument: true } : {}),
       workerScriptUrl: PROBE,
     });
     cores.push(core);
@@ -112,7 +115,7 @@ describe("D-VR-C document-owned physical boundary", () => {
     expect(witness.payload.ordinaryPresent).toBe(true);
     await core.shutdown(2_000);
     cores.splice(cores.indexOf(core), 1);
-    const workerRoot = join(storageRoot, "daemon");
+    const workerRoot = join(storageRoot, owned ? "daemon-owned" : "daemon");
     const pinnedId = documentId(String(witness.payload.pinnedUrl));
     const ordinaryId = documentId(ordinary.url);
     return {
@@ -121,6 +124,7 @@ describe("D-VR-C document-owned physical boundary", () => {
       ordinaryId,
       pinnedFiles: filesUnderDocument(workerRoot, pinnedId),
       ordinaryFiles: filesUnderDocument(workerRoot, ordinaryId),
+      ordinaryOwnedRefused: Boolean(witness.payload.ordinaryOwnedRefused),
     };
   }
 
@@ -130,11 +134,35 @@ describe("D-VR-C document-owned physical boundary", () => {
     // This is the intended contract and is expected to fail until a
     // document-scoped physical storage composition exists.
     expect(result.ordinaryFiles).toEqual([]);
+    expect(result.ordinaryOwnedRefused).toBe(true);
   }, 45_000);
 
   test("weakening control: today's adapter persists every observed document", async () => {
     const result = await runProbe();
     expect(result.pinnedFiles.length).toBeGreaterThan(0);
     expect(result.ordinaryFiles.length).toBeGreaterThan(0);
+  }, 45_000);
+
+  test("owned crossing keeps ordinary O on the primary relay and persists daemon P only", async () => {
+    const result = await runProbe(true);
+    expect(result.pinnedFiles.length).toBeGreaterThan(0);
+    expect(result.ordinaryFiles).toEqual([]);
+    expect(result.ordinaryOwnedRefused).toBe(true);
+  }, 45_000);
+
+  test("owned crossing refuses O and reopens P without the parent", async () => {
+    const result = await runProbe(true);
+    // The fixture's event is the direct crossing refusal witness; the physical
+    // store assertion below is the restart witness.
+    expect(result.pinnedFiles.length).toBeGreaterThan(0);
+    expect(result.ordinaryFiles).toEqual([]);
+    const offline = new Repo({ storage: new NodeFSStorageAdapter(result.workerRoot) });
+    try {
+      const pinned = await offline.find<LarDoc>(`automerge:${result.pinnedId}`);
+      await pinned.whenReady();
+      await expect(offline.find<LarDoc>(`automerge:${result.ordinaryId}`)).rejects.toThrow();
+    } finally {
+      await offline.shutdown();
+    }
   }, 45_000);
 });

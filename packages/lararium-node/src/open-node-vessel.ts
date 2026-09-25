@@ -1427,6 +1427,9 @@ async function prepareNodeBoot(opts: NodeVesselOptions): Promise<NodeBootPrep> {
       },
       daemonAuth,
       storageDir,
+      // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
+      // ordinary oracle/recipe documents remain parent-attached in the primary worker Repo.
+      ownedDocument: true,
       rootDir: rootDirOpt ?? repoRoot,
       guardCrossroadsNexusHandles: nexusStanding.kind !== "charter",
     });

@@ -133,6 +133,8 @@ type VesselMessagePort = IslandMsg_Manifest["syncPort"];
 export interface DaemonVmHost {
   spawnWorker(scriptUrl: URL): VesselWorkerHandle;
   newSyncChannel(): { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
+  /** Optional second crossing for the one explicitly worker-owned document. */
+  newOwnedSyncChannel?: () => { mainPort: VesselMessagePort; syncPort: VesselMessagePort };
   /** Browser workers register their inbound shore before signaling ready; Node omits the handshake. */
   awaitReady?: boolean;
 }
@@ -161,6 +163,8 @@ export interface DaemonVmCoreOptions {
   daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
   /** Storage config delivered in the manifest (node nodefs; browser omits). */
   storage?:        IslandStorageConfig;
+  /** One bounded D-VR-C worker-owned document; absent preserves the legacy shape. */
+  ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
   /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/daemon/`); a node host mints
    *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can
    *  mount the same projector a wiki island mounts. */
@@ -299,7 +303,7 @@ export interface DaemonVmCore {
 }
 
 export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions): DaemonVmCore {
-  const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, diskMirrors, workerScriptUrl } = opts;
+  const { repo, daemonHandle, personaHandle, personaBagId, recipe, grants, coreHash, pluginCids, daemonAuth, storage, ownedDocument, diskMirrors, workerScriptUrl } = opts;
 
   // Mutable delegation config — set via mountMainVerbs(). The worker gates routed
   // verbs (verify-then-delegate); main trusts the channel, so no main-side verifier.
@@ -332,7 +336,25 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
 
   // ── MessageChannel — island ↔ vessel Repo sync (wiring owned by mesh) ───────
   const { mainPort, syncPort } = host.newSyncChannel();
-  attachMessageChannelSync(repo, mainPort);
+  const ownedPeers = new Set<string>();
+  const priorShareConfig = repo.shareConfig;
+  let ownedChannel: { mainPort: VesselMessagePort; syncPort: VesselMessagePort } | undefined;
+  if (ownedDocument) {
+    if (!host.newOwnedSyncChannel) throw new Error("D-VR-C owned document requires a dedicated crossing");
+    ownedChannel = host.newOwnedSyncChannel();
+    const ownedId = ownedDocument.documentUrl.startsWith("automerge:")
+      ? ownedDocument.documentUrl.slice("automerge:".length) : ownedDocument.documentUrl;
+    repo.shareConfig = {
+      announce: async (peerId, documentId) => ownedPeers.has(peerId)
+        ? documentId === ownedId : priorShareConfig.announce(peerId, documentId),
+      access: async (peerId, documentId) => ownedPeers.has(peerId)
+        ? documentId === ownedId : priorShareConfig.access(peerId, documentId),
+    };
+  }
+  const detachPrimary = attachMessageChannelSync(repo, mainPort);
+  const detachOwned = ownedChannel
+    ? attachMessageChannelSync(repo, ownedChannel.mainPort, (peerId) => ownedPeers.add(peerId))
+    : undefined;
 
   // ── Spawn daemon island ─────────────────────────────────────────────────────
   const worker = host.spawnWorker(workerScriptUrl);
@@ -568,6 +590,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     ...(daemonAuthWithCrossroads ? { daemonAuth: daemonAuthWithCrossroads } : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),
     ...(diskMirrors?.length ? { diskMirrors } : {}),
+    ...(ownedDocument && ownedChannel ? { ownedDocument: { ...ownedDocument, syncPort: ownedChannel.syncPort } } : {}),
   });
   const manifestGate = host.awaitReady
     ? new Promise<void>((resolve) => {
@@ -576,7 +599,10 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         });
       })
     : Promise.resolve();
-  void manifestGate.then(() => { worker.post(manifestMsg, [syncPort]); });
+  void manifestGate.then(() => {
+    const transfer = ownedChannel ? [syncPort, ownedChannel.syncPort] : [syncPort];
+    worker.post(manifestMsg, transfer);
+  });
 
   return {
     daemonHandle,
@@ -663,9 +689,13 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       } catch (err) {
         console.warn(`[daemon-vm] graceful shutdown ack failed — ${String(err)}; terminating anyway`);
       }
+      detachOwned?.();
+      detachPrimary();
       worker.terminate();
     },
     dispose: () => {
+      detachOwned?.();
+      detachPrimary();
       worker.terminate();
     },
   };
