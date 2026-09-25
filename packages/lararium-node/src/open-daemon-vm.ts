@@ -95,6 +95,9 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   if (storageDir !== undefined && storageDir.trim() === "") {
     throw new Error("openDaemonVm: storageDir must be omitted for memory-only storage, not empty");
   }
+  if (ownedDocument && storageDir === undefined) {
+    throw new Error("openDaemonVm: ownedDocument requires a storageDir");
+  }
 
   // ── Daemon doc handle (node strategy: merge-on-late-arrival) ────────────────
   const daemonHandle = await resolveBootDoc<LarDoc>(

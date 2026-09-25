@@ -103,6 +103,21 @@ describe("daemon VM Repo persistence fork", () => {
     })).rejects.toThrow("storageDir must be omitted");
   });
 
+  test("refuses an owned daemon scope without its physical storage root", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    repos.push(repo);
+    const daemon = repo.create<LarDoc>(emptyLarDoc());
+
+    await expect(openDaemonVm({
+      repo,
+      daemonUrl: daemon.url,
+      coreHash: null,
+      grants: { islandUrl: daemon.url, wikiUrl: daemon.url },
+      ownedDocument: true,
+      workerScriptUrl: probeUrl(true),
+    })).rejects.toThrow("ownedDocument requires a storageDir");
+  });
+
   test("separates persisted replay, peer-backed restart, and missing-peer refusal", async () => {
     const storageRoot = mkdtempSync(join(tmpdir(), "daemon-replay-"));
     roots.push(storageRoot);
