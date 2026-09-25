@@ -16,7 +16,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
-  signCarriageQuorum, signCarriageContract, carriageEntryBytes, foldCarriageSet, holdsCarriage,
+  signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryBytes, foldCarriageSet, foldCarriageDetails, holdsCarriage,
   CARRIAGE_ENTRY_DOMAIN, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import type { KahuRoster } from "../src/kapae-antigen.js";
@@ -142,6 +142,74 @@ describe("revoke — kahu quorum only, monotone, fail-closed equivocation", () =
     const admit  = await admitEntry({ action: "admit",  version: 2 });
     const set = await foldCarriageSet([revoke, admit], r);
     expect(holdsCarriage(nym, set)).toBe(true);
+  });
+});
+
+describe("fold details — evidence for a future receiver-local relation verifier", () => {
+  test("retains charter head, accepted version, and the same member set", async () => {
+    const r = await roster();
+    const admit = await admitEntry({ version: 3 });
+    const set = await foldCarriageSet([admit], r);
+    const details = await foldCarriageDetails([admit], r);
+    const nym = await pubOf(SEEDS.joiner);
+    expect(details.charterEpochCid).toBe(EPOCH);
+    expect(details.members).toEqual(set);
+    expect(details.entries).toContainEqual(expect.objectContaining({
+      nym, action: "admit", version: 3, sealEpochCid: EPOCH,
+      counted: true, state: "accepted", reason: "highest-counted-admit",
+    }));
+  });
+
+  test("distinguishes revoke and same-version equivocation while preserving strict-floor membership", async () => {
+    const r = await roster();
+    const admit = await admitEntry({ version: 5 });
+    const revoke = await admitEntry({ action: "revoke", version: 5 });
+    const details = await foldCarriageDetails([admit, revoke], r);
+    const nym = await pubOf(SEEDS.joiner);
+    expect(details.members).toEqual(await foldCarriageSet([admit, revoke], r));
+    expect(details.members.has(nym)).toBe(false);
+    expect(details.entries.filter((e) => e.nym === nym && e.version === 5).every((e) => e.state === "equivocal")).toBe(true);
+
+    const higherRevoke = await admitEntry({ action: "revoke", version: 6 });
+    const revoked = await foldCarriageDetails([admit, higherRevoke], r);
+    expect(revoked.entries).toContainEqual(expect.objectContaining({ version: 6, state: "revoked", reason: "highest-counted-revoke" }));
+  });
+
+  test("mixed member and place actions preserve legacy membership parity, including carry ties", async () => {
+    const r = await roster();
+    const memberAdmit = await admitEntry({ version: 4 });
+    const memberRevoke = await admitEntry({ action: "revoke", version: 4 });
+    const placeNym = await pubOf(SEEDS.stranger);
+    const kahu = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (seed) => ({ signer: await pubOf(seed), sign: signerOf(seed) })));
+    const carry = await signCarriageQuorum(
+      { nym: placeNym, action: "carry", version: 1, sealEpochCid: EPOCH }, kahu,
+      await signCarrierContract(placeNym, EPOCH, signerOf(SEEDS.stranger)),
+    );
+    const uncarry = await signCarriageQuorum(
+      { nym: placeNym, action: "uncarry", version: 2, sealEpochCid: EPOCH }, kahu,
+    );
+    const mixed = [memberAdmit, memberRevoke, carry, uncarry];
+    const legacy = await foldCarriageSet(mixed, r);
+    const detailed = await foldCarriageDetails(mixed, r);
+    const joinerNym = await pubOf(SEEDS.joiner);
+    expect(detailed.members).toEqual(legacy);
+    expect(detailed.members.has(placeNym)).toBe(false);
+    expect(detailed.entries).toContainEqual(expect.objectContaining({ nym: placeNym, action: "uncarry", state: "ignored" }));
+    expect(detailed.entries.filter((entry) => entry.nym === joinerNym && entry.version === 4)
+      .every((entry) => entry.state === "equivocal")).toBe(true);
+  });
+
+  test("names uncounted, wrong-charter, and unavailable evidence without granting", async () => {
+    const r = await roster();
+    const malformed = { ...(await admitEntry()), signatures: [] } as CarriageEntry;
+    const wrong = await admitEntry({ sealEpochCid: "other-charter" });
+    const details = await foldCarriageDetails([malformed, wrong], r);
+    expect(details.members.size).toBe(0);
+    expect(details.entries).toContainEqual(expect.objectContaining({ counted: false, reason: "quorum-not-counted" }));
+    expect(details.entries).toContainEqual(expect.objectContaining({ counted: false, reason: "wrong-charter-epoch" }));
+    const unavailable = await foldCarriageDetails(undefined, r);
+    expect(unavailable).toMatchObject({ charterEpochCid: EPOCH, entries: [] });
+    expect(unavailable.members.size).toBe(0);
   });
 });
 

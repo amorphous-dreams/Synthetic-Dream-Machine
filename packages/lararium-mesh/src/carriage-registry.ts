@@ -239,6 +239,115 @@ export async function carriageEntryCounts(entry: CarriageEntry, roster: KahuRost
   return verifyContractIn(entry);   // admit → the operator must have signed "accepts carriage"
 }
 
+export type CarriageFoldWinnerState = "accepted" | "revoked" | "equivocal" | "ignored";
+
+export interface CarriageFoldEntryDetail {
+  readonly nym: string;
+  readonly action: CarriageAction | string;
+  readonly version: number;
+  readonly sealEpochCid: string;
+  readonly counted: boolean;
+  readonly state: CarriageFoldWinnerState;
+  readonly reason: string;
+}
+
+export interface CarriageFoldDetails {
+  /** The charter head the caller supplied to this fold; this is a CID lineage, never an integer epoch. */
+  readonly charterEpochCid: string | null;
+  /** The member set is intentionally identical to `foldCarriageSet`. */
+  readonly members: ReadonlySet<string>;
+  /** Every supplied entry, including uncounted evidence, with a named local reason. */
+  readonly entries: readonly CarriageFoldEntryDetail[];
+}
+
+function entryShapeIsReadable(entry: CarriageEntry): boolean {
+  return typeof entry === "object" && entry !== null &&
+    typeof entry.kind === "string" && typeof entry.nym === "string" &&
+    typeof entry.action === "string" && Number.isSafeInteger(entry.version) && entry.version >= 0 &&
+    typeof entry.sealEpochCid === "string" && Array.isArray(entry.signatures);
+}
+
+async function countReason(entry: CarriageEntry, roster: KahuRoster): Promise<{ counted: boolean; reason: string }> {
+  if (!entryShapeIsReadable(entry)) return { counted: false, reason: "malformed-entry" };
+  if (entry.sealEpochCid !== roster.sealEpochCid) return { counted: false, reason: "wrong-charter-epoch" };
+  if (entry.action !== "admit" && entry.action !== "revoke" && entry.action !== "carry" && entry.action !== "uncarry") {
+    return { counted: false, reason: "unsupported-action" };
+  }
+  if (!(await verifyMembershipQuorum(entry, roster))) return { counted: false, reason: "quorum-not-counted" };
+  if (entry.action === "revoke" || entry.action === "uncarry") return { counted: true, reason: "quorum-counted" };
+  if (entry.action === "carry") {
+    return (await verifyCarrierIn(entry))
+      ? { counted: true, reason: "quorum-and-carrier-seal-counted" }
+      : { counted: false, reason: "carrier-seal-not-counted" };
+  }
+  return (await verifyContractIn(entry))
+    ? { counted: true, reason: "quorum-and-contract-in-counted" }
+    : { counted: false, reason: "contract-in-not-counted" };
+}
+
+/**
+ * Fold with evidence retained for a future relation verifier. This is diagnostic
+ * evidence only; `foldCarriageSet` remains the enforcement API and its member set
+ * semantics are reproduced here without granting any new authority.
+ */
+export async function foldCarriageDetails(
+  entries: Iterable<CarriageEntry> | undefined,
+  roster: KahuRoster | undefined,
+): Promise<CarriageFoldDetails> {
+  if (entries === undefined || roster === undefined) {
+    return { charterEpochCid: roster?.sealEpochCid ?? null, members: new Set<string>(), entries: [] };
+  }
+  const source = [...entries];
+  type MutableDetail = { nym: string; action: CarriageAction | string; version: number; sealEpochCid: string; counted: boolean; state: CarriageFoldWinnerState; reason: string };
+  const counted: Array<{ entry: CarriageEntry; detail: MutableDetail }> = [];
+  const details: MutableDetail[] = [];
+  for (const entry of source) {
+    const result = await countReason(entry, roster);
+    const detail: CarriageFoldEntryDetail = {
+      nym: typeof entry?.nym === "string" ? entry.nym.toLowerCase() : "",
+      action: typeof entry?.action === "string" ? entry.action : "malformed",
+      version: Number.isSafeInteger(entry?.version) ? entry.version : -1,
+      sealEpochCid: typeof entry?.sealEpochCid === "string" ? entry.sealEpochCid : "",
+      counted: result.counted,
+      state: "ignored",
+      reason: result.reason,
+    };
+    details.push(detail);
+    if (result.counted) counted.push({ entry, detail });
+  }
+  const winners = new Map<string, { entry: CarriageEntry; detail: CarriageFoldEntryDetail }>();
+  const equivocal = new Set<string>();
+  for (const candidate of counted) {
+    const nym = candidate.detail.nym;
+    const current = winners.get(nym);
+    if (!current || candidate.entry.version > current.entry.version) {
+      winners.set(nym, candidate);
+      equivocal.delete(nym);
+    } else if (candidate.entry.version === current.entry.version) {
+      if ((candidate.entry.action === "revoke") !== (current.entry.action === "revoke")) equivocal.add(nym);
+      if (candidate.entry.action === "revoke") winners.set(nym, candidate);
+    }
+  }
+  const members = new Set<string>();
+  for (const [nym, winner] of winners) {
+    const state: CarriageFoldWinnerState = equivocal.has(nym)
+      ? "equivocal"
+      : winner.entry.action === "admit" ? "accepted" : winner.entry.action === "revoke" ? "revoked" : "ignored";
+    const reason = state === "accepted" ? "highest-counted-admit" :
+      state === "revoked" ? "highest-counted-revoke" :
+      state === "equivocal" ? "same-version-admit-revoke-equivocation" : "non-member-action";
+    for (const detail of details) {
+      if (detail.nym === nym && detail.version === winner.entry.version &&
+          (detail.action === winner.entry.action || state === "equivocal")) {
+        detail.state = state;
+        detail.reason = reason;
+      }
+    }
+    if (state === "accepted") members.add(nym);
+  }
+  return { charterEpochCid: roster.sealEpochCid, members, entries: details.map((detail) => ({ ...detail })) };
+}
+
 /**
  * Sign a CarriageEntry's KAHU QUORUM — collect ≥ threshold of these into an entry's `signatures`. The
  * module holds no key; each kahu supplies its own signer (mirrors the antigen's `signAntigenEntry`).
