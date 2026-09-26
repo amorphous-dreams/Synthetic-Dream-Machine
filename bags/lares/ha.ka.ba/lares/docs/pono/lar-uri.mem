@@ -401,7 +401,7 @@ A spanSpan record is ''consistent'' when:
 * ''Interval Tree Clocks'' (Almeida et al., 2008) — Dynamic participant identity via interval subdivision. Deferred from URI spec; informs MCP chronometer server design.
 * ''FTLS RSS Time-Scale Hierarchy'' — The five levels (Week/Watch/Turn/Round/Action) are canon game rules. The chronometer's five-position structure derives from this hierarchy.
 * ''what3words'' — Mnemonic precedent for fixed three-slot arity (a term per slot). `lar:` forks from geocoding: roots name attitude-bearing rather than surveyed position.
-* ''FFZ Chronometer Protocol'' (Telarus / Lares, 2026) — Fontany-Fuller-Zelenka. Vector chronometer with per-participant phase registers. Source: `lares/research/chronometer/FFZ-Chronometer-Research.md`
+* ''FFZ Chronometer Protocol'' (Telarus / Lares, 2026) — Fontany-Fuller-Zelenka. Vector chronometer with per-participant phase registers. Source: `bags/lares/ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research.mem`
 * ''Schneier & Raghavan, "Agentic AI's OODA Loop Problem"'' (IEEE S&P, 2025) — Nested OODA loops in AI agents; integrity as architecture. Validates the chronometer's problem space independently.
 * ''OODA-HA Composable Invariant Modules'' (Telarus / Lares, 2026) — Phase-scoped instruction loading with section-level confidence URIs.
 * ''Kowloon / ActivityStreams export model'' — Kowloon's Activity envelope (`actorId`, `object`, `target`, `to`, `canReply`, `canReact`) is a good downstream publication adapter for Lares spans. Kowloon IDs remain sink-local identifiers, not replacements for `span_id`.
@@ -458,6 +458,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;q0MdtnDHceqafDUeclEUX4kdOR4qsWQUom3VhljlaE0
+<<^ code="&#x0003;">>ni:///sha-256;dajddlWLWZ2EALMOmvUe1tuERJO9a3qJKXu0zfrUquE
 
 <<^ code="&#x0004;" -> to="?">>

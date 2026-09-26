@@ -75,9 +75,9 @@ describe("carrier-edges — every address a carrier points at", () => {
    * A rise is only allowed to be absorbed here for the second reason, and only with the cause named;
    * absorbing the first one silently is how a ceiling stops measuring anything.
    *
-   * TWO READERS, TWO CORPORA: `lares meme check --edges $(git ls-files 'bags/*.mem')` reads 175 over bags/
+   * TWO READERS, TWO CORPORA: `lares meme check --edges $(git ls-files 'bags/*.mem')` reads 174 over bags/
    * alone; this test walks `carrierFiles` — every declared carrier, tiddlers and memory included — and
-   * reads 178. The ceiling here is THIS reader's number; lowering it to the CLI's would red on the three
+   * reads 177. The ceiling here is THIS reader's number; lowering it to the CLI's would red on the three
    * edges the CLI never sees, which the runtime kernel face at
    * packages/lararium-tw5/tiddlers/memetic-wikitext.tid carries (`…/api/pono/invariant`,
    * `lararium-node/MEME-STORE-FOUNDATIONS`).
@@ -104,6 +104,6 @@ describe("carrier-edges — every address a carrier points at", () => {
     // `live-equivocation.mem` names `elyncia/characters/primary-characters/telarus`,
     // `lararium/mesh/ahi-ka` and `lares/api/pono/recovery-registration`, carriers nobody has written
     // yet. A FORWARD REFERENCE IS INTENT RECORDED AHEAD OF ITS CARRIER.
-    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(178);
+    expect(dangling.length, "an edge broke — run `lares meme check --edges` to name it").toBeLessThanOrEqual(177);
   });
 });

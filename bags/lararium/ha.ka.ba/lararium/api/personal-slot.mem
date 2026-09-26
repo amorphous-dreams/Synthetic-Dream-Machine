@@ -428,7 +428,7 @@ The approved [[residency-model|lar:///ha.ka.ba/lararium/api/residency-model]] co
 * The binding tiddler in the admin doc names which Automerge document THIS device, in THIS recipe, mounts at the `wikis/{slug}/personal` URI.
 * The residency model surfaces `$:/StoryList` as the topmost manifestation in the resolver-defined priority order.
 
-Open the wiki; the StoryList syncs to your other devices because each layer holds its piece. Implementation coordinates with Sprint 7 of `packages/EPIC-RESIDENCY-MODEL.md` rather than landing as an independent migration.
+Open the wiki; the StoryList syncs to your other devices because each layer holds its piece. This enactment lands as the @personal slot's coordination with the residency model (#/migration below), not as an independent migration.
 
 <<~/ahu>>
 
@@ -466,7 +466,7 @@ This unified ledger renumbers once; every in-body cross-reference resolves here.
 Q1 (slot priority order) ✅ approved — `personal` among the per-wiki live slots, above the `bags/{slug}` canon.
 Q2 (one @personal or per-wiki) ✅ resolved — a per-wiki slot URI (`wikis/{slug}/personal`); the resolver binds the doc per `(PersonaGroup × recipe-fingerprint)`.
 Q3 (`$:/palette` scope) ✅ resolved — palette routes to the personal layer (operator-across-devices). The cascade rule `[prefix[$:/palette]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]` lands above the `$:/state/` catch-all. Custom palette definitions under `$:/palettes/*` are NOT covered — open follow-up if operator-built palettes need to travel across recipes.
-Q4 (fingerprint algorithm) ✅ resolved — SHA-256 over canonical encoding of `(bags/{slug}-doc-id + sorted libraryBags doc-ids)` only. `lares` and `lararium` doc-ids do NOT participate — switching Lares personality or system bag does not fork the operator's view state across devices. `EPIC-RESIDENCY-MODEL.md` S7.4 carries the same rule.
+Q4 (fingerprint algorithm) ✅ resolved — SHA-256 over canonical encoding of `(bags/{slug}-doc-id + sorted libraryBags doc-ids)` only. `lares` and `lararium` doc-ids do NOT participate — switching Lares personality or system bag does not fork the operator's view state across devices. `computeRecipeFingerprint()` in `wiki-recipe.ts` carries the same exclusion.
 
 ''Binding storage''
 
@@ -506,6 +506,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OSiQNpjv7P2Tb1ZNROl2-xQP9AOG9LqJVhSA19N6Beo
+<<^ code="&#x0003;">>ni:///sha-256;W9vXvkSB7Dt8PyjMTMTrHnurzPtnXi7lMbwFKoxIlwg
 
 <<^ code="&#x0004;" -> to="?">>

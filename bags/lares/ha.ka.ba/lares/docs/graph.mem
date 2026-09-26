@@ -116,30 +116,27 @@ Deferred rename target (Phase 1 implementation, not blocking design):
 | `CarrierGraph` | `LociGraph` |
 | `add_node` | `add_locus` |
 | `nodes` dict | `loci` dict |
-| `graph.py` identifiers | align to loci vocabulary throughout |
 | MCP tool descriptions | "loci" not "nodes" |
 
 All graph design docs should use `locus`/`loci` when describing carriers in the graph.
-The rename in the server awaits Phase 1 implementation. Until then, current code and design docs may carry both forms with this note as authority.
+Where code still spells `node`, this note carries the authority for reading it as `locus`.
 
 <<~/ahu>>
 
 <<~ ahu #/implementation-phases>>
 
-!! Implementation Phases
+!! What Stands In Code
 
-| Phase | New file | Key deliverable |
-|---|---|---|
-| 1 | `lares/lararium_mcp/graph.py` | `PranalaEdge`, `CarrierNode`, `CarrierGraph` with BFS/DFS/topo-sort |
-| 1 | `lares/lararium_mcp/tests/test_graph.py` | synthetic graph fixtures, cycle detection, topo sort tests |
-| 2 | `lares/lararium_mcp/pranala_parser.py` | block + inline + sugar parser, field normalization |
-| 2 | `lares/lararium_mcp/tests/test_pranala_parser.py` | AGENTS.md block fixtures, `? ->` resolution |
-| 3 | `lares/lararium_mcp/compiler.py` (rewrite) | Tier 0/1/2 walk, live `pranala_edges`, `interface_index`, content hash |
-| 3 | updated `test_compiler.py` | `test_tier0_tier1_convergence`, `test_full_boot_has_edges`, `test_receipt_deterministic` |
-| 4 | `bags/lares/ha.ka.ba/lares/docs/graph/**` | this carrier cluster (plan → loci) |
+The `PranalaEdge` parser — block + inline + sugar forms, field normalization — stands in TypeScript:
 
-Phase 2 awaits the `? ->` resolution call.
-Phases 1, 3, and 4 may proceed independently.
+| File | Deliverable |
+|---|---|
+| `packages/lararium-tw5/src/meme-ast/types.ts` | `PranalaEdge`, `PranalaEdgeViolation`, `GrammarRules`, `SigilRule` |
+| `packages/lararium-tw5/src/meme-ast/edges.ts` | `edgesFromMemeAst()` — AST → `PranalaEdge[]` |
+| `packages/lararium-tw5/src/meme-ast/parse.ts` | `parseMemeText()` — nodes / edges / meme in one call |
+| `packages/lararium-tw5/tests/carrier-edges.test.ts`, `pranala-attribute-spellings.test.ts` | edge and attribute-spelling fixtures |
+
+The graph-traversal model this carrier cluster describes (`Locus`/`LociGraph`, BFS/DFS, Kahn topological sort, cycle detection) and the compiler rewrite (tier walk, `interface_index`, content-hash receipt) stand as design with no implementing file; `bags/lares/ha.ka.ba/lares/docs/graph/**` (this cluster) holds that design.
 
 <<~/ahu>>
 
@@ -172,6 +169,6 @@ Phases 1, 3, and 4 may proceed independently.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;F3J2RGED1fKwtT7pxpH8bVpX0kG7levVPHACqozURjQ
+<<^ code="&#x0003;">>ni:///sha-256;W970wEB9CVfXWrMjTVed0FrE9cYbjLvxwUxOdDdyuhk
 
 <<^ code="&#x0004;" -> to="?">>

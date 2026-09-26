@@ -34,7 +34,7 @@ The full elyncia.app prototype — the Elyncian DreamNet made real on Gaia:
 
 !! Key Source
 
-[`lares/scrum/sprints/00005/ELYNCIA_APP_SEEDS.md`](../sprints/00005/ELYNCIA_APP_SEEDS.md) — DreamDeck stack seeds, `~:confidence[SP],[9]`.
+DreamDeck stack seeds, `~:confidence[SP],[9]`.
 
 !! Backlog Seed Items (DECK-01 through DECK-07)
 
@@ -58,6 +58,6 @@ Full backlog lives in `ELYNCIA_APP_SEEDS.md`. Short form:
 
 //"Oh," she says. "So that's what it was."//
 
-<<^ code="&#x0003;">>ni:///sha-256;BZSJJ27UbcIftBPy51tDPRHC--GxDHnbIqD6S4MDeaI
+<<^ code="&#x0003;">>ni:///sha-256;jD0otmWHFLeevstpYvauvBSll4hSP7e8YIU1KZa_wU0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -91,7 +91,6 @@ bags/lares/ha.ka.ba/lares/
     pono/          33    the extended docs beside api/pono
     history/       23    the arc that lifted: the Lindwyrm records, the consume archive,
                          the period-forms law that governs how an early HUD reads
-    lararium_mcp/   7    MCP compiler planning
     mu/             5  · voices/ 5 · graph/ 4
   cli/                    2 carriers — the command surface
   library/                3 carriers — shelf indexes; the acquired bodies rest outside every
@@ -137,6 +136,6 @@ file, a browser agent takes the carrier pasted in.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UtICqrZBJlee0MdH9IfSKM6udWLiA3v_OeNdNIGWDso
+<<^ code="&#x0003;">>ni:///sha-256;KsHruZ7kGnUZ6MkTRZmMPRftLm9qyO4oRaRhEYcY9ns
 
 <<^ code="&#x0004;" -> to="?">>

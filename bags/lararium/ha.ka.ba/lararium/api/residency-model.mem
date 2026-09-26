@@ -41,13 +41,11 @@ A single tiddler-title MAY have residency in N bags simultaneously, each bag car
 
 <<~ ahu #/why>>
 
-!! Why the architecture moved here
+!! Why coordinates, not branches
 
-A prior design pivot proposed retiring the single-canonical `promote` ceremony in favor of a git-style ''stage / commit / push'' triple. Research across eight spirits (four per round, two rounds) returned a deeper finding:
+Bags act as scopes — //coordinates in a product space//, never branches. A git-style ''stage / commit / push'' triple treats bags as branches — //parallel timelines that need merging// — a framing the coordinate-space model rejects outright: the verb family draws from set algebra and graph theory, never from version control.
 
-> The git-style triple treats bags as branches — //parallel timelines that need merging//. Bags act as scopes — //coordinates in a product space//. The verb family must come from set algebra and graph theory, not from version control.
-
-Two adjacent traditions hold the right primitives. Neither surfaced through the git framing:
+Two adjacent traditions hold the right primitives. Neither surfaces through the git framing:
 
 # ''RDF named graphs + SPARQL Update'' (W3C 2013) — the quad `(s, p, o, g)` makes "the same triple in multiple graphs" first-class. SPARQL Update settled the action verb vocabulary in 2013 after twenty years of practice.
 # ''FRBR / IFLA LRM + the archival profession'' (1998 / late-19th c.) — Work / Expression / Manifestation / Item dissolves the identity question; SAA professional discipline forbids silent unlink.
@@ -90,7 +88,7 @@ Operator gestures over residency travel through a six-verb action surface, ALL C
 
 ALL-CAPS by deliberate convention — the action surface SHOULD read at a glance as a distinct register from prose, sigils, and tiddler-field names.
 
-''URI grammar — RESOLVED (Sprint 2, 2026-05-31):''
+''URI grammar:''
 
 The M.2 verb-as-tiddler-field pipeline carries the action surface. ACTION verbs compose ON TOP of `verb-tiddler.ts` rather than living under a separate URI prefix — the action identity travels as the `verb` field value within an existing verb-tiddler. Three URI prefixes already exist:
 
@@ -123,7 +121,7 @@ Per-verb args:
 
 Source: `packages/lararium-mesh/src/residency-actions.ts`. Tests: `packages/lararium-mesh/tests/residency-actions.test.ts` (50 cases, including the change-id preservation gate that defends Anti-pattern #1).
 
-!!! Bag-grain surface — APPROVED (operator, 2026-06-10; implementation pending)
+!!! Bag-grain surface (implementation pending)
 
 The ACTION surface carries ''two grains'', both SPARQL Update derived. SPARQL's graph-management verbs operate graph-grain natively; the title-grain forms above specialize them. The approved bag-grain pair:
 
@@ -157,7 +155,7 @@ Every ACTION writes an ''indelible effect record'' tiddler in each affected bag,
 | ''reappraisal'' | operator-recorded justification | the recorded reason that authorizes a coming deaccession |
 | ''disposition'' | final state of a deaccessioned item | where it went, when, why; never silent |
 
-Effect records live within each bag at `lar:///<bag>/ledger/residency/<event-id>` — the bag's indelible residency ledger (the web2 word "log" left the surface 2026-06-07). Records stay append-only and persist in perpetuity, even when a later ACTION deaccessions the underlying tiddler. ''The artifact may leave; the record of its prior presence here, and of its leaving, never does.''
+Effect records live within each bag at `lar:///<bag>/ledger/residency/<event-id>` — the bag's indelible residency ledger. Records stay append-only and persist in perpetuity, even when a later ACTION deaccessions the underlying tiddler. ''The artifact may leave; the record of its prior presence here, and of its leaving, never does.''
 
 This dual-surface design — ACTION verbs for the //gesture//, archival verbs for the //audit// — resonates structurally with web3 causal-islands models. The archival profession solved the identity-across-custody problem before software did; we adopt the discipline along with the vocabulary. The ''Floating Librarians of Mu register'' applies — Mu's stewards of memory cooperate with archivists, not with version-control engineers.
 
@@ -183,7 +181,7 @@ Any implementation of this model MUST hold all five:
 
 The ACTION family grew past pure residency. The first six (ADD/COPY/MOVE/CLEAR/DROP) are SPARQL-Update set-algebra over `(title × bag)`; ''INGEST'' was the first to break that frame — a disk→records shore gesture (three-way diff, replace-by-group, NFC), with no SPARQL analog, riding the same VERB → SUMMONS → OUTCOME rail with the same `withEffectRecord` audit + cap-gate. The tier is open: a verb belongs here when it carries an operator gesture through the rail + audit + authority machinery, even if it moves no tiddler between bags.
 
-!!! RECONCILE — fold a newer engine forward (operator ruling, 2026-06-15)
+!!! RECONCILE — fold a newer engine forward (operator ruling)
 
 `lares act RECONCILE` adopts a newer engine genesis into the living ''`@oracle`'' runtime island (disk-projection #oracle-split) — the deliberate rite that replaces the old silent boot-time fold (engine-watch EW-6).
 
@@ -227,7 +225,7 @@ A tiddler MAY hold residency in multiple Yin coordinates simultaneously (persona
 
 !! Six anti-patterns — defenses MUST exist
 
-The prior research surfaced six failure modes documented across OverlayFS, Docker, Nix, TW5, Ink & Switch CRDT research, and the archival profession. Implementation MUST carry a named defense for each:
+Six failure modes recur across OverlayFS, Docker, Nix, TW5, Ink & Switch CRDT research, and the archival profession. Implementation MUST carry a named defense for each:
 
 | # | Anti-pattern | Source | Defense |
 |---|---|---|---|
@@ -242,7 +240,7 @@ The prior research surfaced six failure modes documented across OverlayFS, Docke
 
 <<~ ahu #/conflict-resolution>>
 
-!! Conflict resolution — Talk Story, not arbitration (2026-05-31)
+!! Conflict resolution — Talk Story, not arbitration
 
 ''Load-bearing principle:'' the CRDT/residency layer detects and records conflicts. It MUST NOT decide them. Resolution surfaces to ''operator-agent or cabal Talk Story'' — the Lares native mode for handling underspecified outcomes.
 
@@ -298,7 +296,6 @@ Two Sprint deferrals (modal-view reader at the bag-pin surface; commit-queue for
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
-<<~ loulou "lar:///packages/EPIC-RESIDENCY-MODEL">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
 
 ''Tie ~ the palace reads at apertures.'' The living-grammar memory-palace ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]])
@@ -307,6 +304,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VS7cTWAyCbKWlciAT2-wnUvNNNImbw-aERLbfU3ju6I
+<<^ code="&#x0003;">>ni:///sha-256;QidOvolnNkDAd9s0cIK805MbSTfs4AHQVyQFFFGeTSI
 
 <<^ code="&#x0004;" -> to="?">>
