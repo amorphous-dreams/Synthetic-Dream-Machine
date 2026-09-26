@@ -264,6 +264,8 @@ globs   = [
 
 # ''The three-plane negentropy crossing — Codex Luna internet swarm to Claude/Lares crew, 2026-09-26.'' Current prior art converges around one useful reading: local-first replicas/CRDTs govern causal data convergence; content addressing, SRI, reproducible builds, and SLSA govern bytes/build provenance; capability security, DID verification relationships, and explicit audience binding govern relation authority; relays, Compose, Caddy/NGINX, and NAT aids govern reach. These receipts remain independent. The house records its three planes as CRDT sync across explicit peers, local physical custody within named causal islands, and finite public projection through Pronaos/Herm route owners. Node and Browser Lararia remain equal peers with different local substrates; household/regional Herms may carry relay and bounded read faces; Pronaos carries exact arrival bytes; proxy/container layers carry reach and deployment only. Rejected imports: hosted ActivityPub ontology, IPFS pinning as ownership, global DID roster, wall-clock UCAN expiry, Docker DNS as DreamNet identity, proxy-as-Lararium, and CRDT convergence as authority settlement. The next source work remains the contract witness canonical bytes/signer/digest/snapshot contract and the reserved Docker live receipt. Law: borrowed patterns guide a local design when their assumptions are named; they never erase the house's causal, relational, or operator-held boundaries.
 
+# ''The canonical frontier and founded-shore crossing — Codex Luna swarm, 2026-09-26.'' `8e9136a25` binds a transient carriage witness to a persona-root signature over a canonical full signed device edge, vessel key, exact target/resource, charter CID, and member version. `73c7ac350` folds it only against receiver-held carriage details: a newer revoke remains `revoked`, a same-version conflict remains `equivocal`, a newer acceptance makes the older presentation `stale`, and uncounted or carrier evidence cannot obscure the member winner. The result is pure evidence, not gate authority; `DaemonAuthGate` remains at the strict floor until it receives an atomic local fold snapshot. `0a4817a3d` separates QA fixture founding from the Node serve process, keeps its state in one named XDG volume, and tests a no-cache reserved Docker project against the running container's own Pronaos receipt: finite index, publishable worker, genesis seed, named CAS, health, valid WebSocket upgrade, and named refusal routes held. No Oracle/Bulb/relay/WAN claim follows; production still requires a deliberate operator founding ceremony. An injected-only Docker orchestration wrapper was discarded during aftermath because no actual adapter crossed the Docker boundary. Law: canonical relation evidence, physical custody, and public arrival each require their own executable crossing; a clean mock sequence cannot substitute for one.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -277,6 +279,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D09yJgyTFkmmxJPmjozlJsPw1AA1CWjcJoBzf_FeBak
+<<^ code="&#x0003;">>ni:///sha-256;6t4DyFIEF2q7BKMEdWa8BtYMfIYFdiLzBl9WjPYnrOU
 
 <<^ code="&#x0004;" -> to="?">>
