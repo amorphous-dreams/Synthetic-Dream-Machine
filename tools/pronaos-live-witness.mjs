@@ -35,7 +35,10 @@ function expectedInputs({ webRoot, artifactRecord, genesisRoot }) {
   const byPath = new Map(record.routes.map((entry) => [entry.path, entry]));
   const index = byPath.get("/");
   if (!index) throw new Error("Pronaos artifact receipt has no / route");
-  const worker = record.routes.find((entry) => /(?:^|[.-])worker[.-]/i.test(entry.path));
+  // The finite Pronaos projection exposes the named runtime workers; the
+  // browser package's pre-bundled `browser-wiki-worker` is an internal helper
+  // and is deliberately not a public route.
+  const worker = record.routes.find((entry) => /\/(?:daemon|wiki|shared-holder)\.worker[-.]/i.test(entry.path));
   if (!worker) throw new Error("Pronaos artifact receipt has no worker route");
   const seedPath = resolve(genesisRoot, "seed.json");
   const seed = JSON.parse(mustFile(seedPath, "genesis seed"));

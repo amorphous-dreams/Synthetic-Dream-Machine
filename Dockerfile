@@ -27,6 +27,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* tsconfig.base.json ./
 COPY TiddlyWiki5/package.json                         TiddlyWiki5/
 COPY packages/lararium-browser/package.json            packages/lararium-browser/
+COPY packages/lares-cli/package.json                   packages/lares-cli/
 COPY packages/lararium-keyhive/package.json            packages/lararium-keyhive/
 COPY packages/lararium-mempalace/package.json          packages/lararium-mempalace/
 COPY packages/lararium-mesh/package.json    packages/lararium-mesh/
@@ -51,6 +52,7 @@ COPY genesis/    genesis/
 # The deferred mcp-runtime stays outside this target's build graph.
 RUN pnpm --filter @lararium/node... build
 RUN pnpm --filter @lararium/web... build
+RUN pnpm --filter @lares/cli build
 
 # ---------------------------------------------------------------------------
 # Stage 3: serve — lararium-node WS server with an optional explicit Pronaos shore
