@@ -11,7 +11,9 @@ import { CARRIAGE_RELATION_WITNESS_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, hex, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import { didFromVerifyingKey, isLarDid, verifyingKeyFromDid } from "./lar-did.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
+import { verifyDeviceDelegation } from "./device-delegation.js";
 import type { ContractRelationWitness } from "./auth-wire.js";
+import type { CarriageFoldDetails } from "./carriage-registry.js";
 
 type WitnessPayload = Omit<ContractRelationWitness, "signature">;
 
@@ -107,4 +109,54 @@ export async function verifyContractRelationWitness(
   } catch {
     return { ok: false, reason: "malformed witness" };
   }
+}
+
+export type ContractRelationFrontierState = "valid" | "pending" | "stale" | "revoked" | "equivocal" | "rejected";
+
+export interface ContractRelationFrontierVerdict {
+  readonly state: ContractRelationFrontierState;
+  readonly reason: string;
+  readonly charterEpochCid: string | null;
+}
+
+/**
+ * Pure receiver-local composition of cryptographic evidence and an already-folded
+ * carriage frontier. This is deliberately not a gate hook: callers must provide
+ * the local fold, and every absent/ambiguous frontier remains non-valid.
+ */
+export async function verifyContractRelationFrontier(args: {
+  witness: ContractRelationWitness;
+  edge: DeviceDelegationTiddler;
+  frontier: CarriageFoldDetails | undefined;
+  relationResource: string;
+  targetNexusPubkey: string;
+}): Promise<ContractRelationFrontierVerdict> {
+  const charterEpochCid = args.frontier?.charterEpochCid ?? null;
+  const refused = (state: ContractRelationFrontierState, reason: string): ContractRelationFrontierVerdict => ({ state, reason, charterEpochCid });
+  if (!args.frontier) return refused("pending", "carriage frontier unavailable");
+  const edgeEvidence = await verifyDeviceDelegation(args.edge, args.edge.personaRootDid);
+  if (!edgeEvidence.ok) return refused("rejected", `device edge ${edgeEvidence.reason ?? "invalid"}`);
+  const witnessEvidence = await verifyContractRelationWitness(args.witness, {
+    edge: args.edge, relationResource: args.relationResource, targetNexusPubkey: args.targetNexusPubkey,
+  });
+  if (!witnessEvidence.ok) return refused("rejected", `relation witness ${witnessEvidence.reason ?? "invalid"}`);
+  if (args.frontier.charterEpochCid !== args.witness.sealEpochCid) return refused("stale", "charter frontier mismatch");
+  const nym = verifyingKeyFromDid(args.witness.personaRootDid).toLowerCase();
+  const localEntries = args.frontier.entries.filter((entry) =>
+    entry.nym === nym && entry.version >= 0 && entry.counted &&
+    (entry.action === "admit" || entry.action === "revoke"));
+  const highestVersion = localEntries.reduce((max, entry) => Math.max(max, entry.version), -1);
+  if (highestVersion < 0) return refused("pending", "accepted carriage member version unavailable");
+  const current = localEntries.filter((entry) => entry.version === highestVersion);
+  // foldCarriageDetails marks every same-version admit/revoke detail equivocal. Keep
+  // that refusal visible even if an older accepted entry is also present.
+  const currentEquivocal = current.find((entry) => entry.state === "equivocal");
+  if (currentEquivocal) return refused("equivocal", currentEquivocal.reason);
+  const winner = current.find((entry) => entry.state === "accepted" || entry.state === "revoked") ?? current[0];
+  if (!winner) return refused("pending", "accepted carriage member version unavailable");
+  if (winner.state === "revoked") return refused("revoked", winner.reason);
+  if (winner.state === "accepted" && args.witness.memberVersion < highestVersion) return refused("stale", "carriage member version superseded");
+  if (winner.state !== "accepted" || args.witness.memberVersion !== highestVersion) return refused("pending", "accepted carriage member version unavailable");
+  if (!args.frontier.members.has(nym)) return refused("rejected", "frontier member set contradicts accepted detail");
+  return { state: "valid", reason: "accepted carriage frontier", charterEpochCid };
 }

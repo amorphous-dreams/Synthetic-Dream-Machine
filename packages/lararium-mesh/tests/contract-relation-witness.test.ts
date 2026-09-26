@@ -5,7 +5,9 @@ import {
   buildContractRelationWitness,
   deviceDelegationRecordDigest,
   verifyContractRelationWitness,
+  verifyContractRelationFrontier,
 } from "../src/index.js";
+import type { CarriageFoldEntryDetail } from "../src/carriage-registry.js";
 
 const ROOT_SEED = new Uint8Array(32).fill(7);
 const DEVICE_SEED = new Uint8Array(32).fill(8);
@@ -81,5 +83,54 @@ describe("contract relation witness canonical seam", () => {
     const { edge } = await fixture();
     expect(deviceDelegationRecordDigest({ ...edge, unmodeled: "ignored" } as typeof edge & { unmodeled: string }))
       .toBe(deviceDelegationRecordDigest(edge));
+  });
+
+  test("composes a local accepted frontier without granting through the transport witness", async () => {
+    const { edge, witness } = await fixture();
+    const base = { nym: witness.personaRootDid.slice(2), action: "admit" as const, version: 3,
+      sealEpochCid: witness.sealEpochCid, counted: true, state: "accepted" as const, reason: "highest-counted-admit" };
+    await expect(verifyContractRelationFrontier({ witness, edge, relationResource: RESOURCE,
+      targetNexusPubkey: NEXUS, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set([base.nym]), entries: [base] } }))
+      .resolves.toMatchObject({ state: "valid" });
+  });
+
+  test("names absent, stale, revoked, and equivocal frontiers instead of lifting authority", async () => {
+    const { edge, witness } = await fixture();
+    const base = { nym: witness.personaRootDid.slice(2), action: "admit" as const, version: 3,
+      sealEpochCid: witness.sealEpochCid, counted: true, state: "accepted" as const, reason: "highest-counted-admit" };
+    const args = { witness, edge, relationResource: RESOURCE, targetNexusPubkey: NEXUS };
+    await expect(verifyContractRelationFrontier({ ...args, frontier: undefined })).resolves.toMatchObject({ state: "pending" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: "old", members: new Set(), entries: [base] } })).resolves.toMatchObject({ state: "stale" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set(), entries: [{ ...base, state: "revoked", reason: "highest-counted-revoke" }] } })).resolves.toMatchObject({ state: "revoked" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set(), entries: [{ ...base, state: "equivocal", reason: "same-version-admit-revoke-equivocation" }] } })).resolves.toMatchObject({ state: "equivocal" });
+  });
+
+  test("interprets the highest local winner before reading an older witness version", async () => {
+    const { edge, witness } = await fixture();
+    const v3: CarriageFoldEntryDetail = { nym: witness.personaRootDid.slice(2), action: "admit", version: 3,
+      sealEpochCid: witness.sealEpochCid, counted: true, state: "ignored", reason: "superseded" };
+    const args = { witness, edge, relationResource: RESOURCE, targetNexusPubkey: NEXUS };
+    const frontier = (latest: CarriageFoldEntryDetail) => ({ charterEpochCid: witness.sealEpochCid, members: new Set<string>(), entries: [v3, latest] });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, version: 4, action: "revoke", state: "revoked", reason: "highest-counted-revoke" }) })).resolves.toMatchObject({ state: "revoked" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, version: 4, state: "equivocal", reason: "same-version-admit-revoke-equivocation" }) })).resolves.toMatchObject({ state: "equivocal" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, version: 4, state: "accepted", reason: "highest-counted-admit" }) })).resolves.toMatchObject({ state: "stale" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set([v3.nym]), entries: [{ ...v3, state: "accepted", reason: "highest-counted-admit" }] } })).resolves.toMatchObject({ state: "valid" });
+  });
+
+  test("ignores uncounted or carrier evidence when deriving the member winner", async () => {
+    const { edge, witness } = await fixture();
+    const nym = witness.personaRootDid.slice(2);
+    const accepted = { nym, action: "admit" as const, version: 3, sealEpochCid: witness.sealEpochCid,
+      counted: true, state: "accepted" as const, reason: "highest-counted-admit" };
+    const frontier = {
+      charterEpochCid: witness.sealEpochCid,
+      members: new Set([nym]),
+      entries: [accepted,
+        { ...accepted, version: 99, counted: false, state: "ignored" as const, reason: "malformed-entry" },
+        { ...accepted, action: "carry" as const, version: 100, state: "ignored" as const, reason: "non-member-action" },
+      ],
+    };
+    await expect(verifyContractRelationFrontier({ witness, edge, relationResource: RESOURCE,
+      targetNexusPubkey: NEXUS, frontier })).resolves.toMatchObject({ state: "valid" });
   });
 });
