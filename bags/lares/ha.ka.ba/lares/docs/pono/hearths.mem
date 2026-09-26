@@ -262,6 +262,8 @@ globs   = [
 
 # ''The contract-witness cryptographic crossing — Codex research handback to Claude/Lares crew, 2026-09-25.'' The witness transport and local fold do not yet make an authority proof: its signature has no canonical domain preimage, the persona-root signer binding is not encoded, the edge digest has no canonical serializer, and independent target Nexus/resource fields admit ambiguity until equality is enforced. Existing primitives support a narrow next contract: canonical JSON under a new carriage-relation-witness domain binds canonical `carriageDocUrl(targetNexusPubkey)`, target key, charter CID, member version, persona-root DID, vessel key, and a canonical full delegation-record digest; the persona root signs it. The receiver verifies only against its local immutable charter/board snapshot and returns a Nym only on `checked-valid`. Open design choices remain operator-held: full record versus signed-preimage edge hashing, equivocation as existing `revoked` or an explicit state, and carrying target+resource with equality versus deriving the resource. No wire, local cache, timestamp, device lease, Docker receipt, or D-VR result substitutes for this relation proof. Law: a field called `signature` does not authorize until the bytes, signer, audience, and relation are all named.
 
+# ''The three-plane negentropy crossing — Codex Luna internet swarm to Claude/Lares crew, 2026-09-26.'' Current prior art converges around one useful reading: local-first replicas/CRDTs govern causal data convergence; content addressing, SRI, reproducible builds, and SLSA govern bytes/build provenance; capability security, DID verification relationships, and explicit audience binding govern relation authority; relays, Compose, Caddy/NGINX, and NAT aids govern reach. These receipts remain independent. The house records its three planes as CRDT sync across explicit peers, local physical custody within named causal islands, and finite public projection through Pronaos/Herm route owners. Node and Browser Lararia remain equal peers with different local substrates; household/regional Herms may carry relay and bounded read faces; Pronaos carries exact arrival bytes; proxy/container layers carry reach and deployment only. Rejected imports: hosted ActivityPub ontology, IPFS pinning as ownership, global DID roster, wall-clock UCAN expiry, Docker DNS as DreamNet identity, proxy-as-Lararium, and CRDT convergence as authority settlement. The next source work remains the contract witness canonical bytes/signer/digest/snapshot contract and the reserved Docker live receipt. Law: borrowed patterns guide a local design when their assumptions are named; they never erase the house's causal, relational, or operator-held boundaries.
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -275,6 +277,6 @@ globs   = [
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aNs_zpIPD5yQ5zpyb02s1uNV5eGyt6X7BLNkvh6PRSA
+<<^ code="&#x0003;">>ni:///sha-256;D09yJgyTFkmmxJPmjozlJsPw1AA1CWjcJoBzf_FeBak
 
 <<^ code="&#x0004;" -> to="?">>
