@@ -95,6 +95,8 @@ export const NEXUS_DOC_DOMAIN = d("nexus-doc");
 export const KAPAE_ANTIGEN_DOMAIN = d("kapae-antigen");
 export const CARRIAGE_ENTRY_DOMAIN = d("carriage-entry");
 export const CARRIAGE_CONTRACT_DOMAIN = d("carriage-contract");
+/** A persona-root-signed, transient presentation of one carriage relation. */
+export const CARRIAGE_RELATION_WITNESS_DOMAIN = d("carriage-relation-witness");
 /** A PLACE's own "I carry for this Nexus" seal — signed by its device-minted VESSEL key, never a persona
  *  root. Its OWN name rather than a flag on the contract domain: a carrier seal must never verify as a
  *  member's accepts-carriage token, nor that token as a carrier's, so the separation rides the name
@@ -187,7 +189,7 @@ export const ALL_DOMAINS: readonly string[] = [
   DEVICE_DELEGATION_DOMAIN, PERSONA_KEL_DOMAIN, HANDLE_CARD_DOMAIN, HANDLE_KEL_DOMAIN, FLEET_PROOF_DOMAIN, DYAD_ID_DOMAIN, DYAD_BINDING_DOMAIN,
   PERSONA_ENROLL_DOMAIN, PERSONA_GRANT_DOMAIN, PERSONA_SEALED_DOMAIN, PERSONA_JOIN_DOMAIN,
   PERSONA_ADMIT_SEAL_INFO, BOOT_INVITE_DOMAIN, CABAL_INVITE_DOMAIN,
-  NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN,
+  NEXUS_DOC_DOMAIN, KAPAE_ANTIGEN_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_RELATION_WITNESS_DOMAIN,
   CARRIAGE_CARRIER_DOMAIN,
   MEMBERSHIP_RELAY_DOMAIN, EDGE_KAPAE_DOMAIN, VOUCH_EDGE_DOMAIN, RE_ANCHORING_DOMAIN,
   PLUGIN_OFFERING_DOMAIN, OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN,

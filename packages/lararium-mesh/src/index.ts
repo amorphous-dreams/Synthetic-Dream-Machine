@@ -56,6 +56,7 @@ export * from "./aperture-selector.js";
 export * from "./epoch-lease.js";
 export * from "./lar-did.js";
 export * from "./device-delegation.js";
+export * from "./contract-relation-witness.js";
 export * from "./authority-verdict.js";
 export * from "./oracle-substrate.js";
 export * from "./oracle-read-client.js";
