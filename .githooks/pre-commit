@@ -1,4 +1,12 @@
 #!/usr/bin/env sh
-# pre-commit — the staged `.mem` carriers must carry a block check that covers their body.
+# pre-commit — the staged `.mem` carriers must carry a block check that covers their body, and a staged
+# submission source/pair must still re-project current. Two gates, run in sequence: `exec` on the first
+# would end the hook there and the second would never fire, so each runs and its exit is kept.
 # Enable once per clone:  git config core.hooksPath .githooks
-exec "$(git rev-parse --show-toplevel)/tools/meme-check-staged.sh"
+REPO="$(git rev-parse --show-toplevel)" || exit 1
+"$REPO/tools/meme-check-staged.sh"
+code1=$?
+"$REPO/tools/submission-currency-staged.sh"
+code2=$?
+[ "$code1" -ne 0 ] && exit "$code1"
+exit "$code2"

@@ -10,7 +10,7 @@
  * file writes the pair `projectSubmission` renders, byte for byte.
  */
 import { afterEach, describe, test, expect, vi } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { projectSubmission } from "@lararium/tw5/meme-markdown";
@@ -368,6 +368,35 @@ describe("lares meme project --to md --check — the fold of submission-parity",
     expect(await cmdMeme(memeArgs(["project"], {}, { check: true }))).toBe(2);
     expect(await cmdMeme(memeArgs(["project"], { to: "html", check: "somewhere" }))).toBe(2);
     vi.restoreAllMocks();
+  });
+
+  /**
+   * `--root` overrides where the source resolves from — the one door a scratch-tree pre-commit gate
+   * needs, since `repoRoot` anchors on the built module's own on-disk location and never on `cwd`.
+   */
+  test("--root reads the source from the named root instead of the real repo tree", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    await clean(d);
+
+    const emptyRoot = mkdtempSync(join(tmpdir(), "lares-meme-root-")); dirs.push(emptyRoot);
+    let logs: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((l: string) => { logs.push(l); });
+    let code = await cmdMeme(memeArgs(["project"], { to: "md", check: d, root: emptyRoot }));
+    vi.restoreAllMocks();
+    expect(code).toBe(1);
+    expect(logs.some((l) => l.includes("prism") && l.includes("GONE"))).toBe(true);
+
+    const editedRoot = mkdtempSync(join(tmpdir(), "lares-meme-root-"))
+    dirs.push(editedRoot);
+    const srcDir = join(editedRoot, "bags/lares/ha.ka.ba/lares/api/pono");
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(join(srcDir, "prism.mem"), readFileSync(PRISM, "utf8") + "\nan edit the shelf pair never saw\n");
+    logs = [];
+    vi.spyOn(console, "log").mockImplementation((l: string) => { logs.push(l); });
+    code = await cmdMeme(memeArgs(["project"], { to: "md", check: d, root: editedRoot }));
+    vi.restoreAllMocks();
+    expect(code).toBe(1);
+    expect(logs.some((l) => l.includes("prism") && l.includes("DRIFTED"))).toBe(true);
   });
 });
 

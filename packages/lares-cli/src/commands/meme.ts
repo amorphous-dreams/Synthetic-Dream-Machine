@@ -863,6 +863,14 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
  * directory — through `projectSubmission`, the same mouth `project --to md` itself calls: no second
  * projector. It reads and writes NOTHING; a hand edit, a moved source, or a gone source each name
  * themselves and the run exits 1. Green means every pair on the target re-projects byte-identical.
+ *
+ * `--root <dir>` OVERRIDES where the source resolves from. `repoRoot` (`@lararium/mesh/node`) anchors
+ * on the built module's OWN on-disk location — it walks up from `import.meta.url` to the first
+ * `pnpm-workspace.yaml`, never from `cwd` or an env var — so it always answers the real checkout no
+ * matter where this process runs from. A pre-commit gate that mirrors staged blobs into a scratch tree
+ * (so it judges what the commit carries, never a dirty working file) needs the source read from THAT
+ * mirror, not the real tree beside it; `--root` is the one door for it, read-alone like the rest of
+ * this seat.
  */
 function projectMdCheck(args: ParsedArgs): number {
   // `--check` rides either spelling `checkFiles`'s `--gradient`/`--edges` already use: a bare flag
@@ -874,6 +882,7 @@ function projectMdCheck(args: ParsedArgs): number {
   if (!target) throw new UsageError("lares meme project --to md --check <file.md|dir> — name a projected pair or a shelf of them");
   const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "md";
   if (to !== "md") throw new UsageError(`--check proves the md pair's currency alone; got --to ${to}`);
+  const root = typeof args.options["root"] === "string" ? args.options["root"] : repoRoot;
 
   const abs = isAbsolute(target) ? target : join(process.cwd(), target);
   let dir: string;
@@ -903,7 +912,7 @@ function projectMdCheck(args: ParsedArgs): number {
     const source = /^source: (\S+)$/m.exec(meta)?.[1];
     const claimedCheck = /^source-check: (\S+)$/m.exec(meta)?.[1];
     if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
-    const srcPath = join(repoRoot, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
+    const srcPath = join(root, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
     if (!existsSync(srcPath)) { console.log(`  ${name}: source GONE — ${source}`); failed += 1; continue; }
     const p = projectSubmission(readFileSync(srcPath, "utf8"), title ? { title } : undefined);
     if (p.check !== claimedCheck) {
