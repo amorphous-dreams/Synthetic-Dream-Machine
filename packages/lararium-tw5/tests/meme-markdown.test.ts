@@ -98,6 +98,21 @@ describe("the submission projection", () => {
     expect(p.markdown).toContain("`<<~ranks kind carrier -> descriptor>>`");
   });
 
+  test("an `ahu #/slot` opener anchors on the SLOT PATH, never the sigil that names it", () => {
+    // RED before the fix: AHU_OPEN's capture group folded the `#` into the id itself
+    // (`#(\/[^\s>]+)` reads `#/x` as one token), so a rooted-slot opener anchored as
+    // `<a id="#/x">` — an id no in-page `href="#/x"` link can reach twice, and a shape the
+    // shelf never carried (every pair on it predates the rooted-slot convention). The `#`
+    // sigil marks the anchor kind; the id is the path alone.
+    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #head>>", "<<~ ahu #/x>>")).markdown;
+    expect(rooted).toContain('<a id="/x"></a>');
+    expect(rooted).not.toContain('id="#/x"');
+  });
+
+  test("CONTROL: an `aka`/`loulou` edge still becomes a reference bullet, untouched by the AHU_OPEN fix", () => {
+    expect(p.markdown).toContain("- `lar:///ha.ka.ba/lares/api/pono/lar-uri`");
+  });
+
   test("a fence seals its interior — the teaching frame passes byte-identical", () => {
     expect(p.markdown).toContain('<<^ code="&#x0002;">>\na teaching frame stays byte-identical');
     expect(p.markdown).toContain("''unrendered''");

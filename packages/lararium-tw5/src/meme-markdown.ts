@@ -67,7 +67,9 @@ const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The tooth stands at one dispatch position: `<<~` then LWSP then the command word,
 // and a close word carries its own slash (`ahu`, `/ahu`). Both spacings reach the same
 // word, matching the plain register's `<<fragment …>>` / `<</fragment>>`.
-const AHU_OPEN = /^(?:<<~\s*ahu|<<fragment)\s+(#\/[^\s>]+)(?: (?:[^>\n]|>(?!>))*)?\s*>>\s*$/;
+// The `#` sigil marks a rooted slot path; the anchor id is the PATH ALONE, never the sigil —
+// `#(\/[^\s>]+)` keeps the slash out of the capture, so `#/x` anchors as `id="/x"`, not `id="#/x"`.
+const AHU_OPEN = /^(?:<<~\s*ahu|<<fragment)\s+#(\/[^\s>]+)(?: (?:[^>\n]|>(?!>))*)?\s*>>\s*$/;
 const AHU_CLOSE = /^(?:<<~\s*\/\s*ahu|<<\/fragment)\s*>>\s*$/;
 const EDGE_LINE = /^<<~\s*(?:aka|loulou) ((?:[^>\n]|>(?!>))*?)\s*>>\s*$/;
 // The speaking head with or without a joined name (`<<~ ahu`, `<<~ranks`, `<<~! wehe`) — any
