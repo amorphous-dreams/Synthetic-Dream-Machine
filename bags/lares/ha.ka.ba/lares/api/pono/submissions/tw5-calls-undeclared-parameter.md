@@ -1,6 +1,6 @@
 
 
-<a id="/entry"></a>
+<a id="entry"></a>
 
 # Procedure Parameter Handling ~ a name the definition never declared
 
@@ -8,7 +8,7 @@
 
 **Title** Document that a parameter the definition does not declare reaches nothing
 
-<a id="/the-claim"></a>
+<a id="the-claim"></a>
 
 ## The gap this fills
 
@@ -24,7 +24,7 @@ sharp edge: the value reaches nothing, `<<name>>` resolves empty, and no error a
 output, which a reader then hunts through the wrong half of their code, because the call site looks
 correct and the definition looks correct and only their DISAGREEMENT carries the fault.
 
-<a id="/the-change"></a>
+<a id="the-change"></a>
 
 ## The proposed change
 
@@ -41,7 +41,7 @@ the definition never declared, so check the definition's parameter list against 
 whenever a parameter reads empty.""">>
 ```
 
-<a id="/for-the-reviewer"></a>
+<a id="for-the-reviewer"></a>
 
 ## Notes for the reviewer
 
@@ -57,7 +57,7 @@ lists in its own signature, so a dispatcher standing between a call and its targ
 the dispatcher does not know. Worth a sentence if the reviewer wants one; the correction above stands
 without it.
 
-<a id="/measured"></a>
+<a id="measured"></a>
 
 ## Measured
 
@@ -81,9 +81,9 @@ Hi <<name>>, at <<address>>.
 under either separator, a typo in the declaration, and a positional past the arity. Nothing in the
 render tells them apart.
 
-<a id="/edges"></a>
+<a id="edges"></a>
 
 ## Edges
 
-- `"lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"`
-- `"lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"`
+- `loulou "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"`
