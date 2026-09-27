@@ -1,5 +1,5 @@
 .PHONY: help install build test typecheck serve dev drop-data clean \
-        docker-build docker-serve docker-dev docker-qa docker-prod docker-smoke
+        docker-build docker-serve docker-dev docker-qa docker-prod docker-smoke docker-dvr-receipt
 
 help:
 	@echo "Development:"
@@ -23,6 +23,7 @@ help:
 	@echo "  make docker-qa     docker compose --profile qa (built, ports exposed)"
 	@echo "  make docker-prod   docker compose --profile prod (direct Node vessel, lares/ read-only)"
 	@echo "  make docker-smoke  docker compose --profile qa-smoke (stdio smoke tests)"
+	@echo "  make docker-dvr-receipt  opt-in Node D-VR-C owned-document Docker receipt"
 
 # ---------------------------------------------------------------------------
 # Local dev
@@ -92,3 +93,6 @@ docker-prod:
 
 docker-smoke:
 	docker compose --profile qa-smoke run --rm lararium-qa-smoke
+
+docker-dvr-receipt:
+	node tools/daemon-dvr-docker-receipt.mjs
