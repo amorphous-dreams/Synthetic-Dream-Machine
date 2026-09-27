@@ -84,7 +84,7 @@ mesh 224 · node 140 (139 + 1 orphan under `tests/e2e/`) · tw5 80 · lares-cli 
 
 **Python**: 95 `test_*.py` in `packages/lararium-sensorium/scripts/` (flat-import idiom, incl. `scripts/qa_anchor/tests/` 6 and `scripts/testbeds/` 7) + 3 in `packages/tree-sitter-memetic-wikitext/host-py/`. `pyproject.toml:41-48` declares both as `testpaths` and its own comment claims **944 collected tests**. **No `package.json` script, no CI step, no shell script runs root `pytest`.** The sensorium's `"test": "vitest run"` reaches only its 2 TS files.
 
-**Ad-hoc, no runner**: `tw5 test:sigil-alignment` (root-scripted), `tw5 smoke:plugin-boot`, `tw5 smoke:plugin-provenance`, `node test:quine`, `tools/mesh-scenarios.sh`, `tools/rehearse-founding.sh`, `tools/rehearse-keeper.sh`, `tools/lararium-container-boot.sh`, `tools/sweep-guard.sh`.
+**Ad-hoc, no runner**: `tw5 test:sigil-alignment` (root-scripted), `tw5 smoke:plugin-boot`, `tw5 smoke:plugin-provenance`, `node test:quine`, `tools/mesh-scenarios.sh`, `tools/rehearse-founding.sh`, `tools/lararium-container-boot.sh`, `tools/sweep-guard.sh`.
 
 **Playwright**: only via `@vitest/browser-playwright` in `packages/lararium-browser/vitest.config.ts` (chromium). No standalone Playwright suite. `mempalace/` is a **git submodule with its own CI** (148 pytest files) — out of scope.
 
@@ -240,6 +240,6 @@ Whether Stage 2's newly-lit suites are **green** — I did not run them (the pyt
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;SXTAAMhfMxSEEw1VrgsBlZ0DUy1QyRyZuKZYy5ehv7c
+<<^ code="&#x0003;">>ni:///sha-256;5njVpvVOpKjM4-QXOcRHRhp_aVY2WUBajQ6BqUsf-gM
 
 <<^ code="&#x0004;" -> to="?">>

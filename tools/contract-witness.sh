@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # contract-witness — the operator handshake across TWO vessels that share no key.
 #
-# ── WHAT THE ONE-VESSEL REHEARSAL COULD NOT SEE ─────────────────────────────────────────────────
-# `rehearse-keeper` movement ⑦ walks both halves of the handshake on one hearth, so the joiner's
+# ── WHAT A ONE-VESSEL WALK CANNOT SEE ─────────────────────────────────────────────────
+# Walking movement ⑦ on one hearth runs both halves of the handshake there, so the joiner's
 # contract-in gets signed by a persona that same vessel holds. Every byte verifies, and the one property
 # the whole ceremony exists for goes unmeasured: that a Nexus admits a key it has NEVER HELD.
 #
@@ -82,7 +82,7 @@ step "seed A's genesis (the hearth true-name lives there)"
 if seed_genesis "$A_ROOT"; then ok; else bad "cp genesis"; fi
 run_a "A founds"                        vessel stand --install
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
-# with green that means nothing — the exact cascade `rehearse-keeper` learned to refuse.
+# with green that means nothing — the cascade a founding check must refuse.
 if [ "$FAILED" -ne 0 ]; then
   say "ABANDONED — A's founding failed; every check below would measure an unfounded vessel."
   exit "$FAILED"

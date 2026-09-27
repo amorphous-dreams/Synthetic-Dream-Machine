@@ -87,25 +87,16 @@ docker compose -f docker-compose.mesh.yml down -v                        # THE C
 destructive command in the house, the rehearsal branch opens on one whose whole virtue reads
 //repeatable//. Run it until the sequence bores; ''boredom names the readiness the keeper needs''.
 
-!!! The KEEPER rehearsal ~ the sequence this branch never ran
+!!! The second operator ~ movement ⑦
 
-''The container harness stands the MESH branch'' — it founds vessels with `lares vessel found` and witnesses Herm
-carry + partition. ''Movements ②–⑥ were never run end-to-end by anything'': persona → nexus seal → vault →
-regenesis → live had no green baseline to diff a failure against. `tools/rehearse-keeper.sh` gives them one.
-
-```
-tools/rehearse-keeper.sh                             # 2 cycles, throwaway tree, burns on exit
-tools/rehearse-keeper.sh --cycles 5 --keep           # run until it bores; keep the tree to inspect
-```
-
-''THE REHEARSAL NOW WALKS ⑦ — the door a second operator comes through.'' Movements ②–⑥ prove a hearth
+''⑦ — the door a second operator comes through.'' Movements ②–⑥ prove a hearth
 standing ALONE, and a Nexus that cannot admit a second operator is a private vessel wearing a charter. ⑦
 runs both halves of the handshake with held personas (`accept-carriage` mints the joiner's contract-in,
 the quorum counter-signs it onto the members board, `revoke` supersedes) ''and the refusal'': a nym with
 no contract-in must fail closed and write nothing. A gate only ever shown saying yes has not been shown
 to be a gate.
 
-''AND THE CUSTODY CROSSING HAS ITS OWN WITNESS.'' ⑦ signs with a persona the same vessel holds, so the
+''AND THE CUSTODY CROSSING HAS ITS OWN WITNESS.'' A one-vessel walk of ⑦ signs with a persona the same vessel holds, so the
 one property the ceremony exists for — that a Nexus admits a key it has ''NEVER HELD'' — goes unmeasured
 there. `contract-witness` stands TWO roots that share nothing and crosses it for real:
 
@@ -1458,6 +1449,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MxrUwiTPGH6C50VquMFfakclgMaRGZI7Gfi00UHgHdM
+<<^ code="&#x0003;">>ni:///sha-256;kMD5FKi-_rSoQHIBrgFT4-7V-JCUrzuSHGAzVVBoz2o
 
 <<^ code="&#x0004;" -> to="?">>
