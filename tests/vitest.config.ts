@@ -10,7 +10,7 @@ export default defineConfig({
     // to be turned off on purpose.
     isolate: true,
     environment: "node",
-    include: ["e2e/**/*.test.ts"],
+    include: ["e2e/**/*.test.ts", "harness/**/*.test.ts"],
     // A staged vessel boots a real daemon (~30s incl. genesis); e2e pacing.
     testTimeout: 180_000,
     hookTimeout: 180_000,

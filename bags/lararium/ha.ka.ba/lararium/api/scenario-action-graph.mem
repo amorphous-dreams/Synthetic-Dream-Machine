@@ -1,0 +1,69 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/scenario-action-graph">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/api/scenario-action-graph.mem"
+l-space   = "stable"
+mana      = 16
+manao     = 16
+manaoio   = 16
+role      = "pure test-only specification for separate mandate, delegation, activity, result, attestation and computed appraisal"
+tags      = ["api/lararium", "api/pono", "mesh/agency", "mesh/provenance", "test/harness"]
+title     = "lar:///ha.ka.ba/lararium/api/scenario-action-graph"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/api/scenario-action-graph"
+```
+
+<<~ ahu #/entry>>
+
+! Scenario Action Graph
+
+This is a pure test grammar beside `ScenarioPresence`. A presence says what actor and vessel stand; this graph says what an actor attempts and what evidence a local reader can appraise. No record grants runtime authority.
+
+<<~/ahu>>
+
+<<~ ahu #/records>>
+
+!! The six source records and one computed verdict
+
+* `ScenarioMandate` is an authored intent: logical action, subject, subject digest, author and bounded scope.
+* `ScenarioDelegation` gives a named delegate a scope that MUST be a subset of its parent mandate. Re-delegation is closed unless another bounded record names it.
+* `ScenarioWithdrawal` is an explicit issuer-attributed act over a delegation, with causal parents. Withdrawal is observed through this record; it is not a timeless flag on the delegation.
+* `ScenarioActivity` is one execution attempt. It keeps responsible principal and workload separate, names causal parent activities, and uses its own id. Retries share `logicalActionId` but never merge records.
+* `ScenarioResult` is the output or external-effect receipt. Its subject and subject digest must agree with the activity.
+* `ScenarioAttestation` is an issuer-attributed claim about one activity and its subject. It is evidence, not permission.
+* `ScenarioAppraisal` is a computed local verdict: `accepted`, `deferred`, `unsettled`, `unavailable`, or `rejected`. It is returned by appraisal and is not an input member of `ScenarioActionGraph`.
+
+Mandate, activity and result are distinct records. Human, agent and workload references remain distinct strings; a workload never becomes its responsible principal by naming.
+
+<<~/ahu>>
+
+<<~ ahu #/laws>>
+
+!! Graph laws
+
+* A missing mandate, delegation, result, attestation or causal parent is `unavailable` when the local appraisal needs it.
+* A changed activity/result subject or digest is `rejected`; an attestation over the wrong subject is also rejected.
+* A delegation or activity scope cannot widen its parent. A fiction, persona, service, vessel or role label contributes no authority.
+* Concurrent activities for one logical action with conflicting result digests are `unsettled` in either arrival order. Causal order may settle a later retry; arrival order never does.
+* A mandate naming a delegate requires one matching delegation: mandate author = delegation grantor = activity responsible principal, and mandate delegate = delegation delegate = activity workload. Omission or substitution is rejected.
+* A withdrawal causally preceding dispatch rejects it. A completed activity causally before withdrawal remains historical. Concurrent or causally ambiguous withdrawal and dispatch are `unsettled` or `unavailable`, never accepted.
+* `ScenarioActionGraph` carries source records only. `ScenarioAppraisal` is computed from the local graph; an input record cannot inject or override that verdict, and appraisal does not mutate the source graph.
+* No scalar version, wall-clock timestamp or cryptographic fingerprint is required. Causality is the explicit parent graph; evidence is supplied data.
+
+<<~/ahu>>
+
+<<~ ahu #/test-seam>>
+
+!! Harness seam
+
+`tests/harness/scenario-action-graph.ts` owns only plain source-data validation, graph lookup and local appraisal output. It does not import `ScenarioPresence`, a vessel runtime, Docker, a crypto provider or a production package. A later adapter may join cast ids to capabilities, but it MUST preserve this graph's distinctions and verdicts.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;794gfL3821kLHabuJ4MKZGt-88QNDGwGJ9GSMcYPchw
+
+<<^ code="&#x0004;" -> to="?">>
