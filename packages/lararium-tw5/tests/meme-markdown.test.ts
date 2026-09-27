@@ -8,7 +8,7 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { transposeMarkdown, projectSubmission } from "../src/meme-markdown.js";
+import { transposeMarkdown, projectSubmission } from "../src/weave/index.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
@@ -94,23 +94,32 @@ describe("the submission projection", () => {
   test("an ahu opens an anchor; edges become reference bullets; other sigils show literally", () => {
     expect(p.markdown).toContain('<a id="head"></a>');
     expect(p.markdown).not.toContain("<<~/ahu");
-    expect(p.markdown).toContain("- `lar:///ha.ka.ba/lares/api/pono/lar-uri`");
+    expect(p.markdown).toContain("- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`");
     expect(p.markdown).toContain("`<<~ranks kind carrier -> descriptor>>`");
   });
 
-  test("an `ahu #/slot` opener anchors on the SLOT PATH, never the sigil that names it", () => {
-    // RED before the fix: AHU_OPEN's capture group folded the `#` into the id itself
-    // (`#(\/[^\s>]+)` reads `#/x` as one token), so a rooted-slot opener anchored as
-    // `<a id="#/x">` — an id no in-page `href="#/x"` link can reach twice, and a shape the
-    // shelf never carried (every pair on it predates the rooted-slot convention). The `#`
-    // sigil marks the anchor kind; the id is the path alone.
+  test("an `ahu #/a/b` opener drops the root slash and joins nested segments with `_`", () => {
+    // Operator-approved: 0 of 2,011 canon slot names carry `_`, so the join is unambiguous.
+    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #head>>", "<<~ ahu #/a/b>>")).markdown;
+    expect(rooted).toContain('<a id="a_b"></a>');
+    expect(rooted).not.toContain('id="/a/b"');
+    expect(rooted).not.toContain('id="#/a/b"');
+  });
+
+  test("an `ahu #/x` opener drops the lone root slash too", () => {
     const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #head>>", "<<~ ahu #/x>>")).markdown;
-    expect(rooted).toContain('<a id="/x"></a>');
-    expect(rooted).not.toContain('id="#/x"');
+    expect(rooted).toContain('<a id="x"></a>');
+    expect(rooted).not.toContain('id="/x"');
   });
 
   test("CONTROL: an `aka`/`loulou` edge still becomes a reference bullet, untouched by the AHU_OPEN fix", () => {
-    expect(p.markdown).toContain("- `lar:///ha.ka.ba/lares/api/pono/lar-uri`");
+    expect(p.markdown).toContain("- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`");
+  });
+
+  test("an `aka` edge keeps its own sigil word, distinct from `loulou`", () => {
+    const aka = transposeMarkdown("<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119>>\nprose\n").markdown;
+    expect(aka).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119`");
+    expect(aka).not.toContain("- `loulou");
   });
 
   test("a fence seals its interior — the teaching frame passes byte-identical", () => {
@@ -129,6 +138,89 @@ describe("the submission projection", () => {
     const again = projectSubmission(CARRIER);
     expect(again.markdown).toBe(p.markdown);
     expect(again.meta).toBe(p.meta);
+  });
+});
+
+describe("defect: wikilinks ship as a CommonMark link", () => {
+  test("`[[target]]` alone becomes a self-labelled link", () => {
+    const t = transposeMarkdown("A line reads [[lar:///ha.ka.ba/lares/api/pono/lar-uri]] here.\n");
+    expect(t.markdown).toContain("[lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
+    expect(t.markdown).not.toContain("[[");
+  });
+
+  test("`[[label|target]]` keeps the label separate from the target", () => {
+    const t = transposeMarkdown("See [[the URI spec|lar:///ha.ka.ba/lares/api/pono/lar-uri]] for more.\n");
+    expect(t.markdown).toContain("[the URI spec](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
+  });
+
+  test("a bare-title target (no scheme) renders the same shape as a `lar:` target", () => {
+    // Both are equally valid meme titles (HOSTFUL NAMES CONTENT) — neither earns a different
+    // href shape. A title carrying whitespace takes CommonMark's angle-bracket destination form.
+    const t = transposeMarkdown("[[My Title]]\n");
+    expect(t.markdown).toContain("[My Title](<My Title>)");
+  });
+
+  test("CONTROL: a wikilink-shaped mention inside a code span stays literal", () => {
+    const t = transposeMarkdown("The `[[text|target]]` syntax reads as a link.\n");
+    expect(t.markdown).toContain("`[[text|target]]`");
+    expect(t.markdown).not.toContain("[text](target)");
+  });
+});
+
+describe("defect: transclusions carry verbatim, never invented into markdown", () => {
+  test("a line-standing `{{title}}` carries whole in a tangle fence", () => {
+    const t = transposeMarkdown("prose before\n\n{{lar:///ha.ka.ba/lares/api/pono/lar-uri}}\n\nprose after\n");
+    expect(t.markdown).toContain('```memetic-wikitext tangle\n{{lar:///ha.ka.ba/lares/api/pono/lar-uri}}\n```');
+    expect(t.markdown).toContain("prose before");
+    expect(t.markdown).toContain("prose after");
+  });
+
+  test("a filtered `{{{ filter }}}` block carries the same way", () => {
+    const t = transposeMarkdown("{{{ [tag[lares]] }}}\n");
+    expect(t.markdown).toContain('```memetic-wikitext tangle\n{{{ [tag[lares]] }}}\n```');
+  });
+
+  test("a mid-line transclusion carries as an inline code span, since a fence cannot open mid-paragraph", () => {
+    const t = transposeMarkdown("Compare {{Foo}} against the source.\n");
+    expect(t.markdown).toContain("Compare `{{Foo}}` against the source.");
+  });
+
+  test("CONTROL: a `{{…}}` mention already inside a code span stays literal, single-wrapped", () => {
+    const t = transposeMarkdown("The `{{title}}` transclusion syntax.\n");
+    expect(t.markdown).toContain("`{{title}}`");
+    expect((t.markdown.match(/`/g) ?? []).length).toBe(2);
+  });
+});
+
+describe("defect: bold/italic marks spanning a hard line break now close", () => {
+  test("`''bold''` spanning a line break resolves on both sides", () => {
+    const t = transposeMarkdown("This spans ''bold\ntext'' across a break.\n");
+    expect(t.markdown).toContain("This spans **bold\ntext** across a break.");
+    expect(t.markdown).not.toContain("''");
+  });
+
+  test("`//italic//` spanning a line break resolves on both sides", () => {
+    const t = transposeMarkdown("A run //that opens\nand closes// mid-paragraph.\n");
+    expect(t.markdown).toContain("A run *that opens\nand closes* mid-paragraph.");
+  });
+
+  test("CONTROL: a code span or a `lar://` scheme elsewhere in the same paragraph run stays untouched", () => {
+    // Regression this fix must not reopen: masking a quad-backtick teaching span over the WHOLE
+    // joined paragraph (rather than one line at a time) once let it swallow an unrelated `''mark''`
+    // three lines down. Masking stays per-line; only the emphasis substitution joins the run.
+    const t = transposeMarkdown(
+      "A labelled ```` ```toml meta ```` fence states identity.\n" +
+      "Some other line reads `ahu` and keeps going.\n" +
+      "The third line names the ''carrier'' by its own mark.\n",
+    );
+    expect(t.markdown).toContain("````");
+    expect(t.markdown).toContain("`ahu`");
+    expect(t.markdown).toContain("**carrier**");
+  });
+
+  test("CONTROL: a blank line still separates two independent paragraphs in the output", () => {
+    const t = transposeMarkdown("First ''paragraph'' stands alone.\n\nSecond paragraph, unrelated.\n");
+    expect(t.markdown).toContain("First **paragraph** stands alone.\n\nSecond paragraph, unrelated.");
   });
 });
 
