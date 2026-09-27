@@ -13,7 +13,7 @@ import { didFromVerifyingKey, isLarDid, verifyingKeyFromDid } from "./lar-did.js
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import { verifyDeviceDelegation } from "./device-delegation.js";
 import type { ContractRelationWitness } from "./auth-wire.js";
-import type { CarriageFoldDetails } from "./carriage-registry.js";
+import { isCarriageDescendant, type CarriageFoldDetails } from "./carriage-registry.js";
 
 type WitnessPayload = Omit<ContractRelationWitness, "signature">;
 
@@ -51,17 +51,17 @@ export async function buildContractRelationWitness(args: {
   relationResource: string;
   targetNexusPubkey: string;
   sealEpochCid: string;
-  memberVersion: number;
+  memberEvidenceCid: string;
 }): Promise<ContractRelationWitness> {
   const personaRootDid = didFromVerifyingKey(hex(await ed25519.getPublicKeyAsync(args.personaRootSeed)));
   if (personaRootDid !== args.edge.personaRootDid) throw new Error("persona root does not match device edge");
   const payload: WitnessPayload = {
-    kind: "contract-relation-witness/v1",
+    kind: "contract-relation-witness/causal-lineage",
     relation: "carriage",
     relationResource: args.relationResource,
     targetNexusPubkey: args.targetNexusPubkey,
     sealEpochCid: args.sealEpochCid,
-    memberVersion: args.memberVersion,
+    memberEvidenceCid: args.memberEvidenceCid,
     personaRootDid,
     vesselVerifyingKey: args.edge.deviceVerifyingKey,
     deviceEdgeDigest: deviceDelegationRecordDigest(args.edge),
@@ -76,10 +76,10 @@ export async function verifyContractRelationWitness(
   expected: { edge: DeviceDelegationTiddler; relationResource: string; targetNexusPubkey: string },
 ): Promise<{ ok: boolean; reason?: string }> {
   try {
-    if (witness.kind !== "contract-relation-witness/v1" || witness.relation !== "carriage") return { ok: false, reason: "malformed witness" };
+    if (witness.kind !== "contract-relation-witness/causal-lineage" || witness.relation !== "carriage") return { ok: false, reason: "malformed witness" };
     if (!isLarDid(witness.personaRootDid) || !/^[0-9a-f]{64}$/.test(witness.vesselVerifyingKey) ||
         !/^[0-9a-f]{128}$/.test(witness.signature) || !/^[0-9a-f]{64}$/.test(witness.deviceEdgeDigest) ||
-        !Number.isSafeInteger(witness.memberVersion) || witness.memberVersion < 0 ||
+        !/^[0-9a-f]{64}$/.test(witness.memberEvidenceCid) ||
         witness.relationResource.length === 0 || witness.targetNexusPubkey.length === 0 || witness.sealEpochCid.length === 0) {
       return { ok: false, reason: "malformed witness" };
     }
@@ -94,7 +94,7 @@ export async function verifyContractRelationWitness(
       relationResource: witness.relationResource,
       targetNexusPubkey: witness.targetNexusPubkey,
       sealEpochCid: witness.sealEpochCid,
-      memberVersion: witness.memberVersion,
+      memberEvidenceCid: witness.memberEvidenceCid,
       personaRootDid: witness.personaRootDid,
       vesselVerifyingKey: witness.vesselVerifyingKey,
       deviceEdgeDigest: witness.deviceEdgeDigest,
@@ -111,7 +111,7 @@ export async function verifyContractRelationWitness(
   }
 }
 
-export type ContractRelationFrontierState = "valid" | "pending" | "stale" | "revoked" | "equivocal" | "rejected";
+export type ContractRelationFrontierState = "held" | "unavailable" | "superseded" | "withdrawn" | "unsettled" | "rejected";
 
 export interface ContractRelationFrontierVerdict {
   readonly state: ContractRelationFrontierState;
@@ -133,30 +133,34 @@ export async function verifyContractRelationFrontier(args: {
 }): Promise<ContractRelationFrontierVerdict> {
   const charterEpochCid = args.frontier?.charterEpochCid ?? null;
   const refused = (state: ContractRelationFrontierState, reason: string): ContractRelationFrontierVerdict => ({ state, reason, charterEpochCid });
-  if (!args.frontier) return refused("pending", "carriage frontier unavailable");
+  if (!args.frontier) return refused("unavailable", "carriage frontier unavailable");
   const edgeEvidence = await verifyDeviceDelegation(args.edge, args.edge.personaRootDid);
   if (!edgeEvidence.ok) return refused("rejected", `device edge ${edgeEvidence.reason ?? "invalid"}`);
   const witnessEvidence = await verifyContractRelationWitness(args.witness, {
     edge: args.edge, relationResource: args.relationResource, targetNexusPubkey: args.targetNexusPubkey,
   });
   if (!witnessEvidence.ok) return refused("rejected", `relation witness ${witnessEvidence.reason ?? "invalid"}`);
-  if (args.frontier.charterEpochCid !== args.witness.sealEpochCid) return refused("stale", "charter frontier mismatch");
+  if (args.frontier.charterEpochCid !== args.witness.sealEpochCid) return refused("superseded", "charter frontier mismatch");
   const nym = verifyingKeyFromDid(args.witness.personaRootDid).toLowerCase();
   const localEntries = args.frontier.entries.filter((entry) =>
-    entry.nym === nym && entry.version >= 0 && entry.counted &&
+    entry.nym === nym && entry.counted && (entry.action === "admit" || entry.action === "revoke"));
+  const evidence = args.frontier.entries.find((entry) =>
+    entry.nym === nym && entry.evidenceCid === args.witness.memberEvidenceCid &&
     (entry.action === "admit" || entry.action === "revoke"));
-  const highestVersion = localEntries.reduce((max, entry) => Math.max(max, entry.version), -1);
-  if (highestVersion < 0) return refused("pending", "accepted carriage member version unavailable");
-  const current = localEntries.filter((entry) => entry.version === highestVersion);
-  // foldCarriageDetails marks every same-version admit/revoke detail equivocal. Keep
-  // that refusal visible even if an older accepted entry is also present.
-  const currentEquivocal = current.find((entry) => entry.state === "equivocal");
-  if (currentEquivocal) return refused("equivocal", currentEquivocal.reason);
-  const winner = current.find((entry) => entry.state === "accepted" || entry.state === "revoked") ?? current[0];
-  if (!winner) return refused("pending", "accepted carriage member version unavailable");
-  if (winner.state === "revoked") return refused("revoked", winner.reason);
-  if (winner.state === "accepted" && args.witness.memberVersion < highestVersion) return refused("stale", "carriage member version superseded");
-  if (winner.state !== "accepted" || args.witness.memberVersion !== highestVersion) return refused("pending", "accepted carriage member version unavailable");
+  if (!evidence) return refused("unavailable", "carriage member evidence unavailable");
+  if (evidence.state === "unavailable") return refused("unavailable", evidence.reason);
+  if (evidence.state === "unsettled") return refused("unsettled", evidence.reason);
+  const byCid = new Map(args.frontier.entries.map((entry) => [entry.evidenceCid, { parents: entry.parents }]));
+  const descendants = localEntries.filter((entry) =>
+    entry.evidenceCid !== args.witness.memberEvidenceCid &&
+    isCarriageDescendant(entry.evidenceCid, args.witness.memberEvidenceCid, byCid));
+  const unsettledDescendant = descendants.find((entry) => entry.state === "unsettled");
+  if (unsettledDescendant) return refused("unsettled", unsettledDescendant.reason);
+  const revokeDescendant = descendants.find((entry) => entry.action === "revoke" && entry.state === "revoked");
+  if (revokeDescendant) return refused("withdrawn", revokeDescendant.reason);
+  if (descendants.some((entry) => entry.state === "accepted")) return refused("superseded", "carriage evidence superseded by descendant");
+  if (evidence.state === "revoked") return refused("withdrawn", "cited carriage evidence withdrawn");
+  if (evidence.state !== "accepted") return refused("unavailable", "accepted carriage evidence unavailable");
   if (!args.frontier.members.has(nym)) return refused("rejected", "frontier member set contradicts accepted detail");
-  return { state: "valid", reason: "accepted carriage frontier", charterEpochCid };
+  return { state: "held", reason: "locally observed accepted carriage frontier", charterEpochCid };
 }

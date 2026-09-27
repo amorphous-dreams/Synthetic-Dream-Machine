@@ -23,9 +23,9 @@ const base = {
 };
 
 const relationWitness: ContractRelationWitness = {
-  kind: "contract-relation-witness/v1", relation: "carriage",
+  kind: "contract-relation-witness/causal-lineage", relation: "carriage",
   relationResource: "lar:///nexus/carriage/00", targetNexusPubkey: "00".repeat(32),
-  sealEpochCid: "sha256-epoch", memberVersion: 2,
+  sealEpochCid: "sha256-epoch", memberEvidenceCid: "aa".repeat(32),
   personaRootDid: "0x" + "11".repeat(32), vesselVerifyingKey: "22".repeat(32),
   deviceEdgeDigest: "sha256-edge", signature: "33".repeat(64),
 };
@@ -79,7 +79,7 @@ describe("buildAuthResponse (V3 peer half)", () => {
     expect(msg.contractWitness).toEqual(relationWitness);
     expect(isContractRelationWitness(msg.contractWitness)).toBe(true);
     expect(isLarAuthMsg(JSON.parse(JSON.stringify(msg)))).toBe(true);
-    expect(isLarAuthMsg({ ...msg, contractWitness: { ...relationWitness, memberVersion: -1 } })).toBe(false);
+    expect(isLarAuthMsg({ ...msg, contractWitness: { ...relationWitness, memberEvidenceCid: "bad" } })).toBe(false);
   });
 });
 

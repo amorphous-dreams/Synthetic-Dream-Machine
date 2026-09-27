@@ -64,12 +64,13 @@ export type DaemonProofEvidence = AuthorityEvidenceVerdict<"daemon-proof-of-poss
 
 /** A transient carriage relation presentation; it grants no authority until the receiver verifies its local fold. */
 export interface ContractRelationWitness {
-  readonly kind: "contract-relation-witness/v1";
+  readonly kind: "contract-relation-witness/causal-lineage";
   readonly relation: "carriage";
   readonly relationResource: string;
   readonly targetNexusPubkey: string;
   readonly sealEpochCid: string;
-  readonly memberVersion: number;
+  /** Content-addressed semantic carriage act that supplied the sender's local evidence. */
+  readonly memberEvidenceCid: string;
   readonly personaRootDid: string;
   readonly vesselVerifyingKey: string;
   readonly deviceEdgeDigest: string;
@@ -80,11 +81,11 @@ export interface ContractRelationWitness {
 export function isContractRelationWitness(v: unknown): v is ContractRelationWitness {
   if (typeof v !== "object" || v === null) return false;
   const x = v as Record<string, unknown>;
-  return x["kind"] === "contract-relation-witness/v1" && x["relation"] === "carriage" &&
+  return x["kind"] === "contract-relation-witness/causal-lineage" && x["relation"] === "carriage" &&
     typeof x["relationResource"] === "string" && x["relationResource"].length > 0 &&
     typeof x["targetNexusPubkey"] === "string" && x["targetNexusPubkey"].length > 0 &&
     typeof x["sealEpochCid"] === "string" && x["sealEpochCid"].length > 0 &&
-    typeof x["memberVersion"] === "number" && Number.isSafeInteger(x["memberVersion"]) && x["memberVersion"] >= 0 &&
+    typeof x["memberEvidenceCid"] === "string" && /^[0-9a-f]{64}$/.test(x["memberEvidenceCid"]) &&
     typeof x["personaRootDid"] === "string" && x["personaRootDid"].length > 0 &&
     typeof x["vesselVerifyingKey"] === "string" && x["vesselVerifyingKey"].length > 0 &&
     typeof x["deviceEdgeDigest"] === "string" && x["deviceEdgeDigest"].length > 0 &&

@@ -16,7 +16,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey } from "../src/antigen-board.js";
 import {
-  signAntigenEntry, foldAntigenSet, makeMultiSigQuorumVerifier,
+  signAntigenEntry, foldAntigenSet, foldAntigenVerdicts, makeMultiSigQuorumVerifier,
   KAPAE_ANTIGEN_DOMAIN, type KapaeAntigenEntry, type KahuRoster,
 } from "../src/kapae-antigen.js";
 import { carryContractShareDecision, type AntigenRing } from "../src/federation-gate.js";
@@ -40,7 +40,7 @@ async function roster(): Promise<KahuRoster> {
 
 async function banEntry(nym: string, seeds = [SEEDS.guru, SEEDS.telarus]): Promise<KapaeAntigenEntry> {
   const signers = await Promise.all(seeds.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signAntigenEntry({ nym, action: "kapae", version: 1, sealEpochCid: EPOCH }, signers);
+  return signAntigenEntry({ nym, action: "kapae", parents: [], sealEpochCid: EPOCH }, signers);
 }
 
 /** A board LarDoc carrying the given tiddler texts (each a would-be antigen entry). */
@@ -70,6 +70,13 @@ describe("antigenEntriesFromBoard — extract, skip the torn/foreign", () => {
     expect(got).toHaveLength(1);
     expect(got[0]!.nym).toBe("cafebabe".repeat(8));
     expect(got[0]!.kind).toBe(KAPAE_ANTIGEN_DOMAIN);
+  });
+
+  test("board deserialization canonicalizes duplicate and reordered parents", async () => {
+    const entry = await banEntry("cafefeed".repeat(8));
+    const serialized = { ...entry, parents: ["parent-b", "parent-a", "parent-b"] };
+    const got = antigenEntriesFromBoard(boardWith({ entry: JSON.stringify(serialized) }));
+    expect(got[0]?.parents).toEqual(["parent-a", "parent-b"]);
   });
 
   test("extraction is permissive but the FOLD adjudicates — an under-signed entry extracts yet never Kapae's", async () => {
@@ -110,19 +117,19 @@ describe("the LIVE pure path — board → fold → carry-contract → Mu", () =
 describe("writeAntigenEntry — the RAISE side lands what the reader reads (#65)", () => {
   const VICTIM = "beadfeed".repeat(8);
 
-  async function liftEntry(nym: string, version: number, seeds = [SEEDS.guru, SEEDS.telarus]): Promise<KapaeAntigenEntry> {
+  async function liftEntry(nym: string, parents: readonly string[] = [], seeds = [SEEDS.guru, SEEDS.telarus]): Promise<KapaeAntigenEntry> {
     const signers = await Promise.all(seeds.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    return signAntigenEntry({ nym, action: "un_kapae", version, sealEpochCid: EPOCH }, signers);
+    return signAntigenEntry({ nym, action: "un_kapae", parents, sealEpochCid: EPOCH }, signers);
   }
 
   test("a written ban ROUND-TRIPS through the reader and FOLDS to Kapae'd against the seated roster", async () => {
     const doc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
-    const entry = await banEntry(VICTIM);   // 2-of-3 signed kapae at version 1
+    const entry = await banEntry(VICTIM);   // 2-of-3 signed founded kapae act
     // writeAntigenEntry mutates a draft exactly as a handle.change would.
     writeAntigenEntry(doc, entry);
 
-    // The accretive key names the nym AND the version — the reader walks it back byte-for-byte.
-    expect(doc.tiddlers[antigenEntryKey(VICTIM, "kapae", 1)]).toBeDefined();
+    // The accretive key names the nym, gesture, and semantic act CID.
+    expect(doc.tiddlers[antigenEntryKey(VICTIM, "kapae", entry.actCid)]).toBeDefined();
     const read = antigenEntriesFromBoard(doc);
     expect(read).toHaveLength(1);
     expect(read[0]).toEqual(entry);
@@ -131,28 +138,27 @@ describe("writeAntigenEntry — the RAISE side lands what the reader reads (#65)
     expect(kapaed.has(VICTIM)).toBe(true);
   });
 
-  test("a lift at a STRICTLY HIGHER version LIFTS; an equal/lower version does NOT (monotone, fail-closed)", async () => {
+  test("a causal descendant lift withdraws; concurrent contradictory heads remain unsettled", async () => {
     const doc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
-    writeAntigenEntry(doc, await banEntry(VICTIM));   // ban @ v1
-
-    // A lift at the SAME version ties → the fold keeps Kapae'd (a tie never rolls a ban back).
-    writeAntigenEntry(doc, await liftEntry(VICTIM, 1));
-    expect((await foldAntigenSet(antigenEntriesFromBoard(doc), await roster(), verifier)).has(VICTIM)).toBe(true);
-
-    // Both entries ACCRETE (distinct keys) — the additive CRDT the fold reads.
-    expect(antigenEntriesFromBoard(doc)).toHaveLength(2);
-
-    // A lift at a strictly HIGHER version supersedes → the ban lifts.
-    writeAntigenEntry(doc, await liftEntry(VICTIM, 2));
+    const ban = await banEntry(VICTIM);
+    writeAntigenEntry(doc, ban);
+    const lift = await liftEntry(VICTIM, [ban.actCid]);
+    writeAntigenEntry(doc, lift);
     expect((await foldAntigenSet(antigenEntriesFromBoard(doc), await roster(), verifier)).has(VICTIM)).toBe(false);
 
-    // A re-ban at a yet-higher version re-imposes it (monotone both ways).
-    const reban = await signAntigenEntry(
-      { nym: VICTIM, action: "kapae", version: 3, sealEpochCid: EPOCH },
+    const concurrentDoc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
+    const concurrentRoot = await banEntry(VICTIM);
+    const concurrentBanChild = await signAntigenEntry(
+      { nym: VICTIM, action: "kapae", parents: [concurrentRoot.actCid], sealEpochCid: EPOCH },
       await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))),
     );
-    writeAntigenEntry(doc, reban);
-    expect((await foldAntigenSet(antigenEntriesFromBoard(doc), await roster(), verifier)).has(VICTIM)).toBe(true);
+    const concurrentLift = await liftEntry(VICTIM, [concurrentRoot.actCid]);
+    // Two children of one parent are concurrent contradictory heads; arrival order cannot choose.
+    writeAntigenEntry(concurrentDoc, concurrentRoot);
+    writeAntigenEntry(concurrentDoc, concurrentBanChild);
+    writeAntigenEntry(concurrentDoc, concurrentLift);
+    const verdicts = await foldAntigenVerdicts(antigenEntriesFromBoard(concurrentDoc), await roster(), verifier);
+    expect(verdicts.get(VICTIM)).toBe("unsettled");
   });
 
   test("a SUB-QUORUM written entry extracts but the FOLD ignores it (1-of-3 never bans)", async () => {

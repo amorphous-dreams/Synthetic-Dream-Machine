@@ -6,7 +6,7 @@
  * a real Automerge board on disk):
  *   · the full loop ADMIT → board → read → fold → holdsCarriage — a 2-of-3 signed + contract-in admit lands on the
  *     always-carried members board and folds the operator nym to MEMBER (the a-multitude-of-one self-contract),
- *   · a REVOKE at a higher version drops membership,
+ *   · a causally-descendant REVOKE drops membership,
  *   · a SUB-QUORUM admit REFUSES (nothing written),
  *   · an UNSEATED charter REFUSES,
  *   · an admit for a nym the vessel does NOT hold, with NO --contract token, REFUSES (no conscription),
@@ -22,8 +22,8 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { hex, genesisSealEpochCid, type NexusDoc } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { hex, genesisSealEpochCid, materializeSharedLarDoc, carriageDocUrl, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed, type NexusDoc } from "@lararium/mesh";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError,
@@ -32,6 +32,7 @@ import { signCarriageContract, verifyCarriageConsent } from "@lararium/mesh";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { makeNexusMembership } from "../src/nexus-carriage.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -74,15 +75,16 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const joinerNym = roots[3]!.verifyingKey.toLowerCase();
 
     const res = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
-    expect(res.version).toBe(1);
+    expect(res.parents).toEqual([]);
+    expect(res.evidenceCid).toMatch(/^[0-9a-f]{64}$/);
     expect(res.signers).toHaveLength(2);       // exactly the 2-of-3 quorum
     expect(res.contractIn).toBe("self");       // multitude-of-one: the vessel held the joiner's seed
-    expect(res.memberNow).toBe(true);
+    expect(res.memberHeld).toBe(true);
 
     const list = await runNexusMembersList({ sealHome: sealHome() });
     expect(list.members).toContain(joinerNym);
     expect(list.entries).toHaveLength(1);
-    expect(list.entries[0]).toMatchObject({ nym: joinerNym, action: "admit", version: 1, signers: 2, contractIn: true });
+    expect(list.entries[0]).toMatchObject({ nym: joinerNym, action: "admit", parents: [], signers: 2, contractIn: true });
   });
 
   it("accept-carriage → admit --contract: a joiner's out-of-band token admits it", async () => {
@@ -94,10 +96,10 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const token = await runNexusAcceptCarriage({ handleIndex: 3, sealHome: sealHome() });
     const res = await runNexusContract({ action: "admit", nym: token.nym, contractSig: token.contractSig, sealHome: sealHome() });
     expect(res.contractIn).toBe("supplied");
-    expect(res.memberNow).toBe(true);
+    expect(res.memberHeld).toBe(true);
   });
 
-  it("REVOKE at a higher version drops membership", async () => {
+  it("REVOKE as a causal descendant drops membership", async () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
@@ -105,11 +107,42 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const rev = await runNexusContract({ action: "revoke", nym: joinerNym, sealHome: sealHome() });
-    expect(rev.version).toBe(2);
-    expect(rev.memberNow).toBe(false);
+    expect(rev.parents).toHaveLength(1);
+    expect(rev.evidenceCid).toMatch(/^[0-9a-f]{64}$/);
+    expect(rev.memberHeld).toBe(false);
 
     const list = await runNexusMembersList({ sealHome: sealHome() });
     expect(list.members).not.toContain(joinerNym);
+  });
+
+  it("does not parent a new act to policy-rejected same-nym evidence", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2, 3].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
+    const joinerNym = roots[3]!.verifyingKey.toLowerCase();
+
+    const first = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    const ownVesselKey = await loadVesselVerifyingKey();
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    try {
+      const handle = await materializeSharedLarDoc(
+        repo,
+        carriageDocUrl(nodeNexusIsland({ ownVesselKey })),
+        "board:carriage-contracts",
+      );
+      const rejected = await signCarriageQuorum(
+        { nym: joinerNym, action: "revoke", parents: [first.evidenceCid], sealEpochCid: "wrong-local-epoch" },
+        [{ signer: roots[0]!.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(0)) }],
+      );
+      handle.change((draft) => writeCarriageEntry(draft, rejected));
+      await repo.flush();
+    } finally {
+      await repo.flush().catch(() => { /* best effort */ });
+    }
+
+    const second = await runNexusContract({ action: "admit", nym: joinerNym, sealHome: sealHome() });
+    expect(second.parents).toEqual([first.evidenceCid]);
+    expect(second.memberHeld).toBe(true);
   });
 
   it("SUB-QUORUM admit REFUSES (one held root against a 2-of-3 roster) — nothing written", async () => {

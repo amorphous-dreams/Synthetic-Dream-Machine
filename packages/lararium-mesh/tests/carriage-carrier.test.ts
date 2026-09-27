@@ -13,7 +13,7 @@
  *   · a carrier seal signed by a hand OTHER than the named place is ignored (the seal must be its own),
  *   · a MEMBER's accepts-carriage token presented as a carrier seal does NOT verify, and the reverse also
  *     does not — the two domains separate them, so no seal crosses boards,
- *   · an `uncarry` at a strictly higher version drops the carrier; a same-version tie stays NON-carrier.
+ *   · a causally-descendant `uncarry` drops the carrier; concurrent contradictory heads stay NON-carrier.
  *
  * CONTROLS: a member admit still needs its persona-signed contract-in and still reads MEMBER (the existing
  * law, unmoved); a nonsense-domain seal verifies as neither carrier nor member.
@@ -22,7 +22,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex, canonicalJsonBytes } from "../src/crypto.js";
 import {
-  signCarriageQuorum, signCarriageContract, signCarrierContract, verifyCarrierContract,
+  signCarriageQuorum, signCarriageContract, signCarrierContract, verifyCarrierContract, carriageEntryActCid,
   foldCarriageSet, foldCarrierSet, holdsCarriage, holdsCarrier,
   type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
@@ -48,7 +48,7 @@ async function roster(threshold = 2): Promise<KahuRoster> {
 
 /** A `carry` / `uncarry` entry: the kahu quorum, plus (for a carry) the PLACE's own vessel-key seal. */
 async function carryEntry(
-  over: Partial<Pick<CarriageEntry, "action" | "version" | "sealEpochCid">> = {},
+  over: Partial<Pick<CarriageEntry, "action" | "parents" | "sealEpochCid">> = {},
   kahu: Uint8Array[] = [SEEDS.guru, SEEDS.telarus],
   carrierSig?: QuorumSignature,
   placeSeed: Uint8Array = SEEDS.herm,
@@ -58,7 +58,7 @@ async function carryEntry(
   const action  = over.action ?? "carry";
   const signers = await Promise.all(kahu.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const seal    = carrierSig ?? (action === "carry" ? await signCarrierContract(nym, epoch, signerOf(placeSeed)) : undefined);
-  return signCarriageQuorum({ nym, action, version: over.version ?? 1, sealEpochCid: epoch }, signers, seal);
+  return signCarriageQuorum({ nym, action, parents: over.parents ?? [], sealEpochCid: epoch }, signers, seal);
 }
 
 describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becomes a member", () => {
@@ -89,7 +89,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
     const r = await roster();
     const nym = await pubOf(SEEDS.herm);
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const bare = await signCarriageQuorum({ nym, action: "carry", version: 1, sealEpochCid: EPOCH }, signers);
+    const bare = await signCarriageQuorum({ nym, action: "carry", parents: [], sealEpochCid: EPOCH }, signers);
     expect(holdsCarrier(nym, await foldCarrierSet([bare], r))).toBe(false);
   });
 
@@ -103,17 +103,17 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
     // And the carrier seal, carried onto a member ADMIT, leaves the admit uncounted.
     const r = await roster();
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const crossed = await signCarriageQuorum({ nym, action: "admit", version: 1, sealEpochCid: EPOCH }, signers, carrierSeal);
+    const crossed = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, signers, carrierSeal);
     expect(holdsCarriage(nym, await foldCarriageSet([crossed], r))).toBe(false);
   });
 
-  test("uncarry at a HIGHER version drops the carrier; a same-version tie stays NON-carrier", async () => {
+  test("an ordered uncarry drops the carrier; concurrent uncarry stays NON-carrier", async () => {
     const r = await roster();
     const nym = await pubOf(SEEDS.herm);
-    const carry   = await carryEntry({ version: 1 });
-    const uncarry = await carryEntry({ action: "uncarry", version: 2 });
+    const carry   = await carryEntry();
+    const uncarry = await carryEntry({ action: "uncarry", parents: [carriageEntryActCid(carry)] });
     expect(holdsCarrier(nym, await foldCarrierSet([carry, uncarry], r))).toBe(false);
-    const tie = await carryEntry({ action: "uncarry", version: 1 });
+    const tie = await carryEntry({ action: "uncarry" });
     expect(holdsCarrier(nym, await foldCarrierSet([carry, tie], r))).toBe(false);
   });
 
@@ -134,7 +134,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
     const nym = await pubOf(SEEDS.joiner);
     const seal = await signCarriageContract(nym, EPOCH, signerOf(SEEDS.joiner));
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const admit = await signCarriageQuorum({ nym, action: "admit", version: 1, sealEpochCid: EPOCH }, signers, seal);
+    const admit = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, signers, seal);
     expect(holdsCarriage(nym, await foldCarriageSet([admit], r))).toBe(true);
     // …and it is not thereby a carrier.
     expect(holdsCarrier(nym, await foldCarrierSet([admit], r))).toBe(false);
@@ -149,7 +149,7 @@ describe("a PLACE contracts as a CARRIER, by its own vessel key, and never becom
     expect(await verifyCarrierContract({ nym, sealEpochCid: EPOCH, sig })).toBe(false);
     const r = await roster();
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const entry = await signCarriageQuorum({ nym, action: "carry", version: 1, sealEpochCid: EPOCH }, signers, { signer: nym, sig });
+    const entry = await signCarriageQuorum({ nym, action: "carry", parents: [], sealEpochCid: EPOCH }, signers, { signer: nym, sig });
     expect(holdsCarrier(nym, await foldCarrierSet([entry], r))).toBe(false);
   });
 });

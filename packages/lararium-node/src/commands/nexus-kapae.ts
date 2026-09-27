@@ -29,7 +29,7 @@
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  antigenEntriesFromBoard, writeAntigenEntry, signAntigenEntry,
+  antigenEntriesFromBoard, antigenActCid, writeAntigenEntry, signAntigenEntry,
   makeMultiSigQuorumVerifier, foldAntigenSet, isKapaed, foundingRoster,
   kapaeAntigenDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type KapaeAction, type KapaeAntigenEntry, type KahuRoster,
@@ -61,8 +61,8 @@ export interface NexusKapaeOptions {
 export interface NexusKapaeResult {
   readonly action:          KapaeAction;
   readonly nym:             string;
-  readonly version:         number;
-  readonly priorVersion:    number | null;
+  readonly actCid:          string;
+  readonly parents:         readonly string[];
   readonly sealEpochCid: string;
   readonly threshold:       number;
   /** The verifying keys that signed the entry (the held persona-roots that met the quorum). */
@@ -79,7 +79,7 @@ export interface NexusKapaeListResult {
   /** The currently-Kapae'd nym set (folded + quorum-verified against the seated roster). */
   readonly kapaed:          readonly string[];
   /** Every well-formed board entry (pre-verify shape read) — surfaces the raw antigen for the operator. */
-  readonly entries:         ReadonlyArray<{ nym: string; action: KapaeAction; version: number; signers: number }>;
+  readonly entries:         ReadonlyArray<{ nym: string; action: KapaeAction; actCid: string; parents: readonly string[]; signers: number }>;
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root a ban on. */
@@ -124,10 +124,10 @@ async function selectHeldQuorumSigners(
 }
 
 /**
- * Raise a ban (`kapae`) or mint a lift (`un_kapae`) on `nym` — sign a monotone antigen entry with ≥ threshold
- * held founding persona-roots and LAND it on the always-carried board. The lift lands at a STRICTLY HIGHER
- * version than any standing entry for the nym (the fold requires it), because the new version reads `max + 1`
- * over every prior entry for that nym. FAILS CLOSED before any write: unseated charter, sub-quorum, malformed
+ * Raise a ban (`kapae`) or mint a lift (`un_kapae`) on `nym` — sign a causal antigen entry with ≥ threshold
+ * held founding persona-roots and LAND it on the always-carried board. The command observes the local causal
+ * frontier and cites every admissible head as a parent; no scalar next-version is minted or accepted. FAILS CLOSED
+ * before any write: unseated charter, sub-quorum, malformed
  * nym, or a self-verify miss all REFUSE with nothing written.
  */
 export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapaeResult> {
@@ -147,10 +147,26 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:kapae-antigen");
 
-    // Monotone version: strictly above every prior entry for this nym, so a lift always supersedes a standing
-    // ban and a re-ban always supersedes a lift (the fold keeps the highest-version verified entry per nym).
-    const priorVersion = maxVersionForNym(antigenEntriesFromBoard(handle.doc()), nym);
-    const version      = (priorVersion ?? 0) + 1;
+    // Continue only the observed local causal frontier. Raw board records are untrusted input: a tampered
+    // semantic CID, wrong-charter quorum, or missing parent must never become a parent of this act.
+    const verifier = makeMultiSigQuorumVerifier();
+    const raw = antigenEntriesFromBoard(handle.doc()).filter((e) => e.nym === nym);
+    const verified = (await Promise.all(raw.map(async (e) => {
+      if (e.actCid !== antigenActCid(e)) return null;
+      if (!(await verifier.verifyQuorum(e, roster))) return null;
+      return e;
+    }))).filter((e): e is NonNullable<typeof e> => e !== null);
+    // Causal closure is iterative: a locally present parent may itself name an absent grandparent.
+    // Remove that branch until no unavailable ancestry remains; one pass would poison the next frontier.
+    let admissible = verified;
+    for (;;) {
+      const ids = new Set(admissible.map((e) => e.actCid));
+      const closed = admissible.filter((e) => e.parents.every((p) => ids.has(p)));
+      if (closed.length === admissible.length) break;
+      admissible = closed;
+    }
+    const covered = new Set(admissible.flatMap((e) => e.parents));
+    const parents = admissible.filter((e) => !covered.has(e.actCid)).map((e) => e.actCid).sort();
 
     // Sign with the held persona-roots — each signer supplies its OWN seed's bare-ed25519 signer (mesh holds
     // no key). loadPersonaGroupRootSeed reads founder-only custody; a joinee never reaches this branch.
@@ -159,13 +175,12 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
       sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
     })));
     const entry: KapaeAntigenEntry = await signAntigenEntry(
-      { nym, action: opts.action, version, sealEpochCid: roster.sealEpochCid },
+      { nym, action: opts.action, parents, sealEpochCid: roster.sealEpochCid },
       signers,
     );
 
     // NEVER write an entry that will not verify — the fold would ignore it, so a written-but-dead ban would
     // read as enforced while enforcing nothing (a false sense of a ban). Self-verify against the live roster.
-    const verifier = makeMultiSigQuorumVerifier();
     if (!(await verifier.verifyQuorum(entry, roster))) {
       throw new NexusKapaeError("refusing to write: the signed entry does not verify against the seated roster (fail-closed).");
     }
@@ -178,7 +193,7 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
     const kapaedNow = isKapaed(nym, folded);
 
     return {
-      action: opts.action, nym, version, priorVersion,
+      action: opts.action, nym, actCid: entry.actCid, parents,
       sealEpochCid: roster.sealEpochCid, threshold: roster.threshold,
       signers: selected.map((s) => s.verifyingKey), boardUrl, kapaedNow,
     };
@@ -206,20 +221,10 @@ export async function runNexusKapaeList(opts: { sealHome: string; storageDir?: s
       seatedKeys:      roster.keys.length,
       kapaed:          [...folded].map((k) => k.toLowerCase()).sort(),
       entries:         entries
-        .map((e) => ({ nym: e.nym, action: e.action, version: e.version, signers: e.signatures.length }))
-        .sort((a, b) => (a.nym === b.nym ? a.version - b.version : a.nym.localeCompare(b.nym))),
+        .map((e) => ({ nym: e.nym, action: e.action, actCid: e.actCid, parents: e.parents, signers: e.signatures.length }))
+        .sort((a, b) => (a.nym === b.nym ? a.actCid.localeCompare(b.actCid) : a.nym.localeCompare(b.nym))),
     };
   } finally {
     await repo.flush().catch(() => { /* best-effort */ });
   }
-}
-
-/** The highest `version` any board entry carries for `nym`, or null when the nym has no standing entry. */
-function maxVersionForNym(entries: readonly KapaeAntigenEntry[], nym: string): number | null {
-  let max: number | null = null;
-  for (const e of entries) {
-    if (e.nym.toLowerCase() !== nym) continue;
-    if (max === null || e.version > max) max = e.version;
-  }
-  return max;
 }

@@ -30,7 +30,7 @@ async function fixture() {
     relationResource: RESOURCE,
     targetNexusPubkey: NEXUS,
     sealEpochCid: "sha256-charter",
-    memberVersion: 3,
+    memberEvidenceCid: "aa".repeat(32),
   });
   return { edge, witness };
 }
@@ -56,6 +56,9 @@ describe("contract relation witness canonical seam", () => {
     await expect(verifyContractRelationWitness({ ...witness, deviceEdgeDigest: "00".repeat(32) }, {
       edge, relationResource: RESOURCE, targetNexusPubkey: NEXUS,
     })).resolves.toMatchObject({ ok: false, reason: "device edge digest mismatch" });
+    await expect(verifyContractRelationWitness({ ...witness, memberEvidenceCid: "bb".repeat(32) }, {
+      edge, relationResource: RESOURCE, targetNexusPubkey: NEXUS,
+    })).resolves.toMatchObject({ ok: false, reason: "signature mismatch" });
   });
 
   test("rejects a signature made for a different relation", async () => {
@@ -87,50 +90,50 @@ describe("contract relation witness canonical seam", () => {
 
   test("composes a local accepted frontier without granting through the transport witness", async () => {
     const { edge, witness } = await fixture();
-    const base = { nym: witness.personaRootDid.slice(2), action: "admit" as const, version: 3,
-      sealEpochCid: witness.sealEpochCid, counted: true, state: "accepted" as const, reason: "highest-counted-admit" };
+    const base = { nym: witness.personaRootDid.slice(2), action: "admit" as const, parents: [] as string[],
+      evidenceCid: "aa".repeat(32), sealEpochCid: witness.sealEpochCid, counted: true, state: "accepted" as const, reason: "causal-head-accepted" };
     await expect(verifyContractRelationFrontier({ witness, edge, relationResource: RESOURCE,
       targetNexusPubkey: NEXUS, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set([base.nym]), entries: [base] } }))
-      .resolves.toMatchObject({ state: "valid" });
+      .resolves.toMatchObject({ state: "held" });
   });
 
   test("names absent, stale, revoked, and equivocal frontiers instead of lifting authority", async () => {
     const { edge, witness } = await fixture();
-    const base = { nym: witness.personaRootDid.slice(2), action: "admit" as const, version: 3,
-      sealEpochCid: witness.sealEpochCid, counted: true, state: "accepted" as const, reason: "highest-counted-admit" };
+    const base = { nym: witness.personaRootDid.slice(2), action: "admit" as const, parents: [] as string[],
+      evidenceCid: "aa".repeat(32), sealEpochCid: witness.sealEpochCid, counted: true, state: "accepted" as const, reason: "causal-head-accepted" };
     const args = { witness, edge, relationResource: RESOURCE, targetNexusPubkey: NEXUS };
-    await expect(verifyContractRelationFrontier({ ...args, frontier: undefined })).resolves.toMatchObject({ state: "pending" });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: "old", members: new Set(), entries: [base] } })).resolves.toMatchObject({ state: "stale" });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set(), entries: [{ ...base, state: "revoked", reason: "highest-counted-revoke" }] } })).resolves.toMatchObject({ state: "revoked" });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set(), entries: [{ ...base, state: "equivocal", reason: "same-version-admit-revoke-equivocation" }] } })).resolves.toMatchObject({ state: "equivocal" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: undefined })).resolves.toMatchObject({ state: "unavailable" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: "old", members: new Set(), entries: [base] } })).resolves.toMatchObject({ state: "superseded" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set(), entries: [{ ...base, state: "revoked", reason: "causal-head-revoked" }] } })).resolves.toMatchObject({ state: "withdrawn" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set(), entries: [{ ...base, state: "unsettled", reason: "concurrent-contradictory-heads" }] } })).resolves.toMatchObject({ state: "unsettled" });
   });
 
   test("interprets the highest local winner before reading an older witness version", async () => {
     const { edge, witness } = await fixture();
-    const v3: CarriageFoldEntryDetail = { nym: witness.personaRootDid.slice(2), action: "admit", version: 3,
+    const v3: CarriageFoldEntryDetail = { nym: witness.personaRootDid.slice(2), action: "admit", parents: [], evidenceCid: "aa".repeat(32),
       sealEpochCid: witness.sealEpochCid, counted: true, state: "ignored", reason: "superseded" };
     const args = { witness, edge, relationResource: RESOURCE, targetNexusPubkey: NEXUS };
     const frontier = (latest: CarriageFoldEntryDetail) => ({ charterEpochCid: witness.sealEpochCid, members: new Set<string>(), entries: [v3, latest] });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, version: 4, action: "revoke", state: "revoked", reason: "highest-counted-revoke" }) })).resolves.toMatchObject({ state: "revoked" });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, version: 4, state: "equivocal", reason: "same-version-admit-revoke-equivocation" }) })).resolves.toMatchObject({ state: "equivocal" });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, version: 4, state: "accepted", reason: "highest-counted-admit" }) })).resolves.toMatchObject({ state: "stale" });
-    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set([v3.nym]), entries: [{ ...v3, state: "accepted", reason: "highest-counted-admit" }] } })).resolves.toMatchObject({ state: "valid" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, parents: [v3.evidenceCid], evidenceCid: "bb".repeat(32), action: "revoke", state: "revoked", reason: "causal-head-revoked" }) })).resolves.toMatchObject({ state: "withdrawn" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, parents: [v3.evidenceCid], evidenceCid: "bb".repeat(32), state: "unsettled", reason: "concurrent-contradictory-heads" }) })).resolves.toMatchObject({ state: "unsettled" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: frontier({ ...v3, parents: [v3.evidenceCid], evidenceCid: "bb".repeat(32), state: "accepted", reason: "causal-head-accepted" }) })).resolves.toMatchObject({ state: "superseded" });
+    await expect(verifyContractRelationFrontier({ ...args, frontier: { charterEpochCid: witness.sealEpochCid, members: new Set([v3.nym]), entries: [{ ...v3, state: "accepted", reason: "causal-head-accepted" }] } })).resolves.toMatchObject({ state: "held" });
   });
 
   test("ignores uncounted or carrier evidence when deriving the member winner", async () => {
     const { edge, witness } = await fixture();
     const nym = witness.personaRootDid.slice(2);
-    const accepted = { nym, action: "admit" as const, version: 3, sealEpochCid: witness.sealEpochCid,
-      counted: true, state: "accepted" as const, reason: "highest-counted-admit" };
+    const accepted = { nym, action: "admit" as const, parents: [] as string[], evidenceCid: "aa".repeat(32), sealEpochCid: witness.sealEpochCid,
+      counted: true, state: "accepted" as const, reason: "causal-head-accepted" };
     const frontier = {
       charterEpochCid: witness.sealEpochCid,
       members: new Set([nym]),
       entries: [accepted,
-        { ...accepted, version: 99, counted: false, state: "ignored" as const, reason: "malformed-entry" },
-        { ...accepted, action: "carry" as const, version: 100, state: "ignored" as const, reason: "non-member-action" },
+        { ...accepted, evidenceCid: "bb".repeat(32), counted: false, state: "ignored" as const, reason: "malformed-entry" },
+        { ...accepted, evidenceCid: "cc".repeat(32), action: "carry" as const, state: "ignored" as const, reason: "non-member-action" },
       ],
     };
     await expect(verifyContractRelationFrontier({ witness, edge, relationResource: RESOURCE,
-      targetNexusPubkey: NEXUS, frontier })).resolves.toMatchObject({ state: "valid" });
+      targetNexusPubkey: NEXUS, frontier })).resolves.toMatchObject({ state: "held" });
   });
 });

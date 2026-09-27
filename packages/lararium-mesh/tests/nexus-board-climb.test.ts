@@ -31,7 +31,7 @@ import {
   whoBoardDocUrl, carriageDocUrl, vouchBoardDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry, foldAntigenSet,
   makeMultiSigQuorumVerifier, type KahuRoster,
-  writeEdgeKapae, signEdgeKapae, shadowSetFromBoard, type EpochOrder,
+  writeEdgeKapae, signEdgeKapae, shadowSetFromBoard,
   signRealmBagRegistration, writeRealmBagRegistration, realmDocUrl, realmBagAnnounceKey,
   publicRealmBooksFromDoc, crossroadsAnnounceOf,
   HANDLE_ANNOUNCE_PREFIX, CARRIAGE_ENTRY_PREFIX, VOUCH_ENTRY_PREFIX,
@@ -76,9 +76,9 @@ async function roster(epoch: string): Promise<KahuRoster> {
   return { keys: await Promise.all(KAHU.map(pubOf)), threshold: 2, sealEpochCid: epoch };
 }
 
-async function ban(nym: string, epoch: string, version = 1) {
+async function ban(nym: string, epoch: string, parents: readonly string[] = []) {
   const signers = await Promise.all(KAHU.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signer(s) })));
-  return signAntigenEntry({ nym, action: "kapae", version, sealEpochCid: epoch }, signers);
+  return signAntigenEntry({ nym, action: "kapae", parents, sealEpochCid: epoch }, signers);
 }
 
 describe("① the antigen carries — the immune memory a climb would drop", () => {
@@ -151,20 +151,19 @@ describe("① the antigen carries — the immune memory a climb would drop", () 
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
 const EDGE_AUTH = seedOf(21);
 /** The chain the reader walks — both the charter epoch and the old one rank, so a fold can order them. */
-const ORDER: EpochOrder = (e) => (e === OLD_EPOCH ? 0 : e === CHARTER ? 1 : null);
 
 describe("② the shadows carry — an empty shadow board lowers every shadow", () => {
   test("RED — a raised shadow on the island below STANDS at the island the boot resolved", async () => {
     const r = repo();
     const authority = await pubOf(EDGE_AUTH);
     const act = await signEdgeKapae(
-      { edgeId: "edge-set-aside", raised: true, version: 1, epochCid: CHARTER }, signer(EDGE_AUTH));
+      { edgeId: "edge-set-aside", raised: true, parents: [], epochCid: CHARTER }, signer(EDGE_AUTH));
     (await board(r, edgeKapaeBoardDocUrl(CHARTER))).change((d) => writeEdgeKapae(d, act));
 
     const island = nexusScopeOrThrow(nexusIdentity(AT_EXPLICIT));
     // THE HARM, measured: the new board mints blank, so the relationship reads RE-ADMITTABLE.
     expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => authority, verify, ORDER))
+      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => authority, verify))
       .toEqual(new Set());
 
     const moved = await carryEdgeShadowsUpTheGradient({
@@ -173,7 +172,7 @@ describe("② the shadows carry — an empty shadow board lowers every shadow", 
     expect(moved.landed).toBe(1);
 
     const shadows = await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => authority, verify, ORDER);
+      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => authority, verify);
     expect(shadows.has("edge-set-aside"), "a hand set this relationship aside — the marker must hold").toBe(true);
   }, 30_000);
 
@@ -182,9 +181,9 @@ describe("② the shadows carry — an empty shadow board lowers every shadow", 
     const authority = await pubOf(EDGE_AUTH);
     // Two islands below the explicit one, each holding a shadow the other never saw.
     const onCharter = await signEdgeKapae(
-      { edgeId: "edge-from-charter", raised: true, version: 1, epochCid: CHARTER }, signer(EDGE_AUTH));
+      { edgeId: "edge-from-charter", raised: true, parents: [], epochCid: CHARTER }, signer(EDGE_AUTH));
     const onOwn = await signEdgeKapae(
-      { edgeId: "edge-from-own", raised: true, version: 1, epochCid: OLD_EPOCH }, signer(EDGE_AUTH));
+      { edgeId: "edge-from-own", raised: true, parents: [], epochCid: OLD_EPOCH }, signer(EDGE_AUTH));
     (await board(r, edgeKapaeBoardDocUrl(CHARTER))).change((d) => writeEdgeKapae(d, onCharter));
     (await board(r, edgeKapaeBoardDocUrl(OWN))).change((d) => writeEdgeKapae(d, onOwn));
 
@@ -198,7 +197,7 @@ describe("② the shadows carry — an empty shadow board lowers every shadow", 
     expect(moved.from).toEqual([CHARTER, OWN]);
 
     const shadows = await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(EXPLICIT))).doc(), () => authority, verify, ORDER);
+      (await board(r, edgeKapaeBoardDocUrl(EXPLICIT))).doc(), () => authority, verify);
     expect(shadows).toEqual(new Set(["edge-from-charter", "edge-from-own"]));
   }, 30_000);
 
@@ -207,19 +206,19 @@ describe("② the shadows carry — an empty shadow board lowers every shadow", 
     const authority = await pubOf(EDGE_AUTH);
     // The island below carries a LOWER rooted on an epoch the reader cannot rank.
     const lower = await signEdgeKapae(
-      { edgeId: "edge-contested", raised: false, version: 9, epochCid: "epoch0-unknown" }, signer(EDGE_AUTH));
+      { edgeId: "edge-contested", raised: false, parents: [], epochCid: "epoch0-unknown" }, signer(EDGE_AUTH));
     (await board(r, edgeKapaeBoardDocUrl(OWN))).change((d) => writeEdgeKapae(d, lower));
     // The destination already stands a RAISE on the chain the reader does walk.
     const raise = await signEdgeKapae(
-      { edgeId: "edge-contested", raised: true, version: 1, epochCid: CHARTER }, signer(EDGE_AUTH));
+      { edgeId: "edge-contested", raised: true, parents: [], epochCid: CHARTER }, signer(EDGE_AUTH));
     (await board(r, edgeKapaeBoardDocUrl(EXPLICIT))).change((d) => writeEdgeKapae(d, raise));
 
     await carryEdgeShadowsUpTheGradient({
       repo: r, nexusPubkey: EXPLICIT, priorIslands: nexusIslandsBelow(AT_EXPLICIT),
     });
     const shadows = await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(EXPLICIT))).doc(), () => authority, verify, ORDER);
-    expect(shadows.has("edge-contested"), "an unknown epoch ranks below every known one — fail-closed").toBe(true);
+      (await board(r, edgeKapaeBoardDocUrl(EXPLICIT))).doc(), () => authority, verify);
+    expect(shadows.has("edge-contested"), "contradictory causal heads remain unsettled — fail-closed").toBe(false);
   }, 30_000);
 });
 
@@ -365,7 +364,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
     const r = repo();
     const entry = await ban("ea".repeat(32), CHARTER);
     const shadow = await signEdgeKapae(
-      { edgeId: "edge-thrice", raised: true, version: 1, epochCid: CHARTER }, signer(EDGE_AUTH));
+      { edgeId: "edge-thrice", raised: true, parents: [], epochCid: CHARTER }, signer(EDGE_AUTH));
     const rec = await publicBook(CHARTER, "lar:///ha.ka.ba/books/thrice");
     (await board(r, kapaeAntigenDocUrl(CHARTER))).change((d) => writeAntigenEntry(d, entry));
     (await board(r, edgeKapaeBoardDocUrl(CHARTER))).change((d) => writeEdgeKapae(d, shadow));
@@ -396,7 +395,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
     const r = repo();
     const entry  = await ban("eb".repeat(32), CHARTER);
     const shadow = await signEdgeKapae(
-      { edgeId: "edge-copied", raised: true, version: 1, epochCid: CHARTER }, signer(EDGE_AUTH));
+      { edgeId: "edge-copied", raised: true, parents: [], epochCid: CHARTER }, signer(EDGE_AUTH));
     (await board(r, kapaeAntigenDocUrl(CHARTER))).change((d) => writeAntigenEntry(d, entry));
     (await board(r, edgeKapaeBoardDocUrl(CHARTER))).change((d) => writeEdgeKapae(d, shadow));
     const beforeAntigen = await keysOn(r, kapaeAntigenDocUrl(CHARTER));
@@ -413,7 +412,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
   test("CONTROL — a key already standing at the destination is never OVERWRITTEN", async () => {
     const r = repo();
     const shadow = await signEdgeKapae(
-      { edgeId: "edge-standing", raised: true, version: 1, epochCid: CHARTER }, signer(EDGE_AUTH));
+      { edgeId: "edge-standing", raised: true, parents: [], epochCid: CHARTER }, signer(EDGE_AUTH));
     (await board(r, edgeKapaeBoardDocUrl(OWN))).change((d) => writeEdgeKapae(d, shadow));
     // The destination already holds that exact key, carrying DIFFERENT bytes (a torn or forged variant).
     const key = Object.keys((await board(r, edgeKapaeBoardDocUrl(OWN))).doc()!.tiddlers)[0]!;

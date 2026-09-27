@@ -12,7 +12,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey } from "../src/carriage-board.js";
-import { signCarriageQuorum, signCarriageContract, CARRIAGE_ENTRY_DOMAIN } from "../src/carriage-registry.js";
+import { signCarriageQuorum, signCarriageContract, signCarrierContract, CARRIAGE_ENTRY_DOMAIN } from "../src/carriage-registry.js";
 import { mutableLarRecord, type LarDoc } from "../src/base-doc.js";
 
 const EPOCH = "epoch-cid-genesis";
@@ -22,11 +22,11 @@ const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const emptyBoard = (): LarDoc => ({ tiddlers: {} }) as LarDoc;
 
-async function admitEntry(version = 1) {
+async function admitEntry() {
   const nym     = await pubOf(JOIN);
   const signers = await Promise.all(KAHU.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const cs      = await signCarriageContract(nym, EPOCH, signerOf(JOIN));
-  return signCarriageQuorum({ nym, action: "admit", version, sealEpochCid: EPOCH }, signers, cs);
+  return signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: EPOCH }, signers, cs);
 }
 
 describe("members-board — write/read roundtrip + fail-closed extraction", () => {
@@ -36,9 +36,19 @@ describe("members-board — write/read roundtrip + fail-closed extraction", () =
     writeCarriageEntry(board, entry);
     const read = carriageEntriesFromBoard(board);
     expect(read).toHaveLength(1);
-    expect(read[0]).toMatchObject({ nym: entry.nym, action: "admit", version: 1, sealEpochCid: EPOCH });
+    expect(read[0]).toMatchObject({ nym: entry.nym, action: "admit", parents: [], sealEpochCid: EPOCH });
     expect(read[0]!.signatures).toHaveLength(2);
     expect(read[0]!.contractSig?.signer).toBe(entry.nym);
+  });
+
+  test("carrier acts use the same causal board parser and remain carrier actions", async () => {
+    const nym = await pubOf(JOIN);
+    const signers = await Promise.all(KAHU.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const entry = await signCarriageQuorum({ nym, action: "carry", parents: [], sealEpochCid: EPOCH }, signers,
+      await signCarrierContract(nym, EPOCH, signerOf(JOIN)));
+    const board = emptyBoard();
+    writeCarriageEntry(board, entry);
+    expect(carriageEntriesFromBoard(board)[0]).toMatchObject({ action: "carry", parents: [] });
   });
 
   test("a foreign / non-JSON / torn tiddler is SKIPPED", async () => {
@@ -60,11 +70,11 @@ describe("members-board — write/read roundtrip + fail-closed extraction", () =
     const board = emptyBoard();
     // A forged tiddler carrying a valid-shaped entry PLUS an extra "email" — the coercer copies the floor alone.
     const smuggled = { ...entry, email: "who@example.com", displayName: "Real Name" };
-    const key = carriageEntryKey(entry.nym, entry.action, entry.version);
+    const key = carriageEntryKey(entry);
     board.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(smuggled) }, EPOCH);
     const read = carriageEntriesFromBoard(board);
     expect(read).toHaveLength(1);
-    expect(Object.keys(read[0]!).sort()).toEqual(["action", "contractSig", "kind", "nym", "sealEpochCid", "signatures", "version"]);
+    expect(Object.keys(read[0]!).sort()).toEqual(["action", "contractSig", "kind", "nym", "parents", "sealEpochCid", "signatures"]);
     expect(read[0]).not.toHaveProperty("email");
     expect(read[0]).not.toHaveProperty("displayName");
     expect(read[0]!.kind).toBe(CARRIAGE_ENTRY_DOMAIN);

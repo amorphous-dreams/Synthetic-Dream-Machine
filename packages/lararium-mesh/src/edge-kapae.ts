@@ -20,9 +20,9 @@
  * diverging in silence. Surfacing the split reads as this module's job; deciding it belongs to the humans.
  *
  * ── THE LAW THIS ENACTS (kapae#law) ──────────────────────────────────────────────────────────────────────
- * A raised kāpae SHADOWS every layer beneath and WINS remove-wins under contention or partition. Lowering it
- * takes a deliberate gesture and writes its own record; nothing un-shadows silently. Entries only ACCRETE —
- * a raise and a lower at one version both survive on the board, and the FOLD adjudicates, never the write.
+ * A raised kāpae shadows every layer beneath. Lowering it takes a deliberate gesture and writes its own record;
+ * nothing un-shadows silently. Entries only accrete. A causal descendant lower can withdraw a shadow, while
+ * concurrent opposite heads remain unsettled and project no shadow; the fold adjudicates, never the write.
  *
  * ── KĀPAE ⊥ ABSENT, and the cut MUST stay sharp ─────────────────────────────────────────────────────────
  * A kāpae shadows; an absent edge falls through. An edge that never existed, or one that expired, reads
@@ -37,7 +37,7 @@
 import { EDGE_KAPAE_DOMAIN } from "./domains.js";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
-import { canonicalJsonBytes } from "./crypto.js";
+import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 
 export { EDGE_KAPAE_DOMAIN } from "./domains.js";
 /** The tiddler-key prefix every kāpae act rides under. */
@@ -47,7 +47,7 @@ export const EDGE_KAPAE_PREFIX = "lar:///ha.ka.ba/dreamnet/edge-kapae/" as const
  * One act on one relationship — a hand raising the marker, or a hand taking it back down.
  *
  * `raised` carries the gesture rather than a state, because the board holds ACTS and the fold holds state.
- * Two hands acting at one version both land, and the fold decides between them.
+ * Two hands acting from one causal frontier both land, and the fold decides between them.
  */
 export interface EdgeKapae {
   readonly kind:    typeof EDGE_KAPAE_DOMAIN;
@@ -55,44 +55,51 @@ export interface EdgeKapae {
   readonly edgeId:  string;
   /** true → raise the shadow (set aside); false → lower it (a deliberate re-admission). */
   readonly raised:  boolean;
-  /** Monotone per edge. A later act supersedes an earlier one; a stale act cannot roll it back. */
-  readonly version: number;
+  /** Content identity of the semantic act (signatures are deliberately outside this identity). */
+  readonly actCid: string;
+  /** Causal parents in this edge's local relation family. An empty set is a founded act. */
+  readonly parents: readonly string[];
   /** The epochCid this act roots on. An ORDER, never an instant — a causal island holds no global now. */
   readonly epochCid:   string;
   /** ed25519 by the authority that holds this edge, over `edgeKapaeBytes`. */
   readonly sig:     string;
 }
 
-/** The bytes an act signs — the edge, the gesture, the version and the epochCid, bound together. */
+/** The semantic bytes an act signs and hashes. Signature representations never enter the act identity. */
 export function edgeKapaeBytes(a: Omit<EdgeKapae, "sig">): Uint8Array {
   return canonicalJsonBytes({
-    kind: a.kind, edgeId: a.edgeId, raised: a.raised, version: a.version, epochCid: a.epochCid,
+    kind: a.kind, edgeId: a.edgeId, raised: a.raised, parents: [...new Set(a.parents)].sort(), epochCid: a.epochCid,
   });
+}
+
+export function edgeKapaeActCid(a: Omit<EdgeKapae, "sig" | "actCid">): string {
+  return `sha256:${sha256HexBytesSync(edgeKapaeBytes({ ...a, actCid: "" }))}`;
 }
 
 /** Mint an act. The caller supplies the signer holding authority over this edge; this module holds no key. */
 export async function signEdgeKapae(
-  parts: Omit<EdgeKapae, "kind" | "sig">,
+  parts: Omit<EdgeKapae, "kind" | "sig" | "actCid">,
   sign: (bytes: Uint8Array) => Promise<string>,
 ): Promise<EdgeKapae> {
-  const unsigned = { ...parts, kind: EDGE_KAPAE_DOMAIN } as Omit<EdgeKapae, "sig">;
+  const base = { ...parts, kind: EDGE_KAPAE_DOMAIN, parents: [...new Set(parts.parents)].sort() } as Omit<EdgeKapae, "sig" | "actCid">;
+  const unsigned = { ...base, actCid: edgeKapaeActCid(base) } as Omit<EdgeKapae, "sig">;
   return { ...unsigned, sig: await sign(edgeKapaeBytes(unsigned)) };
 }
 
 /**
- * The key one act rides under — edge, GESTURE and version together.
+ * The key one act rides under — edge, GESTURE and semantic act CID together.
  *
  * Keying by edge alone would let a concurrent lower win an in-place merge and silently resurrect a shadowed
- * relationship. Keyed this way a raise@v and a lower@v land on DISTINCT keys and BOTH survive, so the fold's
+ * relationship. Keyed this way a raise and a lower from one frontier land on DISTINCT keys and BOTH survive, so the fold's
  * remove-wins guard still runs. The fold adjudicates; the write never does.
  */
-export function edgeKapaeKey(edgeId: string, raised: boolean, version: number): string {
-  return `${EDGE_KAPAE_PREFIX}${edgeId}/${raised ? "raised" : "lowered"}/${version}`;
+export function edgeKapaeKey(edgeId: string, raised: boolean, actCid: string): string {
+  return `${EDGE_KAPAE_PREFIX}${edgeId}/${raised ? "raised" : "lowered"}/${actCid}`;
 }
 
 /** Land an act on a board draft. Call INSIDE a `handle.change()` callback. */
 export function writeEdgeKapae(draft: LarDoc, act: EdgeKapae): void {
-  const key = edgeKapaeKey(act.edgeId, act.raised, act.version);
+  const key = edgeKapaeKey(act.edgeId, act.raised, act.actCid);
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(act) }, act.epochCid);
 }
 
@@ -103,12 +110,13 @@ function coerceAct(parsed: unknown): EdgeKapae | null {
   if (p["kind"] !== EDGE_KAPAE_DOMAIN) return null;
   if (typeof p["edgeId"] !== "string" || p["edgeId"].length === 0) return null;
   if (typeof p["raised"] !== "boolean") return null;
-  if (!Number.isSafeInteger(p["version"]) || (p["version"] as number) < 1) return null;
+  if (typeof p["actCid"] !== "string" || p["actCid"].length === 0) return null;
+  if (!Array.isArray(p["parents"]) || p["parents"].some((x) => typeof x !== "string")) return null;
   if (typeof p["epochCid"] !== "string" || p["epochCid"].length === 0) return null;
   if (typeof p["sig"] !== "string" || p["sig"].length === 0) return null;
   return {
     kind: EDGE_KAPAE_DOMAIN, edgeId: p["edgeId"], raised: p["raised"],
-    version: p["version"] as number, epochCid: p["epochCid"], sig: p["sig"],
+    actCid: p["actCid"], parents: [...new Set(p["parents"] as string[])].sort(), epochCid: p["epochCid"], sig: p["sig"],
   };
 }
 
@@ -129,54 +137,45 @@ export function edgeKapaeActsFromBoard(doc: LarDoc | undefined | null): EdgeKapa
 }
 
 /**
- * Ranks an act's epochCid against the chain a reader holds — higher reads later, `null` reads unknown.
- *
- * WHY THE FOLD TAKES ONE. Version alone is an unbounded scalar standing in for a position, so a hand may
- * simply name a larger number: one act at an absurd version wins every future fold, mintable under partition,
- * converging as the winner on reconnect. That grab is unanswerable in a scalar and trivial against a chain —
- * nobody runs ahead of an epochCid that has not been minted. Epoch outranks version; version orders within one.
- *
- * It arrives INJECTED and REQUIRED, like `verify` and `authorityFor` — this module holds no chain and must
- * not, and a fold that decides standing may not silently fall back to a scalar when nobody hands it one.
- * A reader holding no chain says so explicitly (`noChainHeld`) rather than by omitting an argument.
- * An unknown epochCid ranks BELOW every known one (`-1`), so an act rooting on a chain the reader cannot walk
- * never lowers a shadow raised on one it can — fail-closed, matching the antigen's treatment of the same case.
+ * The fold uses only the local causal acts it has received. An absent parent makes that branch unavailable;
+ * contradictory admissible heads remain unsettled rather than being ranked by a scalar or arrival order.
  */
-export type EpochOrder = (epochCid: string) => number | null;
+export type EdgeKapaeVerdict = "held" | "withdrawn" | "unsettled" | "unavailable" | "rejected";
 
-/**
- * The declaration a reader makes when it holds no chain to walk — every epochCid reads unknown, so the fold
- * orders on version alone and the ceiling grab stands open. Named rather than defaulted, because a caller
- * that cannot order epochs should SAY it at the call site where a reviewer will see it.
- */
-export const noChainHeld: EpochOrder = () => null;
+/** Fold a causal frontier. A child is admissible only when every parent is present in the same
+ * edge family; maximal heads are then projected. Concurrent opposing heads stay unsettled. */
+export function foldEdgeKapaeVerdicts(acts: readonly EdgeKapae[]): Map<string, EdgeKapaeVerdict> {
+  const out = new Map<string, EdgeKapaeVerdict>();
+  const byEdge = new Map<string, EdgeKapae[]>();
+  for (const a of acts) (byEdge.get(a.edgeId) ?? (byEdge.set(a.edgeId, []), byEdge.get(a.edgeId)!)).push(a);
+  for (const [edge, group] of byEdge) {
+    const ids = new Set(group.map((a) => a.actCid));
+    const byId = new Map(group.map((a) => [a.actCid, a]));
+    if (group.some((a) => a.parents.some((p) => !ids.has(p) || byId.get(p)!.epochCid !== a.epochCid))) { out.set(edge, "unavailable"); continue; }
+    const valid = group.filter((a) => a.actCid === edgeKapaeActCid(a) && a.parents.every((p) => ids.has(p)));
+    if (valid.length !== group.length) { out.set(edge, "rejected"); continue; }
+    const covered = new Set(valid.flatMap((a) => a.parents));
+    const heads = valid.filter((a) => !covered.has(a.actCid));
+    if (heads.length === 0) { out.set(edge, "unavailable"); continue; }
+    if (heads.some((a) => a.raised) && heads.some((a) => !a.raised)) out.set(edge, "unsettled");
+    else out.set(edge, heads[0]!.raised ? "held" : "withdrawn");
+  }
+  return out;
+}
 
 /**
  * Fold the acts into the set of SHADOWED edges — the projection the whole pattern rests on.
  *
- * Highest version per edge wins, and a SAME-VERSION TIE LEAVES THE SHADOW UP. That asymmetry carries the
- * remove-wins guarantee the law demands: under partition two peers may disagree, and the raised marker holds
- * the merge, so an eviction never quietly reverses when the partition heals. The more-restrictive act wins,
- * exactly as a kapae beats an un_kapae on the antigen board.
+ * The causal frontier determines standing. A contradictory pair of admissible heads remains unsettled and
+ * therefore does not project a shadow; under partition no arrival order quietly reverses a relationship.
  *
  * Every act arrives VERIFIED — the caller checks signatures before folding, because this fold decides
  * standing and an unverified act would let anyone lower anyone's shadow.
  */
-export function foldEdgeKapae(acts: readonly EdgeKapae[], epochOrder: EpochOrder): Set<string> {
-  const rank = (a: EdgeKapae): number => epochOrder(a.epochCid) ?? -1;
-  const best = new Map<string, EdgeKapae>();
-  for (const a of acts) {
-    const prior = best.get(a.edgeId);
-    if (!prior) { best.set(a.edgeId, a); continue; }
-    const ra = rank(a), rp = rank(prior);
-    // EPOCH FIRST — a position on a chain nobody can run ahead of. Version only breaks a same-epoch tie.
-    if (ra !== rp) { if (ra > rp) best.set(a.edgeId, a); continue; }
-    if (a.version > prior.version) { best.set(a.edgeId, a); continue; }
-    // SAME epochCid AND version, opposing gestures → the raise holds. A tie never re-admits.
-    if (a.version === prior.version && a.raised) best.set(a.edgeId, a);
-  }
+export function foldEdgeKapae(acts: readonly EdgeKapae[]): Set<string> {
+  const verdicts = foldEdgeKapaeVerdicts(acts);
   const shadowed = new Set<string>();
-  for (const [edgeId, act] of best) if (act.raised) shadowed.add(edgeId);
+  for (const [edgeId, verdict] of verdicts) if (verdict === "held") shadowed.add(edgeId);
   return shadowed;
 }
 
@@ -191,7 +190,6 @@ export async function verifiedShadowSet(
   acts: readonly EdgeKapae[],
   authorityFor: (edgeId: string) => string | undefined,
   verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
-  epochOrder: EpochOrder,
 ): Promise<Set<string>> {
   const verdicts = await Promise.all(acts.map(async (a) => {
     const signer = authorityFor(a.edgeId);
@@ -199,7 +197,7 @@ export async function verifiedShadowSet(
     const { sig: _s, ...unsigned } = a;
     return verify(edgeKapaeBytes(unsigned), a.sig, signer).catch(() => false);
   }));
-  return foldEdgeKapae(acts.filter((_, i) => verdicts[i] === true), epochOrder);
+  return foldEdgeKapae(acts.filter((_, i) => verdicts[i] === true));
 }
 
 /**
@@ -217,7 +215,6 @@ export async function shadowSetFromBoard(
   doc: LarDoc | undefined | null,
   authorityFor: (edgeId: string) => string | undefined,
   verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
-  epochOrder: EpochOrder,
 ): Promise<Set<string>> {
-  return verifiedShadowSet(edgeKapaeActsFromBoard(doc), authorityFor, verify, epochOrder);
+  return verifiedShadowSet(edgeKapaeActsFromBoard(doc), authorityFor, verify);
 }

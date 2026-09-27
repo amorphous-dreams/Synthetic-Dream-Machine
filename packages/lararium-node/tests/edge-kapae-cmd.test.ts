@@ -1,31 +1,25 @@
 /**
  * edge-kapae-cmd — raising and lowering a relationship, end-to-end through the node.
  *
- * Proven on a real vessel with a real persona root over a temp LAR_ROOT. What matters: the version CLIMBS
- * from the board so a fresh act supersedes rather than ties; a lower takes the shadow down while BOTH acts
- * survive as the record; a pinned same-version lower leaves the shadow UP (remove-wins, reachable from the
- * verb); and the write asserts no authority — a root with no claim over an edge still lands an act that
- * every reader consulting a different authority drops.
+ * Proven on a real vessel with a real persona root over a temp LAR_ROOT. The command cites only the local
+ * admissible causal frontier; a lower becomes a descendant, and authority remains a reader-side decision.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdtempSync, rmSync,  } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   hex, hexToBytes, edgeKapaeBoardDocUrl, materializeSharedLarDoc,
-  edgeKapaeActsFromBoard, shadowSetFromBoard,
-  noChainHeld,
+  edgeKapaeActsFromBoard, shadowSetFromBoard, mutableLarRecord, signEdgeKapae,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
-  loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
+  loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey, loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
-import { readNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
-import { daemonBagsDir } from "../src/lares-config.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
 
 let root: string;
@@ -57,8 +51,8 @@ async function boardState(authority: string) {
     repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
   const acts     = edgeKapaeActsFromBoard(handle.doc());
   // This harness holds no charter chain, and declares it rather than omitting the argument —
-  // so the fold orders on version alone, which is exactly what these witnesses exercise.
-  const shadowed = await shadowSetFromBoard(handle.doc(), () => authority, verify, noChainHeld);
+  // The fold uses only locally closed causal acts; no epoch-order scalar is consulted.
+  const shadowed = await shadowSetFromBoard(handle.doc(), () => authority, verify);
   await repo.flush();
   return { acts, shadowed };
 }
@@ -67,7 +61,8 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
   it("RAISES, and the shadow stands under the signer that raised it", async () => {
     const r = await runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH });
 
-    expect(r.version).toBe(1);                     // a monotone counter starts where the law starts it
+    expect(r.actCid).toMatch(/^sha256:/);
+    expect(r.parents).toEqual([]);
     expect(r.shadowStands).toBe(true);
     expect(r.signerDid).toBe(await loadPersonaGroupRootVerifyingKey(0));
 
@@ -75,12 +70,12 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
     expect(shadowed.has(EDGE)).toBe(true);
   });
 
-  it("★ the version CLIMBS from the board, so a lower SUPERSEDES rather than ties ★", async () => {
+  it("★ the CLI selects the observed causal head, so a lower supersedes by lineage ★", async () => {
     const up   = await runEdgeKapae({ edgeId: EDGE, raised: true,  epochCid: EPOCH });
     const down = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH });
 
-    expect(up.version).toBe(1);
-    expect(down.version).toBe(2);
+    expect(down.parents).toEqual([up.actCid]);
+    expect(down.actCid).toMatch(/^sha256:/);
     expect(down.shadowStands).toBe(false);
 
     const { acts, shadowed } = await boardState(down.signerDid);
@@ -88,12 +83,40 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
     expect(shadowed.has(EDGE)).toBe(false);
   });
 
-  it("★ a PINNED same-version lower leaves the shadow UP — remove-wins, reachable from the verb ★", async () => {
+  it("★ an explicit causal parent makes the lower a deliberate descendant ★", async () => {
     const up   = await runEdgeKapae({ edgeId: EDGE, raised: true,  epochCid: EPOCH });
-    const tie  = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH, version: up.version });
+    const tie  = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH, parents: [up.actCid] });
 
-    expect(tie.version).toBe(up.version);
-    expect(tie.shadowStands).toBe(true);           // the raise held the tie
+    expect(tie.parents).toEqual([up.actCid]);
+    expect(tie.shadowStands).toBe(false);
+  });
+
+  it("rejects a raw CID-poisoned board act when selecting the next frontier", async () => {
+    const up = await runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH });
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const handle = await materializeSharedLarDoc(repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
+    const poisoned = { ...up, actCid: "sha256:raw-poison" };
+    handle.change((d) => { d.tiddlers["raw-poison"] = mutableLarRecord("raw-poison", { text: JSON.stringify(poisoned) }, "test"); });
+    await repo.flush();
+    const down = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH });
+    expect(down.parents).toEqual([up.actCid]);
+    await repo.shutdown();
+  });
+
+  it("excludes a verified parent whose own grandparent is absent", async () => {
+    const signer = await loadPersonaGroupRootSeed(0);
+    const branch = await signEdgeKapae(
+      { edgeId: EDGE, raised: true, parents: ["sha256:missing-grandparent"], epochCid: EPOCH },
+      (bytes) => ed.signAsync(bytes, signer).then(hex),
+    );
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const handle = await materializeSharedLarDoc(repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
+    handle.change((d) => { d.tiddlers["unavailable-branch"] = mutableLarRecord("unavailable-branch", { text: JSON.stringify(branch) }, "test"); });
+    await repo.flush();
+    const next = await runEdgeKapae({ edgeId: EDGE, raised: false, epochCid: EPOCH });
+    expect(next.parents).toEqual([]);
+    expect(next.shadowStands).toBe(false);
+    await repo.shutdown();
   });
 
   it("the write asserts NO authority — an act lands, and a reader under a different authority drops it", async () => {
@@ -107,60 +130,20 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
     expect(shadowed.size).toBe(0);                 // … and buys nothing where it holds no claim
   });
 
-  it("acts on DIFFERENT edges never contend — each climbs its own counter", async () => {
+  it("acts on DIFFERENT edges never contend — each has its own founded head", async () => {
     const a = await runEdgeKapae({ edgeId: "edge-a", raised: true, epochCid: EPOCH });
     const b = await runEdgeKapae({ edgeId: "edge-b", raised: true, epochCid: EPOCH });
-    expect(a.version).toBe(1);
-    expect(b.version).toBe(1);                     // b's counter never saw a's
+    expect(a.parents).toEqual([]);
+    expect(b.parents).toEqual([]);
 
     const { shadowed } = await boardState(a.signerDid);
     expect([...shadowed].sort()).toEqual(["edge-a", "edge-b"]);
   });
 
-  it("REFUSES a blank edge, a blank epochCid, an unheld root, and a sub-floor version", async () => {
+  it("REFUSES a blank edge, a blank epochCid, and an unheld root", async () => {
     await expect(runEdgeKapae({ edgeId: "  ", raised: true, epochCid: EPOCH })).rejects.toThrow(EdgeKapaeError);
     await expect(runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: "  " })).rejects.toThrow(EdgeKapaeError);
     await expect(runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH, handleIndex: 99 }))
       .rejects.toThrow(EdgeKapaeError);
-    await expect(runEdgeKapae({ edgeId: EDGE, raised: true, epochCid: EPOCH, version: 0 }))
-      .rejects.toThrow(EdgeKapaeError);
-  });
-});
-
-/**
- * A TORN CHARTER MUST NOT SILENTLY DEGRADE THE EPOCH ORDERING.
- *
- * `foldEdgeKapae` ranks acts by `epochOrder(epochCid) ?? -1`, so a reader that answers null for every cid
- * orders on VERSION ALONE — and the mesh law names that state out loud: `noChainHeld` exists precisely so
- * "a caller that cannot order epochs should SAY it at the call site where a reviewer will see it."
- *
- * This command built its rank map from `readNexusDoc(...)?.sealLineage ?? []`, which answers the empty
- * chain for BOTH "no charter stands" and "a charter stands and reads torn". The first reads as the honest
- * floor. The second hides a degradation inside a default: a command deciding whether a shadow STANDS drops
- * to version-only ordering, and the doc for that state says the ceiling grab stands open.
- *
- * Absent keeps the floor. TORN refuses.
- */
-describe("the epoch ordering a kāpae act folds under", () => {
-  it("★ a charter that STANDS and reads torn refuses the act — never a silent drop to version-only ★", async () => {
-    // The suite's beforeEach already stood the vessel identity and persona root.
-    // Tear the charter: the file stands, its fenced blocks no longer compose.
-    const charter = nexusCharterDocPath(daemonBagsDir());
-    mkdirSync(dirname(charter), { recursive: true });
-    writeFileSync(charter, "```toml seal\nnot a fence at all\n", "utf8");
-    expect(readNexusDoc(daemonBagsDir()), "the tear did not tear").toBeNull();
-
-    await expect(runEdgeKapae({
-      edgeId: "edge-torn", epochCid: "cid-torn", raised: true, storageDir: larDataDir(),
-    })).rejects.toThrow(/torn|unreadable|refus/i);
-  });
-
-  it("CONTROL — with NO charter at all the act still lands: the honest floor, ordered on version alone", async () => {
-    expect(readNexusDoc(daemonBagsDir())).toBeNull();
-
-    const out = await runEdgeKapae({
-      edgeId: "edge-nochain", epochCid: "cid-nochain", raised: true, storageDir: larDataDir(),
-    });
-    expect(out.edgeId).toBe("edge-nochain");
   });
 });

@@ -7,7 +7,7 @@
  *     board and folds the victim nym to Kapae'd (the exact set the antigen-ring enforces on),
  *   · a SUB-QUORUM raise REFUSES (fewer than threshold HELD roots sit in the roster) — nothing written,
  *   · an UNSEATED charter REFUSES (no roster to root on),
- *   · un_kapae at a STRICTLY HIGHER version LIFTS; the fold reflects it,
+ *   · un_kapae as a causal descendant LIFTS; the fold reflects it,
  *   · the written tiddler PERSISTS across Repo instances (a fresh Repo reads the prior write back).
  *
  * The signing is the a-multitude-of-one: one operator holds all three founding persona-roots and signs the
@@ -20,9 +20,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, genesisSealEpochCid, type NexusDoc } from "@lararium/mesh";
+import { hex, genesisSealEpochCid, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry, type NexusDoc } from "@lararium/mesh";
+import { Repo } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
@@ -70,8 +72,8 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
     seatCharter(roots.map((r) => r.verifyingKey));
 
     const res = await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
-    expect(res.version).toBe(1);
-    expect(res.priorVersion).toBeNull();
+    expect(res.actCid).toMatch(/^sha256:/);
+    expect(res.parents).toEqual([]);
     expect(res.signers).toHaveLength(2);       // exactly the 2-of-3 quorum
     expect(res.kapaedNow).toBe(true);          // folds to Kapae'd against the seated roster
 
@@ -79,28 +81,63 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
     const list = await runNexusKapaeList({ sealHome: sealHome() });
     expect(list.kapaed).toContain(VICTIM);
     expect(list.entries).toHaveLength(1);
-    expect(list.entries[0]).toMatchObject({ nym: VICTIM, action: "kapae", version: 1, signers: 2 });
+    expect(list.entries[0]).toMatchObject({ nym: VICTIM, action: "kapae", actCid: res.actCid, parents: [], signers: 2 });
   });
 
-  it("un_kapae at a STRICTLY HIGHER version LIFTS the standing ban", async () => {
+  it("un_kapae as a causal descendant LIFTS the standing ban", async () => {
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
 
-    await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });   // ban @ v1
+    const ban = await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
     const lift = await runNexusKapae({ action: "un_kapae", nym: VICTIM, sealHome: sealHome() });
-    expect(lift.version).toBe(2);              // strictly higher than the standing ban
-    expect(lift.priorVersion).toBe(1);
+    expect(lift.actCid).toMatch(/^sha256:/);
+    expect(lift.parents).toEqual([ban.actCid]);
     expect(lift.kapaedNow).toBe(false);        // the fold lifts it
 
     const list = await runNexusKapaeList({ sealHome: sealHome() });
     expect(list.kapaed).not.toContain(VICTIM);
     expect(list.entries).toHaveLength(2);      // both entries accrete; the fold picks the higher
 
-    // A re-ban at a yet-higher version re-imposes it (monotone both ways).
+    // A re-ban as a child of the lift re-imposes it.
     const reban = await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
-    expect(reban.version).toBe(3);
+    expect(reban.parents).toEqual([lift.actCid]);
     expect(reban.kapaedNow).toBe(true);
+  });
+
+  it("rejects a raw CID-poisoned board act when selecting the next frontier", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.map((r) => r.verifyingKey));
+    const ban = await runNexusKapae({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const handle = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(await loadVesselVerifyingKey()), "board:kapae-antigen");
+    const raw = { kind: "lararium/kapae-antigen", nym: VICTIM, action: "kapae", actCid: "sha256:raw-poison", parents: [], sealEpochCid: ban.sealEpochCid, signatures: [] };
+    handle.change((d) => { d.tiddlers["raw-poison"] = mutableLarRecord("raw-poison", { text: JSON.stringify(raw) }, "test"); });
+    await repo.flush();
+    const lift = await runNexusKapae({ action: "un_kapae", nym: VICTIM, sealHome: sealHome() });
+    expect(lift.parents).toEqual([ban.actCid]);
+    await repo.shutdown();
+  });
+
+  it("excludes a verified parent whose own grandparent is absent", async () => {
+    await generateOrLoadVesselIdentity();
+    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    seatCharter(roots.map((r) => r.verifyingKey));
+    const epoch = genesisSealEpochCid(roots.map((r) => r.verifyingKey), 2);
+    const signers = await Promise.all([0, 1].map(async (i) => ({
+      signer: roots[i]!.verifyingKey,
+      sign: async (bytes: Uint8Array) => ed.signAsync(bytes, await loadPersonaGroupRootSeed(i)).then(hex),
+    })));
+    const branch = await signAntigenEntry({ nym: VICTIM, action: "kapae", parents: ["sha256:missing-grandparent"], sealEpochCid: epoch }, signers);
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const handle = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(await loadVesselVerifyingKey()), "board:kapae-antigen");
+    handle.change((d) => { d.tiddlers["unavailable-branch"] = mutableLarRecord("unavailable-branch", { text: JSON.stringify(branch) }, "test"); });
+    await repo.flush();
+    const next = await runNexusKapae({ action: "un_kapae", nym: VICTIM, sealHome: sealHome() });
+    expect(next.parents).toEqual([]);
+    expect(next.kapaedNow).toBe(false);
+    await repo.shutdown();
   });
 
   it("SUB-QUORUM REFUSES: one held root against a 2-of-3 roster writes NOTHING", async () => {

@@ -27,6 +27,7 @@ import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
 import {
   CARRIAGE_ENTRY_DOMAIN,
+  carriageEntryActCid,
   type CarriageEntry,
   type CarriageAction,
 } from "./carriage-registry.js";
@@ -40,14 +41,12 @@ import type { QuorumSignature } from "./kapae-antigen.js";
 export const CARRIAGE_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/carriage-registry/" as const;
 
 /**
- * The tiddler key one carriage entry rides under — keyed by nym, ACTION, and version, so every distinct
- * signed entry ACCRETES (the additive CRDT the fold reads) and NOTHING overwrites a standing entry: an admit@v1
- * and a revoke@v1 land under DISTINCT keys and BOTH survive, so `foldCarriageSet`'s equivocation guard (a
- * same-version revoke drops membership) still runs — keying by nym alone would let a concurrent admit win the
- * Automerge LWW merge in place and silently resurrect a revoked member. The fold, never the write, adjudicates.
+ * The tiddler key one carriage entry rides under — keyed by the semantic act CID, so every distinct
+ * signed entry ACCRETES and NOTHING overwrites a standing entry. Concurrent branches therefore survive
+ * storage and the causal fold, never the write, adjudicates.
  */
-export function carriageEntryKey(nym: string, action: CarriageAction, version: number): string {
-  return `${CARRIAGE_ENTRY_PREFIX}${nym}/${action}/${version}`;
+export function carriageEntryKey(entry: Pick<CarriageEntry, "kind" | "nym" | "action" | "parents" | "sealEpochCid">): string {
+  return `${CARRIAGE_ENTRY_PREFIX}${carriageEntryActCid(entry)}`;
 }
 
 /**
@@ -58,7 +57,7 @@ export function carriageEntryKey(nym: string, action: CarriageAction, version: n
  * provenance only, never the quorum authority.
  */
 export function writeCarriageEntry(draft: LarDoc, entry: CarriageEntry): void {
-  const key = carriageEntryKey(entry.nym, entry.action, entry.version);
+  const key = carriageEntryKey(entry);
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(entry) }, entry.sealEpochCid);
 }
 
@@ -77,8 +76,8 @@ function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
   if (p["kind"] !== CARRIAGE_ENTRY_DOMAIN) return null;                    // not a carriage tiddler → skip
   if (typeof p["nym"] !== "string" || p["nym"].length === 0) return null;   // no member nym → skip
   const action = p["action"];
-  if (action !== "admit" && action !== "revoke") return null;               // unknown action → skip
-  if (!Number.isFinite(p["version"])) return null;                          // no monotone version → skip
+  if (action !== "admit" && action !== "revoke" && action !== "carry" && action !== "uncarry") return null; // unknown action → skip
+  if (!Array.isArray(p["parents"]) || !p["parents"].every((parent) => typeof parent === "string" && /^[0-9a-f]{64}$/.test(parent))) return null;
   if (typeof p["sealEpochCid"] !== "string" || p["sealEpochCid"].length === 0) return null; // no epoch root → skip
   if (!Array.isArray(p["signatures"])) return null;                         // no quorum shape → skip
   const signatures: QuorumSignature[] = [];
@@ -101,7 +100,7 @@ function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
     kind:            CARRIAGE_ENTRY_DOMAIN,
     nym:             p["nym"],
     action:          action as CarriageAction,
-    version:         p["version"] as number,
+    parents:         p["parents"] as string[],
     sealEpochCid: p["sealEpochCid"],
     signatures,
   };

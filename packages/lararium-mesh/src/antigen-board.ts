@@ -35,14 +35,13 @@ import {
 export const ANTIGEN_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/kapae-antigen/" as const;
 
 /**
- * The tiddler key one antigen entry rides under — keyed by nym, ACTION, and version, so every distinct signed
- * entry ACCRETES (the additive CRDT the fold reads) and NOTHING overwrites a standing entry: a ban@v1 and a
- * lift@v1 land under DISTINCT keys and BOTH survive, so `foldAntigenSet`'s equivocation guard (a same-version
- * kapae beats un_kapae) still runs — keying by nym alone (or nym+version) would let a concurrent lift win the
- * Automerge LWW merge in place and silently roll a ban back. The fold, never the write, adjudicates the winner.
+ * The tiddler key one antigen entry rides under — keyed by nym, ACTION, and semantic act CID, so every distinct
+ * signed act ACCRETES (the additive CRDT the fold reads) and NOTHING overwrites a standing entry. Concurrent
+ * contradictory acts both survive and the causal fold can return `unsettled`; keying by nym alone would let a
+ * merge silently choose an arrival. The fold, never the write, adjudicates the local verdict.
  */
-export function antigenEntryKey(nym: string, action: KapaeAction, version: number): string {
-  return `${ANTIGEN_ENTRY_PREFIX}${nym}/${action}/${version}`;
+export function antigenEntryKey(nym: string, action: KapaeAction, actCid: string): string {
+  return `${ANTIGEN_ENTRY_PREFIX}${nym}/${action}/${actCid}`;
 }
 
 /**
@@ -53,7 +52,7 @@ export function antigenEntryKey(nym: string, action: KapaeAction, version: numbe
  * write. The authority stamp carries the entry's charter epoch — provenance only, never the quorum authority.
  */
 export function writeAntigenEntry(draft: LarDoc, entry: KapaeAntigenEntry): void {
-  const key = antigenEntryKey(entry.nym, entry.action, entry.version);
+  const key = antigenEntryKey(entry.nym, entry.action, entry.actCid);
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(entry) }, entry.sealEpochCid);
 }
 
@@ -73,7 +72,8 @@ function coerceAntigenEntry(parsed: unknown): KapaeAntigenEntry | null {
   if (typeof p["nym"] !== "string" || p["nym"].length === 0) return null; // no ban target → skip
   const action = p["action"];
   if (action !== "kapae" && action !== "un_kapae") return null;           // unknown action → skip
-  if (!Number.isFinite(p["version"])) return null;                        // no monotone version → skip
+  if (typeof p["actCid"] !== "string" || p["actCid"].length === 0) return null;
+  if (!Array.isArray(p["parents"]) || p["parents"].some((x) => typeof x !== "string")) return null;
   if (typeof p["sealEpochCid"] !== "string" || p["sealEpochCid"].length === 0) return null; // no epoch root → skip
   if (!Array.isArray(p["signatures"])) return null;                       // no quorum shape → skip
   const signatures: QuorumSignature[] = [];
@@ -86,7 +86,8 @@ function coerceAntigenEntry(parsed: unknown): KapaeAntigenEntry | null {
     kind:            KAPAE_ANTIGEN_DOMAIN,
     nym:             p["nym"],
     action:          action as KapaeAction,
-    version:         p["version"] as number,
+    actCid:          p["actCid"],
+    parents:         [...new Set(p["parents"] as string[])].sort(),
     sealEpochCid: p["sealEpochCid"],
     signatures,
   };

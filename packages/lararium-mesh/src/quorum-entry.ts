@@ -2,7 +2,7 @@
  * quorum-entry — the ONE canonical byte-image every quorum-signed steward entry signs over.
  *
  * THE SUBTRACTION. The Kapae antigen (`kapae-antigen.ts`) and the members set (`membership-registry.ts`) stand the
- * SAME structure: a monotone per-nym CRDT of quorum-signed steward acts. Their signed bytes carry the identical five
+ * SAME structure: a causal per-nym CRDT of quorum-signed steward acts. Their signed bytes carry the identical five
  * fields in the identical order — only the `kind` DOMAIN separates them. This module holds that common image once, so
  * the two boards can never drift a field apart while both claiming a quorum verified them.
  *
@@ -28,10 +28,10 @@ export interface QuorumEntryFields {
   readonly kind:            string;
   /** The subject's ed25519 verifying-key hex — an identity, never a doc. */
   readonly nym:             string;
-  /** The board-local act (`kapae`/`un_kapae`, `admit`/`revoke`). Monotone per nym by `version`. */
+  /** The board-local act (`kapae`/`un_kapae`, `admit`/`revoke`). */
   readonly action:          string;
-  /** The monotone per-nym version — a higher verified version supersedes a lower. */
-  readonly version:         number;
+  /** Content-addressed causal parents; empty means this relation family's genesis act. */
+  readonly parents:         readonly string[];
   /** The charter epoch this act roots on — an entry citing an unknown epoch is IGNORED. */
   readonly sealEpochCid: string;
 }
@@ -45,7 +45,7 @@ export function quorumEntryBytes(fields: QuorumEntryFields): Uint8Array {
     kind:            fields.kind,
     nym:             fields.nym,
     action:          fields.action,
-    version:         fields.version,
+    parents:         [...new Set(fields.parents)].sort(),
     sealEpochCid: fields.sealEpochCid,
   });
 }

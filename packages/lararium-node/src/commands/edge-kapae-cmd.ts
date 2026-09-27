@@ -7,10 +7,8 @@
  * grade its own authority. So a raise by a root holding no claim over an edge lands, verifies as a signature,
  * and gets dropped by every reader. It costs the writer a tiddler and buys them nothing.
  *
- * VERSION CLIMBS FROM THE BOARD, never from a guess. The act reads the highest version standing for its edge
- * and lands one above, so a fresh act supersedes rather than ties. A caller MAY pin a version deliberately —
- * the way a partitioned peer re-asserts at a version it already knows — and a same-version tie then leaves the
- * shadow UP, exactly as the law demands.
+ * CAUSAL FRONTIER CLIMBS FROM THE BOARD, never from a scalar guess. The act cites locally admissible semantic
+ * heads; a caller may only pin one of those heads deliberately, and contradictory heads remain unsettled.
  *
  * RAISING AND LOWERING STAY SYMMETRIC IN SHAPE AND ASYMMETRIC IN FORCE: both write one signed act, and only
  * the fold knows that a raise wins a tie. Nothing here special-cases the gesture, which keeps the asymmetry
@@ -23,13 +21,10 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import * as ed from "@noble/ed25519";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeKapaeActsFromBoard, shadowSetFromBoard,
+  signEdgeKapae, writeEdgeKapae, edgeKapaeActsFromBoard, edgeKapaeActCid, edgeKapaeBytes, shadowSetFromBoard,
   edgeKapaeBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, hexToBytes,
 } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
-import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
-import { noChainHeld, type EpochOrder } from "@lararium/mesh";
-import { daemonBagsDir } from "../lares-config.js";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
@@ -46,15 +41,16 @@ export interface EdgeKapaeOptions {
   readonly epochCid:        string;
   /** WHICH held persona root signs. Absent → the first held root. */
   readonly handleIndex?: number;
-  /** Pin the version rather than climbing from the board — for a partitioned re-assertion. */
-  readonly version?:     number;
+  /** Explicit causal parents; absent means the currently observed local frontier. */
+  readonly parents?:     readonly string[];
   readonly storageDir?:  string;
 }
 
 export interface EdgeKapaeResult {
   readonly edgeId:    string;
   readonly raised:    boolean;
-  readonly version:   number;
+  readonly actCid:   string;
+  readonly parents: readonly string[];
   readonly epochCid:     string;
   readonly signerDid: string;
   readonly boardUrl:  string;
@@ -94,15 +90,32 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:edge-kapae");
 
-    // Climb from what STANDS, so an act supersedes rather than ties. A pinned version rides as given.
-    const standing = edgeKapaeActsFromBoard(handle.doc()).filter((a) => a.edgeId === edgeId);
-    const version  = opts.version ?? (standing.reduce((m, a) => Math.max(m, a.version), 0) + 1);
-    if (!Number.isSafeInteger(version) || version < 1) {
-      throw new EdgeKapaeError(`version ${version} sits below the monotone floor — a counter starts at 1.`);
+    // Continue the observed frontier. No scalar counter can stand in for causality here.
+    const raw = edgeKapaeActsFromBoard(handle.doc()).filter((a) => a.edgeId === edgeId && a.epochCid === epochCid);
+    const verified = (await Promise.all(raw.map(async (a) => {
+      if (a.actCid !== edgeKapaeActCid(a)) return null;
+      const { sig: _sig, ...unsigned } = a;
+      if (!(await verify(edgeKapaeBytes(unsigned), a.sig, signerDid))) return null;
+      return a;
+    }))).filter((a): a is NonNullable<typeof a> => a !== null);
+    // Close the ancestry to a fixed point. A present parent with a missing grandparent is itself
+    // unavailable and must not become the next command's frontier head.
+    let admissible = verified;
+    for (;;) {
+      const ids = new Set(admissible.map((a) => a.actCid));
+      const closed = admissible.filter((a) => a.parents.every((p) => ids.has(p)));
+      if (closed.length === admissible.length) break;
+      admissible = closed;
+    }
+    const covered = new Set(admissible.flatMap((a) => a.parents));
+    const heads = admissible.filter((a) => !covered.has(a.actCid)).map((a) => a.actCid).sort();
+    const parents = [...(opts.parents ?? heads)].sort();
+    if (opts.parents && opts.parents.some((p) => !heads.includes(p))) {
+      throw new EdgeKapaeError("refusing raw or non-frontier parent: parents must be locally admissible causal heads.");
     }
 
     const act = await signEdgeKapae(
-      { edgeId, raised: opts.raised, version, epochCid },
+      { edgeId, raised: opts.raised, parents, epochCid },
       ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)),
     );
     handle.change((d) => writeEdgeKapae(d, act));
@@ -111,28 +124,8 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     // Read the act BACK through the verifying fold, under this signer as the edge's authority. A caller
     // learns whether the shadow now STANDS rather than merely whether a tiddler landed — and an act that
     // cannot survive its own extraction refuses loudly here instead of sitting on the board doing nothing.
-    // The chain that orders the act. A command deciding whether a shadow STANDS holds the chain that
-    // orders standing — epochCid outranks version, and nobody runs ahead of an epochCid not yet minted.
-    // A TORN CHARTER MUST NOT DEGRADE THE ORDERING IN SILENCE. `foldEdgeKapae` ranks on
-    // `epochOrder(cid) ?? -1`, so a reader answering null for every cid orders on VERSION ALONE and the
-    // ceiling grab stands open — which is exactly why mesh names that state `noChainHeld` rather than
-    // letting a caller reach it by omission. `readNexusDoc` answers null for BOTH "no charter" and "a
-    // charter that reads torn": the first IS the honest floor, the second hides the degradation inside a
-    // default. A command deciding whether a shadow STANDS refuses the second.
-    const charterStands = nexusCharterStands(daemonBagsDir());
-    const doc = readNexusDoc(daemonBagsDir());
-    if (charterStands && doc === null) {
-      throw new EdgeKapaeError("the charter doc stands here but reads TORN — refusing to act. An act folds under the chain that ORDERS it, and an unreadable chain would silently drop this fold to version-only ordering. Repair the charter, then act.");
-    }
-    const chain = doc?.sealLineage ?? [];
-    const rank  = new Map(chain.map((e) => [e.epochCid, e.epoch]));   // cid → its ORDINAL position in the chain
-    // SAID, NOT REACHED BY OMISSION. With no chain to walk, every cid ranks unknown and the fold orders on
-    // VERSION alone — and mesh names that state so a reviewer meets it at the call site. Hand-rolling a
-    // lambda that happens to answer null for everything reaches the same behaviour while hiding the
-    // declaration, which is what the comment above objected to and what this line then did anyway.
-    const epochOrder: EpochOrder = chain.length === 0 ? noChainHeld : (cid) => rank.get(cid) ?? null;
-    const shadowed = await shadowSetFromBoard(handle.doc(), () => signerDid, verify, epochOrder);
-    return { edgeId, raised: opts.raised, version, epochCid, signerDid, boardUrl, shadowStands: shadowed.has(edgeId) };
+    const shadowed = await shadowSetFromBoard(handle.doc(), () => signerDid, verify);
+    return { edgeId, raised: opts.raised, actCid: act.actCid, parents, epochCid, signerDid, boardUrl, shadowStands: shadowed.has(edgeId) };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

@@ -87,7 +87,7 @@ describe("rosterFromNexusDoc — a seated doc raises a LIVE antigen roster", () 
     // Two founding kahu sign a ban rooting on the doc's own charter epoch → the nym stands Kapae'd.
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
     const entry = await signAntigenEntry(
-      { nym: VICTIM, action: "kapae", version: 1, sealEpochCid: roster.sealEpochCid },
+      { nym: VICTIM, action: "kapae", parents: [], sealEpochCid: roster.sealEpochCid },
       signers,
     );
     const set = await foldAntigenSet([entry], roster, verifier);
@@ -99,7 +99,7 @@ describe("rosterFromNexusDoc — a seated doc raises a LIVE antigen roster", () 
     const roster = rosterFromNexusDoc(doc);
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
     const entry = await signAntigenEntry(
-      { nym: VICTIM, action: "kapae", version: 1, sealEpochCid: "epoch0-someone-elses" },
+      { nym: VICTIM, action: "kapae", parents: [], sealEpochCid: "epoch0-someone-elses" },
       signers,
     );
     expect(isKapaed(VICTIM, await foldAntigenSet([entry], roster, verifier))).toBe(false);
@@ -133,7 +133,7 @@ describe("rosterFromNexusDoc — the PRE-ROTATED CHAIN roots the antigen on the 
     expect(foundingQuorumSeated(doc)).toBe(true);
 
     const signers = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const entry = await signAntigenEntry({ nym: VICTIM, action: "kapae", version: 1, sealEpochCid: roster.sealEpochCid }, signers);
+    const entry = await signAntigenEntry({ nym: VICTIM, action: "kapae", parents: [], sealEpochCid: roster.sealEpochCid }, signers);
     expect(isKapaed(VICTIM, await foldAntigenSet([entry], roster, verifier))).toBe(true);
   });
 

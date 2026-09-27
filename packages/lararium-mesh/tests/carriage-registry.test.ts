@@ -7,9 +7,9 @@
  *   · a SUB-QUORUM admit → ignored (a lone node cannot admit),
  *   · an admit MISSING / with a BAD contract-in → ignored (a Nexus cannot conscript an operator — WAX-SEALS-ONLY),
  *   · a REVOKE (kahu quorum only, no contract-in) drops membership,
- *   · a revoke at a STRICTLY HIGHER version supersedes an admit; a same-version tie stays NON-member (fail-closed),
+ *   · a causally-descendant revoke supersedes an admit; concurrent contradictory heads stay unsettled,
  *   · an entry on the WRONG charter epoch, and an unbound roster, both fail closed,
- *   · USER-NEVER-WRITTEN — the signed payload carries ONLY the operator-contract floor (pubkey · action · version
+ *   · USER-NEVER-WRITTEN — the signed payload carries ONLY the operator-contract floor (pubkey · action · parents
  *     · charter-epoch); no name/email/device/behavior field can ride the signed bytes.
  */
 import { describe, test, expect } from "vitest";
@@ -17,7 +17,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
   signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryBytes, foldCarriageSet, foldCarriageDetails, holdsCarriage,
-  CARRIAGE_ENTRY_DOMAIN, type CarriageEntry, type QuorumSignature,
+  CARRIAGE_ENTRY_DOMAIN, carriageEntryActCid, type CarriageEntry, type QuorumSignature,
 } from "../src/carriage-registry.js";
 import type { KahuRoster } from "../src/kapae-antigen.js";
 
@@ -45,7 +45,7 @@ async function contractIn(seed: Uint8Array, epoch = EPOCH): Promise<QuorumSignat
   return signCarriageContract(nym, epoch, signerOf(seed));
 }
 
-async function admitEntry(over: Partial<Pick<CarriageEntry, "action" | "version" | "sealEpochCid">> = {},
+async function admitEntry(over: Partial<Pick<CarriageEntry, "action" | "parents" | "sealEpochCid">> = {},
                           kahu: Uint8Array[] = [SEEDS.guru, SEEDS.telarus],
                           contract: QuorumSignature | undefined = undefined,
                           joinerSeed: Uint8Array = SEEDS.joiner): Promise<CarriageEntry> {
@@ -53,7 +53,7 @@ async function admitEntry(over: Partial<Pick<CarriageEntry, "action" | "version"
   const signers = await Promise.all(kahu.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const cs      = contract ?? (over.action === "revoke" ? undefined : await contractIn(joinerSeed, over.sealEpochCid ?? EPOCH));
   return signCarriageQuorum(
-    { nym, action: over.action ?? "admit", version: over.version ?? 1, sealEpochCid: over.sealEpochCid ?? EPOCH },
+    { nym, action: over.action ?? "admit", parents: over.parents ?? [], sealEpochCid: over.sealEpochCid ?? EPOCH },
     signers, cs,
   );
 }
@@ -116,77 +116,83 @@ describe("the members fold — admit needs BOTH the kahu quorum AND the operator
   });
 });
 
-describe("revoke — kahu quorum only, monotone, fail-closed equivocation", () => {
-  test("a revoke at a STRICTLY HIGHER version supersedes an admit (no contract-in needed)", async () => {
+describe("causal revoke — kahu quorum only, fail-closed concurrent equivocation", () => {
+  test("a causally-descendant revoke supersedes an admit (no contract-in needed)", async () => {
     const r = await roster();
     const nym = await pubOf(SEEDS.joiner);
-    const admit  = await admitEntry({ action: "admit",  version: 1 });
-    const revoke = await admitEntry({ action: "revoke", version: 2 });
+    const admit  = await admitEntry({ action: "admit" });
+    const revoke = await admitEntry({ action: "revoke", parents: [
+      carriageEntryActCid(admit),
+    ] });
     const set = await foldCarriageSet([admit, revoke], r);
     expect(holdsCarriage(nym, set)).toBe(false);
   });
 
-  test("a same-version admit/revoke tie stays NON-member (a tie never grants membership)", async () => {
+  test("concurrent admit/revoke heads stay unsettled and NON-member", async () => {
     const r = await roster();
     const nym = await pubOf(SEEDS.joiner);
-    const admit  = await admitEntry({ action: "admit",  version: 5 });
-    const revoke = await admitEntry({ action: "revoke", version: 5 });
+    const admit  = await admitEntry({ action: "admit" });
+    const revoke = await admitEntry({ action: "revoke" });
     expect(holdsCarriage(nym, await foldCarriageSet([admit, revoke], r))).toBe(false);
     expect(holdsCarriage(nym, await foldCarriageSet([revoke, admit], r))).toBe(false);   // order-independent
   });
 
-  test("a stale revoke (lower version) cannot roll back a fresher admit", async () => {
+  test("an ordered descendant admit can reopen a revoked relation", async () => {
     const r = await roster();
     const nym = await pubOf(SEEDS.joiner);
-    const revoke = await admitEntry({ action: "revoke", version: 1 });
-    const admit  = await admitEntry({ action: "admit",  version: 2 });
+    const revoke = await admitEntry({ action: "revoke" });
+    const admit  = await admitEntry({ action: "admit", parents: [
+      carriageEntryActCid(revoke),
+    ] });
     const set = await foldCarriageSet([revoke, admit], r);
     expect(holdsCarriage(nym, set)).toBe(true);
   });
 });
 
 describe("fold details — evidence for a future receiver-local relation verifier", () => {
-  test("retains charter head, accepted version, and the same member set", async () => {
+  test("retains charter head, accepted evidence CID, and the same member set", async () => {
     const r = await roster();
-    const admit = await admitEntry({ version: 3 });
+    const admit = await admitEntry();
     const set = await foldCarriageSet([admit], r);
     const details = await foldCarriageDetails([admit], r);
     const nym = await pubOf(SEEDS.joiner);
     expect(details.charterEpochCid).toBe(EPOCH);
     expect(details.members).toEqual(set);
     expect(details.entries).toContainEqual(expect.objectContaining({
-      nym, action: "admit", version: 3, sealEpochCid: EPOCH,
-      counted: true, state: "accepted", reason: "highest-counted-admit",
+      nym, action: "admit", parents: [], sealEpochCid: EPOCH,
+      counted: true, state: "accepted", reason: "causal-head-accepted",
     }));
   });
 
-  test("distinguishes revoke and same-version equivocation while preserving strict-floor membership", async () => {
+  test("distinguishes concurrent equivocation and an ordered revoke", async () => {
     const r = await roster();
-    const admit = await admitEntry({ version: 5 });
-    const revoke = await admitEntry({ action: "revoke", version: 5 });
+    const admit = await admitEntry();
+    const revoke = await admitEntry({ action: "revoke" });
     const details = await foldCarriageDetails([admit, revoke], r);
     const nym = await pubOf(SEEDS.joiner);
     expect(details.members).toEqual(await foldCarriageSet([admit, revoke], r));
     expect(details.members.has(nym)).toBe(false);
-    expect(details.entries.filter((e) => e.nym === nym && e.version === 5).every((e) => e.state === "equivocal")).toBe(true);
+    expect(details.entries.filter((e) => e.nym === nym).every((e) => e.state === "unsettled")).toBe(true);
 
-    const higherRevoke = await admitEntry({ action: "revoke", version: 6 });
+    const higherRevoke = await admitEntry({ action: "revoke", parents: [
+      carriageEntryActCid(admit),
+    ] });
     const revoked = await foldCarriageDetails([admit, higherRevoke], r);
-    expect(revoked.entries).toContainEqual(expect.objectContaining({ version: 6, state: "revoked", reason: "highest-counted-revoke" }));
+    expect(revoked.entries).toContainEqual(expect.objectContaining({ state: "revoked", reason: "causal-head-revoked" }));
   });
 
   test("mixed member and place actions preserve legacy membership parity, including carry ties", async () => {
     const r = await roster();
-    const memberAdmit = await admitEntry({ version: 4 });
-    const memberRevoke = await admitEntry({ action: "revoke", version: 4 });
+    const memberAdmit = await admitEntry();
+    const memberRevoke = await admitEntry({ action: "revoke" });
     const placeNym = await pubOf(SEEDS.stranger);
     const kahu = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (seed) => ({ signer: await pubOf(seed), sign: signerOf(seed) })));
     const carry = await signCarriageQuorum(
-      { nym: placeNym, action: "carry", version: 1, sealEpochCid: EPOCH }, kahu,
+      { nym: placeNym, action: "carry", parents: [], sealEpochCid: EPOCH }, kahu,
       await signCarrierContract(placeNym, EPOCH, signerOf(SEEDS.stranger)),
     );
     const uncarry = await signCarriageQuorum(
-      { nym: placeNym, action: "uncarry", version: 2, sealEpochCid: EPOCH }, kahu,
+      { nym: placeNym, action: "uncarry", parents: [carriageEntryActCid(carry)], sealEpochCid: EPOCH }, kahu,
     );
     const mixed = [memberAdmit, memberRevoke, carry, uncarry];
     const legacy = await foldCarriageSet(mixed, r);
@@ -194,9 +200,9 @@ describe("fold details — evidence for a future receiver-local relation verifie
     const joinerNym = await pubOf(SEEDS.joiner);
     expect(detailed.members).toEqual(legacy);
     expect(detailed.members.has(placeNym)).toBe(false);
-    expect(detailed.entries).toContainEqual(expect.objectContaining({ nym: placeNym, action: "uncarry", state: "ignored" }));
-    expect(detailed.entries.filter((entry) => entry.nym === joinerNym && entry.version === 4)
-      .every((entry) => entry.state === "equivocal")).toBe(true);
+    expect(detailed.entries).toContainEqual(expect.objectContaining({ nym: placeNym, action: "uncarry", state: "revoked" }));
+    expect(detailed.entries.filter((entry) => entry.nym === joinerNym)
+      .every((entry) => entry.state === "unsettled")).toBe(true);
   });
 
   test("names uncounted, wrong-charter, and unavailable evidence without granting", async () => {
@@ -214,18 +220,18 @@ describe("fold details — evidence for a future receiver-local relation verifie
 });
 
 describe("TRACK CONTRACTS, NEVER IDENTITIES — the signed payload is the operator-contract FLOOR", () => {
-  test("the signed bytes carry ONLY pubkey · action · version · charter-epoch — no identity field", async () => {
+  test("the signed bytes carry ONLY pubkey · action · causal parents · charter-epoch — no identity field", async () => {
     const nym = await pubOf(SEEDS.joiner);
     const decoded = JSON.parse(new TextDecoder().decode(
-      carriageEntryBytes({ kind: CARRIAGE_ENTRY_DOMAIN, nym, action: "admit", version: 1, sealEpochCid: EPOCH }),
+      carriageEntryBytes({ kind: CARRIAGE_ENTRY_DOMAIN, nym, action: "admit", parents: [], sealEpochCid: EPOCH }),
     )) as Record<string, unknown>;
     // Exactly the floor keys — nothing that could name a human.
-    expect(Object.keys(decoded).sort()).toEqual(["action", "kind", "nym", "sealEpochCid", "version"]);
+    expect(Object.keys(decoded).sort()).toEqual(["action", "kind", "nym", "parents", "sealEpochCid"]);
     expect(decoded["nym"]).toBe(nym);                       // an ed25519 pubkey, never a name
     expect(JSON.stringify(decoded)).not.toMatch(/name|email|device|behavior/i);
   });
 
-  test("the contract-in the operator signs carries ONLY nym + charter-epoch (version-independent)", async () => {
+  test("the contract-in the operator signs carries ONLY nym + charter-epoch (independent of causal acts)", async () => {
     const cs = await contractIn(SEEDS.joiner);
     const nym = await pubOf(SEEDS.joiner);
     expect(cs.signer).toBe(nym);   // the seal is the operator's OWN — proves consent, names no human

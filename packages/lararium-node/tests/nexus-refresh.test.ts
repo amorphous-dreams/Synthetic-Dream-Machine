@@ -58,7 +58,7 @@ function seatedCharter(keys: string[], posture?: FederationPosture): NexusDoc {
 
 async function banEntry(nym: string, epoch: string): Promise<KapaeAntigenEntry> {
   const signers = await Promise.all([SEEDS[0]!, SEEDS[1]!].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signAntigenEntry({ nym, action: "kapae", version: 1, sealEpochCid: epoch }, signers);
+  return signAntigenEntry({ nym, action: "kapae", parents: [], sealEpochCid: epoch }, signers);
 }
 
 /** Stand the two live holders on a repo carrying NO storage — a cold in-memory board (the "just booted" state). */

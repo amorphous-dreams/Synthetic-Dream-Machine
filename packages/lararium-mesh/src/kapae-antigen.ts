@@ -11,9 +11,9 @@
  * dependency inversion; a MISSING verifier denies (`denyingQuorumVerifier`), never trusts.
  *
  * FAIL CLOSED, three ways: an entry whose quorum-signature does not verify is IGNORED (never
- * trusted); an entry rooting on an unknown charter epoch is IGNORED; a same-version equivocation
- * between a ban and a lift stays Kapae'd (a lift never rolls back a ban it ties). Only a
- * quorum-verified `un_kapae` at a STRICTLY HIGHER version lifts a Kapae.
+ * trusted); an entry rooting on an unknown charter head is IGNORED; a malformed semantic CID
+ * is REJECTED; concurrent opposite causal heads remain UNSETTLED. A verified `un_kapae`
+ * withdraws a ban only when it explicitly continues that ban's causal evidence.
  *
  * Platform-blind: rides ./crypto + @noble/ed25519 only. NO node: imports.
  * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#kapae-the-antigen
@@ -21,12 +21,11 @@
 
 import { KAPAE_ANTIGEN_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
-import { hexToBytes } from "./crypto.js";
-import { quorumEntryBytes } from "./quorum-entry.js";
+import { hexToBytes, sha256HexBytesSync, canonicalJsonBytes } from "./crypto.js";
 
 /** The domain a Kapae-antigen entry signs over — a signature is meaningless without its domain. */
 export { KAPAE_ANTIGEN_DOMAIN } from "./domains.js";
-/** A steward act on the antigen: raise a ban, or lift one. Monotone per-nym by `version`. */
+/** A steward act on the antigen: raise a ban, or lift one. Acts advance by causal parents. */
 export type KapaeAction = "kapae" | "un_kapae";
 
 /** One founding-kahu signature over an antigen entry's canonical bytes. */
@@ -39,9 +38,8 @@ export interface QuorumSignature {
 
 /**
  * One entry in the antigen set — a quorum-signed ban or lift of ONE presenter nym. The set is a
- * monotone/additive CRDT: entries only accrete, and the fold reads the highest-version verified
- * entry per nym. The signatures ride OUTSIDE the signed content, exactly as a handle-card keeps its
- * lease out of its identity — so re-carrying an entry never re-signs it.
+ * additive CRDT: entries only accrete, and the fold reads their locally held causal frontier.
+ * The signatures ride OUTSIDE the semantic identity, so re-carrying an entry never re-signs it.
  */
 export interface KapaeAntigenEntry {
   readonly kind:            typeof KAPAE_ANTIGEN_DOMAIN;
@@ -49,8 +47,10 @@ export interface KapaeAntigenEntry {
   readonly nym:             string;
   /** Raise (`kapae`) or lift (`un_kapae`) the ban on `nym`. */
   readonly action:          KapaeAction;
-  /** Monotone per-nym: a later steward act supersedes an earlier one; a stale entry cannot roll it back. */
-  readonly version:         number;
+  /** Semantic content identity; signatures are outside this identity. */
+  readonly actCid:          string;
+  /** Causal parents in this nym + charter relation family. */
+  readonly parents:         readonly string[];
   /** The nexus-charter epoch this quorum act roots on (the wax-stamp epoch-chain — SealEpoch.epochCid). */
   readonly sealEpochCid: string;
   /** ≥ threshold distinct-signer signatures — the quorum authority. */
@@ -77,7 +77,12 @@ export interface KahuRoster {
  * un-presentable on the members board (`quorum-entry.ts`).
  */
 export function antigenEntryBytes(entry: Omit<KapaeAntigenEntry, "signatures">): Uint8Array {
-  return quorumEntryBytes(entry);
+  const { actCid: _cid, signatures: _signatures, ...semantic } = entry as KapaeAntigenEntry;
+  return canonicalJsonBytes({ ...semantic, parents: [...new Set(semantic.parents)].sort() });
+}
+
+export function antigenActCid(entry: Omit<KapaeAntigenEntry, "signatures" | "actCid">): string {
+  return `sha256:${sha256HexBytesSync(antigenEntryBytes({ ...entry, actCid: "" }))}`;
 }
 
 /**
@@ -141,10 +146,11 @@ export function makeMultiSigQuorumVerifier(): QuorumVerifier {
  * The module holds no key; the caller supplies each kahu's own signer (mirrors handle-card / wax-stamp).
  */
 export async function signAntigenEntry(
-  parts: Omit<KapaeAntigenEntry, "kind" | "signatures">,
+  parts: Omit<KapaeAntigenEntry, "kind" | "signatures" | "actCid">,
   signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
 ): Promise<KapaeAntigenEntry> {
-  const unsigned = { ...parts, kind: KAPAE_ANTIGEN_DOMAIN } as Omit<KapaeAntigenEntry, "signatures">;
+  const base = { ...parts, kind: KAPAE_ANTIGEN_DOMAIN, parents: [...new Set(parts.parents)].sort() } as Omit<KapaeAntigenEntry, "signatures" | "actCid">;
+  const unsigned = { ...base, actCid: antigenActCid(base) } as Omit<KapaeAntigenEntry, "signatures">;
   const bytes = antigenEntryBytes(unsigned);
   const signatures: QuorumSignature[] = [];
   for (const s of signers) signatures.push({ signer: s.signer, sig: await s.sign(bytes) });
@@ -152,32 +158,53 @@ export async function signAntigenEntry(
 }
 
 /**
- * Fold the antigen entries into the CURRENTLY-Kapae'd nym set. Only quorum-VERIFIED entries count —
- * an unverified entry is IGNORED, never trusted. Per nym the fold keeps the highest-version verified
- * entry; a nym stands Kapae'd iff that winner's action is `kapae`. Fail-closed on equivocation: a
- * `kapae` and an `un_kapae` at the SAME version both stay Kapae'd (a tie never lifts a ban).
+ * Fold the antigen entries into the locally held Kapae frontier. Only quorum-VERIFIED entries count —
+ * an unverified entry is IGNORED, never trusted. A signed entry whose carried semantic CID does not
+ * recompute is REJECTED before it can name a parent or head. A nym stands Kapae'd only when its
+ * complete causal frontier holds one or more compatible `kapae` heads. Opposite concurrent heads
+ * remain unsettled rather than allowing an implicit winner. Different authorized kahu roots can therefore
+ * produce concurrent heads; a reader holding both must surface `unsettled`, never choose by arrival order.
  *
  * The result is a plain nym set — the enforcement shore (./federation-gate carryContractShareDecision)
  * reads it to deny a Kapae'd presenter with Mu.
  */
-export async function foldAntigenSet(
+export type AntigenVerdict = "held" | "withdrawn" | "unsettled" | "unavailable" | "rejected";
+
+export async function foldAntigenVerdicts(
   entries: Iterable<KapaeAntigenEntry>,
   roster: KahuRoster,
   verifier: QuorumVerifier,
-): Promise<ReadonlySet<string>> {
-  // Per nym, the winning verified entry: highest version; on a version tie, `kapae` beats `un_kapae`.
-  const winner = new Map<string, { version: number; action: KapaeAction }>();
+): Promise<ReadonlyMap<string, AntigenVerdict>> {
+  const grouped = new Map<string, KapaeAntigenEntry[]>();
   for (const entry of entries) {
     if (!(await verifier.verifyQuorum(entry, roster))) continue;   // unverified → ignored, never trusted
-    const cur = winner.get(entry.nym);
-    if (cur === undefined || entry.version > cur.version) {
-      winner.set(entry.nym, { version: entry.version, action: entry.action });
-    } else if (entry.version === cur.version && entry.action === "kapae") {
-      cur.action = "kapae";   // same-version tie stays Kapae'd (fail-closed against an equivocating lift)
-    }
+    (grouped.get(entry.nym) ?? (grouped.set(entry.nym, []), grouped.get(entry.nym)!)).push(entry);
   }
+  const verdicts = new Map<string, AntigenVerdict>();
+  for (const [nym, group] of grouped) {
+    // `actCid` deliberately sits outside the signed byte image so signatures survive different
+    // carriage representations. Recompute it before it participates in causal topology: otherwise
+    // a holder could relabel a valid signed act and manufacture parents or hide a real head.
+    if (group.some((entry) => entry.actCid !== antigenActCid(entry))) {
+      verdicts.set(nym, "rejected");
+      continue;
+    }
+    const ids = new Set(group.map((e) => e.actCid));
+    const missing = group.some((e) => e.parents.some((p) => !ids.has(p)));
+    if (missing) { verdicts.set(nym, "unavailable"); continue; }
+    const covered = new Set(group.flatMap((e) => e.parents));
+    const heads = group.filter((e) => !covered.has(e.actCid));
+    if (heads.some((e) => e.action === "kapae") && heads.some((e) => e.action === "un_kapae")) verdicts.set(nym, "unsettled");
+    else verdicts.set(nym, heads[0]?.action === "kapae" ? "held" : "withdrawn");
+  }
+  return verdicts;
+}
+
+export async function foldAntigenSet(
+  entries: Iterable<KapaeAntigenEntry>, roster: KahuRoster, verifier: QuorumVerifier,
+): Promise<ReadonlySet<string>> {
   const kapaed = new Set<string>();
-  for (const [nym, w] of winner) if (w.action === "kapae") kapaed.add(nym);
+  for (const [nym, verdict] of await foldAntigenVerdicts(entries, roster, verifier)) if (verdict === "held") kapaed.add(nym);
   return kapaed;
 }
 

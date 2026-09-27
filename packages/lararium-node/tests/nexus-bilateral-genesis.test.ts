@@ -128,7 +128,7 @@ async function countsQuorumOnly(entry: CarriageEntry, roster: KahuRoster): Promi
   const rosterKeys = new Set(roster.keys.map((k) => k.toLowerCase()));
   const bytes = carriageEntryBytes({
     kind: entry.kind, nym: entry.nym, action: entry.action,
-    version: entry.version, sealEpochCid: entry.sealEpochCid,
+    parents: entry.parents, sealEpochCid: entry.sealEpochCid,
   });
   const counted = new Set<string>();
   for (const s of entry.signatures) {
@@ -161,7 +161,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     expect(admitF.contractIn).toBe("supplied");            // the joiner's out-of-band consent, not a self-sign
     expect(admitF.sealEpochCid).toBe(A.epoch);          // the entry binds A's epoch cid (provenance)
     expect(admitF.signers).toHaveLength(2);                // exactly the 2-of-3 founding-kahu quorum
-    expect(admitF.memberNow).toBe(true);
+    expect(admitF.memberHeld).toBe(true);
 
     // ── Direction 2: Josh (A) accepts carriage into B's nexus; Freyja's (B) kahu admit him onto board B. ──
     const tokenJ = await asRoot(rootA, () => runNexusAcceptCarriage({ handleIndex: 0, sealHome: B.bags }));
@@ -171,7 +171,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
     const admitJ = await asRoot(rootB, () =>
       runNexusContract({ action: "admit", nym: A.operatorNym, contractSig: tokenJ.contractSig, sealHome: B.bags }));
     expect(admitJ.contractIn).toBe("supplied");
-    expect(admitJ.memberNow).toBe(true);
+    expect(admitJ.memberHeld).toBe(true);
 
     // ── The bilateral assertion — each hearth's OWN nexus-membership fold, off its OWN local replica. ──
     const strangerNym = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(123)));
@@ -239,7 +239,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
         return { signer: r.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) };
       }));
       const conscript: CarriageEntry = await signCarriageQuorum(
-        { nym: unconsented, action: "admit", version: 1, sealEpochCid: rosterA.sealEpochCid },
+        { nym: unconsented, action: "admit", parents: [], sealEpochCid: rosterA.sealEpochCid },
         signers,
         undefined,   // NO contract-in
       );

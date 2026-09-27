@@ -1,172 +1,22 @@
-/**
- * kapae-antigen.test.ts — the quorum-verified immune antigen, DENY-BY-DEFAULT at every shore.
- *
- * Proven:
- *   · a 2-of-3 quorum (two distinct founding kahu sign) VERIFIES → the nym stands Kapae'd,
- *   · one signature alone is BELOW threshold → ignored (a lone node cannot Kapae — the censorship guard),
- *   · a non-roster signer, a duplicated signer, and a tampered entry each FAIL to pad the quorum,
- *   · an entry rooting on the WRONG charter epoch is ignored,
- *   · `denyingQuorumVerifier` (the fail-closed default) ignores EVERYTHING,
- *   · an `un_kapae` at a STRICTLY HIGHER version lifts a ban; a same-version tie STAYS Kapae'd,
- *   · an unbound (empty-key) roster fails closed,
- *   · the DOMAIN separates: the same act at another board's domain signs different bytes, a quorum raised
- *     here does not verify there, and the verifier refuses a foreign-domain entry however well it signs.
- */
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes } from "../src/crypto.js";
-import {
-  signAntigenEntry, antigenEntryBytes, foldAntigenSet, isKapaed,
-  makeMultiSigQuorumVerifier, denyingQuorumVerifier,
-  type KapaeAntigenEntry, type KahuRoster,
-} from "../src/kapae-antigen.js";
-
-const EPOCH = "epoch-cid-genesis";
-
-// Three founding kahu + one stranger — fixed seeds so the run is deterministic.
-const SEEDS = {
-  guru:     new Uint8Array(32).fill(1),
-  telarus:  new Uint8Array(32).fill(2),
-  lindwyrm: new Uint8Array(32).fill(3),
-  stranger: new Uint8Array(32).fill(7),
-};
-const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-
-const verifier = makeMultiSigQuorumVerifier();
-const VICTIM   = "deadbeef".repeat(8);   // the presenter nym under ban — any hex handle
-
-async function roster(): Promise<KahuRoster> {
-  const keys = await Promise.all([pubOf(SEEDS.guru), pubOf(SEEDS.telarus), pubOf(SEEDS.lindwyrm)]);
-  return { keys, threshold: 2, sealEpochCid: EPOCH };
-}
-
-async function banEntry(over: Partial<Pick<KapaeAntigenEntry, "action" | "version" | "sealEpochCid" | "nym">> = {},
-                        seeds: Uint8Array[] = [SEEDS.guru, SEEDS.telarus]): Promise<KapaeAntigenEntry> {
-  const signers = await Promise.all(seeds.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signAntigenEntry({
-    nym: over.nym ?? VICTIM, action: over.action ?? "kapae",
-    version: over.version ?? 1, sealEpochCid: over.sealEpochCid ?? EPOCH,
-  }, signers);
-}
-
-describe("makeMultiSigQuorumVerifier — the 2-of-3 quorum", () => {
-  test("two distinct founding kahu → verifies → the nym stands Kapae'd", async () => {
-    const r = await roster();
-    const set = await foldAntigenSet([await banEntry()], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(true);
-  });
-
-  test("ONE signature alone is below threshold → ignored (a lone node cannot Kapae)", async () => {
-    const r = await roster();
-    const set = await foldAntigenSet([await banEntry({}, [SEEDS.guru])], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-
-  test("a non-roster signer does not pad the quorum", async () => {
-    const r = await roster();
-    // one real kahu + one stranger → only one counts → below threshold
-    const set = await foldAntigenSet([await banEntry({}, [SEEDS.guru, SEEDS.stranger])], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-
-  test("a duplicated signer counts once → cannot pad the quorum", async () => {
-    const r = await roster();
-    const e = await banEntry({}, [SEEDS.guru]);
-    const dup: KapaeAntigenEntry = { ...e, signatures: [e.signatures[0]!, e.signatures[0]!] };
-    const set = await foldAntigenSet([dup], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-
-  test("a tampered entry (sig over different bytes) fails to verify", async () => {
-    const r = await roster();
-    const e = await banEntry();
-    const tampered: KapaeAntigenEntry = { ...e, nym: "0".repeat(64) };  // signatures now sign the old nym
-    const set = await foldAntigenSet([tampered], r, verifier);
-    expect(isKapaed("0".repeat(64), set)).toBe(false);
-  });
-
-  test("an entry rooting on the WRONG charter epoch is ignored", async () => {
-    const r = await roster();
-    const set = await foldAntigenSet([await banEntry({ sealEpochCid: "some-other-epoch" })], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-
-  test("an unbound (empty-key) roster fails closed", async () => {
-    const empty: KahuRoster = { keys: [], threshold: 2, sealEpochCid: EPOCH };
-    const set = await foldAntigenSet([await banEntry()], empty, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-});
-
-describe("denyingQuorumVerifier — the fail-closed default", () => {
-  test("ignores a perfectly-signed entry (a missing verifier must deny)", async () => {
-    const r = await roster();
-    const set = await foldAntigenSet([await banEntry()], r, denyingQuorumVerifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-});
-
-describe("foldAntigenSet — monotone lift + fail-closed equivocation", () => {
-  test("an un_kapae at a STRICTLY HIGHER version lifts the ban", async () => {
-    const r = await roster();
-    const ban  = await banEntry({ action: "kapae",    version: 1 });
-    const lift = await banEntry({ action: "un_kapae", version: 2 });
-    const set = await foldAntigenSet([ban, lift], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
-
-  test("a same-version ban/lift tie STAYS Kapae'd (a lift never rolls back a ban it ties)", async () => {
-    const r = await roster();
-    const ban  = await banEntry({ action: "kapae",    version: 5 });
-    const lift = await banEntry({ action: "un_kapae", version: 5 });
-    // order-independent: try both interleavings
-    expect(isKapaed(VICTIM, await foldAntigenSet([ban, lift], r, verifier))).toBe(true);
-    expect(isKapaed(VICTIM, await foldAntigenSet([lift, ban], r, verifier))).toBe(true);
-  });
-
-  test("a stale lift (lower version) cannot roll back a fresher ban", async () => {
-    const r = await roster();
-    const lift = await banEntry({ action: "un_kapae", version: 1 });
-    const ban  = await banEntry({ action: "kapae",    version: 2 });
-    const set = await foldAntigenSet([lift, ban], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(true);
-  });
-});
-
-describe("antigenEntryBytes — canonical + domain", () => {
-  // The claim this describe carries is SEPARATION, not presence. An earlier version of the test below read
-  // `expect(e.kind).toBe(KAPAE_ANTIGEN_DOMAIN)` plus a `toContain` over the bytes — both sides of both assertions
-  // reading the same constant, so a domain fused with the carriage board's would have passed unmoved. The full
-  // cross-board proof (a real signature refusing on the sibling board, both live verifiers rejecting a foreign
-  // domain) rides `tests/quorum-entry.test.ts`; what stays here is the antigen-local half of it.
-
-  test("the domain SEPARATES the image — the same act at another domain signs different bytes", async () => {
-    const e = await banEntry();
-    const own     = antigenEntryBytes(e);
-    const foreign = antigenEntryBytes({ ...e, kind: "lar-some-other-board/v1" } as unknown as Omit<KapaeAntigenEntry, "signatures">);
-    // Not "the string appears" — the byte-image MOVES. That is what makes a signature un-presentable elsewhere.
-    expect(hex(foreign)).not.toBe(hex(own));
-  });
-
-  test("a quorum raised on the antigen does NOT verify against another board's image of the same act", async () => {
-    const e = await banEntry();
-    const foreignBytes = antigenEntryBytes({ ...e, kind: "lar-some-other-board/v1" } as unknown as Omit<KapaeAntigenEntry, "signatures">);
-    const s = e.signatures[0]!;
-    // Positive control — the signature is genuinely good on its own board.
-    expect(await ed.verifyAsync(hexToBytes(s.sig), antigenEntryBytes(e), hexToBytes(s.signer))).toBe(true);
-    expect(await ed.verifyAsync(hexToBytes(s.sig), foreignBytes, hexToBytes(s.signer))).toBe(false);
-  });
-
-  test("the verifier REFUSES a foreign-domain entry even when its quorum signs perfectly over its own bytes", async () => {
-    const r = await roster();
-    const act = { nym: VICTIM, action: "kapae" as const, version: 1, sealEpochCid: EPOCH, kind: "lar-some-other-board/v1" };
-    const bytes = antigenEntryBytes(act as unknown as Omit<KapaeAntigenEntry, "signatures">);
-    const signatures = await Promise.all([SEEDS.guru, SEEDS.telarus].map(async (seed) => ({
-      signer: await pubOf(seed), sig: await signerOf(seed)(bytes),
-    })));
-    // A flawless 2-of-3 quorum on the WRONG board. Deleting `kapae-antigen.ts:116` makes this read Kapae'd.
-    const set = await foldAntigenSet([{ ...act, signatures } as unknown as KapaeAntigenEntry], r, verifier);
-    expect(isKapaed(VICTIM, set)).toBe(false);
-  });
+import { signAntigenEntry, antigenEntryBytes, antigenActCid, foldAntigenVerdicts, foldAntigenSet, makeMultiSigQuorumVerifier, denyingQuorumVerifier, type KapaeAntigenEntry, type KahuRoster } from "../src/kapae-antigen.js";
+import { antigenEntriesFromBoard } from "../src/antigen-board.js";
+import { mutableLarRecord } from "../src/base-doc.js";
+import { hex } from "../src/crypto.js";
+const EPOCH="charter-a", victim="deadbeef".repeat(8), seeds=[new Uint8Array(32).fill(1),new Uint8Array(32).fill(2),new Uint8Array(32).fill(3)];
+const sign=(s:Uint8Array)=>(b:Uint8Array)=>ed.signAsync(b,s).then(hex), pub=(s:Uint8Array)=>ed.getPublicKeyAsync(s).then(hex), verifier=makeMultiSigQuorumVerifier();
+async function roster():Promise<KahuRoster>{return {keys:await Promise.all(seeds.map(pub)),threshold:2,sealEpochCid:EPOCH};}
+async function entry(action:"kapae"|"un_kapae",parents:string[]=[],pair=seeds.slice(0,2)):Promise<KapaeAntigenEntry>{return signAntigenEntry({nym:victim,action,parents,sealEpochCid:EPOCH},await Promise.all(pair.map(async s=>({signer:await pub(s),sign:sign(s)}))));}
+describe("Kapae antigen causal frontier",()=>{
+ test("valid descendant withdraws founded ban",async()=>{const a=await entry("kapae"),b=await entry("un_kapae",[a.actCid]),r=await roster();expect((await foldAntigenVerdicts([a,b],r,verifier)).get(victim)).toBe("withdrawn");expect((await foldAntigenSet([a,b],r,verifier)).has(victim)).toBe(false);});
+ test("concurrent ban/lift is unsettled and fail-closed in either order",async()=>{const a=await entry("kapae",[],seeds.slice(0,2)),b=await entry("un_kapae",[],seeds.slice(1,3)),r=await roster();expect((await foldAntigenVerdicts([a,b],r,verifier)).get(victim)).toBe("unsettled");expect((await foldAntigenVerdicts([b,a],r,verifier)).get(victim)).toBe("unsettled");expect((await foldAntigenSet([a,b],r,verifier)).has(victim)).toBe(false);});
+ test("missing parent is unavailable",async()=>{const a=await entry("kapae",["sha256:missing"]);expect((await foldAntigenVerdicts([a],await roster(),verifier)).get(victim)).toBe("unavailable");});
+ test("parent order and duplicates do not change semantic bytes or CID",async()=>{const a=await entry("kapae",["p","q"]),b=await entry("kapae",["q","p","p"]);expect(Buffer.from(antigenEntryBytes(a)).toString("hex")).toBe(Buffer.from(antigenEntryBytes(b)).toString("hex"));expect(a.actCid).toBe(b.actCid);expect(a.actCid).toBe(antigenActCid({kind:a.kind,nym:a.nym,action:a.action,parents:a.parents,sealEpochCid:a.sealEpochCid}));});
+ test("semantic tamper is rejected by quorum verification",async()=>{const a=await entry("kapae"),b={...a,action:"un_kapae" as const};expect((await foldAntigenVerdicts([b],await roster(),verifier)).get(victim)).toBeUndefined();expect((await foldAntigenSet([b],await roster(),verifier)).has(victim)).toBe(false);});
+ test("a signed act whose semantic CID alone mutates is rejected before frontier folding",async()=>{const a=await entry("kapae"),b={...a,actCid:`sha256:${"0".repeat(64)}`};expect((await foldAntigenVerdicts([b],await roster(),verifier)).get(victim)).toBe("rejected");expect((await foldAntigenSet([b],await roster(),verifier)).has(victim)).toBe(false);});
+ test("wrong charter quorum is ignored",async()=>{const a=await signAntigenEntry({nym:victim,action:"kapae",parents:[],sealEpochCid:"charter-b"},await Promise.all(seeds.slice(0,2).map(async s=>({signer:await pub(s),sign:sign(s)}))));expect((await foldAntigenSet([a],await roster(),verifier)).has(victim)).toBe(false);});
+ test("threshold, duplicate signer, and deny-default controls remain fail-closed",async()=>{const a=await entry("kapae",[],[seeds[0]!]);const dup={...a,signatures:[a.signatures[0]!,a.signatures[0]!]};expect((await foldAntigenSet([a],await roster(),verifier)).has(victim)).toBe(false);expect((await foldAntigenSet([dup],await roster(),verifier)).has(victim)).toBe(false);expect((await foldAntigenSet([a],await roster(),denyingQuorumVerifier)).has(victim)).toBe(false);});
+ test("foreign domain and malformed/torn board records never enter the fold",async()=>{const a=await entry("kapae"),foreign={...a,kind:"foreign/domain" as typeof a.kind}, tiddlers:Record<string, unknown>={};tiddlers.good=mutableLarRecord("good",{text:JSON.stringify(a)},"test");tiddlers.foreign=mutableLarRecord("foreign",{text:JSON.stringify(foreign)},"test");tiddlers.torn=mutableLarRecord("torn",{text:"not-json"},"test");expect(antigenEntriesFromBoard({schemaVersion:"0.1",tiddlers} as never)).toHaveLength(1);expect((await foldAntigenSet([foreign],await roster(),verifier)).has(victim)).toBe(false);});
+ test("an empty roster and a non-roster signer cannot authorize a ban",async()=>{const outsider=new Uint8Array(32).fill(9), a=await signAntigenEntry({nym:victim,action:"kapae",parents:[],sealEpochCid:EPOCH},await Promise.all([seeds[0]!,outsider].map(async s=>({signer:await pub(s),sign:sign(s)}))));expect((await foldAntigenSet([a],await roster(),verifier)).has(victim)).toBe(false);expect((await foldAntigenSet([a],{keys:[],threshold:2,sealEpochCid:EPOCH},verifier)).has(victim)).toBe(false);});
 });

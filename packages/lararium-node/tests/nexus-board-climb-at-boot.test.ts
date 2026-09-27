@@ -46,7 +46,7 @@ import {
   kapaeAntigenDocUrl, edgeKapaeBoardDocUrl, crossroadsDocUrl,
   whoBoardDocUrl, carriageDocUrl, vouchBoardDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
-  writeEdgeKapae, signEdgeKapae, shadowSetFromBoard, type EpochOrder,
+  writeEdgeKapae, signEdgeKapae, shadowSetFromBoard,
   signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc,
   HANDLE_ANNOUNCE_PREFIX, CARRIAGE_ENTRY_PREFIX, VOUCH_ENTRY_PREFIX,
   NEXUS_DOC_DOMAIN,
@@ -75,7 +75,6 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
 const CHARTER   = `epoch0-${"7a".repeat(32)}`;
 /** The epoch a vessel's acts rooted on while it stood alone — the reader ranks it BELOW the charter's. */
 const PRE_EPOCH = `epoch0-${"11".repeat(32)}`;
-const ORDER: EpochOrder = (e) => (e === PRE_EPOCH ? 0 : e === CHARTER ? 1 : null);
 
 /** A fresh seal home — never `~/.local/share/lares`. A charter stands here or it does not. */
 function sealHomeAt(): string {
@@ -132,7 +131,7 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
     expect(nexusIdentity(before).kind, "a fresh hearth stands a PRIVATE NEXUS OF ONE").toBe("own");
     expect(nexusScopeOrThrow(nexusIdentity(before))).toBe(ownKey);
     const raise = await signEdgeKapae(
-      { edgeId: "edge-set-aside", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
+      { edgeId: "edge-set-aside", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
     (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
 
     // ② `nexus rite cabal` seats a charter. The next boot reads a DIFFERENT island off the same disk.
@@ -145,7 +144,7 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
 
     // THE HARM, measured on the board the boot now reads: the shadow reads LOWERED — a resurrection.
     expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify, ORDER))
+      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify))
       .toEqual(new Set());
 
     // ③ the boot climbs.
@@ -159,7 +158,7 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
 
     // ④ and the marker HOLDS at the island the boot resolved — the content stands where the boot looks.
     expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify, ORDER))
+      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify))
       .toEqual(new Set(["edge-set-aside"]));
   }, 30_000);
 
@@ -170,7 +169,7 @@ describe("the boot's own climb — own → charter, the founding walk", () => {
     const victim = "ff".repeat(32);
 
     const entry = await signAntigenEntry(
-      { nym: victim, action: "kapae", version: 1, sealEpochCid: PRE_EPOCH },
+      { nym: victim, action: "kapae", parents: [], sealEpochCid: PRE_EPOCH },
       [{ signer: await pubOf(seedOf(1)), sign: signer(seedOf(1)) }]);
     (await board(r, kapaeAntigenDocUrl(ownKey))).change((d) => writeAntigenEntry(d, entry));
 
@@ -228,7 +227,7 @@ describe("the gradient law holds AT THE BOOT", () => {
 
     // A shadow stands on the vessel's own board — the content a silent descent would abandon.
     const raise = await signEdgeKapae(
-      { edgeId: "edge-untouched", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
+      { edgeId: "edge-untouched", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
     (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
     const beforeOwn = await keysOn(r, edgeKapaeBoardDocUrl(ownKey));
 
@@ -252,7 +251,7 @@ describe("the gradient law holds AT THE BOOT", () => {
     // Nothing moved anywhere on the failure, and the vessel's own board stands exactly as it stood.
     expect(await keysOn(r, edgeKapaeBoardDocUrl(ownKey))).toEqual(beforeOwn);
     expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(ownKey))).doc(), () => auth, verify, ORDER))
+      (await board(r, edgeKapaeBoardDocUrl(ownKey))).doc(), () => auth, verify))
       .toEqual(new Set(["edge-untouched"]));
   }, 30_000);
 
@@ -280,9 +279,9 @@ describe("the gradient law holds AT THE BOOT", () => {
     const home   = sealHomeAt();
 
     const raise = await signEdgeKapae(
-      { edgeId: "edge-thrice", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
+      { edgeId: "edge-thrice", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
     const entry = await signAntigenEntry(
-      { nym: "ea".repeat(32), action: "kapae", version: 1, sealEpochCid: PRE_EPOCH },
+      { nym: "ea".repeat(32), action: "kapae", parents: [], sealEpochCid: PRE_EPOCH },
       [{ signer: await pubOf(seedOf(1)), sign: signer(seedOf(1)) }]);
     (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
     (await board(r, kapaeAntigenDocUrl(ownKey))).change((d) => writeAntigenEntry(d, entry));
@@ -312,7 +311,7 @@ describe("the gradient law holds AT THE BOOT", () => {
     const auth   = await pubOf(seedOf(21));
 
     const raise = await signEdgeKapae(
-      { edgeId: "edge-copied", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
+      { edgeId: "edge-copied", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
     (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
     const beforeKeys = await keysOn(r, edgeKapaeBoardDocUrl(ownKey));
 
@@ -321,7 +320,7 @@ describe("the gradient law holds AT THE BOOT", () => {
 
     expect(await keysOn(r, edgeKapaeBoardDocUrl(ownKey))).toEqual(beforeKeys);
     expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(ownKey))).doc(), () => auth, verify, ORDER))
+      (await board(r, edgeKapaeBoardDocUrl(ownKey))).doc(), () => auth, verify))
       .toEqual(new Set(["edge-copied"]));
   }, 30_000);
 });

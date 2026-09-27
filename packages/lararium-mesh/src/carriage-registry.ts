@@ -7,8 +7,9 @@
  * infrastructure relation a human's PersonaGroup contracts with a kahu Cabal. It says NOTHING about whether
  * that human JOINED any Cabal; joining is a mutual hold on the realm's authority graph (cabal-realm), an
  * orthogonal axis. A human may contract without joining, join without contracting, hold both, or neither.
- * Reading a carriage entry as belonging reads it exactly backwards. Same CRDT shape (monotone/additive, highest-version-per-nym, same-version
- * fail-closed), same quorum authority (≥ k founding-kahu signatures rooted on the charter epoch), and it
+ * Reading a carriage entry as belonging reads it exactly backwards. Same additive evidence shape (entries accrete,
+ * causal heads determine the local relation, contradictory heads fail closed), same quorum authority
+ * (≥ k founding-kahu signatures rooted on the charter epoch), and it
  * FAILS CLOSED at every shore. `blocked{}` ⊥ `carriage{}`: a nym may sit in either, neither,
  * or — pathologically — both (the antigen still draws Mu; a ban outranks a membership at enforcement).
  *
@@ -20,7 +21,7 @@
  *
  * WAX-SEALS ONLY, NEVER A REGISTRAR GRANT. An admit is not a central registrar writing a row — it is a
  * quorum of stewards counter-signing an act the operator itself consented to. Two seals ride every admit:
- *   · the OPERATOR's own signature over a version-independent "accepts carriage" token (`contractSig`) — the
+ *   · the OPERATOR's own signature over an act-independent "accepts carriage" token (`contractSig`) — the
  *     contract-in; without it, an admit does NOT count (a Nexus cannot conscript an operator into carriage).
  *   · ≥ k founding-kahu quorum signatures over the entry — the steward act (identical to the antigen's).
  * A REVOKE needs the steward quorum only (an uncooperative member cannot veto its own removal), mirroring
@@ -28,8 +29,8 @@
  *
  * FAIL CLOSED, every shore: an entry whose kahu quorum does not verify is IGNORED; an admit missing / carrying
  * a bad `contractSig` is IGNORED (never a member); an entry rooting on an unknown charter epoch is IGNORED; a
- * same-version admit/revoke tie stays a NON-member (a tie never grants membership — the more-restrictive act
- * wins, exactly as a kapae beats an un_kapae). An unbound (empty-key) roster meets no threshold → nobody reads
+ * concurrent admit/revoke heads stay UNSETTLED (a contradiction never grants membership). An unbound
+ * (empty-key) roster meets no threshold → nobody reads
  * member.
  *
  * Platform-blind: rides ./crypto + @noble/ed25519 + ./kapae-antigen types only. NO node: imports.
@@ -38,15 +39,14 @@
 
 import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import type { QuorumSignature, KahuRoster } from "./kapae-antigen.js";
-import { quorumEntryBytes } from "./quorum-entry.js";
 
 /** The domain a CarriageEntry's quorum signs over — a signature is meaningless without its domain. */
 export { CARRIAGE_ENTRY_DOMAIN } from "./domains.js";
 /** The domain the operator's OWN "accepts carriage" contract-token signs over — DISTINCT from the entry
- *  domain, and version-INDEPENDENT: the operator consents to carriage-under-this-epoch ONCE, and a kahu
- *  quorum may then admit / re-admit it at any monotone version citing that one standing consent. */
+ *  domain, and act-INDEPENDENT: the operator consents to carriage-under-this-epoch ONCE, and a kahu
+ *  quorum may then admit / re-admit it by citing that one standing consent. */
 export { CARRIAGE_CONTRACT_DOMAIN } from "./domains.js";
 /** The domain a PLACE's own "I carry for this Nexus" seal signs over — its OWN name, so a carrier seal can
  *  never present as a member's accepts-carriage token and no token crosses the two folds. */
@@ -68,7 +68,7 @@ export type CarriageAction = "admit" | "revoke" | "carry" | "uncarry";
 
 /**
  * One entry in the members set — a quorum-signed admit or revoke of ONE operator nym. Monotone/additive
- * CRDT (entries only accrete; the fold reads the highest-version verified entry per nym). The signatures
+ * CRDT (entries only accrete; the fold reads causal heads per nym). The signatures
  * ride OUTSIDE the signed content, so re-carrying an entry never re-signs it (the antigen's discipline).
  *
  * THE PAYLOAD FLOOR (membership-doctrine): pubkey (`nym`) + charter-epoch + the accepts-carriage proof
@@ -81,8 +81,8 @@ export interface CarriageEntry {
   readonly nym:             string;
   /** ADMIT the operator into carriage, or REVOKE it. */
   readonly action:          CarriageAction;
-  /** Monotone per-nym: a later steward act supersedes an earlier one; a stale entry cannot roll it back. */
-  readonly version:         number;
+  /** Content-addressed causal parents. Empty means the relation's genesis act. */
+  readonly parents:         readonly string[];
   /** The nexus-charter epoch this quorum act roots on (the wax-stamp epoch-chain — SealEpoch.epochCid). */
   readonly sealEpochCid: string;
   /** ≥ threshold distinct founding-kahu signatures over `carriageEntryBytes` — the steward quorum. */
@@ -102,20 +102,33 @@ export interface CarriageEntry {
 
 /**
  * The canonical bytes the KAHU QUORUM signs over — everything but the signatures + the contract sig.
- * Composes the shared quorum-entry image at the MEMBERSHIP domain; that domain keeps a membership signature
- * un-presentable on the antigen board (`quorum-entry.ts`). The operator's accepts-carriage token signs
- * SEPARATE bytes (`carriageContractBytes`) and stays a distinct, board-local gate.
+ * Parents are sorted into the semantic act image, so the act's CID is stable across gossip order and
+ * quorum-signature ordering. The operator's accepts-carriage token signs SEPARATE bytes and stays a
+ * distinct, board-local gate.
  */
 export function carriageEntryBytes(
   entry: Omit<CarriageEntry, "signatures" | "contractSig">,
 ): Uint8Array {
-  return quorumEntryBytes(entry);
+  return canonicalJsonBytes({
+    kind: entry.kind,
+    nym: entry.nym,
+    action: entry.action,
+    parents: [...new Set(entry.parents)].sort(),
+    sealEpochCid: entry.sealEpochCid,
+  });
+}
+
+/** The semantic act CID. Signatures are evidence around this act, not part of its identity. */
+export function carriageEntryActCid(
+  entry: Omit<CarriageEntry, "signatures" | "contractSig"> | CarriageEntry,
+): string {
+  return sha256HexBytesSync(carriageEntryBytes(entry));
 }
 
 /**
- * The canonical bytes the OPERATOR signs over to accept carriage — version-INDEPENDENT (only the nym + the
+ * The canonical bytes the OPERATOR signs over to accept carriage — act-INDEPENDENT (only the nym + the
  * charter epoch). The operator signs this ONCE; a kahu quorum may cite the resulting `contractSig` on any
- * monotone admit version. The token IS the acceptance — its verified presence proves "accepts carriage".
+ * later admit act. The token IS the acceptance — its verified presence proves "accepts carriage".
  */
 export function carriageContractBytes(parts: { nym: string; sealEpochCid: string }): Uint8Array {
   return canonicalJsonBytes({
@@ -126,9 +139,9 @@ export function carriageContractBytes(parts: { nym: string; sealEpochCid: string
 }
 
 /**
- * The canonical bytes a PLACE signs over to carry for a Nexus — version-INDEPENDENT, exactly as the
+ * The canonical bytes a PLACE signs over to carry for a Nexus — act-INDEPENDENT, exactly as the
  * operator's accepts-carriage token is, and DOMAIN-SEPARATED from it. The place signs this ONCE with its
- * own vessel key; a kahu quorum may cite the resulting seal on any monotone `carry` version.
+ * own vessel key; a kahu quorum may cite the resulting seal on any later `carry` act.
  *
  * NO PERSONA IS READ ANYWHERE ON THIS PATH. That is the whole point: a Herm holds no persona root by law
  * (`vessel-standing.ts` — `personaSlotCeiling("herm") === 0`, argument-ignoring), so a relation that asked
@@ -203,7 +216,7 @@ async function verifyMembershipQuorum(entry: CarriageEntry, roster: KahuRoster):
 /**
  * Verify the operator's own "accepts carriage" contract-sig on an ADMIT entry. FAIL CLOSED: no contractSig,
  * a contractSig whose `signer` is not the entry's own nym, or a signature that does not verify over the
- * version-independent carriage-token bytes — each reads false (the admit then does NOT count). A Nexus can
+ * act-independent carriage-token bytes — each reads false (the admit then does NOT count). A Nexus can
  * never manufacture this seal: only the operator holding the nym's seed can produce it.
  */
 async function verifyContractIn(entry: CarriageEntry): Promise<boolean> {
@@ -239,12 +252,13 @@ export async function carriageEntryCounts(entry: CarriageEntry, roster: KahuRost
   return verifyContractIn(entry);   // admit → the operator must have signed "accepts carriage"
 }
 
-export type CarriageFoldWinnerState = "accepted" | "revoked" | "equivocal" | "ignored";
+export type CarriageFoldWinnerState = "accepted" | "revoked" | "unsettled" | "unavailable" | "ignored";
 
 export interface CarriageFoldEntryDetail {
   readonly nym: string;
   readonly action: CarriageAction | string;
-  readonly version: number;
+  readonly parents: readonly string[];
+  readonly evidenceCid: string;
   readonly sealEpochCid: string;
   readonly counted: boolean;
   readonly state: CarriageFoldWinnerState;
@@ -256,6 +270,8 @@ export interface CarriageFoldDetails {
   readonly charterEpochCid: string | null;
   /** The member set is intentionally identical to `foldCarriageSet`. */
   readonly members: ReadonlySet<string>;
+  /** The place set is intentionally identical to `foldCarrierSet`. */
+  readonly carriers: ReadonlySet<string>;
   /** Every supplied entry, including uncounted evidence, with a named local reason. */
   readonly entries: readonly CarriageFoldEntryDetail[];
 }
@@ -263,7 +279,8 @@ export interface CarriageFoldDetails {
 function entryShapeIsReadable(entry: CarriageEntry): boolean {
   return typeof entry === "object" && entry !== null &&
     typeof entry.kind === "string" && typeof entry.nym === "string" &&
-    typeof entry.action === "string" && Number.isSafeInteger(entry.version) && entry.version >= 0 &&
+    typeof entry.action === "string" && Array.isArray(entry.parents) &&
+    entry.parents.every((parent) => typeof parent === "string" && /^[0-9a-f]{64}$/.test(parent)) &&
     typeof entry.sealEpochCid === "string" && Array.isArray(entry.signatures);
 }
 
@@ -285,28 +302,57 @@ async function countReason(entry: CarriageEntry, roster: KahuRoster): Promise<{ 
     : { counted: false, reason: "contract-in-not-counted" };
 }
 
+function relationFamily(action: CarriageAction | string): "member" | "carrier" | null {
+  if (action === "admit" || action === "revoke") return "member";
+  if (action === "carry" || action === "uncarry") return "carrier";
+  return null;
+}
+
+/** Whether `candidate` is a causal descendant of `ancestor` in the supplied evidence set. */
+export function isCarriageDescendant(
+  candidate: string,
+  ancestor: string,
+  byCid: ReadonlyMap<string, { readonly parents: readonly string[] }>,
+): boolean {
+  const todo = [...(byCid.get(candidate)?.parents ?? [])];
+  const seen = new Set<string>();
+  while (todo.length) {
+    const cid = todo.pop()!;
+    if (cid === ancestor) return true;
+    if (seen.has(cid)) continue;
+    seen.add(cid);
+    const node = byCid.get(cid);
+    if (node) todo.push(...node.parents);
+  }
+  return false;
+}
+
 /**
- * Fold with evidence retained for a future relation verifier. This is diagnostic
- * evidence only; `foldCarriageSet` remains the enforcement API and its member set
- * semantics are reproduced here without granting any new authority.
+ * Fold with evidence retained for a receiver-local relation verifier. The fold never picks a winner
+ * between contradictory concurrent heads: both remain visible as `unsettled` and the member/carrier
+ * projection fails closed.
  */
 export async function foldCarriageDetails(
   entries: Iterable<CarriageEntry> | undefined,
   roster: KahuRoster | undefined,
 ): Promise<CarriageFoldDetails> {
   if (entries === undefined || roster === undefined) {
-    return { charterEpochCid: roster?.sealEpochCid ?? null, members: new Set<string>(), entries: [] };
+    return { charterEpochCid: roster?.sealEpochCid ?? null, members: new Set<string>(), carriers: new Set<string>(), entries: [] };
   }
   const source = [...entries];
-  type MutableDetail = { nym: string; action: CarriageAction | string; version: number; sealEpochCid: string; counted: boolean; state: CarriageFoldWinnerState; reason: string };
+  type MutableDetail = { nym: string; action: CarriageAction | string; parents: readonly string[]; evidenceCid: string; sealEpochCid: string; counted: boolean; state: CarriageFoldWinnerState; reason: string };
   const counted: Array<{ entry: CarriageEntry; detail: MutableDetail }> = [];
   const details: MutableDetail[] = [];
   for (const entry of source) {
     const result = await countReason(entry, roster);
+    const readable = entryShapeIsReadable(entry);
+    const parents = readable ? [...entry.parents].sort() : [];
+    const evidenceCid = readable ? carriageEntryActCid(entry) : "";
     const detail: CarriageFoldEntryDetail = {
       nym: typeof entry?.nym === "string" ? entry.nym.toLowerCase() : "",
       action: typeof entry?.action === "string" ? entry.action : "malformed",
-      version: Number.isSafeInteger(entry?.version) ? entry.version : -1,
+      parents,
+      evidenceCid,
       sealEpochCid: typeof entry?.sealEpochCid === "string" ? entry.sealEpochCid : "",
       counted: result.counted,
       state: "ignored",
@@ -315,37 +361,73 @@ export async function foldCarriageDetails(
     details.push(detail);
     if (result.counted) counted.push({ entry, detail });
   }
-  const winners = new Map<string, { entry: CarriageEntry; detail: CarriageFoldEntryDetail }>();
-  const equivocal = new Set<string>();
-  for (const candidate of counted) {
-    const nym = candidate.detail.nym;
-    const current = winners.get(nym);
-    if (!current || candidate.entry.version > current.entry.version) {
-      winners.set(nym, candidate);
-      equivocal.delete(nym);
-    } else if (candidate.entry.version === current.entry.version) {
-      if ((candidate.entry.action === "revoke") !== (current.entry.action === "revoke")) equivocal.add(nym);
-      if (candidate.entry.action === "revoke") winners.set(nym, candidate);
-    }
-  }
-  const members = new Set<string>();
-  for (const [nym, winner] of winners) {
-    const state: CarriageFoldWinnerState = equivocal.has(nym)
-      ? "equivocal"
-      : winner.entry.action === "admit" ? "accepted" : winner.entry.action === "revoke" ? "revoked" : "ignored";
-    const reason = state === "accepted" ? "highest-counted-admit" :
-      state === "revoked" ? "highest-counted-revoke" :
-      state === "equivocal" ? "same-version-admit-revoke-equivocation" : "non-member-action";
-    for (const detail of details) {
-      if (detail.nym === nym && detail.version === winner.entry.version &&
-          (detail.action === winner.entry.action || state === "equivocal")) {
-        detail.state = state;
-        detail.reason = reason;
+  const byCid = new Map<string, { entry: CarriageEntry; detail: MutableDetail }>();
+  for (const candidate of counted) byCid.set(candidate.detail.evidenceCid, candidate);
+  // A counted act whose causal parent is absent or belongs to another relation cannot become a head.
+  // Re-run to a fixed point: a child of a parent invalidated by a missing grandparent is unavailable too.
+  let invalidated = true;
+  while (invalidated) {
+    invalidated = false;
+    for (const candidate of counted) {
+      if (!candidate.detail.counted) continue;
+      const family = relationFamily(candidate.entry.action);
+      const missing = candidate.entry.parents.some((parent) => {
+        const parentNode = byCid.get(parent);
+        return !parentNode || relationFamily(parentNode.entry.action) !== family ||
+          parentNode.entry.nym.toLowerCase() !== candidate.entry.nym.toLowerCase() ||
+          parentNode.entry.sealEpochCid !== candidate.entry.sealEpochCid;
+      });
+      if (missing) {
+        candidate.detail.counted = false;
+        candidate.detail.state = "unavailable";
+        candidate.detail.reason = "missing-parent";
+        byCid.delete(candidate.detail.evidenceCid);
+        invalidated = true;
       }
     }
-    if (state === "accepted") members.add(nym);
   }
-  return { charterEpochCid: roster.sealEpochCid, members, entries: details.map((detail) => ({ ...detail })) };
+
+  const byRelation = new Map<string, Array<{ entry: CarriageEntry; detail: MutableDetail }>>();
+  for (const candidate of counted) {
+    if (!candidate.detail.counted) continue;
+    const family = relationFamily(candidate.entry.action);
+    if (!family) continue;
+    const key = `${family}:${candidate.detail.nym}`;
+    const list = byRelation.get(key);
+    if (list) list.push(candidate); else byRelation.set(key, [candidate]);
+  }
+  const members = new Set<string>();
+  const carriers = new Set<string>();
+  for (const [key, candidates] of byRelation) {
+    const family = key.slice(0, key.indexOf(":"));
+    const heads = candidates.filter((candidate) => !candidates.some((other) =>
+      other !== candidate && other.entry.parents.includes(candidate.detail.evidenceCid)));
+    if (heads.length === 0) {
+      for (const candidate of candidates) { candidate.detail.state = "unsettled"; candidate.detail.reason = "causal-cycle"; }
+      continue;
+    }
+    const actions = new Set(heads.map((head) => head.entry.action));
+    const contradictory = (family === "member" && actions.has("admit") && actions.has("revoke")) ||
+      (family === "carrier" && actions.has("carry") && actions.has("uncarry"));
+    if (contradictory) {
+      for (const head of heads) { head.detail.state = "unsettled"; head.detail.reason = "concurrent-contradictory-heads"; }
+      continue;
+    }
+    const headState: CarriageFoldWinnerState = heads[0]!.entry.action === "admit" || heads[0]!.entry.action === "carry" ? "accepted" : "revoked";
+    for (const candidate of candidates) {
+      if (heads.includes(candidate)) {
+        candidate.detail.state = headState;
+        candidate.detail.reason = headState === "accepted" ? "causal-head-accepted" : "causal-head-revoked";
+      } else {
+        candidate.detail.state = "ignored";
+        candidate.detail.reason = "superseded-by-descendant";
+      }
+    }
+    const nym = candidates[0]!.detail.nym;
+    if (family === "member" && headState === "accepted") members.add(nym);
+    if (family === "carrier" && headState === "accepted") carriers.add(nym);
+  }
+  return { charterEpochCid: roster.sealEpochCid, members, carriers, entries: details.map((detail) => ({ ...detail })) };
 }
 
 /**
@@ -357,7 +439,11 @@ export async function signCarriageQuorum(
   signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
   contractSig?: QuorumSignature,
 ): Promise<CarriageEntry> {
-  const unsigned = { ...parts, kind: CARRIAGE_ENTRY_DOMAIN } as Omit<CarriageEntry, "signatures" | "contractSig">;
+  const unsigned = {
+    ...parts,
+    parents: [...new Set(parts.parents)].sort(),
+    kind: CARRIAGE_ENTRY_DOMAIN,
+  } as Omit<CarriageEntry, "signatures" | "contractSig">;
   const bytes = carriageEntryBytes(unsigned);
   const signatures: QuorumSignature[] = [];
   for (const s of signers) signatures.push({ signer: s.signer, sig: await s.sign(bytes) });
@@ -408,11 +494,9 @@ export async function signCarriageContract(
 }
 
 /**
- * Fold the membership entries into the CURRENTLY-admitted operator-nym set. Only entries that fully COUNT
- * (kahu quorum, plus the contract-in for an admit) participate — everything else is IGNORED, never trusted.
- * Per nym the fold keeps the highest-version counted entry; a nym reads MEMBER iff that winner is an `admit`.
- * FAIL CLOSED on equivocation: an `admit` and a `revoke` at the SAME version leave the nym a NON-member (a tie
- * never grants membership — the more-restrictive `revoke` wins, mirroring the antigen's kapae-beats-un_kapae).
+ * Fold the membership entries into the locally observed operator-nym set. Only entries that fully COUNT
+ * (kahu quorum, plus the contract-in for an admit) participate. Causal heads determine the relation; concurrent
+ * contradictory heads remain unsettled and fail closed.
  *
  * The result is a plain nym set — the enforcement shore (nexus-membership → carrierShareDecision) unions it
  * with the seated-kahu floor and reads it to decide MEMBER vs STRANGER.
@@ -421,21 +505,7 @@ export async function foldCarriageSet(
   entries: Iterable<CarriageEntry>,
   roster: KahuRoster,
 ): Promise<ReadonlySet<string>> {
-  // Per nym, the winning counted entry: highest version; on a version tie, `revoke` beats `admit`.
-  const winner = new Map<string, { version: number; action: CarriageAction }>();
-  for (const entry of entries) {
-    if (!(await carriageEntryCounts(entry, roster))) continue;   // uncounted → ignored, never trusted
-    const nym = entry.nym.toLowerCase();
-    const cur = winner.get(nym);
-    if (cur === undefined || entry.version > cur.version) {
-      winner.set(nym, { version: entry.version, action: entry.action });
-    } else if (entry.version === cur.version && entry.action === "revoke") {
-      cur.action = "revoke";   // same-version tie drops membership (fail-closed against an equivocating admit)
-    }
-  }
-  const members = new Set<string>();
-  for (const [nym, w] of winner) if (w.action === "admit") members.add(nym);
-  return members;
+  return (await foldCarriageDetails(entries, roster)).members;
 }
 
 /** Does this operator nym stand a contracted member in the folded members set? */
@@ -451,28 +521,14 @@ export function holdsCarriage(nym: string, memberSet: ReadonlySet<string>): bool
  * `holdsCarriagePeer` stays false for it at the enforcement shore — which is the structural half of the class
  * law: a crossroads runs infrastructure and holds no civic standing (identity-classes#the-four-classes).
  *
- * Same discipline as the member fold: only entries that fully COUNT participate, the highest-version winner
- * per nym decides, and a same-version tie drops the relation (the more-restrictive act wins).
+ * Same discipline as the member fold: only entries that fully COUNT participate, causal heads decide, and
+ * contradictory concurrent heads leave the place unsettled.
  */
 export async function foldCarrierSet(
   entries: Iterable<CarriageEntry>,
   roster: KahuRoster,
 ): Promise<ReadonlySet<string>> {
-  const winner = new Map<string, { version: number; action: CarriageAction }>();
-  for (const entry of entries) {
-    if (entry.action !== "carry" && entry.action !== "uncarry") continue;   // a member act names no place
-    if (!(await carriageEntryCounts(entry, roster))) continue;              // uncounted → ignored, never trusted
-    const nym = entry.nym.toLowerCase();
-    const cur = winner.get(nym);
-    if (cur === undefined || entry.version > cur.version) {
-      winner.set(nym, { version: entry.version, action: entry.action });
-    } else if (entry.version === cur.version && entry.action === "uncarry") {
-      cur.action = "uncarry";   // a tie never grants carriage
-    }
-  }
-  const carriers = new Set<string>();
-  for (const [nym, w] of winner) if (w.action === "carry") carriers.add(nym);
-  return carriers;
+  return (await foldCarriageDetails(entries, roster)).carriers;
 }
 
 /** Does this PLACE's vessel key stand a contracted carrier in the folded carrier set? */

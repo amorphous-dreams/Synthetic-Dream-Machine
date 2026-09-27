@@ -49,7 +49,7 @@ async function seatedCharter(keys: string[]): Promise<NexusDoc> {
 
 async function banEntry(nym: string, epoch: string): Promise<KapaeAntigenEntry> {
   const signers = await Promise.all([SEEDS[0]!, SEEDS[1]!].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signAntigenEntry({ nym, action: "kapae", version: 1, sealEpochCid: epoch }, signers);
+  return signAntigenEntry({ nym, action: "kapae", parents: [], sealEpochCid: epoch }, signers);
 }
 
 /** Poll a predicate to a short deadline — the holder resolves + folds asynchronously in its constructor. */

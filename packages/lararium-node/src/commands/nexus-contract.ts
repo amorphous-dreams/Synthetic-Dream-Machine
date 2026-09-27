@@ -30,8 +30,8 @@ import { join, dirname } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, signCarriageContract, verifyCarriageConsent,
-  signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageSet, foldCarrierSet,
+  carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract, verifyCarriageConsent,
+  signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet, foldCarrierSet,
   holdsCarriage, holdsCarrier, foundingRoster,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type CarriageAction, type CarriageEntry, type KahuRoster, type QuorumSignature,
@@ -69,8 +69,10 @@ export interface NexusContractOptions {
 export interface NexusContractResult {
   readonly action:          CarriageAction;
   readonly nym:             string;
-  readonly version:         number;
-  readonly priorVersion:    number | null;
+  /** Causal evidence this act explicitly extends; empty means a local genesis observation. */
+  readonly parents:          readonly string[];
+  /** Semantic act CID, excluding signatures and contract evidence. */
+  readonly evidenceCid:      string;
   readonly sealEpochCid: string;
   readonly threshold:       number;
   readonly signers:         readonly string[];
@@ -80,9 +82,10 @@ export interface NexusContractResult {
   readonly boardUrl:        string;
   /** Whether the nym stands a MEMBER after this write folds against the seated roster. A `carry` NEVER
    *  moves this: a place is not an operator and never enters the member set (heraldry#/the-herm-card). */
-  readonly memberNow:       boolean;
-  /** Whether the nym stands a contracted CARRIER after this write folds — the place's own relation. */
-  readonly carrierNow:      boolean;
+  /** Whether this receiver locally observes the nym as a held member after the write folds. */
+  readonly memberHeld:      boolean;
+  /** Whether this receiver locally observes the nym as a held carrier after the write folds. */
+  readonly carrierHeld:      boolean;
 }
 
 /** Read the seated roster off disk, FAILING CLOSED when no live quorum stands to root an admit on. */
@@ -185,7 +188,7 @@ async function resolveCarrierIn(
 
 /**
  * Mint THIS vessel's own carrier seal — run by the joining PLACE, on itself. Reads the vessel verifying key
- * and signs the version-independent carrier token for the charter epoch standing in its seal home; the
+ * and signs the act-independent carrier token for the charter epoch standing in its seal home; the
  * founding kahu supply the token to `runNexusContract({ action: "carry", carrierSig })`.
  *
  * IT TOUCHES NO PERSONA. A Herm holds none by law, and this is the whole door that fact required.
@@ -206,9 +209,10 @@ export async function runNexusCarryFor(opts: {
 }
 
 /**
- * ADMIT (`admit`) or REVOKE (`revoke`) an operator nym — sign a monotone membership entry with ≥ threshold held
+ * ADMIT (`admit`) or REVOKE (`revoke`) an operator nym — sign a causal membership act with ≥ threshold held
  * founding persona-roots (plus, for admit, the operator's contract-in) and LAND it on the always-carried members
- * board. FAILS CLOSED before any write. The lift/re-admit rides a STRICTLY HIGHER version than any standing entry.
+ * board. FAILS CLOSED before any write. The act names every locally observed causal head for this relation family;
+ * it never derives authority from a scalar counter.
  */
 export async function runNexusContract(opts: NexusContractOptions): Promise<NexusContractResult> {
   const storageDir = opts.storageDir ?? larDataDir();
@@ -236,15 +240,16 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   try {
     const handle = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
 
-    const priorVersion = maxVersionForNym(carriageEntriesFromBoard(handle.doc()), nym);
-    const version      = (priorVersion ?? 0) + 1;
+    const boardEntries = carriageEntriesFromBoard(handle.doc());
+    const boardFold = await foldCarriageDetails(boardEntries, roster);
+    const parents = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
 
     const signers = await Promise.all(selected.map(async (s) => ({
       signer: s.verifyingKey,
       sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
     })));
     const entry: CarriageEntry = await signCarriageQuorum(
-      { nym, action: opts.action, version, sealEpochCid: roster.sealEpochCid },
+      { nym, action: opts.action, parents, sealEpochCid: roster.sealEpochCid },
       signers,
       contract?.contractSig,
     );
@@ -266,17 +271,17 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
 
     const entries    = carriageEntriesFromBoard(handle.doc());
     const folded     = await foldCarriageSet(entries, roster);
-    const memberNow  = holdsCarriage(nym, folded);
-    // THE TWO FOLDS STAY TWO. A `carry` moves this one and never `memberNow` — the structural half of the
+    const memberHeld  = holdsCarriage(nym, folded);
+    // THE TWO FOLDS STAY TWO. A `carry` moves the carrier observation and never `memberHeld` — the structural half of the
     // class law, reported so a caller reads which relation it actually landed.
-    const carrierNow = holdsCarrier(nym, await foldCarrierSet(entries, roster));
+    const carrierHeld = holdsCarrier(nym, await foldCarrierSet(entries, roster));
 
     return {
-      action: opts.action, nym, version, priorVersion,
+      action: opts.action, nym, parents, evidenceCid: carriageEntryActCid(entry),
       sealEpochCid: roster.sealEpochCid, threshold: roster.threshold,
       signers: selected.map((s) => s.verifyingKey),
       contractIn: contract ? contract.how : "n/a",
-      boardUrl, memberNow, carrierNow,
+      boardUrl, memberHeld, carrierHeld,
     };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
@@ -285,7 +290,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
 
 /**
  * Mint the operator's "accepts carriage" contract-sig — run by the JOINING operator on its OWN vessel. Reads the
- * held persona seed at `handleIndex`, signs the version-independent carriage token for the current charter epoch,
+ * held persona seed at `handleIndex`, signs the act-independent carriage token for the current charter epoch,
  * and returns the token hex the kahu supply to `runNexusContract({ contractSig })`. FAIL CLOSED: an unseated charter
  * has no epoch to bind consent to → REFUSE.
  */
@@ -388,12 +393,12 @@ export interface NexusMembersListResult {
   readonly sealEpochCid: string;
   readonly threshold:       number;
   readonly seatedKeys:      number;
-  /** The currently-admitted member nyms (folded + quorum + contract-in verified against the seated roster). */
+  /** The member nyms locally held by this fold (quorum + contract-in verified against the seated roster). */
   readonly members:         readonly string[];
-  readonly entries:         ReadonlyArray<{ nym: string; action: CarriageAction; version: number; signers: number; contractIn: boolean }>;
+  readonly entries:         ReadonlyArray<{ nym: string; action: CarriageAction; parents: readonly string[]; evidenceCid: string; signers: number; contractIn: boolean }>;
 }
 
-/** Read the currently-admitted member set + the raw board entries (the `--list` fold). Read-only; FAILS CLOSED
+/** Read the locally held member set + the raw board evidence (the `--list` fold). Read-only; FAILS CLOSED
  *  to the empty set on an unseated charter. */
 export async function runNexusMembersList(opts: { sealHome: string; storageDir?: string }): Promise<NexusMembersListResult> {
   const storageDir = opts.storageDir ?? larDataDir();
@@ -421,20 +426,25 @@ export async function runNexusMembersList(opts: { sealHome: string; storageDir?:
       seatedKeys:      roster.keys.length,
       members:         [...folded].map((k) => k.toLowerCase()).sort(),
       entries:         entries
-        .map((e) => ({ nym: e.nym, action: e.action, version: e.version, signers: e.signatures.length, contractIn: Boolean(e.contractSig) }))
-        .sort((a, b) => (a.nym === b.nym ? a.version - b.version : a.nym.localeCompare(b.nym))),
+        .map((e) => ({ nym: e.nym, action: e.action, parents: [...e.parents], evidenceCid: carriageEntryActCid(e), signers: e.signatures.length, contractIn: Boolean(e.contractSig) }))
+        .sort((a, b) => (a.nym === b.nym ? a.evidenceCid.localeCompare(b.evidenceCid) : a.nym.localeCompare(b.nym))),
     };
   } finally {
     await repo.flush().catch(() => { /* best-effort */ });
   }
 }
 
-/** The highest `version` any board entry carries for `nym`, or null when the nym has no standing entry. */
-function maxVersionForNym(entries: readonly CarriageEntry[], nym: string): number | null {
-  let max: number | null = null;
-  for (const e of entries) {
-    if (e.nym.toLowerCase() !== nym) continue;
-    if (max === null || e.version > max) max = e.version;
-  }
-  return max;
+/** Return all locally observed causal heads for one relation family and nym. */
+function causalHeadsForNym(
+  details: ReadonlyArray<{ readonly nym: string; readonly action: string; readonly parents: readonly string[]; readonly evidenceCid: string; readonly sealEpochCid: string; readonly counted: boolean; readonly state: string }>,
+  nym: string,
+  action: CarriageAction,
+  sealEpochCid: string,
+): string[] {
+  const memberFamily = action === "admit" || action === "revoke";
+  const candidates = details.filter((detail) =>
+    detail.nym === nym && detail.sealEpochCid === sealEpochCid && detail.counted && detail.state !== "unavailable" &&
+    (memberFamily ? detail.action === "admit" || detail.action === "revoke" : detail.action === "carry" || detail.action === "uncarry"));
+  const referenced = new Set(candidates.flatMap((entry) => entry.parents));
+  return candidates.map((entry) => entry.evidenceCid).filter((cid) => !referenced.has(cid)).sort();
 }
