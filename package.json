@@ -23,6 +23,7 @@
     "witness:deps": "tools/exact-deps-witness.sh",
     "witness:rite": "tools/rite-commands-witness.sh",
     "witness:roundtrip": "tools/round-trip-witness.sh",
+    "witness:pronaos": "node --test tools/pronaos-deployment-receipt.test.mjs tools/pronaos-runtime-wiring.test.mjs tools/pronaos-live-witness.test.mjs",
     "witness": "tools/witness-all.sh",
     "test:e2e:live": "pnpm --filter @lares/harness test:live"
   },
