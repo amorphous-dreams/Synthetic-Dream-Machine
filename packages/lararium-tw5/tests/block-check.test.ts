@@ -7,7 +7,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { deserializeCarrier } from "../src/deserializer.js";
-import { classifyPostamble, checkedSpan } from "../src/block-check.js";
+import { classifyPostamble, classifyPostEot, checkedSpan } from "../src/block-check.js";
 import { bccOfSpan } from "../src/carrier-check.js";
 
 const frame = (slot: string): string =>
@@ -62,5 +62,24 @@ describe("classifyPostamble", () => {
     const v = classifyPostamble("<<~ ahu #edges>>\n\n* a\n\n<<~/ahu>>");
     expect(v.kind).toBe("foreign");
     if (v.kind === "foreign") expect(v.lines).toBe(5);
+  });
+});
+
+describe("classifyPostEot", () => {
+  test("content after EOT is foreign boundary drift", () => {
+    expect(classifyPostEot(frame("") + "<<~ ahu #escaped>>")?.kind).toBe("foreign");
+  });
+
+  test("the canonical EOT tail has no post-EOT content", () => {
+    expect(classifyPostEot(frame("") )?.kind).toBe("empty");
+  });
+
+  test("EOT2 alone is a canonical terminating mark", () => {
+    const eot2 = frame("").replace('code="&#x0004;"', 'code="&#x0014;"');
+    expect(classifyPostEot(eot2)?.kind).toBe("empty");
+  });
+
+  test("a second terminator after EOT is foreign boundary drift", () => {
+    expect(classifyPostEot(frame("").replace(/(<<\^ code="&#x0004;"[^\n]*>>\n)$/, "$1<<^ code=\"&#x0014;\" -> to=\"?\">>\n"))?.kind).toBe("foreign");
   });
 });

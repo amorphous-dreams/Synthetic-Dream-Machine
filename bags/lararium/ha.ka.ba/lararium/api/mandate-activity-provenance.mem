@@ -39,10 +39,6 @@ The boundary record carries the parent mandate, activity, result, delegation rel
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OCjH6uDTXRs6JDXZoWP3ba-52L0EBIN1U-BLJpy87UQ
-
-<<^ code="&#x0004;" -> to="?">>
-
 <<~ ahu #/appraisal>>
 
 !! Local appraisal is a gradient
@@ -89,3 +85,7 @@ The fiction failure modes are test names, not authority: False Archive tests rec
 <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Btx7rSGC4fLArHlgY_8QivZk2-UezlxEfxkZZXO5IOQ
+
+<<^ code="&#x0004;" -> to="?">>

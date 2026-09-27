@@ -31,6 +31,7 @@
  */
 
 import { frameAlt } from "./frame-marks.js";
+import { fencedSpans, maskedExec } from "./meme-ast/fence-mask.js";
 
 // THE CODE SET COMES FROM THE DECLARATION; THESE SCANS STAY THIS READER'S OWN (frame-marks.ts).
 // This module reads a frame sigil DECORATED — `(?:\s*\S+)?\s*` admits the namespace glyphs and the
@@ -93,6 +94,25 @@ export function classifyPostamble(postamble: string): Postamble {
   if (m) return { kind: "bcc", digest: m[1] as string };
 
   return { kind: "foreign", text: body, lines: body.split("\n").length };
+}
+
+/**
+ * Read the bytes after the carrier's terminating EOT/EOT2 mark.
+ *
+ * A postamble between ETX and EOT is the BCC slot and may be empty or carry one BCC. Bytes after
+ * EOT have no carrier boundary left to receive them. Keep this as a separate reading: a shifted
+ * BCC with legitimate EOT still has a recoverable slot, while content after EOT is boundary drift
+ * that normalization must refuse to guess over.
+ */
+export function classifyPostEot(text: string): Postamble | null {
+  // Find the first actual terminator across EOT/EOT2. We inspect the raw tail afterwards rather
+  // than passing it through `classifyPostamble`, whose ETX-slot reader intentionally strips all EOT
+  // variants and would therefore launder a second terminator as empty postamble.
+  const eot = maskedExec(text, new RegExp(EOT_STRIP_SRC, "g"), fencedSpans(text));
+  if (!eot) return null;
+  const tail = text.slice(eot.index + eot[0].length);
+  if (tail.trim().length === 0) return { kind: "empty" };
+  return { kind: "foreign", text: tail.trim(), lines: tail.trim().split("\n").length };
 }
 
 /**

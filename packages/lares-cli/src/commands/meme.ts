@@ -80,7 +80,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission } from "@lararium/tw5/meme-markdown";
 import {
-  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble,
+  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble, classifyPostEot,
   readCarrierLifecycle, checkCarrierLifecycle,
 } from "@lararium/tw5";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
@@ -531,6 +531,18 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
       console.log("  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand");
     }
 
+    // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may
+    // be prose, a second control mark, or a truncated neighboring carrier. A check over the earlier
+    // span cannot attest to them, so both seats refuse to call the source canonical; normalization
+    // leaves the bytes untouched for a hand to separate rather than guessing which boundary moved.
+    const afterEot = classifyPostEot(res.text);
+    if (afterEot?.kind === "foreign") {
+      faulted++;
+      console.log(`boundary: ${f}`);
+      console.log("  ✗ content follows the terminating EOT/EOT2 mark — separate the carrier by hand; normalization refused to guess");
+      continue;
+    }
+
     const standing = verifyBcc(res.text);
     const stamped  = restamp(res.text);
     const changed  = res.changed || stamped !== res.text;
@@ -563,13 +575,15 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
     + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with --grammar to apply"})` : "");
   if (drifted === 0) {
-    console.log(`all ${files.length} carrier(s) canonical.${tail}`);
+    console.log(faulted === 0
+      ? `all ${files.length} carrier(s) canonical.${tail}`
+      : `no carrier(s) normalized; ${faulted} boundary/stage fault(s) remain.${tail}`);
     // A STAGE FAULT FAILS THE READ-ALONE SEAT even where every byte reads canonical — the two say
     // different things, and a gate that passed a `folded` carrier still holding its argument would
     // let the fire take a carrier whose content lives nowhere else. GRAMMAR drift NEVER fails this
     // seat — a carrier keeping a deliberate spelling reads as a held preference, not a fault, so it
     // never trips a CI gate or pre-commit hook forever.
-    return write || faulted === 0 ? 0 : 1;
+    return faulted === 0 ? 0 : 1;
   }
   console.log(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
   // Read alone, FRAME drift fails loud so a CI gate or pre-commit hook catches un-normalized
@@ -578,7 +592,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
   // re-stamp), since a grammar-only carrier never enters this branch: `changed` on its result is
   // false unless `--grammar` applied it, and its grammar note surfaces through the `grammar
   // preference` line above regardless.
-  return write ? 0 : 1;
+  return faulted === 0 && (write || drifted === 0) ? 0 : 1;
 }
 
 /**

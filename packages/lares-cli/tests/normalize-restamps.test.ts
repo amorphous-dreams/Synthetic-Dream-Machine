@@ -30,7 +30,7 @@
  * reverse in `restamp` if that case ever becomes real.
  */
 import { describe, test, expect, beforeAll } from "vitest";
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, readFileSync, copyFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -44,12 +44,15 @@ const SOURCE = path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/prism.mem");
 
 /** `lares meme normalize <file>` writes; `lares meme check <file>` reads alone — the same law, two seats. */
 function meme(sub: "normalize" | "check", file: string, extra: readonly string[] = []): { out: string; code: number } {
-  try {
-    return { out: execFileSync("node", [BIN, "meme", sub, file, ...extra], { encoding: "utf8" }), code: 0 };
-  } catch (e) {
-    const err = e as { stdout?: string; status?: number };
-    return { out: err.stdout ?? "", code: err.status ?? 1 };
-  }
+  // The CLI deliberately reports human diagnostics on either stream depending on the exit seat.
+  // `execFileSync` only exposes stdout on success and its thrown shape hides stderr, which made a
+  // real child-process refusal look like an empty report. Capture both streams while preserving
+  // the command's actual exit status.
+  const result = spawnSync("node", [BIN, "meme", sub, file, ...extra], { encoding: "utf8" });
+  return {
+    out: `${result.stdout ?? ""}${result.stderr ?? ""}`,
+    code: result.status ?? 1,
+  };
 }
 
 describe("meme normalize — the check follows the body", () => {
@@ -82,6 +85,24 @@ describe("meme normalize — the check follows the body", () => {
     const { out, code } = meme("check", file);
     expect(out).toMatch(/canonical/);
     expect(code).toBe(0);
+  });
+
+  test("★ RED: content after the terminating 0004 refuses the boundary ★", () => {
+    // Recreate the former kapu drift against the repaired EOT2 carrier: an ETX check and 0004/EOT
+    // stand, then a second terminator follows. `verifyBcc` sees the adjacent digest and used to call
+    // the whole source canonical while the parser discarded the post-EOT bytes.
+    const stray = path.join(dir, "post-eot.mem");
+    const source = path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/kapu.mem");
+    const repaired = readFileSync(source, "utf8");
+    writeFileSync(stray, repaired.replace(
+      '<<^ code="&#x0014;" -> to="?">>',
+      '<<^ code="&#x0004;" -> to="?">>\n<<^ code="&#x0014;" -> to="?">>',
+    ));
+    const before = readFileSync(stray, "utf8");
+    const { out, code } = meme("check", stray);
+    expect(out).toMatch(/postamble|boundary|after.*0004|terminat/i);
+    expect(code).toBe(1);
+    expect(readFileSync(stray, "utf8")).toBe(before);
   });
 
   test("★ RED: a FRAMED carrier holding NO check gets one MINTED — minting on absent reads pono ★", () => {
@@ -223,36 +244,25 @@ describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () 
     expect(verifyBcc(after)).toBe("ok");
   });
 
-  test("★ RED: a SHIFTED check followed by MORE real content (not just EOT) still gets REPLACED ★", () => {
-    // The corpus is not always a clean STX…ETX…EOT-end-of-file shape: a fixture that packs other
-    // frame codepoints, or a carrier with trailing material, legitimately carries MORE past the check
-    // than whitespace-then-EOT. `classifyPostamble` over the WHOLE tail then reads `foreign`, not
-    // `bcc` — so a fix that only reads the whole tail still falls through to the bare insert and
-    // reproduces the duplication `ni:///…NEW ni:///…OLD` right where the check stands, with the
-    // trailing content carried along untouched either way. Every check this grammar writes stands
-    // ALONE on the line right after the frame's close, though, so `restamp` must also read THAT line
-    // alone through the same classifier before it gives up and inserts.
+  test("★ RED: a SHIFTED check followed by MORE real content after EOT refuses the boundary ★", () => {
+    // A shifted check is recoverable while the carrier still has one bounded ETX…EOT transmission.
+    // Once content follows EOT, however, the source has escaped its canonical boundary. Preserve it
+    // byte-for-byte and hand the separation back to an operator rather than re-stamping through it.
     const file = path.join(dir, "shifted-with-tail.mem");
     const source = readFileSync(SOURCE, "utf8");
     const span = checkSpan(source);
     if (!span) throw new Error("fixture must carry a complete frame");
-    // Shift the check by one space AND append real trailing content after it — content a bare
-    // whole-tail `classifyPostamble` read cannot absorb into "bcc".
+    // Shift the check by one space AND append real trailing content after EOT.
     const shifted = source.slice(0, span.end) + " " + source.slice(span.end) + "\n<<~ loulou \"lar:///ha.ka.ba/lares/api/pono\">>\n";
     writeFileSync(file, shifted);
     expect(verifyBcc(shifted)).toBe("unchecked");
     expect(classifyPostamble(shifted.slice(span.end)).kind, "the whole tail must read foreign — that is the case this test guards").toBe("foreign");
 
-    meme("normalize", file);
-    const after = readFileSync(file, "utf8");
-    const afterSpan = checkSpan(after);
-    if (!afterSpan) throw new Error("normalize must not tear the frame");
-    const postamble = after.slice(afterSpan.end);
-    const niCount = (postamble.match(/ni:\/\/\//g) ?? []).length;
-    expect(niCount, `postamble after normalize: ${JSON.stringify(postamble.slice(0, 200))}`).toBe(1);
-    expect(verifyBcc(after)).toBe("ok");
-    // The trailing content survived the re-stamp untouched.
-    expect(after).toContain('<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>');
+    const before = readFileSync(file, "utf8");
+    const { out, code } = meme("normalize", file);
+    expect(code).toBe(1);
+    expect(out).toMatch(/content follows the terminating EOT|boundary/i);
+    expect(readFileSync(file, "utf8")).toBe(before);
   });
 });
 

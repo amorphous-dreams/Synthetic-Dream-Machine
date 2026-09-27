@@ -308,5 +308,5 @@ export { bccOf, verifyBcc, checkSpan } from "./carrier-check.js";
 // rather than re-deriving: a check that stands but is not byte-adjacent reads `unchecked` to the
 // strict verifier and `bcc` here, and that gap is exactly what tells a re-stamp to REPLACE the drifted
 // check instead of minting a second one beside it.
-export { classifyPostamble, BCC_RE } from "./block-check.js";
+export { classifyPostamble, classifyPostEot, BCC_RE } from "./block-check.js";
 export type { Postamble } from "./block-check.js";
