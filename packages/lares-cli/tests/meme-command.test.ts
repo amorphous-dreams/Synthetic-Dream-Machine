@@ -273,6 +273,104 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
   });
 });
 
+/**
+ * The fold of `tools/submission-parity.mjs` into this door: `project --to md --check <file|dir>`
+ * re-projects each named pair's SOURCE (read off the meta's `source:` field, resolved against the
+ * repo's `bags/lares` tree) and compares in memory — no write, no wire. `PRISM`'s own declared
+ * address (`lar:///ha.ka.ba/lares/api/pono/prism`) resolves back to itself, so a pair projected
+ * from it here proves current against the real corpus file, exactly as the shelf's pairs do.
+ */
+describe("lares meme project --to md --check — the fold of submission-parity", () => {
+  const clean = (d: string): void => {
+    void cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
+  };
+
+  test("★ a clean pair reads 0 out of step, and touches neither wire nor disk ★", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await clean(d);
+    const mdBefore = readFileSync(join(d, "prism.md"), "utf8");
+    const metaBefore = readFileSync(join(d, "prism.md.meta"), "utf8");
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    expect(readFileSync(join(d, "prism.md"), "utf8")).toBe(mdBefore);
+    expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(metaBefore);
+    expect(h.calls).toEqual([]);
+  });
+
+  test("the bare-flag spelling names its target off the normal source position", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await clean(d);
+    const code = await cmdMeme(memeArgs(["project", d], { to: "md" }, { check: true }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+  });
+
+  test("a single <name>.md file names one pair, not the whole directory", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await clean(d);
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: join(d, "prism.md") }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+  });
+
+  test("★ a hand-edited pair reads DRIFTED — hand edits do not survive re-projection ★", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    await clean(d);
+    writeFileSync(join(d, "prism.md"), readFileSync(join(d, "prism.md"), "utf8") + "\nhand-added line\n");
+    const logs: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((l: string) => { logs.push(l); });
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(1);
+    expect(logs.some((l) => l.includes("prism") && l.includes("DRIFTED"))).toBe(true);
+  });
+
+  test("CONTROL: a pair whose meta names no source, and one missing its .md.meta, each name themselves", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    writeFileSync(join(d, "orphan.md"), "# orphan\n");
+    writeFileSync(join(d, "no-source.md"), "# no-source\n");
+    writeFileSync(join(d, "no-source.md.meta"), "title: x\ntype: text/markdown\n");
+    const logs: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((l: string) => { logs.push(l); });
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(1);
+    expect(logs.some((l) => l.includes("orphan") && l.includes("no .md.meta"))).toBe(true);
+    expect(logs.some((l) => l.includes("no-source") && l.includes("names no source"))).toBe(true);
+  });
+
+  test("a source that no longer exists reads GONE", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    writeFileSync(join(d, "ghost.md"), "# ghost\n");
+    writeFileSync(join(d, "ghost.md.meta"), "title: x\ntype: text/markdown\nsource: lar:///nowhere/at/all\n");
+    const logs: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((l: string) => { logs.push(l); });
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(1);
+    expect(logs.some((l) => l.includes("ghost") && l.includes("GONE"))).toBe(true);
+  });
+
+  test("a target naming no .md pair at all reads 1, not a crash", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(1);
+  });
+
+  test("no target names usage; a non-md --to refuses", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await cmdMeme(memeArgs(["project"], {}, { check: true }))).toBe(2);
+    expect(await cmdMeme(memeArgs(["project"], { to: "html", check: "somewhere" }))).toBe(2);
+    vi.restoreAllMocks();
+  });
+});
+
 describe("lares meme project — the daemon seat rides meme-project", () => {
   test("★ a lar: uri dispatches meme-project with uri · to · container, and writes the text to --out ★", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);

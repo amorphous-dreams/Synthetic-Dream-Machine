@@ -8,6 +8,7 @@
  *   normalize <file.mem ...> [--grammar]
  *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
+ *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
  *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
  *
  * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
@@ -62,13 +63,20 @@
  * mouth the in-VM face (`$tw.lares.meme.project`) and the `meme-project` verb also call, so a pair
  * projected from any door carries identical bytes. No clock rides the meta: currency proves by re-projecting, never by a stamp.
  *
+ * `project --to md --check <file.md | dir>` RUNS THAT PROOF, folded off `tools/submission-parity.mjs`
+ * (now retired) and into this one door: re-project each named pair's source in memory through the same
+ * `projectSubmission`, compare against the pair on disk and its meta's `source-check`, and exit non-zero
+ * naming each pair whose source moved (`source-check` disagrees), vanished, or whose bytes drifted from
+ * a hand edit. Local, read-alone — it writes nothing, exactly like `check` over a `.mem` file.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/handoff
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { stdin, stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
+import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission } from "@lararium/tw5/meme-markdown";
 import {
@@ -732,6 +740,7 @@ function surveySitting(files: string[]): number {
 // ── project: the seat law decides local or daemon ──────────────────────────────────────────────
 
 async function memeProject(args: ParsedArgs): Promise<number> {
+  if ("check" in args.options || "check" in args.flags) return projectMdCheck(args);
   const plan = projectPlan(args);
   if (plan.seat === "local") return projectMdLocal(args, plan.file as string);
 
@@ -843,6 +852,70 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
   writeFileSync(`${mdPath}.meta`, p.meta);
   console.log(`projected ${p.uri} -> ${mdPath} (+.meta, source-check ${p.check})`);
   return 0;
+}
+
+/**
+ * `project --to md --check <file.md|dir>` — THE FOLD of `tools/submission-parity.mjs` into this door.
+ *
+ * A projected pair proves its currency by RE-PROJECTION, never by a stamp: the meta carries no clock,
+ * so the only way a pair reads current is that projecting its source again produces the same bytes.
+ * This mode runs that proof — over one named pair, or every `<name>.md` + `.md.meta` pair in a named
+ * directory — through `projectSubmission`, the same mouth `project --to md` itself calls: no second
+ * projector. It reads and writes NOTHING; a hand edit, a moved source, or a gone source each name
+ * themselves and the run exits 1. Green means every pair on the target re-projects byte-identical.
+ */
+function projectMdCheck(args: ParsedArgs): number {
+  // `--check` rides either spelling `checkFiles`'s `--gradient`/`--edges` already use: a bare flag
+  // with the target in the normal source position (`project <dir> --to md --check`), or an eaten
+  // value (`--check <dir>`) when it lands last on the line — parse-args cannot tell a flag from an
+  // option apart from what follows it, so both spellings answer the same target.
+  const checkOpt = args.options["check"];
+  const target = typeof checkOpt === "string" ? checkOpt : args.positional[1];
+  if (!target) throw new UsageError("lares meme project --to md --check <file.md|dir> — name a projected pair or a shelf of them");
+  const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "md";
+  if (to !== "md") throw new UsageError(`--check proves the md pair's currency alone; got --to ${to}`);
+
+  const abs = isAbsolute(target) ? target : join(process.cwd(), target);
+  let dir: string;
+  let mdFiles: string[];
+  if (existsSync(abs) && statSync(abs).isDirectory()) {
+    dir = abs;
+    mdFiles = readdirSync(abs).filter((f) => f.endsWith(".md")).sort();
+  } else if (abs.endsWith(".md")) {
+    dir = dirname(abs);
+    mdFiles = [basename(abs)];
+  } else {
+    throw new UsageError(`${target}: name a projected <name>.md pair, or a directory holding some`);
+  }
+  if (mdFiles.length === 0) {
+    console.log(`[meme project --check] ${target} holds no .md pair — nothing to prove`);
+    return 1;
+  }
+
+  let failed = 0;
+  for (const md of mdFiles) {
+    const name = md.replace(/\.md$/, "");
+    const mdPath = join(dir, md);
+    const metaPath = `${mdPath}.meta`;
+    if (!existsSync(metaPath)) { console.log(`  ${name}: no .md.meta beside it`); failed += 1; continue; }
+    const meta = readFileSync(metaPath, "utf8");
+    const title = /^title: (\S+)$/m.exec(meta)?.[1];
+    const source = /^source: (\S+)$/m.exec(meta)?.[1];
+    const claimedCheck = /^source-check: (\S+)$/m.exec(meta)?.[1];
+    if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
+    const srcPath = join(repoRoot, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
+    if (!existsSync(srcPath)) { console.log(`  ${name}: source GONE — ${source}`); failed += 1; continue; }
+    const p = projectSubmission(readFileSync(srcPath, "utf8"), title ? { title } : undefined);
+    if (p.check !== claimedCheck) {
+      console.log(`  ${name}: source MOVED — carrier check ${p.check} ≠ meta ${claimedCheck}; re-project`);
+      failed += 1; continue;
+    }
+    const mdNow = readFileSync(mdPath, "utf8");
+    if (p.markdown !== mdNow) { console.log(`  ${name}: markdown DRIFTED from its re-projection; re-project (hand edits do not survive)`); failed += 1; continue; }
+    if (p.meta !== meta) { console.log(`  ${name}: meta DRIFTED from its re-projection`); failed += 1; continue; }
+  }
+  console.log(`[meme project --check] ${mdFiles.length} pair(s) · ${failed} out of step`);
+  return failed === 0 ? 0 : 1;
 }
 
 

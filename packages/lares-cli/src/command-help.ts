@@ -192,6 +192,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
+      "lares meme project --to md --check bags/…/submissions   # every pair on the shelf re-projects clean",
       "lares meme promote bags/…/docs/pono/x.mem              # the canon crossing, receipt beside the carrier",
     ],
     flags: [
@@ -209,6 +210,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--to <mem|md|html|tid|json>   (project) the render target",
       "--out <path>       (project) the pair's directory (--to md) or the rendered file; stdout otherwise",
       "--title-base <uri> (project --to md) mount the pair under a shelf address",
+      "--check            (project --to md, over a <file.md|dir>) prove currency by re-projection alone; " +
+        "writes nothing, exits 1 naming each pair whose source moved or vanished, or whose bytes drifted",
     ],
     next: ["lares meme check <file.mem>", "lares meme sitting bags/   # what the fire could take; it BURNS NOTHING"],
     meme: "lar:///ha.ka.ba/lares/docs/handoff",

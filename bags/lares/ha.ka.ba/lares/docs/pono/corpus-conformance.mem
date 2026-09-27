@@ -49,7 +49,7 @@ booleans cannot tell that from a regression.
 Nothing here proposes a new instrument. The surface exists and sits unbound.
 
 | ''standing'' | ''count'' | ''shape'' |
-|shell witnesses |10 |`bcc` · `doctype` · `frame-shape` · `ahu-sections` · `authoring` · `meme-coordinates` · `round-trip` · `submission-parity` · `type-parity` · `typecheck` |
+|shell witnesses |9 |`bcc` · `doctype` · `frame-shape` · `ahu-sections` · `authoring` · `meme-coordinates` · `round-trip` · `type-parity` · `typecheck` |
 |corpus-walking predicates |9 |`carrier-shape` · `frames-per-carrier` · `grammar-in-a-wiki` · `ahu-sections-address` · `carrier-edges` · `child-name-blocks` · `bracket-law-one-spelling` · `vm-grammar-boundary` · `meme-corpus-roundtrip` |
 |a runner that binds them |''0'' |— |
 |a verdict tied to a seed-state |''0'' |— |
@@ -210,6 +210,6 @@ moved.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
-<<^ code="&#x0003;">>ni:///sha-256;umRlGv-wbpv36h1Cwq3SXe2caxNyrNiqzT8m35kn1TM
+<<^ code="&#x0003;">>ni:///sha-256;7uSBdFU9_Kw3_XKuW9oPxna1sjuFiwHFxcFeLwdVFUw
 
 <<^ code="&#x0004;" -> to="?">>
