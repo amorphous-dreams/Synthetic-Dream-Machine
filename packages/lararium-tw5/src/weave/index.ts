@@ -6,10 +6,10 @@ module-type: library
 /**
  * weave — project one memetic-wikitext carrier into a markdown + meta pair.
  *
- * Strangler-fig replacement for the old `meme-markdown.ts` hand-rolled line transposer. Same
- * mouth (`transposeMarkdown` / `projectSubmission`), same direction (carrier → markdown, WEAVE
- * only — the TANGLE/ingest direction is a later slice), same determinism law: same carrier bytes,
- * same pair, no clock and no randomness anywhere in the path.
+ * The one mouth (`transposeMarkdown` / `projectSubmission`) every door calls: the CLI's
+ * `lares meme project --to md`, the wiki's `meme-project` filter, and the daemon's `meme-project`
+ * verb. It WEAVES (carrier → markdown); TANGLE (markdown → carrier) reads the pair back elsewhere.
+ * Same carrier bytes, same pair: no clock and no randomness anywhere in the path.
  *
  * ── WHY LINE-BASED, WHY ONE-DIRECTIONAL ─────────────────────────────────────────────────────────
  * Wikitext marks an ordered list with a bare `#`, which markdown spends on headings; markdown

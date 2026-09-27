@@ -1,5 +1,5 @@
 /**
- * meme-markdown — the submission projection's laws, each on the seam it guards.
+ * weave — the submission projection's laws, each on the seam it guards.
  *
  * The projection serves a reader who was never taught the grammar, so every law here reads as a
  * promise to that reader: the frame never reaches them, the notation they do meet is shown
