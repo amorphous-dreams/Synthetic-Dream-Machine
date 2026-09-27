@@ -23,7 +23,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { memePathOf } from "../src/place-meme.js";
-import { projectSubmission } from "../src/meme-markdown.js";
+import { projectSubmission } from "../src/weave/index.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { digestsEqual, reprDigestOf } from "@lararium/mesh/agile-digest";

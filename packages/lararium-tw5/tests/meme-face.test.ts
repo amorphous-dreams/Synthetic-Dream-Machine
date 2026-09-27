@@ -11,7 +11,7 @@ import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
-import { projectSubmission } from "../src/meme-markdown.js";
+import { projectSubmission } from "../src/weave/index.js";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 

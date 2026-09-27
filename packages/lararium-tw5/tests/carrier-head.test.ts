@@ -377,7 +377,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     shape: typeof import("../src/carrier-shape.js");
     check: typeof import("../src/carrier-check.js");
     block: typeof import("../src/block-check.js");
-    markdown: typeof import("../src/meme-markdown.js");
+    markdown: typeof import("../src/weave/index.js");
     normalize: typeof import("../src/meme-normalize.js");
     stream: typeof import("../src/meme-stream.js");
     deser: typeof import("../src/deserializer.js");
@@ -390,7 +390,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
         shape:     await import("../src/carrier-shape.js"),
         check:     await import("../src/carrier-check.js"),
         block:     await import("../src/block-check.js"),
-        markdown:  await import("../src/meme-markdown.js"),
+        markdown:  await import("../src/weave/index.js"),
         normalize: await import("../src/meme-normalize.js"),
         stream:    await import("../src/meme-stream.js"),
         deser:     await import("../src/deserializer.js"),
@@ -435,7 +435,7 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     });
   });
 
-  test("★ meme-markdown reads the check off a probed ETX ★", async () => {
+  test("★ weave reads the check off a probed ETX ★", async () => {
     await withProbes(({ markdown }) => {
       expect(markdown.transposeMarkdown(probed).check).toBe("ni:///sha-256;probe");
     });

@@ -47,8 +47,8 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
             // meme-laws carries every pure law over meme text ONCE; the deserializer, the placement,
             // the projections and the face require it by URI.
             if (id === "lararium-meme-laws") return true;
-            // meme-markdown ships ONCE; the face and the projection filter require it by URI.
-            if (id === "lararium-meme-markdown") return true;
+            // weave ships ONCE; the face and the projection filter require it by URI.
+            if (id === "lararium-weave") return true;
             // meme-project ships ONCE; the face, the filter and the exporter require it by URI.
             if (id === "lararium-meme-project") return true;
             // the deserializer ships ONCE as its own module tiddler; the placement and the nalu engine
@@ -69,8 +69,8 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/place-meme"
                 : id === "lararium-meme-laws"
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-laws"
-                : id === "lararium-meme-markdown"
-                  ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-markdown"
+                : id === "lararium-weave"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/weave"
                 : id === "lararium-meme-project"
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-project"
                 : id === "lararium-deserializer"
@@ -111,8 +111,8 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
                 replacement: "lararium-meme-laws",
               }]
             : []),
-          ...(mod.name !== "meme-markdown"
-            ? [{ find: /^(\.\.?\/)+meme-markdown(\.js)?$/, replacement: "lararium-meme-markdown" }]
+          ...(mod.name !== "weave"
+            ? [{ find: /^(\.\.?\/)+weave\/index(\.js)?$/, replacement: "lararium-weave" }]
             : []),
           ...(mod.name !== "meme-project"
             ? [{ find: /^(\.\.?\/)+meme-project(\.js)?$/, replacement: "lararium-meme-project" }]

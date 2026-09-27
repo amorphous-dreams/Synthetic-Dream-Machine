@@ -48,9 +48,9 @@
       "import": "./dist/plugin-tiddler.generated.js",
       "types": "./dist/plugin-tiddler.generated.d.ts"
     },
-    "./meme-markdown": {
-      "import": "./dist/meme-markdown.js",
-      "types": "./dist/meme-markdown.d.ts"
+    "./weave": {
+      "import": "./dist/weave/index.js",
+      "types": "./dist/weave/index.d.ts"
     }
   },
   "main": "./dist/index.js",

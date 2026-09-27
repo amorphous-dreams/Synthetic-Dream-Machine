@@ -33,7 +33,7 @@ import { join } from "node:path";
 import { readCarrierShape } from "../src/carrier-shape.js";
 import { declaresCarrier, carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
-import { transposeMarkdown } from "../src/meme-markdown.js";
+import { transposeMarkdown } from "../src/weave/index.js";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { META_OPEN_CANON } from "../src/meta-fence.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";

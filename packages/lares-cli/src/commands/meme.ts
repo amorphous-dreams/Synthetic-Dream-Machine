@@ -59,7 +59,7 @@
  *               before a move and after: equal counts prove the weld held.
  *
  * `project --to md` over a file renders the submission pair — `<name>.md` + `<name>.md.meta`, beside the
- * source or under `--out <dir>` — through `projectSubmission` (`@lararium/tw5/meme-markdown`), the one
+ * source or under `--out <dir>` — through `projectSubmission` (`@lararium/tw5/weave`), the one
  * mouth the in-VM face (`$tw.lares.meme.project`) and the `meme-project` verb also call, so a pair
  * projected from any door carries identical bytes. No clock rides the meta: currency proves by re-projecting, never by a stamp.
  *
@@ -78,7 +78,7 @@ import { stdin, stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
-import { projectSubmission } from "@lararium/tw5/meme-markdown";
+import { projectSubmission } from "@lararium/tw5/weave";
 import {
   readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble, classifyPostEot,
   readCarrierLifecycle, checkCarrierLifecycle,

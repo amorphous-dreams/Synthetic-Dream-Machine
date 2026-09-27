@@ -36,7 +36,7 @@ module-type: library
  */
 
 import { expandMemeRefs, type TiddlerFields } from "./deserializer.js";
-import { projectSubmission } from "./meme-markdown.js";
+import { projectSubmission } from "./weave/index.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";

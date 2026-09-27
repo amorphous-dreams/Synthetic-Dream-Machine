@@ -26,7 +26,7 @@ describe("the meme laws pack as ONE library tiddler", () => {
   test("every consumer requires the library by URI; the one body holds the one copy", () => {
     const consumers = [
       "lar:///ha.ka.ba/lararium/tw5/modules/deserializer",
-      "lar:///ha.ka.ba/lararium/tw5/modules/meme-markdown",
+      "lar:///ha.ka.ba/lararium/tw5/modules/weave",
       "lar:///ha.ka.ba/lararium/tw5/modules/meme-face",
     ];
     for (const title of consumers) {
