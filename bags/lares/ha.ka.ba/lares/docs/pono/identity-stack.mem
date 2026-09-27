@@ -24,9 +24,13 @@ uri-path      = "ha.ka.ba/lares/docs/pono/identity-stack"
 
 ! Identity Stack — DID / Handle / lar: Alias
 
-> ''PRE-KEYHIVE MODEL — superseded, rewrite deferred (operator, 2026-06-24).'' This stack predates the
-> ruled identity model. The live model is ''capability-is-identity + Keyhive concap'' (the capability IS
-> the identity; petnames over the lar: l-space regions) — <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>.
+> ''PRE-KEYHIVE MODEL — HISTORICAL, NOT LIVE GUIDANCE (operator, 2026-06-24).'' This stack predates the
+> ruled identity model. Do not use its DID/handle/alias table as the current identity or currentness
+> contract. The live model is ''capability-is-identity + Keyhive concap'' (the capability IS the identity;
+> petnames over the lar: l-space regions), with identity enacted by signed relations and causal evidence
+> frontiers — <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">> ·
+> <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> ·
+> <<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>.
 > What this file describes (Elyncia.app / DreamDeck on AT Protocol `did:plc` + UCAN) reads as a ''web2-bridge''
 ''> app layer'' behind a causal-island boundary (Web3-only law), NOT the Lares-stack-proper identity. Held for a
 > later rewrite pass.
@@ -108,6 +112,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ehtrVNdecE0qaElysdHacm6espNaXzqL2GSsReK9tOg
+<<^ code="&#x0003;">>ni:///sha-256;djpXq1PMYxqKzmrHIpXcs9QwCM9UTlb4D8vCVTj6JHg
 
 <<^ code="&#x0004;" -> to="?">>

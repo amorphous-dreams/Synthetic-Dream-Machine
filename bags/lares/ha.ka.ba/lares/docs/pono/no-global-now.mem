@@ -35,6 +35,33 @@ uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 
 ''Register: Mined-Testimony.'' Quotes ride under quote license; the copulas inside them belong to their speakers.
 
+<<~ ahu #/charge/currentness-reframe>>
+
+!! Currentness reframe ~ lineage, frontier, and typed fences
+
+''CURRENT.'' This carrier's older scalar `version` and `highest-epoch-wins` language is historical mined
+testimony, not a license to make membership a numbered entity. The live design direction now reads a
+membership, carriage, or relation as a signed content-addressed act with its parent evidence. A reader
+follows the acts it has actually observed and reports a local frontier; it never claims a global current
+member, a complete roster, or a universal present. The frontier may therefore hold an act as ''held'',
+''withdrawn'', ''unsettled'', ''unavailable'', or ''rejected'' according to the evidence and the local
+policy. A concurrent contradiction stays visible until a later witnessed relation gives the reader more
+ground. This is the causal-lineage shape carried by <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>,
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">>, and
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>.
+
+''NARROW EXCEPTION.'' A protocol may still require a typed cryptographic fencing token for a resource
+supersession or key-rotation gate. Such a token is local evidence for that resource's safety rule. It is
+not entity age, membership rank, liveness, or global currentness, and it MUST NOT be named or reused as a
+membership `version`. A wall-clock witness remains a soft or replay backstop only where its cited
+protocol explicitly requires one; it never supplies the causal verdict.
+
+''OPEN IMPLEMENTATION QUESTION.'' The exact carriage act shape, semantic act CID versus full evidence CID,
+and the public name for a concurrent contradiction remain implementation decisions. This section settles
+the direction and the boundary, not those fields.
+
+<<~/ahu>>
+
 <<~/ahu>>
 
 <<~ ahu #/the-mines>>
@@ -331,6 +358,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H-mwzOHOsvVo5F3ddkcj9ReAgzBvUOltOz5hh_HlRcs
+<<^ code="&#x0003;">>ni:///sha-256;D9-4HfrXbrawSZwzKpp0RJHN6E0VJFPyhbEugQG43bk
 
 <<^ code="&#x0004;" -> to="?">>

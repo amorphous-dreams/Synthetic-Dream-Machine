@@ -404,6 +404,7 @@ backward-compatibly; the v3 content-addressed id-recipe holds; the ''FfzClock li
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>
@@ -418,6 +419,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ripms_-HpEPGlmq3XpvjW5z0g9MeBicKXR1T-Z3rwpY
+<<^ code="&#x0003;">>ni:///sha-256;1kPWPduOC658ViUIpz_e4GCGVOOUNTvgKuMXHSzbQq4
 
 <<^ code="&#x0004;" -> to="?">>

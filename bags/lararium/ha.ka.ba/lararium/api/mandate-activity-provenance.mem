@@ -1,0 +1,91 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/api/mandate-activity-provenance.mem"
+l-space   = "stable"
+mana      = 19
+manao     = 18
+manaoio   = 18
+role      = "canonical agency cut: mandate, activity, result, delegation, attestation and local appraisal"
+tags      = ["api/pono", "api/lararium", "mesh/agency", "mesh/provenance", "mesh/causal-island"]
+title     = "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/api/mandate-activity-provenance"
+```
+
+<<~ ahu #/entry>>
+
+! Mandate → Activity → Appraisal
+
+''The agency cut.'' A human, an AI process, a vessel, and an outcome may all participate in one act without becoming one identity. This membrane names the relations so the causal graph carries the distinction.
+
+''Mandate'' is the content-addressed intent an actor authors or delegates. ''Activity'' is one concrete execution attempt. ''Result'' is the entity the activity generates, including a receipt for an external effect. ''Delegation'' relates a responsible actor to a bounded delegate for a named activity. ''Attestation'' is an integrity-bound claim about a subject and activity. ''Appraisal'' is this causal island's local decision over the evidence and capabilities it can presently hold.
+
+The mandate does not become the activity. The AI process does not become the human author. A signature proves who made an attestation; it does not by itself prove permission or pono. Local appraisal decides.
+
+<<~/ahu>>
+
+<<~ ahu #/worldline-boundary>>
+
+!! Worldline boundary
+
+An ephemeral tasked spirit remains ''nameless'' in local work memory: its derived worldline handle, role, task and held capability stack locate its work. A spirit acquires an explicit process identity only when an activity crosses an authority, vessel, or federation boundary that needs a separately attributable principal. Agent cryptographic fingerprinting of every local helper is deferred; the local graph must not invent identity material merely to make a pet-name look official.
+
+The boundary record carries the parent mandate, activity, result, delegation relation and local appraisal. Re-delegation is closed by default and must carry an explicit attenuating grant; a child never widens the parent's envelope.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;OCjH6uDTXRs6JDXZoWP3ba-52L0EBIN1U-BLJpy87UQ
+
+<<^ code="&#x0004;" -> to="?">>
+
+<<~ ahu #/appraisal>>
+
+!! Local appraisal is a gradient
+
+Every vessel MAY preserve the whole evidence graph while returning a bounded local verdict:
+
+* ''accepted'' — the evidence and held capabilities satisfy local policy;
+* ''deferred'' — evidence is usable but a human or later local ceremony must decide;
+* ''unsettled'' — admissible concurrent heads contradict one another;
+* ''unavailable'' — a required parent, authority, or evidence is absent;
+* ''rejected'' — a subject, signature, capability, or relation fails its structural gate.
+
+These are local appraisals, never a global present. Arrival order, wall-clock freshness, schedule order, pet-name, persona, and vessel class MUST NOT choose among causal heads.
+
+''Schedule law.'' A scheduler triggers an activity against a fixed mandate CID. At execution the vessel re-appraises that mandate against its locally visible causal frontier and held cap stack. A schedule never means ''latest'', and a timer never grants authority.
+
+<<~/ahu>>
+
+<<~ ahu #/scenario-harness>>
+
+!! Red-first ScenarioCast guidance
+
+`ScenarioPresence` describes who and what caps stand in the scenario. It does not stand in for an activity. The harness SHOULD compose these pure records:
+
+```
+ScenarioPresence   → actor + vessel caps + descriptive hats
+ScenarioMandate    → authored/delegated intent entity
+ScenarioActivity   → one execution with causal parents
+ScenarioResult     → generated subject or external-effect receipt
+ScenarioAttestation→ issuer-bound claim about that subject
+ScenarioAppraisal  → local accepted/deferred/unsettled/unavailable/rejected
+```
+
+An AI process enters the cast as its own actor descriptor when it crosses the explicit-process boundary; it is never merely a human `AI` hat. Tests MUST prove that labels do not mint authority, a result cannot use an absent mandate parent, a valid signature on the wrong subject is rejected, concurrent contradictory activities remain unsettled in either arrival order, and re-delegation cannot widen capabilities.
+
+The fiction failure modes are test names, not authority: False Archive tests record/inference separation; Approval-Rot tests contrary evidence; Unsanctioned Expansion tests mandate scope; Context-Fade tests fixed constraints under long runs; Signal-Blur tests epistemic labels; Persona-Capture tests that ritual framing cannot authorize an action.
+
+<<~/ahu>>
+
+<<~ ahu #/relations>>
+
+!! Membrane relations
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+
+<<~/ahu>>

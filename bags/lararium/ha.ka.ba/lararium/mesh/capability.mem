@@ -60,6 +60,7 @@ reader a check they could then fail to find.
 
 <<~ ahu #/edges>>
 
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
 <<~ pranala #source from="?" -> to="packages/lararium-mesh/src/capability.ts" family="code" role="has">>
 
 <<~/ahu>>
@@ -67,6 +68,6 @@ reader a check they could then fail to find.
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
-<<^ code="&#x0003;">>ni:///sha-256;_W-8UnKgp_SxLhBvUhzC2GBnaLB24R3E3xIYyu5GWD0
+<<^ code="&#x0003;">>ni:///sha-256;qs-OSop5cN5Ed89lqVmd-XB143agd9kSPw_jRJzrcD4
 
 <<^ code="&#x0004;" -> to="?">>

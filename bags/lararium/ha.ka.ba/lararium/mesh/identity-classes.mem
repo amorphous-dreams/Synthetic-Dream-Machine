@@ -362,15 +362,17 @@ the shape at persona scale). The invariant becomes:
 
 * the ''identifier prefix'' — derived from the inception key-set + the pre-rotation commitment — stays
   FIXED across every rotation (the KERI autonomic-identifier / AID);
-* a device-delegation edge pins the ''identifier'', and edge-verification WALKS the persona-KEL to the
-  ''current'' authoritative operational key (latest-seen head wins, monotone-versioned);
+* a device-delegation edge pins the ''identifier'', and edge-verification WALKS the locally observed
+  persona-KEL frontier to the authoritative operational key; a missing parent, concurrent head, or
+  incomplete frontier remains named rather than being collapsed into a numbered ''current'' entity;
 * a rotation advances the head; the old edges still resolve, because they pinned the invariant
   identifier, never the rotated key.
 
 ''The load-bearing build for Reading-B read: give each PersonaGroup
 a pre-rotated persona-KEL, and move the pin from the raw operational key to the identifier prefix.''
 ''BUILT'' — `persona-kel` mints the inception, derives the prefix, advances rotations hash-linked, and
-verifies a chain; `boot-daemon-keyhive`'s Binding Gate pins the prefix and resolves the head. It lifted
+verifies a chain; `boot-daemon-keyhive`'s Binding Gate pins the prefix and resolves the locally observed
+frontier. It lifted
 the charter's proven epoch-chain machinery down to persona scale — invent nothing structural, re-site
 what stands (#edges names the code shores). ''The same lift now runs OUTWARD'', to the two sites still
 binding a raw key: the antigen's ban-nym and the handle-card's face-nym (#/the-honest-edges).
@@ -645,6 +647,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gQdmETCRw69LWyqWpVs5BBNSqy088uMwE-DfltLsrxk
+<<^ code="&#x0003;">>ni:///sha-256;4wc0LfD_2ehSBpDCTp-kgHPgHdZ6mAIZZ-qqt481ypE
 
 <<^ code="&#x0004;" -> to="?">>

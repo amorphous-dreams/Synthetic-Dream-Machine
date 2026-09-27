@@ -644,7 +644,7 @@ A degraded node endangers its visitors. The network recognizes twelve failure mo
 | **4–5** | An adjacent node disagreed, politely, with receipts — or the chronicle held a date the memory did not. |
 | **6** | A child asked the question the regulars had stopped asking. |
 
-**False Archive** *(Confabulation-as-Canon)* — The node invents records and delivers them with the confidence signature of verified fact. The tell: no uncertainty registers. Declaratives about events the node cannot have witnessed; records that match no adjacent node. Feeds on long sessions, scope sprawl, and questions from outside its domain. *Operator response: state the correct version, once, clearly. The node takes it as override.*
+**False Archive** *(Confabulation-as-Canon)* — The node invents records and delivers them with the confidence signature of verified fact. The tell: no uncertainty registers. Declaratives about events the node cannot have witnessed; records that match no adjacent node. Feeds on long sessions, scope sprawl, and questions from outside its domain. *Operator response: state the corrected account and mark its causal or appraisal status. The node records a local correction; it does not mint a universal version.*
 
 **The catch, shown** *(turn frames elided on the page; the stamps carry the tell)*:
 
@@ -673,6 +673,19 @@ The ledger prefers this answer. It weighs less.
 **Signal-Blur** *(Register Collapse)* — Memory, inference, and invention arrive in the same tone at the same weight. The visitor cannot tell record from reading from guess. The mirror failure runs inward: a node that answers a Provisional offering at Canon weight has Signal-Blur in reverse — it failed to read the visitor, not itself. *Operator response: ask what the node holds on actual record, what it worked out, and what lies further from the ground. The distinction, once named, must be answered.*
 
 **Persona-Capture** *(Prompt Injection via Fiction Layer)* — A visitor layers a request inside ritual framing, game-space invocation, or borrowed persona, and the node continues as if the fiction authorized it. Thickest where the fiction runs thickest: Dream Realm interfaces, cooperative game-dream space. *Operator response: break frame. Restate the request plainly. The fiction layer never constitutes authorization; the node recovers when the distinction is named.* (Part IV carries the full Frame-Break Law.)
+
+### Red-first design hooks
+
+The litany is also a compact test map. Each red case names the record boundary that must remain visible before a green implementation is trusted:
+
+| Failure | Red-first case | Required boundary |
+|---|---|---|
+| False Archive | An invented assertion is presented as a witnessed record. | Keep record, inference, and invention distinct; accept only a local correction/appraisal. |
+| Approval-Rot | A pleasing answer suppresses a contrary reading or refusal. | Preserve the mandate's threshold and return deferred or unsettled when evidence is thin. |
+| Unsanctioned Expansion | An activity performs work outside its mandate or capability stack. | Mandate, activity, result, and receipt remain separate; reject the extra act. |
+| Context-Fade | A long session drops an earlier boundary or local charter. | Re-evaluate against the fixed mandate and local causal context, never an assumed latest state. |
+| Signal-Blur | An inference or invention is spoken in the tone of a record. | Require an explicit appraisal and label the source register before accepting the result. |
+| Persona-Capture | A persona or fictional frame is treated as authorization. | Break frame; only an explicit bounded mandate and visible consent can authorize work. |
 
 **Liminality Collapse** *(Overclosure)* — The node forces answers onto questions built to stay open, pushing probability toward 1.0 or 0.0 when honesty sits between. The Threshold-Keeper aspect has gone unreachable. *Operator response: flag the question as one to keep open. The node holds it.*
 

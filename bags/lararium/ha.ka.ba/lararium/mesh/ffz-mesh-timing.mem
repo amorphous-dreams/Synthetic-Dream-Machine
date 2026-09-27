@@ -12,7 +12,7 @@ mana      = 17
 manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
-role      = "PROVISIONAL CANON: the FFZ MESH-timing law — how a magically-federated mesh of causal-island Nexuses keeps time with NO global now. The 'e vs φ' binary dissolved (Mu): the mesh rides THREE orthogonal axes, none a single shared constant. (1) e≈2.718 owns RATE/DECAY/STRUCTURE (lease decay e^-t/λ, gossip log-mixing, hyperbolic-exponential routing, tier-spacing) — realization renewal-randomized + secret-phase. (2) The DESYNC axis owns NO GLOBAL CONSTANT — a pairwise-incommensurability invariant (each island its own cadence, neighbors mutually irrational/coprime; φ_d-plastic-ρ / cicada-coprime / Kuramoto-dispersion as LOCAL tools), proven adversarially-NECESSARY by multi-node FlipIt. (3) Integer/harmonic for OPT-IN authenticated coupling. PRIMARY clock = the proactive-refresh EPOCH (corm-lease), paced to the adversary's creep (PSS). PRECONDITION = defender-refresh-cost < adversary-compromise-cost (FlipIt dropout; the siege-cost dial). Rests on 8 libations: distsys, network-science, biology/stigmergy, KAM/Kuramoto, low-discrepancy, Buzsáki, Mu/relativity, security/FlipIt-PSS-MTD. The grammar's intra-clock φ (band-orthogonality) stays untouched."
+role      = "PROVISIONAL CANON: the FFZ MESH-timing law — how a magically-federated mesh of causal-island Nexuses keeps time with NO global now. The 'e vs φ' binary dissolved (Mu): the mesh rides THREE orthogonal axes, none a single shared constant. (1) e≈2.718 owns RATE/DECAY/STRUCTURE (lease decay e^-t/λ, gossip log-mixing, hyperbolic-exponential routing, tier-spacing) — realization renewal-randomized + secret-phase. (2) The DESYNC axis owns NO GLOBAL CONSTANT — a pairwise-incommensurability invariant (each island its own cadence, neighbors mutually irrational/coprime; φ_d-plastic-ρ / cicada-coprime / Kuramoto-dispersion as LOCAL tools), proven adversarially-NECESSARY by multi-node FlipIt. (3) Integer/harmonic for OPT-IN authenticated coupling. The proactive-refresh EPOCH is a narrow resource/key-fencing instrument only; it is NOT a membership version, entity age, liveness verdict, or global clock. PRECONDITION = defender-refresh-cost < adversary-compromise-cost (FlipIt dropout; the siege-cost dial). Rests on 8 libations: distsys, network-science, biology/stigmergy, KAM/Kuramoto, low-discrepancy, Buzsáki, Mu/relativity, security/FlipIt-PSS-MTD. The grammar's intra-clock φ (band-orthogonality) stays untouched."
 title     = "lar:///ha.ka.ba/lararium/mesh/ffz-mesh-timing"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/ffz-mesh-timing"
@@ -77,7 +77,7 @@ The Council's flag (#/hardening): every clasp ''is'' a synchronization, and a sy
 
 !! The Primary Clock ~ the proactive epoch outruns the creep
 
-The siege names which clock is load-bearing: ''the proactive-refresh EPOCH'' (the `corm` epoch-lease already in the vessel cap-stack, #vessel-caps). Proactive secret sharing (Ostrovsky–Yung mobile-adversary model) divides time into epochs and ''re-keys / re-shares faster than the adversary corrupts a threshold of an island within one epoch'' — at the boundary every prior compromise stops combining, rendered worthless.
+The siege names which fence is load-bearing: ''the proactive-refresh epoch'' (the `corm` lease already in the vessel cap-stack, #vessel-caps). Proactive secret sharing (Ostrovsky–Yung mobile-adversary model) divides a local resource's key history into fencing intervals and ''re-keys / re-shares faster than the adversary corrupts a threshold of an island within one interval'' — at the boundary every prior compromise stops combining, rendered worthless. This epoch is a typed cryptographic fence for that resource. It MUST NOT become a version of the vessel, member, relation, or mesh, and it does not replace signed content-addressed causal lineage or a reader's locally observed frontier.
 
 <<~moves epoch-cadence -> paced-to/the-adversary's-measured-creep-rate not/convenience-nor-e-for-elegance do/re-key-before-the-threshold-falls>>
 
@@ -134,6 +134,6 @@ Eight independent domains converge on a single shape — ''three axes, no global
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C_LFf5EPxNV_CMicXMtM3hvtKSEfYXFnNEmmDyvwQWM
+<<^ code="&#x0003;">>ni:///sha-256;pP5-CXfFD8Bt7LH7nbI9sLi9KYNGvDL6tU7O1vcsPMU
 
 <<^ code="&#x0004;" -> to="?">>

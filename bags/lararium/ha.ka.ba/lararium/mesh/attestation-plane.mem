@@ -281,6 +281,7 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~ ahu #/edges>>
 
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
@@ -295,6 +296,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wt6zo2fu_JcGQnN3p5F4-PHgRmCerEsY43n3tQK2-Qg
+<<^ code="&#x0003;">>ni:///sha-256;kTFYqMV_AYK1JhldstPYeD0FT53RC36mabht3PlsjLw
 
 <<^ code="&#x0004;" -> to="?">>

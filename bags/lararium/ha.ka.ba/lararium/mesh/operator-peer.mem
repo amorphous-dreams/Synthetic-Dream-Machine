@@ -238,6 +238,7 @@ identical ea rights.
 
 !! Edges
 
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lar-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/open-vessel">>
 <<~ loulou "lar:///ha.ka.ba/lararium/browser/pono-charter">>
@@ -245,6 +246,6 @@ identical ea rights.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2O66BlNyf0qdJksa_O0TrLVOTwqyHuCPyOY_VzrvG44
+<<^ code="&#x0003;">>ni:///sha-256;D6hADIZ0BTRZAteMklXhFW-R9aqvISsGVRXc553DEGU
 
 <<^ code="&#x0004;" -> to="?">>
