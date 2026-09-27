@@ -55,3 +55,18 @@ test("D-VR runner cleans its named project after a failed container", async () =
   await assert.rejects(() => runDvrDockerReceipt({ projectName: uniqueProjectName("fedcba98-7654-3210-fedc-ba9876543210", 43), run }), /D-VR container failed/);
   assert.match(calls.at(-1).join(" "), /down -v --remove-orphans$/);
 });
+
+test("D-VR runner refuses a nonempty project without teardown ownership", async () => {
+  const calls = [];
+  const run = async (_file, args) => {
+    calls.push(args);
+    const key = args.join(" ");
+    if (key.includes("info --format")) return { stdout: "28.0\n", stderr: "" };
+    if (key.includes("config")) return { stdout: "", stderr: "" };
+    if (key.includes("ps -a")) return { stdout: '[{"Name":"someone-elses-container"}]\n', stderr: "" };
+    if (key.includes("down")) throw new Error("MUST NOT TEARDOWN");
+    throw new Error(`unexpected command: ${key}`);
+  };
+  await assert.rejects(() => runDvrDockerReceipt({ projectName: uniqueProjectName("11111111-2222-3333-4444-555555555555", 44), run }), /already has resources/);
+  assert.equal(calls.some((args) => args.join(" ").includes("down -v --remove-orphans")), false);
+});

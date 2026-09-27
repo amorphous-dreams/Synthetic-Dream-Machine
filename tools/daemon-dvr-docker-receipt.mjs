@@ -56,6 +56,7 @@ export async function runDvrDockerReceipt({
   const compose = ["compose", "-f", composeFile, "-p", projectName];
   const proof = { preflight: false, activeProcessesInspected: false, run: false, cleanup: false };
   let failure;
+  let ownsCleanup = false;
   try {
     const info = await call(run, docker, ["info", "--format", "{{.ServerVersion}}"]);
     if (!info.ok) throw new Error(`Docker daemon is unavailable: ${(info.stderr || info.error?.message || "unknown error").trim()}`);
@@ -72,6 +73,9 @@ export async function runDvrDockerReceipt({
     if (!active.ok) throw new Error(`Could not inspect active D-VR processes: ${(active.stderr || active.error?.message || "unknown error").trim()}`);
     if (active.stdout.trim()) throw new Error(`D-VR project has active containers before run: ${projectName}`);
     proof.activeProcessesInspected = true;
+    // Ownership begins only after both the empty project preflight and the same-context process
+    // inspection succeed. Before this point teardown could remove another process's resources.
+    ownsCleanup = true;
 
     const up = await call(run, docker, [...compose, "up", "--abort-on-container-exit", "--exit-code-from", "dvr-node-owned"]);
     proof.run = true;
@@ -82,9 +86,11 @@ export async function runDvrDockerReceipt({
   } catch (error) {
     failure = error;
   } finally {
-    const down = await call(run, docker, [...compose, "down", "-v", "--remove-orphans"]);
-    proof.cleanup = down.ok;
-    if (!down.ok && !failure) failure = new Error(`D-VR scoped cleanup failed: ${(down.stderr || down.error?.message || "unknown error").trim()}`);
+    if (ownsCleanup) {
+      const down = await call(run, docker, [...compose, "down", "-v", "--remove-orphans"]);
+      proof.cleanup = down.ok;
+      if (!down.ok && !failure) failure = new Error(`D-VR scoped cleanup failed: ${(down.stderr || down.error?.message || "unknown error").trim()}`);
+    }
   }
   throw failure;
 }
