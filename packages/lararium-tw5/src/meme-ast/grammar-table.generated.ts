@@ -112,7 +112,7 @@ export const GENERATED_FAMILIES: FamilyRule[] = [
   { name: "spatial", dagRequired: false, roleRecommended: true, confidenceBounded: false },
 ];
 
-/** alias sigil name -> its canonical sigil name (lar-mirror-of). */
+/** MIRROR -> CANONICAL: a mirror sigil name -> its canonical sigil name (lar-mirror-of). */
 export const GENERATED_ALIAS_MAP: Record<string, string> = {
   "branch": "lele",
   "const": "waiho",
@@ -143,3 +143,13 @@ export const GENERATED_ALIAS_MAP: Record<string, string> = {
 
 /** every sigil name that is NOT an alias (canonical sigils only). */
 export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","carry","confidence","config","dispatcher","drift-ward","feedback","focus","frame","frame-eot","frame-eot2","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","type","typos","ui","waiho","ward","wehe","widget"];
+
+/**
+ * CANONICAL x TONGUE -> PRIMARY MIRROR: the one name a tongue weaves a canonical sigil
+ * as (`lar-weave: primary`), e.g. `GENERATED_PRIMARY_WEAVE.kahea.en === "transclude"`.
+ * A canonical/tongue pair with no primary mirror is simply absent — never an empty string.
+ */
+export const GENERATED_PRIMARY_WEAVE: Record<string, Record<string, string>> = {
+  "aka": { "en": "snapshot" },
+  "kahea": { "en": "transclude" },
+};

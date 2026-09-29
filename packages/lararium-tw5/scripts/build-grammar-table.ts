@@ -53,6 +53,26 @@ export function renderGrammarTable(): string {
 
   const canonicalNames = sortedSigils.filter((s) => !s.aliasFor).map((s) => s.name);
 
+  // canonical -> tongue -> its lar-weave: primary mirror name. Data, not re-derivation — every
+  // consumer that needs "which name does tongue T weave `canonical` as" (weave/index.ts's line
+  // recognizers among them) reads this instead of re-scanning GENERATED_SIGILS for `.weave` at
+  // each call site.
+  const primaryWeaveByCanonical = new Map<string, Record<string, string>>();
+  for (const s of sortedSigils) {
+    if (!s.aliasFor || !s.weave) continue;
+    if (!primaryWeaveByCanonical.has(s.aliasFor)) primaryWeaveByCanonical.set(s.aliasFor, {});
+    primaryWeaveByCanonical.get(s.aliasFor)![s.weave.tongue] = s.name;
+  }
+  const primaryWeaveEntries = [...primaryWeaveByCanonical.keys()].sort()
+    .map((canonical) => {
+      const byTongue = primaryWeaveByCanonical.get(canonical)!;
+      const tongueEntries = Object.keys(byTongue).sort()
+        .map((tongue) => `${quote(tongue)}: ${quote(byTongue[tongue]!)}`)
+        .join(", ");
+      return `  ${quote(canonical)}: { ${tongueEntries} },`;
+    })
+    .join("\n");
+
   const lines: string[] = [];
   lines.push("/**");
   lines.push(" * grammar-table.generated.ts — GENERATED. Do not hand-edit.");
@@ -76,13 +96,22 @@ export function renderGrammarTable(): string {
   }
   lines.push("];");
   lines.push("");
-  lines.push("/** alias sigil name -> its canonical sigil name (lar-mirror-of). */");
+  lines.push("/** MIRROR -> CANONICAL: a mirror sigil name -> its canonical sigil name (lar-mirror-of). */");
   lines.push("export const GENERATED_ALIAS_MAP: Record<string, string> = {");
   if (aliasMapEntries) lines.push(aliasMapEntries);
   lines.push("};");
   lines.push("");
   lines.push("/** every sigil name that is NOT an alias (canonical sigils only). */");
   lines.push(`export const GENERATED_CANONICAL_NAMES: string[] = ${JSON.stringify(canonicalNames)};`);
+  lines.push("");
+  lines.push("/**");
+  lines.push(" * CANONICAL x TONGUE -> PRIMARY MIRROR: the one name a tongue weaves a canonical sigil");
+  lines.push(" * as (`lar-weave: primary`), e.g. `GENERATED_PRIMARY_WEAVE.kahea.en === \"transclude\"`.");
+  lines.push(" * A canonical/tongue pair with no primary mirror is simply absent — never an empty string.");
+  lines.push(" */");
+  lines.push("export const GENERATED_PRIMARY_WEAVE: Record<string, Record<string, string>> = {");
+  if (primaryWeaveEntries) lines.push(primaryWeaveEntries);
+  lines.push("};");
   lines.push("");
   return lines.join("\n");
 }
