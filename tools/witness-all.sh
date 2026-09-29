@@ -23,6 +23,7 @@ declare -A HELD_OUT=(
   [mesh-scenarios]="stands the docker-compose mesh, scenario by scenario — needs docker + a host-built dist"
   [browser-weld-witness]="drives a real browser against a standing web surface"
   [witness-all]="this script"
+  [grammar-table-witness]="red by design until the grammar rulings land and G2-G4 cut consumers over — run it directly"
 )
 
 status=0

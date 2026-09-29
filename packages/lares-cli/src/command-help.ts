@@ -150,8 +150,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +
-      "needs no new verb. TEND the planes with the lifecycle verbs (recall · capture · pour · teardown · " +
-      "worldline · telemetry · subagents · flow). `pour --all` walks the whole tending movement — " +
+      "needs no new verb. TEND the planes with the lifecycle verbs (recall · capture (incl. sub-agent " +
+      "transcripts) · pour · teardown · worldline · telemetry · flow). `pour --all` walks the whole tending movement — " +
       "quiesce · baseline · drawers · bearing · projection · verify · resume — never the guest miner. " +
       "Every verb rides the daemon's composed caps (the " +
       "single-owner law: nothing opens a store beside the vessel's holder).",
