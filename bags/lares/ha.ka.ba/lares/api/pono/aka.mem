@@ -31,6 +31,28 @@ A transclusion-family edge sugar. Embeds a frozen shadow of the target at the so
 Sugar for `<<~ pranala from=? -> to=URI family=transclusion>>`. The `transclusion` family is confidence-bounded:
 a frozen embed can age from its source, so edges SHOULD carry a confidence rating when the embed is uncertain.
 
+''English weave name: `snapshot`.'' `aka` weaves in English as `snapshot`, not as a mirror of any
+other sigil's weave — `snapshot` names its own frozen-image posture directly, the way the target
+reads at the moment the weave pins it. `shadow` rides beside it as a read-only mirror only
+(`lar-mirror-of: aka`), held back from carrying `snapshot`'s weave slot because TiddlyWiki already
+spends "shadow tiddler" on plugin-default semantics; minting `shadow` as the primary weave would
+collide with that existing TW5 sense.
+
+''Live/frozen split.'' `aka` and `kahea` (`lar:///ha.ka.ba/lares/api/pono/kahea`) sugar the same
+`transclusion` family from opposite propagation postures, and each links the other directly. `kahea`
+weaves ''live'' — as an include, re-resolving the target on every render pass. `aka` weaves
+''frozen'' — by inlining the target's content pinned at the moment the weave runs, so the source
+carries a snapshot rather than a subscription. Neither sigil mirrors the other: `aka` names its own
+sigil, its own family-contract row (`propagation:none` against `kahea`'s `propagation:push-forward`),
+and its own English weave name.
+
+''Weave slice, ahead of the code.'' The projection render pass already emits "frozen `aka`
+references" at the wiki→snapshot boundary
+(`lar:///ha.ka.ba/lares/api/pono/render-pipeline#/three-render-modes`); the general inline-weave
+slice that stands `aka` up as a first-class content-substitution pass, distinct from that
+projection-render special case, still needs building
+<confidence:0.55 — the law states the target shape; the slice itself remains pending>.
+
 <<~/ahu>>
 
 <<~ ahu #/ooda-ha>>
@@ -123,9 +145,10 @@ confidence-bounded = true
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-shadow">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MDN1f6fD0TWRk9EQpezT9VYMUwGo2hyS92HcTKYd90U
+<<^ code="&#x0003;">>ni:///sha-256;dM3cUMqciV8oZE8t6AIQEeJPCN1yEBQ6xl5NY5yXET4
 
 <<^ code="&#x0004;" -> to="?">>

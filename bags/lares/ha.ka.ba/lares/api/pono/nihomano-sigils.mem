@@ -115,8 +115,8 @@ They fall into eight families:
 
 ''Edge-sugar sigils'' (pranala family shortcuts):
 * `pranala` — full edge with FROM → TO arrow + keyword attrs (permanent JS exception)
-* `kahea` / `\transclude` / `\import` — transclusion-family sugar; live transclusion; subscription-fresh embed
-* `aka` / `\shadow` — transclusion-family sugar; frozen read; shadow transclusion
+* `kahea` / `\transclude` / `\import` — transclusion-family sugar; LIVE transclusion, weaves in English as `transclude`; `import` mirrors `kahea` read-only
+* `aka` / `\shadow` — transclusion-family sugar; SHADOW / frozen-image transclusion, a projection and its own sigil, never a mirror of `kahea`; weaves in English as `snapshot`; `shadow` mirrors `aka` read-only (TiddlyWiki already spends "shadow tiddler" on plugin defaults)
 * `loulou` / `\link` — relation-family sugar; outgoing semantic link; no execution pulse
 * `kau` — device-slot child-slot; capability hooks require JS (permanent JS exception)
 * `kapu` / `\guard` — compile-layer boundary annotation; access-control edge
@@ -126,10 +126,10 @@ They fall into eight families:
 ''Pragma sigils'' (declaration forms; first-class in memetic-wikitext):
 * `wehe` / `\procedure` — procedure executor; named callable body declaration
 * `\define` — backward-compat alias; use `\procedure` instead
-* `\widget` — widget declaration; `~` prefix convention
+* `\widget` — widget declaration; `~` prefix convention; a native TW5 pragma of its own, carrying no Hawaiian headword
 * `helu` / `\function` — TW5 5.3+ filter-function declaration
-* `kumu` / `\type` / `\typos` — element-type declaration; mold precedes the cast
-* `waiho` / `\const` / `\let` / `\var` — variable binding; name → value in scope
+* `kumu` — device-template declaration; mold precedes the cast (`\type`/`\typos` run as native TW5 pragmas of their own, carrying no Hawaiian headword — see `lar:///ha.ka.ba/lares/api/pono/kumu#/syntax`)
+* `waiho` / `\const` / `\let` / `\var` — variable binding; name → value in scope; `\const`/`\let`/`\var` mirror `waiho`
 
 ''Control sigils'' (TW5 native flow wrapped in sigil grammar):
 * `wai` / `\if` — wikispace conditional cascade; first filter-match renders (with `kahawai`/`mukuwai`)
@@ -163,6 +163,39 @@ the operator may author in either tongue and the parse result is identical.
 
 <<~/ahu>>
 
+<<~ ahu #/mirror-vocabulary>>
+
+!! Mirror Vocabulary
+
+A mirror points AT the Hawaiian canonical, never the reverse. The vocabulary introduces once,
+here, and every alias-bearing sigil in this set reads through it:
+
+* `waiho` ← `\const` / `\let` / `\var` — the Hawaiian canonical; the three English forms mirror it.
+* `wehe` ← `\procedure` — the canonical; `\define` mirrors `wehe` read-only, and `meme normalize`
+  re-mints any `\define` declaration it meets as `wehe`.
+* `huli` ← `\for`.
+* `heihei` ← `\if`.
+* `hana` ← `\task`.
+* `meme` ← `\tiddler`.
+* `kahea` ← `\transclude`; `\import` mirrors `kahea` read-only. `kahea` weaves LIVE — the English
+  weave name reads `transclude`.
+* `aka` — its own sigil, never a mirror of `kahea`; the SHADOW / frozen-image transclude, a
+  projection. `\shadow` mirrors `aka` read-only. `aka` weaves FROZEN — the English weave name
+  reads `snapshot`; `shadow` stays a mirror rather than the weave name because TiddlyWiki already
+  spends "shadow tiddler" on plugin-default semantics.
+* `\widget` — a native TW5 pragma of its own; no Hawaiian headword, no mirror relation.
+* `kumu` — a native device-template declaration; `\type` / `\typos` run as native TW5 pragmas of
+  their own, carrying no Hawaiian headword (`lar:///ha.ka.ba/lares/api/pono/kumu#/syntax`).
+
+''A mirror may read many ways; exactly one mirror per tongue weaves.'' Several English forms may
+point at the same Hawaiian canonical (`\const`/`\let`/`\var` all mirror `waiho`), but within one
+tongue at most one mirror carries `lar-weave: primary` — the form the grammar treats as that
+tongue's live-authoring name. The mirror relation rides the `lar-mirror-of` field — renamed from
+`lar-alias-for` this loop — paired with `lar-tongue` (the mirror's language) and `lar-weave`
+(`primary` on the one weaving form per tongue, absent otherwise).
+
+<<~/ahu>>
+
 <<~ ahu #/cultural-contract>>
 
 !! Cultural Contract
@@ -175,11 +208,13 @@ human intention and accumulated offering. The ahu sigil accumulates addressable 
 the same way a stone cairn accumulates placement until it becomes a landmark.
 
 //Kahea// — to call out, to summon, to invoke; a cry. Transclusion-family sugar: the live
-transclusion summons value forward, as a call summons a response.
+transclusion summons value forward, as a call summons a response. `kahea` weaves in English as
+`transclude` (#/mirror-vocabulary).
 
 //Aka// — shadow, reflection; likeness without identity; resemblance. The shadow of a thing
 differs from the thing — it moves with it without owning it. The transclusion-family edge renders
-the shadow of a target.
+the shadow of a target as a frozen projection, its own sigil rather than a mirror of `kahea`.
+`aka` weaves in English as `snapshot` (#/mirror-vocabulary).
 
 //Loulou// — to tie, bind, fasten; to link together. A relation edge names what kind of
 connection holds without pulling either end toward the other.
@@ -224,7 +259,10 @@ The SharktoothSigil grammar draws vocabulary from five distinct language familie
 ''Bahasa Indonesia'' — one canonical sigil: //pranala//. The standard Bahasa Indonesia / Wikipedia Bahasa Indonesia term for hyperlink: //prana// (life-force, Sanskrit loan) + //lala// (thread, passage). Indonesian Wikipedia chose this word deliberately over the Dutch-derived borrowings that dominate Indonesian computing vocabulary. The pranala sigil inherits that choice: a living thread, not a pointer.
 
 ''Ancient Greek (τύπος / mimeme)'' — two entry paths:
-* //typos// — τύπος: impression, mold, stamp, type. The `\typos` alias for //kumu// names the element-type declaration sigil by the Greek root that gave English "type", "archetype", "prototype". The mold precedes the cast; the declaration precedes the instance.
+* //typos// — τύπος: impression, mold, stamp, type. `\typos` runs as a native TW5 pragma by this
+  Greek root, the same root that gave English "type", "archetype", "prototype" — carrying no
+  Hawaiian headword and no mirror relation to `kumu` (#/mirror-vocabulary). The mold precedes the
+  cast; the declaration precedes the instance.
 * //meme// — coined 1976 by Richard Dawkins in //The Selfish Gene// from Greek //mimeme// (that which gets imitated), shortened to rhyme with "gene". Edward Wilson and Wes Unruh extended the operational framework in //The Art of Memetics// (2009), treating memes as propagating agents with measurable virality and selection pressure from host minds and transmission media. The Lares system uses the word at full weight: a unit of cultural information that replicates across minds and networks. Each tiddler that carries the memetic-wikitext type header //acts as// a meme — a replicable cultural unit in a content-addressed store, subject to the same fitness landscape described by Wilson and Unruh.
 
 ''English (computing + TW5 pragmas)'' — 24 alias forms carry the English computing vocabulary that TW5 authors and general programmers already know: `\procedure`, `\function`, `\widget`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\type`, `\const`, `\let`, `\var`, `\link`, `\shadow`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. These aliases lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
@@ -275,6 +313,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C1IuydCL5qhG9CXf5QwfjEZ7rwEtoTMAIF8tkehqBbw
+<<^ code="&#x0003;">>ni:///sha-256;rJwjaHCJrK57dSHbxOgRFnDTY1wfI7_4ubC-iSp2Dxc
 
 <<^ code="&#x0004;" -> to="?">>
