@@ -10,7 +10,7 @@ lar-example: <<~ waiho name "value">>\nbody\n<<~/waiho>>
 type: text/vnd.tiddlywiki
 
 <!-- waiho — `<<~ waiho name value>>body<<~/waiho>>` binds `name` for the body's duration (block-scoped).
-     `<<~! waiho name value>>` (lar-pragma-pattern, PRAGMA_HAND_KEPT loop 2) carries no closer: it
+     `<<~! waiho name value>>` (lar-pragma-pattern, PRAGMA_HAND_KEPT) carries no closer: it
      hoists to the top of the carrier's execution context, immutable by convention
      (api/pono/waiho.mem #/law) — a genuinely DIFFERENT posture from the block form, not a cosmetic
      `!` variant, so it rides its own pattern field/eventType rather than folding into open/close. -->

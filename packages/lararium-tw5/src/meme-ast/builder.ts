@@ -54,7 +54,7 @@ const slotUriOf = (memeUri: string, enclosing: string, slot: string): string =>
 // Grammar-meme sigils fall to DynamicNode when no grammar is loaded.
 // ---------------------------------------------------------------------------
 
-// G2-G4 cutover (lar:///sigil.grammar.lane loop 2): derived from GENERATED_CANONICAL_NAMES
+// The canonical sigil set (lar:///sigil.grammar.lane) derives from GENERATED_CANONICAL_NAMES
 // (grammar-table.generated.ts, tiddler-derived) plus the reasoned residue no tiddler names —
 // `kahea-invoke` (a dispatch-only pseudo-sigil this switch synthesizes, never authored) and the
 // `control-*` frame marks (scanner.ts's own hand-written independent recognizer; frame-parity's law —

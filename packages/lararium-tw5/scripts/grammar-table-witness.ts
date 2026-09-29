@@ -132,7 +132,7 @@ for (const kw of handDefHead) {
 }
 group("meme-normalize.ts: DEFINITION_HEAD keyword with no pragma-kind tiddler", unexplainedInDefHead.sort());
 
-// 5. TONGUE laws (sigil-mirror-flip's weave-per-tongue field, lar:///sigil.grammar.lane loop 4) —
+// 5. TONGUE laws (sigil-mirror-flip's weave-per-tongue field, lar:///sigil.grammar.lane) —
 // pure checker in tongue-laws.ts, RED-tested there against a fixture; here it runs over the real
 // tiddlers. Raw `lar-tongue`/`lar-weave` fields, not the already-derived `SigilRule.weave` — the
 // shared converter silently DROPS `weave` when `lar-tongue` is absent, which is exactly law (e)'s

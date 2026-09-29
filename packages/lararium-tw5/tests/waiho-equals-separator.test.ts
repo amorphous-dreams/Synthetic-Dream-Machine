@@ -1,5 +1,5 @@
 /**
- * waiho's space-form pattern captured the stray `=` (lar:///sigil.grammar.lane loop 3, item 2).
+ * waiho's space-form pattern captured the stray `=` (lar:///sigil.grammar.lane).
  *
  * Canon (api/pono/waiho.mem ~51, ~64) writes BOTH the carrier-scoped and block-scoped forms with
  * `=`: `<<~! waiho name = value>>` and `<<~ waiho name = value>>...<<~/waiho>>` — but the tiddler's

@@ -14,7 +14,7 @@ type: text/vnd.tiddlywiki
      `papalohe`, never kumu-to-kumu directly. Where `wehe` declares a callable body, `kumu` declares
      a device TYPE other nodes instantiate — `kau` stands up an instance; `kumu` never renders.
      `\type`/`\typos` carry NO mirror relation to kumu (native TW5 pragmas, no Hawaiian headword —
-     see sigil-type.tid/sigil-typos.tid, lar:///sigil.kumu.split loop 1).
+     see sigil-type.tid/sigil-typos.tid, lar:///sigil.kumu.split).
 
      PENDING (canon's own #/pending, not invented here): the `KumuRegistry` resolution step a
      `kahea` name-form call takes to reach a built `WidgetNode` stays open — held at Gap 8 of

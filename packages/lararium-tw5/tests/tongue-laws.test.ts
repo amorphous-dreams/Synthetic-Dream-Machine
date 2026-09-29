@@ -1,5 +1,5 @@
 /**
- * The TONGUE laws (lar:///sigil.grammar.lane loop 4, item 1) — a fixture table that violates each
+ * The TONGUE laws (lar:///sigil.grammar.lane) — a fixture table that violates each
  * of the five laws, one at a time, and the CONTROL that a clean table reports nothing.
  */
 import { describe, test, expect } from "vitest";

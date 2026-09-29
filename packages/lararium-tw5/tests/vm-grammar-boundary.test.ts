@@ -215,7 +215,7 @@ describe("pono grammar boundary", () => {
       // grammar-table.generated.ts — itself derived from the tiddlers, never a hand-typed fixture —
       // so it blesses no grammar as canonical; it holds the derived scan+build layer to the corpus.
       .filter((f) => !f.endsWith("wehe-open-paren.test.ts"))
-      // pragma-bang-optional.test.ts (lar:///sigil.grammar.lane loop 2, item 3) is the same class of
+      // pragma-bang-optional.test.ts (lar:///sigil.grammar.lane) is the same class of
       // scan+build-layer RED control as wehe-open-paren.test.ts just above — whether the tiddler-
       // derived grammar PAIRS open/close on the `<<~!`-prefixed pragma register canon's own prefix
       // table illustrates, and whether waiho/const's carrier-scoped `!` form still fires as a

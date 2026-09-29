@@ -99,11 +99,10 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
   /**
    * ── THE `ahu` OPENER ADMITS ONE SLOT GRAMMAR, END TO END ──────────────────────────────────────
    * The grammar tiddler's `lar-open-pattern` hydrates BOTH the in-VM scan and the node-side default
-   * scan now (G2-G4 cutover, lar:///sigil.grammar.lane loop 2) — `collectEvents` with no grammar
+   * scan (lar:///sigil.grammar.lane) — `collectEvents` with no grammar
    * loaded falls to `GENERATED_SIGILS` (grammar-table.generated.ts), itself derived from this same
-   * tiddler, rather than to a second hand-written bootstrap copy of ahu's pattern. There is no more
-   * independent second recognizer to hold ahu's opener to (that redundant copy is exactly what the
-   * cutover retired) — this now measures that the ONE declared pattern reaches
+   * tiddler, rather than to a second hand-written bootstrap copy of ahu's pattern. No
+   * independent second recognizer holds ahu's opener to a redundant copy — this measures that the ONE declared pattern reaches
    * `collectEvents`/`buildMemeAst` unchanged and admits the slot grammar the tiddler's own
    * `lar-example` shows, end to end through the real runtime path rather than a source-text regex
    * pulled out of the scanner by hand.

@@ -1,6 +1,6 @@
 /**
  * tongue-laws.ts — the TONGUE laws grammar-table-witness measures over the tiddlers
- * (sigil-mirror-flip's weave-per-tongue field, lar:///sigil.grammar.lane loop 4).
+ * (sigil-mirror-flip's weave-per-tongue field, lar:///sigil.grammar.lane).
  *
  * Pure, isomorphic, no fs/disk access — takes a flat list of every sigil the shelf
  * declares (one entry per tiddler) and answers which of the five laws it breaks:

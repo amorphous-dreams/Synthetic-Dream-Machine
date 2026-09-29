@@ -90,7 +90,7 @@ import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
 import { bccOfSpan } from "../carrier-check.js";
 
 /**
- * G2-G4 cutover (lar:///sigil.grammar.lane loop 2): the word SET a line recognizer alternates on
+ * The word SET a line recognizer alternates on (lar:///sigil.grammar.lane)
  * derives from the tiddler-sourced table — the canonical name plus every tiddler that carries
  * `lar-mirror-of: <canonical>` — rather than a hand-typed list that could silently miss a mirror
  * (`shadow`/`snapshot` for `aka`, `link` for `loulou`) the tiddlers already declare. No dialect
