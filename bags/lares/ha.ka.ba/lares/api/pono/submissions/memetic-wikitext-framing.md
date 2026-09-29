@@ -588,10 +588,10 @@ its two halves.
 
 ### The fence carries a label, and the label decides the office
 
-A ```` ```memetic-wikitext tangle```` -labelled fence carries structure home at tangle: a reader that
-meets this label treats the fenced span as the document it names, not as prose about one. A bare
-```` ```memetic-wikitext```` fence, carrying no `tangle` label, stays an inert example — text a
-document talks about, never text a tangle pass ingests.
+A ```` ```memetic-wikitext tangle```` -labelled fence carries structure home at tangle: a reader
+that meets this label treats the fenced span as the document it names, not as prose about one. A
+bare ```` ```memetic-wikitext```` fence, carrying no `tangle` label, stays an inert example — text
+a document talks about, never text a tangle pass ingests.
 
 This sharpens the fence-mask law already stated for the frame's own marks (#/frame-head-lock): an
 office-labelled fence reads as structure ONLY at tangle of a **declared projection** — a woven

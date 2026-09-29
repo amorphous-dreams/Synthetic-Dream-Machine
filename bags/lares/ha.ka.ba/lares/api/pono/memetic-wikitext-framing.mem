@@ -616,10 +616,10 @@ its two halves.
 
 !!! The fence carries a label, and the label decides the office
 
-A ```` ```memetic-wikitext tangle```` -labelled fence carries structure home at tangle: a reader that
-meets this label treats the fenced span as the document it names, not as prose about one. A bare
-```` ```memetic-wikitext```` fence, carrying no `tangle` label, stays an inert example — text a
-document talks about, never text a tangle pass ingests.
+A ```` ```memetic-wikitext tangle```` -labelled fence carries structure home at tangle: a reader
+that meets this label treats the fenced span as the document it names, not as prose about one. A
+bare ```` ```memetic-wikitext```` fence, carrying no `tangle` label, stays an inert example — text
+a document talks about, never text a tangle pass ingests.
 
 This sharpens the fence-mask law already stated for the frame's own marks (#/frame-head-lock): an
 office-labelled fence reads as structure ONLY at tangle of a ''declared projection'' — a woven
@@ -1213,6 +1213,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mIRRDxueZyKbQg6D9fJ7yuubkT3fYxHDhIrTb4ogahM
+<<^ code="&#x0003;">>ni:///sha-256;njl4kzlRudHT9IggPv4p5i-wlWmCazvjg4lP9iEXHdQ
 
 <<^ code="&#x0004;" -> to="?">>
