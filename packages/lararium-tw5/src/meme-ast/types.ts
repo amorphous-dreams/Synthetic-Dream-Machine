@@ -75,6 +75,12 @@ export interface SigilRule {
   // frame) vs the default "repaired" (force-close marked, recovered). The resilient driver reads it;
   // the structure still never breaks. (First rung of the #has recovery cap-stack.)
   recoverAs?: "water" | "repaired";
+  // Weave name per tongue (sigil-mirror-flip ruling item 3): when a canonical sigil carries
+  // several mirrors (Hawaiian headword + English alias(es)), at most ONE mirror per tongue
+  // carries `weave: "primary"` — the name that tongue's authors are steered toward. A mirror
+  // with no `weave` reads as a read-only alias: it parses and renders, but normalize/generation
+  // never mints it. Derived from `lar-tongue` + `lar-weave` on the tiddler (see grammar-cache.ts).
+  weave?: { tongue: string };
 }
 
 export interface FamilyRule {
