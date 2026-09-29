@@ -437,6 +437,26 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
   });
 });
 
+describe("fence-open reads through fence-mask's own rule — one rule, one place", () => {
+  // CommonMark §4.5: a backtick fence's info string may carry no backtick. Before this fix, weave's
+  // own `/^(`{3,})/` test opened a fence on ANY line starting with 3+ backticks, ignorant of that
+  // guard — a prose line that merely QUOTES a quad-backtick inline span (alone on its own line) would
+  // wrongly open a fence with no closer in sight, masking every line after it to end-of-text.
+  test("RED-before-fix: a line opening with a quad-backtick inline span must NOT open a fence", () => {
+    const t = transposeMarkdown("```` `a quoted span` ````\nprose that follows, unmasked\n");
+    // Read as ordinary prose (the leading run's info string carries a backtick, so it never opens):
+    // the code span inside masks and restores, and the next line reaches the reader untouched.
+    expect(t.markdown).toContain("prose that follows, unmasked");
+    expect(t.markdown).not.toMatch(/^````\n/);
+  });
+
+  test("CONTROL: a genuine fence (info string carries no backtick) still opens and seals its interior", () => {
+    const t = transposeMarkdown("```toml\nkey = 1\n```\nprose after\n");
+    expect(t.markdown).toContain("```toml\nkey = 1\n```");
+    expect(t.markdown).toContain("prose after");
+  });
+});
+
 describe("the hana fence: a foreign-grammar span weaves as ONE fenced block, never through the line recognizers", () => {
   test("RED-before-fix shape: a `#` inside a hana TOML body must NOT become a markdown list item", () => {
     const t = transposeMarkdown("<<~ hana toml>>\n# a TOML comment, not a heading\nkey = 1\n<<~/hana>>\n");

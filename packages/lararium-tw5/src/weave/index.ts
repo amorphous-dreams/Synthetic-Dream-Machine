@@ -86,6 +86,7 @@ import { META_OPEN_LINE_RE } from "../meta-fence.js";
 import { frameAlt } from "../frame-marks.js";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../meme-ast/grammar-table.generated.js";
 import { parseTaploFields } from "../toml-ast.js";
+import { fenceLineOpen } from "../meme-ast/fence-mask.js";
 
 /**
  * G2-G4 cutover (lar:///sigil.grammar.lane loop 2): the word SET a line recognizer alternates on
@@ -455,12 +456,23 @@ export function transposeMarkdown(
     // `toml meta` fence heads a worksite and STAYS in the body as an ordinary fenced block.
     if (fence === 0 && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
-    // ── fence tracking: N backticks close only on ≥ N ──
-    if (fenceMark) {
+    // ── fence tracking: N backticks close only on ≥ N. OPENING reads through fence-mask's own
+    // rule (CommonMark §4.5, `fenceLineOpen`) — a backtick fence's info string may carry no
+    // backtick, so a prose line merely QUOTING a quad-backtick inline span (`` ```` `foo` `` on a
+    // line by itself) never opens a fence; it falls through and reads as ordinary prose, exactly
+    // like fence-mask already treats it. ONE RULE, ONE PLACE — this no longer re-derives the guard
+    // with its own unguarded regex. CLOSING keeps this walk's own established rule, untouched. ──
+    if (fence === 0) {
+      const openLen = fenceLineOpen(line);
+      if (openLen > 0) {
+        flushProse();
+        fence = openLen;
+        out.push(line);
+        continue;
+      }
+    } else if (fenceMark) {
       flushProse();
-      const len = fenceMark[1]!.length;
-      if (fence === 0) fence = len;
-      else if (len >= fence) fence = 0;
+      if (fenceMark[1]!.length >= fence) fence = 0;
       out.push(line);
       continue;
     }
