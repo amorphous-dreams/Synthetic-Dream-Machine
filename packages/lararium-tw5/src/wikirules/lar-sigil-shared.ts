@@ -97,17 +97,19 @@ export interface CompoundSigilMatch {
   readonly name:     string;        // dispatch name: "kahea~ahu" | "kahea" | "ahu" | "loulou" | …
   readonly p1:       string;        // first positional arg (slot, uri, or raw args)
   readonly closeKey: string | null; // BLOCK_CLOSERS key for body capture: word1 for compound+bare-slot, null for leaf
+  readonly hasBang:  boolean;       // opened `<<~!` — the caller gates this to pragma-kind heads
 }
 
-// Matches <<~ WORD [WORD2] ARGS>> for any simple sigil invocation.
-// Does not match pranala (arrow syntax, handled by matchPranalaOpenAt).
-// Does not match control chars or <<~! pragma forms (no leading \s+ match).
+// Matches <<~ WORD [WORD2] ARGS>> for any simple sigil invocation, and its optional `<<~!` pragma
+// spelling (group 1) — the caller GATES the bang to pragma-kind heads alone (matchCompoundSigilAt's
+// own `pragmaKindNames` parameter); a bang on any other head never reaches this dispatch.
+// Does not match pranala (arrow syntax, handled by matchPranalaOpenAt) or control chars.
 // ── AN ENGLISH MIRROR IS A PURE NAME ─────────────────────────────────────────────────────────────
 // RULED: a mirror of a sigil name reasons as a Name — `link`, never `\link`. The slashed spelling
 // named nothing of its own; it aliased TiddlyWiki's pragma punctuation into a namespace that already
 // had a word for the thing. A slashed form now reaches no definition and falls to the gradient,
 // rendering as the text an author wrote, which is what an unknown sigil owes a reader.
-const COMPOUND_OPEN_RE = /<<~\s+([\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
+const COMPOUND_OPEN_RE = /<<~(!)?\s+([\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
 
 // ── A SIGIL ENDS AT ITS OWN `>>`, NEVER AT ONE ITS VALUE CARRIES ─────────────────────────────────
 // A lazy scan for the first `>>` reads a value's closer as the call's. MEASURED against the vendored
@@ -175,9 +177,10 @@ export function sigilOpenEnd(source: string, start: number): number {
  *   <<~ kahea kau #dev>>      → name="kahea~kau", p1="#dev",   closeKey="kahea"
  */
 export function matchCompoundSigilAt(
-  source:         string,
-  start:          number,
-  childSlotNames: Set<string>,
+  source:          string,
+  start:           number,
+  childSlotNames:  Set<string>,
+  pragmaKindNames: Set<string> = new Set(),
 ): CompoundSigilMatch | null {
   COMPOUND_OPEN_RE.lastIndex = start;
   const m = COMPOUND_OPEN_RE.exec(source);
@@ -186,7 +189,12 @@ export function matchCompoundSigilAt(
   // a `>>` of its own.
   const end = sigilOpenEnd(source, start);
   if (end < 0) return null;
-  const word1 = m[1]!;
+  const hasBang = m[1] !== undefined;
+  const word1 = m[2]!;
+  // A `<<~!` pragma spelling reaches this dispatch ONLY for a head the grammar kinds `pragma` /
+  // `pragma-alias` (wehe/kumu/helu/widget and their mirrors) — every other head's bang never
+  // matched here before this dispatch widened to admit it, and still does not.
+  if (hasBang && !pragmaKindNames.has(word1)) return null;
   // PRANALA CARRIES TWO TYPED ENDS. This reader hands back one undifferentiated `rest`, and an edge
   // needs its `from` told apart from its `to`: whoever reads whichever address comes first reads the
   // SOURCE, and a graph built on that points backwards. `matchPranalaOpenAt` types the two ends, so
@@ -196,7 +204,7 @@ export function matchCompoundSigilAt(
 
   if (childSlotNames.has(word1)) {
     // bare child-slot: <<~ ahu #slot>> or <<~ kau #device …>>
-    return { start: m.index, end, name: word1, p1: rest, closeKey: word1 };
+    return { start: m.index, end, name: word1, p1: rest, closeKey: word1, hasBang };
   }
   // peek at the first token of rest to detect a compound: <<~ kahea ahu #slot>>
   const spaceIdx  = rest.search(/\s/);
@@ -204,10 +212,10 @@ export function matchCompoundSigilAt(
   const remainder = spaceIdx >= 0 ? rest.slice(spaceIdx).trim() : "";
   if (word2 && childSlotNames.has(word2)) {
     // closeKey = word1 (e.g. "kahea") — the compound block closes with <<~/kahea>>, not <<~/ahu>>
-    return { start: m.index, end, name: `${word1}~${word2}`, p1: remainder, closeKey: word1 };
+    return { start: m.index, end, name: `${word1}~${word2}`, p1: remainder, closeKey: word1, hasBang };
   }
   // simple leaf: <<~ kahea lar:///uri>> or <<~ loulou …>>
-  return { start: m.index, end, name: word1, p1: rest, closeKey: null };
+  return { start: m.index, end, name: word1, p1: rest, closeKey: null, hasBang };
 }
 
 /**

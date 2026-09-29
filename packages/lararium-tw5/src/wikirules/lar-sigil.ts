@@ -90,6 +90,13 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
   const childSlotNames = grammarChildSlotNames(grammar);
   // THE ONE DOOR — which heads the shelf registers, off the grammar the cache already holds.
   const registeredHeads = grammarHeadsOf(grammar);
+  // Pragma-kind heads alone answer to the `<<~!` spelling (waiho/const's own carrier-scoped form
+  // rides a separate `lar-pragma-pattern` at the scan+build layer, never this compound dispatch).
+  const pragmaKindNames = new Set(
+    (grammar?.sigils ?? [])
+      .filter((s) => (s as { kind?: string }).kind === "pragma" || (s as { kind?: string }).kind === "pragma-alias")
+      .map((s) => s.name),
+  );
   let pos = indexOfSigilOpen(source, startPos);
   while (pos >= 0) {
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
@@ -143,7 +150,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // Compound sigil: <<~ WORD1 [child-slot WORD2] ARGS>>
     // Handles: <<~ kahea ahu #slot>>, <<~ ahu #slot>>…<<~/ahu>>,
     //          <<~ kahea lar:///uri>>, <<~ loulou lar:///uri>>, <<~ kau …>>
-    let compound = matchCompoundSigilAt(source, pos, childSlotNames);
+    let compound = matchCompoundSigilAt(source, pos, childSlotNames, pragmaKindNames);
     if (compound) {
       // `ahu` anchors a bare `#name` at the same slot a rooted `#/name` names — the loop's
       // graceful-read ruling (weave carries it too): the two spellings read as one address, never

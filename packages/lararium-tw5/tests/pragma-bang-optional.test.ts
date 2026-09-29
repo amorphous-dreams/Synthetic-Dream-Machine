@@ -1,21 +1,17 @@
 /**
- * PRAGMA `!` — graceful read, canonical write (lar:///sigil.grammar.lane loop 2 item 3, loop 3 item 3).
+ * PRAGMA `!` — graceful read, canonical write.
  *
  * `memetic-wikitext.mem`'s prefix table (~148, ~658) and a worked example (~617) illustrate
- * `<<~!` as the "pragma (definition)" register, with `wehe`/`helu` shown under it.
+ * `<<~!` as the "pragma (definition)" register, with `wehe`/`helu` shown under it. Every
+ * pragma-kind sigil (`wehe`/`kumu`/`helu`/`widget`) accepts an OPTIONAL `!` on its OPEN pattern —
+ * both spellings pair (scan+build layer) and render identically (live wiki). The CLOSE pattern
+ * stays bare (`<<~/wehe>>`, never `<<~!/wehe>>`): no canon example ever bangs a closer, and
+ * widening it breaks `closePatternToTag`'s literal-tag reduction for no attested gain. A
+ * non-pragma-kind sigil (`huli`) stays scoped out — `!` reaches only what this rule names.
  *
- * ── LOOP 2's FALSE ALARM, MEASURED AGAIN CAREFULLY (loop 3) ─────────────────────────────────────
- * Loop 2 widened `wehe`/`kumu`/`helu`/`widget`'s OPEN pattern to `<<~!?\s*NAME` and reported that
- * the identical edit broke `src/wikirules/lar-sigil.ts`'s live rendering of even the BARE form
- * (`block-closers.test.ts` went to WATER) — and reverted it. Re-measured this loop with a cleanly
- * rebuilt plugin bundle: the OPEN-pattern widening (close pattern stays bare — no canon example ever
- * bangs a closer, and widening it breaks `closePatternToTag`'s literal-tag reduction for no attested
- * gain) renders BOTH spellings correctly for all four. `src/wikirules/lar-sigil.ts`'s
- * `COMPOUND_OPEN_RE` and the closer-lookup machinery (`buildClosers`/`findCloseEnd`/
- * `grammarHeadsOf`) never read a sigil's own `lar-open-pattern` string at all — they dispatch on the
- * MATCHED NAME alone, so widening a tiddler's declared pattern (a scan+build-layer artifact) cannot
- * touch what the render layer recognizes. No `lar-sigil.ts` change was needed; loop 2's finding was
- * a stale-build artifact, not a real conflict.
+ * `waiho`/`const` carry a genuinely DIFFERENT posture under `!` (api/pono/waiho.mem #/law:
+ * carrier-scoped, hoisted, NO closer) — their own `lar-pragma-pattern` field fires a standalone
+ * PRAGMA event, additive beside their unchanged block open/close.
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { collectEvents, buildMemeAst } from "../src/meme-ast/index.js";
@@ -72,6 +68,28 @@ describe("pragma-kind sigils accept an optional `!` — both spellings PAIR (sca
   });
 });
 
+/**
+ * The compound-sigil transclude node (`$variable="~<head>"`) the render rule builds for exactly
+ * that head, or undefined. `src`/`__verbatim__` carry the raw matched text — naturally differing by
+ * the bang character itself — so callers comparing bare vs. `!` read the FUNCTIONAL attrs alone.
+ */
+function compoundTransclude(engine: TW5Engine, head: string, wikitext: string): Record<string, unknown> | undefined {
+  const title = "lar:///test/pragma-bang-probe";
+  engine.setTiddler({ title, type: "text/vnd.tiddlywiki", text: wikitext });
+  const tree = engine.wiki.parseTiddler(title)!.tree as unknown as Array<{
+    type: string;
+    attributes?: Record<string, { value?: string; type?: string }>;
+  }>;
+  const node = tree.find((n) => n.type === "transclude" && n.attributes?.["$variable"]?.value === `~${head}`);
+  if (!node) return undefined;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(node.attributes ?? {})) {
+    if (k === "src" || k === "__verbatim__") continue;
+    out[k] = v?.value;
+  }
+  return out;
+}
+
 describe.skipIf(wikiSkip)(`pragma-kind sigils' both spellings RENDER, live${skipNote}`, () => {
   let e: TW5Engine;
   beforeAll(async () => { e = await bootTestWiki(); }, 60_000);
@@ -84,4 +102,21 @@ describe.skipIf(wikiSkip)(`pragma-kind sigils' both spellings RENDER, live${skip
         expect(html, `<<~${bang} ${name} …>> left its closer on the page`).not.toContain(`/${name}&gt;&gt;`);
       }
     });
+
+  test.each(["wehe", "kumu", "helu", "widget"])(
+    "%s — POSITIVE: `!` builds the SAME compound-sigil transclude node the bare form builds", (name) => {
+      const src = (bang: string) => `<<~${bang} ${name} x>>\nbody\n<<~/${name}>>`;
+      const bareNode = compoundTransclude(e, name, src(""));
+      const bangNode = compoundTransclude(e, name, src("!"));
+      expect(bareNode, `<<~ ${name} …>> built no compound transclude node at all`).toBeTruthy();
+      expect(bangNode, `<<~! ${name} …>> built no compound transclude node — fell to a different dispatch`).toBeTruthy();
+      expect(bangNode, `<<~! ${name} …>> captured different attrs (p1, __body__) than the bare form`).toEqual(bareNode);
+    });
+
+  test("CONTROL — a NON-pragma-kind sigil refuses `!`: `huli` builds no compound node at all", () => {
+    const bareNode = compoundTransclude(e, "huli", '<<~ huli "[tag[x]]" as item>>\nbody\n<<~/huli>>');
+    const bangNode = compoundTransclude(e, "huli", '<<~! huli "[tag[x]]" as item>>\nbody\n<<~/huli>>');
+    expect(bareNode, "the bare CONTROL itself lost its huli dispatch").toBeTruthy();
+    expect(bangNode, "`!` reached a sigil this loop never widened — huli is not pragma-kind").toBeUndefined();
+  });
 });
