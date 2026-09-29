@@ -207,6 +207,14 @@ describe("pono grammar boundary", () => {
       // has no other surface. It blesses no grammar; it holds the scan layer to guest-grammar.mem's
       // #/hana-worksite law (a hana body carries a FOREIGN grammar, never this house's own sigils).
       .filter((f) => !f.endsWith("hana-body-opacity.test.ts"))
+      // wehe-open-paren.test.ts is the missing RED control for lar:///sigil.wehe.pairs (10d14e51a):
+      // whether the tiddler-derived scanner PAIRS open/close on the corpus's own `name(params)`
+      // invocation form. The grammar-table snapshot (--check / plugin-artifact-parity) asserts the
+      // TABLE's shape; only a scan+build-layer test can catch an orphan-close the render path would
+      // only ever report as "different HTML," never as which closer went unmatched. It drives
+      // grammar-table.generated.ts — itself derived from the tiddlers, never a hand-typed fixture —
+      // so it blesses no grammar as canonical; it holds the derived scan+build layer to the corpus.
+      .filter((f) => !f.endsWith("wehe-open-paren.test.ts"))
       // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
       // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
       // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
