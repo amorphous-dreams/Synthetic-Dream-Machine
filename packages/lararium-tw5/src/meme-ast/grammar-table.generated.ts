@@ -17,7 +17,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "config", kind: "relation", pattern: "<<~\\s*config\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "const", kind: "pragma-alias", openPattern: "<<~\\s*const\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/const\\s*>>", aliasFor: "waiho" },
   { name: "constraint", kind: "edge-alias", pattern: "<<~\\s*constraint\\s+(#[\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+role[=:]\"?([\\w.-]+)\"?)?\\s*>>", aliasFor: "pono" },
-  { name: "define", kind: "pragma-alias", openPattern: "<<~\\s*define\\s+([\\w-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/define\\s*>>", aliasFor: "define" },
+  { name: "define", kind: "pragma-alias", openPattern: "<<~\\s*define\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/define\\s*>>", aliasFor: "wehe" },
   { name: "dispatcher", kind: "edge-sugar" },
   { name: "drift-ward", kind: "gauge", pattern: "<<~\\s*drift-ward\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "elif", kind: "control", pattern: "<<~\\s*elif\\s+([^\\n>]+?)\\s*>>", aliasFor: "kahawai" },
@@ -39,7 +39,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "hana", kind: "guest-grammar", openPattern: "<<~\\s*hana\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/hana\\s*>>" },
   { name: "has", kind: "relation", pattern: "<<~\\s*has\\s+([\\w-]+)(?:\\s+([\\w.-]+))?(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "heihei", kind: "control", openPattern: "<<~\\s*heihei\\s+([^>]+?)\\s*>>", closePattern: "<<~\\/heihei\\s*>>" },
-  { name: "helu", kind: "pragma", openPattern: "<<~\\s*helu\\s+([\\w-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/helu\\s*>>" },
+  { name: "helu", kind: "pragma", openPattern: "<<~\\s*helu\\s+([\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/helu\\s*>>" },
   { name: "holo", kind: "concurrency", openPattern: "<<~\\s*holo\\s*>>", closePattern: "<<~\\/holo\\s*>>" },
   { name: "hoolele", kind: "concurrency", pattern: "<<~\\s*hoolele\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>" },
   { name: "hud", kind: "metadata", pattern: "<<~\\s*hud\\b([\\s\\S]*?)>>" },
@@ -69,7 +69,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "pono", kind: "edge-sugar", pattern: "<<~\\s*pono\\s+(#[\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+role[=:]\"?([\\w.-]+)\"?)?\\s*>>" },
   { name: "pranala", kind: "edge", inlinePattern: "<<~\\s*pranala\\s+(#[\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+family[=:]\"?([\\w.-]+)\"?)?(?:\\s+role[=:]\"?([\\w.-]+)\"?)?\\s*>>", blockPattern: "<<~\\s*pranala\\s+(#[\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>([\\s\\S]*?)<<~\\/pranala\\s*>>", closePattern: "<<~\\/pranala\\s*>>", defaultFamily: "relation" },
   { name: "pranala-header", kind: "header", pattern: "<<~\\s*\\?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>" },
-  { name: "procedure", kind: "pragma-alias", openPattern: "<<~\\s*procedure\\s+([\\w-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/procedure\\s*>>", aliasFor: "wehe" },
+  { name: "procedure", kind: "pragma-alias", openPattern: "<<~\\s*procedure\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/procedure\\s*>>", aliasFor: "wehe" },
   { name: "puka", kind: "concurrency", openPattern: "<<~\\s*puka\\s*>>", closePattern: "<<~\\/puka\\s*>>" },
   { name: "query", kind: "query-alias", pattern: "<<~\\s*query\\s+([^\\n>]+?)\\s*>>", aliasFor: "ui" },
   { name: "race", kind: "concurrency-alias", openPattern: "<<~\\s*race\\s*>>", closePattern: "<<~\\/race\\s*>>", aliasFor: "holo" },
@@ -79,6 +79,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "set", kind: "frame", pattern: "<<~\\s*set\\b((?:[^>]|>(?!>))*)>>" },
   { name: "shadow", kind: "edge-alias", pattern: "<<~\\s*shadow\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>", aliasFor: "aka" },
   { name: "shrine", kind: "relation", pattern: "<<~\\s*shrine\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
+  { name: "snapshot", kind: "edge-alias", pattern: "<<~\\s*snapshot\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>", aliasFor: "aka", weave: { tongue: "en" } },
   { name: "stage", kind: "mask-summon", pattern: "<<~\\s*stage\\s+\"?(\\d+)\"?(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "stance", kind: "stance", pattern: "<<~\\s*stance(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "suspends", kind: "leaf", pattern: "<<~\\s*suspends(?:\\s+trigger[=:]\"?([\\w.-]+)\"?)?\\s*>>", aliasFor: "kukali" },
@@ -88,14 +89,14 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "tick", kind: "concurrency", openPattern: "<<~\\s*tick\\s*>>", closePattern: "<<~\\/tick\\s*>>" },
   { name: "tiddler", kind: "context-alias", openPattern: "<<~\\s*tiddler\\s+(\\S+)\\s*>>", closePattern: "<<~\\/tiddler\\s*>>", aliasFor: "meme" },
   { name: "toml", kind: "data", pattern: "```toml(?:[ \\t]+([A-Za-z0-9_-]+))?[ \\t]*\\n([\\s\\S]*?)```" },
-  { name: "transclude", kind: "edge-alias", pattern: "<<~\\s*transclude\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+key[=:]\"?([\\w.-]+)\"?)?\\s*>>", aliasFor: "kahea" },
-  { name: "type", kind: "pragma-alias", openPattern: "<<~\\s*type\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/type\\s*>>", aliasFor: "type" },
-  { name: "typos", kind: "pragma-alias", openPattern: "<<~\\s*typos\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/typos\\s*>>", aliasFor: "typos" },
+  { name: "transclude", kind: "edge-alias", pattern: "<<~\\s*transclude\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+key[=:]\"?([\\w.-]+)\"?)?\\s*>>", aliasFor: "kahea", weave: { tongue: "en" } },
+  { name: "type", kind: "pragma", openPattern: "<<~\\s*type\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/type\\s*>>" },
+  { name: "typos", kind: "pragma", openPattern: "<<~\\s*typos\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/typos\\s*>>" },
   { name: "ui", kind: "query", pattern: "<<~\\s*ui\\s+([^\\n>]+?)\\s*>>" },
   { name: "var", kind: "pragma-alias", openPattern: "<<~\\s*var\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/var\\s*>>", aliasFor: "waiho" },
   { name: "waiho", kind: "pragma", openPattern: "<<~\\s*waiho\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/waiho\\s*>>" },
   { name: "ward", kind: "metadata", pattern: "Drift-Ward\\s*\\(" },
-  { name: "wehe", kind: "pragma", openPattern: "<<~\\s*wehe\\s+([\\w-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/wehe\\s*>>" },
+  { name: "wehe", kind: "pragma", openPattern: "<<~\\s*wehe\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/wehe\\s*>>" },
   { name: "widget", kind: "pragma", openPattern: "<<~\\s*widget\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/widget\\s*>>" },
 ];
 
@@ -111,12 +112,12 @@ export const GENERATED_FAMILIES: FamilyRule[] = [
   { name: "spatial", dagRequired: false, roleRecommended: true, confidenceBounded: false },
 ];
 
-/** alias sigil name -> its canonical sigil name (lar-alias-for). */
+/** alias sigil name -> its canonical sigil name (lar-mirror-of). */
 export const GENERATED_ALIAS_MAP: Record<string, string> = {
   "branch": "lele",
   "const": "waiho",
   "constraint": "pono",
-  "define": "define",
+  "define": "wehe",
   "elif": "kahawai",
   "else": "mukuwai",
   "for": "huli",
@@ -131,15 +132,14 @@ export const GENERATED_ALIAS_MAP: Record<string, string> = {
   "race": "holo",
   "rush": "puka",
   "shadow": "aka",
+  "snapshot": "aka",
   "suspends": "kukali",
   "sync": "hui",
   "task": "hana",
   "tiddler": "meme",
   "transclude": "kahea",
-  "type": "type",
-  "typos": "typos",
   "var": "waiho",
 };
 
 /** every sigil name that is NOT an alias (canonical sigils only). */
-export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","carry","confidence","config","dispatcher","drift-ward","feedback","focus","frame","frame-eot","frame-eot2","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","ui","waiho","ward","wehe","widget"];
+export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","carry","confidence","config","dispatcher","drift-ward","feedback","focus","frame","frame-eot","frame-eot2","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","type","typos","ui","waiho","ward","wehe","widget"];
