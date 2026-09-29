@@ -21,7 +21,7 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
   seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony
   kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
   kapae --list                              read the currently-Kapae'd set (the fold)
-  un_kapae <nym>                            mint a quorum-signed lift at a higher version
+  un_kapae <nym>                            mint a quorum-signed causal lift
   contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)
   revoke <operator-pubkey>                  revoke a member (quorum-only)
   carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own
