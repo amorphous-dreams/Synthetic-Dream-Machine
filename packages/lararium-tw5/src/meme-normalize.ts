@@ -48,6 +48,9 @@ const DECLARATION =
 import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
 import { META_OPEN_RE } from "./meta-fence.js";
 import { frameAlt } from "./frame-marks.js";
+// GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
+// dependency-free-by-constraint file the same way the DECLARATION comment above reasons about it.
+import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
 
 // THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS WRITER'S OWN (frame-marks.ts).
 // The alternation groups NON-capturing, so the group numbering each rewrite below indexes survives.
@@ -86,10 +89,16 @@ function metaNamespace(src: string): string | null {
  * The registers are THE SHELF'S: every sigil kinded `pragma` or `pragma-alias` opens a definition — the
  * backslash pragmas, their unslashed English mirrors (`define` · `procedure` · `function` · `widget` ·
  * `typos` · `type` · the `let`/`var`/`const` binders) and the Hawaiian spellings (`wehe` · `kumu` · `helu`
- * · `waiho`). `meme-normalize-param-separator` reads the shelf and holds this list to it.
+ * · `waiho`). G2-G4 cutover (loop 2): DERIVED from GENERATED_SIGILS (grammar-table.generated.ts) by
+ * `lar-kind`, never hand-listed — a tiddler that gains/loses `pragma`/`pragma-alias` kind moves this set
+ * without a second edit here.
  */
-const DEFINITION_HEAD =
-  /^[~^!]?\s*(\\[A-Za-z_]|(?:define|procedure|function|widget|typos|type|let|var|const|wehe|kumu|helu|waiho)(?![\w-]))/;
+export const DEFINITION_WORDS = GENERATED_SIGILS
+  .filter((s) => s.kind === "pragma" || s.kind === "pragma-alias")
+  .map((s) => s.name)
+  .sort();
+const DEFINITION_HEAD = new RegExp(
+  `^[~^!]?\\s*(\\\\[A-Za-z_]|(?:${DEFINITION_WORDS.join("|")})(?![\\w-]))`);
 
 /** A colon separates a parameter only where a QUOTED value follows — a scheme colon never does. */
 const COLON_PARAM = /\b([A-Za-z0-9_-]+):(?=["']|\[\[)/g;
@@ -424,6 +433,33 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
         const next = seat.text.slice(0, fence.index + fence[1]!.length) + aligned + seat.text.slice(fence.index + fence[1]!.length + fence[2]!.length);
         seat.apply("frame", next, () => "meta columns: equals-signs aligned to the longest key");
       }
+    }
+  }
+
+  // ── 7. Sigil spelling: `define` re-mints to `wehe` — FRAME AUTHORITY ─────
+  //
+  // RULED (sigil-mirror-flip, loop 1): `define` is a READ-ONLY mirror of `wehe` — no grammar of its
+  // own, so a carrier spelling it carries no authored intent this gesture would lose by re-minting.
+  // Scoped to `define` ALONE, per this loop's Aftermath — every OTHER read-only mirror (`shadow`,
+  // `import`, `snapshot`'s own non-primary siblings, …) stays authored as written; folding every
+  // read-only mirror to its canonical head is an UNRULED, broader question this loop reports a
+  // carrier count for rather than deciding.
+  {
+    let reminted = 0;
+    const mask = fencedSpans(seat.text);
+    let working = seat.text.replace(/(<<~\s*)define(\s+[^>]*>>)/g, (m, head: string, tail: string, offset: number) => {
+      if (inMask(mask, offset)) return m;
+      reminted += 1;
+      return `${head}wehe${tail}`;
+    });
+    const closeMask = fencedSpans(working);
+    working = working.replace(/<<~\/\s*define\s*>>/g, (m, offset: number) => {
+      if (inMask(closeMask, offset)) return m;
+      reminted += 1;
+      return "<<~/wehe>>";
+    });
+    if (reminted > 0) {
+      seat.apply("frame", working, () => `sigil spelling: ${reminted} \`define\` occurrence${reminted === 1 ? "" : "s"} re-minted to \`wehe\` (read-only mirror)`);
     }
   }
 

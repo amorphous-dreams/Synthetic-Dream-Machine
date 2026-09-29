@@ -130,7 +130,9 @@ function shelfDefinitionHeads(): string[] {
     .map((f) => readFileSync(SHELF + f, "utf8"))
     .filter((t) => /^lar-kind: pragma(-alias)?$/m.test(t))
     // The engine reads both spellings of the pattern field (`grammar-heads`), so the witness does too.
-    .map((t) => /^lar-(?:open-)?pattern: <<~\\s\*([A-Za-z_-]+)/m.exec(t)?.[1] ?? "")
+    // `!?` optional-pragma prefix (lar:///sigil.grammar.lane loop 2, item 3) rides ahead of `\s*`
+    // on some heads now (`<<~!?\s*wehe`) — tolerated here the same way the engine's own reader does.
+    .map((t) => /^lar-(?:open-)?pattern: <<~(?:!\?)?\\s\*([A-Za-z_-]+)/m.exec(t)?.[1] ?? "")
     .filter(Boolean)
     .sort();
 }
@@ -142,9 +144,16 @@ describe("★ a DEFINITION under any shelf spelling keeps its colon ★", () => 
   });
 
   test("★ every shelf definition head keeps `param:\"default\"` byte-identical ★", () => {
+    // `define` is the one RULED exception (lar:///sigil.grammar.lane loop 2, item 2): a FRAME
+    // clause re-mints it to `wehe` (its canonical head, a read-only mirror) unconditionally — so
+    // its OWN colon-preservation check compares against the re-minted spelling, never its own
+    // head word, while every other shelf head still holds fully byte-identical.
     for (const head of shelfDefinitionHeads()) {
       const src = `<<~ ${head} thing(param:"default" other:"")>>body<<~/${head}>>`;
-      expect(norm(src), head).toBe(src);
+      const expected = head === "define"
+        ? `<<~ wehe thing(param:"default" other:"")>>body<<~/wehe>>`
+        : src;
+      expect(norm(src), head).toBe(expected);
     }
   });
 
