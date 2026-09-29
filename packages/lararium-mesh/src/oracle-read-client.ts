@@ -4,15 +4,15 @@
  *
  * This is the second-spore primitive — the first cross-vessel contact the read-only
  * substrate enables. A reader (any vessel, anon) fetches a peer node's pointer +
- * content-addressed snapshot, VERIFIES before trusting (signature · anti-rollback ·
- * anti-equivocation · rehash == cid), and only then loads.
+ * content-addressed snapshot, VERIFIES before trusting (signature · causal ancestry ·
+ * local publisher binding · rehash == cid), and only then loads.
  * Isomorphic: global `fetch` (Node 18+/browser) + `Automerge.load`; a browser vessel
  * reads exactly this way.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-oracle-plane
  */
 
-import { load as automergeLoad, type Doc } from "@automerge/automerge";
+import { load as automergeLoad, getHeads, type Doc } from "@automerge/automerge";
 import { verifyOraclePointer, verifyOracleSnapshotBytes, type OraclePointer } from "./oracle-substrate.js";
 
 /**
@@ -45,10 +45,8 @@ export interface OraclePullResult<T = unknown> {
 export interface OraclePullOpts {
   /** Pin the publisher — refuse a pointer signed by any other key. */
   readonly verifyingKey?:     string;
-  /** The reader's remembered high-water version — a lower one reads as a rollback. */
-  readonly highWaterVersion?: number;
-  /** The id of the last pointer this reader held — a `prev` that doesn't link it is a fork. */
-  readonly lastPointerId?:    string;
+  /** Locally held pointer identities; a missing parent is unavailable. */
+  readonly knownPointerIds?: readonly string[];
   /** Injectable fetch (for tests). */
   readonly fetchImpl?:        typeof fetch;
 }
@@ -78,8 +76,7 @@ export async function pullAndVerifyOracle<T = unknown>(
   // 2. the reader rule — verify BEFORE trusting.
   const verdict = await verifyOraclePointer(pointer, {
     ...(opts.verifyingKey     !== undefined ? { verifyingKey:     opts.verifyingKey }     : {}),
-    ...(opts.highWaterVersion !== undefined ? { highWaterVersion: opts.highWaterVersion } : {}),
-    ...(opts.lastPointerId    !== undefined ? { lastPointerId:    opts.lastPointerId }    : {}),
+    ...(opts.knownPointerIds !== undefined ? { knownPointerIds: opts.knownPointerIds } : {}),
   });
   if (!verdict.ok) return { ok: false, reason: `pointer rejected: ${verdict.reason}`, pointer };
 
@@ -104,6 +101,11 @@ export async function pullAndVerifyOracle<T = unknown>(
   } catch (e) {
     return { ok: false, reason: `automerge load failed: ${e instanceof Error ? e.message : String(e)}`, pointer };
   }
+
+  const loadedHeads = [...new Set(getHeads(doc) as string[])].sort();
+  const signedHeads = [...new Set(pointer.heads)].sort();
+  if (loadedHeads.length !== signedHeads.length || loadedHeads.some((head, i) => head !== signedHeads[i]))
+    return { ok: false, reason: "snapshot heads mismatch (signed frontier does not match bytes)", pointer };
 
   return { ok: true, pointer, doc, cid: pointer.cid };
 }

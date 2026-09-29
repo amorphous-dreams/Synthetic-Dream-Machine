@@ -16,7 +16,7 @@ import {
   pullAndVerifyOracle, dialEntryToRecord,
   type MeshPalaceDoc,
 } from "@lararium/mesh";
-import { mountFlowMapReadFace } from "../src/oracle-read-face.js";
+import { mountFlowMapReadFace, mountOracleReadFace } from "../src/oracle-read-face.js";
 
 const SEED = new Uint8Array(32).fill(7); // a fixed, valid ed25519 seed (deterministic)
 
@@ -50,6 +50,35 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     expect(titles).not.toContain(loc.tiddler.title); // the private territory stayed home
 
     face.dispose();
+    await new Promise<void>((r) => server.close(() => r()));
+  });
+
+  test("restart re-serves the exact durable pointer, then makes a causal child on change", async () => {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const handle = repo.create<MeshPalaceDoc>({ schemaVersion: "0.1", tiddlers: {} });
+    const server = createServer();
+    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    const port = (server.address() as { port: number }).port;
+    const storageDir = mkdtempSync(join(tmpdir(), "herm-flowmap-restart-"));
+    const url = `http://127.0.0.1:${port}`;
+
+    const first = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir });
+    const p1 = (await (await fetch(`${url}/oracle/pointer`)).json()) as { actCid: string; parents: string[] };
+    first.dispose();
+    const second = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir });
+    const p1Restart = (await (await fetch(`${url}/oracle/pointer`)).json()) as { actCid: string; parents: string[] };
+    expect(p1Restart).toEqual(p1);
+
+    handle.change((d) => { d.tiddlers["new"] = { public: true }; });
+    let p2 = p1Restart;
+    for (let i = 0; i < 20 && p2.actCid === p1.actCid; i++) {
+      await new Promise((r) => setTimeout(r, 10));
+      p2 = (await (await fetch(`${url}/oracle/pointer`)).json()) as typeof p2;
+    }
+    expect(p2.actCid).not.toBe(p1.actCid);
+    expect(p2.parents).toEqual([p1.actCid]);
+
+    second.dispose();
     await new Promise<void>((r) => server.close(() => r()));
   });
 });

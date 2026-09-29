@@ -3,14 +3,13 @@
  *
  * Serves the oracle doc as the READ-ONLY PUBLIC substrate over the node's existing HTTP
  * server (no new tech, no new port):
- *   GET /oracle/pointer      → the current signed monotone pointer (JSON)
+ *   GET /oracle/pointer      → the locally published signed causal pointer (JSON)
  *   GET /oracle/<cid>.bin    → the content-addressed snapshot bytes (Automerge.save)
  *
  * Write-refusal is by construction: only GET is served, the bytes are named by their
  * own hash, and there is no sync session — nothing to write. On each oracle-doc change
- * the face re-exports the snapshot and ratchets a fresh pointer (version++, prev-linked,
- * signed). The monotone counter persists to disk so it never regresses across a reboot
- * (a reset counter would read as a ROLLBACK to every reader).
+ * the face re-exports the snapshot and publishes a fresh causal pointer. The local
+ * causal frontier persists to disk so a reboot can continue the same lineage.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-oracle-plane
  * (the content-addressed floor; Hypercore live-streaming rides above it as the
@@ -26,18 +25,17 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { Doc } from "@automerge/automerge";
 import { ORACLE_ROUTE_PREFIX, ORACLE_POINTER_ROUTE, ORACLE_SNAPSHOT_RE } from "@lararium/mesh";
 import {
-  exportOracleSnapshot, buildOraclePointer, oraclePointerId, snapshotPublicFlowMap,
+  exportOracleSnapshot, buildOraclePointer, oraclePointerId, verifyOraclePointer, snapshotPublicFlowMap,
   type OracleSnapshot, type OraclePointer, type LarDoc,
 } from "@lararium/mesh";
 
-/** Persists {version, lastPointerId} so the monotone counter survives a reboot. */
+/** Persists the local causal head and exact publication so restart preserves the causal closure. */
 const STATE_FILE = "oracle-pointer-state.json";
 
 interface PersistedPointerState {
-  readonly version:       number;
-  readonly lastPointerId: string | null;  // id of the current version's pointer (lineage anchor)
-  readonly prevId:        string | null;  // its prev — retained to reconstruct the current pointer after reboot
+  readonly headIds:        readonly string[];
   readonly cid:           string | null;  // the last published content hash (detect a real change vs a reboot)
+  readonly pointer?:       OraclePointer; // exact durable publication for unchanged restart
 }
 
 export interface OracleReadFace {
@@ -68,16 +66,16 @@ export async function mountOracleReadFace(args: {
   let snapshot: OracleSnapshot | null = null;
   let pointer:  OraclePointer  | null = null;
 
-  // Load the persisted monotone counter — a fresh-from-1 counter after a reboot would
-  // read as a rollback to every peer that already saw a higher version.
-  let persisted: PersistedPointerState = { version: 0, lastPointerId: null, prevId: null, cid: null };
+  // Load the persisted local causal frontier. Old scalar state is intentionally
+  // ignored: early alpha has no compatibility bridge between pointer models.
+  let persisted: PersistedPointerState = { headIds: [], cid: null };
   try {
     const raw = JSON.parse(readFileSync(statePath, "utf8")) as PersistedPointerState;
-    if (Number.isInteger(raw.version) && raw.version >= 0) persisted = raw;
-  } catch { /* first boot — start at 0 */ }
+    if (Array.isArray(raw.headIds) && raw.headIds.every((id) => typeof id === "string")) persisted = raw;
+  } catch { /* first boot — no prior causal frontier */ }
 
-  // Publish the pointer. A CONTENT change bumps the monotone version + advances the
-  // lineage. An initial re-publish after reboot reconstructs the same causal pointer;
+  // Publish the pointer. A content change advances the local causal frontier.
+  // An initial re-publish after reboot reconstructs the same causal pointer;
   // there is no heartbeat and no wall-clock validity branch.
   async function reissue(initial = false): Promise<void> {
     const doc = oracleHandle.doc();
@@ -85,19 +83,26 @@ export async function mountOracleReadFace(args: {
     const snap = await exportSnapshot(doc);
     const changed = snap.cid !== persisted.cid;
     if (!changed && !initial) return;
-    const version = changed ? persisted.version + 1 : persisted.version;
-    const prev    = changed ? persisted.lastPointerId : persisted.prevId;
-    const ptr = await buildOraclePointer({ snapshot: snap, version, prev, signerSeed });
+    if (!changed && initial && persisted.pointer) {
+      const durable = await verifyOraclePointer(persisted.pointer);
+      if (durable.ok && persisted.pointer.cid === snap.cid && persisted.headIds.length === 1 && persisted.headIds[0] === persisted.pointer.actCid) {
+        snapshot = snap;
+        pointer = persisted.pointer;
+        return;
+      }
+    }
+    const parents = persisted.headIds;
+    const ptr = await buildOraclePointer({ snapshot: snap, parents, signerSeed });
     snapshot = snap;
     pointer  = ptr;
     if (changed) {
       const id = await oraclePointerId(ptr);
-      persisted = { version, lastPointerId: id, prevId: prev, cid: snap.cid };
+      persisted = { headIds: [id], cid: snap.cid, pointer: ptr };
       try {
         mkdirSync(storageDir, { recursive: true });
         atomicWriteFileSync(statePath, JSON.stringify(persisted));
       } catch { /* quota — the in-memory pointer still serves this run */ }
-      onLog?.(`oracle read-face: v${version} cid=${snap.cid.slice(0, 12)}… (${snap.bytes.byteLength}B)`);
+      onLog?.(`oracle read-face: act=${id.slice(0, 12)}… cid=${snap.cid.slice(0, 12)}… (${snap.bytes.byteLength}B)`);
     }
   }
 
