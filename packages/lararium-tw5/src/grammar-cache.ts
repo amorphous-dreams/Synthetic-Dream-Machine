@@ -114,14 +114,21 @@ function str(v: unknown): string { return typeof v === "string" ? v : ""; }
  * `lar-name` field takes precedence; otherwise strips the "sigil-" prefix
  * from the last path segment of the title (e.g. "…/sigil-ahu" → "ahu").
  */
-function nameFromTitle(title: string, fields: Readonly<Record<string, unknown>>): string {
+export function nameFromTitle(title: string, fields: Readonly<Record<string, unknown>>): string {
   if (fields["lar-name"]) return str(fields["lar-name"]);
   const last = title.split("/").pop() ?? title;
   return last.startsWith("sigil-") ? last.slice(6) : last;
 }
 
-/** Build SigilRule from a SharktoothSigil tiddler's fields. Returns null for family tiddlers. */
-function sigilFromFields(title: string, fields: Readonly<Record<string, unknown>>): SigilRule | null {
+/**
+ * Build SigilRule from a SharktoothSigil tiddler's fields. Returns null for family tiddlers.
+ *
+ * SHARED CONVERTER: this is the ONE fields→rule fold. The node-side generator
+ * (scripts/build-grammar-table.ts, reading .tid frontmatter off disk) imports this
+ * same function rather than re-deriving the field→rule mapping, so the live-wiki
+ * path and the generated-table path cannot diverge on what a field MEANS.
+ */
+export function sigilFromFields(title: string, fields: Readonly<Record<string, unknown>>): SigilRule | null {
   const kindRaw = str(fields["lar-kind"]);
   if (!kindRaw || kindRaw === "family") return null;
   const kind = kindRaw as SigilRule["kind"];
@@ -141,8 +148,8 @@ function sigilFromFields(title: string, fields: Readonly<Record<string, unknown>
   return rule;
 }
 
-/** Build FamilyRule from a SharktoothSigil tiddler with lar-kind: family. */
-function familyFromFields(title: string, fields: Readonly<Record<string, unknown>>): FamilyRule | null {
+/** Build FamilyRule from a SharktoothSigil tiddler with lar-kind: family. SHARED CONVERTER — see sigilFromFields. */
+export function familyFromFields(title: string, fields: Readonly<Record<string, unknown>>): FamilyRule | null {
   if (str(fields["lar-kind"]) !== "family") return null;
   const name = nameFromTitle(title, fields);
   const familyName = name.startsWith("family-") ? name.slice(7) : name;
