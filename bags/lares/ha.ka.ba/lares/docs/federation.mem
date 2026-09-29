@@ -17,9 +17,6 @@ uri-path  = "ha.ka.ba/lares/docs/federation"
 written   = "2026-06-21"
 ```
 
-
-
-
 <<~ ahu #/what-travels>>
 
 ! Federating a Vessel
@@ -166,6 +163,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yNzcLMU8sft7o0D9joF-pxVWmITO0PSEM_ZcJE0VRjc
+<<^ code="&#x0003;">>ni:///sha-256;JiyxsFPnU2LfvOfCxQNIN4gCNg0zMtlSFcwrzvna-Wc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -366,8 +366,9 @@ meant to escape):
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
+
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3oUp1S0MD3WkG9U_LurcnEXkL9rR7zxt4mgNRxBUChI
+<<^ code="&#x0003;">>ni:///sha-256;teTHZmqllj5EL-9wrscuFTTf_Msw3JnhpmkhUi5KIBA
 
 <<^ code="&#x0004;" -> to="?">>
