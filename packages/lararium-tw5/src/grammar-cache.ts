@@ -136,6 +136,7 @@ export function sigilFromFields(title: string, fields: Readonly<Record<string, u
   if (fields["lar-pattern"])         rule.pattern        = str(fields["lar-pattern"]);
   if (fields["lar-open-pattern"])    rule.openPattern    = str(fields["lar-open-pattern"]);
   if (fields["lar-close-pattern"])   rule.closePattern   = str(fields["lar-close-pattern"]);
+  if (fields["lar-pragma-pattern"])  rule.pragmaPattern  = str(fields["lar-pragma-pattern"]);
   if (fields["lar-inline-pattern"])  rule.inlinePattern  = str(fields["lar-inline-pattern"]);
   if (fields["lar-block-pattern"])   rule.blockPattern   = str(fields["lar-block-pattern"]);
   if (fields["lar-mirror-of"])       rule.aliasFor       = str(fields["lar-mirror-of"]);

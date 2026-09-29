@@ -6,6 +6,7 @@ lar-mirror-of: waiho
 lar-see-also: waiho
 lar-open-pattern: <<~\s*const\s+([\w-]+)\s+([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/const\s*>>
+lar-pragma-pattern: <<~!\s*const\s+([\w-]+)\s+([^\n>]+?)\s*>>
 lar-example: <<~ const name "value">>
 type: text/vnd.tiddlywiki
 
