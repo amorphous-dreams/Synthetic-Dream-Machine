@@ -3,9 +3,9 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/waiho
 lar-see-also: let
-lar-open-pattern: <<~\s*waiho\s+([\w-]+)\s+([^\n>]+?)\s*>>
+lar-open-pattern: <<~\s*waiho\s+([\w-]+)(?:\s*=\s*|\s+)([^\n>]+?)\s*>>
 lar-close-pattern: <<~\/waiho\s*>>
-lar-pragma-pattern: <<~!\s*waiho\s+([\w-]+)\s+([^\n>]+?)\s*>>
+lar-pragma-pattern: <<~!\s*waiho\s+([\w-]+)(?:\s*=\s*|\s+)([^\n>]+?)\s*>>
 lar-example: <<~ waiho name "value">>\nbody\n<<~/waiho>>
 type: text/vnd.tiddlywiki
 
