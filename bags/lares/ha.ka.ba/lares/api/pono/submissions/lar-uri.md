@@ -1,6 +1,6 @@
 
 
-- `aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
+- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` (unresolved — no corpus to pin)
 
 <a id="meme-header"></a>
 
