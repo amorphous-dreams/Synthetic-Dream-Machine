@@ -187,7 +187,7 @@ const KNOWN_KINDS = new Set([
   "lele", "let", "link", "loops", "loulou", "meme",
   "mu", "mukuwai", "oracle", "papalohe", "persona", "pono",
   "procedure", "puka", "query", "race", "rush", "scale",
-  "season", "set", "shadow", "shrine", "stage", "stance",
+  "season", "set", "shadow", "shrine", "snapshot", "stage", "stance",
   "suspends", "syad", "sync", "task", "tick", "tiddler",
   "transclude", "type", "typos", "ui", "var", "waiho",
   "wehe", "widget",
