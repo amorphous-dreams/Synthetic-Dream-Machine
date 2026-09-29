@@ -89,7 +89,7 @@ Hawaiian headword and no mirror relation to `kumu`
 
 A `kahea` name-form call resolves a kumu type at widget-build time through the `KumuRegistry`
 into a `WidgetNode`; the registry's own resolution step stays open, held at Gap 8 of the
-research stream <confidence:0.6 — design resolved 2026-04-28, implementation pending>
+research stream <confidence:0.6 — design resolved, implementation pending>
 (`lar:///ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions#/gaps`).
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ research stream <confidence:0.6 — design resolved 2026-04-28, implementation p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NujYmUzHuUJSgRGx_60cCm9tzOd31D0Wl9WTWRBaAj4
+<<^ code="&#x0003;">>ni:///sha-256;6KF5j4g5fOBVFjKd1LFYZzkKjpKAYvM079_6f-1rDCA
 
 <<^ code="&#x0004;" -> to="?">>
