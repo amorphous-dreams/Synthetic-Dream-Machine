@@ -84,8 +84,8 @@ snapshot (aka-frozen sigil refs, human-readable carrier wikitext)
 ```
 
 The boundary separates:
-* ''disk → wiki'' (deserializer expands flat carrier text into tiddler graph)
-* ''wiki → disk'' (carrier render collapses tiddler graph back to flat carrier text)
+* ''disk → wiki'' (deserializer expands flat carrier text into a meme, the expanded record set)
+* ''wiki → disk'' (carrier render collapses the meme back to flat carrier text)
 * ''wiki → snapshot'' (projection render emits frozen `aka` references)
 
 Every render pass MUST declare its mode before it crosses the boundary.
@@ -117,7 +117,7 @@ description = "each child-slot widget emits aka (shadow/frozen) sigil; content f
 trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'projection' } })"
 ```
 
-''Round-trip fidelity:'' carrier render MUST produce output that, when fed back through the deserializer, reproduces an equivalent tiddler graph. No layer should silently overwrite canonical field identity.
+''Round-trip fidelity:'' carrier render MUST produce output that, when fed back through the deserializer, reproduces an equivalent meme. No layer should silently overwrite canonical field identity.
 
 ''Extending to new child-slot sigils:'' tag a tiddler `lar:///ha.ka.ba/tags/<sigil>-template`, define `\widget ~<sigil>(p1:"")` in the SharktoothSigil tiddler. No JS needed — the three-mode dispatch inherits automatically.
 
@@ -258,6 +258,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5sYS49HmOzuxGYge5UwRlp-IvIvOGVeEr7Z3gpeKKM8
+<<^ code="&#x0003;">>ni:///sha-256;GkW74_AqYJJ2B-E9sp9ZavW6QHXkM0NybauiiGyduYE
 
 <<^ code="&#x0004;" -> to="?">>
