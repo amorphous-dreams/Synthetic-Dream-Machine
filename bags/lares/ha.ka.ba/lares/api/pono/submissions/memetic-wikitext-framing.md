@@ -822,24 +822,22 @@ channel, one id scheme, one tongue-marking, one grammar per span.
 ### Dialect
 
 A woven artifact declares its **dialect** as an RFC 7764-registered Markdown variant — CommonMark, GFM,
-kramdown-rfc2629, or another registered name — never an unnamed house flavour. Metadata travels per
-RFC 7763: a `.md.meta` sidecar when the woven file sits on a shelf beside others, YAML frontmatter when
-the file travels alone. The frontmatter writer keeps a strict subset — every value double-quoted, every
-key sorted — defending the woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare
-`yes`/`no`/`on`/`off` ambiguity. `source-check` spells as an RFC 6920 `ni:` URI, the same form the
-carrier's own block check wears (#/control-set)
-<confidence:0.6 — BUILDING; the weave path does not yet declare an RFC 7764 dialect name or emit
-RFC 7763 metadata (sidecar or frontmatter) on every pass. This states the target shape a sibling's
-weave-output change is standing up this loop>.
+kramdown-rfc2629, or another registered name — never an unnamed house flavour, carried as a
+`WeaveProfile` (`kaheaMarker`, `frontmatter`, `requiredMeta`) the weave path selects on `--dialect`.
+Metadata travels per RFC 7763: a `.md.meta` sidecar when the woven file sits on a shelf beside others
+(the CommonMark shelf pair's standing shape), YAML frontmatter when a profile travels standalone. The
+frontmatter writer keeps a strict subset — every value double-quoted, every key sorted — defending the
+woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare `yes`/`no`/`on`/`off` ambiguity.
+`source-check` spells as an RFC 6920 `ni:` URI, the same form the carrier's own block check wears
+(#/control-set). The kramdown-rfc2629 profile additionally REQUIRES `docname`/`cat`/`ipr`/`author`/`date`
+in the carrier's own root meta and refuses naming what a carrier's meta lacks.
 
 ### Ids at the shore
 
 An ahu slot address `#/a/b` weaves as `id="a_b"` in the target format. A segment that would collide
 under that flattening escapes with the ISO/IEC 9075-14 `_xHHHH_` scheme — XML-Name-legal, reversible,
 self-escaping because `_x` itself escapes as `_x005F_` — so no rule naming which slot names run legal
-carries the burden of staying reversible; the escape does
-<confidence:0.6 — BUILDING; the same weave-output pass owes the collision escape, alongside the
-dialect and metadata clauses above>. Inside the house, `lar:` fragments MAY adopt
+carries the burden of staying reversible; the escape does. Inside the house, `lar:` fragments MAY adopt
 RFC 6901 JSON Pointer's `~0`/`~1` escaping by the URI scheme's own declaration
 <confidence:0.5 — PENDING; the `lar-uri` specification owns this choice, not this frame>.
 
@@ -856,8 +854,8 @@ spellings read, one spelling gets written, the way Unicode canonical equivalence
 Annex #15, UAX #15) lets many byte sequences denote one character while normalization picks one to
 keep
 <confidence:0.3 — PENDING; no weave path declares `lang`/`tongue` or applies the Translate/no-translate
-split today, and no tangle pass folds a mirror back to its canonical name. This states the tongue law
-ahead of any implementation, unscheduled against this loop's dialect/frontmatter/escape work above>.
+split, and no tangle pass folds a mirror back to its canonical name. This states the tongue law ahead
+of any implementation, unscheduled>.
 
 ### Mixed grammar
 
