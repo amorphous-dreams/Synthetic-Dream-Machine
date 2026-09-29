@@ -30,14 +30,21 @@ export function fencedSpans(text: string): MaskSpan[] {
   const flushLine = (lineEnd: number, nextStart: number) => {
     const line = text.slice(lineStart, lineEnd);
     const m = FENCE_LINE_RE.exec(line);
+    // CommonMark §4.5: a backtick fence's own INFO STRING (whatever trails the opening run on the
+    // same line) may not itself contain a backtick — a line shaped like
+    // "```memetic-wikitext tangle` more prose" never opens a fence at all; it reads as ordinary
+    // text carrying an inline code span, exactly like every other non-fence line. Measured
+    // (Loop-Observer-II): the un-guarded rule swallowed such a line as an opener with no closer in
+    // sight, masking to end-of-text and tearing the carrier's frame.
+    const opensFence = m !== null && !line.slice(m[0]!.length).includes("`");
     if (open) {
       // closing fence: same-or-longer run, nothing but the run on the line
       if (m && m[1]!.length >= open.len && line.slice(line.indexOf("`") + m[1]!.length).trim() === "") {
         spans.push({ start: open.start, end: nextStart });
         open = null;
       }
-    } else if (m) {
-      open = { len: m[1]!.length, start: lineStart };
+    } else if (opensFence) {
+      open = { len: m![1]!.length, start: lineStart };
     } else {
       // inline code spans on a non-fence line
       let i = 0;
