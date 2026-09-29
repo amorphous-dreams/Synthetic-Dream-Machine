@@ -298,6 +298,20 @@ export const CATALOG_CORPUS_PREFIX = `${CATALOG_DOC_URI}/corpus/`;
 export type MeshScale = "vessel" | "persona-group" | "cabal" | "nexus" | "dreamnet";
 export const MESH_SCALES: readonly MeshScale[] = ["vessel", "persona-group", "cabal", "nexus", "dreamnet"];
 
+/**
+ * Whether a scale FEDERATES beyond this vessel's own local planes — the property the
+ * disclosure shore (mesh-palace's PUBLIC_SCALES) filters by, rather than re-declaring its own
+ * hand-picked 3-of-5 subset of MESH_SCALES that could drift out of step with it. `vessel` and
+ * `persona-group` stay local to one operator; `cabal`/`nexus`/`dreamnet` cross to peers.
+ */
+export const MESH_SCALE_FEDERATES: Readonly<Record<MeshScale, boolean>> = {
+  vessel:          false,
+  "persona-group": false,
+  cabal:           true,
+  nexus:           true,
+  dreamnet:        true,
+};
+
 /** Read a declared scale off a catalog entry; undefined when absent or unrecognized (the caller then defaults patience). */
 export function parseMeshScale(s: string | null | undefined): MeshScale | undefined {
   return typeof s === "string" && (MESH_SCALES as readonly string[]).includes(s) ? (s as MeshScale) : undefined;

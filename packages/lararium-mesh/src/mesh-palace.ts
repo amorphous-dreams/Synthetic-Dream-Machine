@@ -35,7 +35,7 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { bagUri, type MeshScale } from "./lar-uris.js";
+import { bagUri, MESH_SCALES, MESH_SCALE_FEDERATES, type MeshScale } from "./lar-uris.js";
 import { isPersonaPlaneSlug } from "./persona-scope.js";
 import {
   type OracleSnapshot,
@@ -503,7 +503,9 @@ export function hermCanRead(uri: string): boolean {
 // expressed. A record is public when it carries `scale = "cabal" | "nexus" |
 // "dreamnet"` (federating) — vessel-local + persona-group records never cross.
 
-const PUBLIC_SCALES: readonly MeshScale[] = ["cabal", "nexus", "dreamnet"];
+// Derived from MESH_SCALES by the `federates` property (lar-uris.ts) — never a separately
+// hand-typed 3-of-5 subset that could drift out of step with MESH_SCALE_FEDERATES.
+const PUBLIC_SCALES: readonly MeshScale[] = MESH_SCALES.filter((s) => MESH_SCALE_FEDERATES[s]);
 
 function crossesShore(rec: LarTiddlerRecord): boolean {
   const kind = strField(rec, "kind");

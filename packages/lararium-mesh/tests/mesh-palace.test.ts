@@ -118,6 +118,26 @@ describe("the disclosure shore", () => {
     expect(pub.tiddlers).not.toHaveProperty(dialEntryToRecord(localDial, AUTH).tiddler.title);
     expect(pub.tiddlers).not.toHaveProperty(vesselCapStackToRecord(vessel, AUTH).tiddler.title);
   });
+
+  test("★ PUBLIC_SCALES boundary — vessel/persona-group stay local, cabal/nexus/dreamnet cross ★", () => {
+    // PUBLIC_SCALES derives from MESH_SCALES by the "federates beyond this vessel" property — this
+    // pins the boundary itself, so a derivation that drifts (e.g. widens to admit persona-group, or
+    // narrows to drop cabal) fails here rather than silently changing what a peer can see.
+    for (const scale of ["vessel", "persona-group"] as const) {
+      const doc = docOf([dialEntryToRecord(
+        { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "1".repeat(64), endpoint: "ws://x", scale },
+        AUTH,
+      )]);
+      expect(Object.keys(publicFlowMap(doc).tiddlers), `scale="${scale}" must stay local`).toHaveLength(0);
+    }
+    for (const scale of ["cabal", "nexus", "dreamnet"] as const) {
+      const doc = docOf([dialEntryToRecord(
+        { bearing: "lar:///ha.ka.ba/bags/oracle", verifyingKeyHex: "2".repeat(64), endpoint: "ws://x", scale },
+        AUTH,
+      )]);
+      expect(Object.keys(publicFlowMap(doc).tiddlers), `scale="${scale}" must cross the shore`).toHaveLength(1);
+    }
+  });
 });
 
 describe("the public read-face (Two-Faced Substrate)", () => {
