@@ -41,9 +41,9 @@ import type { Verb } from "./verb-tiddler.js";
 
 /**
  * The single tagged base every verb-membership set derives from by filter — one row per
- * ACTION verb, ALL-CAPS by convention. ACTION_VERBS / TRANSFER_VERBS / BAG_VERBS used to run as
- * three independently hand-typed lists that could drift out of step with each other (a verb
- * added to ACTION_VERBS but forgotten in TRANSFER_VERBS silently falls through isTransferVerb).
+ * ACTION verb, ALL-CAPS by convention. A single table keeps ACTION_VERBS / TRANSFER_VERBS /
+ * BAG_VERBS from drifting out of step as three independently hand-typed lists would (a verb
+ * added to ACTION_VERBS but forgotten in TRANSFER_VERBS would silently fall through isTransferVerb).
  * This table is the one place a verb's membership gets declared; the subsets below read it off.
  */
 const ACTION_VERB_TABLE = [
