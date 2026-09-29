@@ -87,6 +87,7 @@ import { frameAlt } from "../frame-marks.js";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../meme-ast/grammar-table.generated.js";
 import { parseTaploFields } from "../toml-ast.js";
 import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
+import { bccOfSpan } from "../carrier-check.js";
 
 /**
  * G2-G4 cutover (lar:///sigil.grammar.lane loop 2): the word SET a line recognizer alternates on
@@ -366,19 +367,70 @@ function tableCells(line: string): string[] | null {
  * The nested weave carries NO resolver forward — a pin fixes one target at one moment, and a chain of
  * `aka`s pinning each other would have no moment to stop at.
  */
+/**
+ * The raw wikitext span of one ahu slot — open sigil through its MATCHING close sigil, inclusive.
+ * The same convention the carrier's own block check already stands (carrier-check.ts: "the span
+ * runs from the first character of STX to the last character of ETX, inclusive"), held here at slot
+ * granularity: the span covers the marks that bound the slot and never covers itself. Nesting-aware:
+ * an ahu (or a mirror) opened INSIDE the target slot bumps depth, so the close that returns depth to
+ * zero — never merely the first close met — is the match. `null` when no slot in `text` answers to
+ * `slotPath` (rooted or bare, same normalization {@link ahuId} applies elsewhere).
+ */
+function extractAhuSlot(text: string, slotPath: string): string | null {
+  const wantId = slotPath.startsWith("/") ? slotPath.slice(1) : slotPath;
+  let depth = 0;
+  let collected: string[] | null = null;
+  for (const line of text.split("\n")) {
+    if (collected === null) {
+      const open = AHU_OPEN.exec(line);
+      if (open) {
+        const gotId = open[1]!.startsWith("/") ? open[1]!.slice(1) : open[1]!;
+        if (gotId === wantId) { collected = [line]; depth = 1; }
+      }
+      continue;
+    }
+    collected.push(line);
+    if (AHU_OPEN.exec(line)) depth++;
+    else if (AHU_CLOSE.test(line)) { depth--; if (depth === 0) return collected.join("\n"); }
+  }
+  return null;
+}
+
+/**
+ * A FROZEN `aka` edge's TARGET decides how much it pins. No fragment: the whole carrier's current
+ * text inlines, pinned with the carrier's own check — unchanged from before. A `#/slot` fragment
+ * names ONE ahu slot, so ONLY that slot's woven body inlines, pinned with a check over that slot's
+ * OWN bytes ({@link extractAhuSlot}, {@link bccOfSpan}) — never the whole carrier a fragment-less aka
+ * would carry, which would smuggle every OTHER section past what the author named into an artifact
+ * that may travel outward (an IANA submission, a standalone dialect file) with no license to hold it.
+ */
 function weaveAka(word: string, rawTarget: string, profile: WeaveProfile, resolve?: (uri: string) => string | null): string[] {
   const target = rawTarget.replace(/^"|"$/g, "");
-  const resolved = resolve ? resolve(target) : null;
+  const hashIdx = target.indexOf("#");
+  const base = hashIdx === -1 ? target : target.slice(0, hashIdx);
+  const slot = hashIdx === -1 ? null : target.slice(hashIdx + 1);
+
+  const resolved = resolve ? resolve(base) : null;
   if (resolved === null || resolved === undefined) {
     return [`- \`${word} ${target}\` (unresolved — no corpus to pin)`];
   }
-  const woven = transposeMarkdown(resolved, profile);
-  const check = woven.check ?? "unchecked";
-  return [
-    `<!-- ${word}: ${target} pinned ${check} -->`,
-    ...woven.markdown.split("\n"),
-    `<!-- /${word} -->`,
-  ];
+
+  if (slot === null) {
+    const woven = transposeMarkdown(resolved, profile);
+    const check = woven.check ?? "unchecked";
+    return [`<!-- ${word}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${word} -->`];
+  }
+
+  const span = extractAhuSlot(resolved, slot);
+  if (span === null) {
+    return [`- \`${word} ${target}\` (unresolved — slot #${slot} not found)`];
+  }
+  // The check covers the SLOT's own bytes alone — open sigil through its matching close, inclusive —
+  // never the whole carrier: a reader pinning one section wants proof of THAT section, and a
+  // whole-carrier check would certify bytes the inline never carried.
+  const check = bccOfSpan(span);
+  const woven = transposeMarkdown(span, profile);
+  return [`<!-- ${word}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${word} -->`];
 }
 
 /**

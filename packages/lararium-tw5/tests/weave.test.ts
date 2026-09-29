@@ -473,6 +473,98 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
     expect(t.markdown).not.toContain("unresolved");
   });
 
+  test("a frozen `aka` with a `#/slot` fragment pins ONLY that slot's body, never the whole carrier", () => {
+    // RED-before-fix: `bagsResolver` strips the fragment before resolving, and the old `weaveAka`
+    // then inlined the WHOLE resolved carrier regardless — a `#/slot` fragment named nothing once
+    // the target text was in hand, so the entire meme (every section) rode into a fragment-scoped
+    // pin, which for an outward artifact (an IANA submission) smuggles content the author never
+    // pointed at.
+    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/other-slot>>
+
+! Other Slot
+
+This is a different section — must NOT appear in the pin.
+
+<<~/ahu>>
+
+<<~ ahu #/normative-language>>
+
+! Normative Language
+
+This is the slot the fragment names.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;WHOLE_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
+    const t = transposeMarkdown(
+      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/target#/normative-language">>\n',
+      PROFILES.CommonMark,
+      resolve,
+    );
+    expect(t.markdown).toContain("# Normative Language");
+    expect(t.markdown).toContain("This is the slot the fragment names.");
+    expect(t.markdown).not.toContain("Other Slot");
+    expect(t.markdown).not.toContain("different section");
+    // pinned with a check over the SLOT's own bytes, never the whole carrier's WHOLE_CHECK
+    expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target#/normative-language pinned ni:///sha-256;");
+    expect(t.markdown).not.toContain("WHOLE_CHECK");
+  });
+
+  test("CONTROL: the SAME target with NO fragment still inlines the whole carrier, unchanged", () => {
+    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/other-slot>>
+
+! Other Slot
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;WHOLE_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
+    const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n', PROFILES.CommonMark, resolve);
+    expect(t.markdown).toContain("# Other Slot");
+    expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;WHOLE_CHECK -->");
+  });
+
+  test("a `#/slot` fragment naming no slot falls back to the marked-unresolved form, naming the missing slot", () => {
+    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+! No slots here
+
+<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
+    const t = transposeMarkdown(
+      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/target#/nowhere">>\n',
+      PROFILES.CommonMark,
+      resolve,
+    );
+    expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/target#/nowhere` (unresolved — slot #/nowhere not found)");
+  });
+
   test("a frozen `aka` whose resolver answers null (target unknown to the corpus) still falls back marked", () => {
     const resolve = (): string | null => null;
     const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/nowhere">>\n', PROFILES.CommonMark, resolve);
