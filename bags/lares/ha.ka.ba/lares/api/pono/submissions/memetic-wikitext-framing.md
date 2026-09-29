@@ -1,22 +1,6 @@
 
 
-<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;rcuuTV8mH5a3Rtn2LNxkBU4Cpk7fvswOPAVaJE1EvYc -->
-
-<a id="head"></a>
-
-# RFC-2119 — Normative Verbs (Kānāwai)
-
-Shared modal-force vocabulary for this stack.
-Carrier laws cite this meme; they do not re-declare the list.
-
-<a id="ooda-ha"></a>
-
-✶ inventory where normative verbs appear across carrier laws in the stack.
-⏿ separate force-bearing terms from prose habits and local restatements.
-◇ fix the five-item canonical set; reject carrier-local metadata duplication when prose citation suffices.
-▶ cite this meme; do not restate the list.
-↺ verify carrier laws point here rather than duplicating or mutating the shared set; name any residue where duplication or mutation still persists.
-
+<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;9Hs6XmpIui_TZVAtVuZw8vPdihkN9Nn_L8Nd3K6m26s -->
 <a id="normative-language"></a>
 
 ## Normative Language
@@ -30,12 +14,6 @@ The canonical normative verb set for this stack, adapted from IETF RFC 2119:
 - `MAY` — truly optional
 
 Carrier laws may explain local usage, but MUST cite this meme rather than re-declaring the list as a top-level `#meta` key.
-
-<a id="edges"></a>
-
-- `loulou "lar:///ha.ka.ba/lares/api/pono/meme"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono"`
-- `loulou "lar:///ha.ka.ba/lares/docs/pono/RFC-2119"`
 
 <!-- /aka -->
 
