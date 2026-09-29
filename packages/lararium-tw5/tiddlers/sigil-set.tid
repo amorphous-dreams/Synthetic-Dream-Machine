@@ -2,7 +2,6 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-set
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: frame
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
-lar-alias-for: set
 lar-pattern: <<~\s*set\b((?:[^>]|>(?!>))*)>>
 lar-example: <<~ set hud="aim" mode="build" focus="9/measure" feedback="closed 1↺">>
 type: text/vnd.tiddlywiki

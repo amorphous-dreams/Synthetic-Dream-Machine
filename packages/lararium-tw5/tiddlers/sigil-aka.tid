@@ -3,7 +3,6 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-sugar
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/aka
 lar-pattern: <<~\s*aka\s+([\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*>>
-lar-alias-for: kahea
 lar-default-family: observe
 lar-example: <<~ aka "lar:///a.b.c/x">>
 type: text/vnd.tiddlywiki
