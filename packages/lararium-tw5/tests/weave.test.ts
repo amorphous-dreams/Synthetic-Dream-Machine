@@ -765,6 +765,29 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
     expect(p.markdown).toContain('lang: "en"');
     expect(p.markdown).not.toContain("tongue:");
   });
+
+  // ADVERSARIAL: a QUOTED sigil — inside a teaching fence, or inside a hana foreign-grammar span —
+  // never reaches the line recognizers at all (the `fence > 0` passthrough, and hana's own
+  // byte-verbatim capture, both run BEFORE any construct regex gets a look at the line). Under a
+  // tongue this stays true: neither path calls `resolveHeadWord`/`translateSigilHead`, so a quoted
+  // `<<~ kahea …>>` reads byte-identical whether or not `--tongue` is active. Proven, not assumed.
+  test("ADVERSARIAL: a fenced example's `<<~ kahea …>>` does NOT translate under --tongue en", () => {
+    const src = CARRIER3('```\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n```');
+    const noTongue = transposeMarkdown(src);
+    const tongued = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
+    expect(tongued.markdown).toBe(noTongue.markdown);
+    expect(tongued.markdown).toContain("```\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n```");
+    expect(tongued.markdown).not.toContain("transclude");
+  });
+
+  test("ADVERSARIAL: a hana body's `<<~ kahea …>>` does NOT translate under --tongue en", () => {
+    const src = CARRIER3('<<~ hana toml>>\nnote = "<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>"\n<<~/hana>>');
+    const noTongue = transposeMarkdown(src);
+    const tongued = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
+    expect(tongued.markdown).toBe(noTongue.markdown);
+    expect(tongued.markdown).toContain('note = "<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>"');
+    expect(tongued.markdown).not.toContain("transclude");
+  });
 });
 
 describe("the reverse mirror map and its round-trip property", () => {

@@ -84,7 +84,7 @@ module-type: library
 import { matchCarrierHeadLine } from "../carrier-head.js";
 import { META_OPEN_LINE_RE } from "../meta-fence.js";
 import { frameAlt } from "../frame-marks.js";
-import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../meme-ast/grammar-table.generated.js";
+import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "../meme-ast/grammar-table.generated.js";
 import { parseTaploFields } from "../toml-ast.js";
 import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
 import { bccOfSpan } from "../carrier-check.js";
@@ -372,11 +372,13 @@ export function mirrorToCanonical(name: string): string | null {
  * `tongue` absent: the word passes through UNCHANGED — the default axis this module has always
  * held, so every prior test and the whole shelf stay byte-identical. `tongue` present: the word
  * canonicalizes first (through {@link mirrorToCanonical}, or itself if already canonical), then
- * looks up the ONE mirror the grammar table marks `weave: { tongue }` for that canonical
- * (`GENERATED_SIGILS`, never a hand list — #/mirror-vocabulary: "exactly one mirror per tongue
- * weaves"). A canonical with no primary mirror for that tongue weaves under its OWN canonical name,
- * never the word as authored — the same "many spellings read, one spelling gets written" law tangle
- * already holds in reverse.
+ * reads the ONE mirror `GENERATED_PRIMARY_WEAVE[canonical]?.[tongue]` names — the table's OWN
+ * canonical×tongue→primary index (`lar-weave: primary`; #/mirror-vocabulary: "exactly one mirror
+ * per tongue weaves"), never re-derived by scanning `GENERATED_SIGILS` here: a second reader
+ * deriving the same fact its own way is exactly the drift #/one-mouth already warns against — one
+ * table, one consumer of it. A canonical with no primary mirror for that tongue weaves under its
+ * OWN canonical name, never the word as authored — the same "many spellings read, one spelling gets
+ * written" law tangle already holds in reverse.
  *
  * ARGUMENTS NEVER TRANSLATE. Every caller applies this to a HEAD WORD captured by its own construct
  * regex, never to a whole line or a target string — the ITS 2.0 Translate/no-translate split
@@ -385,8 +387,7 @@ export function mirrorToCanonical(name: string): string | null {
 function resolveHeadWord(word: string, tongue: string | undefined): string {
   if (!tongue) return word;
   const canonical = mirrorToCanonical(word) ?? word;
-  const primary = GENERATED_SIGILS.find((s) => s.aliasFor === canonical && s.weave?.tongue === tongue);
-  return primary ? primary.name : canonical;
+  return GENERATED_PRIMARY_WEAVE[canonical]?.[tongue] ?? canonical;
 }
 
 // The head token: `<<~` (bare or joined), optional LWSP, then the word — up to the first
