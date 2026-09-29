@@ -11,7 +11,7 @@ import {
   generateOrLoadPersonaRoot,
   renameOwnPersona, clearOwnPersonaPetname, ownPersonaPetname, personaMultitudeView,
   mintPersonaGlamour, publishPersonaGlamour, publicHandleViewOf,
-  verifyHandleCard, readHandleAnnounces, acceptHandleUpdate, handleCardId,
+  verifyHandleCard, readHandleAnnounces,
   type PersonaVault, type ActivePersonaStore, type AnchorStore, type KeypairStore,
   type KeypairCrypto, type PersistedKeypair, type IdentityAnchors,
   type OwnPersonaPetnameStore, type OwnPublicHandleStore, type PersonaPublicHandleRecord,
@@ -200,7 +200,7 @@ describe("persona-glamour — the persona-index → HandleCard wire (#64 stage 4
     const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v2", store, ownerPersonaKelPrefix: OWNER });
 
     expect(second.parents).toEqual([first.actCid]);
-    // A recogniser tracking the first card ACCEPTS the second as a genuine update (not a rollback/fork).
+    // The second card is a verified descendant; causal folding decides whether the retained frontier settles.
     expect((await verifyHandleCard(second)).ok).toBe(true);
   });
 

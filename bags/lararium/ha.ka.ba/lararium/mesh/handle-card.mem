@@ -62,30 +62,35 @@ a stranger; only the local petname turns a valid key into "the mover who healed 
 lives in the recogniser's own book, never on any wire.
 
 ''A rejection NAMES itself.'' `CardRejection` distinguishes wrong-domain · malformed · bad-signature ·
-expired · wrong-nym · rollback · lineage-break. A recogniser that learns only "invalid" cannot tell a forgery
-from a lapsed lease from a typo, and re-presents blind.
+chain-invalid · nym-mismatch · burned · wrong-nym · unavailable · unsettled · rejected. A recogniser that
+learns only "invalid" cannot tell a forgery from missing causal ancestry or an equivocal frontier, and
+re-presents blind.
 
 <<~/ahu>>
 
-<<~ ahu #/monotone-leased-lineage>>
+<<~ ahu #/causal-publication-frontier>>
 
-!! Monotone, leased, lineage-linked ~ a face carried over time
+!! Causal, self-certifying, frontier-linked ~ a face carried over time
 
-The card carries a monotone `version` (a stale card cannot roll a fresh one back), a `prev` link (the
-recogniser follows one face's history), and an `expiry` (a lease read against the recogniser's LOCAL clock —
-an unfed card goes stale on its own, since a negative fact cannot be made to arrive). The word is
-deliberately not `epoch`: that names the mesh's fencing frontier, never a wall-clock.
+The card carries a semantic `actCid` and a canonical, unique, sorted `parents` set. The act CID is derived
+from the card's identity bytes with its own CID blank, and the signature covers the completed card. A later
+publication names one or more causal parents; a recogniser retains the verified closure and computes its
+frontier instead of choosing a numeric latest.
 
-''Identity and signature answer different questions, so they cover different bytes.'' The card's IDENTITY
-content (`handleCardIdBytes`) leaves `expiry` OUT, so a renewal — the same face, a fresh lease — keeps the
-SAME card id and the `prev` lineage stays stable across heartbeats. The SIGNED content (`handleCardBytes`)
-folds `expiry` IN, so no one extends anyone's lease by editing a number the signer never covered. One
-function cannot serve both; two do.
+''Identity and signature answer different questions, so they cover different bytes.'' `handleCardIdBytes`
+derives the semantic act CID from the card's unsigned identity, while `handleCardBytes` signs the complete
+unsigned card. Re-signing or changing a parent set therefore cannot preserve an act identity by accident.
+The KEL carried by the card remains the separate key-rotation and burn chain.
 
-''The announce reader rule'' (`acceptHandleUpdate`) accepts the NEWER face and refuses a rollback or a fork:
-it carries the anti-rollback-by-version and anti-equivocation-by-prev discipline `oracle-substrate` proves
-for its pointer, applied to the card's own monotone fields. Idempotent replay of the current card passes
-under gossip/merge; only a card that PURPORTS to advance is held to the lineage link.
+''The announce reader rule'' (`HandleBook` + `foldHandleCardsDetailed`) verifies every card, requires complete
+causal ancestry, and fails closed on malformed, cross-nym, self-parent, forged, missing-parent, or equivocal
+fronts. An incomplete descendant is `unavailable`; incomparable admissible heads are `unsettled`; only one
+verified settled head becomes the recognition projection. Persistence crosses the same asynchronous restore boundary,
+so a raw snapshot cannot mint recognition.
+
+''Freshness is a separate future relation.'' The causal card has no wall-clock expiry and remains valid
+historical evidence. A later Sensorium observation or relation-specific challenge may describe liveness, but
+that observation must never be smuggled into causal acceptance as a shared now.
 
 ''A face may prove it speaks for a FLEET.'' An optional `fleetProof` — a delegation edge the persona root
 signed over this nym — lets a recogniser walk nym → root in one extra verify. Absent, the card certifies only
@@ -275,6 +280,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;JyoqEo5EflB8dq5bqiXiB_zHLlScMBMNsdcH-flcSA0
+<<^ code="&#x0003;">>ni:///sha-256;NeYAvK1eOWvUU8IIybJowxMDkDTc5g4WwOHVo9Tdofs
 
 <<^ code="&#x0004;" -> to="?">>

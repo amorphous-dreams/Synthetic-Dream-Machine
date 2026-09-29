@@ -59,7 +59,7 @@ The ruling names three, and they differ by ''what holds the presenting key'', ne
 
 !!! ② An infra vessel — a Herm, or a hearth nobody has lit
 
-''One floor, not two kinds of Herm'' (`vessel-standing.ts:96-120`): a crossroads nobody raised and a hearth whose archive holds shut stand in the SAME state, and `standAs(asked, archiveOpens)` returns `"herm"` for either (`vessel-standing.ts:126-129`). So the infra Face covers both, and it covers a hearth ''temporarily'' — the card's monotone `version` + `expiry` lease (`packages/lararium-mesh/src/handle-card.ts:65-71`) already carries a face that stops being fed.
+''One floor, not two kinds of Herm'' (`vessel-standing.ts:96-120`): a crossroads nobody raised and a hearth whose archive holds shut stand in the SAME state, and `standAs(asked, archiveOpens)` returns `"herm"` for either (`vessel-standing.ts:126-129`). So the infra Face covers both, and it covers a hearth ''temporarily'' — a local standing observation may describe whether a face is currently reachable, while the Handle card's causal `actCid`/`parents` remain historical evidence and carry no wall-clock lease.
 
 ''What it may honestly say.'' Where it stands (a shore URL), what it serves (the bulb by cid, `/bulb/manifest` · `/bulb/<cid>.bin` — `packages/lararium-node/src/bulb-read-face.ts:5-8`), and which crossroads it keeps (the carriage relay's gate key, STABLE across restarts and already domain-separated off the vessel seed — `packages/lararium-node/src/carriage-relay.ts:37-41, 74-77`). ''What it may never say'': who dialed it, what crossed it, or what any of it meant.
 
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o6DbNNEBkt9XbRz3hwEz1SUCQPin6n-kpaFNdpEdseQ
+<<^ code="&#x0003;">>ni:///sha-256;tvS_hDJlOKkBtIvaAWGfTzLEb1TgllpV45bq3wnQ3Ac
 
 <<^ code="&#x0004;" -> to="?">>

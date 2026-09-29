@@ -96,10 +96,10 @@ describe("two vessels announce onto one shared per-nexus WHO face and recognise 
     await ingestAnnounceDoc(book, board);
     expect(book.get(nymA)?.heads).toEqual([v2.actCid]);
 
-    // the straggler merges back in — whichever card wins the nym slot, the book cannot be rolled back
+    // the straggler merges back in — retained causal closure keeps the settled frontier intact
     const merged = merge(clone(board), straggler);
     const verdicts = await ingestAnnounceDoc(book, merged);
-    // whichever card won the merge slot: if v1 surfaced, the book refuses it as a rollback; the held face stays v2
+    // The duplicate ancestor does not replace the settled descendant projection.
     expect(book.get(nymA)?.heads).toEqual([v2.actCid]);
   });
 });

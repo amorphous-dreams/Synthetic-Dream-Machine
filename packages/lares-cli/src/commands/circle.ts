@@ -93,7 +93,7 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
   const card     = cardPath ? readCardFile(cardPath) : undefined;
 
   const circles = makeDaemonCircleStore(await vesselDid());
-  const book    = loadNodeHandleBook();
+  const book    = await loadNodeHandleBook();
 
   let result;
   try {
@@ -151,7 +151,7 @@ async function circleCard(args: ParsedArgs): Promise<number> {
   const card = parseHandleCardCarriage(readCarriageArg(raw));
   if (!card) throw new UsageError("no self-certifying HandleCard in the carriage — the card did not arrive (re-carry a `#card=<base64url>` token).");
 
-  const book    = loadNodeHandleBook();
+  const book    = await loadNodeHandleBook();
   const verdict = await book.ingest(card);
   if (!verdict.ok) throw new UsageError(`handle-card refused (${verdict.reject}) — the book holds this nym to its own lineage (anti-rollback / anti-fork).`);
   saveNodeHandleBook(book);   // persist the recogniser's memory — the nym is now known, ready to follow
@@ -159,9 +159,12 @@ async function circleCard(args: ParsedArgs): Promise<number> {
   const rec = book.get(card.nym);
   emit(args, {
     ok: true,
-    data: { nym: card.nym, version: card.version, glamour: card.glamour ?? null, petname: rec?.petname ?? null, recognized: true },
+    data: {
+      nym: card.nym, actCid: card.actCid, parents: [...card.parents],
+      glamour: card.glamour ?? null, petname: rec?.petname ?? null, recognized: true,
+    },
     human: () => {
-      console.log(`admitted ${card.glamour ? `"${card.glamour}" ` : ""}${card.nym.slice(0, 16)}… into the handle-book (v${card.version}, TOFU).`);
+      console.log(`admitted ${card.glamour ? `"${card.glamour}" ` : ""}${card.nym.slice(0, 16)}… into the handle-book (act ${card.actCid.slice(0, 16)}…, ${card.parents.length} parent(s), TOFU).`);
       console.log(`  now follow it locally:  lares circle add ${card.nym} --to ${DEFAULT_CIRCLE}`);
       console.log(`  the admission is PRIVATE and LOCAL — nothing reached the wire.`);
     },
@@ -184,7 +187,7 @@ async function circleRemove(args: ParsedArgs): Promise<number> {
 
 async function circleList(args: ParsedArgs): Promise<number> {
   const circles = makeDaemonCircleStore(await vesselDid());
-  const book    = loadNodeHandleBook();
+  const book    = await loadNodeHandleBook();
   const to      = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
   const circleIds = to.length > 0 ? [to] : [...await circles.circles()];
 

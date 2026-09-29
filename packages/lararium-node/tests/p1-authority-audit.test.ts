@@ -166,7 +166,7 @@ describe("P1 authority relations — characterization witness", () => {
     expect(unknownHead).toMatchObject({ ok: false });
   });
 
-  test("records handle recognition and its optional wall-clock lease", async () => {
+  test("records handle recognition from a self-certifying causal act", async () => {
     const handleSeed = new Uint8Array(32).fill(35);
     const handleKey = `0x${await pubOf(handleSeed)}`;
     const chain = [mintHandleInception(handleKey, handleKey, "ab".repeat(32))];
@@ -174,23 +174,19 @@ describe("P1 authority relations — characterization witness", () => {
       nym: chain[0]!.prefix,
       chain,
       glamour: "audit-face",
-      version: 1,
-      prev: null,
-      expiry: now + 60_000,
+      parents: [],
       standing: null,
       fleetProof: null,
     }, signWith(handleSeed));
-    const noClock = await verifyHandleCard(card);
-    const clockBound = await verifyHandleCard(card, now);
-    const staleClock = await verifyHandleCard(card, now + 120_000);
+    const verified = await verifyHandleCard(card);
     auditRows.push({
       relation: "handle-recognition",
-      inputs: { nym: card.nym, version: card.version, expiry: card.expiry, suppliedNow: true, omittedNow: true },
-      outcome: { noClock: noClock.ok, clockBound: clockBound.ok, staleClock: staleClock.reject, seam: "now optional; no-clock pass is last-known face" },
+      inputs: { nym: card.nym, actCid: card.actCid, parents: card.parents, ownerHeadResolver: false },
+      outcome: { verified: verified.ok, tier: verified.tier, seam: "causal identity is separate from future freshness observation" },
     });
-    expect(noClock).toMatchObject({ ok: true, tier: 1 });
-    expect(clockBound).toMatchObject({ ok: true, tier: 1 });
-    expect(staleClock).toMatchObject({ ok: false, reject: "expired" });
+    expect(verified).toMatchObject({ ok: true, tier: 1, nym: card.nym });
+    expect(card.parents).toEqual([]);
+    expect(card.actCid).toMatch(/^[0-9a-f]{64}$/);
   });
 
   test("records Cabal admission's epoch fence separately from invite expiry text", async () => {

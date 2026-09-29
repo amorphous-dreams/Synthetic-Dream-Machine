@@ -1,5 +1,5 @@
 /**
- * `lares edge {kapae | un-kapae} <edge-id> --epoch-cid <cid> [--as <root-index>] [--version <n>]` — set one
+ * `lares edge {kapae | un-kapae} <edge-id> --epoch-cid <cid> [--as <root-index>]` — set one
  * RELATIONSHIP aside, or take the marker back down.
  *
  * SCOPED UNDER `edge` to mirror `nexus kapae` / `nexus un_kapae`, and to keep them apart. Both acts set
@@ -12,9 +12,9 @@
  * a vessel keeps standing, a face keeps standing, and only THAT relation stops counting. Every comparable
  * system raises its tombstone over a party instead, which is why each needed the whole world to agree.
  *
- * RAISING WINS A TIE; LOWERING TAKES A DELIBERATE HAND. Under partition two peers may disagree and the raised
- * marker holds the merge, so an eviction never quietly reverses when the partition heals. Nothing un-shadows
- * by accident — a lower is its own signed act, and it lands in the record beside the raise it supersedes.
+ * RAISING WINS THE FOLD; LOWERING TAKES A DELIBERATE HAND. Under partition two peers may disagree and the
+ * raised marker holds the merge, so an eviction never quietly reverses when the partition heals. Nothing
+ * un-shadows by accident — a lower is its own signed act, and it lands beside the raise in the causal record.
  *
  * THE WRITE ASSERTS NO AUTHORITY. It signs with a named persona root; whether that root holds the edge gets
  * decided by whichever reader consults the shadow. A raise by a root with no claim lands, verifies, and gets
@@ -39,27 +39,20 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
   if (!edgeId || !epochCid) return usage(args);
 
   const asRaw = args.options["as"];
-  const verRaw = args.options["version"];
   const handleIndex = asRaw === undefined ? undefined : Number(asRaw);
-  const version     = verRaw === undefined ? undefined : Number(verRaw);
   if (handleIndex !== undefined && !Number.isInteger(handleIndex)) {
     console.error(`--as expects a persona-root index, got "${asRaw}"`);
     return 2;
   }
-  if (version !== undefined && !Number.isInteger(version)) {
-    console.error(`--version expects an integer, got "${verRaw}"`);
-    return 2;
-  }
-
   try {
     const r = await runEdgeKapae({
       edgeId, epochCid, raised: verb === "kapae",
       ...(handleIndex !== undefined ? { handleIndex } : {}),
-      ...(version !== undefined ? { version } : {}),
     });
     console.log(r.raised ? "RAISED — the relationship stands aside" : "LOWERED — the relationship stands again");
     console.log(`  edge:     ${r.edgeId}`);
-    console.log(`  version:  ${r.version}`);
+    console.log(`  act-cid:  ${r.actCid}`);
+    console.log(`  parents:  ${r.parents.length === 0 ? "(genesis)" : r.parents.join(", ")}`);
     console.log(`  epoch-cid: ${r.epochCid}`);
     console.log(`  signer:   ${r.signerDid}`);
     console.log(`  board:    ${r.boardUrl}`);

@@ -50,7 +50,7 @@ async function handlePublish(args: ParsedArgs): Promise<number> {
   const opts: Parameters<typeof runHandlePublish>[0] = { glamour };
   if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
   const card = await runHandlePublish(opts);
-  console.log(`[lares handle] published "${card.glamour}" — nym ${card.nym.slice(0, 24)}… (v${card.version})`);
+  console.log(`[lares handle] published "${card.glamour}" — nym ${card.nym.slice(0, 24)}… (act ${card.actCid.slice(0, 16)}…, ${card.parents.length} parent(s))`);
   return 0;
 }
 
@@ -133,7 +133,8 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
     chain = card.chain as HandleKelEvent[];
     chainSource = "card";
   } else {
-    const record = loadNodeHandleBook().get(statement.prefix);
+    const book = await loadNodeHandleBook();
+    const record = book.get(statement.prefix);
     if (!record) {
       emit(args, {
         ok: false,
@@ -149,6 +150,9 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
         },
       });
       return exitFor("not-found");
+    }
+    if (!record.card || record.card.chain.length === 0) {
+      return refuse(args, `this vessel recognises ${statement.prefix.slice(0, 24)}… but has no carried handle-KEL chain to verify the statement against`);
     }
     chain = record.card.chain;
     chainSource = "handle-book";
@@ -236,7 +240,7 @@ export async function cmdHandle(args: ParsedArgs): Promise<number> {
       const opts: Parameters<typeof runHandleRotate>[0] = {};
       if (args.options["persona"] !== undefined) Object.assign(opts, { handleIndex: Number(args.options["persona"]) });
       const card = await runHandleRotate(opts);
-      console.log(`[lares handle] rotated "${card.glamour}" — nym ${card.nym.slice(0, 24)}… seats a fresh key (v${card.version})`);
+      console.log(`[lares handle] rotated "${card.glamour}" — nym ${card.nym.slice(0, 24)}… seats a fresh key (act ${card.actCid.slice(0, 16)}…, ${card.parents.length} parent(s))`);
       return 0;
     }
     case "graft":

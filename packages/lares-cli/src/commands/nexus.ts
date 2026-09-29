@@ -63,7 +63,7 @@ const NEXUS_USAGE: readonly string[] = [
   "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
   "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
   "  kapae --list                              read the currently-Kapae'd set (the fold)",
-  "  un_kapae <nym>                            mint a quorum-signed lift at a higher version",
+  "  un_kapae <nym>                            mint a quorum-signed causal lift",
   "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in)",
   "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
   "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
@@ -299,13 +299,13 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
     emit(args, {
       ok: true,
       data: {
-        action: r.action, nym: r.nym, version: r.version, priorVersion: r.priorVersion,
+        action: r.action, nym: r.nym, parents: r.parents, evidenceCid: r.evidenceCid,
         sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
-        contractIn: r.contractIn, boardUrl: r.boardUrl, memberNow: r.memberNow, carrierNow: r.carrierNow,
+        contractIn: r.contractIn, boardUrl: r.boardUrl, memberHeld: r.memberHeld, carrierHeld: r.carrierHeld,
       },
       human: () => {
         const verb = action === "admit" ? "ADMITTED" : action === "carry" ? "CARRYING" : action === "uncarry" ? "UNCARRIED" : "REVOKED";
-        console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (version ${r.version}${r.priorVersion !== null ? `, superseding ${r.priorVersion}` : ""})`);
+        console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (act ${r.evidenceCid.slice(0, 16)}…, ${r.parents.length} parent(s))`);
         console.log(`  signed by:   ${r.signers.length} of ${r.threshold} required founding-kahu roots`);
         for (const s of r.signers) console.log(`    ${s.slice(0, 16)}…`);
         if (action === "admit") console.log(`  contract-in: ${r.contractIn === "self" ? "self-signed (held persona)" : "supplied token"}`);
@@ -313,10 +313,10 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
         console.log(`  epoch:       ${r.sealEpochCid}`);
         console.log(`  board:       ${r.boardUrl}`);
         if (place) {
-          console.log(`  enforced:    ${r.carrierNow ? "CARRIER (it follows this realm's PUBLIC-declared books BY HASH)" : "NOT a carrier (a standing uncarry or higher entry supersedes)"}`);
+          console.log(`  enforced:    ${r.carrierHeld ? "CARRIER (it follows this realm's PUBLIC-declared books BY HASH)" : "NOT a carrier (a standing uncarry or higher entry supersedes)"}`);
           console.log(`  and NOT:     a member — a place holds no read cap, no seat, and no membership (carry ⊥ read)`);
         } else {
-          console.log(`  enforced:    ${r.memberNow ? "MEMBER (a cross-operator under this nym co-federates / blind-transits sealed planes)" : "NOT a member (a standing revoke or higher entry supersedes)"}`);
+          console.log(`  enforced:    ${r.memberHeld ? "MEMBER (a cross-operator under this nym co-federates / blind-transits sealed planes)" : "NOT a member (a standing revoke or higher entry supersedes)"}`);
         }
       },
     });
@@ -357,7 +357,7 @@ async function cmdMembers(args: ParsedArgs): Promise<number> {
         for (const n of r.members) console.log(`    ${n}`);
         if (r.members.length === 0) console.log(`    (none this replica has synced — a peer may hold members; the seated kahu remain the floor)`);
         console.log(`  board entries (${r.entries.length}):`);
-        for (const e of r.entries) console.log(`    ${e.action.padEnd(6)} v${e.version}  ${e.nym.slice(0, 16)}…  (${e.signers} sig${e.contractIn ? ", contract-in" : ""})`);
+        for (const e of r.entries) console.log(`    ${e.action.padEnd(6)} ${e.evidenceCid.slice(0, 16)}…  ${e.nym.slice(0, 16)}…  (${e.parents.length} parent(s), ${e.signers} sig${e.contractIn ? ", contract-in" : ""})`);
       },
     });
     return 0;

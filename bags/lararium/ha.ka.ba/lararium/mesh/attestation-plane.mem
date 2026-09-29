@@ -178,7 +178,7 @@ want a ''witnessed partial order'' rather than a shared now. So: ''distrust ever
 charter-epoch E'' — a content-addressed link in the hash-linked chain, locally verifiable by walking it.
 Liveness reads stay LOCAL (`persona-admit`: "no global now; read against a local clock"); ordering rides the
 chain. The instrument therefore stands mostly BUILT — `charterChain`, `charterEpochCid`, `boundEpoch`,
-persona-KEL `seq`, HandleCard `version`/`prev` already carry it.
+persona-KEL `seq`, and HandleCard `actCid`/`parents` already carry it.
 
 ''OPEN:'' an attestation issued BETWEEN epochs wants a rule — the chain orders epochs, not the acts inside one.
 
@@ -296,6 +296,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kTFYqMV_AYK1JhldstPYeD0FT53RC36mabht3PlsjLw
+<<^ code="&#x0003;">>ni:///sha-256;vCosC5w4a1q_84x38nH8jrLWYoOFQ5Q2qSuKLUIKs5Y
 
 <<^ code="&#x0004;" -> to="?">>

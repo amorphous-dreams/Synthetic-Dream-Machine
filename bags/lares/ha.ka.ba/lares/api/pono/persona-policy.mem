@@ -117,7 +117,7 @@ A persona carries ''two names beside its key'', and the key stays the only globa
 
 * ''The OWN side ~ the private pet-name map'' (`{handleIndex -> petname}`, persona-petname). The human's own label for their own faces — "work", "the-guru", "my-burner" — ''freely renamable'' and ''never PUBLICLY federated''. It ''RIDES the human's own private fleet'': the map private-federates over the ''@persona bag'' across their own vessel-pool (the fleet ride, below). The wall the shore holds runs ''PUBLIC, not cross-vessel'': no board write exists in it. A ''multitude-view'' reads the whole self across the vessel — `{persona → pet-name, held-here?, has-public-handle?}` — so the human sees every face while the mesh sees one.
 * ''The OTHER side ~ the handle-book'' (handle-book). The recogniser's local labels for ''OTHERS'' nyms' — never on any wire.
-* ''The ONLY name that federates PUBLICLY ~ the public glamour'' (persona-glamour). The persona's veiled key ''signs a HandleCard'' whose `glamour` shows a chosen display (never a legal identity); it ''announces onto the per-Nexus @crossroads WHO board'' (who-face), self-certifying, monotone-versioned. ''What supersedes it is a higher version, never a clock'' — a reader on any island orders two cards by their own monotone version without consulting a shared now; a local clock may hint that a card has gone quiet, and a hint never carries a verdict two islands must agree on.
+* ''The ONLY name that federates PUBLICLY ~ the public glamour'' (persona-glamour). The persona's veiled key ''signs a HandleCard'' whose `glamour` shows a chosen display (never a legal identity); it ''announces onto the per-Nexus @crossroads WHO board'' (who-face), self-certifying and causally linked. ''What supersedes it is a verified settled frontier'' — a reader folds complete causal ancestry, retains concurrent heads rather than choosing an arrival or numeric winner, and never consults a shared now. A later local freshness observation may describe liveness, but it never changes causal validity.
 
 !!! The Binding Law
 
@@ -179,6 +179,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kjykMtimkuczrGWXavU9oB_2u0z9LF9qwYfTuWJXebs
+<<^ code="&#x0003;">>ni:///sha-256;KviCnSzdNlSjFg45WsfGPixSk4NDGZgCgVyBpeustxw
 
 <<^ code="&#x0004;" -> to="?">>

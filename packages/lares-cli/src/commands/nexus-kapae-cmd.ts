@@ -1,15 +1,15 @@
 /**
- * nexus-kapae-cmd — the KĀPAE antigen door: raise a quorum-signed ban on a presenter nym, lift it at a
- * higher version, and fold the board that carries both.
+ * nexus-kapae-cmd — the KĀPAE antigen door: raise a quorum-signed ban on a presenter nym, mint a causal lift,
+ * and fold the board that carries both.
  *
  * ── FAIL CLOSED, AND THE WRITER NEVER SEES A SUB-QUORUM HUNK ────────────────────────────────────
  * Every refusal here — an unseated charter, a sub-quorum signature set, a malformed nym — renders as a
  * clean error and writes NOTHING. The gate lives in the node door (`runNexusKapae`), not in this
  * surface, so a CLI that mis-parsed its arguments cannot talk its way past the quorum rule.
  *
- * A LIFT SUPERSEDES BY VERSION rather than by deletion: `un_kapae` mints at a higher version and the
- * fold reads whichever entry stands highest. Nothing is ever removed from the board, so the record of
- * a ban survives its own lifting — which is the point of keeping an antigen rather than a blocklist.
+ * A LIFT supersedes by causal fold rather than deletion: `un_kapae` extends the observed frontier and the
+ * fold resolves the verified causal acts. Nothing is ever removed from the board, so the record of a ban
+ * survives its own lifting — which is the point of keeping an antigen rather than a blocklist.
  *
  * ── WHY `-cmd` IN THE NAME ──────────────────────────────────────────────────────────────────────
  * `@lararium/node` already carries a `commands/nexus-kapae.ts`, and THIS file imports from it
@@ -55,13 +55,13 @@ async function kapaeRaise(args: ParsedArgs, action: "kapae" | "un_kapae", nym: s
     emit(args, {
       ok: true,
       data: {
-        action: r.action, nym: r.nym, version: r.version, priorVersion: r.priorVersion,
+        action: r.action, nym: r.nym, actCid: r.actCid, parents: r.parents,
         sealEpochCid: r.sealEpochCid, threshold: r.threshold, signers: r.signers,
         boardUrl: r.boardUrl, kapaedNow: r.kapaedNow,
       },
       human: () => {
         const verb = action === "kapae" ? "BANNED" : "LIFTED";
-        console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (version ${r.version}${r.priorVersion !== null ? `, superseding ${r.priorVersion}` : ""})`);
+        console.log(`nexus ${action} → ${verb} ${nym.slice(0, 16)}… (act ${r.actCid.slice(0, 16)}…, ${r.parents.length} parent(s))`);
         console.log(`  signed by:  ${r.signers.length} of ${r.threshold} required founding-kahu roots`);
         for (const s of r.signers) console.log(`    ${s.slice(0, 16)}…`);
         console.log(`  epoch:      ${r.sealEpochCid}`);
@@ -95,7 +95,7 @@ async function kapaeList(args: ParsedArgs): Promise<number> {
         for (const n of r.kapaed) console.log(`    ${n}`);
         if (r.kapaed.length === 0) console.log(`    (none stand banned)`);
         console.log(`  board entries (${r.entries.length}):`);
-        for (const e of r.entries) console.log(`    ${e.action.padEnd(8)} v${e.version}  ${e.nym.slice(0, 16)}…  (${e.signers} sig)`);
+        for (const e of r.entries) console.log(`    ${e.action.padEnd(8)} ${e.actCid.slice(0, 16)}…  ${e.nym.slice(0, 16)}…  (${e.parents.length} parent(s), ${e.signers} sig)`);
       },
     });
     return 0;
