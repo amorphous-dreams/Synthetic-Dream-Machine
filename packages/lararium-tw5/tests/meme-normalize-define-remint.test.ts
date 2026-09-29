@@ -1,10 +1,10 @@
 /**
- * `lares meme normalize` re-mints `define` → `wehe` (lar:///sigil.grammar.lane loop 2, item 2).
+ * `lares meme normalize` re-mints `define` → `wehe` (see lar:///sigil.grammar.lane).
  *
- * RULED: `define` is a READ-ONLY mirror of `wehe` (sigil-mirror-flip, loop 1) — no grammar of its
+ * RULED: `define` is a READ-ONLY mirror of `wehe` (sigil-mirror-flip) — no grammar of its
  * own, so re-minting it loses no authored intent. Scoped to `define` ALONE — every other read-only
  * mirror (`shadow`, `import`, …) stays authored as written; folding every mirror to canonical is an
- * UNRULED, broader question this loop only counts carriers for.
+ * UNRULED, broader question this suite only counts carriers for.
  */
 import { describe, test, expect } from "vitest";
 import { normalizeMemeSource } from "../src/meme-normalize.js";

@@ -42,10 +42,10 @@ export interface ParseEvent {
 // BOOTSTRAP_SCANS — the reasoned HAND-WRITTEN residue: ASCII control-character
 // framing alone (SOH/STX/ETX/EOT/ETB + their kapu-extended DC1/DC4 variants).
 //
-// G2-G4 cutover (lar:///sigil.grammar.lane loop 2): every OTHER bootstrap scan this file used to
-// hand-carry (ahu, scale, aka, kahea, pono, lele, hui/holo/puka, papalohe, toml, waiho, kau,
-// heihei/kahawai/mukuwai, huli, wehe, meme, every English alias, kumu/widget, hana/task, kukali) now
-// derives from GENERATED_SIGILS (grammar-table.generated.ts, itself derived from the tiddlers) —
+// Every OTHER bootstrap scan (ahu, scale, aka, kahea, pono, lele, hui/holo/puka, papalohe, toml,
+// waiho, kau, heihei/kahawai/mukuwai, huli, wehe, meme, every English alias, kumu/widget, hana/task,
+// kukali) derives from GENERATED_SIGILS (grammar-table.generated.ts, itself derived from the
+// tiddlers, see lar:///sigil.grammar.lane) rather than standing as a literal hand-carried in this file —
 // `collectEvents` falls to it when no live GrammarRules is loaded, in place of a second hand-kept list
 // that could silently drift from the tiddlers. See collectEvents below. `pranala` alone stays a SECOND
 // reasoned hand-kept exception (below, beside control-*) — see its own comment.
@@ -69,15 +69,15 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // Kapu extended range — DC1 (&#x0011;) SOH variant, DC4 (&#x0014;) EOT variant
   { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0014;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
-  // pranala stays a reasoned SECOND hand-kept exception, discovered while wiring this cutover
-  // (RED: pranala-attribute-spellings.test.ts). `sigil-pranala.tid`'s own `lar-inline-pattern` /
+  // pranala stays a reasoned SECOND hand-kept exception (RED: pranala-attribute-spellings.test.ts).
+  // `sigil-pranala.tid`'s own `lar-inline-pattern` /
   // `lar-block-pattern` carry a DIFFERENT capture shape than builder.ts's makeLeaf "pranala" case
   // expects (family/role pre-split into their own groups, vs. one raw tail-attrs string `attrOf`
   // reads) — and the tiddler's own comment says why: "Parsed directly in lar-sigil.ts
   // findNextMatch before compound dispatch fires" — pranala's LIVE-WIKI rendering already bypasses
   // the generic tiddler-pattern dispatch, so the tiddler's pattern fields describe the sigil for
-  // reference/generation, not the shape a scanner-and-builder contract can cut over to blind. Kept
-  // verbatim from the pre-cutover bootstrap (block before inline — block wins at same position).
+  // reference/generation, not the shape a scanner-and-builder contract can derive blind. Order
+  // matters below: block before inline — block wins at same position.
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
 ];

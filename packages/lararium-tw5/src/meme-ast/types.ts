@@ -53,11 +53,10 @@ export interface PranalaEdgeViolation {
 export interface SigilRule {
   name: string;
   // NOTE: this union is a HAND-KEPT enumeration of `lar-kind` field values, widened by
-  // grammar-table-witness.sh deriving the table straight from tiddler fields. Retired
-  // 2026-09-28 ("conditional-else", "conditional-branch", "conditional-alias", "iteration",
-  // "iteration-alias", "worksite" as a bare concept — the sigil-mirror-flip ruling's kind
-  // retirement pass) after `git grep` confirmed no tiddler or consumer sets them; "worksite"
-  // and "conditional" are KEPT because tests/vocabulary-cid.test.ts and
+  // grammar-table-witness.sh deriving the table straight from tiddler fields. It excludes
+  // "conditional-else", "conditional-branch", "conditional-alias", "iteration", "iteration-alias"
+  // and bare "worksite" as a concept — `git grep` confirms no tiddler or consumer sets them.
+  // "worksite" and "conditional" are KEPT because tests/vocabulary-cid.test.ts and
   // tests/constructicon-basis.test.ts still construct SigilRule fixtures with those values.
   kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma" | "conditional" | "context" | "concurrency-alias" | "edge-alias" | "pragma-alias" | "child-slot" | "control" | "context-alias" | "data" | "frame" | "gauge" | "leaf" | "mask-summon" | "ordered-scale" | "relation" | "stance";
   layer?: "compile" | "render" | "both";

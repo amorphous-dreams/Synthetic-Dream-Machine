@@ -1,7 +1,7 @@
 /**
  * FENCE-MASK: a backtick fence's info string admits no backtick (CommonMark §4.5).
  *
- * ── THE DEFECT (Loop-Observer-II, lar:///sigil.grammar.lane loop 3) ────────────────────────────
+ * ── THE DEFECT (see lar:///sigil.grammar.lane) ──────────────────────────────────────────────────
  * `FENCE_LINE_RE = /^ {0,3}(\`{3,})/` treated ANY line opening with 3+ backticks as a fence open,
  * even when the rest of that line (its would-be info string) itself carries a backtick — CommonMark
  * forbids that: such a line never opens a fence at all, it reads as ordinary text carrying an

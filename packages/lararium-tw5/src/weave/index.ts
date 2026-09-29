@@ -165,7 +165,7 @@ export interface WeaveProfile {
 }
 
 export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629", WeaveProfile>> = {
-  // The kahea marker reads plain text, one spelling across every profile (Loop-Observer-III): a
+  // The kahea marker reads plain text, one spelling across every profile: a
   // glyph (`↻`, `🔁`) reads fine inside this wiki but a reader outward of it — a screen reader, a
   // plain-text mail client, an RFC I-D toolchain — has no way to decode it, where "(live) " carries
   // its own meaning in any tongue that reads the Latin word "live".
@@ -582,8 +582,8 @@ export function transposeMarkdown(
     // `fenceLineOpen` (a fence's info string may carry no backtick) and `fenceLineClose` (a closer
     // needs a run ≥ the opener AND nothing else on the line — a content line that happens to start
     // with a shorter or trailed run, "```` example of `backticks`" inside a fence opened at four,
-    // never closes early; it is body). ONE RULE, ONE PLACE — this walk no longer re-derives either
-    // guard with its own unguarded regex. ──
+    // never closes early; it is body). ONE RULE, ONE PLACE — this walk reads fence-mask's guard
+    // rather than re-deriving either guard with its own unguarded regex. ──
     if (fence === 0) {
       const openLen = fenceLineOpen(line);
       if (openLen > 0) {

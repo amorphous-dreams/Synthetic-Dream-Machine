@@ -117,6 +117,6 @@ describe.skipIf(wikiSkip)(`pragma-kind sigils' both spellings RENDER, live${skip
     const bareNode = compoundTransclude(e, "huli", '<<~ huli "[tag[x]]" as item>>\nbody\n<<~/huli>>');
     const bangNode = compoundTransclude(e, "huli", '<<~! huli "[tag[x]]" as item>>\nbody\n<<~/huli>>');
     expect(bareNode, "the bare CONTROL itself lost its huli dispatch").toBeTruthy();
-    expect(bangNode, "`!` reached a sigil this loop never widened — huli is not pragma-kind").toBeUndefined();
+    expect(bangNode, "`!` reached a sigil outside the pragma-kind set — huli is not pragma-kind").toBeUndefined();
   });
 });

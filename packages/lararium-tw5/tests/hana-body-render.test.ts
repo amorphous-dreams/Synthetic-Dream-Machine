@@ -14,8 +14,8 @@
  * lookup always reads the variable as blank/unset and the registered-interpreter branch never fires,
  * for ANY grammar-key, registered or not (verified by hand: `_h-interp` always resolves to just the
  * addprefix'd candidate title, never a matched interpreter tiddler, then transcludes a title that
- * doesn't exist → empty, on EVERY call). That bug lives in a `.tid` sigil tiddler this loop must not
- * edit (Aftermath instructions), and it would swallow p2 either way, making an HTML-level assertion
+ * doesn't exist → empty, on EVERY call). That bug lives in a `.tid` sigil tiddler out of scope for
+ * this suite to edit, and it would swallow p2 either way, making an HTML-level assertion
  * blind to whether THIS fix (the forwarding) actually worked. So this suite asserts the render RULE's
  * own output — the transclude node's attributes — which is exactly what changed.
  */

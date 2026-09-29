@@ -42,9 +42,9 @@ export function fenceLineOpen(line: string): number {
  * Does `line` CLOSE a fence opened at `openLen` backticks, CommonMark §4.5/§4.5? A closer needs a
  * run of `openLen` backticks or more, AND NOTHING ELSE ON THE LINE beside it — a content line that
  * happens to start with a shorter or equal-but-trailed run ("```` example of `backticks`", inside a
- * fence opened at four) never closes; it is BODY. Measured (Loop-Observer-III): the un-guarded
- * close accepted any run ≥ the opener regardless of trailing content, closing early on a content
- * line and reading what followed as if the fence had never opened.
+ * fence opened at four) never closes; it is BODY. An un-guarded close that accepted any run ≥ the
+ * opener regardless of trailing content would close early on a content line and read what followed
+ * as if the fence had never opened.
  *
  * ONE RULE, ONE PLACE — see {@link fenceLineOpen}'s own note; both this module's span scan and
  * weave's line-at-a-time walk read this function rather than re-deriving the close guard.

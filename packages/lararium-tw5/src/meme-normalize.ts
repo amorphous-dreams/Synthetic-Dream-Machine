@@ -89,9 +89,9 @@ function metaNamespace(src: string): string | null {
  * The registers are THE SHELF'S: every sigil kinded `pragma` or `pragma-alias` opens a definition — the
  * backslash pragmas, their unslashed English mirrors (`define` · `procedure` · `function` · `widget` ·
  * `typos` · `type` · the `let`/`var`/`const` binders) and the Hawaiian spellings (`wehe` · `kumu` · `helu`
- * · `waiho`). G2-G4 cutover (loop 2): DERIVED from GENERATED_SIGILS (grammar-table.generated.ts) by
- * `lar-kind`, never hand-listed — a tiddler that gains/loses `pragma`/`pragma-alias` kind moves this set
- * without a second edit here.
+ * · `waiho`). DERIVED from GENERATED_SIGILS (grammar-table.generated.ts) by `lar-kind`, never
+ * hand-listed — a tiddler that gains/loses `pragma`/`pragma-alias` kind moves this set without a
+ * second edit here.
  */
 export const DEFINITION_WORDS = GENERATED_SIGILS
   .filter((s) => s.kind === "pragma" || s.kind === "pragma-alias")
@@ -438,12 +438,12 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
 
   // ── 7. Sigil spelling: `define` re-mints to `wehe` — FRAME AUTHORITY ─────
   //
-  // RULED (sigil-mirror-flip, loop 1): `define` is a READ-ONLY mirror of `wehe` — no grammar of its
+  // RULED (sigil-mirror-flip): `define` is a READ-ONLY mirror of `wehe` — no grammar of its
   // own, so a carrier spelling it carries no authored intent this gesture would lose by re-minting.
-  // Scoped to `define` ALONE, per this loop's Aftermath — every OTHER read-only mirror (`shadow`,
-  // `import`, `snapshot`'s own non-primary siblings, …) stays authored as written; folding every
-  // read-only mirror to its canonical head is an UNRULED, broader question this loop reports a
-  // carrier count for rather than deciding.
+  // Scoped to `define` ALONE — every OTHER read-only mirror (`shadow`, `import`, `snapshot`'s own
+  // non-primary siblings, …) stays authored as written; folding every read-only mirror to its
+  // canonical head is an UNRULED, broader question this gesture reports a carrier count for rather
+  // than deciding.
   {
     let reminted = 0;
     const mask = fencedSpans(seat.text);
