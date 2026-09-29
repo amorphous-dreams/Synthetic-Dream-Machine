@@ -398,7 +398,13 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
     expect(p.standalone).toBe(true);
     expect(p.meta).toBe("");
     expect(p.markdown.startsWith("---\n")).toBe(true);
-    expect(p.markdown).toContain('title: "A Probe Draft"');
+    // The fixture's meta `title` carries the carrier's own canonical `lar:` address — the same
+    // key every real carrier's meta holds it under (the round-trip law: `title` IS the address,
+    // never a human caption, or the generic carrier reader would clobber it on every re-parse).
+    // kramdown-rfc2629's REQUIRED `title` key reads whatever the carrier's own meta carries under
+    // that name, so a standalone RFC draft wanting a human title supplies it via `projectSubmission`'s
+    // own `title` option instead of overloading the carrier's identity field.
+    expect(p.markdown).toContain(`title: "lar:///ha.ka.ba/lares/api/pono/draft-lares-probe"`);
     expect(p.markdown).toContain('docname: "draft-lares-probe-00"');
     expect(p.markdown).toContain('cat: "info"');
     expect(p.markdown).toContain('ipr: "trust200902"');
