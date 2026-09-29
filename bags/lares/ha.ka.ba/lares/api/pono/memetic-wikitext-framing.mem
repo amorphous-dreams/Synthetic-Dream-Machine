@@ -11,8 +11,8 @@ mana          = 19
 manao         = 19
 manaoio       = 17
 namespace     = "&#x2299;"
-revised-on    = "2026-08-24"
-revision-note = "stood up at the split: the transmission-frame half of the language spec and the carrier-sigils spine law fold into one carrier-framing specification — declaration register, control set, spine, resonance, trust tiers, authoring, block check, canonical form, carriage, gradient, frame security, byte law"
+revised-on    = "2026-09-29"
+revision-note = "stood up at the split: the transmission-frame half of the language spec and the carrier-sigils spine law fold into one carrier-framing specification — declaration register, control set, spine, resonance, trust tiers, authoring, block check, canonical form, carriage, gradient, frame security, byte law; weave/tangle pattern-integrity, the putback law, and the woven-dialect law added beside the projection-settles and one-mouth clauses"
 role          = "submittable specification for the memetic carrier frame — the declaration register, the SOH/STX/ETX/EOT control set, the ni:/// block check, canonical form, carriage, the health gradient, and frame security. The language it frames rides the sibling memetic-wikitext spec; the address rides lar-uri"
 status-why    = "submission-draft"
 tags          = ["lifecycle/standing"]
@@ -603,6 +603,72 @@ write-back rewrites the author's source forever.
 
 <<~/ahu>>
 
+<<~ ahu #/weave-and-tangle>>
+
+!! Weave and Tangle ~ the pattern-integrity behind "the projection settles"
+
+A carrier faces two directions, and the two directions carry two names, borrowed from Knuth's WEB
+system (Donald Knuth, "Literate Programming", 1984; ''[KNUTH-WEB]''): ''WEAVE'' projects a carrier
+outward into a Gaia format a reader opens — a rendered wiki page, a Markdown file, a printed spec.
+''TANGLE'' reads that woven artifact home — ingest reconstructing the carrier structure the weave
+started from. The projection-settles law above states the round trip's shape; weave and tangle name
+its two halves.
+
+!!! The fence carries a label, and the label decides the office
+
+A `` ```memetic-wikitext tangle``` `` -labelled fence carries structure home at tangle: a reader that
+meets this label treats the fenced span as the document it names, not as prose about one. A bare
+`` ```memetic-wikitext``` `` fence, carrying no `tangle` label, stays an inert example — text a
+document talks about, never text a tangle pass ingests.
+
+This sharpens the fence-mask law already stated for the frame's own marks (#/frame-head-lock): an
+office-labelled fence reads as structure ONLY at tangle of a ''declared projection'' — a woven
+artifact whose frontmatter names its source carrier — and NEVER inside a live carrier or a live wiki.
+A `<<~ ahu>>` slot and a `<<^` frame mark stay quoted examples wherever they stand inside a carrier's
+own body; only a tangle pass, reading a woven file that declares where it came from, may read a
+labelled fence as the thing itself.
+
+!!! An open rhyme, not yet a law
+
+A frozen `aka` transclusion (`lar:///ha.ka.ba/lares/api/pono/aka`) already inlines a target pinned at
+a moment, in-house. A woven projection does the same thing outward, across the carrier/Gaia boundary
+rather than across a carrier/carrier one. Whether one law covers both, or whether the boundary the
+target crosses makes them two laws that merely rhyme, stands open (#/annex-open) — this document marks
+the resemblance and settles nothing about it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-putback-law>>
+
+!! The Putback Law ~ tangle as an edit, not a read
+
+Genuinely new: tangle does not merely parse a woven artifact — it diffs the woven artifact against
+`weave(canon)`, the same carrier freshly woven, and reads the difference as an ''edit'' against the
+canonical source. The law borrows its shape from bidirectional-transformation lenses — the `PutGet` /
+`GetPut` laws and the constant-complement construction (''[LENS-PUTGET]'') — and from BiGUL's
+putback-based discipline (''[BIGUL]''): a `put` (here, tangle) reconciles a changed view against its
+source, rather than overwriting the source outright.
+
+''Composition law.'' Edits landing in disjoint regions of the woven artifact compose freely — tangle
+folds each back into its own span of canon. Edits landing in the SAME region never auto-resolve:
+tangle keeps both deltas as a pair, a hoike (`lar:///ha.ka.ba/lares/api/pono/hoike`), standing for
+talk-story rather than picking a winner.
+
+''The currency gate.'' Re-weave stays blocked while a same-region hoike stands open. The gate asks two
+questions of the pair it holds:
+
+* ''Byte-equality'' — asks whether the pair still holds fresh: does the woven artifact's byte span
+  still match what `weave(canon)` would emit now?
+* ''Model-equality'' — does the edited artifact still mean its source: has the edit changed the
+  document's structure in a way tangle can fold back, or only its surface bytes?
+
+<confidence:0.4 — the putback law and its currency gate stand PENDING, unbuilt. Today's tangle path
+reads a woven artifact once, forward; no implementation computes `weave(canon)`, diffs against it,
+or holds a same-region pair open as a hoike. This section states the target law ahead of the code
+that would enforce it.>
+
+<<~/ahu>>
+
 <<~ ahu #/frame-head-lock>>
 
 ## The Frame Head Locks to Control
@@ -795,6 +861,56 @@ this corpus that failed to render back came from a hand that went around it.
 A migration stands as the honest exception. A document standing in a shape the current grammar no longer
 emits cannot be rewritten by a writer that only knows the current shape, so a migration reads with the
 reader, and writes with the emitter, and never composes bytes of its own.
+
+<<~/ahu>>
+
+<<~ ahu #/the-woven-dialect>>
+
+!! The Woven Dialect ~ one mouth speaking outward
+
+"One mouth" states that a writer owns one canonical spelling of the carrier itself. Weaving a carrier
+into a Gaia format owes the same discipline on the far side of the boundary — one dialect, one metadata
+channel, one id scheme, one tongue-marking, one grammar per span.
+
+!!! Dialect
+
+A woven artifact declares its ''dialect'' as an RFC 7764-registered Markdown variant — CommonMark, GFM,
+kramdown-rfc2629, or another registered name — never an unnamed house flavour. Metadata travels per
+RFC 7763: a `.md.meta` sidecar when the woven file sits on a shelf beside others, YAML frontmatter when
+the file travels alone. The frontmatter writer keeps a strict subset — every value double-quoted, every
+key sorted — defending the woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare
+`yes`/`no`/`on`/`off` ambiguity. `source-check` spells as an RFC 6920 `ni:` URI, the same form the
+carrier's own block check wears (#/control-set).
+
+!!! Ids at the shore
+
+An ahu slot address `#/a/b` weaves as `id="a_b"` in the target format. A segment that would collide
+under that flattening escapes with the ISO/IEC 9075-14 `_xHHHH_` scheme — XML-Name-legal, reversible,
+self-escaping because `_x` itself escapes as `_x005F_` — so no rule naming which slot names run legal
+carries the burden of staying reversible; the escape does. Inside the house, `lar:` fragments MAY adopt
+RFC 6901 JSON Pointer's `~0`/`~1` escaping by the URI scheme's own declaration
+<confidence:0.5 — pending; the `lar-uri` specification owns this choice, not this frame>.
+
+!!! Tongue
+
+A woven file declares `lang` (BCP 47) for the reader's tongue and `tongue: "x-lares>en"` for its own
+authoring lineage — the private-use `x-lares` subtag marking a Lares-authored source, `>en` marking
+the tongue it wove into. A sigil's NAME translates through the one `lar-weave: primary` mirror that
+tongue carries (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/mirror-vocabulary`); a sigil's
+ARGUMENTS never translate — the same Translate/no-translate split W3C ITS 2.0's Translate data
+category draws between a string meant to carry meaning across tongues and a string meant to carry a
+value. Tangle folds every mirror it meets back to its Hawaiian canonical name on the way home: many
+spellings read, one spelling gets written, the way Unicode canonical equivalence (Unicode Standard
+Annex #15, UAX #15) lets many byte sequences denote one character while normalization picks one to
+keep.
+
+!!! Mixed grammar
+
+One matrix grammar governs a carrier, and a foreign grammar enters only inside a declared, named span —
+`<<~ hana grammar-key>>...<<~/hana>>` (`lar:///ha.ka.ba/lares/api/pono/hana`). An embedded language
+supplies content inside that span; it never reaches out to shape the carrier's own structure. The rule
+matches the fence-mask law (#/weave-and-tangle): a foreign or example span stays legible without ever
+being mistaken for the grammar that holds it.
 
 <<~/ahu>>
 
@@ -1032,6 +1148,14 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 * ''[RFC6838]'' — media-type registration procedures (§4.6 security requirement).
 * ''[RFC6839]'' — structured syntax suffixes.
 * ''[RFC6920]'' — naming things with hashes; the `ni:` URI the block check wears.
+* ''[RFC6901]'' — JSON Pointer syntax; the `~0`/`~1` escaping `lar:` fragments may adopt (#/the-woven-dialect).
+* ''[RFC7763]'' — the Markdown metadata sidecar and frontmatter convention a woven artifact's identity travels under.
+* ''[RFC7764]'' — the Markdown variant registry a woven artifact's dialect declares against.
+* ''[ISO9075-14]'' — ISO/IEC 9075-14 (SQL/XML); the `_xHHHH_` XML-Name-legal escaping scheme for a colliding woven id.
+* ''[ITS20]'' — W3C Internationalization Tag Set 2.0; the Translate data category the tongue law draws on.
+* ''[KNUTH-WEB]'' — Donald Knuth, "Literate Programming" (1984); the WEAVE/TANGLE pair this frame's names descend from.
+* ''[LENS-PUTGET]'' — bidirectional-transformation lens laws (`PutGet`/`GetPut`, constant complement); the putback law's ancestry.
+* ''[BIGUL]'' — BiGUL, a putback-based bidirectional programming language; the edit-as-delta, disjoint-composes discipline the putback law borrows.
 * ''[MEMETIC-WIKITEXT]'' — the language this frame carries (sibling submission): `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`.
 * ''[LAR-URI]'' — the `lar:` URI specification (sibling submission): `lar:///ha.ka.ba/lares/api/pono/lar-uri`.
 * ''[TW5]'' — TiddlyWiki5 WikiText grammar — the host whose macro call every frame sigil stands as.
@@ -1050,6 +1174,14 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
   which would put ETB on a carrier's text and ETX on its attestation. The frame above reads the other
   way and states why. The strict reading stays named rather than dismissed.
 
+* ''The aka/weave rhyme (open).'' A frozen `aka` transclusion inlines a target pinned at a moment,
+  in-house; a woven projection does the same thing outward, across the carrier/Gaia boundary
+  (#/weave-and-tangle). Whether one law covers both stands open.
+
+* ''The putback law (open, unbuilt).'' Tangle-as-edit, disjoint-composes, same-region-holds-as-hoike,
+  and the currency gate's byte-equality and model-equality questions all stand as target law ahead of
+  any implementation (#/the-putback-law).
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
@@ -1064,9 +1196,13 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hoike">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hana">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G0SQSh7MTMmLMfiaVw-Z2fLPPkZQObT4PVHF_i5SMRs
+<<^ code="&#x0003;">>ni:///sha-256;tH9RSLiGbwXpB8fTI1hmFvz0ViUOLGRaP_3IlLhkG1o
 
 <<^ code="&#x0004;" -> to="?">>
