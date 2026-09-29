@@ -1,17 +1,8 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing">>
-<<^ code="&#x0002;">>
 
-```toml meta
-title    = "lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing"
-type     = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing"
-```
+- `aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
 
-- `"lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language"`
-
-<a id="/abstract"></a>
+<a id="abstract"></a>
 
 # Memetic-Wikitext Carrier Framing
 
@@ -29,7 +20,7 @@ and one frame carries any document. The language framed here rides the sibling s
 [MEMETIC-WIKITEXT]; the addresses the frame declares ride [LAR-URI]. The Lar keeps the frame — the
 guardian at the threshold of the place, naming it on the way in and pouring the libation on the way out.
 
-<a id="/status"></a>
+<a id="status"></a>
 
 ## Status and Maturity
 
@@ -37,7 +28,7 @@ This document holds **submission-draft** maturity. The control set, spine order,
 byte law read as stable; the conformance clauses and frame-security analysis carry RFC-2119 normative
 force. Items in the open annex remain open. Promotion to canon rests with the operator, not the document.
 
-<a id="/introduction"></a>
+<a id="introduction"></a>
 
 ## Introduction — Scope, Audience, and Relation to the Sibling Specifications
 
@@ -59,7 +50,7 @@ this specification reads inside it.
 **Audience.** Implementers of carrier readers, relays, and consumers; operators of bags and sync
 boundaries; authors of migrations and independent implementations.
 
-<a id="/terminology"></a>
+<a id="terminology"></a>
 
 ## Terminology and Conformance Language
 
@@ -75,7 +66,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 | **slot** | a named parameter a given mark carries; the mark decides which slots apply. |
 | **declaration** | a `<<!WORD>>` statement read before content, selecting or constraining the grammar (#/declaration-register). |
 | **namespace** | the resonance glyph a carrier's heading states, naming which layer authored it (#/resonance). |
-| **heading** | the zone between SOH and STX: the identity block and the carrier-level bindings (#/authoring). |
+| **heading** | the SOH routing zone: the frame identity and transport-level bindings; authorial root metadata is body content (#/authoring). |
 | **block check** | a check computed over the framed span, carried adjacent to ETX (#/control-set). |
 | **carrier reader** | a processor reading and minting the frame: marks, declaration, boundary normalization, the check. |
 | **consumer** | a processor admitting carriers to a bag; the verdict obligations (#/the-touchstone) bind here. |
@@ -84,7 +75,7 @@ The umbrella **processor** class and its other subclasses (parser, renderer) sta
 [MEMETIC-WIKITEXT] #conformance; an obligation stated there on **a processor** binds the carrier reader
 and consumer here as well.
 
-<a id="/conformance"></a>
+<a id="conformance"></a>
 
 ## Conformance Classes
 
@@ -109,7 +100,7 @@ A **conforming consumer** MUST honour the verdict obligations (#/the-touchstone)
 to its operator before any bag admission, treat `torn` as `mismatch`, and read absence as `unchecked` —
 refusing admission only under a policy it declares.
 
-<a id="/grammar"></a>
+<a id="grammar"></a>
 
 ## Formal Grammar (ABNF)
 
@@ -153,7 +144,7 @@ MUST hold (#/carrier-spine). (3) The `check` slot names a POSITION, never a para
 closed `text-close` sigil, on the same line (#/control-set). (4) The composition wraps `document`
 without entering it; everything inside defers to [MEMETIC-WIKITEXT].
 
-<a id="/doctype"></a>
+<a id="doctype"></a>
 
 ## The DOCTYPE — declaring an extension of TW5 wikitext
 
@@ -183,7 +174,7 @@ the media type into the DOCTYPE slot would put both under one name for no gain.
 The suffix states a structural fact about the syntax and holds whatever name the subtype takes; the
 earlier `x-` spellings file as deprecated read-side aliases there.
 
-<a id="/declaration-register"></a>
+<a id="declaration-register"></a>
 
 ## Carrier Frame — The Declaration Register
 
@@ -241,7 +232,7 @@ maintained by hand — repeats the twin-drift this corpus already keeps a witnes
 `!WORD` declarations under the same law — read before content, selecting or constraining the grammar,
 never performing a move the renderer runs. A `!WORD` that acts belongs in the speaking set.
 
-<a id="/carrier-spine"></a>
+<a id="carrier-spine"></a>
 
 ## The Carrier Spine — Four Required Sigils
 
@@ -257,17 +248,19 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 
 **Kapu** names the restricted, admin-only trust tier (#/trust-tiers); the kapu byte column gives each mark's substitute code in that tier.
 
-**The frame — heading, then text.** The protocol law pins the zones: SOH opens the **heading**, STX opens the **text**. The heading holds the toml meta slot and nothing else; the text holds the body.
+**The frame — routing, then document.** The protocol law pins the zones: SOH opens the routing heading, STX opens the checked document body. The root `toml meta` block opens the authored body after STX, alongside local metadata blocks inside `ahu` and `fragment`.
 
-```
+````
 <<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///URI">>   SOH · open heading
-  ‹toml meta slot — the identity heading›
-  <<~ aka "lar:///…RFC-2119">>                          (optional carrier-level binding)
+  ‹routing only — authorial identity begins after STX›
 <<^ code="&#x0002;">>                                 STX · open text (body)
+  ```toml meta                                              root tiddler fields
+  ```
+  <<~ aka "lar:///…RFC-2119">>                            authored relation
   # title · ## sections · #edges                       the text (body)
 <<^ code="&#x0003;">>                                 ETX · close text
 <<^ code="&#x0004;" -> to="?">>                            EOT · release
-```
+````
 
 **The mark names the control byte.** Each sigil states its C0 control character as a named `code:` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX and ETX carry that one param and nothing else — each opens or closes the text and states no bearing.
 
@@ -280,7 +273,7 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 
 **SOH and EOT echo the bearing vectors.** SOH opens facing a bearing (`from=? -> to=lar:///…`) as `aim` opens a turn; EOT releases to the unknown (`-> ?`) as `yield` closes one. The spine frames a meme the way the turn-frame frames an exchange.
 
-<a id="/bearing-arrow"></a>
+<a id="bearing-arrow"></a>
 
 ## The Bearing Arrow — one edge, two orientations
 
@@ -320,7 +313,7 @@ lied about its resolution.** The same cut runs through the block check (`uncheck
 and through the ward's infelicities (a misfire voids, an abuse rings hollow): ABSENCE DECLARED and
 ABSENCE DISCOVERED stand as different facts, and every instrument here that conflated them read useless.
 
-<a id="/control-set"></a>
+<a id="control-set"></a>
 
 ## Carrier Frame — The Control Set
 
@@ -396,9 +389,10 @@ The `bcc` slot carries a check over the framed span. Normatively:
 - **Computed, never stored.** A writer computes the check over the body it has assembled; a reader
   recomputes it over the bytes in front of it. Two computations of one fact, never a copy of one — a
   stored derivation goes stale the moment the thing it derives from moves.
-- **The heading stays outside.** The span opens at STX, so the identity block sits above it: sorted keys,
-  aligned equals, entity-escaped glyphs and child inheritance all churn the meta without touching the
-  check. A carrier whose heading re-canonicalised still verifies.
+- **The routing heading stays outside; authorial identity does not.** The span opens at STX, so the root
+  TOML fields, authored prose, and nested fragment metadata all ride inside the check. A carrier whose
+  parent fields change MUST receive a new check; only DOCTYPE, SOH routing, and transport carriage remain
+  outside this integrity span.
 - **A carrier holding no check reads `unchecked`, never `mismatch`.** Absence of a check and a failed
   check stand as different facts (#/bearing-arrow), and a reader that collapsed them would be useless exactly
   where it matters. The caller decides what an unchecked carrier may do; it still parses.
@@ -446,7 +440,7 @@ below the grammar (canon: `lar:///ha.ka.ba/lares/api/pono/persona-circle`).
 Each mark's `sigil-*.tid` carries `lar-pattern`, and a SHAPE-EXACT pattern refuses a wrong fill the way
 a shape-exact slug rule refuses a truncated tag. Enforcement rides the recogniser, never the surface.
 
-<a id="/resonance"></a>
+<a id="resonance"></a>
 
 ## Namespace Resonance Glyphs — A Separate Mark
 
@@ -472,7 +466,7 @@ Two laws govern the namespace:
 1. **Opener-only.** A resonance glyph rides SOH alone, as the `namespace:` param beside the code.
 2. **EOT rides bare, always.** The resonance mark rides the heading (SOH); the release states its code and its bearing, and no namespace.
 
-<a id="/trust-tiers"></a>
+<a id="trust-tiers"></a>
 
 ## Trust Tiers — The Control-Character Roles
 
@@ -491,19 +485,20 @@ Each kernel-tier control character carries **three simultaneous roles**, bound a
 
 SOH substitutes DC1 (`0x11`) and EOT substitutes DC4 (`0x14`) in kapu-tier carriers; the parser accepts both. The kapu aliases ride SOH and EOT alone.
 
-<a id="/authoring"></a>
+<a id="authoring"></a>
 
 ## Authoring — what an author states, and what the carrier adds
 
 An author writes content and identity; a carrier carries framing. The two divide cleanly, and a
 processor MUST keep the division:
 
-### The identity heading, by position
+### The root identity block, by position
 
-A labelled ```` ```toml meta ```` fence states identity. Which identity it states reads by POSITION:
+A labelled ```` ```toml meta ```` fence states identity. The root fence MUST stand immediately after STX;
+each nested `ahu` or `fragment` fence stands immediately inside its own worksite. Which identity it states reads by POSITION:
 
-1. The fence that OPENS a carrier heads the **carrier** — its address, its namespace, its register.
-2. Every LATER fence heads the **worksite it sits in** — that slot's own register, its own confidence —
+1. The fence immediately after STX names the **carrier** — its title, address, namespace, and register.
+2. Every fence immediately inside a worksite names that worksite — its own register, its own confidence —
   and it overrides what the carrier declared without reaching back up.
 1. Neither reaches into the other.
 
@@ -515,14 +510,14 @@ itself on every later pass.
 
 A carrier reads in three zones, and the middle one had no name:
 
-1. **The identity heading** — the labelled `toml meta` fence. What the meme IS.
-2. **The carrier bindings** — between the heading and STX. `<<~ aka "lar:///…">>` binds a reference at
-  carrier level; `<<~ kahea ahu #/…>>` mounts a slot. These read as AUTHORED structure, not framing:
-  they state what the carrier holds before its body opens.
-1. **The body** — between STX and ETX. Optional, and holding prose, ahu slots, both, or nothing.
+1. **The routing heading** — the SOH zone. It carries only frame identity, bearing, and transport bindings.
+2. **The root identity block** — the labelled `toml meta` fence immediately after STX. It declares the
+  parent tiddler’s fields.
+1. **The authored body** — after root TOML and before ETX. It may carry prose, relations, ahu slots, or
+  nothing; `<<~ aka …>>` and `<<~ kahea ahu …>>` both stand here.
 
-A processor MUST keep the three apart on projection. Folding the bindings into the body moves an
-authored declaration below a mark that says the text has begun.
+A processor MUST keep the three apart on projection. Moving an authored declaration into the routing
+heading removes it from the checked document and violates its own root-field/body placement.
 
 ### The placement law
 
@@ -531,7 +526,7 @@ the tiddler.** A promise, never a prohibition — and it replaces every list of 
 
 | class | holds | because |
 |---|---|---|
-| on the tiddler | meta fields · zone content · effect-record fields | the author sees it, so the author may edit it, from either surface |
+| on the tiddler | meta fields · body content · effect-record fields | the author sees it, so the author may edit it, from either surface |
 | another tiddler | relations · indexes · recipes | a relation between things belongs to no one thing |
 | the envelope | kāpae · authority · change-id · schema-version · the bag cap-reference | facts about the record's replication, not its content |
 | nowhere | `slot` · `fragment-parent` · `file-path` · the block check | derived on demand; a second copy can disagree once both admit edits |
@@ -565,7 +560,69 @@ Projecting a projection MUST change nothing. A processor whose output re-reads d
 input leaves every carrier reading "edited" on every scan, so the ingest loop never converges and a
 write-back rewrites the author's source forever.
 
-<a id="/frame-head-lock"></a>
+<a id="weave-and-tangle"></a>
+
+## Weave and Tangle ~ the pattern-integrity behind "the projection settles"
+
+A carrier faces two directions, and the two directions carry two names, borrowed from Knuth's WEB
+system (Donald Knuth, "Literate Programming", 1984; **[KNUTH-WEB]**): **WEAVE** projects a carrier
+outward into a Gaia format a reader opens — a rendered wiki page, a Markdown file, a printed spec.
+**TANGLE** reads that woven artifact home — ingest reconstructing the carrier structure the weave
+started from. The projection-settles law above states the round trip's shape; weave and tangle name
+its two halves.
+
+### The fence carries a label, and the label decides the office
+
+A `` ```memetic-wikitext tangle``` `` -labelled fence carries structure home at tangle: a reader that
+meets this label treats the fenced span as the document it names, not as prose about one. A bare
+`` ```memetic-wikitext``` `` fence, carrying no `tangle` label, stays an inert example — text a
+document talks about, never text a tangle pass ingests.
+
+This sharpens the fence-mask law already stated for the frame's own marks (#/frame-head-lock): an
+office-labelled fence reads as structure ONLY at tangle of a **declared projection** — a woven
+artifact whose frontmatter names its source carrier — and NEVER inside a live carrier or a live wiki.
+A `<<~ ahu>>` slot and a `<<^` frame mark stay quoted examples wherever they stand inside a carrier's
+own body; only a tangle pass, reading a woven file that declares where it came from, may read a
+labelled fence as the thing itself.
+
+### An open rhyme, not yet a law
+
+A frozen `aka` transclusion (`lar:///ha.ka.ba/lares/api/pono/aka`) already inlines a target pinned at
+a moment, in-house. A woven projection does the same thing outward, across the carrier/Gaia boundary
+rather than across a carrier/carrier one. Whether one law covers both, or whether the boundary the
+target crosses makes them two laws that merely rhyme, stands open (#/annex-open) — this document marks
+the resemblance and settles nothing about it.
+
+<a id="the-putback-law"></a>
+
+## The Putback Law ~ tangle as an edit, not a read
+
+Genuinely new: tangle does not merely parse a woven artifact — it diffs the woven artifact against
+`weave(canon)`, the same carrier freshly woven, and reads the difference as an **edit** against the
+canonical source. The law borrows its shape from bidirectional-transformation lenses — the `PutGet` /
+`GetPut` laws and the constant-complement construction (**[LENS-PUTGET]**) — and from BiGUL's
+putback-based discipline (**[BIGUL]**): a `put` (here, tangle) reconciles a changed view against its
+source, rather than overwriting the source outright.
+
+**Composition law.** Edits landing in disjoint regions of the woven artifact compose freely — tangle
+folds each back into its own span of canon. Edits landing in the SAME region never auto-resolve:
+tangle keeps both deltas as a pair, a hoike (`lar:///ha.ka.ba/lares/api/pono/hoike`), standing for
+talk-story rather than picking a winner.
+
+**The currency gate.** Re-weave stays blocked while a same-region hoike stands open. The gate asks two
+questions of the pair it holds:
+
+- **Byte-equality** — asks whether the pair still holds fresh: does the woven artifact's byte span
+  still match what `weave(canon)` would emit now?
+- **Model-equality** — does the edited artifact still mean its source: has the edit changed the
+  document's structure in a way tangle can fold back, or only its surface bytes?
+
+<confidence:0.4 — the putback law and its currency gate stand PENDING, unbuilt. Today's tangle path
+reads a woven artifact once, forward; no implementation computes `weave(canon)`, diffs against it,
+or holds a same-region pair open as a hoike. This section states the target law ahead of the code
+that would enforce it.>
+
+<a id="frame-head-lock"></a>
 
 ## The Frame Head Locks to Control
 
@@ -586,7 +643,7 @@ onto the first example it meets and answers for a span the writer never wrote �
 reader here once verified a digest written inside a teaching example while the body it named went
 unexamined, and reported the carrier sound.
 
-<a id="/the-touchstone"></a>
+<a id="the-touchstone"></a>
 
 ## The Touchstone Hash ~ the check as the Oracle's inversion
 
@@ -697,18 +754,17 @@ nothing decorates rather than protects, the standing RFC 9580 demoted OpenPGP's 
   reads as refusal to admit — the only defense a bare digest affords against stripping, since whoever
   can rewrite a carrier can rewrite or remove the check beside it.
 
-**What the check cannot answer.** The span opens at STX, so the declaration, the heading, and the meta
-block stand OUTSIDE it: a carrier's address, media type, and grammar-selector can move while the check
-holds. The verdict answers one question — did the text survive carriage — and a reader MUST NOT take an
-`ok` as covering bytes the span excludes. Heading integrity belongs to an outer layer, a seal or a
-signature, never to this mark.
+**What the check cannot answer.** The span opens at STX, so the declaration and SOH routing heading stand
+OUTSIDE it: a carrier's grammar selector and transport bearing can move while the check holds. The root
+TOML metadata is inside the span and therefore is covered. The verdict answers one question — did the
+document bytes survive carriage — and a reader MUST NOT take an `ok` as covering bytes the span excludes.
 
 ### What stands, and what waits
 
 The check stands. The seal, the render vocabulary and the projection stamper wait for a live wiki to
 render them first — a vocabulary chosen before anything renders it would freeze a form nobody has read.
 
-<a id="/canonical-form"></a>
+<a id="canonical-form"></a>
 
 ## Canonical Form ~ the writer's law
 
@@ -755,7 +811,63 @@ A migration stands as the honest exception. A document standing in a shape the c
 emits cannot be rewritten by a writer that only knows the current shape, so a migration reads with the
 reader, and writes with the emitter, and never composes bytes of its own.
 
-<a id="/the-carriage"></a>
+<a id="the-woven-dialect"></a>
+
+## The Woven Dialect ~ one mouth speaking outward
+
+"One mouth" states that a writer owns one canonical spelling of the carrier itself. Weaving a carrier
+into a Gaia format owes the same discipline on the far side of the boundary — one dialect, one metadata
+channel, one id scheme, one tongue-marking, one grammar per span.
+
+### Dialect
+
+A woven artifact declares its **dialect** as an RFC 7764-registered Markdown variant — CommonMark, GFM,
+kramdown-rfc2629, or another registered name — never an unnamed house flavour. Metadata travels per
+RFC 7763: a `.md.meta` sidecar when the woven file sits on a shelf beside others, YAML frontmatter when
+the file travels alone. The frontmatter writer keeps a strict subset — every value double-quoted, every
+key sorted — defending the woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare
+`yes`/`no`/`on`/`off` ambiguity. `source-check` spells as an RFC 6920 `ni:` URI, the same form the
+carrier's own block check wears (#/control-set)
+<confidence:0.6 — BUILDING; the weave path does not yet declare an RFC 7764 dialect name or emit
+RFC 7763 metadata (sidecar or frontmatter) on every pass. This states the target shape a sibling's
+weave-output change is standing up this loop>.
+
+### Ids at the shore
+
+An ahu slot address `#/a/b` weaves as `id="a_b"` in the target format. A segment that would collide
+under that flattening escapes with the ISO/IEC 9075-14 `_xHHHH_` scheme — XML-Name-legal, reversible,
+self-escaping because `_x` itself escapes as `_x005F_` — so no rule naming which slot names run legal
+carries the burden of staying reversible; the escape does
+<confidence:0.6 — BUILDING; the same weave-output pass owes the collision escape, alongside the
+dialect and metadata clauses above>. Inside the house, `lar:` fragments MAY adopt
+RFC 6901 JSON Pointer's `~0`/`~1` escaping by the URI scheme's own declaration
+<confidence:0.5 — PENDING; the `lar-uri` specification owns this choice, not this frame>.
+
+### Tongue
+
+A woven file declares `lang` (BCP 47) for the reader's tongue and `tongue: "x-lares>en"` for its own
+authoring lineage — the private-use `x-lares` subtag marking a Lares-authored source, `>en` marking
+the tongue it wove into. A sigil's NAME translates through the one `lar-weave: primary` mirror that
+tongue carries (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/mirror-vocabulary`); a sigil's
+ARGUMENTS never translate — the same Translate/no-translate split W3C ITS 2.0's Translate data
+category draws between a string meant to carry meaning across tongues and a string meant to carry a
+value. Tangle folds every mirror it meets back to its Hawaiian canonical name on the way home: many
+spellings read, one spelling gets written, the way Unicode canonical equivalence (Unicode Standard
+Annex #15, UAX #15) lets many byte sequences denote one character while normalization picks one to
+keep
+<confidence:0.3 — PENDING; no weave path declares `lang`/`tongue` or applies the Translate/no-translate
+split today, and no tangle pass folds a mirror back to its canonical name. This states the tongue law
+ahead of any implementation, unscheduled against this loop's dialect/frontmatter/escape work above>.
+
+### Mixed grammar
+
+One matrix grammar governs a carrier, and a foreign grammar enters only inside a declared, named span —
+`<<~ hana grammar-key>>...<<~/hana>>` (`lar:///ha.ka.ba/lares/api/pono/hana`). An embedded language
+supplies content inside that span; it never reaches out to shape the carrier's own structure. The rule
+matches the fence-mask law (#/weave-and-tangle): a foreign or example span stays legible without ever
+being mistaken for the grammar that holds it.
+
+<a id="the-carriage"></a>
 
 ## The Carriage ~ what the grammar owns, and where it keeps it
 
@@ -831,7 +943,7 @@ A carriage record round-trips whole in bytes and lossy in fields: re-read, a fra
 fold into the body and the record dissolves. **That loss follows the design.** The boundary lives in position, and
 reserving a field to re-state it would put a derived fact back on the record.
 
-<a id="/the-gradient"></a>
+<a id="the-gradient"></a>
 
 ## The Gradient ~ how far down a carrier sits
 
@@ -865,7 +977,7 @@ rather than an address: links written before the corpus poured to `.mem`. Those 
 all, so they neither resolve nor dangle; matching one to a carrier means guessing which one it became,
 and a resolver must not guess.
 
-<a id="/classifier-channel"></a>
+<a id="classifier-channel"></a>
 
 ## The Classifier Channel — What the Sigil Layer Does
 
@@ -875,7 +987,7 @@ The carrier sigils, the namespace glyphs, and the OODA-HA marks ride as an **unp
 
 Field grounds: `lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds#/classifier-channel`.
 
-<a id="/schema"></a>
+<a id="schema"></a>
 
 ## Schema (machine-readable)
 
@@ -903,7 +1015,7 @@ kernel        = { range = "0x01–0x0F",   trust = "kernel",   resonance = "stan
 kapu-elevated = { range = "0x11–0x14",   trust = "kapu",     resonance = "elevated", writable-by = "admin-only" }
 ```
 
-<a id="/frame-security"></a>
+<a id="frame-security"></a>
 
 ## Frame Security Considerations
 
@@ -955,7 +1067,7 @@ escape discipline — keeps a quoted mark from framing. The mask therefore stand
 boundary: a reader that drops it verifies teaching examples instead of bodies, a failure the corpus
 has met.
 
-<a id="/carrier-bytes"></a>
+<a id="carrier-bytes"></a>
 
 ## Carrier Bytes Law
 
@@ -968,7 +1080,7 @@ A carrier at rest carries one byte law (pinned here in the spec, per the canonic
 
 The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees normalized bytes; every projection outward emits them. Mid-pipeline re-normalization constitutes a degraded shore.
 
-<a id="/references"></a>
+<a id="references"></a>
 
 ## Normative References
 
@@ -977,11 +1089,19 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - **[RFC6838]** — media-type registration procedures (§4.6 security requirement).
 - **[RFC6839]** — structured syntax suffixes.
 - **[RFC6920]** — naming things with hashes; the `ni:` URI the block check wears.
+- **[RFC6901]** — JSON Pointer syntax; the `~0`/`~1` escaping `lar:` fragments may adopt (#/the-woven-dialect).
+- **[RFC7763]** — the Markdown metadata sidecar and frontmatter convention a woven artifact's identity travels under.
+- **[RFC7764]** — the Markdown variant registry a woven artifact's dialect declares against.
+- **[ISO9075-14]** — ISO/IEC 9075-14 (SQL/XML); the `_xHHHH_` XML-Name-legal escaping scheme for a colliding woven id.
+- **[ITS20]** — W3C Internationalization Tag Set 2.0; the Translate data category the tongue law draws on.
+- **[KNUTH-WEB]** — Donald Knuth, "Literate Programming" (1984); the WEAVE/TANGLE pair this frame's names descend from.
+- **[LENS-PUTGET]** — bidirectional-transformation lens laws (`PutGet`/`GetPut`, constant complement); the putback law's ancestry.
+- **[BIGUL]** — BiGUL, a putback-based bidirectional programming language; the edit-as-delta, disjoint-composes discipline the putback law borrows.
 - **[MEMETIC-WIKITEXT]** — the language this frame carries (sibling submission): `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`.
 - **[LAR-URI]** — the `lar:` URI specification (sibling submission): `lar:///ha.ka.ba/lares/api/pono/lar-uri`.
 - **[TW5]** — TiddlyWiki5 WikiText grammar — the host whose macro call every frame sigil stands as.
 
-<a id="/annex-open"></a>
+<a id="annex-open"></a>
 
 ## Annex — Open Items (Informative)
 
@@ -993,19 +1113,27 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
   which would put ETB on a carrier's text and ETX on its attestation. The frame above reads the other
   way and states why. The strict reading stays named rather than dismissed.
 
-<a id="/edges"></a>
+- **The aka/weave rhyme (open).** A frozen `aka` transclusion inlines a target pinned at a moment,
+  in-house; a woven projection does the same thing outward, across the carrier/Gaia boundary
+  (#/weave-and-tangle). Whether one law covers both stands open.
+
+- **The putback law (open, unbuilt).** Tangle-as-edit, disjoint-composes, same-region-holds-as-hoike,
+  and the currency gate's byte-equality and model-equality questions all stand as target law ahead of
+  any implementation (#/the-putback-law).
+
+<a id="edges"></a>
 
 ## Edges
 
-- `"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
-- `"lar:///ha.ka.ba/lares/api/pono/lar-uri"`
-- `"lar:///ha.ka.ba/lares/api/pono/parser"`
-- `"lar:///ha.ka.ba/lararium/docs/carrier-parse"`
-- `"lar:///ha.ka.ba/lares/api/pono/render-pipeline"`
-- `"lar:///ha.ka.ba/lares/api/pono/meme"`
-- `"lar:///ha.ka.ba/lares/api/pono/kapu"`
-- `"lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
-
-<<^ code="&#x0003;">>ni:///sha-256;hbqAG0ybgjNb0io0lmqJnD8W415u_EHhRebCKt3RO_Q
-
-<<^ code="&#x0004;" -> to="?">>
+- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/parser"`
+- `loulou "lar:///ha.ka.ba/lararium/docs/carrier-parse"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/meme"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/kapu"`
+- `loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/aka"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/hoike"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/hana"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils"`
