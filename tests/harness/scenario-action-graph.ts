@@ -89,6 +89,30 @@ export interface ScenarioEvidence {
   readonly ref?: string;
 }
 
+/**
+ * An intentionally emitted record at a vessel, authority, or federation edge.
+ * Evidence is opaque here; a runtime adapter may verify signatures later.
+ * Internal helper work does not need a crossing record.
+ */
+export interface ScenarioBoundaryCrossing {
+  readonly id: string;
+  readonly mandateId: string;
+  readonly activityId: string;
+  readonly delegationId?: string;
+  readonly capabilityEvidence?: ScenarioEvidence;
+  readonly signatureEvidence?: ScenarioEvidence;
+  readonly rootPrincipal: string;
+  readonly immediateDelegator: string;
+  readonly actingProcess: string;
+  readonly sourceVessel: string;
+  readonly causalParents: readonly string[];
+  readonly resultId?: string;
+  /** An optional projection of the externally observed outcome for concurrency checks. */
+  readonly outcomeDigest?: string;
+}
+
+export type ScenarioCrossingReceipt = ScenarioBoundaryCrossing;
+
 export interface ScenarioAppraisal {
   readonly id: string;
   readonly activityId: string;
@@ -103,6 +127,7 @@ export interface ScenarioActionGraph {
   readonly activities: readonly ScenarioActivity[];
   readonly results: readonly ScenarioResult[];
   readonly attestations: readonly ScenarioAttestation[];
+  readonly crossings: readonly ScenarioBoundaryCrossing[];
 }
 
 function requireText(value: string, label: string): void {
@@ -133,6 +158,10 @@ function findById<T extends { readonly id: string }>(values: readonly T[], id: s
   return values.find((value) => value.id === id);
 }
 
+function cloneEvidence(evidence: ScenarioEvidence | undefined): ScenarioEvidence | undefined {
+  return evidence ? { ...evidence } : undefined;
+}
+
 /** Validate and copy pure graph data. Missing references remain representable for `unavailable`. */
 export function defineScenarioActionGraph(input: ScenarioActionGraph): ScenarioActionGraph {
   validateScenarioActionGraph(input);
@@ -143,6 +172,12 @@ export function defineScenarioActionGraph(input: ScenarioActionGraph): ScenarioA
     activities: input.activities.map((record) => ({ ...record, causalParents: [...record.causalParents] })),
     results: input.results.map((record) => ({ ...record })),
     attestations: input.attestations.map((record) => ({ ...record })),
+    crossings: input.crossings.map((record) => ({
+      ...record,
+      capabilityEvidence: cloneEvidence(record.capabilityEvidence),
+      signatureEvidence: cloneEvidence(record.signatureEvidence),
+      causalParents: [...record.causalParents],
+    })),
   };
 }
 
@@ -202,13 +237,26 @@ export function validateScenarioActionGraph(input: ScenarioActionGraph): void {
     requireText(attestation.subjectDigest, `attestation "${attestation.id}" subject digest`);
     recordIds.push(attestation.id);
   }
+  for (const crossing of input.crossings) {
+    requireText(crossing.id, "boundary crossing id");
+    requireText(crossing.mandateId, `boundary crossing "${crossing.id}" mandate`);
+    requireText(crossing.activityId, `boundary crossing "${crossing.id}" activity`);
+    requireText(crossing.rootPrincipal, `boundary crossing "${crossing.id}" root principal`);
+    requireText(crossing.immediateDelegator, `boundary crossing "${crossing.id}" immediate delegator`);
+    requireText(crossing.actingProcess, `boundary crossing "${crossing.id}" acting process`);
+    requireText(crossing.sourceVessel, `boundary crossing "${crossing.id}" source vessel`);
+    unique(crossing.causalParents, `boundary crossing "${crossing.id}" causal parent`);
+    recordIds.push(crossing.id);
+  }
   unique(recordIds, "record id");
 }
 
 function causalParentsFor(graph: ScenarioActionGraph, id: string): readonly string[] | undefined {
   const activity = findById(graph.activities, id);
   if (activity) return activity.causalParents;
-  return findById(graph.withdrawals, id)?.causalParents;
+  const withdrawal = findById(graph.withdrawals, id);
+  if (withdrawal) return withdrawal.causalParents;
+  return findById(graph.crossings, id)?.causalParents;
 }
 
 function causallyPrecedes(graph: ScenarioActionGraph, ancestor: string, descendant: string): boolean {
@@ -222,6 +270,89 @@ function causallyPrecedes(graph: ScenarioActionGraph, ancestor: string, descenda
     pending.push(...(causalParentsFor(graph, parentId) ?? []));
   }
   return false;
+}
+
+function hasCompleteCausalAncestry(
+  graph: ScenarioActionGraph,
+  id: string,
+  active = new Set<string>(),
+  memo = new Map<string, boolean>(),
+): boolean {
+  const remembered = memo.get(id);
+  if (remembered !== undefined) return remembered;
+  if (active.has(id)) return false;
+  const parents = causalParentsFor(graph, id);
+  if (parents === undefined) {
+    memo.set(id, false);
+    return false;
+  }
+  const next = new Set(active).add(id);
+  const complete = parents.every((parentId) => hasCompleteCausalAncestry(graph, parentId, next, memo));
+  memo.set(id, complete);
+  return complete;
+}
+
+function activityAuthorityIsValid(graph: ScenarioActionGraph, activity: ScenarioActivity): boolean {
+  const mandate = findById(graph.mandates, activity.mandateId);
+  if (!mandate || activity.responsible !== mandate.author ||
+      activity.subject !== mandate.subject || activity.subjectDigest !== mandate.subjectDigest ||
+      !mandate.scope.actionIds.includes(activity.logicalActionId) ||
+      !mandate.scope.subjectDigests.includes(activity.subjectDigest)) return false;
+  const delegation = activity.delegationId ? findById(graph.delegations, activity.delegationId) : undefined;
+  if (activity.delegationId && !delegation) return false;
+  if (mandate.delegate) {
+    const parent = delegation ? findById(graph.mandates, delegation.parentMandateId) : undefined;
+    return Boolean(delegation && parent && delegation.parentMandateId === mandate.id &&
+      delegation.grantor === mandate.author && delegation.delegate === mandate.delegate &&
+      activity.workload === delegation.delegate &&
+      subset(delegation.scope.actionIds, parent.scope.actionIds) &&
+      subset(delegation.scope.subjectDigests, parent.scope.subjectDigests) &&
+      delegation.scope.actionIds.includes(activity.logicalActionId) &&
+      delegation.scope.subjectDigests.includes(activity.subjectDigest));
+  }
+  return !delegation;
+}
+
+/** Complete local eligibility for a sibling result to influence conflict appraisal. */
+function activityMayContributeCompetingOutcome(graph: ScenarioActionGraph, activity: ScenarioActivity): boolean {
+  if (!activityAuthorityIsValid(graph, activity)) return false;
+  if (!activity.causalParents.every((parentId) => hasCompleteCausalAncestry(graph, parentId))) return false;
+  const mandate = findById(graph.mandates, activity.mandateId)!;
+  const result = activity.resultId ? findById(graph.results, activity.resultId) : undefined;
+  if (!result || result.activityId !== activity.id || result.subject !== activity.subject || result.subjectDigest !== activity.subjectDigest) return false;
+  if (mandate.attestationRequired && !graph.attestations.some((attestation) =>
+    attestation.activityId === activity.id &&
+    attestation.subject === activity.subject &&
+    attestation.subjectDigest === activity.subjectDigest)) return false;
+  const delegation = activity.delegationId ? findById(graph.delegations, activity.delegationId) : undefined;
+  if (!delegation) return true;
+  for (const withdrawal of graph.withdrawals.filter((candidate) => candidate.delegationId === delegation.id)) {
+    if (withdrawal.issuer !== delegation.grantor ||
+        !withdrawal.causalParents.every((parentId) => hasCompleteCausalAncestry(graph, parentId))) return false;
+    const withdrawalBeforeActivity = causallyPrecedes(graph, withdrawal.id, activity.id);
+    const activityBeforeWithdrawal = causallyPrecedes(graph, activity.id, withdrawal.id);
+    if (withdrawalBeforeActivity || !activityBeforeWithdrawal || activity.phase === "planned") return false;
+  }
+  return true;
+}
+
+function crossingIsAdmissible(graph: ScenarioActionGraph, crossing: ScenarioBoundaryCrossing): boolean {
+  const activity = findById(graph.activities, crossing.activityId);
+  const mandate = findById(graph.mandates, crossing.mandateId);
+  if (!activity || !mandate || !activityMayContributeCompetingOutcome(graph, activity) ||
+      crossing.mandateId !== activity.mandateId || crossing.rootPrincipal !== mandate.author ||
+      crossing.actingProcess !== activity.workload || crossing.immediateDelegator === "" ||
+      crossing.sourceVessel === "" || crossing.delegationId !== activity.delegationId ||
+      !crossing.capabilityEvidence?.kind || !crossing.capabilityEvidence.ref ||
+      !crossing.signatureEvidence?.kind || !crossing.signatureEvidence.ref ||
+      !crossing.causalParents.every((parentId) => hasCompleteCausalAncestry(graph, parentId))) return false;
+  const delegation = activity.delegationId ? findById(graph.delegations, activity.delegationId) : undefined;
+  if (crossing.immediateDelegator !== (delegation?.grantor ?? mandate.author)) return false;
+  const result = crossing.resultId ? findById(graph.results, crossing.resultId) : undefined;
+  if (crossing.resultId && (!result || result.activityId !== activity.id || result.subject !== activity.subject ||
+      result.subjectDigest !== activity.subjectDigest ||
+      (crossing.outcomeDigest !== undefined && crossing.outcomeDigest !== result.digest))) return false;
+  return true;
 }
 
 function appraisal(id: string, activityId: string, verdict: ScenarioAppraisalVerdict, reason: string): ScenarioAppraisal {
@@ -310,8 +441,56 @@ export function appraiseScenarioActivity(graph: ScenarioActionGraph, activityId:
     }
   }
 
+  const crossings = graph.crossings.filter((crossing) => crossing.activityId === activity.id);
+  for (const crossing of crossings) {
+    for (const parentId of crossing.causalParents) {
+      if (!hasCompleteCausalAncestry(graph, parentId)) {
+        return appraisal(appraisalId, activityId, "unavailable", `boundary crossing causal parent "${parentId}" is absent`);
+      }
+    }
+    if (!crossing.capabilityEvidence?.kind || !crossing.capabilityEvidence.ref ||
+        !crossing.signatureEvidence?.kind || !crossing.signatureEvidence.ref) {
+      return appraisal(appraisalId, activityId, "unavailable", "boundary crossing evidence is absent");
+    }
+    if (crossing.mandateId !== mandate.id || crossing.rootPrincipal !== mandate.author ||
+        crossing.activityId !== activity.id || crossing.actingProcess !== activity.workload ||
+        crossing.sourceVessel === "") {
+      return appraisal(appraisalId, activityId, "rejected", "boundary crossing binding does not match mandate or activity");
+    }
+    if (crossing.delegationId !== activity.delegationId) {
+      return appraisal(appraisalId, activityId, "rejected", "boundary crossing delegation does not match activity");
+    }
+    if (crossing.immediateDelegator !== (delegation?.grantor ?? mandate.author)) {
+      return appraisal(appraisalId, activityId, "rejected", "boundary crossing immediate delegator does not match authority");
+    }
+    if (crossing.resultId !== undefined) {
+      if (!result || crossing.resultId !== result.id) {
+        return appraisal(appraisalId, activityId, result ? "rejected" : "unavailable", "boundary crossing result binding is absent or wrong");
+      }
+      if (crossing.outcomeDigest !== undefined && crossing.outcomeDigest !== result.digest) {
+        return appraisal(appraisalId, activityId, "rejected", "boundary crossing outcome does not match result");
+      }
+    }
+  }
+
+  for (const crossing of crossings) {
+    if (crossing.outcomeDigest === undefined) continue;
+    for (const other of graph.crossings) {
+      if (other.id === crossing.id || other.outcomeDigest === undefined) continue;
+      const otherActivity = findById(graph.activities, other.activityId);
+      if (!otherActivity || otherActivity.logicalActionId !== activity.logicalActionId || crossing.outcomeDigest === other.outcomeDigest) continue;
+      if (!crossingIsAdmissible(graph, other)) continue;
+      if (!causallyPrecedes(graph, crossing.id, other.id) && !causallyPrecedes(graph, other.id, crossing.id)) {
+        return appraisal(appraisalId, activityId, "unsettled", "concurrent boundary crossings have conflicting outcomes");
+      }
+    }
+  }
+
   for (const other of graph.activities) {
     if (other.id === activity.id || other.logicalActionId !== activity.logicalActionId) continue;
+    if (!activityMayContributeCompetingOutcome(graph, other)) continue;
+    const otherCrossings = graph.crossings.filter((crossing) => crossing.activityId === other.id);
+    if (otherCrossings.length > 0 && !otherCrossings.some((crossing) => crossingIsAdmissible(graph, crossing))) continue;
     const otherResult = other.resultId ? findById(graph.results, other.resultId) : undefined;
     if (!result || !otherResult || result.digest === otherResult.digest) continue;
     if (!causallyPrecedes(graph, activity.id, other.id) && !causallyPrecedes(graph, other.id, activity.id)) {
