@@ -87,7 +87,7 @@ Live sigils: `kahea`, `loulou`, `aka`, `kapu`
 Properties:
 * `lar-pattern` or `lar-open-pattern` / `lar-close-pattern`
 * `lar-default-family` — pranala family applied when no explicit `family:` attr appears
-* `lar-alias-for` (optional) — delegates to another sigil's procedure
+* `lar-mirror-of` (optional) — points at the Hawaiian canonical sigil's procedure
 
 `kapu` carries `lar-kind: edge-sugar` and operates at compile layer only. It emits no render output — it marks a threshold, restriction, or qualification in the graph edge. Whether `kapu` gains render presence in the HTML mode remains an open question pending mesh network testing.
 
@@ -154,7 +154,7 @@ Form: `<<~ ui FILTER_EXPR>>`
 
 The filter expression runs as `$list filter=<<p1>>` inside the TW5 VM. Full native filter access applies — no sub-grammar isolation.
 
-`query` (`lar-kind: query-alias`) aliases `\query` to the same procedure. `lar-alias-for` points to the target sigil.
+`query` (`lar-kind: query-alias`) aliases `\query` to the same procedure. `lar-mirror-of` points to the target sigil.
 
 <<~/ahu>>
 
@@ -197,6 +197,6 @@ The TypeScript validator `validatePranalaEdge` (in `@lararium/mesh`) enforces th
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bqeTMyt5qeZKy4sQ7lAku1zgc0im8-KLCdj983wnk5g
+<<^ code="&#x0003;">>ni:///sha-256;1T2I-FlrprBzPksWjEr_6K2KBMPM9mgMoU07ek1t7nA
 
 <<^ code="&#x0004;" -> to="?">>

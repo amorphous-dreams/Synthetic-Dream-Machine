@@ -190,9 +190,9 @@ here, and every alias-bearing sigil in this set reads through it:
 ''A mirror may read many ways; exactly one mirror per tongue weaves.'' Several English forms may
 point at the same Hawaiian canonical (`\const`/`\let`/`\var` all mirror `waiho`), but within one
 tongue at most one mirror carries `lar-weave: primary` — the form the grammar treats as that
-tongue's live-authoring name. The mirror relation rides the `lar-mirror-of` field — renamed from
-`lar-alias-for` this loop — paired with `lar-tongue` (the mirror's language) and `lar-weave`
-(`primary` on the one weaving form per tongue, absent otherwise).
+tongue's live-authoring name. The mirror relation rides the `lar-mirror-of` field, paired with
+`lar-tongue` (the mirror's language) and `lar-weave` (`primary` on the one weaving form per
+tongue, absent otherwise).
 
 <<~/ahu>>
 
@@ -265,7 +265,7 @@ The SharktoothSigil grammar draws vocabulary from five distinct language familie
   cast; the declaration precedes the instance.
 * //meme// — coined 1976 by Richard Dawkins in //The Selfish Gene// from Greek //mimeme// (that which gets imitated), shortened to rhyme with "gene". Edward Wilson and Wes Unruh extended the operational framework in //The Art of Memetics// (2009), treating memes as propagating agents with measurable virality and selection pressure from host minds and transmission media. The Lares system uses the word at full weight: a unit of cultural information that replicates across minds and networks. Each tiddler that carries the memetic-wikitext type header //acts as// a meme — a replicable cultural unit in a content-addressed store, subject to the same fitness landscape described by Wilson and Unruh.
 
-''English (computing + TW5 pragmas)'' — 24 alias forms carry the English computing vocabulary that TW5 authors and general programmers already know: `\procedure`, `\function`, `\widget`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\type`, `\const`, `\let`, `\var`, `\link`, `\shadow`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. These aliases lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
+''English (computing + TW5 pragmas)'' — the tongue carries two kinds of English form, both drawing on the vocabulary that TW5 authors and general programmers already know. Mirrors point at a Hawaiian canonical and carry `lar-mirror-of` (#/mirror-vocabulary): `\procedure`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\const`, `\let`, `\var`, `\link`, `\shadow`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. Native forms carry no Hawaiian headword and no `lar-mirror-of` field: `\widget`, `\function`, `\type`, `\typos`. Both kinds lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
 
 ''Verse / Unreal Engine'' — the concurrency cluster (//lele//, //hui//, //holo//, //puka//, //hoolele//) and their English aliases (`\branch`, `\sync`, `\race`, `\rush`, `\spawn`) map directly to Verse's five async primitives: structured fire-and-continue (branch), await-all join (sync), cancelling race (race), selecting race (rush), and unstructured escape hatch (spawn). The execution model forms a ''task tree'' — cancellation cascades downward; `spawn` / `\spawn` is the only way to exit the tree. This alignment makes Lares concurrency legible to Verse developers and positions the grammar for cross-VM execution on Unreal Engine. See `verse-task-tree` for the canonical topology spec.
 
@@ -313,6 +313,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rJwjaHCJrK57dSHbxOgRFnDTY1wfI7_4ubC-iSp2Dxc
+<<^ code="&#x0003;">>ni:///sha-256;SqX5CyR6hBPZODBVUqYV0-ACHoaOPreh3zUA8-dJFvU
 
 <<^ code="&#x0004;" -> to="?">>

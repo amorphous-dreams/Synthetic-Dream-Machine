@@ -33,16 +33,17 @@ This document records the bidirectional alias map.
 | English sigil | Hawaiian equivalent | Semantic |
 |---|---|---|
 | `\procedure` | `wehe` | procedure/function declaration; crossing declaration→execution boundary |
-| `\define` | `wehe` | legacy macro declaration (prefer `\procedure` for new code) |
+| `\define` | `wehe` | read-only mirror of `wehe`; `meme normalize` re-mints a `\define` declaration as `wehe` |
 | `\if` | `heihei` | conditional block; first body that satisfies condition wins |
 | `\for` | `huli` | iteration block; maps a filter over a body template |
-| `\widget` | (none yet) | TW5 widget declaration; `~` prefix convention |
-| `\function` | (none yet) | TW5 5.3+ filter-function declaration |
+| `\widget` | — (native) | TW5 widget declaration; `~` prefix convention; carries no mirror, a native TW5 pragma of its own |
+| `\function` | — (native) | TW5 5.3+ filter-function declaration; carries no mirror, a native TW5 pragma of its own |
 
 ''Cross-ref fields on SharktoothSigil tiddlers:''
 * English sigils carry `lar-see-also: <hawaiian>` pointing to their Hawaiian counterpart.
 * Hawaiian sigils (when authored in Path G.SharktoothSigil) carry `lar-see-also: \<english>` as the reverse pointer.
-* `lar-alias-for` on English sigils points to the TW5 pragma name (e.g. `\procedure`) for grammar aliasing.
+* `lar-mirror-of` on a mirror sigil points at its Hawaiian canonical (e.g. `wehe` for `\procedure`); a native pragma such as `\widget` or `\function` carries no `lar-mirror-of` field
+  (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/mirror-vocabulary`).
 
 <<~/ahu>>
 
@@ -57,8 +58,8 @@ The distinction is cultural/readability only. In a mixed-operator context, eithe
 appears in meme bodies without surprise. No deny-list item belongs to the English forms —
 they are first-class in the grammar after their SharktoothSigil tiddlers load.
 
-When a Hawaiian tiddler ships (e.g. `sigil-wehe.tid`), it becomes authoritative.
-The English alias tiddler's `lar-alias-for` field points to the Hawaiian name, resolving
+A shipped Hawaiian tiddler (e.g. `sigil-wehe.tid`) holds authority over its mirrors.
+The English alias tiddler's `lar-mirror-of` field points to the Hawaiian name, resolving
 the canonical dispatch through the Hawaiian implementation.
 
 <<~/ahu>>
@@ -74,6 +75,6 @@ the canonical dispatch through the Hawaiian implementation.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9HRJlZwWPLjhoVcC7Bwjt0BzbipgIvDmBbdVinmNVfY
+<<^ code="&#x0003;">>ni:///sha-256;MdIYK_6RO385-XDWTrvgaBytzZNSBzS6V--D_OzEDgU
 
 <<^ code="&#x0004;" -> to="?">>
