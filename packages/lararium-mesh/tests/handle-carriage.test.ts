@@ -38,7 +38,7 @@ async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: strin
   const chain = chainOf(await ed.getPublicKeyAsync(seed).then(hex));
   const nym = chain[0]!.prefix;   // the recognised identity is the handle-KEL prefix, not the raw key
   const card = await signHandleCard(
-    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, parents: [], standing: null, fleetProof: null },
     ed25519SignerFromSeed(seed),
   );
   return { nym, card };
@@ -118,7 +118,7 @@ describe("★ THE QR CARRIAGE CEILING — a NAMED boundary, not one discovered a
   async function cardWithChain(seed: Uint8Array, n: number): Promise<HandleCard> {
     const chain = await chainOfLength(seed, n);
     return signHandleCard(
-      { nym: chain[0]!.prefix, chain, glamour: "Eris", version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+      { nym: chain[0]!.prefix, chain, glamour: "Eris", parents: [], standing: null, fleetProof: null },
       ed25519SignerFromSeed(seed),
     );
   }

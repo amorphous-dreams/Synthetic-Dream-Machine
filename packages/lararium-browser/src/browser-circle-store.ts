@@ -60,8 +60,8 @@ export async function loadBrowserHandleBook(idbName = "lares:vessel"): Promise<H
   const db = await openVesselIdb(idbName);
   const snapshot = await idbGet<HandleBookSnapshot>(db, HANDLE_BOOK_STORE, HANDLE_BOOK_KEY);
   db.close();
-  try { return new HandleBook(snapshot); }
-  catch { return new HandleBook(); }   // a torn book reads empty — re-ingesting a card re-learns the nym
+  try { return await HandleBook.restore(snapshot); }
+  catch { return new HandleBook(); }   // a torn or tampered book reads empty — re-ingesting relearns the nym
 }
 
 /** Persist the handle-book snapshot to IDB — the recogniser's private memory of others' keys + labels. */
@@ -81,7 +81,6 @@ export async function browserComposeFollow(args: {
   readonly circleId: string;
   readonly petname?: string | null;
   readonly card?:    HandleCard;
-  readonly now?:     number;
 }): Promise<FollowResult> {
   const idbName = args.idbName ?? "lares:vessel";
   const book    = await loadBrowserHandleBook(idbName);
@@ -90,7 +89,6 @@ export async function browserComposeFollow(args: {
     book, circles, nym: args.nym, circleId: args.circleId,
     ...(args.petname !== undefined ? { petname: args.petname } : {}),
     ...(args.card ? { card: args.card } : {}),
-    ...(args.now !== undefined ? { now: args.now } : {}),
   });
   await saveBrowserHandleBook(book, idbName);   // persist the card ingest / petname that landed on it
   return result;

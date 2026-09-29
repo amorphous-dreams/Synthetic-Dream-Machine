@@ -39,8 +39,7 @@ const nymOf = async (seed: Uint8Array): Promise<string> => chainOf(await pubOf(s
 async function card(over: Partial<HandleCard> = {}): Promise<HandleCard> {
   const chain = chainOf(await pubOf(FACE_SEED));
   const base = {
-    nym: chain[0]!.prefix, chain, glamour: "FastJack", version: 1, prev: null,
-    expiry: 4_000_000_000_000, standing: null, fleetProof: null,
+    nym: chain[0]!.prefix, chain, glamour: "FastJack", parents: [], standing: null, fleetProof: null,
     ...over,
   };
   return signHandleCard(base as Omit<HandleCard, "kind" | "sig">, signer(FACE_SEED));
@@ -72,8 +71,7 @@ describe("the edge turns a convention into a proof", () => {
     const otherFace = new Uint8Array(32).fill(9);
     const otherChain = chainOf(await pubOf(otherFace));
     const stolen = await signHandleCard({
-      nym: otherChain[0]!.prefix, chain: otherChain, glamour: "FastJack", version: 1, prev: null,
-      expiry: 4_000_000_000_000, standing: null, fleetProof: honest,
+      nym: otherChain[0]!.prefix, chain: otherChain, glamour: "FastJack", parents: [], standing: null, fleetProof: honest,
     } as Omit<HandleCard, "kind" | "sig">, signer(otherFace));
 
     expect(await verifyFleetProof(stolen, verify)).toBe(false);
@@ -107,19 +105,15 @@ describe("the edge turns a convention into a proof", () => {
 });
 
 describe("identity and signature answer different questions, so they cover different bytes", () => {
-  test("★ the lease now sits INSIDE the signature — extending an expiry breaks the card ★", async () => {
+  test("★ causal verification accepts without a wall-clock input ★", async () => {
     const c = await card();
     expect((await verifyHandleCard(c, verify)).ok).toBe(true);
-    const extended: HandleCard = { ...c, expiry: c.expiry + 10_000_000 };
-    expect((await verifyHandleCard(extended, verify)).ok).toBe(false);
   });
 
-  test("…and OUTSIDE the identity — a renewal keeps the SAME card id, so a lineage never forks on a beat", async () => {
+  test("semantic identity is the causal act, independent of wall-clock state", async () => {
     const c = await card();
-    const renewed = { ...c, expiry: c.expiry + 10_000_000 };
-    expect(await handleCardId(renewed)).toBe(await handleCardId(c));
-    // the two cover different bytes, which is the whole point
-    expect(hex(handleCardBytes(renewed))).not.toBe(hex(handleCardBytes(c)));
+    expect(await handleCardId(c)).toBe(c.actCid);
+    expect(Object.keys(c)).not.toContain("expiry");
   });
 
   test("BINDING a face changes its identity — a recogniser sees a version, never a silent mutation", async () => {

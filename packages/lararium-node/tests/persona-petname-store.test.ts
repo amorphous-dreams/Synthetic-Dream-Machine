@@ -71,7 +71,7 @@ describe("node persona pet-name stores (#64 stage 4)", () => {
     const petnames = await makeNodePersonaPetnameStore();
     const publicStore = await makeNodePublicHandleStore();
     await renameOwnPersona(petnames, 0, "work");
-    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", now: 1000, store: publicStore, ownerPersonaKelPrefix: OWNER });
+    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", store: publicStore, ownerPersonaKelPrefix: OWNER });
 
     const vault = await makeNodeFsPersonaVault();
     const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
@@ -86,19 +86,19 @@ describe("node persona pet-name stores (#64 stage 4)", () => {
     const publicStore = await makeNodePublicHandleStore();
     const board = makeFakeBoard();
     await renameOwnPersona(petnames, 0, "my-burner");
-    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", now: 5, store: publicStore, ownerPersonaKelPrefix: OWNER });
+    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", store: publicStore, ownerPersonaKelPrefix: OWNER });
 
     expect(JSON.stringify(board.doc())).not.toContain("my-burner");
     expect(await ownPersonaPetname(petnames, 0)).toBe("my-burner");   // untouched by the publish
   });
 
-  test("the PUBLIC record round-trips + advances the lineage across store handles (re-publish bumps version)", async () => {
+  test("the PUBLIC record round-trips + advances the causal frontier across store handles", async () => {
     const board = makeFakeBoard();
-    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v1", now: 10, store: await makeNodePublicHandleStore(), ownerPersonaKelPrefix: OWNER });
-    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v2", now: 20, store: await makeNodePublicHandleStore(), ownerPersonaKelPrefix: OWNER });
-    expect(first.version).toBe(1);
-    expect(second.version).toBe(2);
-    expect(second.prev).not.toBeNull();
+    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v1", store: await makeNodePublicHandleStore(), ownerPersonaKelPrefix: OWNER });
+    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v2", store: await makeNodePublicHandleStore(), ownerPersonaKelPrefix: OWNER });
+    expect(first.parents).toEqual([]);
+    expect(second.parents).toEqual([first.actCid]);
+    expect(second.actCid).not.toBe(first.actCid);
     expect(await (await makeNodePublicHandleStore()).list()).toEqual([3]);
   });
 });

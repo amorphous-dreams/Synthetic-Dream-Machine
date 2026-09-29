@@ -13,7 +13,7 @@
  *
  * `parseHandleCardCarriage` takes the carriage as a STRING and returns a card or `null`. It only SHAPES the card
  * (domain + the load-bearing fields present) — it does NOT verify the signature or the lineage. That trust gate
- * stays where it belongs: `HandleBook.ingest`, which runs the full TOFU/monotone reader rule and returns a named
+ * stays where it belongs: `HandleBook.ingest`, which runs the full TOFU/causal reader rule and returns a named
  * verdict. WITHHOLD-not-forge: a garbled / absent / wrong-domain carriage returns `null` (the card DID NOT
  * ARRIVE — the operator re-carries it), never a throw, so a human's typo never reads as an attack.
  *
@@ -48,11 +48,12 @@ export function parseHandleCardCarriage(carriage: string): HandleCard | null {
   if (!parsed || typeof parsed !== "object") return null;
   const p = parsed as Record<string, unknown>;
   // The load-bearing shape a HandleCard MUST carry — refused HERE rather than half-admitted downstream. The
-  // domain fixes what this carriage admits; the nym + sig + version are what `ingest`'s reader rule then trusts.
+  // domain fixes what this carriage admits; the nym + semantic act + parents are what `ingest` trusts.
   if (p["kind"] !== HANDLE_CARD_DOMAIN) return null;
   if (typeof p["nym"] !== "string" || !p["nym"]) return null;
   if (typeof p["sig"] !== "string" || !p["sig"]) return null;
-  if (typeof p["version"] !== "number") return null;
+  if (typeof p["actCid"] !== "string" || !/^[0-9a-f]{64}$/.test(p["actCid"])) return null;
+  if (!Array.isArray(p["parents"]) || !p["parents"].every((parent) => typeof parent === "string")) return null;
   if (!Array.isArray(p["chain"]) || p["chain"].length === 0) return null;   // the card carries its handle-KEL, or it is not one
   return parsed as HandleCard;
 }

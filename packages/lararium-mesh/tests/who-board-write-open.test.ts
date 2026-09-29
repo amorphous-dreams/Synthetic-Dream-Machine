@@ -39,8 +39,7 @@ function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [
 async function strangerCard(over: Partial<HandleCard> = {}): Promise<HandleCard> {
   const chain = chainOf(await rawPub(STRANGER_SEED));
   return signHandleCard({
-    nym: chain[0]!.prefix, chain, glamour: "Nobody At All", version: 1, prev: null,
-    expiry: 4_000_000_000_000, standing: null, ...over,
+    nym: chain[0]!.prefix, chain, glamour: "Nobody At All", parents: [], standing: null, ...over,
   }, signer(STRANGER_SEED));
 }
 
@@ -56,7 +55,7 @@ describe("the WHO board writes open and certifies on read", () => {
     doc = change(doc, (d) => writeHandleAnnounce(d, card));
 
     const landed = overTheWire(doc);
-    expect(landed.tiddlers[handleAnnounceKey(card.nym)]).toBeDefined();
+    expect(landed.tiddlers[handleAnnounceKey(card.nym, card.actCid)]).toBeDefined();
     expect(readHandleAnnounces(landed).map((c) => c.nym)).toEqual([card.nym]);
 
     // The gate cannot hide in a parameter: the writer's whole input IS (draft, card). A membership argument
@@ -77,7 +76,7 @@ describe("the WHO board writes open and certifies on read", () => {
     expect(read[0]!.glamour).toBe("Somebody Important");
 
     // CONTROL — the recogniser refuses it, naming why.
-    expect((await verifyHandleCard(read[0]!)).reject).toBe("bad-signature");
+    expect((await verifyHandleCard(read[0]!)).reject).toBe("rejected");
     const book = new HandleBook();
     expect((await ingestAnnounceDoc(book, overTheWire(doc))).get(forged.nym)?.ok).toBe(false);
     expect(book.get(forged.nym)).toBeUndefined();          // nothing entered the held face
@@ -104,7 +103,6 @@ describe("the WHO board writes open and certifies on read", () => {
     const book = new HandleBook();
     const verdicts = await ingestAnnounceDoc(book, overTheWire(doc));
     expect(verdicts.get(card.nym)?.ok).toBe(true);
-    expect(verdicts.get(card.nym)?.tier).toBe(1);          // self-contained — no board, no resolver, no roster
-    expect(book.get(card.nym)?.card.glamour).toBe("Nobody At All");
+    expect(book.get(card.nym)?.card?.glamour).toBe("Nobody At All");
   });
 });

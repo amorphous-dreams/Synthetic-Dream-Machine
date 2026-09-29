@@ -102,18 +102,17 @@ export async function composeFollow(args: {
   readonly petname?: string | null;
   /** A self-certifying HandleCard to TOFU-admit an unmet nym. Absent → the nym must already be known. */
   readonly card?:    HandleCard;
-  /** Clock for the card's lease check (the book reads it against the LOCAL now). */
-  readonly now?:     number;
 }): Promise<FollowResult> {
   const { book, circles, nym, circleId } = args;
 
-  // 1. RECOGNISE. A carried card runs through the book's TOFU/monotone rule; a rejection fails closed.
-  let recognized = book.get(nym) !== undefined;
+  // 1. RECOGNISE. A carried card runs through the book's causal fold; a rejection fails closed. A remembered
+  // nym with no unique settled projection is evidence of an unresolved fork, never recognition.
+  let recognized = book.isRecognized(nym);
   if (args.card) {
     if (args.card.nym !== nym) {
       throw new FollowRefused("card-rejected", `follow: card names ${args.card.nym.slice(0, 12)}…, not the followed nym`);
     }
-    const verdict = await book.ingest(args.card, args.now);
+    const verdict = await book.ingest(args.card);
     if (!verdict.ok) {
       throw new FollowRefused("card-rejected", `follow: handle-card refused (${verdict.reject})`, verdict);
     }
@@ -159,6 +158,6 @@ export async function listFollows(book: HandleBook, circles: CircleStore, circle
   const members = await circles.members(circleId);
   return members.map((nym) => {
     const rec = book.get(nym);
-    return { nym, petname: rec?.petname ?? null, glamour: rec?.card.glamour ?? null };
+    return { nym, petname: rec?.petname ?? null, glamour: rec?.card?.glamour ?? null };
   });
 }

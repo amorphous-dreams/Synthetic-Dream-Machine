@@ -16,7 +16,7 @@
  *
  * DISTINCT stores, three ways (persona-policy#two-layer):
  *   · this OwnPublicHandleStore — the vessel's local memory of ITS OWN published faces (index → nym/glamour/
- *     version), so a re-publish bumps monotone and links its own lineage (handle-card's anti-rollback).
+ *     causal heads), so a re-publish links its own publication frontier.
  *   · the pet-name map (persona-petname) — the human's PRIVATE label for their own personas; fleet-syncs
  *     among their own vessels, never PUBLICLY federates.
  *   · the handle-book (handle-book) — the recogniser's labels for OTHERS' nyms.
@@ -54,12 +54,7 @@ import type { OwnPublicHandleView } from "./persona-petname.js";
 export const PERSONA_GLAMOUR_CONTEXT = 0;
 
 
-/** The default freshness lease a glamour card carries — 30 days, read against the recogniser's LOCAL clock
- *  (handle-card's expiry rides no global now; an unfed card goes stale on its own). Re-publish renews it. */
-export const DEFAULT_GLAMOUR_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-
-/** The vessel's local memory of ONE of its own published faces — enough to renew the lease and advance the
- *  card's monotone lineage without re-reading the board. */
+/** The vessel's local memory of ONE of its own published faces — enough to advance the causal frontier. */
 export interface PersonaPublicHandleRecord {
   /** The persona this face belongs to — the `handle'` it derives at. */
   readonly handleIndex: number;
@@ -70,10 +65,8 @@ export interface PersonaPublicHandleRecord {
   readonly nym: string;
   /** The current published display glamour. */
   readonly glamour: string;
-  /** The highest card version this vessel has published — the next card bumps above it (anti-rollback). */
-  readonly version: number;
-  /** The last published card's content id — the next card's `prev` link (anti-equivocation). */
-  readonly cardId: string;
+  /** The maximal published semantic act IDs held by this vessel. */
+  readonly heads: readonly string[];
 }
 
 /**
@@ -98,24 +91,22 @@ export interface MintedGlamour {
 
 /**
  * mintPersonaGlamour — derive the persona's veiled-user key, sign a HandleCard carrying the display glamour,
- * and advance the monotone lineage over the vessel's own prior record. Pure over the store READ — it mints +
+ * and advance the causal lineage over the vessel's own prior record. Pure over the store READ — it mints +
  * hands back the record to persist; it writes nothing and touches no board (the caller announces + persists).
  *
  * The `seed` is the human's persona master-seed (persona-identity); the veiled face derives at
  * `handle' / context'`. The card's `nym` IS that derived key, so the card certifies itself. A first publish
- * mints version 1 with a null prev; a re-publish bumps above the held version and links the held card.
+ * mints a genesis act; a re-publish links the held causal heads.
  */
 export async function mintPersonaGlamour(opts: {
   seed: Uint8Array;
   handleIndex: number;
   glamour: string;
-  now: number;
   store: OwnPublicHandleStore;
   /** The owning persona's KEL prefix — the sole owner-set member of this 1-of-1 face. Its head op-key
    *  authorizes rotation/graft, so a lost handle key recovers THROUGH the persona. */
   ownerPersonaKelPrefix: string;
   contextIndex?: number;
-  ttlMs?: number;
   standing?: string | null;
   /** The root-signed edge binding this face to its fleet, minted where the root lives. */
   fleetProof?: DelegationEdge | null;
@@ -135,7 +126,7 @@ export async function mintPersonaGlamour(opts: {
   // OWNING PERSONA-KEL prefix is the sole owner-set member. The persona's head authorizes rotation, so a
   // lost presentation key recovers through the persona rather than orphaning the face. The prefix binds the
   // handle key + the (persona-owner) genesis digest + the recovery pre-commit, all stable inputs, so a
-  // re-mint reproduces the SAME identifier — the card holds its name across lease renewals. A k-of-n
+  // re-mint reproduces the SAME identifier — the card holds its name across publication acts. A k-of-n
   // HandleGlamour supplies an owner SET here instead; that quorum founding rides its own path.
   const handleKeyDid    = didFromVerifyingKey(veiled.verifyingKey);
   const recoverySetHash = sealKeySetHash([handleKeyDid], 1);
@@ -149,21 +140,17 @@ export async function mintPersonaGlamour(opts: {
   const nym = chain[0]!.prefix;
 
   const prior = await opts.store.load(opts.handleIndex);
-  // A re-publish for the SAME persona must advance its own lineage — a peer's HandleBook refuses a card that
-  // rolls the version back or forks the `prev` chain (handle-card#acceptHandleUpdate). A prior record for a
+  // A re-publish for the SAME persona must advance its own causal frontier. A prior record for a
   // DIFFERENT prefix (a re-derivation drift) never links across chains, so the lineage restarts from that face.
   const sameFace = prior !== null && prior.nym === nym;
-  const version  = sameFace ? prior.version + 1 : 1;
-  const prev     = sameFace ? prior.cardId : null;
+  const parents  = sameFace ? prior.heads : [];
 
   const card = await signHandleCard(
     {
       nym,
       chain,
       glamour,
-      version,
-      prev,
-      expiry:   opts.now + (opts.ttlMs ?? DEFAULT_GLAMOUR_TTL_MS),
+      parents,
       standing: opts.standing ?? null,
       // Absent unless the caller minted an edge on the vessel holding the ROOT — an unbound face publishes
       // honestly and claims no fleet. Binding stays a deliberate act, exactly as announcing does.
@@ -179,8 +166,7 @@ export async function mintPersonaGlamour(opts: {
     contextIndex,
     nym,
     glamour,
-    version,
-    cardId:       await handleCardId(unsigned),
+    heads:        [await handleCardId(unsigned)],
   };
   return { card, record };
 }
@@ -196,11 +182,9 @@ export async function publishPersonaGlamour(opts: {
   seed: Uint8Array;
   handleIndex: number;
   glamour: string;
-  now: number;
   store: OwnPublicHandleStore;
   ownerPersonaKelPrefix: string;
   contextIndex?: number;
-  ttlMs?: number;
   standing?: string | null;
 }): Promise<HandleCard> {
   const { card, record } = await mintPersonaGlamour(opts);

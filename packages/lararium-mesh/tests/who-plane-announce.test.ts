@@ -36,7 +36,7 @@ const pubOf  = async (seed: Uint8Array): Promise<string> => chainOf(await rawPub
 async function announce(seed: Uint8Array, glamour: string, over: Partial<HandleCard> = {}): Promise<HandleCard> {
   const chain = chainOf(await rawPub(seed));
   return signHandleCard({
-    nym: chain[0]!.prefix, chain, glamour, version: 1, prev: null, expiry: 4_000_000_000_000, standing: null, ...over,
+    nym: chain[0]!.prefix, chain, glamour, parents: [], standing: null, fleetProof: null, ...over,
   }, signer(seed));
 }
 
@@ -67,8 +67,8 @@ describe("two vessels announce onto one shared per-nexus WHO face and recognise 
     await ingestAnnounceDoc(bookB, boardB);
 
     // BOUND: each vessel now recognises the OTHER's Handle (and its own).
-    expect(bookA.get(nymB)?.card.glamour).toBe("Dodger");     // A recognises B
-    expect(bookB.get(nymA)?.card.glamour).toBe("FastJack");   // B recognises A
+    expect(bookA.get(nymB)?.card?.glamour).toBe("Dodger");     // A recognises B
+    expect(bookB.get(nymA)?.card?.glamour).toBe("FastJack");   // B recognises A
     expect(bookA.nyms().sort()).toEqual([nymA, nymB].sort());  // the whole island is on A's board
 
     // The petname is LOCAL — A names B in its own book; the name never rode the wire.
@@ -84,8 +84,8 @@ describe("two vessels announce onto one shared per-nexus WHO face and recognise 
 
   test("a re-announced newer card supersedes across the merge; a stale copy cannot roll it back", async () => {
     const nymA = await pubOf(VESSEL_A_SEED);
-    const v1 = await announce(VESSEL_A_SEED, "FastJack", { version: 1 });
-    const v2 = await announce(VESSEL_A_SEED, "FastJack the Healer", { version: 2, prev: await handleCardId(v1) });
+    const v1 = await announce(VESSEL_A_SEED, "FastJack");
+    const v2 = await announce(VESSEL_A_SEED, "FastJack the Healer", { parents: [await handleCardId(v1)] });
 
     // The board starts at v1; a straggler replica freezes there while the main board re-announces v2.
     const boardV1 = change(from<LarDoc>(emptyLarDoc()), (d) => writeHandleAnnounce(d, v1));
@@ -94,13 +94,12 @@ describe("two vessels announce onto one shared per-nexus WHO face and recognise 
     const straggler = clone(boardV1);                                    // a replica still carrying only v1
     const board = change(clone(boardV1), (d) => writeHandleAnnounce(d, v2));   // main advances to v2
     await ingestAnnounceDoc(book, board);
-    expect(book.get(nymA)?.highWaterVersion).toBe(2);
+    expect(book.get(nymA)?.heads).toEqual([v2.actCid]);
 
     // the straggler merges back in — whichever card wins the nym slot, the book cannot be rolled back
     const merged = merge(clone(board), straggler);
     const verdicts = await ingestAnnounceDoc(book, merged);
     // whichever card won the merge slot: if v1 surfaced, the book refuses it as a rollback; the held face stays v2
-    expect(book.get(nymA)?.highWaterVersion).toBe(2);
-    if (verdicts.get(nymA)?.ok === false) expect(verdicts.get(nymA)?.reject).toBe("rollback");
+    expect(book.get(nymA)?.heads).toEqual([v2.actCid]);
   });
 });

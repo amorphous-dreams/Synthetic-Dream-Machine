@@ -56,7 +56,7 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
     const petnames = await makeBrowserPersonaPetnameStore(name);
     const publicStore = await makeBrowserPublicHandleStore(name);
     await renameOwnPersona(petnames, 0, "work");
-    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", now: 1000, store: publicStore, ownerPersonaKelPrefix: OWNER });
+    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", store: publicStore, ownerPersonaKelPrefix: OWNER });
 
     const vault = await makeBrowserIdbPersonaVault(name);
     const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
@@ -72,19 +72,19 @@ describe("the browser pet-name stores over IndexedDB (#64 stage 4)", () => {
     const publicStore = await makeBrowserPublicHandleStore(name);
     const board = makeFakeBoard();
     await renameOwnPersona(petnames, 0, "my-burner");
-    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", now: 5, store: publicStore, ownerPersonaKelPrefix: OWNER });
+    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", store: publicStore, ownerPersonaKelPrefix: OWNER });
     expect(JSON.stringify(board.doc())).not.toContain("my-burner");
     expect(await ownPersonaPetname(petnames, 0)).toBe("my-burner");
   });
 
-  test("the PUBLIC record round-trips + advances the lineage over IDB (re-publish bumps version)", async () => {
+  test("the PUBLIC record round-trips + advances the causal frontier over IDB", async () => {
     const name = idb();
     const board = makeFakeBoard();
-    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v1", now: 10, store: await makeBrowserPublicHandleStore(name), ownerPersonaKelPrefix: OWNER });
-    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v2", now: 20, store: await makeBrowserPublicHandleStore(name), ownerPersonaKelPrefix: OWNER });
-    expect(first.version).toBe(1);
-    expect(second.version).toBe(2);
-    expect(second.prev).not.toBeNull();
+    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v1", store: await makeBrowserPublicHandleStore(name), ownerPersonaKelPrefix: OWNER });
+    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v2", store: await makeBrowserPublicHandleStore(name), ownerPersonaKelPrefix: OWNER });
+    expect(first.parents).toEqual([]);
+    expect(second.parents).toEqual([first.actCid]);
+    expect(second.actCid).not.toBe(first.actCid);
     expect(await (await makeBrowserPublicHandleStore(name)).list()).toEqual([3]);
   });
 });

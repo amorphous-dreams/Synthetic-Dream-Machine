@@ -53,15 +53,15 @@ function daemonDoc(prefix?: string): LarDoc {
 }
 
 /** Publish a face onto the board + into the origin's store, returning the board + idb the twins read. */
-async function publishFace(): Promise<{ name: string; board: ReturnType<typeof makeFakeBoard>; publishedCardId: string; version: number }> {
+async function publishFace(): Promise<{ name: string; board: ReturnType<typeof makeFakeBoard>; actCid: string }> {
   const name = idb();
   await generateOrLoadBrowserPersonaRoot(name, 0);
   const board = makeFakeBoard();
   const card = await publishHandleBrowser({
     daemonDoc: daemonDoc(OWNER), board: board as never,
-    handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+    handleIndex: 0, glamour: "Guru-Josh", idbName: name,
   });
-  return { name, board, publishedCardId: card.prev === null ? "" : card.prev, version: card.version };
+  return { name, board, actCid: card.actCid };
 }
 
 describe("the browser burn twin — a phone vessel closes its own name", () => {
@@ -71,14 +71,14 @@ describe("the browser burn twin — a phone vessel closes its own name", () => {
     const board = makeFakeBoard();
     const published = await publishHandleBrowser({
       daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     });
 
-    const burned = await burnFaceBrowser({ board: board as never, handleIndex: 0, idbName: name, now: 200 });
+    const burned = await burnFaceBrowser({ board: board as never, handleIndex: 0, idbName: name });
 
     expect(isBurned(burned.chain as HandleKelEvent[]), "the chain ends in a burn").toBe(true);
     expect(headHandleKey(burned.chain as HandleKelEvent[]), "a buried name seats no key").toBeNull();
-    expect(burned.version, "the burned card supersedes the published one").toBe(published.version + 1);
+    expect(burned.parents, "the burned card names the published act").toEqual([published.actCid]);
     expect(burned.nym, "the name is unchanged — the same face is buried").toBe(published.nym);
     // The genesis owner still binds — a burn changes no set.
     const owners = currentOwnerSet(burned.chain as HandleKelEvent[])!;
@@ -91,10 +91,10 @@ describe("the browser burn twin — a phone vessel closes its own name", () => {
     const board = makeFakeBoard();
     await publishHandleBrowser({
       daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     });
     await expect(burnFaceBrowser({
-      board: board as never, handleIndex: 0, idbName: name, now: 200,
+      board: board as never, handleIndex: 0, idbName: name,
       fromPersona: true, daemonDoc: daemonDoc(OWNER), kelBoard: makeEmptyKelBoard() as never,
     })).rejects.toThrow(/unreachable|fail-closed|self/i);
   });
@@ -144,7 +144,7 @@ describe("the browser attest twin — a face signs a claim under its head", () =
     const board = makeFakeBoard();
     const card = await publishHandleBrowser({
       daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     });
 
     const claim = { surface: "dns-control", domain: "example.net" } as const;
@@ -163,7 +163,7 @@ describe("the browser attest twin — a face signs a claim under its head", () =
     const board = makeFakeBoard();
     await publishHandleBrowser({
       daemonDoc: daemonDoc(OWNER), board: board as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     });
     // Prose reaches no adapter; an unknown surface reaches none either; a blank subject names nothing.
     for (const bad of ["controls example.net", { surface: "carrier-pigeon", subject: "x" }, { surface: "dns-control", domain: "  " }]) {

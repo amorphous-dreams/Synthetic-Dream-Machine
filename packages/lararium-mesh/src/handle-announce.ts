@@ -44,19 +44,19 @@ import type { CardVerdict } from "./handle-card.js";
  *  On the DreamNet plane, not one lararium's `lares` API — an announced Handle is a super-mesh-wide face. */
 export const HANDLE_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/handles/" as const;
 
-/** The tiddler key one Handle's card announces under — keyed by nym, so a nym's newest card supersedes in place. */
-export function handleAnnounceKey(nym: string): string {
-  return `${HANDLE_ANNOUNCE_PREFIX}${nym}`;
+/** The tiddler key one publication act announces under — CID-keyed so concurrent acts remain observable. */
+export function handleAnnounceKey(nym: string, actCid: string): string {
+  return `${HANDLE_ANNOUNCE_PREFIX}${nym}/${actCid}`;
 }
 
 /**
- * Announce a card onto a doc draft — write it as a namespaced tiddler, keyed by nym. Call INSIDE a
- * `handle.change()` callback (the draft mutates there, exactly as base-doc writes its oracle tiddlers). A later
- * card for the same nym overwrites the tiddler in place; a recogniser's HandleBook still holds the lineage, so
- * a rollback attempt loses at read time even though the doc keeps only the latest slot.
+ * Announce a card onto a doc draft — write it as a namespaced tiddler, keyed by nym and semantic act CID. Call
+ * INSIDE a `handle.change()` callback (the draft mutates there, exactly as base-doc writes its oracle tiddlers).
+ * Each act gets its own CID-keyed tiddler, so concurrent heads remain observable; a recogniser's HandleBook
+ * performs the causal fold and refuses missing, contradictory, or forged evidence.
  */
 export function writeHandleAnnounce(draft: LarDoc, card: HandleCard): void {
-  const key = handleAnnounceKey(card.nym);
+  const key = handleAnnounceKey(card.nym, card.actCid);
   draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(card) }, card.nym);
 }
 
@@ -91,11 +91,25 @@ export function readHandleAnnounces(doc: LarDoc): HandleCard[] {
 export async function ingestAnnounceDoc(
   book: HandleBook,
   doc: LarDoc,
-  now?: number,
 ): Promise<Map<string, CardVerdict>> {
   const verdicts = new Map<string, CardVerdict>();
-  for (const card of readHandleAnnounces(doc)) {
-    verdicts.set(card.nym, await book.ingest(card, now));
+  let pending = readHandleAnnounces(doc);
+  // A CRDT map has no causal arrival order. Retry unavailable acts after
+  // ancestors in the same batch have been admitted, then expose any remaining
+  // gap as unavailable rather than silently dropping it.
+  for (;;) {
+    const deferred: HandleCard[] = [];
+    let progress = false;
+    for (const card of pending) {
+      const verdict = await book.ingest(card);
+      if (!verdict.ok && verdict.reject === "unavailable") deferred.push(card);
+      else { verdicts.set(card.nym, verdict); progress = true; }
+    }
+    if (!deferred.length || !progress) {
+      for (const card of deferred) verdicts.set(card.nym, await book.ingest(card));
+      break;
+    }
+    pending = deferred;
   }
   return verdicts;
 }

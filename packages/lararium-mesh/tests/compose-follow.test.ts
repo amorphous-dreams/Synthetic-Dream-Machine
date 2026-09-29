@@ -43,7 +43,7 @@ async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: strin
   const chain = chainOf(await ed.getPublicKeyAsync(seed).then(hex));
   const nym = chain[0]!.prefix;   // the recognised identity is the handle-KEL prefix, not the raw key
   const card = await signHandleCard(
-    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, parents: [], standing: null },
     ed25519SignerFromSeed(seed),
   );
   return { nym, card };
@@ -77,6 +77,26 @@ describe("composeFollow — the three local stores, one gesture, no trace", () =
     expect(result.recognized).toBe(true);
     expect(result.federated).toBe(false);
     expect(store.members("circles")).toEqual([nym]);
+  });
+
+  test("FAIL-CLOSED — a remembered fork is not recognition", async () => {
+    const book = new HandleBook();
+    const { store, writes } = spyCircleStore();
+    const { nym, card: root } = await makeCard(new Uint8Array(32).fill(8), "root");
+    const a = await signHandleCard(
+      { nym, chain: root.chain, glamour: "a", parents: [root.actCid], standing: null, fleetProof: null },
+      ed25519SignerFromSeed(new Uint8Array(32).fill(8)),
+    );
+    const b = await signHandleCard(
+      { nym, chain: root.chain, glamour: "b", parents: [root.actCid], standing: null, fleetProof: null },
+      ed25519SignerFromSeed(new Uint8Array(32).fill(8)),
+    );
+    await book.ingest(root);
+    expect((await book.ingest(a)).ok).toBe(true);
+    expect((await book.ingest(b)).reject).toBe("unsettled");
+    await expect(composeFollow({ book, circles: store, nym, circleId: "following" }))
+      .rejects.toMatchObject({ name: "FollowRefused", reason: "unknown-nym" });
+    expect(writes).toEqual([]);
   });
 
   test("FAIL-CLOSED — an UNMET nym with no card REFUSES (unknown-nym), writes nothing", async () => {

@@ -7,7 +7,7 @@
  * orphaning the face. This adapter opens the store, loads the persona seed + prefix, resolves the WHO board,
  * and mints + announces.
  *
- * Only the disk/store shores belong here; the mint logic (the veiled key, the monotone lineage, the announce)
+ * Only the disk/store shores belong here; the mint logic (the veiled key, the causal publication frontier, the announce)
  * is platform-blind in @lararium/mesh (publishPersonaGlamour), the very code a browser vessel runs.
  */
 import { Repo } from "@automerge/automerge-repo";
@@ -17,7 +17,7 @@ import { readFileSync, existsSync } from "node:fs";
 import {
   DAEMON_BAG_ID, PERSONA_KEL_PREFIX_TIDDLER, materializeSharedLarDoc, whoBoardDocUrl,
   publishHandleFromDaemonDoc,
-  resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle, signHandleCard, handleCardId,
+  resolveOwnHandleChain, boardHeadCid, burnOwnHandle, rotateOwnHandle, signHandleCard,
   attestUnderHead, normalizeHandleClaim, headOpKey, personaKelBoardDocUrl, personaKelChainForPrefix,
   deriveVeiledUserKey, PERSONA_GLAMOUR_CONTEXT, ed25519SignerFromSeed, hexToBytes, hex,
   type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
@@ -36,8 +36,6 @@ export interface HandlePublishOptions {
   /** Which persona publishes; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
   readonly storageDir?: string;
-  /** Injected clock for determinism in tests; defaults to now. */
-  readonly now?: number;
 }
 
 /**
@@ -77,7 +75,7 @@ export async function runHandlePublish(opts: HandlePublishOptions): Promise<Hand
   const store       = await makeNodePublicHandleStore();
 
   const card = await publishHandleFromDaemonDoc({
-    daemonDoc, board, seed, handleIndex, glamour: opts.glamour, now: opts.now ?? Date.now(), store,
+    daemonDoc, board, seed, handleIndex, glamour: opts.glamour, store,
   });
   await repo.flush();
   return card;
@@ -99,8 +97,8 @@ interface OwnFaceContext {
 
 /**
  * Open the vessel's own published face for a persona: resolve the daemon doc + WHO board, load the persona
- * seed, find the announced nym + its CURRENT chain off the board, and derive the seated handle-key signer.
- * The one boot the leased verbs (burn · attest) share; each supplies only its own act over this context.
+ * seed, find the announced nym + one settled verified chain off the board, and derive the seated handle-key signer.
+ * The shared boot for burn and attest supplies only its own act over this context.
  */
 async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?: number): Promise<OwnFaceContext> {
   const storageDir = storageDirOpt ?? larDataDir();
@@ -136,11 +134,12 @@ async function openOwnFace(verb: string, storageDirOpt?: string, handleIndexOpt?
   if (!record) {
     throw new Error(`[lares handle ${verb}] no published face at persona h${handleIndex} — publish one first.`);
   }
-  const chain = resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
+  const chain = await resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
   if (!chain || chain.length === 0) {
     throw new Error(`[lares handle ${verb}] no chain on the WHO board for ${record.nym.slice(0, 16)}… — the face was never announced here.`);
   }
-  const headCid = boardHeadCid(board.doc() as LarDoc, record.nym)!;
+  const headCid = await boardHeadCid(board.doc() as LarDoc, record.nym);
+  if (!headCid) throw new Error(`[lares handle ${verb}] the WHO board has no settled publication head for ${record.nym.slice(0, 16)}… — fail closed.`);
   const veiled  = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
   const veiledSigner = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
 
@@ -198,15 +197,14 @@ export interface HandleBurnOptions {
   /** Which persona's face to bury; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
   readonly storageDir?: string;
-  readonly now?: number;
   /** Bury the face from ABOVE — the owning persona (its head op-key) signs, not the seated handle key. */
   readonly fromPersona?: boolean;
 }
 
 /**
  * runHandleBurn — the disk adapter for `lares handle burn` (SELF-burn: the seated handle key closes its own
- * name). Resolve the vessel's own published nym for the chosen persona, resolve the CURRENT chain off the WHO
- * board, mint a terminal burn over it under the lease, and re-announce the burned card. A reader refuses the
+ * name). Resolve the vessel's own published nym for the chosen persona, resolve one settled verified chain from the WHO
+ * board, mint a terminal burn conditioned on that head, and re-announce the burned card. A reader refuses the
  * burned chain before ever checking the card's signature, so recognition ends structurally at the burn. The
  * owner-burn hand (the persona buries the face from above, `--from-persona`) rides a later increment — it
  * wants the persona head op-key signer wired.
@@ -219,8 +217,7 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
   const buildCard = (_event: HandleKelEvent, newChain: HandleKelEvent[]): Promise<HandleCard> => signHandleCard(
     {
       nym: face.record.nym, chain: newChain, glamour: face.record.glamour,
-      version: face.record.version + 1, prev: face.record.cardId,
-      expiry: (opts.now ?? Date.now()) + 86_400_000, standing: null, fleetProof: null,
+      parents: face.record.heads, standing: null, fleetProof: null,
     },
     face.veiledSigner,
   );
@@ -247,6 +244,11 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
 
   const result = await burnOwnHandle(hand);
   if (!result.ok) throw new Error(`[lares handle burn] ${result.reason}`);
+  const store = await makeNodePublicHandleStore();
+  await store.save({
+    handleIndex: face.handleIndex, contextIndex: face.record.contextIndex, nym: face.record.nym,
+    glamour: face.record.glamour, heads: [result.card.actCid],
+  });
   await face.repo.flush();
   return result.card;
 }
@@ -255,7 +257,6 @@ export interface HandleRotateOptions {
   /** Which persona's face to rotate; defaults to the worn persona, then 0. */
   readonly handleIndex?: number;
   readonly storageDir?: string;
-  readonly now?: number;
 }
 
 /**
@@ -263,9 +264,9 @@ export interface HandleRotateOptions {
  * presentation key under the same name, the OWNING PERSONA authorizing (a lost handle key recovers through the
  * persona). Resolve the owning persona's verified head op-key off the per-Nexus persona-KEL board, resolve the
  * authorizing hand (the root seed signs a never-rotated persona; a rotated one wants its current op-key custody,
- * unreachable here → fail-closed toward re-founding the face), then rotate over the board's CURRENT chain under
- * the lease and re-announce the renewed card signed by the FRESH head handle key. The advanced record keeps the
- * monotone lineage a peer's HandleBook holds to.
+ * unreachable here → fail-closed toward re-founding the face), then rotate over the board's settled verified chain
+ * and re-announce the renewed card signed by the fresh head handle key. The advanced record keeps the
+ * causal publication frontier a peer's HandleBook holds to.
  */
 export async function runHandleRotate(opts: HandleRotateOptions): Promise<HandleCard> {
   const face = await openOwnFace("rotate", opts.storageDir, opts.handleIndex);
@@ -283,13 +284,11 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   if (!resolved.ok) throw new Error(`[lares handle rotate] ${resolved.reason}`);
 
   const store = await makeNodePublicHandleStore();
-  const now   = opts.now ?? Date.now();
   const buildCard = async (_event: HandleKelEvent, newChain: HandleKelEvent[], freshSign: (b: Uint8Array) => Promise<string>): Promise<HandleCard> =>
     signHandleCard(
       {
         nym: face.record.nym, chain: newChain, glamour: face.record.glamour,
-        version: face.record.version + 1, prev: face.record.cardId,
-        expiry: now + 30 * 24 * 60 * 60 * 1000, standing: null, fleetProof: null,
+        parents: face.record.heads, standing: null, fleetProof: null,
       },
       freshSign,   // the FRESH head handle key certifies the renewed card
     );
@@ -304,11 +303,10 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   });
   if (!result.ok) throw new Error(`[lares handle rotate] ${result.reason}`);
 
-  // Advance the vessel's own published-face record so the next publish/rotate links a fresh prev (anti-rollback).
-  const { sig: _sig, ...unsigned } = result.card;
+  // Advance the vessel's own publication frontier so the next act names this act as its parent.
   await store.save({
     handleIndex: face.handleIndex, contextIndex: face.record.contextIndex, nym: face.record.nym,
-    glamour: face.record.glamour, version: face.record.version + 1, cardId: await handleCardId(unsigned),
+    glamour: face.record.glamour, heads: [result.card.actCid],
   });
   await face.repo.flush();
   return result.card;

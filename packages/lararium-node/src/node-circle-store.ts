@@ -73,16 +73,16 @@ export function makeNodeCircleStore(): CircleStore {
   };
 }
 
-/** Load the recogniser's handle-book from disk (empty when none / a torn file). The caller persists mutations
- *  via {@link saveNodeHandleBook} after a follow — the book itself stays pure + I/O-free. */
-export function loadNodeHandleBook(): HandleBook {
+/** Load the recogniser's handle-book from disk through the async verification boundary. Raw JSON never enters
+ * a recogniser by constructor; invalid, scalar-era, torn, or tampered closure restores as an empty book. */
+export async function loadNodeHandleBook(): Promise<HandleBook> {
   const file = join(larIdentityDir(), HANDLE_BOOK_FILE);
   if (!existsSync(file)) return new HandleBook();
   try {
     const snapshot = JSON.parse(readFileSync(file, "utf8")) as HandleBookSnapshot;
-    return new HandleBook(snapshot);
+    return HandleBook.restore(snapshot);
   } catch {
-    return new HandleBook();   // a torn book reads empty — re-ingesting a card re-learns the nym
+    return new HandleBook();
   }
 }
 

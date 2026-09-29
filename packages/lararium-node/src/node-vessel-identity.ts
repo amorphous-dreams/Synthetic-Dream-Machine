@@ -570,8 +570,8 @@ export async function listPersonaRoots(): Promise<number[]> {
 //     wraps this same shape over a private bag so the label rides the human's own vessels; the local file
 //     stands as the local-first floor beneath that sync.
 //   · the PUBLIC handle record (`.persona-public-handles-${login}.json`) — the vessel's memory of ITS OWN
-//     published glamour faces (index → nym/glamour/version/cardId), so a re-publish advances the monotone
-//     card lineage (persona-glamour). Distinct from the pet-name map and from the handle-book (others' nyms).
+//     published glamour faces (index → nym/glamour/causal heads), so a re-publish extends the local frontier
+//     (persona-glamour). Distinct from the pet-name map and from the handle-book (others' nyms).
 
 /** The private pet-name map filename — login-scoped. */
 function personaPetnameFileName(login: string | null): string {
@@ -700,7 +700,13 @@ function readPublicHandleMap(idDir: string, login: string | null): Record<string
   if (!existsSync(file)) return {};
   try {
     const raw = JSON.parse(readFileSync(file, "utf8")) as { handles?: unknown };
-    if (raw.handles && typeof raw.handles === "object") return raw.handles as Record<string, PersonaPublicHandleRecord>;
+    if (raw.handles && typeof raw.handles === "object") {
+      return Object.fromEntries(Object.entries(raw.handles as Record<string, unknown>).filter(([, value]) => {
+        const r = value as Partial<PersonaPublicHandleRecord>;
+        return r && typeof r === "object" && typeof r.nym === "string" && Array.isArray(r.heads) &&
+          r.heads.every((head) => typeof head === "string");
+      })) as Record<string, PersonaPublicHandleRecord>;
+    }
   } catch { /* a torn record reads empty — a re-publish re-records the face it holds */ }
   return {};
 }
@@ -708,8 +714,8 @@ function readPublicHandleMap(idDir: string, login: string | null): Record<string
 /**
  * Build the node fs OwnPublicHandleStore — the vessel's memory of ITS OWN published glamour faces. Login-
  * scoped, 0o600. Records carry ONLY public data (the veiled nym, the display glamour, the card lineage), so
- * no seal touches them — but they stay in the identity home so a re-publish keeps advancing the lineage a
- * peer's HandleBook holds to.
+ * no seal touches them — but they stay in the identity home so a re-publish keeps extending the causal
+ * frontier a peer's HandleBook holds to.
  */
 export async function makeNodePublicHandleStore(): Promise<OwnPublicHandleStore> {
   const hint  = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));

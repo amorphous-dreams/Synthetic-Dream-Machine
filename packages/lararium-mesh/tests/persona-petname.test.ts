@@ -177,47 +177,31 @@ describe("persona-petname — the pet-name NEVER PUBLICLY FEDERATES (#64 stage 4
 describe("persona-glamour — the persona-index → HandleCard wire (#64 stage 4)", () => {
   test("mint derives the veiled key as the card nym; the card certifies itself", async () => {
     const store = makeInMemoryPublicStore();
-    const { card, record } = await mintPersonaGlamour({ seed: SEED, handleIndex: 4, glamour: "Tide-Caller", now: 100, store, ownerPersonaKelPrefix: OWNER });
+    const { card, record } = await mintPersonaGlamour({ seed: SEED, handleIndex: 4, glamour: "Tide-Caller", store, ownerPersonaKelPrefix: OWNER });
     // The nym IS the derived veiled-user verifying key; the signature checks against it (self-certifying).
     expect(card.nym).toBe(record.nym);
-    expect((await verifyHandleCard(card, 100)).ok).toBe(true);
+    expect((await verifyHandleCard(card)).ok).toBe(true);
     expect(card.glamour).toBe("Tide-Caller");
-    expect(card.version).toBe(1);
-    expect(card.prev).toBeNull();
-    // The record's cardId is the card's content id (its `prev` target on the next publish).
-    expect(record.cardId).toBe(await handleCardId({
-      kind: card.kind, nym: card.nym, chain: card.chain, glamour: card.glamour, version: card.version, prev: card.prev,
-      expiry: card.expiry, standing: card.standing, fleetProof: card.fleetProof,
-    }));
+    expect(card.parents).toEqual([]);
+    expect(record.heads).toEqual([card.actCid]);
   });
 
   test("a DIFFERENT persona-index derives a DIFFERENT nym (unlinkable faces)", async () => {
     const store = makeInMemoryPublicStore();
-    const a = await mintPersonaGlamour({ seed: SEED, handleIndex: 0, glamour: "A", now: 1, store, ownerPersonaKelPrefix: OWNER });
-    const b = await mintPersonaGlamour({ seed: SEED, handleIndex: 1, glamour: "B", now: 1, store, ownerPersonaKelPrefix: OWNER });
+    const a = await mintPersonaGlamour({ seed: SEED, handleIndex: 0, glamour: "A", store, ownerPersonaKelPrefix: OWNER });
+    const b = await mintPersonaGlamour({ seed: SEED, handleIndex: 1, glamour: "B", store, ownerPersonaKelPrefix: OWNER });
     expect(a.card.nym).not.toBe(b.card.nym);
   });
 
-  test("a re-publish advances the monotone lineage the recogniser holds to (version bump + prev link)", async () => {
+  test("a re-publish advances the causal lineage the recogniser holds to", async () => {
     const store = makeInMemoryPublicStore();
     const board = makeFakeBoard();
-    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v1", now: 10, store, ownerPersonaKelPrefix: OWNER });
-    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v2", now: 20, store, ownerPersonaKelPrefix: OWNER });
+    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v1", store, ownerPersonaKelPrefix: OWNER });
+    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 2, glamour: "v2", store, ownerPersonaKelPrefix: OWNER });
 
-    expect(second.version).toBe(2);
-    expect(second.prev).toBe(await handleCardId({
-      kind: first.kind, nym: first.nym, chain: first.chain, glamour: first.glamour, version: first.version, prev: first.prev,
-      expiry: first.expiry, standing: first.standing, fleetProof: first.fleetProof,
-    }));
+    expect(second.parents).toEqual([first.actCid]);
     // A recogniser tracking the first card ACCEPTS the second as a genuine update (not a rollback/fork).
-    const firstId = await handleCardId({
-      kind: first.kind, nym: first.nym, chain: first.chain, glamour: first.glamour, version: first.version, prev: first.prev,
-      expiry: first.expiry, standing: first.standing, fleetProof: first.fleetProof,
-    });
-    const verdict = await acceptHandleUpdate(second, {
-      expectedNym: first.nym, highWaterVersion: first.version, lastCardId: firstId, now: 25,
-    });
-    expect(verdict.ok).toBe(true);
+    expect((await verifyHandleCard(second)).ok).toBe(true);
   });
 
   test("an empty glamour is refused — a federated face needs a display name", async () => {

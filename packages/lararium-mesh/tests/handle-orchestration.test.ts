@@ -13,64 +13,97 @@
  */
 import { describe, test, expect } from "vitest";
 import { resolveOwnHandleChain, boardHeadCid, extendOwnHandle, burnOwnHandle, rotateOwnHandle, graftOwnHandle } from "../src/handle-orchestration.js";
-import { mintHandleInception, mintHandleInceptionSet, verifyHandleKel, isBurned, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
-import { HANDLE_CARD_DOMAIN } from "../src/handle-card.js";
+import { mintHandleInception, mintHandleInceptionSet, mintHandleRotation, verifyHandleKel, isBurned, type HandleKelEvent, type HandleMintResult } from "../src/handle-kel.js";
+import { signHandleCard, type HandleCard } from "../src/handle-card.js";
 import { writeHandleAnnounce } from "../src/handle-announce.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import { hex } from "../src/crypto.js";
 import * as ed from "@noble/ed25519";
 import type { LarDoc } from "../src/base-doc.js";
-import type { HandleCard } from "../src/handle-card.js";
 
 function makeFakeBoard(): { doc(): LarDoc; change(fn: (d: LarDoc) => void): void } {
   const d: LarDoc = { tiddlers: {} } as LarDoc;
   return { doc: () => d, change: (fn) => fn(d) };
 }
 
-function card(nym: string, chain: HandleKelEvent[], version: number): HandleCard {
-  return {
-    kind: HANDLE_CARD_DOMAIN, nym, chain, glamour: "Guru-Josh",
-    version, prev: null, expiry: 0, standing: null, fleetProof: null, sig: "00",
-  } as unknown as HandleCard;
+type CardSigner = (bytes: Uint8Array) => Promise<string>;
+const handleSigners = new Map<string, CardSigner>();
+const lastCardCids = new Map<string, string>();
+
+/** Board fixtures cross the same verification boundary as production: every card is signed by its head key,
+ * and every descendant points at the preceding announced act. An explicit signer is used for rotations,
+ * whose fresh key is not recoverable from the old chain. */
+async function card(nym: string, chain: HandleKelEvent[], ordinal: number, explicitSigner?: CardSigner): Promise<HandleCard> {
+  const head = chain[chain.length - 1]!;
+  const signer = explicitSigner ?? handleSigners.get(head.handleKeyDid);
+  if (!signer) throw new Error(`test fixture has no signer for ${head.handleKeyDid}`);
+  handleSigners.set(head.handleKeyDid, signer);
+  const parent = ordinal > 1 ? lastCardCids.get(nym) : undefined;
+  const result = await signHandleCard({
+    nym, chain, glamour: "Guru-Josh", parents: parent ? [parent] : [], standing: null, fleetProof: null,
+  }, signer);
+  lastCardCids.set(nym, result.actCid);
+  return result;
+}
+
+function signerOf(seed: Uint8Array): CardSigner {
+  return async (bytes) => hex(await ed.signAsync(bytes, seed));
 }
 
 const OWNER = "persona-" + "ab".repeat(32);
 
-describe("handle-orchestration — the board is truth, the extend is leased", () => {
-  test("resolveOwnHandleChain reads the board's chain; boardHeadCid returns its tail cid", () => {
-    const inc = mintHandleInception("0x" + "11".repeat(32), OWNER, sealKeySetHash(["0x" + "11".repeat(32)], 1));
+describe("handle-orchestration — the board is verified evidence, the extend conditions on a causal head", () => {
+  test("resolveOwnHandleChain reads the board's chain; boardHeadCid returns its tail cid", async () => {
+    const seed = new Uint8Array(32).fill(11);
+    const handleKeyDid = "0x" + await ed.getPublicKeyAsync(seed).then(hex);
+    const inc = mintHandleInception(handleKeyDid, OWNER, sealKeySetHash([handleKeyDid], 1));
     const board = makeFakeBoard();
-    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
-    const chain = resolveOwnHandleChain(board.doc(), inc.prefix);
+    const genesis = await card(inc.prefix, [inc], 1, signerOf(seed));
+    board.change((d) => writeHandleAnnounce(d, genesis));
+    const chain = await resolveOwnHandleChain(board.doc(), inc.prefix);
     expect(chain?.length).toBe(1);
-    expect(boardHeadCid(board.doc(), inc.prefix)).toBe(inc.eventCid);
+    expect(await boardHeadCid(board.doc(), inc.prefix)).toBe(inc.eventCid);
   });
 
-  test("★ a stale head REFUSES the mint (lease violation) — the fork-prevention, with a matching-lease control ★", async () => {
-    const inc = mintHandleInception("0x" + "22".repeat(32), OWNER, sealKeySetHash(["0x" + "22".repeat(32)], 1));
+  test("★ a stale head REFUSES the mint (causal head mismatch) — the fork-prevention, with a matching-head control ★", async () => {
+    const handleSeed = new Uint8Array(32).fill(22);
+    const ownerSeed = new Uint8Array(32).fill(23);
+    const freshSeed = new Uint8Array(32).fill(24);
+    const handleKeyDid = "0x" + await ed.getPublicKeyAsync(handleSeed).then(hex);
+    const ownerDid = "0x" + await ed.getPublicKeyAsync(ownerSeed).then(hex);
+    const freshHandleKeyDid = "0x" + await ed.getPublicKeyAsync(freshSeed).then(hex);
+    const inc = mintHandleInception(handleKeyDid, ownerDid, sealKeySetHash([ownerDid], 1));
     const nym = inc.prefix;
     const board = makeFakeBoard();
-    board.change((d) => writeHandleAnnounce(d, card(nym, [inc], 1)));
+    const genesis = await card(nym, [inc], 1, signerOf(handleSeed));
+    board.change((d) => writeHandleAnnounce(d, genesis));
 
-    // A synthetic next event stands in for any verb's real mint — the core is verb-agnostic.
-    const nextEvent = { ...inc, seq: 1, eventCid: "handle1-" + "ff".repeat(32) } as HandleKelEvent;
+    // A real rotation event stands in for any verb's mint — the core remains verb-agnostic while the board
+    // card still carries a valid KEL and a signature by the newly seated handle key.
+    const minted = await mintHandleRotation({
+      head: inc, freshHandleKeyDid, ownerAuthMemberPrefix: ownerDid, ownerHeadOpKeyDid: ownerDid,
+      sign: signerOf(ownerSeed),
+    });
+    expect(minted.ok).toBe(true);
+    if (!minted.ok) return;
+    const nextEvent = minted.event;
     let mintCalls = 0;
     const mintNext = async (_chain: HandleKelEvent[]): Promise<HandleMintResult> => {
       mintCalls += 1;
       return { ok: true, event: nextEvent };
     };
-    const buildCard = (_e: HandleKelEvent, newChain: HandleKelEvent[]) => card(nym, newChain, 2);
+    const buildCard = (_e: HandleKelEvent, newChain: HandleKelEvent[]) => card(nym, newChain, 2, signerOf(freshSeed));
 
     // CONTROL: the lease matches the board head → the mint runs and the board advances.
     const first = await extendOwnHandle({ board: board as never, nym, expectedHeadCid: inc.eventCid, mintNext, buildCard });
     expect(first.ok, first.ok ? "" : first.reason).toBe(true);
     expect(mintCalls).toBe(1);
-    expect(boardHeadCid(board.doc(), nym)).toBe(nextEvent.eventCid);
+    expect(await boardHeadCid(board.doc(), nym)).toBe(nextEvent.eventCid);
 
     // THE RED: the same stale lease (inc's cid) now trails the board (at nextEvent) → REFUSE, no mint.
     const stale = await extendOwnHandle({ board: board as never, nym, expectedHeadCid: inc.eventCid, mintNext, buildCard });
     expect(stale.ok).toBe(false);
-    if (!stale.ok) expect(stale.reason).toMatch(/lease/i);
+    if (!stale.ok) expect(stale.reason).toMatch(/causal head mismatch/i);
     expect(mintCalls, "a stale head never reaches the mint — it cannot fork the head").toBe(1);
   });
 });
@@ -80,10 +113,12 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
   const signerOf = (s: Uint8Array) => async (bytes: Uint8Array) => hex(await ed.signAsync(bytes, s));
 
   async function foundedOnBoard() {
-    const handleKeyDid = "0x" + "33".repeat(32);
+    const handleSeed = new Uint8Array(32).fill(33);
+    const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(handleSeed).then(hex));
     const inc = mintHandleInception(handleKeyDid, OWNER, sealKeySetHash([handleKeyDid], 1));
     const board = makeFakeBoard();
-    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    const genesis = await card(inc.prefix, [inc], 1, signerOf(handleSeed));
+    board.change((d) => writeHandleAnnounce(d, genesis));
     const ownerKeyDid = "0x" + (await ed.getPublicKeyAsync(OWNER_SEED).then(hex));
     return { inc, board, ownerKeyDid };
   }
@@ -112,7 +147,7 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     if (res.ok) return;
     expect(res.reason).toMatch(/co-?signer/i);
     // The chain never moved — a refused burn leaves the name standing, not half-burned.
-    const standing = resolveOwnHandleChain(board.doc(), inc.prefix);
+    const standing = await resolveOwnHandleChain(board.doc(), inc.prefix);
     expect(standing, "the board lost the name entirely").not.toBeNull();
     expect(isBurned(standing!), "a refused burn still buried the name").toBe(false);
   });
@@ -138,7 +173,9 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     if (!res.ok) return;
     expect(verifyHandleKel(res.card.chain as HandleKelEvent[]), "the burned chain verifies").toBe(true);
     expect(isBurned(res.card.chain as HandleKelEvent[]), "the name reads buried").toBe(true);
-    expect(boardHeadCid(board.doc(), inc.prefix)).toBe((res.card.chain[res.card.chain.length - 1] as HandleKelEvent).eventCid);
+    // A terminal burn remains on the board as evidence, but the verified writer resolver exposes no live
+    // chain after recognition has ended.
+    expect(await boardHeadCid(board.doc(), inc.prefix)).toBeNull();
   });
 
   test("★ the SELF-burn — the seated handle key closes its own name through the lease ★", async () => {
@@ -146,7 +183,8 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(HANDLE_SEED).then(hex));
     const inc = mintHandleInception(handleKeyDid, OWNER, sealKeySetHash([handleKeyDid], 1));
     const board = makeFakeBoard();
-    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    const genesis = await card(inc.prefix, [inc], 1, signerOf(HANDLE_SEED));
+    board.change((d) => writeHandleAnnounce(d, genesis));
     const res = await burnOwnHandle({
       board: board as never, nym: inc.prefix, expectedHeadCid: inc.eventCid,
       sign: signerOf(HANDLE_SEED),   // the seated handle key signs its own ending
@@ -168,7 +206,7 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
     if (!neither.ok) expect(neither.reason).toMatch(/exactly one hand/i);
   });
 
-  test("★ a stale lease refuses the burn — no name burns from a head the board already moved past ★", async () => {
+  test("★ a stale causal head refuses the burn — no name burns from a head the board already changed ★", async () => {
     const { inc, board, ownerKeyDid } = await foundedOnBoard();
     const res = await burnOwnHandle({
       board: board as never, nym: inc.prefix, expectedHeadCid: "handle1-" + "00".repeat(32),
@@ -176,8 +214,8 @@ describe("burnOwnHandle — the first verb over the leased-projection core (owne
       buildCard: (_e, newChain) => card(inc.prefix, newChain, 2),
     });
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(res.reason).toMatch(/lease/i);
-    expect(isBurned(resolveOwnHandleChain(board.doc(), inc.prefix)!), "the name stands unburned").toBe(false);
+    if (!res.ok) expect(res.reason).toMatch(/causal head mismatch/i);
+    expect(isBurned((await resolveOwnHandleChain(board.doc(), inc.prefix))!), "the name stands unburned").toBe(false);
   });
 });
 
@@ -205,7 +243,8 @@ describe("the witness threshold rides the orchestrator — a shared name moves o
     const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(HANDLE_SEED).then(hex));
     const inc = mintHandleInceptionSet(handleKeyDid, [aDid, bDid], 2, sealKeySetHash([handleKeyDid], 1));
     const board = makeFakeBoard();
-    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    const genesis = await card(inc.prefix, [inc], 1, signerOf(HANDLE_SEED));
+    board.change((d) => writeHandleAnnounce(d, genesis));
     return { inc, board, aDid, bDid };
   }
 
@@ -216,7 +255,7 @@ describe("the witness threshold rides the orchestrator — a shared name moves o
       seed: HANDLE_SEED, handleIndex: 0,
       ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
       coSigners: [{ memberPrefix: bDid, keyDid: bDid, sign: signerOf(B_SEED) }],
-      buildCard: (_e, newChain, _fresh) => card(inc.prefix, newChain, 2),
+      buildCard: (_e, newChain, fresh) => card(inc.prefix, newChain, 2, fresh),
     });
     expect(res.ok, res.ok ? "" : res.reason).toBe(true);
     if (!res.ok) return;
@@ -230,7 +269,7 @@ describe("the witness threshold rides the orchestrator — a shared name moves o
       seed: HANDLE_SEED, handleIndex: 0,
       ownerAuthMemberPrefix: aDid, ownerHeadOpKeyDid: aDid, sign: signerOf(A_SEED),
       // no coSigners — only the presenter, below the 2-of-2 threshold
-      buildCard: (_e, newChain, _fresh) => card(inc.prefix, newChain, 2),
+      buildCard: (_e, newChain, fresh) => card(inc.prefix, newChain, 2, fresh),
     });
     expect(res.ok, res.ok ? "" : res.reason).toBe(true);   // the mint runs; the threshold bites at VERIFY
     if (!res.ok) return;
@@ -261,7 +300,8 @@ describe("the witness threshold rides the orchestrator — a shared name moves o
     const handleKeyDid = "0x" + (await ed.getPublicKeyAsync(HANDLE_SEED).then(hex));
     const inc = mintHandleInception(handleKeyDid, aDid, sealKeySetHash([handleKeyDid], 1));
     const board = makeFakeBoard();
-    board.change((d) => writeHandleAnnounce(d, card(inc.prefix, [inc], 1)));
+    const genesis = await card(inc.prefix, [inc], 1, signerOf(HANDLE_SEED));
+    board.change((d) => writeHandleAnnounce(d, genesis));
     return { inc, board, aDid, bDid };
   }
 

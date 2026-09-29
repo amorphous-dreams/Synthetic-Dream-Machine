@@ -46,7 +46,7 @@ describe("the browser publish surface — a phone vessel names itself", () => {
     await generateOrLoadBrowserPersonaRoot(name, 0);   // seed the origin's persona vault
     const card = await publishHandleBrowser({
       daemonDoc: daemonDoc(OWNER), board: makeFakeBoard() as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     });
     const owners = currentOwnerSet(card.chain as HandleKelEvent[])!;
     expect(owners.members, "the persona owns the published face").toEqual([OWNER]);
@@ -58,7 +58,7 @@ describe("the browser publish surface — a phone vessel names itself", () => {
     await generateOrLoadBrowserPersonaRoot(name, 0);
     await expect(publishHandleBrowser({
       daemonDoc: daemonDoc(undefined), board: makeFakeBoard() as never,
-      handleIndex: 0, glamour: "Guru-Josh", idbName: name, now: 100,
+      handleIndex: 0, glamour: "Guru-Josh", idbName: name,
     })).rejects.toThrow(/persona-KEL prefix|belongs to its persona/i);
   });
 });

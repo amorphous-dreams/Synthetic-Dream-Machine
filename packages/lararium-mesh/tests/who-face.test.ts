@@ -30,7 +30,7 @@ const pubOf  = async (seed: Uint8Array): Promise<string> => chainOf(await rawPub
 async function publish(seed: Uint8Array, glamour: string): Promise<HandleCard> {
   const chain = chainOf(await rawPub(seed));
   return signHandleCard({
-    nym: chain[0]!.prefix, chain, glamour, version: 1, prev: null, expiry: 4_000_000_000_000, standing: null,
+    nym: chain[0]!.prefix, chain, glamour, parents: [], standing: null,
   }, signer(seed));
 }
 

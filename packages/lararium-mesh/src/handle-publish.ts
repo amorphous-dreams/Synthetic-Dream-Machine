@@ -28,7 +28,6 @@ export async function publishHandleFromDaemonDoc(opts: {
   seed: Uint8Array;
   handleIndex: number;
   glamour: string;
-  now: number;
   store: OwnPublicHandleStore;
 }): Promise<HandleCard> {
   const prefix = tiddlerText(
@@ -42,7 +41,7 @@ export async function publishHandleFromDaemonDoc(opts: {
   }
   return publishPersonaGlamour({
     board: opts.board, seed: opts.seed, handleIndex: opts.handleIndex,
-    glamour: opts.glamour, now: opts.now, store: opts.store,
+    glamour: opts.glamour, store: opts.store,
     ownerPersonaKelPrefix: prefix,
   });
 }

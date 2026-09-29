@@ -1117,7 +1117,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         const handleIndex = await resolveFaceIndex(args);
         const board = await resolveWhoBoard("publish");
         const card = await publishHandleBrowser({ daemonDoc: ownerDaemonDoc(), board, handleIndex, glamour, idbName });
-        return { verb: "face-publish", nym: card.nym, glamour: card.glamour, version: card.version };
+        return { verb: "face-publish", nym: card.nym, glamour: card.glamour, actCid: card.actCid, parents: card.parents };
       });
 
       // face-burn — bury the name. SELF-burn by default (the seated handle key); `from-persona` buries it from
@@ -1133,7 +1133,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
           burnOpts.kelBoard    = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
         }
         const card = await burnFaceBrowser(burnOpts);
-        return { verb: "face-burn", nym: card.nym, version: card.version, burned: true, hand: fromPersona ? "owner" : "self" };
+        return { verb: "face-burn", nym: card.nym, actCid: card.actCid, parents: card.parents, burned: true, hand: fromPersona ? "owner" : "self" };
       });
 
       // face-attest — sign a claim under the face's head, carried ON the card, verified reader-locally. Not a

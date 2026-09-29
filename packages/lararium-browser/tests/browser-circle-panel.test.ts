@@ -12,11 +12,12 @@ import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSee
 import {
   browserComposeFollow, browserComposeUnfollow, browserListFollows, makeBrowserCircleStore,
 } from "../src/browser-circle-store.js";
+import { openVesselIdb, idbGet, idbPut, HANDLE_BOOK_STORE } from "../src/browser-vessel-identity.js";
 import { circlePanelStateArgs } from "../src/circle-panel-state.js";
 
 let created = 0;
 const opened = new Set<string>();
-function idb(): string { const n = `lares:test-circle-panel:${Date.now()}:${created++}`; opened.add(n); return n; }
+function idb(): string { const n = `lares:test-circle-panel:${created++}`; opened.add(n); return n; }
 function deleteIdb(name: string): Promise<void> {
   return new Promise((resolve) => {
     const req = indexedDB.deleteDatabase(name);
@@ -32,7 +33,7 @@ async function card(seedByte: number, glamour: string) {
   const chain = [mintHandleInception(did, did, "ab".repeat(32))];
   const nym = chain[0]!.prefix;
   const c = await signHandleCard(
-    { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },
+    { nym, chain, glamour, parents: [], standing: null },
     ed25519SignerFromSeed(signingSeedFromHex(signingKey)),
   );
   return { nym, card: c };
@@ -58,6 +59,21 @@ describe("browser follow — the IoC graph, local + traceless (real IDB)", () =>
     const un = await browserComposeUnfollow({ idbName: name, nym, circleId: "following" });
     expect(un.federated).toBe(false);
     expect(await makeBrowserCircleStore(name).members("following")).toEqual([]);
+  });
+
+  test("a fresh load restores a valid closure, while a tampered closure drops before recognition", async () => {
+    const name = idb();
+    const { nym, card: c } = await card(9, "Eris");
+    await browserComposeFollow({ idbName: name, nym, circleId: "following", petname: "eris", card: c });
+    expect(await browserListFollows("following", name)).toEqual([{ nym, petname: "eris", glamour: "Eris" }]);
+
+    const db = await openVesselIdb(name);
+    const snapshot = await idbGet<{ records: Array<{ accepted: Array<{ glamour: string }> }> }>(db, HANDLE_BOOK_STORE, "snapshot");
+    snapshot!.records[0]!.accepted[0]!.glamour = "forged";
+    await idbPut(db, HANDLE_BOOK_STORE, "snapshot", snapshot);
+    db.close();
+
+    expect(await browserListFollows("following", name)).toEqual([{ nym, petname: null, glamour: null }]);
   });
 
   test("circlePanelStateArgs shapes the follow-view into the flat, positional, string-only field bag", () => {

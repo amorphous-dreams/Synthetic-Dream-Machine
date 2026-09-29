@@ -489,7 +489,7 @@ export async function browserJoineePersonaIndex(idbName = "lares:vessel"): Promi
 //     federated (persona-petname). The never-federates wall is structural: no board write exists in this
 //     shore. A future device-fleet adapter wraps the SAME shape over a private bag for cross-vessel sync.
 //   · the PUBLIC published-face record (PERSONA_PUBLIC_HANDLE_STORE) — the vessel's memory of its OWN
-//     glamour faces (nym/glamour/version/cardId), so a re-publish advances the monotone lineage
+//     glamour faces (nym/glamour/causal heads), so a re-publish extends the local frontier
 //     (persona-glamour). Distinct from the pet-name map and from the handle-book (others' nyms).
 
 /** The per-persona IDB key — uniform `h${N}`, mirroring the persona-root slots' spelling. */
@@ -583,7 +583,7 @@ export async function makeBrowserPersonaPetnameStore(idbName = "lares:vessel"): 
 /**
  * Build the IDB OwnPublicHandleStore — the vessel's memory of ITS OWN published glamour faces. Keyed
  * `h${N}`, one record per persona. Records carry ONLY public data (the veiled nym, the display glamour, the
- * card lineage), so no seal touches them; they persist so a re-publish keeps advancing the lineage a peer's
+ * causal frontier), so no seal touches them; they persist so a re-publish keeps extending the frontier a peer's
  * HandleBook holds to.
  */
 export async function makeBrowserPublicHandleStore(idbName = "lares:vessel"): Promise<OwnPublicHandleStore> {
@@ -592,7 +592,8 @@ export async function makeBrowserPublicHandleStore(idbName = "lares:vessel"): Pr
       const db = await openVesselIdb(idbName);
       const r  = await idbGet<PersonaPublicHandleRecord>(db, PERSONA_PUBLIC_HANDLE_STORE, personaPetnameKey(handleIndex));
       db.close();
-      return r ?? null;
+      if (!r || typeof r.nym !== "string" || !Array.isArray(r.heads) || !r.heads.every((head) => typeof head === "string")) return null;
+      return r;
     },
     async save(record) {
       const db = await openVesselIdb(idbName);

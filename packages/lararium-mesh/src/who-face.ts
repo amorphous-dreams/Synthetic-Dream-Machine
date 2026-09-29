@@ -41,9 +41,8 @@ export function resolveWhoFace(
 }
 
 /**
- * Announce a card onto a resolved WHO board — write it as a nym-keyed tiddler inside the handle's change.
- * A re-announce (same nym, newer version) overwrites the slot; a recogniser's HandleBook still holds the
- * lineage, so the board keeping only the latest slot never loses the anti-rollback guarantee.
+ * Announce a card onto a resolved WHO board. Each semantic act receives its own key, so concurrent
+ * publications remain available to a recogniser's local causal fold.
  */
 export function announceToWhoFace(whoFaceHandle: DocHandle<LarDoc>, card: HandleCard): void {
   whoFaceHandle.change((d) => writeHandleAnnounce(d, card));

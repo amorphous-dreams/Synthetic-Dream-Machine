@@ -38,7 +38,7 @@ const SUBSTRATE_CAP_ID = "substrate";
  *  compose this cap, read every peer's card, and publish nothing. */
 export interface WhoFaceComponent {
   readonly handle: DocHandle<LarDoc>;
-  readonly ingest: (book: HandleBook, now?: number) => Promise<Map<string, CardVerdict>>;
+  readonly ingest: (book: HandleBook) => Promise<Map<string, CardVerdict>>;
   /** Publish a card onto the board — a deliberate act the holder chooses, NEVER a boot side-effect. */
   readonly announce: (card: HandleCard) => void;
 }
@@ -75,7 +75,7 @@ export function whoFaceCap(deps: {
       await deps.residency?.pin(bagId, "boot:who-face");
       return {
         handle: board,
-        ingest: (book: HandleBook, now?: number) => ingestAnnounceDoc(book, board.doc()!, now),
+        ingest: (book: HandleBook) => ingestAnnounceDoc(book, board.doc()!),
         announce: (card: HandleCard) => announceToWhoFace(board, card),
       };
     },

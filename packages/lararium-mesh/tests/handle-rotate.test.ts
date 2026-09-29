@@ -82,7 +82,7 @@ const buildRotatedCard = (record: PersonaPublicHandleRecord, glamour: string, no
   async (_e: HandleKelEvent, newChain: HandleKelEvent[], freshSign: (b: Uint8Array) => Promise<string>): Promise<HandleCard> => {
     const { signHandleCard } = await import("../src/handle-card.js");
     return signHandleCard(
-      { nym: record.nym, chain: newChain, glamour, version: record.version + 1, prev: record.cardId, expiry: now + 86_400_000, standing: null, fleetProof: null },
+      { nym: record.nym, chain: newChain, glamour, parents: record.heads, standing: null, fleetProof: null },
       freshSign,
     );
   };
@@ -180,10 +180,10 @@ describe("handle-orchestration — rotateOwnHandle: the context ladder end-to-en
     if (!r1.ok) return;
     const c1 = r1.card.chain as HandleKelEvent[];
 
-    // The second rotation links the first rotation's card as its prev and bumps the version.
+    // The second rotation links the first rotation's publication act.
     const { handleCardId } = await import("../src/handle-card.js");
     const { sig: _sig, ...unsigned1 } = r1.card;
-    const record2: PersonaPublicHandleRecord = { ...record, version: record.version + 1, cardId: await handleCardId(unsigned1) };
+    const record2: PersonaPublicHandleRecord = { ...record, heads: [await handleCardId(unsigned1)] };
     const r2 = await rotateOwnHandle({
       board: board as never, nym: record.nym, expectedHeadCid: c1[c1.length - 1]!.eventCid,
       seed: SEED, handleIndex: 0, ownerAuthMemberPrefix: ownerPrefix, ownerHeadOpKeyDid: ownerOpKeyDid, sign: signerOf(OWNER),

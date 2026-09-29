@@ -13,11 +13,8 @@
  * resolves: the identifier is secure-and-decentralised because it IS the key, and memorable because each
  * recogniser keeps a LOCAL petname for it. There is no SIN, and no global registry to capture.
  *
- * MONOTONE, LEASED, LINEAGE-LINKED — the same discipline `oracle-substrate` proved. A card carries a
- * monotone `version` (a stale card cannot roll a fresh one back), a `prev` link (the recogniser can follow
- * one face's history), and an `expiry` (a lease read against the LOCAL clock — an unfed card goes stale on
- * its own, since a negative fact cannot be made to arrive). The identity of a card is its CONTENT, never its
- * signature: re-signing the same face with a fresh expiry keeps the same lineage across heartbeats.
+ * CAUSAL, LEASED, SELF-CERTIFYING — a card carries a semantic act CID and canonical parent set. A local
+ * recogniser folds those acts without a scalar currentness guess or wall-clock authority.
  *
  * Pure and isomorphic, like oracle-substrate: this module holds no I/O and no key. The vessel supplies the
  * signer; the caller carries the bytes; the read-open oracle plane serves the published blob.
@@ -25,7 +22,7 @@
  * Design-of-record: lar:///ha.ka.ba/lares/api/pono/persona-circle#the-vault (publication model).
  */
 import { HANDLE_CARD_DOMAIN } from "./domains.js";
-import { canonicalJsonBytes, hex, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes, hexToBytes, sha256Hex, defaultCryptoProvider } from "./crypto.js";
 import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
@@ -63,13 +60,10 @@ export interface HandleCard {
   readonly chain:    readonly HandleKelEvent[];
   /** The display glamour — a chosen name/mask, never a legal identity. Memorable, never authoritative. */
   readonly glamour:  string;
-  /** Monotone counter — a later card supersedes an earlier one; a stale card cannot roll it back. */
-  readonly version:  number;
-  /** The previous card's id (its content hash), or null at first publication — the face's own lineage. */
-  readonly prev:     string | null;
-  /** POSIX ms — a freshness lease read against the recogniser's LOCAL clock. An unfed card goes stale itself.
-   *  Deliberately not spelled `epoch`: that word names the mesh's fencing frontier, never a wall-clock. */
-  readonly expiry:   number;
+  /** Semantic publication act identity, derived with this field blank. */
+  readonly actCid:   string;
+  /** Canonical causal publication parents — unique, sorted semantic act IDs. */
+  readonly parents:  readonly string[];
   /** OPTIONAL content-address of the handle's reputation thread (the signed vouches/annotations). */
   readonly standing: string | null;
   /**
@@ -86,40 +80,35 @@ export interface HandleCard {
 /**
  * The card's IDENTITY content — everything that makes this face THIS face.
  *
- * `expiry` rides OUTSIDE it, exactly as oracle-substrate keeps a lease out of a pointer's identity: a
- * renewal (same face, fresh expiry) must keep the SAME card id so the `prev` lineage stays stable across
- * heartbeats rather than forking on every beat.
+ * The act identity excludes only the signature and is stable for the completed publication fields.
  */
-export function handleCardIdBytes(card: Omit<HandleCard, "sig" | "expiry">): Uint8Array {
+export function handleCardIdBytes(card: Omit<HandleCard, "sig">): Uint8Array {
   return canonicalJsonBytes({
     kind:       card.kind,
     nym:        card.nym,
     chain:      card.chain,
     glamour:    card.glamour,
-    version:    card.version,
-    prev:       card.prev,
+    actCid:     "",
+    parents:    [...new Set(card.parents)].sort(),
     standing:   card.standing,
     fleetProof: card.fleetProof,
   });
 }
 
 /**
- * The content a card SIGNS over — its identity PLUS the lease.
- *
- * IDENTITY AND SIGNATURE ANSWER DIFFERENT QUESTIONS, so they cover different bytes. Leaving `expiry` out of
- * the identity keeps a lineage stable; leaving it out of the SIGNATURE would let anyone extend anyone's
- * lease by editing a number the signer never covered. One function cannot serve both, so two do.
+ * The content a card signs over — its completed semantic identity.
  */
 export function handleCardBytes(card: Omit<HandleCard, "sig">): Uint8Array {
   return canonicalJsonBytes({
-    identity: hex(handleCardIdBytes(card)),
-    expiry:   card.expiry,
+    kind: card.kind, nym: card.nym, chain: card.chain, glamour: card.glamour,
+    actCid: card.actCid, parents: [...new Set(card.parents)].sort(),
+    standing: card.standing, fleetProof: card.fleetProof,
   });
 }
 
-/** The card's IDENTITY — its content hash, the `prev` target and the recogniser's stable handle for it. */
+/** The card's semantic act identity. */
 export function handleCardId(card: Omit<HandleCard, "sig">): Promise<string> {
-  return Promise.resolve(hex(handleCardIdBytes(card)));
+  return Promise.resolve(card.actCid);
 }
 
 /**
@@ -159,10 +148,12 @@ export function verifyFleetProof(
 
 /** Sign a handle-card. The caller supplies the handle's own signer; this module holds no key. */
 export async function signHandleCard(
-  parts: Omit<HandleCard, "kind" | "sig">,
+  parts: Omit<HandleCard, "kind" | "sig" | "actCid">,
   sign: (bytes: Uint8Array) => Promise<string>,
 ): Promise<HandleCard> {
-  const unsigned = { ...parts, kind: HANDLE_CARD_DOMAIN } as Omit<HandleCard, "sig">;
+  const base = { ...parts, kind: HANDLE_CARD_DOMAIN, parents: [...new Set(parts.parents)].sort() } as Omit<HandleCard, "sig" | "actCid">;
+  const actCid = await sha256Hex(handleCardIdBytes({ ...base, actCid: "" } as Omit<HandleCard, "sig">), defaultCryptoProvider);
+  const unsigned = { ...base, actCid } as Omit<HandleCard, "sig">;
   return { ...unsigned, sig: await sign(handleCardBytes(unsigned)) };
 }
 
@@ -174,11 +165,11 @@ export type CardRejection =
   | "nym-mismatch"       // the presented nym is not the chain's own prefix — the name does not match its chain
   | "burned"             // the Handle's chain ends in a burn — recognition ENDS at the burn, forever
   | "bad-signature"      // the card was not signed by the chain's CURRENT head Handle key — it certifies nothing
-  | "expired"            // the lease lapsed against the local clock (only checked when `now` is given)
   | "owner-head-refused" // TIER 2 only: a presentation rides a SUPERSEDED / non-member owner key (the strict walk refuses)
   | "wrong-nym"          // the card names a DIFFERENT handle than the one a recogniser tracks — not an update
-  | "rollback"           // the card's version sits below one the recogniser already accepted — a replay
-  | "lineage-break";     // the card's `prev` fails to link the last card held — an equivocation/fork
+  | "unavailable"         // a causal parent is absent from the local closure
+  | "unsettled"           // contradictory admissible heads remain
+  | "rejected";           // semantic, signature, KEL, or boundary evidence failed
 
 /**
  * The recognition tier a PASS was earned at — the third axis, held apart from ok/reject so a Tier-1 pass can
@@ -205,7 +196,7 @@ export interface CardVerdict {
  * TIER 1 (SELF-CONTAINED, the default). The chain verifies structurally (`verifyHandleKel`), the presented
  * nym IS the chain's prefix, the Handle is not burned, and the card's signature checks against the chain's
  * CURRENT head key. This needs no registry — a card is trustworthy exactly insofar as its chain seats a live
- * head that signed it. Passing `now` additionally checks the freshness lease.
+ * head that signed it. Causal state has no wall-clock input.
  *
  * TIER 2 (OWNER-HEAD-CHECKED, opt-in). Pass an `ownerHeadResolver` and the verify additionally runs the full
  * walk (`verifyHandleKelFull`): every presentation event must ride a member key that STILL stands as that
@@ -213,29 +204,28 @@ export interface CardVerdict {
  * member key refuses as `owner-head-refused`. The verdict's `tier` names which assurance the pass carries, so
  * a caller can never read a self-contained pass as a board-checked one.
  *
- * A rejection NAMES itself. A recogniser that only learns "invalid" cannot tell a forgery from a lapsed lease
- * from a buried name, and re-presents blind.
+ * A rejection NAMES itself. A recogniser that only learns "invalid" cannot tell a forgery from a broken
+ * causal closure or a buried name, and re-presents blind.
  */
 export async function verifyHandleCard(
   card: HandleCard,
-  now?: number,
   ownerHeadResolver?: OwnerHeadResolver,
 ): Promise<CardVerdict> {
   const tier: CardTier = ownerHeadResolver ? 2 : 1;
   if (card.kind !== HANDLE_CARD_DOMAIN) return { ok: false, reject: "wrong-domain" };
-  if (!HANDLE_PREFIX_RE.test(card.nym) || !/^[0-9a-f]{128}$/.test(card.sig) || !Array.isArray(card.chain) || card.chain.length === 0) {
+  if (!HANDLE_PREFIX_RE.test(card.nym) || !/^[0-9a-f]{128}$/.test(card.sig) || !Array.isArray(card.chain) || card.chain.length === 0 || !/^[0-9a-f]{64}$/.test(card.actCid) || !Array.isArray(card.parents) || !card.parents.every((p) => /^[0-9a-f]{64}$/.test(p))) {
     return { ok: false, reject: "malformed" };
   }
+  const parents = [...new Set(card.parents)].sort();
+  if (parents.length !== card.parents.length || parents.some((p, i) => p !== card.parents[i])) return { ok: false, reject: "rejected" };
+  const derived = await sha256Hex(handleCardIdBytes(card), defaultCryptoProvider);
+  if (derived !== card.actCid) return { ok: false, reject: "rejected" };
   // The chain is the whole of the identity now — a broken lineage seats no trustworthy head, so it fails
   // BEFORE the signature (a sig over a broken chain proves nothing about a live Handle).
   if (!verifyHandleKel(card.chain))            return { ok: false, reject: "chain-invalid" };
   if (card.nym !== card.chain[0]!.prefix)      return { ok: false, reject: "nym-mismatch" };
-  // A burned name refuses WHATEVER its lease or signature — recognition ends at the burn, structurally.
+  // A burned name refuses whatever its signature says — recognition ends at the burn, structurally.
   if (isBurned(card.chain))                    return { ok: false, reject: "burned" };
-  // Freshness before the signature: a card whose lease lapsed is stale whatever its signature.
-  if (now !== undefined && Number.isFinite(card.expiry) && card.expiry <= now) {
-    return { ok: false, reject: "expired" };
-  }
   const headKey = headHandleKey(card.chain);   // non-null: the chain verified and stands unburned
   if (headKey === null)                        return { ok: false, reject: "chain-invalid" };
   const { sig } = card;
@@ -273,61 +263,106 @@ function cardUnsigned(card: HandleCard): Omit<HandleCard, "sig"> {
 export async function recognizeHandle(
   card: HandleCard,
   expectedNym: string,
-  now?: number,
 ): Promise<boolean> {
-  const v = await verifyHandleCard(card, now);
+  const v = await verifyHandleCard(card);
   return v.ok && v.nym === expectedNym;
 }
 
 /**
  * The ANNOUNCE reader rule — accept a fresh card for a Handle already tracked, refuse a rollback or a fork.
  *
- * `verifyHandleCard` certifies ONE card in isolation (self-signed, unexpired). Recognising a handle OVER TIME
- * needs more: an announced Handle republishes its card as it renews the lease, bumps the glamour, or links a
- * new standing thread, and a recogniser must accept the NEWER face while refusing a stale copy that tries to
- * roll the Handle back or a forked lineage that equivocates. This rule carries the SAME discipline
- * `oracle-substrate` proves for its pointer (anti-rollback by `version`, anti-equivocation by `prev`), applied
- * to the card's own monotone fields — so a Handle rides the read-open plane under the identical guarantees.
+ * `verifyHandleCard` certifies ONE card in isolation. Recognising a handle OVER TIME needs more: announced
+ * acts form a causal closure, and a recogniser must retain every verified ancestor while refusing a detached
+ * copy or a forked lineage that equivocates. This rule carries the SAME discipline `oracle-substrate` proves
+ * for its pointer, applied to the card's own causal fields.
  *
  * Pass what the recogniser remembers of this Handle:
  *   - `expectedNym`: the key the recogniser's petname points at — a card naming a different key is a stranger,
  *     never an update, however well it certifies itself (the hijack guard).
- *   - `highWaterVersion`: the highest card version already accepted; a lower one reads as a replay/rollback.
- *   - `lastCardId`: the id (content hash) of the last card held; a `prev` that fails to link it flags a fork.
- *   - `now`: the recogniser's LOCAL clock — past `expiry` reads as stale (no global now).
  *
- * First recognition (no card held yet) passes `highWaterVersion`/`lastCardId` undefined; the rule then reduces
- * to self-certification + the nym match. Never throws — an announce arrives from the open network untrusted.
+ * First recognition (no card held yet) reduces to self-certification + the nym match. Never throws — an
+ * announce arrives from the open network untrusted.
  */
 export async function acceptHandleUpdate(
   card: HandleCard,
   opts: {
     readonly expectedNym:       string;
-    readonly highWaterVersion?: number;
-    readonly lastCardId?:       string;
-    readonly now?:              number;
+    readonly knownActCids?: readonly string[];
+    readonly heldHeadActCids?: readonly string[];
   },
 ): Promise<CardVerdict> {
-  const self = await verifyHandleCard(card, opts.now);
+  const self = await verifyHandleCard(card);
   if (!self.ok) return self;
   if (card.nym !== opts.expectedNym) return { ok: false, reject: "wrong-nym" };
 
-  // The version axis, read against what the recogniser holds. Idempotent replay of the CURRENT card is the
-  // norm under gossip/merge, so it must pass — only a card that PURPORTS TO ADVANCE (version above the
-  // high-water) is held to the lineage link; a card AT the high-water passes iff it IS the held card.
-  if (opts.highWaterVersion !== undefined) {
-    if (card.version < opts.highWaterVersion) return { ok: false, reject: "rollback" };
-    if (card.version === opts.highWaterVersion) {
-      // A different card at the SAME version equivocates; the same card (or an unremembered one) replays clean.
-      if (opts.lastCardId !== undefined && (await handleCardId(card)) !== opts.lastCardId) {
-        return { ok: false, reject: "lineage-break" };
-      }
-      return { ok: true, nym: card.nym };
+  if (opts.knownActCids && card.parents.some((p) => !opts.knownActCids!.includes(p))) return { ok: false, reject: "unavailable" };
+  if (opts.heldHeadActCids && card.actCid !== undefined && card.parents.length > 0 && !card.parents.some((p) => opts.heldHeadActCids!.includes(p))) return { ok: false, reject: "unsettled" };
+  return { ok: true, nym: card.nym };
+}
+
+export type HandleCardFold = "held" | "unsettled" | "unavailable" | "rejected";
+
+export interface HandleCardFoldResult {
+  readonly status: HandleCardFold;
+  /** The verified causal closure. It is empty when any card is rejected or the closure is unavailable. */
+  readonly cards: readonly HandleCard[];
+  /** The unique verified projection, or null while unsettled/unavailable/rejected. */
+  readonly card: HandleCard | null;
+  /** The verified frontier, in stable CID order. */
+  readonly heads: readonly string[];
+}
+
+/**
+ * Fold a nym's locally observed publication acts without arrival-order choice.
+ *
+ * This is deliberately a fixed-point fold. A CRDT can hand us a descendant before its ancestors, and a
+ * board can contain a forged sibling beside a valid chain. Neither arrival order nor a shape-only parent
+ * filter is evidence. Every card is self-verified first; then the whole set must be one nym's closed causal
+ * graph with exactly one head. A missing parent, cross-nym edge, self-parent, invalid signature, or invalid
+ * semantic CID leaves the fold unrecognised.
+ */
+export async function foldHandleCardsDetailed(cards: readonly HandleCard[]): Promise<HandleCardFoldResult> {
+  if (cards.length === 0) return { status: "unavailable", cards: [], card: null, heads: [] };
+
+  const verified: HandleCard[] = [];
+  let rejected = false;
+  for (const card of cards) {
+    const verdict = await verifyHandleCard(card);
+    if (!verdict.ok) { rejected = true; continue; }
+    verified.push(card);
+  }
+  if (rejected || verified.length !== cards.length) {
+    return { status: "rejected", cards: [], card: null, heads: [] };
+  }
+
+  const nym = verified[0]!.nym;
+  const byCid = new Map<string, HandleCard>();
+  for (const card of verified) {
+    if (card.nym !== nym || card.parents.includes(card.actCid)) {
+      return { status: "rejected", cards: [], card: null, heads: [] };
     }
-    // version > high-water: an advance MUST link the held card (anti-equivocation).
-    if (opts.lastCardId !== undefined && card.prev !== opts.lastCardId) {
-      return { ok: false, reject: "lineage-break" };
+    // A semantic act may be re-signed, but two different payloads cannot share an act CID. The verifier
+    // already binds every payload field; retaining one equivalent act keeps the closure set canonical.
+    if (!byCid.has(card.actCid)) byCid.set(card.actCid, card);
+  }
+
+  const closure = [...byCid.values()];
+  const known = new Set(byCid.keys());
+  for (const card of closure) {
+    for (const parent of card.parents) {
+      if (!known.has(parent)) return { status: "unavailable", cards: [], card: null, heads: [] };
     }
   }
-  return { ok: true, nym: card.nym };
+  const covered = new Set(closure.flatMap((card) => card.parents));
+  const heads = closure.filter((card) => !covered.has(card.actCid)).map((card) => card.actCid).sort();
+  if (heads.length !== 1) {
+    return { status: heads.length > 1 ? "unsettled" : "unavailable", cards: closure, card: null, heads };
+  }
+  const projection = closure.find((candidate) => candidate.actCid === heads[0]) ?? null;
+  return { status: "held", cards: closure, card: projection, heads };
+}
+
+/** Fold a nym's locally observed publication acts without arrival-order choice. */
+export async function foldHandleCards(cards: readonly HandleCard[]): Promise<HandleCardFold> {
+  return (await foldHandleCardsDetailed(cards)).status;
 }

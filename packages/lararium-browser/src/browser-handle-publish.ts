@@ -26,7 +26,6 @@ export async function publishHandleBrowser(opts: {
   handleIndex: number;
   glamour:     string;
   idbName?:    string;
-  now?:        number;
 }): Promise<HandleCard> {
   const idbName = opts.idbName ?? "lares:vessel";
   const seed  = await loadPersonaRootSeed(await makeBrowserIdbPersonaVault(idbName), opts.handleIndex);
@@ -37,7 +36,6 @@ export async function publishHandleBrowser(opts: {
     seed,
     handleIndex: opts.handleIndex,
     glamour:     opts.glamour,
-    now:         opts.now ?? Date.now(),
     store,
   });
 }

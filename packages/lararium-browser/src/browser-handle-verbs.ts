@@ -30,8 +30,8 @@ interface OwnFaceBrowserContext {
 
 /**
  * Open the vessel's own published face for a persona from browser shores: load the persona seed + the
- * announced nym from the origin's IndexedDB, resolve the CURRENT chain off the supplied WHO board, and derive
- * the seated handle-key signer. The one boot the leased verbs (burn · attest) share; each supplies only its
+ * announced nym from the origin's IndexedDB, resolve one settled verified chain from the supplied WHO board, and derive
+ * the seated handle-key signer. The shared boot for burn and attest supplies only its
  * own act over this context. The mirror of node's `openOwnFace`.
  */
 async function openOwnFaceBrowser(
@@ -43,11 +43,12 @@ async function openOwnFaceBrowser(
   if (!record) {
     throw new Error(`[browser handle ${verb}] no published face at persona h${handleIndex} — publish one first.`);
   }
-  const chain = resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
+  const chain = await resolveOwnHandleChain(board.doc() as LarDoc, record.nym);
   if (!chain || chain.length === 0) {
     throw new Error(`[browser handle ${verb}] no chain on the WHO board for ${record.nym.slice(0, 16)}… — the face was never announced here.`);
   }
-  const headCid = boardHeadCid(board.doc() as LarDoc, record.nym)!;
+  const headCid = await boardHeadCid(board.doc() as LarDoc, record.nym);
+  if (!headCid) throw new Error(`[browser handle ${verb}] the WHO board has no settled publication head for ${record.nym.slice(0, 16)}… — fail closed.`);
   const veiled  = await deriveVeiledUserKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT);
   const veiledSigner = ed25519SignerFromSeed(hexToBytes(veiled.signingKey));
   return { board, handleIndex, seed, record, chain, headCid, veiledSigner };
@@ -98,7 +99,6 @@ export async function burnFaceBrowser(opts: {
   board:        DocHandle<LarDoc>;
   handleIndex:  number;
   idbName?:     string;
-  now?:         number;
   /** Bury the face from ABOVE — the owning persona (its head op-key) signs, not the seated handle key. */
   fromPersona?: boolean;
   /** OWNER-burn only: the daemon doc carrying the persona-KEL prefix that owns the face. */
@@ -107,7 +107,6 @@ export async function burnFaceBrowser(opts: {
   kelBoard?:    DocHandle<LarDoc>;
 }): Promise<HandleCard> {
   const idbName = opts.idbName ?? "lares:vessel";
-  const now     = opts.now ?? Date.now();
   const face    = await openOwnFaceBrowser("burn", opts.board, opts.handleIndex, idbName);
 
   // The card re-signs with the seated handle key regardless of hand — a reader refuses a burned chain BEFORE
@@ -115,8 +114,7 @@ export async function burnFaceBrowser(opts: {
   const buildCard = (_event: HandleKelEvent, newChain: HandleKelEvent[]): Promise<HandleCard> => signHandleCard(
     {
       nym: face.record.nym, chain: newChain, glamour: face.record.glamour,
-      version: face.record.version + 1, prev: face.record.cardId,
-      expiry: now + 86_400_000, standing: null, fleetProof: null,
+      parents: face.record.heads, standing: null, fleetProof: null,
     },
     face.veiledSigner,
   );
@@ -148,6 +146,11 @@ export async function burnFaceBrowser(opts: {
 
   const result = await burnOwnHandle(hand);
   if (!result.ok) throw new Error(`[browser handle burn] ${result.reason}`);
+  const store = await makeBrowserPublicHandleStore(idbName);
+  await store.save({
+    handleIndex: face.handleIndex, contextIndex: face.record.contextIndex, nym: face.record.nym,
+    glamour: face.record.glamour, heads: [result.card.actCid],
+  });
   return result.card;
 }
 
