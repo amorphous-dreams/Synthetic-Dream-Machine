@@ -46,12 +46,11 @@ carries a snapshot rather than a subscription. Neither sigil mirrors the other: 
 sigil, its own family-contract row (`propagation:none` against `kahea`'s `propagation:push-forward`),
 and its own English weave name.
 
-''Weave slice, ahead of the code.'' The projection render pass already emits "frozen `aka`
-references" at the wiki→snapshot boundary
-(`lar:///ha.ka.ba/lares/api/pono/render-pipeline#/three-render-modes`); the general inline-weave
-slice that stands `aka` up as a first-class content-substitution pass, distinct from that
-projection-render special case, still needs building
-<confidence:0.55 — the law states the target shape; the slice itself remains pending>.
+''Weave slice, built.'' The projection render pass emits "frozen `aka` references" at the
+wiki→snapshot boundary (`lar:///ha.ka.ba/lares/api/pono/render-pipeline#/three-render-modes`); the
+general inline-weave slice that stands `aka` up as a first-class content-substitution pass, distinct
+from that projection-render special case, stands built — `weaveAka` (weave/index.ts) inlines the
+target's current text, pinned with the target's own `ni:` check, whole-carrier or `#/slot`-scoped.
 
 <<~/ahu>>
 
@@ -149,6 +148,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dM3cUMqciV8oZE8t6AIQEeJPCN1yEBQ6xl5NY5yXET4
+<<^ code="&#x0003;">>ni:///sha-256;-W-NRMGrnOtH8YlKmJ5GsbWJSZdBAxcFxkeCkWUgzpY
 
 <<^ code="&#x0004;" -> to="?">>
