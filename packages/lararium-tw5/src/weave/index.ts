@@ -17,15 +17,13 @@ module-type: library
  * reads `!` depth for headings — both total. The reverse direction would have to guess where a
  * `#` meant heading and where it meant item, so no reverse exists here.
  *
- * ── SHAPE: A CLASSIFIER PASS OVER A PER-CONSTRUCT EMITTER TABLE ─────────────────────────────────
+ * ── SHAPE: ONE WALK, AN ORDERED CHAIN OF LINE RECOGNIZERS ───────────────────────────────────────
  * The walk reads one line at a time (state carried forward: an open fence, a buffered meta fence,
- * a line-spanning sigil, a buffered prose run) and asks each `LINE_CONSTRUCTS` entry in order
- * whether it recognizes the line; the first match's `emit` runs and the walk moves on. A later
- * slice adds dialect profiles (gfm, kramdown-rfc), frontmatter, a natural-language tongue axis and
- * the TANGLE direction — none of those touch this walk; they add entries to the table or read the
- * `profile` argument threaded through every emitter. No dialect logic is hardcoded in the walk
- * itself — `PROFILES.commonmark` is the only profile this slice ships, and every emitter that
- * varies by dialect reads it rather than branching on a name.
+ * a line-spanning sigil, a buffered prose run) and tries the module-level recognizers in a fixed
+ * order (`FRAME_LINE`, `DOCTYPE_LINE`, `AHU_OPEN`/`AHU_CLOSE`, `EDGE_LINE`, `TRANSCLUSION_LINE`,
+ * `SIGIL_LINE`, then tables, lists, headings, prose); the first that matches emits and the walk
+ * moves on. Every emitter that varies by dialect reads the `profile` argument threaded through the
+ * walk rather than branching on a dialect name — `PROFILES.commonmark` is the one profile shipped.
  *
  * ── WHAT EACH CONSTRUCT BECOMES ─────────────────────────────────────────────────────────────────
  *   frame sigils (`<<^ …>>`) + declaration    dropped — carriage, not content; the meta records them
@@ -100,9 +98,9 @@ export interface SubmissionProjection {
 
 /**
  * A dialect/profile the walk reads but never branches on by name. This slice ships exactly one —
- * `PROFILES.commonmark` — and every construct above is CommonMark-shaped. A later slice adding
- * `gfm` or `kramdown-rfc` extends this interface and the entries in {@link LINE_CONSTRUCTS} that
- * vary by dialect; the walk itself does not change.
+ * `PROFILES.commonmark` — and every construct above is CommonMark-shaped. A dialect differs from
+ * another only through the fields of this interface, so adding one extends the interface, never
+ * the walk.
  */
 export interface WeaveProfile {
   readonly dialect: string;
