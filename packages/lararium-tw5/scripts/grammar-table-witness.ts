@@ -19,10 +19,12 @@
  * Run: tsx scripts/grammar-table-witness.ts
  */
 
-import { deriveGrammarFromDisk } from "./read-sigil-tiddlers.js";
+import { deriveGrammarFromDisk, readGrammarTiddlers, nameFromTitle } from "./read-sigil-tiddlers.js";
 import { BOOTSTRAP_SCANS } from "../src/meme-ast/scanner.js";
 import { CANONICAL_SIGILS } from "../src/meme-ast/builder.js";
 import { DEFINITION_WORDS } from "../src/meme-normalize.js";
+import { checkTongueLaws } from "./tongue-laws.js";
+import type { TongueEntry } from "./tongue-laws.js";
 
 // ---------------------------------------------------------------------------
 // Main
@@ -129,6 +131,34 @@ for (const kw of handDefHead) {
   if (!pragmaKindNames.has(kw)) unexplainedInDefHead.push(`${kw} — in DEFINITION_HEAD, no tiddler carries lar-kind pragma/pragma-alias for it`);
 }
 group("meme-normalize.ts: DEFINITION_HEAD keyword with no pragma-kind tiddler", unexplainedInDefHead.sort());
+
+// 5. TONGUE laws (sigil-mirror-flip's weave-per-tongue field, lar:///sigil.grammar.lane loop 4) —
+// pure checker in tongue-laws.ts, RED-tested there against a fixture; here it runs over the real
+// tiddlers. Raw `lar-tongue`/`lar-weave` fields, not the already-derived `SigilRule.weave` — the
+// shared converter silently DROPS `weave` when `lar-tongue` is absent, which is exactly law (e)'s
+// shape; reading the derived field alone would hide it.
+const tongueEntries: TongueEntry[] = readGrammarTiddlers().map((t) => {
+  const name = nameFromTitle(t.title, t.fields);
+  const aliasFor = t.fields["lar-mirror-of"];
+  const tongue = t.fields["lar-tongue"];
+  return {
+    name,
+    ...(aliasFor ? { aliasFor } : {}),
+    ...(tongue ? { tongue } : {}),
+    weavePrimary: t.fields["lar-weave"] === "primary",
+  };
+});
+const tongueViolations = checkTongueLaws(tongueEntries);
+const LAW_TITLE: Record<string, string> = {
+  a: "(a) more than one lar-weave: primary mirror per canonical+tongue",
+  b: "(b) a mirror name maps to two different canonicals",
+  c: "(c) a mirror name collides with a canonical sigil's name",
+  d: "(d) a lar-mirror-of target is not a canonical tiddler",
+  e: "(e) a lar-weave: primary mirror declares no lar-tongue",
+};
+for (const law of ["a", "b", "c", "d", "e"] as const) {
+  group(`tongue law ${LAW_TITLE[law]}`, tongueViolations.filter((v) => v.law === law).map((v) => v.message).sort());
+}
 
 const residueNote = reasonedResidue > 0 ? ` + ${reasonedResidue} reasoned residue` : "";
 console.log(`\ngrammar-table-witness: ${disagreements} disagreement(s)${residueNote} (${derived.sigils.length} tiddler sigils, ${handScans.length} hand scan entries, ${handCanonical.size} CANONICAL_SIGILS entries, ${handDefHead.size} DEFINITION_HEAD keywords)`);
