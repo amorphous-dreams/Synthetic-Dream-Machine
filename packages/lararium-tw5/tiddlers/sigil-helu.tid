@@ -3,7 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: pragma
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/helu
 lar-see-also: \function
-lar-open-pattern: <<~\s*helu\s+([\w-]+)(?:\s*\(([^)]*)\))?(?:\s+([^>]*?))?\s*>>
+lar-open-pattern: <<~!?\s*helu\s+([\w-]+)(?:\s*\(([^)]*)\))?(?:\s+([^>]*?))?\s*>>
 lar-close-pattern: <<~\/helu\s*>>
 lar-example: <<~ helu tally "[tag[x]count[]]">>
 type: text/vnd.tiddlywiki

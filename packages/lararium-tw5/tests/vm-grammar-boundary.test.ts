@@ -221,6 +221,18 @@ describe("pono grammar boundary", () => {
       // table illustrates, and whether waiho/const's carrier-scoped `!` form still fires as a
       // standalone pragma event (no closer). Neither question has any other surface.
       .filter((f) => !f.endsWith("pragma-bang-optional.test.ts"))
+      // fence-mask-info-string.test.ts is the unit test of the compile layer's OWN quoted-code
+      // span rule (fence-mask.ts) — whether a line's info string carrying a backtick opens no
+      // fence (CommonMark §4.5). That question lives at the mask layer alone; nothing downstream
+      // can tell a torn frame from a correctly-open one without re-deriving this exact rule, so
+      // this claim has no other surface. It blesses no grammar; it holds one mask rule to spec.
+      .filter((f) => !f.endsWith("fence-mask-info-string.test.ts"))
+      // waiho-equals-separator.test.ts is the unit test of the compile layer's OWN capture-group
+      // split for waiho/const's `name = value` shape — whether the `=` separator rides into the
+      // captured VALUE or is consumed as a separator. That question lives at the scan+build layer
+      // alone (the render path never exposes waiho's raw captured groups), so it has no other
+      // surface. It blesses no grammar; it holds one sigil's own capture shape to canon.
+      .filter((f) => !f.endsWith("waiho-equals-separator.test.ts"))
       // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
       // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
       // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
