@@ -78,6 +78,20 @@ describe("ACTION_VERBS membership", () => {
     expect(isBagVerb("ADD")).toBe(false);
     expect(isBagVerb("LOAD")).toBe(false);
   });
+
+  test("★ TRANSFER_VERBS and BAG_VERBS derive from ACTION_VERBS — every verb accounted for exactly once per flag ★", () => {
+    // TRANSFER_VERBS / BAG_VERBS come off ONE tagged base keyed by ACTION_VERBS, not three
+    // independently hand-typed lists that could drift apart. Any verb ACTION_VERBS grows must
+    // land in the table (so isTransferVerb/isBagVerb never silently answer false for it), and the
+    // two subsets never overlap.
+    const transferSet = new Set(TRANSFER_VERBS);
+    const bagSet = new Set(BAG_VERBS);
+    for (const v of ACTION_VERBS) {
+      expect(transferSet.has(v) && bagSet.has(v)).toBe(false);
+    }
+    for (const v of TRANSFER_VERBS) expect(ACTION_VERBS).toContain(v);
+    for (const v of BAG_VERBS) expect(ACTION_VERBS).toContain(v);
+  });
 });
 
 // ---------------------------------------------------------------------------

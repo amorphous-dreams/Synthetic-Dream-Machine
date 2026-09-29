@@ -39,9 +39,28 @@ import type { Verb } from "./verb-tiddler.js";
 
 // ── ACTION verb set ────────────────────────────────────────────────────────
 
-/** Canonical ACTION verb tuple. ALL-CAPS by convention. */
-export const ACTION_VERBS = ["ADD", "COPY", "MOVE", "CLEAR", "DROP", "LOAD", "INGEST", "CREATE"] as const;
-export type ActionVerb = typeof ACTION_VERBS[number];
+/**
+ * The single tagged base every verb-membership set derives from by filter — one row per
+ * ACTION verb, ALL-CAPS by convention. ACTION_VERBS / TRANSFER_VERBS / BAG_VERBS used to run as
+ * three independently hand-typed lists that could drift out of step with each other (a verb
+ * added to ACTION_VERBS but forgotten in TRANSFER_VERBS silently falls through isTransferVerb).
+ * This table is the one place a verb's membership gets declared; the subsets below read it off.
+ */
+const ACTION_VERB_TABLE = [
+  { verb: "ADD",    transfer: true,  bagOp: false },
+  { verb: "COPY",   transfer: true,  bagOp: false },
+  { verb: "MOVE",   transfer: true,  bagOp: false },
+  { verb: "CLEAR",  transfer: false, bagOp: true  },
+  { verb: "DROP",   transfer: false, bagOp: true  },
+  { verb: "LOAD",   transfer: false, bagOp: false },
+  { verb: "INGEST", transfer: false, bagOp: false },
+  { verb: "CREATE", transfer: false, bagOp: false },
+] as const;
+
+export type ActionVerb = typeof ACTION_VERB_TABLE[number]["verb"];
+
+/** Canonical ACTION verb tuple. ALL-CAPS by convention. Derived from ACTION_VERB_TABLE. */
+export const ACTION_VERBS: readonly ActionVerb[] = ACTION_VERB_TABLE.map((e) => e.verb);
 
 const ACTION_VERB_SET: ReadonlySet<string> = new Set(ACTION_VERBS);
 
@@ -50,17 +69,25 @@ export function isActionVerb(verb: string): verb is ActionVerb {
   return ACTION_VERB_SET.has(verb);
 }
 
-/** ACTION verbs that transfer a tiddler between bags (carry title + fromBag + toBag + changeId). */
-export const TRANSFER_VERBS = ["ADD", "COPY", "MOVE"] as const;
-export type TransferVerb = typeof TRANSFER_VERBS[number];
+export type TransferVerb = Extract<typeof ACTION_VERB_TABLE[number], { readonly transfer: true }>["verb"];
+
+/** ACTION verbs that transfer a tiddler between bags (carry title + fromBag + toBag + changeId).
+ *  Derived by filtering ACTION_VERB_TABLE's `transfer` flag — never a separately hand-typed list. */
+export const TRANSFER_VERBS: readonly TransferVerb[] =
+  ACTION_VERB_TABLE.filter((e): e is typeof ACTION_VERB_TABLE[number] & { transfer: true } => e.transfer)
+    .map((e) => e.verb);
 const TRANSFER_VERB_SET: ReadonlySet<string> = new Set(TRANSFER_VERBS);
 export function isTransferVerb(verb: string): verb is TransferVerb {
   return TRANSFER_VERB_SET.has(verb);
 }
 
-/** ACTION verbs that operate on a whole bag (carry bag only). */
-export const BAG_VERBS = ["CLEAR", "DROP"] as const;
-export type BagVerb = typeof BAG_VERBS[number];
+export type BagVerb = Extract<typeof ACTION_VERB_TABLE[number], { readonly bagOp: true }>["verb"];
+
+/** ACTION verbs that operate on a whole bag (carry bag only).
+ *  Derived by filtering ACTION_VERB_TABLE's `bagOp` flag — never a separately hand-typed list. */
+export const BAG_VERBS: readonly BagVerb[] =
+  ACTION_VERB_TABLE.filter((e): e is typeof ACTION_VERB_TABLE[number] & { bagOp: true } => e.bagOp)
+    .map((e) => e.verb);
 const BAG_VERB_SET: ReadonlySet<string> = new Set(BAG_VERBS);
 export function isBagVerb(verb: string): verb is BagVerb {
   return BAG_VERB_SET.has(verb);
@@ -326,6 +353,12 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         ...(action.deletions ? { deletions: action.deletions } : {}),
         ...(action.massDeleteFraction !== undefined ? { massDeleteFraction: action.massDeleteFraction } : {}),
       };
+    default: {
+      // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
+      // above fails to COMPILE (never-typed), rather than silently falling through undefined.
+      const _exhaustive: never = action;
+      throw new Error(`encodeResidencyArgs: unhandled ACTION verb ${(_exhaustive as ResidencyAction).verb}`);
+    }
   }
 }
 
