@@ -231,6 +231,29 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
   }
   const inBlock = (pos: number): boolean => blockSpans.some(([s, e]) => pos >= s && pos < e);
 
+  // Hana body spans: a hana body carries a FOREIGN grammar (guest-grammar.mem #/hana-worksite), not
+  // TW5 wikitext, parsed by a registered guest interpreter — so a `<<~ …>>` an author writes INSIDE
+  // that body must stay opaque to the scanner, the same worksite exclusion pranala's block body gets
+  // just above. `\task` is hana's English alias and shares the same worksite shape.
+  //
+  // Unlike pranala's whole-match blockSpans (leaf/pragma only, below), this excludes EVERY event
+  // type INCLUDING open/close — a guest payload can carry `<<~ ahu #/x>>`-shaped text, and an ahu
+  // open/close pair must not fire as a real child inside a foreign grammar. The span covers the
+  // BODY ONLY (between the opener's `>>` and the closer's `<<~/`), never the block's own opener or
+  // closer positions, so the hana/task sigil's own open and close events still scan normally.
+  const hanaBodySpans: [number, number][] = [];
+  const HANA_OPEN_RE  = /^<<~\s*(?:hana|task)\s+[^\n>]+?\s*>>/;
+  const HANA_CLOSE_RE = /<<~\/(?:hana|task)\s*>>$/;
+  for (const m of maskedExecAll(text, /<<~\s*(?:hana|task)\s+[^\n>]+?\s*>>[\s\S]*?<<~\/(?:hana|task)\s*>>/g, mask, true)) {
+    const openMatch  = HANA_OPEN_RE.exec(m[0]);
+    const closeMatch = HANA_CLOSE_RE.exec(m[0]);
+    if (!openMatch || !closeMatch) continue;
+    const bodyStart = m.index! + openMatch[0].length;
+    const bodyEnd   = m.index! + m[0].length - closeMatch[0].length;
+    if (bodyStart < bodyEnd) hanaBodySpans.push([bodyStart, bodyEnd]);
+  }
+  const inHanaBody = (pos: number): boolean => hanaBodySpans.some(([s, e]) => pos >= s && pos < e);
+
   const seen   = new Set<number>();
   const events: ParseEvent[] = [];
 
@@ -240,6 +263,7 @@ export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[
     for (const m of maskedExecAll(text, rx, mask, true)) {
       const pos = m.index!;
       if (seen.has(pos)) continue;
+      if (inHanaBody(pos)) continue;
       if (scan.eventType !== "open" && scan.eventType !== "close" && inBlock(pos)) continue;
       seen.add(pos);
       // The generic catch-all emits the MATCHED sigil-name (group 1), flagged so the builder grades it

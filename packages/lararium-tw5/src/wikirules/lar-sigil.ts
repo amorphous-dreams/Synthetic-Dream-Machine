@@ -283,6 +283,7 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
   if ("__compound__" in attrs) {
     const dispatchName = attrs["__compound__"]!;
     const verbatim     = attrs["__verbatim__"] ?? "";
+    const body         = attrs["__body__"];
     delete attrs["__compound__"];
     delete attrs["__body__"];
     delete attrs["__verbatim__"];
@@ -324,6 +325,19 @@ export function parse(this: RuleInstance): ParseTreeNode[] {
       "src":       { type: "string", value: verbatim },
     };
     for (let i = 0; i < 5; i++) macroAttrs[`p${i + 1}`] = { type: "string", value: slots[i] ?? "" };
+    // ── HANA CARRIES A BODY; NO OTHER COMPOUND SIGIL DOES ─────────────────────────────────────────
+    // Every other closer-bearing compound sigil (ahu, kumu, …) splits its block body into child
+    // tiddlers upstream (deserializer), so `__body__` never survives to this rule for them — `attrs`
+    // holds no such key and `body` reads `undefined`. hana (and its English alias `task`, which the
+    // scanner canonicalizes to `hana` but the wikirule's OWN compound matcher — a separate matcher —
+    // reports as its own literal name, so both spellings must be named here) is the one sigil whose
+    // block body is a FOREIGN grammar the host must hand forward untouched (guest-grammar.mem
+    // #/hana-worksite): the `~hana` widget's signature is `~hana(p1:grammar-key p2:body)`, and the
+    // `~task` alias procedure forwards both straight through to `~hana` — so the body rides as p2 on
+    // either name; dropping it here (as the code once did) left every hana body rendering as NOTHING.
+    if ((dispatchName === "hana" || dispatchName === "task") && body !== undefined) {
+      macroAttrs["p2"] = { type: "string", value: body };
+    }
     // A NAME WINS ITS OWN SLOT. Written last, so a call carrying `args=` or `src=` reaches the
     // definition's own parameter rather than the rule's bookkeeping.
     for (const a of readSigilAttrs(run)) macroAttrs[a.name] = attrNodeOf(a);

@@ -199,6 +199,14 @@ describe("pono grammar boundary", () => {
       // anchors on `to=` alone and never exposes family or role, so the claim has no other surface. It
       // blesses no grammar; it holds one layer to the range TiddlyWiki itself parses.
       .filter((f) => !f.endsWith("pranala-attribute-spellings.test.ts"))
+      // hana-body-opacity.test.ts is the unit test of the scanner's own worksite exclusion (the same
+      // mechanism pranala's block body already gets) — whether a `<<~ …>>` written INSIDE a hana body
+      // fires as an event at all. That question lives entirely at the scan layer: the render path can
+      // only observe whether the final tree/HTML differs, never whether the SCANNER specifically
+      // excluded the position, so this claim — like pranala-attribute-spellings.test.ts just above —
+      // has no other surface. It blesses no grammar; it holds the scan layer to guest-grammar.mem's
+      // #/hana-worksite law (a hana body carries a FOREIGN grammar, never this house's own sigils).
+      .filter((f) => !f.endsWith("hana-body-opacity.test.ts"))
       // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
       // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
       // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
