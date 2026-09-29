@@ -296,6 +296,40 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     expect(body).not.toContain("unresolved — no corpus to pin");
   });
 
+  test("--tongue en weaves the frozen `aka` as `snapshot`, its head name's primary mirror for English", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, tongue: "en" }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "prism.md"), "utf8");
+    expect(body).toContain("<!-- snapshot: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;");
+    expect(body).not.toContain("<!-- aka:");
+  });
+
+  test("CONTROL: with NO --tongue, the same `aka` weaves under its canonical name, byte-identical to before", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "prism.md"), "utf8");
+    expect(body).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;");
+    expect(body).not.toContain("snapshot");
+  });
+
+  test("--tongue en --dialect GFM: frontmatter carries lang and tongue: \"x-lares>en\"", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, tongue: "en", dialect: "GFM" }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "prism.md"), "utf8");
+    expect(body).toContain('lang: "en"');
+    expect(body).toContain('tongue: "x-lares>en"');
+    expect(body).toContain("<!-- snapshot:");
+  });
+
   test("CONTROL: an unrecognized --dialect refuses, naming the registered variants", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "error").mockImplementation(() => {});

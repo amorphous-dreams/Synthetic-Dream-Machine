@@ -358,6 +358,54 @@ function tableCells(line: string): string[] | null {
 }
 
 /**
+ * The CANONICAL (Hawaiian) name a mirror — primary or read-only — points at, or `null` for a name
+ * that carries no mirror relation at all (a canonical itself, or no sigil this table names).
+ * `GENERATED_ALIAS_MAP` already IS this reverse map (`lar-mirror-of`, alias → canonical); this
+ * function is the one place that reads it, so a caller never re-derives the reverse.
+ */
+export function mirrorToCanonical(name: string): string | null {
+  return GENERATED_ALIAS_MAP[name] ?? null;
+}
+
+/**
+ * The woven HEAD NAME for one sigil word under one tongue (#/the-woven-dialect's Tongue clause).
+ * `tongue` absent: the word passes through UNCHANGED — the default axis this module has always
+ * held, so every prior test and the whole shelf stay byte-identical. `tongue` present: the word
+ * canonicalizes first (through {@link mirrorToCanonical}, or itself if already canonical), then
+ * looks up the ONE mirror the grammar table marks `weave: { tongue }` for that canonical
+ * (`GENERATED_SIGILS`, never a hand list — #/mirror-vocabulary: "exactly one mirror per tongue
+ * weaves"). A canonical with no primary mirror for that tongue weaves under its OWN canonical name,
+ * never the word as authored — the same "many spellings read, one spelling gets written" law tangle
+ * already holds in reverse.
+ *
+ * ARGUMENTS NEVER TRANSLATE. Every caller applies this to a HEAD WORD captured by its own construct
+ * regex, never to a whole line or a target string — the ITS 2.0 Translate/no-translate split
+ * #/the-woven-dialect draws, held structurally: there is nothing here FOR a target string to match.
+ */
+function resolveHeadWord(word: string, tongue: string | undefined): string {
+  if (!tongue) return word;
+  const canonical = mirrorToCanonical(word) ?? word;
+  const primary = GENERATED_SIGILS.find((s) => s.aliasFor === canonical && s.weave?.tongue === tongue);
+  return primary ? primary.name : canonical;
+}
+
+// The head token: `<<~` (bare or joined), optional LWSP, then the word — up to the first
+// space/`(`/`#`/close, matching #/the-woven-dialect's own cut: "only the head token between `<<~`
+// and the first space/`(`/`#`" translates; everything after it (arguments) is untouched BY
+// CONSTRUCTION, since the replacement below only ever splices in place of the captured word.
+const HEAD_TOKEN_RE = /^(<<~\s*)([A-Za-z][\w-]*)/;
+
+/** Any line-standing sigil this walk gives no dedicated shape — its head word translates the same
+ * way a recognized construct's does, in place, leaving everything after it byte-identical. */
+function translateSigilHead(line: string, tongue: string | undefined): string {
+  if (!tongue) return line;
+  const m = HEAD_TOKEN_RE.exec(line);
+  if (!m) return line;
+  const resolved = resolveHeadWord(m[2]!, tongue);
+  return resolved === m[2] ? line : m[1] + resolved + line.slice(m[0].length);
+}
+
+/**
  * A FROZEN `aka` (or its mirrors `shadow`/`snapshot`) edge weaves by INLINING its target's current
  * text, pinned with the target's own `ni:` check — the woven-outward twin of the in-house `aka`
  * transclusion (#/weave-and-tangle's "an open rhyme"). Resolution needs a wiki/corpus; absent one
@@ -365,7 +413,8 @@ function tableCells(line: string): string[] | null {
  * clearly marked unresolved reference rather than inventing content around a target it cannot read.
  *
  * The nested weave carries NO resolver forward — a pin fixes one target at one moment, and a chain of
- * `aka`s pinning each other would have no moment to stop at.
+ * `aka`s pinning each other would have no moment to stop at. It DOES carry `tongue` forward: the
+ * pinned content weaves into the same outward artifact, so its own sigil names follow the same axis.
  */
 /**
  * The raw wikitext span of one ahu slot — open sigil through its MATCHING close sigil, inclusive.
@@ -404,7 +453,14 @@ function extractAhuSlot(text: string, slotPath: string): string | null {
  * would carry, which would smuggle every OTHER section past what the author named into an artifact
  * that may travel outward (an IANA submission, a standalone dialect file) with no license to hold it.
  */
-function weaveAka(word: string, rawTarget: string, profile: WeaveProfile, resolve?: (uri: string) => string | null): string[] {
+function weaveAka(
+  word: string,
+  rawTarget: string,
+  profile: WeaveProfile,
+  resolve?: (uri: string) => string | null,
+  tongue?: string,
+): string[] {
+  const headWord = resolveHeadWord(word, tongue);
   const target = rawTarget.replace(/^"|"$/g, "");
   const hashIdx = target.indexOf("#");
   const base = hashIdx === -1 ? target : target.slice(0, hashIdx);
@@ -412,25 +468,25 @@ function weaveAka(word: string, rawTarget: string, profile: WeaveProfile, resolv
 
   const resolved = resolve ? resolve(base) : null;
   if (resolved === null || resolved === undefined) {
-    return [`- \`${word} ${target}\` (unresolved — no corpus to pin)`];
+    return [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`];
   }
 
   if (slot === null) {
-    const woven = transposeMarkdown(resolved, profile);
+    const woven = transposeMarkdown(resolved, profile, undefined, tongue);
     const check = woven.check ?? "unchecked";
-    return [`<!-- ${word}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${word} -->`];
+    return [`<!-- ${headWord}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${headWord} -->`];
   }
 
   const span = extractAhuSlot(resolved, slot);
   if (span === null) {
-    return [`- \`${word} ${target}\` (unresolved — slot #${slot} not found)`];
+    return [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`];
   }
   // The check covers the SLOT's own bytes alone — open sigil through its matching close, inclusive —
   // never the whole carrier: a reader pinning one section wants proof of THAT section, and a
   // whole-carrier check would certify bytes the inline never carried.
   const check = bccOfSpan(span);
-  const woven = transposeMarkdown(span, profile);
-  return [`<!-- ${word}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${word} -->`];
+  const woven = transposeMarkdown(span, profile, undefined, tongue);
+  return [`<!-- ${headWord}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${headWord} -->`];
 }
 
 /**
@@ -448,6 +504,14 @@ export function transposeMarkdown(
    * this same walk but WITHOUT a resolver, so a chain of `aka`s never loops.
    */
   resolve?: (uri: string) => string | null,
+  /**
+   * The BCP 47 tongue to weave sigil HEAD names into (#/the-woven-dialect's Tongue clause). Absent:
+   * every head name passes through unchanged — the axis this module held before this parameter
+   * existed, so leaving it off reproduces every prior byte exactly. Present: each construct that
+   * echoes a sigil's own head word resolves it through {@link resolveHeadWord} before emitting —
+   * never touching an argument, a target, or prose.
+   */
+  tongue?: string,
 ): { markdown: string; uri?: string; check?: string; metaFence?: string } {
   const out: string[] = [];
   let fence = 0;            // open fence length in backticks; 0 = prose
@@ -567,22 +631,24 @@ export function transposeMarkdown(
     if (ahu) { flushProse(); out.push(`<a id="${ahuId(ahu[1]!)}"></a>`); continue; }
     if (AHU_CLOSE.test(line)) continue;
     const loulou = LOULOU_LINE.exec(line);
-    if (loulou) { flushProse(); out.push(`- \`${loulou[1]} ${(loulou[2] ?? "").trim()}\``); continue; }
+    if (loulou) { flushProse(); out.push(`- \`${resolveHeadWord(loulou[1]!, tongue)} ${(loulou[2] ?? "").trim()}\``); continue; }
     const aka = AKA_LINE.exec(line);
-    if (aka) { flushProse(); out.push(...weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve)); continue; }
+    if (aka) { flushProse(); out.push(...weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve, tongue)); continue; }
     const kahea = KAHEA_LINE.exec(line);
     if (kahea) {
       flushProse();
       const target = kahea[1]!.replace(/^"|"$/g, "");
       const href = /\s/.test(target) ? `<${target}>` : target;
-      out.push(`${profile.kaheaMarker}[${target}](${href})`);
+      const kaheaWord = resolveHeadWord("kahea", tongue);
+      out.push(`${profile.kaheaMarker}\`${kaheaWord}\` [${target}](${href})`);
       continue;
     }
     const transclusion = TRANSCLUSION_LINE.exec(line);
     if (transclusion) { flushProse(); out.push("```" + profile.tangleInfoString, transclusion[1]!, "```"); continue; }
     if (SIGIL_LINE.test(line)) {
       flushProse();
-      out.push(line.includes("`") ? line : `\`${line}\``);
+      const translated = translateSigilHead(line, tongue);
+      out.push(translated.includes("`") ? translated : `\`${translated}\``);
       continue;
     }
 
@@ -663,10 +729,19 @@ function yamlFrontmatter(fields: Readonly<Record<string, string>>): string {
  */
 export function projectSubmission(
   text: string,
-  opts?: { uri?: string; title?: string; lang?: string; profile?: WeaveProfile; resolve?: (uri: string) => string | null },
+  opts?: {
+    uri?: string;
+    title?: string;
+    lang?: string;
+    /** BCP 47 — weaves every sigil head name through its `lar-weave: primary` mirror for this
+     * tongue (#/the-woven-dialect). Absent: canonical, byte-identical to every prior projection. */
+    tongue?: string;
+    profile?: WeaveProfile;
+    resolve?: (uri: string) => string | null;
+  },
 ): SubmissionProjection {
   const profile = opts?.profile ?? PROFILES.CommonMark;
-  const t = transposeMarkdown(text, profile, opts?.resolve);
+  const t = transposeMarkdown(text, profile, opts?.resolve, opts?.tongue);
   const uri = opts?.uri ?? t.uri ?? "";
   if (!uri) throw new Error("projectSubmission: the carrier declares no address and none was supplied");
   const check = t.check ?? "unchecked";
@@ -678,8 +753,12 @@ export function projectSubmission(
       source: uri,
       "source-check": check,
       variant: profile.dialect,
-      lang: opts?.lang ?? "en",
+      // `lang` names the READER's tongue; `tongue` (added only when one wove) marks the WOVEN
+      // authoring lineage, `x-lares` (private-use, a Lares-authored source) `>` the tongue it wove
+      // into — #/the-woven-dialect's own two-field split.
+      lang: opts?.lang ?? opts?.tongue ?? "en",
     };
+    if (opts?.tongue) fields.tongue = `x-lares>${opts.tongue}`;
     if (profile.requiredMeta?.length) {
       const tomlFields = t.metaFence ? parseTaploFields(t.metaFence) : {};
       const missing = profile.requiredMeta.filter((k) => !tomlFields[k]);

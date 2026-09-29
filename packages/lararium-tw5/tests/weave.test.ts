@@ -10,8 +10,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   transposeMarkdown, projectSubmission, PROFILES,
-  escapeXmlNameSegment, unescapeXmlNameSegment, yamlEscape,
+  escapeXmlNameSegment, unescapeXmlNameSegment, yamlEscape, mirrorToCanonical,
 } from "../src/weave/index.js";
+import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../src/meme-ast/grammar-table.generated.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
@@ -438,7 +439,7 @@ describe("ahu ids: the ISO/IEC 9075-14 `_xHHHH_` escape, self-escaping", () => {
 describe("aka vs kahea vs loulou — frozen, live, and plain citation", () => {
   test("a live `kahea` weaves as a plain-text-marked link — no glyph, decodable outward", () => {
     const t = transposeMarkdown("<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n");
-    expect(t.markdown).toContain("(live) [lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
+    expect(t.markdown).toContain("(live) `kahea` [lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
   });
 
   test("CONTROL: the marker reads the SAME plain-text spelling under every profile", () => {
@@ -674,6 +675,138 @@ describe("the hana fence: a foreign-grammar span weaves as ONE fenced block, nev
     expect(t.markdown).toContain("1. first");
     expect(t.markdown).toContain("2. second");
     expect(t.markdown).toContain("```toml\n# not a list item\n```");
+  });
+});
+
+describe("the tongue axis — sigil HEAD names weave through the tongue's primary mirror", () => {
+  const CARRIER3 = (body: string) =>
+    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tongue-probe">>\n\`\`\`toml meta\nuri-path = "ha.ka.ba/lares/api/pono/tongue-probe"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n${body}\n\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to=?>>\n`;
+
+  test("CONTROL: no --tongue (undefined) leaves every head name canonical, byte-identical to before", () => {
+    const src = CARRIER3(
+      '<<~ ahu #/entry>>\n\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n\n<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n\n<<~/ahu>>',
+    );
+    const noTongue = transposeMarkdown(src);
+    const explicitUndefined = transposeMarkdown(src, PROFILES.CommonMark, undefined, undefined);
+    expect(noTongue.markdown).toBe(explicitUndefined.markdown);
+    expect(noTongue.markdown).toContain("(live) `kahea` [lar:///ha.ka.ba/lares/api/pono/lar-uri]");
+    expect(noTongue.markdown).toContain("- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`");
+  });
+
+  test("RED: --tongue en weaves kahea as transclude and aka as snapshot; ahu (no primary) stays ahu", () => {
+    const src = CARRIER3(
+      '<<~ ahu #/entry>>\n\n<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n\n<<~ aka "lar:///ha.ka.ba/lares/api/pono/lar-uri">>\n\n<<~/ahu>>',
+    );
+    const t = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
+    expect(t.markdown).toContain("(live) `transclude` [lar:///ha.ka.ba/lares/api/pono/lar-uri]");
+    expect(t.markdown).toContain("- `snapshot lar:///ha.ka.ba/lares/api/pono/lar-uri` (unresolved — no corpus to pin)");
+    // ahu carries no primary mirror in "en" — its own name never appears in the woven output either
+    // way, but the ahu construct itself (the anchor) still weaves untouched, proving the tongue axis
+    // does not disturb a construct it has nothing to translate for.
+    expect(t.markdown).toContain('<a id="entry"></a>');
+  });
+
+  test("RED: a kahea ARGUMENT containing the word \"kahea\" stays untranslated — only the head token moves", () => {
+    const src = CARRIER3('<<~ kahea "lar:///ha.ka.ba/lares/api/pono/kahea-fixture">>');
+    const t = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
+    expect(t.markdown).toContain("(live) `transclude` [lar:///ha.ka.ba/lares/api/pono/kahea-fixture](lar:///ha.ka.ba/lares/api/pono/kahea-fixture)");
+    // the argument's own "kahea" substring rides untouched — never swept by a global replace
+    expect(t.markdown).toContain("kahea-fixture");
+  });
+
+  test("loulou has no primary mirror for \"en\" — stays canonical under --tongue too", () => {
+    const src = CARRIER3('<<~ loulou lar:///ha.ka.ba/lares/api/pono/lar-uri>>');
+    const t = transposeMarkdown(src, PROFILES.CommonMark, undefined, "en");
+    expect(t.markdown).toContain("- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`");
+  });
+
+  test("CONTROL: a generic line-standing sigil (no dedicated shape) also translates its head word only", () => {
+    const t = transposeMarkdown('<<~ranks kind carrier -> descriptor>>\n', PROFILES.CommonMark, undefined, "en");
+    // `ranks` names no sigil in the table at all — mirrorToCanonical answers null, so it passes
+    // through as itself (the `?? word` fallback), exactly like an unrecognized word must.
+    expect(t.markdown).toContain("`<<~ranks kind carrier -> descriptor>>`");
+  });
+
+  test("a frozen aka's PINNED content weaves under the same tongue, recursively", () => {
+    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>
+
+<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
+    const t = transposeMarkdown(
+      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n',
+      PROFILES.CommonMark,
+      resolve,
+      "en",
+    );
+    expect(t.markdown).toContain("<!-- snapshot: lar:///ha.ka.ba/lares/api/pono/target pinned");
+    expect(t.markdown).toContain("(live) `transclude` [lar:///ha.ka.ba/lares/api/pono/lar-uri]");
+  });
+
+  test("--tongue en, --dialect GFM: frontmatter carries lang and tongue: \"x-lares>en\"", () => {
+    const src = CARRIER3('<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>');
+    const p = projectSubmission(src, { profile: PROFILES.GFM, tongue: "en" });
+    expect(p.markdown).toContain('lang: "en"');
+    expect(p.markdown).toContain('tongue: "x-lares>en"');
+    expect(p.markdown).toContain("(live) `transclude`");
+  });
+
+  test("CONTROL: with no --tongue, frontmatter carries lang but OMITS the tongue key entirely", () => {
+    const src = CARRIER3('<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>');
+    const p = projectSubmission(src, { profile: PROFILES.GFM });
+    expect(p.markdown).toContain('lang: "en"');
+    expect(p.markdown).not.toContain("tongue:");
+  });
+});
+
+describe("the reverse mirror map and its round-trip property", () => {
+  test("mirrorToCanonical answers every mirror in the table's own alias map, primary or read-only", () => {
+    for (const [alias, canonical] of Object.entries(GENERATED_ALIAS_MAP)) {
+      expect(mirrorToCanonical(alias)).toBe(canonical);
+    }
+  });
+
+  test("CONTROL: a canonical name, or a word naming no sigil at all, answers null", () => {
+    expect(mirrorToCanonical("ahu")).toBeNull();
+    expect(mirrorToCanonical("kahea")).toBeNull();
+    expect(mirrorToCanonical("not-a-sigil-at-all")).toBeNull();
+  });
+
+  test("PROPERTY: for every declared primary, canonical→primary→canonical is identity, and no two canonicals claim the same primary within one tongue", () => {
+    const byTongue = new Map<string, Map<string, string>>(); // tongue -> primary name -> canonical it serves
+    for (const rule of GENERATED_SIGILS) {
+      if (!rule.weave?.tongue || !rule.aliasFor) continue;
+      const { tongue } = rule.weave;
+      const canonical = rule.aliasFor;
+
+      // round-trip: the primary's own reverse-map entry must point back at the SAME canonical the
+      // forward (weave) direction derives it from.
+      expect(mirrorToCanonical(rule.name), `${rule.name} → canonical (tongue ${tongue})`).toBe(canonical);
+
+      // injectivity: no two DIFFERENT canonicals may claim the same primary name in one tongue — a
+      // table violation here is reported, never silently patched (a sibling owns the tiddlers).
+      const claimed = byTongue.get(tongue) ?? new Map<string, string>();
+      const priorCanonical = claimed.get(rule.name);
+      if (priorCanonical !== undefined && priorCanonical !== canonical) {
+        throw new Error(
+          `grammar-table ambiguity (REPORT, do not patch): tongue "${tongue}" primary "${rule.name}" ` +
+          `is claimed by both "${priorCanonical}" and "${canonical}"`,
+        );
+      }
+      claimed.set(rule.name, canonical);
+      byTongue.set(tongue, claimed);
+    }
+    // sanity floor: the two primaries #/mirror-vocabulary names by hand stand in the derived table.
+    expect(byTongue.get("en")?.get("snapshot")).toBe("aka");
+    expect(byTongue.get("en")?.get("transclude")).toBe("kahea");
   });
 });
 

@@ -9,6 +9,7 @@
  *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
  *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
+ *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
  *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
  *
@@ -896,6 +897,9 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
   const titleBase = args.options["title-base"];
   const dialect = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
   const profile = dialect ? profileFor(dialect) : PROFILES.CommonMark;
+  // BCP 47 — absent, every sigil head name weaves canonical, byte-identical to before this flag
+  // existed (#/the-woven-dialect's Tongue clause).
+  const tongue = typeof args.options["tongue"] === "string" ? args.options["tongue"] : undefined;
   if (out) mkdirSync(out, { recursive: true });
   const text = readNamed(file);
   const base = basename(file).replace(/\.mem$/, "");
@@ -903,6 +907,7 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
     ...(titleBase ? { title: `${titleBase}/${base}` } : {}),
     profile,
     resolve: bagsResolver(repoRoot),
+    ...(tongue ? { tongue } : {}),
   });
   const dir = out ?? dirname(file);
   const mdPath = join(dir, `${base}.md`);
