@@ -97,21 +97,24 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
   });
 
   /**
-   * ── THE `ahu` OPENER ADMITS ONE SLOT GRAMMAR ON BOTH SIDES ────────────────────────────────────
-   * The grammar tiddler's `lar-open-pattern` hydrates the in-VM scan; the bootstrap scan reads where no
-   * grammar stands. Measured: the tiddler spelled `#[\w-]+` and refused `#/a` — the spelling the minter
-   * blesses and the tiddler's own `lar-example` shows — so a witness carrier graded `clean` outside the VM
-   * and `warning` (`partial-form:ahu` · `orphan-close:ahu`) inside it. One text, two grades.
+   * ── THE `ahu` OPENER ADMITS ONE SLOT GRAMMAR, END TO END ──────────────────────────────────────
+   * The grammar tiddler's `lar-open-pattern` hydrates BOTH the in-VM scan and the node-side default
+   * scan now (G2-G4 cutover, lar:///sigil.grammar.lane loop 2) — `collectEvents` with no grammar
+   * loaded falls to `GENERATED_SIGILS` (grammar-table.generated.ts), itself derived from this same
+   * tiddler, rather than to a second hand-written bootstrap copy of ahu's pattern. There is no more
+   * independent second recognizer to hold ahu's opener to (that redundant copy is exactly what the
+   * cutover retired) — this now measures that the ONE declared pattern reaches
+   * `collectEvents`/`buildMemeAst` unchanged and admits the slot grammar the tiddler's own
+   * `lar-example` shows, end to end through the real runtime path rather than a source-text regex
+   * pulled out of the scanner by hand.
    */
-  test("★ the grammar tiddler's ahu opener admits what the bootstrap scan admits ★", async () => {
+  test("★ the grammar tiddler's ahu opener admits its declared slot grammar, through collectEvents ★", async () => {
     const { readFileSync } = await import("node:fs");
+    const { collectEvents } = await import("../src/meme-ast/index.js");
     const tid = readFileSync(new URL("../tiddlers/sigil-ahu.tid", import.meta.url).pathname, "utf8");
     const declared = /^lar-open-pattern: (.+)$/m.exec(tid)?.[1];
-    const scanner = readFileSync(new URL("../src/meme-ast/scanner.ts", import.meta.url).pathname, "utf8");
-    const bootstrap = /sigilName: "ahu", regex: \/(.+)\/g, eventType: "open"/.exec(scanner)?.[1];
     expect(declared, "sigil-ahu.tid carries no lar-open-pattern").toBeTruthy();
-    expect(bootstrap, "the scanner carries no ahu open scan").toBeTruthy();
-    const tidRe = new RegExp(declared!), bootRe = new RegExp(bootstrap!);
+    const tidRe = new RegExp(declared!);
     const cases: ReadonlyArray<readonly [string, boolean]> = [
       ["<<~ ahu #/a>>", true], ["<<~ ahu #a>>", false], ["<<~ ahu #/a/b>>", true], ["<<~ ahu #a/b>>", false],
       ["<<~ ahu #/a -> lar:///t/elsewhere>>", true],
@@ -119,8 +122,10 @@ describe.skipIf(wikiSkip)(`the unslashed shelf${skipNote}`, () => {
     ];
     for (const [opener, admits] of cases) {
       expect(tidRe.test(opener), `tiddler on ${opener}`).toBe(admits);
-      expect(bootRe.test(opener), `bootstrap on ${opener}`).toBe(admits);
-      if (admits) expect(tidRe.exec(opener)?.[1], `slot group on ${opener}`).toBe(bootRe.exec(opener)?.[1]);
+      const events = collectEvents(opener + "\n");
+      const openEvt = events.find((e) => e.sigilName === "ahu" && e.eventType === "open");
+      expect(Boolean(openEvt), `collectEvents (default, table-derived) on ${opener}`).toBe(admits);
+      if (admits) expect(openEvt?.groups[1], `slot group on ${opener}`).toBe(tidRe.exec(opener)?.[1]);
     }
   });
 });

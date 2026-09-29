@@ -84,6 +84,37 @@ module-type: library
 import { matchCarrierHeadLine } from "../carrier-head.js";
 import { META_OPEN_LINE_RE } from "../meta-fence.js";
 import { frameAlt } from "../frame-marks.js";
+import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../meme-ast/grammar-table.generated.js";
+
+/**
+ * G2-G4 cutover (lar:///sigil.grammar.lane loop 2): the word SET a line recognizer alternates on
+ * derives from the tiddler-sourced table — the canonical name plus every tiddler that carries
+ * `lar-mirror-of: <canonical>` — rather than a hand-typed list that could silently miss a mirror
+ * (`shadow`/`snapshot` for `aka`, `link` for `loulou`) the tiddlers already declare. No dialect
+ * changes: each recognized word still projects through the SAME shape this file always emitted —
+ * only which words REACH that shape widens to match the tiddlers.
+ *
+ * A mirror's own PREFIX SHAPE still varies (`fragment` opens bare `<<fragment …>>`, never
+ * `<<~ fragment …>>` — TW5-native compatibility spelling; every other mirror in this tree opens
+ * sharktooth), so this reads each candidate's own `openPattern`/`pattern` off the table to sort it
+ * bare vs sharktooth, rather than assuming one shape for every mirror.
+ */
+function mirrorsOf(canonical: string): string[] {
+  return Object.entries(GENERATED_ALIAS_MAP)
+    .filter(([, target]) => target === canonical)
+    .map(([name]) => name);
+}
+function isBarePrefix(name: string): boolean {
+  const rule = GENERATED_SIGILS.find((s) => s.name === name);
+  const pat = rule?.openPattern ?? rule?.pattern ?? "";
+  return pat.length > 0 && !pat.startsWith("<<~");
+}
+function splitByPrefixShape(names: string[]): { sharktooth: string[]; bare: string[] } {
+  const sharktooth: string[] = [];
+  const bare: string[] = [];
+  for (const n of names) (isBarePrefix(n) ? bare : sharktooth).push(n);
+  return { sharktooth, bare };
+}
 
 export interface SubmissionProjection {
   /** The markdown body — what a reviewer reads. */
@@ -130,11 +161,19 @@ const DOCTYPE_LINE = /^<<!DOCTYPE (?:[^>\n]|>(?!>))*>>\s*$/;
 // The `#` sigil marks a slot path, rooted (`#/a/b`) or bare (`#name`) — the capture takes
 // whatever follows the `#` up to whitespace or the close, leading slash included when present, so
 // `ahuId` below can tell the two spellings apart and drop only the ROOT slash, not a bare name.
-const AHU_OPEN = /^(?:<<~\s*ahu|<<fragment)\s+#(\S+?)(?: (?:[^>\n]|>(?!>))*)?\s*>>\s*$/;
-const AHU_CLOSE = /^(?:<<~\s*\/\s*ahu|<<\/fragment)\s*>>\s*$/;
-// The sigil WORD rides the capture too — `aka` and `loulou` name different relations and the
-// projected bullet keeps that legible rather than collapsing both to one bullet shape.
-const EDGE_LINE = /^<<~\s*(aka|loulou) ((?:[^>\n]|>(?!>))*?)\s*>>\s*$/;
+const AHU_NAMES  = ["ahu", ...mirrorsOf("ahu")];
+const AHU_SHAPES = splitByPrefixShape(AHU_NAMES);
+const ahuAlt = [
+  AHU_SHAPES.sharktooth.length ? `<<~\\s*(?:${AHU_SHAPES.sharktooth.join("|")})` : null,
+  AHU_SHAPES.bare.length ? `<<(?:${AHU_SHAPES.bare.join("|")})` : null,
+].filter((s): s is string => s !== null).join("|");
+const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+#(\\S+?)(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
+const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
+// The sigil WORD rides the capture too — `aka`/`loulou` and their mirrors (`shadow`/`snapshot`,
+// `link`) each name a relation and the projected bullet keeps the author's own spelling legible
+// rather than collapsing every spelling to one canonical word.
+const EDGE_NAMES = ["aka", "loulou", ...mirrorsOf("aka"), ...mirrorsOf("loulou")];
+const EDGE_LINE = new RegExp(`^<<~\\s*(${EDGE_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
 // A transclusion standing alone as a block: `{{title}}`, `{{title||template}}`,
 // `{{{filter}}}`, `{{{filter||template}}}` — no markdown equivalent exists for any of them, so
 // the LINE-STANDING form carries whole into a tangle fence (a mid-line occurrence is handled

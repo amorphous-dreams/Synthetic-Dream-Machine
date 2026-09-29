@@ -27,6 +27,7 @@ import type {
 } from "./types.js";
 import type { ParseEvent } from "./scanner.js";
 import { composeSlotPath } from "./ahu-scan.js";
+import { GENERATED_CANONICAL_NAMES } from "./grammar-table.generated.js";
 
 // ---------------------------------------------------------------------------
 // Internal builder frame (scope stack entry)
@@ -53,11 +54,15 @@ const slotUriOf = (memeUri: string, enclosing: string, slot: string): string =>
 // Grammar-meme sigils fall to DynamicNode when no grammar is loaded.
 // ---------------------------------------------------------------------------
 
-const CANONICAL_SIGILS = new Set([
-  "ahu", "kahea-invoke", "pranala", "loulou", "aka", "kahea", "pono", "lele", "papalohe",
-  "mukuwai", "kahawai", "huli", "kumu", "kau", "waiho", "kukali", "toml",
+// G2-G4 cutover (lar:///sigil.grammar.lane loop 2): derived from GENERATED_CANONICAL_NAMES
+// (grammar-table.generated.ts, tiddler-derived) plus the reasoned residue no tiddler names —
+// `kahea-invoke` (a dispatch-only pseudo-sigil this switch synthesizes, never authored) and the
+// `control-*` frame marks (scanner.ts's own hand-written independent recognizer; frame-parity's law —
+// the tiddler-side `frame-soh` etc. name a DIFFERENT, narrower spec-anchor, never this event name).
+export const CANONICAL_SIGILS = new Set<string>([
+  ...GENERATED_CANONICAL_NAMES,
+  "kahea-invoke",
   "control-soh", "control-stx", "control-etx", "control-eot",
-  "hana", "meme", "wehe", "helu", "kapu", "hui", "heihei", "puka", "ui",
 ]);
 
 // ---------------------------------------------------------------------------

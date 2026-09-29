@@ -14,6 +14,7 @@
 
 import type { GrammarRules, SigilRule } from "./types.js";
 import { fencedSpans, maskedExecAll } from "./fence-mask.js";
+import { GENERATED_SIGILS } from "./grammar-table.generated.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,36 +39,25 @@ export interface ParseEvent {
 }
 
 // ---------------------------------------------------------------------------
-// BOOTSTRAP_SCANS — minimal edge + ahu + common control sigils.
-// Used when no GrammarRules loaded (bootstrap / unit tests without grammar).
+// BOOTSTRAP_SCANS — the reasoned HAND-WRITTEN residue: ASCII control-character
+// framing alone (SOH/STX/ETX/EOT/ETB + their kapu-extended DC1/DC4 variants).
 //
-// Control-character framing protocol MUST precede ahu and generic scans so
-// decorated forms like <<^ code="&#x0002;" ahu #meme-body-open>> remain structural.
-// ---------------------------------------------------------------------------
-
-// EVERY POSITIONAL CAPTURE STRIPS AN OPTIONAL QUOTE PAIR. TiddlyWiki reads `name:value` as call
-// syntax, so a bare `lar:///x` standing positionally binds a phantom parameter and the slot stays
-// empty; the corpus quotes such values, and a capture that kept the pair would carry it into an
-// address. See lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat.
-// ── A CALL BINDS WITH `=`, AND A SCAN STILL RECOGNISES THE SIGIL ───────────────────────────────
-// The tail DELIMITER below stays permissive on purpose. A carrier written with `:` is not the house
-// form, but it is still a sigil TiddlyWiki parses — and a scan that refused it would grade the sigil
-// `missing` and LOSE ITS TARGET, which is a parse breaking badly (#/graceful-parsing). The sigil
-// matches, keeps its address, and the BINDER (builder `attrOf`) declines the value, so the parameter
-// falls back to its declared default rather than the edge vanishing.
+// G2-G4 cutover (lar:///sigil.grammar.lane loop 2): every OTHER bootstrap scan this file used to
+// hand-carry (ahu, scale, aka, kahea, pono, lele, hui/holo/puka, papalohe, toml, waiho, kau,
+// heihei/kahawai/mukuwai, huli, wehe, meme, every English alias, kumu/widget, hana/task, kukali) now
+// derives from GENERATED_SIGILS (grammar-table.generated.ts, itself derived from the tiddlers) —
+// `collectEvents` falls to it when no live GrammarRules is loaded, in place of a second hand-kept list
+// that could silently drift from the tiddlers. See collectEvents below. `pranala` alone stays a SECOND
+// reasoned hand-kept exception (below, beside control-*) — see its own comment.
 //
-// `:` binds a DEFAULT in a `\procedure` definition. `=` in a CALL arrived later and unlocks the
-// indirect forms — a filtered, indirect, macro or substituted value reaches a parameter ONLY through
-// it (TiddlyWiki `parseMacroParameterAsAttribute`: `isNewStyleSeparator = (op === "=")`). Every scan
-// below binds the call form, and the corpus writes it.
+// ⚠ THESE control-* PATTERNS STAY HAND-WRITTEN, and that is the point. `frame-parity` reads the
+// control codes out of THIS FILE as the independent second recogniser — comparing the spec against
+// tiddlers alone reads tautological while one hand writes both. Sourcing them from the shared shore
+// would delete the very seam that witness exists to measure. The bearing READ collapsed
+// (carrier-head.ts); the bootstrap SCAN did not, by the same ruling that keeps every frame scan local
+// (frame-marks.ts). (`sigil-frame-soh.tid` etc. DO carry a `lar-pattern` — a deliberately narrower
+// spec-side anchor frame-parity's OWN witness reads; it is not this file's independent recognizer.)
 export const BOOTSTRAP_SCANS: SigilScan[] = [
-  // ASCII control-character framing — SOH / STX / ETX / EOT
-  //
-  // ⚠ THESE PATTERNS STAY HAND-WRITTEN, and that is the point. `frame-parity` reads the control codes
-  // out of THIS FILE as the independent second recogniser — comparing the spec against tiddlers alone
-  // reads tautological while one hand writes both. Sourcing them from the shared shore would delete
-  // the very seam that witness exists to measure. The bearing READ collapsed (carrier-head.ts); the
-  // bootstrap SCAN did not, by the same ruling that keeps every frame scan local (frame-marks.ts).
   { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
   { sigilName: "control-stx", regex: /<<\^(?:[^>]|>(?!>))*&#x0002;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
   { sigilName: "control-etx", regex: /<<\^(?:[^>]|>(?!>))*&#x0003;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
@@ -79,97 +69,17 @@ export const BOOTSTRAP_SCANS: SigilScan[] = [
   // Kapu extended range — DC1 (&#x0011;) SOH variant, DC4 (&#x0014;) EOT variant
   { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0011;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },
   { sigilName: "control-eot", regex: /<<\^(?:[^>]|>(?!>))*&#x0014;(?:[^>]|>(?!>))*>>/g,                        eventType: "pragma" },
-  // Structural: ahu — slot identifier supports nested fragment paths via
-  // `/`-separated segments (`#/parent/child/grandchild`). Per memetic-wikitext
-  // spec §5.3 + lar-uri.md §5.6, the URI fragment is a path within the meme;
-  // nested ahu blocks produce child tiddlers at `parentUri#/parent/child`
-  // rather than dedicated `#parent#child` URIs (single-hash invariant).
-  { sigilName: "ahu", regex: /<<~(?:[^>]|>(?!>))*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)"?)?\s*>>/g, eventType: "open"  },
-  { sigilName: "ahu", regex: /<<~\/ahu\s*>>/g,                                                          eventType: "close" },
-  // English alias: the AST carries shared intent and rooted slot grammar; carrier decomposition
-  // retains the authored worksite spelling separately for byte-preserving projection.
-  { sigilName: "fragment", canonicalName: "ahu", regex: /<<fragment\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)?"?)?\s*>>/g, eventType: "open" },
-  { sigilName: "fragment", canonicalName: "ahu", regex: /<<\/fragment\s*>>/g, eventType: "close" },
-  // Pranala — block before inline (block wins at same position)
+  // pranala stays a reasoned SECOND hand-kept exception, discovered while wiring this cutover
+  // (RED: pranala-attribute-spellings.test.ts). `sigil-pranala.tid`'s own `lar-inline-pattern` /
+  // `lar-block-pattern` carry a DIFFERENT capture shape than builder.ts's makeLeaf "pranala" case
+  // expects (family/role pre-split into their own groups, vs. one raw tail-attrs string `attrOf`
+  // reads) — and the tiddler's own comment says why: "Parsed directly in lar-sigil.ts
+  // findNextMatch before compound dispatch fires" — pranala's LIVE-WIKI rendering already bypasses
+  // the generic tiddler-pattern dispatch, so the tiddler's pattern fields describe the sigil for
+  // reference/generation, not the shape a scanner-and-builder contract can cut over to blind. Kept
+  // verbatim from the pre-cutover bootstrap (block before inline — block wins at same position).
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>([\s\S]*?)<<~\/pranala\s*>>/gs, eventType: "leaf" },
   { sigilName: "pranala", regex: /<<~\s*pranala\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?((?:\s+[\w-]+\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s>"']+))*)\s*>>/g, eventType: "leaf" },
-  // Edge sugar
-  // scale — an ordered scale and the ranks it carries; the chain rides QUOTED as one value.
-  { sigilName: "scale",   regex: /<<~\s*scale\s+([\w-]+)(?:\s+"?((?:[^"]|"(?!\s*>>))*)"?)?\s*>>/g, eventType: "leaf" },
-  { sigilName: "loulou",  regex: /<<~\s*loulou\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,             eventType: "leaf" },
-  // aka — URI form then child-slot form
-  { sigilName: "aka", regex: /<<~\s*aka\s+([a-z][\w-]*)\s+(#[\w-]+)\s*>>/g, eventType: "leaf" },
-  { sigilName: "aka", regex: /<<~\s*aka\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,                      eventType: "leaf" },
-  // kahea — leaf then open then URI-dataflow
-  { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)\s+([^>\n]+?)\s*>>/g,     eventType: "leaf" },
-  { sigilName: "kahea-invoke", regex: /<<~\s*kahea\s+([a-z][\w-]*)(?:\s+([^>]*?))?\s*>>/g,  eventType: "open" },
-  { sigilName: "kahea-invoke", regex: /<<~\/kahea\s*>>/g,                                     eventType: "close" },
-  { sigilName: "kahea",        regex: /<<~\s*kahea\s+(lar:[^\s>]+|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>/g, eventType: "leaf" },
-  { sigilName: "pono",    regex: /<<~\s*pono\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-  { sigilName: "constraint", canonicalName: "pono", regex: /<<~\s*constraint\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+role="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-  { sigilName: "lele",    regex: /<<~\s*lele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,               eventType: "leaf" },
-  { sigilName: "branch", canonicalName: "lele", regex: /<<~\s*branch\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g, eventType: "leaf" },
-  // Concurrency — grammar + scanner wired; Verse runtime semantics pending (async-first)
-  { sigilName: "hui",   regex: /<<~\s*hui\s*>>/g,                          eventType: "open"  },
-  { sigilName: "hui",   regex: /<<~\/hui\s*>>/g,                           eventType: "close" },
-  { sigilName: "holo",  regex: /<<~\s*holo\s*>>/g,                        eventType: "open"  },
-  { sigilName: "holo",  regex: /<<~\/holo\s*>>/g,                         eventType: "close" },
-  { sigilName: "puka",  regex: /<<~\s*puka\s*>>/g,                        eventType: "open"  },
-  { sigilName: "puka",  regex: /<<~\/puka\s*>>/g,                         eventType: "close" },
-  { sigilName: "papalohe", regex: /<<~\s*papalohe\s+(#[\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*->\s*"?((?:[^"\s>]|>(?!>))+)"?(?:\s+listenable="?([\w.-]+)"?)?(?:\s+subscribable="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-  // TOML data block
-  { sigilName: "toml", regex: /```toml(?:[ \t]+([A-Za-z0-9_-]+))?[ \t]*\n([\s\S]*?)```/g,  eventType: "leaf" },
-  { sigilName: "toml", regex: /<<~\s*toml\s*>>([\s\S]*?)<<~\/toml\s*>>/g,                   eventType: "leaf" },
-  // Variable binding (waiho)
-  { sigilName: "waiho", regex: /<<~!\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },
-  { sigilName: "waiho", regex: /<<~\s*waiho\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,  eventType: "open"   },
-  { sigilName: "waiho", regex: /<<~\/waiho\s*>>/g,                                eventType: "close"  },
-  // kau — invocation before placement
-  { sigilName: "kau", regex: /<<~\s*kau\s+([\w][\w.-]*)\(([^)]*)\)\s*>>/g,                   eventType: "leaf" },
-  { sigilName: "kau", regex: /<<~\s*kau\s+(#[\w-]+\s+)?([\w][\w.-]*)(?:\s+([^>]*))?\s*>>/g, eventType: "leaf" },
-  // Conditional — heihei (IF), kahawai (ELIF), mukuwai (ELSE)
-  { sigilName: "heihei",  regex: /<<~\s*heihei\s+([^\n>]+?)\s*>>/g,    eventType: "open"  },
-  { sigilName: "heihei",  regex: /<<~\/heihei\s*>>/g,                   eventType: "close" },
-  { sigilName: "mukuwai", regex: /<<~\s*mukuwai\s*>>/g,                 eventType: "leaf"  },
-  { sigilName: "kahawai", regex: /<<~\s*kahawai\s+([^\n>]+?)\s*>>/g,   eventType: "leaf"  },
-  // Iteration
-  { sigilName: "huli", regex: /<<~\s*huli\s+([^\n>]+?)\s+as\s+([\w-]+)\s*>>/g, eventType: "open"  },
-  { sigilName: "huli", regex: /<<~\/huli\s*>>/g,                                eventType: "close" },
-  // wehe — procedure definition block
-  { sigilName: "wehe", regex: /<<~\s*wehe\s+([\w-]+)(?:\s+([^>]*?))?\s*>>/g,  eventType: "open"  },
-  { sigilName: "wehe", regex: /<<~\/wehe\s*>>/g,                                eventType: "close" },
-  // meme — tiddler context block
-  { sigilName: "meme", regex: /<<~\s*meme\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>/g,                      eventType: "open"  },
-  { sigilName: "meme", regex: /<<~\/meme\s*>>/g,                                eventType: "close" },
-  // English aliases — emit canonical name directly (inline erasure)
-  { sigilName: "if",   canonicalName: "heihei",  regex: /<<~\s*if\s+([^\n>]+?)\s*>>/g,     eventType: "open"  },
-  { sigilName: "if",   canonicalName: "heihei",  regex: /<<~\/if\s*>>/g,                    eventType: "close" },
-  { sigilName: "else", canonicalName: "mukuwai", regex: /<<~\s*else\s*>>/g,                 eventType: "leaf"  },
-  { sigilName: "elif", canonicalName: "kahawai", regex: /<<~\s*elif\s+([^\n>]+?)\s*>>/g,   eventType: "leaf"  },
-  { sigilName: "const", canonicalName: "waiho",  regex: /<<~!\s*const\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g, eventType: "pragma" },
-  { sigilName: "let",  canonicalName: "waiho",   regex: /<<~\s*let\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
-  { sigilName: "let",  canonicalName: "waiho",   regex: /<<~\/let\s*>>/g,                   eventType: "close" },
-  { sigilName: "var",  canonicalName: "waiho",   regex: /<<~\s*var\s+([\w-]+)\s*=\s*([^\n>]+?)\s*>>/g,    eventType: "open"   },
-  { sigilName: "var",  canonicalName: "waiho",   regex: /<<~\/var\s*>>/g,                   eventType: "close" },
-  { sigilName: "kumu",   regex: /<<~\s*kumu\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g,     eventType: "open"  },
-  { sigilName: "kumu",   regex: /<<~\/kumu\s*>>/g,                                   eventType: "close" },
-  { sigilName: "widget", canonicalName: "kumu", regex: /<<~!\s*widget\s+([\w-]+)(?:\(([^)]*)\))?\s*>>/g, eventType: "open"  },
-  { sigilName: "widget", canonicalName: "kumu", regex: /<<~\/widget\s*>>/g,                               eventType: "close" },
-  { sigilName: "task", canonicalName: "hana",   regex: /<<~\s*task\s+([^\n>]+?)\s*>>/g,  eventType: "open"  },
-  { sigilName: "task", canonicalName: "hana",   regex: /<<~\/task\s*>>/g,                 eventType: "close" },
-  // hana — guest-grammar block (direct form; \task is the alias above)
-  { sigilName: "hana", regex: /<<~\s*hana\s+([^\n>]+?)\s*>>/g,                eventType: "open"  },
-  { sigilName: "hana", regex: /<<~\/hana\s*>>/g,                               eventType: "close" },
-  // kukali — reactive wait posture
-  { sigilName: "kukali",    regex: /<<~\s*kukali(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-  { sigilName: "suspends", canonicalName: "kukali", regex: /<<~\s*suspends(?:\s+trigger="?([\w.-]+)"?)?\s*>>/g, eventType: "leaf" },
-
-  // GENERIC catch-all — MUST stay last (position-dedup lets every specific scan win first). Recognizes
-  // any sharktooth form no specific pattern matched: a known sigil in a novel param shape
-  // (`<<~ aperture(0->20)>>`, `<<~ keyword(p) ~~ note>>`) or an unknown word. group 1 = sigil-name,
-  // group 2 = raw params (lazy, `->`-aware). The builder grades it `missing` — the partial rung — so
-  // a form-variant survives as a recognized sigil instead of dropping to water.
-  { sigilName: "(generic)", generic: true, regex: /<<~\s*(\\?[A-Za-z][\w-]*)((?:[^>]|>(?!>))*?)\s*>>/g, eventType: "leaf" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -208,7 +118,11 @@ export function buildScansFromGrammar(sigils: SigilRule[]): SigilScan[] {
 // ---------------------------------------------------------------------------
 
 export function collectEvents(text: string, grammar?: GrammarRules): ParseEvent[] {
-  const scans = grammar ? buildScansFromGrammar(grammar.sigils) : BOOTSTRAP_SCANS;
+  // The control-* frame scans (BOOTSTRAP_SCANS) ride ahead unconditionally — hand-written, never
+  // tiddler-derived (see the comment above BOOTSTRAP_SCANS). Every other sigil comes from the live
+  // GrammarRules when one loaded, else from GENERATED_SIGILS — the tiddler-derived table — rather
+  // than a second hand-kept list that could drift from the tiddlers unnoticed.
+  const scans = [...BOOTSTRAP_SCANS, ...buildScansFromGrammar(grammar ? grammar.sigils : GENERATED_SIGILS)];
 
   // ── A FENCED SIGIL TEACHES; IT DECLARES AND FIRES NOTHING ──────────────────────────────────────
   // Every scan below reads through the quoted-code mask, computed ONCE for the carrier. A grammar
