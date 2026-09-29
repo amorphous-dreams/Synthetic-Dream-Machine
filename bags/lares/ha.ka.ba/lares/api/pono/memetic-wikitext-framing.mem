@@ -896,19 +896,23 @@ RFC 6901 JSON Pointer's `~0`/`~1` escaping by the URI scheme's own declaration
 
 !!! Tongue
 
-A woven file declares `lang` (BCP 47) for the reader's tongue and `tongue: "x-lares>en"` for its own
-authoring lineage — the private-use `x-lares` subtag marking a Lares-authored source, `>en` marking
-the tongue it wove into. A sigil's NAME translates through the one `lar-weave: primary` mirror that
-tongue carries (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/mirror-vocabulary`); a sigil's
-ARGUMENTS never translate — the same Translate/no-translate split W3C ITS 2.0's Translate data
-category draws between a string meant to carry meaning across tongues and a string meant to carry a
-value. Tangle folds every mirror it meets back to its Hawaiian canonical name on the way home: many
-spellings read, one spelling gets written, the way Unicode canonical equivalence (Unicode Standard
-Annex #15, UAX #15) lets many byte sequences denote one character while normalization picks one to
-keep
-<confidence:0.3 — PENDING; no weave path declares `lang`/`tongue` or applies the Translate/no-translate
-split, and no tangle pass folds a mirror back to its canonical name. This states the tongue law ahead
-of any implementation, unscheduled>.
+''Weave direction.'' A woven file declares `lang` (BCP 47) for the reader's tongue under a `--tongue`
+selection and `tongue: "x-lares>en"` for its own authoring lineage — the private-use `x-lares` subtag
+marking a Lares-authored source, `>en` marking the tongue it wove into; `tongue` joins the frontmatter
+ONLY when a tongue wove, and its absence weaves every sigil head canonical, byte-identical to a
+tongue-free pass. A sigil's NAME translates through the one `lar-weave: primary` mirror that tongue
+carries (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/mirror-vocabulary`); a sigil's ARGUMENTS,
+URIs, slot paths, and surrounding prose never translate — structurally, since the weave only ever
+touches the head-word capture its own construct isolates, the same Translate/no-translate split W3C
+ITS 2.0's Translate data category draws between a string meant to carry meaning across tongues and a
+string meant to carry a value.
+
+''Tangle direction.'' Tangle folds every mirror it meets back to its Hawaiian canonical name on the way
+home: many spellings read, one spelling gets written, the way Unicode canonical equivalence (Unicode
+Standard Annex #15, UAX #15) lets many byte sequences denote one character while normalization picks
+one to keep
+<confidence:0.1 — PENDING; no fold path exists — tangle reads a woven file's sigil heads without
+mapping a mirror back to its canonical name>.
 
 !!! Mixed grammar
 
@@ -1209,6 +1213,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Wa7aoA34ViPvNrozcNThgm0daXdO-J721k8DEv4DrfE
+<<^ code="&#x0003;">>ni:///sha-256;mIRRDxueZyKbQg6D9fJ7yuubkT3fYxHDhIrTb4ogahM
 
 <<^ code="&#x0004;" -> to="?">>
