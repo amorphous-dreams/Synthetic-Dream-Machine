@@ -7,7 +7,7 @@
 cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/api/pono/kumu.mem"
 namespace = "&#x2299;"
-role      = "device-template declaration pragma — kumu as a Verse-style messaging edge widget set: @editable slots placed by kau, KumuListenable/KumuSubscribable reaction pins wired via papalohe; \\type/\\typos run as native TW5 pragmas, no longer kumu mirrors"
+role      = "device-template declaration pragma — kumu as a Verse-style messaging edge widget set: @editable slots placed by kau, KumuListenable/KumuSubscribable reaction pins wired via papalohe; \\type/\\typos stand as native TW5 pragmas, carrying no mirror relation to kumu"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kumu"]
 title     = "lar:///ha.ka.ba/lares/api/pono/kumu"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -78,7 +78,7 @@ A kumu declaration's OUTPUT/INPUT pins derive from the type meme's `reaction:lis
 ```
 
 The TW5 `\type` and `\typos` pragmas run as native TW5 pragmas in their own right, carrying no
-Hawaiian headword — they no longer pair with `kumu`
+Hawaiian headword and no mirror relation to `kumu`
 (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/first-discovered-set`).
 
 <<~/ahu>>
@@ -106,6 +106,6 @@ research stream <confidence:0.6 — design resolved 2026-04-28, implementation p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vYs6bzdC1oYBwiwv3Gbg1ziaPHwGFHp9DvqhC33DuSg
+<<^ code="&#x0003;">>ni:///sha-256;NujYmUzHuUJSgRGx_60cCm9tzOd31D0Wl9WTWRBaAj4
 
 <<^ code="&#x0004;" -> to="?">>
