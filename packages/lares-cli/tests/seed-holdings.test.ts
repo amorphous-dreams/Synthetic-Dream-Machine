@@ -11,6 +11,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { discoverHoldings, SYSTEM_HOLDINGS } from "../src/commands/seed.js";
+import { LARES_DOC_URI, LARARIUM_DOC_URI, identitySlug } from "@lararium/mesh";
 
 let root: string;
 
@@ -60,5 +61,18 @@ describe("discoverHoldings — the discovered holdings map", () => {
 
   test("a missing bags/ answers the empty map (no throw)", () => {
     expect(discoverHoldings(join(root, "nope"))).toEqual([]);
+  });
+
+  test("★ SYSTEM_HOLDINGS derives from the LARES/LARARIUM bag constants, not hand-typed strings ★", () => {
+    // The single owner of "what names lares/lararium" is the bag URI constants
+    // (`LARES_DOC_URI`/`LARARIUM_DOC_URI` in @lararium/mesh/lar-uris). SYSTEM_HOLDINGS must read
+    // back exactly the slugs those constants name — never a re-typed literal that can drift out
+    // from under them.
+    const derived = new Set(
+      [identitySlug(LARES_DOC_URI), identitySlug(LARARIUM_DOC_URI)].filter(
+        (s): s is string => s !== null,
+      ),
+    );
+    expect(SYSTEM_HOLDINGS).toEqual(derived);
   });
 });

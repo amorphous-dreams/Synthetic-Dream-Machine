@@ -20,7 +20,7 @@
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { bagUri } from "@lararium/mesh";
+import { bagUri, LARES_DOC_URI, LARARIUM_DOC_URI, identitySlug } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larRoot } from "../env.js";
@@ -30,13 +30,17 @@ import { cmdAct } from "./act.js";
 /**
  * The holdings whose docs the vessel mints at boot — fed by the diff-gated ingest gesture.
  *
- * THESE MUST SPELL WHAT `discoverHoldings` RETURNS, which reads directory names straight off
- * `bags/`. A marked spelling here matches no directory, so the membership test answers false for
- * every holding and the infrastructure bags take the LOAD route in silence — no error, no warning,
- * just the diff-gate skipped. A set that can never match is worse than an absent one: the branch
- * below still reads as reachable.
+ * DERIVED from the bag URI constants (`LARES_DOC_URI`/`LARARIUM_DOC_URI`, the single owner of
+ * "what these two holdings are named"), never hand-typed — a re-typed literal can drift out from
+ * under the constants it means to mirror, and a set that can never match `discoverHoldings`'s
+ * directory names is worse than an absent one: the branch below still reads as reachable while
+ * the infrastructure bags silently take the LOAD route.
  */
-export const SYSTEM_HOLDINGS = new Set(["lares", "lararium"]);
+export const SYSTEM_HOLDINGS = new Set(
+  [identitySlug(LARES_DOC_URI), identitySlug(LARARIUM_DOC_URI)].filter(
+    (s): s is string => s !== null,
+  ),
+);
 
 export interface SeedHolding {
   readonly holding: string;               // "lares"
