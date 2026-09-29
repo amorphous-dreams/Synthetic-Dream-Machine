@@ -15,7 +15,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "carry", kind: "relation", pattern: "<<~\\s*carry\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "confidence", kind: "metadata", pattern: "<<~\\s*confidence\\b([\\s\\S]*?)>>" },
   { name: "config", kind: "relation", pattern: "<<~\\s*config\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
-  { name: "const", kind: "pragma-alias", openPattern: "<<~\\s*const\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/const\\s*>>", aliasFor: "waiho" },
+  { name: "const", kind: "pragma-alias", openPattern: "<<~\\s*const\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/const\\s*>>", pragmaPattern: "<<~!\\s*const\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", aliasFor: "waiho" },
   { name: "constraint", kind: "edge-alias", pattern: "<<~\\s*constraint\\s+(#[\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+role[=:]\"?([\\w.-]+)\"?)?\\s*>>", aliasFor: "pono" },
   { name: "define", kind: "pragma-alias", openPattern: "<<~\\s*define\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/define\\s*>>", aliasFor: "wehe" },
   { name: "dispatcher", kind: "edge-sugar" },
@@ -53,7 +53,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "kapu", kind: "edge-sugar", openPattern: "<<~\\s*kapu\\s+([^\\n>]*)\\s*>>", closePattern: "<<~\\/kapu\\s*>>", pattern: "<<~\\s*kapu\\s+([^\\n>]*)\\s*>>" },
   { name: "kau", kind: "child-slot", pattern: "<<~\\s*kau\\s+(#[\\w-]+\\s+)?([\\w][\\w.-]*)(?:\\s+([^>]*))?\\s*>>" },
   { name: "kukali", kind: "leaf", pattern: "<<~\\s*kukali(?:\\s+trigger[=:]\"?([\\w.-]+)\"?)?\\s*>>" },
-  { name: "kumu", kind: "pragma", openPattern: "<<~\\s*kumu\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/kumu\\s*>>" },
+  { name: "kumu", kind: "pragma", openPattern: "<<~\\s*kumu\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/kumu\\s*>>" },
   { name: "lares", kind: "frame", pattern: "<<~\\s*lares\\s+(aim|yield)\\s+(?:from=)?\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s*->\\s*(?:to=)?\"?((?:[^\"\\s>]|>(?!>))+)\"?)?\\s*>>" },
   { name: "lele", kind: "concurrency", pattern: "<<~\\s*lele\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>" },
   { name: "let", kind: "pragma-alias", openPattern: "<<~\\s*let\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/let\\s*>>", aliasFor: "waiho" },
@@ -94,10 +94,10 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "typos", kind: "pragma", openPattern: "<<~\\s*typos\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/typos\\s*>>" },
   { name: "ui", kind: "query", pattern: "<<~\\s*ui\\s+([^\\n>]+?)\\s*>>" },
   { name: "var", kind: "pragma-alias", openPattern: "<<~\\s*var\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/var\\s*>>", aliasFor: "waiho" },
-  { name: "waiho", kind: "pragma", openPattern: "<<~\\s*waiho\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/waiho\\s*>>" },
+  { name: "waiho", kind: "pragma", openPattern: "<<~\\s*waiho\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>", closePattern: "<<~\\/waiho\\s*>>", pragmaPattern: "<<~!\\s*waiho\\s+([\\w-]+)\\s+([^\\n>]+?)\\s*>>" },
   { name: "ward", kind: "metadata", pattern: "Drift-Ward\\s*\\(" },
   { name: "wehe", kind: "pragma", openPattern: "<<~\\s*wehe\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/wehe\\s*>>" },
-  { name: "widget", kind: "pragma", openPattern: "<<~\\s*widget\\s+([\\w~-]+)(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/widget\\s*>>" },
+  { name: "widget", kind: "pragma", openPattern: "<<~\\s*widget\\s+(~?[\\w-]+)(?:\\s*\\(([^)]*)\\))?(?:\\s+([^>]*?))?\\s*>>", closePattern: "<<~\\/widget\\s*>>" },
 ];
 
 export const GENERATED_FAMILIES: FamilyRule[] = [
