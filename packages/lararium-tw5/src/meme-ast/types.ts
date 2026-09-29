@@ -52,14 +52,14 @@ export interface PranalaEdgeViolation {
 
 export interface SigilRule {
   name: string;
-  // NOTE: this union is a HAND-KEPT enumeration of `lar-kind` field values. It carries entries
-  // ("worksite", "conditional", "conditional-else", "conditional-branch", "conditional-alias",
-  // "iteration", "iteration-alias") that no tiddler currently sets, and — until this widening —
-  // omitted ten values tiddlers DO set ("child-slot", "control", "context-alias", "data", "frame",
-  // "gauge", "leaf", "mask-summon", "ordered-scale", "relation", "stance"), discovered by
-  // grammar-table-witness.sh deriving the table straight from tiddler fields. See
-  // tools/grammar-table-witness.sh and lar-kind enumeration OWED in that witness's handback.
-  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma" | "conditional" | "conditional-else" | "conditional-branch" | "iteration" | "context" | "concurrency-alias" | "edge-alias" | "pragma-alias" | "iteration-alias" | "conditional-alias" | "child-slot" | "control" | "context-alias" | "data" | "frame" | "gauge" | "leaf" | "mask-summon" | "ordered-scale" | "relation" | "stance";
+  // NOTE: this union is a HAND-KEPT enumeration of `lar-kind` field values, widened by
+  // grammar-table-witness.sh deriving the table straight from tiddler fields. Retired
+  // 2026-09-28 ("conditional-else", "conditional-branch", "conditional-alias", "iteration",
+  // "iteration-alias", "worksite" as a bare concept — the sigil-mirror-flip ruling's kind
+  // retirement pass) after `git grep` confirmed no tiddler or consumer sets them; "worksite"
+  // and "conditional" are KEPT because tests/vocabulary-cid.test.ts and
+  // tests/constructicon-basis.test.ts still construct SigilRule fixtures with those values.
+  kind: "worksite" | "edge" | "edge-sugar" | "metadata" | "header" | "concurrency" | "query" | "guest-grammar" | "guest-grammar-alias" | "query-alias" | "pragma" | "conditional" | "context" | "concurrency-alias" | "edge-alias" | "pragma-alias" | "child-slot" | "control" | "context-alias" | "data" | "frame" | "gauge" | "leaf" | "mask-summon" | "ordered-scale" | "relation" | "stance";
   layer?: "compile" | "render" | "both";
   inlinePattern?: string;
   blockPattern?: string;
