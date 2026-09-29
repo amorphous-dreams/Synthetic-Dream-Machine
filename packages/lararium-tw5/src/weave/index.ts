@@ -86,7 +86,7 @@ import { META_OPEN_LINE_RE } from "../meta-fence.js";
 import { frameAlt } from "../frame-marks.js";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../meme-ast/grammar-table.generated.js";
 import { parseTaploFields } from "../toml-ast.js";
-import { fenceLineOpen } from "../meme-ast/fence-mask.js";
+import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
 
 /**
  * G2-G4 cutover (lar:///sigil.grammar.lane loop 2): the word SET a line recognizer alternates on
@@ -164,8 +164,12 @@ export interface WeaveProfile {
 }
 
 export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629", WeaveProfile>> = {
-  CommonMark: { dialect: "CommonMark", tangleInfoString: "memetic-wikitext tangle", kaheaMarker: "↻ ", frontmatter: false },
-  GFM: { dialect: "GFM", tangleInfoString: "memetic-wikitext tangle", kaheaMarker: "🔁 ", frontmatter: true },
+  // The kahea marker reads plain text, one spelling across every profile (Loop-Observer-III): a
+  // glyph (`↻`, `🔁`) reads fine inside this wiki but a reader outward of it — a screen reader, a
+  // plain-text mail client, an RFC I-D toolchain — has no way to decode it, where "(live) " carries
+  // its own meaning in any tongue that reads the Latin word "live".
+  CommonMark: { dialect: "CommonMark", tangleInfoString: "memetic-wikitext tangle", kaheaMarker: "(live) ", frontmatter: false },
+  GFM: { dialect: "GFM", tangleInfoString: "memetic-wikitext tangle", kaheaMarker: "(live) ", frontmatter: true },
   "kramdown-rfc2629": {
     dialect: "kramdown-rfc2629",
     tangleInfoString: "memetic-wikitext tangle",
@@ -444,11 +448,12 @@ export function transposeMarkdown(
       continue;
     }
 
-    const fenceMark = /^(`{3,})/.exec(line);
-
-    // ── the meta fence: captured whole, dropped from the body ──
+    // ── the meta fence: captured whole, dropped from the body. Its opener is fixed at exactly
+    // three backticks (META_OPEN_LINE_RE), so its close reads through fence-mask's own close rule
+    // at that width — a content line that merely STARTS with a backtick run, trailing content and
+    // all, never closes it early. ──
     if (inMetaFence) {
-      if (fenceMark) { inMetaFence = false; metaFenceDone = (metaFence ?? []).join("\n"); metaFence = null; continue; }
+      if (fenceLineClose(line, 3)) { inMetaFence = false; metaFenceDone = (metaFence ?? []).join("\n"); metaFence = null; continue; }
       (metaFence ?? []).push(line);
       continue;
     }
@@ -456,12 +461,12 @@ export function transposeMarkdown(
     // `toml meta` fence heads a worksite and STAYS in the body as an ordinary fenced block.
     if (fence === 0 && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
-    // ── fence tracking: N backticks close only on ≥ N. OPENING reads through fence-mask's own
-    // rule (CommonMark §4.5, `fenceLineOpen`) — a backtick fence's info string may carry no
-    // backtick, so a prose line merely QUOTING a quad-backtick inline span (`` ```` `foo` `` on a
-    // line by itself) never opens a fence; it falls through and reads as ordinary prose, exactly
-    // like fence-mask already treats it. ONE RULE, ONE PLACE — this no longer re-derives the guard
-    // with its own unguarded regex. CLOSING keeps this walk's own established rule, untouched. ──
+    // ── fence tracking: OPEN and CLOSE both read through fence-mask's own rules (CommonMark §4.5) —
+    // `fenceLineOpen` (a fence's info string may carry no backtick) and `fenceLineClose` (a closer
+    // needs a run ≥ the opener AND nothing else on the line — a content line that happens to start
+    // with a shorter or trailed run, "```` example of `backticks`" inside a fence opened at four,
+    // never closes early; it is body). ONE RULE, ONE PLACE — this walk no longer re-derives either
+    // guard with its own unguarded regex. ──
     if (fence === 0) {
       const openLen = fenceLineOpen(line);
       if (openLen > 0) {
@@ -470,9 +475,9 @@ export function transposeMarkdown(
         out.push(line);
         continue;
       }
-    } else if (fenceMark) {
+    } else if (fenceLineClose(line, fence)) {
       flushProse();
-      if (fenceMark[1]!.length >= fence) fence = 0;
+      fence = 0;
       out.push(line);
       continue;
     }
@@ -571,11 +576,25 @@ export function transposeMarkdown(
  * `yes`/`no`/`on`/`off` ambiguity (#/the-woven-dialect). No unquoted scalars, no flow collections,
  * nothing a coercion rule can misread.
  */
+/**
+ * YAML double-quoted scalar escaping (YAML 1.2 §7.3.1's C-style escapes). Backslash first — every
+ * later replacement inserts backslashes of its own, and escaping them again would double-escape.
+ * `: `, `#`, a leading `-`, and a bare `no`/`on`/`yes`/`off` all read safely UNQUOTED-would-be-unsafe
+ * plain scalars, but every value here rides double-quoted already, so none of those needs its own
+ * rule — only the four bytes a double-quoted scalar cannot carry literally do.
+ */
+export function yamlEscape(s: string): string {
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\r\n/g, "\\n")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t");
+}
+
 function yamlFrontmatter(fields: Readonly<Record<string, string>>): string {
-  const lines = Object.keys(fields).sort().map((k) => {
-    const v = fields[k]!.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-    return `${k}: "${v}"`;
-  });
+  const lines = Object.keys(fields).sort().map((k) => `${k}: "${yamlEscape(fields[k]!)}"`);
   return ["---", ...lines, "---", ""].join("\n");
 }
 

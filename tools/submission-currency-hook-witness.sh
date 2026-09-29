@@ -42,10 +42,17 @@ SRC_DIR="bags/lares/ha.ka.ba/lares/api/pono"
 SHELF="bags/lares/ha.ka.ba/lares/api/pono/submissions"
 mkdir -p "$WORK/$SRC_DIR" "$WORK/$SHELF"
 cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism.mem"
+# prism.mem carries a frozen `aka` edge to RFC-2119 — weave PINS it for real (bagsResolver, read-only
+# over `--root`), so the throwaway repo needs that target too, or the currency gate's scratch mirror
+# (which mirrors only what the real repo's commit involves) never finds it and reads a false DRIFT.
+# A real committer's working tree already holds RFC-2119.mem; this mirrors that reality.
+RFC2119_SRC="$REPO_ROOT/bags/lares/ha.ka.ba/lares/api/pono/RFC-2119.mem"
+[ -f "$RFC2119_SRC" ] && cp "$RFC2119_SRC" "$WORK/$SRC_DIR/RFC-2119.mem"
 
 ( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism.mem" --to md --out "$SHELF" \
     --title-base lar:///ha.ka.ba/lares/api/pono/submissions >/dev/null 2>&1 )
 git -C "$WORK" add "$SRC_DIR/prism.mem" "$SHELF/prism.md" "$SHELF/prism.md.meta"
+[ -f "$WORK/$SRC_DIR/RFC-2119.mem" ] && git -C "$WORK" add "$SRC_DIR/RFC-2119.mem"
 git -C "$WORK" commit -qm baseline
 
 echo "submission-currency-hook-witness — the gate over staged submission sources and pairs"

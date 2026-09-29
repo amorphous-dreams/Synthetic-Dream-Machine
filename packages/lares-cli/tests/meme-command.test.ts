@@ -34,7 +34,8 @@ vi.mock("../src/env.js", async (orig) => ({
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdMeme, memePlan, projectPlan } from "../src/commands/meme.js";
+import { cmdMeme, memePlan, projectPlan, bagsResolver } from "../src/commands/meme.js";
+import { repoRoot } from "@lararium/mesh/node";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const memeArgs = (positional: string[], options: Record<string, string> = {}, flags: Record<string, boolean> = {}): ParsedArgs =>
@@ -258,7 +259,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
     vi.restoreAllMocks();
     expect(code).toBe(0);
-    const want = projectSubmission(readFileSync(PRISM, "utf8"));
+    const want = projectSubmission(readFileSync(PRISM, "utf8"), { resolve: bagsResolver(repoRoot) });
     expect(readFileSync(join(d, "prism.md"), "utf8")).toBe(want.markdown);
     expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(want.meta);
     expect(h.calls).toEqual([]);
@@ -268,7 +269,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     vi.spyOn(console, "log").mockImplementation(() => {});
     await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, "title-base": "lar:///t/shelf" }));
     vi.restoreAllMocks();
-    const want = projectSubmission(readFileSync(PRISM, "utf8"), { title: "lar:///t/shelf/prism" });
+    const want = projectSubmission(readFileSync(PRISM, "utf8"), { title: "lar:///t/shelf/prism", resolve: bagsResolver(repoRoot) });
     expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(want.meta);
   });
 
@@ -282,6 +283,17 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     expect(body.startsWith("---\n")).toBe(true);
     expect(body).toContain('variant: "GFM"');
     expect(existsSync(join(d, "prism.md.meta"))).toBe(false);
+  });
+
+  test("a frozen `aka` PINS for real: local weave resolves against the repo's own bags/ corpus", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "prism.md"), "utf8");
+    expect(body).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;");
+    expect(body).not.toContain("unresolved — no corpus to pin");
   });
 
   test("CONTROL: an unrecognized --dialect refuses, naming the registered variants", async () => {

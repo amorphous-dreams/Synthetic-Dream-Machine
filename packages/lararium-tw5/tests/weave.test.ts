@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   transposeMarkdown, projectSubmission, PROFILES,
-  escapeXmlNameSegment, unescapeXmlNameSegment,
+  escapeXmlNameSegment, unescapeXmlNameSegment, yamlEscape,
 } from "../src/weave/index.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
@@ -321,6 +321,41 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
     for (const line of fm.trim().split("\n")) expect(line).toMatch(/: ".*"$/);
   });
 
+  // ADVERSARIAL: a value carrying every byte that could break a naive quoted-scalar writer — a
+  // literal `"`, a literal `\`, a `: ` (would end a plain scalar early), a `#` (would open a
+  // comment), a leading `-` (would read as a block-sequence dash), and a YAML-1.1 bareword
+  // (`no`/`yes`/`on`) that a 1.1 reader coerces to boolean. Every value here rides double-quoted
+  // already, so `: `/`#`/leading `-`/the barewords are syntactically inert without any escaping of
+  // their own; only `"`, `\`, and the control bytes need one, and this pins those exact bytes.
+  test("yamlEscape: quotes, backslashes and control bytes escape to exact YAML 1.2 C-style bytes", () => {
+    expect(yamlEscape('a "quoted" word')).toBe('a \\"quoted\\" word');
+    expect(yamlEscape("a\\backslash")).toBe("a\\\\backslash");
+    expect(yamlEscape("line one\nline two")).toBe("line one\\nline two");
+    expect(yamlEscape("a\rb")).toBe("a\\rb");
+    expect(yamlEscape("a\r\nb")).toBe("a\\nb");
+    expect(yamlEscape("a\tb")).toBe("a\\tb");
+    // structurally inert under double-quoting, carried through byte-for-byte, no escape needed:
+    expect(yamlEscape("field: value")).toBe("field: value");
+    expect(yamlEscape("a # comment")).toBe("a # comment");
+    expect(yamlEscape("-leading-dash")).toBe("-leading-dash");
+    expect(yamlEscape("no")).toBe("no");
+    expect(yamlEscape("yes")).toBe("yes");
+    expect(yamlEscape("on")).toBe("on");
+  });
+
+  test("an adversarial title weaves into frontmatter as one valid double-quoted scalar", () => {
+    const title = 'a "title" with\nbackslash \\ and: colon # hash -dash no yes';
+    const p = projectSubmission(CARRIER2, { profile: PROFILES.GFM, title });
+    const line = p.markdown.split("\n").find((l) => l.startsWith("title:"));
+    expect(line).toBe(
+      'title: "a \\"title\\" with\\nbackslash \\\\ and: colon # hash -dash no yes"',
+    );
+    // exactly one opening and one closing UNESCAPED quote bound the scalar — no earlier unescaped
+    // `"` inside it could be mistaken for the close.
+    const inner = line!.slice("title: \"".length, -1);
+    expect(/(^|[^\\])"/.test(inner)).toBe(false);
+  });
+
   test("kramdown-rfc2629 REFUSES a carrier missing the RFC identity keys (docs/pono/lar-uri.mem, today)", () => {
     const src = readFileSync(join(REPO, "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"), "utf8");
     expect(() => projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] })).toThrow(/docname|cat|ipr|author|date/);
@@ -353,6 +388,24 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
     expect(p.markdown).toContain('author: "J. Fontany"');
     expect(p.markdown).toContain('date: "2026-09-29"');
   });
+
+  test("CONTROL: kramdown-rfc2629's success path, end-to-end over a shelf-shaped test fixture", () => {
+    // tests/fixtures, never bags/ — this fixture proves the SUCCESS path; the REFUSAL path above
+    // already proves itself against the real corpus (docs/pono/lar-uri.mem, which lacks the keys).
+    const src = readFileSync(join(REPO, "packages/lararium-tw5/tests/fixtures/kramdown-draft.mem"), "utf8");
+    const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
+    expect(p.standalone).toBe(true);
+    expect(p.meta).toBe("");
+    expect(p.markdown.startsWith("---\n")).toBe(true);
+    expect(p.markdown).toContain('title: "A Probe Draft"');
+    expect(p.markdown).toContain('docname: "draft-lares-probe-00"');
+    expect(p.markdown).toContain('cat: "info"');
+    expect(p.markdown).toContain('ipr: "trust200902"');
+    expect(p.markdown).toContain('author: "J. Fontany"');
+    expect(p.markdown).toContain('date: "2026-09-29"');
+    expect(p.markdown).toContain("# A Probe Draft");
+    expect(p.markdown).toContain("Body prose for the shelf-corpus CONTROL");
+  });
 });
 
 describe("ahu ids: the ISO/IEC 9075-14 `_xHHHH_` escape, self-escaping", () => {
@@ -383,14 +436,15 @@ describe("ahu ids: the ISO/IEC 9075-14 `_xHHHH_` escape, self-escaping", () => {
 });
 
 describe("aka vs kahea vs loulou — frozen, live, and plain citation", () => {
-  test("a live `kahea` weaves as a marked link, the profile's own spelling", () => {
+  test("a live `kahea` weaves as a plain-text-marked link — no glyph, decodable outward", () => {
     const t = transposeMarkdown("<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n");
-    expect(t.markdown).toContain("↻ [lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
+    expect(t.markdown).toContain("(live) [lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
   });
 
-  test("a live `kahea` under GFM carries the GFM marker instead", () => {
-    const t = transposeMarkdown("<<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>\n", PROFILES.GFM);
-    expect(t.markdown).toContain("🔁 [lar:///ha.ka.ba/lares/api/pono/lar-uri](lar:///ha.ka.ba/lares/api/pono/lar-uri)");
+  test("CONTROL: the marker reads the SAME plain-text spelling under every profile", () => {
+    for (const profile of [PROFILES.CommonMark, PROFILES.GFM, PROFILES["kramdown-rfc2629"]]) {
+      expect(profile.kaheaMarker).toBe("(live) ");
+    }
   });
 
   test("a frozen `aka` with NO resolver falls back to a clearly marked unresolved reference", () => {
@@ -454,6 +508,52 @@ describe("fence-open reads through fence-mask's own rule — one rule, one place
     const t = transposeMarkdown("```toml\nkey = 1\n```\nprose after\n");
     expect(t.markdown).toContain("```toml\nkey = 1\n```");
     expect(t.markdown).toContain("prose after");
+  });
+
+  // CommonMark §4.5's close rule needs a run ≥ the opener AND NOTHING ELSE ON THE LINE. Before this
+  // fix, weave's close test accepted any run ≥ the opener regardless of trailing content, so a
+  // CONTENT line that merely starts with a shorter backtick run closed the fence early and read
+  // what followed as if the fence had never opened.
+  test("RED-before-fix: a content line starting with a trailed backtick run must NOT close an open fence", () => {
+    const t = transposeMarkdown("````\nexample of `backticks`\n! Not a heading\n````\nafter\n");
+    // Still fenced whole — "! Not a heading" never reaches the heading recognizer because the
+    // fence never closed early on the "example of `backticks`" line.
+    expect(t.markdown).toContain("````\nexample of `backticks`\n! Not a heading\n````");
+    expect(t.markdown).not.toContain("# Not a heading");
+    expect(t.markdown).toContain("after");
+  });
+
+  test("CONTROL: a bare closer (the run alone on its line) still closes", () => {
+    const t = transposeMarkdown("````\nbody\n````\nafter\n");
+    expect(t.markdown).toContain("````\nbody\n````");
+    expect(t.markdown).toContain("after");
+  });
+
+  test("the meta fence's own close reads the same guard: a content line starting with backticks never closes it early", () => {
+    const src = [
+      '<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/probe">>',
+      "```toml meta",
+      "role = \"a value\"",
+      "```` a content line that STARTS with backticks but is not a bare closer",
+      "uri-path = \"ha.ka.ba/probe\"",
+      "```",
+      "",
+      '<<^ code="&#x0002;">>',
+      "",
+      "! Body",
+      "",
+      '<<^ code="&#x0003;">>',
+      '<<^ code="&#x0004;" -> to=?>>',
+      "",
+    ].join("\n");
+    const t = transposeMarkdown(src);
+    // RED-before-fix: the trailed line would have closed the meta fence early, dropping it into
+    // `inMetaFence = false` mid-body — `uri-path` would then read as ORDINARY PROSE, never captured,
+    // and the carrier's own address would go missing.
+    expect(t.markdown).toContain("# Body");
+    expect(t.markdown).not.toContain("content line that STARTS");
+    expect(t.markdown).not.toContain("uri-path");
+    expect(t.uri).toBe("lar:///ha.ka.ba/probe");
   });
 });
 

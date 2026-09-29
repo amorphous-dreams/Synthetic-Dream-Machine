@@ -1,0 +1,22 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/draft-lares-probe">>
+```toml meta
+author   = "J. Fontany"
+cat      = "info"
+date     = "2026-09-29"
+docname  = "draft-lares-probe-00"
+ipr      = "trust200902"
+title    = "A Probe Draft"
+uri-path = "ha.ka.ba/lares/api/pono/draft-lares-probe"
+```
+
+<<^ code="&#x0002;">>
+
+! A Probe Draft
+
+Body prose for the shelf-corpus CONTROL: a fixture with every RFC identity key kramdown-rfc2629
+requires, woven end-to-end.
+
+<<^ code="&#x0003;">>ni:///sha-256;KCDimbd0cmQ2I107mCN9FGDTpffnsY0Q_3ARsWtBG6M
+<<^ code="&#x0004;" -> to=?>>

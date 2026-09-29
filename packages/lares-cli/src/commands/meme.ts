@@ -868,6 +868,26 @@ function profileFor(name: string): WeaveProfile {
   return PROFILES[key];
 }
 
+/**
+ * A READ-ONLY resolver over the repo's own `bags/lares` corpus — the same address law
+ * `projectMdCheck` already uses to find a pair's `source:` on disk (`bags/lares/<path>.mem`), so a
+ * frozen `aka` edge (`lar:///ha.ka.ba/...`) can PIN its target's current text rather than always
+ * falling back unresolved. The fragment (`#/slot`) is stripped — `aka` inlines the whole target
+ * carrier, never one slot alone, matching how it already reads in-house. Reads only; never writes,
+ * never reaches past `bags/lares`, and answers `null` (the weave's own unresolved fallback) for
+ * anything outside it or missing.
+ */
+export function bagsResolver(root: string): (uri: string) => string | null {
+  return (uri: string): string | null => {
+    if (!uri.startsWith("lar:///")) return null;
+    const path = uri.slice("lar:///".length).split("#")[0];
+    if (!path) return null;
+    const filePath = join(root, "bags/lares", `${path}.mem`);
+    if (!existsSync(filePath)) return null;
+    try { return readFileSync(filePath, "utf8"); } catch { return null; }
+  };
+}
+
 /** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`
  * — or, under a standalone `--dialect` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
  * inside it per RFC 7763. */
@@ -879,7 +899,11 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
   if (out) mkdirSync(out, { recursive: true });
   const text = readNamed(file);
   const base = basename(file).replace(/\.mem$/, "");
-  const p = projectSubmission(text, { ...(titleBase ? { title: `${titleBase}/${base}` } : {}), profile });
+  const p = projectSubmission(text, {
+    ...(titleBase ? { title: `${titleBase}/${base}` } : {}),
+    profile,
+    resolve: bagsResolver(repoRoot),
+  });
   const dir = out ?? dirname(file);
   const mdPath = join(dir, `${base}.md`);
   writeFileSync(mdPath, p.markdown);
@@ -952,7 +976,7 @@ function projectMdCheck(args: ParsedArgs): number {
     if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
     const srcPath = join(root, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
     if (!existsSync(srcPath)) { console.log(`  ${name}: source GONE — ${source}`); failed += 1; continue; }
-    const p = projectSubmission(readFileSync(srcPath, "utf8"), title ? { title } : undefined);
+    const p = projectSubmission(readFileSync(srcPath, "utf8"), { ...(title ? { title } : {}), resolve: bagsResolver(root) });
     if (p.check !== claimedCheck) {
       console.log(`  ${name}: source MOVED — carrier check ${p.check} ≠ meta ${claimedCheck}; re-project`);
       failed += 1; continue;

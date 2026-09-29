@@ -27,8 +27,6 @@ const FENCE_LINE_RE = /^ {0,3}(`{3,})/;
  * not — including when the leading run WOULD open one but the trailing info string itself carries a
  * backtick: a line shaped like "```memetic-wikitext tangle` more prose" never opens a fence at all;
  * it reads as ordinary text carrying an inline code span, exactly like every other non-fence line.
- * Measured (Loop-Observer-II): the un-guarded rule swallowed such a line as an opener with no closer
- * in sight, masking to end-of-text and tearing the carrier's frame.
  *
  * ONE RULE, ONE PLACE: every caller that needs to know whether a line opens a fence — this module's
  * own span scan, and any line-at-a-time walk elsewhere in the tree (weave's transposer) — reads this
@@ -40,6 +38,23 @@ export function fenceLineOpen(line: string): number {
   return line.slice(m[0].length).includes("`") ? 0 : m[1]!.length;
 }
 
+/**
+ * Does `line` CLOSE a fence opened at `openLen` backticks, CommonMark §4.5/§4.5? A closer needs a
+ * run of `openLen` backticks or more, AND NOTHING ELSE ON THE LINE beside it — a content line that
+ * happens to start with a shorter or equal-but-trailed run ("```` example of `backticks`", inside a
+ * fence opened at four) never closes; it is BODY. Measured (Loop-Observer-III): the un-guarded
+ * close accepted any run ≥ the opener regardless of trailing content, closing early on a content
+ * line and reading what followed as if the fence had never opened.
+ *
+ * ONE RULE, ONE PLACE — see {@link fenceLineOpen}'s own note; both this module's span scan and
+ * weave's line-at-a-time walk read this function rather than re-deriving the close guard.
+ */
+export function fenceLineClose(line: string, openLen: number): boolean {
+  const m = FENCE_LINE_RE.exec(line);
+  if (m === null || m[1]!.length < openLen) return false;
+  return line.slice(line.indexOf("`") + m[1]!.length).trim() === "";
+}
+
 /** All quoted-code spans of `text`, ordered, non-overlapping. */
 export function fencedSpans(text: string): MaskSpan[] {
   const spans: MaskSpan[] = [];
@@ -47,12 +62,11 @@ export function fencedSpans(text: string): MaskSpan[] {
   let lineStart = 0;
   const flushLine = (lineEnd: number, nextStart: number) => {
     const line = text.slice(lineStart, lineEnd);
-    const m = FENCE_LINE_RE.exec(line);
     const openLen = fenceLineOpen(line);
     const opensFence = openLen > 0;
     if (open) {
-      // closing fence: same-or-longer run, nothing but the run on the line
-      if (m && m[1]!.length >= open.len && line.slice(line.indexOf("`") + m[1]!.length).trim() === "") {
+      // closing fence: fenceLineClose — same-or-longer run, nothing but the run on the line
+      if (fenceLineClose(line, open.len)) {
         spans.push({ start: open.start, end: nextStart });
         open = null;
       }
