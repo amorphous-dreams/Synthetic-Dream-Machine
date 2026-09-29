@@ -102,8 +102,8 @@ const allAliasNames = new Set([...derivedAlias.keys(), ...handAlias.keys()]);
 for (const name of allAliasNames) {
   const d = derivedAlias.get(name);
   const h = handAlias.get(name);
-  if (d && !h) aliasDisagreements.push(`${name} -> ${d} — tiddler lar-alias-for set, scanner.ts canonicalName absent`);
-  else if (h && !d) aliasDisagreements.push(`${name} -> ${h} — scanner.ts canonicalName set, tiddler lar-alias-for absent (or tiddler missing)`);
+  if (d && !h) aliasDisagreements.push(`${name} -> ${d} — tiddler lar-mirror-of set, scanner.ts canonicalName absent`);
+  else if (h && !d) aliasDisagreements.push(`${name} -> ${h} — scanner.ts canonicalName set, tiddler lar-mirror-of absent (or tiddler missing)`);
   else if (d && h && d !== h) aliasDisagreements.push(`${name}: tiddler says -> ${d}, scanner.ts says -> ${h}`);
 }
 group("alias pair present on one side only, or disagreeing", aliasDisagreements.sort());

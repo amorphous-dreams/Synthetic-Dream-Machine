@@ -2,7 +2,7 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-guard
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: edge-alias
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kapu
-lar-alias-for: kapu
+lar-mirror-of: kapu
 lar-see-also: kapu
 lar-pattern: <<~\s*guard\s+([^\n>]*)\s*>>
 lar-example: <<~ guard "[tag[x]]">>

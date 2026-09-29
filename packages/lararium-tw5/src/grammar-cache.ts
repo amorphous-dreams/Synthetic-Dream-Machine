@@ -138,13 +138,20 @@ export function sigilFromFields(title: string, fields: Readonly<Record<string, u
   if (fields["lar-close-pattern"])   rule.closePattern   = str(fields["lar-close-pattern"]);
   if (fields["lar-inline-pattern"])  rule.inlinePattern  = str(fields["lar-inline-pattern"]);
   if (fields["lar-block-pattern"])   rule.blockPattern   = str(fields["lar-block-pattern"]);
-  if (fields["lar-alias-for"])       rule.aliasFor       = str(fields["lar-alias-for"]);
+  if (fields["lar-mirror-of"])       rule.aliasFor       = str(fields["lar-mirror-of"]);
   if (fields["lar-default-family"])  rule.defaultFamily  = str(fields["lar-default-family"]);
   const layer = str(fields["lar-layer"]);
   if (layer === "compile" || layer === "render" || layer === "both") rule.layer = layer;
   // Self-defined failure-gradient: the sigil declares how it degrades when unclosed.
   const recoverAs = str(fields["lar-recover-as"]);
   if (recoverAs === "water" || recoverAs === "repaired") rule.recoverAs = recoverAs;
+  // Weave name per tongue: `lar-tongue` (the tongue this mirror stands in, e.g. "en") +
+  // `lar-weave: primary` (this mirror is the one that tongue weaves as — the mint target for
+  // normalize/generation in that tongue) together mark a mirror as its tongue's primary name.
+  // A mirror carrying `lar-tongue` alone with no `lar-weave: primary` reads as read-only: it
+  // parses and renders, but normalize never re-mints text toward it. See types.ts SigilRule.weave.
+  const tongue = str(fields["lar-tongue"]);
+  if (tongue && str(fields["lar-weave"]) === "primary") rule.weave = { tongue };
   return rule;
 }
 

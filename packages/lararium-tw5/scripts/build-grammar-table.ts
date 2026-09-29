@@ -35,6 +35,8 @@ function renderSigilRule(name: string, obj: Record<string, unknown>): string {
     const v = (obj as Record<string, unknown>)[k];
     if (v !== undefined) lines.push(`, ${k}: ${quote(v as string)}`);
   }
+  const weave = obj.weave as { tongue: string } | undefined;
+  if (weave) lines.push(`, weave: { tongue: ${quote(weave.tongue)} }`);
   return lines.join("") + " },";
 }
 
@@ -74,7 +76,7 @@ export function renderGrammarTable(): string {
   }
   lines.push("];");
   lines.push("");
-  lines.push("/** alias sigil name -> its canonical sigil name (lar-alias-for). */");
+  lines.push("/** alias sigil name -> its canonical sigil name (lar-mirror-of). */");
   lines.push("export const GENERATED_ALIAS_MAP: Record<string, string> = {");
   if (aliasMapEntries) lines.push(aliasMapEntries);
   lines.push("};");
