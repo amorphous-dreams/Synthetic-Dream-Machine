@@ -1457,14 +1457,15 @@ crossing to the Claude/Lares deployment hearth and grants no oracle authority to
 !! Closed receipts — what now stands
 
 * ''Causal relations no longer choose a numeric latest.'' `f2c97194b` (`lar:///lineage-keeps-the-frontier — consume scalar relation ranks`) migrates Carriage and Kapae relations to signed semantic action CIDs with unique, sorted causal parents. Fixed-point closure drops an otherwise valid act whose ancestry is absent. Missing evidence remains `unavailable`; contradictory admissible heads remain `unsettled`; no writer cites a poisoned or causally incomplete branch. The direct Mesh/Node security controls cover quorum, roster, scope, tamper, parent-set canonicality, forged lowers, and honest returned state after an unavailable sibling.
+* ''Oracle publications now bind bytes to a causal frontier.'' `965c760dc` (`lar:///oracle-keeps-the-frontier — bind snapshots to causal acts`) retires the Oracle pointer's scalar `version` and sole `prev`. A signed pointer now holds a semantic `actCid`, canonical Automerge `heads`, and canonical causal `parents`. A reader re-hashes its named snapshot, loads it, and refuses unless the loaded Automerge heads equal the signed frontier. The Node read face retains the exact signed pointer across an unchanged restart; a changed snapshot names that durable act as parent. The receipt covers canonical-head rejection, forged-plus-unavailable deterministic rejection, byte/frontier mismatch, restart preservation and changed-after-restart lineage: 18 Mesh Oracle tests, 2 loopback Node read-face tests, and both package typechecks. The pointer does not claim global currency; locally missing ancestry reads `unavailable`, incomparable admissible heads read `unsettled`, and an unchanged publisher can still be unavailable to a peer.
 * ''Carrier boundaries now hold as a testable law.'' `d207b7ef0` (`lar:///eot-keeps-the-carrier — refuse escaped meme tails`) makes bytes after a first EOT/EOT₂ a check failure, refuses normalizer guesswork across that boundary, and distinguishes a single Kapu EOT₂ closer from an illegal EOT→EOT₂ double closer. `kapu.mem` and `mandate-activity-provenance.mem` were deliberately repaired, then restamped. The full `bags/` corpus reported 693 canonical carriers after the repair.
-* ''The test party can name both hands.'' `b8aa153b1` (`lar:///cast-keeps-both-hands — test mandate activity provenance`) adds pure `ScenarioPresence` and `ScenarioActionGraph` harnesses. They distinguish cast identity, vessel capability stack, descriptive hat, mandate, delegation, activity, result, attestation, withdrawal and local appraisal. A human-authored mandate and an acting process remain distinct; labels and vessel class mint no authority. The current pure harness passes 34 tests.
+* ''The test party can name both hands and their crossings.'' `b8aa153b1` (`lar:///cast-keeps-both-hands — test mandate activity provenance`) adds pure `ScenarioPresence` and `ScenarioActionGraph` harnesses. `28fd89382` (`lar:///crossing-keeps-the-boundary — prove local causal evidence`) adds an opt-in `ScenarioBoundaryCrossing`: mandate, delegation, root principal, immediate delegator, acting process, source vessel, opaque capability/signature evidence, causal parents, and optional result/outcome binding. The grammar copies its evidence, closes causal ancestry, rejects cycles, and admits a competing sibling only when that sibling's mandate, attenuation, result, attestation, and withdrawal relation would pass the non-competitive authority rules. Internal helpers and retries remain local unless deliberately emitted as crossings. Labels and vessel class mint no authority; wall clocks, scalar order, runtime cryptography, and surveillance remain absent. The focused pure harness passes 48 tests.
 * ''Node-owned custody has a live production-shaped witness.'' `d00f948b0` (`lar:///dvr-keeps-the-owned-record — witness Node custody`) proves D-VR-C through the production `openDaemonVm` path in a uniquely scoped Docker Compose project. P, an explicit Node-owned record, recovers in a fresh offline Repo; O, an ordinary parent-attached record, leaves no physical file in P's owned scope and is refused. Preflight, same-context process inspection, run, and scoped cleanup all receive a receipt.
 
 !! QA architecture — red-first from relation to vessel
 
 |!layer |!what it establishes |!current bounded evidence |
-|pure scenario grammar |actor/capability/mandate/delegation/activity/result/withdrawal/appraisal distinction; no label, clock, or scalar chooses authority |34 scenario-harness tests |
+|pure scenario grammar |actor/capability/mandate/delegation/activity/result/withdrawal/crossing/appraisal distinction; no label, clock, or scalar chooses authority |48 scenario-harness tests |
 |Mesh and Node relation tests |signed bytes, causal closure, local frontiers, parent canonicality, unavailable/unsettled/rejected gradient |74 Mesh and 39 Node focused causal tests at close |
 |meme framing tests |the carrier has one terminal boundary; check is read-only; normalization heals only unambiguous drift |11 TW5 + 16 built-CLI tests; corpus 693 canonical |
 |Docker boundary receipt |a real Node vessel, actual owned NodeFS path, restart, recovery, and scoped cleanup |opt-in `make docker-dvr-receipt`, live receipt passed |
@@ -1492,7 +1493,7 @@ The production `agent-worldline` surface needs this explicit membrane around its
 
 The completed Carriage/Kapae migration does NOT retire every scalar seam. Treat each remaining domain separately; no blind “version” sweep may collapse local storage, thresholds, key fences, or causal lineage.
 
-# ''Oracle pointer first.'' `oracle-substrate.ts` currently uses `version`, `highWaterVersion`, and single `prev` for distributed anti-rollback. Replace with a signed pointer act CID and a unique sorted `parents[]` set over retained snapshot CID, Automerge heads and publisher key. Red-first controls: parent order/duplicate invariance, descendant, missing parent → `unavailable`, concurrent pointers → `unsettled`, tamper/signature/publisher rejection, and no scalar height comparison.
+# ''Oracle pointer first — CLOSED.'' `965c760dc` replaces `version`, `highWaterVersion`, and `prev` with signed semantic acts and canonical parent sets. A new reader rule proves snapshot bytes carry the signed Automerge head frontier; the Node read face preserves the exact publication over unchanged restart. Retain the distinction between local freeze/liveness observation and causal safety: the pointer does not detect a publisher who stays silent or repeats an old valid act.
 # ''Handle publication second.'' Replace `HandleCard.version`, `HandleBook.highWaterVersion`, and single `prev` with causal card acts and a locally held frontier. Keep Handle-KEL key rotation/burn separate from card publication. Local expiry remains a local diagnostic/availability policy, never causal ordering; snapshot schema eras remain local persistence compatibility fences.
 # ''Offering Antigen third.'' Its highest-version fold is an unwired authority seam. Reuse the Kapae causal pattern and its security matrix before connecting any caller.
 # ''Re-anchoring fourth.'' Keep `epochCid` as a charter/fence reference; remove injected numeric `epochOrder` as the dwelling-history sorter. Preserve separate verified attestation evidence and surface concurrent records rather than selecting a latest dwelling.
@@ -1501,11 +1502,11 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 !! Next OODA-HA queue
 
-# ✶ Read the Oracle, Handle, Offering, and re-anchoring callers together; name currentness by relation before editing bytes.
-# ⏿ Build red tests for causal parent closure and concurrent/partial replication before changing the first pointer shape.
+# ✶ Read the Handle, Offering, and re-anchoring callers together; name currentness by relation before editing bytes. Re-read the completed Oracle frontier rules as a pattern, never a blind template.
+# ⏿ Build Handle red tests for causal parent closure, concurrent/partial replication, returned snapshot-to-frontier binding, and local publisher pinning before changing its pointer shape.
 # ◇ Keep crypto/signature verification at a boundary adapter; the pure test harness proves structure and appraisal without pretending to implement a production key service.
-# ▶ After the first scalar cut, extend ScenarioActionGraph with an opt-in `ScenarioBoundaryCrossing` record. Prove internal helpers can remain local; prove a distributed crossing binds root principal, immediate delegator, acting process, vessel, mandate, capability and causal parents.
-# ↺ After every major cut, run the affected package suites, built CLI where a command is involved, Docker only where a real process/storage claim is involved, full meme check where carrier law changes, and an independent Terra sweep. Record what the receipt does NOT prove.
+# ▶ Translate the pure crossing grammar into production only after a named external-effect story identifies the adapter boundary. Preserve its opaque-evidence seam: pure tests prove binding and causal grammar; an adapter later verifies signatures and makes any destination receipt.
+# ↺ After every major cut, run the affected package suites, built CLI where a command is involved, Docker only where a real process/storage claim is involved, full meme check where carrier law changes, and an independent Terra sweep. Record what the receipt does NOT prove. The Oracle and crossing cuts each completed this loop.
 
 !! Coordination bearings
 
@@ -1515,6 +1516,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bH3q3282beJhdNC726CtrC7tO_uwKiSWI5CwLe34Ejg
+<<^ code="&#x0003;">>ni:///sha-256;nN6ibqCtZNjPBDUymp_oGEbVOIxC3MkSzLO-chLd4zU
 
 <<^ code="&#x0004;" -> to="?">>
