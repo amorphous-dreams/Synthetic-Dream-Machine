@@ -64,9 +64,11 @@ A kumu declaration MUST register a type definition only, producing no render out
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-type">>
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-typos">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kumu-device">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kau">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;t-XjFDulrHOoiUwU6jl2ZQWcfhkAHHva0d7HMWrPki0
+<<^ code="&#x0003;">>ni:///sha-256;C2yrElYkzOafp83yjVtF4t9xF1kxJgN0u8romXmMk3Q
 
 <<^ code="&#x0004;" -> to="?">>
