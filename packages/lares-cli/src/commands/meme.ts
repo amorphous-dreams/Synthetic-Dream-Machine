@@ -8,6 +8,7 @@
  *   normalize <file.mem ...> [--grammar]
  *   check <file.mem ...> [--gradient | --edges | --grammar]
  *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> [--out <path>] [--recipe <slug> | --bag <slug>]
+ *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
  *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
  *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
  *
@@ -78,7 +79,7 @@ import { stdin, stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
-import { projectSubmission } from "@lararium/tw5/weave";
+import { projectSubmission, PROFILES, type WeaveProfile } from "@lararium/tw5/weave";
 import {
   readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble, classifyPostEot,
   readCarrierLifecycle, checkCarrierLifecycle,
@@ -852,19 +853,42 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   return shape && shape.faults.length > 0 ? 1 : 0;
 }
 
-/** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`. */
+/**
+ * `--dialect <variant>` names an RFC 7764-registered Markdown variant, matched case-insensitively
+ * against the profile table's own keys (`CommonMark`, `GFM`, `kramdown-rfc2629`) — never a house
+ * abbreviation. Absent, CommonMark: today's shelf-pair output, unchanged.
+ */
+function profileFor(name: string): WeaveProfile {
+  const key = (Object.keys(PROFILES) as Array<keyof typeof PROFILES>)
+    .find((k) => k.toLowerCase() === name.toLowerCase());
+  if (!key) {
+    const names = Object.keys(PROFILES).join(" · ");
+    throw new UsageError(`--dialect names an RFC 7764 variant, one of ${names} (got "${name}")`);
+  }
+  return PROFILES[key];
+}
+
+/** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`
+ * — or, under a standalone `--dialect` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
+ * inside it per RFC 7763. */
 function projectMdLocal(args: ParsedArgs, file: string): number {
   const out = args.options["out"];
   const titleBase = args.options["title-base"];
+  const dialect = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
+  const profile = dialect ? profileFor(dialect) : PROFILES.CommonMark;
   if (out) mkdirSync(out, { recursive: true });
   const text = readNamed(file);
   const base = basename(file).replace(/\.mem$/, "");
-  const p = projectSubmission(text, titleBase ? { title: `${titleBase}/${base}` } : undefined);
+  const p = projectSubmission(text, { ...(titleBase ? { title: `${titleBase}/${base}` } : {}), profile });
   const dir = out ?? dirname(file);
   const mdPath = join(dir, `${base}.md`);
   writeFileSync(mdPath, p.markdown);
-  writeFileSync(`${mdPath}.meta`, p.meta);
-  console.log(`projected ${p.uri} -> ${mdPath} (+.meta, source-check ${p.check})`);
+  if (p.standalone) {
+    console.log(`projected ${p.uri} -> ${mdPath} (${profile.dialect}, frontmatter, source-check ${p.check})`);
+  } else {
+    writeFileSync(`${mdPath}.meta`, p.meta);
+    console.log(`projected ${p.uri} -> ${mdPath} (+.meta, source-check ${p.check})`);
+  }
   return 0;
 }
 

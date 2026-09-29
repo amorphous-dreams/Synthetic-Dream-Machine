@@ -23,7 +23,7 @@ module-type: library
  * order (`FRAME_LINE`, `DOCTYPE_LINE`, `AHU_OPEN`/`AHU_CLOSE`, `EDGE_LINE`, `TRANSCLUSION_LINE`,
  * `SIGIL_LINE`, then tables, lists, headings, prose); the first that matches emits and the walk
  * moves on. Every emitter that varies by dialect reads the `profile` argument threaded through the
- * walk rather than branching on a dialect name — `PROFILES.commonmark` is the one profile shipped.
+ * walk rather than branching on a dialect name — `PROFILES.CommonMark` is the default, matching todays output unchanged; `PROFILES.GFM` and `PROFILES["kramdown-rfc2629"]` weave standalone dialects with YAML frontmatter.
  *
  * ── WHAT EACH CONSTRUCT BECOMES ─────────────────────────────────────────────────────────────────
  *   frame sigils (`<<^ …>>`) + declaration    dropped — carriage, not content; the meta records them
@@ -85,6 +85,7 @@ import { matchCarrierHeadLine } from "../carrier-head.js";
 import { META_OPEN_LINE_RE } from "../meta-fence.js";
 import { frameAlt } from "../frame-marks.js";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../meme-ast/grammar-table.generated.js";
+import { parseTaploFields } from "../toml-ast.js";
 
 /**
  * G2-G4 cutover (lar:///sigil.grammar.lane loop 2): the word SET a line recognizer alternates on
@@ -117,30 +118,60 @@ function splitByPrefixShape(names: string[]): { sharktooth: string[]; bare: stri
 }
 
 export interface SubmissionProjection {
-  /** The markdown body — what a reviewer reads. */
+  /** The markdown body — what a reviewer reads. Carries YAML frontmatter prepended when `standalone`. */
   markdown: string;
-  /** The sidecar meta, TW5 `.meta` field lines — provenance the pair travels under. */
+  /** The sidecar meta, TW5 `.meta` field lines — provenance the pair travels under. Empty when `standalone`. */
   meta: string;
   /** The carrier's own address, read off its SOH heading (or supplied). */
   uri: string;
   /** The block check found adjacent to ETX, or "unchecked". */
   check: string;
+  /**
+   * RFC 7763: true when the file travels ALONE and carries YAML frontmatter (no `.md.meta` sidecar —
+   * `meta` reads empty); false for the CommonMark shelf pair (frontmatter-free, `.md.meta` sidecar).
+   */
+  standalone: boolean;
 }
 
 /**
- * A dialect/profile the walk reads but never branches on by name. This slice ships exactly one —
- * `PROFILES.commonmark` — and every construct above is CommonMark-shaped. A dialect differs from
- * another only through the fields of this interface, so adding one extends the interface, never
- * the walk.
+ * A dialect/profile the walk reads but never branches on by name. Every construct in the module doc
+ * is CommonMark-shaped; a dialect differs from another only through the fields of this interface, so
+ * adding one extends the interface and the {@link PROFILES} table, never the walk.
+ *
+ * Dialect names are RFC 7764-registered Markdown variants (never an unnamed house flavour, per
+ * #/the-woven-dialect) — `CommonMark`, `GFM`, `kramdown-rfc2629`.
  */
 export interface WeaveProfile {
+  /** An RFC 7764-registered variant name. */
   readonly dialect: string;
   /** The info-string a transclusion tangle fence carries. */
   readonly tangleInfoString: string;
+  /** The marker a live `kahea` include weaves under — the dialect's own spelling of "this rides live". */
+  readonly kaheaMarker: string;
+  /**
+   * RFC 7763: a `.md.meta` sidecar when the woven file sits on a shelf beside others (false — the
+   * CommonMark shelf pairs), YAML frontmatter when the file travels alone (true). Mutually exclusive:
+   * a profile never carries both.
+   */
+  readonly frontmatter: boolean;
+  /**
+   * Extra identity keys a standalone profile REQUIRES in the carrier's own root `toml meta` — absent,
+   * `projectSubmission` refuses rather than weave a document the target format calls invalid.
+   * kramdown-rfc2629 (an RFC I-D) requires `docname` (`draft-*-NN`), `cat`, `ipr`, `author`, `date`.
+   */
+  readonly requiredMeta?: readonly string[];
 }
 
-export const PROFILES: Readonly<Record<"commonmark", WeaveProfile>> = {
-  commonmark: { dialect: "commonmark", tangleInfoString: "memetic-wikitext tangle" },
+export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629", WeaveProfile>> = {
+  CommonMark: { dialect: "CommonMark", tangleInfoString: "memetic-wikitext tangle", kaheaMarker: "↻ ", frontmatter: false },
+  GFM: { dialect: "GFM", tangleInfoString: "memetic-wikitext tangle", kaheaMarker: "🔁 ", frontmatter: true },
+  "kramdown-rfc2629": {
+    dialect: "kramdown-rfc2629",
+    tangleInfoString: "memetic-wikitext tangle",
+    kaheaMarker: "(live) ",
+    frontmatter: true,
+    requiredMeta: ["title", "docname", "cat", "ipr", "author", "date"],
+  },
 };
 
 /** Line-standing frame sigil (any control code), with whatever rides after the closer. */
@@ -169,16 +200,29 @@ const ahuAlt = [
 ].filter((s): s is string => s !== null).join("|");
 const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+#(\\S+?)(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
 const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
-// The sigil WORD rides the capture too — `aka`/`loulou` and their mirrors (`shadow`/`snapshot`,
-// `link`) each name a relation and the projected bullet keeps the author's own spelling legible
-// rather than collapsing every spelling to one canonical word.
-const EDGE_NAMES = ["aka", "loulou", ...mirrorsOf("aka"), ...mirrorsOf("loulou")];
-const EDGE_LINE = new RegExp(`^<<~\\s*(${EDGE_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+// `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape it
+// always had. `aka` (+ its mirrors `shadow`/`snapshot`) names a FROZEN edge — a pinned transclusion,
+// per #/weave-and-tangle's "an open rhyme": a woven `aka` inlines its target's current text, pinned
+// with the target's own `ni:` check, the same way an in-house `aka` already inlines at a moment.
+// `kahea` (a live include; `import`/`transclude` alias it, but this slice reads only the bare word's
+// one-line invoke shape — the block open/close form is declined, see the handback) weaves as a plain
+// link under the profile's own marker, since a LIVE include names no frozen moment to pin.
+const LOULOU_NAMES = ["loulou", ...mirrorsOf("loulou")];
+const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+const AKA_NAMES = ["aka", ...mirrorsOf("aka")];
+const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+const KAHEA_LINE = /^<<~\s*kahea\s+("?lar:[^"\s>]+"?|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>\s*$/;
 // A transclusion standing alone as a block: `{{title}}`, `{{title||template}}`,
 // `{{{filter}}}`, `{{{filter||template}}}` — no markdown equivalent exists for any of them, so
 // the LINE-STANDING form carries whole into a tangle fence (a mid-line occurrence is handled
 // inside `inline()`, where a fence cannot open).
 const TRANSCLUSION_LINE = /^\s*(\{\{[\s\S]*\}\})\s*$/;
+// `<<~ hana key>> … <<~/hana>>` — a foreign-grammar span (#/the-woven-dialect "Mixed grammar"). The
+// body belongs to the EMBEDDED language, never this walk's recognizers: a `#` inside a TOML body
+// must not become a markdown list item. So the whole span weaves as ONE fenced block, info string =
+// the grammar key, body byte-verbatim — captured before any other recognizer gets a look at its lines.
+const HANA_OPEN = /^<<~\s*hana\s+([^\n>]+?)\s*>>\s*$/;
+const HANA_CLOSE = /^<<~\s*\/\s*hana\s*>>\s*$/;
 // The speaking head with or without a joined name (`<<~ ahu`, `<<~ranks`, `<<~! wehe`) — any
 // line-standing sigil not already given a markdown shape above.
 const SIGIL_LINE = /^<<~\S* ?(?:[^>\n]|>(?!>))*>>\s*$/;
@@ -189,9 +233,47 @@ const SIGIL_LINE = /^<<~\S* ?(?:[^>\n]|>(?!>))*>>\s*$/;
  * `#/a/b` → `a_b`, `#/x` → `x`. A bare `#name` (no leading `/`) reads gracefully as the rooted
  * spelling of `/name`, so it takes the identical treatment rather than a literal fallback.
  */
+const XML_NAME_START = /[A-Za-z_À-￿]/;
+const XML_NAME_CHAR = /[A-Za-z0-9_.\-·̀-ͯ‿⁀À-￿]/;
+
+/**
+ * ISO/IEC 9075-14's `_xHHHH_` escape (SQL/XML identifier mapping), self-escaping: the two-character
+ * trigger `_x` is what a decoder watches for, so a literal `_x` in the source must escape too, or a
+ * decoder could not tell an escape from a segment that merely starts with the same two bytes. HHHH is
+ * the code point in uppercase hex, at least four digits (more where the code point needs them, per the
+ * scheme — this module never emits fewer).
+ */
+export function escapeXmlNameSegment(segment: string): string {
+  let out = "";
+  for (let i = 0; i < segment.length; i++) {
+    const ch = segment[i]!;
+    if (ch === "_" && segment[i + 1] === "x") {
+      out += `_x${(0x5f).toString(16).toUpperCase().padStart(4, "0")}_`;
+      continue;
+    }
+    const valid = i === 0 ? XML_NAME_START.test(ch) : XML_NAME_CHAR.test(ch);
+    out += valid ? ch : `_x${ch.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")}_`;
+  }
+  return out;
+}
+
+/** The inverse of {@link escapeXmlNameSegment} — a round-trip test pins the pair. */
+export function unescapeXmlNameSegment(escaped: string): string {
+  return escaped.replace(/_x([0-9A-Fa-f]{4,6})_/g, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)));
+}
+
+/**
+ * The anchor id a rooted or bare `ahu` slot path projects. Canon slot names never carry `_`
+ * (0 of 2,011), so joining nested segments with it is unambiguous, and the root `/` is dropped —
+ * `#/a/b` → `a_b`, `#/x` → `x`. A bare `#name` (no leading `/`) reads gracefully as the rooted
+ * spelling of `/name`, so it takes the identical treatment rather than a literal fallback. Each
+ * SEGMENT escapes on its own, per {@link escapeXmlNameSegment}, before the `_`-join — a slot name
+ * carrying a character illegal in an XML Name (or the literal two bytes `_x`) escapes rather than
+ * producing an id no consumer could parse as one.
+ */
 function ahuId(rawPath: string): string {
   const path = rawPath.startsWith("/") ? rawPath.slice(1) : rawPath;
-  return path.replace(/\//g, "_");
+  return path.split("/").map(escapeXmlNameSegment).join("_");
 }
 
 /**
@@ -270,12 +352,45 @@ function tableCells(line: string): string[] | null {
 }
 
 /**
+ * A FROZEN `aka` (or its mirrors `shadow`/`snapshot`) edge weaves by INLINING its target's current
+ * text, pinned with the target's own `ni:` check — the woven-outward twin of the in-house `aka`
+ * transclusion (#/weave-and-tangle's "an open rhyme"). Resolution needs a wiki/corpus; absent one
+ * (no `resolve`, or `resolve` answers null — the target stands unknown), this falls back to a
+ * clearly marked unresolved reference rather than inventing content around a target it cannot read.
+ *
+ * The nested weave carries NO resolver forward — a pin fixes one target at one moment, and a chain of
+ * `aka`s pinning each other would have no moment to stop at.
+ */
+function weaveAka(word: string, rawTarget: string, profile: WeaveProfile, resolve?: (uri: string) => string | null): string[] {
+  const target = rawTarget.replace(/^"|"$/g, "");
+  const resolved = resolve ? resolve(target) : null;
+  if (resolved === null || resolved === undefined) {
+    return [`- \`${word} ${target}\` (unresolved — no corpus to pin)`];
+  }
+  const woven = transposeMarkdown(resolved, profile);
+  const check = woven.check ?? "unchecked";
+  return [
+    `<!-- ${word}: ${target} pinned ${check} -->`,
+    ...woven.markdown.split("\n"),
+    `<!-- /${word} -->`,
+  ];
+}
+
+/**
  * Transpose a memetic-wikitext body to markdown. Side-channel captures (address, check, meta fence)
  * ride the returned record; {@link projectSubmission} folds them into the meta.
  */
 export function transposeMarkdown(
   text: string,
-  profile: WeaveProfile = PROFILES.commonmark,
+  profile: WeaveProfile = PROFILES.CommonMark,
+  /**
+   * The wiki/corpus a FROZEN `aka` edge resolves its target through — `null`/`undefined` when the
+   * target stands unknown. Absent entirely, or answering `null`, `aka` falls back to a clearly marked
+   * unresolved reference rather than inlining anything (#/weave-and-tangle's "an open rhyme": pinning
+   * needs a moment to pin FROM). Recursion stops at one level: the target's own body weaves through
+   * this same walk but WITHOUT a resolver, so a chain of `aka`s never loops.
+   */
+  resolve?: (uri: string) => string | null,
 ): { markdown: string; uri?: string; check?: string; metaFence?: string } {
   const out: string[] = [];
   let fence = 0;            // open fence length in backticks; 0 = prose
@@ -288,6 +403,8 @@ export function transposeMarkdown(
   let tableRow = 0;         // rows emitted in the current table run
   let sigilBuf: string[] | null = null;  // a line-spanning sigil, gathered whole
   let proseBuf: string[] | null = null;  // a contiguous default/ordered run, flushed as one string
+  let hanaBuf: string[] | null = null;   // a `<<~ hana key>>` span, gathered byte-verbatim
+  let hanaKey: string | null = null;
 
   // A contiguous run of default/ordered lines is buffered raw (structural markers already
   // substituted, emphasis NOT yet applied) and flushed together so a `''`/`//` pair spanning a
@@ -309,6 +426,23 @@ export function transposeMarkdown(
   };
 
   for (const line of text.split("\n")) {
+    // ── a hana span travels byte-verbatim, through NO recognizer — a `#` in a TOML body inside it
+    // must never read as a markdown list item. Checked before fence tracking too: this walk's OWN
+    // backtick-fence bookkeeping never opens on a line hana is carrying home whole.
+    if (hanaBuf) {
+      if (HANA_CLOSE.test(line)) {
+        const joined = hanaBuf.join("\n");
+        const longestRun = Math.max(0, ...(joined.match(/`+/g) ?? []).map((s) => s.length));
+        const fenceStr = "`".repeat(Math.max(3, longestRun + 1));
+        out.push(fenceStr + hanaKey, ...hanaBuf, fenceStr);
+        hanaBuf = null;
+        hanaKey = null;
+        continue;
+      }
+      hanaBuf.push(line);
+      continue;
+    }
+
     const fenceMark = /^(`{3,})/.exec(line);
 
     // ── the meta fence: captured whole, dropped from the body ──
@@ -355,12 +489,26 @@ export function transposeMarkdown(
     }
     if (/^<<[~^]/.test(line) && !/>>/.test(line)) { sigilBuf = [line]; continue; }
 
+    // ── a hana span opens: everything until the matching close travels verbatim (see above) ──
+    const hanaOpen = HANA_OPEN.exec(line);
+    if (hanaOpen) { flushProse(); hanaKey = hanaOpen[1]!.trim(); hanaBuf = []; continue; }
+
     // ── sigils with a markdown shape ──
     const ahu = AHU_OPEN.exec(line);
     if (ahu) { flushProse(); out.push(`<a id="${ahuId(ahu[1]!)}"></a>`); continue; }
     if (AHU_CLOSE.test(line)) continue;
-    const edge = EDGE_LINE.exec(line);
-    if (edge) { flushProse(); out.push(`- \`${edge[1]} ${(edge[2] ?? "").trim()}\``); continue; }
+    const loulou = LOULOU_LINE.exec(line);
+    if (loulou) { flushProse(); out.push(`- \`${loulou[1]} ${(loulou[2] ?? "").trim()}\``); continue; }
+    const aka = AKA_LINE.exec(line);
+    if (aka) { flushProse(); out.push(...weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve)); continue; }
+    const kahea = KAHEA_LINE.exec(line);
+    if (kahea) {
+      flushProse();
+      const target = kahea[1]!.replace(/^"|"$/g, "");
+      const href = /\s/.test(target) ? `<${target}>` : target;
+      out.push(`${profile.kaheaMarker}[${target}](${href})`);
+      continue;
+    }
     const transclusion = TRANSCLUSION_LINE.exec(line);
     if (transclusion) { flushProse(); out.push("```" + profile.tangleInfoString, transclusion[1]!, "```"); continue; }
     if (SIGIL_LINE.test(line)) {
@@ -405,21 +553,71 @@ export function transposeMarkdown(
  * Project one whole carrier into its submission pair. Deterministic: no clock rides the meta —
  * currency is proven by re-projection, never asserted by a stamp.
  */
+/**
+ * YAML frontmatter, strict subset: every value double-quoted, keys SORTED lexicographically —
+ * defending the woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare
+ * `yes`/`no`/`on`/`off` ambiguity (#/the-woven-dialect). No unquoted scalars, no flow collections,
+ * nothing a coercion rule can misread.
+ */
+function yamlFrontmatter(fields: Readonly<Record<string, string>>): string {
+  const lines = Object.keys(fields).sort().map((k) => {
+    const v = fields[k]!.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return `${k}: "${v}"`;
+  });
+  return ["---", ...lines, "---", ""].join("\n");
+}
+
+/**
+ * Project one whole carrier into its submission pair. Deterministic: no clock rides the meta —
+ * currency is proven by re-projection, never asserted by a stamp.
+ *
+ * `opts.profile` defaults to `PROFILES.CommonMark` — today's shelf-pair output, unchanged. A
+ * standalone profile (`GFM`, `kramdown-rfc2629`) prepends YAML frontmatter to `markdown` instead of
+ * carrying a `.md.meta` sidecar (`meta` reads `""`, `standalone` reads `true`) — RFC 7763's two
+ * metadata channels, one per travel mode. `kramdown-rfc2629` additionally REQUIRES `docname`, `cat`,
+ * `ipr`, `author`, `date` in the carrier's own root `toml meta`; missing any, this REFUSES (throws)
+ * naming what is missing, rather than weave a document the target format calls invalid.
+ */
 export function projectSubmission(
   text: string,
-  opts?: { uri?: string; title?: string; profile?: WeaveProfile },
+  opts?: { uri?: string; title?: string; lang?: string; profile?: WeaveProfile; resolve?: (uri: string) => string | null },
 ): SubmissionProjection {
-  const t = transposeMarkdown(text, opts?.profile);
+  const profile = opts?.profile ?? PROFILES.CommonMark;
+  const t = transposeMarkdown(text, profile, opts?.resolve);
   const uri = opts?.uri ?? t.uri ?? "";
   if (!uri) throw new Error("projectSubmission: the carrier declares no address and none was supplied");
   const check = t.check ?? "unchecked";
+  const title = opts?.title ?? `${uri}/submission`;
+
+  if (profile.frontmatter) {
+    const fields: Record<string, string> = {
+      title,
+      source: uri,
+      "source-check": check,
+      variant: profile.dialect,
+      lang: opts?.lang ?? "en",
+    };
+    if (profile.requiredMeta?.length) {
+      const tomlFields = t.metaFence ? parseTaploFields(t.metaFence) : {};
+      const missing = profile.requiredMeta.filter((k) => !tomlFields[k]);
+      if (missing.length > 0) {
+        throw new Error(
+          `projectSubmission: ${profile.dialect} requires ${missing.join(", ")} in the carrier's root toml meta — absent, refusing to weave`,
+        );
+      }
+      for (const k of profile.requiredMeta) fields[k] = String(tomlFields[k]);
+    }
+    const markdown = yamlFrontmatter(fields) + t.markdown;
+    return { markdown, meta: "", uri, check, standalone: true };
+  }
+
   const meta = [
-    `title: ${opts?.title ?? `${uri}/submission`}`,
+    `title: ${title}`,
     `type: text/markdown`,
     `source: ${uri}`,
     `source-check: ${check}`,
     `projected-by: weave (lares meme project --to md · meme-project)`,
     `law: projected artifact — hand edits do not survive re-projection`,
   ].join("\n") + "\n";
-  return { markdown: t.markdown, meta, uri, check };
+  return { markdown: t.markdown, meta, uri, check, standalone: false };
 }

@@ -271,6 +271,26 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     const want = projectSubmission(readFileSync(PRISM, "utf8"), { title: "lar:///t/shelf/prism" });
     expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(want.meta);
   });
+
+  test("--dialect GFM writes frontmatter-carrying markdown alone, no .md.meta sidecar", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, dialect: "GFM" }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "prism.md"), "utf8");
+    expect(body.startsWith("---\n")).toBe(true);
+    expect(body).toContain('variant: "GFM"');
+    expect(existsSync(join(d, "prism.md.meta"))).toBe(false);
+  });
+
+  test("CONTROL: an unrecognized --dialect refuses, naming the registered variants", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, dialect: "markdown-extra" }));
+    vi.restoreAllMocks();
+    expect(code).not.toBe(0);
+  });
 });
 
 /**
