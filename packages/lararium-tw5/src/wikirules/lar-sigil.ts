@@ -143,25 +143,16 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // Compound sigil: <<~ WORD1 [child-slot WORD2] ARGS>>
     // Handles: <<~ kahea ahu #slot>>, <<~ ahu #slot>>…<<~/ahu>>,
     //          <<~ kahea lar:///uri>>, <<~ loulou lar:///uri>>, <<~ kau …>>
-    const compound = matchCompoundSigilAt(source, pos, childSlotNames);
+    let compound = matchCompoundSigilAt(source, pos, childSlotNames);
     if (compound) {
-      // `ahu` owns rooted fragment paths only. A bare `#name` resembles a slot closely enough to
-      // deserve the gradient's partial rung, but it MUST NOT reach the ahu procedure and mint a
-      // child address through compatibility normalization. Keep the authored span visible; where a
-      // matching closer stands, carry its whole body as the one degraded receipt.
-      const bareAhuSlot = (compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
-        /^#[\w-]+(?:\/[\w-]+)*$/.test(compound.p1);
-      if (bareAhuSlot) {
-        const closeEnd = compound.closeKey
-          ? findCloseEnd(source, compound.closeKey, compound.end, closers)
-          : null;
-        this.matchPos = pos;
-        this.matchEnd = closeEnd ?? compound.end;
-        this.attrs = {
-          __literal__: source.slice(pos, this.matchEnd),
-          __degraded__: "partial",
-        };
-        return pos;
+      // `ahu` anchors a bare `#name` at the same slot a rooted `#/name` names — the loop's
+      // graceful-read ruling (weave carries it too): the two spellings read as one address, never
+      // two. Normalized HERE, for this render pass alone — the authored bytes on disk move only
+      // through `lares meme normalize`'s own child-slot-roots clause, never silently through a
+      // render.
+      if ((compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
+          /^#[\w-]+(?:\/[\w-]+)*$/.test(compound.p1)) {
+        compound = { ...compound, p1: `#/${compound.p1.slice(1)}` };
       }
       // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
       // The matcher reports the STRUCTURAL close key — a child slot or a compound head — because
