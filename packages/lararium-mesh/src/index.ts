@@ -63,6 +63,7 @@ export * from "./oracle-read-client.js";
 export * from "./plugin-offering.js";
 export * from "./offering-announce.js";
 export * from "./offering-antigen.js";
+export * from "./offering-inspection.js";
 export * from "./mesh-palace.js";
 export * from "./pronaos.js";
 export * from "./bearing-harvest.js";

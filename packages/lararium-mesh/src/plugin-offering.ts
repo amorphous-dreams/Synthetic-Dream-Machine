@@ -95,6 +95,9 @@ export async function signPluginOffering(
 
 export type OfferingVerdict = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
+/** OfferedBlob follows the genesis/CAS convention: bare canonical lowercase SHA-256 hex. */
+const OFFERED_BLOB_SHA256 = /^[0-9a-f]{64}$/;
+
 /**
  * Verify an offering the way a TAKER must: the signature over its own bytes, AND the blobs folded back
  * to the declared region.
@@ -111,9 +114,14 @@ export async function verifyPluginOffering(offering: PluginOffering): Promise<Of
     !Array.isArray(offering.blobs) || offering.blobs.some((b) =>
       !b || typeof b.id !== "string" || b.id.length === 0 ||
       typeof b.version !== "string" || b.version.length === 0 ||
-      typeof b.sha256 !== "string" || b.sha256.length === 0) ||
+      typeof b.sha256 !== "string" || !OFFERED_BLOB_SHA256.test(b.sha256)) ||
     typeof offering.sig !== "string" || !/^[0-9a-f]{128}$/i.test(offering.sig)
   ) return { ok: false, reason: "malformed plugin offering" };
+  const ids = new Set<string>();
+  for (const blob of offering.blobs) {
+    if (ids.has(blob.id)) return { ok: false, reason: "malformed plugin offering" };
+    ids.add(blob.id);
+  }
 
   let sigOk = false;
   try {

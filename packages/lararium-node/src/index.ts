@@ -202,6 +202,8 @@ export { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/ne
 export type { NexusKapaeOptions, NexusKapaeResult, NexusKapaeListResult } from "./commands/nexus-kapae.js";
 export { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
 export type { NexusPublishPluginsOptions, NexusPublishPluginsResult } from "./commands/nexus-publish.js";
+export { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
+export type { NexusOfferingInspectOptions, NexusOfferingInspectResult } from "./commands/nexus-offering-inspect.js";
 
 // The operator MEMBERS-registry RAISE side (Build-2) — the founding kahu writes a quorum-signed + contract-in
 // admit/revoke onto the members board (the antigen's ALLOW-twin); `accept-carriage` mints the operator contract-in.

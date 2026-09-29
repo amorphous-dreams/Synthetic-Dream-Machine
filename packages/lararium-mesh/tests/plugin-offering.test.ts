@@ -69,6 +69,19 @@ describe("a plugin offering", () => {
     expect(hex(a)).not.toBe(hex(b));
   });
 
+  test("★ a malformed digest is refused before it can describe a collection ★", async () => {
+    const malformed = await signPluginOffering(
+      { offeror: await offerorKey(), pluginsCid: computePluginsCid([{ ...BLOBS[0]!, sha256: "not-a-digest" }]), blobs: [{ ...BLOBS[0]!, sha256: "not-a-digest" }] }, signer);
+    await expect(verifyPluginOffering(malformed)).resolves.toEqual({ ok: false, reason: "malformed plugin offering" });
+  });
+
+  test("★ duplicate blob IDs are refused before they can make the region fold order-sensitive ★", async () => {
+    const duplicate = [BLOBS[0]!, { ...BLOBS[1]!, id: BLOBS[0]!.id, sha256: "cc".repeat(32) }];
+    const offering = await signPluginOffering(
+      { offeror: await offerorKey(), pluginsCid: computePluginsCid(duplicate), blobs: duplicate }, signer);
+    await expect(verifyPluginOffering(offering)).resolves.toEqual({ ok: false, reason: "malformed plugin offering" });
+  });
+
   test("★ an offering names ONE offeror and carries ONE signature — a gift, never a quorum act ★", async () => {
     const offering = await signPluginOffering(
       { offeror: await offerorKey(), pluginsCid: computePluginsCid(BLOBS), blobs: BLOBS }, signer);

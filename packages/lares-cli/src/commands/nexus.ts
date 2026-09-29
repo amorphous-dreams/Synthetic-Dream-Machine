@@ -53,12 +53,13 @@ import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
+import { cmdOffering } from "./nexus-offering.js";
 import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
 import { cmdSeal, runCabalRite } from "./nexus-seal.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 const NEXUS_USAGE: readonly string[] = [
-  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | carry-for | posture | refresh | realm-bag | realm-bags>",
+  "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | carry-for | posture | refresh | realm-bag | realm-bags | offering>",
   "",
   "  seal <seat | reserve | rotate | commit | show | export | import | grow>  the founding-kahu roster + pre-rotated epoch chain; grow = the crossing record ceremony",
   "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
@@ -86,6 +87,7 @@ const NEXUS_USAGE: readonly string[] = [
   "            [--charter <nym>=<realm-id>]    the charter a named hand holds (a book spanning two charters)",
   "  publish <plugins>                         THE OFFERING DOOR — what THIS operator publishes for others to take;",
   "                                            held apart from `kahuli`, which overturns what the MESH shares",
+  "  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install",
   "  realm-bags                                the bags the realm carries, and who keeps each",
 ];
 
@@ -106,6 +108,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
     case "rite":            return await runNexusRite(args);
     case "kahuli":          return await cmdKahuli(args);
     case "publish":         return await cmdPublish(args);
+    case "offering":        return await cmdOffering(args);
     case "refresh":         return await cmdNexusRefresh(args);
     case "realm-bag":       return await cmdRealmBag(args);
     case "realm-bags":      return await cmdRealmBags(args);
