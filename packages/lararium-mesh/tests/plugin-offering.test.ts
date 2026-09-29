@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
 import {
-  pluginOfferingBytes, signPluginOffering, verifyPluginOffering, type OfferedBlob,
+  pluginOfferingBytes, pluginOfferingCid, signPluginOffering, verifyPluginOffering, type OfferedBlob,
 } from "../src/plugin-offering.js";
 import { PLUGIN_OFFERING_DOMAIN } from "../src/domains.js";
 
@@ -28,6 +28,15 @@ const BLOBS: readonly OfferedBlob[] = [
 ];
 
 describe("a plugin offering", () => {
+  test("the complete signed record has a deterministic content CID", async () => {
+    const offering = await signPluginOffering(
+      { offeror: await offerorKey(), pluginsCid: computePluginsCid(BLOBS), blobs: BLOBS }, signer);
+    const reordered = await signPluginOffering(
+      { offeror: await offerorKey(), pluginsCid: computePluginsCid(BLOBS), blobs: [...BLOBS].reverse() }, signer);
+    expect(pluginOfferingCid(offering)).toBe(pluginOfferingCid({ ...offering }));
+    expect(pluginOfferingCid(reordered)).toBe(pluginOfferingCid(offering));
+    expect(pluginOfferingCid({ ...offering, sig: "00".repeat(64) })).not.toBe(pluginOfferingCid(offering));
+  });
   test("★ a taker VERIFIES the blobs against the declared region — the hash is what a co-signer would have attested ★", async () => {
     const offering = await signPluginOffering(
       { offeror: await offerorKey(), pluginsCid: computePluginsCid(BLOBS), blobs: BLOBS }, signer);

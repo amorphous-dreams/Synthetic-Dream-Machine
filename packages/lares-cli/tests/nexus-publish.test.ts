@@ -13,11 +13,13 @@
  * way `kahuli engine` names its own, because a deliberate not-yet must never read as an unknown verb.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
+import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
+import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
 
 const args = (positional: string[], flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options: {}, flags } as unknown as ParsedArgs);
@@ -51,12 +53,46 @@ describe("lares nexus publish — the operator's own collection, apart from the 
     expect(said).toMatch(/own collection/i);
   });
 
-  test("★ the OFFERING is HELD — a deliberate not-yet, never an unknown verb ★", async () => {
-    const code = await cmdNexus(args(["publish", "plugins"], { apply: true }));
+  test("★ `--apply` reaches the production adapter and refuses an unseated local face cleanly ★", async () => {
+    const code = await cmdNexus(args(["publish", "plugins"], { apply: true, json: false }));
     expect(code).not.toBe(0);
     const said = [...errs, ...logs].join("\n");
-    expect(said).toMatch(/held/i);
+    expect(said).toMatch(/active persona|genesis/i);
     expect(said).not.toMatch(/unknown/i);
+  });
+
+  test("★ `--apply --json` emits the structured success boundary, without human-only prose ★", async () => {
+    cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
+    const out: string[] = [];
+    const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
+      out.push(String(chunk));
+      return true;
+    });
+
+    // Stand the minimum real place + face context. The command under test remains the production CLI
+    // door; no adapter is mocked and no offering is assembled by the test.
+    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
+    await generateOrLoadPersonaGroupRoot(0);
+    await wearPersona(0);
+    out.length = 0;
+
+    expect(await cmdNexus(args(["publish", "plugins"], { apply: true, json: true }))).toBe(0);
+    const payload = JSON.parse(out.join("")) as {
+      ok: boolean;
+      data: Record<string, unknown>;
+    };
+    expect(payload).toMatchObject({ ok: true });
+    expect(Object.keys(payload.data)).toEqual([
+      "offeringCid", "boardUrl", "offeror", "pluginsCid", "blobCount",
+    ]);
+    expect(payload.data.offeringCid).toMatch(/^sha256:/);
+    expect(payload.data.boardUrl).toMatch(/^automerge:/);
+    expect(typeof payload.data.offeror).toBe("string");
+    expect(typeof payload.data.pluginsCid).toBe("string");
+    expect(typeof payload.data.blobCount).toBe("number");
+    expect(logs.join("\n")).not.toMatch(/IMMUTABLE OFFERING ANNOUNCED/i);
+    expect(errs.join("\n")).toBe("");
+    write.mockRestore();
   });
 
   test("no tier / an unknown tier refuses THROUGH the emit choke point", async () => {

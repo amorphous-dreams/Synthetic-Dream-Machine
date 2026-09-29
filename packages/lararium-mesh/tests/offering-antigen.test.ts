@@ -22,7 +22,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
   presentOffering, verifyOfferingPresentation,
-  signOfferingKapae, foldOfferingAntigen, offeringStandsAside,
+  signOfferingKapae, foldOfferingAntigen, foldOfferingAntigenVerdicts, auditOfferingAntigen, offeringStandsAside,
   type OfferingKapaeEntry,
 } from "../src/offering-antigen.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN, KAPAE_ANTIGEN_DOMAIN } from "../src/domains.js";
@@ -38,9 +38,9 @@ async function roster(threshold: number): Promise<KahuRoster> {
   return { keys: [await keyOf(1), await keyOf(2), await keyOf(3)], threshold, sealEpochCid: EPOCH };
 }
 
-async function kapae(signers: readonly number[], version = 1): Promise<OfferingKapaeEntry> {
+async function kapae(signers: readonly number[], parents: readonly string[] = [], action: "kapae" | "un_kapae" = "kapae"): Promise<OfferingKapaeEntry> {
   return signOfferingKapae(
-    { pluginsCid: OFFERING_CID, action: "kapae", version, sealEpochCid: EPOCH },
+    { pluginsCid: OFFERING_CID, action, parents, sealEpochCid: EPOCH },
     await Promise.all(signers.map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))),
   );
 }
@@ -84,19 +84,19 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
     expect(k.kind).toBe(OFFERING_KAPAE_DOMAIN);
   });
 
-  test("a LIFT at a higher version re-admits; a stale one cannot roll it back", async () => {
+  test("a complete causal descendant lift re-admits; an unlinked lift is unavailable", async () => {
     const r = await roster(2);
-    const banned = await foldOfferingAntigen([await kapae([1, 2], 1)], r);
+    const ban = await kapae([1, 2]);
+    const banned = await foldOfferingAntigen([ban], r);
     expect(await offeringStandsAside(OFFERING_CID, banned)).toBe(true);
 
     const lift = await signOfferingKapae(
-      { pluginsCid: OFFERING_CID, action: "un_kapae", version: 2, sealEpochCid: EPOCH },
+      { pluginsCid: OFFERING_CID, action: "un_kapae", parents: [ban.actCid], sealEpochCid: EPOCH },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
-    expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([await kapae([1, 2], 1), lift], r))).toBe(false);
+    expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([ban, lift], r))).toBe(false);
 
-    // A stale raise at a LOWER version never rolls the lift back.
-    const stale = await kapae([1, 2], 1);
-    expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([lift, stale], r))).toBe(false);
+    const missing = await kapae([1, 2], ["sha256:missing"]);
+    expect(await foldOfferingAntigenVerdicts([missing], r)).toEqual(new Map([[OFFERING_CID, "unavailable"]]));
   });
 
   test("CONTROL — an UNBOUND roster condemns nothing, however many signatures arrive", async () => {
@@ -107,9 +107,97 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
   test("CONTROL — an entry rooting on ANOTHER charter epoch condemns nothing", async () => {
     const r = await roster(2);
     const elsewhere = await signOfferingKapae(
-      { pluginsCid: OFFERING_CID, action: "kapae", version: 1, sealEpochCid: "epoch-cid-OTHER" },
+      { pluginsCid: OFFERING_CID, action: "kapae", parents: [], sealEpochCid: "epoch-cid-OTHER" },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([elsewhere], r))).toBe(false);
+  });
+
+  test("canonical parents are deduplicated and sorted at signing; self-parenting is refused", async () => {
+    const entry = await signOfferingKapae(
+      { pluginsCid: OFFERING_CID, action: "kapae", parents: ["z", "a", "z"], sealEpochCid: EPOCH },
+      await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
+    expect(entry.parents).toEqual(["a", "z"]);
+    const unknownParent = await signOfferingKapae(
+      { pluginsCid: OFFERING_CID, action: "kapae", parents: ["sha256:will-be-unknown"], sealEpochCid: EPOCH },
+      await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
+    expect(unknownParent.parents).toEqual(["sha256:will-be-unknown"]);
+    const r = await roster(2);
+    expect(await foldOfferingAntigenVerdicts([{ ...entry, parents: [entry.actCid] }], r)).toEqual(new Map());
+    expect((await auditOfferingAntigen([{ ...entry, parents: [entry.actCid] }], r)).get(OFFERING_CID)?.rejectedActCids).toEqual([entry.actCid]);
+  });
+
+  test("a parent from another offering relation family is rejected", async () => {
+    const r = await roster(2);
+    const foreign = await signOfferingKapae(
+      { pluginsCid: "bafyOtherOffering", action: "kapae", parents: [], sealEpochCid: EPOCH },
+      await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
+    const child = await kapae([1, 2], [foreign.actCid]);
+    expect(await foldOfferingAntigenVerdicts([foreign, child], r)).toEqual(new Map([["bafyOtherOffering", "held"]]));
+    expect((await auditOfferingAntigen([foreign, child], r)).get(OFFERING_CID)?.rejectedActCids).toEqual([child.actCid]);
+  });
+
+  test("tampered act identity and signature are rejected", async () => {
+    const r = await roster(2);
+    const entry = await kapae([1, 2]);
+    expect(await foldOfferingAntigenVerdicts([{ ...entry, actCid: "sha256:tampered" }], r)).toEqual(new Map());
+    expect((await auditOfferingAntigen([{ ...entry, actCid: "sha256:tampered" }], r)).get(OFFERING_CID)).toEqual({ verdict: null, rejectedActCids: ["sha256:tampered"] });
+    const noisy = { ...entry, signatures: [{ ...entry.signatures[0]!, sig: "00".repeat(64) }, entry.signatures[1]!] };
+    expect(await foldOfferingAntigenVerdicts([entry, noisy], r)).toEqual(new Map([[OFFERING_CID, "held"]]));
+    expect((await auditOfferingAntigen([entry, noisy], r)).get(OFFERING_CID)?.rejectedActCids).toEqual([entry.actCid]);
+  });
+
+  test("concurrent same-action heads hold; opposite heads are unsettled independent of arrival order", async () => {
+    const r = await roster(2);
+    const root = await kapae([1, 2]);
+    const lift = await kapae([1, 2], [root.actCid], "un_kapae");
+    const banA = await kapae([1, 2], [root.actCid]);
+    const banB = await kapae([1, 2], [lift.actCid]);
+    expect(banA.actCid).not.toBe(banB.actCid);
+    expect(await foldOfferingAntigenVerdicts([root, lift, banA, banB], r)).toEqual(new Map([[OFFERING_CID, "held"]]));
+    const opposite = await kapae([1, 2], [root.actCid], "un_kapae");
+    expect(await foldOfferingAntigenVerdicts([root, banA, opposite], r)).toEqual(new Map([[OFFERING_CID, "unsettled"]]));
+    expect(await foldOfferingAntigenVerdicts([opposite, banA, root], r)).toEqual(new Map([[OFFERING_CID, "unsettled"]]));
+  });
+
+  test("invalid wire evidence is auditable without poisoning a valid settled head", async () => {
+    const r = await roster(2);
+    const valid = await kapae([1, 2]);
+    const forged = { ...valid, actCid: "sha256:forged" };
+    expect(await foldOfferingAntigenVerdicts([valid, forged], r)).toEqual(new Map([[OFFERING_CID, "held"]]));
+    expect((await auditOfferingAntigen([valid, forged], r)).get(OFFERING_CID)).toEqual({ verdict: "held", rejectedActCids: ["sha256:forged"] });
+  });
+
+  test("missing ancestry is unavailable through the transitive closure", async () => {
+    const r = await roster(2);
+    const parent = await kapae([1, 2], ["sha256:missing-grandparent"]);
+    const child = await kapae([1, 2], [parent.actCid]);
+    expect(await foldOfferingAntigenVerdicts([parent, child], r)).toEqual(new Map([[OFFERING_CID, "unavailable"]]));
+  });
+
+  test("invalid proof variants do not weaken a valid quorum", async () => {
+    const r = await roster(2);
+    const entry = await kapae([1, 2]);
+    const withNoise = { ...entry, signatures: [...entry.signatures, { signer: await keyOf(99), sig: "00".repeat(64) }] };
+    expect(await foldOfferingAntigenVerdicts([withNoise], r)).toEqual(new Map([[OFFERING_CID, "held"]]));
+  });
+
+  test("public-wire malformed records never throw and remain outside authority", async () => {
+    const r = await roster(2);
+    const malformed = [
+      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parents-null", parents: null, sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parents-type", parents: "nope", sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parent-element", parents: [1], sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-signatures-null", parents: [], sealEpochCid: EPOCH, signatures: null },
+      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-signature-field", parents: [], sealEpochCid: EPOCH, signatures: [{}] },
+      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: 42, action: "kapae", actCid: "bad-scalar", parents: [], sealEpochCid: EPOCH, signatures: [] },
+    ] as unknown as OfferingKapaeEntry[];
+    await expect(foldOfferingAntigenVerdicts(malformed, r)).resolves.toEqual(new Map());
+    const audit = await auditOfferingAntigen(malformed, r);
+    expect(audit.get(OFFERING_CID)?.verdict).toBeNull();
+    expect(audit.get(OFFERING_CID)?.rejectedActCids).toEqual([
+      "bad-parents-null", "bad-parents-type", "bad-parent-element", "bad-signatures-null", "bad-signature-field",
+    ]);
+    expect(audit.get(OFFERING_CID)?.diagnostics).toHaveLength(5);
   });
 });
 

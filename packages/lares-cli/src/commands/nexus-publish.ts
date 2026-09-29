@@ -21,8 +21,13 @@
  * another door. `plugins` stands first because the region already exists and already gets folded.
  */
 
-import { readGenesisPluginsCid, readGenesisCasManifest } from "@lararium/node";
-import { refuseUsage } from "../render.js";
+import {
+  readGenesisPluginsCid,
+  readGenesisCasManifest,
+  runNexusPublishPlugins,
+  NexusPublishError,
+} from "@lararium/node";
+import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** What this door may publish today. A new cap lands here beside `plugins`. */
@@ -53,17 +58,38 @@ const PUBLISH_USAGE: readonly string[] = [
  * injected abstraction would launder that real difference into a false uniformity; the OFFERING itself
  * (the signed record and its announce, landing next) carries no such split and belongs in mesh.
  */
-function publishPlugins(args: ParsedArgs): number {
+async function publishPlugins(args: ParsedArgs): Promise<number> {
   const pluginsCid = readGenesisPluginsCid();
   const manifest = readGenesisCasManifest();
 
   if (args.flags["apply"]) {
-    console.error("nexus publish plugins --apply — HELD (the offering's payload lands next).");
-    console.error("  --apply mints a SIGNED offering record naming the collection, its region cid and its");
-    console.error("  blob descriptors, then announces it on the crossroads plane. A taker verifies the");
-    console.error("  blobs BY HASH against the declared region, so the offering carries a signature and an");
-    console.error("  announce and NO steward set — nothing stands for a second hand to attest.");
-    return 2;
+    try {
+      const result = await runNexusPublishPlugins();
+      emit(args, {
+        ok: true,
+        data: {
+          offeringCid: result.offeringCid,
+          boardUrl: result.boardUrl,
+          offeror: result.offeror,
+          pluginsCid: result.pluginsCid,
+          blobCount: result.blobCount,
+        },
+        human: () => {
+          console.log("nexus publish plugins — IMMUTABLE OFFERING ANNOUNCED:");
+          console.log(`  offering: ${result.offeringCid}`);
+          console.log(`  board:    ${result.boardUrl}`);
+          console.log(`  offeror:  ${result.offeror}`);
+          console.log(`  plugins:  ${result.pluginsCid} · ${result.blobCount} blob(s)`);
+          console.log("  the gift changed no grammar and installed no bytes");
+        },
+      });
+      return 0;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const code = err instanceof NexusPublishError ? "refused" : "error";
+      emit(args, { ok: false, error: { code, message }, human: () => console.error(`lares nexus publish plugins: ${message}`) });
+      return exitFor(code);
+    }
   }
 
   const none = "(no island baked in this root yet)";
@@ -88,7 +114,7 @@ function publishPlugins(args: ParsedArgs): number {
 export async function cmdPublish(args: ParsedArgs): Promise<number> {
   const what = args.positional[1];
   switch (what) {
-    case "plugins": return publishPlugins(args);
+    case "plugins": return await publishPlugins(args);
     default:
       // A KĀHULI TIER NAMED HERE READS AS A MISROUTE, NEVER AS A TYPO. `engine` and `grammar` are real —
       // they simply belong to the door that ratchets, so the refusal points rather than shrugs.

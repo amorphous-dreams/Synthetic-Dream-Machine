@@ -35,7 +35,7 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN } from "./domains.js";
 import type { KahuRoster, QuorumSignature } from "./kapae-antigen.js";
 
@@ -94,27 +94,90 @@ export interface OfferingKapaeEntry {
   /** The offering's region cid — a COLLECTION, never an identity. */
   readonly pluginsCid:   string;
   readonly action:       OfferingKapaeAction;
-  /** Monotone per offering: a later act supersedes an earlier one; a stale entry cannot roll it back. */
-  readonly version:      number;
+  /** Semantic act identity, derived from the unsigned causal content. */
+  readonly actCid:       string;
+  /** Canonical causal parents in this offering + charter relation family. */
+  readonly parents:      readonly string[];
   readonly sealEpochCid: string;
   readonly signatures:   readonly QuorumSignature[];
 }
 
 export function offeringKapaeBytes(parts: Omit<OfferingKapaeEntry, "kind" | "signatures">): Uint8Array {
+  const parents = [...new Set(parts.parents)].sort();
   return canonicalJsonBytes({
     kind: OFFERING_KAPAE_DOMAIN, pluginsCid: parts.pluginsCid, action: parts.action,
-    version: parts.version, sealEpochCid: parts.sealEpochCid,
+    actCid: parts.actCid, parents, sealEpochCid: parts.sealEpochCid,
   });
+}
+
+/** The act preimage leaves actCid blank; signatures sit outside semantic identity. */
+export function offeringKapaeActCid(
+  parts: Omit<OfferingKapaeEntry, "kind" | "signatures" | "actCid">,
+): string {
+  return `sha256:${sha256HexBytesSync(offeringKapaeBytes({ ...parts, actCid: "" }))}`;
+}
+
+function canonicalParents(parents: readonly string[]): string[] {
+  return [...new Set(parents)].sort();
+}
+
+function isCanonicalParents(parents: readonly string[]): boolean {
+  return parents.every((p, i) => typeof p === "string" && p.length > 0 && parents.indexOf(p) === i &&
+    (i === 0 || parents[i - 1]! < p));
 }
 
 /** Gather k signatures over one act. Each hand signs the SAME bytes — a quorum, never a chain. */
 export async function signOfferingKapae(
-  parts: Omit<OfferingKapaeEntry, "kind" | "signatures">,
+  parts: Omit<OfferingKapaeEntry, "kind" | "signatures" | "actCid"> & { readonly parents: readonly string[] },
   hands: readonly { readonly signer: string; readonly sign: (b: Uint8Array) => Promise<string> }[],
 ): Promise<OfferingKapaeEntry> {
-  const bytes = offeringKapaeBytes(parts);
+  const parents = canonicalParents(parts.parents);
+  const actCid = offeringKapaeActCid({ ...parts, parents });
+  if (parents.includes(actCid)) throw new Error("offering-kapae: an act cannot parent itself");
+  const semantic = { ...parts, parents, actCid };
+  const bytes = offeringKapaeBytes(semantic);
   const signatures = await Promise.all(hands.map(async (h) => ({ signer: h.signer, sig: await h.sign(bytes) })));
-  return { kind: OFFERING_KAPAE_DOMAIN, ...parts, signatures };
+  return { kind: OFFERING_KAPAE_DOMAIN, ...semantic, signatures };
+}
+
+export type OfferingAntigenVerdict = "held" | "withdrawn" | "unsettled" | "unavailable" | "rejected";
+
+/** Audit-only record. Rejected wire candidates are observable here, but never become authority. */
+export interface OfferingAntigenAudit {
+  readonly verdict: OfferingAntigenVerdict | null;
+  readonly rejectedActCids: readonly string[];
+  readonly diagnostics?: readonly string[];
+}
+
+export interface OfferingKapaeDiagnostic {
+  readonly pluginsCid?: string;
+  readonly actCid?: string;
+  readonly reason: string;
+}
+
+/** Normalize hostile board-shaped input before any causal or quorum field is read. */
+export function normalizeOfferingKapaeEntry(raw: unknown): {
+  readonly entry: OfferingKapaeEntry | null;
+  readonly diagnostic?: OfferingKapaeDiagnostic;
+} {
+  if (typeof raw !== "object" || raw === null) return { entry: null, diagnostic: { reason: "entry is not an object" } };
+  const p = raw as Record<string, unknown>;
+  const pluginsCid = typeof p["pluginsCid"] === "string" && p["pluginsCid"].length > 0 ? p["pluginsCid"] : undefined;
+  const actCid = typeof p["actCid"] === "string" && p["actCid"].length > 0 ? p["actCid"] : undefined;
+  const fail = (reason: string) => ({ entry: null, diagnostic: { ...(pluginsCid ? { pluginsCid } : {}), ...(actCid ? { actCid } : {}), reason } });
+  if (p["kind"] !== OFFERING_KAPAE_DOMAIN) return fail("wrong offering-kapae domain");
+  if (!pluginsCid) return fail("missing pluginsCid");
+  if (p["action"] !== "kapae" && p["action"] !== "un_kapae") return fail("invalid action");
+  if (!actCid) return fail("missing actCid");
+  if (!Array.isArray(p["parents"]) || p["parents"].some((parent) => typeof parent !== "string" || parent.length === 0)) return fail("invalid parents");
+  if (typeof p["sealEpochCid"] !== "string" || p["sealEpochCid"].length === 0) return fail("invalid sealEpochCid");
+  if (!Array.isArray(p["signatures"])) return fail("invalid signatures");
+  for (const signature of p["signatures"]) {
+    if (typeof signature !== "object" || signature === null || typeof (signature as Record<string, unknown>)["signer"] !== "string" || typeof (signature as Record<string, unknown>)["sig"] !== "string") {
+      return fail("invalid signature record");
+    }
+  }
+  return { entry: p as unknown as OfferingKapaeEntry };
 }
 
 /**
@@ -123,24 +186,122 @@ export async function signOfferingKapae(
  * The parameter list carries no presentations, and that absence IS the law — a fold that accepted them
  * could be argued into weighting them later, and the whole architecture rests on it never doing so.
  *
- * Highest version per offering wins. A TIE LEAVES IT ASIDE, mirroring the presenter board's remove-wins
- * guarantee: under partition two peers may disagree, and the safer reading holds.
+ * The local causal fold admits one settled head, compatible concurrent heads, or no verdict. A missing
+ * ancestor is unavailable, and contradictory admissible heads remain unsettled; arrival order never chooses.
  */
-export async function foldOfferingAntigen(
+export async function foldOfferingAntigenVerdicts(
   entries: readonly OfferingKapaeEntry[],
   roster:  KahuRoster,
-): Promise<Set<string>> {
-  const best = new Map<string, OfferingKapaeEntry>();
+): Promise<ReadonlyMap<string, OfferingAntigenVerdict>> {
+  const grouped = new Map<string, OfferingKapaeEntry[]>();
   for (const e of entries) {
-    if (e?.kind !== OFFERING_KAPAE_DOMAIN) continue;
-    if (!(await verifyOfferingQuorum(e, roster))) continue;
-    const prior = best.get(e.pluginsCid);
-    if (!prior || e.version > prior.version || (e.version === prior.version && e.action === "kapae")) {
-      best.set(e.pluginsCid, e);
+    const normalized = normalizeOfferingKapaeEntry(e).entry;
+    if (!normalized) continue;
+    (grouped.get(normalized.pluginsCid) ?? (grouped.set(normalized.pluginsCid, []), grouped.get(normalized.pluginsCid)!)).push(normalized);
+  }
+  const validOwners = new Map<string, string>();
+  const verifiedGroups = new Map<string, OfferingKapaeEntry[]>();
+  for (const [pluginsCid, group] of grouped) {
+    const verified: OfferingKapaeEntry[] = [];
+    for (const entry of group) {
+      const canonical = isCanonicalParents(entry.parents);
+      const identity = canonical && entry.actCid === offeringKapaeActCid({
+        pluginsCid: entry.pluginsCid, action: entry.action, parents: entry.parents, sealEpochCid: entry.sealEpochCid,
+      });
+      if (identity && await verifyOfferingQuorum(entry, roster)) {
+        verified.push(entry);
+        validOwners.set(entry.actCid, pluginsCid);
+      }
+    }
+    if (verified.length > 0) verifiedGroups.set(pluginsCid, verified);
+  }
+  const verdicts = new Map<string, OfferingAntigenVerdict>();
+  for (const [pluginsCid, verified] of verifiedGroups) {
+    const scoped = verified.filter((e) => !e.parents.some((p) => validOwners.has(p) && validOwners.get(p) !== pluginsCid));
+    if (scoped.length === 0) continue;
+    const ids = new Set(scoped.map((e) => e.actCid));
+    let admissible = [...scoped];
+    let changed = true;
+    while (changed) {
+      changed = false;
+      const next = admissible.filter((e) => e.parents.every((p) => ids.has(p)));
+      if (next.length !== admissible.length) changed = true;
+      admissible = next;
+    }
+    if (admissible.length !== scoped.length) { verdicts.set(pluginsCid, "unavailable"); continue; }
+    const covered = new Set(admissible.flatMap((e) => e.parents));
+    const heads = admissible.filter((e) => !covered.has(e.actCid));
+    const actions = new Set(heads.map((e) => e.action));
+    if (actions.has("kapae") && actions.has("un_kapae")) verdicts.set(pluginsCid, "unsettled");
+    else if (heads.some((e) => e.action === "kapae")) verdicts.set(pluginsCid, "held");
+    else if (heads.some((e) => e.action === "un_kapae")) verdicts.set(pluginsCid, "withdrawn");
+    else verdicts.set(pluginsCid, "unavailable");
+  }
+  return verdicts;
+}
+
+/**
+ * Audit the same local offering fold. Invalid or unverified wire candidates are reported by act CID, while
+ * the authority verdict is computed from admissible acts only. A raw Crossroads record can therefore never
+ * manufacture a denial by sharing a pluginsCid; a receiving take path consumes `verdict`, while tooling may
+ * surface `rejectedActCids` to an operator.
+ */
+export async function auditOfferingAntigen(
+  entries: readonly OfferingKapaeEntry[], roster: KahuRoster,
+): Promise<ReadonlyMap<string, OfferingAntigenAudit>> {
+  const verdicts = await foldOfferingAntigenVerdicts(entries, roster);
+  const grouped = new Map<string, string[]>();
+  const diagnostics = new Map<string, string[]>();
+  const owners = new Map<string, string>();
+  for (const entry of entries) {
+    const normalized = normalizeOfferingKapaeEntry(entry);
+    if (!normalized.entry) {
+      const d = normalized.diagnostic;
+      if (d?.pluginsCid) {
+        const reasons = diagnostics.get(d.pluginsCid) ?? [];
+        reasons.push(d.reason);
+        diagnostics.set(d.pluginsCid, reasons);
+        if (d.actCid) (grouped.get(d.pluginsCid) ?? (grouped.set(d.pluginsCid, []), grouped.get(d.pluginsCid)!)).push(d.actCid);
+      }
+      continue;
+    }
+    const entryValue = normalized.entry;
+    const identity = isCanonicalParents(entryValue.parents) && entryValue.actCid === offeringKapaeActCid({
+      pluginsCid: entryValue.pluginsCid, action: entryValue.action, parents: entryValue.parents, sealEpochCid: entryValue.sealEpochCid,
+    });
+    if (!identity || !(await verifyOfferingQuorum(entryValue, roster))) {
+      (grouped.get(entryValue.pluginsCid) ?? (grouped.set(entryValue.pluginsCid, []), grouped.get(entryValue.pluginsCid)!)).push(entryValue.actCid);
+    } else owners.set(entryValue.actCid, entryValue.pluginsCid);
+  }
+  for (const entry of entries) {
+    const entryValue = normalizeOfferingKapaeEntry(entry).entry;
+    if (!entryValue || !owners.has(entryValue.actCid)) continue;
+    if (entryValue.parents.some((parent) => owners.has(parent) && owners.get(parent) !== entryValue.pluginsCid)) {
+      const rejected = grouped.get(entryValue.pluginsCid) ?? [];
+      if (!rejected.includes(entryValue.actCid)) rejected.push(entryValue.actCid);
+      grouped.set(entryValue.pluginsCid, rejected);
     }
   }
+  const out = new Map<string, OfferingAntigenAudit>();
+  for (const [pluginsCid, rejectedActCids] of grouped) {
+    out.set(pluginsCid, { verdict: verdicts.get(pluginsCid) ?? null, rejectedActCids, ...(diagnostics.has(pluginsCid) ? { diagnostics: diagnostics.get(pluginsCid)! } : {}) });
+  }
+  for (const [pluginsCid, reasons] of diagnostics) {
+    if (!out.has(pluginsCid)) out.set(pluginsCid, { verdict: verdicts.get(pluginsCid) ?? null, rejectedActCids: [], diagnostics: reasons });
+  }
+  for (const [pluginsCid, verdict] of verdicts) {
+    if (!out.has(pluginsCid)) out.set(pluginsCid, { verdict, rejectedActCids: [] });
+  }
+  return out;
+}
+
+export async function foldOfferingAntigen(
+  entries: readonly OfferingKapaeEntry[], roster: KahuRoster,
+): Promise<Set<string>> {
   const aside = new Set<string>();
-  for (const [cid, e] of best) if (e.action === "kapae") aside.add(cid);
+  for (const [pluginsCid, verdict] of await foldOfferingAntigenVerdicts(entries, roster)) {
+    if (verdict === "held") aside.add(pluginsCid);
+  }
   return aside;
 }
 
@@ -158,6 +319,10 @@ async function verifyOfferingQuorum(entry: OfferingKapaeEntry, roster: KahuRoste
   if (roster.threshold < 1)                        return false;
   if (roster.keys.length < roster.threshold)       return false;   // unbound/short roster → deny
   if (entry.sealEpochCid !== roster.sealEpochCid)  return false;   // roots on an unknown epoch → deny
+  if (!isCanonicalParents(entry.parents)) return false;
+  if (entry.actCid !== offeringKapaeActCid({
+    pluginsCid: entry.pluginsCid, action: entry.action, parents: entry.parents, sealEpochCid: entry.sealEpochCid,
+  })) return false;
 
   const rosterKeys = new Set(roster.keys);
   const bytes      = offeringKapaeBytes(entry);

@@ -61,6 +61,7 @@ export * from "./authority-verdict.js";
 export * from "./oracle-substrate.js";
 export * from "./oracle-read-client.js";
 export * from "./plugin-offering.js";
+export * from "./offering-announce.js";
 export * from "./offering-antigen.js";
 export * from "./mesh-palace.js";
 export * from "./pronaos.js";

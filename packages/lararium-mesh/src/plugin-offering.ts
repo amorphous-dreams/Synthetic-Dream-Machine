@@ -21,7 +21,7 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
+import { canonicalJsonBytes, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import { computePluginsCid } from "./genesis-doc.js";
 import { PLUGIN_OFFERING_DOMAIN } from "./domains.js";
 
@@ -44,14 +44,39 @@ export interface PluginOffering {
   readonly sig:        string;
 }
 
+/** Canonical descriptor order for both the signed preimage and the record CID. */
+function canonicalOfferingBlobs(blobs: readonly OfferedBlob[]): OfferedBlob[] {
+  return blobs
+    .map((b) => ({ id: b.id, version: b.version, sha256: b.sha256 }))
+    .sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1
+      : a.version < b.version ? -1 : a.version > b.version ? 1
+        : a.sha256 < b.sha256 ? -1 : a.sha256 > b.sha256 ? 1 : 0);
+}
+
 /** The signing preimage — offeror, declared region and blobs, canonically ordered. */
 export function pluginOfferingBytes(parts: Omit<PluginOffering, "kind" | "sig">): Uint8Array {
   return canonicalJsonBytes({
     kind:       PLUGIN_OFFERING_DOMAIN,
     offeror:    parts.offeror,
     pluginsCid: parts.pluginsCid,
-    blobs:      parts.blobs.map((b) => ({ id: b.id, version: b.version, sha256: b.sha256 })),
+    blobs:      canonicalOfferingBlobs(parts.blobs),
   });
+}
+
+/** Exact immutable signed-record bytes used for content addressing and carriage. */
+export function pluginOfferingRecordBytes(offering: PluginOffering): Uint8Array {
+  return canonicalJsonBytes({
+    kind:       PLUGIN_OFFERING_DOMAIN,
+    offeror:    offering.offeror,
+    pluginsCid: offering.pluginsCid,
+    blobs:      canonicalOfferingBlobs(offering.blobs),
+    sig:        offering.sig,
+  });
+}
+
+/** Content CID for one complete signed offering record. The signature makes two offerors distinct. */
+export function pluginOfferingCid(offering: PluginOffering): string {
+  return `sha256:${sha256HexBytesSync(pluginOfferingRecordBytes(offering))}`;
 }
 
 /** Mint a signed offering. The caller supplies the signing hand; no seed reaches this module. */
@@ -59,8 +84,13 @@ export async function signPluginOffering(
   parts: Omit<PluginOffering, "kind" | "sig">,
   sign:  (bytes: Uint8Array) => Promise<string>,
 ): Promise<PluginOffering> {
-  const sig = await sign(pluginOfferingBytes(parts));
-  return { kind: PLUGIN_OFFERING_DOMAIN, offeror: parts.offeror, pluginsCid: parts.pluginsCid, blobs: parts.blobs, sig };
+  const canonical = {
+    offeror: parts.offeror,
+    pluginsCid: parts.pluginsCid,
+    blobs: canonicalOfferingBlobs(parts.blobs),
+  };
+  const sig = await sign(pluginOfferingBytes(canonical));
+  return { kind: PLUGIN_OFFERING_DOMAIN, ...canonical, sig };
 }
 
 export type OfferingVerdict = { readonly ok: true } | { readonly ok: false; readonly reason: string };
@@ -75,6 +105,15 @@ export type OfferingVerdict = { readonly ok: true } | { readonly ok: false; read
  */
 export async function verifyPluginOffering(offering: PluginOffering): Promise<OfferingVerdict> {
   if (offering?.kind !== PLUGIN_OFFERING_DOMAIN) return { ok: false, reason: "not a plugin offering" };
+  if (
+    typeof offering.offeror !== "string" || !/^[0-9a-f]{64}$/i.test(offering.offeror) ||
+    typeof offering.pluginsCid !== "string" || offering.pluginsCid.length === 0 ||
+    !Array.isArray(offering.blobs) || offering.blobs.some((b) =>
+      !b || typeof b.id !== "string" || b.id.length === 0 ||
+      typeof b.version !== "string" || b.version.length === 0 ||
+      typeof b.sha256 !== "string" || b.sha256.length === 0) ||
+    typeof offering.sig !== "string" || !/^[0-9a-f]{128}$/i.test(offering.sig)
+  ) return { ok: false, reason: "malformed plugin offering" };
 
   let sigOk = false;
   try {

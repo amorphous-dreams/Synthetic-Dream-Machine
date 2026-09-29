@@ -11,9 +11,9 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x1F381;"
-revised-on = "2026-09-13"
-role       = "the OFFERING as a LAMPLIGHTER capability, collided with the software-supply-chain field. Names three caps that never ratchet — `offer` (sign + announce a collection by CID on the crossroads) · `carry` (a Herm re-shares announced blobs by hash) · `witness` (an append-only record of announcements, ordered never timed) — and the ONE kahu cap that installs: `nexus kahuli grammar --from <offering-cid>`, the receiver's own hand. Carries the security table (freeze · rollback · mix-and-match · handle-squat · maintainer takeover · dependency confusion · captured Union · withdrawal) with the house's answer and the gap where none stands; what `--apply` MUST and MUST NOT do; the anti-roster proof; the gift frame and its two failure modes. Every house claim carries its file:line; every field claim carries quote · link · date."
-status-why = "DESIGN, ahead of code. The record + the recompute + the antigen stand BUILT (`dcec1ef0b`, `6df13cffc`); `--apply` stands HELD at `nexus-publish.ts:60-66`; the announce record kind, the taker's door, and all three caps stand UNBUILT, named red-by-red at #/plan. The field collision ran 2026-09-13 against Sigstore · SLSA · in-toto · TUF · npm provenance · sum.golang.org · CT · Nix · Guix · F-Droid · Debian · Tor, and against the 2016-2026 incident record."
+revised-on = "2026-09-28"
+role       = "the OFFERING as a LAMPLIGHTER capability, collided with the software-supply-chain field. Names the immutable signed offering record, its additive CID-keyed announcement, the causal quorum antigen, and the receiver's own install hand. The public record is shape-filtered first and independently certified; no receiver caller is implied. The proposed bounded `kahuli grammar --from <offering CID>` reader remains held behind an operator contract fork. Carries the security table (freeze · rollback · mix-and-match · handle-squat · maintainer takeover · dependency confusion · captured Union · withdrawal), the remaining source-local and receiver closure queue, the anti-roster proof, and the gift boundary."
+status-why = "DESIGN, partially implemented. `PluginOffering` is an immutable signed record with a content CID and recomputed region; `offering-announce.ts` adds the complete record under a CID-keyed public projection; `offering-antigen.ts` folds quorum acts with semantic CIDs and causal parents, returning held/withdrawn/unsettled/unavailable or no authority verdict while retaining rejected candidates as audit evidence. No production receiver caller exists. Source-local `publish plugins --apply`, bounded read-only `kahuli grammar --from <offering CID>`, the receiver consultant/enforcement input contract and cap placement, and the Node/Web plus Docker multi-vessel story remain queued."
 tags       = ["docs/pono/talk-story", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lares/docs/pono/offering"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -33,11 +33,11 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 ''The lean the charge agreed with, stated as the thing this carrier tests to destruction:''
 
 # `--apply` ''signs and announces'' on the crossroads plane, and does nothing else.
-# The receiving hearth's `kāhuli grammar` — the fast ratchet — stands as ''the only door that installs''.
+# The receiving hearth's `kāhuli grammar` — the fast ratchet — is intended as ''the only door that installs''; no offering reader is live yet.
 # `--apply` ''never ratchets''. A gift announces itself; the receiver ratchets.
 # ''The lamplighter carries the basket; the kahu decides to plant.''
 
-''What the collision did to the lean.'' It held, and the field supplied a stronger argument for it than the house had: the separation of ANNOUNCE from INSTALL reads as the ''one mitigation that survives a maintainer-key takeover'', which every other control in the stack fails (#/security). It also broke two things the house had not noticed it was missing — an offering carries ''no monotone version'' and ''no freshness lease'', so TUF's ROLLBACK and FREEZE attacks both stand open (#/security, #/questions Q1).
+''What the collision did to the lean.'' It held, and the field supplied a stronger argument for it than the house had: the separation of ANNOUNCE from INSTALL reads as the ''one mitigation that survives a maintainer-key takeover'', which every other control in the stack fails (#/security). The implementation now makes the offering an immutable signed record named by its complete record CID. That CID preserves historical identity; it does not invent a global currentness or freshness verdict. Receiver-local causal antigen consultation remains a separate authority relation (#/security, #/closure).
 
 ''And it took one warrant away.'' The clause the house leans on — //the obligation to receive is not the obligation to use// — does not appear in Mauss, who argues the other way; and the hoʻokupu reading the house likes did not resolve to a citable source. ''The lean survives on its own security argument and MUST stop borrowing the anthropology's authority'' (#/the-gift).
 
@@ -49,47 +49,46 @@ uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 
 !! The house today — what the founding hearth already built
 
-!!! The door, read-only, with the offering HELD
+!!! The source-local door, read-only, with the offering HELD
 
-`lares nexus publish plugins` reads the operator's own collection and builds nothing; `PUBLISHABLE = ["plugins"]` takes one case per publishable thing (`packages/lares-cli/src/commands/nexus-publish.ts:29`), so a second cap arrives as a CASE rather than another door. `--apply` refuses at `:60-66` with exit 2 and states its own payload: //"mints a SIGNED offering record naming the collection, its region cid and its blob descriptors, then announces it on the crossroads plane"// (quote license). A tier named at the wrong door draws a refusal that POINTS rather than shrugs (`:94-101`).
+`lares nexus publish plugins` reads the operator's own collection and builds nothing. `--apply` remains a loud held refusal in the CLI; the source-local closure must mint the signed record, verify it, write one additive announcement, and report the resulting offering CID. A tier named at the wrong door still draws a refusal that points rather than shrugs.
 
-!!! The record — one offeror, one region, one signature
+!!! The immutable record — one offeror, one region, one signature, one record CID
 
-`packages/lararium-mesh/src/plugin-offering.ts:36-45` carries the whole ruling in a field set: `kind` · `offeror` (//"an ed25519 verifying-key hex — a nym, never a roster seat"//, `:39`) · `pluginsCid` · `blobs` · `sig`. ''There is no slot for a co-signer.'' The mint takes the signing hand as a parameter and //"no seed reaches this module"// (`:57-65`).
+`packages/lararium-mesh/src/plugin-offering.ts` carries the whole ruling in a field set: `kind` · `offeror` (//"an ed25519 verifying-key hex — a nym, never a roster seat"//) · `pluginsCid` · canonical `blobs` · `sig`. `pluginOfferingRecordBytes` hashes the complete signed record into `pluginOfferingCid`; the signature makes two offerors' otherwise identical collections distinct. ''There is no slot for a co-signer.'' The mint takes the signing hand as a parameter and no seed reaches the mesh module.
 
 !!! The verify RECOMPUTES, and that is the load-bearing move
 
-`verifyPluginOffering` (`:76-92`) checks the signature over the offering's own bytes AND folds the blobs back through `computePluginsCid` (`:87`) — the same function the genesis bake runs (`packages/lararium-mesh/src/genesis-doc.ts:339-341`, `foldRegion("plugins/v1", …)`). Both halves fail closed. The sharp vector stands pinned: //"a SIGNED offering whose blobs fold elsewhere REFUSES — the signature never stands in for the fold"// (`packages/lararium-mesh/tests/plugin-offering.test.ts:38`).
+`verifyPluginOffering` checks the signature over the offering's own bytes AND folds the blobs back through `computePluginsCid` — the same function the genesis bake runs. Both halves fail closed. A signed offering whose blobs fold elsewhere refuses; the signature never stands in for the fold. `verifiedPluginOfferingsFromDoc` repeats this certification after a public board has been shape-filtered.
 
 <<~ has Built Record "at/plugin-offering.ts:36-45 carries/kind·offeror·pluginsCid·blobs·sig ~ ONE signature, no steward set (operator ruling, dcec1ef0b)">>
 <<~ has Built Verify "at/plugin-offering.ts:76-92 does/signature-over-own-bytes AND blobs-fold-to-declared-region ~ fail-closed in both halves">>
-<<~ has Built Antigen "at/offering-antigen.ts:129-150 does/fold VERIFIED quorum acts into the set standing aside ~ the parameter list carries NO presentations, and that absence IS the law">>
-<<~ has Built Presentation "at/offering-antigen.ts:46-90 does/a tender says what it noticed ~ zero threshold weight; five honest presentations move a verdict exactly as far as none">>
+<<~ has Built Antigen "at/offering-antigen.ts does/fold VERIFIED causal quorum acts into held·withdrawn·unsettled·unavailable or no verdict ~ audit records retain rejected candidates, and the fold carries NO presentations">>
+<<~ has Built Presentation "at/offering-antigen.ts does/a tender says what it noticed ~ zero threshold weight; five honest presentations move a verdict exactly as far as none">>
 <<~ has Built Domains "at/domains.ts:133,142,150 holds/plugin-offering ⊥ offering-presentation ⊥ offering-kapae ~ a signature over one can never verify as another">>
 
 !!! The immune half stands READY, not live
 
-`offering-antigen.ts:24-30` says so in its own header (quote license): //"Nothing calls this fold … the law here stands READY rather than enforced. A Nexus opts in by consulting it."// A self-clearing weld holds the two halves together — `offering-antigen.test.ts:132` fails the moment a production caller appears and names the cure. ''An auditor reading the offering path must not take a ready function for a live one.''
+The module header says it plainly: nothing calls this fold, so the law stands READY rather than enforced. The test weld fails when a production caller appears and names the cure. ''An auditor reading the offering path must not take a ready function for a live one.''
 
-!!! ★ THE INVERSION THE HOUSE HAS NOT NOTICED ★
+!!! ★ THE CAUSAL SPLIT THE HOUSE NOW NAMES ★
 
-''The CONDEMNATION board ratchets; the OFFERING does not.'' `OfferingKapaeEntry` carries `version: number`, monotone per offering — //"a later act supersedes an earlier one; a stale entry cannot roll it back"// (`offering-antigen.ts:97-98`), pinned at `offering-antigen.test.ts:87`. `PluginOffering` carries ''no monotone field at all'' (`plugin-offering.ts:36-45`). So the house can prove a condemnation is current and ''cannot prove an offering is''. That asymmetry is the whole of #/security's freeze and rollback rows.
+The offering record is immutable and content-addressed; there is no scalar currentness field to supersede it. `OfferingKapaeEntry` is a separate semantic act with an `actCid`, canonical `parents`, and a charter fence. Its fixed-point authority fold retains causal closure and returns `held`, `withdrawn`, `unsettled`, `unavailable`, or no verdict. `auditOfferingAntigen` reports rejected candidates as audit evidence without allowing them to manufacture authority. This is historical identity plus receiver-local relation evidence, never a scalar winner.
 
-!!! The announce lane already exists, in another subject
+!!! The announce lane now carries the complete signed record
 
-`realm-bag.ts:359-379` carries the shape `--apply` wants: a `RealmBagAnnounce` under its OWN domain (`domains.ts:151`), keyed by the subject, body = //"that it exists and who keeps it. NEVER the doc"// — and `realm-plane.ts:178, 193` lands it inside a `handle.change()` on the crossroads doc. ''The offering announce asks for no new mechanism; it asks for one more subject.'' Beside it, `realm-plane.ts:173` carries the discipline `--apply` MUST borrow: //"refusing to write a registration that does not count"// — a mint self-checks before it announces.
+`offering-announce.ts` defines `PLUGIN_OFFERING_ANNOUNCE_DOMAIN`, `PluginOfferingAnnounce`, and `offeringAnnounceKey`. `writeOfferingAnnounce` keys the public record by the complete `pluginOfferingCid` and carries the signed offering itself, so two offerors announcing the same region remain distinct. `offeringAnnouncesFromDoc` shape-filters raw board records only; `verifyOfferingAnnounce` independently checks the announcement CID, the offeror signature, and the recomputed region. This is additive carriage, not a registry and not an authority verdict.
 
 !!! The fetch door exists too
 
 `packages/lararium-node/src/bulb-read-face.ts:5-8` serves `/bulb/<cid>.bin` and `/cas/<cid>` GET-only, PUBLIC-floor only, //"bytes named by their own hash, no sync session"// (`:18-19`). `:99` holds the line a taker's blobs must never cross: //"a CONTRACT book rides the realm's own lane, never the shore"//.
 
-!!! What stands UNBUILT
+!!! What stands HELD
 
-<<~ has Unbuilt Announce "no OFFERING_ANNOUNCE domain, no announce record, no crossroads write ~ the record exists, the publication does not">>
-<<~ has Unbuilt Mint "no signing hand wired to --apply ~ nexus-publish.ts:60-66 refuses; nothing calls signPluginOffering in production">>
-<<~ has Unbuilt Take "no taker's door ~ `nexus kahuli grammar --apply` itself stands HELD (nexus-kahuli.ts:73-79), and it takes no `--from`">>
-<<~ has Unbuilt Caps "no `offer` · `carry` · `witness` cap names anywhere ~ vessel-caps names five caps and none of them is this">>
-<<~ has Unbuilt Consult "nothing consults foldOfferingAntigen ~ offering-antigen.ts:24-30, welded at offering-antigen.test.ts:132">>
+<<~ has Held PublishApply "the mesh mint + announcement exist, but source-local `publish plugins --apply` has no caller">>
+<<~ has Held Take "no bounded read-only `kahuli grammar --from <offering CID>` reader exists">>
+<<~ has Held Consultant "no receiver-local consultant/enforcement input contract or cap placement has been selected">>
+<<~ has Held Vessels "Node/Web and Docker multi-vessel replication, partition, rejoin, and custody story remains unclaimed">>
 
 <<~/ahu>>
 
@@ -189,26 +188,26 @@ And the house's own prior scout already measured the ceiling: ''no live system s
 
 !!! ★ THE LAMPLIGHTER SET — `offer` · `carry` · `witness` ★
 
-<<~ has Cap offer "verb/sign-and-announce subject/a collection, by its region CID holder/ANY vessel with a signing hand + the crossroads plane grants/nothing to anyone else ratchets/NOTHING reaches/the offeror's own announce record">>
+<<~ has Cap offer "verb/sign-and-announce subject/an immutable signed offering record, by its complete offering CID holder/ANY vessel with a signing hand + the crossroads plane grants/nothing to anyone else ratchets/NOTHING reaches/the offeror's own additive announce record">>
 <<~ has Cap carry "verb/re-share subject/the BLOBS an announced offering names, by hash holder/a Herm, or any vessel lighting the rhizome cap grants/bytes the world may already ask any hearth for ratchets/NOTHING reaches/no read-cap, no persona, no verdict">>
 <<~ has Cap witness "verb/append subject/announcements — WHO announced WHICH region, in WHAT ORDER holder/any vessel that keeps a log grants/a checkable order claim ratchets/NOTHING reaches/no verdict; monitors condemn, the log never does">>
 
-''`offer` composes from parts the house already holds.'' The mint (`signPluginOffering`, `plugin-offering.ts:57-65`) takes the signing hand as a parameter, so the cap rides the ''vessel's own key'' and reaches no seed. The announce borrows `realm-plane.ts:178` verbatim in shape. ''A Place may hold it'' — `heraldry.mem` #/the-herm-card already seats a card owned by a Place DID with no persona root, so a faceless crossroads offering its own collection breaks nothing (#/questions Q6).
+''`offer` composes from parts the house already holds.'' The mint (`signPluginOffering`) takes the signing hand as a parameter, so the cap rides the ''vessel's own key'' and reaches no seed. The announcement carries the complete signed record under its own content CID. ''A Place may hold it'' — `heraldry.mem` #/the-herm-card already seats a card owned by a Place DID with no persona root, so a faceless crossroads offering its own collection breaks nothing (#/questions Q6).
 
 ''`carry` restates `rhizome` over a new subject and adds no authority.'' `vessel-caps.mem` #/lares-viales already rules its shape (quote license): //"The Herm holds the HINT, never the read-cap; a fetcher re-verifies `BLAKE3(bytes)==cid` itself, so the hint stays a hint, never an authority on the bytes."// An offered blob rides the PUBLIC floor (`bulb-read-face.ts:5-8`) and no other. ''`carry` is also the whole of the house's answer to left-pad'': a carrier needs no permission from the offeror to keep serving bytes the offeror withdrew (#/security).
 
-''`witness` is the one that needs care, and the care has a name.'' A log of announcements passes the registry filter only under ''two'' constraints, and both come from standing law:
+''`witness` is the one that needs care, and the care has a name.'' The current announcement is additive CID-keyed carriage, not an ordered witness log. A separate witness still passes the registry filter only under ''two'' constraints, and both come from standing law:
 
 # ''ORDER, NEVER TIME.'' CT's SCT carries a timestamp; ours MUST NOT. `attestation-plane` already ruled it (via `lamplighters.mem`, quote license): //"what the timestamp bought reads as non-repudiable ORDERING, surgical SCOPING, and third-party WITNESS, and all three want a witnessed partial order rather than a shared now."// So a witness entry carries a ''hash-chain position'' and a ''predecessor'', never a clock. The law it obeys reads absolute: the operator ruled no-global-now (`lamplighters.mem` #/immune, option (a) REFUSED).
-# ''KEYED ON THE CID, NEVER ON THE OFFEROR.'' A log a reader can walk by region cid carries announcements; a log indexed by offeror compiles a register of who offers what. The second is the rejected fork (#/anti-roster).
+# ''KEYED ON THE OFFERING CID, NEVER ON THE OFFEROR.'' A record reader can walk by complete offering CID; a log indexed by offeror compiles a register of who offers what. The second is the rejected fork (#/anti-roster).
 
-''And `witness` condemns nothing, by the same arithmetic the antigen already enacts.'' A witness entry reads as a PRESENTATION in the Union's sense — evidence for a reader, no term in any threshold (`offering-antigen.ts:129-150`).
+''And `witness` condemns nothing, by the same arithmetic the antigen already enacts.'' A witness entry would read as a PRESENTATION in the Union's sense — evidence for a reader, no term in any threshold. The current public announcement has no witness ordering claim.
 
 !!! ★ THE KAHU SET — one verb, and it is the ONLY door that installs ★
 
 <<~ has Cap kahuli-grammar "verb/RATCHET subject/this hearth's grammarCid holder/the operator's OWN hand, at the receiving hearth does/recompute the region · verify the sig against the offeror's published Handle · THEN bake and bind ratchets/YES — this is the ratchet reaches/this hearth and the peers that follow it">>
 
-''The spelling'': `lares nexus kahuli grammar --from <offering-cid> --apply`. It sits as a CASE on a door that already stands (`nexus-kahuli.ts:66-86`), takes the tier as its argument in the shape already ruled (memory `project_nexus_identity_kahuli_onboarding`), and its `--apply` payload stands HELD at `:73-79` for its own coexistence-span reasons — so ''the taker's door lands INSIDE a hold that already exists'' rather than opening a new one.
+''The proposed spelling'': `lares nexus kahuli grammar --from <offering-cid> --apply`. It is not a valid command today. The read-only `--from` contract and its relationship to the generic PluginOffering gift remain operator-held; any future `--apply` payload stays a separate receiver-held action rather than an offer-side effect.
 
 ''The three motions, in order, all fail-closed:''
 
@@ -243,21 +242,21 @@ Read the ''Gap'' column first. Four rows answer structurally, two answer partial
 | ''MIX-AND-MATCH'' (TUF) | present blobs that never stood together as one collection | ''ANSWERED, structurally.'' `computePluginsCid` folds the WHOLE set under one domain (`genesis-doc.ts:339-341`); a recombined subset folds elsewhere and `verifyPluginOffering:87-90` refuses. TUF needs a `snapshot` ROLE for this; the region fold gives it for free | — |
 | ''DEPENDENCY CONFUSION'' (Birsan 2021) | a public package at a higher version wins a resolver against a private one | ''CANNOT ARISE.'' There is no name-resolution step and no version comparison anywhere in the take path — a taker names a CID. The attack needs a resolver preferring higher-version-across-registries; the house has no resolver | — |
 | ''TYPOSQUAT'' (PyPI, 2024-03-28) | a near-miss NAME collects the careless install | ''ANSWERED for the artifact, OPEN for discovery.'' A CID cannot be squatted — it is its own name. A GLAMOUR can, and `handle-card.mem` already routes the cure to the reader's local petname | discovery is out-of-band by design; a reader who takes a cid from a stranger's post takes a stranger's cid |
-| ''CAPTURED UNION'' | many tenders converge to condemn a healthy collection | ''ANSWERED, arithmetically.'' `foldOfferingAntigen`'s parameter list carries no presentations (`offering-antigen.ts:129-150`), pinned at `offering-antigen.test.ts:49,69` — the quorum keeps its full k and can self-present with no tender at all | — |
+| ''CAPTURED UNION'' | many tenders converge to condemn a healthy collection | ''ANSWERED, arithmetically.'' `foldOfferingAntigenVerdicts` carries no presentations — the quorum keeps its full k and can self-present with no tender at all | — |
 | ''WITHDRAWAL'' (left-pad, 2016) | the offeror unpublishes and downstream breaks | ''PARTIAL.'' Content-addressed blobs cannot be unpublished by the offeror, and `carry` lets any Herm keep serving them with no permission | availability still dies if every holder drops the bytes; nothing pins a collection anywhere |
-| ''ROLLBACK'' (TUF) | re-present an OLD offering as the offeror's current one | ''PARTIAL, and the wrong half is covered.'' The CONDEMNATION board ratchets (`offering-antigen.ts:97-98`); the OFFERING carries no monotone field (`plugin-offering.ts:36-45`) | ⚠ ''OPEN.'' A taker cannot tell a stale offering from a current one. #/questions Q1 |
-| ''FREEZE'' (TUF) | keep a taker unaware that a newer offering exists | ''NONE.'' No timestamp role, no freshness lease. `HandleCard` carries an `expiry` read against the recogniser's LOCAL clock (`handle-card.ts:69-71`); `PluginOffering` carries no such field | ⚠ ''OPEN.'' And the ordinary cure (a timestamp role) collides with the no-global-now law. #/questions Q1 |
-| ''MAINTAINER TAKEOVER'' (xz 2024 · Shai-Hulud 2025) | the offeror's real key signs a real offering of poisoned blobs | ''NONE at the artifact layer, and none is possible there.'' Recompute passes, signature passes, provenance would pass — npm's own docs say so (#/the-field ②). What stands instead: the ''antigen'' (a kahu quorum sets the region cid aside — `offering-antigen.ts:92-127`), which stands READY and unconsulted; and the ''pull-ratchet'', which bounds the blast radius to one operator's deliberate act | ⚠ ''OPEN in enforcement.'' Nothing consults the fold (`offering-antigen.ts:24-30`) |
+| ''ROLLBACK'' (TUF) | re-present an OLD offering as the offeror's current one | ''HISTORICAL BY DESIGN.'' A complete signed offering CID names immutable bytes; an older valid CID cannot rewrite a newer record because there is no scalar currentness register. The receiver must choose which CID to inspect. | ⚠ ''OPEN only if a receiver wants a relation-specific currentness policy.'' |
+| ''FREEZE'' (TUF) | keep a taker unaware that a newer offering exists | ''OPEN DISCOVERY QUESTION.'' Announcements carry immutable records and no clock or freshness lease. A peer may be missing a record; absence is not a verdict. | ⚠ ''No generic timestamp cure is selected.'' |
+| ''MAINTAINER TAKEOVER'' (xz 2024 · Shai-Hulud 2025) | the offeror's real key signs a real offering of poisoned blobs | ''NONE at the artifact layer, and none is possible there.'' Recompute passes, signature passes, provenance would pass — npm's own docs say so (#/the-field ②). What stands instead: the causal antigen can return `held`, `withdrawn`, `unsettled`, `unavailable`, or no verdict for a receiver that consults it; rejected candidates remain audit evidence. No production receiver consults it yet. | ⚠ ''OPEN in enforcement.'' |
 | ''HANDLE-SQUAT'' | a stranger's Handle wears a glamour a taker trusts | ''ANSWERED by refusing to solve it centrally.'' The glamour asserts nothing about its owner-set; a reader reads the chain (`heraldry.mem` #/the-mantle). No verified-publisher tier, by law | the reader must actually keep petnames; the house ships no petname UX for offerors |
 
 !!! ★ THE ROW THAT CARRIES THE DESIGN ★
 
 ''The takeover row is the argument for the split, and it is the only argument that survives contact.'' Every other control — signature, recompute, provenance, reproducibility — assumes the signing hand stays the offeror's. xz and Shai-Hulud are the class where it does not, and ''both shipped through registries with strictly more machinery than this house has''.
 
-Against that class exactly two things help. ''First'': a human decides, per hearth, per act — which is `kahuli grammar --from`, and which auto-update destroys. ''Second'': a quorum can set a region aside after the fact — which is the antigen, and which the house has built and not wired. ''Everything else in the stack is hygiene.''
+Against that class exactly two things help. ''First'': a human decides, per hearth, per act — which a future bounded `kahuli grammar --from <offering CID>` reader may report, subject to the grammar-ratchet contract still held by the operator. ''Second'': a quorum can set a region aside after the fact — which is the causal antigen, ready for a receiver-local consult but not wired to any receiver yet. ''Everything else in the stack is hygiene.''
 
 <<~moves --apply -> MUST-NOT-INSTALL on/the-takeover-row ~ a push-install converts one stolen key into every follower's disk>>
-<<~moves the-antigen -> OWES-A-CALLER on/the-takeover-row ~ built, welded, and consulted by nothing (offering-antigen.ts:24-30)>>
+<<~moves the-antigen -> OWES-A-CALLER on/the-takeover-row ~ causally folded, tested, and consulted by no production receiver yet>>
 
 !!! And one honest note on what an offering is NOT
 
@@ -269,17 +268,17 @@ Against that class exactly two things help. ''First'': a human decides, per hear
 
 !! `--apply` — what it MUST do, and what it MUST NOT
 
-The verb stands HELD at `nexus-publish.ts:60-66`. This section bounds what lands there.
+The CLI verb remains HELD. This section bounds the source-local `publish plugins --apply` closure.
 
 !!! MUST
 
-# ''MINT through the built record.'' Call `signPluginOffering` (`plugin-offering.ts:57-65`) with the vessel's own signing hand. The seed stays at the CLI/node layer; no key reaches `@lararium/mesh`, which is the property that module already keeps.
-# ''SELF-VERIFY BEFORE ANNOUNCING.'' Run `verifyPluginOffering` over the offering it just signed and REFUSE on anything but `ok`. The discipline is `realm-plane.ts:173`'s, verbatim in shape: //"refusing to write a registration that does not count."// A mint that announces an offering a taker would reject lies to the crossroads.
-# ''ANNOUNCE under a DISTINCT domain.'' `OFFERING_ANNOUNCE_DOMAIN` beside `domains.ts:133,142,150`. An announce must never verify as an offering, nor an offering as an announce.
-# ''CARRY THE MINIMUM.'' The announce body reads `{ offeror, pluginsCid }` and nothing more — the shape `realm-bag.ts:370-373` already keeps (//"the exists · kept-by pair, the doc withheld"//). Never the blob list; a taker fetches the offering itself by its cid.
-# ''KEY ON THE REGION CID.'' The announce key derives from `pluginsCid`, in the shape `realmBagAnnounceKey` already carries (`realm-bag.ts:366-368`).
-# ''CONVERGE ON RE-RUN.'' Re-announcing the same region under the same offeror writes byte-identical bytes — idempotent by intent, the shape every `rite` in this house already keeps.
-# ''PRINT THE CID.'' Exit 0 naming the region cid and the announce key, so the operator can hand the cid to a taker out of band. ''Discovery stays out-of-band by design'' (memory `project_nexus_identity_kahuli_onboarding`: RESOLVE — //"pull a self-certifying Handle card you were pointed to"//).
+# ''MINT the immutable record.'' Call `signPluginOffering` with the vessel's own signing hand. The seed stays at the CLI/node layer; no key reaches `@lararium/mesh`.
+# ''SELF-VERIFY BEFORE ANNOUNCING.'' Run `verifyPluginOffering` over the signed record and refuse on anything but `ok`. A mint that announces an offering a taker would reject lies to the crossroads.
+# ''ANNOUNCE under the distinct domain.'' Call `writeOfferingAnnounce` with the verified record. `PLUGIN_OFFERING_ANNOUNCE_DOMAIN` keeps the projection distinct from both the offering record and the antigen acts.
+# ''CARRY THE COMPLETE SIGNED RECORD.'' The public projection carries `{ kind, offeringCid, offering }`; the nested record remains the signed authority. Shape filtering certifies nothing, and the receiver independently checks the CID, signature, and recomputed region.
+# ''KEY ON THE COMPLETE OFFERING CID.'' `offeringAnnounceKey(pluginOfferingCid(offering))` gives two offerors distinct additive records even when their `pluginsCid` is equal.
+# ''CONVERGE ON RE-RUN.'' Re-announcing the same signed record writes byte-identical bytes at the same CID-keyed title.
+# ''PRINT BOTH CIDS.'' Exit 0 naming the complete offering CID and its declared region CID, so the operator can hand the signed record's CID to a taker out of band.
 
 !!! MUST NOT
 
@@ -288,7 +287,7 @@ The verb stands HELD at `nexus-publish.ts:60-66`. This section bounds what lands
 # ''REACH ANOTHER VESSEL.'' It writes one record on its own crossroads replica. It dials nobody, pushes to nobody, and notifies nobody — carriage does the rest, as-of-each-peer's-last-sync.
 # ''COMPILE A LIST.'' No `offerings-by-offeror` index, no `my-offerings` roll-up, no surface accepting a collection of OTHERS' offerings. `handle-kel.ts:41-43` already holds this exact line for Handles; the offering inherits it.
 # ''CARRY A SECOND HAND.'' No steward set, no co-signer, no proposal/co-sign flow (operator ruling, `dcec1ef0b`; the field set at `plugin-offering.ts:36-45` IS the ruling). ⚠ Note the deliberate asymmetry: `realm-bag` DOES carry a propose/co-sign path (`realm-plane.ts:166-169`) — the offering path MUST NOT borrow it, however similar the announce looks.
-# ''CONSULT THE ANTIGEN.'' An offeror checking whether their own gift stands condemned before announcing makes the offering a permissioned act. ''Condemnation is the RECEIVER's opt-in, at the receiving Nexus'' (`offering-antigen.ts:26-27`).
+# ''CONSULT THE ANTIGEN.'' An offeror checking whether their own gift stands condemned before announcing makes the offering a permissioned act. ''Condemnation is the RECEIVER's opt-in, at the receiving Nexus.''
 # ''CARRY A WALL-CLOCK TIME.'' No `publishedAt`, no `notBefore`. The no-global-now law holds absolute (`lamplighters.mem` #/immune).
 # ''SPEAK FOR THE BLOBS' PROVENANCE.'' The output MUST NOT imply the bytes were built from any source. It names a fold and a key.
 
@@ -313,13 +312,13 @@ The verb stands HELD at `nexus-publish.ts:60-66`. This section bounds what lands
 Run the registry filter mechanically (memory `project_registry_filter_law.md`): ''announced-BY-the-subject · replicated causally · read as-of-last-sync = CARRIAGE → passes''; ''compiled-ABOUT-subjects · authoritative-now · enumerable = REGISTRY → rejected at any scope.''
 
 <<~ has Filter Announce "announced-by/the offeror's own signed record replicated/causally onto each peer's crossroads replica read/as-of-last-sync ~ CARRIAGE, PASSES">>
-<<~ has Filter Witness "announced-by/the subject, appended in ORDER keyed-on/the region cid, never the offeror read/as-of-last-sync ~ CARRIAGE, PASSES — under the two constraints at #/the-caps">>
+<<~ has Filter Witness "announced-by/the subject, appended in ORDER keyed-on/the offering cid, never the offeror read/as-of-last-sync ~ a future witness may pass; the current announcement carries no order claim">>
 <<~ has Filter Index "an INDEX cap over the announce plane ~ PASSES ONLY IF reconstructible + non-authoritative (memory project_nexus_identity_kahuli_onboarding, discovery layer 2: 'carriage, not a registry')">>
 <<~ has Filter Store "a curated list of blessed offerors, at ANY scope, even ONE Nexus ~ REGISTRY, REJECTED">>
 
 !!! ★ THE TWO OBJECTIONS, ANSWERED ★
 
-''"But the antigen reads a `KahuRoster`."'' It does (`kapae-antigen.ts:65-72`, consumed at `offering-antigen.ts:152-160`) — and a `KahuRoster` is ''the charter's own declared signer set, bound to its `sealEpochCid`''. The charter announces its own signers; nothing compiles a claim about third parties. It passes the filter as carriage, and it fences per-Nexus, so ''no mesh-wide list exists to seize''.
+''"But the antigen reads a `KahuRoster`."'' It does — and a `KahuRoster` is ''the charter's own declared signer set, bound to its `sealEpochCid`''. The charter announces its own signers; nothing compiles a claim about third parties. It passes the filter as carriage, and it fences per-Nexus, so ''no mesh-wide list exists to seize''.
 
 ''"But a reader could walk the crossroads plane and build the list themselves."'' Yes — and that is the permitted shape, not a leak. The law forbids the house from ''compiling'' one; it does not pretend public announcements are private. `handle-kel.ts:41-43` draws the line where it belongs: the module //"exposes NO surface accepting a collection of others' Handles"//. A Herm publishing its own offering passes; a Herm compiling the offerings it relayed does not (`heraldry.mem` #/what-it-never-becomes).
 
@@ -354,54 +353,60 @@ Independent fields under their own selection pressure each landed on a piece. Th
 
 <<~ ahu #/plan>>
 
-!! The plan — red → cure → CONTROL
+!! The closure queue — red → cure → CONTROL
 
-Ordered so each step's red stands alone. Spirit-hours name a tasked spirit's walk at this codebase's grain, never a human's. ''Steps 1–3 land the gift end-to-end; 4–6 close the open security rows; 7 lifts the caps into the tier model.''
+The record, recompute, additive announcement, and causal antigen now stand in Mesh. The remaining work is a
+receiver and vessel story; it must not add a scalar currentness field or silently make a public board a
+registry.
 
-!!! Step 1 · The announce record ~ 3 spirit-hours
+!!! Queue 0 · Pre-production raw-board hardening
 
-* ''RED'' (`packages/lararium-mesh/tests/offering-announce.test.ts`, new): an announce minted over an offering verifies under `OFFERING_ANNOUNCE_DOMAIN` and FAILS `verifyPluginOffering`; the same bytes presented as an offering fail; the announce key derives from the region cid alone, so two offerors announcing the same region collide on ONE key and the LATER write wins.
-* ''CURE'': `OFFERING_ANNOUNCE_DOMAIN` in `domains.ts` beside `:133,142,150`; `OfferingAnnounce { kind, offeror, pluginsCid }` + `offeringAnnounceKey` + `writeOfferingAnnounce`, each mirroring `realm-bag.ts:359-379` field-for-field and holding no key.
-* ''CONTROL'': the `plugin-offering` + `offering-antigen` suites stay green byte-for-byte; a nonsense-domain seal verifies as none of the four.
+* ''RED'': raw antigen and announcement board values can arrive malformed or duplicated before typed folds
+  see them; a physical announcement title can also disagree with its claimed offering CID.
+* ''CURE'': shape-normalize raw antigen candidates before causal folding, retaining malformed candidates only
+  as audit evidence; require each announcement key to equal `offeringAnnounceKey(offeringCid)` and deduplicate
+  repeated physical records by offering CID before certification.
+* ''CONTROL'': authority folding returns only `held`, `withdrawn`, `unsettled`, `unavailable`, or no verdict.
+  `rejected` remains audit evidence and never becomes authority.
 
-!!! Step 2 · `--apply` mints, self-verifies, announces ~ 3 spirit-hours
+!!! Queue 1 · Source-local `publish plugins --apply`
 
-* ''RED'' (`packages/lares-cli/tests/nexus-publish-apply.test.ts`, new): `publish plugins --apply` lands ONE announce on the crossroads draft and exits 0 naming the region cid; a second run writes byte-identical bytes; ''a mint whose own verify fails REFUSES and writes nothing''; the run touches no `island.cid-*` sidecar and no genesis file.
-* ''CURE'': `publishPlugins` gains the apply branch — read the manifest's plugin blobs, `signPluginOffering` with the vessel's hand, `verifyPluginOffering` on its own mint, then one `crossroadsHandle.change`. The refusal at `nexus-publish.ts:60-66` retires.
-* ''CONTROL'': `nexus-publish.test.ts:45` (the read builds nothing) stays green; `nexus-publish.test.ts:88` (the kāhuli door still reads its own two regions) stays green; the usage snapshot moves deliberately and by one line.
+* ''RED'': the CLI still refuses `--apply`; no production caller mints `PluginOffering` or writes
+  `writeOfferingAnnounce`.
+* ''CURE'': read the local plugin collection, sign one immutable offering, independently verify it, write one
+  CID-keyed additive announcement, and report both the offering CID and declared `pluginsCid`. No island bake,
+  install, remote push, or antigen consultation belongs on this path.
+* ''CONTROL'': the read path remains read-only; a failed self-verification writes nothing; rerunning the same
+  signed record is byte-identical.
 
-!!! Step 3 · The taker's door — `kahuli grammar --from <offering-cid>` ~ 4 spirit-hours
+!!! Queue 2 · Bounded read-only `kahuli grammar --from <offering CID>`
 
-* ''RED'' (`packages/lares-cli/tests/nexus-kahuli-from.test.ts`, new): `--from` over a well-formed offering reports the region it WOULD adopt and adopts nothing without `--apply`; an offering whose blobs fold elsewhere REFUSES with the fold's own reason; an offering signed by an unknown key still verifies structurally and the door SAYS SO rather than blessing it.
-* ''CURE'': a `--from` reader on `kahuliGrammar` (`nexus-kahuli.ts:66-86`) that fetches the offering by cid, runs `verifyPluginOffering`, and reports. ''The `--apply` half stays HELD'' — it inherits the coexistence-span hold already standing at `:73-79`, so this step opens no new hold.
-* ''CONTROL'': `nexus kahuli engine` stays a loud HELD refusal; `nexus kahuli grammar` with no `--from` reads exactly as today.
+* ''RED'': no bounded reader fetches an offering by its complete record CID and reports what it would adopt.
+* ''CURE'': fetch the named immutable record, verify its CID/signature/region fold, and report the declared
+  region without changing local grammar or island state. `--apply` remains a separate receiver-held action.
+* ''CONTROL'': malformed, wrong-region, or unavailable input refuses with its own evidence; no caller treats a
+  raw announcement or an unknown offeror as authority.
 
-!!! Step 4 · Rollback — the offering gains a monotone version ~ 3 spirit-hours · HELD ON Q1
+!!! Queue 3 · Receiver consultant, enforcement input, and cap placement
 
-* ''RED'': a stale offering cannot supersede a newer one from the same offeror; equal versions with different regions refuse rather than pick.
-* ''CURE'': `version: number` on `PluginOffering`, inside `pluginOfferingBytes` so it signs; a per-offeror monotone fold over the announce plane, mirroring `foldOfferingAntigen`'s highest-version-wins (`offering-antigen.ts:129-150`).
-* ''CONTROL'': an offering minted before the field REFUSES to verify rather than defaulting to 0 — ''a defaulted absence across an axis is a fabricated verdict''; every `plugin-offering.test.ts` vector re-stands with the field present.
-* ⚠ ''HELD'': the operator answers Q1 first. This changes the signing preimage, which restates every existing offering.
+* ''RED'': `foldOfferingAntigenVerdicts` and `auditOfferingAntigen` have no production receiver caller.
+* ''CURE'': name the receiver-local consultant input: verified offering record, local causal antigen acts and
+  roster/fence material, and the explicit verdict gradient. Place the enforcement cap at the receiving Nexus;
+  the offeror path never consults its own condemnation.
+* ''CONTROL'': public shape filtering remains separate from certification; rejected candidates never create a
+  verdict; no global publisher list, clock, or scalar winner appears.
 
-!!! Step 5 · Freeze — the witness, ordered never timed ~ 5 spirit-hours · HELD ON Q2
+!!! Queue 4 · Node/Web and Docker multi-vessel story
 
-* ''RED'': a witness entry carries a predecessor hash and NO clock field; a reader detects a withheld entry by a broken chain; a log that omits an entry cannot produce a consistent chain across it.
-* ''CURE'': an append-only per-offeror chain on the announce plane — each entry naming its predecessor, the head readable by anyone. ''Freshness reads as //I have seen a longer chain//, never //this is old//.''
-* ''CONTROL'': no surface anywhere renders a witness position as a time, a rate, or a standing. A log-fact survives; a fact about the offeror does not (`lamplighters.mem` #/immune).
+* ''RED'': there is no production receipt for Node/Web peers, partial replication, partition/rejoin, receiver
+  refusal, or Docker custody around an offering.
+* ''CURE'': after the receiver contract is selected, define the named Node/Web adapter and the bounded Docker
+  multi-vessel witness. Keep source-local custody, network carriage, and receiver authority as separate claims.
+* ''CONTROL'': record exactly what the multi-vessel receipt proves and does not prove; do not invent a deployment
+  topology or make Docker identity, DNS, or arrival order authoritative.
 
-!!! Step 6 · The antigen gains its caller ~ 3 spirit-hours
-
-* ''RED'': a hearth whose Nexus consults the board REFUSES `kahuli grammar --from` over a condemned region and names the quorum act; a hearth consulting nothing behaves exactly as today.
-* ''CURE'': an opt-in consult on the take path only. ''Never on the offer path'' (#/apply MUST NOT ⑥).
-* ''CONTROL'': `offering-antigen.test.ts:132` — the READY weld — FIRES, and its own named cure runs: re-word the header as live enforcement and delete that test. ''That firing IS the step's success condition.''
-
-!!! Step 7 · The caps enter the tier model ~ 2 spirit-hours
-
-* ''RED'' (`packages/lararium-mesh/tests/offering-cap-tier.test.ts`, new): an offering announce resolves at PUBLIC and at no other tier; a CONTRACT-declared bag's blob draws the same 404 through a carrier that a stranger draws (the `bulb-read-face.ts:99` line, restated on this subject).
-* ''CURE'': name `offer` · `carry` · `witness` in `vessel-caps.mem` beside the five, each as a lit expression of caps already held (`offer` needs a signing hand; `carry` IS `rhizome`; `witness` IS a log). Record the ceiling in `cap-tier.mem`: ''an offering declares PUBLIC or it is not an offering'' — a VEIL offering names a gift nobody may take, which reads as a contradiction rather than a policy.
-* ''CONTROL'': `cap-tier`'s keystone tests stay green; the reach-plane's PUBLIC-refused-by-type row (`cap-tier.mem` #/the-chain) stays untouched — the two planes truncate the chain at opposite ends and MUST NOT borrow each other's reason.
-
-''Order note.'' Steps 1–3 stand the gift end-to-end and touch no open security row. Steps 4–6 close the three ⚠ rows and each waits on an operator answer or on a weld firing. Step 7 is bookkeeping and may ride with any of them. ''A session short on hours should take 1–3 whole rather than 1–7 partly.''
+The older witness/log and generic freshness questions remain policy forks. They do not authorize a version field,
+an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
@@ -409,13 +414,13 @@ Ordered so each step's red stands alone. Spirit-hours name a tasked spirit's wal
 
 !! Questions only the operator answers
 
-# ''Q1 — does an offering carry a monotone version?'' Without one, a taker cannot distinguish a stale offering from a current one, and TUF's ROLLBACK stands open (#/security). With one, the signing preimage moves and every offering already minted restates. ''The design leans YES'', because the condemnation board already ratchets and the asymmetry reads as an accident rather than a ruling — but the lean names a cost the operator may decline.
-# ''Q2 — does the house build a `witness` at all?'' The crossroads announce plane already carries what was announced; a witness adds only ORDER and the detection of withholding. That buys TUF's FREEZE row and spends a new subsystem. ''Lean: DEFER'' — take steps 1–3, live with out-of-band discovery, and let a real withholding motivate it.
-# ''Q3 — what does a taker name: the OFFERING's cid, or the REGION's?'' The region cid is the thing that recomputes; the offering cid addresses the signed record that declares it. Naming the region loses the signature; naming the offering adds one indirection. ''Lean: the OFFERING's cid'', with the region printed beside it.
-# ''Q4 — may an offering name a PREDECESSOR region?'' The `predecessor` + accept-both-epochs shape already rides the engine ratchet's design (memory `project_nexus_identity_kahuli_onboarding`, R3). Borrowing it would let a taker see lineage; it also edges toward the version field Q1 asks about. ''Lean: fold into Q1 rather than answer separately.''
-# ''Q5 — is the antigen consult opt-in per NEXUS or per OPERATOR?'' `offering-antigen.ts:26` says //"A Nexus opts in by consulting it"//. But the ratchet is the operator's own hand, so an operator in a consulting Nexus who wants to take a condemned region has a live question about whose island it is. ''Lean: per-NEXUS for the refusal, with the operator's own override REFUSED'' — otherwise the brake is decorative. The operator rules.
-# ''Q6 — may a PLACE offer?'' `heraldry.mem` seats a Handle owned by a Place DID with no persona root, so a faceless Herm could sign an offering. It would then be offering a collection ''nobody's person stands behind''. ''Lean: YES, and the reader's petname carries the whole weight'' — the same answer the 1-of-1 cabal Handle already got.
-# ''Q7 — the take verb's spelling.'' `nexus kahuli grammar --from <cid>` keeps the tier-parameterized shape and lands inside an existing hold. A separate verb would read friendlier and would open a second door onto the ratchet, which is the thing `4362c7324` just finished closing. ''Lean: the flag, not a door.''
+# ''Q1 — does an immutable offering need a generic currentness field?'' The complete signed offering CID already names historical bytes and prevents one record from rewriting another. A relation-specific currentness or freshness observation would be a separate contract and must not become a hidden version register. ''Lean: no generic scalar; defer the operator's relation policy.''
+# ''Q2 — does the house build an ordered `witness` at all?'' The current announcement is additive and CID-keyed; it carries no order or withholding verdict. A witness would add only partial-order evidence and a new subsystem. ''Lean: defer'' until a real withholding story selects its reader and retention policy.
+# ''Q3 — what does a taker name: the OFFERING's CID, or the REGION's?'' The offering CID addresses the complete signed record; `pluginsCid` is the declared region printed beside it and independently recomputed. ''Lean: name the OFFERING CID.''
+# ''Q4 — is `kahuli grammar --from <offering CID>` semantically the right ratchet reader?'' The source-local reader is still unbuilt, and the generic `PluginOffering` gift versus grammar-ratchet contract has not been settled. ''The operator holds this fork.'' Do not treat the queue item as a valid command today.
+# ''Q5 — is the antigen consult opt-in per NEXUS or per OPERATOR?'' A receiver needs an explicit local consultant and enforcement input contract: offering record, causal antigen material, roster/fence relation, and cap placement. ''The operator rules the receiving scope and any refusal/override policy; the offer path never consults its own condemnation.''
+# ''Q6 — may a PLACE offer?'' `heraldry.mem` seats a Handle owned by a Place DID with no persona root, so a faceless Herm could sign an offering. ''Lean: YES, and the reader's petname carries the whole weight.''
+# ''Q7 — where does the receiver cap live?'' The install hand belongs at the receiving Nexus; the public announcement and source-local publish path grant no install authority. The exact consultant/enforcement adapter remains open.
 # ''Q8 — does the house ever say what an offering's blobs were BUILT from?'' Today it cannot (#/security, the closing note). A reproducible-build campaign would change that and is a different campaign. ''Lean: state the ceiling loudly and open nothing.''
 
 <<~/ahu>>
@@ -424,16 +429,16 @@ Ordered so each step's red stands alone. Spirit-hours name a tasked spirit's wal
 
 !! Edges — what this design touches, and what it must not
 
-''What it would move'': `domains.ts` (one constant) · `plugin-offering.ts` (a version field, under Q1 only) · `nexus-publish.ts` (the apply branch) · `nexus-kahuli.ts` (a `--from` reader on the grammar tier) · `realm-plane.ts`'s announce idiom, borrowed rather than edited · `vessel-caps.mem` + `cap-tier.mem` (the cap names and the PUBLIC ceiling).
+''What it would move'': `packages/lares-cli/src/commands/nexus-publish.ts` (the source-local apply branch) · `packages/lares-cli/src/commands/nexus-kahuli.ts` (only after the operator settles the generic-offering versus grammar-ratchet contract) · a receiver-local consultant/enforcement adapter · the named Node/Web and Docker multi-vessel witness. The Mesh record, announcement, and antigen primitives already stand.
 
-''What it MUST NOT move'': `verifyPluginOffering`'s parameter list (`plugin-offering.ts:76`) — one offering, no roster, ever · `foldOfferingAntigen`'s parameter list (`offering-antigen.ts:129-132`) — no term for tenders · the field set's absence of a co-signer (`:36-45`) · `computePluginsCid`'s single site (`genesis-doc.ts:339-341`) — mint and verify MUST NOT drift · `bulb-read-face.ts:99`'s CONTRACT lane · the `@daemon` plane, which never crosses (memory `project_face_join_and_plane_law.md`).
+''What it MUST NOT move'': `verifyPluginOffering`'s one-record input — no roster, ever · the antigen fold's separation of presentations from quorum acts · `PluginOffering`'s absence of a scalar currentness field and co-signer · `computePluginsCid`'s single fold definition — mint and verify MUST NOT drift · public shape filtering before independent certification · the `@daemon` plane, which never crosses.
 
 <<~ pranala #door from="?" -> to="packages/lares-cli/src/commands/nexus-publish.ts" family="code" role="has">>
 <<~ pranala #record from="?" -> to="packages/lararium-mesh/src/plugin-offering.ts" family="code" role="has">>
 <<~ pranala #antigen from="?" -> to="packages/lararium-mesh/src/offering-antigen.ts" family="code" role="has">>
 <<~ pranala #ratchet from="?" -> to="packages/lares-cli/src/commands/nexus-kahuli.ts" family="code" role="has">>
 <<~ pranala #fold from="?" -> to="packages/lararium-mesh/src/genesis-doc.ts" family="code" role="has">>
-<<~ pranala #announce from="?" -> to="packages/lararium-mesh/src/realm-bag.ts" family="code" role="has">>
+<<~ pranala #announce from="?" -> to="packages/lararium-mesh/src/offering-announce.ts" family="code" role="has">>
 <<~ pranala #shore from="?" -> to="packages/lararium-node/src/bulb-read-face.ts" family="code" role="has">>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">>
@@ -456,6 +461,6 @@ Ordered so each step's red stands alone. Spirit-hours name a tasked spirit's wal
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3BNOus9PCYvxx5Mdx9uIcDNsaxrbuHreS6v1vptkMXA
+<<^ code="&#x0003;">>ni:///sha-256;Fzmala_eiuD0QXDYPlX56j6YK4G1XeevR5zbI1j9zxU
 
 <<^ code="&#x0004;" -> to="?">>
