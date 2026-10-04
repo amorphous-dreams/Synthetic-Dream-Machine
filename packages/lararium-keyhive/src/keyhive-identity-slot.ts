@@ -41,6 +41,7 @@
  */
 import type { ActorId, CapabilityToken, IdentitySlot } from "@lararium/mesh";
 import type { CapabilityAccess } from "@lararium/mesh";
+import { hex, sha256BytesSync } from "@lararium/mesh";
 import type { CapabilityProvider } from "./capability-provider.js";
 
 export interface KeyhiveIdentitySlotOpts {
@@ -165,50 +166,22 @@ export class KeyhiveIdentitySlot implements IdentitySlot {
   }
 
   /**
-   * Stable Automerge actor id from this identity's DID via Web Crypto SHA-256
-   * truncated to 16 bytes. Same logic as OpenIdentitySlot.deriveActorId
-   * (identity-slot.ts:121-132) — DUPLICATED, not extended (do not invent new
-   * crypto; keep mesh untouched). Deterministic: same DID → same actorId.
+   * Stable Automerge actor id from this identity's DID — mesh's SYNC SHA-256 (@noble/hashes,
+   * platform-blind: Node, browser, and worker alike) truncated to 16 bytes. Deterministic: same
+   * DID → same actorId. Routes through mesh's crypto.ts rather than SubtleCrypto so no runtime
+   * needs a non-crypto fallback — every runtime that loads @lararium/mesh carries noble's sync digest.
    */
   async deriveActorId(): Promise<ActorId> {
-    try {
-      const enc   = new TextEncoder();
-      const hash  = await crypto.subtle.digest("SHA-256", enc.encode(this.did));
-      const bytes = new Uint8Array(hash).slice(0, 16);
-      return formatUuid(bytes);
-    } catch {
-      return deterministicUuid(this.did);
-    }
+    const bytes = sha256BytesSync(new TextEncoder().encode(this.did)).slice(0, 16);
+    return formatUuid(bytes);
   }
 }
 
-// ---------------------------------------------------------------------------
-// Helpers — DUPLICATED from identity-slot.ts (formatUuid/deterministicUuid) so
-// mesh stays untouched; keep byte-for-byte identical to that file's logic.
-// ---------------------------------------------------------------------------
-
 function bytesToHex(bytes: Uint8Array): string {
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hex(bytes);
 }
 
 function formatUuid(bytes: Uint8Array): string {
-  const h = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const h = hex(bytes);
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${((parseInt(h[16]!, 16) & 0x3) | 0x8).toString(16)}${h.slice(17, 20)}-${h.slice(20, 32)}`;
-}
-
-// Non-crypto fallback for environments without SubtleCrypto.
-function deterministicUuid(seed: string): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < seed.length; i++) {
-    h ^= seed.charCodeAt(i);
-    h = (h * 0x01000193) >>> 0;
-  }
-  const b = new Uint8Array(16);
-  for (let i = 0; i < 16; i++) {
-    h = ((h ^ (h >> 16)) * 0x45d9f3b) >>> 0;
-    b[i] = h & 0xff;
-  }
-  b[6] = (b[6]! & 0x0f) | 0x40;
-  b[8] = (b[8]! & 0x3f) | 0x80;
-  return formatUuid(b);
 }

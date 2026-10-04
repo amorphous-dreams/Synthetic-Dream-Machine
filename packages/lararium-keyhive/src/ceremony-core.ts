@@ -64,7 +64,7 @@ import {
 const EDGE_BACKSTOP_MS = 100 * 365 * 24 * 60 * 60 * 1000;
 
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
-import { buildCeremonyTiddlers } from "@lararium/mesh";
+import { buildCeremonyTiddlers, webDigest, hex as hexEncode } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import { mintDeviceMintedKey, deriveVeilFromDeviceKey } from "./veil-key.js";
 import { InMemoryEventStore } from "./event-store.js";
@@ -510,8 +510,7 @@ async function flushCapEvents(
   authority = "lares-init",
 ): Promise<void> {
   for (const evt of await store.list()) {
-    const hashBuf = await crypto.subtle.digest("SHA-256", evt.bytes.slice());
-    const hash    = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    const hash    = hexEncode(await webDigest("SHA-256", evt.bytes));
     const title   = capEventTitle(hash);
     daemonHandle.change((doc) => {
       if (!doc.tiddlers[title]) {

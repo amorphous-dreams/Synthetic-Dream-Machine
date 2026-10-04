@@ -26,7 +26,7 @@ import * as KH from "@keyhive/keyhive/slim";
 // @ts-expect-error — keyhive's base64 .d.ts is a `declare module` augmentation, not a module
 // (TS2306); the runtime export `wasmBase64` (a base64 string) resolves fine in node + vite.
 import { wasmBase64 } from "@keyhive/keyhive/keyhive_wasm.base64.js";
-import { ingestTolerant, adaptGate, PONO_FLUSH_GATE } from "@lararium/mesh";
+import { ingestTolerant, adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, webDigest } from "@lararium/mesh";
 import { inSelfSlice } from "./event-store.js";
 import type {
   CapabilityProvider, CapabilityProviderInitOpts,
@@ -67,9 +67,7 @@ export function ensureKeyhiveWasm(): void {
 }
 
 function bytesToHex(bytes: Uint8Array): string {
-  let s = "0x";
-  for (const b of bytes) s += b.toString(16).padStart(2, "0");
-  return s;
+  return "0x" + hexEncode(bytes);
 }
 
 /**
@@ -94,26 +92,20 @@ function eventIsland(e: KH.Event): string | undefined {
 
 function hexToBytes(hex: string): Uint8Array {
   const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
-  if (clean.length % 2 !== 0) throw new Error(`bad hex length: ${hex}`);
-  const out = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < out.length; i++) {
-    out[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
-  }
-  return out;
+  return hexDecode(clean);
 }
 
 /** Stable ChangeId for a bag URL — deterministic so two registrations of
  *  the same URL produce the same Keyhive Document seed. Hash via SHA-256. */
 async function changeIdForBag(bagUrl: string): Promise<KH.ChangeId> {
   const bytes = new TextEncoder().encode(bagUrl);
-  const hashBuf = await crypto.subtle.digest("SHA-256", bytes);
-  return new KH.ChangeId(new Uint8Array(hashBuf));
+  return new KH.ChangeId(await webDigest("SHA-256", bytes));
 }
 
 /** Content-address a chunk by its own bytes — names one encrypted chunk stably. A real Automerge integration
  *  passes the change's actual hash; absent one, the content hash keeps the ref stable and unique per chunk. */
 async function contentRefBytes(content: Uint8Array): Promise<Uint8Array> {
-  return new Uint8Array(await crypto.subtle.digest("SHA-256", content.slice()));
+  return webDigest("SHA-256", content);
 }
 
 export class KeyhiveProvider implements CapabilityProvider {

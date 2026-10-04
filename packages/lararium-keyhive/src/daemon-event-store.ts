@@ -26,7 +26,7 @@ import {
   CAP_EVENT_TAG, CAP_EVENT_PREKEY_TAG, CAP_EVENT_CGKA_TAG,
   CAP_EVENT_DELEGATION_TAG, CAP_EVENT_REVOCATION_TAG,
 } from "@lararium/mesh";
-import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord } from "@lararium/mesh";
+import { type ChangeOrigin, type LarTiddlerRecord, toLarTiddlerRecord, hex } from "@lararium/mesh";
 import type { EventStore, EventRecord } from "./event-store.js";
 import { inIslandSlice } from "./event-store.js";
 import { bytesToBase64, base64ToBytes } from "./bytes-base64.js";
@@ -67,10 +67,7 @@ async function hashBytes(bytes: Uint8Array): Promise<string> {
   // SharedArrayBuffer-vs-ArrayBuffer typing conflict crypto.subtle.digest
   // imposes in strict mode.
   const buf = await crypto.subtle.digest("SHA-256", bytes.slice());
-  const arr = new Uint8Array(buf);
-  let s = "";
-  for (const b of arr) s += b.toString(16).padStart(2, "0");
-  return s;
+  return hex(new Uint8Array(buf));
 }
 
 export interface DaemonEventStoreOptions {
@@ -140,9 +137,7 @@ export class DaemonEventStore implements EventStore {
 
 /** Identify an event by its bytes — the one key both writers share. */
 function bytesKey(bytes: Uint8Array): string {
-  let s = "";
-  for (const b of bytes) s += b.toString(16).padStart(2, "0");
-  return s;
+  return hex(bytes);
 }
 
 /** The reach `absorbCapEvents` needs of a live keyhive — ingest, then let its handler's writes land. */
