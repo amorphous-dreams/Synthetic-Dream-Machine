@@ -13,9 +13,9 @@
  * A nym reads PRESENT iff it carries an add stamp AND no remove stamp strictly supersedes it (remove-WINS on a
  * tie). Because a concurrent follow and unfollow touch DIFFERENT keys (add vs remove of the SAME nym) — and two
  * follows of DIFFERENT nyms touch different keys entirely — the Automerge field-merge keeps BOTH edits: no add
- * a fleet-mate made off-device is ever lost to a whole-field last-writer-wins. A legacy `memberDids` (seeded by
- * cold-boot, or an older doc) reads as a baseline add, superseded by any real remove — so an old graph folds in
- * cleanly without a migration write.
+ * a fleet-mate made off-device is ever lost to a whole-field last-writer-wins. The `memberDids` register is
+ * GONE — cold-boot-ceremony and social-seed stamp `mbr+:` directly now (alpha line, no back-compat); a doc
+ * from before that move holds no member this reader could still find anyway, so there is nothing left to fold.
  *
  * These reactors run IN the daemon worker (verify-then-delegate gated), reaching the circles doc by ACCESS (the
  * catalog registry names it) and writing-then-syncing — access≠load, never a mounted render layer. A follow
@@ -30,7 +30,7 @@
  */
 
 import {
-  circleTiddlerUri, CIRCLES_INNER,
+  circleTiddlerUri, CIRCLES_INNER, MEMBER_ADD_PREFIX,
   type LarTiddlerStore, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -49,13 +49,8 @@ export interface CircleVerbOptions {
   readonly tw5?: TW5Engine;
 }
 
-/** The per-nym follow stamp: `mbr+:<nym>` holds the add timestamp (a nym joined the circle at this instant). */
-const MEMBER_ADD_PREFIX = "mbr+:";
 /** The per-nym unfollow stamp: `mbr-:<nym>` holds the remove timestamp (a nym left; remove-wins on a tie). */
 const MEMBER_RM_PREFIX = "mbr-:";
-/** A legacy add-timestamp baseline — a nym present only via the old space-joined `memberDids` sorts below any
- *  real ISO remove stamp, so a later unfollow always supersedes it (a lexicographic floor, never a real time). */
-const LEGACY_ADD_BASELINE = "";
 
 function strArg(args: Record<string, unknown>, key: string): string {
   return typeof args[key] === "string" ? (args[key] as string).trim() : "";
@@ -64,26 +59,16 @@ function strArg(args: Record<string, unknown>, key: string): string {
 /** The circle tiddler's mutable field bag (title + arbitrary fields, incl. the per-nym stamps). */
 type CircleFields = Record<string, unknown>;
 
-/** Parse a LEGACY space-joined `memberDids` register into its nym set — the back-compat read only (seeds +
- *  older docs still carry it; the reactors never write it). Deduped, filtered. */
-function parseLegacyMembers(raw: unknown): string[] {
-  if (typeof raw !== "string") return [];
-  return [...new Set(raw.split(/\s+/).map((s) => s.trim()).filter(Boolean))];
-}
-
 /**
  * Fold a circle tiddler's fields into the PRESENT nym set — the per-nym CRDT read. Each nym carries an add
- * timestamp (the max of its `mbr+:` stamp and, for a legacy member, the baseline) and a remove timestamp (its
- * `mbr-:` stamp). A nym is PRESENT iff it has an add stamp AND its remove stamp does not supersede it
- * (`addedAt > removedAt`) — so remove WINS on a tie, and a strictly-later re-follow resurrects it. Sorted, so
- * two devices reading the same merged doc converge on one ordering.
+ * timestamp (its `mbr+:` stamp) and a remove timestamp (its `mbr-:` stamp). A nym is PRESENT iff it has an
+ * add stamp AND its remove stamp does not supersede it (`addedAt > removedAt`) — so remove WINS on a tie, and
+ * a strictly-later re-follow resurrects it. Sorted, so two devices reading the same merged doc converge on
+ * one ordering.
  */
 export function foldMembers(fields: CircleFields): string[] {
   const added   = new Map<string, string>();
   const removed = new Map<string, string>();
-  for (const nym of parseLegacyMembers(fields["memberDids"])) {
-    if (!added.has(nym)) added.set(nym, LEGACY_ADD_BASELINE);
-  }
   for (const [key, value] of Object.entries(fields)) {
     if (typeof value !== "string") continue;
     if (key.startsWith(MEMBER_ADD_PREFIX)) {
@@ -132,7 +117,7 @@ function renderCircle(tw5: TW5Engine | undefined, circle: string, members: reado
 }
 
 /**
- * circle-add — the FOLLOW: add a nym to a circle's memberDids in the circles doc (idempotent — a re-add dedupes).
+ * circle-add — the FOLLOW: add a nym to a circle's per-nym membership stamps in the circles doc (idempotent — a re-add dedupes).
  * A non-system circle the operator names is BORN here (kind "Circle"). Writes ONLY the circles doc — never a board.
  */
 export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
@@ -168,7 +153,7 @@ export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
 }
 
 /**
- * circle-remove — the UNFOLLOW (kāpae, remove-wins): drop a nym from a circle's memberDids. Idempotent (a
+ * circle-remove — the UNFOLLOW (kāpae, remove-wins): drop a nym from a circle's per-nym membership stamps. Idempotent (a
  * remove of an absent nym is a no-op; an absent circle stays uncreated). LOCAL to the circles doc — never a board.
  */
 export function makeCircleRemoveReactor(opts: CircleVerbOptions): VerbReactor {
@@ -199,7 +184,7 @@ export function makeCircleRemoveReactor(opts: CircleVerbOptions): VerbReactor {
 }
 
 /**
- * circle-list — READ the follow-view back from circles.memberDids. `circle` given → that circle's members
+ * circle-list — READ the follow-view back from the circles doc's per-nym stamps. `circle` given → that circle's members
  * (+ a render); absent → every circle's membership. A pure read over the circles doc; it announces nothing.
  */
 export function makeCircleListReactor(opts: CircleVerbOptions): VerbReactor {

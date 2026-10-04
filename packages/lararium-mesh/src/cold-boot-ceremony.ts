@@ -17,6 +17,7 @@
  */
 
 import { identityTiddlerUri, circleTiddlerUri, IDENTITIES_NAMESPACE, CIRCLES_NAMESPACE } from "./lar-uris.js";
+import { MEMBER_ADD_PREFIX } from "./social-tiddlers.js";
 
 // ---------------------------------------------------------------------------
 // Base58btc — Bitcoin/IPFS alphabet, no external deps
@@ -119,7 +120,7 @@ export function buildCeremonyTiddlers(
       id:               "operators",
       displayName:      "Operators",
       createdAt:        now,
-      memberDids:       did,
+      [`${MEMBER_ADD_PREFIX}${did}`]: now,
       capabilityPolicy: "group:operators",
     },
   };

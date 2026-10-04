@@ -5,7 +5,8 @@
  * (the space-joined `memberDids` register → per-nym `mbr+:`/`mbr-:` stamps):
  *   · a follow STAMPS the nym's own `mbr+:<nym>` key over the daemon store (never a whole-field register write).
  *   · a circle-list FOLDS that membership back (add-stamp present, no superseding remove-stamp).
- *   · an unfollow stamps `mbr-:<nym>` (remove-wins, idempotent) — a legacy `memberDids` folds in as a baseline.
+ *   · an unfollow stamps `mbr-:<nym>` (remove-wins, idempotent) — the `memberDids` register is GONE; every
+ *     writer (cold-boot-ceremony, social-seed) stamps `mbr+:` directly now.
  *   · CONCURRENT-MERGE: an add on one fork + a remove on another merge to remove-wins with NO lost add.
  *   · NEVER-FEDERATES: the reactor reaches ONLY the circles store — no crossroads-plane / board title is ever
  *     written, and every outcome reads `federated: false`.
@@ -17,17 +18,17 @@ import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeCircleReactors, foldMembers } from "../src/circle-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import type { TW5Engine } from "../src/tw5-vm.js";
-import { circleTiddlerUri, CIRCLES_INNER, mutableLarRecord } from "@lararium/mesh";
+import { circleTiddlerUri, CIRCLES_INNER, MEMBER_ADD_PREFIX, mutableLarRecord, buildCeremonyTiddlers } from "@lararium/mesh";
 
 const CTX = {} as VerbContext;
 const NYM_A = "aa".repeat(32);
 const NYM_B = "bb".repeat(32);
 
-/** A circles store seeded with the "following" system circle (legacy memberDids empty), as seedCirclesDoc plants it. */
+/** A circles store seeded with the "following" system circle (no members yet), as seedCirclesDoc plants it. */
 function seededCircles(): MemoryTiddlerStore {
   const store = new MemoryTiddlerStore(CIRCLES_INNER);
   store._seed(mutableLarRecord(circleTiddlerUri("following"), {
-    text: "", id: "following", displayName: "Following", kind: "System", memberDids: "", createdAt: "",
+    text: "", id: "following", displayName: "Following", kind: "System", createdAt: "",
   }, "lararium-seed"));
   return store;
 }
@@ -58,10 +59,10 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     expect(out["added"]).toBe(true);
     expect(out["federated"]).toBe(false);
     expect(out["members"]).toEqual([NYM_A]);
-    // The add landed as this nym's OWN per-nym key — the reactor never re-writes a joined `memberDids`.
+    // The add landed as this nym's OWN per-nym key — the reactor never writes a joined register at all.
     const fields = stampFieldsOf(store, "following");
     expect(typeof fields[`mbr+:${NYM_A}`]).toBe("string");
-    expect(fields["memberDids"]).toBe("");   // the legacy register stays untouched (no whole-field RMW)
+    expect(fields["memberDids"]).toBeUndefined();   // the register is GONE, not merely untouched
     expect(membersOf(store, "following")).toEqual([NYM_A]);
   });
 
@@ -109,20 +110,16 @@ describe("circle-verbs — the per-nym follow-graph over the circles doc", () =>
     expect(membersOf(store, "following")).toEqual([NYM_A, NYM_B]);
   });
 
-  test("a legacy memberDids register folds in as a baseline, superseded by a real remove", async () => {
-    const store = new MemoryTiddlerStore(CIRCLES_INNER);
-    // An OLDER doc that still carries the space-joined register (a seed, or a pre-C2 write).
-    store._seed(mutableLarRecord(circleTiddlerUri("following"), {
-      text: "", id: "following", displayName: "Following", kind: "System",
-      memberDids: `${NYM_A} ${NYM_B}`, createdAt: "",
-    }, "lararium-seed"));
-    const { remove } = reactorsOver(store);
-
-    // Both legacy members fold present with no stamps at all.
-    expect(membersOf(store, "following")).toEqual([NYM_A, NYM_B]);
-    // A real unfollow of a legacy member supersedes the baseline (remove-wins over the baseline floor).
-    await remove({ circle: "following", nym: NYM_A }, CTX);
-    expect(membersOf(store, "following")).toEqual([NYM_B]);
+  test("a cold-boot-ceremony-seeded circle reads its member through the stamp path alone", () => {
+    // buildCeremonyTiddlers writes the "operators" circle with the operator's own did stamped
+    // `mbr+:<did>` directly — no `memberDids` register ever lands, and nothing in circle-verbs reads
+    // one anymore (parseLegacyMembers is gone). Proves the writer and the reader actually agree.
+    const [, circle] = buildCeremonyTiddlers("ab".repeat(32), "Operator One");
+    const fields = circle!.fields as Record<string, unknown>;
+    expect(fields["memberDids"]).toBeUndefined();
+    const did = Object.keys(fields).find((k) => k.startsWith(MEMBER_ADD_PREFIX))?.slice(MEMBER_ADD_PREFIX.length);
+    expect(typeof did).toBe("string");
+    expect(foldMembers(fields)).toEqual([did]);
   });
 
   test("CONCURRENT-MERGE: add-on-fork-A + remove-on-fork-B merge to remove-wins with NO lost add", async () => {

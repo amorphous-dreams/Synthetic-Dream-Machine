@@ -30,12 +30,16 @@ export interface IdentityTiddler {
 
 // ── Circle (group) ────────────────────────────────────────────────────────
 
+/** The per-nym follow stamp a `CircleTiddler` carries membership through: `mbr+:<nym>` holds the add
+ *  timestamp. Shared between the writer (cold-boot-ceremony, social-seed) and the reader
+ *  (circle-verbs' `foldMembers`) — no whole-field `memberDids` register; see circle-verbs.ts. */
+export const MEMBER_ADD_PREFIX = "mbr+:";
+
 export interface CircleTiddler {
   readonly id:                  string;
   readonly displayName:         string;
   readonly createdAt:           string;
   readonly kind:                "Circle" | "System";
-  readonly memberDids:          string;
   readonly nexusScope?:         "local" | "nexus";
   /** Ed25519 signature over "id|name|nexusScope|sortedMemberDids". */
   readonly memberSignature?:    string;

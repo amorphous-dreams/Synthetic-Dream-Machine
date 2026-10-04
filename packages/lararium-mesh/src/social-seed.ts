@@ -55,7 +55,6 @@ export function seedCirclesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
         id,
         displayName,
         kind: "System",
-        memberDids: "",
         createdAt: "",
       }, "lararium-seed");
     }
