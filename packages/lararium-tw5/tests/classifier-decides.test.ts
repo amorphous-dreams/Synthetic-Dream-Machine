@@ -65,12 +65,18 @@ describe("★ every control matcher reads the control head, and only that ★", 
     expect(offenders, `these matchers still admit the speaking head:\n  ${offenders.join("\n  ")}`).toEqual([]);
   });
 
+  // THE LITERAL MATCHERS LEFT ARE THE KEPT ONES. Every other control scan now builds its code set from
+  // the frame package's declaration (`frameAlt`), so it spells no literal this walk can see. The bootstrap
+  // scanner keeps one literal row per mark BY RULING — it is frame-parity's independent recogniser — and
+  // those rows are what keep this sweep from passing vacuously.
   test("the walk actually finds matchers — an empty sweep would pass vacuously", () => {
     const found = files.reduce((n, rel) => {
       try { return n + [...readFileSync(resolve(PKG, rel), "utf8").matchAll(CONTROL_MATCHER)].length; }
       catch { return n; }
     }, 0);
-    expect(found).toBeGreaterThan(8);
+    const scanner = [...readFileSync(resolve(PKG, "src/meme-ast/scanner.ts"), "utf8").matchAll(CONTROL_MATCHER)].length;
+    expect(scanner).toBeGreaterThanOrEqual(6);
+    expect(found).toBeGreaterThanOrEqual(scanner);
   });
 });
 

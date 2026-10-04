@@ -140,5 +140,9 @@ describe("the marks", () => {
     expect(frameAlt("SOH")).toBe("&#x(?:0001|0011);");
     expect(new RegExp(frameAlt("EOT")).test("&#x0014;")).toBe(true);
     expect(() => markCode("NOPE")).toThrow();
+    // NO FAMILY NAMES EVERY MARK — a line-walker's "is this a frame sigil at all?"
+    const every = new RegExp(`^${frameAlt()}$`);
+    for (const m of FRAME_MARKS) expect(every.test(m.code), m.name).toBe(true);
+    expect(every.test("&#x0005;")).toBe(false);
   });
 });
