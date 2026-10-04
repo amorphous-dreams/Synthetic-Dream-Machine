@@ -262,7 +262,7 @@ describe("pono grammar boundary", () => {
       // parse; it only greps source bytes for a literal the scanner's own BOOTSTRAP_SCANS kept.
       .filter((f) => !f.endsWith("classifier-decides.test.ts"))
       // fragment-doors.test.ts drives placeMeme (the blessed entry point) for its own tests; its
-      // second describe block is the unit test of composeSlotPath/childUri — ahu-scan.ts's own pure
+      // second describe block is the unit test of composeChildPath/childUri — ahu-scan.ts's own pure
       // address-composition helpers — same reasoning as ahu-sections-address.test.ts above (ONE
       // helper's own shape, no parse, no AST, no canonical bless).
       .filter((f) => !f.endsWith("fragment-doors.test.ts"))

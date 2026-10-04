@@ -26,7 +26,6 @@ import type {
   ParseFailure,
 } from "./types.js";
 import type { ParseEvent } from "./scanner.js";
-import { composeSlotPath } from "./ahu-scan.js";
 import { GENERATED_CANONICAL_NAMES } from "./grammar-table.generated.js";
 
 // ---------------------------------------------------------------------------
@@ -39,15 +38,14 @@ interface Frame {
   raw:       string;
   groups:    (string | undefined)[];
   children:  MemeAstNode[];
-  /** The rooted slot path of the enclosing ahu (`#/a`), or "" at the meme root. */
-  enclosing: string;
-  /** An ahu frame's rooted slot path under its enclosing slot (`#/a/c`); the address the record stands at. */
+  /** An ahu frame's rooted slot path, authored VERBATIM — a nested open already carries its whole
+   *  address from the carrier root (canon), so the frame never composes it against an enclosing slot. */
   slotPath?: string;
 }
 
-/** The address a slot spelled `#a` · `#/a` · `#a/b` stands at under its enclosing slot — one spelling, the record's. */
-const slotUriOf = (memeUri: string, enclosing: string, slot: string): string =>
-  memeUri + composeSlotPath(enclosing, slot);
+/** The address a slot stands at: memeUri + its OWN rooted path, verbatim — never composed against
+ *  an enclosing slot (READ relation; see ahu-scan.ts's composeChildPath/childUri split). */
+const slotUriOf = (memeUri: string, slot: string): string => memeUri + slot;
 
 // ---------------------------------------------------------------------------
 // Names that produce SigilNode (not DynamicNode).
@@ -132,12 +130,11 @@ function kaheaInvokeNode(
   args:      string,
   base:      { pos: number; raw: string },
   memeUri:   string,
-  enclosing: string,
   children:  MemeAstNode[],
 ): MemeAstNode {
   if (type === "ahu") {
     const slot = args.trim();
-    return { kind: "Ahu", ...base, slot, uri: slotUriOf(memeUri, enclosing, slot), delegate: null, body: children, invocation: true } as AhuNode;
+    return { kind: "Ahu", ...base, slot, uri: slotUriOf(memeUri, slot), delegate: null, body: children, invocation: true } as AhuNode;
   }
   return { kind: "Sigil", ...base, sigilName: type, attrs: { summon: "true", args }, body: children } as SigilNode;
 }
@@ -152,12 +149,12 @@ function closeFrame(frame: Frame, memeUri: string, grammar?: GrammarRules): Meme
   const g    = (i: number) => (groups[i] ?? "").trim();
 
   if (sigilName === "ahu") {
-    // The address the record stands at: the slot composed under its enclosing slot, rooted.
-    const uri = frame.slotPath !== undefined ? memeUri + frame.slotPath : slotUriOf(memeUri, frame.enclosing, g(1));
+    // The address the record stands at: the slot's own rooted path, verbatim.
+    const uri = frame.slotPath !== undefined ? memeUri + frame.slotPath : slotUriOf(memeUri, g(1));
     return { kind: "Ahu", ...base, slot: g(1), uri, delegate: g(2) || null, body: children } as AhuNode;
   }
   if (sigilName === "kahea-invoke") {
-    return kaheaInvokeNode(g(1), g(2), base, memeUri, frame.enclosing, children);
+    return kaheaInvokeNode(g(1), g(2), base, memeUri, children);
   }
   if (sigilName === "pranala") {
     const tail   = groups[4] ?? "";
@@ -183,10 +180,8 @@ function makeLeaf(
   raw:       string,
   groups:    (string | undefined)[],
   memeUri:   string,
-  ahuStack:  string[],
   grammar?:  GrammarRules,
 ): MemeAstNode {
-  const enclosing = ahuStack.length > 0 ? ahuStack[ahuStack.length - 1]!.slice(memeUri.length) : "";
   const base = { pos, raw };
   const g    = (i: number) => (groups[i] ?? "").trim();
 
@@ -211,13 +206,13 @@ function makeLeaf(
       // when group 2 is absent).
       const akaSlot = g(2);
       if (akaSlot.startsWith("#")) {
-        return { kind: "Ahu", ...base, slot: akaSlot, uri: slotUriOf(memeUri, enclosing, akaSlot), delegate: null, body: [], projection: true } as AhuNode;
+        return { kind: "Ahu", ...base, slot: akaSlot, uri: slotUriOf(memeUri, akaSlot), delegate: null, body: [], projection: true } as AhuNode;
       }
       return { kind: "PranalaSugar", ...base, sigil: "aka", slot: null, fromRaw: null, toRaw: g(1), family: "observe", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
     }
 
     case "kahea-invoke":
-      return kaheaInvokeNode(g(1), g(2), base, memeUri, enclosing, []);
+      return kaheaInvokeNode(g(1), g(2), base, memeUri, []);
 
     case "kahea":
       return { kind: "PranalaSugar", ...base, sigil: "kahea", slot: null, fromRaw: null, toRaw: g(1), family: "dataflow", role: null, listenable: null, subscribable: null } as PranalaSugarNode;
@@ -278,9 +273,8 @@ export function buildMemeAst(
   sourceText?: string,
   failures:   ParseFailure[] = [],
 ): MemeAstNode[] {
-  const root:     MemeAstNode[] = [];
-  const stack:    Frame[]       = [];
-  const ahuStack: string[]      = [];
+  const root:  MemeAstNode[] = [];
+  const stack: Frame[]       = [];
   let cursor = 0;
 
   const top = (): MemeAstNode[] => stack.length > 0 ? stack[stack.length - 1]!.children : root;
@@ -319,12 +313,11 @@ export function buildMemeAst(
     emitTextGap(pos);
 
     if (eventType === "open") {
-      const enclosing = ahuStack.length > 0 ? ahuStack[ahuStack.length - 1]!.slice(memeUri.length) : "";
-      const frame: Frame = { sigilName, pos, raw, groups, children: [], enclosing };
+      const frame: Frame = { sigilName, pos, raw, groups, children: [] };
       if (sigilName === "ahu") {
-        // Composed under the enclosing slot, so a nested `#c` inside `#/a` addresses `#/a/c`.
-        frame.slotPath = composeSlotPath(enclosing, (groups[1] ?? "").trim());
-        ahuStack.push(memeUri + frame.slotPath);
+        // The authored path AS its full address, verbatim — a nested open already carries its whole
+        // path from the carrier root (canon); the frame never composes it against an enclosing slot.
+        frame.slotPath = (groups[1] ?? "").trim();
       }
       stack.push(frame);
       cursor = end;
@@ -347,14 +340,13 @@ export function buildMemeAst(
         top().push(markRecovered(closeFrame(stack.pop()!, memeUri, grammar), "repaired", 9, "mis-nest"));
       }
       const frame = stack.pop()!;
-      if (sigilName === "ahu") ahuStack.pop();
       top().push(closeFrame(frame, memeUri, grammar));
       cursor = end;
       continue;
     }
 
     // leaf or pragma
-    const leaf = makeLeaf(sigilName, eventType, pos, raw, groups, memeUri, ahuStack, grammar);
+    const leaf = makeLeaf(sigilName, eventType, pos, raw, groups, memeUri, grammar);
     // RECOVER (missing): the generic catch-all recognized an unmatched sharktooth — a known sigil in a
     // novel param shape (`<<~ aperture(0->20)>>`) or an unknown word. Grade it the PARTIAL rung
     // (recognized sigil, params best-effort) instead of dropping to water.
@@ -370,7 +362,6 @@ export function buildMemeAst(
 
   while (stack.length > 0) {
     const frame = stack.pop()!;
-    if (frame.sigilName === "ahu") ahuStack.pop();
     // RECOVER: an unclosed frame at EOF — force-close it, but mark recovered + record (never the old
     // silent "confidently-incorrect tree"). The sigil MAY self-declare its posture via `recoverAs`:
     // "water" (inert, standing 2) vs the default "repaired" (recovered, standing 9). The structure never breaks.

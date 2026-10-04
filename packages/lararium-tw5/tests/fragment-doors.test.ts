@@ -8,7 +8,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { placeMeme, type MemeSink } from "../src/place-meme.js";
-import { childUri, composeSlotPath } from "../src/meme-ast/ahu-scan.js";
+import { childUri, composeChildPath } from "../src/meme-ast/ahu-scan.js";
 import type { TiddlerFields } from "../src/deserializer.js";
 import { bootTestWiki, wikiSkip } from "./test-wiki.js";
 
@@ -58,24 +58,22 @@ describe("★ placeMeme refuses a fragment-carrying address ★", () => {
   });
 });
 
-describe("★ childUri — one address helper beside composeSlotPath ★", () => {
+describe("★ childUri — one address helper beside composeChildPath (MINT relation only) ★", () => {
   test("a root's child, a child's child, and a slot that already carries a path", () => {
     expect(childUri("lar:///t/x", "#/a")).toBe("lar:///t/x#/a");
     expect(childUri("lar:///t/x#/a", "#/z")).toBe("lar:///t/x#/a/z");
     expect(childUri("lar:///t/x#/a", "#/b/c")).toBe("lar:///t/x#/a/b/c");
   });
-  test("agrees with composeSlotPath over the root", () => {
-    expect(childUri("lar:///t/x#/a/b", "#/c")).toBe("lar:///t/x" + composeSlotPath("#/a/b", "#/c"));
+  test("agrees with composeChildPath over the root", () => {
+    expect(childUri("lar:///t/x#/a/b", "#/c")).toBe("lar:///t/x" + composeChildPath("#/a/b", "#/c"));
   });
-  test("a nested open's own full path under its own prefix stays that path, never re-prefixed", () => {
-    // CANON (meme-normalize.ts's child-slot clause): a nested open already carries its whole
-    // path from the carrier root by the time a scanner reads it — re-applying the parent prefix
-    // would double the shared segment (`#/observe/observe/observe-ha`).
-    expect(composeSlotPath("#/observe", "#/observe/observe-ha")).toBe("#/observe/observe-ha");
-    expect(composeSlotPath("#/a/b", "#/a/b/c")).toBe("#/a/b/c");
-    // A slot that does NOT carry its prefix is a fresh relative child — still appended (the
-    // placeMeme/childUri mint path, unaffected by the nested-open case above).
-    expect(composeSlotPath("#/a", "#/z")).toBe("#/a/z");
+  test("MINT always appends the leaf, unconditionally — no READ-side tolerance here", () => {
+    // composeChildPath is the MINT relation only: it appends a single leaf under a prefix, full
+    // stop. It never inspects the leaf for whether it already carries the prefix — that heuristic
+    // (the overcollapse this split retired) belonged to READING an authored nested open, which
+    // takes the open's own path AS its full address verbatim instead (never calling this function).
+    expect(composeChildPath("#/a", "#/z")).toBe("#/a/z");
+    expect(composeChildPath("#/a/b", "#/c")).toBe("#/a/b/c");
   });
 });
 

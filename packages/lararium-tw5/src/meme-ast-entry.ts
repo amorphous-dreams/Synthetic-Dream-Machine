@@ -34,7 +34,7 @@ export {
   SLOT_PATH_SRC,
   KAHEA_REF_RE,
   findTopLevelAhuBlocks,
-  composeSlotPath,
+  composeChildPath,
   childUri,
 } from "./meme-ast/index.js";
 // the declared-structure scan — the Confluence gate (place-meme) requires it off the library in-VM

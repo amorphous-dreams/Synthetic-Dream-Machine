@@ -1,8 +1,10 @@
 /**
- * A SLOT PATH CARRIES NO EMPTY SEGMENT. A rooted slot opened INSIDE a parent resolves against its
- * parent the way `href="/child"` resolves under a base — one `/` between segments, never two. The
- * split (the deserializer) and the recompose (`expandMemeRefs`) both read titles through the one
- * minter, so the deserializer's titles witness the law for both ends.
+ * A SLOT PATH CARRIES NO EMPTY SEGMENT. A nested open is READ verbatim — it already carries its
+ * WHOLE path from the carrier root by canon — never composed against its enclosing slot's prefix.
+ * Only a genuinely nested authored form (`#/parent/child` inside `#/parent`) joins with one `/`;
+ * a RELATIVE form (`#/child` alone) reads as ITS OWN root-level address, not a suffix a reader
+ * appends (the overcollapse this law retired — `carrier-check.ts`'s `nested-slot-outside-parent`
+ * names it a fault).
  */
 import { describe, test, expect } from "vitest";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
@@ -19,8 +21,8 @@ const fragments = (text: string): string[] =>
   memeticWikitextDeserializer(text, { title: URI }).map((r) => String(r.title).split("#")[1] ?? "").filter(Boolean);
 
 describe("★ the deserializer mints no // title ★", () => {
-  test("★ a rooted child under a rooted parent joins with ONE slash ★", () => {
-    expect(fragments(nested("#/parent", "#/child"))).toContain("/parent/child");
+  test("★ a genuinely nested child (its own full path) joins with ONE slash ★", () => {
+    expect(fragments(nested("#/parent", "#/parent/child"))).toContain("/parent/child");
   });
   // ONE SLOT, ONE ADDRESS (src/deserializer.ts:415) — the scanner admits the rooted spelling only.
   // An unrooted `#parent` opens no slot at all, so it mints no title and nests nothing beneath it;
@@ -33,11 +35,20 @@ describe("★ the deserializer mints no // title ★", () => {
   test("CONTROL: two unrooted opens mint no slot at either depth", () => {
     expect(fragments(nested("#parent", "#child"))).toEqual([]);
   });
-  test("an operator-authored path under a rooted parent keeps its segments, still one slash", () => {
-    expect(fragments(nested("#/a", "#/b/c"))).toContain("/a/b/c");
+  test("a RELATIVE authored child under a rooted parent reads verbatim — never silently appended", () => {
+    const found = fragments(nested("#/parent", "#/child"));
+    expect(found).toContain("/child");
+    expect(found).not.toContain("/parent/child");
+  });
+  test("an operator-authored path that is NOT a descendant reads verbatim, segments whole", () => {
+    expect(fragments(nested("#/a", "#/b/c"))).toContain("/b/c");
+    expect(fragments(nested("#/a", "#/b/c"))).not.toContain("/a/b/c");
+  });
+  test("a genuinely nested multi-segment path still joins with one slash", () => {
+    expect(fragments(nested("#/a", "#/a/b/c"))).toContain("/a/b/c");
   });
   test("no fragment anywhere carries an empty segment", () => {
-    for (const f of [fragments(nested("#/parent", "#/child")), fragments(nested("#/a", "#/b/c"))].flat()) {
+    for (const f of [fragments(nested("#/parent", "#/parent/child")), fragments(nested("#/a", "#/a/b/c"))].flat()) {
       expect(f.includes("//")).toBe(false);
     }
   });

@@ -49,8 +49,6 @@ import { lendHostGlobals } from "./host-globals-lend.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   findTopLevelAhuBlocks,
-  composeSlotPath,
-  childUri as childUriOf,
   KAHEA_REF_RE,
 } from "./meme-ast/ahu-scan.js";
 
@@ -410,11 +408,15 @@ function splitRecursive(
   let rewritten = "";
   for (const block of blocks) {
     rewritten += text.slice(cursor, block.openStart);
-    const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
-    const childUri      = childUriOf(enclosingUri, block.slot);
+    // READ relation (never MINT): an authored nested open already carries its WHOLE path from the
+    // carrier root by canon — `block.slot` is taken verbatim, never composed against `fragmentPrefix`.
+    // A relative or parent-colliding open is the CHECK layer's fault to name
+    // (`nested-slot-outside-parent`), not this reader's to tolerate or repair.
+    const childSlotPath = block.slot;
+    const childUri      = rootUri + block.slot;
     // ONE SLOT, ONE ADDRESS. The scanner admits the rooted spelling only; the record, parent ref, and
     // `$slot` carry that same spelling, so a reader needs no compatibility normalization.
-    const slot          = composeSlotPath("", block.slot);
+    const slot          = block.slot;
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
     const inner         = splitRecursive(rootUri, childSlotPath, bodyText);
     const childStructure = extractSlotStructure(inner.rewrittenText);
@@ -803,7 +805,7 @@ export type CarriagePart = (typeof CARRIAGE_PARTS)[number];
  *
  * A carriage rides a path like everything else the house addresses — `#/$postamble` at a carrier
  * root, `#/observe/$postamble` under a section. The bare space holds no house address at all
- * (composeSlotPath); it belongs to the page anchors a live wiki renders.
+ * (composeChildPath); it belongs to the page anchors a live wiki renders.
  */
 export function carriageUri(carrierUri: string, part: CarriagePart): string {
   const cut = carrierUri.indexOf("#");
@@ -836,16 +838,18 @@ function carriageText(reader: FieldsReader, carrierUri: string, part: CarriagePa
  * Quoted markers (fenced/inline-code) stay verbatim — the operator SHOWS
  * the grammar there, the recompose never expands inside the mask.
  */
-function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: string, text: string, parentFields: TiddlerFields): string {
+function expandRefs(reader: FieldsReader, rootUri: string, text: string, parentFields: TiddlerFields): string {
   const mask = fencedSpans(text);
   return text.replace(KAHEA_REF_RE, (marker, slot: string, offset: number) => {
     if (inMask(mask, offset)) return marker;
-    const slotPath = composeSlotPath(fragmentPrefix, slot);
+    // READ relation: the kahea marker already carries the slot's full rooted address (split emits it
+    // verbatim), so the child's path is the marker's slot, never recomposed against `fragmentPrefix`.
+    const slotPath = slot;
     const child = reader(rootUri + slotPath);
     if (!child) return marker;   // missing child: keep the marker — honest residue, never invented bytes
     // Diff the child against ITS parent; recurse with the child as the next level's parent.
     const meta   = emitMetaToml(child, CHILD_META_DENY, parentFields);
-    const inner = expandRefs(reader, rootUri, slotPath, String(child["text"] ?? ""), child);
+    const inner = expandRefs(reader, rootUri, String(child["text"] ?? ""), child);
     const pre   = carriageText(reader, rootUri + slotPath, "preamble");
     const post  = carriageText(reader, rootUri + slotPath, "postamble");
     // The meta block sits FLUSH against the ahu sigil line (mirroring the parent carrier's SOH+meta) —
@@ -868,7 +872,7 @@ function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: strin
     }
     // Both spellings reach one worksite record shape. Worksite carriage bytes hold authored delimiters;
     // an absent carriage uses the shared ahu opener and closer.
-    const spelt = composeSlotPath("", slot);
+    const spelt = slot;
     const open = carriageText(reader, rootUri + slotPath, "worksite-open");
     const close = carriageText(reader, rootUri + slotPath, "worksite-close");
     return `${open || `<<~ ahu ${spelt}>>`}${opened}\n\n${close || "<<~/ahu>>"}`;
@@ -902,12 +906,12 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
   // ahu/fragment worksite, so the check seals parent fields along with the prose.
   const carriedRootContent = [
     carriageText(reader, memeUri, "preamble"),
-    expandRefs(reader, memeUri, "", carriageText(reader, memeUri, "header-text"), f),
+    expandRefs(reader, memeUri, carriageText(reader, memeUri, "header-text"), f),
   ].filter((s) => s.trim() !== "").join("\n\n");
   const body =
     (meta ? "```toml meta\n" + meta + "```\n\n" : "")
     + (carriedRootContent ? carriedRootContent + "\n\n" : "")
-    + expandRefs(reader, memeUri, "", String(f.text ?? ""), f);
+    + expandRefs(reader, memeUri, String(f.text ?? ""), f);
 
   // Everything the frame carries is MINTED, never read back from a field: the declaration (a carrier
   // that never carried one gains it on its first projection), the head (both bearing ends quoted, so

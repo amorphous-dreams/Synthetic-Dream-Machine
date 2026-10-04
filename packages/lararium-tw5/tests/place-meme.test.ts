@@ -177,8 +177,9 @@ describe("★ listMemes — roots by default, the slot tree on request ★", () 
     const sink = memorySink();
     await placeMeme({ uri: URI, text: meme(["a", "b"]) }, sink);
     await placeMeme({ uri: "lar:///t/y", text: other("t/y", ["c"]) }, sink);
-    // A nested slot: `#/d` holds `#/e`; the record spells its slot as declared, its uri carries the whole address.
-    const nested = other("t/z", []).replace("<<^ code=\"&#x0002;\">>\n\n", "<<^ code=\"&#x0002;\">>\n\n<<~ ahu #/d>>\n\n! d\n\n<<~ ahu #/e>>\n\n! e\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+    // A nested slot: `#/d` holds `#/d/e` — canon: a nested open carries its WHOLE path from the
+    // carrier root, a strict descendant of its enclosing slot, never a bare relative leaf.
+    const nested = other("t/z", []).replace("<<^ code=\"&#x0002;\">>\n\n", "<<^ code=\"&#x0002;\">>\n\n<<~ ahu #/d>>\n\n! d\n\n<<~ ahu #/d/e>>\n\n! e\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
     const z = await placeMeme({ uri: "lar:///t/z", text: nested }, sink);
     expect(z.decision, z.warnings.join()).toBe("ingest");
     const listed = await listMemes(sink, { tree: true });
@@ -189,7 +190,7 @@ describe("★ listMemes — roots by default, the slot tree on request ★", () 
     ]);
     expect(byUri["lar:///t/y"]).toEqual([{ slot: "#/c", uri: "lar:///t/y#/c", slots: [] }]);
     expect(byUri["lar:///t/z"]).toEqual([
-      { slot: "#/d", uri: "lar:///t/z#/d", slots: [{ slot: "#/e", uri: "lar:///t/z#/d/e", slots: [] }] },
+      { slot: "#/d", uri: "lar:///t/z#/d", slots: [{ slot: "#/d/e", uri: "lar:///t/z#/d/e", slots: [] }] },
     ]);
     // CONTROL: no slot child, and no carriage part, lists as a root.
     expect(listed.map((r) => r.uri)).toEqual([URI, "lar:///t/y", "lar:///t/z"]);

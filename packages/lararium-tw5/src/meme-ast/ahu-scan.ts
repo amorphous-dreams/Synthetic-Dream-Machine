@@ -128,20 +128,26 @@ export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
 export function collectAhuSlots(text: string): Set<string> {
   const mask = fencedSpans(text);
   const slots = new Set<string>();
-  // The scanner admits only the rooted spelling that the address mints.
+  // The scanner admits only the rooted spelling that the address mints; an authored open is already
+  // taken AS its full address verbatim (the READ relation) — nothing composes here.
   for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
     if (!isAhuDeclaration(m[0])) continue;
-    slots.add(composeSlotPath("", m[1] ?? "#"));
+    slots.add(m[1] ?? "#");
   }
   return slots;
 }
 
 /**
- * Compose a fragment-path slot identifier under an enclosing prefix.
+ * Append a SINGLE leaf segment (or leaf path) under a prefix — the MINT relation, one of two that
+ * used to share one function (`composeSlotPath`'s overcollapse): the other, READING an authored
+ * open, takes the open's own path AS its full address, verbatim, and never calls this. This one
+ * mints a FRESH child address from a parent + a leaf (`placeMeme`/`childUri`/island-adaptor
+ * minting) — it always appends, unconditionally; it never inspects the leaf for whether it already
+ * carries the prefix, because a mint site hands it a bare leaf, never a full address to re-derive.
  *
- *   composeSlotPath("",          "#/thesis")  → "#/thesis"         (root child, a PATH)
- *   composeSlotPath("#/parent",  "#/child")   → "#/parent/child"   (one nested, a PATH)
- *   composeSlotPath("#/a/b",     "#/c")       → "#/a/b/c"          (two nested)
+ *   composeChildPath("",          "#/thesis")  → "#/thesis"         (root child, a PATH)
+ *   composeChildPath("#/parent",  "#/child")   → "#/parent/child"   (one nested, a PATH)
+ *   composeChildPath("#/a/b",     "#/c")       → "#/a/b/c"          (two nested)
  *
  * TWO GRAMMARS SHARE THE FRAGMENT SPACE, PARTED BY THE FIRST CHARACTER — the split JSON Schema
  * draws between a JSON Pointer (`#/$defs/x`) and an `$anchor` (`#x`), reached here for the same
@@ -158,40 +164,29 @@ export function collectAhuSlots(text: string): Set<string> {
  * `/` rides a fragment unescaped by RFC 3986 §3.5 (`fragment = *( pchar / "/" / "?" )`), and a
  * media type may define structure within it; `#` may not repeat, so a nested address could never
  * have taken the `#a#b` shape.
- *
- * Slot identifiers carrying their own `/`-paths (operator-authored pre-flattened) get appended
- * under the prefix; a leading `/` on the slot names the root of ITS parent, so it joins with the
- * one slash the path already has.
  */
-export function composeSlotPath(prefix: string, slot: string): string {
-  // A rooted slot resolves against its parent as `href="/child"` resolves under a base: the path
+export function composeChildPath(prefix: string, leaf: string): string {
+  // A rooted leaf resolves against its parent as `href="/child"` resolves under a base: the path
   // carries one `/` between segments, never an empty one.
-  const tail = (slot.startsWith("#") ? slot.slice(1) : slot).replace(/^\//, "");
+  const tail = (leaf.startsWith("#") ? leaf.slice(1) : leaf).replace(/^\//, "");
   if (!prefix) return `#/${tail}`;                             // a root child is a path too
   const rooted = prefix.startsWith("#/") ? prefix : `#/${prefix.slice(1)}`;
-  // CANON (meme-normalize.ts's child-slot clause): a NESTED open already carries its WHOLE path
-  // from the carrier root by the time it reaches a scanner — `<<~ ahu #/observe/observe-ha>>`
-  // inside `<<~ ahu #/observe>>` names the full address, not a suffix to append under its parent.
-  // When the slot's own tail already begins with (or equals) the enclosing prefix's tail, it IS
-  // that full address already; re-prefixing would double the shared segment
-  // (`#/observe/observe/observe-ha`). Only a slot that does NOT carry the prefix is a fresh
-  // relative child, minted by appending it (the placeMeme/childUri mint path).
-  const prefixTail = rooted.slice(2);
-  if (tail === prefixTail || tail.startsWith(`${prefixTail}/`)) return `#/${tail}`;
   return `${rooted}/${tail}`;
 }
 
 /**
- * A child's address under its parent's — fragment-aware, the way `carriageUri` is: a root parent
- * gains the slot as its fragment, a parent already carrying one composes the slot onto that SAME
- * fragment. `#` never repeats.
+ * A FRESH child's address under its parent's — fragment-aware, the way `carriageUri` is: a root
+ * parent gains the leaf as its fragment, a parent already carrying one composes the leaf onto that
+ * SAME fragment. `#` never repeats. MINT relation (see `composeChildPath`): `leaf` is a bare segment
+ * a caller is minting under `parent`, never an authored open's own full address — reading one of
+ * those takes it verbatim instead (deserializer.ts's `splitRecursive`/`expandRefs`, builder.ts).
  *
  *   childUri("lar:///x",     "#/a")  → "lar:///x#/a"
  *   childUri("lar:///x#/a",  "#/z")  → "lar:///x#/a/z"
  */
-export function childUri(parent: string, slot: string): string {
+export function childUri(parent: string, leaf: string): string {
   const cut = parent.indexOf("#");
   return cut < 0
-    ? parent + composeSlotPath("", slot)
-    : parent.slice(0, cut) + composeSlotPath(parent.slice(cut), slot);
+    ? parent + composeChildPath("", leaf)
+    : parent.slice(0, cut) + composeChildPath(parent.slice(cut), leaf);
 }

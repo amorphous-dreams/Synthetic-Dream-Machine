@@ -7,13 +7,19 @@ import { describe, test, expect } from "vitest";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 import { parseMemeText } from "../src/meme-ast/parse.js";
+import { checkCarrier } from "../src/carrier-check.js";
 
 const URI = "lar:///t/spelling";
 const carrier = (body: string): string =>
   `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/spelling"\n\`\`\`\n\n` +
   body + `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 const bare = carrier("<<~ ahu #a>>\n\n! a\n\n<<~/ahu>>\n");
-const rooted = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/c>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+// CANON: a nested open carries its WHOLE path from the carrier root — `#/a/c` nested inside `#/a`
+// names its own full address, a strict descendant, never a leaf to append.
+const rooted = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/a/c>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+// The RETIRED tolerance: `#/c` nested inside `#/a` is a RELATIVE form (unnormalized authoring) —
+// the reader takes it verbatim (never re-prefixed to `#/a/c`), and the check names the fault.
+const relative = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/c>>\n\n! c\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
 
 describe("the rooted ahu slot law", () => {
   test("a bare slot stays in root bytes and mints no child record", () => {
@@ -34,6 +40,30 @@ describe("the rooted ahu slot law", () => {
     expect(decoded.records.map((r) => r.title).filter((title) => !title.includes("/$")).sort())
       .toEqual([URI, `${URI}#/a`, `${URI}#/a/c`]);
     expect(String(decoded.records.find((r) => r.title === `${URI}#/a`)?.text))
-      .toContain("<<~ kahea ahu #/c>>");
+      .toContain("<<~ kahea ahu #/a/c>>");
+  });
+
+  // READ relation (never MINT): a nested open's own path is taken verbatim — never re-composed
+  // against its enclosing slot's prefix. A RELATIVE authored form reads as its OWN address, never
+  // silently appended under its parent (the retired overcollapse).
+  test("a RELATIVE nested open reads verbatim — never silently appended under its parent", () => {
+    const decoded = { records: memeticWikitextDeserializer(relative, { title: URI }) };
+    expect(decoded.records.map((r) => r.title).filter((title) => !title.includes("/$")).sort())
+      .toEqual([URI, `${URI}#/a`, `${URI}#/c`]);
+    // CONTROL: the tolerant double-prefix form a re-composing reader would have minted never appears.
+    expect(decoded.records.map((r) => r.title)).not.toContain(`${URI}#/a/c`);
+  });
+
+  test("a RELATIVE nested open names a CHECK fault — nested-slot-outside-parent", () => {
+    const diagnostics = checkCarrier(URI, relative);
+    const fault = diagnostics.find((d) => d.code === "nested-slot-outside-parent");
+    expect(fault).toBeTruthy();
+    expect(fault?.severity).toBe("error");
+  });
+
+  test("an address equal to its parent faults too — a collision, not a resolution", () => {
+    const equal = carrier("<<~ ahu #/a>>\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<~/ahu>>\n");
+    const diagnostics = checkCarrier(URI, equal);
+    expect(diagnostics.some((d) => d.code === "nested-slot-outside-parent")).toBe(true);
   });
 });

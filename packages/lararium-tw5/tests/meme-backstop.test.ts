@@ -126,9 +126,11 @@ describe("★ PHASE 5 REFUTED: re-placing a root from its records is a fixed poi
   const CHILD_EDITS: Record<string, string> = {
     "a clean edit":            "! a EDITED",
     "a stray ETX mark":        `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n`,
-    "a nested ahu block":      "! a\n\n<<~ ahu #/z>>\n\n! z\n\n<<~/ahu>>\n",
+    // CANON: a nested open carries its whole path from the carrier root — `#/a/z` nested inside
+    // `#/a`, a strict descendant, never the bare relative leaf `#/z` a re-prefixing reader would need.
+    "a nested ahu block":      "! a\n\n<<~ ahu #/a/z>>\n\n! z\n\n<<~/ahu>>\n",
     "a whole pasted frame":    meme(["z"]),
-    "an unclosed ahu":         "! a\n\n<<~ ahu #/z>>\n\nno closer\n",
+    "an unclosed ahu":         "! a\n\n<<~ ahu #/a/z>>\n\nno closer\n",
     "a stray block closer":    "! a\n\n<<~/ahu>>\n\nafter\n",
     "a malformed meta fence":  "! a\n\n```toml meta\nbogus = [\n```\n",
   };

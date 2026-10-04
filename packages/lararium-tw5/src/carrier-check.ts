@@ -16,7 +16,7 @@
 
 import { classifyPostamble, fencedSpans, frameAlt, markCode, maskedExec, maskedExecAll, readFrame } from "@lararium/memetic-frame";
 import { SOH_PREFIX_RE, carrierTexts, divideCarrier, findMetaFence } from "./deserializer.js";
-import { findTopLevelAhuBlocks, childUri } from "./meme-ast/ahu-scan.js";
+import { findTopLevelAhuBlocks } from "./meme-ast/ahu-scan.js";
 import { MEMETIC_SOURCE, shoreDiagnostic, type MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { parseTaploFields } from "./toml-ast.js";
 
@@ -79,14 +79,46 @@ const tomlOf = (fence: { readonly content: string } | null): Record<string, unkn
 /**
  * Every slot's meta, full depth, in the order the split visits them (a slot's own children first):
  * an authored `text` key is ignored there — the body is the text — and named here.
+ *
+ * READ relation: `rootUri` stays the CARRIER root across the whole recursion — a nested open already
+ * carries its WHOLE path from that root (canon), so the child's address is `rootUri + block.slot`
+ * verbatim, never `childUri`'s MINT composition (which would double a shared segment under a deeper
+ * `parent`).
  */
-function slotTextKeys(parent: string, text: string, out: string[]): void {
+function slotTextKeys(rootUri: string, text: string, out: string[]): void {
   for (const block of findTopLevelAhuBlocks(text)) {
-    const child = childUri(parent, block.slot);
+    const child = rootUri + block.slot;
     const body = text.slice(block.bodyStart, block.bodyEnd);
-    slotTextKeys(child, body, out);
+    slotTextKeys(rootUri, body, out);
     const meta = findMetaFence(body, false);
     if (meta && body.slice(0, meta.start).trim() === "" && "text" in tomlOf(meta)) out.push(TEXT_KEY(child));
+  }
+}
+
+/**
+ * NESTED-SLOT-OUTSIDE-PARENT — canon: a nested open carries its WHOLE path from the carrier root, so
+ * it must stand a STRICT DESCENDANT of its enclosing open's path. Three shapes fault here, each a
+ * tolerance the no-back-compat law forbids a reader from silently resolving:
+ *   - a RELATIVE form (`#/fern` inside `#/ridge`, meant as `#/ridge/fern`) — unnormalized authoring;
+ *   - an address EQUAL to its parent (`#/a` inside `#/a`) — a collision with the parent's own address;
+ *   - a DIFFERENT BRANCH entirely (neither equal nor a descendant).
+ * `normalizeMemeSource` is where an authored relative/flat form gets rewritten to the full-path
+ * nested chain — an author runs normalize, this check never tolerates the unnormalized form.
+ */
+function isStrictDescendant(slot: string, parent: string): boolean {
+  return slot !== parent && slot.startsWith(`${parent}/`);
+}
+
+function nestedSlotOutsideParent(uri: string, text: string, enclosing: string | null, out: MemeDiagnostic[]): void {
+  for (const block of findTopLevelAhuBlocks(text)) {
+    if (enclosing !== null && !isStrictDescendant(block.slot, enclosing)) {
+      out.push(error("nested-slot-outside-parent",
+        `${uri}: nested slot "${block.slot}" is not a strict descendant of its enclosing slot `
+        + `"${enclosing}" — a nested open carries its whole address from the carrier root. `
+        + `Run normalize to rewrite the authored form into the full-path nested chain.`, text.length));
+    }
+    const body = text.slice(block.bodyStart, block.bodyEnd);
+    nestedSlotOutsideParent(uri, body, block.slot, out);
   }
 }
 
@@ -123,6 +155,8 @@ export function checkCarrier(uri: string, text: string): MemeDiagnostic[] {
   const out = strandedPastEtx(text);
   for (const carrier of carrierTexts(text, uri)) {
     for (const line of advisories(carrier.uri, carrier.text)) out.push(shoreDiagnostic(line, text.length));
+    const d = divideCarrier(carrier.text);
+    nestedSlotOutsideParent(carrier.uri, d.body, null, out);
   }
   return out;
 }
