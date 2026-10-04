@@ -32,7 +32,7 @@ Aperture     →  attention range in TEXT
 Spatial      →  attention range in SPACE
 ```
 
-On the turn HUD the TEXT projection surfaces as the ''`Aperture`'' gauge --- `<<~ set hud="aim" focus="10/measure">>` --- read against the five bands below.
+On the turn HUD the TEXT projection surfaces as the ''`Aperture`'' gauge --- `<<~ set hud="aim" aperture="10/measure">>` --- read against the five bands below.
 
 All three map onto the same 0–20 Level continuum. Five named bands partition the continuum.
 The subscript digit sigils (₀₁₂₃₄) provide invariant vocabulary for talking about scale
@@ -337,6 +337,6 @@ Envelope: <<~ँ₃ ...>>   Arc-scale
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q3l6OhRSK-fXz9y9d9fU6kcjgSQJiwwb-k7mUTI9C4g
+<<^ code="&#x0003;">>ni:///sha-256;k_9-ojCEKFwW5u7q9UTRecn4WuXp4u0qmTrE6NUEssw
 
 <<^ code="&#x0004;" -> to="?">>

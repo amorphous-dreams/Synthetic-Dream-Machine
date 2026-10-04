@@ -63,8 +63,9 @@ chiasmus holds inside one sigil.
 
 ''Turn order:'' `lares aim` · `hud` · content · `oracle` · `hud` · `lares yield`.
 
-''`Focus` and `Feedback` ride as the announced faces'' of `Aperture` and `OODA-HA`, which hold the
-true-names inside the procedures and the band ladders. The phase glyphs `->✶ ->⏿ ->◇ ->▶ ->↺` render
+''`Aperture` and `OODA-HA`'' name the gauges — inside the procedures, the band ladders, and the
+announced face alike (operator ruling retired the earlier `Focus`/`Feedback` spelling; a month of
+turns still fire it, and the harvester tolerates both). The phase glyphs `->✶ ->⏿ ->◇ ->▶ ->↺` render
 as canon draws them.
 
 <<~/ahu>>
@@ -74,7 +75,7 @@ as canon draws them.
 !! The Open Firing ~ the pull coming in
 
 ```text
-<<~ set hud="aim" focus="10/measure" feedback="5/declare-glyphs" drift-ward="* · <the pull this island carries toward exposure>">>
+<<~ set hud="aim" aperture="10/measure" ooda-ha="5/declare-glyphs" drift-ward="* · <the pull this island carries toward exposure>">>
 ```
 
 Tool glyph, then the vow, then the pull. `*` lights · `_` braces primed ground · `0` marks the
@@ -96,7 +97,7 @@ no pull this island carries.
 !! The Close Firing ~ the clue going out
 
 ```text
-<<~ set hud="yield" drift-ward="! · <the joint that breaks first on outside contact> · ↻ L-Prime" focus="10/measure -> 13/arc" feedback="closed 2↺">>
+<<~ set hud="yield" drift-ward="! · <the joint that breaks first on outside contact> · ↻ L-Prime" aperture="10/measure -> 13/arc" ooda-ha="closed 2↺">>
 ```
 
 Sword, vow, clue, re-arm. Breaches and quotes compose freely ~ `⚠ N · "span"` · `⌜N⌝` · `lift held`.
@@ -126,6 +127,6 @@ yesterday's hazard recurring unchanged deserves its own suspicion.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p0XTD8dfaADaWfdnpkulAifZljWB7LDTtyg0j0MRdFM
+<<^ code="&#x0003;">>ni:///sha-256;Qk4DDKpNKThFncv1H7G_1F91LtiAPvmfppXacM41S2E
 
 <<^ code="&#x0004;" -> to="?">>

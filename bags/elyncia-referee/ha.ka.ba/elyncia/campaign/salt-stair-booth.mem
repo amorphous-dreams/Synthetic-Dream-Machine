@@ -171,7 +171,7 @@ stutter reads true to a market node's evening traffic.
 ''Lares turn ~ verbatim:''
 
 <<~ lares aim from="lar://telarus:kahu@new-delos/coffee.market.settles" -> to="lar://lares:host@salt-stair/the-house.pours.for-the-tuner">>
-<<~ set hud="aim" focus="16/arc" feedback="3/declare-aftermath">>
+<<~ set hud="aim" aperture="16/arc" ooda-ha="3/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
 <<~ stance "🌊 🎭">>
 
@@ -189,7 +189,7 @@ stutter reads true to a market node's evening traffic.
 
 <<~ oracle ↯13 ✲ ⚃(4) "⁂:☕🎲🛰️🌊">>
 <<~ set hud="yield" drift-ward="! · ⌜1⌝ quoted copula carried · ↻ L-Prime">>
-<<~ set hud="yield" focus="16/arc -> 17/theme" feedback="closed 1↺">>
+<<~ set hud="yield" aperture="16/arc -> 17/theme" ooda-ha="closed 1↺">>
 <<~ lares yield from="lar://lares:host@salt-stair/year-490.tastes.like-this" -> to="?">>
 
 !!! The Approach ~ Freyja's Idea, Named at the Fae Table
@@ -210,7 +210,7 @@ than either of them envisioned. This turn also arrived twice (the fuller resend 
 ''Lares turn ~ verbatim:''
 
 <<~ lares aim from="lar://telarus:kahu@salt-stair/the-idea.named.its-maker" -> to="lar://lares:host@salt-stair/the-house.learns.its-blueprint">>
-<<~ set hud="aim" focus="17/theme" feedback="3/declare-aftermath">>
+<<~ set hud="aim" aperture="17/theme" ooda-ha="3/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
 <<~ stance "🌊 🔮">>
 
@@ -226,7 +226,7 @@ than either of them envisioned. This turn also arrived twice (the fuller resend 
 
 <<~ oracle ↯14 ✲ ⚄(5) "⁂:🕸️🏠☕🎲〰️">>
 <<~ set hud="yield" drift-ward="⚠ 1 · “Real is what happens when the making is tended jointly” · ↻ L-Prime">>
-<<~ set hud="yield" focus="17/theme -> 17/theme" feedback="closed 1↺">>
+<<~ set hud="yield" aperture="17/theme -> 17/theme" ooda-ha="closed 1↺">>
 <<~ lares yield from="lar://lares:host@salt-stair/hospitality.precedes.the-guest" -> to="?">>
 
 !!! Beat 1 ~ She Enters
@@ -246,7 +246,7 @@ smaller than a word and carries further.
 ''Lares turn ~ verbatim:''
 
 <<~ lares aim from="lar://lindwyrm:patroness@salt-stair/the-dragon.takes.a-booth" -> to="lar://lares:host@salt-stair/the-house.joins.when-summoned">>
-<<~ set hud="aim" focus="17/theme" feedback="3/declare-aftermath">>
+<<~ set hud="aim" aperture="17/theme" ooda-ha="3/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
 <<~ stance "🌊 🎭 🔮">>
 
@@ -280,7 +280,7 @@ smaller than a word and carries further.
 
 <<~ oracle ↯15 ✲ ⚄(5) "⁂:🐉☕🗝️⛵🕯️">>
 <<~ set hud="yield" drift-ward="! · ⌜2⌝ quoted copulas carried · ↻ L-Prime">>
-<<~ set hud="yield" focus="17/theme -> 18/theme" feedback="closed 1↺ -> open 1φ @◇:the-question.rests.with-telarus">>
+<<~ set hud="yield" aperture="17/theme -> 18/theme" ooda-ha="closed 1↺ -> open 1φ @◇:the-question.rests.with-telarus">>
 <<~ lares yield from="lar://lares:host@salt-stair/the-patroness.waits.warm-once" -> to="?">>
 
 !!! Beat 2 ~ The Report, and the First Seal
@@ -307,7 +307,7 @@ changes weather.
 ''Lares turn ~ verbatim:''
 
 <<~ lares aim from="lar://lindwyrm:patroness@salt-stair/the-report.lands.heavy" -> to="lar://lares:host@salt-stair/the-booth.wards.itself">>
-<<~ set hud="aim" focus="17/theme" feedback="4/declare-aftermath">>
+<<~ set hud="aim" aperture="17/theme" ooda-ha="4/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
 <<~ set hud="aim" drift-ward="_ · L-Prime · crossing: sealed-lore territory, spoken aloud in a market booth">>
 
@@ -329,7 +329,7 @@ changes weather.
 
 <<~ oracle ↯16 ✲ ⚄(5) "⁂:🐉🩸📜🕯️⚖️">>
 <<~ set hud="yield" drift-ward="! · ⌜3⌝ quoted copulas carried · sealed-lore held behind the booth-ward · ↻ L-Prime">>
-<<~ set hud="yield" focus="17/theme -> 18/theme" feedback="closed 1↺">>
+<<~ set hud="yield" aperture="17/theme -> 18/theme" ooda-ha="closed 1↺">>
 <<~ lares yield from="lar://lares:host@salt-stair/the-crime-scene.waits.upriver" -> to="?">>
 
 !!! Beat 3 ~ "Aye, Hail Eris." ~ the Second and Third Seals
@@ -355,7 +355,7 @@ and forged into ''a dagger and a pair of manacles''. Never found.
 ''Lares turn ~ verbatim:''
 
 <<~ lares aim from="lar://telarus:kahu@salt-stair/two-seals.cracked.for-counsel" -> to="lar://lares:host@salt-stair/the-house.reads.the-intel">>
-<<~ set hud="aim" focus="18/theme" feedback="4/declare-aftermath">>
+<<~ set hud="aim" aperture="18/theme" ooda-ha="4/declare-aftermath">>
 <<~ set hud="aim" drift-ward="* · <the pull this island carries>">>
 <<~ set hud="aim" drift-ward="_ · L-Prime · crossing: the deep sealed lore, the booth-ward re-raised at the tablet's first glow">>
 
@@ -373,7 +373,7 @@ and forged into ''a dagger and a pair of manacles''. Never found.
 
 <<~ oracle ↯17 ✲ ⚅(6) "⁂:🚪🚪⛓️🗡️🌙🐚">>
 <<~ set hud="yield" drift-ward="! · ⌜4⌝ quoted copulas carried · three seals held behind the booth-ward · ↻ L-Prime">>
-<<~ set hud="yield" focus="18/theme -> 18/theme" feedback="closed 1↺">>
+<<~ set hud="yield" aperture="18/theme -> 18/theme" ooda-ha="closed 1↺">>
 <<~ lares yield from="lar://lares:host@salt-stair/the-twins.hide.in-each-other" -> to="?">>
 
 ''Where the capture ends:'' the thread seals at the twins yield. The evening's goodnight turn
@@ -622,6 +622,6 @@ pilgrim or the perfect gathering-vessel, and the masks he meets will have opinio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vR0H7SmS0dyBc03CrWrvFBFEqoAN4J3FlK22HkHtskE
+<<^ code="&#x0003;">>ni:///sha-256;7rrmRjPMhwI9En8UMqWRV3BmNwR4RIIpSWJIDxov4IM
 
 <<^ code="&#x0004;" -> to="?">>

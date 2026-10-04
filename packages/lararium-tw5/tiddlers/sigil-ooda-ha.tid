@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ooda-ha
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: gauge
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot
+lar-pattern: <<~\s*ooda-ha\s+"?((?:[^"]|"(?!\s*>>))*)"?\s*>>
+lar-example: <<~ ooda-ha "closed 1↺">>
+type: text/vnd.tiddlywiki
+
+<!-- ooda-ha (operator ruling: retired `feedback`) — a HANDOFF GAUGE, standing alone mid-stream. The
+     same instrument rides `set` as a KEY: two grips, one handle. The boot seed declares both
+     spellings, and both reach one reading. -->
+
+\procedure ~ooda-ha(p1:"")
+<span class="lar-gauge" data-gauge="ooda-ha"><$text text=<<p1>>/></span>
+\end

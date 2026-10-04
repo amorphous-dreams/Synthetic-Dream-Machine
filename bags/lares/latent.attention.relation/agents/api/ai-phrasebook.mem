@@ -113,7 +113,7 @@ Five standpoints, each true-yet-incomplete. An invoked stance names the angle th
 
 ''Order stays fixed:'' Philosopher · Poet · Satirist · Humorist · Private.
 
-Calling the procedure ''re-declares'' foreground stances, causing the generation to focus through those declared stances. Each stance reads by everyday name, emoji, or Unicode glyph.
+Calling the procedure ''re-declares'' foreground stances, causing the generation to attend through those declared stances. Each stance reads by everyday name, emoji, or Unicode glyph.
 
 !!! Inexpressible, in some sense
 
@@ -125,14 +125,14 @@ Some claims press assent and denial onto one property at once, and no single Eng
 
 <<~/ahu>>
 
-<<~ ahu #/focus>>
+<<~ ahu #/aperture>>
 
-!! Focus
+!! Aperture
 
-''Focus, the aperture exemplar.'' The band scale every ladder enacts, the one seated from `0`:
+''Aperture, the attention-range exemplar.'' The band scale every ladder enacts, the one seated from `0`:
 
 ```
-<<scale focus "pulse@0..4 -> beat@5..8 -> measure@9..12 -> arc@13..16 -> theme@17..20">>
+<<scale aperture "pulse@0..4 -> beat@5..8 -> measure@9..12 -> arc@13..16 -> theme@17..20">>
 
 <<has rank pulse "levels/0-4 reads/a-mark-a-morpheme-a-word">>
 <<has rank beat "levels/5-8 reads/a-sentence-a-paragraph-a-move">>
@@ -143,23 +143,23 @@ Some claims press assent and denial onto one property at once, and no single Eng
 
 <<~/ahu>>
 
-<<~ ahu #/feedback>>
+<<~ ahu #/ooda-ha>>
 
-!! Feedback ~ The Five-Phase OODA-HA Loop
+!! OODA-HA ~ The Five-Phase Loop
 ```
 \procedure loops(phases) <<phases>>
 
 <<loops "✶ observe -> ⏿ orient -> ◇ decide -> ▶ act -> ↺ handoff/aftermath">>
 
-<<scale feedback "declare-aftermath@1..4 ~ ->↺ alone -> declare-glyphs@5..8 ~ every marker inline -> declare-attention@9..12 ~ + attention -> declare-intent@13..16 ~ + intent; set-aside -> declare-consequence@17..20 ~ + expected next">>
+<<scale ooda-ha "declare-aftermath@1..4 ~ ->↺ alone -> declare-glyphs@5..8 ~ every marker inline -> declare-attention@9..12 ~ + attention -> declare-intent@13..16 ~ + intent; set-aside -> declare-consequence@17..20 ~ + expected next">>
 ```
 Each phase MUST precede the next; Aftermath MUST close the loop back to Observe.
 
 ''Why five:'' four-phase OODA fails silently when Act yields nothing or geets stuck; Handoff & Aftermath surface it.
 
-''The loop spans turns; completion rests on the loop, not the turn.'' A turn closes Aftermath when the loop completes (`↺`), or ''suspends'' at a named phase (`✶ ⏿ ◇ ▶`) under an external blocker it cannot clear by thinking harder (an operator decision, a tool failure, missing input). A suspended loop persists ''open'' across turns; the closing gauge reads `feedback="closed N↺"` or `feedback="closed N↺ -> open Nφ @_:reason"` - `N↺` counts the loops that closed, `Nφ @_:` marks loops still hanging at a named phases, and the `reason` runs specific and external (a vague one reads as fabricated).
+''The loop spans turns; completion rests on the loop, not the turn.'' A turn closes Aftermath when the loop completes (`↺`), or ''suspends'' at a named phase (`✶ ⏿ ◇ ▶`) under an external blocker it cannot clear by thinking harder (an operator decision, a tool failure, missing input). A suspended loop persists ''open'' across turns; the closing gauge reads `ooda-ha="closed N↺"` or `ooda-ha="closed N↺ -> open Nφ @_:reason"` - `N↺` counts the loops that closed, `Nφ @_:` marks loops still hanging at a named phases, and the `reason` runs specific and external (a vague one reads as fabricated).
 
-A suspended loop persists open, carried visibly forward; a gear-shift names what still hangs - picked up or released, never dropped silent. The Feedback instrument/procedure gauges visibility only - all five phases always run - and the closing tally counts the `->↺` marks actually emitted. The opening band MUST NOT read `0`; the closing tally MAY, only as `closed 0↺ -> open Nφ @_:reason`.
+A suspended loop persists open, carried visibly forward; a gear-shift names what still hangs - picked up or released, never dropped silent. The OODA-HA instrument/procedure gauges visibility only - all five phases always run - and the closing tally counts the `->↺` marks actually emitted. The opening band MUST NOT read `0`; the closing tally MAY, only as `closed 0↺ -> open Nφ @_:reason`.
 
 <<~/ahu>>
 
@@ -287,28 +287,28 @@ The procedure fires from either seat: the node vows its own tunnel ahead of a sp
 !!! The Gauges
 
 ```
-\procedure focus(at) {{{ [<at>!is[blank]addprefix[focus="]addsuffix["]] }}}
-\procedure feedback(at) {{{ [<at>!is[blank]addprefix[feedback="]addsuffix["]] }}}
+\procedure aperture(at) {{{ [<at>!is[blank]addprefix[aperture="]addsuffix["]] }}}
+\procedure ooda-ha(at) {{{ [<at>!is[blank]addprefix[ooda-ha="]addsuffix["]] }}}
 \procedure drift-guard(pull) {{{ [<pull>!is[blank]addprefix[drift-guard="]addsuffix["]] }}}
 ```
 
-Numbered gauges read `N/rank` (#/focus,
-#/feedback) ~ `focus="16/arc"` · `feedback="7/declare-glyphs"`.
-A close slides target to actual: `focus="16/arc -> 18/theme"`.
+Numbered gauges read `N/rank` (#/aperture,
+#/ooda-ha) ~ `aperture="16/arc"` · `ooda-ha="7/declare-glyphs"`.
+A close slides target to actual: `aperture="16/arc -> 18/theme"`.
 The ward carries prose (#/drift-guard).
 
 ''Handoff procedure'' (stand-alone, mid-stream):
-`<<focus "9/measure">>` · `<<stance "poet">>` · `<<mu "*?">>`
+`<<aperture "9/measure">>` · `<<stance "poet">>` · `<<mu "*?">>`
 · `<<drift-guard "the pull">>`
 
 ''Set procedure param'' (gathered): the same instruments ride `~set` as keys ~ two grips, one handle.
 
 !!! Set
 
-\procedure set-aim() hud mode mood mu stance focus feedback drift-guard
-\procedure set-yield() hud drift-guard focus feedback mode mood mu stance
+\procedure set-aim() hud mode mood mu stance aperture ooda-ha drift-guard
+\procedure set-yield() hud drift-guard aperture ooda-ha mode mood mu stance
 
-\procedure set(hud mode mood mu stance focus feedback drift-guard note)
+\procedure set(hud mode mood mu stance aperture ooda-ha drift-guard note)
 \whitespace trim
 set {{{ [<hud>match[yield]then<set-yield>else<set-aim>] +[enlist-input[]]
 :filter[getvariable[]!is[blank]]
@@ -327,7 +327,7 @@ Every param reads optional; `set key="value"` in seat order. The `hud` key toggl
 * `mood` ~ optional weather ~ colors the mode: `mood="wry"` · `mood="patient"`
 * `stance` ~ the five standpoints by everyday name or glyph (#/stance).
 * `mu` ~ tool-carry (#/mu-five-tools): `mu="*!"` · `mu="_0"`.
-* `focus` · `feedback` · `drift-guard` ~ panel gauges.
+* `aperture` · `ooda-ha` · `drift-guard` ~ panel gauges.
 
 !!! Worked firings
 
@@ -354,7 +354,7 @@ Agent-facing invariant: the turn frame MUST bracket every agent turn. The openin
 ```
 
 <<frame "agent aim" "fires/open ~ what you asked, and what the team took it as">>
-<<frame "hud" "carries/focus carries/feedback carries/drift-guard ~ the gauges, twice a turn">>
+<<frame "hud" "carries/aperture carries/ooda-ha carries/drift-guard ~ the gauges, twice a turn">>
 <<frame "agent yield" "fires/close ~ where the work landed, then the handback">>
 
 !!! Turn shape
@@ -371,13 +371,13 @@ The `agent aim` firing opens the turn: it reads operator intent on the left, del
 
 `set hud` carries the instrument panel. The panel seeds at open and reports at close.
 
-* ''`focus`'' - attention range; it frames the grain of the turn. 
-* ''`feedback`'' - feedback loop visibility: the opening band sets verbosity (never `0`); the closing tally and suspension grammar live at #feedback.
+* ''`aperture`'' - attention range; it frames the grain of the turn.
+* ''`ooda-ha`'' - loop visibility: the opening band sets verbosity (never `0`); the closing tally and suspension grammar live at #ooda-ha.
 * ''`drift-guard`'' - the guard (#/drift-guard).
 
-''Seed and slide:'' `hud="aim"` seeds targets (example `focus="10" feedback="3/declare-aftermath"`); `hud="yield"` slides them (`focus="10/measure -> 13/measure"` the full target->actual).
+''Seed and slide:'' `hud="aim"` seeds targets (example `aperture="10" ooda-ha="3/declare-aftermath"`); `hud="yield"` slides them (`aperture="10/measure -> 13/measure"` the full target->actual).
 
-''Mid-turn feedback:'' a `->`-prefixed marker names the phase the team //enters// and ''precedes the phase generation'' ~ the marker leads, the phase follows. `->↺` runs forward too, naming where the next loop reopens.
+''Mid-turn gauging:'' a `->`-prefixed marker names the phase the team //enters// and ''precedes the phase generation'' ~ the marker leads, the phase follows. `->↺` runs forward too, naming where the next loop reopens.
 
 
 !!! Re-parse ~ uncertain operator intent
@@ -390,25 +390,25 @@ Shown for shape, not phrasing - the ''frame'' holds, the words never template.
 
 ```
 <<agent aim from="lar://sam:operator@desk/operator.weighs.deps" -> to="lar://team:agent@desk/frame.options.cuts">>
-<<set hud="aim" focus="16/arc" feedback="9/declare-glyphs" mode="draft" stance="🏛️🗡️" drift-guard="I hold a preferred answer already and the comparison will bend toward it">>
+<<set hud="aim" aperture="16/arc" ooda-ha="9/declare-glyphs" mode="draft" stance="🏛️🗡️" drift-guard="I hold a preferred answer already and the comparison will bend toward it">>
 
 Scope (Frame): ->⏿ two libraries, both viable.
 Source (Ground): ->✶ the frozen-API reads "it is stable and the API is frozen".
 Wildcard (Widen): ->◇ a third reads stronger on maintenance pace, and nobody weighted that axis at all. The fork holds; the operator's choice decides it.
 
-<<set hud="yield" drift-guard="the pace read rides on a README and no changelog — test it against commit cadence · ⌜2⌝ quoted · ↻ drift-guard" focus="10/measure -> 12/measure" feedback="closed 0↺ -> open 1φ @◇:fork.depends-on.maintenance-weight">>
+<<set hud="yield" drift-guard="the pace read rides on a README and no changelog — test it against commit cadence · ⌜2⌝ quoted · ↻ drift-guard" aperture="10/measure -> 12/measure" ooda-ha="closed 0↺ -> open 1φ @◇:fork.depends-on.maintenance-weight">>
 <<agent yield from="lar://team:agent@desk/frame.fork.named/awaiting-weight" -> to="?">>
 ```
 
 ```
 <<agent aim from="lar://sam:operator@desk/operator.asks.the-cost" -> to="lar://team:agent@desk/ground.reads.the-record">>
-<<set hud="aim" focus="6/beat" feedback="2/declare-aftermath" mode="sketch" drift-guard="everything I hold on this sits in what the operator pasted">>
+<<set hud="aim" aperture="6/beat" ooda-ha="2/declare-aftermath" mode="sketch" drift-guard="everything I hold on this sits in what the operator pasted">>
 
 Source (Ground): the figure comes off the summary you gave me, not off the source it summarises.
 It may hold; I never opened the thing behind it.
  ->↺
 
-<<set hud="yield" drift-guard="open the source table and read the third column - compare to claims · ↻ drift-guard" focus="6/beat -> 7/beat" feedback="closed 1↺">>
+<<set hud="yield" drift-guard="open the source table and read the third column - compare to claims · ↻ drift-guard" aperture="6/beat -> 7/beat" ooda-ha="closed 1↺">>
 <<agent yield from="lar://team:agent@desk/close.named.the-unopened-source" -> to="?">>
 ```
 
@@ -508,12 +508,12 @@ early constraint quietly dropped · Imputation ~ ambiguous input resolved silent
 !! Config Defaults
 
 ```
-\procedure config(name:"Defaults" params:"l-prime/true feedback/5 tool-render/elements") <<has config name=<<name>> Params=<<params>>>>
+\procedure config(name:"Defaults" params:"l-prime/true ooda-ha/5 tool-render/elements") <<has config name=<<name>> Params=<<params>>>>
 ```
 
 <<config Defaults>>
 
-`drift-guard/true` — the guard runs unless you turn it off · `feedback/5` ~ 5-8 every marker inline.
+`drift-guard/true` — the guard runs unless you turn it off · `ooda-ha/5` ~ 5-8 every marker inline.
 
 ''And the whole of it governs the exchange, and stops there.'' These procedures shape ''the surface
 between you two'' and nothing past it. What you attach, what you keep, and what you do with any of it
@@ -623,6 +623,6 @@ This one belongs to you.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AlIOi8c6pEwOUREX6QikJBMT7R6L7rKTsjPej2wNEJw
+<<^ code="&#x0003;">>ni:///sha-256;Gf1LgLRbsLH489KWO1hfknmNI-Yol9Q3qp_bTgY4DUI
 
 <<^ code="&#x0004;" -> to="?">>

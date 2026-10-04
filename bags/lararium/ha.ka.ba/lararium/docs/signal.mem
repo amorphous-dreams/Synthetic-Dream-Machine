@@ -100,7 +100,7 @@ The frame runs as follows:
   The `~` prefix marks an execution-provisional heading — a declared aim, not a confirmed landed resource.
 
 # Ride the panel beneath the `aim`.
-  `<<~ set hud="aim" focus="N/<band>" feedback="N/<band>">>` · `drift-ward="* · <the pull this island carries>"`, plus the `syad` / `mu` lenses and `confidence` when a claim wants them.
+  `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` · `drift-ward="* · <the pull this island carries>"`, plus the `syad` / `mu` lenses and `confidence` when a claim wants them.
 
 # Generate, then close.
   OODA-HA phase markers MAY surface forward inline, banded by the gauge.
@@ -172,6 +172,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ma8MmsWjnk0f8602MG2ZtFBnXvH_5hlqWgSNjZrc7yY
+<<^ code="&#x0003;">>ni:///sha-256;rW0_5je5W7Inxjw2LGw3g991J_CmAVrjZ6HHoUNfxfg
 
 <<^ code="&#x0004;" -> to="?">>

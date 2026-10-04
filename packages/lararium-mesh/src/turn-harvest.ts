@@ -18,7 +18,9 @@
  *
  * FOUR ISLANDS, NOT SEVEN. A turn carries a bearing (`lares aim` / `lares yield`),
  * Voices surfacing in prose, ONE panel sigil whose named keys hold every gauge
- * (`set hud="aim" … focus= feedback= drift-ward= mode= mood= mu= stance=`), and
+ * (`set hud="aim" … aperture= ooda-ha= drift-ward= mode= mood= mu= stance=` — a
+ * month of turns still carry the retired `focus=`/`feedback=` spellings, read the
+ * same), and
  * whatever other sigils it fires. The panel is why this reads as four families
  * rather than one per gauge: a reader that scans for a gauge SIGIL finds none
  * and reports a turn that gauged as a turn that did not.
@@ -178,14 +180,14 @@ const KNOWN_KINDS = new Set([
   // COMPLETE: `tools/turn-parity.mjs` compares the two sets directly and FAILS on any head the shelf
   // declares and this list omits. A hand-written enumeration reads honest only while something proves
   // it whole — the parse path keeps its purity, and the witness carries the proof.
-  "aka", "branch", "carry", "confidence", "config", "const",
-  "constraint", "define", "drift-ward", "elif", "else", "feedback",
-  "focus", "for", "frame", "function", "guard", "hana",
+  "aka", "aperture", "branch", "carry", "confidence", "config", "const",
+  "constraint", "define", "drift-ward", "elif", "else",
+  "for", "frame", "function", "guard", "hana",
   "has", "heihei", "helu", "holo", "hoolele", "hud",
   "hui", "huli", "if", "import", "integrity", "kahawai",
   "kahea", "kanawai", "kapu", "kau", "kukali", "kumu",
   "lares", "law", "lele", "let", "link", "loops", "loulou", "meme",
-  "mu", "mukuwai", "oracle", "papalohe", "persona", "pin", "pono",
+  "mu", "mukuwai", "ooda-ha", "oracle", "papalohe", "persona", "pin", "pono",
   "procedure", "puka", "query", "race", "rush", "scale",
   "season", "set", "shrine", "stage", "stance",
   "suspends", "syad", "sync", "task", "tick", "tiddler",
@@ -200,6 +202,9 @@ const KNOWN_KINDS = new Set([
   // Instruments the frame has since set down. A CORPUS STATES ONE GRAMMAR; A READER TOLERATES EVERY
   // GRAMMAR IT WILL MEET — a turn written under an earlier frame still harvests here.
   "hud", "ward", "syad", "confidence",
+  // `focus`/`feedback` RETIRED by operator ruling to `aperture`/`ooda-ha` (2026-10). A month of real
+  // turns still fire the old heads — this reader tolerates both; writers/canon move to the new names.
+  "focus", "feedback",
 ]);
 
 function leadingWord(body: string): string {
@@ -381,13 +386,16 @@ export function closingPanel(h: TurnHarvest): PanelSignal | null {
 }
 
 /**
- * Whether the turn closed a loop — the closing panel's `feedback` tally reads `closed N↺` with N ≥ 1.
+ * Whether the turn closed a loop — the closing panel's `ooda-ha` tally reads `closed N↺` with N ≥ 1.
+ * The key rides as `ooda-ha` under the current frame; a turn still carrying the retired `feedback`
+ * key reads the same (the panel keeps whichever one the author fired, never both).
  *
  * A suspension alone does not close: `closed 0↺ -> open 1φ @◇:reason` reports a turn that ran the loop
  * and hung it, which is the honest reading the tally exists to carry.
  */
 export function aftermathClosed(h: TurnHarvest): boolean {
-  const tally = closingPanel(h)?.keys["feedback"] ?? "";
+  const keys = closingPanel(h)?.keys ?? {};
+  const tally = keys["ooda-ha"] ?? keys["feedback"] ?? "";
   const m = /closed\s+(\d+)\s*[↺↻]/.exec(tally);
   return m !== null && Number(m[1]) >= 1;
 }

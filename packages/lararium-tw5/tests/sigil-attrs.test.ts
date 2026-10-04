@@ -182,10 +182,10 @@ describe("the corpus shapes, verbatim", () => {
   });
 
   test("★ a panel, whole ★", () => {
-    const b = ' hud="yield" mode="strike" focus="14/arc" drift-ward="* · a note"';
+    const b = ' hud="yield" mode="strike" aperture="14/arc" drift-ward="* · a note"';
     const a = Object.fromEntries(readSigilAttrs(b).map((x) => [x.name, x.value]));
     expect(a["drift-ward"]).toBe("* · a note");
-    expect(a["focus"]).toBe("14/arc");
+    expect(a["aperture"]).toBe("14/arc");
   });
 
   test("★ a turn bearing, whole ★", () => {

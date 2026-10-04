@@ -190,7 +190,7 @@ export function quotableAttrs(body: string): SigilAttr[] {
  * Blank every span whose interior a delimiter already protects, keeping offsets.
  *
  * TWO KINDS, and both carry spaces so a word-walker cannot see their edges:
- *   · a QUOTED value — `feedback="closed 1↺ -> open 1φ @◇:reason"`, where the colon separates nothing,
+ *   · a QUOTED value — `ooda-ha="closed 1↺ -> open 1φ @◇:reason"`, where the colon separates nothing,
  *     in any of the delimiters a string literal wears, `"""…"""` included and tried FIRST;
  *   · a WIKILINK — `[[label|lar:///x]]`, which TiddlyWiki reads as one link and which quoting would
  *     BREAK. A sigil carrying prose carries these, and they are already well-formed.
@@ -250,7 +250,7 @@ export function schemeShapedPositionals(body: string): string[] {
   const out: string[] = [];
   // ── A QUOTED SPAN IS ALREADY SAFE, AND IT CARRIES SPACES ──────────────────────────────────────
   // A word-walker that only refused words BEGINNING with a quote still reads the interior of
-  // `feedback="closed 1↺ -> open 1φ @◇:reason"` as bare words, and reports a hazard inside a value
+  // `ooda-ha="closed 1↺ -> open 1φ @◇:reason"` as bare words, and reports a hazard inside a value
   // that is already delimited. The span is masked whole before any word is read.
   const masked = maskProtectedSpans(body);
   const word = /(?:^|\s)(?!["'])((?:[^\s>"']|>(?!>))+)/g;

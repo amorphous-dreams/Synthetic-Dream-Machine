@@ -205,7 +205,7 @@ export function deriveRootHandle(sourceFile?: string, frontier?: string | null):
 /** Deterministic function-hall routing from the authored instruments (no LLM). */
 function hallForHarvest(h: TurnHarvest): string {
   if (h.bearing && h.standing >= 13) return "hall_facts"; // a decision landed, high standing
-  if (h.panels.some((p) => (p.keys["feedback"] ?? "").includes("↺"))) return "hall_events"; // a loop closed
+  if (h.panels.some((p) => (p.keys["ooda-ha"] ?? p.keys["feedback"] ?? "").includes("↺"))) return "hall_events"; // a loop closed
   if (h.sigilCount > 0 || h.voices.length > 0) return "hall_discoveries"; // structured exploration
   return ""; // leave the substrate's own hall untouched
 }
@@ -233,7 +233,10 @@ export function buildPatch(
   if (h.voices.length)
     patch["lar_voices"] = h.voices.map((v) => (v.role ? `${v.name} (${v.role})` : v.name)).join("|").slice(0, 400);
   // The closing tally, verbatim — `closed 2↺`, or `closed 0↺ -> open 1φ @◇:reason` when one hangs.
-  const tally = h.panels.find((p) => p.hud === "yield")?.keys["feedback"];
+  // Reads the current `ooda-ha` key, falling back to the retired `feedback` spelling; the OUTPUT
+  // field keeps its `lar_feedback` name regardless — the sensorium reads that field name.
+  const yieldKeys = h.panels.find((p) => p.hud === "yield")?.keys;
+  const tally = yieldKeys?.["ooda-ha"] ?? yieldKeys?.["feedback"];
   if (tally) patch["lar_feedback"] = tally.slice(0, 300);
   if (h.driftFlags.length) patch["lar_drift"] = h.driftFlags.join("|").slice(0, 200);
   const hall = hallForHarvest(h);

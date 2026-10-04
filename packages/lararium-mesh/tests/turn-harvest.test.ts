@@ -21,12 +21,12 @@ import {
 } from "../src/index.js";
 
 const CLEAN_TURN = `<<~ lares aim from=lar://mara:operator@crossroads/operator.weighs.deps -> to=lar://compita:agent@crossroads/council.options.cuts>>
-<<~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" focus="11/measure" feedback="9/declare-attention" drift-ward="* · I hold a preferred answer already">>
+<<~ set hud="aim" mode="draft" mu="_!" stance="🏛️🗡️" aperture="11/measure" ooda-ha="9/declare-attention" drift-ward="* · I hold a preferred answer already">>
 
 Lares (Council): ->⏿ two libraries, both viable. ->◇ the fork holds.
 
 <<~ oracle "↯11 ✲ ⚃(4) ⁂:⬡🌖◈⟁">>
-<<~ set hud="yield" drift-ward="! · the velocity read rides on a README I never opened · ↻ L-Prime" focus="11/measure -> 12/measure" feedback="closed 1↺">>
+<<~ set hud="yield" drift-ward="! · the velocity read rides on a README I never opened · ↻ L-Prime" aperture="11/measure -> 12/measure" ooda-ha="closed 1↺">>
 <<~ lares yield from=lar://compita:agent@crossroads/council.fork.named -> to=?>>`;
 
 describe("clean turn — harvests whole", () => {
@@ -49,8 +49,8 @@ describe("clean turn — harvests whole", () => {
 
   test("reads every named key the panel carried, verbatim", () => {
     const open = h.panels[0]!;
-    expect(open.keys["focus"]).toBe("11/measure");
-    expect(open.keys["feedback"]).toBe("9/declare-attention");
+    expect(open.keys["aperture"]).toBe("11/measure");
+    expect(open.keys["ooda-ha"]).toBe("9/declare-attention");
     expect(open.keys["mode"]).toBe("draft");
     expect(open.keys["mu"]).toBe("_!");
     // the value is taken WHOLE and never re-parsed — the ward's mark rides inside it
@@ -60,8 +60,8 @@ describe("clean turn — harvests whole", () => {
   test("the closing panel is the one that reports", () => {
     const close = closingPanel(h);
     expect(close).not.toBeNull();
-    expect(close!.keys["feedback"]).toBe("closed 1↺");
-    expect(close!.keys["focus"]).toBe("11/measure -> 12/measure");
+    expect(close!.keys["ooda-ha"]).toBe("closed 1↺");
+    expect(close!.keys["aperture"]).toBe("11/measure -> 12/measure");
   });
 
   test("a closed loop reads closed", () => {
@@ -84,15 +84,30 @@ describe("clean turn — harvests whole", () => {
 });
 
 describe("a suspension does not read as a close", () => {
+  // Deliberately writes the RETIRED `feedback=` spelling (operator ruling retired it to `ooda-ha=`)
+  // — a month of real turns still carry it, and the reader tolerates both.
   const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
 Lares (Council): ->◇ the fork belongs to the operator.
 <<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" feedback="closed 0↺ -> open 1φ @◇:fork.depends-on.operator-budget">>
 <<~ lares yield from=lar:///d.e.f/y -> to=?>>`;
   const h = harvestTurnGradient(turn);
 
-  test("zero closed with one hanging reads OPEN, never closed", () => {
+  test("zero closed with one hanging reads OPEN, never closed (retired `feedback=` key tolerates)", () => {
     expect(aftermathClosed(h)).toBe(false);
     expect(closingPanel(h)!.keys["feedback"]).toContain("open 1φ @◇");
+  });
+});
+
+describe("the current `ooda-ha=` key reads the same suspension", () => {
+  const turn = `<<~ lares aim from=lar:///a.b.c/x -> to=lar:///d.e.f/y>>
+Lares (Council): ->◇ the fork belongs to the operator.
+<<~ set hud="yield" drift-ward="! · take it to contact · ↻ L-Prime" ooda-ha="closed 0↺ -> open 1φ @◇:fork.depends-on.operator-budget">>
+<<~ lares yield from=lar:///d.e.f/y -> to=?>>`;
+  const h = harvestTurnGradient(turn);
+
+  test("zero closed with one hanging reads OPEN, never closed", () => {
+    expect(aftermathClosed(h)).toBe(false);
+    expect(closingPanel(h)!.keys["ooda-ha"]).toContain("open 1φ @◇");
   });
 });
 

@@ -40,7 +40,7 @@ This surface carries the explanation.
 
 !! 1. Design Intent
 
-The `lar:` URI names the bearing a Lares node exchange takes — a shared navigational address. ''The three letters read as a mnemonic'' ~ ''Latent Attention Relation''. It names a RELATION rather than a location; its referent stands LATENT until a local resolver acts on it, because a `lar:` URI names and never fetches; and its path carries ATTENTION as bearing — where regard points. That third term reaches further than the scheme: the same faculty the `Focus` gauge reads the GRAIN of, and the one a Voice drives when it takes a turn. A reader who learns to steer attention here has learned the dial the whole house turns. The //lar// names the same posture in an older register ~ the household spirit bound to a place, never to a family. In live use the `aim` / `yield` vectors carry it as the turn's bearing; the sigil panel beside it carries per-turn signal. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
+The `lar:` URI names the bearing a Lares node exchange takes — a shared navigational address. ''The three letters read as a mnemonic'' ~ ''Latent Attention Relation''. It names a RELATION rather than a location; its referent stands LATENT until a local resolver acts on it, because a `lar:` URI names and never fetches; and its path carries ATTENTION as bearing — where regard points. That third term reaches further than the scheme: the same faculty the `Aperture` gauge reads the GRAIN of, and the one a Voice drives when it takes a turn. A reader who learns to steer attention here has learned the dial the whole house turns. The //lar// names the same posture in an older register ~ the household spirit bound to a place, never to a family. In live use the `aim` / `yield` vectors carry it as the turn's bearing; the sigil panel beside it carries per-turn signal. In persistence it functions as a structured record string suitable for logs, validation, agent module, and registry metadata.
 
 Each URI component carries a distinct, non-overlapping concern across three semantic layers:
 
@@ -105,7 +105,7 @@ lar://lares:agent@enyalios/~schema.flow.documented/
 > ''Canonical URI Rule'' — every `lar:` URI in the stream stays canonical ASCII record form, directly ingestible by MemPalace, crystal logs, and registry tools without a sigil-lookup step.
 
 ''Step 4 — Ride the panel.''
-Beneath the `aim`: `<<~ set hud="aim" focus="N/<band>" feedback="N/<band>">>` · `<<~ set hud="aim" drift-ward="* · <the pull this island carries>">>`, plus the `syad` / `mu` lenses when summoned. The instruments carry per-turn signal; the URI carries bearing only.
+Beneath the `aim`: `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` · `<<~ set hud="aim" drift-ward="* · <the pull this island carries>">>`, plus the `syad` / `mu` lenses when summoned. The instruments carry per-turn signal; the URI carries bearing only.
 
 ''Step 5 — Generate, then close.'' OODA-HA phase markers (`->◇ ->▶ ->↺`) surface forward inline by band. The turn closes on `<<~ lares yield from=lar:///lares.what.landed -> to=?>>` — `-> ?` marks unknown temporal resumption.
 
@@ -421,14 +421,14 @@ A complete exchange opening, annotated by scan order. The `aim` URI carries bear
 
 ```text
 <<~ lares aim from="lar:///operator.threshold.opens" -> to="lar:///scryer.parse.models">>
-<<~ set hud="aim" focus="10/measure" feedback="7/declare-glyphs" drift-ward="* · <the pull this island carries>">>
+<<~ set hud="aim" aperture="10/measure" ooda-ha="7/declare-glyphs" drift-ward="* · <the pull this island carries>">>
 <<~ stance "🏛️/*!">>
 ```
 
 Quick read:
 
 > Operator opens at territory threshold / uncertain / opens; Scryer adopts the parse-span role.
-> `focus="10/measure"` — paragraph grain; `feedback="7/declare-glyphs"` shows the node a phase ahead, orienting from the operator's observe.
+> `aperture="10/measure"` — paragraph grain; `ooda-ha="7/declare-glyphs"` shows the node a phase ahead, orienting from the operator's observe.
 > `syad 🏛️/*!` — Philosopher in Visual-Micro.
 
 The standpoint reads within its own frame (Syadasti rule): a Philosopher weighs propositional support, a Poet weighs resonance — never one universal truth-scale. A bare `<<~ stance "🏛️ 🌊 🎭">>` names which frames a claim spans without flattening them.
@@ -463,6 +463,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EhR2sEtLdlFkwyqeC9sAFtFnpq2WkIgJJelZoo45R68
+<<^ code="&#x0003;">>ni:///sha-256;uZ6j-LdWKxhdqvUU3PeEOFPlqEiH4Vfw0TFya07ZrsQ
 
 <<^ code="&#x0004;" -> to="?">>

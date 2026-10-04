@@ -11,6 +11,7 @@ import type { SigilRule, FamilyRule } from "./types.js";
 export const GENERATED_SIGILS: SigilRule[] = [
   { name: "ahu", kind: "child-slot", openPattern: "<<~[^>]*\\bahu\\s+(#\\/[\\wāēīōūʻ-]+(?:\\/[\\wāēīōūʻ-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?)?\\s*>>", closePattern: "<<~\\/ahu\\s*>>" },
   { name: "aka", kind: "edge-sugar", pattern: "<<~\\s*aka\\s+([\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>", defaultFamily: "observe" },
+  { name: "aperture", kind: "gauge", pattern: "<<~\\s*aperture\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "branch", kind: "concurrency", pattern: "<<~\\s*branch\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>", aliasFor: "lele" },
   { name: "carry", kind: "relation", pattern: "<<~\\s*carry\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "confidence", kind: "metadata", pattern: "<<~\\s*confidence\\b([\\s\\S]*?)>>" },
@@ -22,8 +23,6 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "drift-ward", kind: "gauge", pattern: "<<~\\s*drift-ward\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "elif", kind: "control", pattern: "<<~\\s*elif\\s+([^\\n>]+?)\\s*>>", aliasFor: "kahawai" },
   { name: "else", kind: "control", pattern: "<<~\\s*else\\s*>>", aliasFor: "mukuwai" },
-  { name: "feedback", kind: "gauge", pattern: "<<~\\s*feedback\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
-  { name: "focus", kind: "gauge", pattern: "<<~\\s*focus\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "for", kind: "control", openPattern: "<<~\\s*for\\s+([^>]+?)\\s*>>", closePattern: "<<~\\/for\\s*>>", aliasFor: "huli" },
   { name: "fragment", kind: "child-slot", openPattern: "<<fragment\\s+(#\\/[\\wāēīōūʻ-]+(?:\\/[\\wāēīōūʻ-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)?\"?)?\\s*>>", closePattern: "<</fragment\\s*>>", aliasFor: "ahu" },
   { name: "frame", kind: "relation", pattern: "<<~\\s*frame\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
@@ -65,6 +64,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "meme", kind: "context", openPattern: "<<~\\s*meme\\s+(\\S+)\\s*>>", closePattern: "<<~\\/meme\\s*>>" },
   { name: "mu", kind: "relation", pattern: "<<~\\s*mu\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "mukuwai", kind: "control", pattern: "<<~\\s*mukuwai\\s*>>" },
+  { name: "ooda-ha", kind: "gauge", pattern: "<<~\\s*ooda-ha\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "oracle", kind: "frame", pattern: "<<~\\s*oracle\\b([\\s\\S]*?)>>" },
   { name: "papalohe", kind: "edge-sugar", pattern: "<<~\\s*papalohe\\s+(#[\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*->\\s*\"?((?:[^\"\\s>]|>(?!>))+)\"?(?:\\s+listenable[=:]\"?([\\w.-]+)\"?)?(?:\\s+subscribable[=:]\"?([\\w.-]+)\"?)?\\s*>>" },
   { name: "persona", kind: "relation", pattern: "<<~\\s*persona\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
@@ -143,7 +143,7 @@ export const GENERATED_ALIAS_MAP: Record<string, string> = {
 };
 
 /** every sigil name that is NOT an alias (canonical sigils only). */
-export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","carry","confidence","config","dispatcher","drift-ward","feedback","focus","frame","frame-eot","frame-eot2","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kanawai","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","type","typos","ui","waiho","ward","wehe","widget"];
+export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","aperture","carry","confidence","config","dispatcher","drift-ward","frame","frame-eot","frame-eot2","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kanawai","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","ooda-ha","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","type","typos","ui","waiho","ward","wehe","widget"];
 
 /**
  * CANONICAL x TONGUE -> PRIMARY MIRROR: the one name a tongue weaves a canonical sigil
