@@ -82,8 +82,8 @@ function metaNamespace(src: string): string | null {
 }
 
 /**
- * The meta `tongue` value — the EXPLICIT MARK (operator ruling, lar:///sigil.grammar.lane loop 6):
- * a carrier whose meta declares `tongue = "<bcp47>"` (e.g. `tongue = "en"`) rests in its authored
+ * The meta `tongue` value — the EXPLICIT MARK (RULED, operator): a carrier whose meta declares
+ * `tongue = "<bcp47>"` (e.g. `tongue = "en"`) rests in its authored
  * mirror spellings; `fold MIRROR_FOLD`'s head below never touches a tongue-marked carrier. No
  * existing field already said this (measured: `git grep 'tongue ='` over bags/ found none) — report
  * the exact spelling (`tongue`, a bare BCP-47 tag) to the parent so canon can state it.
@@ -116,9 +116,9 @@ const DEFINITION_HEAD = new RegExp(
 
 /**
  * Every READ-ONLY mirror — `lar-mirror-of` set, no `lar-weave: primary` — and the canonical head it
- * folds to (operator ruling, lar:///sigil.grammar.lane loop 6: normalize folds every read-only
- * mirror's HEAD TOKEN to its canonical house name; a `lar-weave: primary` mirror is a canonical
- * spelling in its own tongue and never folds). DERIVED from GENERATED_SIGILS, never hand-listed.
+ * folds to (RULED, operator: normalize folds every read-only mirror's HEAD TOKEN to its canonical
+ * house name; a `lar-weave: primary` mirror is a canonical spelling in its own tongue and never
+ * folds). DERIVED from GENERATED_SIGILS, never hand-listed.
  */
 const READ_ONLY_MIRRORS: ReadonlyArray<{ readonly name: string; readonly canonical: string }> =
   GENERATED_SIGILS
@@ -510,7 +510,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
 
   // ── 7. Sigil spelling: every READ-ONLY mirror folds to its canonical head — FRAME AUTHORITY ─────
   //
-  // RULED (operator, lar:///sigil.grammar.lane loop 6): `lares meme normalize` "shall preserve
+  // RULED (operator): `lares meme normalize` "shall preserve
   // explicitly marked weave/tangle alternates, but otherwise normalize to house memetic-wikitext
   // grammar." A read-only mirror (`lar-mirror-of` set, no `lar-weave: primary`) carries no grammar
   // of its own — folding its HEAD TOKEN to the canonical name loses no authored intent. A

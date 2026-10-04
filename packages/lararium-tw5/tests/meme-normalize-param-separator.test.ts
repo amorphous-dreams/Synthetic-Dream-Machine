@@ -146,8 +146,8 @@ describe("★ a DEFINITION under any shelf spelling keeps its colon ★", () => 
 
   test("★ every shelf definition head keeps `param:\"default\"` byte-identical ★", () => {
     // Every READ-ONLY mirror among the definition heads (`define`/`procedure`→wehe,
-    // `let`/`var`/`const`→waiho — lar:///sigil.grammar.lane loop 6) is a RULED FRAME-authority
-    // fold: unconditional, so its OWN colon-preservation check compares against the folded
+    // `let`/`var`/`const`→waiho) is a RULED FRAME-authority fold: unconditional, so its OWN
+    // colon-preservation check compares against the folded
     // spelling, never its own head word. `GENERATED_ALIAS_MAP` names the fold target; every
     // non-mirror head (function/widget/type/typos and the canonicals themselves) still holds
     // fully byte-identical.

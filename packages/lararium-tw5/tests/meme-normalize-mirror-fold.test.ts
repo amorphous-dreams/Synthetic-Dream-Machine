@@ -1,8 +1,6 @@
 /**
- * `lares meme normalize` folds every READ-ONLY mirror's HEAD TOKEN to its canonical house name
- * (lar:///sigil.grammar.lane loop 6; supersedes the single-mirror `define`→`wehe` fold from loop 2,
- * now generalized to every `lar-mirror-of` entry the generated table carries — define->wehe
- * included).
+ * `lares meme normalize` folds every READ-ONLY mirror's HEAD TOKEN to its canonical house name —
+ * every `lar-mirror-of` entry the generated table carries, `define`->`wehe` included.
  *
  * OPERATOR RULED: `lares meme normalize` "shall preserve explicitly marked weave/tangle
  * alternates, but otherwise normalize to house memetic-wikitext grammar." A read-only mirror
@@ -29,7 +27,7 @@ const HEAD = (body: string, meta = "") =>
 
 describe("normalizeMemeSource — every read-only mirror folds to its canonical head", () => {
   // `fragment` alone opens bare (`<<fragment`, no `~`) — its own dedicated test below exercises
-  // its real shape; this loop covers every OTHER (sharktooth) mirror.
+  // its real shape; this table covers every OTHER (sharktooth) mirror.
   test.each(READ_ONLY_MIRRORS.filter((m) => m.name !== "fragment").map((m) => [m.name, m.canonical] as const))(
     "RED→GREEN — %s folds to %s", (name, canonical) => {
       const src = HEAD(`<<~ ${name} "lar:///a.b.c/x">>`);
