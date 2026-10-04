@@ -90,7 +90,7 @@ address, with arguments, through a template cascade''.
 The move also lands on the published context law rather than against it: just-in-time
 retrieval asks for lightweight identifiers that load content at runtime, and a `lar:` URI
 stands as exactly that identifier
-(<<~ loulou "lar:///ha.ka.ba/lares/api/vendor/claude-code-harness#the-laws-we-adopt">>).
+(<<~ loulou "lar:///ha.ka.ba/lares/api/vendor/claude-code-harness#/the-laws-we-adopt">>).
 
 <<~/ahu>>
 
@@ -129,7 +129,7 @@ Three groundings meet at this one boundary, each arriving on its own evidence:
 # ''The observe cap'' — the wake hook withholds the standing half so standing stays the
 operator's act.
 # ''The advisory law'' — an instrument surfaces and never remediates unattended
-(<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos#refusal">>).
+(<<~ loulou "lar:///ha.ka.ba/lararium/docs/kairos#/refusal">>).
 
 ''The convergence stands NOTED, never proven.'' Three readings reached in one pass may carry
 one intuition wearing three names. The claim that tests it outside: does the `bag-paths`
@@ -223,6 +223,6 @@ else moves first.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LxCU1I5K7aNYxQIp6-j16fGCITJMpWcRfVBBEYbdB0o
+<<^ code="&#x0003;">>ni:///sha-256;wKXXBWYJ4AX2_7fLXaTGxpAWKsUw1zVQHw8QmYvA9p8
 
 <<^ code="&#x0004;" -> to="?">>

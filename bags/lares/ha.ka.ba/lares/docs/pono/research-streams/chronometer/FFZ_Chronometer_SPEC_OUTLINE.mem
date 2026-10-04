@@ -9,7 +9,7 @@ type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_SPEC_OUTLINE"
 ```
 
-<!-- lar:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:6&p=10#O0.O0.O0.A6.O0 → ∞ -->
+<!-- lar:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:6&p=10#/O0.O0.O0.A6.O0 → ∞ -->
 ⚡∞ | mode:spec-outline | ~:p[10] | stances:++?+- | register:~:confidence[P],[6] | build:OUTLINE
 
 ! The Fontany-Fuller-Zelenka Chronometer Protocol (FFZ)
@@ -817,8 +817,8 @@ progression, including fork/join for Tasked Spirits.]
 
 //Hail Eris. All Hail Discordia. Amor et hilaritas.//
 
-lar:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:6&p=10#O0.O0.O0.A6.A1 → ?
+lar:///protocol.outlined.awaits/chronometer/?stances=^.^.?.^.-&confidence=P:6&p=10#/O0.O0.O0.A6.A1 → ?
 
-<<^ code="&#x0003;">>ni:///sha-256;FjriXYKZd6jmSS-tpd7BF5COGdBzOvSyVkEHJxyjQfE
+<<^ code="&#x0003;">>ni:///sha-256;mXhJ3aGrvTdGvHE9qeWwgmk3P980hCF8gWS66WDhd-s
 
 <<^ code="&#x0004;" -> to="?">>
