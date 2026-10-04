@@ -1,3 +1,11 @@
+---
+lang: "en"
+source: "lar:///ha.ka.ba/lares/docs/tw5-calls-colon-caveat"
+source-check: "ni:///sha-256;vAquQu-jlBroqFT5QPE4E6qVzWPfyhbcAiESux5T_5U"
+title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-colon-caveat"
+tongue: "x-lares>en"
+variant: "GFM"
+---
 
 
 <a id="entry"></a>

@@ -1,3 +1,11 @@
+---
+lang: "en"
+source: "lar:///ha.ka.ba/lares/docs/tw5-calls-undeclared-parameter"
+source-check: "ni:///sha-256;xLymsK-7yyYGFjW9qo4AcMlKVVWmDt2n4BbsCT37Ceg"
+title: "lar:///ha.ka.ba/lares/api/pono/submissions/tw5-calls-undeclared-parameter"
+tongue: "x-lares>en"
+variant: "GFM"
+---
 
 
 <a id="entry"></a>

@@ -1,3 +1,11 @@
+---
+lang: "en"
+source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
+source-check: "ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA"
+title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
+tongue: "x-lares>en"
+variant: "GFM"
+---
 
 
 <a id="abstract"></a>
