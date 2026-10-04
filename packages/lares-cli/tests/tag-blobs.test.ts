@@ -19,10 +19,10 @@ import { carrierCasFlagged } from "../src/cas-stage.js";
 const BIG = "x".repeat(1100 * 1024);  // over the 1 MiB fault wall — the ONE size the house reads
 const HUGE = "y".repeat(1100 * 1024); // over the 1 MiB fault wall
 
-const smallAhu = (slot: string) => `<<~ ahu #${slot}>>\n\nshort prose in ${slot}.\n\n<<~/ahu>>\n`;
+const smallAhu = (slot: string) => `<<~ ahu #/${slot}>>\n\nshort prose in ${slot}.\n\n<<~/ahu>>\n`;
 const metaAhu = (slot: string, body: string) =>
-  `<<~ ahu #${slot}>>\n\`\`\`toml meta\nrole = "source-text interior"\ntype = "text/markdown"\n\`\`\`\n\n${body}\n<<~/ahu>>\n`;
-const bareAhu = (slot: string, body: string) => `<<~ ahu #${slot}>>\n\n${body}\n<<~/ahu>>\n`;
+  `<<~ ahu #/${slot}>>\n\`\`\`toml meta\nrole = "source-text interior"\ntype = "text/markdown"\n\`\`\`\n\n${body}\n<<~/ahu>>\n`;
+const bareAhu = (slot: string, body: string) => `<<~ ahu #/${slot}>>\n\n${body}\n<<~/ahu>>\n`;
 
 describe("carrierNeedsTag — reuses the in-tree readiness law", () => {
   test("a small un-flagged text carrier needs NO tag (inlines pono)", () => {
@@ -53,7 +53,7 @@ describe("tagMemeText — stamp the single dominant blob-ahu", () => {
     expect(text).toContain('_lar_cas = "yes"');
     // The flag lands INSIDE the source-text meta fence, not the header — and CAS_FLAG_RE reads it.
     expect(carrierCasFlagged(text)).toBe(true);
-    expect(text.indexOf('_lar_cas = "yes"')).toBeGreaterThan(text.indexOf("#source-text"));
+    expect(text.indexOf('_lar_cas = "yes"')).toBeGreaterThan(text.indexOf("#/source-text"));
   });
 
   test("body chunked across many small ahus → mind-bundle, canon untouched", () => {
@@ -90,7 +90,7 @@ describe("tagMemeText — stamp the single dominant blob-ahu", () => {
    * narrow enough that neither of these is a fence.
    */
   test("a plain ```toml fence whose body opens with the word `meta` is NOT a meta fence", () => {
-    const content = `<<~ ahu #source-text>>\n\`\`\`toml\nmeta = "this is operator content"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
+    const content = `<<~ ahu #/source-text>>\n\`\`\`toml\nmeta = "this is operator content"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
     const meme = smallAhu("meme-header") + content;
     const { text, kind } = tagMemeText(meme);
     expect(kind, "a plain toml fence was stamped as a meta fence").toBe("meme-no-meta");
@@ -99,7 +99,7 @@ describe("tagMemeText — stamp the single dominant blob-ahu", () => {
 
   test("an opener carrying trailing prose is NOT a meta fence", () => {
     const content =
-      `<<~ ahu #source-text>>\n\`\`\`toml meta and a note the author left\nrole = "x"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
+      `<<~ ahu #/source-text>>\n\`\`\`toml meta and a note the author left\nrole = "x"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
     const meme = smallAhu("meme-header") + content;
     const { text, kind } = tagMemeText(meme);
     expect(kind).toBe("meme-no-meta");
@@ -112,7 +112,7 @@ describe("tagMemeText — stamp the single dominant blob-ahu", () => {
     ["two spaces", "```toml  meta"],
     ["a tab",      "```toml\tmeta"],
   ])("a meta fence spelled with %s still stamps the blob-ahu", (_label, open) => {
-    const content = `<<~ ahu #source-text>>\n${open}\nrole = "source-text interior"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
+    const content = `<<~ ahu #/source-text>>\n${open}\nrole = "source-text interior"\n\`\`\`\n\n${BIG}\n<<~/ahu>>\n`;
     const meme = smallAhu("meme-header") + content;
     const { text, kind } = tagMemeText(meme);
     expect(kind).toBe("ahu-tagged");
