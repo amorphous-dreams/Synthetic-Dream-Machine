@@ -53,7 +53,10 @@ function divide(title: string): Address {
   }
   const hash = title.indexOf("#");
   const beforeHash = hash < 0 ? title : title.slice(0, hash);
-  const fragment = hash < 0 ? "" : title.slice(hash + 1);
+  // Every lar: fragment is ROOTED (`#name` and `#/name` name the same slot — operator ruling,
+  // 21b4c5123). A leading `/` carries no addressing weight of its own; strip it on intake so
+  // `fragment`/`depth`/`parent` answer identically whichever spelling the title carries.
+  const fragment = hash < 0 ? "" : title.slice(hash + 1).replace(/^\//, "");
 
   const afterScheme = beforeHash.slice("lar://".length);
   const local = afterScheme.startsWith("/");

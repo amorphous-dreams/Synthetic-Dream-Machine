@@ -595,6 +595,30 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     for (const r of refusals) flags.push(r);
   }
 
+  // ── 4.5. lar: fragment rooting — FRAME AUTHORITY ──────────────────────────
+  //
+  // RULED (operator): every `lar:` URI fragment is ROOTED — `lar:///…#name` becomes
+  // `lar:///…#/name` (no plain-name anchors). Canon states this (21b4c5123: memetic-wikitext.mem
+  // media-type registration; lar-uri.mem). This fires wherever a lar: URI appears IN A CARRIER —
+  // a sigil argument, a wikilink target (`[[x|lar:///…#y]]`), or bare prose — never inside a
+  // fenced/code-span example. An already-rooted `#/name` is left alone (idempotent); a non-lar
+  // URI, and an http(s) URL's own `#fragment`, never match the required `lar:///` prefix at all.
+  // Slot OPENS (`<<~ ahu #name>>`) carry no `lar:///<path>` prefix, so clause 4 above — not this
+  // one — roots those.
+  {
+    let rooted = 0;
+    const mask = fencedSpans(seat.text);
+    const LAR_FRAGMENT_RE = /(lar:\/\/\/[^\s"'`#>)\]]+)#(?!\/)([^\s"'`>)\]|]+)/g;
+    const next = seat.text.replace(LAR_FRAGMENT_RE, (whole, path: string, name: string, offset: number) => {
+      if (inMask(mask, offset)) return whole;
+      rooted += 1;
+      return `${path}#/${name}`;
+    });
+    if (rooted > 0) {
+      seat.apply("frame", next, () => `lar: fragment: ${rooted} fragment${rooted === 1 ? "" : "s"} rooted (#name → #/name)`);
+    }
+  }
+
   // ── 5. Framing ends (positional → named) — FRAME AUTHORITY ───────────────
   // A framing sigil SHOWN inside a fence or a code span is held text, and keeps its spelling.
   {
