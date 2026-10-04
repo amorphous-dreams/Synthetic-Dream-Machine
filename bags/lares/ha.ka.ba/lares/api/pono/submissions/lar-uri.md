@@ -1,21 +1,6 @@
 
 
-<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;9Hs6XmpIui_TZVAtVuZw8vPdihkN9Nn_L8Nd3K6m26s -->
-<a id="normative-language"></a>
-
-## Normative Language
-
-The canonical normative verb set for this stack, adapted from IETF RFC 2119:
-
-- `MUST` — absolute requirement
-- `MUST NOT` — absolute prohibition
-- `SHOULD` — strong recommendation; deviation requires understood and weighed justification
-- `SHOULD NOT` — strong discouragement; deviation requires understood and weighed justification
-- `MAY` — truly optional
-
-Carrier laws may explain local usage, but MUST cite this meme rather than re-declaring the list as a top-level `#meta` key.
-
-<!-- /aka -->
+- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;9Hs6XmpIui_TZVAtVuZw8vPdihkN9Nn_L8Nd3K6m26s`
 
 <a id="meme-header"></a>
 
