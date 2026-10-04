@@ -75,6 +75,28 @@ Carried forward as named, not independently re-run by this hand:
 
 <<~/ahu>>
 
+<<~ ahu #/group-b-bind-under-handle>>
+
+!! GROUP B: `bind-under-handle.test.ts` red — gate correct, one caller unfed
+
+`packages/lararium-node/tests/bind-under-handle.test.ts` fails with:
+
+```
+[daemon-keyhive] Binding Gate: current lease frontier unavailable — refusing persona-bound boot
+```
+
+''Cause.'' `dbb85cf63` (retire clock authority) made `expectedEpoch` a required parameter of
+`bootDaemonKeyhive` (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:137`) and updated the two
+callers it touched — but not the joinee boot path this test drives, which still calls in without
+supplying the live lease epoch, so the gate correctly refuses.
+
+''Fix direction (not applied by this hand — not this hand's files).'' Supply the live lease epoch the
+same way `face-join.ts`'s `gateFaceJoin` already does for its own caller, rather than loosening or
+bypassing the gate. The gate's refusal is doing its job here; the joinee boot path is the thing that
+needs to catch up to it. Never revert or weaken the gate itself.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -86,6 +108,6 @@ Carried forward as named, not independently re-run by this hand:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ywVMJoACQRPN2zNT2hPXu5FBpna-SkcmaWtAVMnX1mY
+<<^ code="&#x0003;">>ni:///sha-256;GH9UNxmCUzoBvti0gdhBLYI55rkyx5WiXyBV1u2bKNQ
 
 <<^ code="&#x0004;" -> to="?">>
