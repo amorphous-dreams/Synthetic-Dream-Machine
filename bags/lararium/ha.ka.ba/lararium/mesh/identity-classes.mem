@@ -77,7 +77,7 @@ and forfeits the claim'', by construction rather than by rule.
 ''A SECOND cut rides beneath the CARRIES column — TRANSIT ⊥ READ.'' What a vessel RELAYS
 (transit/carriage, `sharePolicy`, advisory) never fuses with what it can DECRYPT (read/cap,
 BeeKEM/CGKA crypto) — the carry-contract's carry ⊥ read law
-([[carry-contract|lar:///ha.ka.ba/lararium/mesh/carry-contract]]#carry-read-contract). So the CARRIES
+([[carry-contract|lar:///ha.ka.ba/lararium/mesh/carry-contract#/carry-read-contract]]). So the CARRIES
 column reads on two lanes: the ''transit lane'' (which planes' bytes flow ACROSS this vessel) runs wide,
 and the ''read lane'' (which planes this vessel decrypts) runs narrow. A Herm and a node Lararium both
 BLIND-TRANSIT private ciphertext — they hold the encrypted replica and read NONE of it — while the
@@ -90,7 +90,7 @@ read-cap stays with the authorized decryptor alone. #the-mesh-breathes carries t
 !! The KERI ladder ~ transferable ⊥ non-transferable ⊥ delegated ⊥ none-civic
 
 The class-axis reads KERI's identifier taxonomy, and the split draws by ''persistence and accreted
-value'', never by title ([[founding-runbook|lar:///ha.ka.ba/lararium/mesh/founding-runbook]]#identity-classes):
+value'', never by title ([[founding-runbook|lar:///ha.ka.ba/lararium/mesh/founding-runbook#/identity-classes]]):
 
 * ''NON-TRANSFERABLE / basic'' (the USER floor) — a single-key identifier that pre-commits NO next
   key-set, so it ''cannot rotate by construction''. Its "rotation" reads as ''abandon-and-recreate'':
@@ -132,7 +132,7 @@ standing, cabal entanglement (#the-frame carries the cost curve at founding-runb
 * ''operator → kahu'' — a charter quorum SEATS the operator's key into the nexus k-of-n
   ([[charter-chain|lar:///ha.ka.ba/lararium/mesh/charter-chain]]); the operator gains a SECOND chain
   (the charter-KEL) atop its persona-KEL, and the steward repair-kit
-  ([[siege-resilience|lar:///ha.ka.ba/lararium/mesh/siege-resilience]]#repair-kit).
+  ([[siege-resilience|lar:///ha.ka.ba/lararium/mesh/siege-resilience#/repair-kit]]).
 
 The default holds: users stay light, operators carry the future — promotion moves by //grown value//,
 never by decree.
@@ -309,7 +309,7 @@ EXACT original root from a guardian quorum and re-signs a fresh device's edge wi
 (recovery-core: the reconstructed root == the original). ''The old operational private key returns to
 life'' — and the guardian quorum that rebuilds it holds, transiently, the whole signing authority,
 forever, over anything (the recovery quorum IS the impersonation quorum, admitted as a priced/social
-cost, [[persona-policy|lar:///ha.ka.ba/lares/api/pono/persona-policy]]#cryptographic-individual).
+cost, [[persona-policy|lar:///ha.ka.ba/lares/api/pono/persona-policy#/cryptographic-individual]]).
 
 ''Operator ruling (2026-07-20):'' a RANDOM recovery root authorizes a SIGNED recovery OPERATION rather
 than resurrects the old operational private key. Recovery ''preserves identity continuity, not
@@ -647,6 +647,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EQrGIRPAb79BVMRRhIIyXe908sYb1eHOZbC9RVaW66g
+<<^ code="&#x0003;">>ni:///sha-256;gtIT40x9jFBRIXYol3S03r3KKOArN7cVShDIKlSxQyk
 
 <<^ code="&#x0004;" -> to="?">>

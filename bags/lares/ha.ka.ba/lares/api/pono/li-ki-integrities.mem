@@ -1,24 +1,18 @@
 <<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
 <<^ code="&#x0002;">>
 
 ```toml meta
-title    = "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities"
-type     = "text/memetic-wikitext+tiddlywiki"
-uri-path = "ha.ka.ba/lares/api/pono/li-ki-integrities"
-```
-
-<<~ ॐ ँ ? -> lar:///ha.ka.ba/lares/api/pono/li-ki-integrities>>
-```toml meta
 cacheable = true
 hydrate   = true
+l-space   = "stable"
 mana      = 17
 manao     = 17
 manaoio   = 17
 namespace = "ॐ ँ"
 reflexive = true
-l-space   = "stable"
+title     = "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/li-ki-integrities"
 ```
@@ -160,8 +154,6 @@ Named empty seats, held open: ''value/preference'' (nothing yet reads what the n
 
 <<~/ahu>>
 
-<<~ ॐ ँ -> ?>>
-
-<<^ code="&#x0003;">>ni:///sha-256;f9tz0Ae9MjyD-uaRRx91OAfwd7vl4PXRyFy6sy7vnYk
+<<^ code="&#x0003;">>ni:///sha-256;2GXjr2lv7bEtnuZeBLp7ONYbf-SQkvOvJWL4xyEsx7E
 
 <<^ code="&#x0004;" -> to="?">>
