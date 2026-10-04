@@ -12,7 +12,7 @@
  * to the daemon-held circles doc. NEVER-FEDERATES, STRUCTURALLY: the adapter reaches ONLY the three circle-*
  * verbs; no crossroads-plane / board / announce verb is on it, so a follow leaves no central trace.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
 import type { CircleStore } from "@lararium/mesh";

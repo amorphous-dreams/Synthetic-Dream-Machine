@@ -45,7 +45,7 @@ module-type: startup
  *
  * PURE subpath (no Automerge) — the barrel `@lararium/mesh` drags in wasm the plugin build can't bundle.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#time
+ * Meme: lar:///ha.ka.ba/lararium/api/agent-worldline#/time
  */
 
 import {

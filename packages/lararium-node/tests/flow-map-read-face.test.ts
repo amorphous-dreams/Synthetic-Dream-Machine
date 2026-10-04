@@ -3,7 +3,7 @@
  * shore holds AT THE WIRE: only the coarse public projection crosses; the private territory
  * (vessel-local dial-records) never leaves. Proves serve → pull → verify end-to-end on localhost,
  * and witnesses the additive read-face refactor (the shore export variant).
- * Canon: lar:///ha.ka.ba/lararium/mesh/vessel-caps#lares-viales
+ * Canon: lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales
  */
 
 import { describe, test, expect } from "vitest";

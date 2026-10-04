@@ -23,7 +23,7 @@
  * quantity" is named and then hunted; the read files each lobe by what it carries and lets the shared cid
  * stalk narrow them. Inflationary ⊥ deflationary stays live.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#the-lattice
+ * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/the-lattice
  */
 
 import { readManifest, resolveCapDir } from "./sensorium.js";

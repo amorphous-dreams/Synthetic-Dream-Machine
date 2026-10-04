@@ -16,7 +16,7 @@
  *   lares sense refresh <query> --k <n>      cap the witness hits (default 5)
  *   lares sense refresh --all-strata         index every stratum (incl. the low-volume murmur)
  *
- * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-memory#refresh
+ * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-memory#/refresh
  */
 
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";

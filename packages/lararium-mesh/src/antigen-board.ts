@@ -15,7 +15,7 @@
  *
  * Platform-blind: rides ./base-doc (LarDoc) + ./kapae-antigen types only. NO node: imports — the DISK/repo
  * resolution of the board handle lives in the node holder (antigen-ring), which hands a read `LarDoc` here.
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#kapae-the-antigen
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen
  */
 
 import type { LarDoc } from "./base-doc.js";

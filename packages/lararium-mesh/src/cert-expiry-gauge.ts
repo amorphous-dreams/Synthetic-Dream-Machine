@@ -24,7 +24,7 @@
  * the reading it actually holds rather than inheriting a global present, and every band below is a pure
  * function a test can pin exactly.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/nexus-topology#the-shrinking-window
+ * Meme: lar:///ha.ka.ba/lararium/mesh/nexus-topology#/the-shrinking-window
  */
 
 /** Fraction of lifetime elapsed at which a renewal SHOULD already have happened, so someone hears early. */

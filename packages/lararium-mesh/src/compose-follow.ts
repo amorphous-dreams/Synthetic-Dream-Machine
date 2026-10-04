@@ -21,7 +21,7 @@
  * Platform-blind: rides ./handle-book + ./handle-card only. NO node: imports — the CLI and the browser both
  * consume this, each supplying its own local CircleStore adapter.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
 import type { HandleBook } from "./handle-book.js";

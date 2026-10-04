@@ -24,8 +24,8 @@
  *
  * Canon:
  *   lar:///ha.ka.ba/lararium/mesh/vessel-caps   (the five-cap model)
- *   lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#node-addressing
- *   lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#the-routing-substrate
+ *   lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/node-addressing
+ *   lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-routing-substrate
  * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace
  */
 

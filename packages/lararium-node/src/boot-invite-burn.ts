@@ -11,7 +11,7 @@
  * WITHHOLD-NEVER-FORGE: every refusal (garbled, wrong-Nexus, expired, already-spent, bad-seal) returns the pure
  * `BootVerdict{admitted:false}` — the caller reads that as "found your own group at the anon floor", never a throw.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-invite
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";

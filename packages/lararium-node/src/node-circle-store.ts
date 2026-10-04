@@ -13,7 +13,7 @@
  * (the ONE federated surface, deliberately posted). This module holds the first; it touches neither the
  * second nor the wire.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from "node:fs";

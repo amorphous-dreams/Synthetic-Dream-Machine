@@ -35,7 +35,7 @@
  * here. A PENDING (CAS miss) or an integrity fault leaves the handle skinny — "loading" holds,
  * a later render re-fires and re-tries; the body is never faked.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#tw5-shore
+ * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/tw5-shore
  */
 
 import { sha256HexBytesSync, cidFromUri } from "@lararium/mesh";

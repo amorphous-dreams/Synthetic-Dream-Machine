@@ -7,7 +7,7 @@
  * accretion of distinct vouchers, idempotence of one voucher re-minting, realm-scoping — guards the shape of
  * the DAG the price walks.
  *
- * Canon: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#the-standing
+ * Canon: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 import { CABAL_INVITE_DOMAIN } from "../src/domains.js";
 import { describe, test, expect } from "vitest";

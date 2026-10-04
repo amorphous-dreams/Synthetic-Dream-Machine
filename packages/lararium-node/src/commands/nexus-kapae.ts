@@ -23,7 +23,7 @@
  * signs with 2 of their OWN held persona-roots. A real cabal (2 DISTINCT operators) needs a collect-signatures
  * flow — surfaced, unbuilt (see the handback fork).
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#kapae-the-antigen
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen
  */
 
 import { Repo } from "@automerge/automerge-repo";

@@ -3,7 +3,7 @@
  * thing that ever crosses the read-face wire. A pure disclosure SHORE (mirrors
  * mesh-palace's `snapshotPublicFlowMap`): drop-private, keep-public.
  *
- * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#the-realm (NAMED-not-ruled —
+ * Canon: lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-realm (NAMED-not-ruled —
  * "the realm's identity is content-addressed; the name grants no authority" — though
  * it does leak metadata; see THE VEIL INVARIANT below)
  * + lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture ("cabalGroup = shared

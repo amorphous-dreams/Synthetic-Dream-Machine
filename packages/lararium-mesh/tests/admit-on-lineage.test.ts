@@ -6,7 +6,7 @@
  * the cap BITES here, what it turned away comes back VISIBLE, and with nothing capped the shore agrees
  * exactly with the manual path — so folding here costs no behaviour, it only removes a way to get it wrong.
  *
- * Canon: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#the-standing
+ * Canon: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";

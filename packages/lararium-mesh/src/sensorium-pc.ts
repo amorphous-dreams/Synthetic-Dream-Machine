@@ -57,7 +57,7 @@
  * commits, guarded by the R keel: it FIRES only on SURROGATE-significance (the τ beats an AR(1)
  * null) AND multi-scale agreement (dyadic bands trend up together). Either alone stays a WATCH.
  *
- * Meme: lar:///ha.ka.ba/lares/api/pono/sensorium-machina#the-py-r-web
+ * Meme: lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/the-py-r-web
  */
 
 const EPS = 1e-9;

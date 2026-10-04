@@ -267,7 +267,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--card <file>      (add) the self-certifying HandleCard for a nym this vessel has never met",
     ],
     next: ["lares circle list", "lares handle publish '<glamour>'   # the outward act, never a follow"],
-    meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks",
+    meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks",
   },
 
   handle: {

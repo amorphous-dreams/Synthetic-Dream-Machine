@@ -16,7 +16,7 @@
  * withdraws a ban only when it explicitly continues that ban's causal evidence.
  *
  * Platform-blind: rides ./crypto + @noble/ed25519 only. NO node: imports.
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#kapae-the-antigen
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen
  */
 
 import { KAPAE_ANTIGEN_DOMAIN } from "./domains.js";

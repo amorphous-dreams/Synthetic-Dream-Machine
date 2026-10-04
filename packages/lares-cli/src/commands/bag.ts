@@ -42,7 +42,7 @@ import type { ParsedArgs } from "../parse-args.js";
  *  NAMED FOR WHAT IT DOES, and for whose word it borrows. The ceremony is DXOS's, and `epoch` in this
  *  house is RESERVED for the monotone fencing frontier a grant binds to. A compaction CUTS history and
  *  fences nobody, so it carries the qualifier and leaves the bare word to the fence
- *  (lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#whose-word-is-it). */
+ *  (lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/whose-word-is-it). */
 export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
   const bagUrl = args.positional[0];
   if (!bagUrl) {

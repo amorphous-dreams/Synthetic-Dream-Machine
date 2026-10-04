@@ -18,7 +18,7 @@
  *
  * TypeScript carries lifecycle and read coordination. Python owns the capture pipe.
  *
- * Meme: lar:///ha.ka.ba/lararium/mempalace/genesis-doc#astral-multipalace
+ * Meme: lar:///ha.ka.ba/lararium/mempalace/genesis-doc#/astral-multipalace
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";

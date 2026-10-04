@@ -15,7 +15,7 @@
  * FAIL CLOSED: an unknown persona root, a malformed joiner nym, an expiry already past, or a signature that
  * does not read back off the board REFUSES before anything lands. Never write a vouch the fold would drop.
  *
- * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#the-standing
+ * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 
 import { Repo } from "@automerge/automerge-repo";

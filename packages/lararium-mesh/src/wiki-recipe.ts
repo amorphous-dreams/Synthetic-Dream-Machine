@@ -431,7 +431,7 @@ export interface RecipeFingerprintInput {
  * does not change the fingerprint. `canonicalJson` sorts object keys for
  * further stability.
  *
- * @see lar:///ha.ka.ba/lararium/api/personal-slot#questions Q4
+ * @see lar:///ha.ka.ba/lararium/api/personal-slot#/questions Q4
  */
 export async function computeRecipeFingerprint(
   input: RecipeFingerprintInput,

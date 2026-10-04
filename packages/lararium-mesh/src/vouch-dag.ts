@@ -33,7 +33,7 @@
  * module, never here.
  *
  * Platform-blind: rides ./cabal-invite + ./lineage-rank only. NO node: imports, no key, no I/O.
- * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-siege-gate
+ * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate
  */
 import type { CabalInvite } from "./cabal-invite.js";
 import type { VouchEdge } from "./lineage-rank.js";

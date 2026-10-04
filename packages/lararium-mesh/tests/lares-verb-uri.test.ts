@@ -6,7 +6,7 @@
  * args ride `arg-<name>` FIELDS, not the URI; the reaction-router lifts them into the
  * structured payload, which crosses the flat island wire as a `verb-args` JSON string.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris#verb-summon
+ * Meme: lar:///ha.ka.ba/lararium/mesh/lar-uris#/verb-summon
  */
 
 import { describe, test, expect } from "vitest";

@@ -43,7 +43,7 @@
  *
  * Platform-blind: rides ./kapae-antigen types + ./crypto only. NO node: imports (the DISK read/write of
  * the doc lives in the node adapter `nexus-doc`, which hands a parsed `NexusDoc` in here).
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#the-honest-edges
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-honest-edges
  */
 
 import { NEXUS_DOC_DOMAIN } from "./domains.js";

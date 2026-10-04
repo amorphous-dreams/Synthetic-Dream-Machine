@@ -20,7 +20,7 @@
  * the ki/li/couple_r pattern). The seat gates BOTH surfaces — the CLI's `--approve` (guardHitl below) and
  * the MCP tool's guard_hitl are the SAME reversibility×trust grid, so an HITL verb refuses on either door.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#sensorium-lifecycle
+ * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/sensorium-lifecycle
  */
 
 import {

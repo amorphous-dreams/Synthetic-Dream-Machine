@@ -14,7 +14,7 @@
  *
  *   lares sense [<sensorium>] jing   the coherence verdict — readable lobes · coheres · radius · offending lobe · note
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#the-lattice
+ * Meme: lar:///ha.ka.ba/lararium/mesh/mesh-palace · lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/the-lattice
  */
 
 import { readJing, meshSensoriumDir } from "@lararium/node";

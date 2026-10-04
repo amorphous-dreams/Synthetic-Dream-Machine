@@ -8,7 +8,7 @@
  * write exists in either shore. A future device-fleet adapter wraps the SAME `CircleStore` shape over a PRIVATE
  * bag for cross-vessel sync; the interface never moves.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
 import {

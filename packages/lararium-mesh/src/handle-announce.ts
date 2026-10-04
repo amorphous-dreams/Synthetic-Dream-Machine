@@ -32,8 +32,8 @@
  * synced doc, so reading NEVER throws on a malformed tiddler (a bad entry is skipped, and every surviving card
  * still passes the recogniser rule before it is trusted).
  *
- * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-oracle-plane (the read-open plane the card
- * publishes on); lar:///ha.ka.ba/lares/api/pono/persona-circle#the-vault (the publication model).
+ * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane (the read-open plane the card
+ * publishes on); lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault (the publication model).
  */
 import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
 import { HANDLE_CARD_DOMAIN, type HandleCard } from "./handle-card.js";

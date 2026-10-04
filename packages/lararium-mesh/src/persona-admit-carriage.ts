@@ -14,7 +14,7 @@
  * Platform-blind: rides ./crypto (base64url) + ./persona-admit (the hop shapes) only. NO node imports — the CLI,
  * the node daemon, and the browser all consume it.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/persona-admit#carriage
+ * Meme: lar:///ha.ka.ba/lararium/mesh/persona-admit#/carriage
  */
 
 import { base64UrlEncode, base64UrlDecode, utf8Bytes } from "./crypto.js";

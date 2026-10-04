@@ -15,7 +15,7 @@
  * seal marker), and the carry-split blind-transits exactly those. The gate and its fail-closed discipline
  * stay put; only the oracle's affirmative set grows.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#carry-read-contract
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/carry-read-contract
  */
 
 import type { DocumentId } from "@automerge/automerge-repo";

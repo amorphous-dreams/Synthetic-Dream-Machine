@@ -11,7 +11,7 @@
  * the face re-exports the snapshot and publishes a fresh causal pointer. The local
  * causal frontier persists to disk so a reboot can continue the same lineage.
  *
- * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-oracle-plane
+ * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane
  * (the content-addressed floor; Hypercore live-streaming rides above it as the
  * deferred end-goal). The pure core (export/build/verify) lives in @lararium/mesh.
  */

@@ -40,7 +40,7 @@
  * instrument imposes structure (deflationary) stays LIVE — this organ files the flow's parts by what they
  * carry and lets the aperture (the triangle cofaces) narrow them; it names no quantity it then hunts for.
  *
- * Meme: lar:///ha.ka.ba/lares/api/pono/sensorium-machina#ki · lar:///ha.ka.ba/lares/api/pono/cohomological-gate
+ * Meme: lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/ki · lar:///ha.ka.ba/lares/api/pono/cohomological-gate
  */
 
 import type { MeshCoupling } from "./mesh-coupling.js";

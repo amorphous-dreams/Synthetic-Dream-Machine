@@ -41,7 +41,7 @@
  * one layer up, where the platform lives — this module holds no key and touches no store.
  *
  * Platform-blind: rides ./cabal-invite + ./admission-price only. NO node: imports.
- * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-identity#the-siege-gate
+ * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate
  */
 import {
   decideCabalJoin, type CabalInvite, type CabalJoinPolicy, type JoinRefusal,
@@ -79,7 +79,7 @@ export interface AdmissionVerdict {
  * An `open` policy skips the invite requirement but STILL prices — open means "no invite needed", never
  * "free": the wall keeps pricing the cartel out whichever way the operator sets the invite dial.
  *
- * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#the-standing
+ * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 export async function admitToRealm(args: {
   readonly policy:            CabalJoinPolicy;
@@ -156,7 +156,7 @@ export interface LineageAdmission extends AdmissionVerdict {
  * spent instead of trusting a graph that came back quietly shorter than the invites it handed in.
  *
  * Platform-blind, like everything here: node and browser compose the identical shore.
- * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#the-standing
+ * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 export async function admitOnLineage(args: {
   readonly policy:            CabalJoinPolicy;

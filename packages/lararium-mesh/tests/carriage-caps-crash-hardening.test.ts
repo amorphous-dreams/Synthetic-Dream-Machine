@@ -10,7 +10,7 @@
  * GREEN (post-fix): the tick's body is guarded — the throw is logged via `onLog`, never surfaces as an
  * unhandled rejection, and the loop still reschedules (does not stop()).
  *
- * Canon: lar:///ha.ka.ba/lararium/mesh/vessel-caps#lares-viales
+ * Canon: lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales
  */
 
 import { describe, test, expect } from "vitest";

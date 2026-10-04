@@ -11,7 +11,7 @@
  * node does. The board carries no write-ACL — the self-certifying card is the trust (who-face), so an
  * openly-synced board stays forgery-proof. Requires the substrate (the composite to layer the board into).
  *
- * Canon: lar:///ha.ka.ba/lararium/docs/crossroads · lar:///ha.ka.ba/lares/api/pono/persona-circle#the-vault
+ * Canon: lar:///ha.ka.ba/lararium/docs/crossroads · lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault
  */
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import type { CapModule } from "./cap-compose.js";

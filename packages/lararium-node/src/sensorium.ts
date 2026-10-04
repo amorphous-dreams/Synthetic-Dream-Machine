@@ -28,7 +28,7 @@
  * {@link capDecl} chooses; {@link resolveCapDir} inverts. The manifest thus stays a FAITHFUL snapshot
  * of where the bytes actually are, never a wishful canonical claim.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#palace-instance · lar:///ha.ka.ba/lares/api/pono/has-stack#runtime-twin
+ * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance · lar:///ha.ka.ba/lares/api/pono/has-stack#runtime-twin
  */
 
 import { spawn } from "node:child_process";
@@ -417,7 +417,7 @@ export function writeManifest(sensoriumDir: string, m: SensoriumManifest): void 
  * MESHPALACE, would compose this SAME transport plus a SOURCE-FEED cap (see {@link PalaceFeedCap})
  * — modeled here, federation deferred.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/capture-annotation-model#isomorphic-telemetry-vm
+ * Meme: lar:///ha.ka.ba/lararium/api/capture-annotation-model#/isomorphic-telemetry-vm
  */
 
 
@@ -915,7 +915,7 @@ export function _liveContentHolderCount(): number {
  * structural hash, no AST payload stored here) but riding the IDENTICAL transport cap — two
  * op-surface shapes, one transport, no god base-class (the holder 2-shapes lesson, one up).
  *
- * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#two-planes
+ * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/two-planes
  */
 
 
@@ -1072,7 +1072,7 @@ export function _liveFormHolderCount(): number {
  * Each match carries its `verbatim_sha` (the cross-plane join key) so a multi-graph recall can fuse the
  * structure leg against content by that sha.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#dual-graph
+ * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/dual-graph
  */
 
 /** One nearest-shape match from the structure query face. `verbatim_sha` is the cross-plane join key. */

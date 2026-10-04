@@ -16,7 +16,7 @@
  * Platform: IndexedDB for the burn-set (the browser floor), @noble/ed25519 for the OFFLINE seal check
  * (mesh's `verifyBootInviteSig` — no added dep). NO relay, no authority, no clock beyond the local `now`.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-invite
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import {

@@ -39,7 +39,7 @@
  *
  * Platform-blind: rides ./base-doc + ./cabal-invite only. NO node: imports — the repo resolution of the board
  * handle lives in the node holder, which hands a read `LarDoc` in.
- * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#the-standing
+ * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 
 import { VOUCH_EDGE_DOMAIN } from "./domains.js";

@@ -22,7 +22,7 @@
  *   · an entry that does not COUNT against the seated roster → REFUSE; never write a dead admit.
  *   · a malformed nym → REFUSE.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-operator-contract
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";

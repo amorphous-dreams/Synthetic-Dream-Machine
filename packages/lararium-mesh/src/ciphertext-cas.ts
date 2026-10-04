@@ -34,7 +34,7 @@
  * epoch-rotation is surfaced as the honest gap (the seal FAILS CLOSED with no secret — see the node installer).
  *
  * Platform-blind: `@noble/hashes/blake3` (audited, browser-shippable) + agile-digest + crypto `hex` only.
- * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#cad-storage
+ * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-storage
  */
 
 import { CAD_KEYSTREAM_INFO } from "./domains.js";

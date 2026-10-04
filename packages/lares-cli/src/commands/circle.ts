@@ -23,7 +23,7 @@
  * have never met) — carry its self-certifying HandleCard to admit it first. Recognition stays CLIENT-side
  * (the local handle-book) ahead of the circles membership write; the handle-book co-move is the open fork.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
 import { readFileSync } from "node:fs";

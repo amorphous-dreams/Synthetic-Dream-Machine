@@ -38,7 +38,7 @@
 #   KEEP=1 tools/rehearse-founding.sh       # leave the final mesh standing for inspection
 #
 # Prereq: the host builds first (`pnpm -r build`) — the containers trust the mounted dist.
-# Meme: lar:///ha.ka.ba/lararium/mesh/founding-runbook#rehearse
+# Meme: lar:///ha.ka.ba/lararium/mesh/founding-runbook#/rehearse
 
 set -u
 

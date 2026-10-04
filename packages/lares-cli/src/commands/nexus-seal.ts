@@ -371,7 +371,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
 
 const TRANSITION_PENDING_FILE = "transition-pending.json";
 const TRANSITIONS_FILE        = "transitions.json";
-const GROWTH_RITE_URI         = "lar:///ha.ka.ba/lararium/mesh/founding-runbook#the-growth-rite";
+const GROWTH_RITE_URI         = "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/the-growth-rite";
 
 interface PendingTransition {
   fromEpochCid:  string;

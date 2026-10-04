@@ -8,7 +8,7 @@
  * The recovery twin of kahu-blind (S1): S1 = a custodian can't READ; S3 = a custodian can't RECOVER.
  *
  * Env: LAR_KAHU_ROLE (citizen|kahu) · LAR_KAHU_SHARED (req, shared volume)
- * Meme: lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#the-recovery · project_civic_recovery_and_waxstamp
+ * Meme: lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-recovery · project_civic_recovery_and_waxstamp
  */
 
 import {

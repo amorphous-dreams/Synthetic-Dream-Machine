@@ -25,7 +25,7 @@
  * published either — a secrets store that never registers simply never gains the extra floor, which surfaces
  * the moment its bag reads publishable.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/reach-plane#the-vault-reads-as-a-bag
+ * Meme: lar:///ha.ka.ba/lararium/mesh/reach-plane#/the-vault-reads-as-a-bag
  */
 
 import type { DocumentId } from "@automerge/automerge-repo";

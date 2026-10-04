@@ -278,7 +278,7 @@ export function presenterIsKapaed(antigen: AntigenRing | null, peerId: string): 
  * (`persona-group-ring.ts` — the seal check rides in as an injected function precisely so keyhive never
  * enters this package). The wait is the worker-boundary message of ② and the naming freeze of ③.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#carry-read-contract
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/carry-read-contract
  */
 export async function carryContractShareDecision(
   relayPeers: ReadonlySet<string>,
@@ -352,7 +352,7 @@ export interface PlaneSeal {
  * DEGENERATION (the read-lane-untouched proof): with `membership = null` OR `seal = null`, this returns
  * EXACTLY `carryContractShareDecision(...)` — the carry-split adds a lane, it never widens the floor.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#carry-read-contract
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/carry-read-contract
  */
 export async function carrierShareDecision(
   relayPeers: ReadonlySet<string>,
@@ -409,7 +409,7 @@ export interface CrossOperatorAdmission {
  * The #59 Kapae antigen runs AHEAD of the carriage, at the sharePolicy — a Kapae'd cross-operator draws Mu
  * even for a federatable plane; this fn only classifies, it never overrides the antigen.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#carry-read-contract
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/carry-read-contract
  */
 export function classifyCrossOperatorAdmission(proofVerified: boolean): CrossOperatorAdmission {
   if (proofVerified) {

@@ -20,7 +20,7 @@
  * Platform-blind: rides ./crypto (base64url) + ./handle-card (the card shape) only. NO node imports — the CLI and
  * the browser both consume it.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-two-stacks
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */
 
 import { base64UrlEncode, base64UrlDecode, utf8Bytes } from "./crypto.js";

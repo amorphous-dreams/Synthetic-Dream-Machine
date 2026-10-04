@@ -7,7 +7,7 @@
  * widget reads (`list` = active, plus held/surface/recipeSlug/recipe), and that the
  * state title stays under the $:/temp/ prefix (the confirmed non-sync boundary).
  *
- * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-ui-tiddlers#switcher-state
+ * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-ui-tiddlers#/switcher-state
  */
 
 import { describe, test, expect } from "vitest";

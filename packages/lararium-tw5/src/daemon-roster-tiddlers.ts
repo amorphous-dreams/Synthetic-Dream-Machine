@@ -16,7 +16,7 @@
  * with the daemon routed executor, F-C); the surface + its refresh button stand now, painting empty until
  * that push lands. The four seed sites collapse to ONE (seedDaemonProtocol), and this rides beside them.
  *
- * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-ui-tiddlers · lar:///ha.ka.ba/lararium/api/living-grammar-palace#sensorium-lifecycle
+ * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-ui-tiddlers · lar:///ha.ka.ba/lararium/api/living-grammar-palace#/sensorium-lifecycle
  */
 
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";

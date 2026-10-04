@@ -17,7 +17,7 @@
  * move, so recall stays unbroken (F4 field-flip). The alias-indirection store-swap (Sanity hot-swap) and
  * the daemon-loop cadence and the hardening SIGNAL all ship as STABLE GROUND, feature-gated OFF.
  *
- * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#sensorium-lifecycle
+ * Meme: lar:///ha.ka.ba/lararium/api/living-grammar-palace#/sensorium-lifecycle
  */
 
 import { mkdirSync, readFileSync, rmSync } from "node:fs";

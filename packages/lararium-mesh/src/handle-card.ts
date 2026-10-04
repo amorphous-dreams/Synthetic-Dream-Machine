@@ -19,7 +19,7 @@
  * Pure and isomorphic, like oracle-substrate: this module holds no I/O and no key. The vessel supplies the
  * signer; the caller carries the bytes; the read-open oracle plane serves the published blob.
  *
- * Design-of-record: lar:///ha.ka.ba/lares/api/pono/persona-circle#the-vault (publication model).
+ * Design-of-record: lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault (publication model).
  */
 import { HANDLE_CARD_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, hexToBytes, sha256Hex, defaultCryptoProvider } from "./crypto.js";

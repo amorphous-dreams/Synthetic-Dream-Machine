@@ -20,7 +20,7 @@
  * project — the correct fate for a spelling this grammar does not mint. Admitting near-misses would
  * trade that loud surface for a silent guess about what the author meant.
  *
- * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#media-type
+ * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type
  */
 
 /** What every carrier declares and every reader dispatches on — the one spelling. */

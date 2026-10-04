@@ -10,7 +10,7 @@
  * pins byte-for-byte (mu-void.test.ts).
  *
  * Platform-blind: rides ./crypto only. NO node: imports.
- * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#kapae-the-antigen
+ * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen
  */
 
 import { MU_VOID_DOMAIN } from "./domains.js";

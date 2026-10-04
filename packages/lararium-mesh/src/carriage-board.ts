@@ -20,7 +20,7 @@
  *
  * Platform-blind: rides ./base-doc (LarDoc) + ./carriage-registry types only. NO node: imports — the DISK /
  * repo resolution of the board handle lives in the node holder (nexus-carriage), which hands a read `LarDoc`.
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#the-operator-contract
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
 import type { LarDoc } from "./base-doc.js";
