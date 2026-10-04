@@ -14,8 +14,8 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-module
  */
-import { createHash } from "node:crypto";
 import { tagDigest } from "@lararium/mesh/agile-digest";
+import { sha256HexSync } from "@lararium/mesh";
 import { readFrame, stampCarrier, META_OPEN_RE } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { alignMetaTomlColumns } from "../src/meme-normalize.js";
@@ -27,7 +27,7 @@ import { alignMetaTomlColumns } from "../src/meme-normalize.js";
 export function moduleBodyDigest(content: string, moduleRef: string): string | null {
   const record = memeticWikitextDeserializer(content, { title: moduleRef }).find((r) => r.title === moduleRef);
   if (!record || typeof record.text !== "string") return null;
-  return createHash("sha256").update(record.text, "utf8").digest("hex");
+  return sha256HexSync(record.text);
 }
 
 /**

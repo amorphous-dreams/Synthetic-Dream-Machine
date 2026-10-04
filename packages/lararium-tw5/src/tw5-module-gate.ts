@@ -1,4 +1,4 @@
-import { parsePonoLevel, digestsEqual } from "@lararium/mesh";
+import { parsePonoLevel, digestsEqual, hex } from "@lararium/mesh";
 import type { TW5Instance } from "./types/tiddlywiki.js";
 
 // Module gate thresholds on the 0–20 Level scale: mana ≥ 18, manao ≥ 17, manaoio ≥ 17.
@@ -69,9 +69,7 @@ async function verifySha256(body: string, claimedHex: string): Promise<boolean> 
     const subtle = globalThis.crypto?.subtle;
     if (!subtle) return false;
     const buf = await subtle.digest("SHA-256", new TextEncoder().encode(body));
-    const actual = Array.from(new Uint8Array(buf))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
+    const actual = hex(new Uint8Array(buf));
     // Dual-read: a `source-sha256` field may ride bare (implicit sha256) OR tagged
     // (`sha256:…`) — `digestsEqual` normalizes both, so read-accepts-both lands
     // BEFORE any emitter (sync-heleuma) starts writing the tagged form.

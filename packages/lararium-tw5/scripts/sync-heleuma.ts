@@ -38,11 +38,11 @@
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from "fs";
 import { execSync } from "child_process";
-import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lararium/mesh/node";
 import { tagDigest, digestsEqual } from "@lararium/mesh/agile-digest";
+import { sha256HexSync } from "@lararium/mesh";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
 import { moduleBodyDigest, applySourceSha256Patch } from "./heleuma-digest.js";
 
@@ -579,7 +579,7 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   const srcSym    = d.symbols.join(" ");
   const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
   const joined    = bodies.join("\n\n");
-  const bodyHash  = tagDigest(createHash("sha256").update(joined, "utf8").digest("hex"));   // canonical tagged
+  const bodyHash  = tagDigest(sha256HexSync(joined));   // canonical tagged
   const kindLabel   = d.kind === "filter-operator" ? "TW5 filter operator" : "TW5 widget";
   // ka handles a single symbol; ba handles multiple space-separated symbols
   const heleumaMode = d.symbols.length === 1 ? "ka" : "ba";
