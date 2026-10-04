@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;eD7sST41Ls3pXmHdALIFzvafBJ6UAibf7wXnObVcOAo"
+source-check: "ni:///sha-256;Gb2eaSFPd84pWlf9EGlQTxqVr_QQzYQCgDjYSCRM5ck"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -869,6 +869,16 @@ woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare `yes`/`no`
 `source-check` spells as an RFC 6920 `ni:` URI, the same form the carrier's own block check wears
 (#/control-set). The kramdown-rfc2629 profile additionally REQUIRES `docname`/`cat`/`ipr`/`author`/`date`
 in the carrier's own root meta and refuses naming what a carrier's meta lacks.
+
+**Informative vs binding.** kramdown-rfc2629 toolchains split a document's own references into two
+classes — `normative` (the reader needs this to understand the spec) and `informative` (background,
+not required). The house carries two pins over that same split, under its own words: `kanawai`
+(`lar:///ha.ka.ba/lares/api/pono/kanawai`) declares a BINDING relation to its target — the law a
+carrier holds itself to — and weaves into the kramdown shore's `normative:` class; `aka`
+(`lar:///ha.ka.ba/lares/api/pono/aka`) declares an INFORMATIVE relation and weaves into
+`informative:`. WHICH SIGIL decides the category, never the target or where the pin stands. The
+house itself never says "normative" — `kanawai` carries the house's own word for what that reference
+class means.
 
 ### Ids at the shore
 

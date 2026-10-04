@@ -22,7 +22,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/lar-uri"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -463,6 +463,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-O42Q6UzlZpd9IfSXr4MNULzsPEeOMN8emdfdZH7T38
+<<^ code="&#x0003;">>ni:///sha-256;-wM_FlZw-796LcuPjtaZKsxH40tbFi_j91DHGO94b4U
 
 <<^ code="&#x0004;" -> to="?">>

@@ -26,7 +26,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/memetic-wikitext"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -706,6 +706,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MvN3aV5Ifr8D4ywqtxm4TLAToPJC2y4ayft7PTj4Tew
+<<^ code="&#x0003;">>ni:///sha-256;F2KjrtlavKr_nCC3Pcd5OiZgYMO_eje2CJH9eXwDDiU
 
 <<^ code="&#x0004;" -> to="?">>
