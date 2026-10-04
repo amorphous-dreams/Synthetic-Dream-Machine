@@ -114,8 +114,13 @@ describe("meta fence — lar_* sensorium metadata round-trips; only structural/p
     const firstPara = "paragraph 0 — a line of real body content.";
     const occurrences = out.split(firstPara).length - 1;
     expect(occurrences).toBe(1);
-    // the structural keys never surface as TOML assignments
-    expect(out).not.toMatch(/^\s*title\s*=/m);
+    // `text` never surfaces as a TOML assignment — the body IS the "text" key; re-emitting it as
+    // meta would double every byte of it on every round trip, the exact fault this test pins.
+    // `title` is NOT in that set: it is the record's own address (no body bytes to double), and
+    // every root re-emits it as an authored identity (deserializer.ts's META_DENY — title is
+    // deliberately absent from it, unlike CHILD_META_DENY's root-only exclusion), matching the
+    // live corpus (e.g. doa/index.mem, the-law-of-5s.mem) carrying it explicitly.
+    expect(out).toContain("title");
     expect(out).not.toMatch(/^\s*text\s*=/m);
     // parse∘render re-reads the same body — no doubling
     const again = memeticWikitextDeserializer(out, { title: URI });
