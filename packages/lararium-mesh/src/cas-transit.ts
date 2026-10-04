@@ -38,8 +38,14 @@ import { sha256HexBytesSync } from "./crypto.js";
  *  `cid/` blob (bare hex / `sha256:`). The gate on the serve side and the verify on the fetch side both read this. */
 export type CidDigestClass = "sealed" | "cleartext";
 
+/** A bare 64-char hex cleartext cid — distinct from `source-sha256`'s carrier digest (always tagged
+ *  now); a wire-protocol cid from a peer/relay may still arrive bare, so this class read stays
+ *  tag-agnostic on purpose (bytes from OUTSIDE the house, not pre-agile debt to migrate away). */
+const BARE_CID_HEX = /^[0-9a-fA-F]{64}$/;
+
 /** Read a cid's class off its own tag. A malformed cid reads CLEARTEXT-shaped and fails every verify downstream. */
 export function cidDigestClass(cid: string): CidDigestClass {
+  if (BARE_CID_HEX.test(cid)) return "cleartext";
   try { return parseDigest(cid).algo === CIPHERTEXT_CID_ALGO ? "sealed" : "cleartext"; } catch { return "cleartext"; }
 }
 
@@ -49,10 +55,14 @@ export function cidDigestClass(cid: string): CidDigestClass {
  * (both collision-resistant; a tampered byte fails both). Never widens: bytes matching neither are rejected.
  */
 export function verifyCidBytes(bytes: Uint8Array, cid: string): boolean {
+  const bare = BARE_CID_HEX.test(cid);
   let parsed: { algo: string; hex: string };
-  try { parsed = parseDigest(cid); } catch { return false; }
-  if (parsed.algo === CIPHERTEXT_CID_ALGO) return verifyCiphertextCid(bytes, cid);
-  const bare = /^[0-9a-fA-F]{64}$/.test(cid);
+  if (bare) {
+    parsed = { algo: "sha256", hex: cid.toLowerCase() };
+  } else {
+    try { parsed = parseDigest(cid); } catch { return false; }
+  }
+  if (!bare && parsed.algo === CIPHERTEXT_CID_ALGO) return verifyCiphertextCid(bytes, cid);
   if (sha256HexBytesSync(bytes).toLowerCase() === parsed.hex.toLowerCase()) return true;
   return bare ? verifyCiphertextCid(bytes, cid) : false;
 }

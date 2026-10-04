@@ -9,13 +9,13 @@ import {
 import { sha256HexBytesSync, utf8Bytes } from "../src/crypto.js";
 
 const bytes = utf8Bytes("the one exact public artifact");
-const cid = sha256HexBytesSync(bytes);
+const cid = `sha256:${sha256HexBytesSync(bytes)}`;
 
 const publication = (): PublicArtifactPublication => ({
   schema: "lararium-pronaos-public-artifact/v1",
   operator: { id: "house-operator", authentication: "local-operator" },
   artifactCid: cid,
-  integrity: `sha256:${cid}`,
+  integrity: cid,
   route: { path: "/", contentType: "text/html; charset=utf-8", cache: "no-store" },
   ability: PUBLIC_ARTIFACT_DELIVERY_ABILITY,
 });
@@ -36,7 +36,7 @@ describe("Pronaos public artifact publication", () => {
   test("a different CID or route cannot widen the publication", () => {
     expect(() => deliverPublicArtifact(publication(), { path: "/private", artifactCid: cid }, bytes))
       .toThrow(/route is not declared/);
-    expect(() => deliverPublicArtifact(publication(), { path: "/", artifactCid: "b".repeat(64) }, bytes))
+    expect(() => deliverPublicArtifact(publication(), { path: "/", artifactCid: `sha256:${"b".repeat(64)}` }, bytes))
       .toThrow(/CID is not declared/);
   });
 

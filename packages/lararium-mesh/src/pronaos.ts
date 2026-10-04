@@ -1,4 +1,4 @@
-import { digestsEqual, parseDigest } from "./agile-digest.js";
+import { digestsEqual, parseDigest, formatDigest, IMPLICIT_ALGO } from "./agile-digest.js";
 import { sha256HexBytesSync } from "./crypto.js";
 
 /**
@@ -155,7 +155,8 @@ export interface PublicArtifactPublication {
     readonly id: string;
     readonly authentication: "local-operator";
   };
-  /** Content identifier for the exact bytes; alpha accepts bare or sha256-tagged form. */
+  /** Content identifier for the exact bytes; must be sha256-tagged (`sha256:<hex>`) — every digest
+   *  in the house rides tagged, no bare-hex dual-read. */
   readonly artifactCid: string;
   /** Independent integrity spelling for the same bytes; it must name sha256 and equal the CID. */
   readonly integrity: string;
@@ -347,7 +348,7 @@ export function deliverPublicArtifact(
   if (!(bytes instanceof Uint8Array)) {
     fail("public artifact bytes are not a Uint8Array");
   }
-  const computed = sha256HexBytesSync(bytes);
+  const computed = formatDigest(IMPLICIT_ALGO, sha256HexBytesSync(bytes));
   if (!digestsEqual(computed, publication.artifactCid) || !digestsEqual(computed, publication.integrity)) {
     fail("public artifact bytes fail integrity");
   }

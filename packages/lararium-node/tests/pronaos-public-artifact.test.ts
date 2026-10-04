@@ -11,12 +11,12 @@ import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import type { PublicArtifactPublication } from "@lararium/mesh";
 
 const bytes = new TextEncoder().encode("operator-published bytes");
-const cid = createHash("sha256").update(bytes).digest("hex");
+const cid = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 const publication = (): PublicArtifactPublication => ({
   schema: "lararium-pronaos-public-artifact/v1",
   operator: { id: "house-operator", authentication: "local-operator" },
   artifactCid: cid,
-  integrity: `sha256:${cid}`,
+  integrity: cid,
   route: { path: "/assets/published.js", contentType: "application/javascript", cache: "immutable" },
   ability: "public-artifact:deliver",
 });

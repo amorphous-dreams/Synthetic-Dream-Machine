@@ -14,7 +14,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-module
  */
-import { tagDigest } from "@lararium/mesh/agile-digest";
+import { tagDigest, formatDigest, IMPLICIT_ALGO } from "@lararium/mesh/agile-digest";
 import { sha256HexSync } from "@lararium/mesh";
 import { readFrame, stampCarrier, META_OPEN_RE } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
@@ -22,12 +22,13 @@ import { alignMetaTomlColumns } from "../src/meme-normalize.js";
 
 /**
  * The digest the gate verifies: SHA-256 (hex) of the module record's `text`, read through the same
- * deserializer that hands the gate its tiddler. Null where the carrier yields no record at that address.
+ * deserializer that hands the gate its tiddler, TAGGED (`sha256:…`) — every carrier digest in the
+ * house rides tagged now. Null where the carrier yields no record at that address.
  */
 export function moduleBodyDigest(content: string, moduleRef: string): string | null {
   const record = memeticWikitextDeserializer(content, { title: moduleRef }).find((r) => r.title === moduleRef);
   if (!record || typeof record.text !== "string") return null;
-  return sha256HexSync(record.text);
+  return formatDigest(IMPLICIT_ALGO, sha256HexSync(record.text));
 }
 
 /**

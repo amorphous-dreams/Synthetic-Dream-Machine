@@ -445,9 +445,9 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
       continue;
     }
     const existingHash = toml["source-sha256"] ?? "";
-    // Dual-read across the tag boundary: `existingHash` may ride bare (pre-agile) OR
-    // tagged (`sha256:…`); `digestsEqual` normalizes both, so a merely-reformatted
-    // digest never reads as content drift. Empty existing → not-equal → drift (add).
+    // `existingHash` rides tagged (`sha256:…`) like every carrier digest now;
+    // `digestsEqual` still normalizes the canonical `:` vs legacy SRI `-` spelling.
+    // Empty existing → not-equal → drift (add).
     const hashDrift    = !digestsEqual(liveHash, existingHash);
 
     const anchorUri = toml["uri-path"] ?? mdPath;

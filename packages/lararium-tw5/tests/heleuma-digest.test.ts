@@ -40,11 +40,11 @@ describe("★ source-sha256 is the gate's own hash ★", () => {
   test("the digest equals SHA-256 of the record text the gate verifies", () => {
     const gateText = String(memeticWikitextDeserializer(moduleCarrier, { title: MODULE }).find((r) => r.title === MODULE)?.text);
     expect(gateText).toBe(CODE);
-    expect(moduleBodyDigest(moduleCarrier, MODULE)).toBe(sha(CODE));
+    expect(moduleBodyDigest(moduleCarrier, MODULE)).toBe(`sha256:${sha(CODE)}`);
   });
 
   test("CONTROL — the STX..ETX span is NOT what the gate hashes (it carries the meta)", () => {
-    expect(moduleBodyDigest(moduleCarrier, MODULE)).not.toBe(sha(moduleCarrier.slice(moduleCarrier.indexOf("&#x0002;"))));
+    expect(moduleBodyDigest(moduleCarrier, MODULE)).not.toBe(`sha256:${sha(moduleCarrier.slice(moduleCarrier.indexOf("&#x0002;")))}`);
   });
 });
 

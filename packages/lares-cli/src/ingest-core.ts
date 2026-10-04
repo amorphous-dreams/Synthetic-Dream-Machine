@@ -180,10 +180,9 @@ export function scanFiles(
     } catch { /* no readable sidecar — a self-contained filetype needs none */ }
     const diskHash   = carrierHash(text, meta);
     const syncedHash = tree.get(syncedTreeKey(toBag, uri));
-    // Dual-read: the tree value may be stored bare (pre-agile) while `diskHash`
-    // comes freshly computed (tagged post-step-3) — `digestsEqual` normalizes the
-    // straddle, so a byte-identical carrier still reads "unchanged" across the tag
-    // boundary (no mass re-land). Behaviour byte-identical on today's all-bare store.
+    // Both sides ride tagged now (`carrierHash` emits `sha256:…`; the tree stores
+    // the same tagged form) — `digestsEqual` still normalizes the two spellings a
+    // tagged digest can carry (canonical `:` vs legacy SRI `-`).
     const status: ScanStatus =
       syncedHash === null ? "new" : digestsEqual(diskHash, syncedHash) ? "unchanged" : "changed";
     rows.push({ file, uri, text, diskHash, syncedHash, status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
