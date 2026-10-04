@@ -4,19 +4,20 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem"
-hydrate   = true
-l-space   = "adjacent"
-mana      = 14
-manao     = 14
-manaoio   = 13
-role      = "WORK HANDOFF, addressed — the loops the founding hearth hands to the lares(Codex) nakama-crew invited 2026-09-14. Carries per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. Reads cold: a hand who joined no earlier turn acts from this carrier alone. NEVER a shift ledger (that is docs/handoff, re-trued continuously between sessions sharing this tree), NEVER the hearth ledger (that is docs/pono/hearths, whose row for this crew the operator writes). Retires when the crew takes the loops or hands them back; a taken item moves by an edit here naming the commit that took it."
-tags      = ["docs/handoff", "lifecycle/standing"]
-title     = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/docs/crew-handoff-codex"
-written   = "2026-09-14"
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem"
+hydrate    = true
+l-space    = "adjacent"
+mana       = 14
+manao      = 14
+manaoio    = 13
+role       = "WORK HANDOFF, addressed — the loops the founding hearth hands to the lares(Codex) nakama-crew invited 2026-09-14. Carries per item: what it is, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. Reads cold: a hand who joined no earlier turn acts from this carrier alone. NEVER a shift ledger (that is docs/handoff, re-trued continuously between sessions sharing this tree), NEVER the hearth ledger (that is docs/pono/hearths, whose row for this crew the operator writes). Retires when the crew takes the loops or hands them back; a taken item moves by an edit here naming the commit that took it."
+status-why = "the crew has not yet taken or handed back every loop named here; standing until each item moves by its own edit naming the commit that took it"
+tags       = ["docs/handoff", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/crew-handoff-codex"
+written    = "2026-09-14"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -1526,6 +1527,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IpzJkAfJaRiOS-Ke3JQVP6ANZfwI4Oc4A8T_KyhyfS0
+<<^ code="&#x0003;">>ni:///sha-256;2l2yAkJE_LCp6Uja0zIcSl4DP0rnBOB0CiSLY5kn_x0
 
 <<^ code="&#x0004;" -> to="?">>

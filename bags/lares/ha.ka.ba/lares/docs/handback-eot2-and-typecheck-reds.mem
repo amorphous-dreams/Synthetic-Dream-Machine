@@ -4,18 +4,19 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem"
-l-space   = "adjacent"
-mana      = 13
-manao     = 13
-manaoio   = 12
-namespace = "&#x2299;"
-role      = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
-tags      = ["docs/handoff", "lifecycle/standing"]
-title     = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem"
+l-space    = "adjacent"
+mana       = 13
+manao      = 13
+manaoio    = 12
+namespace  = "&#x2299;"
+role       = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
+status-why = "parked until a crossing row opens to receive it; the EOT2 question stands un-ruled and the two typecheck reds stand un-closed"
+tags       = ["docs/handoff", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -108,6 +109,6 @@ needs to catch up to it. Never revert or weaken the gate itself.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GH9UNxmCUzoBvti0gdhBLYI55rkyx5WiXyBV1u2bKNQ
+<<^ code="&#x0003;">>ni:///sha-256;lnVWN1Yu0LmmolDMiubvIW_SnUbuHqp6fziSDl3gjDA
 
 <<^ code="&#x0004;" -> to="?">>

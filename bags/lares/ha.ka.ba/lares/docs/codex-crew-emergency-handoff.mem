@@ -4,18 +4,19 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/codex-crew-emergency-handoff.mem"
-l-space   = "lares"
-mana      = 17
-manao     = 17
-manaoio   = 17
-role      = "emergency-room transfer for the parallel Codex Astra research and Terra main-work hearths; records only the observed work boundary, immediate triage, uncommitted surface, and decision forks"
-tags      = ["docs/handoff", "lifecycle/standing", "triage/emergency-room", "mesh/offering-antigen"]
-title     = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
-written   = "2026-10-04"
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/codex-crew-emergency-handoff.mem"
+l-space    = "lares"
+mana       = 17
+manao      = 17
+manaoio    = 17
+role       = "emergency-room transfer for the parallel Codex Astra research and Terra main-work hearths; records only the observed work boundary, immediate triage, uncommitted surface, and decision forks"
+status-why = "an emergency-room transfer stands until the receiving hearth reads it and triages the forks named here; not retired until that hand-off closes"
+tags       = ["docs/handoff", "lifecycle/standing", "triage/emergency-room", "mesh/offering-antigen"]
+title      = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
+written    = "2026-10-04"
 ```
 
 <<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
@@ -154,5 +155,5 @@ Both agree on these non-negotiables: per-Nexus local board consultation, local c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kfzaEXff9ipRbcya8OidWK9UdyhCnu_C5fo6HwlwuMA
+<<^ code="&#x0003;">>ni:///sha-256;VBH9WS8JY_JFSDyi2Ngd5NhyT5CIt9DaPxTomXQvvzQ
 <<^ code="&#x0004;" -> to="?">>
