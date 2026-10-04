@@ -1144,8 +1144,16 @@ export function deserializeCarrier(
   }
   const bcc = verifyBcc(text);
   if (bcc === "mismatch") {
+    // A STALE BLOCK CHECK ON A HUMAN'S DISK EDIT IS AN EDIT, NEVER TAMPERING. The check is a derived
+    // trailer the writer re-stamps on every emit (`stampCarrier`); a hand that moved body bytes
+    // without re-running the writer leaves the old trailer standing, which names an honest edit the
+    // ingest gate still owes a real decision (noop/ingest/conflict) over, not a blanket refuse. So
+    // this grades a WARNING: it still surfaces on the shared diagnostics channel (the code + message
+    // ride it unchanged) without outranking `grade()`'s own verdict. The writer re-stamps the check
+    // the next time this meme is written; the pre-commit hook (`tools/meme-check-staged.sh`, via
+    // `lares meme check`) reads `verifyBcc` directly and still refuses a staged stale check.
     diagnostics.push({
-      from: 0, to: text.length, severity: "error", source: "memetic-wikitext",
+      from: 0, to: text.length, severity: "warning", source: "memetic-wikitext",
       code: "block-check-mismatch", message: "ni:/// block check does not match the STX–ETX body, including root TOML metadata",
     });
   } else if (bcc === "torn") {

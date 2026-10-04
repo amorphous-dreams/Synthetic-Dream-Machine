@@ -106,4 +106,76 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     expect(d.kind).toBe("refuse");
     if (d.kind === "refuse") expect(d.warnings.join(" ")).toMatch(/fence|UNCLOSED/i);
   });
+
+  /**
+   * ONE ROW PER DIAGNOSTIC PRODUCER the ingest law (a) fix touches or sits beside — pinned so a
+   * future pass over `memeticIngestOps.deserialize`'s diagnostics channel cannot silently re-widen
+   * `block-check-mismatch` back to a refuse, or narrow `block-check-torn`/`frame-malformed` by
+   * accident while doing it. A stale BLOCK CHECK on a hand-edited disk carrier is an EDIT, never
+   * tampering (#/the-touchstone) — the gate must still reach a real decision over it. A TORN frame
+   * and a SECOND live ETX are different in kind: neither names an honest edit, so both still refuse.
+   */
+  describe("the gate's grade, per diagnostic producer", () => {
+    test("a stale block check (mismatch) warns, never refuses — the body is unchanged, so it's framing-only", () => {
+      // Re-stamp the disk text with a check that no longer covers the (unedited) span below it —
+      // the exact shape `stampCarrier` repairs and `tools/meme-check-staged.sh` still refuses staged.
+      // The BCC slot sits OUTSIDE the STX..ETX span it checks, so the render through the shore comes
+      // back canonically identical — a stale check alone is the purest framing-only edit there is.
+      const staleChecked = source.replace(
+        /ni:\/\/\/sha-256;[A-Za-z0-9_-]+(?=\n)/,
+        "ni:///sha-256;0000000000000000000000000000000000000000000",
+      );
+      expect(staleChecked).not.toBe(source);
+      const d = decideIngest({
+        uri: URI, diskText: staleChecked, diskHash: sha(staleChecked),
+        syncedHash: sha(canonical), currentRenderHash: sha(canonical), hash: sha,
+      });
+      // BEFORE this fix, `block-check-mismatch` graded `error` and this read `refuse` — the exact
+      // honest-edit-reads-as-tampering bug ingest law (a) rules against. Now it grades a WARNING
+      // (still surfaced) and the gate reaches its real verdict: canonical-equivalent, never a refuse.
+      expect(d.kind).toBe("noop");
+      if (d.kind === "noop") expect(d.reason).toBe("canonical-equivalent");
+    });
+
+    test("a stale block check still warns when it DOES carry a real content edit — ingest, not refuse", () => {
+      const staleAndEdited = source
+        .replace("! Entry ~ Lararium Hearth", "! Entry ~ Lararium Hearth (edited)")
+        .replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+(?=\n)/, "ni:///sha-256;0000000000000000000000000000000000000000000");
+      expect(staleAndEdited).not.toBe(source);
+      const d = decideIngest({
+        uri: URI, diskText: staleAndEdited, diskHash: sha(staleAndEdited),
+        syncedHash: sha(canonical), currentRenderHash: sha(canonical), hash: sha,
+      });
+      expect(d.kind).toBe("ingest");
+      if (d.kind === "ingest") {
+        expect(d.canonicalText).toContain("(edited)");
+        expect(d.diagnostics.some((x) => x.code === "block-check-mismatch" && x.severity === "warning")).toBe(true);
+      }
+    });
+
+    test("a TORN frame (STX, no ETX) still refuses — never an honest edit", () => {
+      const torn = source.slice(0, source.indexOf("<<^ code=\"&#x0003;\">>"));
+      expect(torn).not.toBe(source);
+      const d = decideIngest({
+        uri: URI, diskText: torn, diskHash: sha(torn),
+        syncedHash: sha(canonical), currentRenderHash: sha(canonical), hash: sha,
+      });
+      expect(d.kind).toBe("refuse");
+      if (d.kind === "refuse") expect(d.diagnostics.some((x) => x.code === "block-check-torn" && x.severity === "error")).toBe(true);
+    });
+
+    test("a SECOND live ETX (frame-malformed) still refuses — unchanged by the mismatch fix", () => {
+      const doubled = source.replace(
+        "<<^ code=\"&#x0003;\">>",
+        "<<^ code=\"&#x0003;\">>\n\nstray trailing body\n\n<<^ code=\"&#x0003;\">>",
+      );
+      expect(doubled).not.toBe(source);
+      const d = decideIngest({
+        uri: URI, diskText: doubled, diskHash: sha(doubled),
+        syncedHash: sha(canonical), currentRenderHash: sha(canonical), hash: sha,
+      });
+      expect(d.kind).toBe("refuse");
+      if (d.kind === "refuse") expect(d.diagnostics.some((x) => x.code === "frame-malformed" && x.severity === "error")).toBe(true);
+    });
+  });
 });

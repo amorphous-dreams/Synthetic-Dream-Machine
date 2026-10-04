@@ -46,7 +46,9 @@ describe("root metadata is authored body", () => {
     expect(rendered.slice(span.end).startsWith(bccOfSpan(good))).toBe(true);
     const mutated = rendered.replace("root-authority", "root-mutated");
     const diagnostic = deserializeCarrier(mutated, { title: URI }).diagnostics;
-    expect(diagnostic.some((d) => d.code === "block-check-mismatch")).toBe(true);
+    // GRADED A WARNING, never an error: a stale check on a human's disk edit is an edit, never
+    // tampering (ingest law (a)) — it still surfaces on the shared diagnostics channel.
+    expect(diagnostic.some((d) => d.code === "block-check-mismatch" && d.severity === "warning")).toBe(true);
   });
 });
 
