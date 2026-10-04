@@ -182,7 +182,6 @@ export type { NodeVesselOptions, NodeVesselResult, NodeOpenPhase } from "./open-
 export { createReadinessState, mountReadinessFace } from "./readiness-face.js";
 export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-face.js";
 
-export { createSessionEventLog, seedDaemonDoc } from "@lararium/mesh";
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey } from "./synced-tree.js";
 export { bagsFileToUri, wikisFileToUri } from "./bag-paths.js";

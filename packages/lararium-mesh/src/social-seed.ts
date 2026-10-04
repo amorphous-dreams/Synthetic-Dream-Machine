@@ -9,7 +9,7 @@
  */
 
 import type { Repo, DocHandle }  from "@automerge/automerge-repo";
-import type { LarDoc, SessionEventLog } from "@lararium/mesh";
+import type { LarDoc } from "@lararium/mesh";
 import {
   DAEMON_BAG_ID,
   emptyLarDoc,
@@ -18,7 +18,6 @@ import {
   emptySessionsDoc,
   mutableLarRecord,
   circleTiddlerUri,
-  sessionEventLogUri,
 } from "@lararium/mesh";
 
 export function seedIdentitiesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
@@ -100,22 +99,3 @@ export function seedPersonaDoc(repo: Repo, personaBagId: string): DocHandle<LarD
   return handle;
 }
 
-export function createSessionEventLog(
-  repo:      Repo,
-  sessionId: string,
-): DocHandle<SessionEventLog> {
-  const logHandle = repo.create<SessionEventLog>({ schemaVersion: "0.1", tiddlers: {}, events: {} });
-  const logUri = sessionEventLogUri(sessionId);
-
-  // Self-ref oracle tiddler: new doc not yet in composite — direct write is correct here.
-  logHandle.change((doc) => {
-    doc.tiddlers[logUri] = mutableLarRecord(logUri, {
-      text: logHandle.url,
-      sessionId,
-      kind: "session-event-log",
-    }, "lararium-session");
-  });
-
-  console.log(`[social-seed] SessionEventLog created  sessionId=${sessionId}  url=${logHandle.url}`);
-  return logHandle;
-}
