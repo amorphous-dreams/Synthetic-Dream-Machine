@@ -81,6 +81,20 @@ function metaNamespace(src: string): string | null {
   return m ? m[1]! : null;
 }
 
+/**
+ * The meta `tongue` value — the EXPLICIT MARK (operator ruling, lar:///sigil.grammar.lane loop 6):
+ * a carrier whose meta declares `tongue = "<bcp47>"` (e.g. `tongue = "en"`) rests in its authored
+ * mirror spellings; `fold MIRROR_FOLD`'s head below never touches a tongue-marked carrier. No
+ * existing field already said this (measured: `git grep 'tongue ='` over bags/ found none) — report
+ * the exact spelling (`tongue`, a bare BCP-47 tag) to the parent so canon can state it.
+ */
+function metaTongue(src: string): string | null {
+  const fence = metaFence(src);
+  if (!fence) return null;
+  const m = /^[ \t]*tongue[ \t]*=[ \t]*"([^"]*)"/m.exec(fence[2]!);
+  return m ? m[1]! : null;
+}
+
 
 /**
  * The command word a `<<` … `>>` opens with, definition registers named.
@@ -99,6 +113,64 @@ export const DEFINITION_WORDS = GENERATED_SIGILS
   .sort();
 const DEFINITION_HEAD = new RegExp(
   `^[~^!]?\\s*(\\\\[A-Za-z_]|(?:${DEFINITION_WORDS.join("|")})(?![\\w-]))`);
+
+/**
+ * Every READ-ONLY mirror — `lar-mirror-of` set, no `lar-weave: primary` — and the canonical head it
+ * folds to (operator ruling, lar:///sigil.grammar.lane loop 6: normalize folds every read-only
+ * mirror's HEAD TOKEN to its canonical house name; a `lar-weave: primary` mirror is a canonical
+ * spelling in its own tongue and never folds). DERIVED from GENERATED_SIGILS, never hand-listed.
+ */
+const READ_ONLY_MIRRORS: ReadonlyArray<{ readonly name: string; readonly canonical: string }> =
+  GENERATED_SIGILS
+    .filter((s) => s.aliasFor && !s.weave)
+    .map((s) => ({ name: s.name, canonical: s.aliasFor! }))
+    .sort((a, b) => b.name.length - a.name.length); // longest-first: no mirror here prefixes another
+
+const MIRROR_CANONICAL_OF = new Map(READ_ONLY_MIRRORS.map((m) => [m.name, m.canonical]));
+
+/**
+ * The HEAD TOKEN ALONE — split by each mirror's OWN declared prefix shape, never one loosened
+ * alternation. `fragment` alone opens bare (`<<fragment` / `</fragment>>` — no `~`, a TW5-native
+ * compatibility spelling); every other read-only mirror requires the sharktooth (`<<~ NAME`,
+ * `<<~! NAME` pragma form, `<<~/NAME` close). A regex that made `~` universally optional would fold
+ * a bare `<<link …>>` that matches NO declared pattern for `link` at all — not the sigil, just text
+ * that resembles one — measured against the real corpus (ai-phrasebook.mem:14) before this split
+ * landed. Group 1 (the prefix, untouched) and group 2 (the mirror word, the only text rewritten).
+ */
+function isBarePrefix(name: string, canonical: string): boolean {
+  const rule = GENERATED_SIGILS.find((s) => s.name === name) ?? GENERATED_SIGILS.find((s) => s.name === canonical);
+  const pat = rule?.openPattern ?? rule?.pattern ?? rule?.pragmaPattern ?? "";
+  return pat.length > 0 && !pat.startsWith("<<~");
+}
+const BARE_MIRROR_NAMES = READ_ONLY_MIRRORS.filter((m) => isBarePrefix(m.name, m.canonical)).map((m) => m.name);
+const SHARKTOOTH_MIRROR_NAMES = READ_ONLY_MIRRORS.filter((m) => !isBarePrefix(m.name, m.canonical)).map((m) => m.name);
+const MIRROR_FOLD_ALTS = [
+  SHARKTOOTH_MIRROR_NAMES.length ? `(<<~[!/]?\\s*)(${SHARKTOOTH_MIRROR_NAMES.join("|")})` : null,
+  BARE_MIRROR_NAMES.length ? `(<<\\/?)(${BARE_MIRROR_NAMES.join("|")})` : null,
+].filter((s): s is string => s !== null).join("|");
+const MIRROR_FOLD_RE = new RegExp(`(?:${MIRROR_FOLD_ALTS})(?![\\w-])`, "g");
+
+/**
+ * A `hana`/`task` block's BODY carries a FOREIGN grammar (guest-grammar.mem #/hana-worksite), never
+ * this house's own sigil spellings — the same opacity `meme-ast/scanner.ts`'s own worksite exclusion
+ * holds the compile layer to. A mirror word appearing inside a hana body is the guest grammar's own
+ * text, not an authored sigil call, and folding it would rewrite content this house does not own.
+ */
+function hanaBodySpans(text: string, mask: readonly { start: number; end: number }[]): [number, number][] {
+  const spans: [number, number][] = [];
+  const openRe = /<<~\s*(?:hana|task)\s+[^\n>]+?\s*>>/g;
+  let m: RegExpExecArray | null;
+  while ((m = openRe.exec(text))) {
+    if (inMask(mask, m.index)) continue;
+    const bodyStart = m.index + m[0].length;
+    const close = /<<~\/(?:hana|task)\s*>>/.exec(text.slice(bodyStart));
+    if (!close) continue;
+    spans.push([bodyStart, bodyStart + close.index]);
+    openRe.lastIndex = bodyStart + close.index + close[0].length;
+  }
+  return spans;
+}
+const inAnySpan = (spans: readonly [number, number][], i: number): boolean => spans.some(([s, e]) => i >= s && i < e);
 
 /** A colon separates a parameter only where a QUOTED value follows — a scheme colon never does. */
 const COLON_PARAM = /\b([A-Za-z0-9_-]+):(?=["']|\[\[)/g;
@@ -436,30 +508,36 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     }
   }
 
-  // ── 7. Sigil spelling: `define` re-mints to `wehe` — FRAME AUTHORITY ─────
+  // ── 7. Sigil spelling: every READ-ONLY mirror folds to its canonical head — FRAME AUTHORITY ─────
   //
-  // RULED (sigil-mirror-flip): `define` is a READ-ONLY mirror of `wehe` — no grammar of its
-  // own, so a carrier spelling it carries no authored intent this gesture would lose by re-minting.
-  // Scoped to `define` ALONE — every OTHER read-only mirror (`shadow`, `import`, `snapshot`'s own
-  // non-primary siblings, …) stays authored as written; folding every read-only mirror to its
-  // canonical head is an UNRULED, broader question this gesture reports a carrier count for rather
-  // than deciding.
-  {
-    let reminted = 0;
+  // RULED (operator, lar:///sigil.grammar.lane loop 6): `lares meme normalize` "shall preserve
+  // explicitly marked weave/tangle alternates, but otherwise normalize to house memetic-wikitext
+  // grammar." A read-only mirror (`lar-mirror-of` set, no `lar-weave: primary`) carries no grammar
+  // of its own — folding its HEAD TOKEN to the canonical name loses no authored intent. A
+  // `lar-weave: primary` mirror (e.g. `transclude`, `snapshot`) is itself a canonical spelling in
+  // its own tongue and never folds.
+  //
+  // EXPLICIT MARK = preserve: a carrier whose meta declares `tongue = "<bcp47>"` rests in its
+  // authored mirror spellings — this clause never touches it at all. Arguments/URIs/prose, fences,
+  // and hana/task guest-grammar bodies never move either way — only the head token, authored
+  // outside both.
+  if (metaTongue(seat.text) === null) {
+    let folded = 0;
     const mask = fencedSpans(seat.text);
-    let working = seat.text.replace(/(<<~\s*)define(\s+[^>]*>>)/g, (m, head: string, tail: string, offset: number) => {
-      if (inMask(mask, offset)) return m;
-      reminted += 1;
-      return `${head}wehe${tail}`;
-    });
-    const closeMask = fencedSpans(working);
-    working = working.replace(/<<~\/\s*define\s*>>/g, (m, offset: number) => {
-      if (inMask(closeMask, offset)) return m;
-      reminted += 1;
-      return "<<~/wehe>>";
-    });
-    if (reminted > 0) {
-      seat.apply("frame", working, () => `sigil spelling: ${reminted} \`define\` occurrence${reminted === 1 ? "" : "s"} re-minted to \`wehe\` (read-only mirror)`);
+    const hanaSpans = hanaBodySpans(seat.text, mask);
+    const next = seat.text.replace(
+      MIRROR_FOLD_RE,
+      (whole, sharkPrefix: string | undefined, sharkName: string | undefined,
+        barePrefix: string | undefined, bareName: string | undefined, offset: number) => {
+        if (inMask(mask, offset) || inAnySpan(hanaSpans, offset)) return whole;
+        const prefix = sharkPrefix ?? barePrefix!;
+        const name = sharkName ?? bareName!;
+        folded += 1;
+        return prefix + MIRROR_CANONICAL_OF.get(name)!;
+      },
+    );
+    if (folded > 0) {
+      seat.apply("frame", next, () => `sigil spelling: ${folded} read-only mirror occurrence${folded === 1 ? "" : "s"} folded to its canonical head`);
     }
   }
 

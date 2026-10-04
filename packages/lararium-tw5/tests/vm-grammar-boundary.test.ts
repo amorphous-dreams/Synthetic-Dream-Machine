@@ -233,6 +233,16 @@ describe("pono grammar boundary", () => {
       // alone (the render path never exposes waiho's raw captured groups), so it has no other
       // surface. It blesses no grammar; it holds one sigil's own capture shape to canon.
       .filter((f) => !f.endsWith("waiho-equals-separator.test.ts"))
+      // meme-normalize-mirror-fold.test.ts is the unit test of meme-normalize.ts's own read-only
+      // mirror fold — it reads GENERATED_SIGILS to enumerate every `lar-mirror-of` entry the fold
+      // must cover, the same derivation meme-normalize.ts itself performs. It drives
+      // normalizeMemeSource(), never collectEvents/buildMemeAst, and blesses no grammar as
+      // canonical — it holds the fold to the tiddlers' own declared mirror set.
+      .filter((f) => !f.endsWith("meme-normalize-mirror-fold.test.ts"))
+      // meme-normalize-param-separator.test.ts reads GENERATED_ALIAS_MAP only to compute its OWN
+      // expected fold target per shelf head (so the colon-preservation check keeps working once a
+      // head folds) — same reasoning as the mirror-fold test just above.
+      .filter((f) => !f.endsWith("meme-normalize-param-separator.test.ts"))
       // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
       // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
       // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law

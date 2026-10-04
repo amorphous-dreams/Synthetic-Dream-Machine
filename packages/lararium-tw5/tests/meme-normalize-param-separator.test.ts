@@ -25,6 +25,7 @@
 
 import { describe, test, expect } from "vitest";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
+import { GENERATED_ALIAS_MAP } from "../src/meme-ast/grammar-table.generated.js";
 
 const norm = (s: string) => normalizeMemeSource(s, { grammar: true }).text;
 
@@ -144,14 +145,17 @@ describe("★ a DEFINITION under any shelf spelling keeps its colon ★", () => 
   });
 
   test("★ every shelf definition head keeps `param:\"default\"` byte-identical ★", () => {
-    // `define` is the one RULED exception (lar:///sigil.grammar.lane): a FRAME
-    // clause re-mints it to `wehe` (its canonical head, a read-only mirror) unconditionally — so
-    // its OWN colon-preservation check compares against the re-minted spelling, never its own
-    // head word, while every other shelf head still holds fully byte-identical.
+    // Every READ-ONLY mirror among the definition heads (`define`/`procedure`→wehe,
+    // `let`/`var`/`const`→waiho — lar:///sigil.grammar.lane loop 6) is a RULED FRAME-authority
+    // fold: unconditional, so its OWN colon-preservation check compares against the folded
+    // spelling, never its own head word. `GENERATED_ALIAS_MAP` names the fold target; every
+    // non-mirror head (function/widget/type/typos and the canonicals themselves) still holds
+    // fully byte-identical.
     for (const head of shelfDefinitionHeads()) {
       const src = `<<~ ${head} thing(param:"default" other:"")>>body<<~/${head}>>`;
-      const expected = head === "define"
-        ? `<<~ wehe thing(param:"default" other:"")>>body<<~/wehe>>`
+      const canonical = GENERATED_ALIAS_MAP[head];
+      const expected = canonical
+        ? `<<~ ${canonical} thing(param:"default" other:"")>>body<<~/${canonical}>>`
         : src;
       expect(norm(src), head).toBe(expected);
     }
