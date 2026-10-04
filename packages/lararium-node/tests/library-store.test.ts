@@ -99,10 +99,11 @@ describe("the acquired tier", () => {
     // A different NAME with identical BYTES lands the same cid dir; the content address decides identity.
     const b = acquireIntoLibrary(join(src, "second.txt"), { collection: "c" });
     expect(b.dir).toBe(a.dir);
-    expect(readdirSync(libraryCollectionDir("c"))).toHaveLength(1);
+    // One cid-named body directory, plus the collection's own index.mem beside it — never a second body dir.
+    expect(readdirSync(libraryCollectionDir("c")).sort()).toEqual([sha("identical"), "index.mem"]);
   });
 
-  test("the sidecar makes a body self-describing IN ISOLATION", () => {
+  test("the index record makes a body self-describing IN ISOLATION", () => {
     const file = join(src, "x.txt");
     writeFileSync(file, "bytes", "utf8");
     const out = acquireIntoLibrary(file, { collection: "c", origin: "somewhere", licence: "public domain", note: "why" });
@@ -110,6 +111,32 @@ describe("the acquired tier", () => {
     // A blob needing an index to say what it is cannot be audited alone, and audit alone is the point.
     expect(meta).toMatchObject({ name: "x.txt", collection: "c", origin: "somewhere", licence: "public domain", note: "why" });
     expect(meta?.mediaType).toContain("text");
+  });
+
+  test("★ NO meta.json ANYWHERE — the sidecar retired, the entry lives in the index ★", () => {
+    writeFileSync(join(src, "a.txt"), "body a", "utf8");
+    writeFileSync(join(src, "b.txt"), "body b", "utf8");
+    const a = acquireIntoLibrary(join(src, "a.txt"), { collection: "c" });
+    const b = acquireIntoLibrary(join(src, "b.txt"), { collection: "c" });
+
+    expect(existsSync(join(a.dir, "meta.json"))).toBe(false);
+    expect(existsSync(join(b.dir, "meta.json"))).toBe(false);
+
+    const indexText = readFileSync(join(libraryCollectionDir("c"), "index.mem"), "utf8");
+    // Each entry is its own typed-JSON ahu slot, addressed by the entry's own cid.
+    expect(indexText).toContain(`<<~ ahu #/${sha("body a")}>>`);
+    expect(indexText).toContain(`<<~ ahu #/${sha("body b")}>>`);
+    expect((indexText.match(/type\s*=\s*"application\/json"/g) ?? [])).toHaveLength(2);
+
+    expect(listCollection("c")).toHaveLength(2);
+    expect(verifyCollection("c").every((v) => v.ok)).toBe(true);
+
+    // Tampering the BODY still catches it, even with the index unchanged.
+    writeFileSync(a.path, "tampered", "utf8");
+    const verdicts = verifyCollection("c");
+    const tampered = verdicts.find((v) => v.cid === sha("body a"));
+    expect(tampered?.ok).toBe(false);
+    expect(tampered?.why).toMatch(/bytes digest/);
   });
 });
 
@@ -143,15 +170,18 @@ describe("verify reads BYTES, never records", () => {
     expect(v?.why).toMatch(/bytes digest/);
   });
 
-  test("a sidecar that disagrees with its own directory fails", () => {
+  test("an index entry that disagrees with its own slot address fails", () => {
     writeFileSync(join(root, "in", "b.txt"), "good", "utf8");
     const out = acquireIntoLibrary(join(root, "in", "b.txt"), { collection: "c" });
     const meta = readLibraryMeta(out.dir)!;
-    writeFileSync(join(out.dir, "meta.json"), JSON.stringify({ ...meta, cid: "f".repeat(64) }), "utf8");
-    expect(verifyCollection("c")[0]?.why).toMatch(/sidecar claims/);
+    const indexPath = join(libraryCollectionDir("c"), "index.mem");
+    const tamperedJson = JSON.stringify({ ...meta, cid: "f".repeat(64) }, null, 2);
+    const original = JSON.stringify(meta, null, 2);
+    writeFileSync(indexPath, readFileSync(indexPath, "utf8").replace(original, tamperedJson), "utf8");
+    expect(verifyCollection("c")[0]?.why).toMatch(/index claims/);
   });
 
-  test("a body with no sidecar reads as un-auditable rather than as fine", () => {
+  test("a body with no index entry reads as un-auditable rather than as fine", () => {
     mkdirSync(join(libraryCollectionDir("c"), "a".repeat(64)), { recursive: true });
     const [v] = verifyCollection("c");
     expect(v?.ok).toBe(false);

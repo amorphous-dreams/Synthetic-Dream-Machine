@@ -16,21 +16,35 @@
  * was doing the harm, so `acquire` MOVES and says so; `--keep` exists for a source the operator does not own.
  *
  * ── VERIFY READS BYTES, NEVER RECORDS ────────────────────────────────────────────────────────────
- * A verify that trusted `meta.json` would certify its own bookkeeping. This re-digests the body and checks
- * it against the DIRECTORY name — the one value nothing but a re-write can move — so a tampered sidecar
+ * A verify that trusted a sidecar would certify its own bookkeeping. This re-digests the body and checks
+ * it against the DIRECTORY name — the one value nothing but a re-write can move — so a tampered record
  * reads as a mismatch rather than as agreement.
+ *
+ * ── NO SIDECAR: EVERY ENTRY'S RECORD LIVES IN THE COLLECTION'S OWN INDEX ─────────────────────────
+ * A per-entry `meta.json` was one more untracked file per body, readable only by walking the disk. Each
+ * entry's record now rides as its own `#/<cid>` ahu slot INSIDE the collection's index carrier
+ * (`<collection>/index.mem`), typed as a JSON tiddler (`type = "application/json"`, body = the JSON the
+ * sidecar used to hold) — the same shape `deserializer.ts`'s `splitRecursive` already gives any child
+ * slot that declares its own `type` (precedent: `child-declared-type.test.ts`). `acquireIntoLibrary`
+ * reads the current index back through `carrier-render.ts`'s `metaFieldsFromBody` (the SAME fence
+ * reader the root carrier meta already goes through here — `deserializeCarrier` itself stays an
+ * internal tw5 module with no package subpath, by the same design note `carrier-canonical.ts` carries:
+ * exporting it would widen that package's public surface for one caller), upserts this entry, and
+ * renders the whole index again through `canonicalizeCarrierText` — the one door that decides a
+ * carrier's bytes. One fewer untracked-file-per-body, one more reason the index travels as a single
+ * coherent carrier.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution
  */
 
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import {
-  LIBRARY_META_FILE, parseLibraryRef, metaMatchesDir, libraryRef,
+  parseLibraryRef, metaMatchesDir, libraryRef,
   mediaTypeFromExt, niUriSha256FromHex, type LibraryEntryMeta,
 } from "@lararium/mesh";
-import { kv, renderCarrier } from "./carrier-render.js";
+import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
 import { larariumDataHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
@@ -58,6 +72,11 @@ export function larLibraryHome(): string {
 /** Where one collection's bodies stand. Resolution of a `library:<name>` reference, and the only mapping. */
 export function libraryCollectionDir(collection: string): string {
   return join(larLibraryHome(), collection);
+}
+
+/** Where one collection's own index carrier stands — the shelf's single source of entry records. */
+export function libraryIndexPath(collection: string): string {
+  return join(libraryCollectionDir(collection), "index.mem");
 }
 
 /**
@@ -92,7 +111,8 @@ export interface AcquireOptions {
 }
 
 /**
- * Take one body into the tier: digest it, site it under `<collection>/<cid>/<name>`, and write its sidecar.
+ * Take one body into the tier: digest it, site it under `<collection>/<cid>/<name>`, and upsert its
+ * record into the collection's own index carrier.
  *
  * IDEMPOTENT BY CONTENT. Acquiring the same bytes twice lands the same directory and rewrites nothing — the
  * content address decides identity, so a repeated run costs a digest and no disk. A body whose bytes already
@@ -121,7 +141,9 @@ export function acquireIntoLibrary(sourcePath: string, opts: AcquireOptions): Ac
     mkdirSync(dir, { recursive: true });
     copyFileSync(sourcePath, path);
   }
-  atomicWriteFileSync(join(dir, LIBRARY_META_FILE), `${JSON.stringify(meta, null, 2)}\n`);
+  const entries = new Map(readLibraryIndexEntries(opts.collection));
+  entries.set(cid, meta);
+  writeLibraryIndexEntries(opts.collection, entries);
 
   // The MOVE completes after the body stands safely in the tier — never before, so a failure mid-act leaves
   // the operator with the original rather than with neither.
@@ -130,14 +152,57 @@ export function acquireIntoLibrary(sourcePath: string, opts: AcquireOptions): Ac
   return { meta, dir, path, held, moved };
 }
 
-/** Read one body's sidecar, or null when it carries none / carries a torn one. */
+/** Read one body's record out of its collection's index, or null when the index carries none / a torn one. */
 export function readLibraryMeta(entryDir: string): LibraryEntryMeta | null {
-  const path = join(entryDir, LIBRARY_META_FILE);
-  if (!existsSync(path)) return null;
-  try {
-    const m = JSON.parse(readFileSync(path, "utf8")) as LibraryEntryMeta;
-    return typeof m?.cid === "string" && typeof m?.name === "string" ? m : null;
-  } catch { return null; }
+  const cid        = basename(entryDir);
+  const collection = basename(dirname(entryDir));
+  return readLibraryIndexEntries(collection).get(cid) ?? null;
+}
+
+/** One top-level `#/<cid>` ahu entry block, open tag through its own close — never nested (the index
+ *  mints every entry flat, one slot per body). */
+const AHU_ENTRY_RE = /<<~\s*ahu\s+#\/([0-9a-f]{64})\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
+
+/** The slot's own leading `toml meta` fence, so its body (the JSON) can be read apart from it. */
+const TOML_META_FENCE_RE = /```toml meta[\s\S]*?```/;
+
+/**
+ * Read a collection's index carrier back into entries, keyed by the SLOT ADDRESS (never by whatever cid
+ * the entry's own JSON claims) — through `metaFieldsFromBody`, the SAME fence reader the root carrier
+ * meta is already read through in this module, never a second hand-rolled JSON-slot grammar. (tw5's
+ * own `deserializeCarrier` stays internal to `@lararium/tw5` with no package subpath — the same
+ * "widens the public surface for one caller" reason `carrier-canonical.ts` already declines to export
+ * it for.)
+ *
+ * A slot that fails to parse as JSON, or does not carry `type: application/json`, or holds neither a
+ * `cid` nor a `name` string, reads ABSENT — the same "cannot describe itself" verdict a torn sidecar
+ * used to produce.
+ */
+function readLibraryIndexEntries(collection: string): ReadonlyMap<string, LibraryEntryMeta> {
+  const path = libraryIndexPath(collection);
+  const out  = new Map<string, LibraryEntryMeta>();
+  if (!existsSync(path)) return out;
+  const text = readFileSync(path, "utf8");
+  for (const m of text.matchAll(AHU_ENTRY_RE)) {
+    const cid      = m[1]!;
+    const slotBody = m[2]!;
+    const fields   = metaFieldsFromBody(slotBody);
+    if (fields["type"] !== "application/json") continue;
+    const fence    = TOML_META_FENCE_RE.exec(slotBody);
+    const jsonText = fence ? slotBody.slice(fence.index + fence[0].length) : slotBody;
+    try {
+      const parsed = JSON.parse(jsonText.trim()) as LibraryEntryMeta;
+      if (typeof parsed?.cid === "string" && typeof parsed?.name === "string") out.set(cid, parsed);
+    } catch { /* unreadable entry — reads absent */ }
+  }
+  return out;
+}
+
+/** Render + write a collection's index carrier from its full entry set — the one write path. */
+function writeLibraryIndexEntries(collection: string, entries: ReadonlyMap<string, LibraryEntryMeta>): void {
+  const path = libraryIndexPath(collection);
+  mkdirSync(dirname(path), { recursive: true });
+  atomicWriteFileSync(path, renderLibraryIndex(collection, [...entries.values()]));
 }
 
 /** Every collection standing in the tier, ascending. */
@@ -147,16 +212,9 @@ export function listCollections(): string[] {
   return readdirSync(home).filter((n) => statSync(join(home, n)).isDirectory()).sort();
 }
 
-/** Every body in one collection, ascending by name. A directory with no readable sidecar reads absent. */
+/** Every body in one collection, ascending by name. An index with no readable slot for it reads absent. */
 export function listCollection(collection: string): LibraryEntryMeta[] {
-  const dir = libraryCollectionDir(collection);
-  if (!existsSync(dir)) return [];
-  const out: LibraryEntryMeta[] = [];
-  for (const cidDir of readdirSync(dir).sort()) {
-    const meta = readLibraryMeta(join(dir, cidDir));
-    if (meta) out.push(meta);
-  }
-  return out.sort((a, b) => a.name.localeCompare(b.name));
+  return [...readLibraryIndexEntries(collection).values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** What a verify found about one body. */
@@ -170,26 +228,34 @@ export interface LibraryVerdict {
 }
 
 /**
- * Re-digest every body in a collection and check it against its own DIRECTORY name.
+ * Re-digest every body in a collection and check it against its own DIRECTORY name — and check every
+ * directory standing in the tier has an index entry at all.
  *
- * It reads the bytes rather than the sidecar on purpose: checking `meta.cid` against the directory would
- * compare two records and certify neither. The digest is the only reading nothing but a re-write can move.
+ * It reads the bytes rather than the index's own `cid` field on purpose: checking a record's `cid`
+ * against the directory it stands in would compare two records and certify neither. The digest is the
+ * only reading nothing but a re-write can move.
  */
 export function verifyCollection(collection: string): LibraryVerdict[] {
-  const dir = libraryCollectionDir(collection);
-  if (!existsSync(dir)) return [];
+  const dir     = libraryCollectionDir(collection);
+  const entries = readLibraryIndexEntries(collection);
   const out: LibraryVerdict[] = [];
-  for (const cidDir of readdirSync(dir).sort()) {
-    const entryDir = join(dir, cidDir);
-    const meta = readLibraryMeta(entryDir);
-    if (!meta) { out.push({ collection, cid: cidDir, name: "(no sidecar)", ok: false, why: "no readable meta.json — the body cannot describe itself" }); continue; }
-    if (!metaMatchesDir(meta, cidDir)) { out.push({ collection, cid: cidDir, name: meta.name, ok: false, why: `sidecar claims ${meta.cid} inside a directory named ${cidDir}` }); continue; }
-    const body = join(entryDir, meta.name);
-    if (!existsSync(body)) { out.push({ collection, cid: cidDir, name: meta.name, ok: false, why: "the sidecar stands and the body does not" }); continue; }
+  for (const [slotCid, meta] of entries) {
+    if (!metaMatchesDir(meta, slotCid)) { out.push({ collection, cid: slotCid, name: meta.name, ok: false, why: `index claims ${meta.cid} under slot #/${slotCid}` }); continue; }
+    const body = join(dir, slotCid, meta.name);
+    if (!existsSync(body)) { out.push({ collection, cid: slotCid, name: meta.name, ok: false, why: "the index names a body that does not stand" }); continue; }
     const actual = sha256Hex(readFileSync(body));
-    out.push(actual === cidDir.toLowerCase()
-      ? { collection, cid: cidDir, name: meta.name, ok: true }
-      : { collection, cid: cidDir, name: meta.name, ok: false, why: `bytes digest ${actual} — the directory claims ${cidDir}` });
+    out.push(actual === slotCid.toLowerCase()
+      ? { collection, cid: slotCid, name: meta.name, ok: true }
+      : { collection, cid: slotCid, name: meta.name, ok: false, why: `bytes digest ${actual} — the index claims ${slotCid}` });
+  }
+  // A directory standing in the tier with no index entry describing it cannot be audited alone —
+  // the same verdict a body with no readable sidecar used to carry.
+  if (existsSync(dir)) {
+    for (const cidDir of readdirSync(dir).sort()) {
+      if (cidDir === "index.mem" || entries.has(cidDir)) continue;
+      if (!statSync(join(dir, cidDir)).isDirectory()) continue;
+      out.push({ collection, cid: cidDir, name: "(no index entry)", ok: false, why: "no index entry describes this body — the body cannot describe itself" });
+    }
   }
   return out;
 }
@@ -199,27 +265,31 @@ export function verifyCollection(collection: string): LibraryVerdict[] {
  * collection holds and how to verify it, with no path riding in it anywhere — through tw5's own
  * canonical render (`carrier-render.ts`).
  *
- * EACH ENTRY IS ITS OWN SLOT, never a markdown table row: a `#/<cid>` ahu block carrying that entry's
- * own fields, so `<index-uri>#/<cid>` addresses one entry directly and a reader (or `lares meme`)
- * walks the collection the same way it walks any other carrier's children. A cid is lowercase hex,
- * which the ahu slot grammar (`[\w-]+`) admits whole.
+ * EACH ENTRY IS ITS OWN SLOT, never a markdown table row: a `#/<cid>` ahu block TYPED AS A JSON
+ * TIDDLER (`type = "application/json"` in the slot's own leading `toml meta` fence, body = the JSON
+ * the sidecar used to hold), so `<index-uri>#/<cid>` addresses one entry directly, a reader (or
+ * `lares meme`) walks the collection the same way it walks any other carrier's children, and
+ * `deserializeCarrier` hands back that entry as an ordinary tiddler record whose `type` reads
+ * `application/json` and whose `text` parses back to these same fields — the precedent
+ * `deserializer.ts`'s `splitRecursive` already gives any child slot that declares its own `type`
+ * (`child-declared-type.test.ts`). A cid is lowercase hex, which the ahu slot grammar (`[\w-]+`)
+ * admits whole.
  */
 function renderLibraryIndex(collection: string, entries: readonly LibraryEntryMeta[]): string {
   const rows = [...entries].sort((a, b) => a.name.localeCompare(b.name));
   const total = rows.reduce((n, e) => n + e.size, 0);
   const uri = `lar:///ha.ka.ba/library/${collection}`;
-  const entryBlock = (e: LibraryEntryMeta): string => {
-    const meta = [
-      kv("name", e.name),
-      kv("bytes", String(e.size)),
-      kv("media-type", e.mediaType),
-      kv("anchor", e.integrity),
-      ...(e.origin ? [kv("origin", e.origin)] : []),
-      ...(e.licence ? [kv("licence", e.licence)] : []),
-      ...(e.note ? [kv("note", e.note.replace(/"/g, "'"))] : []),
-    ].join("\n");
-    return [`<<~ ahu #/${e.cid}>>`, "```toml meta", meta, "```", "<<~/ahu>>"].join("\n");
-  };
+  const entryBlock = (e: LibraryEntryMeta): string => [
+    `<<~ ahu #/${e.cid}>>`,
+    "",
+    "```toml meta",
+    kv("type", "application/json"),
+    "```",
+    "",
+    JSON.stringify(e, null, 2),
+    "",
+    "<<~/ahu>>",
+  ].join("\n");
   const body = [
     "```toml meta",
     kv("collection", collection),

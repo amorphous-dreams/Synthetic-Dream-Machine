@@ -17,16 +17,19 @@
  *
  * ── THE LAYOUT, AND WHAT EACH LEVEL BUYS ─────────────────────────────────────────────────────────
  *     <library>/<collection>/<cid>/<the real filename>
- *     <library>/<collection>/<cid>/meta.json
+ *     <library>/<collection>/index.mem
  *
  *   · COLLECTION on top so a reference names a WALKABLE root — a pour points at `library:mark-twain` and
- *     `os.walk` finds the books, with no index consulted and no symlink to break on a foreign platform.
+ *     `os.walk` finds the books, with no tooling consulted and no symlink to break on a foreign platform.
  *   · CID beneath it so identity stays content-addressed: the directory name IS the digest, so integrity
  *     audits with `sha256sum` and no tooling.
  *   · THE REAL FILENAME inside, so the store reads as a library rather than as a heap of hex. `cat` works,
  *     `grep` works, and a human browsing it recognises what they are looking at.
- *   · meta.json beside it, so a body self-describes IN ISOLATION — origin, licence, media-type, anchor.
- *     A blob that needs an index to say what it is cannot be audited alone, and audit alone is the point.
+ *   · index.mem beside the collection (never per-entry), so every body self-describes — origin, licence,
+ *     media-type, anchor — as one typed-JSON ahu slot per entry in a single tracked-shape carrier a reader
+ *     (or `lares meme`) walks like any other memetic-wikitext carrier's children. A blob that needs an
+ *     index to say what it is cannot be audited alone, and audit alone is the point — the index just
+ *     stopped being one torn file per body and became one carrier per shelf.
  *
  * ONE HONEST COST: a body in two collections stores twice. Dedup would want hardlinks, and hardlinks break
  * across filesystems and read poorly on Windows. Paying bytes to keep the layout portable and link-free
@@ -41,9 +44,6 @@
  */
 
 export const LIBRARY_REF_PREFIX = "library:" as const;
-
-/** The self-describing sidecar beside every acquired body. */
-export const LIBRARY_META_FILE = "meta.json" as const;
 
 /** A collection name reads as one path segment — no separators, no traversal, no surprises. */
 const COLLECTION_RE = /^[a-z0-9][a-z0-9._-]*$/;
