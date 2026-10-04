@@ -2,9 +2,11 @@
  * build-plugin-tiddler.ts — single TW5 plugin build pipeline:
  *
  *   1. Vite compiles plugin-owned TS sources → tiddlers/src/*.js
- *      (native TW5 header comments embedded)
- *      Anchor memes in bags/lararium/tw5 get body-sha256 patched from those
- *      generated JS tiddlers, without duplicating JS bodies into bags/.
+ *      (native TW5 header comments embedded). This step alone never patches the
+ *      bags/lararium/tw5 anchor memes — `scripts/sync-heleuma.ts` (the package's
+ *      own `build` script chains it after this file) reads those generated JS
+ *      tiddlers and re-stamps the anchors' `source-sha256`, without duplicating
+ *      JS bodies into bags/.
  *   2. TW5 CLI packs src/tiddlers/ into a complete plugin tiddler JSON:
  *        tiddlywiki ++./src/tiddlers \
  *          --render "$:/core/templates/exporters/JsonFile" \
@@ -50,6 +52,10 @@ const ROOT       = path.resolve(__dirname, "..");
 const REPO_ROOT  = path.resolve(ROOT, "../..");
 const OUT_DIR    = path.join(ROOT, "dist-plugin");
 const PLUGIN_DIR = path.join(ROOT, "plugins");
+// The `$:/` drag-and-drop variant is a first-class distribution (operator ruling,
+// 2026-10-04): the stock-TW5 copy a plain TiddlyWiki drops the plugin into, so it
+// stays tracked here rather than inside the gitignored dist-plugin/ intermediates dir.
+const STANDALONE_DIR = path.join(PLUGIN_DIR, "standalone");
 
 const PLUGIN_TITLE_LAR = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
@@ -234,22 +240,28 @@ async function main(): Promise<void> {
   writeFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.lar.json"), pluginLarJson, "utf8");
   writeFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.json"),     pluginTw5Json, "utf8");
   const pluginJsonSha = sha256(pluginLarJson);
+  const pluginTw5Sha  = sha256(pluginTw5Json);
+  const attestation = {
+    format: "lararium-tw5-plugin-build/v1",
+    canonicalTitle: PLUGIN_TITLE_LAR,
+    compatibilityTitle: PLUGIN_TITLE_TW5,
+    moduleManifestPath: MODULE_MANIFEST,
+    moduleManifestSha256: moduleManifest.sha256,
+    sourceManifestPath: SOURCE_MANIFEST,
+    sourceManifestSha256: sourceManifest.sha256,
+    packTranscriptPath: TRANSCRIPT_PATH,
+    packTranscriptSha256: transcriptSha256,
+    moduleCount: moduleManifest.manifest.modules.length,
+    packedTiddlerCount: tiddlerCount,
+    pluginJsonSha256: pluginJsonSha,
+    // The standalone ($:/) distribution's own digest — same inner tiddlers, title +
+    // `lares-compatibility-only` swapped. Lets a verifier check the committed
+    // plugins/standalone/ artifact without re-deriving the lar:// one first.
+    pluginTw5Sha256: pluginTw5Sha,
+  };
   writeFileSync(
     path.join(OUT_DIR, "lares-memetic-wikitext.attestation.json"),
-    JSON.stringify({
-      format: "lararium-tw5-plugin-build/v1",
-      canonicalTitle: PLUGIN_TITLE_LAR,
-      compatibilityTitle: PLUGIN_TITLE_TW5,
-      moduleManifestPath: MODULE_MANIFEST,
-      moduleManifestSha256: moduleManifest.sha256,
-      sourceManifestPath: SOURCE_MANIFEST,
-      sourceManifestSha256: sourceManifest.sha256,
-      packTranscriptPath: TRANSCRIPT_PATH,
-      packTranscriptSha256: transcriptSha256,
-      moduleCount: moduleManifest.manifest.modules.length,
-      packedTiddlerCount: tiddlerCount,
-      pluginJsonSha256: pluginJsonSha,
-    }, null, 2) + "\n",
+    JSON.stringify(attestation, null, 2) + "\n",
     "utf8",
   );
 
@@ -263,11 +275,21 @@ async function main(): Promise<void> {
   const pluginJsonDest = path.join(PLUGIN_DIR, "lares-memetic-wikitext.json");
   copyFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.lar.json"), pluginJsonDest);
 
+  // Track the `$:/` standalone distribution alongside the lar:// canonical copy — it is
+  // the stock-TW5 artifact a plain TiddlyWiki drag-and-drops, not an intermediate, so it
+  // lives outside the gitignored dist-plugin/. CI's currency gate rebuilds and diffs this.
+  mkdirSync(STANDALONE_DIR, { recursive: true });
+  const standaloneTidDest = path.join(STANDALONE_DIR, "lares-memetic-wikitext.tid");
+  const standaloneAttestationDest = path.join(STANDALONE_DIR, "lares-memetic-wikitext.attestation.json");
+  copyFileSync(tidTw5.path, standaloneTidDest);
+  copyFileSync(path.join(OUT_DIR, "lares-memetic-wikitext.attestation.json"), standaloneAttestationDest);
+
   console.log(`✓ wrote ${tidLar.path} (${(tidLar.bytes / 1024).toFixed(1)} KiB) — lararium VM canonical`);
   console.log(`✓ wrote ${tidTw5.path} (${(tidTw5.bytes / 1024).toFixed(1)} KiB) — vanilla TW5 drag-and-drop`);
   console.log(`✓ wrote ${tsSrcPath}`);
   console.log(`✓ wrote ${pluginJsonDest} — automerge-docs pickup`);
-  console.log(`✓ attested modules=${moduleManifest.manifest.modules.length} module-manifest=${moduleManifest.sha256.slice(0, 16)}… source-manifest=${sourceManifest.sha256.slice(0, 16)}… plugin=${pluginJsonSha.slice(0, 16)}…`);
+  console.log(`✓ wrote ${standaloneTidDest} + ${standaloneAttestationDest} — tracked standalone distribution`);
+  console.log(`✓ attested modules=${moduleManifest.manifest.modules.length} module-manifest=${moduleManifest.sha256.slice(0, 16)}… source-manifest=${sourceManifest.sha256.slice(0, 16)}… plugin=${pluginJsonSha.slice(0, 16)}… tw5-plugin=${pluginTw5Sha.slice(0, 16)}…`);
   console.log(`  ${tiddlerCount} inner tiddlers packed`);
 }
 

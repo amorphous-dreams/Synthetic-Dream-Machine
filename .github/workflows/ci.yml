@@ -4,18 +4,22 @@ name: CI
 # domains + models (web3 local-first · causal-islands · the meme graph):
 #   typecheck       — every package's types hold
 #   build-freshness — `build` is deterministic AND emits no stale tracked source:
-#                     the checked-in generated plugin artifacts must match a fresh
+#                     the checked-in generated plugin artifacts — the lar:// canonical copy AND
+#                     the `$:/` standalone distribution (plugins/standalone/) — must match a fresh
 #                     build (the canonical "regenerate + git diff --exit-code" gate;
 #                     catches a hand-edited / forgotten-regen generated file)
 #   test            — every package's suite, incl. the meme round-trip laws
-#                     (meme-corpus-roundtrip) and the plugin-artifact parity gate
+#                     (meme-corpus-roundtrip) and the two plugin-artifact parity gates (lar:// +
+#                     the standalone `$:/` distribution)
 #   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own
 #                     name so a red suite cannot swallow it; the docker/browser hold-outs are
 #                     named with their reasons in the job's log
 #   e2e             — the residency/ingest witnesses through the real CLI + vessels
 #   boot-budget     — the cache-stable boot stays under its char ceiling
-#   pristine-upstream — the meme routes meet a PUBLISHED tiddlywiki (npm), not only the fork:
-#                     the plugin drops into stock, and the log names the version it met
+#   pristine-upstream — the meme routes AND a stock single-file build meet a PUBLISHED tiddlywiki
+#                     (npm), not only the fork, against the COMMITTED standalone artifact (never a
+#                     fresh dist-plugin rebuild) — the plugin drops into stock, and the log names
+#                     the version it met
 #
 # Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
 # backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
@@ -314,9 +318,32 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
+      # THE NODE FLOOR, NAMED. A plain TW5 server evaluates modules in a sandbox carrying none of
+      # TextEncoder/TextDecoder/crypto; `host-globals-lend.ts` lends the host's own copies through
+      # `process.getBuiltinModule` (Node >=24) and silently no-ops without it (a browser or older
+      # Node is a legitimate no-op case elsewhere — here it is a floor violation). Absent, the meme
+      # laws' hashing dies deep inside the contact as a bare "TextEncoder is not defined", naming
+      # nothing about why; this step names the real floor before that cryptic failure ever fires.
+      - name: Node floor — process.getBuiltinModule must be present
+        run: |
+          node -e '
+            if (typeof process.getBuiltinModule !== "function") {
+              console.error("::error::Node " + process.version + " lacks process.getBuiltinModule — the plugin cannot lend TextEncoder/TextDecoder/crypto into the stock TW5 sandbox (host-globals-lend.ts). Pin Node >=24 (root package.json engines); below that floor the hashing paths fail deep in the contact as a bare \"TextEncoder is not defined\".");
+              process.exit(1);
+            }
+            console.log("process.getBuiltinModule present on " + process.version);
+          '
       - run: pnpm install --frozen-lockfile
-      - name: Build (the packed plugin is what drops into stock)
+      - name: Build (dependency packages; the tw5 plugin build also runs here)
         run: pnpm -r build
+      # THE COMMITTED ARTIFACT, NOT A FRESH REBUILD. `pnpm -r build` above regenerates
+      # dist-plugin/ as the tw5 package's own side effect; this job's whole point is to prove
+      # what SHIPS, so the pristine engine meets the TRACKED `$:/` distribution — the sibling
+      # `build-freshness` job is what already proves a fresh build and the tracked copy agree.
+      - name: Point dist-plugin at the committed standalone artifact
+        run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+      - name: Install Playwright Chromium (standalone single-file suite)
+        run: pnpm exec playwright install --with-deps chromium
       # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
       - name: Cache the published tiddlywiki
         id: pristine-cache
@@ -336,11 +363,11 @@ jobs:
           pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
           test -f "$pkg/tiddlywiki.js"
           node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
-      - name: meme-routes contact against the pristine engine
+      - name: meme-routes + standalone single-file contact against the pristine engine
         run: |
           export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
           export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
-          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
           test "${PIPESTATUS[0]}" -eq 0
       - name: The log names the engine it met
         run: |
