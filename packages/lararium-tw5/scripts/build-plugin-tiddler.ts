@@ -212,11 +212,18 @@ async function main(): Promise<void> {
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
 
   // 3. Emit two title variants (lar:// canonical + $:// drag-and-drop).
-  const pluginTiddlerTw5 = {
+  // The $:/ variant is a PROJECTION of the lar:// canonical artifact: `lares-projection-of`
+  // names that canonical title. It would otherwise inherit `lares-canonical-title` from the
+  // spread carrying the SAME value — one relation, one name, so that field is dropped here
+  // rather than kept alongside its replacement. (The lar:// tiddler itself keeps
+  // `lares-canonical-title` as its own self-identification; that is a different relation —
+  // naming itself, not projecting from something else.)
+  const pluginTiddlerTw5: Record<string, unknown> = {
     ...pluginTiddlerLar,
     title: PLUGIN_TITLE_TW5,
-    "lares-compatibility-only": "true",
+    "lares-projection-of": PLUGIN_TITLE_LAR,
   };
+  delete pluginTiddlerTw5["lares-canonical-title"];
 
   function emitTid(tiddler: Record<string, unknown>, fileName: string): { path: string; bytes: number } {
     const lines: string[] = [];
@@ -255,7 +262,7 @@ async function main(): Promise<void> {
     packedTiddlerCount: tiddlerCount,
     pluginJsonSha256: pluginJsonSha,
     // The standalone ($:/) distribution's own digest — same inner tiddlers, title +
-    // `lares-compatibility-only` swapped. Lets a verifier check the committed
+    // `lares-canonical-title`/`lares-projection-of` swapped. Lets a verifier check the committed
     // plugins/standalone/ artifact without re-deriving the lar:// one first.
     pluginTw5Sha256: pluginTw5Sha,
   };

@@ -7,9 +7,11 @@
  * (operator ruling, 2026-10-04: that copy IS a first-class distribution, not a build intermediate, so
  * it moved out of the gitignored dist-plugin/ into a tracked home).
  *
- * The two variants share every packed inner tiddler; `build-plugin-tiddler.ts` only swaps `title` and
- * adds `lares-compatibility-only`. This test re-derives the `$:/` variant's expected fields from the
- * committed `.ts` (never re-runs the TW5 CLI pack step — that's CI's rebuild+diff currency job) and
+ * The two variants share every packed inner tiddler; `build-plugin-tiddler.ts` swaps `title`, drops
+ * `lares-canonical-title` (the lar:// tiddler's self-identification — a different relation on this
+ * variant), and adds `lares-projection-of` naming the lar:// canonical title. This test re-derives
+ * the `$:/` variant's expected fields from the committed `.ts` (never re-runs the TW5 CLI pack step —
+ * that's CI's rebuild+diff currency job) and
  * checks the committed `.tid` and its attestation agree with that derivation. A drift here means one
  * of the two committed artifacts was regenerated — or hand-edited — without its sibling.
  *
@@ -37,8 +39,9 @@ describe("standalone plugin parity — committed .tid ≡ generated .ts (title +
   const expected: Record<string, unknown> = {
     ...lar,
     title: TID_TITLE,
-    "lares-compatibility-only": "true",
+    "lares-projection-of": lar["lares-canonical-title"],
   };
+  delete expected["lares-canonical-title"];
 
   test("the .tid header carries every non-text field the derivation expects", () => {
     for (const [key, val] of Object.entries(expected)) {
@@ -46,6 +49,10 @@ describe("standalone plugin parity — committed .tid ≡ generated .ts (title +
       if (typeof val === "string" && val.includes("\n")) continue; // emitTid drops multi-line fields from the header too
       expect(parsed.fields[key], `field "${key}"`).toBe(String(val));
     }
+  });
+
+  test("the .tid header does NOT carry lares-canonical-title (replaced by lares-projection-of)", () => {
+    expect(parsed.fields["lares-canonical-title"]).toBeUndefined();
   });
 
   test("the .tid body carries the same packed inner tiddlers as the lar:// canonical artifact", () => {
