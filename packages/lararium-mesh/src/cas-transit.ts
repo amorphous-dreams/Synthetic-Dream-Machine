@@ -27,7 +27,7 @@
  * sub-range without the whole blob). Whole-blob `verifyCiphertextCid` is correct and sufficient today; bao is the
  * streaming upgrade, wire-compatible, and lands when large-body range-fetch needs it.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#cad-transit
+ * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-transit
  */
 
 import { verifyCiphertextCid, CIPHERTEXT_CID_ALGO } from "./ciphertext-cas.js";

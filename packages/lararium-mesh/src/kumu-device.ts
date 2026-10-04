@@ -127,8 +127,8 @@ export interface KumuDeviceSpec {
  * Identifies a live kumu device instance.
  *
  * Both fragments produce tiddler addresses in the wiki Automerge doc:
- *   lar:///type-path#nameFragment  — human-readable wiki-local label
- *   lar:///type-path#uuidFragment  — stable UUID address for wiring
+ *   lar:///type-path#/nameFragment  — human-readable wiki-local label
+ *   lar:///type-path#/uuidFragment  — stable UUID address for wiring
  */
 export interface KumuInstanceRef {
   readonly typeUri: string;

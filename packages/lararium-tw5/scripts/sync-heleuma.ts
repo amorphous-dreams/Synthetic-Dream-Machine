@@ -138,7 +138,7 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
 
 
 // ---------------------------------------------------------------------------
-// Commit: patch #source slot and/or source-sha256 in one write
+// Commit: patch #/source slot and/or source-sha256 in one write
 // ---------------------------------------------------------------------------
 
 

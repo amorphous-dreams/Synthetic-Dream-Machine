@@ -51,14 +51,14 @@ for (const f of files) {
   }
   // THE BEARING ARROW IS STRUCTURE, so a frame that lost it is malformed rather than terse.
   //
-  // `? -> uri` at the heading and `-> ?` at the close carry ONE relation read from two ends — source
+  // `from="?" -> to=uri` at the heading and `-> to="?"` at the close carry ONE relation read from two ends — source
   // unresolved and target known, then source known and target unresolved. A named parameter would state
   // a PROPERTY; the arrow states a RELATION, and the control-soh scan captures its target as a group.
   // Drop it and the capture returns nothing while every other check here still reads the frame as sound.
   const masked = (re) => [...maskedExecAll(t, re)];
   const soh = masked(SOH_LINE_RE).length > 0;
   if (soh && masked(carrierHeadPattern("gm")).length === 0) {
-    faults.push([f, "SOH carries no `? -> uri` — the heading states no bearing"]);
+    faults.push([f, "SOH carries no `from=\"?\" -> to=uri` — the heading states no bearing"]);
   }
   // THE CLOSE NAMES ITS SLOT. The frame's ends took `from=` and `to=`, so an EOT reads `-> to=?` —
   // and a check wanting a bare `?` after the arrow matches nothing, then reports the whole corpus.

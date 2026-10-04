@@ -167,13 +167,13 @@ export function sigilOpenEnd(source: string, start: number): number {
  * rather than hardcoded names, so new slot types (kau, future) require
  * only a TOML [[sigils]] entry with kind="child-slot".
  *
- *   <<~ ahu #slot>>           → name="ahu",       p1="#slot",  slotType="ahu"
- *   <<~ kahea ahu #slot>>     → name="kahea~ahu", p1="#slot",  slotType="ahu"
- *   <<~ aka   ahu #slot>>     → name="aka~ahu",   p1="#slot",  slotType="ahu"
- *   <<~ kahea lar:///uri>>    → name="kahea",     p1=uri,      slotType=null
- *   <<~ loulou lar:///uri>>   → name="loulou",    p1=uri,      slotType=null
- *   <<~ kau #dev DeviceName>> → name="kau",       p1=rest,     closeKey="kau"
- *   <<~ kahea kau #dev>>      → name="kahea~kau", p1="#dev",   closeKey="kahea"
+ *   <<~ ahu #/slot>>           → name="ahu",       p1="#/slot",  slotType="ahu"
+ *   <<~ kahea ahu #/slot>>     → name="kahea~ahu", p1="#/slot",  slotType="ahu"
+ *   <<~ aka   ahu #/slot>>     → name="aka~ahu",   p1="#/slot",  slotType="ahu"
+ *   <<~ kahea lar:///uri>>     → name="kahea",     p1=uri,       slotType=null
+ *   <<~ loulou lar:///uri>>    → name="loulou",    p1=uri,       slotType=null
+ *   <<~ kau #/dev DeviceName>> → name="kau",       p1=rest,      closeKey="kau"
+ *   <<~ kahea kau #/dev>>      → name="kahea~kau", p1="#/dev",   closeKey="kahea"
  */
 export function matchCompoundSigilAt(
   source:          string,
@@ -202,10 +202,10 @@ export function matchCompoundSigilAt(
   const rest = source.slice(start + m[0].indexOf(word1) + word1.length, end - 2).trim();
 
   if (childSlotNames.has(word1)) {
-    // bare child-slot: <<~ ahu #slot>> or <<~ kau #device …>>
+    // bare child-slot: <<~ ahu #/slot>> or <<~ kau #/device …>>
     return { start: m.index, end, name: word1, p1: rest, closeKey: word1, hasBang };
   }
-  // peek at the first token of rest to detect a compound: <<~ kahea ahu #slot>>
+  // peek at the first token of rest to detect a compound: <<~ kahea ahu #/slot>>
   const spaceIdx  = rest.search(/\s/);
   const word2     = spaceIdx >= 0 ? rest.slice(0, spaceIdx) : rest;
   const remainder = spaceIdx >= 0 ? rest.slice(spaceIdx).trim() : "";

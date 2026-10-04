@@ -12,9 +12,9 @@
  * the shelf stands where no wipe reaches rather than one directory aside from one that does.
  *
  *     <library>/<collection>/<cid>/<the real filename>
- *     <library>/<collection>/<cid>/meta.json
+ *     <library>/<collection>/index.mem         (each entry's record rides its own `#/<cid>` ahu slot)
  *
- * Readable (a real filename, `cat`-able), auditable (the directory name IS the digest; the sidecar carries
+ * Readable (a real filename, `cat`-able), auditable (the directory name IS the digest; the index carries
  * origin and licence), and out of every tracked tree.
  *
  *   list                          the collections, and what each holds

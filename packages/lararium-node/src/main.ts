@@ -419,7 +419,7 @@ async function main(): Promise<void> {
   // The oracle doc's read-only PUBLIC substrate (the Two-Faced Substrate's content-addressed
   // floor) — served over THIS http server: GET /oracle/pointer · /oracle/<cid>.bin.
   // Write-refusing by construction (GET-only, hash-named, no sync). Best-effort: a
-  // read-face failure logs and never crashes boot. lar:///…/lararium-identity#the-oracle-plane.
+  // read-face failure logs and never crashes boot. lar:///…/lararium-identity#/the-oracle-plane.
   let oracleReadFace: { dispose: () => void } | null = null;
   if (result.oracleDocUrl) {
     try {

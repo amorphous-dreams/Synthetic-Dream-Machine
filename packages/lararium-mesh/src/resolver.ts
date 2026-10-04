@@ -97,9 +97,9 @@ function splitLarUri(uri: string): { root: string; childPath: string[]; fragment
   const parts = rawPath.replace(/^\/+/, "").split("/").filter(Boolean);
   if (parts.length === 0) throw new Error(`lar URI needs a root segment: ${uri}`);
   const [root, ...childPath] = parts as [string, ...string[]];
-  // Fragment-path (`#parent/child/grandchild`) projects onto disk as nested
-  // subdirectories — `lar:///foo#a/b` → `foo/a/b.mem`. The single-hash + path
-  // invariant comes from lar:///ha.ka.ba/lares/api/pono/memetic-wikitext #anchors — the media type
+  // Fragment-path (`#/parent/child/grandchild`) projects onto disk as nested
+  // subdirectories — `lar:///foo#/a/b` → `foo/a/b.mem`. The single-hash + path
+  // invariant comes from lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/anchors — the media type
   // owns fragment meaning (RFC 3986 §3.5); this resolver implements the path-shaped anchor it defines.
   const rawHash = decodeURIComponent(url.hash.replace(/^#/, ""));
   const fragmentPath = rawHash ? rawHash.split("/").filter(Boolean) : [];

@@ -3,14 +3,15 @@
  *
  * Carrier framing uses HTML-entity control sigils as stream boundaries:
  *
- *   <<^ code="&#x0001;" namespace="[prefix?]"  ? -> lar:///URI>>   SOH — opens a carrier, declares URI
+ *   <<^ code="&#x0001;" namespace="[prefix?]" from="?" -> to="lar:///URI">>   SOH — opens a carrier, declares URI
  *   <<^ code="&#x0002;" [^>]*>>               STX — header→body boundary
  *   <<^ code="&#x0003;" [^>]*>>               ETX — closes body (carrier done)
- *   <<^ code="&#x0004;" [^>]*>>               EOT — carrier exit sigil
- *   <<~ -> ?>>                                return-throat — EOT variant
- *   <<~ ahu #slot>>...<<~/ahu>>             ahu section — incremental child event
+ *   <<^ code="&#x0004;" -> to="?">>            EOT — carrier exit sigil
+ *   <<~ -> "?">>                               return-throat — EOT variant
+ *   <<~ ahu #/slot>>...<<~/ahu>>            ahu section — incremental child event
  *
- * Kapu extended range: &#x0011; = SOH variant, &#x0014; = EOT variant.
+ * Kapu extended range: &#x0011; = SOH₂ (Kapu SOH variant); &#x0014; = EOT₂, reserved for the relay
+ * stream — no at-rest office (SOH₂ keeps the Kapu office; EOT closes a Kapu carrier at rest).
  *
  * MemeStreamParser uses an index-based scan (no buffer slicing mid-frame)
  * so fullText in carrier-close is always the complete SOH→ETX span.
@@ -59,7 +60,7 @@ const SOH_RE  = carrierHeadPattern();
 const INNER   = "(?:[^>\\n]|>(?!>))*";
 const STX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>`);
 const ETX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`);
-// EOT: entity form OR return-throat (<<~ -> ?>>)
+// EOT: entity form OR return-throat (<<~ -> "?">>)
 const EOT_RE  = new RegExp(`<<[~^](?:${INNER}${frameAlt("EOT")}${INNER}|\\s*->\\s*\\?)\\s*>>`);
 // `fragment` is an English surface alias for the same rooted ahu worksite event.
 // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling) —

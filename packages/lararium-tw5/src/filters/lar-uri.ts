@@ -7,7 +7,7 @@ module-type: filteroperator
  * lar-uri — read one part of an address, in the vocabulary the URI law already uses.
  *
  * ── WHY THE ADDRESS AND NOT A FIELD ─────────────────────────────────────────────────────────────
- * Belonging lives in the title. A child addressed `lar:///root#a/b` is enclosed by `lar:///root#a`,
+ * Belonging lives in the title. A child addressed `lar:///root#/a/b` is enclosed by `lar:///root#/a`,
  * and the whole relation reads from the name with no stored parent to go stale when a title moves.
  * The wiki still has to ASK, and TiddlyWiki's core here ships no `split` — that gap is the only
  * reason the relation was ever kept in a field.

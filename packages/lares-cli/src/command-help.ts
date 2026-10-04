@@ -222,9 +222,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     synopsis:
       "The ACQUIRED shelf — books and corpora a human did not author, kept READABLE and VERIFIABLE outside " +
       "every tracked tree. The tier stands in the SHRINE at `<lararium>/library` (`~/.local/share/lararium/" +
-      "library`, or LAR_LIBRARY) — a house no wipe names. Layout: `<collection>/<cid>/<the real filename>` " +
-      "+ `meta.json`: the directory name IS the digest (audit with sha256sum, no tooling), the filename " +
-      "reads to a human, the sidecar carries origin · licence · the RFC-6920 anchor. A reference NAMES — " +
+      "library`, or LAR_LIBRARY) — a house no wipe names. Layout: `<collection>/<cid>/<the real filename>`: " +
+      "the directory name IS the digest (audit with sha256sum, no tooling), the filename reads to a human. " +
+      "No per-entry sidecar: each entry's record rides as its own `#/<cid>` ahu slot inside the collection's " +
+      "`index.mem` carrier — origin · licence · the RFC-6920 anchor. A reference NAMES — " +
       "`library:mark-twain` travels, a directory does not.",
     examples: [
       "lares library list                              # the collections, and what each holds",
