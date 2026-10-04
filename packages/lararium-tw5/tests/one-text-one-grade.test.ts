@@ -17,16 +17,23 @@ import type { TW5Engine } from "../src/tw5-vm.js";
 import type { LaresMemeFace } from "../src/types/lares-globals.js";
 
 const URI = "lar:///t.witness.npc/inventory";
-/** The scenarist's witness meme, byte for byte (`tools/mesh-scenarios.sh run_meme` · `meme_text a`). */
-const witness = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t.witness.npc/inventory"\nbag = "backpack: rope, lantern"\n\`\`\`\n\n` +
+/**
+ * The scenarist's witness meme, byte for byte (`tools/mesh-scenarios.sh run_meme` · `meme_text a`) —
+ * parameterized by its own uri, so a CONTROL that places under a DIFFERENT uri (to avoid colliding
+ * with an earlier test's landed group in the shared wiki) still hands `check` and `place` the exact
+ * same bytes. A fixture that built one text under `URI` and only renamed the SOH target for `place`
+ * (leaving the root TOML `uri-path` stale) minted its own extra `uri-path` mismatch advisory on the
+ * `place` leg alone — a test-fixture divergence, not a `check`/`place` reading disagreement.
+ */
+const witness = (uri: string, slots: readonly string[]): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n` +
+  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\nbag = "backpack: rope, lantern"\n\`\`\`\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n\n`).join("") +
   `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 /** The same carrier with its one slot torn: the opener stands, the closer never arrives. */
-const unclosed = witness(["a"]).replace("<<~/ahu>>\n", "");
+const unclosedOf = (uri: string): string => witness(uri, ["a"]).replace("<<~/ahu>>\n", "");
 /** The same carrier with a closer no opener claims. */
-const orphan = witness(["a"]).replace("<<~ ahu #/a>>\n", "");
+const orphanOf = (uri: string): string => witness(uri, ["a"]).replace("<<~ ahu #/a>>\n", "");
 
 describe.skipIf(wikiSkip)(`one text, one grade${skipNote}`, () => {
   let face: LaresMemeFace;
@@ -36,12 +43,12 @@ describe.skipIf(wikiSkip)(`one text, one grade${skipNote}`, () => {
   });
 
   test("the witness `#/a` slot parses whole inside the grammar-hydrated VM — no partial form, no orphan close", () => {
-    const parsed = face.parse(URI, witness(["a"]));
+    const parsed = face.parse(URI, witness(URI, ["a"]));
     expect(parsed.failures.map((f) => f.reason)).toEqual([]);
   });
 
   test("`check` carries the grade `place` lands, and on the witness both read `clean`", async () => {
-    const text = witness(["a"]);
+    const text = witness(URI, ["a"]);
     const checked = face.check(text);
     const placed = await face.place(URI, text);
     expect(placed.diagnostics.map((d) => d.code)).toEqual([]);
@@ -51,8 +58,10 @@ describe.skipIf(wikiSkip)(`one text, one grade${skipNote}`, () => {
   });
 
   test("CONTROL: a closer no opener claims grades `warning` on both readers", async () => {
-    const checked = face.check(orphan);
-    const placed = await face.place(`${URI}-orphan`, orphan.replaceAll(URI, `${URI}-orphan`));
+    const uri = `${URI}-orphan`;
+    const text = orphanOf(uri);
+    const checked = face.check(text);
+    const placed = await face.place(uri, text);
     expect(checked.diagnostics.map((d) => d.code)).toEqual(["orphan-close:ahu"]);
     expect(checked.grade).toBe("warning");
     expect(placed.grade).toBe("warning");
@@ -60,8 +69,10 @@ describe.skipIf(wikiSkip)(`one text, one grade${skipNote}`, () => {
   });
 
   test("CONTROL: an opener whose closer never arrives grades `info` on both readers — repaired, text kept", async () => {
-    const checked = face.check(unclosed);
-    const placed = await face.place(`${URI}-unclosed`, unclosed.replaceAll(URI, `${URI}-unclosed`));
+    const uri = `${URI}-unclosed`;
+    const text = unclosedOf(uri);
+    const checked = face.check(text);
+    const placed = await face.place(uri, text);
     expect(checked.diagnostics.map((d) => d.code)).toEqual(["unclosed-frame"]);
     expect(checked.grade).toBe("info");
     expect(placed.grade).toBe("info");
