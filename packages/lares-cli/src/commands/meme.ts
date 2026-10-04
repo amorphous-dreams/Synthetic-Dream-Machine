@@ -912,10 +912,14 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
   const dir = out ?? dirname(file);
   const mdPath = join(dir, `${base}.md`);
   writeFileSync(mdPath, p.markdown);
+  // Every profile keeps the `.md.meta` sidecar, frontmatter or not (TW5 loads it, and the
+  // currency gate reads its `variant`/`tongue` back to know what target to re-project with — the
+  // placement law `projectSubmission` states: the sidecar is the target record, the frontmatter is
+  // the standalone-travel identity).
+  writeFileSync(`${mdPath}.meta`, p.meta);
   if (p.standalone) {
-    console.log(`projected ${p.uri} -> ${mdPath} (${profile.dialect}, frontmatter, source-check ${p.check})`);
+    console.log(`projected ${p.uri} -> ${mdPath} (+.meta, ${profile.dialect}, frontmatter, source-check ${p.check})`);
   } else {
-    writeFileSync(`${mdPath}.meta`, p.meta);
     console.log(`projected ${p.uri} -> ${mdPath} (+.meta, source-check ${p.check})`);
   }
   return 0;
@@ -978,10 +982,21 @@ function projectMdCheck(args: ParsedArgs): number {
     const title = /^title: (\S+)$/m.exec(meta)?.[1];
     const source = /^source: (\S+)$/m.exec(meta)?.[1];
     const claimedCheck = /^source-check: (\S+)$/m.exec(meta)?.[1];
+    // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair was
+    // woven for — no flag at check time, the recorded sidecar IS the instruction. Absent either
+    // key, the pair stays CommonMark with no tongue (the default both channels share).
+    const variant = /^variant: (\S+)$/m.exec(meta)?.[1];
+    const recordedTongue = /^tongue: (\S+)$/m.exec(meta)?.[1];
+    const profile = variant ? profileFor(variant) : PROFILES.CommonMark;
     if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
     const srcPath = join(root, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
     if (!existsSync(srcPath)) { console.log(`  ${name}: source GONE — ${source}`); failed += 1; continue; }
-    const p = projectSubmission(readFileSync(srcPath, "utf8"), { ...(title ? { title } : {}), resolve: bagsResolver(root) });
+    const p = projectSubmission(readFileSync(srcPath, "utf8"), {
+      ...(title ? { title } : {}),
+      profile,
+      resolve: bagsResolver(root),
+      ...(recordedTongue ? { tongue: recordedTongue } : {}),
+    });
     if (p.check !== claimedCheck) {
       console.log(`  ${name}: source MOVED — carrier check ${p.check} ≠ meta ${claimedCheck}; re-project`);
       failed += 1; continue;

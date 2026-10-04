@@ -303,15 +303,18 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
     expect(withDefault.meta).toContain("source: lar:///ha.ka.ba/lares/api/pono/probe2");
   });
 
-  test("GFM travels alone: YAML frontmatter, no .md.meta sidecar", () => {
+  test("GFM travels alone: YAML frontmatter PLUS a `.md.meta` sidecar (TW5 loads it too)", () => {
     const p = projectSubmission(CARRIER2, { profile: PROFILES.GFM });
     expect(p.standalone).toBe(true);
-    expect(p.meta).toBe("");
     expect(p.markdown.startsWith("---\n")).toBe(true);
     expect(p.markdown).toContain('source: "lar:///ha.ka.ba/lares/api/pono/probe2"');
     expect(p.markdown).toContain('source-check: "ni:///sha-256;PROBE2"');
     expect(p.markdown).toContain('variant: "GFM"');
     expect(p.markdown).toContain('lang: "en"');
+    // the sidecar: title/type (what TW5 loads) + the target record (what --check re-projects with)
+    expect(p.meta).toContain("title: lar:///ha.ka.ba/lares/api/pono/probe2/submission");
+    expect(p.meta).toContain("type: text/markdown");
+    expect(p.meta).toContain("variant: GFM");
   });
 
   test("frontmatter keys sort lexicographically and every value double-quotes", () => {
@@ -396,7 +399,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
     const src = readFileSync(join(REPO, "packages/lararium-tw5/tests/fixtures/kramdown-draft.mem"), "utf8");
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
     expect(p.standalone).toBe(true);
-    expect(p.meta).toBe("");
+    expect(p.meta).toContain("variant: kramdown-rfc2629");
     expect(p.markdown.startsWith("---\n")).toBe(true);
     // The fixture's meta `title` carries the carrier's own canonical `lar:` address — the same
     // key every real carrier's meta holds it under (the round-trip law: `title` IS the address,
@@ -587,6 +590,175 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
   test("CONTROL: `snapshot`, aka's mirror, takes the same frozen treatment as `aka`", () => {
     const t = transposeMarkdown('<<~ snapshot "lar:///ha.ka.ba/lares/api/pono/nowhere">>\n');
     expect(t.markdown).toContain("- `snapshot lar:///ha.ka.ba/lares/api/pono/nowhere` (unresolved — no corpus to pin)");
+  });
+});
+
+describe("LOOP 6: head-position aka (carrier scope) weaves as a citation, never inlined", () => {
+  // Carrier scope: between the meta fence and the first ahu. 218 of canon's 249 aka uses stand here
+  // — a declared likeness/conformance over the WHOLE carrier, not a quote of one section.
+  const headCarrier = (akaLine: string, dialect = PROFILES.CommonMark) =>
+    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/probe"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+${akaLine}
+
+<<~ ahu #/entry>>
+
+! Entry
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>
+<<^ code="&#x0004;" -> to=?>>
+`;
+
+  const TARGET = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+! Target content
+
+<<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+  const resolveTarget = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? TARGET : null);
+
+  test("RED: a head-position aka weaves as a ONE-LINE citation naming the target and its pin, never inlined", () => {
+    const src = headCarrier('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>');
+    const t = transposeMarkdown(src, PROFILES.CommonMark, resolveTarget);
+    expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/target` — pinned `ni:///sha-256;TARGET_CHECK`");
+    expect(t.markdown).not.toContain("Target content");
+    expect(t.markdown).not.toContain("<!--");
+  });
+
+  test("CONTROL: the SAME target, inside the ahu (body position), still inlines — unchanged", () => {
+    const src = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/probe"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/entry>>
+
+! Entry
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const t = transposeMarkdown(src, PROFILES.CommonMark, resolveTarget);
+    expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/target pinned ni:///sha-256;TARGET_CHECK -->");
+    expect(t.markdown).toContain("# Target content");
+  });
+
+  test("a head-position aka with no resolver falls back to the clearly marked unresolved form", () => {
+    const src = headCarrier('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>');
+    const t = transposeMarkdown(src);
+    expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/target` (unresolved — no corpus to pin)");
+  });
+
+  test("RED: kramdown-rfc2629 weaves a head-position RFC-2119 normative-language aka as the BCP 14 boilerplate", () => {
+    const src = headCarrier('<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>');
+    const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolveTarget);
+    expect(t.markdown).toContain(
+      'The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", ' +
+      '"RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted ' +
+      "as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as " +
+      "shown here.",
+    );
+    expect(t.normativeRefs).toEqual(["RFC2119", "RFC8174"]);
+    // the special case needs no resolver at all — it fires on the TARGET STRING alone
+    const noResolver = transposeMarkdown(src, PROFILES["kramdown-rfc2629"]);
+    expect(noResolver.markdown).toBe(t.markdown);
+  });
+
+  test("CONTROL: a head-position aka in kramdown-rfc2629 targeting something OTHER than RFC-2119 stays a plain citation", () => {
+    const src = headCarrier('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>');
+    const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolveTarget);
+    expect(t.markdown).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/target` — pinned `ni:///sha-256;TARGET_CHECK`");
+    expect(t.markdown).not.toContain("BCP 14");
+    expect(t.normativeRefs).toBeUndefined();
+  });
+
+  test("CONTROL: a BODY-position RFC-2119 normative-language aka, even in kramdown, still inlines — never the boilerplate", () => {
+    const src = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/probe"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/entry>>
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const RFC2119 = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/RFC-2119">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/RFC-2119"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/normative-language>>
+
+! Normative Language
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;RFC2119_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolveRfc2119 = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/RFC-2119" ? RFC2119 : null);
+    const t = transposeMarkdown(src, PROFILES["kramdown-rfc2629"], resolveRfc2119);
+    expect(t.markdown).not.toContain("BCP 14");
+    expect(t.markdown).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned");
+    expect(t.normativeRefs).toBeUndefined();
+  });
+
+  test("projectSubmission over kramdown-rfc2629 carries normative: RFC2119/RFC8174 in the frontmatter", () => {
+    const src = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/draft-probe">>
+\`\`\`toml meta
+author    = "J. Fontany"
+cat       = "info"
+date      = "2026-09-29"
+docname   = "draft-lares-probe-00"
+ipr       = "trust200902"
+title     = "A Probe Draft"
+uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+<<~ ahu #/entry>>
+
+! Entry
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;PROBE3
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
+    expect(p.markdown).toContain("normative:\n  RFC2119:\n  RFC8174:");
+    expect(p.markdown).toContain("BCP 14");
   });
 });
 

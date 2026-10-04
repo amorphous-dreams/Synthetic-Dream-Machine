@@ -122,15 +122,21 @@ function splitByPrefixShape(names: string[]): { sharktooth: string[]; bare: stri
 export interface SubmissionProjection {
   /** The markdown body — what a reviewer reads. Carries YAML frontmatter prepended when `standalone`. */
   markdown: string;
-  /** The sidecar meta, TW5 `.meta` field lines — provenance the pair travels under. Empty when `standalone`. */
+  /**
+   * The sidecar meta, TW5 `.meta` field lines — ALWAYS populated (every profile keeps this
+   * sidecar; TW5 loads it regardless of dialect). Authoritative for `title`/`type` and for the
+   * TARGET RECORD (`variant`/`tongue`, present only when non-default) a re-projection reads back —
+   * see the placement-law comment in {@link projectSubmission}.
+   */
   meta: string;
   /** The carrier's own address, read off its SOH heading (or supplied). */
   uri: string;
   /** The block check found adjacent to ETX, or "unchecked". */
   check: string;
   /**
-   * RFC 7763: true when the file travels ALONE and carries YAML frontmatter (no `.md.meta` sidecar —
-   * `meta` reads empty); false for the CommonMark shelf pair (frontmatter-free, `.md.meta` sidecar).
+   * RFC 7763: true when the file ALSO carries YAML frontmatter for standalone travel (GFM,
+   * kramdown-rfc2629) — the `.md.meta` sidecar travels alongside it regardless, never "no sidecar."
+   * False for the CommonMark shelf pair (frontmatter-free; the sidecar is the only metadata).
    */
   standalone: boolean;
 }
@@ -407,6 +413,29 @@ function translateSigilHead(line: string, tongue: string | undefined): string {
 }
 
 /**
+ * BCP 14 key-words boilerplate, quoted VERBATIM from RFC 8174 §2 ("Guidance in the Use of These Key
+ * Words") — fetched 2026-10-03 from https://www.rfc-editor.org/rfc/rfc8174:
+ *
+ *   "The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT",
+ *   "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted
+ *   as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as
+ *   shown here."
+ *
+ * Operator-approved (LOOP 6): a HEAD-POSITION (carrier-scope) `aka` targeting RFC-2119's own
+ * normative-language slot weaves AS this sentence under `kramdown-rfc2629` — the dialect's native
+ * way of citing BCP 14, rather than a markdown citation line naming a meme the kramdown toolchain
+ * has never heard of. [RFC2119] and [RFC8174] become the kramdown frontmatter's `normative:` refs.
+ */
+const BCP14_BOILERPLATE =
+  'The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", ' +
+  '"RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted ' +
+  "as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as " +
+  "shown here.";
+
+/** The exact head-position target the BCP 14 special case answers to. */
+const RFC2119_NORMATIVE_LANGUAGE = /\/RFC-2119#\/?normative-language$/;
+
+/**
  * A FROZEN `aka` (or its mirrors `shadow`/`snapshot`) edge weaves by INLINING its target's current
  * text, pinned with the target's own `ni:` check — the woven-outward twin of the in-house `aka`
  * transclusion (#/weave-and-tangle's "an open rhyme"). Resolution needs a wiki/corpus; absent one
@@ -454,40 +483,97 @@ function extractAhuSlot(text: string, slotPath: string): string | null {
  * would carry, which would smuggle every OTHER section past what the author named into an artifact
  * that may travel outward (an IANA submission, a standalone dialect file) with no license to hold it.
  */
+interface WovenAka {
+  readonly lines: string[];
+  /** RFC numbers the BCP 14 special case pulls into the kramdown frontmatter's `normative:` refs. */
+  readonly normativeRefs?: string[];
+}
+
+/**
+ * The target's own check, whichever shape it pins — the whole carrier's ETX check with no
+ * fragment, or (per the slot-scoped law above) `bccOfSpan` over just the named slot's bytes.
+ * `null` covers both failure shapes a caller must answer the SAME unresolved way: no resolver
+ * reached the target, or a fragment named a slot the target does not carry.
+ */
+function pinOf(resolved: string, slot: string | null, profile: WeaveProfile, tongue: string | undefined): { check: string; body: string } | null {
+  if (slot === null) {
+    const woven = transposeMarkdown(resolved, profile, undefined, tongue);
+    return { check: woven.check ?? "unchecked", body: woven.markdown };
+  }
+  const span = extractAhuSlot(resolved, slot);
+  if (span === null) return null;
+  // The check covers the SLOT's own bytes alone — open sigil through its matching close,
+  // inclusive — never the whole carrier: a reader pinning one section wants proof of THAT
+  // section, and a whole-carrier check would certify bytes the inline never carried.
+  return { check: bccOfSpan(span), body: transposeMarkdown(span, profile, undefined, tongue).markdown };
+}
+
+/**
+ * A FROZEN `aka` edge's SCOPE decides its shape, and its TARGET decides how much it pins.
+ *
+ * HEAD POSITION (carrier scope — between the meta fence and the first `ahu`; 218 of canon's 249
+ * aka uses): a declared likeness/conformance over the WHOLE carrier, not a section of it. It
+ * weaves as a CITATION — one line naming the target and its pin, never inlined content — because
+ * a carrier-scope claim is "this document conforms to/cites that one," not "read that one's text
+ * here." `kramdown-rfc2629` carries ONE further special case: a head-position aka targeting
+ * RFC-2119's own normative-language slot weaves as the BCP 14 boilerplate sentence
+ * ({@link BCP14_BOILERPLATE}) instead of a citation line — the dialect's native idiom for exactly
+ * this claim, with `[RFC2119]`/`[RFC8174]` riding the kramdown frontmatter's own `normative:` refs.
+ *
+ * BODY POSITION (inside an ahu — a local edge): unchanged from before this loop — the target's
+ * current text INLINES, pinned with its own check, the woven-outward twin of the in-house `aka`
+ * transclusion (#/weave-and-tangle's "an open rhyme").
+ *
+ * Resolution needs a wiki/corpus either way; absent one (no `resolve`, or `resolve` answers null —
+ * the target stands unknown), both scopes fall back to a clearly marked unresolved reference rather
+ * than inventing content or a pin around a target neither scope can read.
+ *
+ * The nested weave carries NO resolver forward — a pin fixes one target at one moment, and a chain
+ * of `aka`s pinning each other would have no moment to stop at. It DOES carry `tongue` forward: the
+ * pinned content weaves into the same outward artifact, so its own sigil names follow the same axis.
+ */
 function weaveAka(
   word: string,
   rawTarget: string,
   profile: WeaveProfile,
   resolve?: (uri: string) => string | null,
   tongue?: string,
-): string[] {
+  headPosition = false,
+): WovenAka {
   const headWord = resolveHeadWord(word, tongue);
   const target = rawTarget.replace(/^"|"$/g, "");
   const hashIdx = target.indexOf("#");
   const base = hashIdx === -1 ? target : target.slice(0, hashIdx);
   const slot = hashIdx === -1 ? null : target.slice(hashIdx + 1);
 
+  if (headPosition) {
+    if (profile.dialect === "kramdown-rfc2629" && RFC2119_NORMATIVE_LANGUAGE.test(target)) {
+      return { lines: [BCP14_BOILERPLATE], normativeRefs: ["RFC2119", "RFC8174"] };
+    }
+    const resolved = resolve ? resolve(base) : null;
+    if (resolved === null || resolved === undefined) {
+      return { lines: [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`] };
+    }
+    const pin = pinOf(resolved, slot, profile, tongue);
+    if (pin === null) {
+      return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
+    }
+    return { lines: [`- \`${headWord} ${target}\` — pinned \`${pin.check}\``] };
+  }
+
   const resolved = resolve ? resolve(base) : null;
   if (resolved === null || resolved === undefined) {
-    return [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`];
+    return { lines: [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`] };
   }
-
   if (slot === null) {
-    const woven = transposeMarkdown(resolved, profile, undefined, tongue);
-    const check = woven.check ?? "unchecked";
-    return [`<!-- ${headWord}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${headWord} -->`];
+    const pin = pinOf(resolved, null, profile, tongue);
+    return { lines: [`<!-- ${headWord}: ${target} pinned ${pin!.check} -->`, ...pin!.body.split("\n"), `<!-- /${headWord} -->`] };
   }
-
-  const span = extractAhuSlot(resolved, slot);
-  if (span === null) {
-    return [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`];
+  const pin = pinOf(resolved, slot, profile, tongue);
+  if (pin === null) {
+    return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
   }
-  // The check covers the SLOT's own bytes alone — open sigil through its matching close, inclusive —
-  // never the whole carrier: a reader pinning one section wants proof of THAT section, and a
-  // whole-carrier check would certify bytes the inline never carried.
-  const check = bccOfSpan(span);
-  const woven = transposeMarkdown(span, profile, undefined, tongue);
-  return [`<!-- ${headWord}: ${target} pinned ${check} -->`, ...woven.markdown.split("\n"), `<!-- /${headWord} -->`];
+  return { lines: [`<!-- ${headWord}: ${target} pinned ${pin.check} -->`, ...pin.body.split("\n"), `<!-- /${headWord} -->`] };
 }
 
 /**
@@ -513,7 +599,7 @@ export function transposeMarkdown(
    * never touching an argument, a target, or prose.
    */
   tongue?: string,
-): { markdown: string; uri?: string; check?: string; metaFence?: string } {
+): { markdown: string; uri?: string; check?: string; metaFence?: string; normativeRefs?: string[] } {
   const out: string[] = [];
   let fence = 0;            // open fence length in backticks; 0 = prose
   let ordinal = 0;          // position inside a `#` ordered run
@@ -527,6 +613,8 @@ export function transposeMarkdown(
   let proseBuf: string[] | null = null;  // a contiguous default/ordered run, flushed as one string
   let hanaBuf: string[] | null = null;   // a `<<~ hana key>>` span, gathered byte-verbatim
   let hanaKey: string | null = null;
+  let sawAhu = false;        // true once the FIRST ahu opens — carrier scope ends there
+  const normativeRefs = new Set<string>(); // RFC numbers a head-position RFC-2119 aka pulls in
 
   // A contiguous run of default/ordered lines is buffered raw (structural markers already
   // substituted, emphasis NOT yet applied) and flushed together so a `''`/`//` pair spanning a
@@ -629,12 +717,22 @@ export function transposeMarkdown(
 
     // ── sigils with a markdown shape ──
     const ahu = AHU_OPEN.exec(line);
-    if (ahu) { flushProse(); out.push(`<a id="${ahuId(ahu[1]!)}"></a>`); continue; }
+    if (ahu) { flushProse(); sawAhu = true; out.push(`<a id="${ahuId(ahu[1]!)}"></a>`); continue; }
     if (AHU_CLOSE.test(line)) continue;
     const loulou = LOULOU_LINE.exec(line);
     if (loulou) { flushProse(); out.push(`- \`${resolveHeadWord(loulou[1]!, tongue)} ${(loulou[2] ?? "").trim()}\``); continue; }
     const aka = AKA_LINE.exec(line);
-    if (aka) { flushProse(); out.push(...weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve, tongue)); continue; }
+    if (aka) {
+      flushProse();
+      // CARRIER SCOPE (head position): after the meta fence, before the first ahu — a declared
+      // likeness/conformance over the WHOLE carrier, never one section of it (218 of canon's 249
+      // aka uses). BODY SCOPE: inside an ahu — a local edge, still a frozen inline (unchanged).
+      const headPosition = metaFenceDone !== undefined && !sawAhu;
+      const woven = weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve, tongue, headPosition);
+      out.push(...woven.lines);
+      for (const ref of woven.normativeRefs ?? []) normativeRefs.add(ref);
+      continue;
+    }
     const kahea = KAHEA_LINE.exec(line);
     if (kahea) {
       flushProse();
@@ -682,7 +780,13 @@ export function transposeMarkdown(
   }
   flushProse();
   const markdown = out.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\n+$/, "\n");
-  return { markdown, ...(uri ? { uri } : {}), ...(check ? { check } : {}), ...(metaFenceDone ? { metaFence: metaFenceDone } : {}) };
+  return {
+    markdown,
+    ...(uri ? { uri } : {}),
+    ...(check ? { check } : {}),
+    ...(metaFenceDone ? { metaFence: metaFenceDone } : {}),
+    ...(normativeRefs.size > 0 ? { normativeRefs: [...normativeRefs] } : {}),
+  };
 }
 
 /**
@@ -712,9 +816,9 @@ export function yamlEscape(s: string): string {
     .replace(/\t/g, "\\t");
 }
 
-function yamlFrontmatter(fields: Readonly<Record<string, string>>): string {
+function yamlFrontmatter(fields: Readonly<Record<string, string>>, extraLines: readonly string[] = []): string {
   const lines = Object.keys(fields).sort().map((k) => `${k}: "${yamlEscape(fields[k]!)}"`);
-  return ["---", ...lines, "---", ""].join("\n");
+  return ["---", ...lines, ...extraLines, "---", ""].join("\n");
 }
 
 /**
@@ -748,6 +852,26 @@ export function projectSubmission(
   const check = t.check ?? "unchecked";
   const title = opts?.title ?? `${uri}/submission`;
 
+  // THE PLACEMENT LAW — ONE AUTHORITY PER QUESTION, both channels written from these SAME inputs so
+  // they never disagree in practice: the `.md.meta` SIDECAR is authoritative for what TW5 loads as
+  // the tiddler's own fields (title/type) and for the TARGET RECORD (`variant`/`tongue`) — the fact
+  // `--check` and the currency gate read back to know what to re-project THIS pair with, no flag
+  // needed at check time. The YAML FRONTMATTER is authoritative for the identity the file travels
+  // WITH when it leaves the shelf alone (source/source-check/lang/tongue/the kramdown identity
+  // keys) — what an external reader (an IANA tool, an RFC toolchain) sees with no sidecar beside it.
+  // A pair with no recorded variant stays CommonMark, no tongue (the default both channels share).
+  const metaLines = [
+    `title: ${title}`,
+    `type: text/markdown`,
+    `source: ${uri}`,
+    `source-check: ${check}`,
+    ...(profile.dialect !== "CommonMark" ? [`variant: ${profile.dialect}`] : []),
+    ...(opts?.tongue ? [`tongue: ${opts.tongue}`] : []),
+    `projected-by: weave (lares meme project --to md · meme-project)`,
+    `law: projected artifact — hand edits do not survive re-projection`,
+  ];
+  const meta = metaLines.join("\n") + "\n";
+
   if (profile.frontmatter) {
     const fields: Record<string, string> = {
       title,
@@ -770,17 +894,18 @@ export function projectSubmission(
       }
       for (const k of profile.requiredMeta) fields[k] = String(tomlFields[k]);
     }
-    const markdown = yamlFrontmatter(fields) + t.markdown;
-    return { markdown, meta: "", uri, check, standalone: true };
+    // kramdown-rfc's OWN reference convention: a bare anchor key with no value resolves through its
+    // own RFC/I-D alias registry — quoting it would turn the lookup key into a literal string the
+    // toolchain checks verbatim, never resolving. So this rides OUTSIDE the quoted-scalar writer,
+    // appended inside the SAME frontmatter block rather than forced through one generic field shape.
+    const extraLines = profile.dialect === "kramdown-rfc2629" && t.normativeRefs?.length
+      ? ["normative:", ...t.normativeRefs.map((r) => `  ${r}:`)]
+      : [];
+    const markdown = yamlFrontmatter(fields, extraLines) + t.markdown;
+    // Frontmatter-carrying dialects keep the `.md.meta` sidecar TOO (TW5 loads it) — `standalone`
+    // still names "this file carries its own frontmatter," never "no sidecar travels beside it."
+    return { markdown, meta, uri, check, standalone: true };
   }
 
-  const meta = [
-    `title: ${title}`,
-    `type: text/markdown`,
-    `source: ${uri}`,
-    `source-check: ${check}`,
-    `projected-by: weave (lares meme project --to md · meme-project)`,
-    `law: projected artifact — hand edits do not survive re-projection`,
-  ].join("\n") + "\n";
   return { markdown: t.markdown, meta, uri, check, standalone: false };
 }

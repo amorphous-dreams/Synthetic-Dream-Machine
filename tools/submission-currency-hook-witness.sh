@@ -95,6 +95,23 @@ elif printf '%s' "$OUT" | grep -q 'no built CLI'; then ok
 else bad "refused without naming the build"; fi
 git -C "$WORK" reset -q -- "$SHELF/prism.md"
 
+# LOOP 6: THE PAIR READS AS PROJECTED. A second fixture, woven under `--dialect GFM --tongue en`,
+# RECORDS that target in its own `.md.meta` (`variant: GFM` / `tongue: en`) — the currency gate takes
+# NO flag of its own, reading that recorded target back off the pair and re-projecting with it. This
+# proves the gate's `projectMdCheck` path (not just the CLI's own `project` door) reads the record.
+step "⑥ a GFM+en pair recording its target → the gate re-projects WITH it, passes GREEN"
+cp "$PRISM_SRC" "$WORK/$SRC_DIR/prism-gfm.mem"
+sed -i 's#to="lar:///ha.ka.ba/lares/api/pono/prism"#to="lar:///ha.ka.ba/lares/api/pono/prism-gfm"#' "$WORK/$SRC_DIR/prism-gfm.mem"
+( cd "$WORK" && node "$LARES" meme project "$SRC_DIR/prism-gfm.mem" --to md --dialect GFM --tongue en --out "$SHELF" \
+    --title-base lar:///ha.ka.ba/lares/api/pono/submissions >/dev/null 2>&1 )
+if grep -q 'variant: GFM' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null && grep -q 'tongue: en' "$WORK/$SHELF/prism-gfm.md.meta" 2>/dev/null; then
+  git -C "$WORK" add "$SRC_DIR/prism-gfm.mem" "$SHELF/prism-gfm.md" "$SHELF/prism-gfm.md.meta"
+  if OUT=$(cd "$WORK" && "$HOOK" 2>&1); then ok; else bad "refused a current GFM+en pair"; printf '%s\n' "$OUT" | tail -6 | sed 's/^/      /'; fi
+  git -C "$WORK" commit -qm "gfm+en pair"
+else
+  bad "the sidecar never recorded variant/tongue"
+fi
+
 if [ "$FAILED" -eq 0 ]; then echo "submission-currency-hook-witness: the gate refuses a stale pair, passes a current one, and reads what the commit carries"
 else echo "submission-currency-hook-witness: $FAILED check(s) failed"; fi
 exit "$FAILED"

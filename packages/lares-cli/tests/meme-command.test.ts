@@ -273,7 +273,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(want.meta);
   });
 
-  test("--dialect GFM writes frontmatter-carrying markdown alone, no .md.meta sidecar", async () => {
+  test("--dialect GFM writes frontmatter-carrying markdown PLUS the .md.meta sidecar (LOOP 6: every profile keeps one)", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
     const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, dialect: "GFM" }));
@@ -282,9 +282,13 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     const body = readFileSync(join(d, "prism.md"), "utf8");
     expect(body.startsWith("---\n")).toBe(true);
     expect(body).toContain('variant: "GFM"');
-    expect(existsSync(join(d, "prism.md.meta"))).toBe(false);
+    expect(existsSync(join(d, "prism.md.meta"))).toBe(true);
+    const meta = readFileSync(join(d, "prism.md.meta"), "utf8");
+    expect(meta).toContain("variant: GFM");
   });
 
+  // prism.mem's `aka` stands between the meta fence and its first ahu — HEAD/carrier position
+  // (LOOP 6) — so it weaves as a citation-plus-pin, never inlined.
   test("a frozen `aka` PINS for real: local weave resolves against the repo's own bags/ corpus", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
@@ -292,7 +296,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     vi.restoreAllMocks();
     expect(code).toBe(0);
     const body = readFileSync(join(d, "prism.md"), "utf8");
-    expect(body).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;");
+    expect(body).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;");
     expect(body).not.toContain("unresolved — no corpus to pin");
   });
 
@@ -303,8 +307,8 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     vi.restoreAllMocks();
     expect(code).toBe(0);
     const body = readFileSync(join(d, "prism.md"), "utf8");
-    expect(body).toContain("<!-- snapshot: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;");
-    expect(body).not.toContain("<!-- aka:");
+    expect(body).toContain("- `snapshot lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;");
+    expect(body).not.toContain("- `aka ");
   });
 
   test("CONTROL: with NO --tongue, the same `aka` weaves under its canonical name, byte-identical to before", async () => {
@@ -314,7 +318,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     vi.restoreAllMocks();
     expect(code).toBe(0);
     const body = readFileSync(join(d, "prism.md"), "utf8");
-    expect(body).toContain("<!-- aka: lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language pinned ni:///sha-256;");
+    expect(body).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;");
     expect(body).not.toContain("snapshot");
   });
 
@@ -327,7 +331,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     const body = readFileSync(join(d, "prism.md"), "utf8");
     expect(body).toContain('lang: "en"');
     expect(body).toContain('tongue: "x-lares>en"');
-    expect(body).toContain("<!-- snapshot:");
+    expect(body).toContain("- `snapshot ");
   });
 
   test("CONTROL: an unrecognized --dialect refuses, naming the registered variants", async () => {
@@ -363,6 +367,22 @@ describe("lares meme project --to md --check — the fold of submission-parity",
     expect(readFileSync(join(d, "prism.md"), "utf8")).toBe(mdBefore);
     expect(readFileSync(join(d, "prism.md.meta"), "utf8")).toBe(metaBefore);
     expect(h.calls).toEqual([]);
+  });
+
+  // LOOP 6: the pair reads AS PROJECTED — `--check` never takes a `--dialect`/`--tongue` flag; it
+  // reads the recorded `variant: GFM` (and `tongue:`, when one wove) off the pair's OWN
+  // `.md.meta` and re-projects with THAT target.
+  test("★ a pair recording a target re-projects WITH that target, no flag at check time ★", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, dialect: "GFM", tongue: "en" }));
+    const mdBefore = readFileSync(join(d, "prism.md"), "utf8");
+    const code = await cmdMeme(memeArgs(["project"], { to: "md", check: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    expect(readFileSync(join(d, "prism.md"), "utf8")).toBe(mdBefore);
+    expect(mdBefore).toContain('variant: "GFM"');
+    expect(mdBefore).toContain("- `snapshot ");
   });
 
   test("the bare-flag spelling names its target off the normal source position", async () => {
