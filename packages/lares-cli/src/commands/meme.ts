@@ -889,28 +889,57 @@ export function bagsResolver(root: string): (uri: string) => string | null {
   };
 }
 
+/**
+ * The existing pair's OWN target record, read back off its `.md.meta` sidecar — the same two keys
+ * `projectMdCheck` already reads to know what a recorded pair re-projects WITH (#/the-woven-dialect's
+ * placement law: the sidecar is the target record). Absent sidecar, or absent key, answers `undefined`
+ * for that key — never a guess — so a first-time projection keeps today's CommonMark/no-tongue default.
+ */
+function recordedTarget(mdPath: string): { variant?: string; tongue?: string } {
+  const metaPath = `${mdPath}.meta`;
+  if (!existsSync(metaPath)) return {};
+  let meta: string;
+  try { meta = readFileSync(metaPath, "utf8"); } catch { return {}; }
+  const variant = /^variant: (\S+)$/m.exec(meta)?.[1];
+  const tongue = /^tongue: (\S+)$/m.exec(meta)?.[1];
+  return { ...(variant ? { variant } : {}), ...(tongue ? { tongue } : {}) };
+}
+
 /** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`
  * — or, under a standalone `--dialect` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
- * inside it per RFC 7763. */
+ * inside it per RFC 7763.
+ *
+ * A BARE RE-PROJECT KEEPS THE PAIR'S OWN TARGET. `--dialect`/`--tongue` win when given; absent, a pair
+ * already standing at this exact path (beside the source, or under this `--out`) names its own target
+ * through its `.md.meta`'s `variant:`/`tongue:` fields — the same record `--check` reads back — so a
+ * re-project with no flags reproduces what is already there rather than silently falling to CommonMark
+ * and clobbering a standalone profile's frontmatter + normative list. A pair with no recorded meta (a
+ * first projection) keeps today's default exactly as before this clause existed.
+ */
 function projectMdLocal(args: ParsedArgs, file: string): number {
   const out = args.options["out"];
   const titleBase = args.options["title-base"];
-  const dialect = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
-  const profile = dialect ? profileFor(dialect) : PROFILES.CommonMark;
-  // BCP 47 — absent, every sigil head name weaves canonical, byte-identical to before this flag
-  // existed (#/the-woven-dialect's Tongue clause).
-  const tongue = typeof args.options["tongue"] === "string" ? args.options["tongue"] : undefined;
   if (out) mkdirSync(out, { recursive: true });
   const text = readNamed(file);
   const base = basename(file).replace(/\.mem$/, "");
+  const dir = out ?? dirname(file);
+  const mdPath = join(dir, `${base}.md`);
+  const recorded = recordedTarget(mdPath);
+
+  const dialectFlag = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
+  const dialect = dialectFlag || recorded.variant || "";
+  const profile = dialect ? profileFor(dialect) : PROFILES.CommonMark;
+  // BCP 47 — absent both the flag and the pair's own record, every sigil head name weaves canonical,
+  // byte-identical to before this flag existed (#/the-woven-dialect's Tongue clause).
+  const tongueFlag = typeof args.options["tongue"] === "string" ? args.options["tongue"] : undefined;
+  const tongue = tongueFlag ?? recorded.tongue;
+
   const p = projectSubmission(text, {
     ...(titleBase ? { title: `${titleBase}/${base}` } : {}),
     profile,
     resolve: bagsResolver(repoRoot),
     ...(tongue ? { tongue } : {}),
   });
-  const dir = out ?? dirname(file);
-  const mdPath = join(dir, `${base}.md`);
   writeFileSync(mdPath, p.markdown);
   // Every profile keeps the `.md.meta` sidecar, frontmatter or not (TW5 loads it, and the
   // currency gate reads its `variant`/`tongue` back to know what target to re-project with — the

@@ -346,6 +346,78 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
 });
 
 /**
+ * A bare re-project over an EXISTING pair reads its own `.md.meta`'s `variant:`/`tongue:` as the
+ * default target — the pair already names what it was woven for, the same record `--check` reads
+ * back. Before this clause, a bare re-project always fell to CommonMark/no-tongue and clobbered a
+ * standalone profile's frontmatter + normative list (operator ruling 1). A real kramdown-shaped
+ * corpus carrier (`docs/pono/lar-uri.mem` — pinned ground, same as weave.test.ts's own use of it)
+ * proves it rather than a hand-built stub.
+ */
+describe("lares meme project --to md — a bare re-project reads the pair's OWN recorded target", () => {
+  const LAR_URI = join(REPO, "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem");
+
+  test("★ RED→GREEN: a bare re-project of a standing kramdown pair keeps its dialect — no flags, no clobber ★", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    // Mint the pair once, explicitly, under kramdown-rfc2629 + a tongue.
+    await cmdMeme(memeArgs(["project", LAR_URI], { to: "md", out: d, dialect: "kramdown-rfc2629", tongue: "en" }));
+    const metaBefore = readFileSync(join(d, "lar-uri.md.meta"), "utf8");
+    expect(metaBefore).toContain("variant: kramdown-rfc2629");
+    expect(metaBefore).toContain("tongue: en");
+
+    // Re-project BARE — no --dialect, no --tongue. The fix: read the pair's own meta back.
+    const code = await cmdMeme(memeArgs(["project", LAR_URI], { to: "md", out: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "lar-uri.md"), "utf8");
+    // The frontmatter + normative list are what the bug clobbered — gone entirely under a silent
+    // fall to CommonMark.
+    expect(body.startsWith("---\n")).toBe(true);
+    expect(body).toContain('variant: "kramdown-rfc2629"');
+    expect(body).toContain('docname: "draft-fontany-lar-uri-scheme-00"');
+    expect(body).toContain("normative:");
+    // lar-uri.mem pins the BCP 14 key-words source by `kanawai`; under kramdown-rfc2629 that fires
+    // the boilerplate special case (weave.test.ts's own ground) — its presence proves the dialect
+    // (never CommonMark's plain citation bullet) survived the bare re-project.
+    expect(body).toContain('The key words "MUST"');
+    expect(readFileSync(join(d, "lar-uri.md.meta"), "utf8")).toBe(metaBefore);
+  });
+
+  test("CONTROL: an explicit --dialect on the re-project wins over the pair's own recorded variant, field by field", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    await cmdMeme(memeArgs(["project", LAR_URI], { to: "md", out: d, dialect: "kramdown-rfc2629", tongue: "en" }));
+    // Only --dialect given this time — no --tongue. Each flag defaults from meta INDEPENDENTLY
+    // (operator ruling 1: "explicit flags still win", read per field), so the recorded tongue
+    // "en" still carries even though the dialect flag overrides the recorded variant.
+    const code = await cmdMeme(memeArgs(["project", LAR_URI], { to: "md", out: d, dialect: "GFM" }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const meta = readFileSync(join(d, "lar-uri.md.meta"), "utf8");
+    expect(meta).toContain("variant: GFM");
+    expect(meta).toContain("tongue: en");
+    const body = readFileSync(join(d, "lar-uri.md"), "utf8");
+    expect(body).toContain('variant: "GFM"');
+    // Outside kramdown-rfc2629's BCP-14 special case, a `kanawai` pin weaves its ordinary citation
+    // bullet under the tongue's own head-word mirror ("law", English) — proof the recorded tongue
+    // carried through this GFM re-project.
+    expect(body).toContain("- `law ");
+  });
+
+  test("CONTROL: a pair with NO recorded meta (a first projection) keeps today's CommonMark default", async () => {
+    const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const code = await cmdMeme(memeArgs(["project", LAR_URI], { to: "md", out: d }));
+    vi.restoreAllMocks();
+    expect(code).toBe(0);
+    const body = readFileSync(join(d, "lar-uri.md"), "utf8");
+    expect(body.startsWith("---\n")).toBe(false);
+    const meta = readFileSync(join(d, "lar-uri.md.meta"), "utf8");
+    expect(meta).not.toContain("variant:");
+  });
+});
+
+/**
  * The fold of `tools/submission-parity.mjs` into this door: `project --to md --check <file|dir>`
  * re-projects each named pair's SOURCE (read off the meta's `source:` field, resolved against the
  * repo's `bags/lares` tree) and compares in memory — no write, no wire. `PRISM`'s own declared
