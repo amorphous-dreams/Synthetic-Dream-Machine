@@ -1,0 +1,45 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-9591">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable      = true
+file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-9591.mem"
+mana           = 14
+manao          = 14
+manaoio        = 13
+namespace      = "&#x2299;"
+reference-kind = "rfc"
+role           = "reference meme — cites IETF RFC 9591 by its own bibliographic metadata"
+tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+title          = "lar:///ha.ka.ba/lares/ref/RFC-9591"
+type           = "text/memetic-wikitext+tiddlywiki"
+uri-path       = "ha.ka.ba/lares/ref/RFC-9591"
+
+[reference]
+author     = "D. Connolly, C. Komlo, I. Goldberg, C. A. Wood"
+date       = "June 2024"
+seriesinfo = "Informational (IRTF CFRG)"
+target     = "https://www.rfc-editor.org/info/rfc9591"
+title      = "The Flexible Round-Optimized Schnorr Threshold (FROST) Protocol for Two-Round Schnorr Signatures"
+```
+
+<<~ ahu #/head>>
+
+! RFC 9591 — The FROST Protocol for Two-Round Schnorr Signatures
+
+A reference meme. It carries RFC 9591's own bibliographic facts — fetched from rfc-editor.org,
+never invented — in `[reference]` above, so a pin at this address cites the work itself.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;7aZSMr9pYj4sg4hlOA4_zWoYFr97xGXEb9oKOIFsxzc
+
+<<^ code="&#x0004;" -> to="?">>

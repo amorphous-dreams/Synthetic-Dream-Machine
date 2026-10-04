@@ -1,0 +1,45 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-5011">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable      = true
+file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-5011.mem"
+mana           = 14
+manao          = 14
+manaoio        = 13
+namespace      = "&#x2299;"
+reference-kind = "rfc"
+role           = "reference meme — cites IETF RFC 5011 by its own bibliographic metadata"
+tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+title          = "lar:///ha.ka.ba/lares/ref/RFC-5011"
+type           = "text/memetic-wikitext+tiddlywiki"
+uri-path       = "ha.ka.ba/lares/ref/RFC-5011"
+
+[reference]
+author     = "M. StJohns"
+date       = "September 2007"
+seriesinfo = "STD 74"
+target     = "https://www.rfc-editor.org/info/rfc5011"
+title      = "Automated Updates of DNS Security (DNSSEC) Trust Anchors"
+```
+
+<<~ ahu #/head>>
+
+! RFC 5011 — Automated Updates of DNS Security (DNSSEC) Trust Anchors
+
+A reference meme. It carries RFC 5011's own bibliographic facts — fetched from rfc-editor.org,
+never invented — in `[reference]` above, so a pin at this address cites the work itself.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;gJ9dCWo2vXgjJ4CJwJzUnINiVi2w-TH-gmhetarsT_E
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,49 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-6962">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable      = true
+file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-6962.mem"
+mana           = 14
+manao          = 14
+manaoio        = 13
+namespace      = "&#x2299;"
+reference-kind = "rfc"
+role           = "reference meme — cites IETF RFC 6962 by its own bibliographic metadata"
+tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+title          = "lar:///ha.ka.ba/lares/ref/RFC-6962"
+type           = "text/memetic-wikitext+tiddlywiki"
+uri-path       = "ha.ka.ba/lares/ref/RFC-6962"
+
+[reference]
+author     = "B. Laurie, A. Langley, E. Kasper"
+date       = "June 2013"
+seriesinfo = "Experimental; obsoleted by RFC 9162"
+target     = "https://www.rfc-editor.org/info/rfc6962"
+title      = "Certificate Transparency"
+```
+
+<<~ ahu #/head>>
+
+! RFC 6962 — Certificate Transparency
+
+A reference meme. It carries RFC 6962's own bibliographic facts — fetched from rfc-editor.org,
+never invented — in `[reference]` above, so a pin at this address cites the work itself.
+Superseded by `lar:///ha.ka.ba/lares/ref/RFC-9162`; this carrier stands because canon cites
+both versions.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/ref/RFC-9162">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;YnZmNa-dJsVmfa0XELB-Wkjw3lB5Ux_ETyCY4hpsNO8
+
+<<^ code="&#x0004;" -> to="?">>
