@@ -53,15 +53,21 @@ describe("root metadata is authored body", () => {
   });
 });
 
-describe("legacy root metadata remains recoverable but is not emitted", () => {
-  test("pre-STX metadata surfaces a diagnostic and body survives", () => {
-    const legacy = readFileSync(FIXTURE, "utf8").replace(
-      '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n<<^ code="&#x0002;">>\n\n```toml meta',
-      '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n```toml meta',
-    ).replace('```\n\nRoot prose', '```\n\n<<^ code="&#x0002;">>\n\nRoot prose');
-    const map = records(legacy);
-    expect(map.get(URI)!.text).toContain("Root prose");
-    const diagnostics = memeticIngestOps.deserialize(URI, legacy).diagnostics;
-    expect(diagnostics.map((d) => d.message).join("\n")).toMatch(/root TOML metadata stands before STX/);
+describe("★ root metadata before STX is a frame fault, never recovered ★", () => {
+  const preStx = readFileSync(FIXTURE, "utf8").replace(
+    '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n<<^ code="&#x0002;">>\n\n```toml meta',
+    '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n```toml meta',
+  ).replace('```\n\nRoot prose', '```\n\n<<^ code="&#x0002;">>\n\nRoot prose');
+
+  test("the gate refuses it on the frame fault `meta-before-stx`", () => {
+    const diagnostics = memeticIngestOps.deserialize(URI, preStx).diagnostics;
+    expect(diagnostics.filter((d) => d.severity === "error").map((d) => d.code)).toEqual(["meta-before-stx"]);
+  });
+
+  test("the parser lifts no field from it — the SOH..STX bytes ride verbatim as `header-text`", () => {
+    const map = records(preStx);
+    expect(map.get(URI)!["custom"]).toBeUndefined();
+    expect(map.get(URI)!["uri-path"]).toBeUndefined();
+    expect(map.get(`${URI}#/$header-text`)?.text).toMatch(/^```toml meta\n[\s\S]*custom   = "root-authority"[\s\S]*```\s*$/);
   });
 });

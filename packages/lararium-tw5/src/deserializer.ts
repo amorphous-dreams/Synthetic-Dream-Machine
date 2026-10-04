@@ -326,28 +326,26 @@ export interface MetaFence {
 }
 
 /**
- * One carrier's text, divided — the frame, the authored root meta where it stands, the body. The
- * records split from this division, and the carrier check reads the same one, so a check never
- * judges bytes the records were not built from.
+ * One carrier's text, divided — the frame, the bytes between the head and STX, the root meta, the
+ * body. The records split from this division, and the carrier check reads the same one, so a check
+ * never judges bytes the records were not built from.
  */
 export interface CarrierDivision {
   /** The carrier text with its head line stripped. */
   readonly noSoh: string;
   /** The one span reader's division of `noSoh`. */
   readonly frame: FrameRead;
-  /** A root meta fence standing BEFORE STX — the legacy layout the recovery reading still lifts. */
-  readonly headerMeta: MetaFence | null;
-  /** The root meta fence opening the body, after STX. */
+  /** The bytes between the head and STX, verbatim — carried, never read for fields. */
+  readonly headerText: string;
+  /** The root meta fence: the first construct of the body. */
   readonly bodyMeta: MetaFence | null;
-  /** The authored body the records split from: content standing before STX joined to the framed body. */
-  readonly recoveredBody: string;
+  /** The authored body after its root meta, edge-trimmed — what the records split from. */
+  readonly body: string;
 }
 
 export function divideCarrier(text: string): CarrierDivision {
-  // Strip structural markers to isolate header (SOH→STX) and body (STX→ETX).
-  // Fence-mask law: a QUOTED control sigil (in a code fence or inline code)
-  // never frames the carrier — before the mask, a fenced ETX mention
-  // truncated everything after it (real corpus loss).
+  // Fence-mask law: a QUOTED control sigil (in a code fence or inline code) never frames the carrier —
+  // before the mask, a fenced ETX mention truncated everything after it (real corpus loss).
   const noSoh = text.replace(SOH_LINE_RE, "");   // anchored at 0 — never fenced
   // THE ONE SPAN READER DIVIDES THE CARRIER (`readFrame`): the first live STX opens the text, the first
   // live ETX after it closes it, and a quoted mark — a teaching example in a fence — frames nothing.
@@ -361,88 +359,26 @@ export function divideCarrier(text: string): CarrierDivision {
   const closeMark = frame.etx ?? frame.eot;
   const closeAt = closeMark ? closeMark.index - (noSoh[closeMark.index - 1] === "\n" ? 1 : 0) : -1;
   const stripped = closeMark ? noSoh.slice(0, closeAt) : noSoh;
-
   // The STX the reader found, with the newline the frame pads it with — or none, where the text has no
   // bound (or the only STX stands past the close, which bounds nothing).
-  const stxM = frame.stx && frame.stx.index < stripped.length
-    ? { index: frame.stx.index, length: frame.stx.end - frame.stx.index + (noSoh[frame.stx.end] === "\n" ? 1 : 0) }
-    : null;
-  // ONE MODEL FOR EVERY CARRIER: routing outside, authored document inside. NO STX MEANS ALL BODY — a
-  // carrier that supplies identity without framing has left its document boundary short, rather than
-  // declared a second document kind. The body may hold prose, ahu slots, both, or nothing; one meme may
-  // project to several tiddlers while one tiddler’s text remains empty.
-  //
-  // Reading a heading-only carrier as ALL HEADER routed its prose into `header-text` and left the body
-  // slot empty, so the projection minted an empty STX/ETX pair beside the author's own EOT — a carrier
-  // that never round-tripped, in a shape nothing measured, because both witnesses skip a carrier that
-  // states no `uri-path` and these were exactly the carriers that stated none.
-  const bare = !stxM;
-  // AN AUTHORED META FENCE OPENS THE ROOT DOCUMENT, FRAME OR NO FRAME. The frame belongs to the carrier;
-  // the author writes the root fields.
-  //
-  // THE FENCE MUST OPEN THE FILE TO COUNT, because every OTHER meta block belongs to the ahu tiddler it
-  // sits in. A slot’s fence carries its local metadata — `register`, `confidence`, and address — and
-  // `extractSlotStructure` projects it onto the child record where it overrides inherited fields. One
-  // positional law holds: the opening root fence names the carrier, each later local fence names its
-  // slot, and neither reaches into the other.
-  const leadingMeta = bare ? findMetaFence(stripped, false) : null;
-  const authoredHead = leadingMeta && stripped.slice(0, leadingMeta.start).trim() === ""
-    ? leadingMeta
-    : null;
-  const headerRegion = stxM
-    ? stripped.slice(0, stxM.index)
-    : (authoredHead ? stripped.slice(0, authoredHead.end) : (bare ? "" : stripped));
-  // Trim body edges at ingest. The export template owns the visual padding:
-  // one blank line after STX and one blank line before ETX. Keeping the stored
-  // field edge-trimmed prevents authored leading/trailing newlines from stacking
-  // with those template-emitted margins.
-  const bodyRegion   = stripLeadingNewlines(
-    stxM
-      ? stripped.slice(stxM.index + stxM.length)
-      : (authoredHead ? stripped.slice(authoredHead.end) : (bare ? stripped : "")),
-  );
-
-  // Parse meta fields from header region (before STX).
-  // Guard: only look for meta in the part of headerRegion before the first
-  // top-level ahu block. If the meta fence sits inside a slot body it is a
-  // slot-level meta, not a root-level one — extractSlotStructure picks it up
-  // when splitRecursive descends into that slot.
-  const rootMetaTopBlocks = findTopLevelAhuBlocks(headerRegion);
-  const rootMetaCutoff = rootMetaTopBlocks.length > 0
-    ? rootMetaTopBlocks[0]!.openStart
-    : headerRegion.length;
-  // THE FENCE MUST OPEN ITS HEAD, at the carrier level exactly as at the slot level. Content standing
-  // between the heading sigil and a labelled fence means the fence heads nothing — it reads as body,
-  // the way a teaching example does. Whitespace is spacing, never content.
-  const metaCandidate = findMetaFence(headerRegion.slice(0, rootMetaCutoff));
-  const headerMeta = metaCandidate && headerRegion.slice(0, metaCandidate.start).trim() === ""
-    ? metaCandidate
-    : null;
-
-  // Root TOML is the first authored construct after STX, exactly as a fragment's local TOML block is
-  // the first construct after its opener.
-  const bodyRootCandidate = stxM
-    ? findMetaFence(bodyRegion, false)
-    : null;
-  const bodyMeta = bodyRootCandidate && bodyRegion.slice(0, bodyRootCandidate.start).trim() === ""
-    ? bodyRootCandidate
-    : null;
-
-  // Strip one leading \n from the pre-frame post-meta content: the fence regex consumes the closing
-  // ``` and its \n, but the source's blank line between the meta fence and the next header content
-  // lives here.
-  const postMetaContent = headerMeta
-    ? stripLeadingNewlines(headerRegion.slice(headerMeta.end))
-    : (rootMetaTopBlocks.length > 0 ? headerRegion : "");
-
-  // Authored content standing before STX joins the root body in the recovery reading. Projection
-  // places root TOML and authored content after STX.
-  const preFrameContent = headerMeta ? postMetaContent : headerRegion;
-  const bodyWithoutRootMeta = bodyMeta ? stripLeadingNewlines(bodyRegion.slice(bodyMeta.end)) : bodyRegion;
-  const recoveredBody = stripEdgeNewlines(
-    [preFrameContent, bodyWithoutRootMeta].filter((s) => s.trim() !== "").join("\n\n"),
-  );
-  return { noSoh, frame, headerMeta, bodyMeta, recoveredBody };
+  const stx = frame.stx && frame.stx.index < stripped.length ? frame.stx : null;
+  // ONE MODEL FOR EVERY CARRIER: routing outside, authored document inside. The bytes between the head
+  // and STX ride VERBATIM as carriage, and no field is read from them — root metadata opens the BODY,
+  // and a meta fence standing above STX is the frame verdict's fault (`meta-before-stx`), never a block
+  // this reader recovers. NO STX MEANS ALL BODY: a carrier that supplies identity without framing has
+  // left its document boundary short, rather than declared a second document kind.
+  const headerText = stx ? stripped.slice(0, stx.index) : "";
+  const bodyRegion = stripLeadingNewlines(stx
+    ? stripped.slice(stx.end + (noSoh[stx.end] === "\n" ? 1 : 0))
+    : stripped);
+  // THE FENCE MUST OPEN THE BODY TO COUNT, because every OTHER meta block belongs to the ahu tiddler it
+  // sits in. A slot’s fence carries its local metadata and `extractSlotStructure` projects it onto the
+  // child record. One positional law holds: the opening root fence names the carrier, each later local
+  // fence names its slot, and neither reaches into the other. Whitespace is spacing, never content.
+  const candidate = findMetaFence(bodyRegion, false);
+  const bodyMeta = candidate && bodyRegion.slice(0, candidate.start).trim() === "" ? candidate : null;
+  const body = stripEdgeNewlines(bodyMeta ? stripLeadingNewlines(bodyRegion.slice(bodyMeta.end)) : bodyRegion);
+  return { noSoh, frame, headerText, bodyMeta, body };
 }
 
 function splitMemeToTiddlers(
@@ -450,14 +386,11 @@ function splitMemeToTiddlers(
   text:       string,
   baseFields: TiddlerFields,
 ): TiddlerFields[] {
-  const { headerMeta, bodyMeta, recoveredBody } = divideCarrier(text);
-  const rootFields = {
-    ...(headerMeta ? fieldifyToml(headerMeta.content) : {}),
-    ...(bodyMeta ? fieldifyToml(bodyMeta.content) : {}),
-  };
+  const { headerText, bodyMeta, body } = divideCarrier(text);
+  const rootFields = bodyMeta ? fieldifyToml(bodyMeta.content) : {};
   // A CARRIER IS A ROOT: every door refuses a fragment-carrying address before a split runs, so the
   // carrier's own URI is the root its slots compose under.
-  const { children, rewrittenText } = splitRecursive(uri, "", recoveredBody);
+  const { children, rewrittenText } = splitRecursive(uri, "", body);
 
   const parent: TiddlerFields = {
     ...baseFields,
@@ -466,7 +399,8 @@ function splitMemeToTiddlers(
     type:  rootFields.type ?? CARRIER_TYPE,
     text:  stripEdgeNewlines(rewrittenText),
   };
-  return [parent, ...children];
+  // Spacing between the head and STX is the frame's padding; anything more rides as carriage.
+  return [parent, ...children, ...carriageRecord(uri, "header-text", headerText.trim() === "" ? "" : headerText)];
 }
 
 // ---------------------------------------------------------------------------

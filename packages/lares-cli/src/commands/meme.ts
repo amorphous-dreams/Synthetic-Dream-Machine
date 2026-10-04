@@ -461,10 +461,17 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // stayed silent here reported `canonical` over a carrier whose frame opens and never closes — the
     // exact silence a torn carrier passed the pre-commit gate through. No gesture can close a tear; the
     // door names it and hands it to a hand.
-    if (verifyBcc(res.text) === "torn") {
+    // A FRAME FAULT is no drift a gesture closes — a meta fence above STX, a second ETX — so the door
+    // names each and hands the carrier to a hand, stamping nothing over it.
+    if (frame.kind === "torn") {
       faulted++;
       console.log(`torn: ${f}`);
-      console.log("  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand");
+      for (const fault of frame.faults) {
+        console.log(fault.kind === "no-etx"
+          ? "  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand"
+          : `  ✗ ${fault.message}`);
+      }
+      continue;
     }
 
     // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may

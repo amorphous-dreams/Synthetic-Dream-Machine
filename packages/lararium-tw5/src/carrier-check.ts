@@ -92,20 +92,15 @@ function slotTextKeys(parent: string, text: string, out: string[]): void {
 
 /**
  * THE AUTHORING ADVISORIES — what the split reads past without losing a byte, and a person must
- * still settle: a closer swallowed by a fence, root meta standing before STX (or on both sides of it),
- * a root `title`/`uri-path` naming another address than the head, a `text` key the body overrides.
+ * still settle: a closer swallowed by a fence, a root `title`/`uri-path` naming another address than
+ * the head, a `text` key the body overrides. (Root meta above STX is the frame verdict's tear.)
  */
 function advisories(uri: string, text: string): string[] {
   const out: string[] = [];
   const d = divideCarrier(text);
   out.push(...swallowedEtx(uri, d.noSoh, d.frame.etx !== null));
-  const header = tomlOf(d.headerMeta);
-  const body = tomlOf(d.bodyMeta);
-  if ("text" in header) out.push(TEXT_KEY(uri));
-  if ("text" in body) out.push(TEXT_KEY(uri));
-  if (d.headerMeta) out.push(`${uri}: root TOML metadata stands before STX; the carrier body begins at STX`);
-  if (d.headerMeta && d.bodyMeta) out.push(`${uri}: duplicate root TOML metadata appears before and after STX`);
-  const root = { ...header, ...body };
+  const root = tomlOf(d.bodyMeta);
+  if ("text" in root) out.push(TEXT_KEY(uri));
   if (root["title"] !== undefined && String(root["title"]) !== uri) {
     out.push(`${uri}: root TOML title "${String(root["title"])}" does not match SOH target "${uri}"`);
   }
@@ -115,7 +110,7 @@ function advisories(uri: string, text: string): string[] {
       out.push(`${uri}: root TOML uri-path "${String(root["uri-path"])}" does not match SOH target path "${expected}"`);
     }
   }
-  slotTextKeys(uri, d.recoveredBody, out);
+  slotTextKeys(uri, d.body, out);
   return out;
 }
 

@@ -53,7 +53,7 @@ import { parseMemeText } from "./meme-ast/parse.js";
 import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
-import { headUriOf, verdict, type FrameVerdict } from "@lararium/memetic-frame";
+import { headUriOf, verdict, type FrameFault, type FrameVerdict } from "@lararium/memetic-frame";
 import { checkCarrier } from "./carrier-check.js";
 
 export type IngestDecision<R = TiddlerFields> =
@@ -96,12 +96,21 @@ function diagnostic(severity: DiagnosticSeverity, code: string, message: string,
   return { from: 0, to: length, severity, source: MEMETIC_SOURCE, code, message };
 }
 
+/** Each tear's code on the diagnostics channel: a missing close and a fault of the frame's own spelling keep their names. */
+const TORN_CODE: Readonly<Record<FrameFault["kind"], string>> = {
+  "no-etx":          "block-check-torn",
+  "meta-before-stx": "meta-before-stx",
+  "second-stx":      "frame-malformed",
+  "second-etx":      "frame-malformed",
+  "etx-before-stx":  "frame-malformed",
+};
+
 /**
  * The gate's POLICY over the frame verdict, on the shared diagnostics channel.
  *
  *   · torn  → ERROR, each fault named: a frame the reader cannot divide without choosing never names
- *             an honest edit. A missing close keeps its own code (`block-check-torn`); a mark the
- *             rule passed over reads `frame-malformed`.
+ *             an honest edit. A missing close keeps its own code (`block-check-torn`), a meta fence
+ *             above STX its own (`meta-before-stx`); a mark the rule passed over reads `frame-malformed`.
  *   · stale → WARNING, both digests in the message. A stale check on a human's disk edit is an EDIT,
  *             never tampering: the check is a trailer the writer re-stamps on every emit, so the gate
  *             still owes the edit a real decision (noop/ingest/conflict), never a blanket refuse. The
@@ -113,7 +122,7 @@ function diagnostic(severity: DiagnosticSeverity, code: string, message: string,
 export function frameDiagnostics(uri: string, v: FrameVerdict, length: number): MemeDiagnostic[] {
   switch (v.kind) {
     case "torn":
-      return v.faults.map((f) => diagnostic("error", f.kind === "no-etx" ? "block-check-torn" : "frame-malformed", f.message, length));
+      return v.faults.map((f) => diagnostic("error", TORN_CODE[f.kind], f.message, length));
     case "stale":
       return [diagnostic("warning", "block-check-mismatch",
         `ni:/// block check does not match the STX–ETX body, including root TOML metadata — stored ${v.stored} · computed ${v.computed}`, length)];

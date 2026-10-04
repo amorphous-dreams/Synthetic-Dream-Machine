@@ -58,6 +58,18 @@ describe("★ verdict(text) ★", () => {
     expect(verdict(carrier.replace(ETX, `${ETX}\n\n${STX}`)).kind).not.toBe("torn");
   });
 
+  test("a toml meta fence standing before STX reads torn — root metadata opens the body, below STX", () => {
+    const pre = carrier.replace(`${STX}\n\n${META_OPEN_CANON}`, `${META_OPEN_CANON}`).replace("```\n\nProse.", `\`\`\`\n\n${STX}\n\nProse.`);
+    expect(pre).not.toBe(carrier);
+    const v = verdict(pre);
+    expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["meta-before-stx"]);
+  });
+
+  test("CONTROL: a QUOTED meta fence before STX frames nothing and faults nothing", () => {
+    const quoted = carrier.replace(STX, "````\n```toml meta\nk = 1\n```\n````\n" + STX);
+    expect(verdict(quoted).kind).not.toBe("torn");
+  });
+
   test("NO frame at all reads bare — not a meme", () => {
     expect(verdict("bare data found on the internet\n\n```toml meta\nk = 1\n```\n")).toEqual({ kind: "bare" });
   });
