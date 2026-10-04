@@ -1,0 +1,88 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds.mem"
+l-space   = "adjacent"
+mana      = 13
+manao     = 13
+manaoio   = 12
+namespace = "&#x2299;"
+role      = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
+tags      = ["docs/handoff", "lifecycle/standing"]
+title     = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+
+
+
+<<~ ahu #/head>>
+
+! Parked for `lares(Codex)` — a question and two named reds
+
+''Why this carrier, not the crew's own ledger.'' `bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem`
+sits on the Codex Lares hearth's held ground (`lar:///ha.ka.ba/lares/docs/pono/hearths#/holds`, trailer
+`session_01a0a6f209517170ad254cf14549cc5f`). This hand carries no crossing row for that ground, so the
+house pattern parks the row here instead — a `docs/handback-*.mem` carrier the crew (or whoever opens the
+next crossing) folds in on its own schedule.
+
+<<~/ahu>>
+
+<<~ ahu #/eot2-question>>
+
+!! EOT2 on `kapu.mem` — an open question, not a ruling
+
+''Context, not law — stated once so the question reads clean.'' The relay/stream ontology stands
+mid-refactor; the operator's working frame reads EOT2 as transport framing: EOT2 serves STREAMED text or
+encoded memes BETWEEN RELAYS, never an at-rest carrier's own close. Nothing below writes that frame into
+canon — the framing spec (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing`) stays silent on EOT2
+until the refactor lands.
+
+''The question.'' `lar:///ha.ka.ba/lares/api/pono/kapu` ends on an authored EOT2 close
+(`<<^ code="&#x0014;" -> to="?">>`), a choice `d207b7ef0` ("refuse escaped meme tails") made by REMOVING
+the canonical EOT line that stood beside it, leaving EOT2 standing alone. Read against the transport
+framing above: an at-rest carrier closes on EOT; EOT2 names a relay-stream boundary. If that framing
+holds, the EOT2 line on `kapu.mem` reads as the escaped tail the same commit meant to teach a reader to
+refuse — or the crew held a specific reason to keep it that this hand does not carry. Which one?
+
+''What a fresh hand hits either way.'' The emitter re-mints canonical EOT on normalize, so the file as it
+stands today CANNOT round-trip: a normalize pass restamps EOT2 back to EOT, and `8fb7fe383` already had
+to hand-restore the EOT2 line once after exactly that happened. Whoever answers the question above should
+also say whether the emitter needs a carve-out for an authored EOT2 close, or whether `kapu.mem` should
+simply close on EOT like every other carrier.
+
+<<~/ahu>>
+
+<<~ ahu #/typecheck-reds>>
+
+!! Two named typecheck reds
+
+Carried forward as named, not independently re-run by this hand:
+
+* `packages/lararium-web/src/main.ts:98` — `r.pointer.version`, from `965c760dc`
+  ("`lar:///oracle-keeps-the-frontier` — bind snapshots to causal acts"); the `OraclePointer` shape that
+  commit bound does not (yet) carry a `version` field this call site reads.
+* `tests/harness/scenario-action-graph.ts:175`.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;B6N4pXnNitAnFpCAjJCWDxSke9avzr_z8WO-6VlKZT8
+
+<<^ code="&#x0004;" -> to="?">>
