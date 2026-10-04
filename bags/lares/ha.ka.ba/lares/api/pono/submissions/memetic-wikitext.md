@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;r8Jtiw56_5mwHBFBdgI7SrdHfOyVfLAbzmEvpUFoULY"
+source-check: "ni:///sha-256;MvN3aV5Ifr8D4ywqtxm4TLAToPJC2y4ayft7PTj4Tew"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -94,7 +94,7 @@ future document defines — each read as one encoding of one structure rather th
 - **worksite** — a named region nested in a meme's content. Worksites nest, and a nested worksite's
   name extends its parent's path; a worksite addresses as a fragment anchor of its meme.
 - **edge** — a directed relation from one address toward another. Three kinds carry every relation:
-  adjacency (a bare pointer), transclusion (renders-in-place, live or shadow), and the anchored pointer
+  adjacency (a bare pointer), transclusion (renders-in-place, live or frozen), and the anchored pointer
   (a named office aimed at a target). The edge itself carries no further vocabulary; a relation richer
   than its kind reifies as a meme that speaks for itself.
 - **content** — the text a meme or worksite holds, within which further structure stands: edges, nested
@@ -614,7 +614,7 @@ A canvas reaction wire (flow surface):
 | --- | --- |
 | TW5 `[[Title]]` link | `<<~ loulou "lar:///uri">>` |
 | TW5 `{{Title}}` transclusion | `<<~ kahea "lar:///uri">>` |
-| TW5 shadow tiddler | `<<~ aka "lar:///uri">>` |
+| (no direct TW5 analog: a pinned, frozen read) | `<<~ aka "lar:///uri">>` |
 | TW5 `\procedure` / `\function` | `<<~! wehe …>>` / `<<~! helu …>>` |
 | TW5 `<$tiddler>` context | `<<~ meme "lar:///uri">>` |
 | TW5 `<$list>` filter / iterate | `<<~ wai …>>` / `<<~ huli …>>` |
