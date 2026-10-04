@@ -11,8 +11,8 @@ import { join } from "node:path";
 import {
   transposeMarkdown, projectSubmission, PROFILES,
   escapeXmlNameSegment, unescapeXmlNameSegment, yamlEscape, mirrorToCanonical,
+  GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE,
 } from "../src/weave/index.js";
-import { GENERATED_SIGILS, GENERATED_ALIAS_MAP } from "../src/meme-ast/grammar-table.generated.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
@@ -360,9 +360,23 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
     expect(/(^|[^\\])"/.test(inner)).toBe(false);
   });
 
-  test("kramdown-rfc2629 REFUSES a carrier missing the RFC identity keys (docs/pono/lar-uri.mem, today)", () => {
-    const src = readFileSync(join(REPO, "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"), "utf8");
+  test("kramdown-rfc2629 REFUSES a carrier missing the RFC identity keys (tests/fixtures, not bags/)", () => {
+    // Pinned to a FIXTURE rather than the live corpus: docs/pono/lar-uri.mem carried this refusal
+    // until Canon-Scribe's 624b85d2d gave it docname/cat/ipr/author/date, and the next corpus edit
+    // could add or drop a key just as easily — a RED this loop owns needs ground that stays put.
+    const src = readFileSync(join(REPO, "packages/lararium-tw5/tests/fixtures/kramdown-missing-keys.mem"), "utf8");
     expect(() => projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] })).toThrow(/docname|cat|ipr|author|date/);
+  });
+
+  test("PROPOSAL: the real lar-uri.mem source now weaves under kramdown-rfc2629, per its proposed meta", () => {
+    // "Proposed" names what the keys MEAN (docname `draft-fontany-lar-uri-00`, an unregistered
+    // Internet-Draft name — ipr `trust200902` names the boilerplate an eventual submission would
+    // carry) — not any uncertainty that the carrier's own toml meta holds them today.
+    const src = readFileSync(join(REPO, "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"), "utf8");
+    const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
+    expect(p.standalone).toBe(true);
+    expect(p.markdown).toContain('docname: "draft-fontany-lar-uri-00"');
+    expect(p.markdown).toContain('ipr: "trust200902"');
   });
 
   test("kramdown-rfc2629 WEAVES once every required key stands in the carrier's own toml meta", () => {
@@ -982,28 +996,29 @@ describe("the reverse mirror map and its round-trip property", () => {
   });
 
   test("PROPERTY: for every declared primary, canonical→primary→canonical is identity, and no two canonicals claim the same primary within one tongue", () => {
+    // Walks `GENERATED_PRIMARY_WEAVE` (canonical → tongue → primary) — the table's OWN derived
+    // index, re-exported from weave's sanctioned surface — rather than scanning `GENERATED_SIGILS`
+    // directly (vm-grammar-boundary.test.ts's compile-layer boundary).
     const byTongue = new Map<string, Map<string, string>>(); // tongue -> primary name -> canonical it serves
-    for (const rule of GENERATED_SIGILS) {
-      if (!rule.weave?.tongue || !rule.aliasFor) continue;
-      const { tongue } = rule.weave;
-      const canonical = rule.aliasFor;
+    for (const [canonical, perTongue] of Object.entries(GENERATED_PRIMARY_WEAVE)) {
+      for (const [tongue, primary] of Object.entries(perTongue)) {
+        // round-trip: the primary's own reverse-map entry must point back at the SAME canonical the
+        // forward (weave) direction derives it from.
+        expect(mirrorToCanonical(primary), `${primary} → canonical (tongue ${tongue})`).toBe(canonical);
 
-      // round-trip: the primary's own reverse-map entry must point back at the SAME canonical the
-      // forward (weave) direction derives it from.
-      expect(mirrorToCanonical(rule.name), `${rule.name} → canonical (tongue ${tongue})`).toBe(canonical);
-
-      // injectivity: no two DIFFERENT canonicals may claim the same primary name in one tongue — a
-      // table violation here is reported, never silently patched (a sibling owns the tiddlers).
-      const claimed = byTongue.get(tongue) ?? new Map<string, string>();
-      const priorCanonical = claimed.get(rule.name);
-      if (priorCanonical !== undefined && priorCanonical !== canonical) {
-        throw new Error(
-          `grammar-table ambiguity (REPORT, do not patch): tongue "${tongue}" primary "${rule.name}" ` +
-          `is claimed by both "${priorCanonical}" and "${canonical}"`,
-        );
+        // injectivity: no two DIFFERENT canonicals may claim the same primary name in one tongue —
+        // a table violation here is reported, never silently patched (a sibling owns the tiddlers).
+        const claimed = byTongue.get(tongue) ?? new Map<string, string>();
+        const priorCanonical = claimed.get(primary);
+        if (priorCanonical !== undefined && priorCanonical !== canonical) {
+          throw new Error(
+            `grammar-table ambiguity (REPORT, do not patch): tongue "${tongue}" primary "${primary}" ` +
+            `is claimed by both "${priorCanonical}" and "${canonical}"`,
+          );
+        }
+        claimed.set(primary, canonical);
+        byTongue.set(tongue, claimed);
       }
-      claimed.set(rule.name, canonical);
-      byTongue.set(tongue, claimed);
     }
     // sanity floor: the two primaries #/mirror-vocabulary names by hand stand in the derived table.
     expect(byTongue.get("en")?.get("snapshot")).toBe("aka");

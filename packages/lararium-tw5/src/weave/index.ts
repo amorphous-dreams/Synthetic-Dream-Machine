@@ -85,6 +85,11 @@ import { matchCarrierHeadLine } from "../carrier-head.js";
 import { META_OPEN_LINE_RE } from "../meta-fence.js";
 import { frameAlt } from "../frame-marks.js";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "../meme-ast/grammar-table.generated.js";
+// Re-exported so a test of weave's OWN tongue-axis properties (round-trip, injectivity) reaches
+// the mirror/primary tables through this sanctioned surface rather than importing
+// `meme-ast/grammar-table.generated.js` directly (vm-grammar-boundary.test.ts forbids a test
+// reaching the compile-layer's internals as if THEY were the canonical grammar surface).
+export { GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE };
 import { parseTaploFields } from "../toml-ast.js";
 import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
 import { bccOfSpan } from "../carrier-check.js";
@@ -520,9 +525,9 @@ function pinOf(resolved: string, slot: string | null, profile: WeaveProfile, ton
  * ({@link BCP14_BOILERPLATE}) instead of a citation line — the dialect's native idiom for exactly
  * this claim, with `[RFC2119]`/`[RFC8174]` riding the kramdown frontmatter's own `normative:` refs.
  *
- * BODY POSITION (inside an ahu — a local edge): unchanged from before this loop — the target's
- * current text INLINES, pinned with its own check, the woven-outward twin of the in-house `aka`
- * transclusion (#/weave-and-tangle's "an open rhyme").
+ * BODY POSITION (inside an ahu — a local edge): the target's current text INLINES, pinned with its
+ * own check, the woven-outward twin of the in-house `aka` transclusion (#/weave-and-tangle's "an
+ * open rhyme").
  *
  * Resolution needs a wiki/corpus either way; absent one (no `resolve`, or `resolve` answers null —
  * the target stands unknown), both scopes fall back to a clearly marked unresolved reference rather
