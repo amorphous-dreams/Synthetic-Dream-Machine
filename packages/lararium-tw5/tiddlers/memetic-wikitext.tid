@@ -21,7 +21,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/memetic-wikitext/kernel"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/head>>
 
@@ -130,8 +130,8 @@ Minimum atoms:
 - route arrow `->`
 - anchor token `#NAME`
 - unresolved token `?`
-- fenced `toml` payload inside `ahu #meta`
-- control sigils `&#x0001;` through `&#x0006;`
+- fenced `toml` payload opening the body, immediately after STX (the root identity block; no `ahu` wrapper)
+- control sigils: SOH `&#x0001;` · SOH₂ `&#x0011;` · STX `&#x0002;` · ETX `&#x0003;` · ETB `&#x0017;` · EOT `&#x0004;` · EOT₂ `&#x0014;`
 
 Minimum constructions:
 
@@ -167,15 +167,11 @@ They do NOT become child tiddlers.
 
 ```toml
 [[control-slot]]
-name  = "#meta"
-role  = "identity block; metadata TOML; dissolves into parent fields"
-
-[[control-slot]]
-name  = "#exit"
+name  = "#/exit"
 role  = "outward uncertainty discharge; dissolves, not projected"
 
 [[control-slot]]
-name  = "#stream-open"
+name  = "#/stream-open"
 role  = "stream boundary open marker; structural only"
 
 [[control-slot]]

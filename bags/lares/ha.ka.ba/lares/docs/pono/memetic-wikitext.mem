@@ -160,10 +160,10 @@ TW5 cascade page: a list of conditions evaluated in turn, ordered by tagged-tidd
 XML and XHTML supply the right model for well-formedness, nesting, closure, quoting, and conformance language. Sigils SHOULD look more like XML/XHTML than HTML in their closure discipline.
 
 ''4. Fragment semantics require a representation model.''
-W3C fragment guidance requires fragment meaning to bind to a representation or media type, not just to a URI scheme. The `#slot` anchor form in `ahu` needs a registered media type (`text/memetic-wikitext`) to carry normative fragment semantics.
+W3C fragment guidance requires fragment meaning to bind to a representation or media type, not just to a URI scheme. The `#/slot` anchor form in `ahu` needs a registered media type (`text/memetic-wikitext`) to carry normative fragment semantics.
 
 ''5. Normative language: RFC 8174 + W3C QA guidance.''
-`MUST`, `SHOULD`, `MAY`, conformance classes, and claims follow RFC 8174. The `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119` edge in every invariant file satisfies this requirement.
+`MUST`, `SHOULD`, `MAY`, conformance classes, and claims follow RFC 8174. The `<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>` head pin in every invariant file satisfies this requirement.
 
 ''6. Machine-readable artifacts: prose primary, schemas subordinate.''
 JSON Schema and OpenAPI show the correct authority split. Prose spec text remains primary; validators and schemas are valuable but subordinate. The TypeScript `FAMILY_CONTRACTS` validator in `pranala-parser.ts` follows this correctly.
@@ -193,6 +193,6 @@ The submission-grade specification at `lar:///ha.ka.ba/lares/api/pono/memetic-wi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E8YCsBIC1KHFSF_NQrLflA6GH1aETmxWOfLVPvxtamc
+<<^ code="&#x0003;">>ni:///sha-256;pdA5ugoGpPMuOHW1UNFJC1zUvzedPgJbTdWbfRHpBMw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -2,7 +2,7 @@ title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hud
 tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: metadata
 lar-pattern: <<~\s*hud\b([\s\S]*?)>>
-lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#exchange-protocol
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/exchange-protocol
 lar-example: <<~ hud Focus(11)>>
 lar-render: literal
 type: text/vnd.tiddlywiki

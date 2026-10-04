@@ -363,11 +363,12 @@ TW5-quine runs after S0 + S2.
 !! The Gate ~ heleuma-anchored, help-text⇄meme drift trips it
 
 This meme stands as the ''heleuma anchor'' for the `lares corpus`
-command surface. The heleuma audit ([[lares-bin|lar:///ha.ka.ba/lares/cli/bin/lares]] — `lares heleuma`)
-binds a load-bearing source file to a self-describing meme at a stable `lar:` URI; the audit FAILS on
-drift. S0 wires `packages/lares-cli/src/commands/corpus.ts` to carry the help registry AND a back-pointer
-to this URI, so the help text the operator reads and the prose here stand as ONE canon. When the registry
-text and this meme diverge, `lares heleuma` trips — the docs cannot silently rot away from the code.
+command surface. The heleuma audit (`packages/lararium-tw5/scripts/sync-heleuma.ts`, run as
+`pnpm --filter @lararium/tw5 build:heleuma`) binds a load-bearing source file to a self-describing meme
+at a stable `lar:` URI; the audit FAILS on drift. S0 wires `packages/lares-cli/src/commands/corpus.ts`
+to carry the help registry AND a back-pointer to this URI, so the help text the operator reads and the
+prose here stand as ONE canon. When the registry text and this meme diverge, the heleuma audit trips —
+the docs cannot silently rot away from the code.
 
 <<~/ahu>>
 
@@ -516,6 +517,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ycgWaY7O_n7SI1jSmKEk48vDzZLEj-iZDw-zsVrWVko
+<<^ code="&#x0003;">>ni:///sha-256;N9eCquZ0CVZlkEUjXzWiTo8Z8l6NdqPtZqZ-B_NTZ5s
 
 <<^ code="&#x0004;" -> to="?">>

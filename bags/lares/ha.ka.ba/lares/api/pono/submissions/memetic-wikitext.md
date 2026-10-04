@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;iBe6WRIdMX6i_uaXhFXneUx1TQEHk0ZFZlWZwnfOf0U"
+source-check: "ni:///sha-256;DEvO3CiTlaxeTJ0htkopzLJjdPHguQI1QGE4xYmd46I"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -173,12 +173,15 @@ facts the frame rests on, each the host's and not this grammar's:
   same. A DEFINITION keeps the colon: `\procedure greet(name:"world")` spells the host's own parameter
   list, which refuses `=`.
 - **The colon separator requires a strict identifier** — TW5 tests the name against `/^[A-Za-z0-9\-_]+$/`
-  before accepting `:`, so `$:/foo` never mis-reads as a named parameter. `code:` and `namespace:` pass.
+  before accepting `:`, so `$:/foo` never mis-reads as a named parameter. `code` and `namespace` would
+  each pass that test, but the frame's own normative grammar writes `code=` and `namespace=` always
+  ([FRAMING] #/grammar) — only a grammar-class call site (`\procedure greet(name:"world")`, above)
+  keeps the colon.
 - **A quoted value reads as a TW5 string literal** — single, double, triple-double or `[[bracket]]` — and a
   string literal carries UTF-8, so `namespace="&#x2299;"` and `namespace="ॐ ँ"` stand as written.
 - **An unnamed value reads positional**, numbered in order, and `reUnquotedAttribute` admits any `>` that
   no second one follows — so `->` rides as a positional parameter and needs no rule of its own
-  ([FRAMING] #bearing-arrow). A framing sigil names the ends the arrow stands between: `from=? -> to=…`,
+  ([FRAMING] #/bearing-arrow). A framing sigil names the ends the arrow stands between: `from="?" -> to=…`,
   the spelling `pranala` and `lares aim` already write.
 
 **A `lar:` URI carries a scheme, not a parameter.** `lar` passes the strict-identifier test and a colon

@@ -187,7 +187,7 @@ If yes to all three: it MUST move to a meme. The TypeScript file becomes the
 fallback only (Heleuma Stage 4: meme is authoritative, TS is fallback).
 
 ''Current candidates (Stage 1):''
-* `packages/lararium-tw5/src/filters/memes.ts` — filter operator body is stable
+* `packages/lararium-tw5/src/filters/all-memes.ts` — filter operator body is stable
 * `packages/lararium-tw5/src/filters/edge.ts` — stable
 * `packages/lararium-tw5/src/filters/toml-field.ts` — stable
 * `packages/lararium-tw5/src/filters/implementors.ts` — stable
@@ -271,6 +271,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;peEjDxFPEUd5q613DUvggky55pXMYPWuL7BnPMKGsd0
+<<^ code="&#x0003;">>ni:///sha-256;eXVpXw3-1vcez9SNYz56Ghd5XnKm33T2juScBgQS1OQ
 
 <<^ code="&#x0004;" -> to="?">>

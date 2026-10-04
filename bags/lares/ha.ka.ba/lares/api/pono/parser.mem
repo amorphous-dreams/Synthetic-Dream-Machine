@@ -195,7 +195,7 @@ Parser MUST reject ad-hoc closure spellings as canonical. A noncanonical closer 
 
 !! Meta Block
 
-The ''toml meta slot'' (`#meta`) carries the canonical identity payload for a meme — a bare `` ```toml meta `` fence immediately after the STX body opener, not an `<<~ ahu>>` wrapper (see `memetic-wikitext-framing#carrier-spine`).
+The root identity block carries the canonical identity payload for a meme — a bare `` ```toml meta `` fence immediately after the STX body opener, not an `<<~ ahu>>` wrapper and not a named slot (see `memetic-wikitext-framing#/carrier-spine`).
 
 Canonical form:
 ````text
@@ -253,7 +253,7 @@ The streaming parse surface emits one event per carrier-frame boundary; `collect
 
 ```toml
 # Source: packages/lararium-mesh/src/meme-stream.ts
-# SOH carries 0x01 (or kapu DC1 0x11); EOT carries 0x04 (or DC4 0x14), or the return-throat <<~ -> ?>>
+# SOH carries 0x01 (or kapu DC1 0x11); EOT carries 0x04, or the return-throat <<~ -> "?">>
 [[stream-events]]
 kind    = "carrier-open"
 fields  = ["uri: string"]
@@ -289,6 +289,6 @@ trigger = "end of stream"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ub25_foLAqTmq3x8DU4kpvz4u4rw49F-7pybymCmOsk
+<<^ code="&#x0003;">>ni:///sha-256;8r1D4R62S64Rf3YxQZb7Sho2z42Bs5yB4MVDjGzu2Yw
 
 <<^ code="&#x0004;" -> to="?">>

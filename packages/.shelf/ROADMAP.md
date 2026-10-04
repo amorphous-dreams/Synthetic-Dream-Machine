@@ -134,7 +134,7 @@ These planning docs follow one architectural law:
 | 4 | **K / F-arc** | ⬜ Next | TW5 save routing, debounce, projection hygiene for sustained editing across shared peer surfaces. |
 | 5 | **R** | ⧾ Verify first | ReactionEngine wiring: changeset application, changed-URI derivation, `RE.onChangeset`, integration tests. |
 | 6 | **N** | ⬜ DEFERRED | `<$lar-action>` widget writes a verb-tiddler carrying an ACTION verb (ADD/COPY/MOVE/CLEAR/DROP/LOAD) — same shape `lares act` authors. **DEFERRED 2026-06-07** (operator — still an unstable concept; the `lares act` CLI is the stable front door). Reflects Residency Model Epic. |
-| 7 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep `lares heleuma --write` aligned. Migrate monolith documentation TOML tables to canonical bag memes. Add `Content-Security-Policy: worker-src 'self'` to Caddyfile and Docker serving layer before any browser vessel goes to production (see `bags/lararium/browser/pono-charter.md` BV-9). |
+| 7 | **O** | ⬜ Corpus hygiene | Author scaffolded heleuma stubs; keep the heleuma audit (`pnpm --filter @lararium/tw5 build:heleuma`) aligned. Migrate monolith documentation TOML tables to canonical bag memes. Add `Content-Security-Policy: worker-src 'self'` to Caddyfile and Docker serving layer before any browser vessel goes to production (see `bags/lararium/browser/pono-charter.md` BV-9). |
 | 10 | **UEFN scene importer** | ⬜ Queued | .verse class defs + .umap placements + DEB wires → bag of tiddlers + edges. Spec: `bags/lares/api/pono/uefn-scene.md`. |
 
 ## Test Flow Harness
