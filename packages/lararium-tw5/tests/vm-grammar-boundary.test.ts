@@ -243,6 +243,15 @@ describe("pono grammar boundary", () => {
       // expected fold target per shelf head (so the colon-preservation check keeps working once a
       // head folds) — same reasoning as the mirror-fold test just above.
       .filter((f) => !f.endsWith("meme-normalize-param-separator.test.ts"))
+      // ahu-sections-address.test.ts reads fence-mask.ts's OWN fenceLineOpen/fenceLineClose to toggle
+      // fences the same way the compile layer does — it drives no meme-ast parse at all, only the
+      // mask layer's line-fence rule, the same reasoning as fence-mask-info-string.test.ts above.
+      .filter((f) => !f.endsWith("ahu-sections-address.test.ts"))
+      // sigil-pin-kanawai.test.ts is the scan+build-layer RED control for the aka/pin + kanawai/law
+      // split (lar:///sigil.grammar.lane loop 7) — same reasoning as wehe-open-paren.test.ts: whether
+      // the tiddler-derived grammar scans and erases these two mirror pairs correctly has no other
+      // surface than this layer.
+      .filter((f) => !f.endsWith("sigil-pin-kanawai.test.ts"))
       // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
       // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
       // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law

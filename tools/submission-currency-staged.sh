@@ -96,17 +96,17 @@ mirror() {
   fi
 }
 
-# A FROZEN `aka`/`shadow`/`snapshot` edge in a mirrored source pins its target's own text (weave
-# resolves it through `bagsResolver`, read-only over `--root`) — so the scratch mirror needs that
-# target too, or the check re-projects the unresolved fallback against a shelf pair the real weave
-# (over the whole repo) pinned for real, and reads a false DRIFT on every commit that never touched
-# the aka'd file at all. One level deep, matching weave's own resolver: an aka target's OWN aka edges
-# do not chase further.
+# A FROZEN `aka`/`pin` OR `kanawai`/`law` edge in a mirrored source pins its target's own text
+# (weave resolves it through `bagsResolver`, read-only over `--root`) — so the scratch mirror needs
+# that target too, or the check re-projects the unresolved fallback against a shelf pair the real
+# weave (over the whole repo) pinned for real, and reads a false DRIFT on every commit that never
+# touched the pinned file at all. One level deep, matching weave's own resolver: a pin target's OWN
+# pins do not chase further.
 mirror_aka_targets() {
   local mirrored_src="$1"
   [ -f "$mirrored_src" ] || return 0
-  grep -oE '<<~[[:space:]]*(aka|shadow|snapshot)[[:space:]]+"?lar:///[^">[:space:]]+' "$mirrored_src" \
-    | sed -E 's/^<<~[[:space:]]*(aka|shadow|snapshot)[[:space:]]+"?//' \
+  grep -oE '<<~[[:space:]]*(aka|pin|kanawai|law)[[:space:]]+"?lar:///[^">[:space:]]+' "$mirrored_src" \
+    | sed -E 's/^<<~[[:space:]]*(aka|pin|kanawai|law)[[:space:]]+"?//' \
     | while IFS= read -r uri; do
         path="${uri#lar:///}"
         path="${path%%#*}"

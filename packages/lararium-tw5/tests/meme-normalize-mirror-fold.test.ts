@@ -5,7 +5,7 @@
  * OPERATOR RULED: `lares meme normalize` "shall preserve explicitly marked weave/tangle
  * alternates, but otherwise normalize to house memetic-wikitext grammar." A read-only mirror
  * (`lar-mirror-of` set, no `lar-weave: primary`) carries no grammar of its own, so folding its head
- * token loses no authored intent; a `lar-weave: primary` mirror (`transclude`, `snapshot`) IS a
+ * token loses no authored intent; a `lar-weave: primary` mirror (`transclude`, `pin`) IS a
  * canonical spelling in its own tongue and never folds.
  *
  * EXPLICIT MARK = preserve: a carrier whose meta declares `tongue = "<bcp47>"` rests in its
@@ -99,8 +99,8 @@ describe("normalizeMemeSource — every read-only mirror folds to its canonical 
     expect(notes.join()).not.toMatch(/folded to its canonical head/);
   });
 
-  test("a lar-weave: primary mirror (transclude/snapshot) never folds — it IS canonical in its tongue", () => {
-    const src = HEAD('<<~ transclude "lar:///a.b.c/x">>\n<<~ snapshot "lar:///a.b.c/y">>');
+  test("a lar-weave: primary mirror (transclude/pin/law) never folds — it IS canonical in its tongue", () => {
+    const src = HEAD('<<~ transclude "lar:///a.b.c/x">>\n<<~ pin "lar:///a.b.c/y">>\n<<~ law "lar:///a.b.c/z">>');
     const { changed } = normalizeMemeSource(src);
     expect(changed).toBe(false);
   });

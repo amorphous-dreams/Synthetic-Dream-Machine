@@ -81,7 +81,7 @@ Boot-level memetic-wikitext carries these primitives:
 
 - `ahu` — local worksite, anchor, and nearby semantic context
 - `loulou` — named `pranala` edge for outward relation or path without inline pull
-- `aka` — named `pranala` edge for passive inclusion or shadow transclusion where that sugar fits
+- `aka` — named `pranala` edge for passive inclusion or pinned (frozen) transclusion where that sugar fits
 - `kahea` — named `pranala` edge for active invocation or live transclusion pressure where that sugar fits
 - `kapu` — qualification, boundary, trust, disclosure, retention, and failure posture
 - `ui` — query surface
@@ -334,8 +334,8 @@ trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-
 
 [[render_modes]]
 name        = "projection"
-label       = "Projection (shadow/frozen form)"
-description = "each child-slot widget emits aka (shadow transclusion) sigil; content frozen at projection time"
+label       = "Projection (pinned/frozen form)"
+description = "each child-slot widget emits aka (pinned transclusion) sigil; content frozen at projection time"
 example     = "<<~ aka ahu #slot>>"
 trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'projection' } })"
 ```
@@ -389,6 +389,6 @@ Adding a sigil: tag a tiddler with `lar:///ha.ka.ba/tags/SharktoothSigil` and po
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v_fnFXnAfvA2yZ-a_S1T_HqrbRqSrOHPNroNLVLsnzc
+<<^ code="&#x0003;">>ni:///sha-256;mzeR5wgPpQoSblyZNc3822UTXjZwbPD5wAvJffbdzq8
 
 <<^ code="&#x0004;" -> to="?">>

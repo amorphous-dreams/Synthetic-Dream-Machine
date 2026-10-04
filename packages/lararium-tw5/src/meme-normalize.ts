@@ -514,7 +514,7 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // explicitly marked weave/tangle alternates, but otherwise normalize to house memetic-wikitext
   // grammar." A read-only mirror (`lar-mirror-of` set, no `lar-weave: primary`) carries no grammar
   // of its own — folding its HEAD TOKEN to the canonical name loses no authored intent. A
-  // `lar-weave: primary` mirror (e.g. `transclude`, `snapshot`) is itself a canonical spelling in
+  // `lar-weave: primary` mirror (e.g. `transclude`, `pin`) is itself a canonical spelling in
   // its own tongue and never folds.
   //
   // EXPLICIT MARK = preserve: a carrier whose meta declares `tongue = "<bcp47>"` rests in its

@@ -1,0 +1,20 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pin
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-alias
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/aka
+lar-mirror-of: aka
+lar-tongue: en
+lar-weave: primary
+lar-see-also: aka
+lar-pattern: <<~\s*pin\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-example: <<~ pin "lar:///a.b.c/x">>
+type: text/vnd.tiddlywiki
+
+<!-- pin — RULED (operator): `aka` = PIN a lar: target — a frozen read posture, its own sigil,
+     never a delegation to kahea. `pin` weaves as the primary English name for `aka`.
+     RETIRES `snapshot` and `shadow` whole (alpha, no back-compat) — both read-only mirrors and
+     the prior primary weave, superseded by this single English name. -->
+
+\procedure ~pin(p1:"")
+<$transclude $variable="~aka" p1=<<p1>>/>
+\end

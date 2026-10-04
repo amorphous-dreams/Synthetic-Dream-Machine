@@ -92,7 +92,7 @@ describe("checkTongueLaws — RED, one violation of each law", () => {
       // (d): dangling target
       { name: "ghost", aliasFor: "nowhere" },
       // (e): primary with no tongue
-      { name: "shadow", aliasFor: "aka", weavePrimary: true },
+      { name: "untongued-mirror", aliasFor: "aka", weavePrimary: true },
     ];
     const laws = new Set(checkTongueLaws(entries).map((v) => v.law));
     expect([...laws].sort()).toEqual(["a", "b", "c", "d", "e"]);

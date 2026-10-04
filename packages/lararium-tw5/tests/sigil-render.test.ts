@@ -96,7 +96,7 @@ describe.skipIf(wikiSkip)(`a sigil renders on a gradient${skipNote}`, () => {
     // A mirror that delegates to its head cannot part company with it; a mirror carrying no
     // definition while its head carries one splits the pair, and this vector reads the split.
     const PAIRS: Array<[string, string]> = [
-      ["link", "loulou"], ["branch", "lele"], ["shadow", "aka"], ["transclude", "kahea"],
+      ["link", "loulou"], ["branch", "lele"], ["pin", "aka"], ["transclude", "kahea"],
     ];
     const arg = '"lar:///ha.ka.ba/lares/api/pono/meme"';
     const split = PAIRS.filter(([m, o]) => rendered(`<<~ ${m} ${arg}>>`) !== rendered(`<<~ ${o} ${arg}>>`));

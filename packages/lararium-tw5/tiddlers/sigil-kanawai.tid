@@ -1,0 +1,23 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kanawai
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-sugar
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kanawai
+lar-pattern: <<~\s*kanawai\s+([\w-]+\s+)?"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-default-family: observe
+lar-example: <<~ kanawai "lar:///a.b.c/x">>
+type: text/vnd.tiddlywiki
+
+<!-- kanawai — Hawaiian: kānāwai, "law" — the BINDING pin, `aka`'s informative sibling (operator
+     ruling, lar:///sigil.grammar.lane loop 7). Own KanawaiTemplate cascade; not a delegation to
+     aka or kahea. Canon-Scribe's pono/kanawai meme states the binding/informative distinction this
+     loop; this tiddler carries the grammar alone. -->
+
+\widget ~kanawai(p1:"" p2:"")
+<$set name="_kw-uri" filter="[<p1>regexp[^#]]" value={{{ [<p1>addprefix<currentTiddler>] }}} emptyValue=<<p1>>>
+<$let _kw-template={{{ [<p2>!match[]] ~[all[shadows+tiddlers]tag[lar:///ha.ka.ba/tags/kanawai-template]!is[draft]!has[draft.of]] :map:flat[subfilter{!!text}] +[first[]else[lar:///ha.ka.ba/lararium/templates/kanawai/html]] }}}>
+<$tiddler tiddler=<<_kw-uri>>>
+<$transclude $tiddler=<<_kw-template>>/>
+</$tiddler>
+</$let>
+</$set>
+\end
