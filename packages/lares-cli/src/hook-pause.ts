@@ -25,11 +25,6 @@ export function hookPauseMarkerPath(): string {
   return join(larStateHome(), "hooks.paused");
 }
 
-/** True while the hooks are paused (the marker exists). */
-export function hooksArePaused(): boolean {
-  return existsSync(hookPauseMarkerPath());
-}
-
 export interface HookPauseState {
   readonly paused: boolean;
   readonly marker: string;

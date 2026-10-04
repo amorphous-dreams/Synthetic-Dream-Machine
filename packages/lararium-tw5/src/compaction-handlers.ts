@@ -19,7 +19,7 @@
  */
 
 import type { Repo, AutomergeUrl } from "@lararium/mesh";
-import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh";
 import {
   type LarDoc,
   emptyLarDoc, mutableLarRecord, mkDaemonResidencyOp, mkDaemonWikiAlert,
@@ -309,6 +309,3 @@ async function alertWikisUsingBag(
   }
   return slugs;
 }
-
-// Origin tag used by Epoch — reserved for future audit-log integration.
-export const EPOCH_ORIGIN: ChangeOrigin = { kind: "lares-verb", requestId: "epoch" };

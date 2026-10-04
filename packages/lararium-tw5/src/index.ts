@@ -109,17 +109,8 @@ export type {
 export { IslandAdaptor } from "./island-adaptor.js";
 export { buildIslandRecipe } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
-export {
-  openVmCarrierSyncSession,
-} from "./wiki-sync.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
-export type {
-  VmCarrierSyncInput,
-  VmCarrierSyncResult,
-  VmCarrierSyncSession,
-  VmCarrierSyncSessionOptions,
-} from "./wiki-sync.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export { getOriginBag } from "./residency-surface.js";
 export { registerActionReactors, makeActionReactorFor, makeTw5Deserializer } from "./action-handler.js";
@@ -272,7 +263,7 @@ export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as Declare
 // not, and fails gracefully so a capture still records its turn.
 export { grammarHeads, grammarHeadsFromPlugin, GRAMMAR_TAG } from "./grammar-heads.js";
 export type { HeadWiki } from "./grammar-heads.js";
-export { getGrammar, resetGrammar, getVocabularyCid } from "./grammar-cache.js";
+export { getGrammar, resetGrammar } from "./grammar-cache.js";
 
 // THE ONE READER of a sigil's parameters — the names it binds, the SLOTS it fills, and the
 // positionals a scheme would steal.

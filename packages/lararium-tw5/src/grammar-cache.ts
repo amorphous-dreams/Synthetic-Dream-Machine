@@ -44,7 +44,7 @@ export function startup(): void {
   wiki.addEventListener("change", (changes) => {
     for (const title of Object.keys(changes)) {
       const tags = wiki.getTiddler(title)?.fields.tags ?? [];
-      if (tags.includes(GRAMMAR_TAG)) { _cache = undefined; _cid = undefined; return; }
+      if (tags.includes(GRAMMAR_TAG)) { _cache = undefined; return; }
     }
   });
 }
@@ -66,32 +66,11 @@ export function getGrammar(): GrammarRules | null {
   return rules;
 }
 
-export function resetGrammar(): void { _cache = undefined; _cid = undefined; }
+export function resetGrammar(): void { _cache = undefined; }
 
 // ---------------------------------------------------------------------------
 // Vocabulary cid — the version key downstream projections carry
 // ---------------------------------------------------------------------------
-
-let _cid: string | null | undefined = undefined;
-
-/**
- * The vocabulary-cid: sha256 over the EFFECTIVE grammar rules, name-sorted.
- *
- * Hashing the built rules (never the raw tiddlers) keys the cid to what the
- * vocabulary DOES — housekeeping fields, tiddler titles, and filter order
- * carry no weight; the same effective vocabulary always names the same cid.
- * Overrides win through TW5's own shadow semantics before the build, so the
- * cid reads the live operator-extended state, and every MemeAst projection
- * downstream keys on (ground-cid, carrier-version, vocabulary-cid, schema).
- *
- * `null` while no grammar tiddlers stand (the bootstrap-scan regime).
- */
-export function getVocabularyCid(): string | null {
-  if (_cid !== undefined) return _cid;
-  const rules = getGrammar();
-  _cid = rules ? vocabularyCidOf(rules) : null;
-  return _cid;
-}
 
 /** The pure cid fold — name-sorted rules → canonical bytes → sha256 hex. */
 export function vocabularyCidOf(rules: GrammarRules): string {

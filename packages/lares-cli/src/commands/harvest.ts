@@ -438,9 +438,6 @@ export function repaveVerdict(counts: {
               + (after === before ? " — nothing new landed, which is the idempotent re-run working" : ` (up from ${n(before)})`) };
 }
 
-/** The stages that land nothing and whose absence a later reading cannot recover. */
-export const REPAVE_GUARDS: readonly RepaveStageName[] = ["quiesce", "baseline", "verify", "resume"];
-
 /**
  * The wing a re-pave fills, from the ONE law.
  *
