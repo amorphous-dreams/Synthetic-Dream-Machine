@@ -81,7 +81,7 @@ target's current text, pinned with the target's own `ni:` check, whole-carrier o
 ⏿ orient: family:transclusion, traversal:source-to-target, propagation:none; read-only; no execution pulse
 ◇ confidence-bounded: if the observation carries uncertainty, SHOULD declare confidence on the edge
 ▶ emit EdgeSugarNode with sigil:aka, family:transclusion; render the pinned likeness/frozen image at source position
-↺ target content is live-readable at source; source holds no lifecycle stake in target; confirm the pinned image stable; target still resolvable; no ownership or mutation transferred
+↺ the pin reads the target as it stood at the moment the weave pinned it; source holds no lifecycle stake in target; confirm the pinned image stable; target still resolvable; no ownership or mutation transferred
 
 <<~/ahu>>
 
@@ -169,6 +169,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aMLl5QIWSmP_G4K7bdoCCjHLc7s_dYkq--7jyJ4-08A
+<<^ code="&#x0003;">>ni:///sha-256;Teygbya71-maNst5mJN5coVq1IiUQ8F_aozVviM4MNk
 
 <<^ code="&#x0004;" -> to="?">>
