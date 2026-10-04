@@ -1,6 +1,22 @@
+---
+author: "Joshua Fontany <joshua.fontany@gmail.com>"
+cat: "info"
+date: "2026-10-03"
+docname: "draft-fontany-lar-uri-00"
+ipr: "trust200902"
+lang: "en"
+source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
+source-check: "ni:///sha-256;-O42Q6UzlZpd9IfSXr4MNULzsPEeOMN8emdfdZH7T38"
+title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
+tongue: "x-lares>en"
+variant: "kramdown-rfc2629"
+normative:
+  RFC2119:
+  RFC8174:
+---
 
 
-- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;9Hs6XmpIui_TZVAtVuZw8vPdihkN9Nn_L8Nd3K6m26s`
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
 
 <a id="meme-header"></a>
 
