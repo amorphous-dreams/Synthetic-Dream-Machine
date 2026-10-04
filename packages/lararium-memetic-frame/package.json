@@ -1,0 +1,31 @@
+{
+  "name": "@lararium/memetic-frame",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The memetic carrier FRAME, alone: control marks, the fence mask, the meta-fence opener, the head reader, the ONE span reader, the ni:/// block check, and the frame writer. Zero workspace dependencies; isomorphic.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./marks": {
+      "import": "./dist/marks.js",
+      "types": "./dist/marks.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "node ../../tools/clean-output.mjs dist",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.4.0"
+  },
+  "devDependencies": {
+    "vitest": "4.1.11"
+  }
+}

@@ -27,9 +27,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import {
-  expandMemeRefs, memeticWikitextDeserializer, fencedSpans, inMask, carriageUri,
+  expandMemeRefs, memeticWikitextDeserializer, carriageUri,
   type TiddlerFields,
 } from "../src/deserializer.js";
+import { fencedSpans, inMask } from "@lararium/memetic-frame";
 import { parseTaploFields } from "../src/toml-ast.js";
 import { carrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";

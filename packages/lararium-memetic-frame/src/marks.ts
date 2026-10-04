@@ -1,5 +1,5 @@
 /**
- * frame-marks — the carrier frame's control marks, declared once.
+ * marks — the carrier frame's control marks, declared once.
  *
  * ── WHAT COLLAPSES HERE, AND WHAT DELIBERATELY DOES NOT ─────────────────────────────────────────
  * Six places held the frame: the bootstrap scanner, the stream framer, the deserializer's own scans,
@@ -83,5 +83,8 @@ export function frameHex(family: string): string {
  * Interpolate ONCE, at module scope — these run on hot parse paths.
  */
 export function frameAlt(...families: readonly string[]): string {
-  return `&#x(?:${families.map((f) => frameHex(f)).join("|")});`;
+  // NO FAMILY NAMES EVERY MARK — the alternation a line-walker stands when it asks only "is this a frame
+  // sigil at all?". A walker that spelled `&#x00..;` instead read any C0 entity as frame.
+  const named = families.length === 0 ? FRAME_MARKS.map((m) => m.name) : families;
+  return `&#x(?:${named.map((f) => frameHex(f)).join("|")});`;
 }

@@ -8,7 +8,7 @@
  *   `(?:[^>\n]|>(?!>))`   line-bounded — a sigil closes on the line it opens
  *   `(?:[^>]|>(?!>))`     wider — the bootstrap scan, deliberately, before a grammar stands
  *
- * `frame-marks.ts` rules that the CODES collapse and the PATTERN WIDTHS do not: a line-bounded scan and a
+ * The frame declaration (`@lararium/memetic-frame` marks.ts) rules that the CODES collapse and the PATTERN WIDTHS do not: a line-bounded scan and a
  * wider one answer different questions. That scar stays. What must not drift is the LAW inside each width.
  *
  * ── WHY A GUARD ──────────────────────────────────────────────────────────────────────────────────────────

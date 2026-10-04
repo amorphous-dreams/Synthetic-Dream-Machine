@@ -23,7 +23,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
-import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
+import { fencedSpans, inMask } from "@lararium/memetic-frame";
 
 /** How a carrier spelled the reference. */
 export type EdgeForm = "loulou" | "pranala" | "kahea" | "wikilink" | "md-target";

@@ -6,9 +6,9 @@ module-type: library
 /**
  * meme-laws — every pure law over meme TEXT, packed ONCE as one library tiddler.
  *
- * A capability of memetic-wikitext is a law over bytes: normalize a carrier's framing, compute and
- * verify its block check, read its shape down the ingest gradient, read every address it points at,
- * read what its head names. None of these touches a disk, a socket, or a store, so each one reaches
+ * A capability of memetic-wikitext is a law over bytes: normalize a carrier, read its shape down the
+ * ingest gradient, read every address it points at, read the stage it stands in. None of these touches
+ * a disk, a socket, or a store, so each one reaches
  * every context the plugin reaches — a stock TiddlyWiki, a lararium island, a worker, a browser —
  * the moment it rides the plugin.
  *
@@ -18,14 +18,14 @@ module-type: library
  * is the only place the functions exist inside the packed plugin. A consumer outside the plugin
  * (the CLI, the sensorium) keeps importing the source modules by name through `@lararium/tw5`.
  *
+ * THE FRAME IS NOT HERE. The marks, the span reader, the block check and the frame writer are
+ * `@lararium/memetic-frame`, which the plugin packs as ITS OWN library tiddler
+ * (`lar:///ha.ka.ba/lararium/tw5/lib/memetic-frame`) — once, required by URI from every module here.
+ *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
 export * from "./meme-normalize.js";
-export * from "./block-check.js";
-export * from "./carrier-check.js";
 export * from "./carrier-shape.js";
 export * from "./carrier-edges.js";
 export * from "./carrier-lifecycle.js";
-export * from "./carrier-head.js";
-export * from "./frame-marks.js";

@@ -13,7 +13,7 @@
  */
 
 import type { GrammarRules, SigilRule } from "./types.js";
-import { fencedSpans, maskedExecAll } from "./fence-mask.js";
+import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS } from "./grammar-table.generated.js";
 
 // ---------------------------------------------------------------------------
@@ -54,8 +54,8 @@ export interface ParseEvent {
 // control codes out of THIS FILE as the independent second recogniser — comparing the spec against
 // tiddlers alone reads tautological while one hand writes both. Sourcing them from the shared shore
 // would delete the very seam that witness exists to measure. The bearing READ collapsed
-// (carrier-head.ts); the bootstrap SCAN did not, by the same ruling that keeps every frame scan local
-// (frame-marks.ts). (`sigil-frame-soh.tid` etc. DO carry a `lar-pattern` — a deliberately narrower
+// (@lararium/memetic-frame head.ts); the bootstrap SCAN did not, by the same ruling that keeps every frame scan local
+// (@lararium/memetic-frame marks.ts). (`sigil-frame-soh.tid` etc. DO carry a `lar-pattern` — a deliberately narrower
 // spec-side anchor frame-parity's OWN witness reads; it is not this file's independent recognizer.)
 export const BOOTSTRAP_SCANS: SigilScan[] = [
   { sigilName: "control-soh", regex: /<<\^(?:[^>]|>(?!>))*&#x0001;(?:[^>]|>(?!>))*"?\?"?\s*->\s*(?:to=)?"?([^"\s>]+)"?\s*>>/g, eventType: "pragma" },

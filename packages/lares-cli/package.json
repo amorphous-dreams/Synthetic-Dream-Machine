@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@lararium/memetic-frame": "workspace:*",
     "@lararium/mempalace": "workspace:*",
     "@lararium/mesh": "workspace:*",
     "@lararium/node": "workspace:*",

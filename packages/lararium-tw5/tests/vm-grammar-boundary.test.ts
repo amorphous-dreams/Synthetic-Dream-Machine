@@ -108,7 +108,7 @@ describe("pono grammar boundary", () => {
    * every exemption below is DECLARED with its reason — a list that only shrinks.
    */
   test("★ no reader outside the shore captures a carrier's bearing ★", () => {
-    const SHORE = "carrier-head.ts";
+    // THE SHORE IS THE FRAME PACKAGE'S `head.ts` — outside this tree, so no file here is exempt as it.
     /**
      * DECLARED EXEMPTIONS, each with the reason it stands. Adding one is a ruling, not a convenience.
      */
@@ -125,7 +125,6 @@ describe("pono grammar boundary", () => {
     ];
     const offenders: string[] = [];
     for (const file of walk(join(ROOT, "src")).filter((f) => f.endsWith(".ts"))) {
-      if (file.endsWith(SHORE)) continue;
       // GENERATED OUTPUT CARRIES THE SHORE'S OWN BODY. The packed plugin inlines every module it
       // bundles, so the shore's pattern appears there by construction — reading it as a second reader
       // would fail this gate on the very file that proves the collapse worked.
@@ -140,7 +139,7 @@ describe("pono grammar boundary", () => {
         offenders.push(`${relative(ROOT, file)}:${i + 1}  ${line.trim().slice(0, 96)}`);
       });
     }
-    expect(offenders, "a bearing read belongs in carrier-head.ts — see its header").toEqual([]);
+    expect(offenders, "a bearing read belongs in @lararium/memetic-frame's head.ts — see its header").toEqual([]);
   });
 
   /**
@@ -152,7 +151,7 @@ describe("pono grammar boundary", () => {
    * pranala rule was found still holding its own capture AFTER the corpus had moved.
    */
   test("★ no reader outside the shore captures a sigil parameter ★", () => {
-    const SHORES = ["carrier-head.ts", "sigil-attrs.ts"];
+    const SHORES = ["sigil-attrs.ts"];
     /** DECLARED EXEMPTIONS, each with the reason it stands. A list that only shrinks. */
     const EXEMPT = [
       {

@@ -13,7 +13,7 @@
  *
  * ── MINTING ON ABSENT READS PONO (operator ruling) ──────────────────────────────────────────────
  * A FRAMED carrier holding no check gets one MINTED. Read-optional, emit-always is the fault it cures:
- * `block-check.ts` rules the BCC optional on READ while the deserializer mints one unconditionally on
+ * the frame package rules the BCC optional on READ while the deserializer mints one unconditionally on
  * EMIT, so a hand-authored carrier lands legal on every gate its author runs and red on the one they do
  * not — which is how a torn-then-unchecked carrier reached `main`. Of the 701 carriers under `bags/`,
  * zero legitimately want to stand unchecked: the option reads real in the grammar and unexercised in
@@ -26,8 +26,8 @@
  *     carries a complete checked frame.
  *
  * ⚠ THE COST: this forecloses deliberately authoring an unchecked FRAMED carrier — the BSC
- * trusted-link case `block-check.ts` cites, where a block ran without a BCC by choice. One line to
- * reverse in `restamp` if that case ever becomes real.
+ * trusted-link case the frame package cites, where a block ran without a BCC by choice. One line to
+ * reverse in `stampCarrier` if that case ever becomes real.
  */
 import { describe, test, expect, beforeAll } from "vitest";
 import { spawnSync } from "node:child_process";
@@ -35,7 +35,7 @@ import { mkdtempSync, writeFileSync, readFileSync, copyFileSync } from "node:fs"
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { verifyBcc, checkSpan, classifyPostamble } from "@lararium/tw5";
+import { verifyBcc, checkSpan, classifyPostamble } from "@lararium/memetic-frame";
 
 const REPO = path.resolve(new URL("../../..", import.meta.url).pathname);
 const BIN = path.join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
@@ -106,7 +106,7 @@ describe("meme normalize — the check follows the body", () => {
   });
 
   test("★ RED: a FRAMED carrier holding NO check gets one MINTED — minting on absent reads pono ★", () => {
-    // The operator ruling. Read-optional, emit-always: `block-check.ts` rules the BCC optional on READ
+    // The operator ruling. Read-optional, emit-always: the frame package rules the BCC optional on READ
     // and the deserializer mints one unconditionally on EMIT, so a hand-authored carrier lands legal on
     // every gate its author runs and red on the one they do not. Of the 701 carriers the corpus gate
     // walks, zero legitimately want to stand unchecked.
@@ -178,20 +178,20 @@ describe("meme normalize — the check follows the body", () => {
 });
 
 /**
- * `restamp`'s mint branch — a SHIFTED check must be REPLACED, never left beside a fresh mint.
+ * `stampCarrier`'s mint branch — a SHIFTED check must be REPLACED, never left beside a fresh mint.
  *
- * `verifyBcc` demands byte-exact adjacency (carrier-check.ts:177-193) — a check standing even one
+ * `verifyBcc` demands byte-exact adjacency (the frame package's check.ts) — a check standing even one
  * space after the frame's close reads `unchecked`, the same verdict a carrier with NO check at all
- * reads. `restamp`'s mint branch used to treat both alikes: glue the fresh `ni:///…` to the frame's
+ * reads. `stampCarrier`'s mint branch used to treat both alikes: glue the fresh `ni:///…` to the frame's
  * close and leave whatever already stood there untouched. For the truly-absent case that is correct.
  * For a SHIFTED check it duplicates: the carrier ends up wearing two checks, `ni:///…NEW ni:///…OLD`,
  * and every reader downstream of the frame now meets TWO `ni:///` occurrences where the grammar
  * promises one.
  *
- * `classifyPostamble` (block-check.ts) already answers the distinction `restamp` was missing: it
+ * `classifyPostamble` (the frame package) already answers the distinction the mint branch was missing: it
  * tolerates the whitespace `verifyBcc` refuses, so a shifted-but-otherwise-well-formed check reads
  * `{ kind: "bcc" }` to it while `verifyBcc` still reads `unchecked`. That gap between the two readers
- * IS the signal — `restamp` reads it and REPLACES rather than inserts.
+ * IS the signal — `stampCarrier` reads it and REPLACES rather than inserts.
  */
 describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () => {
   let dir: string;

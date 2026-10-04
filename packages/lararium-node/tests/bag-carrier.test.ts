@@ -17,7 +17,8 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { verifyBcc, readCarrierShape } from "@lararium/tw5";
+import { readCarrierShape } from "@lararium/tw5";
+import { verifyBcc } from "@lararium/memetic-frame";
 import { renderBagManifest, renderLibraryIndex } from "../src/bag-carrier.js";
 import type { BagManifest } from "@lararium/mesh";
 import type { LibraryEntryMeta } from "@lararium/mesh";

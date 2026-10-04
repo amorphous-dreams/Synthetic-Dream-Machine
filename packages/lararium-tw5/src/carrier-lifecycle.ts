@@ -29,8 +29,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/otakiage
  */
 
-import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
-import { META_OPEN_RE } from "./meta-fence.js";
+import { fencedSpans, inMask, META_OPEN_RE } from "@lararium/memetic-frame";
 
 /** The five standings a governed carrier holds, in order. */
 export const LIFECYCLE_STAGES = ["designed", "standing", "folded", "harvest", "retiring"] as const;

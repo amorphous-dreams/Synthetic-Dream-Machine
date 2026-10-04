@@ -16,12 +16,12 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SHORE = join(HERE, "../packages/lararium-tw5/dist/carrier-head.js");
+const SHORE = join(HERE, "../packages/lararium-memetic-frame/dist/index.js");
 
 // THE ABSENCE NAMES ITS OWN CURE. A gate that skipped here would read clean over an unbuilt tree,
 // which is the one reading it must never give.
 if (!existsSync(SHORE)) {
-  console.error(`carrier-head: no built shore at ${SHORE}\n  cure: pnpm --filter @lararium/tw5 build`);
+  console.error(`carrier-head: no built shore at ${SHORE}\n  cure: pnpm --filter @lararium/memetic-frame build`);
   process.exit(2);
 }
 const { matchCarrierHead } = await import(SHORE);

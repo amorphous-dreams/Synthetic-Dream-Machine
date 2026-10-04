@@ -1,5 +1,5 @@
 /**
- * carrier-check — the block check a carrier carries, computed rather than stored.
+ * check — the block check a carrier carries, computed rather than stored.
  *
  * ── WHY IT DERIVES AND NEVER SITS IN A FIELD ────────────────────────────────────────────────────
  * A check held as a record field is a stored derivation, and a stored derivation goes stale the moment
@@ -47,18 +47,20 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
-// The mesh already stands one sha256 for every platform this runs on; a second import would be a
-// second spelling of one primitive, and the isomorphic surface is exactly where that costs most.
-import { sha256HexSync } from "@lararium/mesh/crypto";
+// ONE DIGEST, DIRECT. The frame stands on `@noble/hashes` itself rather than on any workspace package,
+// so a holder of nothing but this package — a relay, a stock TiddlyWiki, a browser island — computes
+// the same check every vessel computes.
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 
-import { fencedSpans, maskedExec } from "./meme-ast/fence-mask.js";
-import { frameAlt } from "./frame-marks.js";
+import { fencedSpans, maskedExec } from "./fence-mask.js";
+import { frameAlt } from "./marks.js";
+import { checkSpan, frameStanding } from "./span.js";
 
-// THE CODE SET COMES FROM THE DECLARATION; THIS SCAN STAYS THIS READER'S OWN (frame-marks.ts).
-// A frame sigil never crosses a line, and `>>` closes it only when a second bracket follows.
-const INNER = "(?:[^>\\n]|>(?!>))*";
-const STX_SRC = `<<\\^${INNER}${frameAlt("STX")}${INNER}>>`;
-const ETX_SRC = `<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`;
+/** UTF-8 hex digest. TextEncoder stands in every context the frame runs in (a sandbox lends one). */
+function sha256Hex(text: string): string {
+  return bytesToHex(sha256(new TextEncoder().encode(text)));
+}
 
 /** The one digest algorithm this grammar accepts, named in the check and never chosen by it. */
 export const CHECK_ALG = "sha-256";
@@ -86,48 +88,6 @@ function hexToB64u(hex: string): string {
 }
 
 /**
- * The span a check covers: STX opener through ETX closer, inclusive. Null when the frame is absent.
- *
- * READ THROUGH THE FENCE MASK, because this grammar teaches its own control set. The specification
- * memes carry worked examples of every mark inside quote fences, and a raw `indexOf` locks onto the
- * FIRST one it meets — which in those documents is an example, hundreds of lines above the body. Six
- * carriers verified that way: the reader confirmed a check written inside a teaching example and
- * reported `ok` while the carrier's own body went unexamined. The emitter never had that fault, since
- * it divides a carrier the way the deserializer does; this reader now meets it on one span.
- *
- * The head is the CONTROL glyph and only that. A matcher admitting the speaking head would accept a
- * malformed carrier in silence — and silence is this layer's whole danger, because an unmatched frame
- * reroutes to text rather than throwing.
- */
-/**
- * The frame's standing, before any digest: absent, torn, or framed.
- *
- * TORN names STX standing without ETX — a truncated transmission. It gets its own reading because the
- * conflation it prevents is the cheapest strip there is: cut a file ahead of its closer and a missing
- * check would otherwise read as lawful absence. Truncation and absence name different facts, and the
- * grammar's own bearing law spends a paragraph refusing exactly this collapse elsewhere.
- */
-export type FrameStanding =
-  | { kind: "absent" }
-  | { kind: "torn" }
-  | { kind: "framed"; start: number; end: number };
-
-export function frameStanding(text: string): FrameStanding {
-  const spans = fencedSpans(text);
-  const stxM = maskedExec(text, new RegExp(STX_SRC, "g"), spans);
-  if (!stxM) return { kind: "absent" };
-  const rest = text.slice(stxM.index);
-  const etxM = maskedExec(rest, new RegExp(ETX_SRC, "g"), fencedSpans(rest));
-  if (!etxM) return { kind: "torn" };
-  return { kind: "framed", start: stxM.index, end: stxM.index + etxM.index + etxM[0].length };
-}
-
-export function checkSpan(text: string): { start: number; end: number } | null {
-  const st = frameStanding(text);
-  return st.kind === "framed" ? { start: st.start, end: st.end } : null;
-}
-
-/**
  * The check over an already-isolated body span, as a name that points at itself.
  *
  * The form is the shelves' own: an algorithm, then the full digest of the bytes it covers. A shelf's
@@ -139,7 +99,7 @@ export function checkSpan(text: string): { start: number; end: number } | null {
  * accident and then met an adversary. `nihOfSpan` is the reader's form, derived and never stored.
  */
 export function bccOfSpan(span: string): string {
-  return `ni:///${CHECK_ALG};${hexToB64u(sha256HexSync(span))}`;
+  return `ni:///${CHECK_ALG};${hexToB64u(sha256Hex(span))}`;
 }
 
 /**
@@ -151,7 +111,7 @@ export function bccOfSpan(span: string): string {
  * grammar keeps finding, so the second home is a moment rather than a place.
  */
 export function nihOfSpan(span: string): string {
-  const hex = sha256HexSync(span);
+  const hex = sha256Hex(span);
   let sum = 0, factor = 2;
   for (let i = hex.length - 1; i >= 0; i--) {
     const addend = factor * parseInt(hex[i]!, 16);
@@ -190,4 +150,107 @@ export function verifyBcc(text: string): "ok" | "mismatch" | "unchecked" | "torn
   // multiple of six, so a comparator that tolerated them would call two different strings one check.
   // Re-encoding what we computed and comparing whole refuses every non-canonical spelling for free.
   return bccOfSpan(text.slice(span.start, span.end)) === trailing[1]! ? "ok" : "mismatch";
+}
+
+/*
+ * The BCC slot — what may stand between ETX and EOT, and nothing else.
+ *
+ * ── THE SLOT IS OCCUPIED, AND BY ONE THING ──────────────────────────────────────────────────────
+ * The frame glyphs are ASCII C0 as IBM BSC (1967) and ISO 1745 (1975) used them: SOH opens the
+ * heading, STX opens the text, ETX ends the text, EOT ends the transmission. A block reads
+ *
+ *     [SOH heading] STX text ETX BCC        …        EOT
+ *
+ * The BCC — block check character — is an integrity trailer, and it sits AFTER ETX for a reason that
+ * is not stylistic: it cannot live inside the span it checks. Its coverage runs from STX through the
+ * ETX **inclusive**, so the terminator is part of what the check attests.
+ *
+ * ETX is also where a verdict falls. In BSC it "calls for a reply": the receiver checks the BCC and
+ * answers ACK or NAK. That is exactly the ingest gate's boundary — ingest · noop · conflict · refuse —
+ * so the trailer belongs to the same moment the gate already decides in.
+ *
+ * EOT then ends the transmission in BOTH directions: nothing further is expected from or to the far
+ * side. Content addressed after that is addressed to nobody.
+ *
+ * ── SO: NO PAYLOAD BETWEEN ETX AND EOT ──────────────────────────────────────────────────────────
+ * A carrier that put content there lost it silently — the render simply did not reproduce it, which
+ * is the inverse of a block check: BSC answered a bad block with NAK and a retransmission, never with
+ * a quiet drop. `classifyPostamble` makes the slot legible so the deserializer can refuse instead.
+ *
+ * PARTIAL BLOCKS TAKE ETB, NEVER A SECOND ETX. BSC terminated a non-final block with ETB (0x17) and
+ * reserved ETX for the last one. Two ETXs would assert two verdicts on one transmission — which is
+ * the shape to reach for if a carrier is ever split, or streamed during a residency move.
+ *
+ * Canon: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+ */
+
+// THE SLOT READER KEEPS ITS OWN SCAN (marks.ts). It reads an EOT sigil DECORATED — `(?:\s*\S+)?\s*`
+// admits namespace glyphs and a `code=` binding alike — and strips to the line's end, because `[^>]*`
+// cannot cross the `>` inside `-> ?`. Only the entity alternation travels.
+const DECOR = "(?:\\s*\\S+)?\\s*";
+const EOT_STRIP_SRC = `<<\\^${DECOR}${frameAlt("EOT")}[^\\n]*?>>`;
+
+
+/**
+ * The check as the spec writes it: `ni:///<alg>;<base64url>`, standing directly after the ETX sigil.
+ * The namespace rides the heading, never the check — the digest binds bytes, and bytes carry no
+ * vibration.
+ *
+ * A block runs `STX -> text -> ETX -> BCC` and the check follows the terminator with nothing between —
+ * the position a receiver has always read it from. The value derives; `bccOfSpan` computes it over the
+ * framed span, and the slot classifier only says whether one STANDS. Present and CORRECT are different
+ * questions, and a classifier that answered the first under the name of the second would invite the
+ * reading that a present postamble is a verified one.
+ */
+export const BCC_RE = /^(ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+)$/;
+
+/**
+ * What a carrier wrote between ETX and EOT.
+ *
+ *   · `empty`   — whitespace only. The overwhelmingly common case, and legal: the BCC is OPTIONAL,
+ *                 exactly as BSC allowed blocks to run without one on a trusted link.
+ *   · `bcc`     — a well-formed block check. Legal, and checkable.
+ *   · `foreign` — anything else. Payload stranded past the end of text, which no reader will ever
+ *                 render. This is the case that used to vanish.
+ */
+export type Postamble =
+  | { readonly kind: "empty" }
+  | { readonly kind: "bcc";     readonly digest: string }
+  | { readonly kind: "foreign"; readonly text: string; readonly lines: number };
+
+export function classifyPostamble(postamble: string): Postamble {
+  if (postamble.trim().length === 0) return { kind: "empty" };
+
+  // EOT and any trailing whitespace belong to the frame, never to the slot — strip them before
+  // judging what the operator actually wrote there.
+  // `[^>]*` cannot cross the `>` inside `-> ?`, so the EOT sigil's own arrow defeats a naive strip.
+  // Match to the line's end instead — a frame sigil never spans lines.
+  const body = postamble
+    .replace(new RegExp(EOT_STRIP_SRC, "g"), "")
+    .trim();
+  if (body.length === 0) return { kind: "empty" };
+
+  const m = BCC_RE.exec(body);
+  if (m) return { kind: "bcc", digest: m[1] as string };
+
+  return { kind: "foreign", text: body, lines: body.split("\n").length };
+}
+
+/**
+ * Read the bytes after the carrier's terminating EOT/EOT2 mark.
+ *
+ * A postamble between ETX and EOT is the BCC slot and may be empty or carry one BCC. Bytes after
+ * EOT have no carrier boundary left to receive them. Keep this as a separate reading: a shifted
+ * BCC with legitimate EOT still has a recoverable slot, while content after EOT is boundary drift
+ * that normalization must refuse to guess over.
+ */
+export function classifyPostEot(text: string): Postamble | null {
+  // Find the first actual terminator across EOT/EOT2. We inspect the raw tail afterwards rather
+  // than passing it through `classifyPostamble`, whose ETX-slot reader intentionally strips all EOT
+  // variants and would therefore launder a second terminator as empty postamble.
+  const eot = maskedExec(text, new RegExp(EOT_STRIP_SRC, "g"), fencedSpans(text));
+  if (!eot) return null;
+  const tail = text.slice(eot.index + eot[0].length);
+  if (tail.trim().length === 0) return { kind: "empty" };
+  return { kind: "foreign", text: tail.trim(), lines: tail.trim().split("\n").length };
 }

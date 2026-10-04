@@ -15,8 +15,8 @@ import {
   headUriOf,
   carrierHeadPattern,
   carrierReleasePattern,
-} from "../src/carrier-head.js";
-import { FRAME_MARKS } from "../src/frame-marks.js";
+  FRAME_MARKS,
+} from "@lararium/memetic-frame";
 
 const URI = "lar:///ha.ka.ba/lares/api/pono/example";
 
@@ -108,7 +108,7 @@ describe("a fresh pattern per call", () => {
   });
 });
 
-describe("the codes come from frame-marks, never from here", () => {
+describe("the codes come from the frame declaration, never from here", () => {
   // One fact, declared once. Restating the codes would let a mark added to FRAME_MARKS read correct in
   // every file while this reader quietly dropped it.
   test("★ every SOH mark the grammar stands is a mark this shore reads ★", () => {
@@ -135,13 +135,13 @@ describe("the codes come from frame-marks, never from here", () => {
 
 // ── THE PARITY WALK ─────────────────────────────────────────────────────────────────────────────
 //
-// `frame-marks` rules that the CODES collapse into one fact while the SCANS stay apart. This walk
+// The frame declaration (`marks.ts`) rules that the CODES collapse into one fact while the SCANS stay apart. This walk
 // enforces exactly that split across EVERY module, so neither half rots:
 //
 //   · a module that WRITES a control mark must read the code from `FRAME_MARKS` — a code spelled
 //     into a plain string is a second copy of a collapsed fact, and a mark added to the declaration
 //     would read correct in every file while that string quietly emitted the old grammar;
-//   · a module that SCANS for a mark keeps its own regex — three bug-comments in `frame-marks`
+//   · a module that SCANS for a mark keeps its own regex — three bug-comments in `marks.ts`
 //     record what collapsing those costs, so a code standing inside a REGEX LITERAL passes;
 //   · a module that TEACHES the shape keeps its comment — a code inside a comment passes.
 //
@@ -239,10 +239,13 @@ describe("no module re-spells a control code — the parity walk", () => {
     expect(hardcodedMarkStrings(block)).toEqual([]);
   });
 
-  test("★ EVERY module writes its marks from frame-marks ★", () => {
+  test("★ EVERY module writes its marks from the frame package's declaration ★", () => {
     const srcRoot = fileURLToPath(new URL("../src", import.meta.url));
-    // `frame-marks` IS the declaration; the generated plugin tiddler is a build product, never hand-edited.
-    const exempt = new Set(["frame-marks.ts", "plugin-tiddler.generated.ts"]);
+    const frameRoot = fileURLToPath(new URL("../../lararium-memetic-frame/src", import.meta.url));
+    // `marks.ts` IS the declaration. The plugin tiddler and the grammar table are BUILD PRODUCTS — the
+    // table generates from the `sigil-frame-*` tiddlers, and `frame-literals-agree.test.ts` witnesses
+    // that its codes are the declaration's.
+    const exempt = new Set(["marks.ts", "plugin-tiddler.generated.ts", "grammar-table.generated.ts"]);
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
         const full = join(dir, e.name);
@@ -250,7 +253,7 @@ describe("no module re-spells a control code — the parity walk", () => {
         return e.isFile() && e.name.endsWith(".ts") && !exempt.has(e.name) ? [full] : [];
       });
 
-    const modules = walk(srcRoot);
+    const modules = [...walk(srcRoot), ...walk(frameRoot)];
     expect(modules.length).toBeGreaterThan(50);
 
     const offenders: string[] = [];
@@ -344,7 +347,7 @@ describe("CONTROLS — what must NOT read as a head", () => {
 
 // ── THE PROBE WALK — a mark added to FRAME_MARKS must reach every scan ────────────────────────────
 //
-// The codes collapse into ONE fact (frame-marks.ts) and the SCANS deliberately stay apart. Between
+// The codes collapse into ONE fact (memetic-frame marks.ts) and the SCANS deliberately stay apart. Between
 // those two halves sits the gap this walk closes: a scan that spells the code SET into its own
 // pattern honors neither. It keeps no shape the ruling protects — the anchors, flags and surround are
 // what the scars record — and it silently drops a mark the declaration stands.
@@ -369,14 +372,13 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   /**
    * Load a fresh module graph, stand the probes in ITS declaration, and hand the caller the readers.
    *
-   * `resetModules` gives the graph its own `frame-marks`; the push lands there BEFORE any consumer
+   * `resetModules` gives the graph its own `marks`; the push lands there BEFORE any consumer
    * imports it, so each reader derives over the probed table. The real declaration this file imported
    * at the top never moves.
    */
   async function withProbes<T>(fn: (m: {
     shape: typeof import("../src/carrier-shape.js");
-    check: typeof import("../src/carrier-check.js");
-    block: typeof import("../src/block-check.js");
+    frame: typeof import("@lararium/memetic-frame");
     markdown: typeof import("../src/weave/index.js");
     normalize: typeof import("../src/meme-normalize.js");
     stream: typeof import("../src/meme-stream.js");
@@ -384,12 +386,12 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   }) => Promise<T> | T): Promise<T> {
     vi.resetModules();
     try {
-      const fm = await import("../src/frame-marks.js");
+      // The DECLARATION alone loads first, so the push lands before any scan interpolates the set.
+      const fm = await import("@lararium/memetic-frame/marks");
       (fm.FRAME_MARKS as { code: string; name: string; slots: readonly string[] }[]).push(...PROBES);
       return await fn({
         shape:     await import("../src/carrier-shape.js"),
-        check:     await import("../src/carrier-check.js"),
-        block:     await import("../src/block-check.js"),
+        frame:     await import("@lararium/memetic-frame"),
         markdown:  await import("../src/weave/index.js"),
         normalize: await import("../src/meme-normalize.js"),
         stream:    await import("../src/meme-stream.js"),
@@ -422,16 +424,11 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
     });
   });
 
-  test("★ carrier-check frames a probed span ★", async () => {
-    await withProbes(({ check }) => {
-      expect(check.frameStanding(probed).kind).toBe("framed");
-    });
-  });
-
-  test("★ block-check spans a probed frame and strips a probed EOT ★", async () => {
-    await withProbes(({ block }) => {
-      expect(block.checkedSpan(probed)).not.toBeNull();
-      expect(block.classifyPostamble(`\n<<^ code="${PROBE_EOT}" -> to="?">>\n`).kind).toBe("empty");
+  test("★ the span reader frames a probed span and the slot reader strips a probed EOT ★", async () => {
+    await withProbes(({ frame }) => {
+      expect(frame.frameStanding(probed).kind).toBe("framed");
+      expect(frame.checkSpan(probed)).not.toBeNull();
+      expect(frame.classifyPostamble(`\n<<^ code="${PROBE_EOT}" -> to="?">>\n`).kind).toBe("empty");
     });
   });
 
@@ -471,11 +468,11 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   // CONTROL — the walk measures the PROBE, never the canonical marks. Every reading above must also
   // hold over the declaration as it stands, or a green probe would prove only that the walk is loose.
   test("CONTROL — every reader answers the same over the CANONICAL marks", async () => {
-    await withProbes(({ shape, check, block, markdown, stream, deser }) => {
+    await withProbes(({ shape, frame, markdown, stream, deser }) => {
       const m = shape.readCarrierShape(canon).marks;
       expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: true, etx: true, eot: true });
-      expect(check.frameStanding(canon).kind).toBe("framed");
-      expect(block.checkedSpan(canon)).not.toBeNull();
+      expect(frame.frameStanding(canon).kind).toBe("framed");
+      expect(frame.checkSpan(canon)).not.toBeNull();
       expect(markdown.transposeMarkdown(canon).check).toBe("ni:///sha-256;probe");
       expect(new stream.MemeStreamParser().push(canon).map((e) => e.kind)).toContain("carrier-close");
       const text = String(deser.memeticWikitextDeserializer(canon, { title: "canon" })[0]?.["text"] ?? "");
@@ -486,11 +483,11 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   // CONTROL — a code the declaration never stands reaches no reader. Without this the probe tests
   // would pass over a scan that matched ANY four-hex entity, which honors neither half of the ruling.
   test("CONTROL — an UNDECLARED code frames nothing", async () => {
-    await withProbes(({ shape, check }) => {
+    await withProbes(({ shape, frame }) => {
       const stranger = carrier("&#x0001;", "&#x0099;", "&#x009a;", "&#x009b;");
       const m = shape.readCarrierShape(stranger).marks;
       expect({ stx: m.stx, etx: m.etx, eot: m.eot }).toEqual({ stx: false, etx: false, eot: false });
-      expect(check.frameStanding(stranger).kind).toBe("absent");
+      expect(frame.frameStanding(stranger).kind).toBe("absent");
     });
   });
 
@@ -501,9 +498,10 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   // hand-written rows carry ONE code each by the ruling that keeps it independent (scanner.ts).
   test("★ no module spells a MULTI-CODE alternation of frame entities ★", () => {
     const srcRoot = fileURLToPath(new URL("../src", import.meta.url));
-    // `frame-marks.ts` IS the declaration; the generated plugin tiddler is a build product. Every
-    // other module in this tree reads its code set from `frameAlt` — the set has no exemptions left.
-    const exempt = new Set(["frame-marks.ts", "plugin-tiddler.generated.ts"]);
+    // The frame package's `marks.ts` IS the declaration; the generated plugin tiddler is a build
+    // product. Every other module in this tree reads its code set from `frameAlt` — the set has no
+    // exemptions left.
+    const exempt = new Set(["plugin-tiddler.generated.ts"]);
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
         const full = join(dir, e.name);

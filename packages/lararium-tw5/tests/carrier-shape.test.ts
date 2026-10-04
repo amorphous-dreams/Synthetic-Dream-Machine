@@ -22,8 +22,8 @@ import { readCarrierShape } from "../src/carrier-shape.js";
 // this package holds (vm-grammar-boundary.test.ts). The walk below shares the mask with the reader
 // it measures on purpose: a lesson that quotes a frame writes no frame on either side of the
 // comparison, and the CODE SET is the one thing being held apart.
-import { fencedSpans, maskedExecAll } from "../src/deserializer.js";
-import { frameMark } from "../src/frame-marks.js";
+import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
+import { frameMark } from "@lararium/memetic-frame";
 import { carrierFiles } from "../src/carrier-files.js";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { REPO } from "./test-wiki.js";

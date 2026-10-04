@@ -31,7 +31,22 @@ module-type: tiddlerdeserializer
 
 import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
 import { MemeStreamParser } from "./meme-stream.js";
-import { carrierHeadLinePattern } from "./carrier-head.js";
+import {
+  carrierHeadLinePattern,
+  fencedSpans,
+  inMask,
+  maskedExec,
+  maskedExecAll,
+  META_OPEN_RE,
+  PLAIN_OPEN_RE,
+  FRAME_MARKS,
+  frameAlt,
+  frameHex,
+  classifyPostamble,
+  verifyBcc,
+  readFrame,
+  frameCarrier,
+} from "@lararium/memetic-frame";
 import { renderMetaTomlLine } from "./meme-normalize.js";
 import { lendHostGlobals } from "./host-globals-lend.js";
 import type { MemeStreamEvent } from "./meme-stream.js";
@@ -39,22 +54,16 @@ import {
   findTopLevelAhuBlocks,
   composeSlotPath,
 } from "./meme-ast/ahu-scan.js";
-import { fencedSpans, inMask, maskedExec, maskedExecAll } from "./meme-ast/fence-mask.js";
-import { META_OPEN_RE, PLAIN_OPEN_RE } from "./meta-fence.js";
-import { frameMark, FRAME_MARKS, frameAlt, frameHex } from "./frame-marks.js";
 
 /** name -> code, so the emitter names a mark rather than spelling its entity. */
 const FRAME_BY_NAME: Record<string, string> =
   Object.fromEntries(FRAME_MARKS.map((m) => [m.name, m.code]));
 
-// ── THE CODE SETS COME FROM THE DECLARATION; EACH SCAN KEEPS ITS OWN SHAPE (frame-marks.ts) ───────
-// Three shapes stand here and they differ for reasons this file's own comments record: the SOH
-// PREFIX stops at `&` so a namespace written as entities is never read AS the code; the DECORATED
-// form admits namespace glyphs and a `code=` binding alike; the LINE form refuses a sigil that
-// crosses a newline, because the multi-line read once swallowed text to a distant real sigil. Only
-// the entity alternation travels between them.
-const INNER   = "(?:[^>\\n]|>(?!>))*";
-const DECOR   = "(?:\\s*\\S+)?\\s*";
+// ── THE CODE SETS COME FROM THE DECLARATION; THE HEAD SCANS STAY THIS READER'S OWN (marks.ts) ───────
+// The STX/ETX/EOT division is the one span reader's (`readFrame`). What stays here reads the HEAD, and
+// its shapes differ for reasons this file's comments record: the SOH PREFIX stops at `&` so a namespace
+// written as entities is never read AS the code, and the bare form's class stops at a binding mark.
+// Only the entity alternation travels between them.
 /** `<<^` then anything but an entity, then a SOH code — the prefix that stops at `&`. */
 const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
 /** The SOH variant a head names through its `code=` binding, captured. */
@@ -64,26 +73,13 @@ const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex
  * is the whole guard: a namespace is glyphs, and a glyph is never a mark that binds.
  */
 const SOH_BARE_RE = new RegExp(`^<<\\^([^&:=\\n]*)&#x(${frameHex("SOH")})`);
-const ETX_DECOR_SRC = `<<\\^${DECOR}${frameAlt("ETX")}`;
-const EOT_DECOR_SRC = `<<\\^${DECOR}${frameAlt("EOT")}`;
-const ETX_LEADING_SRC = `\\n?<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`;
-const EOT_LEADING_SRC = `\\n?<<\\^${INNER}${frameAlt("EOT")}${INNER}>>`;
 /** The ETX entity ALONE — the fence-swallow diagnostic asks only whether a closer stands at all. */
 const ETX_ENTITY_SRC = frameAlt("ETX");
-// The fence-mask law surfaces through the shore: consumers (tests, the
-// projector layer) read quoted-sigil semantics from HERE, never from
-// meme-ast internals (vm-grammar-boundary law).
-export { fencedSpans, inMask, maskedExec, maskedExecAll } from "./meme-ast/fence-mask.js";
 import { parseTaploFields } from "./toml-ast.js";
 import { shoreDiagnostic } from "./meme-ast/diagnostics.js";
-import { classifyPostamble } from "./block-check.js";
-import { bccOfSpan, verifyBcc } from "./carrier-check.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
 
-/** The one declaration a carrier opens on: this grammar, at the address that specifies it. */
-const DECLARATION =
-  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
 import { parseMemeText } from "./meme-ast/parse.js";
@@ -164,37 +160,25 @@ export function memeticWikitextDeserializer(
   // one frame position instead of copying it onto every record of a carrier.
   const prologueRaw = (closes.length > 0 && sohIdx > 0) ? text.slice(0, sohIdx) : "";
   const prologue = prologueRaw.replace(/^<<!DOCTYPE[^>\n]*>>\n?\n?/m, "");
-  // ETX/EOT closer end: walk to find the last close-sentinel and use the
-  // position right after its `>>`. Rather than craft a finicky regex for
-  // the closing `>>` (which needs to skip past the embedded `;` and any
-  // whitespace), search for the SOH-shape match position then walk
-  // forward to the next `>>`.
-  // ETX AND EOT ARE DIFFERENT GLYPHS AND MUST BE SCANNED APART. One pattern for `&#x000[34]` takes
-  // the LAST match, which is the EOT — so `lastEtxEnd` landed past the end of transmission and the
-  // slot between ETX and EOT was never looked at. Content stranded there stayed inside the meme text
-  // and disappeared in the render, silently: that is how two `#edges` blocks were lost.
-  const closeEnd = (m: { index: number; 0: string }): number => {
-    const idx = text.indexOf(">>", m.index + m[0].length);
-    return idx >= 0 ? idx + 2 : -1;
-  };
-  let lastEtxEnd = -1;
-  for (const etxMatch of maskedExecAll(text, new RegExp(ETX_DECOR_SRC, "g"))) {
-    const end = closeEnd(etxMatch);
-    if (end >= 0) lastEtxEnd = end;
-  }
-  let eotStart = -1;
-  for (const eotMatch of maskedExecAll(text, new RegExp(EOT_DECOR_SRC, "g"))) {
-    if (lastEtxEnd >= 0 && eotMatch.index >= lastEtxEnd) { eotStart = eotMatch.index; break; }
-  }
+  // THE CLOSE IS THE ONE SPAN READER'S (`readFrame`), the same reader the block check and the gradient
+  // divide by. The LAST carrier owns the file's tail, so the reader runs over that carrier's own region:
+  // the ETX that closes its text, then the first release past it.
+  //
+  // ETX AND EOT ARE DIFFERENT GLYPHS AND STAY APART. The slot between them carries the block check and
+  // nothing else; content stranded there stays legible to the classifier below instead of vanishing in
+  // the render — which is how two `#edges` blocks were once lost. A second live ETX inside the frame
+  // lands in that slot too: the text closed at the first, so what follows is not body, and it NAKs.
+  const lastSoh = maskedExecAll(text, new RegExp(SOH_PREFIX_RE.source, "g")).at(-1);
+  const tailFrom = lastSoh ? lastSoh.index : 0;
+  const tail = readFrame(text.slice(tailFrom));
+  const closeEnd = tail.etx ? tailFrom + tail.etx.end : -1;
+  const release = tail.etx && tail.eot ? tail.eot : null;
   // THE SLOT: what the carrier wrote between end-of-text and end-of-transmission.
-  const slotText = (lastEtxEnd >= 0 && eotStart > lastEtxEnd) ? text.slice(lastEtxEnd, eotStart) : "";
+  const slotText = closeEnd >= 0 && release ? text.slice(closeEnd, tailFrom + release.index) : "";
   // Past EOT there stands only the frame's own trailing newline; that tail reads to end of text.
-  if (eotStart >= 0) {
-    const eotEnd = text.indexOf(">>", eotStart);
-    if (eotEnd >= 0) lastEtxEnd = eotEnd + 2;
-  }
-  const postamble = (closes.length > 0 && lastEtxEnd >= 0 && lastEtxEnd < text.length)
-    ? text.slice(lastEtxEnd)
+  const frameEnd = release ? tailFrom + release.end : closeEnd;
+  const postamble = (closes.length > 0 && frameEnd >= 0 && frameEnd < text.length)
+    ? text.slice(frameEnd)
     : "";
   for (const ev of closes) {
     const uri      = ev.uri || baseUri;
@@ -241,7 +225,7 @@ export function memeticWikitextDeserializer(
     // worksite spelling, and recomposition returns that surface.
     // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else.
     //
-    // ETX ends the text; the slot after it carries the block check, never payload (block-check.ts
+    // ETX ends the text; the slot after it carries the block check, never payload (@lararium/memetic-frame check.ts
     // holds the why). A carrier that wrote prose there lost it: the render never reproduced it, and
     // nothing said so. Two `#edges` blocks vanished that way before anyone diffed a round-trip.
     //
@@ -324,12 +308,10 @@ function safeSplitMeme(uri: string, text: string, fields: TiddlerFields): Tiddle
 // Child tiddlers: one per non-control ahu slot; text = slot body proper.
 // ---------------------------------------------------------------------------
 
-// Structural marker patterns — strip these from parent text at ingest.
-// Control sigils live on ONE line by law — `[^>\n]` keeps the scan from
-// crossing lines (a greedy multi-line match once swallowed from a quoted
-// `<<~` mention down to the real closer; found on loci.md).
+// The head line, stripped at ingest. Control sigils live on ONE line by law — the shore's line pattern
+// never crosses one (a greedy multi-line match once swallowed from a quoted `<<~` mention down to the
+// real closer; found on loci.md).
 const SOH_LINE_RE = carrierHeadLinePattern();
-const STX_LINE_RE = new RegExp(`<<\\^${INNER}${frameAlt("STX")}${INNER}>>\\n?`);
 
 function stripLeadingNewlines(text: string): string {
   return text.replace(/^\n+/, "");
@@ -374,28 +356,25 @@ function splitMemeToTiddlers(
   // never frames the carrier — before the mask, a fenced ETX mention
   // truncated everything after it (real corpus loss).
   const noSoh = text.replace(SOH_LINE_RE, "");   // anchored at 0 — never fenced
-  // THE LAST CLOSE CLOSES; AN EARLIER ONE BELONGS TO AN EMBEDDED EXAMPLE. Documents that TEACH the
-  // frame carry example marks in their prose — `meme/SKILL` holds two ETX and three EOT — and cutting
-  // at the first truncated a body mid-document. `checkedSpan` already walks to the last ETX for the
-  // same reason on the same corpus; this walk enacts the same rule inside splitMemeToTiddlers.
+  // THE ONE SPAN READER DIVIDES THE CARRIER (`readFrame`): the first live STX opens the text, the first
+  // live ETX after it closes it, and a quoted mark — a teaching example in a fence — frames nothing.
+  // The same rule the block check verifies by, so the body this split reads is the body the check
+  // covers, byte for byte.
   //
   // A carrier that frames no body still closes its transmission, so where no ETX stands the body ends
-  // at the last EOT — otherwise the author's own close rides inside the body and the projection mints
-  // a second one below it.
-  let etxM: { index: number } | null = null;
-  for (const m of maskedExecAll(noSoh, new RegExp(ETX_LEADING_SRC, "g"))) etxM = m;
-  let eotM: { index: number } | null = null;
-  if (!etxM) {
-    for (const m of maskedExecAll(noSoh, new RegExp(EOT_LEADING_SRC, "g"))) eotM = m;
-  }
-  const stripped = etxM ? noSoh.slice(0, etxM.index) : (eotM ? noSoh.slice(0, eotM.index) : noSoh);
+  // at the release — otherwise the author's own close rides inside the body and the projection mints
+  // a second one below it. The newline ahead of a closing mark is the frame's padding, never body.
+  const frame = readFrame(noSoh);
+  const closeMark = frame.etx ?? frame.eot;
+  const closeAt = closeMark ? closeMark.index - (noSoh[closeMark.index - 1] === "\n" ? 1 : 0) : -1;
+  const stripped = closeMark ? noSoh.slice(0, closeAt) : noSoh;
   // Degraded-carrier surfacing: a closer swallowed by an UNCLOSED fence
   // tail would ride into the body as CONTENT — and every render would
   // append a fresh closer pair, doubling without bound. This shows up
   // on fence-teaching docs CommonMark itself misread. A closer
   // inside a properly CLOSED fence reads as deliberate quotation — benign,
   // no warning (the render adds the structural close lawfully).
-  if (!etxM && new RegExp(ETX_ENTITY_SRC).test(noSoh)) {
+  if (!frame.etx && new RegExp(ETX_ENTITY_SRC).test(noSoh)) {
     const spans = fencedSpans(noSoh);
     const openTail = spans.length > 0 && spans[spans.length - 1]!.end === noSoh.length
       ? spans[spans.length - 1]! : null;
@@ -415,7 +394,11 @@ function splitMemeToTiddlers(
     }
   }
 
-  const stxM = maskedExec(stripped, STX_LINE_RE);
+  // The STX the reader found, with the newline the frame pads it with — or none, where the text has no
+  // bound (or the only STX stands past the close, which bounds nothing).
+  const stxM = frame.stx && frame.stx.index < stripped.length
+    ? { index: frame.stx.index, length: frame.stx.end - frame.stx.index + (noSoh[frame.stx.end] === "\n" ? 1 : 0) }
+    : null;
   // A fully BARE doc (no SOH, no STX — the no-carrier fallback) reads as ALL BODY:
   // its content belongs between the minted &#x0002;/&#x0003; markers on recompose
   // (the header-routed wrap left the body slot empty
@@ -454,7 +437,7 @@ function splitMemeToTiddlers(
   // with those template-emitted margins.
   const bodyRegion   = stripLeadingNewlines(
     stxM
-      ? stripped.slice(stxM.index + stxM[0].length)
+      ? stripped.slice(stxM.index + stxM.length)
       : (authoredHead ? stripped.slice(authoredHead.end) : (bare ? stripped : "")),
   );
 
@@ -1093,68 +1076,31 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
 
   const str = (k: string): string => (typeof f[k] === "string" ? (f[k] as string) : "");
   const meta = emitMetaToml(f, META_DENY);
-  // The emitter reads the shared table rather than spelling the entities inline: a mark that leaves
-  // the grammar leaves here too, instead of surviving as a literal no reader still scans for.
-  const MARK = (name: string): string => frameMark(FRAME_BY_NAME[name]!)!.code;
-  const sohCode = f["$carrier-soh"] === "0011" ? MARK("SOH2") : MARK("SOH");
-  // THE ENDS TAKE NAMES; THE ARROW KEEPS ITS SHAPE. `from="?" -> to="uri"` reads "this carrier
-  // resolves toward that address", the spelling `pranala` and `lares aim` already write. The ARROW
-  // stays an unnamed positional — that is what carries the relation, and quoting reaches only the two
-  // values it stands between, so a bearing never demotes to a field.
-  //
-  // THE VALUES QUOTE, so TiddlyWiki's own parser types every control sigil without a special case and
-  // this tree consumes that parse tree rather than re-deriving it. A hand-rolled reader that binds the
-  // bare form alone stops matching every head the moment the corpus takes quotes.
-  const ns = str("namespace").trim();
 
-  let out = carriageText(reader, memeUri, "prologue");
-  // THE DECLARATION IS THE CARRIER'S BUSINESS, exactly as the frame is. An author writes content and
-  // identity; which grammar reads the result is not a question they should have to answer, and a
-  // carrier that never carried a declaration would otherwise never gain one — the projection would
-  // mint SOH through EOT and leave the one line that selects the grammar to chance.
-  //
-  // MINTED UNCONDITIONALLY. The frame owns this line, so the parse no longer stores a copy of it and
-  // nothing here has to check whether one stands — a suppression check and the field it guarded, gone
-  // together. What the author wrote ABOVE the declaration still rides in `prologue` and emits first.
-  out += `${DECLARATION}\n\n`;
-  out += `<<^ code="${sohCode}"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${memeUri}">>\n`;
-  // THE SPAN OPENS HERE. Root metadata and authored content travel inside the document body; the root
-  // follows the same metadata/body pattern as an ahu/fragment worksite, and the BCC seals parent fields.
-  const spanStart = out.length;
-  out += `<<^ code="${MARK("STX")}">>\n\n`;
-  if (meta) out += "```toml meta\n" + meta + "```\n\n";
-  // Root carriage content joins the body before the root text, keeping every authored byte within
-  // the STX–ETX span.
+  // THE BODY IS THIS READER'S; THE FRAME IS THE FRAME WRITER'S. Root metadata, carried root content
+  // and the root text travel inside STX..ETX — the root follows the same metadata/body pattern as an
+  // ahu/fragment worksite, so the check seals parent fields along with the prose.
   const carriedRootContent = [
     carriageText(reader, memeUri, "preamble"),
     expandRefs(reader, memeUri, "", carriageText(reader, memeUri, "header-text"), f),
   ].filter((s) => s.trim() !== "").join("\n\n");
-  if (carriedRootContent) out += carriedRootContent + "\n\n";
-  out += expandRefs(reader, memeUri, "", String(f.text ?? ""), f);
-  // ETX takes its block check adjacent, per the received framing (STX -> text -> ETX -> BCC); the
-  // attestation block follows and ETB terminates it.
-  //
-  // COMPUTED HERE, NEVER READ FROM A FIELD. A stored check goes stale the moment the bytes move, and
-  // the span carries the frame sigils' OWN bytes — so a frame migration would turn every stored check
-  // into a `mismatch` over a body nobody touched.
-  //
-  // MINTED UNCONDITIONALLY, on the DECLARATION's precedent. The frame owns this slot, so the parse
-  // stores no copy and nothing here asks whether one stood — a presence flag and the field it guarded,
-  // gone together. That flag was the last thing keeping a machine-derived fact on the operator's
-  // record, and a carrier that arrived unchecked gains its check on the first projection rather than
-  // staying unchecked because it always had been.
-  const sila = str("$carrier-sila");
-  out += `\n\n<<^ code="${MARK("ETX")}">>`;
-  out += bccOfSpan(out.slice(spanStart));
-  out += "\n";
-  if (sila) out += `\n${sila}\n<<^ code="${MARK("ETB")}">>\n`;
-  out += `\n<<^ code="${MARK("EOT")}" -> to="?">>\n`;
-  // The EOT→postamble shore normalizes to a stable fixed point: the EOT line
-  // already ends with one newline; a postamble's own leading newlines would
-  // stack a fresh blank line every round trip (found on the Kapu &#x0014;
-  // trailing closer).
-  out += stripLeadingNewlines(carriageText(reader, memeUri, "postamble"));
-  return out;
+  const body =
+    (meta ? "```toml meta\n" + meta + "```\n\n" : "")
+    + (carriedRootContent ? carriedRootContent + "\n\n" : "")
+    + expandRefs(reader, memeUri, "", String(f.text ?? ""), f);
+
+  // Everything the frame carries is MINTED, never read back from a field: the declaration (a carrier
+  // that never carried one gains it on its first projection), the head (both bearing ends quoted, so
+  // TiddlyWiki's own parser types it), and the check (computed over the span just framed — a stored
+  // check goes stale the moment the bytes move). What the author wrote above the declaration and past
+  // the release rides its own carriage record and lands in its position.
+  return frameCarrier({
+    head: { uri: memeUri, namespace: str("namespace"), kapu: f["$carrier-soh"] === "0011" },
+    body,
+    prologue: carriageText(reader, memeUri, "prologue"),
+    attestation: str("$carrier-sila"),
+    postamble: carriageText(reader, memeUri, "postamble"),
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1173,6 +1119,16 @@ export function deserializeCarrier(
 ): { records: TiddlerFields[]; diagnostics: MemeDiagnostic[] } {
   const records = memeticWikitextDeserializer(text, fields);
   const diagnostics: MemeDiagnostic[] = [];
+  // A MALFORMED FRAME IS NAMED, NEVER RESOLVED. The span reader closed the text at the canon's ETX and
+  // names every mark it had to pass over; the gate hears each as an error. A second STX is left to the
+  // gradient — a stream of several carriers stands several by design.
+  for (const fault of readFrame(text).faults) {
+    if (fault.kind === "second-stx") continue;
+    diagnostics.push({
+      from: 0, to: text.length, severity: "error", source: "memetic-wikitext",
+      code: "frame-malformed", message: fault.message,
+    });
+  }
   const bcc = verifyBcc(text);
   if (bcc === "mismatch") {
     diagnostics.push({

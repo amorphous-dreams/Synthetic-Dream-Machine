@@ -29,6 +29,7 @@
     "@automerge/automerge-repo-storage-nodefs": "2.6.0-alpha.3",
     "@automerge/automerge-subduction": "0.16.1",
     "@lararium/keyhive": "workspace:*",
+    "@lararium/memetic-frame": "workspace:*",
     "@lararium/mempalace": "workspace:*",
     "@lararium/mesh": "workspace:*",
     "@lararium/sensorium": "workspace:*",

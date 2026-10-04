@@ -13,7 +13,7 @@
  * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/ahu-scan
  */
 
-import { fencedSpans, maskedExecAll } from "./fence-mask.js";
+import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
 
 /**
  * Slot identifier — supports nested fragment paths via `/`-separated

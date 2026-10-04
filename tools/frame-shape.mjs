@@ -15,24 +15,18 @@ import { readCarrier, vanishedNote } from "./corpus-read.mjs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
-import { maskedExecAll } from "../packages/lararium-tw5/dist/deserializer.js";
 import { execSync } from "child_process";
 
 // THE SHORE ANSWERS FOR THE FRAMING ENDS. This gate held its own spelling of that question and read
 // 1395 torn frames the day the corpus quoted its control values — the corpus had not moved.
-const SHORE = join(dirname(fileURLToPath(import.meta.url)), "../packages/lararium-tw5/dist/carrier-head.js");
+// The head reader, the marks and the fence mask are the FRAME PACKAGE — one built shore for all three.
+const SHORE = join(dirname(fileURLToPath(import.meta.url)), "../packages/lararium-memetic-frame/dist/index.js");
 if (!existsSync(SHORE)) {
-  console.error(`[frame-shape] no built shore at ${SHORE}\n  cure: pnpm --filter @lararium/tw5 build`);
+  console.error(`[frame-shape] no built shore at ${SHORE}\n  cure: pnpm --filter @lararium/memetic-frame build`);
   process.exit(2);
 }
-const { carrierHeadPattern, carrierReleasePattern } = await import(SHORE);
+const { carrierHeadPattern, carrierReleasePattern, FRAME_MARKS, frameAlt, maskedExecAll } = await import(SHORE);
 
-const FRAME_MARKS_SHORE = join(dirname(fileURLToPath(import.meta.url)), "../packages/lararium-tw5/dist/frame-marks.js");
-if (!existsSync(FRAME_MARKS_SHORE)) {
-  console.error(`[frame-shape] no built shore at ${FRAME_MARKS_SHORE}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { FRAME_MARKS, frameAlt } = await import(FRAME_MARKS_SHORE);
 
 const REPO = process.env["REPO"] ?? process.cwd();
 // THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
@@ -44,10 +38,10 @@ if (!existsSync(DIST_CARRIERS)) {
 }
 const { carrierFiles } = await import(DIST_CARRIERS);
 
-// The CODE + NAME set — frame-marks.ts's own declaration, never a second hand-kept copy.
+// The CODE + NAME set — the frame package's own declaration, never a second hand-kept copy.
 const MARKS = FRAME_MARKS.map((m) => [m.code, m.name]);
 
-// Interpolated ONCE, at module scope (frame-marks.ts's own guidance — these run on hot parse paths).
+// Interpolated ONCE, at module scope (the declaration's own guidance — these run on hot parse paths).
 const SOH_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("SOH")}[^\\n]*$`, "gm");
 const EOT_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("EOT")}[^\\n]*$`, "gm");
 const ETX_OR_EOT_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("ETX", "EOT")}[^\\n]*$`, "gm");

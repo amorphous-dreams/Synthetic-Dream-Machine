@@ -33,8 +33,7 @@ import type { TiddlerFields } from "./deserializer.js";
 import { expandMemeRefs } from "./deserializer.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 
-import { carrierMarkPattern, headUriOf } from "./carrier-head.js";
-import { maskedExec } from "./meme-ast/fence-mask.js";
+import { carrierMarkPattern, headUriOf, maskedExec } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { sha256HexSync } from "@lararium/mesh/crypto";
 import { tagDigest } from "@lararium/mesh/agile-digest";

@@ -18,7 +18,7 @@
  * `=` and `:` both appear in this corpus. A reader binding one meets carriers written in the other.
  */
 
-import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
+import { fencedSpans, inMask } from "@lararium/memetic-frame";
 
 /**
  * What a parameter's value carries beyond its text — the kinds TiddlyWiki itself assigns.

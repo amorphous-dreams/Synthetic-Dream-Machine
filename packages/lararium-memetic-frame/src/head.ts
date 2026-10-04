@@ -30,11 +30,11 @@
  * ── AND WHAT THIS DOES NOT COLLAPSE ──────────────────────────────────────────────────────────────
  * Three layers, and only the middle one is new:
  *
- *   · the CODES collapse, in frame-marks.ts — one fact, and a mark either stands in this grammar or
+ *   · the CODES collapse, in marks.ts — one fact, and a mark either stands in this grammar or
  *     it does not. This module derives its code sets from there rather than restating them.
  *   · the BEARING READ collapses, here — nine readers asked one question in nine identical spellings
  *     and eight broke in the same minute.
- *   · the frame SCANS DO NOT collapse, by standing ruling (frame-marks.ts). The stream framer refuses
+ *   · the frame SCANS DO NOT collapse, by standing ruling (marks.ts). The stream framer refuses
  *     a line-crossing sigil because the multi-line form once swallowed text to a distant real sigil;
  *     the bootstrap scanner takes the wider read deliberately, running before grammar loads; the
  *     deserializer's prefix stops at a binding mark. Those differences are SCARRED, not accidental.
@@ -45,11 +45,11 @@
  */
 
 /**
- * The framing codes come from frame-marks — ONE fact, declared once. Restating them here would let a
+ * The framing codes come from marks.ts — ONE fact, declared once. Restating them here would let a
  * mark added there read correct in every file while this one quietly dropped it.
  */
-import { frameHex } from "./frame-marks.js";
-import { maskedExec } from "./meme-ast/fence-mask.js";
+import { frameHex } from "./marks.js";
+import { maskedExec } from "./fence-mask.js";
 
 const SOH_CODES = `(?:${frameHex("SOH")})`;
 const EOT_CODES = `(?:${frameHex("EOT")})`;

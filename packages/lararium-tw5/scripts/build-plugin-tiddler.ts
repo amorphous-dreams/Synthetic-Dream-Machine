@@ -20,13 +20,13 @@
  */
 
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexSync } from "@lararium/mesh";
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, cpSync, copyFileSync } from "fs";
 import { spawnSync } from "child_process";
 import { tmpdir } from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
-import { MODULE_MANIFEST, PLUGIN_ENTRIES, SOURCE_MANIFEST, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "../vite.plugin.config.js";
+import { MODULE_MANIFEST, SOURCE_MANIFEST, TIDDLERS_DIR } from "../vite.plugin.config.js";
 import { readModuleManifest, type ModuleManifest } from "../plugin-build/module-manifest.js";
 import {
   buildPluginSourceManifest,
@@ -50,10 +50,6 @@ const ROOT       = path.resolve(__dirname, "..");
 const REPO_ROOT  = path.resolve(ROOT, "../..");
 const OUT_DIR    = path.join(ROOT, "dist-plugin");
 const PLUGIN_DIR = path.join(ROOT, "plugins");
-// THE CORPUS SITS UNDER ITS NAMESPACE, not directly under the bag. A bag holds
-// `ha.ka.ba/<namespace>/…`, so `bags/lararium/tw5` names a directory that has never stood —
-// the marker retirement made that visible without causing it.
-const BAG_ROOT   = path.join(REPO_ROOT, "bags", "lararium", "ha.ka.ba", "lararium", "tw5");
 
 const PLUGIN_TITLE_LAR = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
@@ -62,39 +58,8 @@ const PLUGIN_TITLE_TW5 = "$:/plugins/lares/memetic-wikitext";
 // to the workspace link, no .pnpm path guessing. tiddlywiki.js carries a `#!/usr/bin/env node` shebang.
 const TW5_BIN = createRequire(import.meta.url).resolve("tiddlywiki/tiddlywiki.js");
 
-const SHA_FIELD_RE  = /^body-sha256\s*=\s*"[^"]*"/m;
-const TOML_BLOCK_RE = /(```toml[\s\S]*?```)/;
-
 /** sha256 — local alias to sha256HexSync from @lararium/mesh (build-time only). */
 const sha256 = sha256HexSync;
-
-function patchSha256(meme: string, digest: string): string {
-  const tomlM = TOML_BLOCK_RE.exec(meme);
-  if (!tomlM) throw new Error("root toml meta block not found");
-  const tomlOrig = tomlM[1]!;
-  const patched  = SHA_FIELD_RE.test(tomlOrig)
-    ? tomlOrig.replace(SHA_FIELD_RE, `body-sha256 = "${digest}"`)
-    : tomlOrig.replace(/(\n```)$/, `\nbody-sha256 = "${digest}"$1`);
-  return meme.replace(tomlOrig, patched);
-}
-
-function patchAnchorHashes(): void {
-  console.log("[plugin-build] patching anchor body-sha256 fields…");
-  let patched = 0;
-  for (const entry of PLUGIN_ENTRIES) {
-    if (!entry.anchor) continue;
-    const jsPath = path.join(ROOT, TIDDLER_SRC_DIR, `${entry.name}.js`);
-    const anchorPath = path.join(BAG_ROOT, entry.anchor);
-    if (!existsSync(jsPath) || !existsSync(anchorPath)) continue;
-    const cjs = readFileSync(jsPath, "utf8").trimEnd();
-    const digest = sha256(cjs);
-    const next = patchSha256(readFileSync(anchorPath, "utf8"), digest);
-    writeFileSync(anchorPath, next, "utf8");
-    patched++;
-    console.log(`  ${entry.anchor}  body-sha256=${digest.slice(0, 16)}…`);
-  }
-  console.log(`[plugin-build] patched ${patched} anchor hashes`);
-}
 
 function parsePackedTiddlers(pluginTiddler: Record<string, unknown>): Record<string, Record<string, unknown>> {
   const innerParsed = JSON.parse(pluginTiddler["text"] as string) as {
@@ -169,10 +134,7 @@ async function main(): Promise<void> {
   );
   const sourceManifest = readPluginSourceManifest(sourceManifestPath);
 
-  // 2. Patch anchor hashes from generated JS bodies.
-  patchAnchorHashes();
-
-  // 3. Pack via TW5 CLI.
+  // 2. Pack via TW5 CLI.
   //    Run TW5 from a temp dir so any side-effect writes go there, not into our
   //    source tree. ++ with an absolute path loads tiddlers/ as a plugin folder.
   console.log("[plugin-build] packing plugin via TW5 CLI…");
@@ -243,7 +205,7 @@ async function main(): Promise<void> {
   const innerParsed = JSON.parse(pluginTiddlerLar["text"] as string) as { tiddlers?: Record<string, unknown> };
   const tiddlerCount = Object.keys(innerParsed.tiddlers ?? {}).length;
 
-  // 4. Emit two title variants (lar:// canonical + $:// drag-and-drop).
+  // 3. Emit two title variants (lar:// canonical + $:// drag-and-drop).
   const pluginTiddlerTw5 = {
     ...pluginTiddlerLar,
     title: PLUGIN_TITLE_TW5,

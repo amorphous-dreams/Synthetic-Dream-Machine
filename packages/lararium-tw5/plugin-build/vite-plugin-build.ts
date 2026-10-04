@@ -47,6 +47,11 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
             // meme-laws carries every pure law over meme text ONCE; the deserializer, the placement,
             // the projections and the face require it by URI.
             if (id === "lararium-meme-laws") return true;
+            // THE FRAME PACKAGE ships ONCE as its own library tiddler (lib/memetic-frame) — the
+            // standalone plugin carries it exactly once, and every module requires it by URI. Only the
+            // library's own bundle inlines it (resolved to source by the alias below). The `/marks`
+            // subpath is the same package, so it rides the same tiddler.
+            if ((id === "@lararium/memetic-frame" || id === "@lararium/memetic-frame/marks") && mod.name !== "memetic-frame") return true;
             // weave ships ONCE; the face and the projection filter require it by URI.
             if (id === "lararium-weave") return true;
             // meme-project ships ONCE; the face, the filter and the exporter require it by URI.
@@ -61,7 +66,9 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
             exports: "named",
             generatedCode: { symbols: false },
             paths: (id: string) =>
-              id === "lararium-wiki-sense-fold"
+              id === "@lararium/memetic-frame" || id === "@lararium/memetic-frame/marks"
+                ? "lar:///ha.ka.ba/lararium/tw5/lib/memetic-frame"
+                : id === "lararium-wiki-sense-fold"
                 ? "lar:///ha.ka.ba/lararium/tw5/lib/wiki-sense-fold"
                 : id === "lararium-meme-ast"
                   ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-ast"
@@ -89,13 +96,13 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
           ...(mod.name !== "wiki-sense-fold"
             ? [{ find: /^(\.\.?\/)+wiki-sense-fold(\.js)?$/, replacement: "lararium-wiki-sense-fold" }]
             : []),
-          // meme-ast rides the same law: its runtime submodules (index/parse/fence-mask/ahu-scan)
-          // rewrite to ONE bare id in every module except meme-ast's own bundle — the five inlined
-          // copies collapse to require() of the one library tiddler. (types.js stays type-only and
-          // erases before resolution.)
+          // meme-ast rides the same law: its runtime submodules (index/parse/ahu-scan) rewrite to ONE
+          // bare id in every module except meme-ast's own bundle — the inlined copies collapse to
+          // require() of the one library tiddler. (types.js stays type-only and erases before
+          // resolution.)
           ...(mod.name !== "meme-ast"
             ? [{
-                find: /^(\.\.?\/)+meme-ast\/(index|parse|fence-mask|ahu-scan)(\.js)?$/,
+                find: /^(\.\.?\/)+meme-ast\/(index|parse|ahu-scan)(\.js)?$/,
                 replacement: "lararium-meme-ast",
               }]
             : []),
@@ -103,11 +110,12 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
           ...(mod.name !== "place-meme"
             ? [{ find: /^(\.\.?\/)+place-meme(\.js)?$/, replacement: "lararium-place-meme" }]
             : []),
-          // meme-laws rides the same law: the seven law modules it re-exports rewrite to ONE bare id
-          // in every module except the library's own bundle, which inlines them.
+          // meme-laws rides the same law: the law modules it re-exports rewrite to ONE bare id in
+          // every module except the library's own bundle, which inlines them. The list IS the
+          // library's re-export list — a module left off it would be inlined beside the library.
           ...(mod.name !== "meme-laws"
             ? [{
-                find: /^(\.\.?\/)+(meme-laws|meme-normalize|block-check|carrier-check|carrier-shape|carrier-edges|carrier-head|frame-marks)(\.js)?$/,
+                find: /^(\.\.?\/)+(meme-laws|meme-normalize|carrier-shape|carrier-edges|carrier-lifecycle)(\.js)?$/,
                 replacement: "lararium-meme-laws",
               }]
             : []),
@@ -119,6 +127,11 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
             : []),
           ...(mod.name !== "deserializer"
             ? [{ find: /^(\.\.?\/)+deserializer(\.js)?$/, replacement: "lararium-deserializer" }]
+            : []),
+          // The frame library's own bundle inlines the package from SOURCE, so a plugin build never
+          // packs a stale dist.
+          ...(mod.name === "memetic-frame"
+            ? [{ find: /^@lararium\/memetic-frame$/, replacement: path.resolve(ROOT, "../lararium-memetic-frame/src/index.ts") }]
             : []),
           {
             find: /^@lararium\/mesh\/(.+)$/,

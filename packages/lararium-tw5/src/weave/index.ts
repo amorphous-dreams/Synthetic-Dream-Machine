@@ -81,9 +81,14 @@ module-type: library
  * daemon's `meme-project` verb and `lares meme project --to md` all call {@link projectSubmission}.
  */
 
-import { matchCarrierHeadLine } from "../carrier-head.js";
-import { META_OPEN_LINE_RE } from "../meta-fence.js";
-import { frameAlt } from "../frame-marks.js";
+import {
+  matchCarrierHeadLine,
+  META_OPEN_LINE_RE,
+  frameAlt,
+  fenceLineOpen,
+  fenceLineClose,
+  bccOfSpan,
+} from "@lararium/memetic-frame";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "../meme-ast/grammar-table.generated.js";
 // Re-exported so a test of weave's OWN tongue-axis properties (round-trip, injectivity) reaches
 // the mirror/primary tables through this sanctioned surface rather than importing
@@ -91,12 +96,10 @@ import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "
 // reaching the compile-layer's internals as if THEY were the canonical grammar surface).
 export { GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE };
 import { parseTaploFields } from "../toml-ast.js";
-import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
 // Re-exported for the SAME reason as GENERATED_ALIAS_MAP/GENERATED_PRIMARY_WEAVE above — a test
 // walking a woven body's own fence structure (CENSUS LANE C) reads the canonical open/close rule
 // through this sanctioned surface rather than a hand-rolled `startsWith("\`\`\`")` re-derivation.
 export { fenceLineOpen, fenceLineClose };
-import { bccOfSpan } from "../carrier-check.js";
 
 /**
  * The word SET a line recognizer alternates on (lar:///sigil.grammar.lane)
@@ -195,12 +198,16 @@ export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629"
   },
 };
 
-/** Line-standing frame sigil (any control code), with whatever rides after the closer. */
-const FRAME_LINE = /^<<\^ code="&#x00[0-9A-Fa-f]{2};"(?:[^>\n]|>(?!>))*>>.*$/;
+/**
+ * Line-standing frame sigil (every mark the frame declares), with whatever rides after the closer.
+ * THE SET IS THE DECLARATION'S (`frameAlt()` names every mark): a hand-spelled `&#x00..;` read any C0
+ * entity as frame and would have dropped an authored line that merely quoted one.
+ */
+const FRAME_LINE = new RegExp(`^<<\\^ code="${frameAlt()}"(?:[^>\\n]|>(?!>))*>>.*$`);
 /**
  * The ETX closer with its adjacent check.
  *
- * THE CODE SET COMES FROM THE DECLARATION; THIS SHAPE STAYS THIS READER'S OWN (frame-marks.ts). The
+ * THE CODE SET COMES FROM THE DECLARATION; THIS SHAPE STAYS THIS READER'S OWN (@lararium/memetic-frame marks.ts). The
  * line-anchored canonical spelling is what a transpose meets, and the trailing capture takes the BCC
  * that rides the closer with nothing between.
  */
@@ -520,7 +527,7 @@ function citationFields(meta: Readonly<Record<string, unknown>>): Record<string,
 
 /**
  * The raw wikitext span of one ahu slot — open sigil through its MATCHING close sigil, inclusive.
- * The same convention the carrier's own block check already stands (carrier-check.ts: "the span
+ * The same convention the carrier's own block check already stands (@lararium/memetic-frame check.ts: "the span
  * runs from the first character of STX to the last character of ETX, inclusive"), held here at slot
  * granularity: the span covers the marks that bound the slot and never covers itself. Nesting-aware:
  * an ahu (or a mirror) opened INSIDE the target slot bumps depth, so the close that returns depth to

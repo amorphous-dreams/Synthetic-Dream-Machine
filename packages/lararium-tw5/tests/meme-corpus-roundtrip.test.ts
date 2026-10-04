@@ -20,14 +20,13 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { carrierHeadPattern } from "../src/carrier-head.js";
+import { carrierHeadPattern, maskedExecAll } from "@lararium/memetic-frame";
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { join } from "node:path";
 import {
   memeticWikitextDeserializer,
   expandMemeRefs,
-  maskedExecAll,
   type TiddlerFields,
 } from "../src/deserializer.js";
 

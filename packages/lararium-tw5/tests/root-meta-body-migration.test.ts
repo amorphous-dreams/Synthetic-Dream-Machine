@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
-import { bccOfSpan } from "../src/carrier-check.js";
-import { checkedSpan } from "../src/block-check.js";
+import { bccOfSpan, checkSpan } from "@lararium/memetic-frame";
 import { deserializeCarrier, expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
 
 const URI = "lar:///tests/root-meta-body";
@@ -41,8 +40,10 @@ describe("root metadata is authored body", () => {
   test("a root TOML byte mutation mismatches the BCC", () => {
     const map = records(readFileSync(FIXTURE, "utf8"));
     const rendered = expandMemeRefs(reader(map), URI)!;
-    const good = checkedSpan(rendered)!;
-    expect(rendered.slice(rendered.indexOf("ni:///"))).toContain(bccOfSpan(good, "⊙"));
+    const span = checkSpan(rendered)!;
+    const good = rendered.slice(span.start, span.end);
+    // ADJACENT: the check follows the ETX sigil with nothing between.
+    expect(rendered.slice(span.end).startsWith(bccOfSpan(good))).toBe(true);
     const mutated = rendered.replace("root-authority", "root-mutated");
     const diagnostic = deserializeCarrier(mutated, { title: URI }).diagnostics;
     expect(diagnostic.some((d) => d.code === "block-check-mismatch")).toBe(true);

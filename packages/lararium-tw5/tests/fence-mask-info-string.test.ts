@@ -10,7 +10,7 @@
  * "fence" and every reader built on `fencedSpans`/`maskedExecAll` went blind to it.
  */
 import { describe, test, expect } from "vitest";
-import { fencedSpans, inMask } from "../src/meme-ast/fence-mask.js";
+import { fencedSpans, inMask } from "@lararium/memetic-frame";
 
 describe("fencedSpans — a backtick fence's info string carries no backtick", () => {
   test("RED→GREEN — a quad-backtick line whose info string carries a backtick opens NO fence", () => {

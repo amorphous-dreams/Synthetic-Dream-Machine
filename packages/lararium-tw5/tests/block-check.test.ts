@@ -7,8 +7,13 @@
  */
 import { describe, test, expect } from "vitest";
 import { deserializeCarrier } from "../src/deserializer.js";
-import { classifyPostamble, classifyPostEot, checkedSpan } from "../src/block-check.js";
-import { bccOfSpan } from "../src/carrier-check.js";
+import { classifyPostamble, classifyPostEot, checkSpan, bccOfSpan } from "@lararium/memetic-frame";
+
+/** The checked span's bytes, through the ONE span reader, or null where no frame closes. */
+const checkedSpan = (text: string): string | null => {
+  const span = checkSpan(text);
+  return span ? text.slice(span.start, span.end) : null;
+};
 
 const frame = (slot: string): string =>
   `<<^ code="&#x0001;" from=? -> to=lar:///t/x>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
@@ -19,7 +24,7 @@ const stranded = (text: string): string[] =>
     .filter((d) => d.code === "postamble-content").map((d) => d.severity);
 
 const digestOf = (text: string): string =>
-  bccOfSpan(checkedSpan(text) ?? "", "\u2299");
+  bccOfSpan(checkedSpan(text) ?? "");
 
 describe("★ content past ETX refuses instead of vanishing ★", () => {
   test("an empty slot is legal — the block check is OPTIONAL", () => {

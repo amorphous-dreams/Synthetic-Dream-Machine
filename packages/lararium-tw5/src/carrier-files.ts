@@ -32,8 +32,7 @@
  * every per-carrier law reads the whole of what this finder returns.
  */
 
-import { fencedSpans, maskedExec, type MaskSpan } from "./meme-ast/fence-mask.js";
-import { META_OPEN_RE } from "./meta-fence.js";
+import { fencedSpans, maskedExec, type MaskSpan, META_OPEN_RE } from "@lararium/memetic-frame";
 /**
  * The media type comes from the ONE place that spells it. A hand-spelled constant drifts the moment
  * the real one moves, and a `type` that no longer matches simply stops projecting — no throw, no
@@ -87,7 +86,7 @@ const DOCTYPE_RE = /<<!DOCTYPE\s+"?memetic-wikitext[^\n>]*>>/;
 const TID_TYPE_RE = new RegExp(String.raw`^\s*type\s*:\s*` + CARRIER_TYPE.replace("+", "\\+"), "m");
 /** The same fact as a toml key, inside the meta block. */
 const TOML_TYPE_RE = new RegExp(String.raw`^\s*type\s*=\s*"` + CARRIER_TYPE.replace("+", "\\+") + `"`, "m");
-/** The meta block's opener — the ONE spelling, from `meta-fence.ts`. A LABELLED fence carries slot
+/** The meta block's opener — the ONE spelling, from `@lararium/memetic-frame`. A LABELLED fence carries slot
  *  identity; a plain ```toml fence does not. The local spelling admitted `\s*` before the newline,
  *  which matches a newline itself: an opener followed by a blank line swallowed the blank into the
  *  match and every offset taken from it shifted by a line. `[ \t]*` cannot. */

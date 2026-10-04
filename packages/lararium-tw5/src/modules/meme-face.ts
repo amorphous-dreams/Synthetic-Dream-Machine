@@ -20,7 +20,8 @@ module-type: startup
  *   recompose(uri)            the whole carrier from its record group, synchronous; null under no root
  *   parse(uri, text, grammar?) the graded meme-ast over any text; absent a grammar, the wiki's own
  *
- * The laws come from the library tiddlers (`meme-laws`, `place-meme`, `meme-project`, `meme-ast`);
+ * The laws come from the library tiddlers (`memetic-frame`, `meme-laws`, `place-meme`, `meme-project`,
+ * `meme-ast`);
  * this module binds them to `$tw.wiki` and nothing more. The face names the ONE namespace a meme law
  * publishes under — no law stands flat on `$tw.lares`.
  */
@@ -28,7 +29,8 @@ module-type: startup
 import type { LaresMemeFace, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
 import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink } from "../place-meme.js";
-import { bccOf, headUriOf, normalizeMemeSource, readCarrierEdges, readCarrierShape, verifyBcc } from "../meme-laws.js";
+import { normalizeMemeSource, readCarrierEdges, readCarrierShape } from "../meme-laws.js";
+import { bccOf, headUriOf, verifyBcc } from "@lararium/memetic-frame";
 import { projectMeme, recomposeMeme } from "../meme-project.js";
 import { parseMemeText } from "../meme-ast/index.js";
 import { gradeOf } from "../meme-ast/diagnostics.js";

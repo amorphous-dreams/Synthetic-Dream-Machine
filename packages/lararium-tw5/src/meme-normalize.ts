@@ -25,6 +25,21 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-normalize
  */
 
+// THE FRAME IS ITS OWN PACKAGE, zero workspace dependencies — so this module stays bundleable into the
+// TW5 plugin (an import from the mesh would drag its automerge wasm into a bundle that cannot carry it).
+// The declaration a carrier opens with is the frame writer's own constant, never a second spelling.
+import {
+  CARRIER_DECLARATION as DECLARATION, fencedSpans, inMask, META_OPEN_RE, frameAlt, readFrame,
+} from "@lararium/memetic-frame";
+// GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
+// dependency-free-by-constraint file the same way the frame import above reasons about it.
+import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
+
+// THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS WRITER'S OWN (marks.ts).
+// The alternation groups NON-capturing, so the group numbering each rewrite below indexes survives.
+const SOH_ALT = frameAlt("SOH");
+const EOT_ALT = frameAlt("EOT");
+
 /**
  * The whole SOH opener, up to its closing `>>`, with the namespace param captured where one stands.
  *
@@ -32,31 +47,6 @@
  * splicing glyphs in front of a control entity. Matching the whole head lets one rebuild place the
  * namespace correctly whether the carrier states one, states a stale one, or states none at all.
  */
-/**
- * The declaration a carrier opens with.
- *
- * SPELLED HERE, not imported, and the constraint is structural rather than stylistic: this module gets
- * BUNDLED INTO THE TW5 PLUGIN, so an import from the mesh package would pull that package's automerge
- * wasm into a bundle that cannot carry it. The whole file stays dependency-free for that reason.
- *
- * `type-parity` holds the two spellings together — it reads every literal declaration in the tree
- * against the one authority, so this copy cannot drift without a witness saying so.
- */
-const DECLARATION =
-  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
-
-import { fencedSpans, inMask } from "./meme-ast/fence-mask.js";
-import { META_OPEN_RE } from "./meta-fence.js";
-import { frameAlt } from "./frame-marks.js";
-// GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
-// dependency-free-by-constraint file the same way the DECLARATION comment above reasons about it.
-import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
-
-// THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS WRITER'S OWN (frame-marks.ts).
-// The alternation groups NON-capturing, so the group numbering each rewrite below indexes survives.
-const SOH_ALT = frameAlt("SOH");
-const EOT_ALT = frameAlt("EOT");
-
 const SOH_OPENER_RE = new RegExp(
   `(<<\\^)[ \\t]*(?:code="(${SOH_ALT})"(?:[ \\t]+namespace="([^"]*)")?|([^&\\n]*?)(${SOH_ALT}))`);
 
@@ -65,11 +55,21 @@ function decodeEntities(s: string): string {
   return s.replace(/&#x([0-9a-fA-F]+);/g, (_m, hex: string) => String.fromCodePoint(parseInt(hex, 16)));
 }
 
-/** The toml meta fence body (between the ```toml meta fences), or null if absent.
+/** The ROOT toml meta fence (between the ```toml meta fences), or null if absent.
  *  THREE GROUPS, and callers index them: [1] opener, [2] body, [3] closer. The opener comes from the
- *  one spelling; the closer is this reader's own and stays as it stands. */
+ *  one spelling; the closer is this reader's own and stays as it stands.
+ *
+ *  THE ROOT META RIDES THE BODY. Where a frame opens, the search starts at STX (the one span reader
+ *  finds it); a carrier with no STX is all body and reads from the top. A carrier still in the
+ *  pre-body shape — its meta above STX — is exactly what a REPAIR gesture meets, so where the body
+ *  holds no meta the block above the frame answers instead. The match index stays absolute. */
 function metaFence(src: string): RegExpExecResult | null {
-  return new RegExp(`(${META_OPEN_RE.source})([\\s\\S]*?)(\\n\`\`\`)`).exec(src);
+  const re = new RegExp(`(${META_OPEN_RE.source})([\\s\\S]*?)(\\n\`\`\`)`, "g");
+  re.lastIndex = readFrame(src).stx?.end ?? 0;
+  const inBody = re.exec(src);
+  if (inBody) return inBody;
+  re.lastIndex = 0;
+  return re.exec(src);
 }
 type RegExpExecResult = RegExpExecArray;
 

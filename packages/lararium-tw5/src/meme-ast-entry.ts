@@ -37,15 +37,6 @@ export {
 // when a re-placement compares the slots the new text declares against the group it holds.
 export { collectAhuSlots } from "./meme-ast/ahu-scan.js";
 
-// the fence-mask law — the deserializer + meme-stream require these off the library in-VM
-// (the barrel keeps them internal; the LIBRARY surface carries them for its VM consumers).
-export {
-  fencedSpans,
-  inMask,
-  maskedExec,
-  maskedExecAll,
-} from "./meme-ast/fence-mask.js";
-
 export type {
   MemeAstNode,
   MemeNode,

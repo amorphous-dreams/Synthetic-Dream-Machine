@@ -34,7 +34,7 @@ const { carrierFiles, inSubmodule } = await import(DIST_CARRIERS);
 // A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes the declaration in
 // a fence, and a reader counting lines takes the lesson for the carrier's own act.
 const { fencedSpans, inMask } = await import(
-  new URL("../packages/lararium-tw5/dist/meme-ast/fence-mask.js", import.meta.url).pathname);
+  new URL("../packages/lararium-memetic-frame/dist/index.js", import.meta.url).pathname);
 
 // ── A DECLARATION STANDS BARE, ON ITS OWN LINE ─────────────────────────────────────────────────
 // A carrier answers to this grammar alone, so its declaration stands bare where the grammar reads it.

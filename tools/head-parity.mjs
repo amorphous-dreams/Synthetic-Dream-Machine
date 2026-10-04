@@ -27,6 +27,8 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
+/** The frame package's built shore — marks, fence mask, head reader. */
+const FRAME = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
 // THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
 // DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
 const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
@@ -38,14 +40,16 @@ const { carrierFiles } = await import(DIST_CARRIERS);
 
 
 // THE ABSENCE NAMES ITS CURE. A witness that skipped here would read clean over an unbuilt tree.
-for (const need of ["carrier-head.js", "tw5-vm.js", "generated-tw5-version.js"]) {
-  if (!existsSync(join(DIST, need))) {
-    console.error(`[head-parity] no built shore at ${join(DIST, need)}\n  cure: pnpm --filter @lararium/tw5 build`);
+for (const need of ["tw5-vm.js", "generated-tw5-version.js"].map((n) => join(DIST, n)).concat(FRAME)) {
+  if (!existsSync(need)) {
+    console.error(`[head-parity] no built shore at ${need}\n  cure: pnpm --filter @lararium/memetic-frame build && pnpm --filter @lararium/tw5 build`);
     process.exit(2);
   }
 }
 
-const { matchCarrierHead } = await import(join(DIST, "carrier-head.js"));
+const { matchCarrierHead, frameAlt } = await import(FRAME);
+// The head codes come from the declaration — a hand-copied `0001|0011` would miss a SOH added there.
+const HEAD_CODE_RE = new RegExp(frameAlt("SOH"));
 const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
 const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
 
@@ -72,7 +76,7 @@ function controlNodes(nodes, out = []) {
 function parserHeadUri(text) {
   for (const n of controlNodes(wiki.parseText("text/vnd.tiddlywiki", text, { parseAsInline: false }).tree)) {
     const code = n.attributes?.code?.value ?? "";
-    if (!/&#x00(?:01|11);/.test(code)) continue;
+    if (!HEAD_CODE_RE.test(code)) continue;
     // the far side is a named `to=`, or the positional token the framing ends carried before names
     const named = n.attributes?.to?.value;
     if (named) return named;

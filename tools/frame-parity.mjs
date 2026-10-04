@@ -148,7 +148,7 @@ const specOnly = standing.filter((s) => !scannerCodes.has(s.code));
 // A MARK THE TABLE NEVER DECLARES IS A MARK NOTHING HOLDS — no reader scans for it, and the emitter
 // cannot write it, so a carrier that gained one would lose it on the first write-back with nothing on
 // the read path able to notice what went missing.
-const TABLE = join(REPO, "packages/lararium-tw5/src/frame-marks.ts");
+const TABLE = join(REPO, "packages/lararium-memetic-frame/src/marks.ts");
 const tableCodes = new Set(
   [...readFileSync(TABLE, "utf8").matchAll(/code:\s*"(&#x00[0-9A-Fa-f]{2};)"/g)].map((m) => m[1]),
 );
@@ -170,7 +170,7 @@ const READERS = [
   "packages/lararium-tw5/src/meme-ast/scanner.ts",
   "packages/lararium-tw5/src/meme-stream.ts",
   "packages/lararium-tw5/src/deserializer.ts",
-  "packages/lararium-tw5/src/block-check.ts",
+  "packages/lararium-memetic-frame/src/check.ts",
 ];
 const readerCodes = new Map();
 for (const f of READERS) {

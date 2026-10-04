@@ -81,10 +81,8 @@ import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, type WeaveProfile } from "@lararium/tw5/weave";
-import {
-  readCarrierShape, readCarrierEdges, bccOf, verifyBcc, checkSpan, classifyPostamble, classifyPostEot,
-  readCarrierLifecycle, checkCarrierLifecycle,
-} from "@lararium/tw5";
+import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
+import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
 import { vesselDid } from "../env.js";
@@ -352,80 +350,6 @@ function readNamed(f: string): string {
 }
 
 /**
- * The carrier with its check matching the body it follows — RE-STAMPED where one stands stale, and
- * MINTED where a framed carrier holds none.
- *
- * MINTING ON ABSENT READS PONO (operator ruling). Read-optional, emit-always is the fault it cures:
- * `block-check.ts` rules the BCC optional on READ while the deserializer mints one unconditionally on
- * EMIT, so a hand-authored carrier lands legal on every gate its author runs and red on the one they do
- * not. Of the 701 carriers under `bags/`, zero legitimately want to stand unchecked — the option reads
- * real in the grammar and unexercised in the corpus.
- *
- * ⚠ THE COST, named: this forecloses deliberately authoring an unchecked FRAMED carrier — the BSC
- * trusted-link case `block-check.ts` cites, where a block ran without a BCC by choice. The `unchecked`
- * branch below is the one line to reverse if that case ever becomes real.
- *
- * TORN GETS NOTHING. A torn frame opens STX and never closes, so a digest over it would cover bytes the
- * grammar never bounded — the check-over-the-wrong-span defect, where a hash over nothing matched its
- * own recomputation and carriers read `ok` at every gate with kilobytes outside the verdict. A torn
- * carrier wants its frame CLOSED by a hand; `checkSpan` answers null and this door adds no mark. The
- * normalize loop names the tear aloud rather than passing it in silence.
- *
- * A SOURCE WITH NO COMPLETE FRAME gets nothing either: no bounded span stands, so nothing is stampable.
- *
- * ANCHORED AT THE SPAN, never a whole-file replace: `ni:///…` reads as prose in a carrier that
- * discusses checks, and a global swap would rewrite the lesson along with the stamp. A mismatch REPLACES
- * the stale trailer, byte-anchored the same way.
- *
- * `unchecked` NAMES TWO SHAPES, and the mint branch has to tell them apart. `verifyBcc` demands EXACT
- * adjacency — the emitter writes the mark immediately after the ETX sigil — so a check that stands but
- * is even one byte off reads `unchecked` too, the same verdict a truly bare carrier reads. Minting
- * unconditionally on `unchecked` therefore GLUED a fresh check to the span's close and left whatever
- * already stood there untouched: a carrier whose check had merely drifted came out wearing two,
- * `ni:///…NEW ni:///…OLD`. `classifyPostamble` (`block-check.ts`) is the reader that already draws this
- * distinction — it tolerates the whitespace `verifyBcc` refuses, so a drifted-but-otherwise-intact check
- * still classifies `bcc` to it. The mint branch reads that classification: `bcc` means a check stands
- * and gets REPLACED (the check and the whitespace ahead of it, both consumed); anything else means the
- * slot is genuinely empty and gets the bare insert.
- *
- * THE WHOLE TAIL FIRST, THEN JUST ITS OWN LINE. `classifyPostamble` reads `bcc` only when the slot it is
- * handed reduces to nothing but the check — true for the common case, a framed carrier ending right
- * after its EOT. It is NOT true for a carrier that packs more than this one block into the file (a
- * corpus fixture demonstrating other frame codepoints, trailing prose, another block entirely): there
- * the tail past ETX carries real content beyond the check, `classifyPostamble` reads `foreign`, and the
- * whole-tail reading alone would fall through to a bare insert and reproduce the duplication. Every
- * check this grammar writes stands ALONE on the line right after the frame's close, though, so a second
- * reading — `classifyPostamble` over just that first line — still catches it: `bcc` there means the
- * check occupies its own line and gets replaced the same way, with everything past that line carried
- * through untouched.
- */
-function restamp(text: string): string {
-  const standing = verifyBcc(text);
-  if (standing !== "mismatch" && standing !== "unchecked") return text;
-  const span = checkSpan(text);
-  const want = bccOf(text);
-  // A torn frame and a source without a complete frame both answer null here — neither bounds a span to attest to.
-  if (!span || !want) return text;
-  if (standing === "mismatch") {
-    return text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want);
-  }
-  const after = text.slice(span.end);
-  const wholeTail = classifyPostamble(after);
-  const eol = after.indexOf("\n");
-  const ownLine = eol < 0 ? wholeTail : classifyPostamble(after.slice(0, eol));
-  const standingDigest = wholeTail.kind === "bcc" ? wholeTail.digest : ownLine.kind === "bcc" ? ownLine.digest : null;
-  if (standingDigest !== null) {
-    // A check stands somewhere in the slot — REPLACE it (and the whitespace ahead of it) with the fresh
-    // mint glued to the span's close, rather than leaving it stranded beside a second, newly-adjacent
-    // one. The digest is the check's own hash: unique enough in practice to locate unambiguously.
-    const at = after.indexOf(standingDigest);
-    const rest = at < 0 ? after : after.slice(at + standingDigest.length);
-    return text.slice(0, span.end) + want + rest;
-  }
-  return text.slice(0, span.end) + want + after;
-}
-
-/**
  * `check`: the normalize law read alone, or one of its two sibling readings.
  *
  * parse-args reads `--gradient` as a boolean only when the next token is another option or the end;
@@ -523,7 +447,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     // this gesture just made non-canonical. STAMPED AFTER FRAMING, never before: the bytes the check
     // covers are the ones normalize leaves.
     // A TORN FRAME FAILS THE READ-ALONE SEAT, and says why. Reported BEFORE the no-change exit, because
-    // a tear changes no byte: `restamp` cannot stamp it and normalize cannot close it, so the door that
+    // a tear changes no byte: `stampCarrier` cannot stamp it and normalize cannot close it, so the door that
     // stayed silent here reported `canonical` over a carrier whose frame opens and never closes — the
     // exact silence a torn carrier passed the pre-commit gate through. No gesture can close a tear; the
     // door names it and hands it to a hand.
@@ -546,7 +470,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     }
 
     const standing = verifyBcc(res.text);
-    const stamped  = restamp(res.text);
+    const stamped  = stampCarrier(res.text);
     const changed  = res.changed || stamped !== res.text;
     if (!changed) continue;
     drifted++;

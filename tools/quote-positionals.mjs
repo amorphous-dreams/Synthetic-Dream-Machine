@@ -43,6 +43,8 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
+/** The frame package's built shore — marks, fence mask, head reader. */
+const FRAME = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
 // THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
 // DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
 const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
@@ -61,14 +63,14 @@ const EXEMPT = [
 ];
 const given = argv.filter((a) => !a.startsWith("--"));
 
-for (const need of ["sigil-attrs.js", "meme-ast/fence-mask.js", "tw5-vm.js", "generated-tw5-version.js"]) {
-  if (!existsSync(join(DIST, need))) {
-    console.error(`[quote-positionals] no built shore at ${join(DIST, need)}\n  cure: pnpm --filter @lararium/tw5 build`);
+for (const need of ["sigil-attrs.js", "tw5-vm.js", "generated-tw5-version.js"].map((n) => join(DIST, n)).concat(FRAME)) {
+  if (!existsSync(need)) {
+    console.error(`[quote-positionals] no built shore at ${need}\n  cure: pnpm --filter @lararium/memetic-frame build && pnpm --filter @lararium/tw5 build`);
     process.exit(2);
   }
 }
 const { schemeShapedPositionals } = await import(join(DIST, "sigil-attrs.js"));
-const { fencedSpans, inMask } = await import(join(DIST, "meme-ast/fence-mask.js"));
+const { fencedSpans, inMask } = await import(FRAME);
 const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
 const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
 

@@ -12,8 +12,7 @@
 
 import type { GrammarRules } from "../meme-ast/types.js";
 import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
-import { fencedSpans, inMask } from "../meme-ast/fence-mask.js";
-import type { MaskSpan } from "../meme-ast/fence-mask.js";
+import { fencedSpans, inMask, type MaskSpan } from "@lararium/memetic-frame";
 
 /**
  * A parse-tree attribute, in the shapes TiddlyWiki's own parser emits.

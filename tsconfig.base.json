@@ -23,6 +23,12 @@
       "@lararium/mesh/meme-ast": [
         "./packages/lararium-mesh/src/meme-ast/index.ts"
       ],
+      "@lararium/memetic-frame": [
+        "./packages/lararium-memetic-frame/src/index.ts"
+      ],
+      "@lararium/memetic-frame/*": [
+        "./packages/lararium-memetic-frame/src/*.ts"
+      ],
       "@lararium/mesh/node": [
         "./packages/lararium-mesh/src/node.ts"
       ]

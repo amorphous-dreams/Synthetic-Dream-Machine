@@ -14,7 +14,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { projectSubmission } from "@lararium/tw5/weave";
-import { verifyBcc } from "@lararium/tw5";
+import { verifyBcc } from "@lararium/memetic-frame";
 
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,

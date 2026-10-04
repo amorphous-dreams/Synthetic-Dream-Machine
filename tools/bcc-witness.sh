@@ -20,7 +20,7 @@ node --input-type=module -e '
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-const { verifyBcc } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-check.js"));
+const { verifyBcc } = await import(pathToFileURL("packages/lararium-memetic-frame/dist/index.js"));
 // THE CORPUS COMES FROM THE ONE FINDER. A `find bags -name "*.mem"` answers a question about paths
 // and walks untracked scratch besides; the law asks which files DECLARE.
 const { carrierFiles } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-files.js"));

@@ -25,9 +25,9 @@ if (!existsSync(DIST_CARRIERS)) {
 }
 const { carrierFiles } = await import(DIST_CARRIERS);
 
-const FRAME_MARKS_SHORE = join(REPO, "packages/lararium-tw5/dist/frame-marks.js");
+const FRAME_MARKS_SHORE = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
 if (!existsSync(FRAME_MARKS_SHORE)) {
-  console.error(`[empty-room] no built shore at ${FRAME_MARKS_SHORE}\n  cure: pnpm --filter @lararium/tw5 build`);
+  console.error(`[empty-room] no built shore at ${FRAME_MARKS_SHORE}\n  cure: pnpm --filter @lararium/memetic-frame build`);
   process.exit(2);
 }
 const { frameAlt } = await import(FRAME_MARKS_SHORE);

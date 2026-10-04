@@ -55,52 +55,6 @@ importers:
 
   ftls: {}
 
-  packages/lararium-web:
-    dependencies:
-      '@automerge/automerge':
-        specifier: 3.4.1
-        version: 3.4.1
-      '@automerge/automerge-repo':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3
-      '@automerge/automerge-repo-storage-indexeddb':
-        specifier: 2.6.0-alpha.3
-        version: 2.6.0-alpha.3
-      '@lararium/browser':
-        specifier: workspace:*
-        version: link:../lararium-browser
-      '@lararium/mesh':
-        specifier: workspace:*
-        version: link:../lararium-mesh
-      idiomorph:
-        specifier: 0.7.4
-        version: 0.7.4
-    devDependencies:
-      '@keyhive/keyhive':
-        specifier: 0.1.0-alpha.8
-        version: 0.1.0-alpha.8
-      '@lararium/keyhive':
-        specifier: workspace:*
-        version: link:../lararium-keyhive
-      '@vitest/browser':
-        specifier: 4.1.11
-        version: 4.1.11(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))(vitest@4.1.11)
-      '@vitest/browser-playwright':
-        specifier: 4.1.11
-        version: 4.1.11(playwright@1.62.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))(vitest@4.1.11)
-      vite:
-        specifier: 8.2.2
-        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13)
-      vite-plugin-arraybuffer:
-        specifier: 0.1.4
-        version: 0.1.4
-      vite-plugin-wasm:
-        specifier: 3.6.0
-        version: 3.6.0(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))
-      vitest:
-        specifier: 4.1.11
-        version: 4.1.11(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))
-
   packages/lararium-browser:
     dependencies:
       '@automerge/automerge':
@@ -155,6 +109,16 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
+    devDependencies:
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))
+
+  packages/lararium-memetic-frame:
+    dependencies:
+      '@noble/hashes':
+        specifier: 2.4.0
+        version: 2.4.0
     devDependencies:
       vitest:
         specifier: 4.1.11
@@ -233,6 +197,9 @@ importers:
       '@lararium/keyhive':
         specifier: workspace:*
         version: link:../lararium-keyhive
+      '@lararium/memetic-frame':
+        specifier: workspace:*
+        version: link:../lararium-memetic-frame
       '@lararium/mempalace':
         specifier: workspace:*
         version: link:../lararium-mempalace
@@ -298,6 +265,9 @@ importers:
 
   packages/lararium-tw5:
     dependencies:
+      '@lararium/memetic-frame':
+        specifier: workspace:*
+        version: link:../lararium-memetic-frame
       '@lararium/mesh':
         specifier: workspace:*
         version: link:../lararium-mesh
@@ -324,8 +294,57 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))
 
+  packages/lararium-web:
+    dependencies:
+      '@automerge/automerge':
+        specifier: 3.4.1
+        version: 3.4.1
+      '@automerge/automerge-repo':
+        specifier: 2.6.0-alpha.3
+        version: 2.6.0-alpha.3
+      '@automerge/automerge-repo-storage-indexeddb':
+        specifier: 2.6.0-alpha.3
+        version: 2.6.0-alpha.3
+      '@lararium/browser':
+        specifier: workspace:*
+        version: link:../lararium-browser
+      '@lararium/mesh':
+        specifier: workspace:*
+        version: link:../lararium-mesh
+      idiomorph:
+        specifier: 0.7.4
+        version: 0.7.4
+    devDependencies:
+      '@keyhive/keyhive':
+        specifier: 0.1.0-alpha.8
+        version: 0.1.0-alpha.8
+      '@lararium/keyhive':
+        specifier: workspace:*
+        version: link:../lararium-keyhive
+      '@vitest/browser':
+        specifier: 4.1.11
+        version: 4.1.11(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))(vitest@4.1.11)
+      '@vitest/browser-playwright':
+        specifier: 4.1.11
+        version: 4.1.11(playwright@1.62.1)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))(vitest@4.1.11)
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13)
+      vite-plugin-arraybuffer:
+        specifier: 0.1.4
+        version: 0.1.4
+      vite-plugin-wasm:
+        specifier: 3.6.0
+        version: 3.6.0(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))
+      vitest:
+        specifier: 4.1.11
+        version: 4.1.11(@types/node@26.4.0)(@vitest/browser-playwright@4.1.11)(vite@8.2.2(@types/node@26.4.0)(esbuild@0.28.1)(tsx@4.23.13))
+
   packages/lares-cli:
     dependencies:
+      '@lararium/memetic-frame':
+        specifier: workspace:*
+        version: link:../lararium-memetic-frame
       '@lararium/mempalace':
         specifier: workspace:*
         version: link:../lararium-mempalace

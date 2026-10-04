@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
 
-import { bccOf } from "@lararium/tw5";
+import { bccOf } from "@lararium/memetic-frame";
 import { CARRIER_TYPE, DECLARATION } from "@lararium/mesh/carrier-type";
 import { bagManifestUri, libraryRef, type BagManifest, type LibraryEntryMeta } from "@lararium/mesh";
 

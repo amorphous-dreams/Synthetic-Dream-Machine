@@ -31,7 +31,7 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { carrierFiles } from "../src/carrier-files.js";
-import { fenceLineOpen, fenceLineClose } from "../src/meme-ast/fence-mask.js";
+import { fenceLineOpen, fenceLineClose } from "@lararium/memetic-frame";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 

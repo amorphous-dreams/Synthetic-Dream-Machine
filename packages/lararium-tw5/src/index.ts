@@ -255,12 +255,8 @@ export type {
 
 export * from "./memetic-wikitext-sensorium.js";
 export { readCarrierShape } from "./carrier-shape.js";
-// THE ONE READER of a carrier's framing ends. Nine spellings stood before it; see carrier-head.ts.
-export {
-  matchCarrierHead, matchCarrierHeadLine, matchCarrierMark, headUriOf,
-  carrierHeadPattern, carrierMarkPattern, carrierReleasePattern,
-} from "./carrier-head.js";
-export type { CarrierHead, CarrierMark } from "./carrier-head.js";
+// THE FRAME IS ITS OWN PACKAGE. The head reader, the meta opener, the span reader and the block check
+// live in `@lararium/memetic-frame`; a consumer imports them from there, never through this barrel.
 // THE ONE FINDER of the corpus. Twenty-two readers enumerated it by hardcoded glob, in three
 // disagreeing answers, and the disagreement hid a real carrier from every gate. Read the DECLARATION,
 // never the path — see carrier-files.ts.
@@ -286,11 +282,6 @@ export {
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";
-// THE ONE OPENER of a `toml meta` block. Seven spellings stood before it, differing on the separator,
-// the trailing run, the line anchor and the close — so a carrier written with two spaces deserialized
-// with its fields and read `meta:false` everywhere else. Recognition is permissive so no carrier goes
-// invisible over whitespace; the canon is one space, and `readCarrierShape` faults the difference.
-export { META_OPEN_RE, META_OPEN_LINE_RE, PLAIN_OPEN_RE, META_OPEN_CANON, isCanonicalMetaOpen } from "./meta-fence.js";
 export { readCarrierEdges } from "./carrier-edges.js";
 export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
 // THE STAGE A GOVERNED CARRIER STANDS IN — read off `tags`, so a filter answers it in the wiki.
@@ -301,12 +292,3 @@ export {
   checkCarrierLifecycle,
 } from "./carrier-lifecycle.js";
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
-// The check a carrier carries, and the span it covers. `meme normalize` re-stamps with these, so a
-// carrier whose framing it rewrites leaves the door holding a check that matches the body it follows.
-export { bccOf, verifyBcc, checkSpan } from "./carrier-check.js";
-// What stands in the slot after ETX, before EOT — the ONE reading `restamp` shares with `verifyBcc`
-// rather than re-deriving: a check that stands but is not byte-adjacent reads `unchecked` to the
-// strict verifier and `bcc` here, and that gap is exactly what tells a re-stamp to REPLACE the drifted
-// check instead of minting a second one beside it.
-export { classifyPostamble, classifyPostEot, BCC_RE } from "./block-check.js";
-export type { Postamble } from "./block-check.js";

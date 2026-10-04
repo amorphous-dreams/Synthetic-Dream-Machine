@@ -32,7 +32,7 @@
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
 import { utf8Bytes, ridesAsPointer, isOversizedBody, mediaTypeFromExt, SKINNY_CARRIER_THRESHOLD } from "@lararium/mesh";
 import { findTopLevelAhuBlocks } from "@lararium/tw5/meme-ast";
-import { META_OPEN_RE } from "@lararium/tw5";
+import { META_OPEN_RE } from "@lararium/memetic-frame";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 /** The minimal carrier view the writer reads — a subset of `ScanRow`. */

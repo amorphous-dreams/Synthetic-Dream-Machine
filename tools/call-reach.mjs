@@ -55,6 +55,8 @@ import { dirname, join } from "node:path";
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TW5  = join(REPO, "packages/lararium-tw5");
 const DIST = join(TW5, "dist");
+/** The frame package's built shore — marks, fence mask, head reader. */
+const FRAME = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
 for (const need of ["carrier-files.js", "grammar-heads.js", "tw5-vm.js", "generated-tw5-version.js"]) {
   if (!existsSync(join(DIST, need))) {
     console.error(`[call-reach] no built shore at ${join(DIST, need)}\n  cure: pnpm --filter @lararium/tw5 build`);
@@ -63,7 +65,7 @@ for (const need of ["carrier-files.js", "grammar-heads.js", "tw5-vm.js", "genera
 }
 const { carrierFiles }        = await import(join(DIST, "carrier-files.js"));
 const { grammarHeads }        = await import(join(DIST, "grammar-heads.js"));
-const { fencedSpans, inMask } = await import(join(DIST, "meme-ast/fence-mask.js"));
+const { fencedSpans, inMask } = await import(FRAME);
 // THE PARSER'S OWN WALK. A regex ending on the first `>>` stops INSIDE a value carrying a nested
 // call — `"… Use the <<~ sigil>>."` — and hands back a truncated call that echoes because it is
 // malformed. This witness extracts a call exactly as the rule does, or it measures its own cut.

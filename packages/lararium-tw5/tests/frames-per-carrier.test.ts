@@ -22,8 +22,8 @@ import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { maskedExecAll } from "../src/deserializer.js";
-import { checkSpan } from "../src/carrier-check.js";
+import { maskedExecAll } from "@lararium/memetic-frame";
+import { checkSpan } from "@lararium/memetic-frame";
 import { carrierFiles } from "../src/carrier-files.js";
 import { REPO } from "./test-wiki.js";
 
@@ -48,7 +48,7 @@ describe("a carrier's bodies, counted through the parser's own fence mask", () =
    * and every instrument in this tree would still read it green.
    *
    * A red here does NOT say the corpus is broken — it says the CHECK READER is single-frame and the
-   * corpus has outgrown it. The cure lives in `carrier-check.ts`, which would walk every span rather
+   * corpus has outgrown it. The cure lives in the frame package's span reader, which would walk every span rather
    * than the first, and this test names the carriers it would have to walk.
    */
   test("every carrier holds exactly one body, or names itself for a multi-frame check reader", () => {

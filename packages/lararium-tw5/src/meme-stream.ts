@@ -22,10 +22,7 @@
  * This module is isomorphic (no fs/DOM/TW5 dependencies).
  */
 
-import { fencedSpans, maskedExec } from "./meme-ast/fence-mask.js";
-import { carrierHeadPattern } from "./carrier-head.js";
-import { frameAlt } from "./frame-marks.js";
-import type { MaskSpan } from "./meme-ast/fence-mask.js";
+import { fencedSpans, maskedExec, carrierHeadPattern, frameAlt, type MaskSpan } from "@lararium/memetic-frame";
 
 // ---------------------------------------------------------------------------
 // Event types
@@ -52,10 +49,10 @@ export type MemeStreamEvent =
 // bracket closes a call only when a second one follows, so a bearing arrow and a resonance marker
 // (ॐ, ⊙) alike ride as content. A sigil NEVER crosses a line: the multi-line form let a quoted
 // `<<~` mention swallow text down to a distant real sigil (loci.md).
-/** The SOH pattern comes from the ONE reader of a carrier's framing ends (carrier-head.ts). */
+/** The SOH pattern comes from the ONE reader of a carrier's framing ends (@lararium/memetic-frame head.ts). */
 const SOH_RE  = carrierHeadPattern();
 /**
- * THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS READER'S OWN (frame-marks.ts).
+ * THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS READER'S OWN (@lararium/memetic-frame marks.ts).
  * Only the entity alternation travels — the line law above, and the EOT's second branch below, are
  * this module's own and stay where they stand.
  */
