@@ -8,7 +8,7 @@ author    = "Joshua Fontany <joshua.fontany@gmail.com>"
 cacheable = false
 cat       = "info"
 date      = "2026-10-03"
-docname   = "draft-fontany-lar-uri-00"
+docname   = "draft-fontany-lar-uri-scheme-00"
 file-path = "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"
 ipr       = "trust200902"
 l-space   = "stable"
@@ -463,6 +463,6 @@ Audit anchors carried forward: "Ha: Body... vehicle"; "Ka: Soul... motive fire";
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-wM_FlZw-796LcuPjtaZKsxH40tbFi_j91DHGO94b4U
+<<^ code="&#x0003;">>ni:///sha-256;ez7JoKyPPKDeixXD-pisi9H3w9m2wYoTfkCIed4p_mU
 
 <<^ code="&#x0004;" -> to="?">>

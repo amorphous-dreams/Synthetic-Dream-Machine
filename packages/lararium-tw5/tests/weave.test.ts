@@ -379,13 +379,13 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
   });
 
   test("PROPOSAL: the real lar-uri.mem source now weaves under kramdown-rfc2629, per its proposed meta", () => {
-    // "Proposed" names what the keys MEAN (docname `draft-fontany-lar-uri-00`, an unregistered
+    // "Proposed" names what the keys MEAN (docname `draft-fontany-lar-uri-scheme-00`, an unregistered
     // Internet-Draft name — ipr `trust200902` names the boilerplate an eventual submission would
     // carry) — not any uncertainty that the carrier's own toml meta holds them today.
     const src = readFileSync(join(REPO, "bags/lares/ha.ka.ba/lares/docs/pono/lar-uri.mem"), "utf8");
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
     expect(p.standalone).toBe(true);
-    expect(p.markdown).toContain('docname: "draft-fontany-lar-uri-00"');
+    expect(p.markdown).toContain('docname: "draft-fontany-lar-uri-scheme-00"');
     expect(p.markdown).toContain('ipr: "trust200902"');
   });
 

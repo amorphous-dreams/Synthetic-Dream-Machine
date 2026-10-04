@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;GhKd0J42YXgMwtznyfUttrmhecnYBbB0vNUzja8JbVA"
+source-check: "ni:///sha-256;RjskvhVEYspgEk7wUgOzK3Jvf5yWC50zrugI7E9exo4"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -869,6 +869,15 @@ woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare `yes`/`no`
 `source-check` spells as an RFC 6920 `ni:` URI, the same form the carrier's own block check wears
 (#/control-set). The kramdown-rfc2629 profile additionally REQUIRES `docname`/`cat`/`ipr`/`author`/`date`
 in the carrier's own root meta and refuses naming what a carrier's meta lacks.
+
+**Registering the house's own output.** CommonMark, GFM and kramdown-rfc2629 each name a LAYER a woven
+file rides — which syntax extensions and which metadata channel apply. The weave path's own
+transposition (ahu slots as anchors, a frozen `aka`/`kanawai` pin as an HTML comment carrying its own
+check, a transclusion as a tangle fence) rides underneath every layer alike and earns its own RFC
+7764 registration apart from them: **memetic-markdown**, media type `text/markdown; variant=memetic-markdown`.
+A reader meets the layer dialect in a woven file's `variant:` field (sidecar or frontmatter) and meets
+`memetic-markdown` wherever this house registers the format itself — never the other way around; the
+two names answer different questions, so a pair carries one of each, not a choice between them.
 
 **Informative vs binding.** kramdown-rfc2629 toolchains split a document's own references into two
 classes — `normative` (the reader needs this to understand the spec) and `informative` (background,

@@ -912,6 +912,15 @@ woven file against a YAML 1.1 reader meeting a YAML 1.2 writer's bare `yes`/`no`
 (#/control-set). The kramdown-rfc2629 profile additionally REQUIRES `docname`/`cat`/`ipr`/`author`/`date`
 in the carrier's own root meta and refuses naming what a carrier's meta lacks.
 
+''Registering the house's own output.'' CommonMark, GFM and kramdown-rfc2629 each name a LAYER a woven
+file rides — which syntax extensions and which metadata channel apply. The weave path's own
+transposition (ahu slots as anchors, a frozen `aka`/`kanawai` pin as an HTML comment carrying its own
+check, a transclusion as a tangle fence) rides underneath every layer alike and earns its own RFC
+7764 registration apart from them: ''memetic-markdown'', media type `text/markdown; variant=memetic-markdown`.
+A reader meets the layer dialect in a woven file's `variant:` field (sidecar or frontmatter) and meets
+`memetic-markdown` wherever this house registers the format itself — never the other way around; the
+two names answer different questions, so a pair carries one of each, not a choice between them.
+
 ''Informative vs binding.'' kramdown-rfc2629 toolchains split a document's own references into two
 classes — `normative` (the reader needs this to understand the spec) and `informative` (background,
 not required). The house carries two pins over that same split, under its own words: `kanawai`
@@ -1250,6 +1259,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GhKd0J42YXgMwtznyfUttrmhecnYBbB0vNUzja8JbVA
+<<^ code="&#x0003;">>ni:///sha-256;RjskvhVEYspgEk7wUgOzK3Jvf5yWC50zrugI7E9exo4
 
 <<^ code="&#x0004;" -> to="?">>
