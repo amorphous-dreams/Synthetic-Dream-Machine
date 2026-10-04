@@ -29,7 +29,6 @@ module-type: tiddlerdeserializer
  *   child bodies, reconstructs the whole definition-form carrier.
  */
 
-import { PARSE_WARNING_TAG, stableLarUri } from "@lararium/mesh/lar-uris";
 import { MemeStreamParser } from "./meme-stream.js";
 import {
   carrierHeadLinePattern,
@@ -39,11 +38,11 @@ import {
   maskedExecAll,
   META_OPEN_RE,
   PLAIN_OPEN_RE,
-  FRAME_MARKS,
   frameAlt,
   frameHex,
   readFrame,
   frameCarrier,
+  type FrameRead,
 } from "@lararium/memetic-frame";
 import { renderMetaTomlLine } from "./meme-normalize.js";
 import { lendHostGlobals } from "./host-globals-lend.js";
@@ -52,10 +51,6 @@ import {
   findTopLevelAhuBlocks,
   composeSlotPath,
 } from "./meme-ast/ahu-scan.js";
-
-/** name -> code, so the emitter names a mark rather than spelling its entity. */
-const FRAME_BY_NAME: Record<string, string> =
-  Object.fromEntries(FRAME_MARKS.map((m) => [m.name, m.code]));
 
 // ── THE CODE SETS COME FROM THE DECLARATION; THE HEAD SCANS STAY THIS READER'S OWN (marks.ts) ───────
 // The STX/ETX/EOT division is the one span reader's (`readFrame`). What stays here reads the HEAD, and
@@ -71,14 +66,10 @@ const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex
  * is the whole guard: a namespace is glyphs, and a glyph is never a mark that binds.
  */
 const SOH_BARE_RE = new RegExp(`^<<\\^([^&:=\\n]*)&#x(${frameHex("SOH")})`);
-/** The ETX entity ALONE — the fence-swallow diagnostic asks only whether a closer stands at all. */
-const ETX_ENTITY_SRC = frameAlt("ETX");
 import { parseTaploFields } from "./toml-ast.js";
-import { shoreDiagnostic } from "./meme-ast/diagnostics.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
 
-import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
 export type { GrammarRules } from "./meme-ast/types.js";
 export { getGrammar, resetGrammar };
@@ -124,69 +115,13 @@ export function memeticWikitextDeserializer(
   // FIRST and LAST carrier respectively, so it is gathered here and joined once every close is read.
   const carriage: TiddlerFields[] = [];
 
-  // ✶ Scan — stream parse: handles single-meme, multi-meme, and partials.
-  const parser = new MemeStreamParser();
-  const events: MemeStreamEvent[] = [...parser.push(text), ...parser.flush()];
-
-  // ⏿ Hold — only carrier-close events produce tiddlers.
-  const closes = events.filter((e): e is Extract<MemeStreamEvent, { kind: "carrier-close" }> =>
-    e.kind === "carrier-close"
-  );
-
-  // ◇ Route — each carrier-close → split ahu slots → batch.
-  // Pre-SOH content (the declaration + leading prose) sits OUTSIDE
-  // ev.fullText because MemeStreamParser frames on SOH/ETX. Capture
-  // everything before the first SOH as `prologue` on the first carrier's
-  // parent and everything after the last ETX/EOT as `postamble` on the
-  // last carrier's parent. The recompose inverse (`expandMemeRefs` /
-  // `exportMemeText`) re-emits both verbatim. Round-trip law: anything in
-  // the operator's source survives.
-  // (Multi-meme prologue/postamble distribution between intermediate
-  // carriers lands when MemeStreamParser surfaces positional metadata on
-  // carrier events.)
-  // SOH carrier sentinels begin with `<<^` then optional namespace glyphs
-  // (⊙, ॐ ँ, …) then the SOH control-char reference directly — the same
-  // shape the namespace extractor below reads. Anchoring on the SOH/SOH2
-  // codes avoids matching the declaration, a speaking-head sigil,
-  // or later STX/ETX sentinels — an
-  // any-control-char form swallows the whole header into `prologue` whenever
-  // the SOH carries a namespace it cannot see.
-  const sohM = maskedExec(text, SOH_PREFIX_RE);
-  const sohIdx = sohM ? sohM.index : -1;
-  // THE FRAME OWNS THE DECLARATION; `prologue` carries bytes beyond it. This keeps the declaration in
-  // one frame position instead of copying it onto every record of a carrier.
-  const prologueRaw = (closes.length > 0 && sohIdx > 0) ? text.slice(0, sohIdx) : "";
-  const prologue = prologueRaw.replace(/^<<!DOCTYPE[^>\n]*>>\n?\n?/m, "");
-  // THE CLOSE IS THE ONE SPAN READER'S (`readFrame`), the same reader the block check and the gradient
-  // divide by. The LAST carrier owns the file's tail, so the reader runs over that carrier's own region:
-  // the ETX that closes its text, then the first release past it.
-  //
-  // ETX AND EOT ARE DIFFERENT GLYPHS AND STAY APART. The slot between them carries the block check and
-  // nothing else; content stranded there stays legible to the classifier below instead of vanishing in
-  // the render — which is how two `#edges` blocks were once lost. A second live ETX inside the frame
-  // lands in that slot too: the text closed at the first, so what follows is not body, and it NAKs.
-  const lastSoh = maskedExecAll(text, new RegExp(SOH_PREFIX_RE.source, "g")).at(-1);
-  const tailFrom = lastSoh ? lastSoh.index : 0;
-  const tail = readFrame(text.slice(tailFrom));
-  const closeEnd = tail.etx ? tailFrom + tail.etx.end : -1;
-  const release = tail.etx && tail.eot ? tail.eot : null;
-  // THE SLOT: what the carrier wrote between end-of-text and end-of-transmission.
-  const slotText = closeEnd >= 0 && release ? text.slice(closeEnd, tailFrom + release.index) : "";
-  // Past EOT there stands only the frame's own trailing newline; that tail reads to end of text.
-  const frameEnd = release ? tailFrom + release.end : closeEnd;
-  const postamble = (closes.length > 0 && frameEnd >= 0 && frameEnd < text.length)
-    ? text.slice(frameEnd)
-    : "";
+  const { closes, prologue, postamble, slotText } = readStream(text);
   for (const ev of closes) {
     const uri      = ev.uri || baseUri;
     // MemeStreamParser's fullText extends past the ETX in single-meme
     // files; trim that trailing content so the parent meme's text field
     // doesn't duplicate the postamble already captured separately.
-    let memeText = ev.fullText;
-    if (postamble.length > 0 && ev === closes[closes.length - 1] && memeText.endsWith(postamble)) {
-      memeText = memeText.slice(0, memeText.length - postamble.length);
-    }
-    const tiddlers = safeSplitMeme(uri, memeText, asStringFields(fields));
+    const tiddlers = safeSplitMeme(uri, ownText(ev, closes, postamble), asStringFields(fields));
     if (prologue.length > 0 && tiddlers.length > 0 && ev === closes[0]) {
       // ONE RECORD, NOT A COPY PER TIDDLER. The prologue belongs to the carrier, and stamping it on
       // every record of that carrier put 4,015 copies of one string in the corpus.
@@ -245,6 +180,104 @@ export function memeticWikitextDeserializer(
   return result;
 }
 
+type CarrierClose = Extract<MemeStreamEvent, { kind: "carrier-close" }>;
+
+/** A stream of carriers, read once: each close, and the file-level carriage around them. */
+interface StreamReading {
+  readonly closes: readonly CarrierClose[];
+  readonly prologue: string;
+  readonly postamble: string;
+  /** What the last carrier wrote between end-of-text and end-of-transmission. */
+  readonly slotText: string;
+}
+
+function readStream(text: string): StreamReading {
+  // ✶ Scan — stream parse: handles single-meme, multi-meme, and partials.
+  const parser = new MemeStreamParser();
+  const events: MemeStreamEvent[] = [...parser.push(text), ...parser.flush()];
+
+  // ⏿ Hold — only carrier-close events produce tiddlers.
+  const closes = events.filter((e): e is CarrierClose =>
+    e.kind === "carrier-close"
+  );
+
+  // ◇ Route — each carrier-close → split ahu slots → batch.
+  // Pre-SOH content (the declaration + leading prose) sits OUTSIDE
+  // ev.fullText because MemeStreamParser frames on SOH/ETX. Capture
+  // everything before the first SOH as `prologue` on the first carrier's
+  // parent and everything after the last ETX/EOT as `postamble` on the
+  // last carrier's parent. The recompose inverse (`expandMemeRefs` /
+  // `exportMemeText`) re-emits both verbatim. Round-trip law: anything in
+  // the operator's source survives.
+  // (Multi-meme prologue/postamble distribution between intermediate
+  // carriers lands when MemeStreamParser surfaces positional metadata on
+  // carrier events.)
+  // SOH carrier sentinels begin with `<<^` then optional namespace glyphs
+  // (⊙, ॐ ँ, …) then the SOH control-char reference directly — the same
+  // shape the namespace extractor below reads. Anchoring on the SOH/SOH2
+  // codes avoids matching the declaration, a speaking-head sigil,
+  // or later STX/ETX sentinels — an
+  // any-control-char form swallows the whole header into `prologue` whenever
+  // the SOH carries a namespace it cannot see.
+  const sohM = maskedExec(text, SOH_PREFIX_RE);
+  const sohIdx = sohM ? sohM.index : -1;
+  // THE FRAME OWNS THE DECLARATION; `prologue` carries bytes beyond it. This keeps the declaration in
+  // one frame position instead of copying it onto every record of a carrier.
+  const prologueRaw = (closes.length > 0 && sohIdx > 0) ? text.slice(0, sohIdx) : "";
+  const prologue = prologueRaw.replace(/^<<!DOCTYPE[^>\n]*>>\n?\n?/m, "");
+  // THE CLOSE IS THE ONE SPAN READER'S (`readFrame`), the same reader the block check and the gradient
+  // divide by. The LAST carrier owns the file's tail, so the reader runs over that carrier's own region:
+  // the ETX that closes its text, then the first release past it.
+  //
+  // ETX AND EOT ARE DIFFERENT GLYPHS AND STAY APART. The slot between them carries the block check and
+  // nothing else; content stranded there stays legible to the classifier below instead of vanishing in
+  // the render — which is how two `#edges` blocks were once lost. A second live ETX inside the frame
+  // lands in that slot too: the text closed at the first, so what follows is not body, and it NAKs.
+  const lastSoh = maskedExecAll(text, new RegExp(SOH_PREFIX_RE.source, "g")).at(-1);
+  const tailFrom = lastSoh ? lastSoh.index : 0;
+  const tail = readFrame(text.slice(tailFrom));
+  const closeEnd = tail.etx ? tailFrom + tail.etx.end : -1;
+  const release = tail.etx && tail.eot ? tail.eot : null;
+  // THE SLOT: what the carrier wrote between end-of-text and end-of-transmission.
+  const slotText = closeEnd >= 0 && release ? text.slice(closeEnd, tailFrom + release.index) : "";
+  // Past EOT there stands only the frame's own trailing newline; that tail reads to end of text.
+  const frameEnd = release ? tailFrom + release.end : closeEnd;
+  const postamble = (closes.length > 0 && frameEnd >= 0 && frameEnd < text.length)
+    ? text.slice(frameEnd)
+    : "";
+  return { closes, prologue, postamble, slotText };
+}
+
+/**
+ * One carrier's own text. MemeStreamParser's fullText extends past the ETX in single-meme files; trim
+ * that trailing content so the parent meme's text field doesn't duplicate the postamble captured
+ * separately.
+ */
+function ownText(ev: CarrierClose, closes: readonly CarrierClose[], postamble: string): string {
+  if (postamble.length > 0 && ev === closes[closes.length - 1] && ev.fullText.endsWith(postamble)) {
+    return ev.fullText.slice(0, ev.fullText.length - postamble.length);
+  }
+  return ev.fullText;
+}
+
+/** One carrier of a text: the address it names and the bytes the records are split from. */
+export interface CarrierText {
+  readonly uri:  string;
+  readonly text: string;
+}
+
+/**
+ * Every carrier a text carries, as the deserializer divides it — or the whole text under `baseUri`
+ * where no carrier closes. The carrier check reads the same division the records were split from.
+ */
+export function carrierTexts(text: string, baseUri: string): CarrierText[] {
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
+  const { closes, postamble } = readStream(text);
+  const out = closes.map((ev) => ({ uri: ev.uri || baseUri, text: ownText(ev, closes, postamble) }));
+  return out.length === 0 && text.trim() ? [{ uri: baseUri, text }] : out;
+}
+
 // ---------------------------------------------------------------------------
 // safeSplitMeme — LOSS-LESS split (Goal B).
 //
@@ -284,36 +317,32 @@ function stripEdgeNewlines(text: string): string {
   return text.replace(/^\n+|\n+$/g, "");
 }
 
-function parseWarningTitle(uri: string): string {
-  const safeSlug = uri.replace(/[^a-zA-Z0-9._-]/g, "_");
-  return stableLarUri(`lararium/parse-warning/${safeSlug}`);
+/** A meta fence as the reader found it: its TOML and where the fence stands. */
+export interface MetaFence {
+  readonly content: string;
+  readonly start:   number;
+  readonly end:     number;
 }
 
 /**
- * The advisory envelope — one tiddler, at one address, whether the carrier arrived framed or bare.
- *
- * Both entry doors raise the same finding in the same shape, and a second spelling of it would drift
- * the day one gained a field. The count of records this returns is load-bearing: the ingest merge model
- * rests on it, so this mints nothing where a carrier had nothing to tell a person.
+ * One carrier's text, divided — the frame, the authored root meta where it stands, the body. The
+ * records split from this division, and the carrier check reads the same one, so a check never
+ * judges bytes the records were not built from.
  */
-function parseAdvisories(uri: string, warnings: readonly string[]): TiddlerFields[] {
-  if (warnings.length === 0) return [];
-  return [{
-    title:           parseWarningTitle(uri),
-    tags:            PARSE_WARNING_TAG,
-    "meme-uri":      uri,
-    "warning-count": String(warnings.length),
-    text:            warnings.join("\n"),
-  }];
+export interface CarrierDivision {
+  /** The carrier text with its head line stripped. */
+  readonly noSoh: string;
+  /** The one span reader's division of `noSoh`. */
+  readonly frame: FrameRead;
+  /** A root meta fence standing BEFORE STX — the legacy layout the recovery reading still lifts. */
+  readonly headerMeta: MetaFence | null;
+  /** The root meta fence opening the body, after STX. */
+  readonly bodyMeta: MetaFence | null;
+  /** The authored body the records split from: content standing before STX joined to the framed body. */
+  readonly recoveredBody: string;
 }
 
-function splitMemeToTiddlers(
-  uri:        string,
-  text:       string,
-  baseFields: TiddlerFields,
-): TiddlerFields[] {
-  const warnings: string[] = [];
-
+export function divideCarrier(text: string): CarrierDivision {
   // Strip structural markers to isolate header (SOH→STX) and body (STX→ETX).
   // Fence-mask law: a QUOTED control sigil (in a code fence or inline code)
   // never frames the carrier — before the mask, a fenced ETX mention
@@ -331,42 +360,12 @@ function splitMemeToTiddlers(
   const closeMark = frame.etx ?? frame.eot;
   const closeAt = closeMark ? closeMark.index - (noSoh[closeMark.index - 1] === "\n" ? 1 : 0) : -1;
   const stripped = closeMark ? noSoh.slice(0, closeAt) : noSoh;
-  // Degraded-carrier surfacing: a closer swallowed by an UNCLOSED fence
-  // tail would ride into the body as CONTENT — and every render would
-  // append a fresh closer pair, doubling without bound. This shows up
-  // on fence-teaching docs CommonMark itself misread. A closer
-  // inside a properly CLOSED fence reads as deliberate quotation — benign,
-  // no warning (the render adds the structural close lawfully).
-  if (!frame.etx && new RegExp(ETX_ENTITY_SRC).test(noSoh)) {
-    const spans = fencedSpans(noSoh);
-    const openTail = spans.length > 0 && spans[spans.length - 1]!.end === noSoh.length
-      ? spans[spans.length - 1]! : null;
-    let swallowed = false;
-    if (openTail) {
-      const g = new RegExp(ETX_ENTITY_SRC, "g"); let m: RegExpExecArray | null;
-      while ((m = g.exec(noSoh)) !== null) {
-        if (m.index >= openTail.start) { swallowed = true; break; }
-      }
-    }
-    if (swallowed) {
-      warnings.push(
-        `${uri}: carrier close (${FRAME_BY_NAME.ETX}) sits inside an UNCLOSED code fence — ` +
-        `closers will double on every round trip. Check fence balance ` +
-        `(quote fences inside fences with a LONGER outer run).`,
-      );
-    }
-  }
 
   // The STX the reader found, with the newline the frame pads it with — or none, where the text has no
   // bound (or the only STX stands past the close, which bounds nothing).
   const stxM = frame.stx && frame.stx.index < stripped.length
     ? { index: frame.stx.index, length: frame.stx.end - frame.stx.index + (noSoh[frame.stx.end] === "\n" ? 1 : 0) }
     : null;
-  // A fully BARE doc (no SOH, no STX — the no-carrier fallback) reads as ALL BODY:
-  // its content belongs between the minted &#x0002;/&#x0003; markers on recompose
-  // (the header-routed wrap left the body slot empty
-  // and stacked blank lines). A degraded SOH-carrier missing its STX keeps the
-  // header reading (its meta still parses; the gradient grades the miss).
   // ONE MODEL FOR EVERY CARRIER: routing outside, authored document inside. NO STX MEANS ALL BODY — a
   // carrier that supplies identity without framing has left its document boundary short, rather than
   // declared a second document kind. The body may hold prose, ahu slots, both, or nothing; one meme may
@@ -378,9 +377,7 @@ function splitMemeToTiddlers(
   // states no `uri-path` and these were exactly the carriers that stated none.
   const bare = !stxM;
   // AN AUTHORED META FENCE OPENS THE ROOT DOCUMENT, FRAME OR NO FRAME. The frame belongs to the carrier;
-  // the author writes the root fields. Reading a bare document as undifferentiated text buried that fence
-  // and caused projection to mint two metadata blocks while dropping declared fields — silently and
-  // repeatably.
+  // the author writes the root fields.
   //
   // THE FENCE MUST OPEN THE FILE TO COUNT, because every OTHER meta block belongs to the ahu tiddler it
   // sits in. A slot’s fence carries its local metadata — `register`, `confidence`, and address — and
@@ -409,101 +406,76 @@ function splitMemeToTiddlers(
   // top-level ahu block. If the meta fence sits inside a slot body it is a
   // slot-level meta, not a root-level one — extractSlotStructure picks it up
   // when splitRecursive descends into that slot.
-  const _rootMetaTopBlocks = findTopLevelAhuBlocks(headerRegion);
-  const _rootMetaCutoff = _rootMetaTopBlocks.length > 0
-    ? _rootMetaTopBlocks[0]!.openStart
+  const rootMetaTopBlocks = findTopLevelAhuBlocks(headerRegion);
+  const rootMetaCutoff = rootMetaTopBlocks.length > 0
+    ? rootMetaTopBlocks[0]!.openStart
     : headerRegion.length;
   // THE FENCE MUST OPEN ITS HEAD, at the carrier level exactly as at the slot level. Content standing
   // between the heading sigil and a labelled fence means the fence heads nothing — it reads as body,
   // the way a teaching example does. Whitespace is spacing, never content.
-  const _metaCandidate = extractRootTomlWithPos(headerRegion.slice(0, _rootMetaCutoff));
-  const metaPos = _metaCandidate && headerRegion.slice(0, _metaCandidate.start).trim() === ""
-    ? _metaCandidate
+  const metaCandidate = findMetaFence(headerRegion.slice(0, rootMetaCutoff));
+  const headerMeta = metaCandidate && headerRegion.slice(0, metaCandidate.start).trim() === ""
+    ? metaCandidate
     : null;
-  const headerRootToml = metaPos?.content ?? null;
-  const headerFieldsRaw = headerRootToml ? fieldifyToml(headerRootToml, warnings, uri) : {};
-  const { __arrayKeys: _, ...headerFields } = headerFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
 
   // Root TOML is the first authored construct after STX, exactly as a fragment's local TOML block is
-  // the first construct after its opener. A root block standing before STX contributes to the recovery
-  // reading; projection places the complete root document inside STX–ETX.
+  // the first construct after its opener.
   const bodyRootCandidate = stxM
     ? findMetaFence(bodyRegion, false)
     : null;
-  const bodyRootMeta = bodyRootCandidate && bodyRegion.slice(0, bodyRootCandidate.start).trim() === ""
+  const bodyMeta = bodyRootCandidate && bodyRegion.slice(0, bodyRootCandidate.start).trim() === ""
     ? bodyRootCandidate
     : null;
-  const bodyFieldsRaw = bodyRootMeta ? fieldifyToml(bodyRootMeta.content, warnings, uri) : {};
-  const { __arrayKeys: __bodyArrayKeys, ...bodyFields } = bodyFieldsRaw as TiddlerFields & { __arrayKeys?: string[] };
-  if (metaPos) warnings.push(`${uri}: root TOML metadata stands before STX; the carrier body begins at STX`);
-  if (headerRootToml && bodyRootMeta) warnings.push(`${uri}: duplicate root TOML metadata appears before and after STX`);
-  const rootFields = { ...headerFields, ...bodyFields };
-  const rootTitle = rootFields.title;
-  if (rootTitle !== undefined && String(rootTitle) !== uri) {
-    warnings.push(`${uri}: root TOML title "${String(rootTitle)}" does not match SOH target "${uri}"`);
-  }
-  if (rootFields["uri-path"] !== undefined) {
-    const expectedPath = uri.startsWith("lar:///") ? uri.slice(7) : uri;
-    if (String(rootFields["uri-path"]) !== expectedPath) {
-      warnings.push(`${uri}: root TOML uri-path "${String(rootFields["uri-path"])}" does not match SOH target path "${expectedPath}"`);
-    }
-  }
 
-  // Strip one leading \n from the pre-frame post-meta content: extractRootTomlWithPos's regex
-  // consumes the closing ``` and its \n, but the source's blank line between the
-  // meta fence and the next header content (aka/ahu refs) lives here. The template
-  // emits \n\n after the closing ```, so the stored field must not also start with \n.
-  const postMetaContent = metaPos
-    ? stripLeadingNewlines(headerRegion.slice(metaPos.end))
-    : (_rootMetaTopBlocks.length > 0 ? headerRegion : "");
+  // Strip one leading \n from the pre-frame post-meta content: the fence regex consumes the closing
+  // ``` and its \n, but the source's blank line between the meta fence and the next header content
+  // lives here.
+  const postMetaContent = headerMeta
+    ? stripLeadingNewlines(headerRegion.slice(headerMeta.end))
+    : (rootMetaTopBlocks.length > 0 ? headerRegion : "");
 
   // Authored content standing before STX joins the root body in the recovery reading. Projection
   // places root TOML and authored content after STX.
-  const preFrameContent = metaPos ? postMetaContent : headerRegion;
-  const bodyWithoutRootMeta = bodyRootMeta ? stripLeadingNewlines(bodyRegion.slice(bodyRootMeta.end)) : bodyRegion;
-  // The recovery body joins pre-frame and framed authored content before child worksite extraction.
+  const preFrameContent = headerMeta ? postMetaContent : headerRegion;
+  const bodyWithoutRootMeta = bodyMeta ? stripLeadingNewlines(bodyRegion.slice(bodyMeta.end)) : bodyRegion;
   const recoveredBody = stripEdgeNewlines(
     [preFrameContent, bodyWithoutRootMeta].filter((s) => s.trim() !== "").join("\n\n"),
   );
+  return { noSoh, frame, headerMeta, bodyMeta, recoveredBody };
+}
+
+/** A URI's carrier root and the fragment it already carries ("" at a root). */
+export function splitFragment(uri: string): { rootUri: string; fragmentPrefix: string } {
+  const hashIdx = uri.indexOf("#");
+  return hashIdx < 0
+    ? { rootUri: uri, fragmentPrefix: "" }
+    : { rootUri: uri.slice(0, hashIdx), fragmentPrefix: uri.slice(hashIdx) };
+}
+
+function splitMemeToTiddlers(
+  uri:        string,
+  text:       string,
+  baseFields: TiddlerFields,
+): TiddlerFields[] {
+  const { headerMeta, bodyMeta, recoveredBody } = divideCarrier(text);
+  const rootFields = {
+    ...(headerMeta ? fieldifyToml(headerMeta.content) : {}),
+    ...(bodyMeta ? fieldifyToml(bodyMeta.content) : {}),
+  };
   // `uri` may already CARRY a fragment (a slot re-descending into its own child) — handing
   // splitRecursive a bare "" prefix every time drops that standing fragment, so a slot child
   // of a slot child loses its ancestry and its kahea refs compose against the wrong parent.
-  const hashIdx = uri.indexOf("#");
-  const rootUri = hashIdx < 0 ? uri : uri.slice(0, hashIdx);
-  const fragmentPrefix = hashIdx < 0 ? "" : uri.slice(hashIdx);
-  const { children: bodyChildren, rewrittenText: bodyRewritten } =
-    splitRecursive(rootUri, fragmentPrefix, recoveredBody, warnings);
-
-  const normalizedBodyRewritten = stripEdgeNewlines(bodyRewritten);
-
-  const allChildren = bodyChildren;
+  const { rootUri, fragmentPrefix } = splitFragment(uri);
+  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, recoveredBody);
 
   const parent: TiddlerFields = {
     ...baseFields,
     ...rootFields,
     title: uri,
     type:  rootFields.type ?? CARRIER_TYPE,
-    text:  normalizedBodyRewritten,
+    text:  stripEdgeNewlines(rewrittenText),
   };
-  const result: TiddlerFields[] = [parent, ...allChildren];
-
-  // ── THE WARNING TIDDLER IS THE ENVELOPE, AND IT HOLDS MORE THAN THIS ────────────────────────────
-  //
-  // A parse grade is something the READER observed, never something the author wrote, so a field
-  // carrying it on the record would be a fact an operator can see and edit and cannot round-trip —
-  // the placement law's exact prohibition. This tiddler is where such facts belong.
-  //
-  // Two DIFFERENT readings exist and neither subsumes the other. These `warnings` are AUTHORING
-  // advisories: a TOML key the URI already derives, a carrier close sitting inside an unclosed fence.
-  // `parseMemeText` reports something else entirely — positional grammar recoveries, each naming what
-  // the parser fell back to. Summing them into one count would blur a nudge to a person with a
-  // recovery by a machine.
-  //
-  // The parser's recoveries ride the gate's diagnostics channel (`failuresToDiagnostics`), never this
-  // tiddler. An emitter added here would move every downstream record count.
-  result.push(...parseAdvisories(uri, warnings));
-
-  return result;
+  return [parent, ...children];
 }
 
 // ---------------------------------------------------------------------------
@@ -523,7 +495,6 @@ function splitRecursive(
   rootUri:          string,
   fragmentPrefix:   string,  // "" at meme root; "#/a" → "#/a/b" → "#/a/b/c"
   text:             string,
-  warnings:         string[],
 ): { children: TiddlerFields[]; rewrittenText: string } {
   const allChildren: TiddlerFields[] = [];
   const enclosingUri = rootUri + fragmentPrefix;
@@ -538,8 +509,8 @@ function splitRecursive(
     // `$slot` carry that same spelling, so a reader needs no compatibility normalization.
     const slot          = composeSlotPath("", block.slot);
     const bodyText      = text.slice(block.bodyStart, block.bodyEnd);
-    const inner         = splitRecursive(rootUri, childSlotPath, bodyText, warnings);
-    const childStructure = extractSlotStructure(inner.rewrittenText, warnings, childUri);
+    const inner         = splitRecursive(rootUri, childSlotPath, bodyText);
+    const childStructure = extractSlotStructure(inner.rewrittenText);
 
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
     // Record hygiene (carrier-whole at rest): children carry NO `file-path` —
@@ -583,7 +554,7 @@ function splitRecursive(
 const META_FENCE_RE  = new RegExp(META_OPEN_RE.source  + "([\\s\\S]*?)```\\n?");
 const PLAIN_FENCE_RE = new RegExp(PLAIN_OPEN_RE.source + "([\\s\\S]*?)```\\n?");
 
-function findMetaFence(text: string, allowPlain = false): { content: string; start: number; end: number } | null {
+export function findMetaFence(text: string, allowPlain = false): MetaFence | null {
   // The meta fence IS a fence — accept a match starting AT a span opener,
   // reject one buried inside another span (a ````-quoted teaching example).
   const m = maskedExec(text, META_FENCE_RE, undefined, true)
@@ -591,8 +562,6 @@ function findMetaFence(text: string, allowPlain = false): { content: string; sta
   if (!m) return null;
   return { content: m[1] ?? "", start: m.index, end: m.index + m[0].length };
 }
-
-function extractRootTomlWithPos(text: string) { return findMetaFence(text); }
 
 // ---------------------------------------------------------------------------
 // extractSlotStructure — split a slot body into preamble + meta fields + text
@@ -626,11 +595,7 @@ interface SlotStructure {
   readonly postamble: string;
 }
 
-function extractSlotStructure(
-  bodyText: string,
-  warnings: string[],
-  context:  string,
-): SlotStructure {
+function extractSlotStructure(bodyText: string): SlotStructure {
   // Only a LABELED ```toml meta fence carries slot identity. A plain ```toml
   // fence is operator CONTENT (teaching matter, config examples) — swallowing
   // it into fields mutated content on round-trip (key reorder, re-alignment,
@@ -651,9 +616,7 @@ function extractSlotStructure(
     // A fence that OPENS its head has only spacing above it, and spacing is not content — capturing it
     // gave `preamble` a whitespace value that re-emitted as an meta key and shrank on the next read.
     preamble  = "";
-    const raw = fieldifyToml(metaM.content, warnings, context);
-    const { __arrayKeys: _, ...parsed } = raw as TiddlerFields & { __arrayKeys?: string[] };
-    fields    = parsed;
+    fields    = fieldifyToml(metaM.content);
     remainder = bodyText.slice(metaM.end);
   }
 
@@ -694,23 +657,16 @@ function extractSlotStructure(
 // fieldifyToml — convert raw TOML key=value text into TiddlerFields
 // ---------------------------------------------------------------------------
 
-function fieldifyToml(
-  toml:     string,
-  warnings: string[],
-  context:  string,
-): TiddlerFields & { __arrayKeys?: string[] } {
-  const parsed = parseTaploFields(toml);
-  const out: TiddlerFields & { __arrayKeys?: string[] } = {};
-  const arrayKeys: string[] = [];
-  for (const [k, v] of Object.entries(parsed)) {
+function fieldifyToml(toml: string): TiddlerFields {
+  const out: TiddlerFields = {};
+  for (const [k, v] of Object.entries(parseTaploFields(toml))) {
     // `title` is carried in the root authorial block so identity can be checked against SOH. The
-    // record title remains the canonical SOH-derived key; a mismatch is diagnosed by the caller.
+    // record title remains the canonical SOH-derived key; a mismatch is the carrier check's to name.
     if (k === "title") { out[k] = String(v); continue; }
-    if (k === "text")  { warnings.push(`${context}: "text" in TOML ignored (derived from body)`); continue; }
-    if (Array.isArray(v)) { out[k] = (v as unknown[]).map(String); arrayKeys.push(k); }
-    else                  { out[k] = String(v); }
+    // `text` derives from the body; an authored `text` key is ignored here and named by the carrier check.
+    if (k === "text")  continue;
+    out[k] = Array.isArray(v) ? (v as unknown[]).map(String) : String(v);
   }
-  if (arrayKeys.length > 0) out.__arrayKeys = arrayKeys;
   return out;
 }
 
@@ -758,18 +714,9 @@ export function splitBodyTiddler(
     return { parent: { ...baseFields, title: uri, text: bodyText }, children: [] };
   }
 
-  const warnings: string[] = [];
-  // `uri` may already CARRY a fragment (a slot re-descending into its own child) — see the
-  // identical fix in splitMemeToTiddlers above.
-  const hashIdx = uri.indexOf("#");
-  const rootUri = hashIdx < 0 ? uri : uri.slice(0, hashIdx);
-  const fragmentPrefix = hashIdx < 0 ? "" : uri.slice(hashIdx);
-  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, bodyText, warnings);
-
+  const { rootUri, fragmentPrefix } = splitFragment(uri);
+  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, bodyText);
   const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
-
-  children.push(...parseAdvisories(uri, warnings));
-
   return { parent, children };
 }
 
@@ -1074,29 +1021,4 @@ export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | 
     attestation: str("$carrier-sila"),
     postamble: carriageText(reader, memeUri, "postamble"),
   });
-}
-
-// ---------------------------------------------------------------------------
-// The shore's receipt, on the shared channel
-// ---------------------------------------------------------------------------
-
-/**
- * The deserializer reports a fault on the same diagnostics contract the parser and the render plane
- * already speak, so the gate reads a grade rather than a title. It also synthesises a `parse-warning`
- * tiddler for the live wiki to surface, but nothing downstream recognises the fault by that title —
- * the diagnostics carry the grade, freeing every consumer from sniffing a string for carrier survival.
- */
-export function deserializeCarrier(
-  text:   string,
-  fields: Record<string, unknown>,
-): { records: TiddlerFields[]; diagnostics: MemeDiagnostic[] } {
-  const records = memeticWikitextDeserializer(text, fields);
-  const diagnostics: MemeDiagnostic[] = [];
-  for (const record of records) {
-    if (!String(record.title ?? "").includes("/parse-warning/")) continue;
-    for (const line of String(record.text ?? "").split("\n")) {
-      if (line.trim()) diagnostics.push(shoreDiagnostic(line.trim(), text.length));
-    }
-  }
-  return { records, diagnostics };
 }

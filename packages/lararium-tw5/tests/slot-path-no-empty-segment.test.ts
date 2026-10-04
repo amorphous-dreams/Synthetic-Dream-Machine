@@ -5,7 +5,7 @@
  * minter, so the deserializer's titles witness the law for both ends.
  */
 import { describe, test, expect } from "vitest";
-import { deserializeCarrier } from "../src/deserializer.js";
+import { memeticWikitextDeserializer } from "../src/deserializer.js";
 
 const URI = "lar:///t/x";
 
@@ -16,7 +16,7 @@ const nested = (parent: string, child: string): string =>
   `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
 
 const fragments = (text: string): string[] =>
-  deserializeCarrier(text, { title: URI }).records.map((r) => String(r.title).split("#")[1] ?? "").filter(Boolean);
+  memeticWikitextDeserializer(text, { title: URI }).map((r) => String(r.title).split("#")[1] ?? "").filter(Boolean);
 
 describe("★ the deserializer mints no // title ★", () => {
   test("★ a rooted child under a rooted parent joins with ONE slash ★", () => {

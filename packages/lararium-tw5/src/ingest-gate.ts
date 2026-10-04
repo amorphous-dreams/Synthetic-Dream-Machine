@@ -45,7 +45,7 @@
 
 // PURE subpath (no Automerge) — the barrel drags wasm the plugin build cannot bundle.
 import { digestsEqual } from "@lararium/mesh/agile-digest";
-import { deserializeCarrier, expandMemeRefs } from "./deserializer.js";
+import { memeticWikitextDeserializer, expandMemeRefs } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { collectAhuSlots } from "./meme-ast/ahu-scan.js";
 import { parseMemeText } from "./meme-ast/parse.js";
@@ -135,14 +135,12 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
     const frame = verdict(text);
     if (frame.kind === "bare") return { records: [bareRecord(uri, text)], diagnostics: frameDiagnostics(uri, frame, text.length) };
     const failures = parseMemeText(uri, text, getGrammar() ?? undefined).failures;
-    const carrier = deserializeCarrier(text, { title: uri });
     return {
-      records: carrier.records,
+      records: memeticWikitextDeserializer(text, { title: uri }),
       diagnostics: [
         ...failuresToDiagnostics(failures, text.length),
         ...frameDiagnostics(uri, frame, text.length),
         ...checkCarrier(uri, text),
-        ...carrier.diagnostics,
       ],
     };
   },

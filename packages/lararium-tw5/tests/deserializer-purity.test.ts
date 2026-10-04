@@ -24,5 +24,10 @@ describe("★ the deserializer stamps no reading onto a record ★", () => {
     // The slot's bytes reach no record at all — which is exactly why the carrier check refuses them.
     expect(records.some((r) => String(r.text ?? "").includes("stranded prose"))).toBe(false);
   });
-});
 
+  test("an advisory mints no parse-warning envelope — the carrier check names it on the gate's channel", () => {
+    const text = frameCarrier({ head: { uri: URI }, body: "```toml meta\ntext = \"x\"\ntitle = \"lar:///t/other\"\n```\n\nbody" });
+    const records = recordsOf(text);
+    expect(records.map((r) => String(r.title))).toEqual([URI, `${URI}#/$postamble`]);
+  });
+});

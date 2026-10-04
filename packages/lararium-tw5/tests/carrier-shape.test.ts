@@ -100,6 +100,33 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
     expect(d.faults).toEqual([]);
   });
 
+  /** THE ADVISORIES THE CARRIER CHECK NAMES, the gradient names too — one fault per authored drift. */
+  describe("★ the gradient names what the carrier check refuses ★", () => {
+    const framed = (meta: string, tail = "") =>
+      `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\n${meta}\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>${tail}\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+    const faultsOf = (text: string) => readCarrierShape(text).faults.join("\n");
+
+    test("CONTROL: a carrier whose meta agrees with its head carries none of these faults", () => {
+      expect(faultsOf(framed('title    = "lar:///ha.ka.ba/x/y"\nuri-path = "ha.ka.ba/x/y"'))).not.toMatch(/title|uri-path|`text`|between ETX|both sides/);
+    });
+    test("a root title naming another address", () => {
+      expect(faultsOf(framed('title = "lar:///ha.ka.ba/other"'))).toMatch(/root meta title .* names another address than the head/);
+    });
+    test("a root uri-path naming another path", () => {
+      expect(faultsOf(framed('uri-path = "ha.ka.ba/other"'))).toMatch(/root meta uri-path .* names another path than the head/);
+    });
+    test("a root `text` key", () => {
+      expect(faultsOf(framed('text = "x"'))).toMatch(/root meta carries a `text` key/);
+    });
+    test("root meta on both sides of STX", () => {
+      const both = framed('uri-path = "ha.ka.ba/x/y"').replace(`<<^ code="&#x0002;">>`, "```toml meta\ncustom = 1\n```\n<<^ code=\"&#x0002;\">>");
+      expect(faultsOf(both)).toMatch(/root meta stands on both sides of STX/);
+    });
+    test("content between ETX and EOT", () => {
+      expect(faultsOf(framed('uri-path = "ha.ka.ba/x/y"', "\nstranded prose"))).toMatch(/content stands between ETX and EOT/);
+    });
+  });
+
   /** The corpus itself: every carrier stands at its full floor. */
   test("every carrier in the corpus stands at its full floor", () => {
     const files = carrierFiles(REPO);

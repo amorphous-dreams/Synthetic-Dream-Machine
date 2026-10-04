@@ -28,6 +28,7 @@ import {
   matchCarrierHead,
   verifyBcc,
   readFrame,
+  classifyPostamble,
   META_OPEN_RE,
   META_OPEN_CANON,
   isCanonicalMetaOpen,
@@ -63,15 +64,20 @@ export interface CarrierShape {
  * readings were measured over all 724 and never disagreed — so this closes a hole rather than a wound.
  */
 function metaValue(text: string, spans: readonly MaskSpan[], key: string, from = 0): string | null {
+  const block = metaBlock(text, spans, from);
+  const m = block === null ? null : new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(block);
+  return m ? m[1]! : null;
+}
+
+/** The first meta block's TOML at or past `from`, or null. */
+function metaBlock(text: string, spans: readonly MaskSpan[], from = 0): string | null {
   const open = metaOpenFrom(text, spans, from);
   if (!open) return null;
   const start = open.index + open[0].length;
   const close = text.indexOf("\n```", start);
   // An opener with no closer names no block. The flat read required the closer too, and a shape
   // reading of half a fence would be a value the file never finished stating.
-  if (close < 0) return null;
-  const m = new RegExp(`^${key}\\s*=\\s*"([^"]*)"`, "m").exec(text.slice(start, close));
-  return m ? m[1]! : null;
+  return close < 0 ? null : text.slice(start, close);
 }
 
 /** The opener line as this file actually spells it, or null when it carries no meta block. */
@@ -136,6 +142,40 @@ export function readCarrierShape(text: string): CarrierShape {
   const openLine = metaOpenLine(text, spans, bodyFrom);
   if (openLine !== null && !isCanonicalMetaOpen(openLine)) {
     faults.push(`meta fence opens \`${openLine}\` — canon is \`${META_OPEN_CANON}\`, one space and nothing after`);
+  }
+
+  // THE ROOT BLOCK OPENS THE BODY: the first meta after STX counts as the carrier's only where nothing
+  // but spacing stands between STX and it — a later block belongs to the slot it sits in.
+  const firstMeta = metaOpenFrom(text, spans, 0);
+  const bodyMeta = metaOpenFrom(text, spans, bodyFrom);
+  const rootMeta = bodyMeta !== null && (!frame.stx || text.slice(frame.stx.end, bodyMeta.index).trim() === "");
+  const metaAboveStx = frame.stx !== null && firstMeta !== null && firstMeta.index < frame.stx.index;
+  // THE ROOT META AGREES WITH THE HEAD. The head is the address; a root `title` or `uri-path` naming
+  // another one states two identities, and the carrier check refuses the pair until a hand settles it.
+  if (rootMeta && marks.headUri !== null) {
+    const title = metaValue(text, spans, "title", bodyFrom);
+    if (title !== null && title !== marks.headUri) {
+      faults.push(`root meta title "${title}" names another address than the head (${marks.headUri})`);
+    }
+    const path = marks.headUri.startsWith("lar:///") ? marks.headUri.slice(7) : marks.headUri;
+    if (marks.uriPath !== null && marks.uriPath !== path) {
+      faults.push(`root meta uri-path "${marks.uriPath}" names another path than the head (${path})`);
+    }
+  }
+  // The body IS the text; a `text` key in the root meta states a second one that nothing reads.
+  if (rootMeta && /^text\s*=/m.test(metaBlock(text, spans, bodyFrom) ?? "")) {
+    faults.push("root meta carries a `text` key — the body is the text, and the key is ignored");
+  }
+  // ONE ROOT BLOCK, below STX. A block above STX beside one opening the body names the carrier twice;
+  // one above STX with only slot blocks below it is the pre-body shape the fault further down names.
+  if (metaAboveStx && rootMeta) {
+    faults.push("root meta stands on both sides of STX — one root block, below STX");
+  } else if (metaAboveStx && marks.meta) {
+    faults.push("root meta stands before STX — the body, and the identity the check covers, begin at STX");
+  }
+  // The slot after ETX carries the check alone (memetic-frame `check.ts`); payload there reaches no reader.
+  if (frame.etx && frame.eot && classifyPostamble(text.slice(frame.etx.end, frame.eot.index)).kind === "foreign") {
+    faults.push("content stands between ETX and EOT — the text ends at ETX; that slot carries the block check alone");
   }
 
   if (!marks.meta) {

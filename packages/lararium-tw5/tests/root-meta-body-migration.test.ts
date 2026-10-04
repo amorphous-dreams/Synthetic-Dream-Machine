@@ -61,7 +61,7 @@ describe("legacy root metadata remains recoverable but is not emitted", () => {
     ).replace('```\n\nRoot prose', '```\n\n<<^ code="&#x0002;">>\n\nRoot prose');
     const map = records(legacy);
     expect(map.get(URI)!.text).toContain("Root prose");
-    const warning = [...map.values()].find((r) => String(r.tags ?? "").includes("parse-warning"));
-    expect(warning?.text).toMatch(/outside|STX|legacy|meta/i);
+    const diagnostics = memeticIngestOps.deserialize(URI, legacy).diagnostics;
+    expect(diagnostics.map((d) => d.message).join("\n")).toMatch(/root TOML metadata stands before STX/);
   });
 });
