@@ -26,6 +26,8 @@
  * - any other shape → virtual (wiki-only)
  */
 
+import { STABLE_L_SPACE } from "./lar-uris.js";
+
 export interface LarResolution {
   readonly uri: string;
   readonly root: string;
@@ -68,7 +70,8 @@ export interface LarHostfulResolution extends LarResolution {
 }
 
 // The one root the scheme stands: lar:///ha.ka.ba/lares/api/pono/lar-uri (#scheme-syntax).
-const STABLE_TUPLE_ROOT = "ha.ka.ba";
+// Spelled once, in lar-uris.ts — this file reads it rather than re-minting a second literal.
+const STABLE_TUPLE_ROOT = STABLE_L_SPACE;
 const LARES_SCOPE   = "lares";
 const ENGINE_SCOPE  = "lararium";
 
