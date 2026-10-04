@@ -13,9 +13,11 @@
  */
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { verifyBcc } from "@lararium/memetic-frame";
+import { readCarrierShape } from "@lararium/tw5";
 import {
   emptyFoundingCharterDoc, genesisSealEpochCid, rosterFromNexusDoc, foundingQuorumSeated,
   genesisCharterEpoch, sealKeySetHash, sealLineageHead,
@@ -24,6 +26,7 @@ import {
 } from "@lararium/mesh";
 import {
   readNexusDoc, writeNexusDoc, nexusCharterDocPath,
+  writeNexusSeal, writeNexusKahu, writeNexusPractice,
 } from "../src/nexus-doc.js";
 import {
   generateOrLoadPersonaGroupRoot, listPersonaRoots, makeNodePersonaPetnameStore,
@@ -192,5 +195,51 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     expect(back?.threshold).toBe(2);
     expect(rosterFromNexusDoc(back).keys.length).toBe(3);
     expect(foundingQuorumSeated(back)).toBe(true);
+  });
+});
+
+describe("the charter carrier itself — FRAMED, checked, and restamped per joint", () => {
+  let bags: string;
+  beforeEach(() => { bags = mkdtempSync(join(tmpdir(), "lares-nexusdoc-frame-")); });
+  afterEach(() => { rmSync(bags, { recursive: true, force: true }); });
+
+  const doc: NexusDoc = {
+    kind: NEXUS_DOC_DOMAIN, threshold: 2,
+    sealEpochCid: genesisSealEpochCid(["a".repeat(64), "b".repeat(64)], 2),
+    kahu: [
+      { displayName: "Kahu Alpha", verifyingKey: "a".repeat(64) },
+      { displayName: "Kahu Beta",  verifyingKey: "b".repeat(64) },
+    ],
+  };
+
+  test("the rendered charter stands as a real carrier — framed (DOCTYPE/STX/ETX), checked (BCC verifies), and shape-clean", () => {
+    writeNexusDoc(bags, doc);
+    const body = readFileSync(nexusCharterDocPath(bags), "utf8");
+    expect(verifyBcc(body)).toBe("ok");
+    expect(readCarrierShape(body).faults).toEqual([]);
+  });
+
+  test("a SEAL-joint write re-stamps the check over the moved span", () => {
+    writeNexusDoc(bags, doc);
+    writeNexusSeal(bags, { kind: NEXUS_DOC_DOMAIN, sealEpochCid: "a-new-epoch-cid" }, doc);
+    const body = readFileSync(nexusCharterDocPath(bags), "utf8");
+    expect(verifyBcc(body)).toBe("ok");
+    expect(readNexusDoc(bags)?.sealEpochCid).toBe("a-new-epoch-cid");
+  });
+
+  test("a KAHU-joint write re-stamps the check over the moved span", () => {
+    writeNexusDoc(bags, doc);
+    writeNexusKahu(bags, { threshold: 1, kahu: [{ displayName: "Solo", verifyingKey: null }] }, doc);
+    const body = readFileSync(nexusCharterDocPath(bags), "utf8");
+    expect(verifyBcc(body)).toBe("ok");
+    expect(readNexusDoc(bags)?.threshold).toBe(1);
+  });
+
+  test("a PRACTICE-joint write re-stamps the check over the moved span", () => {
+    writeNexusDoc(bags, doc);
+    writeNexusPractice(bags, { federationPosture: "open" }, doc);
+    const body = readFileSync(nexusCharterDocPath(bags), "utf8");
+    expect(verifyBcc(body)).toBe("ok");
+    expect(readNexusDoc(bags)?.federationPosture).toBe("open");
   });
 });

@@ -33,10 +33,12 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
 import {
-  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, NEXUS_CHARTER_URI_PATH,
+  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI,
   type NexusDoc, type NexusCharterKahu, type SealEpoch,
   type FederationPosture, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
+import { stampCarrier } from "@lararium/memetic-frame";
+import { renderCarrier } from "./carrier-render.js";
 
 /** The seal file's name inside the seal home — one file, read by an operator's own eyes. */
 export function nexusCharterDocRelPath(): string {
@@ -216,7 +218,9 @@ export function readNexusDoc(bagsDir: string): NexusDoc | null {
 
 // ── render ────────────────────────────────────────────────────────────────────────────────────────
 
-/** Render the whole carrier in house form — the meta frame, the prose, and one fenced block per joint. */
+/** Render the whole carrier in house form — through tw5's own canonical render (`carrier-render.ts`),
+ *  never a hand-spelled frame. The meta fence, the prose, and one fenced block per joint are this
+ *  module's BODY; the DOCTYPE/head/STX·ETX+check/EOT frame around them is `renderCarrier`'s alone. */
 export function renderNexusDoc(doc: NexusDoc): string {
   const seated = doc.kahu.filter((k) => k.verifyingKey).length;
   const depth  = doc.sealLineage?.length ?? 0;
@@ -228,42 +232,48 @@ export function renderNexusDoc(doc: NexusDoc): string {
   const practice: NexusPracticeBlock =
     doc.federationPosture === undefined ? {} : { federationPosture: doc.federationPosture };
 
-  return `<<~ ? -> ${NEXUS_CHARTER_URI}>>
-\`\`\`toml meta
-uri-path  = "${NEXUS_CHARTER_URI_PATH}"
-file-path = "<lares>/nexus/${nexusCharterDocRelPath()}"
-type      = ${JSON.stringify(CARRIER_TYPE)}
-register  = "Canon"
-mana      = 19
-cacheable = true
-retain    = true
-role      = "the nexus doc — three joints at three cadences: the SEAL lineage (rare, a rotation ceremony), the KAHU roster (steward seats), and the PRACTICE dials (fast, one hand). Each rides its own block and its own narrow writer."
-\`\`\`
+  const body = [
+    "```toml meta",
+    // The root TOML `uri-path` field is checked against the head's own SOH target path (tw5's
+    // deserializer: `uri.slice("lar:///".length)`, dots and all — never a slash-converted or
+    // otherwise-derived spelling), so it rides straight off NEXUS_CHARTER_URI rather than the
+    // unrelated NEXUS_CHARTER_URI_PATH constant (a display-only path nothing else validates against).
+    `uri-path  = "${NEXUS_CHARTER_URI.slice("lar:///".length)}"`,
+    `file-path = "<lares>/nexus/${nexusCharterDocRelPath()}"`,
+    `type      = ${JSON.stringify(CARRIER_TYPE)}`,
+    `register  = "Canon"`,
+    `mana      = 19`,
+    `cacheable = true`,
+    `retain    = true`,
+    `role      = "the nexus doc — three joints at three cadences: the SEAL lineage (rare, a rotation ceremony), the KAHU roster (steward seats), and the PRACTICE dials (fast, one hand). Each rides its own block and its own narrow writer."`,
+    "```",
+    "",
+    "<<~ ahu #/the-three-joints>>",
+    "",
+    "! The nexus Doc — seal · kahu · practice",
+    "",
+    "Three joints ride here at three cadences, each in its own block, because a single block forced every writer through a whole-doc rewrite: a posture flip re-emitted the seal lineage on its way past, and two hands touching different joints clobbered each other. Each narrow writer swaps ONLY its own fence and carries the rest through as opaque text.",
+    "",
+    `The KAHU block holds the APPROVED roster the Kapae immune antigen reads. A ban/lift act carries ${doc.threshold}-of-${doc.kahu.length} founding-kahu signatures, rooted on the seal epoch below. Each kahu's key reads that PersonaGroup's own root-derived verifying key, seated from the vault by \`lares nexus seal seat\` — never invented. An unseated key reads null, and the antigen stays inert until a quorum stands.`,
+    "",
+    `Seated: ${seated}/${doc.kahu.length} · threshold ${doc.threshold} · epoch ${doc.sealEpochCid ?? "(unestablished — seat a quorum)"}${lineageLine}`,
+    "",
+    `\`\`\`json ${SEAL_BLOCK}`,
+    JSON.stringify(seal, null, 2),
+    "```",
+    "",
+    `\`\`\`json ${KAHU_BLOCK}`,
+    JSON.stringify(kahu, null, 2),
+    "```",
+    "",
+    `\`\`\`json ${PRACTICE_BLOCK}`,
+    JSON.stringify(practice, null, 2),
+    "```",
+    "",
+    "<<~/ahu>>",
+  ].join("\n");
 
-<<~ ahu #the-three-joints>>
-
-! The nexus Doc — seal · kahu · practice
-
-Three joints ride here at three cadences, each in its own block, because a single block forced every writer through a whole-doc rewrite: a posture flip re-emitted the seal lineage on its way past, and two hands touching different joints clobbered each other. Each narrow writer swaps ONLY its own fence and carries the rest through as opaque text.
-
-The KAHU block holds the APPROVED roster the Kapae immune antigen reads. A ban/lift act carries ${doc.threshold}-of-${doc.kahu.length} founding-kahu signatures, rooted on the seal epoch below. Each kahu's key reads that PersonaGroup's own root-derived verifying key, seated from the vault by \`lares nexus seal seat\` — never invented. An unseated key reads null, and the antigen stays inert until a quorum stands.
-
-Seated: ${seated}/${doc.kahu.length} · threshold ${doc.threshold} · epoch ${doc.sealEpochCid ?? "(unestablished — seat a quorum)"}${lineageLine}
-
-\`\`\`json ${SEAL_BLOCK}
-${JSON.stringify(seal, null, 2)}
-\`\`\`
-
-\`\`\`json ${KAHU_BLOCK}
-${JSON.stringify(kahu, null, 2)}
-\`\`\`
-
-\`\`\`json ${PRACTICE_BLOCK}
-${JSON.stringify(practice, null, 2)}
-\`\`\`
-
-<<~/ahu>>
-`;
+  return renderCarrier(NEXUS_CHARTER_URI, body);
 }
 
 // ── write ─────────────────────────────────────────────────────────────────────────────────────────
@@ -290,7 +300,10 @@ export function writeNexusDoc(bagsDir: string, doc: NexusDoc): string {
  */
 function writeJoint(bagsDir: string, block: string, payload: unknown, seed: NexusDoc): string {
   const body = readBody(bagsDir) ?? renderNexusDoc(seed);
-  return writeBody(bagsDir, swapFence(body, block, payload));
+  // The swap moves the span the check covers (the payload's byte length rarely matches the fence it
+  // replaces), so the check must move with it — `stampCarrier` re-stamps over the CURRENT span, never
+  // a blind carry of the old check forward.
+  return writeBody(bagsDir, stampCarrier(swapFence(body, block, payload)));
 }
 
 /** Write the SEAL joint alone — a rotation ceremony's reach, touching no roster and no dial. */
