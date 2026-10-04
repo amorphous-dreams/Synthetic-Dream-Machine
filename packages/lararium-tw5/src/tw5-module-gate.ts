@@ -36,7 +36,7 @@ export async function bootTrustedModules(tw: TW5Instance): Promise<void> {
       const body = f["text"] ?? "";
       if (!body.trim() || body.startsWith("// Body injected")) continue;
 
-      const claimedHash = f["body-sha256"] ?? "";
+      const claimedHash = f["source-sha256"] ?? "";
       if (!claimedHash || !(await verifySha256(body, claimedHash))) continue;
 
       wiki.addTiddler(new tw.Tiddler({
@@ -72,7 +72,7 @@ async function verifySha256(body: string, claimedHex: string): Promise<boolean> 
     const actual = Array.from(new Uint8Array(buf))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
-    // Dual-read: a `body-sha256` field may ride bare (implicit sha256) OR tagged
+    // Dual-read: a `source-sha256` field may ride bare (implicit sha256) OR tagged
     // (`sha256:…`) — `digestsEqual` normalizes both, so read-accepts-both lands
     // BEFORE any emitter (sync-heleuma) starts writing the tagged form.
     return digestsEqual(actual, claimedHex);

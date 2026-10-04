@@ -30,7 +30,7 @@ _bootModules()
     ├─ wiki.filterTiddlers([all[tiddlers]implementors[MODULE_INTERFACE_URI]])
     │       │  for each matching tiddler:
     │       ├─ Layer 1: mana/manao/manaoio/confidence ≥ thresholds
-    │       ├─ Layer 2: SHA-256(text) === body-sha256 field
+    │       ├─ Layer 2: SHA-256(text) === source-sha256 field
     │       └─ Layer 3: keyhive capability proof (planned — not yet implemented)
     │
     ├─ if any pass → inject as JS modules via wiki.addTiddler()
@@ -64,7 +64,7 @@ All four signal fields must meet or exceed these floor values for a meme to be i
 | `manaoio` | `MODULE_MANAOIO_THRESHOLD` | 17 |
 | `confidence` | `MODULE_CONFIDENCE_THRESHOLD` | 18 |
 
-Additionally: `body-sha256` must verify (SHA-256 of the `text` field, hex-encoded). Gate layer 3 (keyhive capability proof) is planned but not yet implemented; the gate currently passes on layers 1–2 only.
+Additionally: `source-sha256` must verify (SHA-256 of the `text` field, hex-encoded). Gate layer 3 (keyhive capability proof) is planned but not yet implemented; the gate currently passes on layers 1–2 only.
 
 <<~/ahu>>
 
@@ -80,6 +80,6 @@ The distinction is the whole gate. ''Authority is what a carrier holds and who g
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MjzfwJhajaCgCSaRD98p4Qhu5psrVw66qoDRz18XCqc
+<<^ code="&#x0003;">>ni:///sha-256;3kMN9yUmhPZesW8enVXRuAhLlQEsWNib-bCePZWlLtM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -49,9 +49,9 @@ heleuma = "ba"
 
 It SHALL hold a `#source` slot with verbatim content sufficient to reconstruct the artifact from the meme alone (the quine property). "Sufficient" means: a reader with no access to the source repository can rebuild the artifact from the `#source` and `#contract` slots together.
 
-It MAY declare `source-symbol` when the source span has a clear boundary. When `source-symbol` is declared, the meme MAY also declare `body-sha256` — the SHA-256 hash of the `#source` slot's verbatim content — for drift detection at build time.
+It MAY declare `source-symbol` when the source span has a clear boundary. When `source-symbol` is declared, the meme MAY also declare `source-sha256` — the SHA-256 hash of the `#source` slot's verbatim content — for drift detection at build time.
 
-It SHALL NOT declare `body-sha256` without `source-symbol`.
+It SHALL NOT declare `source-sha256` without `source-symbol`.
 
 <<~/ahu>>
 
@@ -59,6 +59,6 @@ It SHALL NOT declare `body-sha256` without `source-symbol`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LVuxMLqOWNBG5N_E2comCWVR4dPq4hxKU1WETb-mm1o
+<<^ code="&#x0003;">>ni:///sha-256;1N9KPROE7aexAu_wO-NfYSl0hsDmW3aBnnpos55iHMM
 
 <<^ code="&#x0004;" -> to="?">>

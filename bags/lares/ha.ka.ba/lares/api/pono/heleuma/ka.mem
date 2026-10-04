@@ -50,10 +50,10 @@ source-symbol = "<standalone function or export name>"
 
 It SHALL hold a `#source` slot with the ''complete verbatim'' body of the named symbol (the quine property). Partial captures violate the quine. If the natural unit is embedded in a larger function, extract it to a named function first.
 
-It MAY declare `body-sha256` when ready for promotion:
+It MAY declare `source-sha256` when ready for promotion:
 
 ```toml
-body-sha256 = "<sha256 hex of #source slot content>"
+source-sha256 = "<sha256 hex of #source slot content>"
 ```
 
 This is gate layer 2 (content integrity). Written by `sync-heleuma --commit` when the source is stable.
@@ -68,7 +68,7 @@ Signal fields (`mana`, `manao`, `manaoio`) SHALL approach 16 / 16 / 15 as the so
 
 !! Promotion Path
 
-When `body-sha256` is present and all signal thresholds are met, `_bootModules()` loads this meme as a live JS module, replacing the compiled-in fallback. (When keyhive lands, a capability proof will also be required — gate layer 3.) At that point:
+When `source-sha256` is present and all signal thresholds are met, `_bootModules()` loads this meme as a live JS module, replacing the compiled-in fallback. (When keyhive lands, a capability proof will also be required — gate layer 3.) At that point:
 
 * `heleuma = "ka"` SHALL be removed
 * The meme pair becomes a standard corpus meme pair
@@ -82,6 +82,6 @@ When `body-sha256` is present and all signal thresholds are met, `_bootModules()
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5Fb0jZgbc5BS8QztGGYwqlvvOL3wTepXC3t65d0akSs
+<<^ code="&#x0003;">>ni:///sha-256;J2u8J7ZZNUylDx2RwIqHc2U1DSeBSUFum381m-kq5dM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -4,7 +4,7 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-body-sha256   = "09e7f52ebcb8617e2f675e8a4f09f043474488b34b93ff3c857615a923153300"
+source-sha256 = "09e7f52ebcb8617e2f675e8a4f09f043474488b34b93ff3c857615a923153300"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/cold-boot-ceremony.mem"
 heleuma       = "ka"
@@ -54,6 +54,6 @@ Caller MUST check the identity tiddler does not already exist before writing (id
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IW7iRgXskhIs_oIzqhv8eC9whe4OU2xSfyDqrdDEhf4
+<<^ code="&#x0003;">>ni:///sha-256;jS1qewGYu0ao9l6wIoV2J2fwkO1f8QhsQOJr8UoK7w8
 
 <<^ code="&#x0004;" -> to="?">>

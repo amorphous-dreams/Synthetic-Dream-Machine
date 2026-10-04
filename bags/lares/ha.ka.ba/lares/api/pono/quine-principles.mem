@@ -100,7 +100,7 @@ not closed — it is partial.
 
 ''Lararium expression:''
 * Boot behavior is determined by the meme corpus (which memes have `invariant = true`,
-  which have `mana ≥ 18`, which carry Heleuma body-sha256 anchors)
+  which have `mana ≥ 18`, which carry Heleuma source-sha256 anchors)
 * The `lar:` URI resolver is the single gate — all content enters through it
 * FPI-2 (wave vs water): behavior MUST stay independent of physical filesystem layout
 
@@ -135,7 +135,7 @@ save-to-self: editing a tiddler changes what the wiki renders, with no intermedi
 new implementation. Schema rules that require a TypeScript rebuild before they apply.
 Any "reload required" path for content that could live in the tiddler store.
 
-''Rule:'' Any meme with `mana ≥ 18` and a Heleuma body-sha256 anchor MUST be loadable
+''Rule:'' Any meme with `mana ≥ 18` and a Heleuma source-sha256 anchor MUST be loadable
 at runtime without a restart. The boot-time gate checks these fields; if they pass,
 the meme is preferred over the compiled TypeScript equivalent.
 
@@ -242,7 +242,7 @@ link between the compiled artifact and its meme representation:
 ```toml
 # in the meme's TOML meta block:
 heleuma       = "ba"        # stage marker
-body-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme capture
+source-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme capture
 ```
 
 ''Stages:''
@@ -250,9 +250,9 @@ body-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme ca
 | Stage | Description |
 |---|---|
 | 0 | Logic in TypeScript only; no meme |
-| 1 | TypeScript file has meme; meme has `heleuma = "ba"` and `body-sha256` |
+| 1 | TypeScript file has meme; meme has `heleuma = "ba"` and `source-sha256` |
 | 2 | Meme body contains compiled CJS; TypeScript fallback still active |
-| 3 | Boot-time gate checks `mana`, `confidence`, `body-sha256`; meme preferred if all pass |
+| 3 | Boot-time gate checks `mana`, `confidence`, `source-sha256`; meme preferred if all pass |
 | 4 | Meme is authoritative; TypeScript is fallback only |
 
 ''`heleuma = "ba"`'': "ba" (Hawaiian: to carry, to bear) — the meme is now the carrier
@@ -271,6 +271,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BNKTEPjTDYSYx2Et-sS3jws7mXk7_oJ_kLTDFv4B5Tc
+<<^ code="&#x0003;">>ni:///sha-256;WXdzBq8yHw9Hotfq2VmzvbtGUkiYvqE15H-Ppdq4J6M
 
 <<^ code="&#x0004;" -> to="?">>

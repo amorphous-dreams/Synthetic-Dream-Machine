@@ -70,7 +70,7 @@ through the URI resolver, not by direct construction.
 The pattern holds invariant; the instantiation remains transient and replaceable.
 
 ''Pattern (invariant):'' lar: URI namespace, AST/parseTree definitions, OODA-HA/LADDER_5
-doctrine arrays, Heleuma body-sha256 anchors, CRDT schema.
+doctrine arrays, Heleuma source-sha256 anchors, CRDT schema.
 
 ''Water (transient):'' a specific TW5 instance, a specific peer node, a specific browser
 session, a specific filesystem layout.
@@ -134,16 +134,16 @@ arrive before platform-specific variants. The whole-system property comes first.
 Applied to code: move logic from the external TypeScript layer into tiddlers.
 Each piece of logic moved reduces the "material" required to carry the pattern.
 
-''Measurement:'' the Heleuma `body-sha256` anchor system tracks ephemeralization
+''Measurement:'' the Heleuma `source-sha256` anchor system tracks ephemeralization
 progress. A TypeScript file with a `heleuma = "ka/ba"` anchor and a `source-symbol`
 in its `#source` ahu MAY be a candidate for ephemeralization once the meme is stable.
 
 ''Progression:''
 ```
 Stage 0: logic in external TypeScript only (no meme representation)
-Stage 1: TypeScript file has a Heleuma anchor; meme exists with body-sha256
+Stage 1: TypeScript file has a Heleuma anchor; meme exists with source-sha256
 Stage 2: meme body contains the compiled CJS; imperative fallback still present
-Stage 3: boot-time gate checks mana/confidence/body-sha256; corpus path preferred
+Stage 3: boot-time gate checks mana/confidence/source-sha256; corpus path preferred
 Stage 4: external TypeScript serves as fallback only; meme carries authority
 ```
 
@@ -220,6 +220,6 @@ Run this against any new code before merging:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KG56G4Q0vrpWt1WLKiJtg8qXbBS5Vp7Ejt59EoKdvTU
+<<^ code="&#x0003;">>ni:///sha-256;I2PoInDhhGEKcd2Do_TWyCmqFUdeJC_EJhmpFiiycxk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -65,7 +65,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/meta-panel"
 <details class="lar-meta-details">
 <summary>Technical fields</summary>
 <table class="lar-meta-table">
-<$list filter="content-type module-type tw5-module-name body-sha256 cacheable retain hydrate" variable="f">
+<$list filter="content-type module-type tw5-module-name source-sha256 cacheable retain hydrate" variable="f">
 <$set name="v" value={{{ [{!!$(f)$}] }}}>
 <$reveal type="nomatch" state="" text="">
 <tr><th><code><<f>></code></th><td><code><<v>></code></td></tr>
@@ -80,7 +80,7 @@ uri-path  = "ha.ka.ba/lararium/tw5/ui/meta-panel"
 <details class="lar-meta-details">
 <summary>Raw fields</summary>
 <table class="lar-meta-table">
-<$list filter="[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[mana]!match[manao]!match[manaoio]!match[confidence]!match[role]!match[namespace]!match[register]!match[l-space]!match[content-type]!match[module-type]!match[tw5-module-name]!match[body-sha256]!match[cacheable]!match[retain]!match[hydrate]]" variable="f">
+<$list filter="[fields[]!match[title]!match[text]!match[tags]!match[bag]!match[revision]!match[created]!match[modified]!match[creator]!match[modifier]!match[mana]!match[manao]!match[manaoio]!match[confidence]!match[role]!match[namespace]!match[register]!match[l-space]!match[content-type]!match[module-type]!match[tw5-module-name]!match[source-sha256]!match[cacheable]!match[retain]!match[hydrate]]" variable="f">
 <$set name="v" value={{{ [{!!$(f)$}] }}}>
 <$reveal type="nomatch" state="" text="">
 <tr><th><code><<f>></code></th><td><<v>></td></tr>
@@ -102,7 +102,7 @@ tier1 = ["mana", "manao", "manaoio", "confidence"]
 # Tier 2 — identity block
 tier2 = ["role", "namespace", "register", "l-space"]
 # Tier 3 — technical fields (details disclosure)
-tier3 = ["content-type", "module-type", "tw5-module-name", "body-sha256", "cacheable", "retain", "hydrate"]
+tier3 = ["content-type", "module-type", "tw5-module-name", "source-sha256", "cacheable", "retain", "hydrate"]
 # Fields always excluded from tier 4 (raw fallback)
 exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "creator", "modifier"]
 ```
@@ -118,6 +118,6 @@ exclude = ["title", "text", "tags", "bag", "revision", "created", "modified", "c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qqTTE4MsrFT-wPhmUy2dQIxqYclZTLLEcHBGV544eHM
+<<^ code="&#x0003;">>ni:///sha-256;9OFLdg_UPCNd1w70USd4Y-3FaSweakXTy1qiDzGbd8k
 
 <<^ code="&#x0004;" -> to="?">>

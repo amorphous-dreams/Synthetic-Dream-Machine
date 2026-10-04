@@ -34,7 +34,7 @@ corpus load.
 | `manao` | MUST be ≥ 17 to pass gate layer 1 (threshold) |
 | `manaoio` | MUST be ≥ 17 to pass gate layer 1 (threshold) |
 | `confidence` | MUST be ≥ 18 to pass gate layer 1 (threshold) |
-| `body-sha256` | SHA-256 hex digest of the body text; MUST match at inject time (gate layer 2 — content integrity); written by `scripts/write-module-meme.ts` at build time |
+| `source-sha256` | SHA-256 hex digest of the body text; MUST match at inject time (gate layer 2 — content integrity); written by `scripts/sync-heleuma.ts` at build time |
 
 !!! Body
 
@@ -49,7 +49,7 @@ to the bundle's execution context. Three gate layers must all pass before the ke
 to any meme body:
 
 # ''Threshold'' (`mana` ≥ 18, `manao` ≥ 17, `manaoio` ≥ 17, `confidence` ≥ 18) — declared intent
-# ''Content hash'' (`body-sha256` matches `sha256(text)`) — body integrity; set at build time by `pnpm bundle`, verified at inject time; a tampered or stale body fails here
+# ''Content hash'' (`source-sha256` matches `sha256(text)`) — body integrity; set at build time by `pnpm bundle`, verified at inject time; a tampered or stale body fails here
 # ''Keyhive capability proof'' (planned) — Ed25519-signed authorization from a keyhive principal; replaces the pre-keyhive `promoted-at` timestamp sketch; not yet implemented; gate currently passes on layers 1–2 only
 
 A meme that fails any layer falls through to the imperative fallback path and is not executed.
@@ -69,6 +69,6 @@ boots correctly in offline or cold-start conditions before the corpus is loaded.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qbuwVULM0GWxGHD1Rrebo6hGBUOXVpAhZ9rKONNFBaE
+<<^ code="&#x0003;">>ni:///sha-256;Dv-7TqZ0FS1OyWrPF7GLaUz0wHlVz7rF7fxFW6O4YNY
 
 <<^ code="&#x0004;" -> to="?">>

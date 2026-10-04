@@ -4,7 +4,7 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-body-sha256   = "6cc6ce1e6d1dc43e399f3c00735763a804c36fdf3b646670588cc2505b9f5af2"
+source-sha256 = "6cc6ce1e6d1dc43e399f3c00735763a804c36fdf3b646670588cc2505b9f5af2"
 cacheable     = true
 file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/kau.mem"
 heleuma       = "ka"
@@ -67,6 +67,6 @@ Per-instance capability hooks and UUID write-back surface as explicit TW5 action
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OcmxXs7m9Vqvn_CA8sYoM7B5azN_WyV4FDhfwcLkkDQ
+<<^ code="&#x0003;">>ni:///sha-256;AmDSIrkQQ-EK5l1uNm97b6dFn9Auoem7ndxnd8A5z-k
 
 <<^ code="&#x0004;" -> to="?">>

@@ -4,11 +4,11 @@
  * THE WINDOW LAW. An anchor's `#source` slot holds a `<$transclude>` facing the code-file tiddler
  * `module-ref` names — the one home for the code, shipped by the plugin, ingested through the TW5
  * filetype registry, or minted at promotion. Drift between the wiki's code tiddler and the live TS
- * belongs to --sync-modules (body-sha256 over the module body); the default check asks reference
+ * belongs to --sync-modules (source-sha256 over the module body); the default check asks reference
  * integrity alone: ref declared, window standing, window facing the ref.
  *
  * Modes (mutually exclusive flags):
- *   (none)            Dry-run: window integrity + module body-sha256, write nothing.
+ *   (none)            Dry-run: window integrity + module source-sha256, write nothing.
  *   --commit          Build plugin tiddlers, then re-check windows.
  *   --scan            Scan packages/ for exported symbols that lack a heleuma pair.
  *   --scan-promote    Scan packages/ for pure-data constants that should become
@@ -20,7 +20,7 @@
  *
  * heleuma modes:
  *   ha — body/structure anchor: permanent compiled-in territory, no promotion path.
- *   ka — soul/fire anchor: promotion-eligible; #source + body-sha256 track readiness; keyhive proof is layer 3 (planned).
+ *   ka — soul/fire anchor: promotion-eligible; #source + source-sha256 track readiness; keyhive proof is layer 3 (planned).
  *   ba — psyche/path anchor: quine-only; #source slot sufficient for reconstruction.
  *
  * Decorator file conventions (--scan-decorators):
@@ -44,7 +44,7 @@ import { fileURLToPath } from "url";
 import { repoRoot } from "@lararium/mesh/node";
 import { tagDigest, digestsEqual } from "@lararium/mesh/agile-digest";
 import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
-import { moduleBodyDigest, applyBodySha256Patch } from "./heleuma-digest.js";
+import { moduleBodyDigest, applySourceSha256Patch } from "./heleuma-digest.js";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
@@ -66,7 +66,7 @@ const SYNC_MODULES     = args.includes("--sync-modules");
 // ---------------------------------------------------------------------------
 
 const TOML_RE        = /```toml([\s\S]*?)```/;
-const SOURCE_SLOT_RE = /<<~ ahu #source\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
+const SOURCE_SLOT_RE = /<<~ ahu #\/source\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const FENCE_RE       = /```[^\n]*\n([\s\S]*?)\n```/;
 
 function parseToml(block: string): Record<string, string> {
@@ -138,11 +138,11 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
 
 
 // ---------------------------------------------------------------------------
-// Commit: patch #source slot and/or body-sha256 in one write
+// Commit: patch #source slot and/or source-sha256 in one write
 // ---------------------------------------------------------------------------
 
 
-// Patches body-sha256 in the first ```toml block (the root toml meta prelude).
+// Patches source-sha256 in the first ```toml block (the root toml meta prelude).
 // Adds the field if absent; replaces it if stale. The emitted value rides
 // ALGORITHM-TAGGED (`sha256:<hex>`) — `verifySha256` (the runtime cold-boot reader)
 // and this script's own drift check both dual-read via `digestsEqual`, so a field
@@ -393,7 +393,7 @@ function runScanPromote(): void {
 
 // ---------------------------------------------------------------------------
 // --sync-modules: walk lares/ for anchors with module-ref, verify/patch
-//   body-sha256 against the module record's text — the bytes the boot gate verifies.
+//   source-sha256 against the module record's text — the bytes the boot gate verifies.
 //   In --commit mode: also re-extracts and strips TypeScript source from
 //   source-file/source-symbol, injects into module tiddler body if drifted.
 // ---------------------------------------------------------------------------
@@ -444,7 +444,7 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
       missing++;
       continue;
     }
-    const existingHash = toml["body-sha256"] ?? "";
+    const existingHash = toml["source-sha256"] ?? "";
     // Dual-read across the tag boundary: `existingHash` may ride bare (pre-agile) OR
     // tagged (`sha256:…`); `digestsEqual` normalizes both, so a merely-reformatted
     // digest never reads as content drift. Empty existing → not-equal → drift (add).
@@ -453,13 +453,13 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
     const anchorUri = toml["uri-path"] ?? mdPath;
 
     if (COMMIT && hashDrift) {
-      const patched_content = applyBodySha256Patch(content, liveHash);
+      const patched_content = applySourceSha256Patch(content, liveHash);
       writeFileSync(mdPath, patched_content, "utf8");
-      console.log(`[sync-modules] patched  ${anchorUri}  body-sha256 ${existingHash ? "updated" : "added"}`);
+      console.log(`[sync-modules] patched  ${anchorUri}  source-sha256 ${existingHash ? "updated" : "added"}`);
       patched++;
     } else if (!COMMIT && hashDrift) {
       console.warn(`[sync-modules] DRIFT  ${anchorUri}`);
-      console.warn(`               anchor body-sha256: ${existingHash || "(missing)"}`);
+      console.warn(`               anchor source-sha256: ${existingHash || "(missing)"}`);
       console.warn(`               module body sha256: ${liveHash}`);
       drift++;
     } else {
@@ -481,7 +481,7 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
 // (by scanning lares/ for a meme with source-file pointing to this file).
 //
 // With --commit: scaffolds missing memes with correct TOML, source-file,
-// source-symbol, body-sha256, and a #source slot containing verbatim source.
+// source-symbol, source-sha256, and a #source slot containing verbatim source.
 // ---------------------------------------------------------------------------
 
 interface DecoratorFile {
@@ -601,7 +601,7 @@ heleuma     = "${heleumaMode}"
 module-ref  = "lar:///${uriPath}"
 source-file = "${d.relPath}"
 source-symbol = "${srcSym}"
-body-sha256 = "${bodyHash}"
+source-sha256 = "${bodyHash}"
 cacheable   = true
 status-date = "${new Date().toISOString().slice(0, 10)}"
 \`\`\`
@@ -685,14 +685,14 @@ if (SCAN_DECORATORS) {
 }
 
 if (SYNC_MODULES) {
-  console.log("[sync-modules] checking anchor body-sha256 against module tiddler bodies\n");
+  console.log("[sync-modules] checking anchor source-sha256 against module tiddler bodies\n");
   const { drift, missing, patched } = runSyncModules();
   if (COMMIT) {
     console.log(`\n[sync-modules] patched ${patched}, missing ${missing}`);
   } else {
     console.log(`\n[sync-modules] ${drift} drift, ${missing} missing`);
     if (drift > 0 || missing > 0) {
-      console.warn("[sync-modules] run with --sync-modules --commit to update body-sha256 fields");
+      console.warn("[sync-modules] run with --sync-modules --commit to update source-sha256 fields");
     }
   }
   process.exit(drift > 0 || missing > 0 ? 1 : 0);
@@ -779,9 +779,9 @@ if (COMMIT) {
 
 // Always run module-sync check in dry-run pass (not in --commit, which only patches #source slots)
 if (!COMMIT) {
-  console.log("\n[sync-modules] checking anchor body-sha256 against module tiddler bodies");
+  console.log("\n[sync-modules] checking anchor source-sha256 against module tiddler bodies");
   const modResult = runSyncModules();
   if (modResult.drift > 0 || modResult.missing > 0) {
-    console.warn(`[sync-modules] run with --sync-modules --commit to update body-sha256 fields`);
+    console.warn(`[sync-modules] run with --sync-modules --commit to update source-sha256 fields`);
   }
 }

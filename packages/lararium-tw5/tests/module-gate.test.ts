@@ -74,7 +74,7 @@ function moduleMeme(title: string, body: string, overrides: Fields = {}): Fields
     tags:          [MODULE_COMPONENT],
     mana:          "18", manao: "18", manaoio: "18", confidence: "18",
     "module-type": "library",
-    "body-sha256": sha256(body),
+    "source-sha256": sha256(body),
     text:          body,
     ...overrides,
   };
@@ -99,7 +99,7 @@ describe("bootTrustedModules — selection by worn component", () => {
     const body = "exports.probe = 1;";
     const { tw, tiddlers } = fakeTw({
       ["lar:///ha.ka.ba/bags/test/modules/low"]:    moduleMeme("lar:///ha.ka.ba/bags/test/modules/low", body, { mana: "3" }),
-      ["lar:///ha.ka.ba/bags/test/modules/nohash"]: moduleMeme("lar:///ha.ka.ba/bags/test/modules/nohash", body, { "body-sha256": "" }),
+      ["lar:///ha.ka.ba/bags/test/modules/nohash"]: moduleMeme("lar:///ha.ka.ba/bags/test/modules/nohash", body, { "source-sha256": "" }),
       ["lar:///ha.ka.ba/bags/test/modules/bare"]:   moduleMeme("lar:///ha.ka.ba/bags/test/modules/bare", body, { tags: [] }),
     });
 

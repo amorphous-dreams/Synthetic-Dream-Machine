@@ -42,11 +42,11 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/boot-gate"
 | pono | `manao` via `MODULE_MANAO_THRESHOLD` | 17 |
 | pono | `manaoio` via `MODULE_MANAOIO_THRESHOLD` | 17 |
 | body | non-empty text, and not the injected-body placeholder | — |
-| digest | `body-sha256` verifies through `SubtleCrypto.digest("SHA-256")` | — |
+| digest | `source-sha256` verifies through `SubtleCrypto.digest("SHA-256")` | — |
 
 A level that reads as `null` — absent, or unparseable by `parsePonoLevel` — fails the same way a low one does.
 
-''The digest read accepts two spellings.'' A `body-sha256` field may ride bare (implicit sha256) or tagged (`sha256:…`); `digestsEqual` normalizes both, so a reader accepting both stands BEFORE any emitter starts writing the tagged form.
+''The digest read accepts two spellings.'' A `source-sha256` field may ride bare (implicit sha256) or tagged (`sha256:…`); `digestsEqual` normalizes both, so a reader accepting both stands BEFORE any emitter starts writing the tagged form.
 
 A keyhive capability proof stands as the layer still owed; the gate admits on pono and digest alone.
 
@@ -68,6 +68,6 @@ After at least one module injects, the gate reads `lar:///ha.ka.ba/lararium/tw5/
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;50_kDy5KbKhTPlPiyPXqA-oYyqSQoKgBwjjetuqFeyM
+<<^ code="&#x0003;">>ni:///sha-256;8fTZjIRpfTGKvcxmbq8AgEpTJ_U8w0uVAoq2-TBOSnA
 
 <<^ code="&#x0004;" -> to="?">>

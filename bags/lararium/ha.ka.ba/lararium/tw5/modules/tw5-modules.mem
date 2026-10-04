@@ -4,7 +4,7 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-body-sha256     = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+source-sha256   = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 cacheable       = true
 file-path       = "bags/lararium/ha.ka.ba/lararium/tw5/modules/tw5-modules.mem"
 mana            = 19
@@ -42,6 +42,6 @@ The sigil declarations and render templates that make up the wikitext surface tr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7SQNfrAQjhUk6n0bSARvoSsN-EOMx_G7ec3O4vCjveA
+<<^ code="&#x0003;">>ni:///sha-256;Xy1bHCsLQdtw-EeiMtIEUq4w8OAWG3I_pVUeJR-x_Ik
 
 <<^ code="&#x0004;" -> to="?">>

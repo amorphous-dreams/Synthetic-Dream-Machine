@@ -1,8 +1,8 @@
 /**
- * `body-sha256` HASHES WHAT THE GATE HASHES, and a patched anchor re-stamps its check.
+ * `source-sha256` HASHES WHAT THE GATE HASHES, and a patched anchor re-stamps its check.
  *
  * Two layers, both standing:
- *   (L1) a `ka` anchor's `body-sha256` is the SHA-256 of the module's CODE — exactly the deserialized
+ *   (L1) a `ka` anchor's `source-sha256` is the SHA-256 of the module's CODE — exactly the deserialized
  *        record `text` the boot gate (`tw5-module-gate.ts`) verifies before it injects a module;
  *   (L2) the block check over STX..ETX covers the whole body, root meta INCLUDED — so the meta that
  *        holds L1 is itself covered by L2.
@@ -18,7 +18,7 @@ import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
 import { frameCarrier, verifyBcc } from "@lararium/memetic-frame";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
-import { moduleBodyDigest, applyBodySha256Patch } from "../scripts/heleuma-digest.js";
+import { moduleBodyDigest, applySourceSha256Patch } from "../scripts/heleuma-digest.js";
 
 const MODULE = "lar:///ha.ka.ba/lararium/tw5/modules/probe";
 const CODE = 'exports.probe = function () { return "probe"; };';
@@ -33,10 +33,10 @@ const moduleCarrier = frameCarrier({
 /** The anchor whose meta carries the digest, framed and checked. */
 const anchor = frameCarrier({
   head: { uri: "lar:///ha.ka.ba/lararium/tw5/probe-anchor" },
-  body: `\`\`\`toml meta\nbody-sha256 = "sha256:stale"\nheleuma     = "ka"\nmodule-ref  = "${MODULE}"\n\`\`\`\n\nAnchor prose.`,
+  body: `\`\`\`toml meta\nsource-sha256 = "sha256:stale"\nheleuma     = "ka"\nmodule-ref  = "${MODULE}"\n\`\`\`\n\nAnchor prose.`,
 });
 
-describe("★ body-sha256 is the gate's own hash ★", () => {
+describe("★ source-sha256 is the gate's own hash ★", () => {
   test("the digest equals SHA-256 of the record text the gate verifies", () => {
     const gateText = String(memeticWikitextDeserializer(moduleCarrier, { title: MODULE }).find((r) => r.title === MODULE)?.text);
     expect(gateText).toBe(CODE);
@@ -51,8 +51,8 @@ describe("★ body-sha256 is the gate's own hash ★", () => {
 describe("★ a patched anchor re-stamps its check ★", () => {
   test("the field moves, and the check moves with it", () => {
     expect(verifyBcc(anchor)).toBe("ok");
-    const patched = applyBodySha256Patch(anchor, sha(CODE));
-    expect(patched).toContain(`body-sha256 = "sha256:${sha(CODE)}"`);
+    const patched = applySourceSha256Patch(anchor, sha(CODE));
+    expect(patched).toContain(`source-sha256 = "sha256:${sha(CODE)}"`);
     expect(verifyBcc(patched)).toBe("ok");
   });
 });

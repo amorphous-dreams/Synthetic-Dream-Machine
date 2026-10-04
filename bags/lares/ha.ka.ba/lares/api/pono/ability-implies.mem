@@ -4,7 +4,7 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-body-sha256   = "4eb7fd5da26c4cb5097ed713b105a0e0f8570f390a4ee7882ec7a98064faea68"
+source-sha256 = "4eb7fd5da26c4cb5097ed713b105a0e0f8570f390a4ee7882ec7a98064faea68"
 cacheable     = true
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/ability-implies.mem"
 heleuma       = "ka"
@@ -75,6 +75,6 @@ export function abilityImplies(have: OrichalcumAbility, need: OrichalcumAbility)
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pN9923DDpoXVbVyunSDczkLbVpAjIFBpI3DabnIAdlU
+<<^ code="&#x0003;">>ni:///sha-256;9aaGfGagWDv_VaF8KKXmNJnKMKY4NK5haYp93TJJg6E
 
 <<^ code="&#x0004;" -> to="?">>

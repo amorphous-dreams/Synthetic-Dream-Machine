@@ -58,7 +58,7 @@ plugin.info + static .tid + TS module sources
 - `plugin.info` carries human intent only; generated facts stay out.
 - JS module verification compares body sha256 field-by-field.
 - Source manifests stay acyclic (source facts precede packed-artifact facts).
-- Anchor meme `body-sha256` fields patch cleanly from generated JS bodies.
+- Anchor meme `source-sha256` fields patch cleanly from generated JS bodies.
 
 **Current gaps / pono debts:**
 

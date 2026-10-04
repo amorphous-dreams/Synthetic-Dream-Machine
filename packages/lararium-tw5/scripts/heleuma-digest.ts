@@ -1,8 +1,8 @@
 /**
- * heleuma-digest — `body-sha256`: what it hashes, and how an anchor takes a new one.
+ * heleuma-digest — `source-sha256`: what it hashes, and how an anchor takes a new one.
  *
  * ── TWO LAYERS, AND BOTH STAND ──────────────────────────────────────────────────────────────────
- *   (L1) a `ka` anchor's `body-sha256` is the SHA-256 of the module's CODE — exactly the deserialized
+ *   (L1) a `ka` anchor's `source-sha256` is the SHA-256 of the module's CODE — exactly the deserialized
  *        record `text` the boot gate (`src/tw5-module-gate.ts`) verifies before it injects a module.
  *   (L2) the block check over STX..ETX covers the anchor's whole body, root meta INCLUDED — so the
  *        meta that holds L1 is itself covered by L2.
@@ -31,10 +31,10 @@ export function moduleBodyDigest(content: string, moduleRef: string): string | n
 }
 
 /**
- * Write `body-sha256` into the anchor's ROOT meta — the first meta block of the body, found by the one
- * span reader — then re-stamp the anchor's check over the body that moved.
+ * Write `source-sha256` into the anchor's ROOT meta — the first meta block of the body, found by the
+ * one span reader — then re-stamp the anchor's check over the body that moved.
  */
-export function applyBodySha256Patch(content: string, sha256: string): string {
+export function applySourceSha256Patch(content: string, sha256: string): string {
   const tagged = tagDigest(sha256);
   const from = readFrame(content).stx?.end ?? 0;
   const open = new RegExp(META_OPEN_RE.source, "g");
@@ -45,10 +45,10 @@ export function applyBodySha256Patch(content: string, sha256: string): string {
   const close = content.indexOf("\n```", bodyStart);
   if (close < 0) return content;
   const meta = content.slice(bodyStart, close);
-  const SHA_FIELD = /^body-sha256\s*=\s*"[^"]*"/m;
+  const SHA_FIELD = /^source-sha256\s*=\s*"[^"]*"/m;
   const next = SHA_FIELD.test(meta)
-    ? meta.replace(SHA_FIELD, `body-sha256 = "${tagged}"`)
-    : `${meta}\nbody-sha256 = "${tagged}"`;
+    ? meta.replace(SHA_FIELD, `source-sha256 = "${tagged}"`)
+    : `${meta}\nsource-sha256 = "${tagged}"`;
   // The column law holds after the patch, so the anchor stays canonical under `meme check`.
   return stampCarrier(content.slice(0, bodyStart) + alignMetaTomlColumns(next) + content.slice(close));
 }
