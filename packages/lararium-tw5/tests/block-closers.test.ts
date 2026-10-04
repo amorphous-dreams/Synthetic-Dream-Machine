@@ -44,6 +44,11 @@ function readBlocks(): Block[] {
 /** Declared, never inferred — heads whose OPEN form this vector cannot write. */
 const EXEMPT = new Set([
   "pranala",   // arrow syntax with typed ends; `pranala-block` vectors cover it
+  "fragment",  // the English BUILTIN_CHILD_SLOT alias — `<<fragment … <</fragment>>`, no `~`. Its
+               // capture is hardcoded directly in lar-sigil.ts (the tilde-less close string, searched
+               // by literal indexOf) rather than routed through closePatternToTag/BLOCK_CLOSERS, so
+               // its declared `lar-close-pattern` is documentation for the shelf census, not a tag
+               // this generic reducer owns.
 ]);
 
 const blocks = readBlocks().filter((b) => !EXEMPT.has(b.name));
@@ -64,6 +69,7 @@ describe("closePatternToTag — a tag, or nothing", () => {
   test("★ every closer the shelf declares reduces to a real tag ★", () => {
     const unreduced: string[] = [];
     for (const file of readdirSync(DIR).filter((n) => /^sigil-.*\.tid$/.test(n))) {
+      if (EXEMPT.has(file.slice("sigil-".length, -".tid".length))) continue;
       const m = /^lar-close-pattern:\s*(.*)$/m.exec(readFileSync(DIR + file, "utf8"));
       if (m && closePatternToTag(m[1]!) === null) unreduced.push(`${file}: ${m[1]}`);
     }
