@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/noosphere-boot"
 ```
 
-<<~ aka "https://www.rfc-editor.org/rfc/rfc2119#section-1">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -652,6 +652,6 @@ Every shrine keeps one Pinax to Eris Discordia in a corner.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QWW1LR1Hjp0uGvJuO50S8fHmb2FxEJOOsSpMxJC7m70
+<<^ code="&#x0003;">>ni:///sha-256;Q0NIy2EUh6nuurVM6ejpg0t_IdW5Ip-218zdVKcSyrE
 
 <<^ code="&#x0004;" -> to="?">>
