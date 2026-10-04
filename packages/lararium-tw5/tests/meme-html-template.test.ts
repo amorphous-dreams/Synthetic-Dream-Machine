@@ -27,7 +27,7 @@ const CORE_STATIC = "$:/core/templates/static.tiddler.html";
 
 const URI = "lar:///t/html";
 const meme =
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/html"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/html"\n\`\`\`\n\n` +
   `<<~ ahu #/a>>\n\n! Alpha heading\n\nA body line.\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 async function placed(extraPlugins: Array<Record<string, unknown>>) {
