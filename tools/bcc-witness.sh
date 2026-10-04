@@ -20,10 +20,13 @@ node --input-type=module -e '
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-const { verifyBcc } = await import(pathToFileURL("packages/lararium-memetic-frame/dist/index.js"));
+const { distCarrierFiles, distModule } = await import(pathToFileURL(process.cwd() + "/tools/corpus-read.mjs"));
+const { verifyBcc } = await distModule(
+  process.cwd(), "packages/lararium-memetic-frame/dist/index.js", "bcc-witness",
+  "pnpm --filter @lararium/memetic-frame build");
 // THE CORPUS COMES FROM THE ONE FINDER. A `find bags -name "*.mem"` answers a question about paths
 // and walks untracked scratch besides; the law asks which files DECLARE.
-const { carrierFiles } = await import(pathToFileURL("packages/lararium-tw5/dist/carrier-files.js"));
+const { carrierFiles } = await distCarrierFiles(process.cwd(), "bcc-witness");
 const files = carrierFiles(process.cwd());
 let ok = 0, mismatch = 0, unchecked = 0, torn = 0;
 for (const f of files) {

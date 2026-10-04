@@ -10,19 +10,13 @@
 //
 // So `carrier-type.ts` holds the declaration and this witness checks that nothing spells it inline.
 // A LITERAL IS THE FAULT, not a mismatch — by the time two literals disagree the damage has landed.
-import { readFileSync, existsSync } from "fs";
+import { readFileSync } from "fs";
 import { execSync } from "child_process";
 import { join } from "path";
+import { distCarrierFiles } from "./corpus-read.mjs";
 
 const REPO = process.env["REPO"] ?? process.cwd();
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[type-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "type-parity");
 
 const DECL  = "packages/lararium-mesh/src/carrier-type.ts";
 // THE DECLARATION'S OWN AUTHORITY moved to @lararium/memetic-frame — `write.ts` is the one hand that

@@ -11,26 +11,15 @@
 // So this gate binds the two facts no single carrier holds alone: whether a room stands EMPTY, and
 // whether anyone SENT a reader to it. An uncited stub owes nobody and reports as slack, never as a
 // fault. A cited stub is a broken promise and fails.
-import { readFileSync, existsSync } from "fs";
-import { readCarrier, vanishedNote } from "./corpus-read.mjs";
+import { readFileSync } from "fs";
+import { readCarrier, vanishedNote, distCarrierFiles, distModule } from "./corpus-read.mjs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[empty-room] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "empty-room");
 
-const FRAME_MARKS_SHORE = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
-if (!existsSync(FRAME_MARKS_SHORE)) {
-  console.error(`[empty-room] no built shore at ${FRAME_MARKS_SHORE}\n  cure: pnpm --filter @lararium/memetic-frame build`);
-  process.exit(2);
-}
-const { frameAlt } = await import(FRAME_MARKS_SHORE);
+const { frameAlt } = await distModule(
+  REPO, "packages/lararium-memetic-frame/dist/index.js", "empty-room", "pnpm --filter @lararium/memetic-frame build");
 const STX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code="${frameAlt("STX")}"[^>\\n]*>>`);
 const ETX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code="${frameAlt("ETX")}"`);
 

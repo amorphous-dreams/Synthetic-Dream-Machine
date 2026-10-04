@@ -15,20 +15,13 @@
 // The reading runs one way on purpose: a mark the SPEC stands and no TIDDLER declares is a promise the
 // tree cannot keep, and it fails. A tiddler declaring a mark the spec never wrote down only means the
 // readers hold more than the spec says — reported, never refused.
-import { readFileSync, existsSync } from "fs";
-import { readCarrier, vanishedNote } from "./corpus-read.mjs";
+import { readFileSync } from "fs";
+import { readCarrier, vanishedNote, distCarrierFiles } from "./corpus-read.mjs";
 import { execSync } from "child_process";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[frame-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "frame-parity");
 
 const SPEC = join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext-framing.mem");
 

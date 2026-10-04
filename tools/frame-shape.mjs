@@ -10,33 +10,20 @@
 // merging them would re-fuse the domains the split exists to hold apart.
 //
 // Reported per carrier, per mark, so a repair reads off the finding instead of out of a diff.
-import { readFileSync, existsSync } from "fs";
-import { readCarrier, vanishedNote } from "./corpus-read.mjs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { readFileSync } from "fs";
+import { readCarrier, vanishedNote, distCarrierFiles, distModule } from "./corpus-read.mjs";
 
 import { execSync } from "child_process";
+
+const REPO = process.env["REPO"] ?? process.cwd();
 
 // THE SHORE ANSWERS FOR THE FRAMING ENDS. This gate held its own spelling of that question and read
 // 1395 torn frames the day the corpus quoted its control values — the corpus had not moved.
 // The head reader, the marks and the fence mask are the FRAME PACKAGE — one built shore for all three.
-const SHORE = join(dirname(fileURLToPath(import.meta.url)), "../packages/lararium-memetic-frame/dist/index.js");
-if (!existsSync(SHORE)) {
-  console.error(`[frame-shape] no built shore at ${SHORE}\n  cure: pnpm --filter @lararium/memetic-frame build`);
-  process.exit(2);
-}
-const { carrierHeadPattern, carrierReleasePattern, FRAME_MARKS, frameAlt, maskedExecAll } = await import(SHORE);
+const { carrierHeadPattern, carrierReleasePattern, FRAME_MARKS, frameAlt, maskedExecAll } = await distModule(
+  REPO, "packages/lararium-memetic-frame/dist/index.js", "frame-shape", "pnpm --filter @lararium/memetic-frame build");
 
-
-const REPO = process.env["REPO"] ?? process.cwd();
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[frame-shape] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "frame-shape");
 
 // The CODE + NAME set — the frame package's own declaration, never a second hand-kept copy.
 const MARKS = FRAME_MARKS.map((m) => [m.code, m.name]);

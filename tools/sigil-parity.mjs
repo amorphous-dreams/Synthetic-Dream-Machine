@@ -26,7 +26,7 @@
  * shape `witness-all` exists to refuse. The count prints on every run and only shrinks.
  */
 import { readFileSync, existsSync } from "node:fs";
-import { readCarrier, vanishedNote } from "./corpus-read.mjs";
+import { readCarrier, vanishedNote, distCarrierFiles, distModule, bootTW5Engine } from "./corpus-read.mjs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -34,15 +34,7 @@ import { dirname, join } from "node:path";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[sigil-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
-
+const { carrierFiles } = await distCarrierFiles(REPO, "sigil-parity");
 
 for (const need of ["sigil-attrs.js", "tw5-vm.js", "generated-tw5-version.js"]) {
   if (!existsSync(join(DIST, need))) {
@@ -50,7 +42,7 @@ for (const need of ["sigil-attrs.js", "tw5-vm.js", "generated-tw5-version.js"]) 
     process.exit(2);
   }
 }
-const { readSigilAttrs } = await import(join(DIST, "sigil-attrs.js"));
+const { readSigilAttrs } = await distModule(DIST, "sigil-attrs.js", "sigil-parity");
 
 /**
  * A sigil the GRAMMAR registers is a call; one invented in prose is not.
@@ -63,20 +55,11 @@ const { readSigilAttrs } = await import(join(DIST, "sigil-attrs.js"));
 // ORACLE and holds no grammar — so it asks the packed plugin rather than the VM. Reading
 // `ls tiddlers/sigil-*.tid` answered off FILENAMES, and a filename names a tiddler: the frame
 // marks and the dispatcher entered a set of heads no call can wear.
-const { grammarHeadsFromPlugin } = await import(join(DIST, "grammar-heads.js"));
+const { grammarHeadsFromPlugin } = await distModule(DIST, "grammar-heads.js", "sigil-parity");
 const PLUGIN_JSON = join(REPO, "packages/lararium-tw5/plugins/lares-memetic-wikitext.json");
 const REGISTERED = grammarHeadsFromPlugin(JSON.parse(readFileSync(PLUGIN_JSON, "utf8")));
-const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
-const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
 
-const CORE = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
-if (!existsSync(CORE)) {
-  console.error(`[sigil-parity] no TW5 core blob at ${CORE}\n  cure: pnpm --filter @lararium/tw5 build:tw5-vendor`);
-  process.exit(2);
-}
-const engine = new TW5Engine();
-await engine.boot(new Uint8Array(readFileSync(CORE)));
-const wiki = engine.wiki ?? engine._tw?.wiki;
+const { engine, wiki } = await bootTW5Engine(DIST, "sigil-parity");
 
 /** Every sigil node the parser found — control host, speaking host, or a plain macro call. */
 function sigils(nodes, out = []) {

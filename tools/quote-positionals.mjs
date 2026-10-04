@@ -39,20 +39,14 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { distCarrierFiles, distModule, bootTW5Engine } from "./corpus-read.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
 /** The frame package's built shore — marks, fence mask, head reader. */
 const FRAME = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[quote-positionals] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "quote-positionals");
 
 const argv = process.argv.slice(2);
 const write = argv.includes("--write");
@@ -63,25 +57,17 @@ const EXEMPT = [
 ];
 const given = argv.filter((a) => !a.startsWith("--"));
 
+const CURE = "pnpm --filter @lararium/memetic-frame build && pnpm --filter @lararium/tw5 build";
 for (const need of ["sigil-attrs.js", "tw5-vm.js", "generated-tw5-version.js"].map((n) => join(DIST, n)).concat(FRAME)) {
   if (!existsSync(need)) {
-    console.error(`[quote-positionals] no built shore at ${need}\n  cure: pnpm --filter @lararium/memetic-frame build && pnpm --filter @lararium/tw5 build`);
+    console.error(`[quote-positionals] no built shore at ${need}\n  cure: ${CURE}`);
     process.exit(2);
   }
 }
-const { schemeShapedPositionals } = await import(join(DIST, "sigil-attrs.js"));
-const { fencedSpans, inMask } = await import(FRAME);
-const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
-const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
+const { schemeShapedPositionals } = await distModule(DIST, "sigil-attrs.js", "quote-positionals", CURE);
+const { fencedSpans, inMask } = await distModule(REPO, FRAME, "quote-positionals", CURE);
 
-const CORE = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
-if (!existsSync(CORE)) {
-  console.error(`[quote-positionals] no TW5 core blob at ${CORE}\n  cure: pnpm --filter @lararium/tw5 build:tw5-vendor`);
-  process.exit(2);
-}
-const engine = new TW5Engine();
-await engine.boot(new Uint8Array(readFileSync(CORE)));
-const wiki = engine.wiki ?? engine._tw?.wiki;
+const { engine, wiki } = await bootTW5Engine(DIST, "quote-positionals");
 
 function firstSigilNode(src) {
   const walk = (ns) => {

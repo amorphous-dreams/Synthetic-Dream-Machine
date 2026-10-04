@@ -11,9 +11,9 @@
 //
 // One address, exactly: this grammar's spec. A DOCTYPE aimed anywhere else is not a variant, it is a
 // declaration that does not hold.
-import { existsSync, readFileSync } from "fs";
+import { readFileSync } from "fs";
 import { execFileSync } from "child_process";
-import { readCarrier, vanishedNote } from "./corpus-read.mjs";
+import { readCarrier, vanishedNote, distCarrierFiles } from "./corpus-read.mjs";
 import { join } from "path";
 
 const REPO = process.env["REPO"] ?? process.cwd();
@@ -23,14 +23,7 @@ const ROOT = "memetic-wikitext+tiddlywiki";
 // ruling, and the cure the corpus already took when 738 carriers and their minters converted. This witness
 // was the one reader left on the retired spelling, so it called 725 canonical carriers "the wrong form".
 const DECLARATION = `<<!DOCTYPE "${ROOT}" "${SPEC_URI}">>`;
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[doctype] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles, inSubmodule } = await import(DIST_CARRIERS);
+const { carrierFiles, inSubmodule } = await distCarrierFiles(REPO, "doctype");
 // A FENCED DECLARATION DECLARES NOTHING. A carrier that TEACHES the register writes the declaration in
 // a fence, and a reader counting lines takes the lesson for the carrier's own act.
 const { fencedSpans, inMask } = await import(

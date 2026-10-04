@@ -19,7 +19,7 @@
  * Exit 0 = the shore and the parser name the same address for every carrier.
  */
 import { readFileSync, existsSync } from "node:fs";
-import { readCarrier, vanishedNote } from "./corpus-read.mjs";
+import { readCarrier, vanishedNote, distCarrierFiles, distModule, bootTW5Engine } from "./corpus-read.mjs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -29,39 +29,22 @@ const REPO = process.env["REPO"] ?? join(HERE, "..");
 const DIST = join(REPO, "packages/lararium-tw5/dist");
 /** The frame package's built shore — marks, fence mask, head reader. */
 const FRAME = join(REPO, "packages/lararium-memetic-frame/dist/index.js");
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[head-parity] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "head-parity");
 
-
+const CURE = "pnpm --filter @lararium/memetic-frame build && pnpm --filter @lararium/tw5 build";
 // THE ABSENCE NAMES ITS CURE. A witness that skipped here would read clean over an unbuilt tree.
 for (const need of ["tw5-vm.js", "generated-tw5-version.js"].map((n) => join(DIST, n)).concat(FRAME)) {
   if (!existsSync(need)) {
-    console.error(`[head-parity] no built shore at ${need}\n  cure: pnpm --filter @lararium/memetic-frame build && pnpm --filter @lararium/tw5 build`);
+    console.error(`[head-parity] no built shore at ${need}\n  cure: ${CURE}`);
     process.exit(2);
   }
 }
 
-const { matchCarrierHead, frameAlt } = await import(FRAME);
+const { matchCarrierHead, frameAlt } = await distModule(REPO, FRAME, "head-parity", CURE);
 // The head codes come from the declaration — a hand-copied `0001|0011` would miss a SOH added there.
 const HEAD_CODE_RE = new RegExp(frameAlt("SOH"));
-const { TW5Engine } = await import(join(DIST, "tw5-vm.js"));
-const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await import(join(DIST, "generated-tw5-version.js"));
 
-const CORE = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
-if (!existsSync(CORE)) {
-  console.error(`[head-parity] no TW5 core blob at ${CORE}\n  cure: pnpm --filter @lararium/tw5 build:tw5-vendor`);
-  process.exit(2);
-}
-
-const engine = new TW5Engine();
-await engine.boot(new Uint8Array(readFileSync(CORE)));
-const wiki = engine.wiki ?? engine._tw?.wiki;
+const { engine, wiki } = await bootTW5Engine(DIST, "head-parity");
 
 /** Every control-host transclude node the parser found, in reading order. */
 function controlNodes(nodes, out = []) {

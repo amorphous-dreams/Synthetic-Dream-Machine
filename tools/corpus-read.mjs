@@ -15,7 +15,7 @@
 // stops checking N carriers is worse than one that crashes. So the skip is COUNTED, and every summary
 // line says so when the count is non-zero. The honest reading is "I checked 733 of 734; one left the
 // tree while I walked it."
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 let vanished = 0;
@@ -38,4 +38,59 @@ export function vanishedCount() {
 /** ` · N left the tree mid-walk` for a summary line, or the empty string when none did. */
 export function vanishedNote() {
   return vanished === 0 ? "" : ` · ${vanished} left the tree mid-walk (a parallel commit; re-run to check them)`;
+}
+
+// ---------------------------------------------------------------------------
+// Dist-shore boot — eleven tools repeated this existsSync-then-import block by hand, each phrasing
+// the cure line itself; one drifted the moment a twelfth was added with a typo in the package name.
+// ---------------------------------------------------------------------------
+
+/**
+ * THE ONE FINDER of the corpus, loaded from the built shore. A hardcoded glob answers a question
+ * about PATHS; the law asks about DECLARATIONS, and the two disagreed on the runtime kernel face for
+ * three rulings — so every witness walks from here, never from its own `find`/glob.
+ *
+ * Exits loudly (2), naming the exact cure, when the dist a caller needs has never been built — the
+ * absence NAMES its cure rather than reading clean over an unbuilt tree.
+ */
+export async function distCarrierFiles(repo, toolName) {
+  const distCarriers = join(repo, "packages/lararium-tw5/dist/carrier-files.js");
+  if (!existsSync(distCarriers)) {
+    console.error(`[${toolName}] no built shore at ${distCarriers}\n  cure: pnpm --filter @lararium/tw5 build`);
+    process.exit(2);
+  }
+  return import(distCarriers);
+}
+
+/**
+ * Any other built module beneath `dist` (or an absolute path, e.g. the frame package's shore) a tool
+ * needs before it can run — same loud exit, same cure line, so a witness that forgets to build one
+ * dependency reads the same way whichever dependency it forgot.
+ */
+export async function distModule(dist, relOrAbs, toolName, cure = "pnpm --filter @lararium/tw5 build") {
+  const at = relOrAbs.startsWith("/") ? relOrAbs : join(dist, relOrAbs);
+  if (!existsSync(at)) {
+    console.error(`[${toolName}] no built shore at ${at}\n  cure: ${cure}`);
+    process.exit(2);
+  }
+  return import(at);
+}
+
+/**
+ * Boots a vanilla TW5 engine from the built shore — the oracle three witnesses (head-parity,
+ * sigil-parity, quote-positionals) each booted by hand, identically. Holds no grammar on purpose: its
+ * wiki serves as the parse ORACLE these witnesses measure their own reading against.
+ */
+export async function bootTW5Engine(dist, toolName) {
+  const { TW5Engine } = await distModule(dist, "tw5-vm.js", toolName);
+  const { TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME } = await distModule(dist, "generated-tw5-version.js", toolName);
+  const core = join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
+  if (!existsSync(core)) {
+    console.error(`[${toolName}] no TW5 core blob at ${core}\n  cure: pnpm --filter @lararium/tw5 build:tw5-vendor`);
+    process.exit(2);
+  }
+  const engine = new TW5Engine();
+  await engine.boot(new Uint8Array(readFileSync(core)));
+  const wiki = engine.wiki ?? engine._tw?.wiki;
+  return { engine, wiki };
 }

@@ -18,22 +18,16 @@
  *
  * Usage:  node tools/ranks-to-scale.mjs [--write]
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
+import { distCarrierFiles } from "./corpus-read.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = process.env["REPO"] ?? join(HERE, "..");
-// THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
-// DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
-const DIST_CARRIERS = join(REPO, "packages/lararium-tw5/dist/carrier-files.js");
-if (!existsSync(DIST_CARRIERS)) {
-  console.error(`[ranks-to-scale] no built shore at ${DIST_CARRIERS}\n  cure: pnpm --filter @lararium/tw5 build`);
-  process.exit(2);
-}
-const { carrierFiles } = await import(DIST_CARRIERS);
+const { carrierFiles } = await distCarrierFiles(REPO, "ranks-to-scale");
 
 const write = process.argv.includes("--write");
 const require = createRequire(import.meta.url);
