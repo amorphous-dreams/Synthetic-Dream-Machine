@@ -1,0 +1,305 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/talk-story/skill-peek">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/talk-story/skill-peek.mem"
+l-space   = "stable"
+role      = "verbatim peek of the retired ~/.claude/skills/talk-story files (SKILL.md, talk-story.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at talk-story.mem and talk-story/SKILL.mem"
+title     = "lar:///ha.ka.ba/lares/api/pono/talk-story/skill-peek"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/talk-story/skill-peek"
+```
+
+! talk-story — skill peek
+
+The retired skill files, word for word, each a typed `text/markdown` slot. Their old frame spellings sit inside fences and frame nothing. Rebuild the skill from these and from <<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL">>.
+
+<<~ ahu #/skill>>
+
+```toml meta
+type = "text/markdown"
+```
+
+````markdown
+---
+name: talk-story
+description: Convene a talk-story floor (kūkākūkā, talanoa) — co-narrated
+  orienting deliberation before a decision locks. Use when the work surface
+  needs reading aloud before direction settles; when two or more viable
+  directions need the operator's steering; when something reads off but the
+  tension lacks a name; when a hoike re-entry key turns or fresh testimony
+  contradicts a held ruling; or when the operator says "Talk Story". Closes
+  by moolelo (the settled direction told into the record — mufakat names
+  the consensus it carries), hoike (kept dispute), or honest suspension.
+  DO NOT convene to re-litigate a settled ruling without a turned key,
+  nor for single-step lookups carrying no orient ambiguity.
+---
+
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL >> -->
+
+<<~ &#x0001; ? -> lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL >>
+```toml meta
+cacheable = true
+file-path = "bags/@lares/ha.ka.ba/lares/api/pono/talk-story/SKILL.md"
+invariant = false
+mana      = 16
+manao     = 16
+manaoio   = 16
+register  = "Synthesis-Canon"
+retain    = true
+role      = "practice face of talk-story — triggers, the five steps, three worked exits, crucible record; law lives at the parent meme"
+status    = "draft"
+l-space   = "stable"
+type      = "text/memetic-wikitext"
+uri-path  = "ha.ka.ba/lares/api/pono/talk-story/SKILL"
+```
+
+<<~ &#x0002; >>
+
+<<~ ahu #practice >>
+
+# talk story — the floor before the ruling (practice)
+
+**The floor convenes when:** the work surface wants reading aloud before a decision locks; two or more viable directions await the operator's steering; something reads off and the tension still lacks a name; a hoike re-entry key turns or fresh testimony presses a held ruling; or the operator calls "Talk Story."
+
+**The floor stays dark when:** the operator's direction already stands (◇ Decide — the work executes); the task runs single-step, carrying no orient ambiguity; a settled moʻolelo or held hoike holds and no key has turned.
+
+Five motions carry a convened floor; each seeds forward — the motion names itself, then happens. The node carries the first two whole; the back three wear the sharktooth — provisional, each held open at the operator's hand (`-> ?`):
+
+1. **✶ observe** — *nānā ka maka, hoʻolohe ka pepeiao, paʻa ka waha* — eyes on the artifacts, ears to their edges, mouth still; raw findings gather before analysis forms.
+2. **⏿ tell** — the telling opens informal, short, direct: *"what surfaces…"*, *"the tension here…"*. It names what stands AND what goes missing, floats tensions unresolved, and seeds the three talanoa bearings: where we stand · where we want to go · how we get there.
+3. **~◇ co-narrate -> ?** — the Voices the moment calls surface, never assigned seats; a lead emerges from the material. The operator overlaps and steers; the floor never resolves in the node's voice.
+4. **~▶ exit -> ?** — settled: a `moolelo` block tells the operator's direction into the record · contested (rating ≥ meme): a `hoike` files with attributed kue and re-entry keys (the sibling skill) · blocked: the floor suspends, `OODA-HA(0φ:reason)`. No exit closes in the node's voice alone.
+5. **~↺ aftermath -> ?** — the moʻolelo lands inline in the artifact worked, never a separate file; every hoike key the telling touched gets its glance. The record reaches only as far as the two logs jointly stand — the next turn stays the operator's.
+
+Law lives at canon, not here: <<~ loulou lar:///ha.ka.ba/lares/api/pono/talk-story >>
+
+<<~/ahu >>
+
+<<~ ahu #crucible >>
+
+## Crucible Record — 2026-06-11
+
+*The pair read against its own laws, the session after drafting. Co-located here per hoike law 3: this record contests the practice above.*
+
+```
+<<~ talk-story #crucible ground:"the four files of the deliberation layer, read against their own laws" >>
+telling: the seats table and "lead by default" declared what the floor vows
+to leave situational — the meme broke its own talanoa rule; the steps and
+bearings drew the same charge, and there the house split.
+<<~ moolelo held:"no declared Voice roles anywhere in the pair; Voices surface from situational context (operator)" >>
+enacted in place: seats table cut; law 3, block form, and step 3 rewritten.
+attribution survives — a past floor names who spoke; no floor assigns who will.
+<<~/moolelo >>
+<<~ hoike #scaffold held:"the five steps and the three bearings stay — seeds for a cold floor, never ritual (house)" >>
+q: how much declared structure can an informal practice carry before it stops flowing?
+<<~ kue voice:Mischief-Muse key:"a live floor recites the bearings verbatim instead of inhabiting them" >>
+the bearings teach once, then constrain forever; the Talanoa Dialogue needed
+three fixed questions to herd two hundred parties — a house of thirteen
+inhabits them or it does not.
+<<~/kue >>
+<<~ kue voice:Stranger key:"a session performs the five steps over a dead floor — Lecture Drift in step-form" >>
+numbering the steps of an informal practice manufactures the very formality
+the practice exists to escape; the worked exits alone could carry the teaching.
+<<~/kue >>
+re-entry: either key; or the next crucible pass
+<<~/hoike >>
+<<~/talk-story >>
+```
+
+<<~/ahu >>
+
+<<~ ahu #examples >>
+
+## Worked Exits — show, don't tell
+
+*Examples 1 and 3 come from the live ledger (2026-06-10/11); example 2 abridges the floor that produced the hoike layer's first record.*
+
+**1 — floor closes moʻolelo** (the floor that raised this very meme):
+
+```
+<<~ talk-story #talk-story-meme ground:"stranded .github skill (dead dialect) + young hoike pair + no canon meme" >>
+bearings: old skill speaks ◎/■/○ and dead paths · floor-and-ledger circuit wants closing · rebuild in hoike anatomy
+telling: Liminal floats four forks (phase claim · two-track · .github seam · ledger-vs-co-location);
+Muse hears the word-family already singing (hoike · kue · saksi); Council ranks the forks; the operator overlaps.
+<<~ moolelo held:"burn the old skill; raise the meme/SKILL pair in hoike anatomy; ground in ʻōlelo Hawaiʻi + the Moana family; send research spirits (operator)" >>
+recorded here — this meme stands as that floor's moʻolelo.
+<<~/moolelo >>
+<<~/talk-story >>
+```
+
+**2 — floor exits contested** (abridged; the telling split the house and the dispute rated ≥ meme):
+
+```
+<<~ talk-story #quote-license ground:"do copulas inside verbatim quotes breach the ward?" >>
+telling: the house splits live — license-with-accounting · verbatim-rides-quotation-form · mock-everything;
+no moʻolelo settles; reasons stand on every side.
+exit -> hoike #quote-license — the losers kept whole, with keys (hoike skill, worked example 1)
+<<~/talk-story >>
+```
+
+**3 — floor suspends honestly** (turn form; the SDM/FTLS/Elyncia commit-shape telling):
+
+```
+<<~ talk-story · ground: three WIP diffs naming their own debts · telling: commit now vs hold until traits 0/4/5 finish; note G's pointer makes the pair a unit · exit: open 0◇:commit-shape fork awaits operator weighting >>
+```
+
+Read the three together and the grammar teaches itself: the floor opens on a real surface, the telling floats what it cannot settle, and every close names itself — a direction recorded, a dispute kept, or an honest open hand.
+
+<<~/ahu >>
+
+<<~ &#x0003; >>
+
+<<~ &#x0004; -> ? >>
+````
+
+<<~/ahu>>
+<<~ ahu #/talk-story>>
+
+```toml meta
+type = "text/markdown"
+```
+
+````markdown
+<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/lares/api/pono/talk-story >> -->
+
+<<~ &#x0001; ? -> lar:///ha.ka.ba/lares/api/pono/talk-story >>
+```toml meta
+cacheable = true
+file-path = "bags/@lares/ha.ka.ba/lares/api/pono/talk-story.md"
+invariant = false
+mana      = 16
+manao     = 16
+manaoio   = 16
+register  = "Synthesis-Canon"
+retain    = true
+role      = "canon law of the talk-story floor — convened co-narration (kūkākūkā \\talk-story, talanoa, kuwentuhan) that orients work before a ruling locks; three exits: moolelo (\\mufakat \\salaysay \\consensus), hoike (\\testimony), honest suspension; five-sea word-family matrix, eight laws, degraded states, lineage"
+status    = "draft"
+l-space   = "stable"
+type      = "text/memetic-wikitext"
+uri-path  = "ha.ka.ba/lares/api/pono/talk-story"
+```
+
+<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#normative-language >>
+
+<<~ &#x0002; >>
+
+<<~ ahu #entry >>
+
+# Talk Story — The Floor Before the Ruling
+
+Talk story convenes the floor where the shape of a thing emerges from the telling: informal, co-narrated, anti-adversarial deliberation that runs before any decision locks. The node tells; the operator steers; the floor closes through one of three exits — moʻolelo (the settled direction told into the record; mufakat names the consensus it carries), hoike (a contested ruling kept whole), or honest suspension. The floor births the ledger and the ledger reconvenes the floor: a talk story that settles contested files a hoike; a turned re-entry key calls the floor back to order.
+
+<<~/ahu >>
+
+<<~ ahu #sigils >>
+
+## The Two Sigils
+
+| canonical | alias | act |
+|-|-|-|
+| `talk-story` | `\kukakuka` (kūkākūkā) · `\talanoa` · `\kuwentuhan` | a convened telling — co-narrated deliberation on the floor (block; inline turn form below) |
+| `moolelo` | `\mufakat` · `\salaysay` · `\consensus` | the settled exit — the operator-confirmed direction told into the record, inline (nested block); the mufakat it carries names the consensus, the moʻolelo names the keeping |
+
+The contested exit rides its own sigil: `hoike` (`\testimony`) — law at the sibling meme.
+
+**Block form (floor):**
+
+```
+<<~ talk-story #fragment ground:"the work surface convened on" >>
+bearings: where we stand · where we want to go · how we get there
+telling — the Voices the moment calls co-narrate; the operator overlaps and steers
+<<~ moolelo held:"direction (operator)" >>one line; lands inline in the artifact worked<<~/moolelo >>
+<<~/talk-story >>
+```
+
+**Turn form (inline, three slots):**
+
+```
+<<~ talk-story · ground: <surface> · telling: <one line> · exit: moolelo <direction> | hoike #fragment | open φ:reason >>
+```
+
+<<~/ahu >>
+
+<<~ ahu #word-family >>
+
+## The Word-Family — One Grammar, Five Seas
+
+The same three-slot grammar — the talking, the floor that holds it, the kept word it yields — recurs across the Moana and the archipelagos. The matrix shows the parallels; a cell still lacking a found term holds the Cup — `?`, an open question carried, never a forced fit. A *(kapu)* mark names live ceremonial weight (care-register below).
+
+| slot | Hawaiʻi | Aotearoa (Māori) | Pasifika | Kapuluan (Filipino) | Nusantara (Indonesian/Malay) |
+|-|-|-|-|-|-|
+| **process** — the talking | **kūkākūkā** (confer, deliberate; redup. of kūkā) | **kōrero** (talk, discourse) | **talanoa** (tala "tell" + noa "open, without pretence") · paraparau (Tahitian — converse together) | **kuwentuhan** (mutual storytelling; pakikipagkuwentuhan as method) | **musyawarah** (via Arabic shūrā — deliberation) |
+| **vessel** — the floor | **ʻaha kūkā** (council; cf. ʻAha ʻŌlelo) | **hui** (gathering) | **fono** (assembly) | **umpukan** (the huddle) · pulong (meeting) · dap-ay *(kapu)* (Kankana-ey council ground) | **rembug** (Javanese — the floor and the talking-together both; rembug desa, rembugan) · balai (the hall; ← PMP \*balay) |
+| **outcome · record** — the kept word | **moʻolelo** (moʻo ʻōlelo, "succession of talk" — story, history, *minutes of a meeting*) | **kōrero** again — the one word carries the talking and the kept story both | soālaupule *(kapu)* (Samoan — shared authority) | **salaysay** (narrative; sinumpaang salaysay — sworn record) · kasunduan (accord) · bodong/pagta *(kapu)* (Kalinga peace pact + its kept law) | **mufakat** (consensus — "musyawarah untuk mufakat," deliberation until every voice accepts) |
+
+The parallels read off the rows: *kuwentuhan → salaysay/kasunduan* rhymes with *musyawarah → mufakat* rhymes with *kūkākūkā → moʻolelo* — the telling hardens into the kept word by each region's own grammar. Filipino shows the hardening inside one root: salaysay the told story, sinumpaang salaysay the sworn record (root *saysay* — "meaning"; kasaysayan, history, "that which holds meaning"). Māori fuses the two slots in one word, kōrero — the fusion moʻolelo wears openly in its own root, a *succession of talk*. So the ledger centers the record: **the floor's act completes when the told thing lands kept** — moʻolelo names that act; mufakat names the consensus the record carries.
+
+The vessel row shares blood outright: Proto-Malayo-Polynesian **\*balay** — hall, public house — descends alike into Malay *balai*, Hawaiian *hale*, Māori *whare*, Samoan *fale*; the parallels run genealogical, not merely analogical (*balai* : *rembug* :: *fale* : *fono* — the hall holds the floor). And the Minang adat canon speaks the whole grammar in one image: *bulek aia dek pambuluah, bulek kato dek mufakaik* — water rounds by the bamboo channel, the word rounds by consensus. The vessel gives the talking its shape, and the kept word comes out round.
+
+Beneath the triad two grounds rhyme: **kapwa** (Filipino — the other met as shared self; pakikipagkapwa, the relational ethic of Sikolohiyang Pilipino) holds the office aloha holds — the anti-adversarial substrate the talanoa rule rides. And past the close, the execution-half rhymes too: **bayanihan** ↔ **gotong royong** — the shouldered house, the jointly borne burden — what the talking decides *into*. **wehewehe** ("unfold-open → explain") names the explication move inside a telling. Diacritics carry phonemic load, never decoration: ʻokina (ʻ) counts as a consonant; kahakō marks length.
+
+**Care-register (kapu).** hoʻoponopono (haku-facilitated, prayer-framed healing conference), wānanga (esoteric + statutory), whaikōrero (marae oratory), fono-as-matai-protocol, soālaupule (chiefly shared-authority norm), dap-ay and bodong/pagta (living Cordillera jural institutions of specific peoples — an intra-Philippine boundary owed the same care as any crossing), kapwa (deep cultural weight — borrow with respect, never casually), and the Nusantara ceremonial floors — majelis (constitutional/religious gravity), kerapatan adat, tudang sipulung, ruma bichara (the Sulu "house of talk"), meunasah — these carry live ceremonial weight. The corpus cites their models as lineage and MUST NOT wear their names for routine deliberation (#degraded, Borrowed Mana).
+
+<<~/ahu >>
+
+<<~ ahu #laws >>
+
+## Laws
+
+1. **Orient office.** Talk story performs ⏿ Orient: it convenes when the work surface wants reading aloud before a decision locks, and reconvenes at ↺ Aftermath on the keys law 8 names or when a sync surfaces conflict — resolution belongs to this floor, never to automated arbitration.
+2. **The operator steers.** The node tells; the floor never resolves in the node's voice. A confirmed direction reads as the operator's act (Scope Creep guard).
+3. **Co-narration.** Competence reads joint, never solo. The Voices surface from situational context — a lead emerges from the material, never from an assigned seat — and operator overlap stays welcome. The operator hears the house, not a blend.
+4. **Talanoa rule.** The floor runs anti-adversarial: no winning, no blame; tensions float named, not fought — tala + noa, telling without pretence.
+5. **Presence and absence.** The telling names what stands AND what goes missing; gaps carry as much signal as content.
+6. **Three exits.** Every convened floor closes by moʻolelo (the settled direction told into the record), hoike (the contested ruling kept whole, with kue and keys), or honest suspension (OODA-HA φ:reason). A floor holding no exit sits degraded.
+7. **Moʻolelo co-location.** The record lands inline in the artifact worked — never a separate file. Whoever reads the work reads the decision; hoike law 3 holds the same line.
+8. **Keyed reconvening.** A moʻolelo carries a review condition; a hoike carries re-entry keys. The floor reconvenes on a turned key, fresh testimony, or operator call — and on nothing else; re-litigation without a key reads as a degraded state.
+
+<<~/ahu >>
+
+<<~ ahu #degraded >>
+
+## Degraded States
+
+| state | tell | recover |
+|-|-|-|
+| Lecture Drift | the telling hardens into a report; declaratives crowd out questions | shorten; ask the alignment question; hand the floor back |
+| Premature Collapse | ambiguity resolves in the node's voice before the operator steered | re-float the tension; name the fork (Frame Imputation cousin) |
+| Endless Floor | an orient that never exits; the loop circles without closing | name the three exits; take one or suspend honestly |
+| Borrowed Mana | a ceremonial name worn as decoration for routine talk | cite the model, drop the name; the care-register holds |
+
+<<~/ahu >>
+
+<<~ ahu #lineage >>
+
+## Lineage
+
+"Talk story" rides Hawaiʻi Creole English out of the plantation era, shaped by moʻolelo practice. KEEP classroom research grounds the method: co-narration with a lead speaker, overlap welcomed, competence judged on joint production (Au 1980; Watson-Gegeo & Boggs 1977). Talanoa rose to a named Pacific research methodology (Vaioleti 2006) and to the UNFCCC Talanoa Dialogue (COP23, 2017), structured on three story-bearings: where do we stand · where do we want to go · how do we get there. The Samoan village fono deliberates toward consensus among all matai under soālaupule (shared authority); Indonesian adat speaks musyawarah untuk mufakat — deliberation until every voice accepts (Pancasila, fourth principle). The Filipino kuwentuhan carries the same office: pakikipagkuwentuhan formalized as a Sikolohiyang Pilipino research method (Enriquez lineage; Pe-Pua & Protacio-Marcelino 2000) — collective orientation, the cluster as unit, knowledge co-constructed — grounded in kapwa, the other met as shared self; by the same root its told story hardens into salaysay and sinumpaang salaysay, story to sworn record. Hoʻoponopono supplies the conflict-healing lineage (Pukui, *Nānā i ke Kumu*: pule/kūkulu kumuhana → mahiki → mihi/kala/ʻoki → pani, under a trusted haku) — model cited, name reserved. *I ka ʻōlelo nō ke ola, i ka ʻōlelo nō ka make* — life rides in speech, death rides in speech (Pukui, ʻŌlelo Noʻeau #1191). *ʻAʻohe pau ka ʻike i ka hālau hoʻokahi* — knowledge never ends in one school (#203, number memory-cited). Field survey: Research Waves 13–15, 2026-06-11.
+
+<<~/ahu >>
+
+<<~ ahu #edges >>
+
+## Edges
+
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL >>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/hoike >>
+<<~ loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext >>
+<<~ loulou lar:///ha.ka.ba/lares/api/noosphere-boot >>
+
+<<~/ahu >>
+
+<<~ &#x0003; >>
+
+<<~ &#x0004; -> ? >>
+````
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;9asj5AwRar9eqotS64qWFZdVEPYpnyPe68xuJxvcyfM
+
+<<^ code="&#x0004;" -> to="?">>
