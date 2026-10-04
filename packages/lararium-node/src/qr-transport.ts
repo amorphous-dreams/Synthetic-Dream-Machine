@@ -61,11 +61,6 @@ export async function qrCarriageToTerminalResilient(carriage: string): Promise<R
  *  is bundled by this module — the shore keeps the scanner dependency the caller's, injected choice. */
 export type QrImageDecoder = (rgba: Uint8ClampedArray, width: number, height: number) => string | null;
 
-/** Render a carriage as a terminal QR (a tabletop hand-off) — ECC H. */
-export async function qrCarriageToTerminal(carriage: string): Promise<string> {
-  return QRCode.toString(carriage, { type: "utf8", errorCorrectionLevel: HANDSHAKE_QR_ECC });
-}
-
 /** Render a carriage as a PNG buffer (a still image a peer photographs / decodes) — ECC H, no canvas/node-gyp. */
 export async function qrCarriageToPngBuffer(carriage: string, opts?: { scale?: number; margin?: number }): Promise<Buffer> {
   return QRCode.toBuffer(carriage, {
@@ -74,11 +69,6 @@ export async function qrCarriageToPngBuffer(carriage: string, opts?: { scale?: n
     scale: opts?.scale ?? 6,
     margin: opts?.margin ?? 2,
   });
-}
-
-/** Render a carriage as an SVG string (an embeddable vector QR) — ECC H. Runs anywhere GEN is allowed. */
-export async function qrCarriageToSvg(carriage: string): Promise<string> {
-  return QRCode.toString(carriage, { type: "svg", errorCorrectionLevel: HANDSHAKE_QR_ECC });
 }
 
 /** The raw QR module matrix for a carriage — `{ size, data }` where `data[i]` is 1 (dark) / 0 (light), row-major. */

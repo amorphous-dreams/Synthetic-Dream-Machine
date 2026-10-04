@@ -121,14 +121,6 @@ export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
 export function GENESIS_ENGINE_CID(genesisDir?: string): string | undefined {
   return readGenesisEngineCid(genesisDir);
 }
-/** The grammar content-CID — kāhuli's fast ratchet, the REQUIRED grammar alone. */
-export function GENESIS_GRAMMAR_CID(genesisDir?: string): string | undefined {
-  return readGenesisGrammarCid(genesisDir);
-}
-/** The plugins content-CID — THIS operator's own collection, never the true-name and never a kāhuli tier. */
-export function GENESIS_PLUGINS_CID(genesisDir?: string): string | undefined {
-  return readGenesisPluginsCid(genesisDir);
-}
 
 // ---------------------------------------------------------------------------
 // hearthTrueName — the hearth's PUBLIC true-name (the place's public face).

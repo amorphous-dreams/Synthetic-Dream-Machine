@@ -106,11 +106,6 @@ export function larRuntimeHome(): string {
   return join(process.env["XDG_RUNTIME_DIR"]?.trim() || tmpdir(), "lares");
 }
 
-/** The vessel config file — `$XDG_CONFIG_HOME/lares/config.json`. */
-export function larConfigPath(): string {
-  return join(larConfigHome(), "config.json");
-}
-
 /**
  * The ONE mempalace executable resolver (DRY) — prefer the user-installed CLI at `~/.local/bin`
  * (`mempalace.exe` on win32), fall back to the bare name on PATH. Both the palace-organ setup and the
@@ -464,10 +459,3 @@ export function larBootstrapPath(): string {
 
 // ── Transient runtime (tmpfs) ────────────────────────────────────────────────────────────────────
 
-/** TRANSIENT runtime dir (tmpfs) for write-then-delete spool — `$XDG_RUNTIME_DIR/lares` (tmpfs) or
- *  os.tmpdir() fallback, isolated under `<root>/run` for staged pairs. The capture nalu's flush
- *  BATCHES live here; they never need to survive a reboot (the WAL on disk — larDataDir/capture-nalu
- *  — is the durable layer), so keeping them off persistent disk removes SSD write-churn + fsync cost. */
-export function larRuntimeDir(): string {
-  return larRuntimeHome();
-}

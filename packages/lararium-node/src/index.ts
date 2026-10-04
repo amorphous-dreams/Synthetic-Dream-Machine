@@ -1,11 +1,11 @@
 export type { CorpusSource } from "./node-host.js";
-export { LARES_ROOT, REPO_ROOT, bagsRoot, laresMemesRoot } from "./node-host.js";
+export { REPO_ROOT, bagsRoot } from "./node-host.js";
 export {
   larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
-  larHarvestDir, larHarvestStageDir, larRuntimeDir, larStructurePalaceDir, larFormPalaceDir,
+  larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
   larMempalaceDir, larContentDir, larMeshPalaceDir, scratchSensoriumDir, scratchSensoriumInstanceDir,
   // XDG base homes + the memory sensorium dir + config path (the consolidated layout).
-  laresDataHome, larariumDataHome, larStateHome, larCacheHome, larConfigHome, larRuntimeHome, larConfigPath,
+  laresDataHome, larariumDataHome, larStateHome, larCacheHome, larConfigHome, larRuntimeHome,
   assertOneSegment,
   memorySensoriumDir, memorySensoriumLenses, sensoriumLenses, sensoriumNames, sensoriumDir,
   // The `mesh` sensorium dir + its WHO/AUTHORITY/FLOW child dirs (the consolidated federation tree).
@@ -275,7 +275,7 @@ export {
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
 export {
-  qrCarriageToTerminal, qrCarriageToPngBuffer, qrCarriageToSvg, qrCarriageMatrix,
+  qrCarriageToPngBuffer, qrCarriageMatrix,
   pngToImageData, decodeQrPng, HANDSHAKE_QR_ECC,
 } from "./qr-transport.js";
 export type { QrImageDecoder } from "./qr-transport.js";
@@ -423,4 +423,4 @@ export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPin
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
-  GENESIS_ENGINE_CID, GENESIS_GRAMMAR_CID, GENESIS_PLUGINS_CID } from "./genesis-artifact.js";
+  GENESIS_ENGINE_CID } from "./genesis-artifact.js";

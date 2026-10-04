@@ -32,18 +32,6 @@ export const DENY_ALL_PLANE_SEAL: PlaneSeal = {
 };
 
 /**
- * Build a plane-seal oracle over an EXPLICIT sealed-plane doc-id set — the shape a future `cad` / BeeKEM-
- * on-wire plane registers through. Fail-closed by construction: a docId absent from the set reads unsealed
- * (deny-carry). An empty set is exactly `DENY_ALL_PLANE_SEAL`.
- */
-export function makeSealedPlaneSet(sealedDocIds: Iterable<DocumentId>): PlaneSeal {
-  const sealed = new Set<DocumentId>(sealedDocIds);
-  return {
-    isSealedPlane(documentId: DocumentId): boolean { return sealed.has(documentId); },
-  };
-}
-
-/**
  * THE SEAL-PRODUCER SOCKET — a LIVE, growable sealed-plane registry. The `seal` reads the CURRENT set (so a
  * body sealed AFTER the sharePolicy closed over `seal` lights the member lane immediately), and `register` is
  * the ONLY door into that set. The door opens for a docId ONLY as a SIDE-EFFECT of the encrypt-on-CAS installer
