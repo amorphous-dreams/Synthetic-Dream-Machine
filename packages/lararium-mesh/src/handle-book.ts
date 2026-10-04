@@ -60,11 +60,6 @@ export class HandleBook {
     return book;
   }
 
-  /** Alias for callers that name the persistence boundary `hydrate`. */
-  static hydrate(snapshot: HandleBookSnapshot | unknown): Promise<HandleBook> {
-    return HandleBook.restore(snapshot);
-  }
-
   async ingest(card: HandleCard): Promise<CardVerdict> {
     const held = this.records.get(card.nym);
     const self = await verifyHandleCard(card);
