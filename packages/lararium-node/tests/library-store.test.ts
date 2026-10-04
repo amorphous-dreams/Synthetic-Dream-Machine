@@ -17,6 +17,7 @@ import {
   larLibraryHome, libraryCollectionDir, resolveLibraryRef, acquireIntoLibrary,
   listCollections, listCollection, verifyCollection, writeLibraryIndex, readLibraryMeta,
 } from "../src/library-store.js";
+import { sha256HexBytesSync } from "@lararium/mesh";
 import { larDataDir, larStateHome, laresDataHome, larariumDataHome } from "../src/vessel-paths.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -231,5 +232,16 @@ describe("a reference NAMES, and refuses what could walk out of the tier", () =>
     expect(listCollections()).toEqual([]);
     expect(listCollection("nope")).toEqual([]);
     expect(verifyCollection("nope")).toEqual([]);
+  });
+
+  // DIGEST-EQUALITY CONTROL: library-store now hashes an acquired body through the shared
+  // `@lararium/mesh` sha256HexBytesSync (the hand-rolled local `createHash` wrapper retired,
+  // item 5) — pin it byte-equal to node's own crypto over the exact Buffer shape this store reads.
+  test("sha256HexBytesSync agrees with node crypto over the bytes an acquire reads", () => {
+    mkdirSync(join(root, "in"), { recursive: true });
+    const bodyPath = join(root, "in", "pin.txt");
+    writeFileSync(bodyPath, "pin the digest", "utf8");
+    const bytes = readFileSync(bodyPath);
+    expect(sha256HexBytesSync(bytes)).toBe(sha("pin the digest"));
   });
 });

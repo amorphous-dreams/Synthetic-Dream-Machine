@@ -37,12 +37,11 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution
  */
 
-import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import {
   parseLibraryRef, metaMatchesDir, libraryRef,
-  mediaTypeFromExt, niUriSha256FromHex, type LibraryEntryMeta,
+  mediaTypeFromExt, niUriSha256FromHex, sha256HexBytesSync, type LibraryEntryMeta,
 } from "@lararium/mesh";
 import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
 import { larariumDataHome } from "./vessel-paths.js";
@@ -89,8 +88,6 @@ export function resolveLibraryRef(ref: string): string | null {
   return collection === null ? null : libraryCollectionDir(collection);
 }
 
-const sha256Hex = (bytes: Buffer): string => createHash("sha256").update(bytes).digest("hex");
-
 /** What an acquire did. `moved` names whether the source left its old home — the reason to run this at all. */
 export interface AcquireOutcome {
   readonly meta:  LibraryEntryMeta;
@@ -121,7 +118,7 @@ export interface AcquireOptions {
  */
 export function acquireIntoLibrary(sourcePath: string, opts: AcquireOptions): AcquireOutcome {
   const bytes = readFileSync(sourcePath);
-  const cid   = sha256Hex(bytes);
+  const cid   = sha256HexBytesSync(bytes);
   const name  = basename(sourcePath);
   const ext   = name.includes(".") ? name.slice(name.lastIndexOf(".")) : "";
   const dir   = join(libraryCollectionDir(opts.collection), cid);
@@ -243,7 +240,7 @@ export function verifyCollection(collection: string): LibraryVerdict[] {
     if (!metaMatchesDir(meta, slotCid)) { out.push({ collection, cid: slotCid, name: meta.name, ok: false, why: `index claims ${meta.cid} under slot #/${slotCid}` }); continue; }
     const body = join(dir, slotCid, meta.name);
     if (!existsSync(body)) { out.push({ collection, cid: slotCid, name: meta.name, ok: false, why: "the index names a body that does not stand" }); continue; }
-    const actual = sha256Hex(readFileSync(body));
+    const actual = sha256HexBytesSync(readFileSync(body));
     out.push(actual === slotCid.toLowerCase()
       ? { collection, cid: slotCid, name: meta.name, ok: true }
       : { collection, cid: slotCid, name: meta.name, ok: false, why: `bytes digest ${actual} — the index claims ${slotCid}` });

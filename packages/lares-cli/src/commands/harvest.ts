@@ -28,11 +28,10 @@
  * --json (../render.ts #actor-parity).
  */
 
-import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, appendFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
-import { harvestTurnGradient, detectGoneTurns, liveKeysForRewind, type KeyedBranchNode } from "@lararium/mesh";
+import { harvestTurnGradient, detectGoneTurns, liveKeysForRewind, sha256HexSync, type KeyedBranchNode } from "@lararium/mesh";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { writebackWing, resolveLociIo, kapaeTurn, KgUnavailable, isoWholeSeconds } from "@lararium/sensorium";
 import { larRoot, larHarvestDir, vesselDid } from "../env.js";
@@ -146,7 +145,7 @@ function readTurns(file: string): RawTurn[] {
 }
 
 export function sha(s: string): string {
-  return createHash("sha256").update(s).digest("hex").slice(0, 16);
+  return sha256HexSync(s).slice(0, 16);
 }
 
 /**
