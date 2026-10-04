@@ -50,7 +50,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { derivePersonaKeypair } from "./persona-hd.js";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
-import { sha256HexSync, canonicalJson } from "./crypto.js";
+import { sha256HexSync, canonicalJson, hex } from "./crypto.js";
 import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
@@ -118,7 +118,7 @@ export function signDyadBindingWithSeed(
 ): Promise<DelegationEdge> {
   return signDyadBinding(ref, groupRootDid, epochCid, async (bytes) => {
     const sig = await ed25519.signAsync(bytes, rootSeed);
-    return Array.from(sig).map((b) => b.toString(16).padStart(2, "0")).join("");
+    return hex(sig);
   });
 }
 
@@ -351,7 +351,7 @@ export function dyadVeilIndex(groupTag: string): number {
 export function mintVeilTag(): string {
   const b = new Uint8Array(32);
   globalThis.crypto.getRandomValues(b);
-  return Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+  return hex(b);
 }
 
 /** The daemon-doc tiddler carrying a founded group's veil tag — read at boot to stand the veil identity. */

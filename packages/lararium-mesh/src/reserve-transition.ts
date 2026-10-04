@@ -16,7 +16,7 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { sha256HexSync, hexToBytes, canonicalJson, canonicalJsonBytes } from "./crypto.js";
+import { sha256HexSync, hexToBytes, hex, canonicalJson, canonicalJsonBytes } from "./crypto.js";
 import { sealKeySetHash } from "./wax-stamp.js";
 import { RESERVE_TRANSITION_DOMAIN } from "./domains.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
@@ -97,10 +97,10 @@ export async function mintReserveTransition(input: {
 
 /** A signer hand built from a held seed — the CLI ceremony's one-liner; the seed never leaves the call. */
 export async function transitionSignerFromSeed(seed: Uint8Array): Promise<TransitionSigner> {
-  const pub = Array.from(await ed25519.getPublicKeyAsync(seed)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const pub = hex(await ed25519.getPublicKeyAsync(seed));
   return {
     signer: pub,
-    sign: async (bytes) => Array.from(await ed25519.signAsync(bytes, seed)).map((b) => b.toString(16).padStart(2, "0")).join(""),
+    sign: async (bytes) => hex(await ed25519.signAsync(bytes, seed)),
   };
 }
 

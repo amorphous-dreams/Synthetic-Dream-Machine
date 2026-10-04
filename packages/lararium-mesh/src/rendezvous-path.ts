@@ -34,7 +34,7 @@
  * any naming scheme a human has to reconstruct.
  */
 
-import { createHash } from "node:crypto";
+import { sha256HexSync } from "./crypto.js";
 
 /**
  * The bytes a Unix socket path may occupy.
@@ -59,7 +59,7 @@ export function rendezvousFits(path: string): boolean {
  *
  */
 export function rendezvousPath(opts: { root: string; uid: number }): string {
-  const digest = createHash("sha256").update(opts.root).digest("hex").slice(0, 12);
+  const digest = sha256HexSync(opts.root).slice(0, 12);
   return `/tmp/lares-${opts.uid}/${digest}.sock`;
 }
 

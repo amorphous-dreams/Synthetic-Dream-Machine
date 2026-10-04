@@ -68,6 +68,7 @@ import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 
 import { bagUri, identitySlug } from "./lar-uris.js";
+import { hex } from "./crypto.js";
 
 /** Domain separation. Distinct from `circle-scope`, so the two levels can never derive into each other. */
 const PERSONA_SCOPE_HMAC_KEY = new TextEncoder().encode(PERSONA_SCOPE_INFO);
@@ -85,9 +86,7 @@ export const PERSONA_SCOPE_TAG_HEX = 16;
  */
 export function personaScopeTag(personaGroupDocIdHex: string): string {
   const mac = hmac(sha256, PERSONA_SCOPE_HMAC_KEY, new TextEncoder().encode(personaGroupDocIdHex));
-  return Array.from(mac.subarray(0, PERSONA_SCOPE_TAG_HEX / 2))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return hex(mac.subarray(0, PERSONA_SCOPE_TAG_HEX / 2));
 }
 
 /**
