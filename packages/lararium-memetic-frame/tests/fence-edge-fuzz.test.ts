@@ -85,7 +85,7 @@ function bodyFor(c: Case): string {
       break;
     case "on-open-line":
       // the mark rides the OPENER's own line, trailing the delimiter — CommonMark's info string.
-      // `fenceLineOpenAny` forbids the fence's own character in the info string, so a mark (which
+      // `fenceLineOpen` forbids the fence's own character in the info string, so a mark (which
       // carries neither backtick nor tilde) is always a legal info string here.
       lines.push(fence + c.mark, "prose inside", fence);
       break;

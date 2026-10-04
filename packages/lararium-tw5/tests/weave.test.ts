@@ -131,6 +131,20 @@ describe("the submission projection", () => {
     expect(p.markdown).toContain("''unrendered''");
   });
 
+  test("★ a TILDE fence seals its interior too — CommonMark §4.5 admits it as a peer ★", () => {
+    const src = "prose\n\n~~~\n''unrendered''\n<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119>>\n~~~\n\nafter ''bold''\n";
+    const md = transposeMarkdown(src).markdown;
+    expect(md).toContain("~~~\n''unrendered''\n<<~ aka lar:///ha.ka.ba/lares/api/pono/RFC-2119>>\n~~~");
+    expect(md).not.toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119`");
+    // CONTROL: past the closing tilde run the walk transposes again.
+    expect(md).toContain("after **bold**");
+  });
+
+  test("CONTROL: a backtick run never closes a tilde fence", () => {
+    const src = "~~~\n```\n''inside''\n~~~\n";
+    expect(transposeMarkdown(src).markdown).toContain("```\n''inside''\n~~~");
+  });
+
   test("a sigil spanning lines travels whole, fenced", () => {
     const src = "<<~ranks register a ~ one\n  -> b ~ two\n  -> c ~ three>>\nprose after\n";
     const t = transposeMarkdown(src);
@@ -239,17 +253,17 @@ describe("against the live corpus", () => {
     // CENSUS LANE C: walked through weave's OWN fence-open/close rule (`fenceLineOpen`/
     // `fenceLineClose`, re-exported from the sanctioned surface), never a hand-rolled
     // `startsWith("\`\`\`")` that could drift from the production walk's own fence law.
-    let fence = 0;
+    let fence: ReturnType<typeof fenceLineOpen> = null;
     const unfenced: string[] = [];
     for (const line of p.markdown.split("\n")) {
-      if (fence === 0) {
-        const openLen = fenceLineOpen(line);
-        if (openLen > 0) { fence = openLen; continue; }
+      if (fence === null) {
+        fence = fenceLineOpen(line);
+        if (fence) continue;
       } else if (fenceLineClose(line, fence)) {
-        fence = 0;
+        fence = null;
         continue;
       }
-      if (fence > 0) continue;
+      if (fence !== null) continue;
       unfenced.push(line);
       expect(line).not.toMatch(/^<<\^ code:/);
     }

@@ -16,7 +16,7 @@
 export { FRAME_MARKS, FRAME_CODES, frameMark, frameHex, frameAlt, type FrameMark } from "./marks.js";
 export {
   fencedSpans, inMask, inMaskInterior, maskedExec, maskedExecAll, fenceLineOpen, fenceLineClose,
-  type MaskSpan,
+  type MaskSpan, type FenceChar, type FenceOpen,
 } from "./fence-mask.js";
 export { META_OPEN_CANON, META_OPEN_RE, META_OPEN_LINE_RE, PLAIN_OPEN_RE, isCanonicalMetaOpen } from "./meta-fence.js";
 export {

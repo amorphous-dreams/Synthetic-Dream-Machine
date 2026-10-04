@@ -22,77 +22,51 @@
  * to read as LIVE, closing the carrier's real span early at the quoted mark and naming it a
  * `second-etx` fault over a carrier that was, in fact, well-formed.
  *
- * `fenceLineOpen`/`fenceLineClose` stay BACKTICK-ONLY below — `weave`'s line-at-a-time walk
- * (lararium-tw5/src/weave/index.ts) reads them directly and tracks fence state as a bare length,
- * with no character carried alongside it; widening those two exports would need widening that walk's
- * state too, which is a wider change than this fix's scope. `fenceLineOpenAny`/`fenceLineCloseAny`
- * below carry the character a run opened with, and `fencedSpans` — the scan the frame reader actually
- * depends on — reads THOSE, so the one place a quoted mark gets masked for already covers both fence
- * kinds; a follow-up may widen weave's walk to read the same pair.
+ * ONE FAMILY, BOTH CHARACTERS. `fenceLineOpen` answers the run a line opens — its length and its
+ * character — and `fenceLineClose` closes only against that same character; `fencedSpans` and every
+ * line-at-a-time walk (weave's transposer, its slot extractor) read the same pair, so no reader can
+ * mask a tilde fence while another reads through it.
  *
  * Isomorphic; no TW5/fs/DOM dependencies — same law in every caller.
  */
 
 export interface MaskSpan { readonly start: number; readonly end: number }
 
-const FENCE_LINE_RE = /^ {0,3}(`{3,})/;
-const FENCE_LINE_RE_ANY = /^ {0,3}(`{3,}|~{3,})/;
+const FENCE_OPEN_RE = /^ {0,3}(`{3,}|~{3,})/;
+const FENCE_RUN_RE: Readonly<Record<FenceChar, RegExp>> = { "`": /^ {0,3}(`{3,})/, "~": /^ {0,3}(~{3,})/ };
 
 /** A fence character this module recognises — the two CommonMark §4.5 admits. */
 export type FenceChar = "`" | "~";
 
-/** Like {@link fenceLineOpen}, but recognising EITHER fence character. */
-export function fenceLineOpenAny(line: string): { readonly len: number; readonly ch: FenceChar } | null {
-  const m = FENCE_LINE_RE_ANY.exec(line);
+/** An opened fence: its run length and the character it opened with. */
+export interface FenceOpen { readonly len: number; readonly ch: FenceChar }
+
+/**
+ * Does `line` open a fence, CommonMark §4.5? Answers the run — length and character — or null when it
+ * does not, including when the leading run WOULD open one but the info string carries the fence's own
+ * character: a line shaped like "```memetic-wikitext tangle` more prose" never opens a fence at all; it
+ * reads as ordinary text carrying an inline code span. (A backtick info string may carry a tilde and
+ * vice versa — only the fence's OWN character is forbidden there.)
+ */
+export function fenceLineOpen(line: string): FenceOpen | null {
+  const m = FENCE_OPEN_RE.exec(line);
   if (m === null) return null;
   const run = m[1]!;
   const ch = run[0] as FenceChar;
-  // Same guard `fenceLineOpen` applies for backticks: an info string carrying the SAME character the
-  // fence opened with would itself close the fence mid-declaration, so a line shaped that way never
-  // opens one. (CommonMark allows a backtick info string to carry a tilde and vice versa — only the
-  // fence's OWN character is forbidden there.)
   return line.slice(m[0].length).includes(ch) ? null : { len: run.length, ch };
 }
 
-/** Like {@link fenceLineClose}, but closing against the SAME character `open` records. */
-export function fenceLineCloseAny(line: string, open: { readonly len: number; readonly ch: FenceChar }): boolean {
-  const re = open.ch === "`" ? FENCE_LINE_RE : /^ {0,3}(~{3,})/;
-  const m = re.exec(line);
+/**
+ * Does `line` CLOSE the fence `open` records? A closer needs a run of the SAME character, `open.len`
+ * or longer, AND NOTHING ELSE ON THE LINE beside it — a content line that happens to start with a
+ * shorter or trailed run ("```` example of `backticks`", inside a fence opened at four) never closes;
+ * it is BODY. An un-guarded close would close early on a content line and read what followed as if
+ * the fence had never opened.
+ */
+export function fenceLineClose(line: string, open: FenceOpen): boolean {
+  const m = FENCE_RUN_RE[open.ch].exec(line);
   if (m === null || m[1]!.length < open.len) return false;
   return line.slice(line.indexOf(open.ch) + m[1]!.length).trim() === "";
-}
-
-/**
- * Does `line` open a backtick fence, CommonMark §4.5? Answers the run length, or `0` when it does
- * not — including when the leading run WOULD open one but the trailing info string itself carries a
- * backtick: a line shaped like "```memetic-wikitext tangle` more prose" never opens a fence at all;
- * it reads as ordinary text carrying an inline code span, exactly like every other non-fence line.
- *
- * ONE RULE, ONE PLACE: every caller that needs to know whether a line opens a fence — this module's
- * own span scan, and any line-at-a-time walk elsewhere in the tree (weave's transposer) — reads this
- * function rather than re-deriving the guard.
- */
-export function fenceLineOpen(line: string): number {
-  const m = FENCE_LINE_RE.exec(line);
-  if (m === null) return 0;
-  return line.slice(m[0].length).includes("`") ? 0 : m[1]!.length;
-}
-
-/**
- * Does `line` CLOSE a fence opened at `openLen` backticks, CommonMark §4.5/§4.5? A closer needs a
- * run of `openLen` backticks or more, AND NOTHING ELSE ON THE LINE beside it — a content line that
- * happens to start with a shorter or equal-but-trailed run ("```` example of `backticks`", inside a
- * fence opened at four) never closes; it is BODY. An un-guarded close that accepted any run ≥ the
- * opener regardless of trailing content would close early on a content line and read what followed
- * as if the fence had never opened.
- *
- * ONE RULE, ONE PLACE — see {@link fenceLineOpen}'s own note; both this module's span scan and
- * weave's line-at-a-time walk read this function rather than re-deriving the close guard.
- */
-export function fenceLineClose(line: string, openLen: number): boolean {
-  const m = FENCE_LINE_RE.exec(line);
-  if (m === null || m[1]!.length < openLen) return false;
-  return line.slice(line.indexOf("`") + m[1]!.length).trim() === "";
 }
 
 /** All quoted-code spans of `text`, ordered, non-overlapping. */
@@ -102,11 +76,11 @@ export function fencedSpans(text: string): MaskSpan[] {
   let lineStart = 0;
   const flushLine = (lineEnd: number, nextStart: number) => {
     const line = text.slice(lineStart, lineEnd);
-    const opened = fenceLineOpenAny(line);
+    const opened = fenceLineOpen(line);
     if (open) {
-      // closing fence: fenceLineCloseAny — same-or-longer run of the SAME character, nothing but
+      // closing fence: fenceLineClose — same-or-longer run of the SAME character, nothing but
       // the run on the line
-      if (fenceLineCloseAny(line, open)) {
+      if (fenceLineClose(line, open)) {
         spans.push({ start: open.start, end: nextStart });
         open = null;
       }

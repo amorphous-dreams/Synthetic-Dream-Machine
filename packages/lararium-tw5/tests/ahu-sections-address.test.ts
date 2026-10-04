@@ -31,7 +31,7 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { carrierFiles } from "../src/carrier-files.js";
-import { fenceLineOpen, fenceLineClose } from "@lararium/memetic-frame";
+import { fenceLineOpen, fenceLineClose, type FenceOpen } from "@lararium/memetic-frame";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
@@ -41,17 +41,18 @@ const carriers = (): string[] => carrierFiles(REPO);
 /**
  * Section opens and closes, counted outside fenced blocks — a fence carries examples, never
  * structure. `fenceLineOpen`/`fenceLineClose` (fence-mask.ts) read CommonMark §4.5's own rule: a
- * line opening with 3+ backticks whose INFO STRING itself carries a backtick never opens a fence at
- * all (it reads as ordinary prose) — a naive `line.startsWith("```")` toggle flips on that line
+ * line opening with a 3+ backtick or tilde run whose INFO STRING itself carries that character never
+ * opens a fence at all (it reads as ordinary prose) — a naive `line.startsWith("```")` toggle flips on that line
  * anyway and desyncs every open/close count that follows it.
  */
 export function frame(text: string): { opens: string[]; closes: number } {
   const opens: string[] = [];
-  let closes = 0, fenceLen = 0;
+  let closes = 0;
+  let fence: FenceOpen | null = null;
   for (const line of text.split("\n")) {
-    if (fenceLen > 0) { if (fenceLineClose(line, fenceLen)) fenceLen = 0; continue; }
-    const openLen = fenceLineOpen(line);
-    if (openLen > 0) { fenceLen = openLen; continue; }
+    if (fence) { if (fenceLineClose(line, fence)) fence = null; continue; }
+    fence = fenceLineOpen(line);
+    if (fence) continue;
     const open = /^(?:<<~ ahu|<<fragment) #\/?([a-z0-9-]+)/.exec(line);
     if (open) opens.push(open[1]!);
     if (/^(?:<<~\/ahu|<<\/fragment)/.test(line)) closes += 1;
@@ -130,11 +131,11 @@ describe("★ every named ahu section addresses ★", () => {
     const bare: string[] = [];
     for (const f of carriers()) {
       const disk = readFileSync(path.join(REPO, f), "utf8");
-      let fenceLen = 0;
+      let fence: FenceOpen | null = null;
       disk.split("\n").forEach((line, i) => {
-        if (fenceLen > 0) { if (fenceLineClose(line, fenceLen)) fenceLen = 0; return; }
-        const openLen = fenceLineOpen(line);
-        if (openLen > 0) { fenceLen = openLen; return; }
+        if (fence) { if (fenceLineClose(line, fence)) fence = null; return; }
+        fence = fenceLineOpen(line);
+        if (fence) return;
         const m = /^<<(?:~ ?ahu|fragment|~ ?kahea ahu) #(?!\/)([a-z0-9-]+)/i.exec(line);
         if (m) bare.push(`${f}:${i + 1} #${m[1]}`);
       });

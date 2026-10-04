@@ -88,6 +88,7 @@ import {
   fenceLineOpen,
   fenceLineClose,
   bccOfSpan,
+  type FenceOpen,
 } from "@lararium/memetic-frame";
 import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "../meme-ast/grammar-table.generated.js";
 // Re-exported so a test of weave's OWN tongue-axis properties (round-trip, injectivity) reaches
@@ -100,6 +101,9 @@ import { parseTaploFields } from "../toml-ast.js";
 // walking a woven body's own fence structure (CENSUS LANE C) reads the canonical open/close rule
 // through this sanctioned surface rather than a hand-rolled `startsWith("\`\`\`")` re-derivation.
 export { fenceLineOpen, fenceLineClose };
+
+/** The root meta fence's run: its opener is fixed at exactly three backticks (META_OPEN_LINE_RE). */
+const META_FENCE: FenceOpen = { len: 3, ch: "`" };
 
 /**
  * The word SET a line recognizer alternates on (lar:///sigil.grammar.lane)
@@ -538,20 +542,20 @@ function extractAhuSlot(text: string, slotPath: string): string | null {
   const wantId = slotPath.startsWith("/") ? slotPath.slice(1) : slotPath;
   let depth = 0;
   let collected: string[] | null = null;
-  // ── fence tracking, same rule weave() reads below (ONE RULE, ONE PLACE): a backtick fence may
-  // SHOW the ahu sigils as literal text (a worked example, a quoted illustration), and a line
-  // inside one never opens or closes a real slot. ──
-  let fence = 0;
+  // ── fence tracking, same rule weave() reads below (ONE RULE, ONE PLACE): a fence — backtick or
+  // tilde — may SHOW the ahu sigils as literal text (a worked example, a quoted illustration), and a
+  // line inside one never opens or closes a real slot. ──
+  let fence: FenceOpen | null = null;
   for (const line of text.split("\n")) {
-    if (fence === 0) {
-      const openLen = fenceLineOpen(line);
-      if (openLen > 0) { fence = openLen; if (collected !== null) collected.push(line); continue; }
+    if (fence === null) {
+      const opened = fenceLineOpen(line);
+      if (opened) { fence = opened; if (collected !== null) collected.push(line); continue; }
     } else if (fenceLineClose(line, fence)) {
-      fence = 0;
+      fence = null;
       if (collected !== null) collected.push(line);
       continue;
     }
-    if (fence > 0) { if (collected !== null) collected.push(line); continue; }
+    if (fence !== null) { if (collected !== null) collected.push(line); continue; }
     if (collected === null) {
       const open = AHU_OPEN.exec(line);
       if (open) {
@@ -721,7 +725,7 @@ export function transposeMarkdown(
   tongue?: string,
 ): { markdown: string; uri?: string; check?: string; metaFence?: string; references?: ReferenceEntry[] } {
   const out: string[] = [];
-  let fence = 0;            // open fence length in backticks; 0 = prose
+  let fence: FenceOpen | null = null;   // the open fence's run; null = prose
   let ordinal = 0;          // position inside a `#` ordered run
   let metaFence: string[] | null = null;
   let metaFenceDone: string | undefined;
@@ -777,35 +781,35 @@ export function transposeMarkdown(
     // at that width — a content line that merely STARTS with a backtick run, trailing content and
     // all, never closes it early. ──
     if (inMetaFence) {
-      if (fenceLineClose(line, 3)) { inMetaFence = false; metaFenceDone = (metaFence ?? []).join("\n"); metaFence = null; continue; }
+      if (fenceLineClose(line, META_FENCE)) { inMetaFence = false; metaFenceDone = (metaFence ?? []).join("\n"); metaFence = null; continue; }
       (metaFence ?? []).push(line);
       continue;
     }
     // Only the fence that OPENS the carrier heads the carrier (the position law) — every later
     // `toml meta` fence heads a worksite and STAYS in the body as an ordinary fenced block.
-    if (fence === 0 && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
+    if (fence === null && metaFenceDone === undefined && META_OPEN_LINE_RE.test(line)) { inMetaFence = true; metaFence = []; continue; }
 
     // ── fence tracking: OPEN and CLOSE both read through fence-mask's own rules (CommonMark §4.5) —
-    // `fenceLineOpen` (a fence's info string may carry no backtick) and `fenceLineClose` (a closer
-    // needs a run ≥ the opener AND nothing else on the line — a content line that happens to start
-    // with a shorter or trailed run, "```` example of `backticks`" inside a fence opened at four,
-    // never closes early; it is body). ONE RULE, ONE PLACE — this walk reads fence-mask's guard
-    // rather than re-deriving either guard with its own unguarded regex. ──
-    if (fence === 0) {
-      const openLen = fenceLineOpen(line);
-      if (openLen > 0) {
+    // `fenceLineOpen` (backtick or tilde; a fence's info string may carry no run of its own
+    // character) and `fenceLineClose` (a closer needs a run of the SAME character ≥ the opener AND
+    // nothing else on the line — a content line that happens to start with a shorter or trailed run,
+    // "```` example of `backticks`" inside a fence opened at four, never closes early; it is body).
+    // ONE RULE, ONE PLACE — this walk reads fence-mask's guard rather than re-deriving either. ──
+    if (fence === null) {
+      const opened = fenceLineOpen(line);
+      if (opened) {
         flushProse();
-        fence = openLen;
+        fence = opened;
         out.push(line);
         continue;
       }
     } else if (fenceLineClose(line, fence)) {
       flushProse();
-      fence = 0;
+      fence = null;
       out.push(line);
       continue;
     }
-    if (fence > 0) { out.push(line); continue; }
+    if (fence !== null) { out.push(line); continue; }
 
     // ── a blank line closes the paragraph — a mark left unmatched on one side never pairs
     // across it; only a run of CONTIGUOUS lines buffers for the cross-line emphasis fix ──
