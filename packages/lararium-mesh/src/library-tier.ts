@@ -40,9 +40,6 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution
  */
 
-/** The scheme a manifest, recipe, or pour uses to name a collection without naming a directory. */
-import { CARRIER_TYPE, DECLARATION } from "./carrier-type.js";
-
 export const LIBRARY_REF_PREFIX = "library:" as const;
 
 /** The self-describing sidecar beside every acquired body. */
@@ -100,44 +97,6 @@ export function metaMatchesDir(meta: LibraryEntryMeta, dirName: string): boolean
   return meta.cid.toLowerCase() === dirName.toLowerCase();
 }
 
-/**
- * Render a collection's INDEX — the tracked, human-readable meme that says what a collection holds and how
- * to verify it.
- *
- * THE INDEX IS THE PART THAT TRAVELS. The bodies stay out of every repo; this goes in one, because a reader
- * cloning the corpus should learn what the shelf holds without holding it. It carries no path — only names,
- * digests, anchors and origins — so it stays true on a machine that has fetched nothing.
- */
-export function renderLibraryIndex(collection: string, entries: readonly LibraryEntryMeta[]): string {
-  const rows = [...entries].sort((a, b) => a.name.localeCompare(b.name));
-  const total = rows.reduce((n, e) => n + e.size, 0);
-  return [
-    DECLARATION,
-    "",
-    `<<^ code="&#x0001;" namespace="⊙" ? -> lar:///ha.ka.ba/library/${collection}>>`,
-    "```toml meta",
-    `collection = "${collection}"`,
-    `entries    = "${rows.length}"`,
-    `bytes      = "${total}"`,
-    `type       = "${CARRIER_TYPE}"`,
-    "```",
-    "",
-    `! Library — ${collection}`,
-    "",
-    "The ACQUIRED bodies this collection holds. ''The bytes rest outside every tracked tree'' —",
-    "in the vessel's own library tier — so a shelf may grow without a repository growing with it.",
-    "''This index travels instead'': a reader learns what the shelf holds, and how to verify it,",
-    "without holding it.",
-    "",
-    "Each row carries the RFC-6920 anchor a stranger checks with no tooling of ours.",
-    "",
-    "| Name | Bytes | Anchor | Origin |",
-    "|---|---|---|---|",
-    ...rows.map((e) => `| ${e.name} | ${e.size} | \`${e.integrity}\` | ${e.origin ?? "//(unrecorded)//"} |`),
-    "",
-    `Reference this collection as \`${libraryRef(collection)}\` — a name that travels, never a path.`,
-    "",
-    '<<^ code="&#x0004;" -> ?>>',
-    "",
-  ].join("\n");
-}
+// Rendering the collection INDEX carrier lives in `@lararium/node`'s bag-carrier.ts, beside the fs
+// shore that writes it — mesh holds no frame grammar, so the one renderer that mints the real
+// SOH/STX/ETX/EOT frame sits where it can import `@lararium/tw5`'s carrier-check.

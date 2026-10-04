@@ -11,7 +11,7 @@
  */
 import { describe, test, expect } from "vitest";
 import {
-  BAG_MANIFEST_FILE, defaultBagManifest, bagManifestFromMeta, renderBagManifest,
+  BAG_MANIFEST_FILE, defaultBagManifest, bagManifestFromMeta,
   placeBag, planBagMove,
 } from "../src/bag-manifest.js";
 import type { BagHomeRoots, RepoRegistration } from "../src/bag-home.js";
@@ -49,12 +49,9 @@ describe("★ NO PATHS, EVER — a repository home names a registered id ★", (
     expect(bagManifestFromMeta("nexus", { home: "hearth", repository: "canon" }).repository).toBeUndefined();
   });
 
-  test("★ the rendered manifest carries the ID and never a directory ★", () => {
-    const wire = renderBagManifest(bagManifestFromMeta("lares", { home: "repository", repository: "canon", "cap-tier": "public" }));
-    expect(wire).toContain('repository = "canon"');
-    expect(wire).not.toContain("/repos/canon");     // the path stays local to the vessel that resolved it
-    expect(wire).not.toContain("/state");
-  });
+  // The RENDERED carrier's own "no path, ever" proof — `bag-declare.test.ts`'s
+  // "the written declaration carries the repo ID and NO path" — lives beside `renderBagManifest`
+  // in `@lararium/node`'s `bag-carrier.ts`, since mesh holds no frame grammar to render one with.
 
   test("an unregistered id REFUSES here rather than resolving somewhere else", () => {
     const m = bagManifestFromMeta("lares", { home: "repository", repository: "elsewhere" });

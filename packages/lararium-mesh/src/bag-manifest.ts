@@ -28,7 +28,6 @@
  */
 
 import { parseCapTier, DEFAULT_CAP_TIER, type CapTier } from "./cap-tier.js";
-import { CARRIER_TYPE, DECLARATION } from "./carrier-type.js";
 import { parseBagHome, DEFAULT_BAG_HOME, resolveBagHomeDir, type BagHome, type BagHomeRoots, type BagHomeResolution } from "./bag-home.js";
 
 /** The file a bag's self-declaration rides, at the bag's own root. A meme about the bag. */
@@ -95,35 +94,10 @@ export function bagManifestFromMeta(bag: string, meta: Record<string, unknown> |
   };
 }
 
-/** Render a manifest back to the `toml meta` body a bag's `meta.mem` carries. Stable key order — a diff reads. */
-export function renderBagManifest(m: BagManifest): string {
-  const lines = [
-    DECLARATION,
-    "",
-    `<<^ code="&#x0001;" namespace="⊙" ? -> ${bagManifestUri(m.bag)}>>`,
-    "```toml meta",
-    `bag       = "${m.bag}"`,
-    `cap-tier  = "${m.tier}"`,
-    `home      = "${m.home}"`,
-    ...(m.repository ? [`repository = "${m.repository}"`] : []),
-    ...(m.role ? [`role      = "${m.role.replace(/"/g, "'")}"`] : []),
-    `type      = "${CARRIER_TYPE}"`,
-    "```",
-    "",
-    `! ${m.bag}`,
-    "",
-    `This bag declares its own caps and its own home. ''cap-tier'' names WHO may read it — and only ever`,
-    `TIGHTENS against the structural floor, so a declaration cannot open what the crypto keeps shut.`,
-    `''home'' names WHERE its bytes rest: \`repository\` (a clone carries it) · \`hearth\` (per-operator, no`,
-    `clone carries it) · \`ley\` (nowhere durable — it lives while the mesh carries it).`,
-    "",
-    `A repository home names a REGISTERED id, never a path: the bag names WHAT, each vessel resolves WHERE.`,
-    "",
-    '<<^ code="&#x0004;" -> ?>>',
-    "",
-  ];
-  return lines.join("\n");
-}
+// Rendering the manifest CARRIER — the real `meta.mem` with its SOH/STX/ETX/EOT frame and block
+// check — lives in `@lararium/node`'s bag-carrier.ts, beside `writeBagManifest`. Mesh holds the pure
+// data (this type, the parse, the fail-closed defaults) and no frame grammar; the one renderer that
+// mints the frame sits where it can import `@lararium/tw5`'s carrier-check.
 
 /** A manifest read against a vessel's actual roots — the declaration plus where it lands here. */
 export interface BagPlacement {

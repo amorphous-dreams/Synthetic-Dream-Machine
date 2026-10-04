@@ -27,9 +27,10 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import {
-  LIBRARY_META_FILE, parseLibraryRef, metaMatchesDir, renderLibraryIndex,
+  LIBRARY_META_FILE, parseLibraryRef, metaMatchesDir,
   mediaTypeFromExt, niUriSha256FromHex, type LibraryEntryMeta,
 } from "@lararium/mesh";
+import { renderLibraryIndex } from "./bag-carrier.js";
 import { larariumDataHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 

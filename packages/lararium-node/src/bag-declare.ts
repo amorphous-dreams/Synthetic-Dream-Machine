@@ -25,9 +25,10 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
-  BAG_MANIFEST_FILE, bagManifestFromMeta, defaultBagManifest, renderBagManifest, planBagMove,
+  BAG_MANIFEST_FILE, bagManifestFromMeta, defaultBagManifest, planBagMove,
   type BagHome, type BagHomeRoots, type BagManifest, type BagMove, type RepoRegistration,
 } from "@lararium/mesh";
+import { renderBagManifest } from "./bag-carrier.js";
 import { laresDataHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
@@ -88,7 +89,10 @@ export function bagHomeRoots(): BagHomeRoots {
  * read simply does not appear, and every field the caller wants already fail-closes on absence.
  */
 export function metaTableFromBody(body: string): Record<string, unknown> {
-  const fence = /```toml\s+meta\s*\n([\s\S]*?)\n```/.exec(body);
+  // The opener this reads is `meta-fence.ts`'s own ADMITTED form ([ \t], never `\s` — `\s` crosses a
+  // newline, so `\s+` before the label would let ```toml\nmeta match and `\s*` after it would swallow
+  // the blank line beneath the opener into the fence it opens).
+  const fence = /```toml[ \t]+meta[ \t]*\n([\s\S]*?)\n```/.exec(body);
   const table: Record<string, unknown> = {};
   if (!fence?.[1]) return table;
   for (const line of fence[1].split("\n")) {
