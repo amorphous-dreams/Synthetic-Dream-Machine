@@ -250,15 +250,18 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    * green while a reader silently drops the second code of a family, because dropping it costs at
    * most one carrier. So the tally runs per CODE.
    *
-   * AND THE THIN CODES NEVER STAND ALONE. `kapu.mem` writes `&#x0014;` on the line BELOW its
-   * `&#x0004;`, so no corpus carrier's marks turn on the second EOT code and no walk over the corpus
-   * as it stands can catch a reader that drops it. Named, not papered over — the substitution walk
-   * below is what carries those teeth, and the probe walk in `carrier-head.test.ts` carries the rest.
+   * EOT2 NO LONGER STANDS IN THE CORPUS AT REST. `kapu.mem` once carried `&#x0014;` on the line below
+   * its `&#x0004;`, but operator ruling 2a623c1a2 (2026-10-04, `handback-eot2-and-typecheck-reds.mem`)
+   * closed it on a plain EOT like every other carrier — EOT2's office stays open for the relay-stream
+   * layer, not for an at-rest close, so no corpus file is lawfully left to carry the floor. The SOH2
+   * floor still reads off the corpus (several carriers write it); EOT2 reads off its OWN fixture below
+   * instead, so a reader that drops the second code of a family still goes red without asking the
+   * corpus to keep hosting a mark the corpus no longer has reason to write.
    *
    * `&#x0017;` (ETB) stands in the declaration and no corpus carrier writes it, so it carries no
    * floor here — an absent count states a fact, and inventing a floor for it would state a false one.
    */
-  test("★ the thin codes still stand in the corpus, or the walk above lost its teeth ★", () => {
+  test("★ the thin codes still stand — SOH2 in the corpus, EOT2 in its own fixture ★", () => {
     const tally = new Map<string, number>();
     for (const f of carrierFiles(REPO)) {
       const text = readFileSync(path.join(REPO, f), "utf8");
@@ -270,9 +273,16 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
     }
     const undeclared = [...tally.keys()].filter((c) => frameMark(c) === undefined);
     expect(undeclared, "a corpus carrier writes a control code the declaration stands nowhere").toEqual([]);
-    // The second code of each multi-code family. Losing either would cost one file and no family floor.
+    // The second code of the SOH family. Losing it would cost at least one real corpus file.
     expect(tally.get("&#x0011;") ?? 0, "no carrier writes SOH2 — the SOH family reads as one code").toBeGreaterThanOrEqual(1);
-    expect(tally.get("&#x0014;") ?? 0, "no carrier writes EOT2 — the EOT family reads as one code").toBeGreaterThanOrEqual(1);
+
+    // EOT2's own fixture — no at-rest carrier is ruled to carry this mark, so the floor stands here.
+    const eot2Fixture = '<<^ code="&#x0003;">>ni:///sha-256;x\n\n<<^ code="&#x0014;" -> to="?">>';
+    const eot2Seen = new Set<string>();
+    for (const sig of maskedExecAll(eot2Fixture, SIGIL, fencedSpans(eot2Fixture))) {
+      for (const ent of sig[0].matchAll(/&#x[0-9A-Fa-f]{4};/g)) eot2Seen.add(ent[0]);
+    }
+    expect(eot2Seen.has("&#x0014;"), "the EOT2 fixture itself lost the mark it exists to carry").toBe(true);
   });
 
   /**

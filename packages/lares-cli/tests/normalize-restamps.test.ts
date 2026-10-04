@@ -88,16 +88,19 @@ describe("meme normalize — the check follows the body", () => {
   });
 
   test("★ RED: content after the terminating 0004 refuses the boundary ★", () => {
-    // Recreate the former kapu drift against the repaired EOT2 carrier: an ETX check and 0004/EOT
-    // stand, then a second terminator follows. `verifyBcc` sees the adjacent digest and used to call
-    // the whole source canonical while the parser discarded the post-EOT bytes.
+    // OWN FIXTURE, not the corpus — this used to mutate `kapu.mem`, trading on the one carrier that
+    // (at the time) ended on an authored EOT2 close standing alone. Operator ruling 2a623c1a2
+    // (2026-10-04) closed `kapu.mem` on a plain EOT like every other carrier, so that carrier no
+    // longer holds the `&#x0014;` line this test's `.replace` needed to find — the substitution
+    // silently no-op'd and the "stray" file read as an unmodified, canonical copy.
+    //
+    // Built from SOURCE (`prism.mem`) instead: a real ETX check and EOT stand, then a second
+    // terminator follows. `verifyBcc` sees the adjacent digest and used to call the whole source
+    // canonical while the parser discarded the post-EOT bytes.
     const stray = path.join(dir, "post-eot.mem");
-    const source = path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/kapu.mem");
-    const repaired = readFileSync(source, "utf8");
-    writeFileSync(stray, repaired.replace(
-      '<<^ code="&#x0014;" -> to="?">>',
-      '<<^ code="&#x0004;" -> to="?">>\n<<^ code="&#x0014;" -> to="?">>',
-    ));
+    const source = readFileSync(SOURCE, "utf8");
+    if (checkSpan(source) === null) throw new Error("fixture must carry a complete frame");
+    writeFileSync(stray, `${source.trimEnd()}\n<<^ code="&#x0014;" -> to="?">>\n`);
     const before = readFileSync(stray, "utf8");
     const { out, code } = meme("check", stray);
     expect(out).toMatch(/postamble|boundary|after.*0004|terminat/i);
