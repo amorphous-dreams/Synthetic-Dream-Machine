@@ -94,10 +94,11 @@ export function bagManifestFromMeta(bag: string, meta: Record<string, unknown> |
   };
 }
 
-// Rendering the manifest CARRIER — the real `meta.mem` with its SOH/STX/ETX/EOT frame and block
-// check — lives in `@lararium/node`'s bag-carrier.ts, beside `writeBagManifest`. Mesh holds the pure
-// data (this type, the parse, the fail-closed defaults) and no frame grammar; the one renderer that
-// mints the frame sits where it can import `@lararium/tw5`'s carrier-check.
+// Rendering the manifest CARRIER — the real `meta.mem` with its SOH/STX/ETX/EOT frame, routed
+// through tw5's own canonical render — lives in `@lararium/node`'s `bag-declare.ts` (via
+// `carrier-render.ts`), beside `writeBagManifest`. Mesh holds the pure data (this type, the parse,
+// the fail-closed defaults) and no frame grammar; the renderer sits where it can import
+// `@lararium/tw5`.
 
 /** A manifest read against a vessel's actual roots — the declaration plus where it lands here. */
 export interface BagPlacement {

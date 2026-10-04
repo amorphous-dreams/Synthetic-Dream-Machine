@@ -51,7 +51,7 @@ describe("★ NO PATHS, EVER — a repository home names a registered id ★", (
 
   // The RENDERED carrier's own "no path, ever" proof — `bag-declare.test.ts`'s
   // "the written declaration carries the repo ID and NO path" — lives beside `renderBagManifest`
-  // in `@lararium/node`'s `bag-carrier.ts`, since mesh holds no frame grammar to render one with.
+  // in `@lararium/node`'s `bag-declare.ts`, since mesh holds no frame grammar to render one with.
 
   test("an unregistered id REFUSES here rather than resolving somewhere else", () => {
     const m = bagManifestFromMeta("lares", { home: "repository", repository: "elsewhere" });

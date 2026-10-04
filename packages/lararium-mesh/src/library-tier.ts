@@ -97,6 +97,6 @@ export function metaMatchesDir(meta: LibraryEntryMeta, dirName: string): boolean
   return meta.cid.toLowerCase() === dirName.toLowerCase();
 }
 
-// Rendering the collection INDEX carrier lives in `@lararium/node`'s bag-carrier.ts, beside the fs
-// shore that writes it — mesh holds no frame grammar, so the one renderer that mints the real
-// SOH/STX/ETX/EOT frame sits where it can import `@lararium/tw5`'s carrier-check.
+// Rendering the collection INDEX carrier — routed through tw5's own canonical render — lives in
+// `@lararium/node`'s `library-store.ts` (via `carrier-render.ts`), beside the fs shore that writes
+// it. Mesh holds no frame grammar, so the renderer sits where it can import `@lararium/tw5`.
