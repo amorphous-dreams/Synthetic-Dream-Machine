@@ -49,10 +49,9 @@ The module header inside the source carries the registration triple TW5 reads at
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/stack">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/filters/memes">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YGbR-rf_omWd_e1LxVHd7pe8FZ8zyBQRX9iVSvHD4QY
+<<^ code="&#x0003;">>ni:///sha-256;nwbu2pqwdW7Z14aktTohE5fHdW_uAGq-kE25kxMr180
 
 <<^ code="&#x0004;" -> to="?">>

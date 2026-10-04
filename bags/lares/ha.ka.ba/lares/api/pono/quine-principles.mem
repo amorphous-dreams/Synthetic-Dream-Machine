@@ -73,7 +73,7 @@ In a quine, the self-reproduction step uses the same output mechanism as everyth
 else. There is no "reflection API" that works differently from the "content API."
 
 ''Lararium expression:''
-* `filterTiddlers("[memes[]]")` returns the same set whether called from a widget,
+* `filterTiddlers("[all[memes]]")` returns the same set whether called from a widget,
   a test, or the TW5 VM's own boot logic
 * `resolveLarUri("lar:///ha.ka.ba/...")` works identically in browser, node, and worker
 * `VmDebugSurface` on every peer — no peer has privileged debug access the others lack
@@ -151,11 +151,11 @@ the meme is preferred over the compiled TypeScript equivalent.
 | Live update mechanism | Method dictionary swap | Wiki re-render | CRDT changeset + MemeSyncAdaptor |
 | Persistence | `.image` file | Single HTML file | Automerge DocHandle (CRDT) |
 | Distribution | Single-machine image | Single-device file | Multi-peer mesh (Beelay sync) |
-| Introspection | `doesUnderstand:` | `[all[tiddlers]]` | `[memes[]]` filter |
+| Introspection | `doesUnderstand:` | `[all[tiddlers]]` | `[all[memes]]` filter |
 | Self-description | Classes describe classes | Tiddlers describe tiddlers | Memes describe memes via `lar:` URIs |
 | Ephemeralization target | — | — | TypeScript → memes (Heleuma anchors) |
 
-Smalltalk's `doesUnderstand:` is the missing piece in TiddlyWiki. `[memes[]]` is
+Smalltalk's `doesUnderstand:` is the missing piece in TiddlyWiki. `[all[memes]]` is
 Lararium's answer: a filter expression that returns the self-describing layer.
 
 <<~/ahu>>
@@ -271,6 +271,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WXdzBq8yHw9Hotfq2VmzvbtGUkiYvqE15H-Ppdq4J6M
+<<^ code="&#x0003;">>ni:///sha-256;peEjDxFPEUd5q613DUvggky55pXMYPWuL7BnPMKGsd0
 
 <<^ code="&#x0004;" -> to="?">>
