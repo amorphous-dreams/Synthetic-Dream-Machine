@@ -16,7 +16,7 @@
 
 import { describe, test, expect } from "vitest";
 import { MemeStreamParser } from "../src/meme-stream.js";
-import { DECLARATION } from "@lararium/mesh/carrier-type";
+import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 
 // ---------------------------------------------------------------------------
 // Fixtures

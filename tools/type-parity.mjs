@@ -24,18 +24,19 @@ if (!existsSync(DIST_CARRIERS)) {
 }
 const { carrierFiles } = await import(DIST_CARRIERS);
 
-const DECL = "packages/lararium-mesh/src/carrier-type.ts";
+const DECL  = "packages/lararium-mesh/src/carrier-type.ts";
+// THE DECLARATION'S OWN AUTHORITY moved to @lararium/memetic-frame — `write.ts` is the one hand that
+// mints it (`CARRIER_DECLARATION`), and carrier-type.ts (the media-TYPE registry) no longer carries a
+// copy to reconstruct one from. Reading write.ts's literal directly means this witness compares
+// against the bytes the writer actually mints, not a hand-rebuilt guess at them.
+const WRITE = "packages/lararium-memetic-frame/src/write.ts";
 
 const decl = readFileSync(join(REPO, DECL), "utf8");
 const canonical = /CARRIER_TYPE = "([^"]+)"/.exec(decl)?.[1];
-// The authority builds its declaration from the type constant, so this witness builds the same
-// string the same way rather than string-matching a template it cannot evaluate.
-const declSpec = /DECLARATION[\s\S]{0,120}?(lar:\/\/\/[^\s`"]+)/.exec(decl)?.[1];
-// MIRRORED FROM THE AUTHORITY, character for character — `DECLARATION` strips `text/`, so this does
-// too. An earlier generation stripped `text/x-`, the provisional prefix RFC 6838 deprecates; against a
-// canonical name that no longer carries it that reconstruction kept the prefix, and the one legitimate
-// inline copy read as a fork of a line it matches exactly.
-const declaration = declSpec ? `<<!DOCTYPE ${canonical.replace("text/", "")} ${declSpec}>>` : null;
+// THE AUTHORITY'S OWN LITERAL, read verbatim — `CARRIER_DECLARATION` is a plain single-quoted string,
+// never a template needing reassembly, so this witness takes it exactly rather than rebuilding it.
+const write = readFileSync(join(REPO, WRITE), "utf8");
+const declaration = /CARRIER_DECLARATION\s*=\s*'([^']+)'/.exec(write)?.[1] ?? null;
 if (!canonical) {
   console.error("[type-parity] carrier-type.ts names no CARRIER_TYPE — the declaration moved");
   process.exit(1);
@@ -45,10 +46,10 @@ if (!canonical) {
 //
 // Two writers once spelled that line by hand while the authority held another, and they drifted the
 // moment the grammar took its `+tiddlywiki` suffix — three library indexes opened by naming the
-// grammar's ADDRESS and never its name, parsed, and rendered back to something else. One module still
-// spells it inline out of necessity: `meme-normalize` gets bundled into the TW5 plugin, so an import
-// from the mesh package would drag that package's automerge wasm into a bundle that cannot hold it.
-// A necessary copy is fine; an UNWATCHED one is how the last three carriers broke.
+// grammar's ADDRESS and never its name, parsed, and rendered back to something else. No module spells
+// it inline anymore: `@lararium/memetic-frame` (the `CARRIER_DECLARATION` authority) carries no
+// automerge/wasm weight, so every caller — including `meme-normalize`, once the one holdout that
+// inlined it to dodge the mesh package's bundle cost — imports the real constant instead.
 
 // THE EXPORT KEYS ARE THE ONE PLACE A LITERAL MUST STAND. TypeScript's `export { X as "literal" }`
 // takes no expression, so the dispatch keys spell both names by necessity — and both must be there,
@@ -91,17 +92,23 @@ for (const f of carriers) {
 
 // Every literal DOCTYPE in a source must match the authority character for character.
 const declFaults = [];
+const normDecl = (s) => s.trim().replace(/\s*>>$/, ">>");
 if (declaration) {
   for (const f of SOURCES) {
-    if (f === DECL) continue;
+    if (f === DECL || f === WRITE) continue;
     const t = readFileSync(join(REPO, f), "utf8");
-    for (const m of t.matchAll(/<<!DOCTYPE[^"`\n]*/g)) {
-      const lit = m[0].trim().replace(/\s*>>$/, " >>");
+    // THROUGH THE CLOSING `>>`, QUOTES INCLUDED — the earlier form stopped at the first quote
+    // (`[^"\`\n]*`), so it never captured the quoted grammar name or address at all. Every match then
+    // read as a bare `<<!DOCTYPE`, which the "names no address" guard below (`!lit.includes("lar:///")`)
+    // always skipped — the gate ran, matched, and never once fired, on a corpus that had already
+    // drifted on this exact line twice.
+    for (const m of t.matchAll(/<<!DOCTYPE[^`\n]*>>/g)) {
+      const lit = normDecl(m[0]);
       // A CONCRETE declaration names the grammar and its address; anything else is a source
       // DESCRIBING the form rather than writing one — a grammar sketch in a comment, or a template
       // that builds the line from the constants it already reads. Neither can drift.
       if (lit.includes("${") || !lit.includes("lar:///")) continue;
-      if (!declaration.includes(lit.replace(/ >>$/, ""))) declFaults.push([f, lit.slice(0, 90)]);
+      if (normDecl(declaration) !== lit) declFaults.push([f, lit.slice(0, 90)]);
     }
   }
 }

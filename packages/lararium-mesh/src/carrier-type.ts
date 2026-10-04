@@ -34,13 +34,6 @@ export function isCarrierType(type: unknown): boolean {
   return typeof type === "string" && CARRIER_TYPES.includes(type);
 }
 
-/**
- * The declaration every carrier opens with, spelled once.
- *
- * It carries the grammar's NAME before the address that defines it, so a reader learns what reads the
- * bytes before it learns where the law lives. Three carriers once opened with the address alone, minted
- * by two writers that each spelled the line by hand — and they parsed, and round-tripped to something
- * else, because a hand-spelled constant drifts the moment the real one moves.
- */
-export const DECLARATION =
-  `<<!DOCTYPE "${CARRIER_TYPE.replace("text/", "")}" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>`;
+// The declaration every carrier opens with lives at @lararium/memetic-frame's `CARRIER_DECLARATION` —
+// ONE authority, since a frame mark belongs to the frame writer/reader, never to the type registry
+// that merely names the media type the declaration's grammar produces.

@@ -16,7 +16,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { carrierFiles, declaresCarrier, readCarrierFiles, SUBMODULES } from "../src/carrier-files.js";
-import { CARRIER_TYPE, DECLARATION as DECL } from "@lararium/mesh/carrier-type";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { CARRIER_DECLARATION as DECL } from "@lararium/memetic-frame";
 import { REPO } from "./test-wiki.js";
 
 describe("declaresCarrier — a file counts as a carrier when it says so", () => {

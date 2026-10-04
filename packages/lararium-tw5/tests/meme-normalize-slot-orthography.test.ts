@@ -9,7 +9,7 @@
 
 import { describe, test, expect } from "vitest";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
-import { DECLARATION } from "@lararium/mesh/carrier-type";
+import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 
 const SLOT_HEAD = (body: string) =>
   `${DECLARATION}\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +

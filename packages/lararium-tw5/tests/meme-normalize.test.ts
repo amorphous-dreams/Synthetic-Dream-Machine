@@ -8,7 +8,7 @@
 
 import { describe, test, expect } from "vitest";
 import { normalizeMemeSource } from "../src/meme-normalize.js";
-import { DECLARATION } from "@lararium/mesh/carrier-type";
+import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 
 const HEAD = (soh: string, ns: string) =>
   `${DECLARATION}\n\n${soh}\n` +
