@@ -363,7 +363,7 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
   test("kramdown-rfc2629 REFUSES a carrier missing the RFC identity keys (tests/fixtures, not bags/)", () => {
     // Pinned to a FIXTURE rather than the live corpus: docs/pono/lar-uri.mem carried this refusal
     // until Canon-Scribe's 624b85d2d gave it docname/cat/ipr/author/date, and the next corpus edit
-    // could add or drop a key just as easily — a RED this loop owns needs ground that stays put.
+    // could add or drop a key just as easily — a RED needs ground that stays put.
     const src = readFileSync(join(REPO, "packages/lararium-tw5/tests/fixtures/kramdown-missing-keys.mem"), "utf8");
     expect(() => projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] })).toThrow(/docname|cat|ipr|author|date/);
   });
