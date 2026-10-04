@@ -37,12 +37,21 @@ const META_FENCE_RE = /```toml meta\n[\s\S]*?```\n/g;
 const contentView = (s: string) => s.replace(META_FENCE_RE, "META\n");
 const squeeze = (s: string) =>
   s.replace(/\n{2,}/g, "\n").replace(/[ \t]+$/gm, "").replace(/\n+$/g, "\n");
-/** Law-mandated normalizations the render MAY apply (glyph-ward ruling). */
+/**
+ * Law-mandated normalizations the render MAY apply (glyph-ward ruling). The code-0002/0003/0004
+ * sigils strip FIRST, against their literal un-spaced `">>"` — before the universal `\s*>>` → `
+ * >>` pass below inserts a space ahead of EVERY `>>` (including theirs), which would otherwise
+ * leave the strip regexes matching nothing and the carrier's own re-stamped check hash (which
+ * legitimately differs byte-for-byte from the committed one on any file the render reflows even
+ * within the tolerated framing classes) standing unstripped — read as "content drift" when the
+ * only thing that moved was a hash neither side's canonical text actually disagrees over once the
+ * trailer is out of the comparison.
+ */
 const sigilNorm = (s: string) => s
-  .replace(/<<~\s*/g, "<<~ ").replace(/\s*>>/g, " >>")
-  .replace(/<<\^ code="&#x(0001|0011);"[^>\n]*?( from=\?)/g, '<<^ code="&#x$1;"$2')  // the namespace re-homes (framing)
   .replace(/<<\^ code="&#x0002;">>\n*/g, "").replace(/<<\^ code="&#x0003;">>[^\n]*\n*/g, "")
-  .replace(/<<\^ code="&#x0004;"[^\n]*>>\n*/g, "");
+  .replace(/<<\^ code="&#x0004;"[^\n]*>>\n*/g, "")
+  .replace(/<<~\s*/g, "<<~ ").replace(/\s*>>/g, " >>")
+  .replace(/<<\^ code="&#x(0001|0011);"[^>\n]*?( from=\?)/g, '<<^ code="&#x$1;"$2');  // the namespace re-homes (framing)
 const lawView = (s: string) => squeeze(sigilNorm(contentView(s)));
 
 function carriers(): Array<{ rel: string; src: string; uri: string }> {
