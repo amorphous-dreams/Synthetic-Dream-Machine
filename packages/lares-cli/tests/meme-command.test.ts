@@ -287,39 +287,41 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     expect(meta).toContain("variant: GFM");
   });
 
-  // prism.mem's `aka` stands between the meta fence and its first ahu — HEAD/carrier position
-  // (LOOP 6) — so it weaves as a citation-plus-pin, never inlined.
-  test("a frozen `aka` PINS for real: local weave resolves against the repo's own bags/ corpus", async () => {
+  // prism.mem pins RFC-2119 by `kanawai` (binding), retargeted (LOOP 7, Canon-Scribe's sibling
+  // work) to the reference meme `lar:///ha.ka.ba/lares/ref/RFC-2119` — no fragment. Under
+  // CommonMark it weaves as a citation-plus-pin (a kramdown-only special case fires the BCP 14
+  // boilerplate instead; see weave.test.ts). Rendering follows the TARGET, never position.
+  test("a frozen `kanawai` PINS for real: local weave resolves against the repo's own bags/ corpus", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
     const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
     vi.restoreAllMocks();
     expect(code).toBe(0);
     const body = readFileSync(join(d, "prism.md"), "utf8");
-    expect(body).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;");
+    expect(body).toContain("- `kanawai lar:///ha.ka.ba/lares/ref/RFC-2119` — pinned `ni:///sha-256;");
     expect(body).not.toContain("unresolved — no corpus to pin");
   });
 
-  test("--tongue en weaves the frozen `aka` as `snapshot`, its head name's primary mirror for English", async () => {
+  test("--tongue en weaves the `kanawai` pin as `law`, its head name's primary mirror for English", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
     const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d, tongue: "en" }));
     vi.restoreAllMocks();
     expect(code).toBe(0);
     const body = readFileSync(join(d, "prism.md"), "utf8");
-    expect(body).toContain("- `snapshot lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;");
-    expect(body).not.toContain("- `aka ");
+    expect(body).toContain("- `law lar:///ha.ka.ba/lares/ref/RFC-2119` — pinned `ni:///sha-256;");
+    expect(body).not.toContain("- `kanawai ");
   });
 
-  test("CONTROL: with NO --tongue, the same `aka` weaves under its canonical name, byte-identical to before", async () => {
+  test("CONTROL: with NO --tongue, the same `kanawai` pin weaves under its canonical name, byte-identical to before", async () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     vi.spyOn(console, "log").mockImplementation(() => {});
     const code = await cmdMeme(memeArgs(["project", PRISM], { to: "md", out: d }));
     vi.restoreAllMocks();
     expect(code).toBe(0);
     const body = readFileSync(join(d, "prism.md"), "utf8");
-    expect(body).toContain("- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;");
-    expect(body).not.toContain("snapshot");
+    expect(body).toContain("- `kanawai lar:///ha.ka.ba/lares/ref/RFC-2119` — pinned `ni:///sha-256;");
+    expect(body).not.toContain("- `law ");
   });
 
   test("--tongue en --dialect GFM: frontmatter carries lang and tongue: \"x-lares>en\"", async () => {
@@ -331,7 +333,7 @@ describe("lares meme project --to md over a file — local, byte for byte", () =
     const body = readFileSync(join(d, "prism.md"), "utf8");
     expect(body).toContain('lang: "en"');
     expect(body).toContain('tongue: "x-lares>en"');
-    expect(body).toContain("- `snapshot ");
+    expect(body).toContain("- `law ");
   });
 
   test("CONTROL: an unrecognized --dialect refuses, naming the registered variants", async () => {
@@ -382,7 +384,7 @@ describe("lares meme project --to md --check — the fold of submission-parity",
     expect(code).toBe(0);
     expect(readFileSync(join(d, "prism.md"), "utf8")).toBe(mdBefore);
     expect(mdBefore).toContain('variant: "GFM"');
-    expect(mdBefore).toContain("- `snapshot ");
+    expect(mdBefore).toContain("- `law ");
   });
 
   test("the bare-flag spelling names its target off the normal source position", async () => {

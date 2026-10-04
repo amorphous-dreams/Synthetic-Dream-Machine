@@ -92,13 +92,17 @@ import { GENERATED_SIGILS, GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE } from "
 export { GENERATED_ALIAS_MAP, GENERATED_PRIMARY_WEAVE };
 import { parseTaploFields } from "../toml-ast.js";
 import { fenceLineOpen, fenceLineClose } from "../meme-ast/fence-mask.js";
+// Re-exported for the SAME reason as GENERATED_ALIAS_MAP/GENERATED_PRIMARY_WEAVE above — a test
+// walking a woven body's own fence structure (CENSUS LANE C) reads the canonical open/close rule
+// through this sanctioned surface rather than a hand-rolled `startsWith("\`\`\`")` re-derivation.
+export { fenceLineOpen, fenceLineClose };
 import { bccOfSpan } from "../carrier-check.js";
 
 /**
  * The word SET a line recognizer alternates on (lar:///sigil.grammar.lane)
  * derives from the tiddler-sourced table — the canonical name plus every tiddler that carries
  * `lar-mirror-of: <canonical>` — rather than a hand-typed list that could silently miss a mirror
- * (`shadow`/`snapshot` for `aka`, `link` for `loulou`) the tiddlers already declare. No dialect
+ * (`pin` for `aka`, `law` for `kanawai`, `link` for `loulou`) the tiddlers already declare. No dialect
  * changes: each recognized word still projects through the SAME shape this file always emitted —
  * only which words REACH that shape widens to match the tiddlers.
  *
@@ -218,17 +222,26 @@ const ahuAlt = [
 const AHU_OPEN = new RegExp(`^(?:${ahuAlt})\\s+#(\\S+?)(?: (?:[^>\\n]|>(?!>))*)?\\s*>>\\s*$`);
 const AHU_CLOSE = new RegExp(`^(?:<<~\\s*\\/\\s*(?:${AHU_SHAPES.sharktooth.join("|")})|<<\\/(?:${AHU_SHAPES.bare.join("|") || "\\x00"})\\s*)>>\\s*$`);
 // `loulou` (+ its mirror `link`) names a plain citation and keeps the reference-bullet shape it
-// always had. `aka` (+ its mirrors `shadow`/`snapshot`) names a FROZEN edge — a pinned transclusion,
-// per #/weave-and-tangle's "an open rhyme": a woven `aka` inlines its target's current text, pinned
-// with the target's own `ni:` check, the same way an in-house `aka` already inlines at a moment.
+// always had. `aka`/`kanawai` (English mirrors `pin`/`law`) PIN an edge — rendering follows the
+// TARGET (#/weave-and-tangle's "an open rhyme"): a reference meme's pin weaves as a citation, a
+// content slot's pin inlines, pinned with the target's own `ni:` check. See `weaveAka` below for
+// the full law (LOOP 7 — role, never position, decides normative vs informative).
 // `kahea` (a live include; `import`/`transclude` alias it, but this slice reads only the bare word's
 // one-line invoke shape — the block open/close form is declined, see the handback) weaves as a plain
 // link under the profile's own marker, since a LIVE include names no frozen moment to pin.
 const LOULOU_NAMES = ["loulou", ...mirrorsOf("loulou")];
 const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
-const AKA_NAMES = ["aka", ...mirrorsOf("aka")];
+// `aka` (English `pin`, informative) and `kanawai` (English `law`, binding/normative) are TWO
+// canonical sigils sharing one rendering mechanism — a pin's TARGET decides whether it weaves as a
+// citation or a frozen image either way; only the SIGIL decides which kramdown reference list a
+// citation folds into (operator ruling, LOOP 7 — role = WHICH SIGIL, no parameter, no position
+// rule). Both families' names derive from the table, never hand-listed.
+const AKA_NAMES = ["aka", ...mirrorsOf("aka"), "kanawai", ...mirrorsOf("kanawai")];
 const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
-const KAHEA_LINE = /^<<~\s*kahea\s+("?lar:[^"\s>]+"?|[^\s>(]+\/[^\s>]*|[^\s>(]+#[^\s>]*)\s*>>\s*$/;
+// CENSUS LANE B: the word set derives from the table (`mirrorsOf`), matching AHU/LOULOU/AKA above —
+// a hand-typed "kahea" alone would silently miss `import`/`transclude` the tiddlers already declare.
+const KAHEA_NAMES = ["kahea", ...mirrorsOf("kahea")];
+const KAHEA_LINE = new RegExp(`^<<~\\s*(?:${KAHEA_NAMES.join("|")})\\s+("?lar:[^"\\s>]+"?|[^\\s>(]+\\/[^\\s>]*|[^\\s>(]+#[^\\s>]*)\\s*>>\\s*$`);
 // A transclusion standing alone as a block: `{{title}}`, `{{title||template}}`,
 // `{{{filter}}}`, `{{{filter||template}}}` — no markdown equivalent exists for any of them, so
 // the LINE-STANDING form carries whole into a tangle fence (a mid-line occurrence is handled
@@ -426,10 +439,11 @@ function translateSigilHead(line: string, tongue: string | undefined): string {
  *   as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as
  *   shown here."
  *
- * Operator-approved (LOOP 6): a HEAD-POSITION (carrier-scope) `aka` targeting RFC-2119's own
- * normative-language slot weaves AS this sentence under `kramdown-rfc2629` — the dialect's native
- * way of citing BCP 14, rather than a markdown citation line naming a meme the kramdown toolchain
- * has never heard of. [RFC2119] and [RFC8174] become the kramdown frontmatter's `normative:` refs.
+ * Operator-approved: a pin of the BCP 14 key-words source ({@link isBcp14KeyWordsSource}, detected
+ * off the TARGET's own meta — never a hardcoded path) weaves AS this sentence under
+ * `kramdown-rfc2629` — the dialect's native way of citing BCP 14, rather than a markdown citation
+ * line naming a meme the kramdown toolchain has never heard of. [RFC2119] and [RFC8174] become the
+ * kramdown frontmatter's `normative:` refs.
  */
 const BCP14_BOILERPLATE =
   'The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", ' +
@@ -437,20 +451,73 @@ const BCP14_BOILERPLATE =
   "as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as " +
   "shown here.";
 
-/** The exact head-position target the BCP 14 special case answers to. */
-const RFC2119_NORMATIVE_LANGUAGE = /\/RFC-2119#\/?normative-language$/;
+/**
+ * A REFERENCE meme declares itself — `reference-kind` in its OWN root toml meta (e.g. `"rfc"`), the
+ * field name a sibling's tiddler work writes. Anything else is a CONTENT SLOT. Operator ruling:
+ * `aka` PINS a `lar:` target; RENDERING FOLLOWS THE TARGET, never where the pin stands — a pin of a
+ * reference meme weaves as a citation, a pin of a content slot weaves as the frozen image, in BOTH
+ * carrier scope and body scope alike. Position no longer changes rendering.
+ */
+function isReferenceMeme(meta: Readonly<Record<string, unknown>>): boolean {
+  return typeof meta["reference-kind"] === "string" && meta["reference-kind"].length > 0;
+}
 
 /**
- * A FROZEN `aka` (or its mirrors `shadow`/`snapshot`) edge weaves by INLINING its target's current
- * text, pinned with the target's own `ni:` check — the woven-outward twin of the in-house `aka`
- * transclusion (#/weave-and-tangle's "an open rhyme"). Resolution needs a wiki/corpus; absent one
- * (no `resolve`, or `resolve` answers null — the target stands unknown), this falls back to a
- * clearly marked unresolved reference rather than inventing content around a target it cannot read.
- *
- * The nested weave carries NO resolver forward — a pin fixes one target at one moment, and a chain of
- * `aka`s pinning each other would have no moment to stop at. It DOES carry `tongue` forward: the
- * pinned content weaves into the same outward artifact, so its own sigil names follow the same axis.
+ * Is THIS reference meme the BCP 14 key-words source — the one a `kanawai` pin (never an `aka`
+ * pin; see {@link referenceCategory}) weaves as the boilerplate sentence rather than a plain
+ * citation? Detected through the target's OWN META alone (`reference-kind: "rfc"` and a
+ * `seriesinfo` naming RFC 2119 or BCP 14) — NEVER a hardcoded path: operator redirect moved the
+ * reference meme to `lar:///ha.ka.ba/lares/ref/RFC-2119` (Canon-Scribe's sibling work) and left the
+ * old `.../api/pono/RFC-2119` standing as the house's own usage law — a plain content meme a pin of
+ * it still inlines, never the boilerplate, because it carries no `reference-kind` at all.
  */
+function isBcp14KeyWordsSource(meta: Readonly<Record<string, unknown>>): boolean {
+  if (meta["reference-kind"] !== "rfc") return false;
+  // The citation fields live under TOML's own `[reference]` TABLE, which `parseTaploFields`
+  // flattens to `reference-<key>` (toml-ast.ts's own nesting convention) — never a bare top-level
+  // `seriesinfo`.
+  const seriesinfo = typeof meta["reference-seriesinfo"] === "string" ? meta["reference-seriesinfo"] : "";
+  return /\bRFC\s*2119\b/i.test(seriesinfo) || /\bBCP\s*14\b/i.test(seriesinfo);
+}
+
+/**
+ * THE NORMATIVE/INFORMATIVE MECHANISM — OPERATOR-RULED (LOOP 7, superseding the earlier "unruled,
+ * keyed off content" interim): the category is WHICH SIGIL PINNED, never the target's content, a
+ * parameter, the tongue, or where the pin stands. `aka` (English `pin`) is informative; `kanawai`
+ * (English `law`, binding) is normative. One function, so a future ruling still swaps one place.
+ */
+function referenceCategory(canonical: "aka" | "kanawai"): "normative" | "informative" {
+  return canonical === "kanawai" ? "normative" : "informative";
+}
+
+/** The kramdown reference anchor a target answers to: its own declared `anchor` field, else derived
+ * from the base URI's last path segment (letters/digits only, uppercased) — kramdown-rfc's own
+ * alias-name shape. `ref/RFC-2119` and `api/pono/RFC-2119` derive the SAME anchor, `RFC2119`, since
+ * only the last segment feeds it — the meme's own meta still decides whether that anchor resolves
+ * through kramdown's standard registry or carries inline fields (`isStandardRfcAnchor`, below). */
+function referenceAnchor(base: string, meta: Readonly<Record<string, unknown>>): string {
+  if (typeof meta["anchor"] === "string" && meta["anchor"].length > 0) return meta["anchor"];
+  const seg = base.split("/").pop() ?? base;
+  return seg.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+}
+
+/** Does kramdown resolve this anchor through its OWN standard-RFC alias registry (a bare `ANCHOR:`,
+ * no inline fields needed) — or does the reference entry need its citation fields written out? */
+function isStandardRfcAnchor(anchor: string): boolean {
+  return /^RFC\d+$/.test(anchor);
+}
+
+/** The citation fields a reference meme's own meta carries, in kramdown-rfc's own field names — only
+ * the ones PRESENT; an absent field is an absent line, never an invented placeholder. Read off the
+ * flattened `reference-<key>` TOML-table keys ({@link isBcp14KeyWordsSource}'s own note), re-keyed
+ * to the SHORT names the emitted YAML entry carries. */
+const CITATION_FIELD_KEYS = ["title", "author", "date", "seriesinfo", "target"] as const;
+function citationFields(meta: Readonly<Record<string, unknown>>): Record<string, string> | undefined {
+  const fields: Record<string, string> = {};
+  for (const k of CITATION_FIELD_KEYS) { const v = meta[`reference-${k}`]; if (typeof v === "string" && v.length > 0) fields[k] = v; }
+  return Object.keys(fields).length > 0 ? fields : undefined;
+}
+
 /**
  * The raw wikitext span of one ahu slot — open sigil through its MATCHING close sigil, inclusive.
  * The same convention the carrier's own block check already stands (carrier-check.ts: "the span
@@ -480,18 +547,18 @@ function extractAhuSlot(text: string, slotPath: string): string | null {
   return null;
 }
 
-/**
- * A FROZEN `aka` edge's TARGET decides how much it pins. No fragment: the whole carrier's current
- * text inlines, pinned with the carrier's own check — unchanged from before. A `#/slot` fragment
- * names ONE ahu slot, so ONLY that slot's woven body inlines, pinned with a check over that slot's
- * OWN bytes ({@link extractAhuSlot}, {@link bccOfSpan}) — never the whole carrier a fragment-less aka
- * would carry, which would smuggle every OTHER section past what the author named into an artifact
- * that may travel outward (an IANA submission, a standalone dialect file) with no license to hold it.
- */
+export interface ReferenceEntry {
+  readonly anchor: string;
+  readonly category: "normative" | "informative";
+  /** Inline YAML citation fields — present only when kramdown cannot resolve the anchor through
+   * its own standard-RFC alias registry. */
+  readonly fields?: Readonly<Record<string, string>>;
+}
+
 interface WovenAka {
   readonly lines: string[];
-  /** RFC numbers the BCP 14 special case pulls into the kramdown frontmatter's `normative:` refs. */
-  readonly normativeRefs?: string[];
+  /** Reference-meme pins a kramdown weave folds into its `normative:`/`informative:` lists. */
+  readonly references?: ReferenceEntry[];
 }
 
 /**
@@ -514,24 +581,28 @@ function pinOf(resolved: string, slot: string | null, profile: WeaveProfile, ton
 }
 
 /**
- * A FROZEN `aka` edge's SCOPE decides its shape, and its TARGET decides how much it pins.
+ * A FROZEN `aka` edge's TARGET decides EVERYTHING: how much it pins, AND what shape the pin weaves
+ * as. Operator ruling (LOOP 7): `aka` PINS a `lar:` target; rendering follows the TARGET, never
+ * where the pin stands. The target's own root toml meta decides the kind ({@link isReferenceMeme}):
  *
- * HEAD POSITION (carrier scope — between the meta fence and the first `ahu`; 218 of canon's 249
- * aka uses): a declared likeness/conformance over the WHOLE carrier, not a section of it. It
- * weaves as a CITATION — one line naming the target and its pin, never inlined content — because
- * a carrier-scope claim is "this document conforms to/cites that one," not "read that one's text
- * here." `kramdown-rfc2629` carries ONE further special case: a head-position aka targeting
- * RFC-2119's own normative-language slot weaves as the BCP 14 boilerplate sentence
- * ({@link BCP14_BOILERPLATE}) instead of a citation line — the dialect's native idiom for exactly
- * this claim, with `[RFC2119]`/`[RFC8174]` riding the kramdown frontmatter's own `normative:` refs.
+ *   REFERENCE meme (`reference-kind` set) → CITATION. CommonMark/GFM: one line naming the target
+ *   and its pin, never inlined content. `kramdown-rfc2629`: the BCP 14 key-words source
+ *   ({@link isBcp14KeyWordsSource}, read off the target's OWN meta — never a hardcoded path) weaves
+ *   as the boilerplate sentence ({@link BCP14_BOILERPLATE}); every other reference meme weaves its
+ *   bracketed anchor, and the reference entry itself (standard-RFC bare, or its citation fields
+ *   inline) rides the kramdown frontmatter's `normative:`/`informative:` lists
+ *   ({@link referenceCategory}).
  *
- * BODY POSITION (inside an ahu — a local edge): the target's current text INLINES, pinned with its
- * own check, the woven-outward twin of the in-house `aka` transclusion (#/weave-and-tangle's "an
- * open rhyme").
+ *   CONTENT slot (no `reference-kind`) → FROZEN IMAGE. The target's current text INLINES, pinned
+ *   with its own check (or, with a `#/slot` fragment, ONLY that slot's woven body, pinned with a
+ *   check over that slot's OWN bytes — never the whole carrier, which would smuggle every OTHER
+ *   section past what the author named into an artifact that may travel outward with no license to
+ *   hold it) — the woven-outward twin of the in-house `aka` transclusion (#/weave-and-tangle's "an
+ *   open rhyme").
  *
  * Resolution needs a wiki/corpus either way; absent one (no `resolve`, or `resolve` answers null —
- * the target stands unknown), both scopes fall back to a clearly marked unresolved reference rather
- * than inventing content or a pin around a target neither scope can read.
+ * the target stands unknown), this falls back to a clearly marked unresolved reference rather than
+ * inventing content, a pin, or a kind around a target it cannot read.
  *
  * The nested weave carries NO resolver forward — a pin fixes one target at one moment, and a chain
  * of `aka`s pinning each other would have no moment to stop at. It DOES carry `tongue` forward: the
@@ -543,33 +614,57 @@ function weaveAka(
   profile: WeaveProfile,
   resolve?: (uri: string) => string | null,
   tongue?: string,
-  headPosition = false,
 ): WovenAka {
   const headWord = resolveHeadWord(word, tongue);
+  // WHICH SIGIL — never a parameter, the target, or where the pin stands — decides normative vs
+  // informative (operator ruling). `mirrorToCanonical` folds any mirror (`pin`, `law`, a read-only
+  // alias) back to its canonical `aka`/`kanawai` before the category question is even asked.
+  const canonical = (mirrorToCanonical(word) ?? word) as "aka" | "kanawai";
   const target = rawTarget.replace(/^"|"$/g, "");
   const hashIdx = target.indexOf("#");
   const base = hashIdx === -1 ? target : target.slice(0, hashIdx);
   const slot = hashIdx === -1 ? null : target.slice(hashIdx + 1);
 
-  if (headPosition) {
-    if (profile.dialect === "kramdown-rfc2629" && RFC2119_NORMATIVE_LANGUAGE.test(target)) {
-      return { lines: [BCP14_BOILERPLATE], normativeRefs: ["RFC2119", "RFC8174"] };
-    }
-    const resolved = resolve ? resolve(base) : null;
-    if (resolved === null || resolved === undefined) {
-      return { lines: [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`] };
-    }
-    const pin = pinOf(resolved, slot, profile, tongue);
-    if (pin === null) {
-      return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
-    }
-    return { lines: [`- \`${headWord} ${target}\` — pinned \`${pin.check}\``] };
-  }
-
   const resolved = resolve ? resolve(base) : null;
   if (resolved === null || resolved === undefined) {
     return { lines: [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`] };
   }
+
+  // The target's OWN root toml meta decides the kind — read once, off the WHOLE carrier (a
+  // reference meme's `reference-kind` lives at carrier scope, never inside one slot).
+  const wholeWoven = transposeMarkdown(resolved, profile, undefined, tongue);
+  const targetMeta = wholeWoven.metaFence ? parseTaploFields(wholeWoven.metaFence) : {};
+
+  if (isReferenceMeme(targetMeta)) {
+    const check = slot === null
+      ? (wholeWoven.check ?? "unchecked")
+      : bccOfSpan(extractAhuSlot(resolved, slot) ?? "");
+    if (slot !== null && extractAhuSlot(resolved, slot) === null) {
+      return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
+    }
+
+    if (profile.dialect !== "kramdown-rfc2629") {
+      return { lines: [`- \`${headWord} ${target}\` — pinned \`${check}\``] };
+    }
+    // The BCP 14 boilerplate fires on a `kanawai` (binding) pin of the key-words source alone — the
+    // SAME target pinned by `aka` (informative) weaves its ordinary bracketed citation instead.
+    if (canonical === "kanawai" && isBcp14KeyWordsSource(targetMeta)) {
+      return {
+        lines: [BCP14_BOILERPLATE],
+        references: [
+          { anchor: "RFC2119", category: "normative" },
+          { anchor: "RFC8174", category: "normative" },
+        ],
+      };
+    }
+    const anchor = referenceAnchor(base, targetMeta);
+    const category = referenceCategory(canonical);
+    const fields = isStandardRfcAnchor(anchor) ? undefined : citationFields(targetMeta);
+    return { lines: [`[${anchor}]`], references: [{ anchor, category, ...(fields ? { fields } : {}) }] };
+  }
+
+  // CONTENT SLOT: the frozen image, unchanged from before this loop — position never entered this
+  // decision; only the target's own meta (just read, above) did.
   if (slot === null) {
     const pin = pinOf(resolved, null, profile, tongue);
     return { lines: [`<!-- ${headWord}: ${target} pinned ${pin!.check} -->`, ...pin!.body.split("\n"), `<!-- /${headWord} -->`] };
@@ -604,7 +699,7 @@ export function transposeMarkdown(
    * never touching an argument, a target, or prose.
    */
   tongue?: string,
-): { markdown: string; uri?: string; check?: string; metaFence?: string; normativeRefs?: string[] } {
+): { markdown: string; uri?: string; check?: string; metaFence?: string; references?: ReferenceEntry[] } {
   const out: string[] = [];
   let fence = 0;            // open fence length in backticks; 0 = prose
   let ordinal = 0;          // position inside a `#` ordered run
@@ -618,8 +713,7 @@ export function transposeMarkdown(
   let proseBuf: string[] | null = null;  // a contiguous default/ordered run, flushed as one string
   let hanaBuf: string[] | null = null;   // a `<<~ hana key>>` span, gathered byte-verbatim
   let hanaKey: string | null = null;
-  let sawAhu = false;        // true once the FIRST ahu opens — carrier scope ends there
-  const normativeRefs = new Set<string>(); // RFC numbers a head-position RFC-2119 aka pulls in
+  const references = new Map<string, ReferenceEntry>(); // anchor -> entry, every reference-meme pin
 
   // A contiguous run of default/ordered lines is buffered raw (structural markers already
   // substituted, emphasis NOT yet applied) and flushed together so a `''`/`//` pair spanning a
@@ -722,20 +816,18 @@ export function transposeMarkdown(
 
     // ── sigils with a markdown shape ──
     const ahu = AHU_OPEN.exec(line);
-    if (ahu) { flushProse(); sawAhu = true; out.push(`<a id="${ahuId(ahu[1]!)}"></a>`); continue; }
+    if (ahu) { flushProse(); out.push(`<a id="${ahuId(ahu[1]!)}"></a>`); continue; }
     if (AHU_CLOSE.test(line)) continue;
     const loulou = LOULOU_LINE.exec(line);
     if (loulou) { flushProse(); out.push(`- \`${resolveHeadWord(loulou[1]!, tongue)} ${(loulou[2] ?? "").trim()}\``); continue; }
     const aka = AKA_LINE.exec(line);
     if (aka) {
       flushProse();
-      // CARRIER SCOPE (head position): after the meta fence, before the first ahu — a declared
-      // likeness/conformance over the WHOLE carrier, never one section of it (218 of canon's 249
-      // aka uses). BODY SCOPE: inside an ahu — a local edge, still a frozen inline (unchanged).
-      const headPosition = metaFenceDone !== undefined && !sawAhu;
-      const woven = weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve, tongue, headPosition);
+      // TARGET-KIND decides the shape now (LOOP 7) — position (carrier scope vs inside an ahu)
+      // no longer enters it; `weaveAka` reads the target's own meta.
+      const woven = weaveAka(aka[1]!, (aka[2] ?? "").trim(), profile, resolve, tongue);
       out.push(...woven.lines);
-      for (const ref of woven.normativeRefs ?? []) normativeRefs.add(ref);
+      for (const ref of woven.references ?? []) references.set(ref.anchor, ref);
       continue;
     }
     const kahea = KAHEA_LINE.exec(line);
@@ -790,7 +882,7 @@ export function transposeMarkdown(
     ...(uri ? { uri } : {}),
     ...(check ? { check } : {}),
     ...(metaFenceDone ? { metaFence: metaFenceDone } : {}),
-    ...(normativeRefs.size > 0 ? { normativeRefs: [...normativeRefs] } : {}),
+    ...(references.size > 0 ? { references: [...references.values()] } : {}),
   };
 }
 
@@ -899,12 +991,26 @@ export function projectSubmission(
       }
       for (const k of profile.requiredMeta) fields[k] = String(tomlFields[k]);
     }
+    // DERIVED, NEVER HAND-LISTED: every `normative:`/`informative:` entry comes from the carrier's
+    // OWN pins ({@link ReferenceEntry}, collected while weaving), split by {@link referenceCategory}.
     // kramdown-rfc's OWN reference convention: a bare anchor key with no value resolves through its
-    // own RFC/I-D alias registry — quoting it would turn the lookup key into a literal string the
-    // toolchain checks verbatim, never resolving. So this rides OUTSIDE the quoted-scalar writer,
-    // appended inside the SAME frontmatter block rather than forced through one generic field shape.
-    const extraLines = profile.dialect === "kramdown-rfc2629" && t.normativeRefs?.length
-      ? ["normative:", ...t.normativeRefs.map((r) => `  ${r}:`)]
+    // own standard-RFC alias registry — quoting it would turn the lookup key into a literal string
+    // the toolchain checks verbatim, never resolving; an anchor outside that registry carries its
+    // citation fields inline instead. This rides OUTSIDE the quoted-scalar writer, appended inside
+    // the SAME frontmatter block rather than forced through one generic field shape.
+    const referenceBlock = (label: "normative" | "informative", refs: readonly ReferenceEntry[]): string[] => {
+      const matching = refs.filter((r) => r.category === label);
+      if (matching.length === 0) return [];
+      const lines = [`${label}:`];
+      for (const r of matching) {
+        lines.push(`  ${r.anchor}:`);
+        for (const [k, v] of Object.entries(r.fields ?? {})) lines.push(`    ${k}: "${yamlEscape(v)}"`);
+      }
+      return lines;
+    };
+    const refs = t.references ?? [];
+    const extraLines = profile.dialect === "kramdown-rfc2629"
+      ? [...referenceBlock("normative", refs), ...referenceBlock("informative", refs)]
       : [];
     const markdown = yamlFrontmatter(fields, extraLines) + t.markdown;
     // Frontmatter-carrying dialects keep the `.md.meta` sidecar TOO (TW5 loads it) — `standalone`
