@@ -103,7 +103,23 @@ describe.skipIf(wikiSkip)(
     // begins at the declaration. The projector emits the CARRIER; comparing whole files would report
     // a `.tid`'s three field lines as grammar drift.
     const fromDeclaration = (t: string) => { const at = t.indexOf("<<!DOCTYPE"); return at < 0 ? t : t.slice(at); };
-    const stripMeta = (t: string) => fromDeclaration(t).replace(/```toml meta\n[\s\S]*?\n```\n/g, "```toml meta\n<META>\n```\n");
+    // THE BLOCK CHECK ITSELF IS NOT BODY. A stale-but-internally-consistent digest is the gate's
+    // own documented WARNING, never tampering (ingest-gate.ts: "a stale check on a human's disk
+    // edit is an EDIT, never tampering") — the SAME law `meme-corpus-roundtrip.test.ts`'s `lawView`
+    // already strips the trailer for. Comparing the literal hash bytes here would report every
+    // carrier the render legitimately re-stamps (anything whose on-disk digest has drifted from
+    // its own current canonical render, by construction never an error) as body drift, when the
+    // byte it moved is the law's OWN re-stamp, not the author's prose.
+    //
+    // BLANK-LINE MARGINS AREN'T BODY EITHER — `meme-corpus-roundtrip.test.ts`'s own law names them
+    // a tolerated framing class ("corpus files stay non-canonical at rest until a deliberate
+    // normalization commit"); `lares meme normalize` does not touch inter-block blank-line counts,
+    // so a carrier sitting one blank line off from what the render produces is exactly that
+    // at-rest, pre-normalization state, not a grammar claim failing.
+    const stripMeta = (t: string) => fromDeclaration(t)
+      .replace(/```toml meta\n[\s\S]*?\n```\n/g, "```toml meta\n<META>\n```\n")
+      .replace(/ni:\/\/\/sha-256;[A-Za-z0-9_-]+/g, "ni:///sha-256;<CHECK>")
+      .replace(/\n{2,}/g, "\n");
     const drift: string[] = [];
     for (const f of carriers) {
       const disk = readFileSync(path.join(REPO, f), "utf8");
