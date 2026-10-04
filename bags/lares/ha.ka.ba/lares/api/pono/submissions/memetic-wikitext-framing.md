@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;RjskvhVEYspgEk7wUgOzK3Jvf5yWC50zrugI7E9exo4"
+source-check: "ni:///sha-256;wgIk6a6APufF485M2vWzHOa-b_ebktDzrU9yjC6RiT0"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -894,9 +894,11 @@ class means.
 An ahu slot address `#/a/b` weaves as `id="a_b"` in the target format. A segment that would collide
 under that flattening escapes with the ISO/IEC 9075-14 `_xHHHH_` scheme — XML-Name-legal, reversible,
 self-escaping because `_x` itself escapes as `_x005F_` — so no rule naming which slot names run legal
-carries the burden of staying reversible; the escape does. Inside the house, `lar:` fragments MAY adopt
-RFC 6901 JSON Pointer's `~0`/`~1` escaping by the URI scheme's own declaration
-<confidence:0.5 — PENDING; the `lar-uri` specification owns this choice, not this frame>.
+carries the burden of staying reversible; the escape does. RULED (see
+`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type` — Fragment identifier): a `lar:`
+fragment IS a JSON Pointer (RFC 6901), reused per RFC 8820, whose reference tokens are slot names
+(`[a-z0-9āēīōūʻ-]`, `$` reserved) — no RFC 6901 escaping arises, since no admitted slot-name glyph is
+`~`, `/`, or any byte that scheme would need to escape.
 
 ### Tongue
 

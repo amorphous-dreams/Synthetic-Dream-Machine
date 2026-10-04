@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;F2KjrtlavKr_nCC3Pcd5OiZgYMO_eje2CJH9eXwDDiU"
+source-check: "ni:///sha-256;iBe6WRIdMX6i_uaXhFXneUx1TQEHk0ZFZlWZwnfOf0U"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -502,10 +502,15 @@ Subtype name:              memetic-wikitext+tiddlywiki
 Required parameters:       none
 Optional parameters:       charset (default UTF-8)
 Encoding considerations:   8-bit; UTF-8 REQUIRED
-Fragment identifier:       sigil-minted anchors (#/anchors): a worksite name,
-                           a nested worksite path (#/a/b), a pranala office.
+Fragment identifier:       a fragment is a JSON Pointer (RFC 6901), reused per
+                           RFC 8820: reference tokens are slot names
+                           ([a-z0-9āēīōūʻ-], `$` reserved) so no RFC 6901
+                           escaping arises, `/` always nests, and a fragment
+                           is always rooted (#/…). The record form percent-
+                           encodes any non-ASCII slot glyph per RFC 3986.
                            The scheme [LAR-URI] carries fragments opaque;
                            their meaning lives in this registration
+                           (RFC 3986 §3.5)
 Security considerations:   see #security
 Interoperability:          degrades to readable text in a plain viewer;
                            sigils render inert without a conforming processor

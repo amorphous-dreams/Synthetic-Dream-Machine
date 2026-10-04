@@ -6,7 +6,7 @@ docname: "draft-fontany-lar-uri-scheme-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
-source-check: "ni:///sha-256;ez7JoKyPPKDeixXD-pisi9H3w9m2wYoTfkCIed4p_mU"
+source-check: "ni:///sha-256;EhR2sEtLdlFkwyqeC9sAFtFnpq2WkIgJJelZoo45R68"
 title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -36,7 +36,7 @@ Each URI component carries a distinct, non-overlapping concern across three sema
 
 1. **WHO** — authority (`alias:grant@host`) identifies speaker and machine host
 2. **BEARING** — the HA.KA.BA address (path) names semantic attitude
-3. **SECTION** — the fragment (`#`) carries section anchors only, rooted — `#/ahu-name`, `#/section-id`
+3. **SECTION** — the fragment (`#`) carries section anchors only, always rooted (`#/ahu-name`, `#/section-id`) — fragment semantics belong to the media type, never this scheme (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type`)
 
 Resource-state annotations such as the mana/context-window pool are HUD adjuncts, not core URI components. This value uses the shared `0–20` Level model as a navigational resource estimate. Span identity, wall-clock timestamps, and export-target metadata remain adjacent calibration fields rather than authority overloads.
 
@@ -161,7 +161,7 @@ This applies to authority-less forms as well: `lar:///ha.ka.ba/lares/` names the
 | 3 | **`@`** | Identity → machine delimiter | Standard | `@` |
 | 4 | **host** | Machine identity | `machine_id` from crystal system | `enyalios` |
 | 5 | **path** | Hierarchical resource | HA.KA.BA address: `/ha.ka.ba/lares/` | `/threshold.uncertain.opens` |
-| 6 | **`#fragment`** | Section anchor | Named section within this meme | `#/ahu-name`, `#/section-id` |
+| 6 | **`#fragment`** | Section anchor, always rooted — fragment semantics ride the media type (RFC 3986 §3.5), not this scheme | Named section within this meme | `#/ahu-name`, `#/section-id` |
 
 > **Layout validation:** The BEARING → HOW → SECTION ordering (path → query → fragment) places the most semantically stable, least volatile information first. Grouped, goal-oriented layout confirmed by Li et al. (2024) automotive HUD research: grouped information layouts produce superior cognitive performance, lower workload, and better eye movement patterns compared to disordered layouts. *Source: `_todo/E-deep-research-report.md` §4.2*
 
@@ -197,7 +197,7 @@ Span sequencing is intentionally **not** encoded in URI authority. Exchange iden
 
 **Optional sub-path extension:** After the mandatory three-slot HA.KA.BA, additional `/`-separated path segments may follow to navigate within the named territory. Sub-path segments are free-form routing tokens, not HA.KA.BA slots. The stable named graph address strips the sub-path; the sub-path is session-scope navigation only.
 
-**fragment** (`#/section-anchor`) — Named section within this meme: `#/ahu-name`, `#/section-id`, `#/pranala-name`. The fragment carries section anchors only, rooted at the carrier.
+**fragment** (`#/section-anchor`) — Named section within this meme: `#/ahu-name`, `#/section-id`, `#/pranala-name`. The fragment carries section anchors only, always rooted at the carrier — never bare — per the media-type's own fragment law (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext#/media-type`), since fragment semantics belong to the representation's media type (RFC 3986 §3.5), not this scheme.
 
 <a id="provisionality"></a>
 
@@ -318,7 +318,7 @@ A `lar:` URI is **well-formed** when:
 4. Path contains exactly three HA.KA.BA slots after the leading `/`
 5. Path slots contain no whitespace, path separators, or quotes (inherits l-space Address anti-collision rules)
 6. `p` value is a decimal in range `[0.0, 1.0]`
-7. Fragment (`#`) carries only rooted section anchors — `#/ahu-name`, `#/section-id` — no chronometer data
+7. Fragment (`#`) carries only rooted section anchors — `#/ahu-name`, `#/section-id` — no chronometer data; always rooted, per the media type's own fragment law, not this scheme
 
 ### 9.2 Consistency
 
