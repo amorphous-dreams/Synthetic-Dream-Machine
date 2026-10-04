@@ -260,8 +260,6 @@ export const DAEMON_SURFACE_ID = "daemon";
 export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
   /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
   identity: BrowserVesselIdentity;
-  /** True when a genesis update was detected + merged on this boot (browser substrate). */
-  engineUpdated: boolean;
   /**
    * True → this boot CROSSED into the Nexus (an OPEN policy, or a sealed unspent invite spent this boot).
    * False → the vessel WITHHELD the crossing and founded its own group at the ANON FLOOR (garbled / absent /
@@ -736,10 +734,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     if (!daemon) return;
     void daemon.placeVerb({ verb: "circle-list", args: { circle: circleId }, requestedBy: "circle" });
   };
-  // The materialize-fresh path RELOADS a persisted oracle doc intact (find-first) or
-  // materializes it fresh — never a merge-into-stale reconcile. No engine
-  // CID-diverge merge happens at boot, so this stays false (kept for API parity).
-  const engineUpdated = false;
   // The ONE residency collector + pool-wiring, composed through the SHARED factory (both vessels
   // call it). Browser advertises the MINIMAL grant (a small live-wiki set + one rotatable pin
   // besides the daemon bag) and supplies its vessel-specific hooks: it stays SILENT on a cool (node
@@ -1331,7 +1325,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase:            "live",
-    engineUpdated,
     admittedToNexus,
     // The return-leg routes to whichever surface is LIVE-active (read the pointer, never a captured value —
     // the seat routes the next event to whatever holds focus). daemon → its own worker; else the pinned wiki.
