@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/waiho"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -93,6 +93,6 @@ In the Kumulipo creation chant, //waiho// appears in the context of primal mater
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1COqgim-BWezht-9vPEthhJHYV8hNmYha--5Xc-WI64
+<<^ code="&#x0003;">>ni:///sha-256;Hxyvd5ZpADbCIJYJfmQTubfiO_AUZUvexQEqnfHyVBI
 
 <<^ code="&#x0004;" -> to="?">>

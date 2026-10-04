@@ -15,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pattern-integrities-cultural"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -251,6 +251,6 @@ Feed the node. Run the bench whole. Grade on the chain. Keep the cliff independe
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iMymDjfecyd2phWpywBi_nT00CSSh4-1FO6k8QGO8Xg
+<<^ code="&#x0003;">>ni:///sha-256;A4pFbKg7WYfLVj3DVuMvH0ZXpeG_FIQWoUIo7Blb-uw
 
 <<^ code="&#x0004;" -> to="?">>

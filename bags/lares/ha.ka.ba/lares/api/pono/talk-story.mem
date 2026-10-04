@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/talk-story"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -130,6 +130,6 @@ Beneath the triad two grounds rhyme: ''kapwa'' (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;po-PyEq3C4FBKSHCICXHeqOZM6eOsAmXNF_SYB6LQKA
+<<^ code="&#x0003;">>ni:///sha-256;RulXwczdFYY5D0WmAx0sIJ1wqP8IZcM3B6fgg36xlaE
 
 <<^ code="&#x0004;" -> to="?">>

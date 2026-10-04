@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-four-tools"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -88,6 +88,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kNGXJ4z6yRhHdFjOD_NiMqPwfxRVpKeKyglJHKYvN-Y
+<<^ code="&#x0003;">>ni:///sha-256;fPCGm1CcCklATlSdtko-p5WV9MeFAhAJbSG2n2dKiJU
 
 <<^ code="&#x0004;" -> to="?">>

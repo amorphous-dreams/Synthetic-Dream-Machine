@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/hoike"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -113,6 +113,6 @@ The layer carries the Eduyot pattern: minority opinions kept with attribution so
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TRoMbQE71h0ehK9EKh4Ed6xcQYoA2XaTRGWU7Kr1q-o
+<<^ code="&#x0003;">>ni:///sha-256;Keuj5nsJyZVyiEQls5acwGS5M_oGvWvbBTE03dqBWAU
 
 <<^ code="&#x0004;" -> to="?">>

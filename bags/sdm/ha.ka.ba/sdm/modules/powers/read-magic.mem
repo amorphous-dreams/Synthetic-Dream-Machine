@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/read-magic"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -94,6 +94,6 @@ A botched read mis-recognizes: the operator marks the wrong meaning as trusted, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gorbmEZShsfgIjpE-dolpZiRPOxodZtYBjObs2wILoU
+<<^ code="&#x0003;">>ni:///sha-256;GJM1QuIiB27KuI0rSaEVz2Ra3W_Ib8EKdKY3ZqH2N2w
 
 <<^ code="&#x0004;" -> to="?">>

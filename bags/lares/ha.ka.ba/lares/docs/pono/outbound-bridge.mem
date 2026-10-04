@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/outbound-bridge"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -170,6 +170,6 @@ CONTROLS standing green beside them: the anchor put lands in the daemon's wiki a
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NKwp5O43LJsasLRuzI247z_xuxoYFn2_6b7nuVk5ozk
+<<^ code="&#x0003;">>ni:///sha-256;yM7MJ9GyoMLAhklsylOokjRv1va4OVFfLC8zN1f_jbA
 
 <<^ code="&#x0004;" -> to="?">>

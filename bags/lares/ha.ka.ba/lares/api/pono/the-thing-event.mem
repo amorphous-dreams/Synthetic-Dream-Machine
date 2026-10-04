@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/the-thing-event"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -101,6 +101,6 @@ That reads as the same law as //the naming layer performs, so it must never cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mgVsuC1BtboNOaaKQHQ8oDWXqewyZ5cbg3M5ivYjUDM
+<<^ code="&#x0003;">>ni:///sha-256;Dz_1v2fn9_HYOTOMCBcCud9KvO3A3A0SwxmO6lxQ39I
 
 <<^ code="&#x0004;" -> to="?">>

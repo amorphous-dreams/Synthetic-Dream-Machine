@@ -20,7 +20,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/carry-contract"
 written    = "2026-07-20"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -182,6 +182,6 @@ cannot.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l4s-YQYSEQDVzIXQclO2e5k9L60ZbAOg_5wik8iklOU
+<<^ code="&#x0003;">>ni:///sha-256;bMwWr2W_OJnFovC8MvNAkKVh0cb7Dx3KKptlBz0NFkw
 
 <<^ code="&#x0004;" -> to="?">>

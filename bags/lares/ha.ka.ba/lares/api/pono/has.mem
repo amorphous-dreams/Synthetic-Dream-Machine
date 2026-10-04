@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/has"
 written   = "2026-09-09"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -221,6 +221,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rR6cMI8oc8TQcbOsa5WDUnDR3Qjxp0OBb6Wc80jx5Wc
+<<^ code="&#x0003;">>ni:///sha-256;1Ic67Adgxp8-9vt6ugOnUNIa8BWn6fdIXgIRgL2gkS8
 
 <<^ code="&#x0004;" -> to="?">>

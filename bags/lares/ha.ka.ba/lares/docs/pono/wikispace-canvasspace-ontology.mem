@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -248,6 +248,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qtNKKjsra6s9fawAQJUKyWWyJXHmiHlHsW4O7GdBGIY
+<<^ code="&#x0003;">>ni:///sha-256;nTuIxCpFC_oRih8uUyUrqPllHN0UX8Tjn6LWJ4TT1y0
 
 <<^ code="&#x0004;" -> to="?">>

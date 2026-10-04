@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/structure-shaped-convention"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -79,6 +79,6 @@ That makes this a ''sibling of Confabulation-as-Canon'' rather than a variant: t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ncSlnS_t-0ZY_f1Jh773T_c7V7fh88JZvoAuzAmX9bg
+<<^ code="&#x0003;">>ni:///sha-256;8Nes0OvBST29e1xHsF_UZjwXDRheHgpmKCc4Bl3nNPQ
 
 <<^ code="&#x0004;" -> to="?">>

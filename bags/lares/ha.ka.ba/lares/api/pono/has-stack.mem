@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/has-stack"
 written   = "2026-06-12"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -113,6 +113,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;98p8bi5o-vfVziqjt72lAKN8aXTPow3QRghjwKTC8pU
+<<^ code="&#x0003;">>ni:///sha-256;ocUIfw3GritdXANBwHXIgyfprQ1ZHGuWldtOJ_xhfFk
 
 <<^ code="&#x0004;" -> to="?">>

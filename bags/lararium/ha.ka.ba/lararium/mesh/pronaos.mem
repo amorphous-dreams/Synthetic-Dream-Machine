@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/pronaos"
 written    = "2026-09-22"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -294,6 +294,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fxySv96_y87XCJ8SWkS5w8U5ESoTwlOtHYmgYHiSR-0
+<<^ code="&#x0003;">>ni:///sha-256;WPztaVMvyHEJ4SQNfIbBZrS_7JW0TkojRCQPg6q8IuU
 
 <<^ code="&#x0004;" -> to="?">>

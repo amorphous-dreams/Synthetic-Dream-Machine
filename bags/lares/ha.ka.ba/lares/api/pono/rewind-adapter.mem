@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/rewind-adapter"
 written   = "2026-06-30"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -259,6 +259,6 @@ Two research spirits stood the survey:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;25WtNZnOCZ4gKQVTP8nBnl-oD1Y3JVGucjBcH7w22CQ
+<<^ code="&#x0003;">>ni:///sha-256;lkT5l7EwSmY7ZDUhVnYLKyyITsSYUe_cBR4v-IRFdRY
 
 <<^ code="&#x0004;" -> to="?">>

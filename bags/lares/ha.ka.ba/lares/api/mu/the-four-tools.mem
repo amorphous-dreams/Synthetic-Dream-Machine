@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-four-tools"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -303,6 +303,6 @@ arcana   = "release"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9gwcaIV4J5z1Lfkd5Px8Zu5vDAXPpTIfJzlXVM24-Jw
+<<^ code="&#x0003;">>ni:///sha-256;w_ITP9u0nEBY3-zOUdkfb62gC1dKU12qLYb1Sn_iQOQ
 
 <<^ code="&#x0004;" -> to="?">>

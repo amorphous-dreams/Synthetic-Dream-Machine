@@ -21,7 +21,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/persona-policy"
 written           = "2026-07-20"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -179,6 +179,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KviCnSzdNlSjFg45WsfGPixSk4NDGZgCgVyBpeustxw
+<<^ code="&#x0003;">>ni:///sha-256;o0_YDwZGNCcqewdCKdS8LvCUiEHicrXBcuTQby1vYfE
 
 <<^ code="&#x0004;" -> to="?">>

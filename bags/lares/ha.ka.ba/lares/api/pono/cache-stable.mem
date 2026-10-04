@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/cache-stable"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -100,6 +100,6 @@ Cache-Stable-compliant memes MUST fill the OODA-HA phase line with their own pre
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HnzbWCFq0MWw-JQODHBMPY5kCROEKKn9H9bLb98xFdQ
+<<^ code="&#x0003;">>ni:///sha-256;4uiBBC2moBTghJ-MsOR8dzKHQNBoNB8q-085cit_Qvc
 
 <<^ code="&#x0004;" -> to="?">>

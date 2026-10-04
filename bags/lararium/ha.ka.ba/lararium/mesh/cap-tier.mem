@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/cap-tier"
 written    = "2026-07-23"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -157,6 +157,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;eDIXmGteMtVzlW9D93crZIGjfP-K8E8balE-3C1ROaQ
+<<^ code="&#x0003;">>ni:///sha-256;N7puqeaopYx0IFpqXHNKni44QRSWDVRR9mVvs5ECens
 
 <<^ code="&#x0004;" -> to="?">>

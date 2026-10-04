@@ -31,7 +31,7 @@ voice-character   = "[STUB — partially known from house entry; pending-talk-st
 voice-role        = "Hierophant"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -167,6 +167,6 @@ How Tide-Caller colors each Voice register when they speak through her frame —
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QycLSuFLFMuHfiwE0q5XqUzQa6o2_eQp-ATx73G9zyM
+<<^ code="&#x0003;">>ni:///sha-256;fSIOgvw2eDy5PNJy0Yuvk_ywLISPRXuYRf7eHJ8q7ks
 
 <<^ code="&#x0004;" -> to="?">>

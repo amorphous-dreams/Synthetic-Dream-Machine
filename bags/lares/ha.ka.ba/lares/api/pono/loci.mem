@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/loci"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -204,6 +204,6 @@ Convention fails when:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TZhh57My9EVIepcgHc6DdkZzOq_Ppf5PZ4kFxodBc5g
+<<^ code="&#x0003;">>ni:///sha-256;0QQXEPMeMRltyC2kZaYACwQ2pLdev6-7I5clEBf5bxA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/secure-context"
 written    = "2026-07-23"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -219,6 +219,6 @@ This meme stands ''PROPOSED'' — a two-lens research swarm (infrastructure/cert
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cVVzkjqmcRaNjcP4ZljCtv3rLNPq9zJIBhYMe4rJUWc
+<<^ code="&#x0003;">>ni:///sha-256;GrzZFQvTY5NNZtEO2EqIHwuS91BGkP7_bxJQZYNcJPE
 
 <<^ code="&#x0004;" -> to="?">>

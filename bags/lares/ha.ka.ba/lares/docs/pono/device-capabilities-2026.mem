@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/device-capabilities-2026"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -224,6 +224,6 @@ Ranked substrate → face → gatherings (GROUNDS BEFORE WINS); none enacted her
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XR2YAt9ZIrLb828R07_BcfemPj0B4Y0iv0LRvaISIvc
+<<^ code="&#x0003;">>ni:///sha-256;YhvQgePvdsOVV6fJW_lui4KHiEYDzy7nQzLbuvLg-uc
 
 <<^ code="&#x0004;" -> to="?">>

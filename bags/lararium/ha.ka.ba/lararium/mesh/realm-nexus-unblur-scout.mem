@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/realm-nexus-unblur-scout"
 written    = "2026-09-13"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -210,6 +210,6 @@ the `bags/nexus` charter home                         nexus-refresh.ts:42 · ope
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n2vW2h-cRJ18IBWKLDZ2QbvRBPyNeqDQ_gx--qotJNY
+<<^ code="&#x0003;">>ni:///sha-256;d4IXHm6eFkYYcw5aqXJ1jToyDqhnE8RLVBFnQ0H2StQ
 
 <<^ code="&#x0004;" -> to="?">>

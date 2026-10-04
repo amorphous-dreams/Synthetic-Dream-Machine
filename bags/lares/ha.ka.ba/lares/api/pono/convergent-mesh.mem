@@ -20,7 +20,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/convergent-mesh"
 written    = "2026-06-24"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -139,6 +139,6 @@ The Scope-1 CAD-blob pipe now carries a ''concrete design'' (`content-resolution
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;miifbqk-UImbTKsJq1sPDwGFfNzIGaBJzJpGxJEZfng
+<<^ code="&#x0003;">>ni:///sha-256;-o4i2z8TCQIyUKVHfOpNXgQtwb5-Yfi-LNnIOOBU_hw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/guest-grammar"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -134,6 +134,6 @@ Schema detail, fixture families, and execution procedure belong in the companion
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DsALrkpRL8VwBRp99x0IUxhxwswXC6l_l3ICt66iGzI
+<<^ code="&#x0003;">>ni:///sha-256;-uiX53rvBfR4yoAIBgiHQwHh2McaSGVDa1q5ZoKeRgY
 
 <<^ code="&#x0004;" -> to="?">>

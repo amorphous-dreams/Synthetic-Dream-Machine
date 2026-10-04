@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/exchange-vector"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -100,6 +100,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (`<<~ WORD 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aIQ9Pe3Ad_-Fvbv9ldDexHet-PZZMr1xD8PhP4onqTI
+<<^ code="&#x0003;">>ni:///sha-256;5_NvWGWRM6KJ5odDiNUuMdQDQUajmRTBMitHEqdmXFo
 
 <<^ code="&#x0004;" -> to="?">>

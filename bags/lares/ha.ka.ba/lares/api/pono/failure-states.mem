@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -76,6 +76,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bkJwP83HoqyqM6Kb4XSFqX6pvb0ta6HoTEN2SwWT4sY
+<<^ code="&#x0003;">>ni:///sha-256;6eJWJAZTVlSh2kcaTPgTNPhIVVXHKTbm5uSIFzAzVwo
 
 <<^ code="&#x0004;" -> to="?">>

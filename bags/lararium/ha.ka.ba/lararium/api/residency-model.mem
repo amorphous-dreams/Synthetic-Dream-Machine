@@ -23,7 +23,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-model"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -304,6 +304,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QidOvolnNkDAd9s0cIK805MbSTfs4AHQVyQFFFGeTSI
+<<^ code="&#x0003;">>ni:///sha-256;Rhgnz9pk7TjUknNZl-xTMUupNn13fyC7sw7ajjQzpvA
 
 <<^ code="&#x0004;" -> to="?">>

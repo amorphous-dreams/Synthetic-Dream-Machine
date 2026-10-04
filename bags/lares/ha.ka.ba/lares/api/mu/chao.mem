@@ -19,7 +19,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/chao"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -156,6 +156,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HstPTvaabNpOfJpK5CvIW0qvWTE9RoxeeqfWkCOVYoI
+<<^ code="&#x0003;">>ni:///sha-256;g7SYSsrQMvXLaJkij-zjIHPmjI5CyJGtK6qdW5WJN6A
 
 <<^ code="&#x0004;" -> to="?">>

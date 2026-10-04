@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/modules/power"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -89,6 +89,6 @@ tags = ["@sdm/tags/function/ecm-scan", "@sdm/tags/domain/divination", "@sdm/tags
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rSFXNm6g7j6Q5rh0vEjE-DKJnnyyV3ASMQ7ZqH6kZCk
+<<^ code="&#x0003;">>ni:///sha-256;NPlwGT8b0EVbMRrTlXdjk04T0vju5zJeeUYT037M92Q
 
 <<^ code="&#x0004;" -> to="?">>

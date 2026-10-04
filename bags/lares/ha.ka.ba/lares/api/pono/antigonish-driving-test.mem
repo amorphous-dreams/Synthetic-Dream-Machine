@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/antigonish-driving-test"
 written   = "2026-06-30"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -485,6 +485,6 @@ as loss and the Arcane stays self-reported-and-unwitnessed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NiJopN3T8zv0k5zPWUZj6qCSn3v_hXyy9ZoozfEBC2s
+<<^ code="&#x0003;">>ni:///sha-256;JE-uIGNGjkG0xWGUXyZJQtUV2HYdG50lFzyhySJM8sg
 
 <<^ code="&#x0004;" -> to="?">>

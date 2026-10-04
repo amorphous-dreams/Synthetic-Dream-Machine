@@ -20,7 +20,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/stream-sensorium-ontology"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -74,6 +74,6 @@ One recursion — ''ki &rarr; li &rarr; ki &rarr; li'' — repeating at every sc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lIZ95Dlv_LJoiZWYctqln_co7RnpFomdCEFfHQ7LaaE
+<<^ code="&#x0003;">>ni:///sha-256;hZ5a2vZg7oJw7lwRAqpz0zGODqfU-DDJkOyESwWnm-Y
 
 <<^ code="&#x0004;" -> to="?">>

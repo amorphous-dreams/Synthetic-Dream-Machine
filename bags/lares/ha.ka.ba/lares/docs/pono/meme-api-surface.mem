@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/meme-api-surface"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -224,6 +224,6 @@ The same walk through the other skins: `lares meme put lar:///t/x --file x.mem` 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E98syl1KhrEk7Ia61Cc3_bD72MS-KKmea5uXUQB76mw
+<<^ code="&#x0003;">>ni:///sha-256;Xe487Sp0WBTO12BKLSDi9QTgFk5h3nY6iXrhq6bFT4A
 
 <<^ code="&#x0004;" -> to="?">>

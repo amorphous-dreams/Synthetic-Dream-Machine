@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/identity-classes"
 written    = "2026-07-20"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -647,6 +647,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4wc0LfD_2ehSBpDCTp-kgHPgHdZ6mAIZZ-qqt481ypE
+<<^ code="&#x0003;">>ni:///sha-256;EQrGIRPAb79BVMRRhIIyXe908sYb1eHOZbC9RVaW66g
 
 <<^ code="&#x0004;" -> to="?">>

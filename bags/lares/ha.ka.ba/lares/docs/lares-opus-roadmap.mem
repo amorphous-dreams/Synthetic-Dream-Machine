@@ -21,7 +21,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/lares-opus-roadmap"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -127,6 +127,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dfvLtiCclfDhLAq2HjIt_U-gPe0RtU2crzk96w3mQpE
+<<^ code="&#x0003;">>ni:///sha-256;AmY9fbQetlmoOjueog_oHJ6g_BX-qZ4ouaJBPfsEj5Y
 
 <<^ code="&#x0004;" -> to="?">>

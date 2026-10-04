@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/syncer-back-parity"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -192,6 +192,6 @@ The leans as first written, kept for the record:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9F3isBSzSsSQ5AAaa0b1nUyp-_kku20FZbNH7XAAA6E
+<<^ code="&#x0003;">>ni:///sha-256;1Z32slY_xDFGTStATcnKDhMgNLEUaj-ysWZJDsn4KQ8
 
 <<^ code="&#x0004;" -> to="?">>

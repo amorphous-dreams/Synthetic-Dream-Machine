@@ -18,7 +18,7 @@ type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/api/pono/pranala"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -80,6 +80,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W2Xs43EMFUlqO2rAmLrT_Kv765F--WLuHOEJp3XC2hw
+<<^ code="&#x0003;">>ni:///sha-256;kvwpDGCEgnE_eUUczkUnjGo7VJE6-yRN6l6xl8Fq1eE
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives/README"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -190,6 +190,6 @@ They do not govern the live fold.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3UeTY8iYKtJeO6TtCzYR3Xo_YjduXYQhFessg5xjJhk
+<<^ code="&#x0003;">>ni:///sha-256;0UNjZ4lnBrvX-psAE8XbQeE6_Q1qunlWmxf1RybfM8s
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -341,6 +341,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bCrn2rO3e0WgoHdpIhos0nfZ53XkJCwOlkTnqL11XO4
+<<^ code="&#x0003;">>ni:///sha-256;YLpVXS5ffn8rAUh57LW-KZ8I1WL0i4KjK7XkeJxPtCI
 
 <<^ code="&#x0004;" -> to="?">>

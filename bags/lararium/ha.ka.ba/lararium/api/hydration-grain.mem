@@ -21,7 +21,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/hydration-grain"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -117,6 +117,6 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sunwe2LatKrZuxKMX9EnBFymC40z9MyP4V7XsAIvNBE
+<<^ code="&#x0003;">>ni:///sha-256;PFOw6RZnkCTJuKYnqDwhAafyRXF6VA2RIUH6OLpHy34
 
 <<^ code="&#x0004;" -> to="?">>

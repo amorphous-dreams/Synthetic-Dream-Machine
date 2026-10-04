@@ -20,7 +20,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/offering"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -461,6 +461,6 @@ an ordered announce claim, or a receiver caller by implication.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Fzmala_eiuD0QXDYPlX56j6YK4G1XeevR5zbI1j9zxU
+<<^ code="&#x0003;">>ni:///sha-256;Yn3iUJY4XA1KrQo_HKnMQVXijISaJhDStFt56L2uM-w
 
 <<^ code="&#x0004;" -> to="?">>

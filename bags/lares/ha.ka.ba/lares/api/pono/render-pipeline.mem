@@ -19,7 +19,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/render-pipeline"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -258,6 +258,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Gi4K0S6dNfknpNULQOiKt8pzP3mK6yVP1qbIYzHkR-A
+<<^ code="&#x0003;">>ni:///sha-256;M4-uN8g-SB3mRBTaXxRw0A7qSJWZzz1fvRP9CmOIK-g
 
 <<^ code="&#x0004;" -> to="?">>

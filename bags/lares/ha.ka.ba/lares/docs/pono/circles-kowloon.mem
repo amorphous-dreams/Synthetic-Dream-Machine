@@ -13,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/circles-kowloon"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -193,6 +193,6 @@ The question //how far up does the inversion scale?// has a mechanical answer he
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ihhUykptGoaaEUGg76fi9nNBGh97jRuKd_557C8Q_fs
+<<^ code="&#x0003;">>ni:///sha-256;tNCpmOqjZ9W20-5a0u11gLK_QdFcA9WWehSIvjZj594
 
 <<^ code="&#x0004;" -> to="?">>

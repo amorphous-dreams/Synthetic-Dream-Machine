@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/protective-optional"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -67,6 +67,6 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FQP7-XNBZMkhL1Zq_aqLyxygPxtNmGkv1UgIBmk-6Yc
+<<^ code="&#x0003;">>ni:///sha-256;fxrw8-APxr2xajEnNqD3H5dvHyqHp_Aq80V5CkaKnRg
 
 <<^ code="&#x0004;" -> to="?">>

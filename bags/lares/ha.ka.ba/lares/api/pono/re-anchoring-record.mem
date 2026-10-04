@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/re-anchoring-record"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -135,6 +135,6 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5jMd3DDowLujOUmzhNo37_SREQbgeWhTYBEBDqXKFFo
+<<^ code="&#x0003;">>ni:///sha-256;Komttlq6L4xVuwzv3V5tPUYxDpn9ow3-nZntEEMy4Kc
 
 <<^ code="&#x0004;" -> to="?">>

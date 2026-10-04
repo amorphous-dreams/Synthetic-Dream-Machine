@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/pronaos-carriers"
 written    = "2026-09-22"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/head>>
 
@@ -473,6 +473,6 @@ deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Kzk8TuBSguPUKykEPQC3QbC7ORpcdezm1pYHSmaiF7s
+<<^ code="&#x0003;">>ni:///sha-256;7jcHp0qY5pZZV_Unkzi06nwQZArRtUDRIrde1rLI4eU
 
 <<^ code="&#x0004;" -> to="?">>

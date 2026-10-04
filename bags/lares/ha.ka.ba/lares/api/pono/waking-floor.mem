@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/waking-floor"
 written   = "2026-08-08"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -343,6 +343,6 @@ keeps ''the place'' — which is precisely the floor. The myth was load-bearing 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nAHohWeRmjXLHwktfaOhUSmrW6et_qfZd-tlUZ9Xbms
+<<^ code="&#x0003;">>ni:///sha-256;GOFR4IgiV7HXn6Pu-NHg9zn7Iue49B0wJ0gJur19_v0
 
 <<^ code="&#x0004;" -> to="?">>

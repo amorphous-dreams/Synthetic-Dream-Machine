@@ -19,7 +19,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/hud"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -121,6 +121,6 @@ The docs room carries the full line-composition examples, the stance and tool gl
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2-xrP1cDlhg0-_arBU80LG9OAOYZAa4OBp01rTxomz4
+<<^ code="&#x0003;">>ni:///sha-256;Aub-PV-z6N4bNX2Re2fcyY4PzFlDvjFa5jwn8KucseY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pranala-header"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -110,6 +110,6 @@ agrees-with    = "uri-path"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gLzNoO46qoUT-98zxKdn40xte_cnTUOeGxXMBFfSb08
+<<^ code="&#x0003;">>ni:///sha-256;fc2B_7J-76U_ldUiMuQ2Nj07llpzJI6HfBIFIDmBRHU
 
 <<^ code="&#x0004;" -> to="?">>

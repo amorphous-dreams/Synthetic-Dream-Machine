@@ -19,7 +19,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/content-resolution"
 written    = "2026-07-19"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -299,6 +299,6 @@ priors decide them, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yL0I5bP0vm-ZAyIw4wVfYcXjA-bYwleR17yie2V3zN8
+<<^ code="&#x0003;">>ni:///sha-256;qfni7LdiFvf-wKPwla_-6at-MtF_XdbYOfRrlMusU9U
 
 <<^ code="&#x0004;" -> to="?">>

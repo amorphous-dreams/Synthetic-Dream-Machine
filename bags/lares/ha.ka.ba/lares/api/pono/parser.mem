@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/parser"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -289,6 +289,6 @@ trigger = "end of stream"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hmxPpOn2T_8Dzo2IJMLidoulKhU627f_odQJEQVobBw
+<<^ code="&#x0003;">>ni:///sha-256;Ub25_foLAqTmq3x8DU4kpvz4u4rw49F-7pybymCmOsk
 
 <<^ code="&#x0004;" -> to="?">>

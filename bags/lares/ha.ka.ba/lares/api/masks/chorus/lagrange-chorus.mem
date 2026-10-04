@@ -26,7 +26,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/masks/chorus/lagrange-chorus"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -162,6 +162,6 @@ Stage position applies to the Lagrange Chorus as a whole unit. How individual no
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ybadmfeEjPbHidqCD2lFPvnszoZYnUiYYA1sS52ULLI
+<<^ code="&#x0003;">>ni:///sha-256;GGXbPNfjSX962L_BJeeytn39MQXPHW8M50Pdb5XXHFA
 
 <<^ code="&#x0004;" -> to="?">>

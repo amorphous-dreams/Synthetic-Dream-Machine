@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -73,6 +73,6 @@ AST reader: read the sockets, then route.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S8ulogEIR21ZGqAlNBT8xtyaBTPFkYvwIaDu-dlUArg
+<<^ code="&#x0003;">>ni:///sha-256;p0AygCPlmW99IBSlet-VTjYZjLzftAC8EKHZZP9u2Ws
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/reality-tunnels"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -89,6 +89,6 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qQGQbJLNoI62ELkXa_0-93FyjrAHIK0SVYj_tlUk7Dc
+<<^ code="&#x0003;">>ni:///sha-256;TZr4-IfB4CiGebuPOa94-b7fA3Z4NNDPoVajI_VdGbM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/projections/powers/ftls-card"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -79,6 +79,6 @@ That procedure reads the current tiddler's `@`-prefixed tags and renders each as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SLR2paoSqjvAApywlyVLcsaXhXaCrQ_W3yca03Rugic
+<<^ code="&#x0003;">>ni:///sha-256;-xSPgcmdLwrtWE6WndXr7m11z20DqxI6h4jvNvejU6w
 
 <<^ code="&#x0004;" -> to="?">>

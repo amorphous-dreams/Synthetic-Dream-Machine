@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/gold-anchor"
 written   = "2026-06-30"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -382,6 +382,6 @@ spirit's lane); this meme states the design they enact.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wZBi6jSziUWxpOkrYFrUwnpu8kBWSuXslxwJmEls8jY
+<<^ code="&#x0003;">>ni:///sha-256;WZw7bd9YvKtMbTgqJOdSYqrzVb8vFKDViEwnjB8NxSw
 
 <<^ code="&#x0004;" -> to="?">>

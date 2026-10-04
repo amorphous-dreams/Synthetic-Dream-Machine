@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/cohomological-gate"
 written   = "2026-07-01"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -186,6 +186,6 @@ Frontier research, 2026 sources, grounded on established classical mathematics (
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CtNu0kkCiKXZi0PfeO-7FG3rQfIFMOBBWuoYyIrqzQs
+<<^ code="&#x0003;">>ni:///sha-256;LM4xXiew7nbkiYC29UZtE06Kh72fX3CTBOpilO6cTgM
 
 <<^ code="&#x0004;" -> to="?">>

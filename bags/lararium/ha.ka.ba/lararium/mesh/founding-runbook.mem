@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/founding-runbook"
 written    = "2026-07-20"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -1449,6 +1449,6 @@ teach a ceremony nobody has performed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kMD5FKi-_rSoQHIBrgFT4-7V-JCUrzuSHGAzVVBoz2o
+<<^ code="&#x0003;">>ni:///sha-256;mTtgKpSfO2-ZJmTQ72M-jcV5vTMpGUJigMmhoQokfdE
 
 <<^ code="&#x0004;" -> to="?">>

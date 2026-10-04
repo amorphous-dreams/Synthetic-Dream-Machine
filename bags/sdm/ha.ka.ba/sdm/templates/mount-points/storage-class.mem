@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/mount-points/storage-class"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -64,6 +64,6 @@ A mount-point meme names ''where a module seats on an entity'' and the contract 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Iuhhke8dixmg5ZKmfhZYR3ptF58KhJLVoEd447sOHVI
+<<^ code="&#x0003;">>ni:///sha-256;WA5_ymmTyAVyK7iF9J62g-gQLAgG_UznBnXWhGZqk48
 
 <<^ code="&#x0004;" -> to="?">>

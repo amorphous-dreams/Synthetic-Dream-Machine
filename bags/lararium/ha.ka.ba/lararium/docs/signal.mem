@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -172,6 +172,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WNK-UE6DVluEP28R22go77vpu__MAv7w076STZ4n6V4
+<<^ code="&#x0003;">>ni:///sha-256;ma8MmsWjnk0f8602MG2ZtFBnXvH_5hlqWgSNjZrc7yY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/epic/powers-composition-rewrite"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -778,6 +778,6 @@ history if ever needed.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UbrsloIiDolYSoVR1vY923-KL5I0HeRUD_BPE05fKws
+<<^ code="&#x0003;">>ni:///sha-256;szezqg4WtDzyTwX7rKrtOCuBln-sC9u8nRZUzbRlcyg
 
 <<^ code="&#x0004;" -> to="?">>

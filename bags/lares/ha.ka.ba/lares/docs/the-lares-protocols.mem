@@ -21,7 +21,7 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/the-lares-protocols"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -182,6 +182,6 @@ These questions don't get answered by adding more architecture. They get answere
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3ZNMsONucMwFkHYF_so-tRRpNl_sBHigJiGjgGVXc2c
+<<^ code="&#x0003;">>ni:///sha-256;OgS1SbYoMzDrOfRlXU11XhlcEahqgg4_ktId0UsEp_I
 
 <<^ code="&#x0004;" -> to="?">>

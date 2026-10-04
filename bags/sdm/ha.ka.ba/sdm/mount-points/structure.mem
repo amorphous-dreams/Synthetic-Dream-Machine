@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/structure"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -94,6 +94,6 @@ A Site does not overflow to Burden; it simply lacks capacity until upgraded. Buy
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iWFPm0z0sjmG4w_QzNn3ms4yLKwOMaDJTSal1KI4a1o
+<<^ code="&#x0003;">>ni:///sha-256;ayaR0VmD0RIElypNO_x5ccHJRC6W8WSfPyahaFll-fM
 
 <<^ code="&#x0004;" -> to="?">>

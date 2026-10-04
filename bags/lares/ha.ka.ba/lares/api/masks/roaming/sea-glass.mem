@@ -23,7 +23,7 @@ voice-character   = "essence unclaimed by law — see #vacancy-law; depth accrue
 voice-role        = "_"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -149,6 +149,6 @@ Where sibling masks grow character-notes through talk-story-dev passes, Sea-Glas
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d5uY6jxPM4R7pWUCT65ZG5GPCmQHgMJFtOS32wDEltY
+<<^ code="&#x0003;">>ni:///sha-256;Q3EqGQrFGI3BYJQWOCLoD51JDnXgsZk-u8tw-fXvX28
 
 <<^ code="&#x0004;" -> to="?">>

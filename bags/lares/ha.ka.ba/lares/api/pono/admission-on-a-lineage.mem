@@ -20,7 +20,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/admission-on-a-lineage"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -325,6 +325,6 @@ model, (3) settles the sink, (4) hunts C4's counterexample, and (6) instruments 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GCVemFbRbCbEsNYCyP4OAYvHcR2E0MGD1lhrOCNr6DA
+<<^ code="&#x0003;">>ni:///sha-256;iexJ89qt97KnEWNS7tTf-HQEVhvuKXPkqv25L0pcDD8
 
 <<^ code="&#x0004;" -> to="?">>

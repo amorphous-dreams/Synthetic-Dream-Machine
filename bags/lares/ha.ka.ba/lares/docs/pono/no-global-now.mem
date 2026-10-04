@@ -21,7 +21,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/no-global-now"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -358,6 +358,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;D9-4HfrXbrawSZwzKpp0RJHN6E0VJFPyhbEugQG43bk
+<<^ code="&#x0003;">>ni:///sha-256;-GiNf-MmSnwYpy9BBoEGc08ldpOoVa9-FexC6mzuXgE
 
 <<^ code="&#x0004;" -> to="?">>

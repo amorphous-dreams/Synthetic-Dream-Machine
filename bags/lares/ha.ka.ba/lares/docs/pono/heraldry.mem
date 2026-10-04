@@ -21,7 +21,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/pono/heraldry"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tvS_hDJlOKkBtIvaAWGfTzLEb1TgllpV45bq3wnQ3Ac
+<<^ code="&#x0003;">>ni:///sha-256;Ze0PwtOMruHH5pMcqFTWE-UM--GNjF8YyzcfKMMBTy4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -19,7 +19,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/lararium"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -70,6 +70,6 @@ The lararium prepares the handoff to `lar:///ha.ka.ba/lares/api/pono/config` by 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;g2gHoq5py68wt-RmnVk6zBVKQLDipGLPuQdoscKBQ8g
+<<^ code="&#x0003;">>ni:///sha-256;Yrl1GMZGW9NgWYmFf87e97VK4rBL7m_5zlQplVcl3ao
 
 <<^ code="&#x0004;" -> to="?">>

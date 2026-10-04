@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/prism"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -115,6 +115,6 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U1jTD7WD4RLATHQypsxTYDJ94ZFGtjBFSkAeplTYRW8
+<<^ code="&#x0003;">>ni:///sha-256;96-26R4_zG0OAx_h62Arn61mQqLNRhbXlp_V-wIbMH0
 
 <<^ code="&#x0004;" -> to="?">>

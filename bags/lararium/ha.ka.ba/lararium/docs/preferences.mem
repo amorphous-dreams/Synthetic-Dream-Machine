@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -80,6 +80,6 @@ This pass only promotes concepts that recur strongly enough to feel load-bearing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;a5-T4OHowdDwbY55DeD4bQ-vWSC3kfR4LPUCgeV6RZY
+<<^ code="&#x0003;">>ni:///sha-256;jAxxjH8IJpfU0geaogmJ7UTPd5woBBeLvUSNKTgCLcY
 
 <<^ code="&#x0004;" -> to="?">>

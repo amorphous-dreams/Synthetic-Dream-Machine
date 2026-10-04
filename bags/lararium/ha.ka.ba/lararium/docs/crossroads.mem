@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/crossroads"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -103,6 +103,6 @@ Who writes @crossroads (community authority shape), how Nexus-level federation d
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bqWbSe73rsb0gNht1WZJgwAZiLqVVqtUgDuiH1SG0Kg
+<<^ code="&#x0003;">>ni:///sha-256;FAmflUGj-GONFMMB6DUUtLW1G3mrFoRYbB5wmTTFqXU
 
 <<^ code="&#x0004;" -> to="?">>

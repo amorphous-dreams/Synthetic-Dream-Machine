@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -83,6 +83,6 @@ Carried forward as named, not independently re-run by this hand:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;B6N4pXnNitAnFpCAjJCWDxSke9avzr_z8WO-6VlKZT8
+<<^ code="&#x0003;">>ni:///sha-256;-f0ipdzBN3IiC8gmj9m1Nt9FpcPsSjuwiwyT2zkdwuY
 
 <<^ code="&#x0004;" -> to="?">>

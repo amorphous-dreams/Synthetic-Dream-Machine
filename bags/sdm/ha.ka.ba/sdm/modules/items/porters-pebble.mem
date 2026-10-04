@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/items/porters-pebble"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -88,6 +88,6 @@ A botched activation or a sundered pebble follows the `item` mount-point's failu
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jM-S20JJsbkZ8aXvHitJwnUqf3fjF9eAlBtLhEi83M4
+<<^ code="&#x0003;">>ni:///sha-256;JM4TlzP74syTJn2Tcl6aY03k_O9QjBC5VpSqwCIwi5g
 
 <<^ code="&#x0004;" -> to="?">>

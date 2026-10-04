@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kukali"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -148,6 +148,6 @@ sigilName = "kukali"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tvelYGBe3o4-lFsUjX5uhbi4sQ4W0ozYYMHBrUIvvU4
+<<^ code="&#x0003;">>ni:///sha-256;rXmmV5KQABTJo6SulTL9SKwBQA3VD7_fHj5p0jqdjH8
 
 <<^ code="&#x0004;" -> to="?">>

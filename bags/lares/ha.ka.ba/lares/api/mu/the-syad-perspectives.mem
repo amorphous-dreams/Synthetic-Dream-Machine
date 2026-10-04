@@ -20,7 +20,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-syad-perspectives"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -306,6 +306,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mikjWZ112nqfpMl40O_luitrtc7VTfD-4Ap8fWeYUBo
+<<^ code="&#x0003;">>ni:///sha-256;qZXGdSe2lpZ5Q_OHIzwWCwac13zUTozEhU5dWj6FfVY
 
 <<^ code="&#x0004;" -> to="?">>

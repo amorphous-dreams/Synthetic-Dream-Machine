@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/sensorium-machina"
 written   = "2026-07-13"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -539,6 +539,6 @@ five-plane count (#owed, the-five-plane-count).
 
 <<~ ॐ ँ -> ?>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C1vrEmTEOOzuco77G3hpfFoxwFSpwqTAzwRmdxOVF-k
+<<^ code="&#x0003;">>ni:///sha-256;e-d7tfM0ALtPrcQPXulbtJPRW_MYmixsmV2AkxFss4w
 
 <<^ code="&#x0004;" -> to="?">>

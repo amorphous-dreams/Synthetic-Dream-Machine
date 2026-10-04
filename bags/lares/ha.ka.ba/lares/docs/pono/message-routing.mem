@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/message-routing"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -94,6 +94,6 @@ Filters inside `wai` / `huli` / `ui` evaluate against the ''explicit current mem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_s1xurSWTXkAzmVSusAM9cWdFz7NKqyG3rLyt0Ji8as
+<<^ code="&#x0003;">>ni:///sha-256;Xhnk3QfTS285anI0G8QLN7iVGD8Un8pmf48d9nRTw6I
 
 <<^ code="&#x0004;" -> to="?">>

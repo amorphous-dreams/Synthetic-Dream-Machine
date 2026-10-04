@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/wehe"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -119,6 +119,6 @@ close-pattern = '<<~\/wehe\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SQkWRqT60HUjp8fQy6D2GSUTwGaSH29hwlOLvhklqfU
+<<^ code="&#x0003;">>ni:///sha-256;t_AN9uJsMU4MY_O4_wZ4VhBLGopjGN-T_VNJv0WOvE8
 
 <<^ code="&#x0004;" -> to="?">>

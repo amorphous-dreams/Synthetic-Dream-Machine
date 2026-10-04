@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/masks"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -393,6 +393,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Y_wKtMw7J6un52FrCfkYS7CozWEV3p4UajXfFK_qFZw
+<<^ code="&#x0003;">>ni:///sha-256;02pDVByajF1Dirl9wRxsL_bQUx0TkM2wnMD5zdZR_rM
 
 <<^ code="&#x0004;" -> to="?">>

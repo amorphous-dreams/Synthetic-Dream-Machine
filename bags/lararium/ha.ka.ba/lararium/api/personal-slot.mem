@@ -23,7 +23,7 @@ uri-path    = "ha.ka.ba/lararium/api/personal-slot"
 uri-shape   = "lar:///ha.ka.ba/wikis/{slug}/personal"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -506,6 +506,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;W9vXvkSB7Dt8PyjMTMTrHnurzPtnXi7lMbwFKoxIlwg
+<<^ code="&#x0003;">>ni:///sha-256;kDHoFUOOPMhn-w7N1b9bqeeKZ5egI5YhXHzVnvsL55Y
 
 <<^ code="&#x0004;" -> to="?">>

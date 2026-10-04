@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/item"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -89,6 +89,6 @@ Past 7 + Strength carried slots, use a container item to compress many Powers in
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;g3m5yYAqvkQLqhJd_039nsCsgXHHlLM5DYoDP6SoL-M
+<<^ code="&#x0003;">>ni:///sha-256;_ZHqM9vsPpzm3b0JLrR71RO6HerQB4p761rRgezZz54
 
 <<^ code="&#x0004;" -> to="?">>

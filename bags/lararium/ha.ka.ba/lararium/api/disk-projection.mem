@@ -23,7 +23,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/disk-projection"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -211,6 +211,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L2n7NrGwmJKe1skUMNxL_xvyLv7Zd_osPKlHffzaMaM
+<<^ code="&#x0003;">>ni:///sha-256;t3gHk2U-yDDtTLLgzeg2ryfxmcz4L26tiBEv1iqes7o
 
 <<^ code="&#x0004;" -> to="?">>

@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/lararium-identity"
 written    = "2026-06-23"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -576,6 +576,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;soS51KoGi0DslY1k4Bzu62Hja3e54sfX2k31esdXESU
+<<^ code="&#x0003;">>ni:///sha-256;bMFGwmJgkPK9QzhY6Eq4SCnkBQWNrtwvEjYmJQ5V6po
 
 <<^ code="&#x0004;" -> to="?">>

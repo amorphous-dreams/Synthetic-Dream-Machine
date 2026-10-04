@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/mount-points/burden"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -87,6 +87,6 @@ Burden is itself the overflow sink for Trait and Item. Past 20, the character is
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fcErURVvD0-Wj-qYc8Bb539YEja0wWvHLFCi2VYN0l0
+<<^ code="&#x0003;">>ni:///sha-256;6LPyJGpW3LbqxmljxeFuKeJ4vPyr6ZpiJAieRHw6J3k
 
 <<^ code="&#x0004;" -> to="?">>

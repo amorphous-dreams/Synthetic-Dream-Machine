@@ -20,7 +20,7 @@ uri-path   = "ha.ka.ba/lares/api/pono/group-as-closure"
 written    = "2026-06-29"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -200,6 +200,6 @@ group-object, the closure model carries a real pattern integrity, not a stylisti
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rpy-8XDR8I5vTCNqZFQuam4bg_riR___P9zx0Vg3uys
+<<^ code="&#x0003;">>ni:///sha-256;ma89RTXs8fgCgSizwulRu_IiVJTnIfowlOTFZX6u_sg
 
 <<^ code="&#x0004;" -> to="?">>

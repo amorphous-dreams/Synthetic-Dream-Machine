@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kapu"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -133,6 +133,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QcAzMIS4p_a_LXravyzRm8TjxD1r78e_U_wxvJRuy9U
+<<^ code="&#x0003;">>ni:///sha-256;fTkHgTSluuMyQfCWzaqJ-m0bmTrXFpf-wO_pQkO5Z6w
 
 <<^ code="&#x0014;" -> to="?">>

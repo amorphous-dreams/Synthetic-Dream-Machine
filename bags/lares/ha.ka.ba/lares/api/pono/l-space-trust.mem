@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/l-space-trust"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -91,6 +91,6 @@ Explicit operator-mediated promotion MAY move content upward by creating or revi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SaDYjewb0UMstlWeW2dp1cae1qtfHUSBQyuj-lI1cxw
+<<^ code="&#x0003;">>ni:///sha-256;LSbO7lxPEJEOvdPHFSslyJgT_1z2LcrN-fJHmuCHZJg
 
 <<^ code="&#x0004;" -> to="?">>

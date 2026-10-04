@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -117,6 +117,6 @@ The archive-derived research bundle lives at:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AbQANtoId6pRhXWS9CcACKTquJo7aFk6P6_n8zsCaTk
+<<^ code="&#x0003;">>ni:///sha-256;KOy6NVN8xDSSGfFhsTMfYTC0ev14nR1u6bMk8K0aPfI
 
 <<^ code="&#x0004;" -> to="?">>

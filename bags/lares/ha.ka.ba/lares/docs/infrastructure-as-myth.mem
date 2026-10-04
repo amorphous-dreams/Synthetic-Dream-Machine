@@ -28,7 +28,7 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/docs/infrastructure-as-myth"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -694,6 +694,6 @@ Aikhenvald 2000, //Classifiers// · Asai et al. 2023, //Self-RAG//, arXiv:2310.1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HRYKTMPBFpYDmroq-04ze6W8z_gNXNuOX1LPTrTlCEE
+<<^ code="&#x0003;">>ni:///sha-256;U42Oc_mV6Wby5fhCMLwq1G7u2h39sVvQZcwi0tdmaA0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -23,7 +23,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -150,6 +150,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;slD4JQ4PBSkUkqGJJEe-vCosA4CZPmYRnLk8xjAGokk
+<<^ code="&#x0003;">>ni:///sha-256;kd2rCCFyaXlyPidI8oCnQXmL49wyaZlS3S-J36uLvy4
 
 <<^ code="&#x0004;" -> to="?">>

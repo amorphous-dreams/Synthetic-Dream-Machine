@@ -20,7 +20,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/masks"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -139,6 +139,6 @@ gates, so masks share the apron and no collision rule arbitrates them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zEnSIDXGWWmfgR_xrBUb8S0GRGV36KomWhlbqGQxGtQ
+<<^ code="&#x0003;">>ni:///sha-256;SABS41HkiSxDER39RLKKC2MmGNjQo3yaqRt47tU-9Uk
 
 <<^ code="&#x0004;" -> to="?">>

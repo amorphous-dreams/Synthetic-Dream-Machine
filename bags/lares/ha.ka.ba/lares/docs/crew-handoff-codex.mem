@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/docs/crew-handoff-codex"
 written   = "2026-09-14"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -1509,6 +1509,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GYMUfrFkWStncBpUFKkUu8jUHT_8Gz2Y3kZNwSw2O8I
+<<^ code="&#x0003;">>ni:///sha-256;dhpWF67Dk9eSK12kzn6c2GE6BibCJ4JHbJvVi6y-_cQ
 
 <<^ code="&#x0004;" -> to="?">>

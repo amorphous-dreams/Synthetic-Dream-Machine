@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/canvas/rooms"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -136,6 +136,6 @@ label      = "← System"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n5VtBEXMROfTgyVfLY9pI-kkpKc--T67sB2OcRnm-zM
+<<^ code="&#x0003;">>ni:///sha-256;pFalQh_nDzi0smGs0mcfhpM0xJqifoNb80KlXj48S3o
 
 <<^ code="&#x0004;" -> to="?">>

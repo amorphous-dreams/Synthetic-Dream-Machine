@@ -18,7 +18,7 @@ uri-path  = "ha.ka.ba/lares/docs/handoff"
 written   = "2026-06-19"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -659,6 +659,6 @@ re-entry: closed — the floor convened and the held review condition met; the c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8x0fH5oUNlhEoYqv5lBfvnwdeAx14c0kf1-78_5ZqAg
+<<^ code="&#x0003;">>ni:///sha-256;DLJ8oy6yGnuISU-EPNHIYtD-HZ3gyoBsNcAiUqAUIuY
 
 <<^ code="&#x0004;" -> to="?">>

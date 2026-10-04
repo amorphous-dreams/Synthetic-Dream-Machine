@@ -19,7 +19,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -528,6 +528,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CGFrnW_t5Kgz-iXKaS9yHkknCRkBllIvg47IrQP2f70
+<<^ code="&#x0003;">>ni:///sha-256;zj6FChXWLDGW-NTaEnDtTOa6kMCJKzs1kzuaSDQuyWs
 
 <<^ code="&#x0004;" -> to="?">>

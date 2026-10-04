@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/conformance"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -121,6 +121,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LoF5bG-10pOfzBUhXzE5UbfrAnDa_ST4f5614WdoraE
+<<^ code="&#x0003;">>ni:///sha-256;1RuvstMMjfopy76wbhDgERMMT1euinzZGAoiO_nLam4
 
 <<^ code="&#x0004;" -> to="?">>

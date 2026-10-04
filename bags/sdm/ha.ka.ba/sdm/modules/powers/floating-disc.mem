@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/modules/powers/floating-disc"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -90,6 +90,6 @@ On a botched or interfered read, choose one: the disc drops its load; locks into
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;shMZDJnwZo5t_mIw5XDk3beMeRK0de13T7r4L8grA_0
+<<^ code="&#x0003;">>ni:///sha-256;8i9ocDpCdwrQnq6UcvznsuPzZgAEvR26oMTR5vajVfM
 
 <<^ code="&#x0004;" -> to="?">>

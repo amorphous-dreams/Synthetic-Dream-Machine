@@ -21,7 +21,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/corpus-conformance"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -210,6 +210,6 @@ moved.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/graceful-parsing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
 
-<<^ code="&#x0003;">>ni:///sha-256;7uSBdFU9_Kw3_XKuW9oPxna1sjuFiwHFxcFeLwdVFUw
+<<^ code="&#x0003;">>ni:///sha-256;wBmdNIzaAfXEaPYoLpkYLDOZ4pS4bID8Nv4W6X3spS4
 
 <<^ code="&#x0004;" -> to="?">>

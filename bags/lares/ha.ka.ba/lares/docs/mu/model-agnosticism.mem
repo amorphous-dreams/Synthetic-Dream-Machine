@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/model-agnosticism"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -136,6 +136,6 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;038VTIMHCHmTSpzVKT9JjG1RJwSzt6k-NZm0uMRPtK4
+<<^ code="&#x0003;">>ni:///sha-256;HRKfQLQRDS0LtHuMcZUzAfnF_kbMhL0BbsVBkQVZT9E
 
 <<^ code="&#x0004;" -> to="?">>

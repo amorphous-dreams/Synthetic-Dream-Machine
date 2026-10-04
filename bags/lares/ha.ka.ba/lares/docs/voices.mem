@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -250,6 +250,6 @@ The Voice house spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST implem
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CEezRIFsiWxqFmMh71sNm7u_IMxJ7xxYi7jpIaZQtCI
+<<^ code="&#x0003;">>ni:///sha-256;KeDfDlssBpgq-F78IMfk0r9hQfqe_Ot3mE0oWDobN6E
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal-review"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -253,6 +253,6 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fU4E8CBjlUn3PjGeii7WswnmLlvf5WgucZxqdW2o1q8
+<<^ code="&#x0003;">>ni:///sha-256;_Jyi7jI6jOtQLeJpaj828YgMCoO9_7uEMms7LpEVK-c
 
 <<^ code="&#x0004;" -> to="?">>

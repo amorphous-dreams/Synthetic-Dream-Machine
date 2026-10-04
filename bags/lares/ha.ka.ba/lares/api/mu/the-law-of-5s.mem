@@ -22,7 +22,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-law-of-5s"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -203,6 +203,6 @@ export const RATING_COLOR: Record<Rating5, string> = {
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1o85qgE7S-tQuBJWsiNNYWydIAl9Gxt0bqlOsR5D2FQ
+<<^ code="&#x0003;">>ni:///sha-256;Srg-7ecWQdMeqmKFNIl9RAiYTE0Sp7jcwM8pTlVSS9E
 
 <<^ code="&#x0004;" -> to="?">>

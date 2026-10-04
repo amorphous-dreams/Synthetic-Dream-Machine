@@ -21,7 +21,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/sync-namespace"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -100,6 +100,6 @@ This dual-distribution shape names a ''packaging convention, not a namespace exc
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VfusY0GFFibMzjnEnTfEUKcSUVrHPmvPA_MZU4jy3pQ
+<<^ code="&#x0003;">>ni:///sha-256;F7Vgbx2ge9yzwxpGGBZYWcivix9eD2O1Yuy-W3j9oes
 
 <<^ code="&#x0004;" -> to="?">>

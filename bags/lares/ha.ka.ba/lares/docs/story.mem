@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/story"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/meme-header>>
 
@@ -55,6 +55,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sysKFSGfq2L10R7MGF3VmJxc5R6fQleAYNZzWiIvNnE
+<<^ code="&#x0003;">>ni:///sha-256;m0b8xMshOMjqLFqhHa7EJ56TgAZkWdHoNQDPFCnlY64
 
 <<^ code="&#x0004;" -> to="?">>

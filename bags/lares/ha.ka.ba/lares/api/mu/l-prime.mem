@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/l-prime"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -152,6 +152,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;U1x96hO1zGTstvrpbcfeVXIwXU3BjcsCaEfAbD2yJpY
+<<^ code="&#x0003;">>ni:///sha-256;DunEhvmvgoQCTqGaPjGD5sEjjbvNALLvKpvIGavQjC0
 
 <<^ code="&#x0004;" -> to="?">>

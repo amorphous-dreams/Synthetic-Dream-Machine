@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/reach-plane"
 written    = "2026-08-08"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -283,6 +283,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Mf8GPJJWHCl1mEo81SeargqID94sDcFD1rPH9FA-xCI
+<<^ code="&#x0003;">>ni:///sha-256;5rjY-0PnfYeavv4G4kc8DgeSLXim7y6aUlYf9mkMwoU
 
 <<^ code="&#x0004;" -> to="?">>

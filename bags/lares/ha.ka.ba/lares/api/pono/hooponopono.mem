@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hooponopono"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -114,6 +114,6 @@ Boundary event fields:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EgRSq2q82lZ3S_NwasgA6-N19JHyrDc0iUS93cfGHlo
+<<^ code="&#x0003;">>ni:///sha-256;UATH_e8t0Urud2KnZx0lXv8hKAWZt_21VyiqpqJgDfI
 
 <<^ code="&#x0004;" -> to="?">>

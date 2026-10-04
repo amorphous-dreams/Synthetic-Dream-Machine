@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/witness/powers/osr-spells"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -65,6 +65,6 @@ Conversion anchor: P2 ≈ 1st, P4 ≈ 2nd, P6 ≈ 3rd, P18 ≈ 9th.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yC1dS_AIFcgYcKD_fggrnE6CbnmpE_hOTV9DHvw9S_0
+<<^ code="&#x0003;">>ni:///sha-256;MUFby5LeikLy3JIMza85JwyT8XM5-rjvYrJ0bEi_ORg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -20,7 +20,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/alignment-layer"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -238,6 +238,6 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gtuFuOLFFGz2UZKGdFJNFlaGMa5HQQBQUhtTT4ULyeU
+<<^ code="&#x0003;">>ni:///sha-256;V5o7z_Gz-lb3hMGAn1PKbk6pZgYlnDp_Oa102SNjbuI
 
 <<^ code="&#x0004;" -> to="?">>

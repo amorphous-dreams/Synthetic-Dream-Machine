@@ -18,7 +18,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/mesh/bounded-reach-contract"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/head>>
 
@@ -260,6 +260,6 @@ before any deployment path opens.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cWNnmcEqL-w9_tI5FMaqdaX2DmW2k2Jk3Ekk4kh8AB0
+<<^ code="&#x0003;">>ni:///sha-256;hJVfhxr0Xy4wfjWPqDauPDmxPVtf6B3nWnpsCTuemaE
 
 <<^ code="&#x0004;" -> to="?">>

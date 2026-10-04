@@ -34,7 +34,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -107,6 +107,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;FxUqgXsmjVEEUKqSvsSd4SN-Kt9LJzMma4knIPWtYOI
+<<^ code="&#x0003;">>ni:///sha-256;iUZFfiEkrkzS_BOIf2SBsn_6XGxOLsJs1xJ0d0L3UkI
 
 <<^ code="&#x0004;" -> to="?">>

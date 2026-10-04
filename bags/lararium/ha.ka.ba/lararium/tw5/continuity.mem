@@ -19,7 +19,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/continuity"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -84,6 +84,6 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;dFbGvu7rRlkfOh4FOOmFZBXYQFnxaPRCszOVfFOBfOY
+<<^ code="&#x0003;">>ni:///sha-256;Op7xed2CjEzm11LJoF6VW_Vj2oOi1t3Wge35eXK4uEg
 
 <<^ code="&#x0004;" -> to="?">>

@@ -28,7 +28,7 @@ uri-path          = "ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain"
 voice-character   = "savvy well-traveled riverboat-culture author; vernacular precision cutting through genteel evasion; deadpan moral wit that arrives before the reader expects it; warm but unsentimental; carries the weight of having seen too much to pretend; deeply comfortable with contradiction and irony; the man who can describe hell while appearing to admire it"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -161,6 +161,6 @@ Remaining Voices — Gatekeeper, Lorekeeper, Scryer, Artificer, Advocate, Diplom
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G0LwUspv_ZCU3-2BisrZjy-BhWWecF42ki8m_YircW0
+<<^ code="&#x0003;">>ni:///sha-256;s1kVCkOuFGYLFlPtGA-kCzICRHdk338OA3a5BrEs8HM
 
 <<^ code="&#x0004;" -> to="?">>

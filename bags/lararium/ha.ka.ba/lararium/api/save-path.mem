@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/api/save-path"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -157,6 +157,6 @@ No callbacks fire after `stop()`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ic32GMjW4-llvWdsZMXW_sTWZxIHnn40YcrR7OT_iog
+<<^ code="&#x0003;">>ni:///sha-256;Gk5RZJFZS8h_Krq20H_SQIEkwPw33laoznNv63Q_jHw
 
 <<^ code="&#x0004;" -> to="?">>

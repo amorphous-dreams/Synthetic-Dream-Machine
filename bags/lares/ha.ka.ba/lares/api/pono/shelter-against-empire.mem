@@ -19,7 +19,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/shelter-against-empire"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -169,6 +169,6 @@ on the ordering as a judgement across the cases; the individual attributions hol
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WMi3zjCrUdm7aakM152PTUvqfXAIa0GStyygex9SfgQ
+<<^ code="&#x0003;">>ni:///sha-256;JNHRQYbRpCloen1Czr0OvjK3KEkbJ4ENcKE2gjyD_lM
 
 <<^ code="&#x0004;" -> to="?">>

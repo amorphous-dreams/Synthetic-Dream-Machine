@@ -29,7 +29,7 @@ by file-import as cargo. A `lar:` URI carries the reach; the daemon's TW5 VM ren
 
 <<~/ahu>>
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/provenance>>
 
@@ -223,6 +223,6 @@ else moves first.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gXihZleOCOAQXecQkZvGp00HvGq6pItIubFAks8niFU
+<<^ code="&#x0003;">>ni:///sha-256;LxCU1I5K7aNYxQIp6-j16fGCITJMpWcRfVBBEYbdB0o
 
 <<^ code="&#x0004;" -> to="?">>

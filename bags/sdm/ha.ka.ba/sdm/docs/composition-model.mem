@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/docs/composition-model"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -134,6 +134,6 @@ Full lineage table lives in the epic. See edges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UmDSmCcY_VspcXwhnP3V8gjPV4ybaxI8FihHy6Oir7Q
+<<^ code="&#x0003;">>ni:///sha-256;fIn_lO4SFxI_U4O3GT3PrOwl4fz466HIY3D3yu6BCNA
 
 <<^ code="&#x0004;" -> to="?">>

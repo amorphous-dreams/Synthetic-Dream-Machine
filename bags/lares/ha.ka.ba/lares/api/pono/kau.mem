@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kau"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -121,6 +121,6 @@ This maps directly to the Ink & Switch island model: each automerge object opera
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2tLC3zf0jBb1qg0AI6rmUAVIAhnwYR4CbVXe6SMHQh0
+<<^ code="&#x0003;">>ni:///sha-256;QfpSAX3Y085csZ8dAa6NBW2ZAocfjQb9OaDX2S5THhU
 
 <<^ code="&#x0004;" -> to="?">>

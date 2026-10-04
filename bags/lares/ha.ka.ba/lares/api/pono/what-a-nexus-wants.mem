@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/what-a-nexus-wants"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -62,6 +62,6 @@ The conversion act (`the-thing-event`) runs on an assembly standing as the third
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aEDQqogaoiSviz2XmhOgBVQKg6TrMVGAGr3FuTEtdVg
+<<^ code="&#x0003;">>ni:///sha-256;qjTfhhppnj9G7Li5tteyLEPoOMRecQhLqpaWtkVLLdY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/alignment-architecture"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -214,6 +214,6 @@ The general pattern: N operators on N nodes sharing M bags across K federation e
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1ImC36KGFsZ5rpzKGsbJh4YraHaERcr8QvYkvSpQovU
+<<^ code="&#x0003;">>ni:///sha-256;PwVaYZj56Jhsbnk91ihjtHNOeLSJLAlaDA0PYrUTn8U
 
 <<^ code="&#x0004;" -> to="?">>

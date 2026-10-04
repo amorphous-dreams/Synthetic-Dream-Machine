@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/lararium-memory"
 written   = "2026-06-24"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -276,6 +276,6 @@ conflict press a `hoike`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;v3ICFu-jWlYyVSWUtrh8Ox7SARHoZttlcozLPh-SWeg
+<<^ code="&#x0003;">>ni:///sha-256;mfe_ReNvuMpx6m-hiRr87eD7JSV4cxdCDpxfJkLlj_Y
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/worker-message-protocol"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -115,6 +115,6 @@ These three types cover the full P.3 boundary surface. Lock them before shipping
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kQq5jx-Lic8veYirHlW8-rvR9Y13Q_vihfW4dQ0B3VU
+<<^ code="&#x0003;">>ni:///sha-256;91BtJE2gPUilDprvUWjv45TeSXW6vKPjWGOzqZT6t4Q
 
 <<^ code="&#x0004;" -> to="?">>

@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -474,6 +474,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OKp5Uh-RS0-8gpo_5XaV0mREwk4WgKjx_Qb9WTa2PCI
+<<^ code="&#x0003;">>ni:///sha-256;ewJyhwrZSeZP-AxgFDYjAqMjJK2UKEyNK8jJn_x08EI
 
 <<^ code="&#x0004;" -> to="?">>

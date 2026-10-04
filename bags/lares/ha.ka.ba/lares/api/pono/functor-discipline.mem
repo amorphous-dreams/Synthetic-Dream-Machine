@@ -17,7 +17,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/functor-discipline"
 written   = "2026-06-29"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -340,6 +340,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4GdVPwBhVYQ6i3rqgYyP1IDcf53E4LCq1yC-IYKwAmU
+<<^ code="&#x0003;">>ni:///sha-256;g28c7RjFJvAxGA09K1v5ZmPZortfmthGcSn6u3l05Uo
 
 <<^ code="&#x0004;" -> to="?">>

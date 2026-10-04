@@ -16,7 +16,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/pono/identity-stack"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -112,6 +112,6 @@ See `the-four-tools` and `the-syad-perspectives` for the tool and standpoint gra
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;djpXq1PMYxqKzmrHIpXcs9QwCM9UTlb4D8vCVTj6JHg
+<<^ code="&#x0003;">>ni:///sha-256;lQ0zBpMEiyouvFV7usqJFabmwEGBeRRr1d-vQ2A3wsI
 
 <<^ code="&#x0004;" -> to="?">>

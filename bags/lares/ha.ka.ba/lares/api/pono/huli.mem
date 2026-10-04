@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/huli"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -122,6 +122,6 @@ close-pattern = '<<~\/huli\s*>>'
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RlxNi9NTK8W7N1dDPoAHUHFuBmZXx8BGgbf9fJ6cJ1E
+<<^ code="&#x0003;">>ni:///sha-256;HTH4CPQjmmUKahfuP_XKAYMDODrlV1jGmVDdeDLWkzI
 
 <<^ code="&#x0004;" -> to="?">>

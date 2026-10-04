@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/tiddler-carriage"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -136,6 +136,6 @@ No door carries a cleartext `sha256` blob across the fleet today. The three plac
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;T9gFuXtHuia_2-_9u8LVutCi7VPmeKiYXuzZc2pw5LQ
+<<^ code="&#x0003;">>ni:///sha-256;B8Sp7Ylga9_fjhk0U6aBcuQPJiKL4tSp7c2npTclNsc
 
 <<^ code="&#x0004;" -> to="?">>

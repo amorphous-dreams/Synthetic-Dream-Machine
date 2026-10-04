@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -67,6 +67,6 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Qt01mFfsjpo8cEwV3-U2FPOr4mkAzIgjpAXW_Iarz0g
+<<^ code="&#x0003;">>ni:///sha-256;0fmPzZOAivMZLHWf3X0mUmU-p4sg3tT7PK7SxvqHvyA
 
 <<^ code="&#x0004;" -> to="?">>

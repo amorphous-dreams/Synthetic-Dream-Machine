@@ -18,7 +18,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/pae"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -129,6 +129,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gAkCUhKtP1i4pX_oC3iRNsRodctvZpWDFIPKTdr16w4
+<<^ code="&#x0003;">>ni:///sha-256;hSx8qgUfekf0GqiwD_PUkYN7zB-gyWhXvyvisQ7myMA
 
 <<^ code="&#x0004;" -> to="?">>

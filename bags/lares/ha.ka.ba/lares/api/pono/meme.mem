@@ -17,7 +17,7 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/api/pono/meme"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>⊙:5de4551845d0a7b9
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>⊙:5de4551845d0a7b9
 
 
 
@@ -172,6 +172,6 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3G6JUYNkBrYSVDjlmEut2yWrYZENpjG1kVsoVTshZqA
+<<^ code="&#x0003;">>ni:///sha-256;dDo6NxQatUm0qr7YBb1z-ZkwlEbbnNeAEtRUx89u8-o
 
 <<^ code="&#x0004;" -> to="?">>

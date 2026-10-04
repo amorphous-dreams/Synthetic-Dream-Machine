@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/papalohe"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -133,6 +133,6 @@ Two values, distinct Verse-side origins:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fzlKwSF4oYvilT1DMnKn7doAQ_S2U9W5M_ZrZ7ZHMO4
+<<^ code="&#x0003;">>ni:///sha-256;ejZsZyLV_D4OkgOk9ii0jP9cgt3B8VWpQEyHTPlYKCo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/attestation-plane"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -296,6 +296,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vCosC5w4a1q_84x38nH8jrLWYoOFQ5Q2qSuKLUIKs5Y
+<<^ code="&#x0003;">>ni:///sha-256;q42rD-EAx8YTn1Rizhg_Qi7gJZwr5MxccYpGArJnF6s
 
 <<^ code="&#x0004;" -> to="?">>

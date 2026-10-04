@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heihei"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -106,6 +106,6 @@ arm-wire       = "reaction"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Y5G9udlhsRkf9AA-1jhbyKP5XIrNWMJGNJe9YKeZrag
+<<^ code="&#x0003;">>ni:///sha-256;NIf7hhazpCu7GPnh9SWvbfuKugNYIHTJp8LNEUO31fo
 
 <<^ code="&#x0004;" -> to="?">>

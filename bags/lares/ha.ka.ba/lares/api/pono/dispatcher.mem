@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/dispatcher"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -95,6 +95,6 @@ TW5 wikitext body:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-ljtvNS6tJA_AZJ9u-vRZzQQY--4_-zLWEAPrQuLeIo
+<<^ code="&#x0003;">>ni:///sha-256;FmJMhzWQ5A7TH9M4Wexye8hT-67bJ_x1KwERjftCfXI
 
 <<^ code="&#x0004;" -> to="?">>

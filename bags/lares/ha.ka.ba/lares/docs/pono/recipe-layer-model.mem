@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -302,6 +302,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;G7vIzYFIjG1hGAdIxFgoFzhppEHpdEGYrSMnq_jIV6I
+<<^ code="&#x0003;">>ni:///sha-256;y_7FPCqUjHj5wuvh-S_sLqjozWRiLCnmOzpvvLP8H8E
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -137,6 +137,6 @@ Each cure below planted its red, quoted it, and reverted it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JJK1EmRXblzu0hBRUO1xIQEOJoB4RUyGk5J926-3mEo
+<<^ code="&#x0003;">>ni:///sha-256;x8gq25rtYRIC5FKk2lEXUN9HRMMWXeHZKQBhfXZp79E
 
 <<^ code="&#x0004;" -> to="?">>

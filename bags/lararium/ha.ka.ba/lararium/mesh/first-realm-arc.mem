@@ -18,7 +18,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/first-realm-arc"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -127,6 +127,6 @@ The runbook stands ''Synthesis-Canon and complete for what it covers''. These si
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LbwZSxdGSiGMI5SFe5i9NHW2LzMNXQGht_0RAuz9ZKg
+<<^ code="&#x0003;">>ni:///sha-256;8UgxjyIja3lxCDsHsSpm9HpB1u1fGqtt-KW8qB9Uswg
 
 <<^ code="&#x0004;" -> to="?">>

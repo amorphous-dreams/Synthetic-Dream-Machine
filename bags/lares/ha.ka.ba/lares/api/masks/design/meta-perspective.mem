@@ -23,7 +23,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/masks/design/meta-perspective"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -67,6 +67,6 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O-wzzmptGg5Ns2WVH-9m4Y9m37RnMMJlHlE_nyBnWU4
+<<^ code="&#x0003;">>ni:///sha-256;6fpdEoORTzVNa_yC7NcCHZaP-v8PvAPiO8BoN8iE_WQ
 
 <<^ code="&#x0004;" -> to="?">>

@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/membership-doctrine"
 written    = "2026-07-21"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -202,6 +202,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yP_fPgYD9Yo5OKSpjiZ0Qy35puFd2kurfblJyuXcLL8
+<<^ code="&#x0003;">>ni:///sha-256;OodHnt_kabq_vnlC0TZKnkhPuqYhuNZab38BKN7YtM0
 
 <<^ code="&#x0004;" -> to="?">>

@@ -19,7 +19,7 @@ uri-path   = "ha.ka.ba/lararium/api/island-isomorphism"
 written    = "2026-06-12"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -98,6 +98,6 @@ re-entry: the kue key; or the migration's step 4 boundary, where the residue get
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SciQTN0GV-vrtMggVk_wzR8gMB4oDui8Ua9GCZutxv0
+<<^ code="&#x0003;">>ni:///sha-256;cB0DQEcVXd-ZI9fHEYZ9wuu8dB9gMLr6gKcpxz-fMMc
 
 <<^ code="&#x0004;" -> to="?">>

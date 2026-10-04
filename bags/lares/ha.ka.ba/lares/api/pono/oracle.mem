@@ -21,7 +21,7 @@ uri-path      = "ha.ka.ba/lares/api/pono/oracle"
 written       = "2026-06-16"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -210,6 +210,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ubkE-v6fw5VE4mUCDX0Pxbaa5BjLmThsI7keHgv3TZw
+<<^ code="&#x0003;">>ni:///sha-256;EJSgbsMJ6eMSCyTKFMCVloHhFPxXiTW_KaT9ppfIfKs
 
 <<^ code="&#x0004;" -> to="?">>

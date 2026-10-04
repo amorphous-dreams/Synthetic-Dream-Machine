@@ -31,7 +31,7 @@ extraction-note = "Content copied verbatim from Preferences v4.0.1 and lightly f
 
 <<~/ahu>>
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/meme-header>>
 
@@ -211,6 +211,6 @@ The operator naming a degraded state constitutes correction input, not accusatio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fMN5qjESDdvJXjNouASjLGxiM1-75wZbjQGuFkXIQUQ
+<<^ code="&#x0003;">>ni:///sha-256;6eYicoT8qB_6XiryGRWXT_Dx5HUYK59IN1LvdIM9Hc0
 
 <<^ code="&#x0004;" -> to="?">>

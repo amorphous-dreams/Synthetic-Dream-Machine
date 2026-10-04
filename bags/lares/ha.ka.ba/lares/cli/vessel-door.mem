@@ -19,7 +19,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/cli/vessel-door"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -273,6 +273,6 @@ reached.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ori85J3DPzPsYs8OMbuLghyiq-GYbrvxxDQPbn83DVY
+<<^ code="&#x0003;">>ni:///sha-256;hJvKn6Gs5nbwL2mS4YM-OOQxabeRU8oOgCmojM76ldA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/lamplighters"
 written   = "2026-08-14"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -404,6 +404,6 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m3NX4KPnt66DmIHGMJo7QbJQF1OhH283bidkj-FiJcc
+<<^ code="&#x0003;">>ni:///sha-256;m4k_Rl8HMymdy1TUq1kDfLjsUXm1t5Ar-4-uolnl2Fw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/reference-fusion"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -73,6 +73,6 @@ If the node refuses a true context claim outright rather than re-marking it, sig
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Mi8lltDhxlyEq_85ggtwJElnxl732PIGAls-PktZHQo
+<<^ code="&#x0003;">>ni:///sha-256;dCf5ydp21AS16iAFgiagh0S155mEvSfbDjuS14Kfz28
 
 <<^ code="&#x0004;" -> to="?">>

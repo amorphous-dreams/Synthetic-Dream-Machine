@@ -16,7 +16,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/sdm/templates/components/tag"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -71,6 +71,6 @@ A component earns its address by serving a filter query. Tags start as TOML head
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JQkX4Eg1J0OXkmJDNh20_tvuPSJue6TGdidZiIPHKvg
+<<^ code="&#x0003;">>ni:///sha-256;wos4jWVu_hTf_xntibQv2L0ICepjXMx4Deo9nCY1rVY
 
 <<^ code="&#x0004;" -> to="?">>

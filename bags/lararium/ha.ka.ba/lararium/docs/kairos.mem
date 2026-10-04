@@ -32,7 +32,7 @@ never a subsystem bolted beside it.
 
 <<~/ahu>>
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 <<~ ahu #/provenance>>
 
@@ -321,6 +321,6 @@ free coarse breakpoint; a scheduled sweep needs its own justification.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q8f6bV_MEo3zYqJbdd1mAzSgu5sfDj5_2akZca97kAc
+<<^ code="&#x0003;">>ni:///sha-256;4FMCqTuOcTZLpGyd56BIABGQ8Py63eAQemZgJgRTHa8
 
 <<^ code="&#x0004;" -> to="?">>

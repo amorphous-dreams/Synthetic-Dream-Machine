@@ -22,7 +22,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/blob-carriage"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -226,6 +226,6 @@ What moved: decode-before-hash in `cas-stage.ts` (+ `declaredType`); `ridesAsPoi
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SChu5hFidfxaUmIs5AzLZIzVSZpVY0vUEEZuBgiEabs
+<<^ code="&#x0003;">>ni:///sha-256;7ELQzTbKCfvHD_l40WxH9YFb_hZpiF9Y4MmN-ABRucE
 
 <<^ code="&#x0004;" -> to="?">>

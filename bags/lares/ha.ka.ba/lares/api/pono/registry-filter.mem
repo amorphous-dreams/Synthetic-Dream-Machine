@@ -20,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/registry-filter"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -102,6 +102,6 @@ Two deployed systems compile the registry this law forbids, and their measured p
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
 
-<<^ code="&#x0003;">>ni:///sha-256;RUgfgvzy6CWenNlQhKNABz08PFaCw3Ib51A6l5h6vbw
+<<^ code="&#x0003;">>ni:///sha-256;PRp20jAvvnOjhIAd2gtYFm43Tu4_QKx0riQPPXteP8E
 
 <<^ code="&#x0004;" -> to="?">>

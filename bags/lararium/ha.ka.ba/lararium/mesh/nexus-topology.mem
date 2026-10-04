@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/mesh/nexus-topology"
 written    = "2026-08-08"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -239,6 +239,6 @@ Several memes carry these names inside ''worked examples'' — a doc-stack diagr
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7hf5QWOZfWkVk3Wp3sJ2tGGEaPz4y0BJexrE5t7MobI
+<<^ code="&#x0003;">>ni:///sha-256;0A9wbNart9niGUc1BNMfHvgzzaFz6X8tlfLf9WzGM7c
 
 <<^ code="&#x0004;" -> to="?">>

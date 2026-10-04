@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/lararium"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -73,6 +73,6 @@ The rooms may deepen later without moving the seat again.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d4lA-uikkv_tsXHrI1Ssk-_pWVCuvjwFBkaNkSxRbz0
+<<^ code="&#x0003;">>ni:///sha-256;NbE9PE1GtR9dyQNkJ5CAJK-1YqCRuHRnvy8H6fY5iT4
 
 <<^ code="&#x0004;" -> to="?">>

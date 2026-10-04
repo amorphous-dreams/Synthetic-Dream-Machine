@@ -20,7 +20,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/system-pattern-integrities"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -358,6 +358,6 @@ desc  = "Authority flows from a capability receipt, signature, or policy (Keyhiv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XDsLx3s0pDVDRmCd4V9wpN5aMFII1xyUDt5WvNKg1Y4
+<<^ code="&#x0003;">>ni:///sha-256;FLf-MWw3LDo2SaI5-taJyMbbK52tKcWhJsXpj-isioY
 
 <<^ code="&#x0004;" -> to="?">>

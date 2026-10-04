@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/table-hides-a-plane"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -73,6 +73,6 @@ If the entities share a plane but differ in degree, that reads as an ordinary ta
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aV6bpWmVBV36aaR85gfQE7GUyAKcs7CchMxRwbHGPbo
+<<^ code="&#x0003;">>ni:///sha-256;AxUZ2dscuYCkEGc0q4lrBHXJ06LeocOZ-lUnhcKaNI8
 
 <<^ code="&#x0004;" -> to="?">>

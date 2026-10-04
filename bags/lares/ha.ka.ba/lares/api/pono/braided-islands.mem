@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/braided-islands"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -101,6 +101,6 @@ without a loom.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SidxrzdsK4PIaRoEkb5f6qsJYTxkwajLDjxNRnPKAZo
+<<^ code="&#x0003;">>ni:///sha-256;uJfh8qaBWrLgLw6UGF2Hs0rG1TSwYsf_KSCzKADjx1o
 
 <<^ code="&#x0004;" -> to="?">>

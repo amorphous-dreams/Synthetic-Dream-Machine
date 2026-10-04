@@ -21,7 +21,7 @@ uri-path   = "ha.ka.ba/lararium/api/sensorium-runbook"
 written    = "2026-08-04"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -431,6 +431,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1tVt57sLFKU-MdG8xenHl0cTNB3S7vQgARwM3SND814
+<<^ code="&#x0003;">>ni:///sha-256;hcNrnUuNKyLj4TnQOs5BYsn3erlkQsHD_t-04cSoshc
 
 <<^ code="&#x0004;" -> to="?">>

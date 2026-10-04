@@ -19,7 +19,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/scale-architecture"
 written   = "2026-07-01"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -144,6 +144,6 @@ Established algorithms carrying the descent and the escape, 2026 fusion research
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SQVow0-1ELklcsdaTLJm44y9KxSeqkn6twVptC31gI0
+<<^ code="&#x0003;">>ni:///sha-256;jucR4iGWwYDrpLbAtUXI2uOTzS5FgWSWDZLi5BmVqtc
 
 <<^ code="&#x0004;" -> to="?">>

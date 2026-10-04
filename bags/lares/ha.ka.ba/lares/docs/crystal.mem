@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/crystal"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -52,6 +52,6 @@ Use this branch for:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oXSeUkNTQ6FPOZCpPwAvlOfWogqCDNrZPLGz7W9Iu00
+<<^ code="&#x0003;">>ni:///sha-256;Ouv_LQ5Wvw1CURvQ_kPq2HX2IZUIbeKmBrwle-cST_g
 
 <<^ code="&#x0004;" -> to="?">>

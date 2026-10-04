@@ -19,7 +19,7 @@ type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/relational-parameter"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -241,6 +241,6 @@ wikitext hits, matches a guard already in the source, and needs no agreement abo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;MLuw0kFIO1bYas_t2Vd71SYLxBmKfFiFiIuo1wRT_Ik
+<<^ code="&#x0003;">>ni:///sha-256;kOBZ_Dg84O3RmiO09gmuohI0P6kg-lYxVYxjZ_oWtl4
 
 <<^ code="&#x0004;" -> to="?">>
