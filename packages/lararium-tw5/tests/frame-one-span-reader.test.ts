@@ -16,7 +16,8 @@
 import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { bccOfSpan, frameStanding, verifyBcc } from "@lararium/memetic-frame";
-import { deserializeCarrier, expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
+import { expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
+import { memeticIngestOps } from "../src/ingest-gate.js";
 import { readCarrierShape } from "../src/carrier-shape.js";
 
 const URI = "lar:///tests/root-meta-body";
@@ -90,7 +91,7 @@ describe("★ one span reader — a second live ETX is a fault, never a silent c
   });
 
   test("no byte between two ETX marks vanishes in silence — the deserializer raises an error", () => {
-    const { records, diagnostics } = deserializeCarrier(stray, { title: URI });
+    const { records, diagnostics } = memeticIngestOps.deserialize(URI, stray);
     const survives = records.some((r) => String(r.text ?? "").includes("AFTER-STRAY"));
     const surfaced = diagnostics.some((d) => d.severity === "error");
     expect(survives || surfaced).toBe(true);
@@ -102,7 +103,7 @@ describe("★ one span reader — a second live ETX is a fault, never a silent c
     const st = frameStanding(clean);
     expect(st.kind === "framed" && st.faults.length === 0).toBe(true);
     expect(verifyBcc(clean)).toBe("ok");
-    expect(deserializeCarrier(clean, { title: URI }).diagnostics.filter((d) => d.severity === "error")).toEqual([]);
+    expect(memeticIngestOps.deserialize(URI, clean).diagnostics.filter((d) => d.severity === "error")).toEqual([]);
     expect(readCarrierShape(clean).faults).toEqual([]);
     expect(bccOfSpan("x")).toMatch(/^ni:\/\/\/sha-256;/);
   });

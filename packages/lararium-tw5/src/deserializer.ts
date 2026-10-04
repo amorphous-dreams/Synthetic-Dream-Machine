@@ -64,7 +64,7 @@ const FRAME_BY_NAME: Record<string, string> =
 // written as entities is never read AS the code, and the bare form's class stops at a binding mark.
 // Only the entity alternation travels between them.
 /** `<<^` then anything but an entity, then a SOH code — the prefix that stops at `&`. */
-const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
+export const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
 /** The SOH variant a head names through its `code=` binding, captured. */
 const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
 /**
@@ -1101,19 +1101,6 @@ export function deserializeCarrier(
   const records = memeticWikitextDeserializer(text, fields);
   const diagnostics: MemeDiagnostic[] = [];
   for (const record of records) {
-    // CONTENT PAST ETX REFUSES — the NAK the block check was always for. The text ends at ETX and the
-    // slot below it carries the check alone, so anything written there reaches no reader and no render
-    // reproduces it. Absent this NAK the body simply vanishes: two `#edges` blocks went that way, and
-    // nothing said a word.
-    const stranded = record["$postamble-foreign"];
-    if (stranded !== undefined) {
-      diagnostics.push({
-        from: 0, to: text.length, severity: "error",
-        source: "memetic-wikitext", code: "postamble-content",
-        message: `${stranded} line(s) stand between ETX and EOT. The text ends at ETX; that slot `
-               + `carries the block check alone. Move the content above the \`<<^ code="${FRAME_BY_NAME.ETX}">>\` close.`,
-      });
-    }
     if (!String(record.title ?? "").includes("/parse-warning/")) continue;
     for (const line of String(record.text ?? "").split("\n")) {
       if (line.trim()) diagnostics.push(shoreDiagnostic(line.trim(), text.length));

@@ -53,6 +53,7 @@ import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagn
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
 import { verdict, type FrameVerdict } from "@lararium/memetic-frame";
+import { checkCarrier } from "./carrier-check.js";
 
 export type IngestDecision<R = TiddlerFields> =
   | { readonly kind: "noop"; readonly reason: "disk-matches-synced" | "canonical-equivalent" }
@@ -140,6 +141,7 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
       diagnostics: [
         ...failuresToDiagnostics(failures, text.length),
         ...frameDiagnostics(uri, frame, text.length),
+        ...checkCarrier(uri, text),
         ...carrier.diagnostics,
       ],
     };

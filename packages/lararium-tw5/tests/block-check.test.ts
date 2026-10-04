@@ -6,7 +6,7 @@
  * only by diffing a round-trip. A block check answers a bad block with NAK, never with silence.
  */
 import { describe, test, expect } from "vitest";
-import { deserializeCarrier } from "../src/deserializer.js";
+import { memeticIngestOps } from "../src/ingest-gate.js";
 import { classifyPostamble, classifyPostEot, checkSpan, bccOfSpan } from "@lararium/memetic-frame";
 
 /** The checked span's bytes, through the ONE span reader, or null where no frame closes. */
@@ -20,7 +20,7 @@ const frame = (slot: string): string =>
   `<<^ code="&#x0002;">>\n\n<<~ ahu #a>>\n\n! Heading\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n${slot}\n<<^ code="&#x0004;" -> to=?>>\n`;
 
 const stranded = (text: string): string[] =>
-  deserializeCarrier(text, { title: "lar:///t/x" }).diagnostics
+  memeticIngestOps.deserialize("lar:///t/x", text).diagnostics
     .filter((d) => d.code === "postamble-content").map((d) => d.severity);
 
 const digestOf = (text: string): string =>
