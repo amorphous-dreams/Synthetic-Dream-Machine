@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;2NaQFevYx-W3JyMv43ImKiIu5ko2vJkZM6uApSoHQw0"
+source-check: "ni:///sha-256;8adoxcXcctGLSbHp7d-Kt09veDzPRMg6FBHK6sMv6sk"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -78,7 +78,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 | **document** | one meme's encoded structure; defined by [MEMETIC-WIKITEXT] #abstract-syntax. |
 | **carrier** | one document standing in the frame this specification defines. |
 | **frame** | the control marks bracketing a carrier: heading, text, and transmission bounds (#/control-set). |
-| **mark** | one control character the frame stands for, named by a `code:` parameter. |
+| **mark** | one control character the frame stands for, named by a `code=` parameter. |
 | **slot** | a named parameter a given mark carries; the mark decides which slots apply. |
 | **declaration** | a `<<!WORD>>` statement read before content, selecting or constraining the grammar (#/declaration-register). |
 | **namespace** | the resonance glyph a carrier's heading states, naming which layer authored it (#/resonance). |
@@ -99,13 +99,13 @@ Two kinds of thing conform: the **carrier** (the artifact) and the frame-side pr
 reader** and **consumer**. Authors carry SHOULD-strength guidance only: the corpus gets written by hand,
 and the projection re-mints what a hand leaves non-canonical.
 
-A **conforming carrier** MUST: state `code:` as the first parameter of every frame sigil (#/control-set);
+A **conforming carrier** MUST: state `code=` as the first parameter of every frame sigil (#/control-set);
 stand its frame marks on the control head `<<^` alone (#/frame-head-lock); hold its marks in spine order
 where present (#/carrier-spine); and carry at most one text frame (#/the-touchstone). A carrier that fails
 a clause still parses — graceful parsing holds — and parses as a carrier in fault, the gradient naming
 what it lacks (#/the-gradient).
 
-A **conforming carrier reader** MUST: read the frame's `code:` parameter to identify each mark
+A **conforming carrier reader** MUST: read the frame's `code=` parameter to identify each mark
 (#/control-set); read a leading `<<!DOCTYPE>>` before selecting a grammar (#/declaration-register);
 accept a carrier that states no frame and MINT the frame AND the declaration on projection (#/authoring);
 divide the carrier through the fence mask (#/frame-head-lock); normalize bytes once at the boundary
@@ -130,9 +130,11 @@ Every frame construct stands as a `macro-call` in the host's reading, exactly as
 frame       = "<<" control LWSP code-param params LWSP ">>"
 code-param  = "code=" DQUOTE "&#x" 4HEXDIG ";" DQUOTE
 header      = "<<" control LWSP code-param [ LWSP ns-param ]
-              LWSP "?" LWSP "->" LWSP URI-ref LWSP ">>"
+              LWSP from-param LWSP "->" LWSP to-param LWSP ">>"
 ns-param    = "namespace=" string-literal
-footer      = "<<" control LWSP code-param LWSP "->" LWSP "?" LWSP ">>"
+from-param  = "from=" DQUOTE "?" DQUOTE
+to-param    = "to=" DQUOTE ( "?" / URI-ref ) DQUOTE
+footer      = "<<" control LWSP code-param LWSP "->" LWSP to-param LWSP ">>"
 
 ; ── the declaration register (#/declaration-register) ────────
 doctype     = "<<" declaration LWSP root-name LWSP URI-ref LWSP ">>"
@@ -147,13 +149,14 @@ alg         = 1*( %x61-7A / DIGIT / "-" )
 carrier     = [ doctype ] [ header ] heading
               [ text-open ] document [ text-close [ check ] ]
               [ footer ]
-heading     = <the identity fence and carrier-level bindings; zones per #authoring>
-document    = <one meme's encoded structure; [MEMETIC-WIKITEXT] #grammar>
+heading     = <frame identity, bearing, and transport bindings only; the SOH zone per #authoring>
+document    = <one meme's encoded structure, opening on the root identity fence;
+              [MEMETIC-WIKITEXT] #grammar>
 text-open   = frame                                ; code &#x0002; — STX
 text-close  = frame                                ; code &#x0003; — ETX
 ```
 
-**Normative grammar rules.** (1) A `frame` sigil MUST state `code:` as its first parameter; the
+**Normative grammar rules.** (1) A `frame` sigil MUST state `code=` as its first parameter; the
 remaining slots belong to the mark that code names (#/control-set). (2) Every frame part reads optional
 at ARRIVAL — the frame mints at projection, never as a demand on arrival (#/authoring) — and where the marks stand, spine order
 MUST hold (#/carrier-spine). (3) The `check` slot names a POSITION, never a parameter: adjacent after the
@@ -260,7 +263,7 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 | **SOH** | `<<^ code="&#x0001;" from="?" -> to="lar:///URI">>` | Start of Heading — the Lar takes its post and names the place with its `lar:` bearing | `0x01` | DC1 `0x11` |
 | **STX** | `<<^ code="&#x0002;">>` | Start of Text — cross the threshold; the body opens | `0x02` | — |
 | **ETX** | `<<^ code="&#x0003;">>ni:///sha-256;…` | End of Text — the body closes, the check follows the closer; the hearth banks | `0x03` | — |
-| **EOT** | `<<^ code="&#x0004;" -> to="?">>` | End of Transmission — the libation pours; the carrier releases to the crossroad | `0x04` | DC4 `0x14` |
+| **EOT** | `<<^ code="&#x0004;" -> to="?">>` | End of Transmission — the libation pours; the carrier releases to the crossroad | `0x04` | — |
 
 **Kapu** names the restricted, admin-only trust tier (#/trust-tiers); the kapu byte column gives each mark's substitute code in that tier.
 
@@ -278,16 +281,16 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 <<^ code="&#x0004;" -> to="?">>                            EOT · release
 ````
 
-**The mark names the control byte.** Each sigil states its C0 control character as a named `code:` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX and ETX carry that one param and nothing else — each opens or closes the text and states no bearing.
+**The mark names the control byte.** Each sigil states its C0 control character as a named `code=` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX and ETX carry that one param and nothing else — each opens or closes the text and states no bearing.
 
 **The frame, in the transmission register and the mythic one at once:**
 
 - **SOH** — Start of Heading. The transmission opens on its heading; the parser reads identity before content. The Lar wakes at the doorpost and speaks the name of the place — the `lar:///` bearing the carrier will keep.
 - **STX** — Start of Text. The heading ends, the body begins. One steps across the threshold into the dwelling.
 - **ETX** — End of Text. The body stands complete. The hearth banks; the room falls quiet.
-- **EOT** — End of Transmission. The frame closes and hands forward on `-> to=?` — resumption unknown. The libation pours at the crossroad; the message goes out to wherever the road runs. EOT stands as the carrier's own `yield`.
+- **EOT** — End of Transmission. The frame closes and hands forward on `-> to="?"` — resumption unknown. The libation pours at the crossroad; the message goes out to wherever the road runs. EOT stands as the carrier's own `yield`.
 
-**SOH and EOT echo the bearing vectors.** SOH opens facing a bearing (`from=? -> to=lar:///…`) as `aim` opens a turn; EOT releases to the unknown (`-> ?`) as `yield` closes one. The spine frames a meme the way the turn-frame frames an exchange.
+**SOH and EOT echo the bearing vectors.** SOH opens facing a bearing (`from="?" -> to="lar:///…"`) as `aim` opens a turn; EOT releases to the unknown (`-> "?"`) as `yield` closes one. The spine frames a meme the way the turn-frame frames an exchange.
 
 <a id="bearing-arrow"></a>
 
@@ -297,11 +300,11 @@ The frame's heading and its close both carry an arrow, and they carry ONE relati
 
 | mark | form | source | target |
 |---|---|---|---|
-| SOH | `from=? -> to=lar:///…` | unresolved | known — the carrier arriving at its address |
-| EOT | `-> to=?` | known | unresolved — the carrier departing into open bearing |
+| SOH | `from="?" -> to="lar:///…"` | unresolved | known — the carrier arriving at its address |
+| EOT | `-> to="?"` | known | unresolved — the carrier departing into open bearing |
 
 **`?` names an unresolved bearing**, never a keyword and never a name — and it rides as the VALUE of the
-end it answers for, `from=?` or `to=?`, never bare. A bare `?` names nothing and reads as content. The
+end it answers for, `from="?"` or `to="?"`, never bare. A bare `?` names nothing and reads as content. The
 control-soh scan captures the arrow's target as a group, so the bearing rides as PARSED STRUCTURE rather
 than as decoration inside the line.
 
@@ -320,7 +323,7 @@ out of documents so content may move beneath them.
 
 The arrow answers the same failure from the other side. It stays embedded and makes its SOURCE
 self-resolving — `?` reads as *wherever this carrier stands* at read time — so the carrier moves and
-its outbound bearing travels with it. And `-> ?` declares the dangle rather than suffering it: a
+its outbound bearing travels with it. And `-> "?"` declares the dangle rather than suffering it: a
 frontier, honestly marked, the way a MUD room's exit to an unbuilt room reads as an open edge and never
 as an error.
 
@@ -339,7 +342,7 @@ the canonical-form discipline — the boundary enforces, the spec declares.
 ### One sigil, dispatched by code
 
 The frame speaks through ONE sigil, `<<^ …>>`, parameterised by the control character it stands for.
-`code:` selects the mark; the remaining slots belong to that mark alone. One name, one relation — the
+`code=` selects the mark; the remaining slots belong to that mark alone. One name, one relation — the
 frame position — with the code as a parameter, the way `lares` carries `aim` and `yield` through a
 single vector.
 
@@ -353,10 +356,10 @@ processor binds the name; nothing about either side asks the host for an extensi
 \end
 ```
 
-### Named, colon-paired, TW5-native
+### Named, equals-paired, TW5-native
 
-Slots read `name:"value"`, which invokes in FIVE registers at once: TW5 procedure calls (the host's
-own — a parameter labelled with its name and a colon, values in single, double, triple-double or
+Slots read `name="value"`, which invokes in FIVE registers at once: TW5 procedure calls (the host's
+own — a parameter labelled with its name and `=`, values in single, double, triple-double or
 `[[bracket]]` quotes), TW5 tiddler-field headers, YAML, JSON and CSS. A frame that reads correctly in
 the host's calling syntax IS a call in that host, never a lookalike.
 
@@ -378,7 +381,7 @@ parser reads both and a reader narrower than the parser refuses a sigil the wiki
 | `&#x0003;` | ETX | `code` `bcc` | text ends; the block check follows the mark directly |
 | `&#x0017;` | ETB | `code` `hash` | the attestation block ends |
 | `&#x0004;` | EOT | `code` `target` | transmission ends, bearing forward |
-| `&#x0014;` | EOT₂ | `code` `target` | the Kapu transmission-end variant |
+| `&#x0014;` | EOT₂ | `code` `target` | reserved for the relay stream; no at-rest office |
 
 ### The block check
 
@@ -471,7 +474,7 @@ a shape-exact slug rule refuses a truncated tag. Enforcement rides the recognise
 
 ## Namespace Resonance Glyphs — A Separate Mark
 
-Resonance glyphs do **not** join the spine. They ride the **SOH opener only**, as the `namespace:` param — a visible mark of which layer authored the carrier. They carry trust intent to human and machine readers; the parser takes the param as optional.
+Resonance glyphs do **not** join the spine. They ride the **SOH opener only**, as the `namespace=` param — a visible mark of which layer authored the carrier. They carry trust intent to human and machine readers; the parser takes the param as optional.
 
 | Glyph | Layer | Resonance |
 |---|---|---|
@@ -490,7 +493,7 @@ Resonance glyphs do **not** join the spine. They ride the **SOH opener only**, a
 
 Two laws govern the namespace:
 
-1. **Opener-only.** A resonance glyph rides SOH alone, as the `namespace:` param beside the code.
+1. **Opener-only.** A resonance glyph rides SOH alone, as the `namespace=` param beside the code.
 2. **EOT rides bare, always.** The resonance mark rides the heading (SOH); the release states its code and its bearing, and no namespace.
 
 <a id="trust-tiers"></a>
@@ -510,7 +513,7 @@ Each kernel-tier control character carries **three simultaneous roles**, bound a
 | **kernel** | `0x01`–`0x0F` | kernel | standard | operator+ |
 | **kapu / elevated** | DC1–DC4 (`0x11`–`0x14`) | kapu | elevated | admin-only |
 
-SOH substitutes DC1 (`0x11`) and EOT substitutes DC4 (`0x14`) in kapu-tier carriers; the parser accepts both. The kapu aliases ride SOH and EOT alone.
+SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias at rest — a kapu-tier carrier still closes on plain EOT (`0x04`); DC4 (`0x14`, EOT₂) is reserved for the relay stream, with no at-rest office. The kapu alias rides SOH alone.
 
 <a id="authoring"></a>
 
@@ -567,12 +570,15 @@ every consumer honours it without agreeing on anything else. TW5 states the same
 A labelled meta fence heads the head it **opens**. Content standing before it means the fence heads
 nothing — it reads as body, exactly as a teaching example reads. Whitespace reads as spacing, never content.
 
-**Post-meta content in the head STANDS.** That zone reads as the **bindings zone** (the three-zone law, above): a carrier
-states what it holds before its body opens, and folding those into the body would move an authored
-declaration below a mark that says the text has begun.
+**At carrier level, nothing stands in the head.** The SOH zone (the routing heading) carries only frame
+identity, bearing, and transport bindings (the three-zone law, above); the root `toml meta` fence opens
+the **body** — it stands immediately after STX, as the body's first block, never inside the head.
+Folding root identity into the SOH zone would bury authored declaration above the mark that opens the
+checked text rather than below it.
 
-The law reaches every level. A carrier's head and an ahu slot's head answer to it identically — one rule
-rather than two spellings of a similar one.
+**At slot level, the fence-opens-its-head law holds as stated.** An `ahu` or `fragment` worksite carries
+no SOH/STX split of its own, so post-meta content in ITS head zone stands as that slot's bindings
+zone — the same mechanic the carrier uses, read at a level that never divides heading from text.
 
 ### Minted at projection, never demanded on arrival
 
@@ -1001,7 +1007,7 @@ A multi-line part becomes a record on the same rails that carry ahu fragments:
 
 `<<~moves carriage -> a-record-of-its-own on/the-carrier's-own-address if/the-value-can-hold-a-newline do/splice-it-back-by-position>>`
 
-- **The address derives.** `lar:///…#$prologue` under a carrier; `lar:///…#/slot/$preamble` under a
+- **The address derives.** `lar:///…#/$prologue` under a carrier; `lar:///…#/slot/$preamble` under a
   fragment, extending the slot path the way a nested fragment already does. The `$` marks the host's
   slot and keeps the address whole — a `$:/`-prefixed system title would break the carriage away from
   the thing it belongs to.
@@ -1068,10 +1074,13 @@ This law's own machine surface holds the spine, the resonance set, and the trust
 ```toml
 # Carrier spine — transmission-frame control codes
 [spine]
-SOH = { role = "Start of Heading — opener; names the canonical URI", byte = "0x01", kapu = "0x11", required = true }
-STX = { role = "Start of Text — body open; bare pragma",            byte = "0x02",               required = true }
-ETX = { role = "End of Text — body close; bare pragma",             byte = "0x03",               required = true }
-EOT = { role = "End of Transmission — throat close; return -> ?",    byte = "0x04", kapu = "0x14", required = true }
+SOH  = { role = "Start of Heading — opener; names the canonical URI",         code = "code", byte = "0x01", kapu = "0x11", required = true }
+SOH2 = { role = "Start of Heading, second form — the Kapu opener",            code = "code", byte = "0x11",               required = false }
+STX  = { role = "Start of Text — body open; bare pragma",                     code = "code", byte = "0x02",               required = true }
+ETX  = { role = "End of Text — body close; bare pragma",                      code = "code", byte = "0x03",               required = true }
+ETB  = { role = "End of Transmission Block — attestation block close",        code = "code", byte = "0x17",               required = false }
+EOT  = { role = "End of Transmission — throat close; return -> \"?\"",        code = "code", byte = "0x04",               required = true }
+EOT2 = { role = "End of Transmission, second form — reserved for the relay stream; no at-rest office", code = "code", byte = "0x14", required = false }
 
 # Namespace resonance — prefixes the SOH opener only; EOT always bare
 # Open set: more resonance glyphs MAY register here as layers/tiers emerge.
@@ -1103,9 +1112,10 @@ a reader that takes an `ok` for authenticity has granted the check a standing it
 
 **What an adversary inside the model can still do, and what answers each:**
 
-- **Rewrite the heading while the check holds.** The span opens at STX, so the declaration, the
-  heading, and the identity block stand outside it — a carrier's address, media type, and
-  grammar-selector can all move under an `ok`. This bounds what the verdict means (did the TEXT survive
+- **Rewrite the heading while the check holds.** The span opens at STX, so the declaration and the
+  heading stand outside it — a carrier's address, media type, and grammar-selector can all move
+  under an `ok`. The root identity block rides inside the span (#/control-set) and so cannot move
+  this way. This bounds what the verdict means (did the TEXT survive
   carriage) and stands as the design's accepted boundary: heading integrity rides the outer layer. A
   consumer MUST NOT treat the verdict as covering bytes the span excludes.
 - **Smuggle a second frame.** The check covers the first STX..ETX span only — the same first-STX,
