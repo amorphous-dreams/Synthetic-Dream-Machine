@@ -16,11 +16,14 @@ import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
+import { maskedExecAll } from "@lararium/memetic-frame";
 
 const REPO = resolve(__dirname, "../../..");
 
 /** A control entity reached directly, or through a run of non-ASCII namespace glyphs. */
 const OLD_OPENER = /<<~[ \t]*(?:[^\x00-\x7F][ \t]?)*&#x00[01][0-9A-Fa-f];/;
+/** The same opener, global — read through the fence mask, so a quoted carrier frames nothing. */
+const OLD_OPENER_G = new RegExp(OLD_OPENER.source, "g");
 
 /** Every tracked carrier and doc that could hold a sigil — read from git, never from a hand-kept list. */
 function trackedCarriers(): string[] {
@@ -44,7 +47,7 @@ describe("the control band opens with the caret", () => {
     for (const rel of files) {
       let src: string;
       try { src = readFileSync(resolve(REPO, rel), "utf8"); } catch { continue; }
-      const m = OLD_OPENER.exec(src);
+      const m = [...maskedExecAll(src, OLD_OPENER_G)][0];
       if (m) offenders.push(`${rel} → ${m[0]}`);
     }
     expect(offenders, `these carriers open the control band on the sharktooth:\n  ${offenders.join("\n  ")}`)
