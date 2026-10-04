@@ -20,7 +20,7 @@ const EXPORTER = "lar:///ha.ka.ba/lararium/exporters/memetic-wikitext";
 const uriOf = (n: string): string => `lar:///t/${n}`;
 const meme = (n: string, slots: readonly string[]): string =>
   `<<^ code="&#x0001;" from="?" -> to="${uriOf(n)}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/${n}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 describe.skipIf(wikiSkip)(`Export → memetic-wikitext${skipNote}`, () => {
