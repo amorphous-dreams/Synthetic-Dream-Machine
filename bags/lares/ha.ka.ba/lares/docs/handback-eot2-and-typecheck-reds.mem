@@ -57,6 +57,9 @@ to hand-restore the EOT2 line once after exactly that happened. Whoever answers 
 also say whether the emitter needs a carve-out for an authored EOT2 close, or whether `kapu.mem` should
 simply close on EOT like every other carrier.
 
+''Ruled (operator, 2026-10-04):'' `kapu.mem` closes on regular EOT for now, like every other carrier
+at rest. No emitter carve-out. EOT2's office stays open until the relay-stream layer settles.
+
 <<~/ahu>>
 
 <<~ ahu #/typecheck-reds>>
@@ -83,6 +86,6 @@ Carried forward as named, not independently re-run by this hand:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-f0ipdzBN3IiC8gmj9m1Nt9FpcPsSjuwiwyT2zkdwuY
+<<^ code="&#x0003;">>ni:///sha-256;ywVMJoACQRPN2zNT2hPXu5FBpna-SkcmaWtAVMnX1mY
 
 <<^ code="&#x0004;" -> to="?">>
