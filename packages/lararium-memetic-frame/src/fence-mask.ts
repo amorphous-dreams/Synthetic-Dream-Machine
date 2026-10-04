@@ -9,11 +9,26 @@
  * after it at ingest — silent content loss on real corpus files.
  *
  * Two span kinds, CommonMark-shaped, conservative:
- *   - fenced code blocks: a line opening with 0–3 spaces then 3+ backticks
- *     closes at the next line with the same-or-longer backtick run (or
- *     end-of-text when unclosed — the open tail stays masked);
- *   - inline code spans: equal-length backtick runs paired within a line,
- *     outside fenced blocks.
+ *   - fenced code blocks: a line opening with 0–3 spaces then 3+ backticks OR 3+ tildes closes at
+ *     the next line with a same-or-longer run of the SAME character (or end-of-text when unclosed —
+ *     the open tail stays masked);
+ *   - inline code spans: equal-length backtick runs paired within a line, outside fenced blocks.
+ *
+ * TILDE FENCES, FOUND BY FUZZING (lararium-memetic-frame/tests/fence-edge-fuzz.test.ts). CommonMark
+ * §4.5 admits a tilde fence (`~~~`) as a full peer of a backtick fence — a corpus author quoting a
+ * frame mark inside one is exactly the "conformant corpus quotes every mark in a fence" case
+ * #/the-touchstone promises. `fencedSpans` (this module's own scan, which the ONE span reader in
+ * `span.ts` reads through) now masks both; a quoted ETX the fuzz generated inside a `~~~` fence used
+ * to read as LIVE, closing the carrier's real span early at the quoted mark and naming it a
+ * `second-etx` fault over a carrier that was, in fact, well-formed.
+ *
+ * `fenceLineOpen`/`fenceLineClose` stay BACKTICK-ONLY below — `weave`'s line-at-a-time walk
+ * (lararium-tw5/src/weave/index.ts) reads them directly and tracks fence state as a bare length,
+ * with no character carried alongside it; widening those two exports would need widening that walk's
+ * state too, which is a wider change than this fix's scope. `fenceLineOpenAny`/`fenceLineCloseAny`
+ * below carry the character a run opened with, and `fencedSpans` — the scan the frame reader actually
+ * depends on — reads THOSE, so the one place a quoted mark gets masked for already covers both fence
+ * kinds; a follow-up may widen weave's walk to read the same pair.
  *
  * Isomorphic; no TW5/fs/DOM dependencies — same law in every caller.
  */
@@ -21,6 +36,31 @@
 export interface MaskSpan { readonly start: number; readonly end: number }
 
 const FENCE_LINE_RE = /^ {0,3}(`{3,})/;
+const FENCE_LINE_RE_ANY = /^ {0,3}(`{3,}|~{3,})/;
+
+/** A fence character this module recognises — the two CommonMark §4.5 admits. */
+export type FenceChar = "`" | "~";
+
+/** Like {@link fenceLineOpen}, but recognising EITHER fence character. */
+export function fenceLineOpenAny(line: string): { readonly len: number; readonly ch: FenceChar } | null {
+  const m = FENCE_LINE_RE_ANY.exec(line);
+  if (m === null) return null;
+  const run = m[1]!;
+  const ch = run[0] as FenceChar;
+  // Same guard `fenceLineOpen` applies for backticks: an info string carrying the SAME character the
+  // fence opened with would itself close the fence mid-declaration, so a line shaped that way never
+  // opens one. (CommonMark allows a backtick info string to carry a tilde and vice versa — only the
+  // fence's OWN character is forbidden there.)
+  return line.slice(m[0].length).includes(ch) ? null : { len: run.length, ch };
+}
+
+/** Like {@link fenceLineClose}, but closing against the SAME character `open` records. */
+export function fenceLineCloseAny(line: string, open: { readonly len: number; readonly ch: FenceChar }): boolean {
+  const re = open.ch === "`" ? FENCE_LINE_RE : /^ {0,3}(~{3,})/;
+  const m = re.exec(line);
+  if (m === null || m[1]!.length < open.len) return false;
+  return line.slice(line.indexOf(open.ch) + m[1]!.length).trim() === "";
+}
 
 /**
  * Does `line` open a backtick fence, CommonMark §4.5? Answers the run length, or `0` when it does
@@ -58,20 +98,20 @@ export function fenceLineClose(line: string, openLen: number): boolean {
 /** All quoted-code spans of `text`, ordered, non-overlapping. */
 export function fencedSpans(text: string): MaskSpan[] {
   const spans: MaskSpan[] = [];
-  let open: { len: number; start: number } | null = null;
+  let open: { len: number; ch: FenceChar; start: number } | null = null;
   let lineStart = 0;
   const flushLine = (lineEnd: number, nextStart: number) => {
     const line = text.slice(lineStart, lineEnd);
-    const openLen = fenceLineOpen(line);
-    const opensFence = openLen > 0;
+    const opened = fenceLineOpenAny(line);
     if (open) {
-      // closing fence: fenceLineClose — same-or-longer run, nothing but the run on the line
-      if (fenceLineClose(line, open.len)) {
+      // closing fence: fenceLineCloseAny — same-or-longer run of the SAME character, nothing but
+      // the run on the line
+      if (fenceLineCloseAny(line, open)) {
         spans.push({ start: open.start, end: nextStart });
         open = null;
       }
-    } else if (opensFence) {
-      open = { len: openLen, start: lineStart };
+    } else if (opened) {
+      open = { len: opened.len, ch: opened.ch, start: lineStart };
     } else {
       // inline code spans on a non-fence line
       let i = 0;
@@ -103,6 +143,8 @@ export function fencedSpans(text: string): MaskSpan[] {
     if (text[i] === "\n") flushLine(i, i + 1);
   }
   flushLine(text.length, text.length);
+  // THE CAST, kept: `open` is reassigned inside the `flushLine` closure above, and TS's
+  // control-flow narrowing does not carry a closure's mutations back out to this `!== null` check.
   if (open !== null) spans.push({ start: (open as { start: number }).start, end: text.length });
   return spans;
 }
