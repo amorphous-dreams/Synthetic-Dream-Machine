@@ -7,6 +7,7 @@
 cacheable = true
 l-space   = "latent.attention.relation"
 title     = "lar:///latent.attention.relation/agents/api/ai-phrasebook"
+tongue    = "en"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "latent.attention.relation/agents/api/ai-phrasebook"
 ```
@@ -622,6 +623,6 @@ This one belongs to you.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;V2bHb3wWF0_5blfsW7ooFqMPhbBPCgvJoQlJdbDTBEU
+<<^ code="&#x0003;">>ni:///sha-256;AlIOi8c6pEwOUREX6QikJBMT7R6L7rKTsjPej2wNEJw
 
 <<^ code="&#x0004;" -> to="?">>
