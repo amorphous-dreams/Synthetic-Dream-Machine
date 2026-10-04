@@ -4,7 +4,7 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-source-sha256 = "a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
+source-sha256 = "sha256:a31316c2e25c7209328b72006b8cfa76a65365403452a630b397508083e9a2ad"
 file-path     = "bags/lararium/ha.ka.ba/lararium/docs/meme-ast.mem"
 heleuma       = "ka"
 mana          = 18
@@ -59,6 +59,6 @@ Build: `pnpm --filter @lararium/tw5 build:plugin`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;wOFJOmnl2mD4BNMAxMOQrX7eGTcM9KiN9aVq1T2Uy70
+<<^ code="&#x0003;">>ni:///sha-256;G0QC99tXrKTkP50P8YT-_CVCZvqhGG7OGVwNQLOAlb0
 
 <<^ code="&#x0004;" -> to="?">>
