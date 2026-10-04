@@ -441,30 +441,125 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   // a special case. A NESTED slot carries its whole path — rooting only the leaf makes a child the
   // sibling of its own parent, which reads as structure and addresses as none. No slot is exempt from a
   // root: every slot a carrier declares opens a child, and a child answers to an address.
+  //
+  // FLAT PATHS EXPAND (operator ruling). `<<~ ahu #/a/b/c>> … <<~/ahu>>` names THREE nested slots in
+  // one open/close pair — the author wrote the whole chain inline rather than opening each level by
+  // hand. Any segment already satisfied by the enclosing stack is not "new"; a path already matching
+  // its enclosing stack is untouched. Beyond that, each MISSING parent segment mints its own wrapper
+  // open before the authored line and its own close after — unless that parent's full path already
+  // stands elsewhere in the carrier as some OTHER block's own address, in which case the whole
+  // expansion refuses (no bytes move, no duplicate address mints) and names itself in `flags`.
   {
     const lines = seat.text.split("\n");
-    const stack: Array<string | null> = [];
-    // The fence mask pairs a fence with its own length, so a shorter fence line a longer fence
-    // holds opens nothing.
     const mask = fencedSpans(seat.text);
+    const CLOSE_RE = /^<<(?:~\/ahu|\/fragment)\s*>>/;
+    // The leading slash is OPTIONAL on read — a bare `#name` is exactly the unrooted drift this
+    // clause exists to fix — and always present on write (every output line below mints `#/`).
+    const OPEN_RE = /^<<(~ ?ahu|fragment) #\/?([a-z0-9/-]+)(.*)$/i;
+
+    // The enclosing `stack` is ALWAYS the prefix a new open mints onto — a bare leaf (`#ha-fields`)
+    // always lands under whatever is physically open around it, regardless of what name it carries.
+    // The ONE exception: an author who writes the ABSOLUTE path redundantly, stack included
+    // (`#/a/b` while already standing inside `#/a`), is not asking for `a/a/b` — `segs` carrying the
+    // whole enclosing stack as its OWN leading prefix means "this is already rooted", so only the
+    // trailing segments beyond the stack are new. Anything short of that full-stack match (including
+    // a one-segment mismatch, as a bare sibling leaf always is) carries no redeclaration at all.
+    const newSegsFor = (segs: string[], stack: string[]): string[] => {
+      const isRedeclared = segs.length >= stack.length && stack.every((s, i) => segs[i] === s);
+      const fresh = isRedeclared ? segs.slice(stack.length) : segs;
+      // Every open introduces at least one new level — a redeclaration of the exact standing
+      // address (no trailing segments at all) still names ITS OWN leaf.
+      return fresh.length > 0 ? fresh : [segs[segs.length - 1]!];
+    };
+
+    // PASS 1 — index every open's OWN (deepest) declared address, so pass 2 can refuse a missing
+    // parent that collides with a block some OTHER open already owns in its own right.
+    const ownPaths = new Set<string>();
+    {
+      const stack: string[] = [];
+      const closeCounts: number[] = [];
+      let offset = 0;
+      for (const line of lines) {
+        const start = offset;
+        offset += line.length + 1;
+        if (inMask(mask, start)) continue;
+        if (CLOSE_RE.test(line)) {
+          for (let i = 0, n = closeCounts.pop() ?? 1; i < n; i++) stack.pop();
+          continue;
+        }
+        const m = OPEN_RE.exec(line);
+        if (!m) continue;
+        const segs = m[2]!.split("/");
+        const newSegs = newSegsFor(segs, stack);
+        ownPaths.add([...stack, ...newSegs].join("/"));
+        for (const s of newSegs) stack.push(s);
+        closeCounts.push(newSegs.length);
+      }
+    }
+
+    // PASS 2 — rewrite, expanding a flat multi-segment open into its nested chain.
+    const stack: string[] = [];
+    const closeCounts: number[] = [];
+    const refusals: string[] = [];
     let rooted = 0, offset = 0;
-    const rebuilt = lines.map((line) => {
+    const out: string[] = [];
+    for (const line of lines) {
       const start = offset;
       offset += line.length + 1;
-      if (inMask(mask, start)) return line;
-      if (/^<<(?:~\/ahu|\/fragment)\s*>>/.test(line)) { stack.pop(); return line; }
-      const m = /^<<(~ ?ahu|fragment) #\/([a-z0-9/-]+)(.*)$/i.exec(line);
-      if (!m) return line;
-      const leaf = m[2]!.split("/").pop()!;
-      const path = [...stack.filter(Boolean), leaf].join("/");
-      stack.push(leaf);
-      const out = `<<${m[1]} #/${path}${m[3]}`;
-      if (out !== line) rooted += 1;
-      return out;
-    });
-    if (rooted > 0) {
-      seat.apply("frame", rebuilt.join("\n"), () => `child slot: ${rooted} open${rooted === 1 ? "" : "s"} rooted at the carrier`);
+      if (inMask(mask, start)) { out.push(line); continue; }
+      if (CLOSE_RE.test(line)) {
+        const n = closeCounts.pop() ?? 1;
+        for (let i = 0; i < n; i++) stack.pop();
+        out.push(Array.from({ length: n }, () => line).join("\n"));
+        continue;
+      }
+      const m = OPEN_RE.exec(line);
+      if (!m) { out.push(line); continue; }
+      const segs = m[2]!.split("/");
+      const base = stack.slice();
+      const newSegs = newSegsFor(segs, stack);
+
+      if (newSegs.length <= 1) {
+        const path = [...base, ...newSegs].join("/");
+        stack.push(newSegs[0]!);
+        closeCounts.push(1);
+        const rebuilt = `<<${m[1]} #/${path}${m[3]}`;
+        if (rebuilt !== line) rooted += 1;
+        out.push(rebuilt);
+        continue;
+      }
+
+      // Multi-segment flat open — every MISSING PARENT (never the leaf itself) checks against
+      // another block's own address first.
+      let conflictParent: string | null = null;
+      for (let i = 1; i < newSegs.length && conflictParent === null; i++) {
+        const parent = [...base, ...newSegs.slice(0, i)].join("/");
+        if (ownPaths.has(parent)) conflictParent = parent;
+      }
+      if (conflictParent !== null) {
+        refusals.push(
+          `child slot: #/${segs.join("/")} refuses to expand — its missing parent #/${conflictParent} already stands as its own block`,
+        );
+        stack.push(segs.join("/"));
+        closeCounts.push(1);
+        out.push(line);
+        continue;
+      }
+
+      for (let i = 0; i < newSegs.length; i++) {
+        const path = [...base, ...newSegs.slice(0, i + 1)].join("/");
+        out.push(i === newSegs.length - 1 ? `<<${m[1]} #/${path}${m[3]}` : `<<${m[1]} #/${path}>>`);
+        stack.push(newSegs[i]!);
+      }
+      closeCounts.push(newSegs.length);
+      rooted += 1;
     }
+
+    const rebuilt = out.join("\n");
+    if (rebuilt !== seat.text) {
+      seat.apply("frame", rebuilt, () => `child slot: ${rooted} open${rooted === 1 ? "" : "s"} rooted at the carrier`);
+    }
+    for (const r of refusals) flags.push(r);
   }
 
   // ── 5. Framing ends (positional → named) — FRAME AUTHORITY ───────────────

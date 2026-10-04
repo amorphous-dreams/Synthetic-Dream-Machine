@@ -138,6 +138,55 @@ describe("normalizeMemeSource — child-slot roots", () => {
     const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu #head>>\n\nbody\n\n<<~/ahu>>")).text;
     expect(normalizeMemeSource(once).changed).toBe(false);
   });
+
+  // ── Flat slot paths expand — operator ruling ──────────────────────────────
+  //
+  // `<<~ ahu #/a/b/c>> … <<~/ahu>>` names three nested slots in ONE open/close pair; normalize
+  // rewrites it into three actually-nested ahu blocks, inserting the missing parent opens before
+  // and the matching closes after. A missing parent that already stands elsewhere as its OWN
+  // block never gets a second mint — the expansion refuses and reports instead.
+
+  test("a flat path expands into its nested parent chain", () => {
+    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu #/a/b/c>>\n\nleaf body\n\n<<~/ahu>>"));
+    expect(r.changed).toBe(true);
+    expect(r.text).toContain("<<~ ahu #/a>>");
+    expect(r.text).toContain("<<~ ahu #/a/b>>");
+    expect(r.text).toContain("<<~ ahu #/a/b/c>>");
+    // three opens want three closes, in reverse nesting order.
+    const closes = r.text.match(/<<~\/ahu>>/g) ?? [];
+    expect(closes.length).toBe(3);
+    // the leaf body sits inside the innermost (deepest) block.
+    expect(r.text.indexOf("<<~ ahu #/a/b/c>>")).toBeLessThan(r.text.indexOf("leaf body"));
+    expect(r.text.indexOf("leaf body")).toBeLessThan(r.text.lastIndexOf("<<~/ahu>>"));
+  });
+
+  test("flat expansion is idempotent — a second normalize changes nothing", () => {
+    const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu #/a/b/c>>\n\nleaf body\n\n<<~/ahu>>")).text;
+    expect(normalizeMemeSource(once).changed).toBe(false);
+  });
+
+  test("a missing parent that already stands elsewhere as its OWN block refuses the expansion", () => {
+    const src = SLOT_HEAD(
+      "<<~ ahu #/a>>\n\nother body\n\n<<~/ahu>>\n\n<<~ ahu #/a/b/c>>\n\nleaf body\n\n<<~/ahu>>",
+    );
+    const r = normalizeMemeSource(src);
+    // the flat open's bytes never move — no duplicate `#/a` block gets minted.
+    expect(r.text).toContain("<<~ ahu #/a/b/c>>");
+    expect((r.text.match(/<<~ ahu #\/a>>/g) ?? []).length).toBe(1);
+    expect(r.flags.join()).toMatch(/#\/a.*#\/a\/b\/c|#\/a\/b\/c.*#\/a/);
+  });
+
+  test("a carrier already nested one block per level is unchanged", () => {
+    const src = SLOT_HEAD("<<~ ahu #/a>>\n\n<<~ ahu #/a/b>>\n\n<<~ ahu #/a/b/c>>\n\nleaf\n\n<<~/ahu>>\n\n<<~/ahu>>\n\n<<~/ahu>>");
+    const r = normalizeMemeSource(src);
+    expect(r.changed).toBe(false);
+  });
+
+  test("a flat path shown inside a fence stays as authored", () => {
+    const r = normalizeMemeSource(SLOT_HEAD("```\n<<~ ahu #/a/b/c>>\n```"));
+    expect(r.text).toContain("<<~ ahu #/a/b/c>>");
+    expect(r.text).not.toContain("<<~ ahu #/a>>\n\n<<~ ahu #/a/b>>");
+  });
 });
 
 describe("normalizeMemeSource — sigil close spacing", () => {
