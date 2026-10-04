@@ -141,3 +141,42 @@ describe("MemeStreamParser — minimal carrier (no ahu body)", () => {
     expect(events.filter((e) => e.kind === "ahu-child")).toHaveLength(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// EOT retires the speaking head and the bare return-throat (J4) — the frame locked to `<<^`
+// (action-handler.ts's CARRIER_SOH never admits `<<~`); an EOT reader that still did would close a
+// carrier on a speaking-head sigil or a bare arrow with no code at all, silently, exactly the
+// detection-blindness classifier-decides.test.ts exists to catch on the SOH side.
+// ---------------------------------------------------------------------------
+
+describe("MemeStreamParser — EOT reads the control head only, never the speaking one", () => {
+  const openBody = (uri: string) => [
+    `<<^ code="&#x0001;" from="?" -> to="${uri}">>`,
+    `<<^ code="&#x0002;">>`,
+    `body text`,
+  ].join("\n");
+
+  test("a bare return-throat (<<~ -> \"?\">>) never closes a carrier", () => {
+    const uri    = "lar:///ha.ka.ba/lares/api/pono/invariant";
+    const text   = `${openBody(uri)}\n<<~ -> "?">>`;
+    const events = new MemeStreamParser().push(text);
+    expect(events.some((e) => e.kind === "carrier-open")).toBe(true);
+    expect(events.some((e) => e.kind === "carrier-close")).toBe(false);
+  });
+
+  test("the speaking head's own EOT spelling (<<~ code=\"&#x0004;\">>) never closes a carrier", () => {
+    const uri    = "lar:///ha.ka.ba/lares/api/pono/invariant";
+    const text   = `${openBody(uri)}\n<<~ code="&#x0004;" -> "?">>`;
+    const events = new MemeStreamParser().push(text);
+    expect(events.some((e) => e.kind === "carrier-open")).toBe(true);
+    expect(events.some((e) => e.kind === "carrier-close")).toBe(false);
+  });
+
+  test("a canonical control-head EOT (<<^ code=\"&#x0004;\">>) still closes the carrier", () => {
+    const uri    = "lar:///ha.ka.ba/lares/api/pono/invariant";
+    const text   = `${openBody(uri)}\n<<^ code="&#x0004;" -> "?">>`;
+    const events = new MemeStreamParser().push(text);
+    expect(events.some((e) => e.kind === "carrier-open")).toBe(true);
+    expect(events.some((e) => e.kind === "carrier-close")).toBe(true);
+  });
+});
