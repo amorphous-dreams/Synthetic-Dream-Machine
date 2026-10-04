@@ -73,11 +73,9 @@ for (const f of carriers) {
   const { lines, live } = liveLines(text);
   const findLive = (p) => lines.findIndex((l, i) => live(i) && p(l.trim()));
   const at = findLive((l) => l.startsWith("<<!DOCTYPE"));
-  // A CALL binds with `=`; `:` is definition-side. Reading only the colon form matched 5 stragglers and
-  // missed 2961 real heads, so the "nothing stands between the declaration and the head" check below never
-  // fired — a gate that reads green because it never runs. Both spellings are admitted; the colon form is
-  // the retired one and still worth catching where it stands.
-  const sohAt = findLive((l) => l.startsWith("<<^ code=") || l.startsWith("<<^ code:"));
+  // A CALL binds with `=`. The colon form is retired outright — early alpha, no back-compat — so a
+  // carrier still spelling `<<^ code:` reads as the fault it is rather than a tolerated SOH.
+  const sohAt = findLive((l) => l.startsWith("<<^ code="));
   if (at < 0) { missing.push(f); continue; }
   const first = (lines[at] ?? "").trim();
   if (first !== DECLARATION) { misaimed.push([f, first.slice(0, 100)]); continue; }

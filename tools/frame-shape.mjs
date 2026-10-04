@@ -60,15 +60,20 @@ for (const f of files) {
   if (soh && masked(carrierHeadPattern("gm")).length === 0) {
     faults.push([f, "SOH carries no `from=\"?\" -> to=uri` — the heading states no bearing"]);
   }
-  // THE CLOSE NAMES ITS SLOT. The frame's ends took `from=` and `to=`, so an EOT reads `-> to=?` —
-  // and a check wanting a bare `?` after the arrow matches nothing, then reports the whole corpus.
-  //
-  // AND THE QUOTE IS NOT PART OF THE READING. TiddlyWiki assigns `to=?` and `to="?"` the same type and
-  // the same value, so both spell one bearing. A gate binding only the bare form reads a corpus-wide
-  // requote as 1395 torn frames — measured, the day the corpus took quotes.
+  // THE CLOSE NAMES ITS SLOT. The frame's ends took `from=` and `to=`, so an EOT reads `-> to="?"`.
   const eot = masked(EOT_LINE_RE).length > 0;
   if (eot && masked(carrierReleasePattern("gm")).length === 0) {
-    faults.push([f, "EOT carries no `-> to=?` — the close resolves a bearing it cannot know"]);
+    faults.push([f, "EOT carries no `-> to=\"?\"` — the close resolves a bearing it cannot know"]);
+  }
+  // EARLY ALPHA, NO BACK-COMPAT: the bare `-> to=?` spelling is retired outright. TiddlyWiki reads
+  // `to=?` and `to="?"` as the same value, but this gate now names the unquoted spelling a fault on
+  // its own, additive to whatever the shared frame package's own pattern still tolerates.
+  const BARE_EOT_BEARING_RE = /->\s*to=\?(?!")/;
+  for (const line of masked(EOT_LINE_RE)) {
+    if (BARE_EOT_BEARING_RE.test(line[0])) {
+      faults.push([f, "EOT closes on a bare `-> to=?` — the retired unquoted spelling, never a tolerated one"]);
+      break;
+    }
   }
 
   // AN OPENED BODY CLOSES — and a carrier that never opens one carries no fault. The frame acts as a

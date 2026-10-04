@@ -14,4 +14,4 @@ Fixture for the REFUSAL control: title stands, but docname/cat/ipr/author/date d
 never weave under kramdown-rfc2629, whatever the live corpus carries on any given day.
 
 <<^ code="&#x0003;">>ni:///sha-256;besFOZXc9RjgLoGgSJwyB-lpiL5dqHuUaR05UswRz8o
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
