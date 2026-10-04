@@ -116,7 +116,7 @@ They fall into eight families:
 ''Edge-sugar sigils'' (pranala family shortcuts):
 * `pranala` — full edge with FROM → TO arrow + keyword attrs (permanent JS exception)
 * `kahea` / `\transclude` / `\import` — transclusion-family sugar; LIVE transclusion, weaves in English as `transclude`; `import` mirrors `kahea` read-only
-* `aka` / `\shadow` — transclusion-family sugar; LIKENESS (head position) / FROZEN-IMAGE (body position) transclusion, a projection and its own sigil, never a mirror of `kahea`; weaves in English as `snapshot`; `shadow` mirrors `aka` read-only (TiddlyWiki already spends "shadow tiddler" on plugin defaults)
+* `aka` — transclusion-family sugar; PINS a target, its own sigil, never a mirror of `kahea`; rendering follows the target (a citation for a reference meme, a frozen image for a content meme); weaves in English as `pin`
 * `loulou` / `\link` — relation-family sugar; outgoing semantic link; no execution pulse
 * `kau` — device-slot child-slot; capability hooks require JS (permanent JS exception)
 * `kapu` / `\guard` — compile-layer boundary annotation; access-control edge
@@ -179,10 +179,10 @@ here, and every alias-bearing sigil in this set reads through it:
 * `meme` ← `\tiddler`.
 * `kahea` ← `\transclude`; `\import` mirrors `kahea` read-only. `kahea` weaves LIVE — the English
   weave name reads `transclude`.
-* `aka` — its own sigil, never a mirror of `kahea`; the LIKENESS (head position) / FROZEN-IMAGE
-  (body position) transclude, a projection. `\shadow` mirrors `aka` read-only. `aka` weaves
-  FROZEN — the English weave name reads `snapshot`; `shadow` stays a mirror rather than the weave
-  name because TiddlyWiki already spends "shadow tiddler" on plugin-default semantics.
+* `aka` — its own sigil, never a mirror of `kahea`; it PINS a target, and rendering follows the
+  target's own kind (a citation for a reference meme, a frozen image for a content meme). `aka`
+  weaves FROZEN — the English weave name reads `pin`. `snapshot` and `shadow` retire from the
+  grammar; canon names neither as live vocabulary.
 * `\widget` — a native TW5 pragma of its own; no Hawaiian headword, no mirror relation.
 * `kumu` — a native device-template declaration; `\type` / `\typos` run as native TW5 pragmas of
   their own, carrying no Hawaiian headword (`lar:///ha.ka.ba/lares/api/pono/kumu#/syntax`).
@@ -213,9 +213,9 @@ transclusion summons value forward, as a call summons a response. `kahea` weaves
 
 //Aka// — image, reflection, likeness; resemblance without identity. An image of a thing holds a
 moment of it without holding the thing itself — it stays still once the thing has moved on. The
-transclusion-family edge renders a likeness of a target at a carrier's head, or a frozen image of a
-target in its body, its own sigil rather than a mirror of `kahea`. `aka` weaves in English as
-`snapshot` (#/mirror-vocabulary).
+transclusion-family edge PINS a target, its own sigil rather than a mirror of `kahea`; rendering
+follows what the pin names — a citation for a reference meme, a frozen image for a content meme.
+`aka` weaves in English as `pin` (#/mirror-vocabulary).
 
 //Loulou// — to tie, bind, fasten; to link together. A relation edge names what kind of
 connection holds without pulling either end toward the other.
@@ -266,7 +266,7 @@ The SharktoothSigil grammar draws vocabulary from five distinct language familie
   cast; the declaration precedes the instance.
 * //meme// — coined 1976 by Richard Dawkins in //The Selfish Gene// from Greek //mimeme// (that which gets imitated), shortened to rhyme with "gene". Edward Wilson and Wes Unruh extended the operational framework in //The Art of Memetics// (2009), treating memes as propagating agents with measurable virality and selection pressure from host minds and transmission media. The Lares system uses the word at full weight: a unit of cultural information that replicates across minds and networks. Each tiddler that carries the memetic-wikitext type header //acts as// a meme — a replicable cultural unit in a content-addressed store, subject to the same fitness landscape described by Wilson and Unruh.
 
-''English (computing + TW5 pragmas)'' — the tongue carries two kinds of English form, both drawing on the vocabulary that TW5 authors and general programmers already know. Mirrors point at a Hawaiian canonical and carry `lar-mirror-of` (#/mirror-vocabulary): `\procedure`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\const`, `\let`, `\var`, `\link`, `\shadow`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. Native forms carry no Hawaiian headword and no `lar-mirror-of` field: `\widget`, `\function`, `\type`, `\typos`. Both kinds lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
+''English (computing + TW5 pragmas)'' — the tongue carries two kinds of English form, both drawing on the vocabulary that TW5 authors and general programmers already know. Mirrors point at a Hawaiian canonical and carry `lar-mirror-of` (#/mirror-vocabulary): `\procedure`, `\define`, `\if`, `\elif`, `\else`, `\for`, `\task`, `\const`, `\let`, `\var`, `\link`, `\pin`, `\transclude`, `\import`, `\tiddler`, `\query`, `\branch`, `\sync`, `\race`, `\rush`, `\guard`, `\constraint`, `\suspends`. Native forms carry no Hawaiian headword and no `lar-mirror-of` field: `\widget`, `\function`, `\type`, `\typos`. Both kinds lower the entry barrier for operators who author in English and let TW5-native macro patterns migrate naturally into the sigil grammar.
 
 ''Verse / Unreal Engine'' — the concurrency cluster (//lele//, //hui//, //holo//, //puka//, //hoolele//) and their English aliases (`\branch`, `\sync`, `\race`, `\rush`, `\spawn`) map directly to Verse's five async primitives: structured fire-and-continue (branch), await-all join (sync), cancelling race (race), selecting race (rush), and unstructured escape hatch (spawn). The execution model forms a ''task tree'' — cancellation cascades downward; `spawn` / `\spawn` is the only way to exit the tree. This alignment makes Lares concurrency legible to Verse developers and positions the grammar for cross-VM execution on Unreal Engine. See `verse-task-tree` for the canonical topology spec.
 
@@ -314,6 +314,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xxg0ZUZJKyHiAgp0doDEHLcROHKFhYzX6c8lSqE8uTM
+<<^ code="&#x0003;">>ni:///sha-256;zJYk_2P1HEhzi1NXfYJGVw2wT6Y2RYoc-eI63I7Mjsc
 
 <<^ code="&#x0004;" -> to="?">>

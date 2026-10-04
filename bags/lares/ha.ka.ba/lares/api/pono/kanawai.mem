@@ -1,0 +1,135 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kanawai">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/kanawai.mem"
+mana      = 17
+manao     = 17
+manaoio   = 16
+namespace = "&#x2299;"
+role      = "transclusion-family edge sugar — the BINDING pin; pairs with aka, the informative pin; pins a lar: target and declares the carrier's own binding law; shorthand for pranala family:transclusion"
+tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kanawai"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kanawai"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/kanawai"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Kanawai
+
+//kānāwai// — Hawaiian: law, rule, edict; the body of binding custom a people holds itself to.
+
+''The binding pin.'' `kanawai` and `aka` (`lar:///ha.ka.ba/lares/api/pono/aka`) sugar the SAME
+`pranala family=transclusion`, split the same way aka's own ontology splits (PROPAGATION, against
+`kahea`'s push-forward), and further split from EACH OTHER on one further axis — FORCE. `aka` pins
+informatively: a citation, a cross-reference, a likeness the carrier names without binding itself to
+it. `kanawai` pins BINDINGLY: a carrier declaring `<<~ kanawai "URI">>` declares the law it holds
+itself to, not merely a work it cites.
+
+''The paradigm case.'' A carrier's own normative verbs — `MUST`, `SHOULD`, `MAY` — bind under the
+vocabulary `lar:///ha.ka.ba/lares/ref/RFC-2119` fixes. Declaring `<<~ kanawai
+"lar:///ha.ka.ba/lares/ref/RFC-2119">>` at a carrier's head states that binding directly: this carrier
+holds itself to RFC 2119's modal force, not merely citing the document. That declaration renders as a
+citation, the same way an `aka` pin to a reference target would — the FORCE differs, not the shape on
+the page.
+
+''Both pin; both render by the target.'' `kanawai` carries the same mechanics `aka` carries: pin a
+`lar:` target, render by the target's own kind — a citation for a reference meme, a frozen image for a
+content meme. A `kanawai` pinning a content meme embeds that content as a frozen image too, binding
+the carrier to it exactly as the citation case binds the carrier to a cited work's force.
+
+''English weave name: `law`.'' `kanawai` weaves in English as `law`. ''The kramdown shore maps `kanawai`
+to `normative` and `aka` to `informative`'' — the two reference classes an RFC toolchain already
+distinguishes — but the house itself never says "normative": `kanawai` carries the house's own word
+for what a normative reference means, binding rather than informing.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Law (Kānāwai)
+
+A kanawai MUST bind a source socket and a target URI.
+A kanawai MUST carry `family:transclusion`.
+A kanawai MUST leave the target unchanged.
+A kanawai MUST stay inert, carrying no execution pulse.
+A kanawai SHOULD carry `confidence` when the observation is uncertain.
+A kanawai MUST stay acyclic — directly and transitively.
+A kanawai declaration MUST read as the carrier binding itself to the target; a citation that carries
+no such binding reads as `aka` instead.
+
+<<~/ahu>>
+
+<<~ ahu #/syntax>>
+
+!! Syntax
+
+```text
+<<~ kanawai URI>>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+```
+
+`?` source resolves to the nearest enclosing socket.
+Fragment `#slot-name` addresses a named ahu child directly.
+
+Regex (canonical):
+```
+/<<~\s*kanawai\s+(\S+)\s*>>/
+```
+Groups: `[full, target-uri]`
+
+Full pranala expansion:
+```text
+<<~ pranala from="?" -> to="URI" family="transclusion" lifecycle="instance" traversal="source-to-target" propagation="none" role="binding">>
+```
+
+<<~/ahu>>
+
+<<~ ahu #/schema>>
+
+!! Schema (machine-readable)
+
+Canonical TOML form, mirroring `aka`'s own schema with the `role` fixed to `binding`.
+
+```toml
+sigil          = "kanawai"
+kind           = "edge-sugar"
+layer          = "both"
+default-family = "transclusion"
+render-mode    = null
+alias          = ["law"]
+
+pattern = '<<~\s*kanawai\s+(\S+)\s*>>'
+
+[captures]
+to = 1
+
+[family-contract]
+role-recommended   = true
+confidence-bounded = true
+```
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/aka">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loulou">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;5nUHoez4faPm4CLPWa9nzF-6FPtI8sfuuA5qwsbKr-o
+
+<<^ code="&#x0004;" -> to="?">>

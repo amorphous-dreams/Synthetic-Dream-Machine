@@ -17,7 +17,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kahea"
 ```
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language">>
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
 
 
 
@@ -36,15 +36,14 @@ Sugar for `<<~ pranala from=? -> to=URI family=transclusion propagation=push-for
 name, not a mirror of any other sigil. `import` rides beside it as a read-only mirror
 (`lar-mirror-of: kahea`).
 
-''One family, two axes.'' `kahea` and `aka` (`lar:///ha.ka.ba/lares/api/pono/aka`) sugar the SAME
-`pranala family=transclusion` — one edge family, split on PROPAGATION (`kahea` push-forward · `aka`
-none/pinned) crossed with SCOPE (a head-position carrier-scope declaration · a body embed), and each
-links the other directly. `kahea` holds the push-forward pole of propagation: it weaves ''live'' — as
-an include, re-resolving the target on every render pass, kept fresh by subscription — at either
-scope. `aka` holds the pinned pole: it weaves ''frozen'' — a likeness declaration at a carrier's head,
-a frozen-image embed in its body. Neither mirrors the other: `kahea` carries
+''One family, one axis.'' `kahea` and `aka` (`lar:///ha.ka.ba/lares/api/pono/aka`) sugar the SAME
+`pranala family=transclusion` — one edge family, split on PROPAGATION alone, and each links the
+other directly. `kahea` holds the push-forward pole: it weaves ''live'' — as an include,
+re-resolving the target on every render pass, kept fresh by subscription. `aka` holds the pinned
+pole: it PINS the target, and rendering follows the target's own kind — a citation for a reference
+meme, a frozen image for a content meme. Neither mirrors the other: `kahea` carries
 `propagation:push-forward` against `aka`'s `propagation:none`, and each names its own sigil, its own
-family-contract row, its own English weave name.
+family-contract row, its own English weave name (`transclude` for `kahea`, `pin` for `aka`).
 
 <<~/ahu>>
 
@@ -165,6 +164,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JSTD1cQgRDDFzGrGgShO0aVVJW2hCIMcCTM6S5-OxWY
+<<^ code="&#x0003;">>ni:///sha-256;NzCUsQiFBKFbh3YgDj5fFLAeBmIxgzKQRVasGKREdro
 
 <<^ code="&#x0004;" -> to="?">>
