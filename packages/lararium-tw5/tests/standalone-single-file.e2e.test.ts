@@ -40,9 +40,9 @@ const SAMPLE_TITLE = "test/standalone-sample";
 // A minimal framed carrier — same shape the other e2e suites mint, enough to tell "parsed through
 // the memetic-wikitext parser" apart from "escaped as plain text".
 const SAMPLE_TEXT =
-  `<<^ code="&#x0001;" from=? -> to=lar:///t/standalone>>\n\`\`\`toml meta\nuri-path = "t/standalone"\n\`\`\`\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="lar:///t/standalone">>\n\`\`\`toml meta\nuri-path = "t/standalone"\n\`\`\`\n\n` +
   `<<^ code="&#x0002;">>\n\n<<~ ahu #/body>>\n\n! standalone sample\n\n<<~/ahu>>\n\n` +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 /** Lay a minimal edition with one sample tiddler, optionally carrying the plugin, and build its
  *  single-file HTML via `--rendertiddler "$:/core/save/all"`. */

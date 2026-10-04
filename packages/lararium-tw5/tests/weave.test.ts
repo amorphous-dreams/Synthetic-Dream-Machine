@@ -53,7 +53,7 @@ a teaching frame stays byte-identical, ''unrendered''
 <<~/ahu>>
 
 <<^ code="&#x0003;">>ni:///sha-256;AAAA_probe_check
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
 
 describe("the submission projection", () => {
@@ -301,7 +301,7 @@ uri-path = "ha.ka.ba/lares/api/pono/probe2"
 ! A heading
 
 <<^ code="&#x0003;">>ni:///sha-256;PROBE2
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
 
   test("CommonMark stays the default; today's output is unchanged", () => {
@@ -406,7 +406,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
 ! A draft
 
 <<^ code="&#x0003;">>ni:///sha-256;PROBE3
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"] });
     expect(p.standalone).toBe(true);
@@ -510,7 +510,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 ! Target content
 
 <<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n', PROFILES.CommonMark, resolve);
@@ -550,7 +550,7 @@ This is the slot the fragment names.
 <<~/ahu>>
 
 <<^ code="&#x0003;">>ni:///sha-256;WHOLE_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown(
@@ -582,7 +582,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 <<~/ahu>>
 
 <<^ code="&#x0003;">>ni:///sha-256;WHOLE_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown('<<~ aka "lar:///ha.ka.ba/lares/api/pono/target">>\n', PROFILES.CommonMark, resolve);
@@ -601,7 +601,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 ! No slots here
 
 <<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown(
@@ -661,7 +661,7 @@ Real slot content, outside any fence.
 <<~/ahu>>
 
 <<^ code="&#x0003;">>ni:///sha-256;FENCED_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/fenced-target" ? target : null);
     const t = transposeMarkdown(
@@ -690,7 +690,7 @@ Real slot content, no fence anywhere.
 <<~/ahu>>
 
 <<^ code="&#x0003;">>ni:///sha-256;UNFENCED_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/unfenced-target" ? target : null);
     const t = transposeMarkdown(
@@ -722,7 +722,7 @@ ${where === "body" ? akaLine : ""}
 <<~/ahu>>
 
 <<^ code="&#x0003;">>
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
 
   // A CONTENT slot: no `reference-kind` at all — the shape every pre-LOOP-7 target still carries
@@ -737,7 +737,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 ! Target content
 
 <<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
 
   // A REFERENCE meme, shaped exactly as Canon-Scribe's sibling work ships it (bags/lares/ha.ka.ba/
@@ -762,7 +762,7 @@ title      = "The GNU Name System"
 ! GNU Name System reference meme
 
 <<^ code="&#x0003;">>ni:///sha-256;REF9498_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
 
   // The BCP 14 key-words source — `reference-kind = "rfc"` plus `seriesinfo` naming RFC 2119/BCP 14.
@@ -786,7 +786,7 @@ title      = "Key words for use in RFCs to Indicate Requirement Levels"
 ! RFC 2119 — Key Words
 
 <<^ code="&#x0003;">>ni:///sha-256;BCP14_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
 
   const resolve = (uri: string): string | null => {
@@ -904,7 +904,7 @@ title      = "DOM Standard"
 ! DOM reference meme
 
 <<^ code="&#x0003;">>ni:///sha-256;DOM_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolveDom = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/ref/w3c-dom" ? nonStandard : null);
     const src = carrier('<<~ aka "lar:///ha.ka.ba/lares/ref/w3c-dom">>', "head");
@@ -942,7 +942,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/draft-probe"
 <<~/ahu>>
 
 <<^ code="&#x0003;">>ni:///sha-256;PROBE3
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const p = projectSubmission(src, { profile: PROFILES["kramdown-rfc2629"], resolve });
     expect(p.markdown).toContain("normative:\n  RFC2119:\n  RFC8174:");
@@ -1003,7 +1003,7 @@ describe("fence-open reads through fence-mask's own rule — one rule, one place
       "! Body",
       "",
       '<<^ code="&#x0003;">>',
-      '<<^ code="&#x0004;" -> to=?>>',
+      '<<^ code="&#x0004;" -> to="?">>',
       "",
     ].join("\n");
     const t = transposeMarkdown(src);
@@ -1047,7 +1047,7 @@ describe("the hana fence: a foreign-grammar span weaves as ONE fenced block, nev
 
 describe("the tongue axis — sigil HEAD names weave through the tongue's primary mirror", () => {
   const CARRIER3 = (body: string) =>
-    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tongue-probe">>\n\`\`\`toml meta\nuri-path = "ha.ka.ba/lares/api/pono/tongue-probe"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n${body}\n\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to=?>>\n`;
+    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tongue-probe">>\n\`\`\`toml meta\nuri-path = "ha.ka.ba/lares/api/pono/tongue-probe"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n${body}\n\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n`;
 
   test("CONTROL: no --tongue (undefined) leaves every head name canonical, byte-identical to before", () => {
     const src = CARRIER3(
@@ -1105,7 +1105,7 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
 <<~ kahea lar:///ha.ka.ba/lares/api/pono/lar-uri>>
 
 <<^ code="&#x0003;">>ni:///sha-256;TARGET_CHECK
-<<^ code="&#x0004;" -> to=?>>
+<<^ code="&#x0004;" -> to="?">>
 `;
     const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/target" ? target : null);
     const t = transposeMarkdown(

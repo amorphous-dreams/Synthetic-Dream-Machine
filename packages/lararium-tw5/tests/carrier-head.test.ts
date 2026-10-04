@@ -20,20 +20,15 @@ import {
 
 const URI = "lar:///ha.ka.ba/lares/api/pono/example";
 
-describe("both spellings of the bearing reach ONE reading", () => {
-  test("★ quoted and bare name the same address ★", () => {
-    const quoted = matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to="${URI}">>`);
-    const bare = matchCarrierHead(`<<^ code="&#x0001;" from=? -> to=${URI}>>`);
-    expect(quoted?.uri).toBe(URI);
-    expect(bare?.uri).toBe(URI);
-    expect(quoted?.quoted).toBe(true);
-    expect(bare?.quoted).toBe(false);
+describe("ONE spelling of the bearing — quoted, named — and no other", () => {
+  test("★ the canonical head names its address ★", () => {
+    expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to="${URI}">>`)?.uri).toBe(URI);
   });
 
-  test("★ the POSITIONAL far side names the same address ★", () => {
-    // The spelling the framing ends carried before they took names. `normalize` converts it, so a
-    // reader that required `to=` would refuse exactly the carriers normalization exists to reach.
-    expect(matchCarrierHead(`<<^ code="&#x0001;" ? -> ${URI}>>`)?.uri).toBe(URI);
+  test("★ the retired bare and positional spellings name nothing ★", () => {
+    expect(matchCarrierHead(`<<^ code="&#x0001;" from=? -> to=${URI}>>`)).toBeNull();
+    expect(matchCarrierHead(`<<^ code="&#x0001;" ? -> ${URI}>>`)).toBeNull();
+    expect(matchCarrierHead(`<<^ॐ&#x0001; from="?" -> to="${URI}">>`)).toBeNull();
   });
 
   test("the shifted pair carries the same law", () => {
@@ -72,9 +67,9 @@ describe("TWO questions, held apart", () => {
     expect(matchCarrierMark(`<<^ code="&#x0004;" -> to="?">>`, "head")).toBeNull();
   });
 
-  test("the release pattern accepts both spellings", () => {
+  test("the release pattern reads the quoted close alone", () => {
     expect(carrierReleasePattern().test(`<<^ code="&#x0004;" -> to="?">>`)).toBe(true);
-    expect(carrierReleasePattern().test(`<<^ code="&#x0004;" -> to=?>>`)).toBe(true);
+    expect(carrierReleasePattern().test(`<<^ code="&#x0004;" -> to=?>>`)).toBe(false);
     expect(carrierReleasePattern().test(`<<^ code="&#x0004;" -> to="lar:///x">>`)).toBe(false);
   });
 });
@@ -288,10 +283,6 @@ describe("a `>` rides as content", () => {
     expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to="lar:///a>b">>`)?.uri).toBe("lar:///a>b");
   });
 
-  test("★ and bare ★", () => {
-    expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to=lar:///a>b>>`)?.uri).toBe("lar:///a>b");
-  });
-
   test("but `>>` still closes the sigil", () => {
     expect(matchCarrierHead(`<<^ code="&#x0001;" from="?" -> to="${URI}">> trailing`)?.uri).toBe(URI);
   });
@@ -435,16 +426,6 @@ describe("a mark added to FRAME_MARKS reaches every scan — the probe walk", ()
   test("★ weave reads the check off a probed ETX ★", async () => {
     await withProbes(({ markdown }) => {
       expect(markdown.transposeMarkdown(probed).check).toBe("ni:///sha-256;probe");
-    });
-  });
-
-  test("★ meme-normalize names the ends of a probed opener and closer ★", async () => {
-    await withProbes(({ normalize }) => {
-      const positional =
-        `<<^ code="${PROBE_SOH}" ? -> ${URI}>>\n\n<<^ code="${PROBE_EOT}" -> ?>>\n`;
-      const out = normalize.normalizeMemeSource(positional).text;
-      expect(out).toContain('from="?"');
-      expect(out).toContain('to="?"');
     });
   });
 

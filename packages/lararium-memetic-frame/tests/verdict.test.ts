@@ -70,6 +70,30 @@ describe("★ verdict(text) ★", () => {
     expect(verdict(quoted).kind).not.toBe("torn");
   });
 
+  describe("★ a retired frame spelling reads torn, never repaired ★", () => {
+    const HEAD = `<<^ code="&#x0001;" from="?" -> to="${URI}">>`;
+    const EOT = `<<^ code="&#x0004;" -> to="?">>`;
+    const retired: Record<string, string> = {
+      "a bare `?` on the head": carrier.replace(HEAD, `<<^ code="&#x0001;" from=? -> to="${URI}">>`),
+      "an unquoted target": carrier.replace(HEAD, `<<^ code="&#x0001;" from="?" -> to=${URI}>>`),
+      "a positional head": carrier.replace(HEAD, `<<^ code="&#x0001;" ? -> ${URI}>>`),
+      "glyphs before the code": carrier.replace(HEAD, `<<^ॐ&#x0001; from="?" -> to="${URI}">>`),
+      "a bare `?` on the release": carrier.replace(EOT, `<<^ code="&#x0004;" -> to=?>>`),
+      "a positional release": carrier.replace(EOT, `<<^ code="&#x0004;" -> ?>>`),
+      "an older declaration": carrier.replace(/^<<!DOCTYPE[^\n]*/, "<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///x>>"),
+    };
+    for (const [name, text] of Object.entries(retired)) {
+      test(name, () => {
+        expect(text).not.toBe(carrier);
+        const v = verdict(text);
+        expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["retired-spelling"]);
+      });
+    }
+    test("CONTROL: the canonical head and release carry no tear", () => {
+      expect(verdict(carrier).kind).toBe("match");
+    });
+  });
+
   test("NO frame at all reads bare — not a meme", () => {
     expect(verdict("bare data found on the internet\n\n```toml meta\nk = 1\n```\n")).toEqual({ kind: "bare" });
   });

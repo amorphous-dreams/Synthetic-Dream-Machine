@@ -14,7 +14,7 @@ import { normalizeMemeSource } from "../src/meme-normalize.js";
 import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 
 const HEAD = (body: string) =>
-  `${DECLARATION}\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
+  `${DECLARATION}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x">>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   "```\n\n<<^ code=\"&#x0002;\">>\n\n" + body + "\n\n" +

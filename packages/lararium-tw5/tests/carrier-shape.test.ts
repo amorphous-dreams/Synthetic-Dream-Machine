@@ -33,7 +33,7 @@ const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares
  *  name it (the test below asks the corpus rather than carrying a stale count).
  *  A fixture in the bare form is legal grammar and measures a shape no file has. */
 const head = (uri: string, ns = "") =>
-  `<<^ code="&#x0001;"${ns ? ` namespace="${ns}"` : ""} from=? -> to=${uri}>>`;
+  `<<^ code="&#x0001;"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${uri}">>`;
 
 describe("carrier-shape — every source reads as a carrier, with its marks and faults", () => {
   /**
@@ -44,12 +44,6 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
     const shape = readCarrierShape(`${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n`);
     expect(shape.marks.head).toBe(true);
     expect(shape.marks.headUri).toBe("lar:///ha.ka.ba/x/y");
-  });
-
-  /** The bare form stays legal, so the reader reads its far-side address positionally. */
-  test("an unnamed far side reads the same address", () => {
-    const bare = `${DECL}\n\n<<^ code="&#x0001;" ? -> lar:///ha.ka.ba/x/y>>\n`;
-    expect(readCarrierShape(bare).marks.headUri).toBe("lar:///ha.ka.ba/x/y");
   });
 
   /**
@@ -94,7 +88,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
 
   test("a bag-declaring carrier carries the complete frame that seals its declaration and prose", () => {
     const d = readCarrierShape(
-      `${DECL}\n\n${head("lar:///ha.ka.ba/bags/lares")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nbag = "lares"\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`,
+      `${DECL}\n\n${head("lar:///ha.ka.ba/bags/lares")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nbag = "lares"\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`,
     );
     expect(d.marks).toMatchObject({ stx: true, etx: true, eot: true });
     expect(d.faults).toEqual([]);
@@ -103,7 +97,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
   /** THE ADVISORIES THE CARRIER CHECK NAMES, the gradient names too — one fault per authored drift. */
   describe("★ the gradient names what the carrier check refuses ★", () => {
     const framed = (meta: string, tail = "") =>
-      `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\n${meta}\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>${tail}\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+      `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\n${meta}\n\`\`\`\n\nprose\n\n<<^ code="&#x0003;">>${tail}\n\n<<^ code="&#x0004;" -> to="?">>\n`;
     const faultsOf = (text: string) => readCarrierShape(text).faults.join("\n");
 
     test("CONTROL: a carrier whose meta agrees with its head carries none of these faults", () => {
@@ -184,7 +178,7 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
    * than blessed by the first frame's `ok`.
    */
   test("a second text frame surfaces as a fault rather than riding beneath the first frame's verdict", () => {
-    const two = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nfirst body\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0002;">>\n\nsmuggled body\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+    const two = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nfirst body\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0002;">>\n\nsmuggled body\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
     const shape = readCarrierShape(two);
     expect(shape.faults.join(" ")).toContain("2 text frames");
   });
@@ -193,9 +187,9 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
    *  would let two byte-different files share one verdict, the class the span law exists to close. */
   test("a shifted check does not verify", () => {
     const base = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nbody\n\n<<^ code="&#x0003;">>`;
-    const good = readCarrierShape(`${base}ni:///sha-256;AAAA\n\n<<^ code="&#x0004;" -> to=?>>\n`);
+    const good = readCarrierShape(`${base}ni:///sha-256;AAAA\n\n<<^ code="&#x0004;" -> to="?">>\n`);
     expect(good.marks.check).toBe("mismatch");   // adjacent but wrong digest — SEEN, judged
-    const shifted = readCarrierShape(`${base} ni:///sha-256;AAAA\n\n<<^ code="&#x0004;" -> to=?>>\n`);
+    const shifted = readCarrierShape(`${base} ni:///sha-256;AAAA\n\n<<^ code="&#x0004;" -> to="?">>\n`);
     expect(shifted.marks.check).toBe("unchecked"); // one space off — not a check at all
   });
 
@@ -352,7 +346,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    * above, and so would one that answered `true` unconditionally.
    */
   test("CONTROL — a carrier spelled in undeclared codes reads no marks at all", () => {
-    const real = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nbody\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+    const real = `${DECL}\n\n${head("lar:///ha.ka.ba/x/y")}\n\`\`\`toml meta\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\nbody\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
     expect(familiesWritten(real)).toEqual({ stx: true, etx: true, eot: true });
     expect(readCarrierShape(real).marks).toMatchObject({ stx: true, etx: true, eot: true });
 
@@ -363,7 +357,7 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
 
   /** CONTROL — a frame quoted in a lesson writes no frame, on BOTH sides of the comparison. */
   test("CONTROL — a fenced frame counts for neither reading", () => {
-    const lesson = "```\n<<^ code=\"&#x0002;\">>\n<<^ code=\"&#x0003;\">>\n<<^ code=\"&#x0004;\" -> to=?>>\n```\n";
+    const lesson = "```\n<<^ code=\"&#x0002;\">>\n<<^ code=\"&#x0003;\">>\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n```\n";
     expect(familiesWritten(lesson)).toEqual({ stx: false, etx: false, eot: false });
     expect(readCarrierShape(lesson).marks).toMatchObject({ stx: false, etx: false, eot: false });
   });

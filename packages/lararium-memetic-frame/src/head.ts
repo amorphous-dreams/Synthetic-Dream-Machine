@@ -18,10 +18,12 @@
  * answers the first question and not the second, and collapsing them would let a torn frame report
  * an address it never carried.
  *
- * ── THE QUOTE IS NOT PART OF THE VALUE ───────────────────────────────────────────────────────────
- * TiddlyWiki types `to=lar:///x` and `to="lar:///x"` identically; the canonical corpus writes the
- * quoted form. Every capture here strips the pair rather than carrying it into the value, and
- * `quoted` reports which spelling the source used for callers that canonicalize.
+ * ── ONE SPELLING, QUOTED ─────────────────────────────────────────────────────────────────────────
+ * The framing ends are written one way: `<<^ code="&#x0001;" from="?" -> to="lar:///x">>` and
+ * `<<^ code="&#x0004;" -> to="?">>`. TiddlyWiki would type an unquoted or positional end the same,
+ * and that is exactly why reading them stopped: a tolerance read silently becomes the canon. A retired
+ * spelling reads as no mark here, and the frame verdict names it as a tear. Every capture strips the
+ * quote pair rather than carrying it into the value.
  *
  * ── WHAT STANDS BETWEEN THE ENDS ─────────────────────────────────────────────────────────────────
  * The ARROW rides as an unnamed positional and carries the RELATION. Quoting reaches only the two
@@ -57,25 +59,22 @@ const EOT_CODES = `(?:${frameHex("EOT")})`;
 /** A control sigil never crosses a line, and `>>` closes it only when a second bracket follows. */
 const INNER = "(?:[^>\\n]|>(?!>))*";
 /**
- * THE PREFIX STOPS AT `&`. A namespace written as entities and placed BEFORE the code would otherwise
- * be read AS the control code — the quietest way this frame has broken. The canonical head writes
- * `code=` first, so refusing an earlier entity costs a canonical carrier nothing.
+ * THE CODE IS NAMED, AND NAMED FIRST: `<<^ code="&#x0001;"`. A head that carried its code as a bare
+ * entity — glyphs in front of it standing for a namespace — is a retired spelling, read as no mark at
+ * all here and named by the frame verdict as a tear. Nothing repairs it in silence.
  */
-const PREFIX = "[^&\\n]*";
-/** A bearing end: `?` or `"?"`, the quote outside the value. */
-const UNK = '"?\\?"?';
+const CODE = (codes: string): string => `<<\\^\\s+code="&#x${codes};"`;
+/** A bearing end: `"?"`, quoted. A bare `?` is a retired spelling. */
+const UNK = '"\\?"';
 /**
- * A bearing target: bare or quoted, the pair stripped from the capture.
+ * A bearing target: `to="…"`, named and quoted, the pair stripped from the capture. The positional
+ * (`? -> lar:///x`) and unquoted (`to=lar:///x`) spellings are retired.
  *
- * THE NAME IS OPTIONAL IN THE GRAMMAR. `? -> lar:///x` is the positional spelling the framing ends
- * carried before they took names, and `normalize` converts it — so a reader that required `to=` would
- * refuse the very carriers normalization exists to reach.
- *
- * AND A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS. TiddlyWiki's `reUnquotedAttribute` admits
+ * A `>` CLOSES A CALL ONLY WHEN A SECOND ONE FOLLOWS. TiddlyWiki's `reUnquotedAttribute` admits
  * `>(?!>)` inside a value, so an address carrying a bracket rides as content. A capture that excluded
  * `>` outright read NULL where the parser read the whole address — measured against the parse tree.
  */
-const TARGET = '(?:to=)?"?((?:[^"\\s>]|>(?!>))+)"?';
+const TARGET = 'to="((?:[^"\\s>]|>(?!>))+)"';
 
 export interface CarrierMark {
   /** Offset of `<<^`, relative to the text handed in. */
@@ -93,8 +92,6 @@ export interface CarrierHead extends CarrierMark {
   readonly uri: string;
   /** The namespace glyphs, whole — a value like `ॐ ँ` carries its space. */
   readonly namespace: string | null;
-  /** Whether the source quoted its bearing ends. Canonical writes them quoted. */
-  readonly quoted: boolean;
 }
 
 /**
@@ -102,22 +99,22 @@ export interface CarrierHead extends CarrierMark {
  * and a reader that inherited a stale index skips the very first mark in its own text.
  */
 export const carrierHeadPattern = (flags = ""): RegExp =>
-  new RegExp(`<<\\^${PREFIX}&#x${SOH_CODES};${INNER}${UNK}\\s*->\\s*${TARGET}\\s*>>`, flags);
+  new RegExp(`${CODE(SOH_CODES)}${INNER}\\bfrom=${UNK}\\s*->\\s*${TARGET}\\s*>>`, flags);
 
 /** The head line, anchored and taking its trailing newline — what a stripper needs. */
 export const carrierHeadLinePattern = (flags = ""): RegExp =>
-  new RegExp(`^<<\\^${PREFIX}&#x${SOH_CODES};${INNER}>>\\n?`, flags);
+  new RegExp(`^${CODE(SOH_CODES)}${INNER}>>\\n?`, flags);
 
 /** The head or release MARK — bearing not required. */
 export const carrierMarkPattern = (which: "head" | "release", flags = ""): RegExp =>
-  new RegExp(`<<\\^${PREFIX}&#x${which === "head" ? SOH_CODES : EOT_CODES};${INNER}>>`, flags);
+  new RegExp(`${CODE(which === "head" ? SOH_CODES : EOT_CODES)}${INNER}>>`, flags);
 
 /** The release, which resolves toward an address it cannot know. */
 export const carrierReleasePattern = (flags = ""): RegExp =>
-  new RegExp(`<<\\^${PREFIX}&#x${EOT_CODES};${INNER}->\\s*(?:to=)?${UNK}\\s*>>`, flags);
+  new RegExp(`${CODE(EOT_CODES)}${INNER}->\\s*to=${UNK}\\s*>>`, flags);
 
 const CODE_RE = new RegExp(`&#x(${frameHex("SOH")}|${frameHex("EOT")});`);
-const NS_RE = /\bnamespace="([^"]*)"|\bnamespace=([^\s>"]+)/;
+const NS_RE = /\bnamespace="([^"]*)"/;
 
 /**
  * What does this carrier's head NAME? Null where no head carries a bearing.
@@ -143,8 +140,7 @@ export function matchCarrierHead(text: string, from = 0): CarrierHead | null {
     code: CODE_RE.exec(m[0])?.[1] ?? "",
     text: m[0],
     uri: m[1] ?? "",
-    namespace: ns ? (ns[1] ?? ns[2] ?? null) : null,
-    quoted: /from="\?"/.test(m[0]),
+    namespace: ns ? ns[1]! : null,
   };
 }
 

@@ -27,7 +27,7 @@ const URI = "lar:///ha.ka.ba/lares/api/mu";
 const FULL_CARRIER = [
   DECLARATION,
   ``,
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>`,
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>`,
   ``,
   `<<^ code="&#x0002;">>`,
   ``,
@@ -45,7 +45,7 @@ const FULL_CARRIER = [
   `<<~/ahu>>`,
   ``,
   `<<^ code="&#x0003;">>`,
-  `<<^ code="&#x0004;" -> to=?>>`,
+  `<<^ code="&#x0004;" -> to="?">>`,
 ].join("\n");
 
 // ---------------------------------------------------------------------------
@@ -107,7 +107,7 @@ describe("MemeStreamParser — incremental streaming", () => {
     const parser = new MemeStreamParser();
     // Push the opening portion — no carrier-close yet
     const partial = [
-      `<<^ code="&#x0001;" from=? -> to=${URI}>>`,
+      `<<^ code="&#x0001;" from="?" -> to="${URI}">>`,
       `<<^ code="&#x0002;">>`,
       `<<~ ahu #body>>`,
       `body text`,
@@ -117,7 +117,7 @@ describe("MemeStreamParser — incremental streaming", () => {
     expect(mid.some((e) => e.kind === "carrier-close")).toBe(false);
 
     // Push the closing portion
-    const tail = "\n<<^ code=\"&#x0003;\">>\n<<^ code=\"&#x0004;\" -> ?>>";
+    const tail = "\n<<^ code=\"&#x0003;\">>\n<<^ code=\"&#x0004;\" -> to=\"?\">>";
     const final = parser.push(tail);
     expect(final.some((e) => e.kind === "carrier-close")).toBe(true);
   });
@@ -131,7 +131,7 @@ describe("MemeStreamParser — minimal carrier (no ahu body)", () => {
   test("emits open and close for a data carrier with no ahu body", () => {
     const URI2   = "lar:///ha.ka.ba/lares/api/pono/invariant";
     const minimal = [
-      `<<^ code="&#x0001;" from=? -> to=${URI2}>>`,
+      `<<^ code="&#x0001;" from="?" -> to="${URI2}">>`,
       `<<^ code="&#x0002;">>`,
       `<<^ code="&#x0003;">>`,
     ].join("\n");
@@ -174,7 +174,7 @@ describe("MemeStreamParser — EOT reads the control head only, never the speaki
 
   test("a canonical control-head EOT (<<^ code=\"&#x0004;\">>) still closes the carrier", () => {
     const uri    = "lar:///ha.ka.ba/lares/api/pono/invariant";
-    const text   = `${openBody(uri)}\n<<^ code="&#x0004;" -> "?">>`;
+    const text   = `${openBody(uri)}\n<<^ code="&#x0004;" -> to="?">>`;
     const events = new MemeStreamParser().push(text);
     expect(events.some((e) => e.kind === "carrier-open")).toBe(true);
     expect(events.some((e) => e.kind === "carrier-close")).toBe(true);

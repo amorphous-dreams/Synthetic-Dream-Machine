@@ -44,6 +44,5 @@ for (const f of files) {
     uri: head?.uri ?? null,
     namespace: head?.namespace ?? null,
     code: head?.code ?? null,
-    quoted: head?.quoted ?? null,
   }) + "\n");
 }

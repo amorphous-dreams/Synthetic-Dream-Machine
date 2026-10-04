@@ -23,9 +23,9 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 const URI = "lar:///t/ford";
 const LARES = bagUri("lares");
 const meme = (slot: string): string =>
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t/ford"\n\`\`\`\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/ford"\n\`\`\`\n\n` +
   `<<^ code="&#x0002;">>\n\n<<~ ahu #${slot}>>\n\n! ${slot}\n\n<<~/ahu>>\n\n` +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 const ctx = (): VerbContext => ({
   daemon: {} as CompositeStore,

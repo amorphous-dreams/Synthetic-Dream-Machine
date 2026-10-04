@@ -19,10 +19,10 @@ import type { LaresMemeFace } from "../src/types/lares-globals.js";
 const URI = "lar:///t.witness.npc/inventory";
 /** The scenarist's witness meme, byte for byte (`tools/mesh-scenarios.sh run_meme` · `meme_text a`). */
 const witness = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t.witness.npc/inventory"\nbag = "backpack: rope, lantern"\n\`\`\`\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t.witness.npc/inventory"\nbag = "backpack: rope, lantern"\n\`\`\`\n\n` +
   `<<^ code="&#x0002;">>\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n\n`).join("") +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 /** The same carrier with its one slot torn: the opener stands, the closer never arrives. */
 const unclosed = witness(["a"]).replace("<<~/ahu>>\n", "");
 /** The same carrier with a closer no opener claims. */

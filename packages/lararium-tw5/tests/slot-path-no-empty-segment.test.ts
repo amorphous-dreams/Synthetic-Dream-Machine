@@ -11,9 +11,9 @@ const URI = "lar:///t/x";
 
 /** A framed meme with one parent slot holding one child slot, the two opened as given. */
 const nested = (parent: string, child: string): string =>
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
   `<<~ ahu ${parent}>>\n\nouter\n\n<<~ ahu ${child}>>\n\ninner\n\n<<~/ahu>>\n\n<<~/ahu>>\n\n` +
-  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 const fragments = (text: string): string[] =>
   memeticWikitextDeserializer(text, { title: URI }).map((r) => String(r.title).split("#")[1] ?? "").filter(Boolean);

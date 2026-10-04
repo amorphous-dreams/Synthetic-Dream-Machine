@@ -54,19 +54,13 @@ import {
 } from "./meme-ast/ahu-scan.js";
 
 // ── THE CODE SETS COME FROM THE DECLARATION; THE HEAD SCANS STAY THIS READER'S OWN (marks.ts) ───────
-// The STX/ETX/EOT division is the one span reader's (`readFrame`). What stays here reads the HEAD, and
-// its shapes differ for reasons this file's comments record: the SOH PREFIX stops at `&` so a namespace
-// written as entities is never read AS the code, and the bare form's class stops at a binding mark.
-// Only the entity alternation travels between them.
+// The STX/ETX/EOT division is the one span reader's (`readFrame`). What stays here reads the HEAD: the
+// SOH PREFIX stops at `&` so a namespace written as entities is never read AS the code. Only the entity
+// alternation travels between them.
 /** `<<^` then anything but an entity, then a SOH code — the prefix that stops at `&`. */
 export const SOH_PREFIX_RE = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
 /** The SOH variant a head names through its `code=` binding, captured. */
 const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
-/**
- * The BARE prefix form, namespace captured. ITS CLASS EXCLUDES THE BINDING MARKS, and that exclusion
- * is the whole guard: a namespace is glyphs, and a glyph is never a mark that binds.
- */
-const SOH_BARE_RE = new RegExp(`^<<\\^([^&:=\\n]*)&#x(${frameHex("SOH")})`);
 import { parseTaploFields } from "./toml-ast.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
@@ -128,26 +122,12 @@ export function memeticWikitextDeserializer(
       // every record of that carrier put 4,015 copies of one string in the corpus.
       carriage.push(...carriageRecord(String(tiddlers[0]!["title"]), "prologue", prologue));
     }
-    // Extract namespace prefix glyph(s) from SOH line (e.g. "ॐ ँ", "⊙").
-    // Stored only when non-empty; template emits it before the control char.
-    // The Kapu SOH variant (&#x0011; DC1) carries its own semantics — the
-    // code survives on the parent as `carrier-soh`, never normalized away.
-    // A NAMED PARAM WINS OVER THE BARE PREFIX, and the order matters more than it looks. The bare form
-    // takes everything between the head and the control entity as the namespace, which reads correctly
-    // only while nothing else stands there. Put one named param in front of the entity and an unfenced
-    // prefix scan returns `code=` as a namespace: no throw, no diagnostic, a wrong glyph carried into
-    // every render and every re-emission — the quietest way this frame has ever broken.
-    //
-    // SO THE BARE SCAN STOPS AT A BINDING MARK. Its class excludes them, and that exclusion is the
-    // whole guard: a namespace is glyphs, and a glyph is never a mark that binds. This reader breaks
-    // FIRST and SILENTLY under any change to the frame's spelling, so the class is the line to check
-    // whenever the frame's binding changes.
-    const nsParam = /^<<[~^][^>\n]*?\bnamespace=\s*"([^"]*)"/.exec(ev.fullText);
-    const nsBare  = SOH_BARE_RE.exec(ev.fullText);
-    // The heading variant rides its own capture: a `code=` param names it, else the bare entity does.
-    const sohCode = SOH_CODE_PARAM_RE.exec(ev.fullText)?.[1]
-      ?? nsBare?.[2];
-    const namespace = (nsParam?.[1] ?? nsBare?.[1] ?? "").trim();
+    // The head names its namespace and its code by NAMED params, the one spelling a head is read in;
+    // a head in a retired spelling (glyphs before the code) is the frame verdict's tear, never read
+    // here. The Kapu SOH variant (&#x0011; DC1) carries its own semantics — the code survives on the
+    // parent as `$carrier-soh`, never normalized away.
+    const namespace = (/^<<\^[^>\n]*?\bnamespace="([^"]*)"/.exec(ev.fullText)?.[1] ?? "").trim();
+    const sohCode = SOH_CODE_PARAM_RE.exec(ev.fullText)?.[1];
     if (namespace.length > 0 && tiddlers.length > 0) {
       for (const t of tiddlers) t["namespace"] = namespace;
     }

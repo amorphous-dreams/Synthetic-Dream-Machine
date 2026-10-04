@@ -11,15 +11,15 @@ import { normalizeMemeSource } from "../src/meme-normalize.js";
 import { CARRIER_DECLARATION as DECLARATION } from "@lararium/memetic-frame";
 
 const HEAD = (soh: string, ns: string) =>
-  `${DECLARATION}\n\n${soh}\n` +
+  `${DECLARATION}\n\n${soh}\n<<^ code=\"&#x0002;\">>\n\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   (ns === "" ? "" : `namespace = "${ns}"\n`) +
-  "```\n\n<<^ code=\"&#x0002;\">>\n\nbody\n\n<<^ code=\"&#x0003;\">>\n";
+  "```\n\nbody\n\n<<^ code=\"&#x0003;\">>\n";
 
 describe("normalizeMemeSource — SOH namespace embed", () => {
   test("homes the meta-declared namespace into a bare SOH (the oracle.md class)", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" ? -> lar:///x>>", "&#x2299;");
+    const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;");
     const { text, changed, notes } = normalizeMemeSource(src);
     expect(changed).toBe(true);
     expect(text).toContain("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>");
@@ -27,7 +27,7 @@ describe("normalizeMemeSource — SOH namespace embed", () => {
   });
 
   test("decodes a multi-glyph entity namespace (noosphere ॐ ँ)", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" ? -> lar:///x>>", "&#x0950; &#x0901;");
+    const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "&#x0950; &#x0901;");
     const { text } = normalizeMemeSource(src);
     expect(text).toContain("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" from=\"?\" -> to=\"lar:///x\">>");
   });
@@ -38,12 +38,12 @@ describe("normalizeMemeSource — SOH namespace embed", () => {
     expect(r1.changed).toBe(false);
     expect(r1.text).toBe(src);
     // double-apply on the bare form converges and stays put
-    const r2 = normalizeMemeSource(normalizeMemeSource(HEAD("<<^ code=\"&#x0001;\" ? -> lar:///x>>", "&#x2299;")).text);
+    const r2 = normalizeMemeSource(normalizeMemeSource(HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;")).text);
     expect(r2.changed).toBe(false);
   });
 
   test("re-homes a STALE SOH namespace to match meta", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" ? -> lar:///x>>", "&#x2299;");
+    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;");
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(true);
     expect(text).toContain("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>");
@@ -51,7 +51,7 @@ describe("normalizeMemeSource — SOH namespace embed", () => {
   });
 
   test("clears the SOH namespace when meta declares none", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"⊙\" ? -> lar:///x>>", "");
+    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>", "");
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(true);
     expect(text).toContain("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>");
@@ -64,15 +64,6 @@ describe("normalizeMemeSource — SOH namespace embed", () => {
 });
 
 describe("normalizeMemeSource — SOH opener spacing", () => {
-  test("homes a missing space in a no-namespace opener (the lifted-corpus form)", () => {
-    // The INPUT must carry the drift this test names — a caret opener with no space after it.
-    const src = HEAD("<<^&#x0001; ? -> lar:///x>>", "");
-    const { text, changed, notes } = normalizeMemeSource(src);
-    expect(changed).toBe(true);
-    expect(text).toContain("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>");
-    expect(notes.join()).toMatch(/spacing canonicalized/);
-  });
-
   test("idempotent — a correctly-spaced bare opener is left untouched", () => {
     const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "");
     expect(normalizeMemeSource(src).changed).toBe(false);
@@ -81,7 +72,7 @@ describe("normalizeMemeSource — SOH opener spacing", () => {
 
 // meta head with a register field, for the register-band class.
 const CLOSE_HEAD = (close: string) =>
-  `${DECLARATION}\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
+  `${DECLARATION}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x">>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   "```\n\n<<^ code=\"&#x0002;\">>\n\n" +
@@ -89,7 +80,7 @@ const CLOSE_HEAD = (close: string) =>
   "<<^ code=\"&#x0003;\">>\n";
 
 const SLOT_HEAD = (body: string) =>
-  `${DECLARATION}\n\n<<^ code="&#x0001;" from=? -> to=lar:///x>>\n` +
+  `${DECLARATION}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x">>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
   "```\n\n<<^ code=\"&#x0002;\">>\n\n" + body + "\n\n" +

@@ -16,8 +16,8 @@ const checkedSpan = (text: string): string | null => {
 };
 
 const frame = (slot: string): string =>
-  `<<^ code="&#x0001;" from=? -> to=lar:///t/x>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  `<<^ code="&#x0002;">>\n\n<<~ ahu #a>>\n\n! Heading\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n${slot}\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `<<^ code="&#x0001;" from="?" -> to="lar:///t/x">>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  `<<^ code="&#x0002;">>\n\n<<~ ahu #a>>\n\n! Heading\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n${slot}\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 const stranded = (text: string): string[] =>
   memeticIngestOps.deserialize("lar:///t/x", text).diagnostics
@@ -60,7 +60,7 @@ describe("the checked span follows the frame, not the prose", () => {
 describe("classifyPostamble", () => {
   test("whitespace and a bare EOT both read as an empty slot", () => {
     expect(classifyPostamble("\n\n").kind).toBe("empty");
-    expect(classifyPostamble("\n<<^ code=\"&#x0004;\" -> ?>>\n").kind).toBe("empty");
+    expect(classifyPostamble("\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n").kind).toBe("empty");
   });
 
   test("it counts the stranded lines, so a refusal can name the size of what it refused", () => {

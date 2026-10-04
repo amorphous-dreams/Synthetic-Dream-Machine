@@ -12,7 +12,9 @@
  *   · `torn`   — the frame cannot be divided without choosing: no ETX after the STX, a second live ETX,
  *                an ETX ahead of the STX, a toml meta fence standing before the STX (root metadata
  *                opens the BODY — a block above STX stands outside the span the check covers, and no
- *                reader recovers it). Each fault is named; nothing past the close is folded in.
+ *                reader recovers it), a head or release in a RETIRED spelling (a bare `?`, an unquoted
+ *                or positional target, glyphs before the code) — no reader repairs one in silence.
+ *                Each fault is named; nothing past the close is folded in.
  *   · `bare`   — NO frame at all: no head, no STX, no ETX, no release. Bare data found on the internet
  *                is not a meme, and reading it as one would invent a carrier nobody wrote.
  *
@@ -25,7 +27,9 @@
 
 import { fencedSpans, maskedExec, maskedExecAll } from "./fence-mask.js";
 import { META_OPEN_RE } from "./meta-fence.js";
-import { carrierMarkPattern } from "./head.js";
+import { carrierHeadPattern, carrierMarkPattern, carrierReleasePattern } from "./head.js";
+import { frameHex } from "./marks.js";
+import { CARRIER_DECLARATION } from "./write.js";
 import { readFrame, type FrameFault } from "./span.js";
 import { standingCheck } from "./check.js";
 
@@ -42,15 +46,46 @@ const META_BEFORE_STX: FrameFault = {
   message: "a toml meta fence stands before STX — root metadata opens the body, below STX; the frame recovers nothing above it",
 };
 
+/**
+ * Any caret sigil carrying a head or release code, in whatever spelling — wider than the canonical
+ * patterns by design, so a retired spelling is SEEN and named rather than read as no frame at all.
+ */
+const ANY_END_RE = new RegExp(`<<\\^(?:[^>\\n]|>(?!>))*?&#x(${frameHex("SOH")}|${frameHex("EOT")});(?:[^>\\n]|>(?!>))*>>`, "g");
+const SOH_HEX = new RegExp(`^(?:${frameHex("SOH")})$`);
+
+/** A declaration line, live — the frame's own, whatever it spells. */
+const DECLARATION_LINE_RE = /^<<!DOCTYPE[^\n]*/gm;
+
+/** Each declaration, head and release written in a spelling the canonical forms no longer read. */
+function retiredEnds(text: string, spans: ReturnType<typeof fencedSpans>): FrameFault[] {
+  const faults: FrameFault[] = [];
+  for (const m of maskedExecAll(text, DECLARATION_LINE_RE, spans)) {
+    if (m[0] === CARRIER_DECLARATION) continue;
+    faults.push({ kind: "retired-spelling", message: `\`${m[0]}\` is a retired declaration — the frame declares \`${CARRIER_DECLARATION}\`; nothing repairs it` });
+  }
+  for (const m of maskedExecAll(text, ANY_END_RE, spans)) {
+    const canonical = SOH_HEX.test(m[1]!) ? carrierHeadPattern("y") : carrierReleasePattern("y");
+    canonical.lastIndex = m.index;
+    const hit = canonical.exec(text);
+    if (hit && hit[0] === m[0]) continue;
+    faults.push({
+      kind: "retired-spelling",
+      message: `\`${m[0]}\` is a retired frame spelling — the ends read \`code="…" from="?" -> to="…"\` and \`-> to="?"\`, quoted; nothing repairs it`,
+    });
+  }
+  return faults;
+}
+
 export function verdict(text: string): FrameVerdict {
   const spans = fencedSpans(text);
   const frame = readFrame(text, spans);
-  const marked = frame.stx || frame.etx || frame.eot
+  const retired = retiredEnds(text, spans);
+  const marked = frame.stx || frame.etx || frame.eot || retired.length > 0
     || maskedExec(text, carrierMarkPattern("head", "g"), spans)
     || maskedExec(text, carrierMarkPattern("release", "g"), spans);
   if (!marked) return { kind: "bare" };
 
-  const faults = frame.faults.filter((f) => f.kind !== "second-stx");
+  const faults = [...frame.faults.filter((f) => f.kind !== "second-stx"), ...retired];
   if (frame.stx && !frame.etx) faults.push(NO_ETX);
   // A meta fence IS a fence, so its opener sits at a mask span's start: `allowSpanStart` admits it and
   // still refuses one quoted inside another fence.

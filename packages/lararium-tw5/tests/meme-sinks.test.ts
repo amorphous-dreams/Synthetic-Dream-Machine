@@ -17,10 +17,10 @@ const URI = "lar:///t/x";
 const ORIGIN: ChangeOrigin = { kind: "lares-verb", requestId: "r-test" };
 
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
   `<<^ code="&#x0002;">>\n\n` +
   slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 describe("storeMemeSink — placeMeme over one bag's own store", () => {
   test("a fresh meme lands its group as records; residency rides the store, never a stamped field", async () => {

@@ -1,5 +1,7 @@
 
 <<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/library/oracles/doa/index">>
+<<^ code="&#x0002;">>
+
 ```toml meta
 cacheable  = true
 file-path  = "bags/crossroads/ha.ka.ba/lares/library/oracles/doa/index.mem"
@@ -13,8 +15,6 @@ role       = "skinny handle for the Discordian Oracle AppleKation reliquary — 
 type       = "{CARRIER_TYPE}"
 uri-path   = "ha.ka.ba/lares/library/oracles/doa/index"
 ```
-
-<<^ code="&#x0002;">>
 
 <<~ ahu #/head>>
 

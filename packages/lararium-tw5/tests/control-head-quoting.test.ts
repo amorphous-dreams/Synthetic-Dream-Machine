@@ -22,8 +22,8 @@
  *
  * The cost of learning this: 2131 values took quotes in one pass, TiddlyWiki re-parsed every carrier
  * identically, and EIGHT hand-rolled readers that never meet the parser stopped matching at once — the
- * tw5 suite fell to 10 failures and one witness reported 1395 torn frames. The tests below are the guard:
- * both spellings must reach the same reading, and the canonical emit must be the quoted one.
+ * tw5 suite fell to 10 failures and one witness reported 1395 torn frames. The bare spelling is retired
+ * since: no reader takes it, and the frame verdict names it as a tear. The canonical emit is the quoted one.
  */
 
 import { describe, test, expect } from "vitest";
@@ -36,21 +36,18 @@ const carrier = (head: string) =>
 
 describe("the control head quotes its values", () => {
   test("a quoted code reads", () => {
-    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from=? -> to=lar:///x>>')).marks.head).toBe(true);
+    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from="?" -> to="lar:///x">>')).marks.head).toBe(true);
   });
 
   test("★ a namespace carrying a space needs its quotes — the value is two glyphs ★", () => {
     // The whole reason the head keeps one spelling. This value stands in 66 carriers.
-    const shape = readCarrierShape(carrier('<<^ code="&#x0001;" namespace="ॐ ँ" from=? -> to=lar:///x>>'));
+    const shape = readCarrierShape(carrier('<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///x">>'));
     expect(shape.marks.head).toBe(true);
   });
 
-  test("★ both spellings of the bearing reach ONE reading ★", () => {
-    const bare   = readCarrierShape(carrier('<<^ code="&#x0001;" from=? -> to=lar:///x>>'));
-    const quoted = readCarrierShape(carrier('<<^ code="&#x0001;" from="?" -> to="lar:///x">>'));
-    expect(quoted.marks.headUri).toBe("lar:///x");
-    expect(quoted.marks.headUri).toBe(bare.marks.headUri);
-    expect(quoted.marks.head).toBe(bare.marks.head);
+  test("★ the retired bare spelling names no address ★", () => {
+    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from=? -> to=lar:///x>>')).marks.headUri).toBeNull();
+    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from="?" -> to="lar:///x">>')).marks.headUri).toBe("lar:///x");
   });
 
   test("★ the canonical emit quotes both ends ★", async () => {

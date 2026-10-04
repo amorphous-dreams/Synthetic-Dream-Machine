@@ -15,10 +15,10 @@ import { bootTestWiki, wikiSkip } from "./test-wiki.js";
 const URI = "lar:///t/x";
 
 const memeAt = (uri: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${uri}>>\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n` +
   `<<^ code="&#x0002;">>\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 function memorySink(): MemeSink & { store: Map<string, TiddlerFields> } {
   const store = new Map<string, TiddlerFields>();

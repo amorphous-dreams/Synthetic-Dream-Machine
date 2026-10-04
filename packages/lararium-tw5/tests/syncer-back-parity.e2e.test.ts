@@ -34,9 +34,9 @@ if (!forkPresent) {
 
 /** A framed meme carrying one slot per name. */
 const meme = (uri: string, uriPath: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${uri}>>\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n\`\`\`toml meta\nuri-path = "${uriPath}"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {

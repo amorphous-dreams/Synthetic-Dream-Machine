@@ -151,7 +151,7 @@ describe.skipIf(wikiSkip)(
   /**
    * AUTHORING, THROUGH THE WIKI. `round-trip` proves canon stays canon over files already canonical
    * when they landed. This proves a HAND-AUTHORED file BECOMES canon — the shape an operator writes in
-   * an editor, the shape a render surface hands the projector, the shape an older session emits.
+   * an editor, the shape a render surface hands the projector.
    */
   test("every shape an operator writes mints a schema-correct carrier, and settles", () => {
     const URI = "lar:///ha.ka.ba/lares/docs/authoring-probe";
@@ -165,8 +165,6 @@ describe.skipIf(wikiSkip)(
       ["bare prose, no frame and no meta", BODY, ""],
       ["meta only — identity without framing", `${META}\n\n${BODY}`, ""],
       ["meta declaring a namespace, unframed", `${META_NS}\n\n${BODY}`, "⊙"],
-      ["a frame from before the named params",
-        `<<^ ⊙&#x0001; ? -> ${URI}>>\n${META_NS}\n<<^ &#x0002;>>\n\n${BODY}\n<<^ &#x0003;>>\n\n<<^ &#x0004; -> ?>>\n`, "⊙"],
       ["an ahu slot carrying its own meta", `${META_NS}\n\n${BODY}\n${SLOT}\n`, "⊙"],
     ];
     const project = (src: string) => {

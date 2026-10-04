@@ -27,9 +27,8 @@
 
 // THE FRAME IS ITS OWN PACKAGE, zero workspace dependencies — so this module stays bundleable into the
 // TW5 plugin (an import from the mesh would drag its automerge wasm into a bundle that cannot carry it).
-// The declaration a carrier opens with is the frame writer's own constant, never a second spelling.
 import {
-  CARRIER_DECLARATION as DECLARATION, fencedSpans, inMask, META_OPEN_RE, frameAlt, readFrame,
+  fencedSpans, inMask, META_OPEN_RE, frameAlt, readFrame,
 } from "@lararium/memetic-frame";
 // GENERATED_SIGILS is pure data (SigilRule[] literals, no runtime deps) — safe in this
 // dependency-free-by-constraint file the same way the frame import above reasons about it.
@@ -38,7 +37,6 @@ import { GENERATED_SIGILS } from "./meme-ast/grammar-table.generated.js";
 // THE CODE SET COMES FROM THE DECLARATION; THESE SHAPES STAY THIS WRITER'S OWN (marks.ts).
 // The alternation groups NON-capturing, so the group numbering each rewrite below indexes survives.
 const SOH_ALT = frameAlt("SOH");
-const EOT_ALT = frameAlt("EOT");
 
 /**
  * The whole SOH opener, up to its closing `>>`, with the namespace param captured where one stands.
@@ -48,7 +46,7 @@ const EOT_ALT = frameAlt("EOT");
  * namespace correctly whether the carrier states one, states a stale one, or states none at all.
  */
 const SOH_OPENER_RE = new RegExp(
-  `(<<\\^)[ \\t]*(?:code="(${SOH_ALT})"(?:[ \\t]+namespace="([^"]*)")?|([^&\\n]*?)(${SOH_ALT}))`);
+  `(<<\\^)[ \\t]*code="(${SOH_ALT})"(?:[ \\t]+namespace="([^"]*)")?`);
 
 /** Decode `&#xNNNN;` entities to literal glyphs; non-entity chars pass through. */
 function decodeEntities(s: string): string {
@@ -60,15 +58,12 @@ function decodeEntities(s: string): string {
  *  one spelling; the closer is this reader's own and stays as it stands.
  *
  *  THE ROOT META RIDES THE BODY. Where a frame opens, the search starts at STX (the one span reader
- *  finds it); a carrier with no STX is all body and reads from the top. A carrier still in the
- *  pre-body shape — its meta above STX — is exactly what a REPAIR gesture meets, so where the body
- *  holds no meta the block above the frame answers instead. The match index stays absolute. */
+ *  finds it); a carrier with no STX is all body and reads from the top. A meta block above STX is the
+ *  frame verdict's tear (`meta-before-stx`), never a block this writer reads. The match index stays
+ *  absolute. */
 function metaFence(src: string): RegExpExecResult | null {
   const re = new RegExp(`(${META_OPEN_RE.source})([\\s\\S]*?)(\\n\`\`\`)`, "g");
   re.lastIndex = readFrame(src).stx?.end ?? 0;
-  const inBody = re.exec(src);
-  if (inBody) return inBody;
-  re.lastIndex = 0;
   return re.exec(src);
 }
 type RegExpExecResult = RegExpExecArray;
@@ -174,20 +169,6 @@ const inAnySpan = (spans: readonly [number, number][], i: number): boolean => sp
 
 /** A colon separates a parameter only where a QUOTED value follows — a scheme colon never does. */
 const COLON_PARAM = /\b([A-Za-z0-9_-]+):(?=["']|\[\[)/g;
-
-/**
- * The framing opener's two ends, positional.
- *
- * `pranala` and `lares aim` name theirs; the four framing codes carried a bare `?` and a bare address with
- * the bearing arrow between. The arrow stays — TiddlyWiki parses it as an unnamed positional — and the ends
- * it terminates take the names every other sigil already gives them.
- */
-const FRAME_OPEN_ENDS = new RegExp(
-  `(<<\\^ code="${SOH_ALT}"(?:[ \\t]+namespace="[^"]*")?[ \\t]+)"?\\?"?([ \\t]*->[ \\t]*)(\\S+?)([ \\t]*>>)`, "g");
-
-/** The closer states one end: the arrow reaches an unresolved address. */
-const FRAME_CLOSE_ENDS = new RegExp(
-  `(<<\\^ code="${EOT_ALT}"[ \\t]*->[ \\t]*)"?\\?"?([ \\t]*>>)`, "g");
 
 /**
  * Rewrite every CALL-site colon separator to `=`, leaving definitions and scheme colons untouched.
@@ -346,21 +327,12 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   const flags: string[] = [];
   const seat = new ClauseSeat(src, opts);
 
-  // ── 0. The declaration names the grammar, then the address ───────────────
+  // ── 0. The declaration ────────────────────────────────────────────────────
   //
-  // A carrier opening with the address alone parses, renders back to something else, and reads as
-  // content drift in a round-trip witness — three library indexes arrived that way from two writers
-  // that each spelled the line by hand. The one authority lives beside the type constant; a carrier
-  // holding a shorter or older declaration takes it here, which is what a normalize gesture is for.
-  const decl = /^<<!DOCTYPE[^>\n]*>>/m.exec(seat.text);
-  if (decl && decl[0] !== DECLARATION) {
-    const next = seat.text.slice(0, decl.index) + DECLARATION + seat.text.slice(decl.index + decl[0].length);
-    seat.apply("frame", next, () => "declaration: took the grammar's name before its address");
-    flags.push("declaration");
-  }
-  // ABSENCE RAISES NOTHING HERE. This gesture repairs what a carrier wrote; whether a `.mem` on disk
-  // must carry a declaration at all is the doctype witness's question, and normalize also runs over
-  // fragments and authoring drafts that legitimately carry no head.
+  // ONE DECLARATION, minted by the frame writer. A carrier holding a shorter or older one is a retired
+  // spelling — the frame verdict's tear — and no gesture rewrites it in silence. ABSENCE RAISES NOTHING
+  // HERE: whether a `.mem` on disk must carry a declaration at all is the doctype witness's question,
+  // and normalize also runs over fragments and authoring drafts that legitimately carry no head.
 
   // ── 1. SOH opener (namespace embed + spacing) — FRAME AUTHORITY ──────────
   const nsRaw = metaNamespace(seat.text);
@@ -369,13 +341,10 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   const sohMask = fencedSpans(seat.text);
   const soh = [...seat.text.matchAll(new RegExp(SOH_OPENER_RE.source, "g"))].find((m) => !inMask(sohMask, m.index!));
   if (soh) {
-    // BOTH SPELLINGS READ, ONE SPELLING WRITES. A head stating named params reads from them; a head
-    // from before the params carries its namespace as bare glyphs in front of the control entity, and
-    // this is the door that lifts it. Normalizing is exactly where a grammar migration belongs — the
-    // reader stays forgiving so a carrier written under either form still arrives, and every carrier
-    // that passes through leaves in the current one.
-    const code = soh[2] ?? soh[5]!;
-    const have = soh[3] ?? soh[4]?.trim() ?? "";
+    // ONE SPELLING READS: the named-param head. A head carrying its namespace as bare glyphs in front of
+    // the control entity is a retired spelling — the frame verdict's tear — and this door never lifts it.
+    const code = soh[2]!;
+    const have = soh[3] ?? "";
     // Canonical opener: the control head, the code param, then the namespace param where the meta
     // declares one. Comparing the WHOLE matched head rather than the namespace alone canonicalizes
     // spacing and param order together, so one rewrite settles every drift the head can carry.
@@ -616,30 +585,6 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     });
     if (rooted > 0) {
       seat.apply("frame", next, () => `lar: fragment: ${rooted} fragment${rooted === 1 ? "" : "s"} rooted (#name → #/name)`);
-    }
-  }
-
-  // ── 5. Framing ends (positional → named) — FRAME AUTHORITY ───────────────
-  // A framing sigil SHOWN inside a fence or a code span is held text, and keeps its spelling.
-  {
-    let ends = 0;
-    const openMask = fencedSpans(seat.text);
-    let working = seat.text.replace(FRAME_OPEN_ENDS, (m: string, head: string, arrow: string, target: string, tail: string, offset: number) => {
-      if (inMask(openMask, offset)) return m;
-      ends += 1;
-      // QUOTED IS CANONICAL — TiddlyWiki's own parser reads every control sigil, and a quoted value is
-      // the form it types without a special case. A target arriving already quoted keeps its one pair.
-      const bare = target.replace(/^"(.*)"$/, "$1");
-      return `${head}from="?"${arrow}to="${bare}"${tail}`;
-    });
-    const closeMask = fencedSpans(working);
-    working = working.replace(FRAME_CLOSE_ENDS, (m: string, head: string, tail: string, offset: number) => {
-      if (inMask(closeMask, offset)) return m;
-      ends += 1;
-      return `${head}to="?"${tail}`;
-    });
-    if (ends > 0) {
-      seat.apply("frame", working, () => `framing ends: ${ends} sigil${ends === 1 ? "" : "s"} named from= and to=`);
     }
   }
 

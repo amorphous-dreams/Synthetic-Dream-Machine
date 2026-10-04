@@ -127,8 +127,8 @@ describe("★ the placement sinks ★", () => {
 
   test("★ round trip: a meme whose meta carries `bag = …` lands, reads back, and re-places as a noop ★", async () => {
     const meme =
-      `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "t/npc"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
-      `<<^ code="&#x0002;">>\n\nan NPC\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+      `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/npc"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
+      `<<^ code="&#x0002;">>\n\nan NPC\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
     const store = new MemoryTiddlerStore(ORIGIN_BAG);
     const sink = storeMemeSink(store, ORIGIN_BAG, { kind: "lares-verb", requestId: "w" });
     const first = await placeMeme({ uri: URI, text: meme }, sink);

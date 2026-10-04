@@ -22,7 +22,7 @@ const carrier = (head: string, stx: string) =>
   "```toml meta\ncacheable = true\n```\n\n" +
   `${stx}\n\nbody\n\n<<^ code="&#x0003;">>\n`;
 
-const SOH = '<<^ code="&#x0001;" from=? -> to=lar:///a.b.c/x>>';
+const SOH = '<<^ code="&#x0001;" from="?" -> to="lar:///a.b.c/x">>';
 const STX = '<<^ code="&#x0002;">>';
 
 describe("a control sigil closes at >> and nowhere else", () => {
@@ -38,7 +38,7 @@ describe("a control sigil closes at >> and nowhere else", () => {
   });
 
   test("★ and one in the opener's own value leaves the head readable ★", () => {
-    const s = readCarrierShape(carrier('<<^ code="&#x0001;" span=1>2 from=? -> to=lar:///a.b.c/x>>', STX));
+    const s = readCarrierShape(carrier('<<^ code="&#x0001;" span=1>2 from="?" -> to="lar:///a.b.c/x">>', STX));
     expect(s.marks.head).toBe(true);
   });
 
