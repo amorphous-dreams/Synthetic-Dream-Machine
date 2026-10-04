@@ -188,7 +188,7 @@ A meme owns its blocks, and a block owns its ports. ''The model carries that con
 
 !! Transclusion — Surface-Split
 
-The ''core holds surface-invariant'': content-identity (Nelson — "the same thing knowably in two places", //not// a copy), `aka` (frozen/shadow) vs `kahea` (live/subscription-fresh), acyclicity, and the firm line ''transclusion carries content-identity; `dataflow` carries a computed value'' — these never blur, even where both render as arrows on canvas.
+The ''core holds surface-invariant'': content-identity (Nelson — "the same thing knowably in two places", //not// a copy), `aka` (frozen/likeness-image) vs `kahea` (live/subscription-fresh), acyclicity, and the firm line ''transclusion carries content-identity; `dataflow` carries a computed value'' — these never blur, even where both render as arrows on canvas.
 
 What ''splits is the content-position'':
 
@@ -248,6 +248,6 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rl9bNCPwy3xxz_y20Bqc32_a2R06TOGbwoHYrvxfQoc
+<<^ code="&#x0003;">>ni:///sha-256;qtNKKjsra6s9fawAQJUKyWWyJXHmiHlHsW4O7GdBGIY
 
 <<^ code="&#x0004;" -> to="?">>

@@ -82,7 +82,7 @@ The boot compiler IGNORES `<<~!` blocks — they produce no compile-time artifac
 
 !!! Tension 1 — `aka`: "passive inclusion" vs "frozen transclusion"
 
-An older docs guide warned "avoid treating `aka` as implying live invocation." Correct but incomplete: `aka` performs frozen (shadow) transclusion — it carries ''`family:transclusion`'' pressure with read-only render-time embedding, not pure passivity. `aka` = frozen (read-only, non-propagating); `kahea` = live (subscription-fresh, propagating). The distinction reads as propagation and fidelity, not presence/absence of transclusion. Both sit in the `transclusion` family (page surface), distinct from `dataflow` value-wires (canvas).
+An older docs guide warned "avoid treating `aka` as implying live invocation." Correct but incomplete: `aka` performs frozen (likeness/frozen-image) transclusion — it carries ''`family:transclusion`'' pressure with read-only render-time embedding, not pure passivity. `aka` = frozen (read-only, non-propagating); `kahea` = live (subscription-fresh, propagating). The distinction reads as propagation and fidelity, not presence/absence of transclusion. Both sit in the `transclusion` family (page surface), distinct from `dataflow` value-wires (canvas).
 
 !!! Tension 2 — compile-time cycle detection vs render-time recursion guard
 
@@ -128,6 +128,6 @@ Simple transclusion `{{Title}}` maps to `<<~ kahea "lar:///uri">>`. Template tra
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oAp4h33NohSaFnJaY6268wWdmj0qWoBr1wfWfXZVgOU
+<<^ code="&#x0003;">>ni:///sha-256;bVK4_5YGAJCq5eFE52ru_Q2ygIRKyDVNiOBFP5oWT3w
 
 <<^ code="&#x0004;" -> to="?">>

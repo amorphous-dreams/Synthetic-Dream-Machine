@@ -142,7 +142,7 @@ With chained branch-channel `[SC]`:
 | `lele` | inline | fire and forget dispatch / branch | `[SC]` |
 | `ahu` | block-only | bounded fragment / altar-worksite | `[SC]` |
 | `loulou` | inline-only | linked bundle / relation edge | `[SC]` (cultural origin) |
-| `aka` | inline-only | shadow transclusion / observe | `[SC]` |
+| `aka` | inline-only | likeness/frozen-image transclusion / observe | `[SC]` |
 | `hana` | block-only | bounded guest work / execute task | `[SC]` |
 | `ui` | inline-only | query/filter render surface | `[SC]` |
 | `kapu` | inline-only | qualification / boundary posture | `[SC]` |
@@ -191,7 +191,7 @@ Design implications:
 * Distinguish: block vs. inline rendering mode.
 * Distinguish: command words from arguments.
 * Distinguish: host-level control sigils from guest expression grammar.
-* `aka` = shadow transclusion (TW5: `<$transclude mode="text"/>`).
+* `aka` = likeness/frozen-image transclusion (TW5: `<$transclude mode="text"/>`).
 * `kahea` = live transclusion (TW5: `<$transclude/>` with live update).
 * `wai`/`mukuwai` = TW5 `<$list filter="[tag[X]]">` / `<$else>`.
 
@@ -415,6 +415,6 @@ When editing grammar meme or parser:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h4N_Z0u810pS7_LGpYjU1YQHcV7IgdqCr4bqgKZ57G4
+<<^ code="&#x0003;">>ni:///sha-256;P6pMDq_wXXNZuPgHhKmL63IYUhZBZZZYgdc6cV0QsRA
 
 <<^ code="&#x0004;" -> to="?">>

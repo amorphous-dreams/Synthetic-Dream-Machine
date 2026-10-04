@@ -113,7 +113,7 @@ trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-
 [[render_modes]]
 name        = "projection"
 label       = "Frozen projection"
-description = "each child-slot widget emits aka (shadow/frozen) sigil; content frozen at projection time"
+description = "each child-slot widget emits aka (likeness/frozen-image) sigil; content frozen at projection time"
 trigger     = "wiki.renderTiddler('text/plain', uri, { variables: { 'lar-render-mode': 'projection' } })"
 ```
 
@@ -258,6 +258,6 @@ Trace continuity across the causal island boundary:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GkW74_AqYJJ2B-E9sp9ZavW6QHXkM0NybauiiGyduYE
+<<^ code="&#x0003;">>ni:///sha-256;Gi4K0S6dNfknpNULQOiKt8pzP3mK6yVP1qbIYzHkR-A
 
 <<^ code="&#x0004;" -> to="?">>

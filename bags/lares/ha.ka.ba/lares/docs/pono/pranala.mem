@@ -53,14 +53,14 @@ alias = "loulou"
 <<~/pranala>>
 ````
 
-`aka` — shadow transclusion:
+`aka` — likeness/frozen-image transclusion:
 
 ````text
-<<~ pranala #shadow from="?" -> to=URI>>
+<<~ pranala #likeness from="?" -> to=URI>>
 ```toml
 family = "observe"
 lifecycle = "instance"
-label = "shadow transclusion"
+label = "likeness/frozen-image transclusion"
 alias = "aka"
 ```
 <<~/pranala>>
@@ -106,6 +106,6 @@ This is the correct pattern for genuinely symmetric semantics — model it expli
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OgwA7A5cQ-BN5eRYkDqfsLzSb6ttFcVLXx_Osd6PKWg
+<<^ code="&#x0003;">>ni:///sha-256;9UzUBqWy03bNMstl6H0iNoTc8sd-uL9gV4Gsfc2gsZ4
 
 <<^ code="&#x0004;" -> to="?">>
