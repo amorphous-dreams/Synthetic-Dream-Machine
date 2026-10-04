@@ -4,8 +4,13 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
+author        = "Joshua Fontany <joshua.fontany@gmail.com>"
 cacheable     = true
+cat           = "info"
+date          = "2026-10-03"
+docname       = "draft-fontany-memetic-wikitext-00"
 file-path     = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext.mem"
+ipr           = "trust200902"
 l-space       = "stable"
 mana          = 19
 manao         = 19
@@ -701,6 +706,6 @@ A canvas reaction wire (flow surface):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KWrB0z8eFRxMD9s1_SIC_f5mmS2sLhWE2wDu6Sf3WJ4
+<<^ code="&#x0003;">>ni:///sha-256;r8Jtiw56_5mwHBFBdgI7SrdHfOyVfLAbzmEvpUFoULY
 
 <<^ code="&#x0004;" -> to="?">>
