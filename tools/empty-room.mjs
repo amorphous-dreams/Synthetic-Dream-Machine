@@ -25,6 +25,14 @@ if (!existsSync(DIST_CARRIERS)) {
 }
 const { carrierFiles } = await import(DIST_CARRIERS);
 
+const FRAME_MARKS_SHORE = join(REPO, "packages/lararium-tw5/dist/frame-marks.js");
+if (!existsSync(FRAME_MARKS_SHORE)) {
+  console.error(`[empty-room] no built shore at ${FRAME_MARKS_SHORE}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { frameAlt } = await import(FRAME_MARKS_SHORE);
+const STX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code="${frameAlt("STX")}"[^>\\n]*>>`);
+const ETX_OPEN_RE = new RegExp(`<<\\^[^>\\n]*code="${frameAlt("ETX")}"`);
 
 const carriers = carrierFiles(REPO);
 
@@ -44,8 +52,8 @@ const key = (text, name) => {
  * strip and swallows the prose behind it.
  */
 const bodyOf = (text) => {
-  const head = /<<\^[^>\n]*code="&#x0002;"[^>\n]*>>/.exec(text);
-  const tail = /<<\^[^>\n]*code="&#x0003;"/.exec(text);
+  const head = STX_OPEN_RE.exec(text);
+  const tail = ETX_OPEN_RE.exec(text);
   if (!head || !tail || tail.index < head.index) return "";
   return text.slice(head.index + head[0].length, tail.index);
 };

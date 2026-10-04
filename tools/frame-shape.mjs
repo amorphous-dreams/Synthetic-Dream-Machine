@@ -27,6 +27,13 @@ if (!existsSync(SHORE)) {
 }
 const { carrierHeadPattern, carrierReleasePattern } = await import(SHORE);
 
+const FRAME_MARKS_SHORE = join(dirname(fileURLToPath(import.meta.url)), "../packages/lararium-tw5/dist/frame-marks.js");
+if (!existsSync(FRAME_MARKS_SHORE)) {
+  console.error(`[frame-shape] no built shore at ${FRAME_MARKS_SHORE}\n  cure: pnpm --filter @lararium/tw5 build`);
+  process.exit(2);
+}
+const { FRAME_MARKS, frameAlt } = await import(FRAME_MARKS_SHORE);
+
 const REPO = process.env["REPO"] ?? process.cwd();
 // THE ONE FINDER of the corpus. A hardcoded glob answers a question about PATHS; the law asks about
 // DECLARATIONS, and the two disagreed on the runtime kernel face for three rulings.
@@ -37,15 +44,16 @@ if (!existsSync(DIST_CARRIERS)) {
 }
 const { carrierFiles } = await import(DIST_CARRIERS);
 
-const MARKS = [
-  ["&#x0001;", "SOH", true],
-  ["&#x0011;", "SOH2", false],
-  ["&#x0002;", "STX", false],
-  ["&#x0003;", "ETX", false],
-  ["&#x0017;", "ETB", false],
-  ["&#x0004;", "EOT", false],
-  ["&#x0014;", "EOT2", false],
-];
+// The CODE + NAME set — frame-marks.ts's own declaration, never a second hand-kept copy.
+const MARKS = FRAME_MARKS.map((m) => [m.code, m.name]);
+
+// Interpolated ONCE, at module scope (frame-marks.ts's own guidance — these run on hot parse paths).
+const SOH_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("SOH")}[^\\n]*$`, "gm");
+const EOT_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("EOT")}[^\\n]*$`, "gm");
+const ETX_OR_EOT_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("ETX", "EOT")}[^\\n]*$`, "gm");
+const STX_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("STX")}[^\\n]*$`, "gm");
+const ETX_LINE_RE = new RegExp(`^<<\\^[^>\\n]*${frameAlt("ETX")}[^\\n]*$`, "gm");
+const ETX_CODE = FRAME_MARKS.find((m) => m.name === "ETX").code;
 
 const files = carrierFiles(REPO);
 
@@ -67,7 +75,7 @@ for (const f of files) {
   // a PROPERTY; the arrow states a RELATION, and the control-soh scan captures its target as a group.
   // Drop it and the capture returns nothing while every other check here still reads the frame as sound.
   const masked = (re) => [...maskedExecAll(t, re)];
-  const soh = masked(/^<<\^[^>\n]*&#x(?:0001|0011);[^\n]*$/gm).length > 0;
+  const soh = masked(SOH_LINE_RE).length > 0;
   if (soh && masked(carrierHeadPattern("gm")).length === 0) {
     faults.push([f, "SOH carries no `? -> uri` — the heading states no bearing"]);
   }
@@ -77,7 +85,7 @@ for (const f of files) {
   // AND THE QUOTE IS NOT PART OF THE READING. TiddlyWiki assigns `to=?` and `to="?"` the same type and
   // the same value, so both spell one bearing. A gate binding only the bare form reads a corpus-wide
   // requote as 1395 torn frames — measured, the day the corpus took quotes.
-  const eot = masked(/^<<\^[^>\n]*&#x(?:0004|0014);[^\n]*$/gm).length > 0;
+  const eot = masked(EOT_LINE_RE).length > 0;
   if (eot && masked(carrierReleasePattern("gm")).length === 0) {
     faults.push([f, "EOT carries no `-> to=?` — the close resolves a bearing it cannot know"]);
   }
@@ -93,16 +101,16 @@ for (const f of files) {
   // lesson: memes that TEACH the frame carry whole example carriers, and a documentation table shows the
   // marks in a row. Reading raw text took those for frames — and an earlier version of this rule carried
   // a shape-specific guard invented to route around exactly that. One mask retires the guard.
-  const owned = [...maskedExecAll(t, /^<<\^[^>\n]*&#x(?:0003|0004|0014);[^\n]*$/gm)];
-  const lastEtx = owned.filter((m) => m[0].includes("&#x0003;")).pop();
-  const firstEot = owned.find((m) => !m[0].includes("&#x0003;"));
+  const owned = [...maskedExecAll(t, ETX_OR_EOT_LINE_RE)];
+  const lastEtx = owned.filter((m) => m[0].includes(ETX_CODE)).pop();
+  const firstEot = owned.find((m) => !m[0].includes(ETX_CODE));
   if (lastEtx && firstEot && firstEot.index < lastEtx.index) {
     faults.push([f, "an EOT stands before the text ends — the closes run out of order"]);
   }
 
-  if (masked(/^<<\^[^>\n]*&#x0002;[^\n]*$/gm).length > 0) {
-    if (masked(/^<<\^[^>\n]*&#x0003;[^\n]*$/gm).length === 0) faults.push([f, "opens a body on STX and never closes it on ETX"]);
-    if (masked(/^<<\^[^>\n]*&#x(?:0004|0014);[^\n]*$/gm).length === 0) faults.push([f, "closes on ETX and never ends on EOT"]);
+  if (masked(STX_LINE_RE).length > 0) {
+    if (masked(ETX_LINE_RE).length === 0) faults.push([f, "opens a body on STX and never closes it on ETX"]);
+    if (masked(EOT_LINE_RE).length === 0) faults.push([f, "closes on ETX and never ends on EOT"]);
   }
 }
 
