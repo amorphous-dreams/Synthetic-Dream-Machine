@@ -25,10 +25,11 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
-  BAG_MANIFEST_FILE, bagManifestFromMeta, defaultBagManifest, planBagMove,
+  BAG_MANIFEST_FILE, bagManifestFromMeta, bagManifestUri, defaultBagManifest, planBagMove,
   type BagHome, type BagHomeRoots, type BagManifest, type BagMove, type RepoRegistration,
 } from "@lararium/mesh";
-import { renderBagManifest } from "./bag-carrier.js";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
 import { laresDataHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
@@ -82,24 +83,44 @@ export function bagHomeRoots(): BagHomeRoots {
 }
 
 /**
- * Pull the `toml meta` table out of a `.mem` body.
+ * Pull the `toml meta` table out of a `.mem` body — through tw5's OWN TOML field reader
+ * (`carrier-render.ts`'s `metaFieldsFromBody`), never a second hand-rolled grammar.
  *
- * DELIBERATELY SHALLOW. It reads flat `key = "value"` lines inside the fenced block and nothing else, because
- * a manifest carries only flat scalars and a fuller parser would invite fuller manifests. A key it cannot
- * read simply does not appear, and every field the caller wants already fail-closes on absence.
+ * NOT SHALLOW ANYMORE. The retired hand-rolled regex admitted only quoted strings; this reads the
+ * full TOML surface the real deserializer's meta-fence pass reads (numbers, arrays, booleans all
+ * flatten to the TW5 tiddler-field convention — `toml-ast.ts`'s `flattenTomlValue`: scalars stringify,
+ * arrays stay `string[]`). A key the fence does not carry simply does not appear, and every field a
+ * caller wants already fail-closes on absence.
  */
 export function metaTableFromBody(body: string): Record<string, unknown> {
-  // The opener this reads is `meta-fence.ts`'s own ADMITTED form ([ \t], never `\s` — `\s` crosses a
-  // newline, so `\s+` before the label would let ```toml\nmeta match and `\s*` after it would swallow
-  // the blank line beneath the opener into the fence it opens).
-  const fence = /```toml[ \t]+meta[ \t]*\n([\s\S]*?)\n```/.exec(body);
-  const table: Record<string, unknown> = {};
-  if (!fence?.[1]) return table;
-  for (const line of fence[1].split("\n")) {
-    const kv = /^\s*([A-Za-z0-9_-]+)\s*=\s*"(.*)"\s*$/.exec(line);
-    if (kv?.[1] !== undefined && kv[2] !== undefined) table[kv[1]] = kv[2];
-  }
-  return table;
+  return metaFieldsFromBody(body);
+}
+
+/** Render a bag's declaration back to the `meta.mem` carrier its own root holds — through tw5's own
+ *  canonical render (`carrier-render.ts`). Stable draft key order; the render decides the final bytes. */
+function renderBagManifest(m: BagManifest): string {
+  const uri = bagManifestUri(m.bag);
+  const body = [
+    "```toml meta",
+    kv("bag", m.bag),
+    kv("cap-tier", m.tier),
+    kv("home", m.home),
+    ...(m.repository ? [kv("repository", m.repository)] : []),
+    ...(m.role ? [kv("role", m.role.replace(/"/g, "'"))] : []),
+    kv("title", uri),
+    kv("type", CARRIER_TYPE),
+    "```",
+    "",
+    `! @${m.bag}`,
+    "",
+    "This bag declares its own caps and its own home. ''cap-tier'' names WHO may read it — and only ever",
+    "TIGHTENS against the structural floor, so a declaration cannot open what the crypto keeps shut.",
+    "''home'' names WHERE its bytes rest: `repository` (a clone carries it) · `hearth` (per-operator, no",
+    "clone carries it) · `ley` (nowhere durable — it lives while the mesh carries it).",
+    "",
+    "A repository home names a REGISTERED id, never a path: the bag names WHAT, each vessel resolves WHERE.",
+  ].join("\n");
+  return renderCarrier(uri, body);
 }
 
 /** Read one bag's declaration off a directory, or the fail-closed default when it declares none. */

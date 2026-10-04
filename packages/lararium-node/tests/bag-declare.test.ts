@@ -64,10 +64,10 @@ describe("bag-declare — the disk shore", () => {
     expect(readBagManifest(join(corpus, "lares"), "lares").home).toBe("hearth");
   });
 
-  test("the shallow meta parser reads flat scalars and ignores everything else", () => {
+  test("the meta reader reads the full TOML surface — tw5's own, not a quoted-string-only grammar", () => {
     const t = metaTableFromBody('```toml meta\nhome      = "ley"\ncount = 3\n```\n');
     expect(t["home"]).toBe("ley");
-    expect(t["count"]).toBeUndefined();       // non-string values simply do not appear
+    expect(t["count"]).toBe("3");       // a real TOML parser reads the number; the TW5 field convention stringifies it
   });
 });
 

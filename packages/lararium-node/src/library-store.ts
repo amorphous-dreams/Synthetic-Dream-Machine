@@ -27,10 +27,10 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import {
-  LIBRARY_META_FILE, parseLibraryRef, metaMatchesDir,
+  LIBRARY_META_FILE, parseLibraryRef, metaMatchesDir, libraryRef,
   mediaTypeFromExt, niUriSha256FromHex, type LibraryEntryMeta,
 } from "@lararium/mesh";
-import { renderLibraryIndex } from "./bag-carrier.js";
+import { kv, renderCarrier } from "./carrier-render.js";
 import { larariumDataHome } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
@@ -192,6 +192,56 @@ export function verifyCollection(collection: string): LibraryVerdict[] {
       : { collection, cid: cidDir, name: meta.name, ok: false, why: `bytes digest ${actual} — the directory claims ${cidDir}` });
   }
   return out;
+}
+
+/**
+ * Render a library collection's INDEX — the tracked, human-readable carrier that says what a
+ * collection holds and how to verify it, with no path riding in it anywhere — through tw5's own
+ * canonical render (`carrier-render.ts`).
+ *
+ * EACH ENTRY IS ITS OWN SLOT, never a markdown table row: a `#/<cid>` ahu block carrying that entry's
+ * own fields, so `<index-uri>#/<cid>` addresses one entry directly and a reader (or `lares meme`)
+ * walks the collection the same way it walks any other carrier's children. A cid is lowercase hex,
+ * which the ahu slot grammar (`[\w-]+`) admits whole.
+ */
+function renderLibraryIndex(collection: string, entries: readonly LibraryEntryMeta[]): string {
+  const rows = [...entries].sort((a, b) => a.name.localeCompare(b.name));
+  const total = rows.reduce((n, e) => n + e.size, 0);
+  const uri = `lar:///ha.ka.ba/library/${collection}`;
+  const entryBlock = (e: LibraryEntryMeta): string => {
+    const meta = [
+      kv("name", e.name),
+      kv("bytes", String(e.size)),
+      kv("media-type", e.mediaType),
+      kv("anchor", e.integrity),
+      ...(e.origin ? [kv("origin", e.origin)] : []),
+      ...(e.licence ? [kv("licence", e.licence)] : []),
+      ...(e.note ? [kv("note", e.note.replace(/"/g, "'"))] : []),
+    ].join("\n");
+    return [`<<~ ahu #/${e.cid}>>`, "```toml meta", meta, "```", "<<~/ahu>>"].join("\n");
+  };
+  const body = [
+    "```toml meta",
+    kv("collection", collection),
+    kv("entries", String(rows.length)),
+    kv("bytes", String(total)),
+    "```",
+    "",
+    `! Library — ${collection}`,
+    "",
+    "The ACQUIRED bodies this collection holds. ''The bytes rest outside every tracked tree'' —",
+    "in the vessel's own library tier — so a shelf may grow without a repository growing with it.",
+    "''This index travels instead'': a reader learns what the shelf holds, and how to verify it,",
+    "without holding it.",
+    "",
+    "Each entry below is its own slot, addressable as `<index-uri>#/<cid>`, carrying the RFC-6920",
+    "anchor a stranger checks with no tooling of ours.",
+    "",
+    rows.map(entryBlock).join("\n\n"),
+    "",
+    `Reference this collection as \`${libraryRef(collection)}\` — a name that travels, never a path.`,
+  ].join("\n");
+  return renderCarrier(uri, body);
 }
 
 /** Render a collection's tracked index to a path. The bodies stay out of the repo; this goes in. */
