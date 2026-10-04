@@ -256,6 +256,27 @@ describe("pono grammar boundary", () => {
       // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
       // asks only how it is spelled. The boundary guards the RUNTIME surface, which this never touches.
       .filter((f) => !f.endsWith("sigil-unslashed-shelf.test.ts"))
+      // classifier-decides.test.ts reads scanner.ts (and every tracked source) as SOURCE TEXT via
+      // readFileSync, walking the control-matcher regex off the files themselves — same reasoning as
+      // sigil-unslashed-shelf.test.ts just above. It imports no value from meme-ast and drives no
+      // parse; it only greps source bytes for a literal the scanner's own BOOTSTRAP_SCANS kept.
+      .filter((f) => !f.endsWith("classifier-decides.test.ts"))
+      // fragment-doors.test.ts drives placeMeme (the blessed entry point) for its own tests; its
+      // second describe block is the unit test of composeSlotPath/childUri — ahu-scan.ts's own pure
+      // address-composition helpers — same reasoning as ahu-sections-address.test.ts above (ONE
+      // helper's own shape, no parse, no AST, no canonical bless).
+      .filter((f) => !f.endsWith("fragment-doors.test.ts"))
+      // frame-literals-agree.test.ts reads GENERATED_SIGILS and BOOTSTRAP_SCANS only to compare their
+      // code sets against @lararium/memetic-frame's own FRAME_MARKS declaration — same reasoning as
+      // meme-normalize-mirror-fold.test.ts above (a read-only parity check, never a parse driver).
+      .filter((f) => !f.endsWith("frame-literals-agree.test.ts"))
+      // slot-spelling-one-address.test.ts and mixed-ahu-fragment-tree.test.ts drive
+      // memeticWikitextDeserializer (the blessed entry point) for every record-shape assertion; each
+      // calls parseMemeText ONLY to reach a diagnostic (`partial-form:ahu`, the raw node tree's Ahu
+      // count) the deserializer's own surface never exposes — the same compile-layer-diagnostic
+      // reasoning as waiho-equals-separator.test.ts and fence-mask-info-string.test.ts above.
+      .filter((f) => !f.endsWith("slot-spelling-one-address.test.ts"))
+      .filter((f) => !f.endsWith("mixed-ahu-fragment-tree.test.ts"))
       .filter((f) => {
         // The boundary guards the RUNTIME grammar surface — reaching past a blessed entry point to
         // drive the compile layer directly. A `import type` of a rule SHAPE binds no runtime surface
