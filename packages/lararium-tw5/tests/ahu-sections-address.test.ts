@@ -31,19 +31,27 @@ import { execSync } from "node:child_process";
 import path from "node:path";
 import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { carrierFiles } from "../src/carrier-files.js";
+import { fenceLineOpen, fenceLineClose } from "../src/meme-ast/fence-mask.js";
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 
 /** THE WHOLE CORPUS. Every carrier the tree declares answers this law. */
 const carriers = (): string[] => carrierFiles(REPO);
 
-/** Section opens and closes, counted outside fenced blocks — a fence carries examples, never structure. */
-function frame(text: string): { opens: string[]; closes: number } {
+/**
+ * Section opens and closes, counted outside fenced blocks — a fence carries examples, never
+ * structure. `fenceLineOpen`/`fenceLineClose` (fence-mask.ts) read CommonMark §4.5's own rule: a
+ * line opening with 3+ backticks whose INFO STRING itself carries a backtick never opens a fence at
+ * all (it reads as ordinary prose) — a naive `line.startsWith("```")` toggle flips on that line
+ * anyway and desyncs every open/close count that follows it.
+ */
+export function frame(text: string): { opens: string[]; closes: number } {
   const opens: string[] = [];
-  let closes = 0, fenced = false;
+  let closes = 0, fenceLen = 0;
   for (const line of text.split("\n")) {
-    if (line.startsWith("```")) { fenced = !fenced; continue; }
-    if (fenced) continue;
+    if (fenceLen > 0) { if (fenceLineClose(line, fenceLen)) fenceLen = 0; continue; }
+    const openLen = fenceLineOpen(line);
+    if (openLen > 0) { fenceLen = openLen; continue; }
     const open = /^(?:<<~ ahu|<<fragment) #\/?([a-z0-9-]+)/.exec(line);
     if (open) opens.push(open[1]!);
     if (/^(?:<<~\/ahu|<<\/fragment)/.test(line)) closes += 1;
@@ -71,6 +79,39 @@ function addressed(file: string, disk: string): Set<string> | null {
   return out;
 }
 
+describe("frame() — fence toggling reads CommonMark §4.5, never a naive line.startsWith", () => {
+  test("RED→GREEN — a hard-wrapped prose line opening with a quad-backtick inline span does NOT desync the count", () => {
+    // CommonMark §4.5: a backtick fence's own info string may not itself carry a backtick — a line
+    // shaped "```memetic-wikitext tangle`more prose" never opens a fence at all; it reads as
+    // ordinary text. A naive `line.startsWith("```")` toggle flips `fenced` on anyway, and every
+    // real `<<~ ahu …>>` open/close that follows it in the SAME carrier silently stops counting.
+    const text = [
+      "prose before",
+      "```memetic-wikitext tangle`more prose",
+      "<<~ ahu #a>>",
+      "body",
+      "<<~/ahu>>",
+    ].join("\n");
+    const { opens, closes } = frame(text);
+    expect(opens).toEqual(["a"]);
+    expect(closes).toBe(1);
+  });
+
+  test("CONTROL — a real fence (clean info string) still masks the open/close it carries", () => {
+    const text = [
+      "```text",
+      "<<~ ahu #fenced-example>>",
+      "<<~/ahu>>",
+      "```",
+      "<<~ ahu #real>>",
+      "<<~/ahu>>",
+    ].join("\n");
+    const { opens, closes } = frame(text);
+    expect(opens).toEqual(["real"]);
+    expect(closes).toBe(1);
+  });
+});
+
 describe("★ every named ahu section addresses ★", () => {
   test("① every ahu open carries a close", () => {
     const drift: string[] = [];
@@ -89,10 +130,11 @@ describe("★ every named ahu section addresses ★", () => {
     const bare: string[] = [];
     for (const f of carriers()) {
       const disk = readFileSync(path.join(REPO, f), "utf8");
-      let fenced = false;
+      let fenceLen = 0;
       disk.split("\n").forEach((line, i) => {
-        if (line.startsWith("```")) { fenced = !fenced; return; }
-        if (fenced) return;
+        if (fenceLen > 0) { if (fenceLineClose(line, fenceLen)) fenceLen = 0; return; }
+        const openLen = fenceLineOpen(line);
+        if (openLen > 0) { fenceLen = openLen; return; }
         const m = /^<<(?:~ ?ahu|fragment|~ ?kahea ahu) #(?!\/)([a-z0-9-]+)/i.exec(line);
         if (m) bare.push(`${f}:${i + 1} #${m[1]}`);
       });
