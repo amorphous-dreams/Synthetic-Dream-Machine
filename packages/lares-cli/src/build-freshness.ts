@@ -24,9 +24,8 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, type Dirent } from "node:fs";
-import { join, dirname, relative } from "node:path";
-import { createHash } from "node:crypto";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { join, dirname } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { udsAlive } from "./local-connector.js";
 import { VESSEL_SUBS } from "./commands/vessel.js";
@@ -79,44 +78,38 @@ const BUILD_LOCK  = join(repoRoot, "node_modules", ".lares-build", "build.lock")
  * hides a real change, and a false "fresh" runs superseded logic against real identity.
  *
  * Content answers both. Two trees with the same bytes ARE the same build, whatever their clocks say.
+ *
+ * ONE implementation: `tools/stamp-build.mjs` computes this digest to WRITE the stamp (it runs
+ * before the CLI exists, so it cannot import from here); this reads it back to CHECK the stamp, by
+ * importing the very function stamp-build.mjs runs — a dynamic import, since this module's own
+ * callers stay synchronous-shaped elsewhere in the file but this one path now awaits. Two
+ * byte-identical copies used to stand here; the twin test that watched them agree now compares a
+ * function to itself, so it is retired rather than kept as a tautology (see build-freshness.ts's
+ * removed `../../../tests/build-digest-lockstep.test.ts`).
  */
-export function sourceDigest(dir: string): string {
-  const h = createHash("sha256");
-  const walk = (d: string): void => {
-    let entries: Dirent[];
-    try { entries = readdirSync(d, { withFileTypes: true }); } catch { return; }
-    for (const e of [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
-      if (e.name === "node_modules" || e.name === "dist" || e.name === ".git") continue;
-      if (e.name.endsWith(".prev")) continue;   // a retired output, never a source
-      const full = join(d, e.name);
-      if (e.isDirectory()) { walk(full); continue; }
-      if (!/\.(ts|mts|cts|json)$/.test(e.name)) continue;
-      // RELATIVE to the walk root — an absolute path folds the checkout location into the digest,
-      // so the same bytes would hash differently per machine and per cwd, and the stamp would never match.
-      try { h.update(relative(dir, full)); h.update(readFileSync(full)); } catch { /* unreadable — skip */ }
-    }
-  };
-  walk(dir);
-  return h.digest("hex");
+export async function sourceDigest(dir: string): Promise<string> {
+  // @ts-expect-error — a plain .mjs tool, deliberately importable without a build
+  const { sourceDigest: stampSourceDigest } = await import("../../../tools/stamp-build.mjs");
+  return stampSourceDigest(dir) as string;
 }
 
 /**
  * Does the built dist come from THESE bytes? Fresh when the recorded digest matches what the tree
  * currently holds; stale on any mismatch, and stale when no build has ever stamped one.
  */
-function isWorkspaceStale(): boolean {
+async function isWorkspaceStale(): Promise<boolean> {
   if (!existsSync(BUILT_LARES_BIN)) return true;
-  const digest = sourceDigest(join(repoRoot, "packages"));
+  const digest = await sourceDigest(join(repoRoot, "packages"));
   let stamped: string | null = null;
   try { stamped = readFileSync(BUILD_STAMP, "utf8").trim(); } catch { stamped = null; }
   return stamped !== digest;
 }
 
 /** Record the digest the current dist was built FROM — written only after a build succeeds. */
-function stampBuild(): void {
+async function stampBuild(): Promise<void> {
   try {
     mkdirSync(dirname(BUILD_STAMP), { recursive: true });
-    writeFileSync(BUILD_STAMP, sourceDigest(join(repoRoot, "packages")));
+    writeFileSync(BUILD_STAMP, await sourceDigest(join(repoRoot, "packages")));
   } catch { /* a stamp we cannot write costs one extra build, never correctness */ }
 }
 
@@ -134,7 +127,7 @@ export interface FreshBuildDeps {
   /** Does a daemon answer at the vessel's socket? */
   readonly alive: () => Promise<boolean>;
   /** Does the built dist come from bytes other than the tree's? */
-  readonly stale: () => boolean;
+  readonly stale: () => boolean | Promise<boolean>;
   /** Build the workspace; the exit status. */
   readonly build: () => number;
   /** Re-run the same invocation against the just-built bin; the child's exit status. */
@@ -189,7 +182,7 @@ export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, 
   // reading never earns a rebuild (the same promise as `--observe`, kept by asking the socket rather than
   // the caller). The tree is asked only on a MISS, where standing would boot.
   if (attachesWhenAlive(args) && await deps.alive()) return null;
-  if (!deps.stale()) return null;              // dist clearly current — run the handler in-process
+  if (!(await deps.stale())) return null;      // dist clearly current — run the handler in-process
 
   // ONE WRITER. Two builds over one dist race with nothing between them, and the loser writes into a
   // tree the winner is mid-way through replacing. An exclusive create IS the lock: the filesystem
@@ -213,7 +206,7 @@ export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, 
     console.error("  the previous output stands: `build` re-emits dist without clearing it, so nothing was destroyed.");
     return status;
   }
-  stampBuild();   // only a SUCCEEDING build earns a stamp — a failed one leaves the tree reading stale
+  await stampBuild();   // only a SUCCEEDING build earns a stamp — a failed one leaves the tree reading stale
 
   // Re-exec the SAME invocation against the just-built bin, in a fresh process. The
   // `--skip-build` sentinel (appended last) ends the recursion and tells the child to
