@@ -28,11 +28,11 @@
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from "fs";
 import { dirname, join } from "path";
-import { createHash, randomBytes } from "crypto";
-import { tagDigest } from "@lararium/mesh";
+import { randomBytes } from "crypto";
+import { tagDigest, sha256HexSync } from "@lararium/mesh";
 
 export function contentHash(text: string): string {
-  return createHash("sha256").update(text, "utf8").digest("hex");
+  return sha256HexSync(text);
 }
 
 /** The canonical Synced-tree key: bag-id + carrier-root URI, NUL-joined.

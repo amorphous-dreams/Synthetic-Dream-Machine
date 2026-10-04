@@ -43,7 +43,7 @@
  * Mode 0o600 at write time; caller must ensure the identity dir is not world-readable.
  */
 
-import { generateKeyPairSync, createHash } from "node:crypto";
+import { generateKeyPairSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync } from "node:fs";
@@ -69,6 +69,8 @@ import {
   type PersonaDeclarationStore,
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
+  sha256HexBytesSync,
+  hexToBytes,
 } from "@lararium/mesh";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
@@ -228,7 +230,7 @@ function mintInceptionCommitment(currentVerifyingKey: string): {
   const privJwk = privateKey.export({ format: "jwk" }) as { d: string };
   const nextVerifyingKey = Buffer.from(pubJwk.x,  "base64url").toString("hex");
   const nextSigningKey   = Buffer.from(privJwk.d, "base64url").toString("hex");
-  const nextDigest = createHash("sha256").update(Buffer.from(nextVerifyingKey, "hex")).digest("hex");
+  const nextDigest = sha256HexBytesSync(hexToBytes(nextVerifyingKey));
   return {
     kel: {
       v: "lares-prerotation/v1", t: "icp", s: "0",
