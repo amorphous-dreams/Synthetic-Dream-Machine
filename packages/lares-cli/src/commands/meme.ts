@@ -82,7 +82,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
 import { projectSubmission, PROFILES, type WeaveProfile } from "@lararium/tw5/weave";
 import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
-import { verifyBcc, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
+import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
 import { vesselDid } from "../env.js";
@@ -411,7 +411,17 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
 
   for (const f of files) {
     const src = readNamed(f);
-    const res = normalizeMemeSource(src, { grammar });
+    // BARE DATA IS NOT A MEME. No head, no text frame, no release: normalizing it would frame bytes
+    // nobody framed, so both seats NAME it and move none of its bytes. A reading, never a fault — the
+    // stage law below still reads whatever meta it declares.
+    const frame = verdict(src);
+    if (frame.kind === "bare") {
+      console.log(`bare: ${f}`);
+      console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
+    }
+    const res = frame.kind === "bare"
+      ? { text: src, changed: false, notes: [], flags: [], grammarChanged: false, grammarNotes: [] }
+      : normalizeMemeSource(src, { grammar });
 
     // GRAMMAR-authority drift reads and reports SEPARATELY from FRAME drift — a preference named
     // aloud, never a failure. `res.grammarNotes` already carries the per-site "would take the
@@ -489,6 +499,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
         ? (write ? "minted over the body it follows" : "would mint over the body it follows")
         : (write ? "re-stamped over the body it follows" : "would re-stamp over the body it follows");
       console.log(`  - block check ${act}`);
+      if (frame.kind === "stale") console.log(`  - stale: stored ${frame.stored} · computed ${frame.computed}`);
     }
   }
 

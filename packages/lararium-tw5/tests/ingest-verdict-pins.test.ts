@@ -21,6 +21,9 @@ const ETX = '<<^ code="&#x0003;">>';
 const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
 const STALE = "ni:///sha-256;0000000000000000000000000000000000000000000";
 
+const BARE      = "just bare data found on the internet\n\nno frame at all\n";
+const BARE_TOML = "```toml meta\ncustom = \"lifted\"\n```\n\nbare body\n<<~ ahu #/a>>\n\nslot\n\n<<~/ahu>>\n";
+
 interface Row { readonly text: string; readonly decision: string; readonly codes: readonly string[] }
 
 const ROWS: Record<string, Row> = {
@@ -40,8 +43,8 @@ const ROWS: Record<string, Row> = {
   "a root `text` key refuses":             { text: canonical.replace('uri-path = "t/pin"', 'text     = "x"\nuri-path = "t/pin"'), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
   "a slot `text` key refuses":             { text: canonical.replace("<<~ ahu #/a>>\n", "<<~ ahu #/a>>\n```toml meta\ntext = \"x\"\n```\n"), decision: "refuse", codes: ["block-check-mismatch:warning", "shore-round-trip:error"] },
   "a head-only carrier ingests":           { text: '<<^ code="&#x0001;" from="?" -> to="lar:///t/pin">>\n\nhead only prose\n\n<<^ code="&#x0004;" -> to="?">>\n', decision: "ingest", codes: [] },
-  "bare data ingests":                     { text: "just bare data found on the internet\n\nno frame at all\n", decision: "ingest", codes: [] },
-  "bare data with a toml fence refuses":   { text: "```toml meta\ncustom = \"lifted\"\n```\n\nbare body\n", decision: "refuse", codes: ["shore-round-trip:error"] },
+  "bare data is held, flagged UNSTABLE":   { text: BARE, decision: "ingest", codes: ["bare-data:warning"] },
+  "bare data with a toml fence is held":   { text: BARE_TOML, decision: "ingest", codes: ["bare-data:warning"] },
 };
 
 function decide(text: string): { decision: string; codes: string[] } {
@@ -62,4 +65,25 @@ describe("★ the gate's decision, one row per diagnostic producer ★", () => {
       expect(decide(row.text)).toEqual({ decision: row.decision, codes: [...row.codes].sort() });
     });
   }
+});
+
+describe("★ bare data is held, never parsed as a meme ★", () => {
+  for (const text of [BARE, BARE_TOML]) {
+    test(`held verbatim as ONE record — no meta lifted, no slot split: ${JSON.stringify(text.slice(0, 24))}`, () => {
+      const d = decideIngest({ uri: URI, diskText: text, diskHash: sha(text), syncedHash: null, currentRenderHash: "none", hash: sha });
+      expect(d.kind).toBe("ingest");
+      if (d.kind !== "ingest") return;
+      expect(d.records).toEqual([{ title: URI, type: "text/plain", text }]);
+      expect(d.canonicalText).toBe(text);
+      expect(d.diagnostics.map((x) => x.message).join(" ")).toMatch(/UNSTABLE/);
+    });
+  }
+
+  test("a stale check names BOTH digests on the diagnostic", () => {
+    const text = canonical.replace("! Pin", "! Pin edited").replace(CHECK, STALE);
+    const d = decideIngest({ uri: URI, diskText: text, diskHash: sha(text), syncedHash: null, currentRenderHash: "none", hash: sha });
+    const stale = d.kind === "ingest" ? d.diagnostics.find((x) => x.code === "block-check-mismatch") : undefined;
+    expect(stale?.message).toContain(STALE);
+    expect(stale?.message).toMatch(/computed ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}/);
+  });
 });

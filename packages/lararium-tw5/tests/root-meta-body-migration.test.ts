@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { bccOfSpan, checkSpan } from "@lararium/memetic-frame";
-import { deserializeCarrier, expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
+import { expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
+import { memeticIngestOps } from "../src/ingest-gate.js";
 
 const URI = "lar:///tests/root-meta-body";
 const FIXTURE = new URL("./fixtures/root-meta-body.mem", import.meta.url).pathname;
@@ -45,7 +46,7 @@ describe("root metadata is authored body", () => {
     // ADJACENT: the check follows the ETX sigil with nothing between.
     expect(rendered.slice(span.end).startsWith(bccOfSpan(good))).toBe(true);
     const mutated = rendered.replace("root-authority", "root-mutated");
-    const diagnostic = deserializeCarrier(mutated, { title: URI }).diagnostics;
+    const diagnostic = memeticIngestOps.deserialize(URI, mutated).diagnostics;
     // GRADED A WARNING, never an error: a stale check on a human's disk edit is an edit, never
     // tampering (ingest law (a)) — it still surfaces on the shared diagnostics channel.
     expect(diagnostic.some((d) => d.code === "block-check-mismatch" && d.severity === "warning")).toBe(true);

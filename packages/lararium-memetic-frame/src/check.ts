@@ -138,18 +138,31 @@ export function verifyBcc(text: string): "ok" | "mismatch" | "unchecked" | "torn
   const st = frameStanding(text);
   if (st.kind === "absent") return "unchecked";
   if (st.kind === "torn") return "torn";
-  const span = st;
+  const check = standingCheck(text, st);
+  if (!check) return "unchecked";
+  return check.verifies ? "ok" : "mismatch";
+}
+
+/**
+ * The check standing after a framed span, beside the check its bytes compute — or null where none
+ * stands. The one place a trailing check is read; `verifyBcc` and `verdict` both answer through it.
+ */
+export function standingCheck(
+  text: string,
+  span: { readonly start: number; readonly end: number },
+): { readonly stored: string; readonly computed: string; readonly verifies: boolean } | null {
   // ADJACENT, exactly. The check follows the closed sigil with nothing between — the emitter mints it
   // so, and slack here would let two byte-different files share one verdict. A shifted check reads as
   // postamble content: it does not verify, and the projection re-mints it adjacent.
   const trailing = /^(ni:\/\/\/([a-z0-9-]+);([A-Za-z0-9_-]+))/.exec(text.slice(span.end));
-  if (!trailing) return "unchecked";
-  // The message names its algorithm; this reader decides whether to accept it.
-  if (!ACCEPTED_ALGS.has(trailing[2]!)) return "mismatch";
-  // CANONICAL OR REJECT. base64url admits several spellings of a value whose bit-length is not a
-  // multiple of six, so a comparator that tolerated them would call two different strings one check.
-  // Re-encoding what we computed and comparing whole refuses every non-canonical spelling for free.
-  return bccOfSpan(text.slice(span.start, span.end)) === trailing[1]! ? "ok" : "mismatch";
+  if (!trailing) return null;
+  const stored = trailing[1]!;
+  const computed = bccOfSpan(text.slice(span.start, span.end));
+  // The message names its algorithm; this reader decides whether to accept it. CANONICAL OR REJECT:
+  // base64url admits several spellings of a value whose bit-length is not a multiple of six, so a
+  // comparator that tolerated them would call two different strings one check. Re-encoding what we
+  // computed and comparing whole refuses every non-canonical spelling for free.
+  return { stored, computed, verifies: ACCEPTED_ALGS.has(trailing[2]!) && stored === computed };
 }
 
 /*

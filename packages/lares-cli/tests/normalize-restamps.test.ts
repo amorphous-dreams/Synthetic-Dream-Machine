@@ -76,6 +76,11 @@ describe("meme normalize — the check follows the body", () => {
     expect(verifyBcc(readFileSync(file, "utf8"))).toBe("mismatch");
   });
 
+  test("★ a stale check names BOTH digests — the one standing and the one the body computes ★", () => {
+    const { out } = meme("check", file);
+    expect(out).toMatch(/stale: stored ni:\/\/\/sha-256;[A-Za-z0-9_-]{43} · computed ni:\/\/\/sha-256;[A-Za-z0-9_-]{43}/);
+  });
+
   test("normalize leaves the check matching the body it follows", () => {
     meme("normalize", file);
     expect(verifyBcc(readFileSync(file, "utf8"))).toBe("ok");
@@ -365,5 +370,20 @@ describe("meme normalize/check — FRAME drift and GRAMMAR drift read as two aut
     expect(after).toContain('voice:Mischief-Muse key="a value carrying spaces" held=[[a bracketed value]]');
     expect(after).not.toContain('key:"a value carrying spaces"');
     expect(after).not.toContain("held:[[a bracketed value]]");
+  });
+});
+
+describe("★ bare data — no frame at all — reads as bare data, never as a broken meme ★", () => {
+  test("check names it bare and UNSTABLE, and normalize frames nothing", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "lares-bare-"));
+    const file = path.join(dir, "found.mem");
+    const bytes = "bare data found on the internet\n\n```toml meta\nk = 1\n```\n";
+    writeFileSync(file, bytes);
+    const { out, code } = meme("check", file);
+    expect(out).toMatch(/bare: /);
+    expect(out).toMatch(/UNSTABLE/);
+    expect(code).toBe(0);
+    meme("normalize", file);
+    expect(readFileSync(file, "utf8")).toBe(bytes);
   });
 });

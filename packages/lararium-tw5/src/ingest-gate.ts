@@ -26,6 +26,9 @@
  *
  * Decision law (in order):
  *   1. disk == synced            → NOOP (nothing happened on disk)
+ *   1½. the frame reads BARE     → hold the bytes verbatim as ONE record, flagged UNSTABLE — bare
+ *      data found on the internet is not a meme, so it is never parsed as one and never refused as
+ *      a broken one (a family that declares no `frame` never reaches this leg)
  *   2. the parse grades error    → REFUSE (the carrier stopped round-tripping)
  *      anything milder            → carry the diagnostics forward, never drop the bytes
  *      (native ops never grade error — a native deserialize throws — so the refuse
@@ -46,9 +49,10 @@ import { deserializeCarrier, expandMemeRefs } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { collectAhuSlots } from "./meme-ast/ahu-scan.js";
 import { parseMemeText } from "./meme-ast/parse.js";
-import { failuresToDiagnostics, gradeOf } from "./meme-ast/diagnostics.js";
+import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
+import { verdict, type FrameVerdict } from "@lararium/memetic-frame";
 
 export type IngestDecision<R = TiddlerFields> =
   | { readonly kind: "noop"; readonly reason: "disk-matches-synced" | "canonical-equivalent" }
@@ -66,6 +70,8 @@ export type IngestDecision<R = TiddlerFields> =
  *   - `declaredStructure` — the structural surface a faithful round-trip preserves
  *                     (ahu slots for memetic; ∅ for native, opting out of the guard),
  *   - `grade`       — the fault severity; `error` refuses.
+ *   - `frame`       — the frame verdict, for a family that frames its carriers (memetic). The gate
+ *                     reads it itself, so no caller of the family's default ops can skip it.
  * The hash itself rides `IngestGateInput.hash` — the gate compares, never digests.
  */
 export interface IngestOps<R = TiddlerFields> {
@@ -73,6 +79,48 @@ export interface IngestOps<R = TiddlerFields> {
   render(uri: string, records: readonly R[]): string;
   declaredStructure(text: string): ReadonlySet<string>;
   grade(diagnostics: readonly MemeDiagnostic[]): DiagnosticSeverity | "clean";
+  frame?(text: string): FrameVerdict;
+}
+
+/** The type bare data is held under: the bytes, unread. */
+export const BARE_DATA_TYPE = "text/plain";
+
+/** Bare data, held: one record carrying the bytes verbatim — no meta lifted, no slot split. */
+function bareRecord(uri: string, text: string): TiddlerFields {
+  return { title: uri, type: BARE_DATA_TYPE, text };
+}
+
+function diagnostic(severity: DiagnosticSeverity, code: string, message: string, length: number): MemeDiagnostic {
+  return { from: 0, to: length, severity, source: MEMETIC_SOURCE, code, message };
+}
+
+/**
+ * The gate's POLICY over the frame verdict, on the shared diagnostics channel.
+ *
+ *   · torn  → ERROR, each fault named: a frame the reader cannot divide without choosing never names
+ *             an honest edit. A missing close keeps its own code (`block-check-torn`); a mark the
+ *             rule passed over reads `frame-malformed`.
+ *   · stale → WARNING, both digests in the message. A stale check on a human's disk edit is an EDIT,
+ *             never tampering: the check is a trailer the writer re-stamps on every emit, so the gate
+ *             still owes the edit a real decision (noop/ingest/conflict), never a blanket refuse. The
+ *             pre-commit hook (`tools/meme-check-staged.sh` via `lares meme check`) still refuses a
+ *             staged stale check.
+ *   · bare  → WARNING, UNSTABLE: the bytes hold, unread.
+ *   · match, absent → nothing to say.
+ */
+export function frameDiagnostics(uri: string, v: FrameVerdict, length: number): MemeDiagnostic[] {
+  switch (v.kind) {
+    case "torn":
+      return v.faults.map((f) => diagnostic("error", f.kind === "no-etx" ? "block-check-torn" : "frame-malformed", f.message, length));
+    case "stale":
+      return [diagnostic("warning", "block-check-mismatch",
+        `ni:/// block check does not match the STX–ETX body, including root TOML metadata — stored ${v.stored} · computed ${v.computed}`, length)];
+    case "bare":
+      return [diagnostic("warning", "bare-data",
+        `${uri}: bare data — no frame stands (no head, no STX/ETX, no release); held verbatim, never read as a meme. WARNING: UNSTABLE`, length)];
+    default:
+      return [];
+  }
 }
 
 /**
@@ -83,11 +131,17 @@ export interface IngestOps<R = TiddlerFields> {
  */
 export const memeticIngestOps: IngestOps<TiddlerFields> = {
   deserialize(uri, text) {
+    const frame = verdict(text);
+    if (frame.kind === "bare") return { records: [bareRecord(uri, text)], diagnostics: frameDiagnostics(uri, frame, text.length) };
     const failures = parseMemeText(uri, text, getGrammar() ?? undefined).failures;
     const carrier = deserializeCarrier(text, { title: uri });
     return {
       records: carrier.records,
-      diagnostics: [...failuresToDiagnostics(failures, text.length), ...carrier.diagnostics],
+      diagnostics: [
+        ...failuresToDiagnostics(failures, text.length),
+        ...frameDiagnostics(uri, frame, text.length),
+        ...carrier.diagnostics,
+      ],
     };
   },
   render(uri, records) {
@@ -100,6 +154,7 @@ export const memeticIngestOps: IngestOps<TiddlerFields> = {
   grade(diagnostics) {
     return gradeOf(diagnostics);
   },
+  frame: verdict,
 };
 
 export interface IngestGateInput {
@@ -141,6 +196,16 @@ export function decideIngest<R = TiddlerFields>(
   // below that, keeps its text, rides forward with its receipt. A family whose deserialize
   // THROWS on malformed input (the native filetypes) never grades error here — the refuse
   // leg rides dormant in the shared shape, present but unfired for that family.
+  // 1½ — bare data: the frame verdict reads no frame at all. The bytes are held as they stand —
+  // never parsed as a meme (a toml fence in bare data lifts into no field), never refused as a broken
+  // one — and the hold IS the canonical text, flagged UNSTABLE.
+  const frame = congruence.frame?.(diskText);
+  if (frame?.kind === "bare") {
+    if (hash(diskText) === currentRenderHash) return { kind: "noop", reason: "canonical-equivalent" };
+    const held = [bareRecord(uri, diskText)] as unknown as readonly R[];
+    return settle(input, held, diskText, frameDiagnostics(uri, frame, diskText.length));
+  }
+
   const { records, diagnostics } = congruence.deserialize(uri, diskText);
   if (congruence.grade(diagnostics) === "error") {
     return {
@@ -177,6 +242,17 @@ export function decideIngest<R = TiddlerFields>(
     // a clean ingest (never-projected or records-unmoved) or a conflict below.
   }
 
+  return settle(input, records, canonicalText, diagnostics);
+}
+
+/** Rules 4–5: the records against the merge base, once the candidate stands. */
+function settle<R>(
+  input: IngestGateInput,
+  records: readonly R[],
+  canonicalText: string,
+  diagnostics: readonly MemeDiagnostic[],
+): IngestDecision<R> {
+  const { syncedHash, currentRenderHash } = input;
   // 4 — clean ingest: the records stand where the last projection left them.
   // Same tag-boundary normalization as the echo gate above — `currentRenderHash`
   // comes freshly computed (tagged) while `syncedHash` may still be stored bare.

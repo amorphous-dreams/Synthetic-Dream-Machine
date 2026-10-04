@@ -1,0 +1,68 @@
+/**
+ * THE FRAME VERDICT — one value, carrying its evidence, over the bytes alone.
+ *
+ * `verdict(text)` answers what the frame says about a text before any grammar reads it: the check
+ * matches (`match`), stands stale with both digests in hand (`stale`), was never stamped on a framed
+ * carrier (`absent`), cannot be divided without choosing (`torn`, its faults named), or no frame
+ * stands at all (`bare` — not a meme).
+ */
+import { describe, test, expect } from "vitest";
+import { frameCarrier, bccOf, verdict, META_OPEN_CANON } from "../src/index.js";
+
+const URI = "lar:///t/verdict";
+const carrier = frameCarrier({ head: { uri: URI }, body: `${META_OPEN_CANON}\ntitle = "${URI}"\n\`\`\`\n\nProse.` });
+const STX = '<<^ code="&#x0002;">>';
+const ETX = '<<^ code="&#x0003;">>';
+const CHECK = /ni:\/\/\/sha-256;[A-Za-z0-9_-]+/;
+const STALE = "ni:///sha-256;0000000000000000000000000000000000000000000";
+
+describe("★ verdict(text) ★", () => {
+  test("a stamped carrier matches, and names the check it read", () => {
+    expect(verdict(carrier)).toEqual({ kind: "match", check: bccOf(carrier) });
+  });
+
+  test("a stale check carries BOTH digests — the one standing and the one the bytes compute", () => {
+    expect(verdict(carrier.replace(CHECK, STALE))).toEqual({ kind: "stale", stored: STALE, computed: bccOf(carrier) });
+  });
+
+  test("a check naming an algorithm the reader refuses reads stale, never match", () => {
+    const foreign = carrier.replace(CHECK, "ni:///md5;AAAA");
+    expect(verdict(foreign)).toMatchObject({ kind: "stale", stored: "ni:///md5;AAAA" });
+  });
+
+  test("a framed carrier holding no check reads absent", () => {
+    expect(verdict(carrier.replace(CHECK, ""))).toEqual({ kind: "absent" });
+  });
+
+  test("a head-only carrier (no text frame) reads absent — it carries a frame, never a check", () => {
+    expect(verdict(`<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\nprose\n\n<<^ code="&#x0004;" -> to="?">>\n`)).toEqual({ kind: "absent" });
+  });
+
+  test("STX with no ETX reads torn, the missing close named", () => {
+    const v = verdict(carrier.slice(0, carrier.indexOf(ETX)));
+    expect(v.kind).toBe("torn");
+    if (v.kind === "torn") expect(v.faults.map((f) => f.kind)).toEqual(["no-etx"]);
+  });
+
+  test("a second live ETX reads torn", () => {
+    const v = verdict(carrier.replace(ETX, `${ETX}\n\nstray\n\n${ETX}`));
+    expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["second-etx"]);
+  });
+
+  test("an ETX ahead of the STX reads torn", () => {
+    const v = verdict(carrier.replace(STX, `${ETX}\n${STX}`));
+    expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["etx-before-stx"]);
+  });
+
+  test("a second STX alone is never a tear — a stream stands several by design", () => {
+    expect(verdict(carrier.replace(ETX, `${ETX}\n\n${STX}`)).kind).not.toBe("torn");
+  });
+
+  test("NO frame at all reads bare — not a meme", () => {
+    expect(verdict("bare data found on the internet\n\n```toml meta\nk = 1\n```\n")).toEqual({ kind: "bare" });
+  });
+
+  test("CONTROL: a QUOTED frame is still bare — a fenced mark frames nothing", () => {
+    expect(verdict(`prose\n\n\`\`\`\n${STX}\n${ETX}\n\`\`\`\n`)).toEqual({ kind: "bare" });
+  });
+});

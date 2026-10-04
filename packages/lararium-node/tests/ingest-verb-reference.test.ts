@@ -92,11 +92,11 @@ describe("INGEST by reference — summons lean, body resolved + landed", () => {
     expect(carriers[0]!["decision"]).toBe("ingest");
 
     // The whole body transited the reference path and landed in the target bag's per-carrier
-    // field (the shore normalizes a trailing newline — a decompose detail, not a transport
-    // loss): the landed record carries the full corpus.
+    // field. It carries no frame, so the gate holds it as BARE DATA — verbatim, every byte, never
+    // read as a meme: the landed record carries the full corpus.
     const landed = (await composite.resolveAll(URI)).find((e) => e.bagId === BAG)!.record;
     const landedText = String(landed.tiddler["text"] ?? "");
-    expect(landedText).toBe(body.replace(/\n$/, ""));
+    expect(landedText).toBe(body);
     expect(landed.meta?.["changeId"]).toBe("chg-ref-1");
   });
 

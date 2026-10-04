@@ -43,7 +43,6 @@ import {
   frameAlt,
   frameHex,
   classifyPostamble,
-  verifyBcc,
   readFrame,
   frameCarrier,
 } from "@lararium/memetic-frame";
@@ -1101,36 +1100,6 @@ export function deserializeCarrier(
 ): { records: TiddlerFields[]; diagnostics: MemeDiagnostic[] } {
   const records = memeticWikitextDeserializer(text, fields);
   const diagnostics: MemeDiagnostic[] = [];
-  // A MALFORMED FRAME IS NAMED, NEVER RESOLVED. The span reader closed the text at the canon's ETX and
-  // names every mark it had to pass over; the gate hears each as an error. A second STX is left to the
-  // gradient — a stream of several carriers stands several by design.
-  for (const fault of readFrame(text).faults) {
-    if (fault.kind === "second-stx") continue;
-    diagnostics.push({
-      from: 0, to: text.length, severity: "error", source: "memetic-wikitext",
-      code: "frame-malformed", message: fault.message,
-    });
-  }
-  const bcc = verifyBcc(text);
-  if (bcc === "mismatch") {
-    // A STALE BLOCK CHECK ON A HUMAN'S DISK EDIT IS AN EDIT, NEVER TAMPERING. The check is a derived
-    // trailer the writer re-stamps on every emit (`stampCarrier`); a hand that moved body bytes
-    // without re-running the writer leaves the old trailer standing, which names an honest edit the
-    // ingest gate still owes a real decision (noop/ingest/conflict) over, not a blanket refuse. So
-    // this grades a WARNING: it still surfaces on the shared diagnostics channel (the code + message
-    // ride it unchanged) without outranking `grade()`'s own verdict. The writer re-stamps the check
-    // the next time this meme is written; the pre-commit hook (`tools/meme-check-staged.sh`, via
-    // `lares meme check`) reads `verifyBcc` directly and still refuses a staged stale check.
-    diagnostics.push({
-      from: 0, to: text.length, severity: "warning", source: "memetic-wikitext",
-      code: "block-check-mismatch", message: "ni:/// block check does not match the STX–ETX body, including root TOML metadata",
-    });
-  } else if (bcc === "torn") {
-    diagnostics.push({
-      from: 0, to: text.length, severity: "error", source: "memetic-wikitext",
-      code: "block-check-torn", message: "STX stands without ETX; carrier body is torn",
-    });
-  }
   for (const record of records) {
     // CONTENT PAST ETX REFUSES — the NAK the block check was always for. The text ends at ETX and the
     // slot below it carries the check alone, so anything written there reaches no reader and no render
