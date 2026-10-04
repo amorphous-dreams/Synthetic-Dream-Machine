@@ -31,7 +31,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/pattern-integrity-rhymes
  */
 
-import { SEED_WRAP_PRF_INFO, type KeyClass } from "@lararium/mesh";
+import { SEED_WRAP_PRF_INFO, type KeyClass, hex as meshHex } from "@lararium/mesh";
 
 /** The HKDF `info` for the seed wrap — minted once in the registry, never built at a call site, never another seal's. */
 export const SEED_WRAP_HKDF_INFO = SEED_WRAP_PRF_INFO;
@@ -115,7 +115,7 @@ function subtle(): SubtleCrypto {
   return s;
 }
 
-const hex   = (b: Uint8Array): string => Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
+const hex   = meshHex;
 const unhex = (s: string): Uint8Array => {
   if (!/^(?:[0-9a-f]{2})*$/i.test(s)) throw new SeedWrapRefused("a record field is not hex");
   return new Uint8Array((s.match(/.{2}/g) ?? []).map((h) => parseInt(h, 16)));
