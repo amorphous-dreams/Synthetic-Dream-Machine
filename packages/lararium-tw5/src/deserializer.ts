@@ -502,8 +502,14 @@ function splitMemeToTiddlers(
   const recoveredBody = stripEdgeNewlines(
     [preFrameContent, bodyWithoutRootMeta].filter((s) => s.trim() !== "").join("\n\n"),
   );
+  // `uri` may already CARRY a fragment (a slot re-descending into its own child) — handing
+  // splitRecursive a bare "" prefix every time drops that standing fragment, so a slot child
+  // of a slot child loses its ancestry and its kahea refs compose against the wrong parent.
+  const hashIdx = uri.indexOf("#");
+  const rootUri = hashIdx < 0 ? uri : uri.slice(0, hashIdx);
+  const fragmentPrefix = hashIdx < 0 ? "" : uri.slice(hashIdx);
   const { children: bodyChildren, rewrittenText: bodyRewritten } =
-    splitRecursive(uri, "", recoveredBody, warnings);
+    splitRecursive(rootUri, fragmentPrefix, recoveredBody, warnings);
 
   const normalizedBodyRewritten = stripEdgeNewlines(bodyRewritten);
 
@@ -696,7 +702,8 @@ function extractSlotStructure(
   // The slot grammar mirrors AHU_OPEN_RE: a rooted slot path (`#/a/b/c`)
   // addresses a nested fragment and MUST round-trip whole — a `#[\w-]+`-only
   // match clipped the path at the first `/`, orphaning the slot's body.
-  const refRe = /<<~\s*kahea\s+ahu\s+#\/[\w-]+(?:\/[\w-]+)*\s*>>/g;
+  // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling).
+  const refRe = /<<~\s*kahea\s+ahu\s+#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*\s*>>/g;
   let lastEnd = -1;
   for (const m of maskedExecAll(remainder, refRe)) {
     lastEnd = m.index + m[0].length;
@@ -792,7 +799,12 @@ export function splitBodyTiddler(
   }
 
   const warnings: string[] = [];
-  const { children, rewrittenText } = splitRecursive(uri, "", bodyText, warnings);
+  // `uri` may already CARRY a fragment (a slot re-descending into its own child) — see the
+  // identical fix in splitMemeToTiddlers above.
+  const hashIdx = uri.indexOf("#");
+  const rootUri = hashIdx < 0 ? uri : uri.slice(0, hashIdx);
+  const fragmentPrefix = hashIdx < 0 ? "" : uri.slice(hashIdx);
+  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, bodyText, warnings);
 
   const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
 
@@ -1009,7 +1021,8 @@ function carriageText(reader: FieldsReader, carrierUri: string, part: CarriagePa
   return r && typeof r["text"] === "string" ? (r["text"] as string) : "";
 }
 
-const KAHEA_AHU_REF_RE = /<<~\s*kahea\s+ahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/g;
+// Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling).
+const KAHEA_AHU_REF_RE = /<<~\s*kahea\s+ahu\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)\s*>>/g;
 
 /**
  * Splice child definition blocks back over their kahea markers, full depth.
