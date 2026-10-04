@@ -523,23 +523,3 @@ export class CompositeStore implements LarTiddlerStore {
     return out;
   }
 }
-
-/**
- * Returns a LarTiddlerStore view over `composite` that fans reads across all
- * layers (standard composite priority) but pins writes to `bagId`.
- *
- * Use this when a ceremony (MOVE, wiki-sync) needs to issue `put`/`tombstone`
- * to one specific bag while still resolving cross-bag reads through the full
- * composite (e.g. cross-bag tombstone resolution, getLive checks).
- */
-export function bagScopedStore(composite: CompositeStore, bagId: string): LarTiddlerStore {
-  return {
-    listVisible:   () => composite.listVisible(),
-    get:           (title) => composite.getLive(title),
-    put:           (record, origin, options) => composite.put(record, origin, { bag: options?.bag ?? bagId }),
-    tombstone:     (title, origin) => composite.tombstoneInBag(bagId, title, origin),
-    remove:        (title, origin) => composite.removeInBag(bagId, title, origin),
-    subscribe:     (fn) => composite.subscribe(fn),
-    addProjection: (p) => composite.addProjection(p),
-  };
-}

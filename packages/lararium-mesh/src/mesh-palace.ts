@@ -42,8 +42,6 @@ import {
   type OraclePointer,
   type PointerVerdict,
   exportOracleSnapshot,
-  buildOraclePointer,
-  verifyOraclePointer,
 } from "./oracle-substrate.js";
 
 // ── The cap vocabulary (canon: mesh/vessel-caps) ──────────────────────────
@@ -556,17 +554,6 @@ function loadDoc(d: LarDoc): Doc<Record<string, unknown>> {
 export function snapshotPublicFlowMap(palaceDoc: LarDoc): Promise<OracleSnapshot> {
   return exportOracleSnapshot(loadDoc(publicFlowMap(palaceDoc)));
 }
-
-/** Export an already-loaded FLOW-map Doc as a snapshot (generic passthrough). */
-export function exportFlowMapSnapshot<T>(doc: Doc<T>): Promise<OracleSnapshot> {
-  return exportOracleSnapshot(doc);
-}
-
-/** Build + sign the monotone pointer to a FLOW-map snapshot. */
-export const buildFlowMapPointer = buildOraclePointer;
-
-/** The reader rule for a peer's FLOW-map pointer (never throws — returns a verdict). */
-export const verifyFlowMapPointer = verifyOraclePointer;
 
 // ── The live surface — a DocHandle-bound read/write over the pure core ─────
 // Writes go through `handle.change()`, reads off `handle.doc()`. The pure

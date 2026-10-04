@@ -132,7 +132,7 @@ export {
 export type { SealedBody } from "./ciphertext-cas.js";
 // The cad REMOTE TRANSIT leg — DHT-free discovery + secret-free BLAKE3(bytes)==cid verify (verify-cap ⊥ read-cap).
 export {
-  wantHave, have, dontHave, wantBlock, block,
+  have, block,
   fetchCidOverTransit, makeCidResolver, cidDigestClass, verifyCidBytes,
 } from "./cas-transit.js";
 export type {

@@ -40,15 +40,6 @@ export type FfzLevel = [number, number, number, number, number];
  */
 export const FFZ_DEFAULT_BOUNDS: FfzLevel = [64, 256, 1024, 365, Infinity];
 
-/** Canonical register names for the five attention-scale bands (Pulse/Beat/Measure/Arc/Theme). */
-export const FFZ_REGISTER_NAMES = [
-  "Pulse",   // L0 — sub-perceptual; operator-invisible system tick
-  "Beat",    // L1 — operator perceptual grain; the anchor level
-  "Measure", // L2 — session-length arc; coherent working window (DEFAULT)
-  "Arc",     // L3 — day/cycle arc; recurrent cadence
-  "Theme",   // L4 — epoch; anti-aliasing guard; unbounded by invariant
-] as const;
-
 /**
  * FfzClockProfile — a named bound set with a documented L1-grain annotation.
  *
@@ -70,25 +61,6 @@ export interface FfzClockProfile {
   /** Bounds tuple for this profile. L4 MUST remain Infinity. */
   readonly bounds:     FfzLevel;
 }
-
-/** Built-in profiles. Bounds remain stubs until real rhythm data arrives. */
-export const FFZ_PROFILES: Record<string, FfzClockProfile> = {
-  "session": {
-    name:    "session",
-    l1Grain: "one operator-agent exchange turn (grounded)",
-    bounds:  [64, 256, 1024, 365, Infinity],
-  },
-  "diegetic": {
-    name:    "diegetic",
-    l1Grain: "one FTLS combat round (~6 seconds in-world)",
-    bounds:  [16, 8, 12, 6, Infinity],
-  },
-  "world-time": {
-    name:    "world-time",
-    l1Grain: "one in-world month (4 weeks)",
-    bounds:  [4, 3, 4, 100, Infinity],
-  },
-} as const;
 
 /**
  * LarTickCounter — the Lararium node's monotonic sequence number.
@@ -181,27 +153,6 @@ export function ffzCompare(a: FfzClock, b: FfzClock): -1 | 0 | 1 {
   return a.actorId < b.actorId ? -1 : a.actorId > b.actorId ? 1 : 0;
 }
 
-/**
- * CRDT merge: dominant epoch wins.
- * Sub-epoch levels merge (max per level) only when both clocks share the same epoch.
- * The merged clock retains `a.actorId` and `a.bounds` — caller provides the local actor.
- */
-export function ffzMerge(a: FfzClock, b: FfzClock): FfzClock {
-  const epochA = a.levels[4];
-  const epochB = b.levels[4];
-  // L4's band is called Theme/epoch — a RHYTHMIC name, and a pure homonym of the mesh's fencing epoch.
-  // The `Math.max` below is a band-width fold, NOT the lease max-register it resembles.
-  const dominantEpoch = Math.max(epochA, epochB);
-  const bl = b.levels as readonly number[];
-  const levels = (a.levels as readonly number[]).map((v, i): number => {
-    if (i === 4) return dominantEpoch;
-    return epochA === epochB ? Math.max(v, bl[i] as number)
-         : epochA > epochB  ? v
-         :                    bl[i] as number;
-  }) as unknown as FfzLevel;
-  return { levels, bounds: a.bounds, actorId: a.actorId };
-}
-
 // ---------------------------------------------------------------------------
 // ExchangeState — lifecycle FSM for operator-agent exchange turns
 // ---------------------------------------------------------------------------
@@ -227,33 +178,3 @@ export type ExchangeState =
   | "grounded"          // both parties accepted; L1 tick fires, then → "idle"
   | "blocked";          // agent waiting for operator input (MCP input_required)
 
-// ---------------------------------------------------------------------------
-// Serialization — compact 6-integer wire form for DocHandle.broadcast()
-// ---------------------------------------------------------------------------
-
-/**
- * Compact wire encoding: `"L0:L1:L2:L3:L4:actorHash"`.
- * actorHash = first 8 hex chars of actorId (collision-tolerant for broadcast).
- * Full actorId stored in PresenceSlot — not repeated in every clock tick.
- */
-export function ffzSerialize(clock: FfzClock): string {
-  const hash = clock.actorId.slice(0, 8);
-  return `${clock.levels.join(":")}:${hash}`;
-}
-
-/**
- * Deserialize from wire form; requires full actorId and bounds from the surrounding context.
- * Returns null on parse failure.
- */
-export function ffzDeserialize(
-  wire: string,
-  actorId: string,
-  bounds: FfzLevel = FFZ_DEFAULT_BOUNDS,
-): FfzClock | null {
-  const parts = wire.split(":");
-  if (parts.length !== 6) return null;
-  const nums = parts.slice(0, 5).map(Number);
-  if (nums.some(isNaN)) return null;
-  const levels = nums as unknown as FfzLevel;
-  return { levels, bounds, actorId };
-}

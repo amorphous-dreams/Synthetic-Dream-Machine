@@ -1314,15 +1314,6 @@ export function mkDaemonResolveBindingResult(opts: {
   return msg;
 }
 
-export function mkDaemonEvictRequest(opts: { requestId: string; bagId: string }): DaemonMsg_EvictRequest {
-  return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
-    type: "daemon:evict-request",
-    requestId: opts.requestId,
-    bagId:     opts.bagId,
-  };
-}
-
 export function mkDaemonEvictResult(opts: { requestId: string; ok: boolean; error?: string }): DaemonMsg_EvictResult {
   const msg: DaemonMsg_EvictResult = {
     schema_version: ISLAND_PROTOCOL_VERSION,

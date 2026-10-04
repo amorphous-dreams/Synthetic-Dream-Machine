@@ -22,11 +22,6 @@ export function stripMemeExt(value: string): string {
   return value.endsWith(MEME_EXT) ? value.slice(0, -MEME_EXT.length) : value;
 }
 
-/** True when a filename carries the meme extension. */
-export function hasMemeExt(value: string): boolean {
-  return value.endsWith(MEME_EXT);
-}
-
 function splitHash(value: string): [string, string | null] {
   const index = value.indexOf("#");
   return index >= 0 ? [value.slice(0, index), value.slice(index + 1)] : [value, null];
@@ -101,9 +96,4 @@ export function mirrorStrategyForBag(targetBagId: string): MirrorPathStrategy | 
   if (targetBagId === LARES_DOC_URI) return "lares";
   if (targetBagId === LARARIUM_DOC_URI) return "engine";
   return null;
-}
-
-export function canonicalMirrorRelPathForBag(uri: string, targetBagId: string): string | null {
-  const strategy = mirrorStrategyForBag(targetBagId);
-  return strategy ? mirrorRelPath(uri, strategy) : null;
 }

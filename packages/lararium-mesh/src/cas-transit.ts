@@ -68,14 +68,8 @@ export type CasTransitMessage =
   | { readonly type: "want-block"; readonly cid: string }                         // fetch ask
   | { readonly type: "block";      readonly cid: string; readonly bytes: Uint8Array };  // the ciphertext
 
-/** Build a `want-have` (discovery broadcast). */
-export const wantHave  = (cid: string): CasTransitMessage => ({ type: "want-have",  cid });
 /** Build a `have` (a holder's affirmative). */
 export const have      = (cid: string): CasTransitMessage => ({ type: "have",       cid });
-/** Build a `dont-have` (a peer's miss). */
-export const dontHave  = (cid: string): CasTransitMessage => ({ type: "dont-have",  cid });
-/** Build a `want-block` (fetch a named holder). */
-export const wantBlock = (cid: string): CasTransitMessage => ({ type: "want-block", cid });
 /** Build a `block` (the ciphertext answer). */
 export const block     = (cid: string, bytes: Uint8Array): CasTransitMessage => ({ type: "block", cid, bytes });
 

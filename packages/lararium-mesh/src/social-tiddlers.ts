@@ -8,7 +8,6 @@
  * (convergent capabilities + Group CRDT + BeeKEM). Queryable from TW5 field filters.
  */
 
-import type { LarTiddlerRecord } from "./tiddler-store.js";
 import type { LarDoc } from "./base-doc.js";
 import type { FfzClock, ExchangeState, LarTickCounter } from "./ffz-clock.js";
 
@@ -27,20 +26,6 @@ export interface IdentityTiddler {
   readonly keyHistory?:     string;
   readonly trustTier?:      "local" | "nexus" | "cross-nexus" | "public";
   readonly readPolicy?:     string;
-}
-
-export function readIdentityTiddler(raw: LarTiddlerRecord): IdentityTiddler | null {
-  const fields = raw.tiddler as Record<string, unknown>;
-  const didValue = typeof fields["did"] === "string" ? fields["did"] : undefined;
-  if (!didValue) return null;
-  return {
-    did:            didValue,
-    displayName:    typeof fields["displayName"] === "string" ? fields["displayName"] : didValue,
-    createdAt:      (fields["createdAt"] as string | undefined) ?? (fields["created"] as string | undefined) ?? "",
-    kind:           (fields["kind"] as IdentityTiddler["kind"] | undefined) ?? "device",
-    ...(typeof fields["verifyingKey"] === "string" ? { verifyingKey: fields["verifyingKey"] } : {}),
-    ...(typeof fields["readPolicy"] === "string" ? { readPolicy: fields["readPolicy"] } : {}),
-  };
 }
 
 // ── Circle (group) ────────────────────────────────────────────────────────
@@ -62,23 +47,6 @@ export interface CircleTiddler {
   readonly readPolicy?:         string;
 }
 
-export function readCircleTiddler(raw: LarTiddlerRecord): CircleTiddler | null {
-  const fields = raw.tiddler as Record<string, unknown>;
-  const id = typeof fields["id"] === "string" ? fields["id"] : undefined;
-  if (!id) return null;
-  return {
-    id,
-    displayName:          (fields["displayName"] as string | undefined) ?? id,
-    createdAt:            (fields["createdAt"] as string | undefined) ?? (fields["created"] as string | undefined) ?? "",
-    kind:                 (fields["kind"] as CircleTiddler["kind"] | undefined) ?? "Circle",
-    memberDids:           (fields["memberDids"] as string | undefined) ?? "",
-    ...(typeof fields["addressingScope"] === "string" ? { addressingScope: fields["addressingScope"] } : {}),
-    ...(typeof fields["encryptedShareHint"] === "string" ? { encryptedShareHint: fields["encryptedShareHint"] } : {}),
-    ...(typeof fields["capabilityPolicy"] === "string" ? { capabilityPolicy: fields["capabilityPolicy"] } : {}),
-    ...(typeof fields["readPolicy"] === "string" ? { readPolicy: fields["readPolicy"] } : {}),
-  };
-}
-
 // ── Session ───────────────────────────────────────────────────────────────
 
 export interface SessionTiddler {
@@ -93,20 +61,6 @@ export interface SessionTiddler {
   readonly readPolicy?:       string;
 }
 
-export function readSessionTiddler(raw: LarTiddlerRecord): SessionTiddler | null {
-  const fields = raw.tiddler as Record<string, unknown>;
-  const id = typeof fields["id"] === "string" ? fields["id"] : undefined;
-  if (!id) return null;
-  return {
-    id,
-    operatorDid:        (fields["operatorDid"] as string | undefined) ?? "",
-    agentId:            (fields["agentId"] as string | undefined) ?? "",
-    startedAt:          (fields["startedAt"] as string | undefined) ?? (fields["created"] as string | undefined) ?? "",
-    state:              (fields["state"] as SessionTiddler["state"] | undefined) ?? "active",
-    ...(typeof fields["capabilityToken"] === "string" ? { capabilityToken: fields["capabilityToken"] } : {}),
-    ...(typeof fields["readPolicy"] === "string" ? { readPolicy: fields["readPolicy"] } : {}),
-  };
-}
 
 // ── Session event log ─────────────────────────────────────────────────────
 
