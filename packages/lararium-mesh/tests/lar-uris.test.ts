@@ -265,3 +265,41 @@ describe("★ an inner path names its own record, never the entity holding it �
     }
   });
 });
+
+describe("a slot fragment's RECORD FORM percent-encodes its Hawaiian letters (RFC 3986, UTF-8)", () => {
+  // Operator ruling, slot-grammar-orthography. A slot name's CANON spelling (the record's own
+  // title/fragment) carries the letter itself — a `lar:` URI title is a TiddlyWiki title, and a
+  // title holds raw Unicode. The WIRE form (any transport that reads a `lar:` URI as an RFC 3986
+  // URI reference, never as a title) percent-encodes every non-ASCII octet of its UTF-8 encoding;
+  // this is the platform's own `encodeURIComponent`, exercised here against the exact fragment
+  // shapes `meme-normalize` mints, so a drift in either direction is caught at the seam.
+  test("ʻokina (U+02BB) encodes to its two UTF-8 octets, %CA%BB, and decodes back", () => {
+    const frag = "#/hawaiʻi";
+    const encoded = encodeURIComponent(frag);
+    expect(encoded).toContain("%CA%BB");
+    expect(decodeURIComponent(encoded)).toBe(frag);
+  });
+
+  test("each Hawaiian long vowel round-trips through percent-encode/decode", () => {
+    for (const letter of ["ā", "ē", "ī", "ō", "ū"]) {
+      const frag = `#/kanawai${letter}`;
+      const encoded = encodeURIComponent(frag);
+      expect(encoded).not.toBe(frag); // the letter itself moved to %-octets
+      expect(decodeURIComponent(encoded)).toBe(frag);
+    }
+  });
+
+  test("a full lar: URI carrying a kahakō + ʻokina fragment round-trips through URL's own fragment reader", () => {
+    const uri = "lar:///ha.ka.ba/x/y#/hawaiʻi/kānāwai";
+    const [base, frag] = uri.split("#");
+    const wire = `${base}#${encodeURIComponent(frag!)}`;
+    expect(wire).toBe("lar:///ha.ka.ba/x/y#%2Fhawai%CA%BBi%2Fk%C4%81n%C4%81wai");
+    const decoded = `${wire.split("#")[0]}#${decodeURIComponent(wire.split("#")[1]!)}`;
+    expect(decoded).toBe(uri);
+  });
+
+  test("CONTROL: an ASCII-only slot segment (letters/digits/hyphen) is untouched by percent-encoding", () => {
+    const seg = "plain-slot";
+    expect(encodeURIComponent(seg)).toBe(seg);
+  });
+});

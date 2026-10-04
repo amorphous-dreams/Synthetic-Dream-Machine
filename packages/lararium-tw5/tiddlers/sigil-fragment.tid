@@ -3,7 +3,7 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: child-slot
 lar-mirror-of: ahu
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/ahu
-lar-open-pattern: <<fragment\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)?"?)?\s*>>
+lar-open-pattern: <<fragment\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)(?:\s+->\s+"?((?:[^"\s>]|>(?!>))+)?"?)?\s*>>
 lar-close-pattern: <</fragment\s*>>
 lar-example: <<fragment #/head>>\nbody\n<</fragment>>
 type: text/vnd.tiddlywiki

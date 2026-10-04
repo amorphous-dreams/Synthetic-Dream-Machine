@@ -434,6 +434,36 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     }
   }
 
+  // ── 3.5. Slot-name orthography (NFC + ʻokina fold) — FRAME AUTHORITY ─────
+  //
+  // RULED (operator, slot-grammar-orthography): a slot token admits Hawaiian orthography
+  // — `[a-z0-9āēīōūʻ-]` — while sigil HEADS stay core ASCII (typability; no change to sigil
+  // grammar). NORMALIZE applies INSIDE SLOT NAMES ONLY, fence-masked: NFC first (a decomposed
+  // vowel + combining macron U+0304 precomposes), then fold ʻokina look-alikes — the curly
+  // quotes U+2018/U+2019 and the typable straight apostrophe U+0027 — to the one ʻokina glyph
+  // U+02BB. Never touches a byte outside a slot name (prose, fences, sigil heads). Each fold
+  // reports through `flags`, the existing human-triage channel.
+  {
+    const mask = fencedSpans(seat.text);
+    let folded = 0;
+    // Every slot-bearing sigil shares the shape `<<… #/path…` — the parameter right after the
+    // root mark, up to the next delimiter (`"`, `>`, or whitespace). Scoping the fold to text
+    // that follows `<<` … `#/` inside one sigil call keeps prose and lar-uri fragments untouched.
+    const SLOT_TOKEN_RE = /(<<[^\n>]*?\s)(#\/?[^\s">]+)/g;
+    const next = seat.text.replace(SLOT_TOKEN_RE, (whole, head: string, path: string, offset: number) => {
+      if (inMask(mask, offset)) return whole;
+      const nfc = path.normalize("NFC");
+      const okinaFolded = nfc.replace(/[‘’']/g, "ʻ");
+      if (okinaFolded === path) return whole;
+      folded += 1;
+      flags.push(`slot name: ${path} folded to ${okinaFolded} (NFC + ʻokina)`);
+      return head + okinaFolded;
+    });
+    if (folded > 0) {
+      seat.apply("frame", next, () => `slot name orthography: ${folded} slot${folded === 1 ? "" : "s"} folded to canonical (NFC + ʻokina)`);
+    }
+  }
+
   // ── 4. Child-slot roots — FRAME AUTHORITY ─────────────────────────────────
   //
   // A CHILD SLOT NAMES THE STRING IT ADDRESSES. The carrier mints `parentUri#/name`, so an open that
@@ -455,7 +485,10 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
     const CLOSE_RE = /^<<(?:~\/ahu|\/fragment)\s*>>/;
     // The leading slash is OPTIONAL on read — a bare `#name` is exactly the unrooted drift this
     // clause exists to fix — and always present on write (every output line below mints `#/`).
-    const OPEN_RE = /^<<(~ ?ahu|fragment) #\/?([a-z0-9/-]+)(.*)$/i;
+    // Slot token = `[a-z0-9āēīōūʻ-]` (operator ruling, slot-grammar-orthography); `/` nests. By
+    // this point (clause 3.5 runs first) any fold-eligible apostrophe/decomposed vowel has already
+    // precomposed to the canonical glyphs, so the class below names the admitted set exactly.
+    const OPEN_RE = /^<<(~ ?ahu|fragment) #\/?([a-z0-9āēīōūʻ/-]+)(.*)$/i;
 
     // The enclosing `stack` is ALWAYS the prefix a new open mints onto — a bare leaf (`#ha-fields`)
     // always lands under whatever is physically open around it, regardless of what name it carries.

@@ -52,6 +52,7 @@ and wikitext body.
 !! Law (Kānāwai)
 
 An ahu block slot name MUST begin with `#/`. The slash roots the path at the carrier, so a slot names the same string it addresses; a nested slot extends it (`#/parent/child`). A bare `#name` belongs to no ahu slot grammar: a processor MUST preserve that source verbatim, surface a diagnostic to the operator, and MUST NOT normalize it or mint a child address from it. A CONTROL slot carries structural metadata rather than addressable content and takes no root — it opens no child to address.
+A slot token admits `[a-z0-9āēīōūʻ-]` — lowercase ASCII letters and digits, a hyphen, the Hawaiian long vowels ā ē ī ō ū (precomposed), and the ʻokina (U+02BB); `/` nests, and `$` is reserved as a leading carriage marker (RULED, operator, slot-grammar-orthography). `lares meme normalize` folds a slot name — and only a slot name, fence-masked — to NFC first (so a decomposed vowel, a base letter plus the combining macron U+0304, precomposes to its canonical letter), then folds the three ʻokina look-alikes (the curly quotes U+2018/U+2019 and the typable straight apostrophe U+0027) to U+02BB, reporting each fold as a diagnostic. Kahakō and ʻokina stand RULED; a kahakō look-alike (a folding macron on any other vowel, or any other Hawaiian orthographic mark) is NOT ruled — it stays unfolded, and MUST pass through unchanged.
 An ahu block MUST close with `<<~/ahu>>`.
 An ahu block MAY nest inside another ahu block. A nested slot extends its enclosing slot path (`#/parent/child`), while a top-level slot begins a path at the carrier root.
 An ahu slot MUST produce an independently addressable tiddler at `parentUri + slot`.
@@ -118,6 +119,6 @@ slot = 1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HstOjbDMGFe4nO8-34GtaOklPv835UOTilu-kuvSFfI
+<<^ code="&#x0003;">>ni:///sha-256;H2lh_nTMKxYeoM0ES6qFkwP-gGuNaxEQy3lxcMtkqko
 
 <<^ code="&#x0004;" -> to="?">>

@@ -9,7 +9,7 @@
 import type { SigilRule, FamilyRule } from "./types.js";
 
 export const GENERATED_SIGILS: SigilRule[] = [
-  { name: "ahu", kind: "child-slot", openPattern: "<<~[^>]*\\bahu\\s+(#\\/[\\w-]+(?:\\/[\\w-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?)?\\s*>>", closePattern: "<<~\\/ahu\\s*>>" },
+  { name: "ahu", kind: "child-slot", openPattern: "<<~[^>]*\\bahu\\s+(#\\/[\\wāēīōūʻ-]+(?:\\/[\\wāēīōūʻ-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?)?\\s*>>", closePattern: "<<~\\/ahu\\s*>>" },
   { name: "aka", kind: "edge-sugar", pattern: "<<~\\s*aka\\s+([\\w-]+\\s+)?\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>", defaultFamily: "observe" },
   { name: "branch", kind: "concurrency", pattern: "<<~\\s*branch\\s+\"?((?:[^\"\\s>]|>(?!>))+)\"?\\s*>>", aliasFor: "lele" },
   { name: "carry", kind: "relation", pattern: "<<~\\s*carry\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
@@ -25,7 +25,7 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "feedback", kind: "gauge", pattern: "<<~\\s*feedback\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "focus", kind: "gauge", pattern: "<<~\\s*focus\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?\\s*>>" },
   { name: "for", kind: "control", openPattern: "<<~\\s*for\\s+([^>]+?)\\s*>>", closePattern: "<<~\\/for\\s*>>", aliasFor: "huli" },
-  { name: "fragment", kind: "child-slot", openPattern: "<<fragment\\s+(#\\/[\\w-]+(?:\\/[\\w-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)?\"?)?\\s*>>", closePattern: "<</fragment\\s*>>", aliasFor: "ahu" },
+  { name: "fragment", kind: "child-slot", openPattern: "<<fragment\\s+(#\\/[\\wāēīōūʻ-]+(?:\\/[\\wāēīōūʻ-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)?\"?)?\\s*>>", closePattern: "<</fragment\\s*>>", aliasFor: "ahu" },
   { name: "frame", kind: "relation", pattern: "<<~\\s*frame\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "frame-eot", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0004;" },
   { name: "frame-eot2", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0014;" },

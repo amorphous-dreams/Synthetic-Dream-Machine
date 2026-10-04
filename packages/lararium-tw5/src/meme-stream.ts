@@ -62,7 +62,9 @@ const ETX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`);
 // EOT: entity form OR return-throat (<<~ -> ?>>)
 const EOT_RE  = new RegExp(`<<[~^](?:${INNER}${frameAlt("EOT")}${INNER}|\\s*->\\s*\\?)\\s*>>`);
 // `fragment` is an English surface alias for the same rooted ahu worksite event.
-const AHU_OPEN_RE  = /<<(?:~(?:[^>\n]|>(?!>))*\bahu|fragment)\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/;
+// Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling) —
+// mirrors AHU_OPEN_RE in meme-ast/ahu-scan.ts.
+const AHU_OPEN_RE  = /<<(?:~(?:[^>\n]|>(?!>))*\bahu|fragment)\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)\s*>>/;
 const AHU_CLOSE_RE = /<<(?:~\s*\/\s*ahu|\/fragment)\s*>>/;
 
 type Hit = { index: number; end: number; cap: string | undefined };

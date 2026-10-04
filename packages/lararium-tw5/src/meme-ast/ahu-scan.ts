@@ -26,8 +26,13 @@ import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
  * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens `<<~ ahu #/slot>>`; an English carrier opens
  * `<<fragment #/slot>>`. Both name a meme holding tiddlers and scan through this
  * shared reader. A bare `#slot` belongs to neither child-slot grammar.
+ *
+ * A SEGMENT ADMITS the Hawaiian long vowels (ā ē ī ō ū, precomposed) and the ʻokina (U+02BB) beside
+ * the base `[\w-]` — operator ruling. `normalizeMemeSource` is where NFC-folding a decomposed vowel
+ * and folding an ʻokina LOOK-ALIKE (‘ ’ ') to U+02BB happen; by the time a slot name reaches this
+ * scanner it already carries the one canonical spelling this charclass admits.
  */
-export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
+export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
 /**

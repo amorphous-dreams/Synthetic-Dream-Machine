@@ -128,7 +128,8 @@ interface Slot { readonly name: string; readonly body: string }
 function readSlots(text: string): Slot[] {
   const mask = fencedSpans(text);
   const out: Slot[] = [];
-  const open = /^<<~ ?ahu #\/([a-z0-9/-]+)[^\n]*>>$/gim;
+  // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[a-z0-9-]` (operator ruling).
+  const open = /^<<~ ?ahu #\/([a-z0-9āēīōūʻ/-]+)[^\n]*>>$/gim;
   const close = /^<<~\/ahu\s*>>$/gim;
   const marks: Array<{ at: number; end: number; name?: string }> = [];
   for (const m of text.matchAll(open)) {

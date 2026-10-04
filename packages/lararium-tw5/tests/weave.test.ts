@@ -467,6 +467,19 @@ describe("ahu ids: the ISO/IEC 9075-14 `_xHHHH_` escape, self-escaping", () => {
     const t = transposeMarkdown("<<~ ahu #/carrier-spine>>\nprose\n<<~/ahu>>\n");
     expect(t.markdown).toContain('<a id="carrier-spine"></a>');
   });
+
+  test("CONTROL: the Hawaiian long vowels and ʻokina are already XML-Name-legal — no escape (operator ruling, slot-grammar-orthography)", () => {
+    for (const seg of ["kānāwai", "hawaiʻi", "ʻōlelo"]) {
+      const escaped = escapeXmlNameSegment(seg);
+      expect(escaped).toBe(seg); // unchanged — these glyphs sit inside À-￿, already XML_NAME_CHAR
+      expect(escaped).not.toContain("_x");
+    }
+  });
+
+  test("a kahakō + ʻokina ahu slot weaves to a readable, unescaped anchor id", () => {
+    const t = transposeMarkdown("<<~ ahu #/hawaiʻi/kānāwai>>\nprose\n<<~/ahu>>\n");
+    expect(t.markdown).toContain('<a id="hawaiʻi_kānāwai"></a>');
+  });
 });
 
 describe("aka vs kahea vs loulou — frozen, live, and plain citation", () => {

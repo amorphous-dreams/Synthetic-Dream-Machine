@@ -112,9 +112,16 @@ describe("normalizeMemeSource — child-slot roots", () => {
     expect(r.text).not.toContain("<<~ ahu #/ha-fields>>");
   });
 
-  test("the English spelling roots the same way", () => {
+  test("the English spelling roots the same way, then folds to its canonical head", () => {
+    // `fragment` is a READ-ONLY mirror (no `lar-weave: primary`) — clause 7 folds its head token
+    // to `ahu` the same pass that clause 4 roots its slot, since this carrier declares no
+    // `tongue`. A carrier that means to PRESERVE the mirror spelling declares one (see the
+    // mirror-fold suite's "PRESERVE" case); this test's own intent is the ROOTING, which the
+    // English spelling takes identically to the sharktooth one — so the canonical result is the
+    // rooted, folded form.
     const r = normalizeMemeSource(SLOT_HEAD("<<fragment #head>>\n\nbody\n\n<</fragment>>"));
-    expect(r.text).toContain("<<fragment #/head>>");
+    expect(r.text).toContain("<<ahu #/head>>");
+    expect(r.text).toContain("<</ahu>>");
   });
 
 

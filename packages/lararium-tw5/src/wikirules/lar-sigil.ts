@@ -102,7 +102,8 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
     // shared shape; carrier decomposition retains the authored worksite spelling for projection.
     if (source.startsWith("<<fragment", pos)) {
-      const open = /^<<fragment\s+(#\/[\w-]+(?:\/[\w-]+)*)(?:\s+->\s+[^>]+)?\s*>>/.exec(source.slice(pos));
+      // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling).
+      const open = /^<<fragment\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)(?:\s+->\s+[^>]+)?\s*>>/.exec(source.slice(pos));
       if (open) {
         const close = source.indexOf("<</fragment>>", pos + open[0].length);
         this.matchPos = pos;
@@ -158,7 +159,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // through `lares meme normalize`'s own child-slot-roots clause, never silently through a
       // render.
       if ((compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
-          /^#[\w-]+(?:\/[\w-]+)*$/.test(compound.p1)) {
+          /^#[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*$/.test(compound.p1)) {
         compound = { ...compound, p1: `#/${compound.p1.slice(1)}` };
       }
       // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
