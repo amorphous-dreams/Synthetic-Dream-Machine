@@ -59,7 +59,7 @@ English alias: `sharktooth-sigils` — same meme, same law, different face.
 
 ''THE THIRD CHARACTER STILL DECIDES'', now five ways and still with no lookahead: `<<~` opens the speaking set · `<<^` the control set · `<<!` the declaration register · `<<<` a quote fence · anything else reads a macrocall. `!` never opens a macro name, so the fifth way costs the decision nothing. A one-character decision is the property the whole carrier grammar rests on, and it is precisely why the control band took a MARK rather than moving its entity into the delimiter — an opener reading `<<&#x0001;` would land inside the macrocall token and parse as a call to a macro nobody wrote.
 
-''The namespace glyph stays where it lies'' — adjacent to its control character on the SOH opener, mirroring the `namespace` field the meta block declares two lines below. Black speaks, red steers, and the two channels say the same thing on purpose. ''Only the SOH openers carry it''; the later controls frame and name nothing.
+''The namespace glyph stays where it lies'' — adjacent to its control character on the SOH opener. `namespace` is a head param, never a body field: the meta block that follows STX may declare its own `namespace` field, mirroring the SOH's, but the two live on opposite sides of the header/body boundary. Black speaks, red steers, and the two channels say the same thing on purpose. ''Only the SOH openers carry it''; the later controls frame and name nothing.
 
 <<~/ahu>>
 
@@ -314,6 +314,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zJYk_2P1HEhzi1NXfYJGVw2wT6Y2RYoc-eI63I7Mjsc
+<<^ code="&#x0003;">>ni:///sha-256;wSBgwTwH78fsbyZtUCEcejG4oD0Y3_fCZicUTcrNq1c
 
 <<^ code="&#x0004;" -> to="?">>

@@ -69,10 +69,10 @@ Phase semantics:
 
 | Phase | Sigil | Payload | Consumer action |
 |---|---|---|---|
-| `soh` | `<<~\x01 ? -> lar:///URI>>` | declared URI | open stub card for URI |
-| `stx` | `<<~\x02>>` | none | meta prelude dissolved; render identity panel |
-| `etx` | `<<~\x03>>` | none | content ahus committed; fire activate |
-| `eot` | `<<~\x04 -> ?>>` | none | edges committed; update graph; release channel |
+| `soh` | `<<^ code="&#x0001;" from="?" -> to="lar:///URI">>` | declared URI | open stub card for URI |
+| `stx` | `<<^ code="&#x0002;">>` | none | meta prelude dissolved; render identity panel |
+| `etx` | `<<^ code="&#x0003;">>` | none | content ahus committed; fire activate |
+| `eot` | `<<^ code="&#x0004;" -> to="?">>` | none | edges committed; update graph; release channel |
 
 `soh` MUST carry the carrier's URI in the `toUri` field.
 `eot` marks the return-to-caller; no payload.
@@ -129,6 +129,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hSx8qgUfekf0GqiwD_PUkYN7zB-gyWhXvyvisQ7myMA
+<<^ code="&#x0003;">>ni:///sha-256;dbwDuVqqnz3xamqfHUZhyM0TK0URIpt_RB28YOQ1SsY
 
 <<^ code="&#x0004;" -> to="?">>

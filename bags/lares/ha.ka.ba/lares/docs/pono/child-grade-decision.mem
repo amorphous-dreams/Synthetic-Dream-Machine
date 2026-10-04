@@ -64,7 +64,7 @@ That refutation names the shape any new proposal must survive. ''A cure that han
 * ''The child carries NO `file-path`'' (`deserializer.ts:590-591`): a fragment record never owns a disk file; its carrier root does. So a child has no independent projection and no independent disk round trip.
 * ''The child carries its own `type`'' when its meta declares one (`deserializer.ts:598-601`) — a markdown section under a memetic root keeps `text/markdown`.
 * ''`$fragment-parent` points ONE LEVEL up'', never at the meme root (`deserializer.ts:562-564`), so a climb to the root walks a hop chain.
-* ''The parent holds the frame.'' The DOCTYPE, the SOH head, the meta fence, STX, ETX, the block check, EOT — all of it stands on the ROOT's record. ''A child holds body and nothing else.'' This single asymmetry drives most of what follows.
+* ''The parent holds the frame.'' The DOCTYPE, the SOH head, STX, the meta fence, ETX, the block check, EOT — all of it stands on the ROOT's record. ''A child holds body and nothing else.'' This single asymmetry drives most of what follows.
 
 !! Which field the grading reads
 
@@ -397,6 +397,6 @@ In all three, the CONTENT grade and the FRAME shape diverge, and the frame shape
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kYuEBZ9pokSgMB8r1ifjZPBXPN1D_d_RA3xHEIuqa0g
+<<^ code="&#x0003;">>ni:///sha-256;eFbu6Fy8ClmY2RHTSVqldZ4dQHe23TI3TRpO0ykHF5o
 
 <<^ code="&#x0004;" -> to="?">>
