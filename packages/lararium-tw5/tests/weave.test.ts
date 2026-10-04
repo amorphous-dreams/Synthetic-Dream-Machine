@@ -617,6 +617,76 @@ uri-path = "ha.ka.ba/lares/api/pono/target"
     const t = transposeMarkdown('<<~ pin "lar:///ha.ka.ba/lares/api/pono/nowhere">>\n');
     expect(t.markdown).toContain("- `pin lar:///ha.ka.ba/lares/api/pono/nowhere` (unresolved — no corpus to pin)");
   });
+
+  test("a `#/slot` fragment skips a fenced span that SHOWS the ahu sigils literally, and finds the real slot", () => {
+    // RED-before-fix: `extractAhuSlot` walked AHU_OPEN/AHU_CLOSE line-by-line with no fence
+    // awareness, while `weave()` below it already reads `fenceLineOpen`/`fenceLineClose` from
+    // fence-mask.ts before trusting a line as a live sigil. A backtick fence showing the ahu
+    // sigils as LITERAL TEXT (a worked example, a quoted illustration) fooled the slot scan into
+    // opening and closing on the fence's own fake pair, so the fragment pinned the fence's fake
+    // body instead of the real slot — exactly the carrier-bytes-the-author-never-pointed-at
+    // failure the slot-scoped law (line ~510 above) exists to rule out.
+    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/fenced-target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/fenced-target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+\`\`\`text
+<<~ ahu #/normative-language>>
+FAKE slot content inside a fence — must not appear in the pin.
+<<~/ahu>>
+\`\`\`
+
+<<~ ahu #/normative-language>>
+
+! Normative Language
+
+Real slot content, outside any fence.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;FENCED_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/fenced-target" ? target : null);
+    const t = transposeMarkdown(
+      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/fenced-target#/normative-language">>\n',
+      PROFILES.CommonMark,
+      resolve,
+    );
+    expect(t.markdown).toContain("Real slot content, outside any fence.");
+    expect(t.markdown).not.toContain("FAKE slot content");
+  });
+
+  test("CONTROL: the same slot with NO fence present still extracts normally", () => {
+    const target = `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/unfenced-target">>
+\`\`\`toml meta
+uri-path = "ha.ka.ba/lares/api/pono/unfenced-target"
+\`\`\`
+
+<<^ code="&#x0002;">>
+
+<<~ ahu #/normative-language>>
+
+! Normative Language
+
+Real slot content, no fence anywhere.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;UNFENCED_CHECK
+<<^ code="&#x0004;" -> to=?>>
+`;
+    const resolve = (uri: string): string | null => (uri === "lar:///ha.ka.ba/lares/api/pono/unfenced-target" ? target : null);
+    const t = transposeMarkdown(
+      '<<~ aka "lar:///ha.ka.ba/lares/api/pono/unfenced-target#/normative-language">>\n',
+      PROFILES.CommonMark,
+      resolve,
+    );
+    expect(t.markdown).toContain("Real slot content, no fence anywhere.");
+  });
 });
 
 describe("LOOP 7: a pin's TARGET decides its shape; WHICH SIGIL (aka/pin vs kanawai/law) decides normative vs informative", () => {

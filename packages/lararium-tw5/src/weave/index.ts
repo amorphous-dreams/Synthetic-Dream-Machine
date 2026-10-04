@@ -531,7 +531,20 @@ function extractAhuSlot(text: string, slotPath: string): string | null {
   const wantId = slotPath.startsWith("/") ? slotPath.slice(1) : slotPath;
   let depth = 0;
   let collected: string[] | null = null;
+  // ── fence tracking, same rule weave() reads below (ONE RULE, ONE PLACE): a backtick fence may
+  // SHOW the ahu sigils as literal text (a worked example, a quoted illustration), and a line
+  // inside one never opens or closes a real slot. ──
+  let fence = 0;
   for (const line of text.split("\n")) {
+    if (fence === 0) {
+      const openLen = fenceLineOpen(line);
+      if (openLen > 0) { fence = openLen; if (collected !== null) collected.push(line); continue; }
+    } else if (fenceLineClose(line, fence)) {
+      fence = 0;
+      if (collected !== null) collected.push(line);
+      continue;
+    }
+    if (fence > 0) { if (collected !== null) collected.push(line); continue; }
     if (collected === null) {
       const open = AHU_OPEN.exec(line);
       if (open) {

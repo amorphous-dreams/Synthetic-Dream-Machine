@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;Gb2eaSFPd84pWlf9EGlQTxqVr_QQzYQCgDjYSCRM5ck"
+source-check: "ni:///sha-256;GhKd0J42YXgMwtznyfUttrmhecnYBbB0vNUzja8JbVA"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -272,7 +272,7 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 <<^ code="&#x0002;">>                                 STX · open text (body)
   ```toml meta                                              root tiddler fields
   ```
-  <<~ aka "lar:///…RFC-2119">>                            authored relation
+  <<~ kanawai "lar:///…RFC-2119">>                        authored relation
   # title · ## sections · #edges                       the text (body)
 <<^ code="&#x0003;">>                                 ETX · close text
 <<^ code="&#x0004;" -> to="?">>                            EOT · release

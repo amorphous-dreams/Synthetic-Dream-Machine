@@ -61,7 +61,7 @@ A kanawai MUST bind a source socket and a target URI.
 A kanawai MUST carry `family:transclusion`.
 A kanawai MUST leave the target unchanged.
 A kanawai MUST stay inert, carrying no execution pulse.
-A kanawai SHOULD carry `confidence` when the observation is uncertain.
+A kanawai SHOULD carry `confidence` when uncertainty rides the observation.
 A kanawai MUST stay acyclic — directly and transitively.
 A kanawai declaration MUST read as the carrier binding itself to the target; a citation that carries
 no such binding reads as `aka` instead.
@@ -130,6 +130,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5nUHoez4faPm4CLPWa9nzF-6FPtI8sfuuA5qwsbKr-o
+<<^ code="&#x0003;">>ni:///sha-256;lRGeUytuBotf5wCZ4ub_JylMhET-nf1vqrqWgfSqUVA
 
 <<^ code="&#x0004;" -> to="?">>
