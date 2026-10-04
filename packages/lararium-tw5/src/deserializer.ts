@@ -51,6 +51,7 @@ import {
   findTopLevelAhuBlocks,
   composeSlotPath,
   childUri as childUriOf,
+  KAHEA_REF_RE,
 } from "./meme-ast/ahu-scan.js";
 
 // ── THE CODE SETS COME FROM THE DECLARATION; THE HEAD SCANS STAY THIS READER'S OWN (marks.ts) ───────
@@ -526,14 +527,11 @@ function extractSlotStructure(bodyText: string): SlotStructure {
   }
 
   // Find LAST kahea ref — trailing prose becomes postamble. Quoted refs
-  // (fenced/inline-code) stay content, never structure (fence-mask law).
-  // The slot grammar mirrors AHU_OPEN_RE: a rooted slot path (`#/a/b/c`)
-  // addresses a nested fragment and MUST round-trip whole — a `#[\w-]+`-only
-  // match clipped the path at the first `/`, orphaning the slot's body.
-  // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling).
-  const refRe = /<<~\s*kahea\s+ahu\s+#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*\s*>>/g;
+  // (fenced/inline-code) stay content, never structure (fence-mask law). The slot path is the
+  // scanner's own (`KAHEA_REF_RE`): a rooted path (`#/a/b/c`) addresses a nested fragment and MUST
+  // round-trip whole.
   let lastEnd = -1;
-  for (const m of maskedExecAll(remainder, refRe)) {
+  for (const m of maskedExecAll(remainder, KAHEA_REF_RE)) {
     lastEnd = m.index + m[0].length;
   }
 
@@ -832,9 +830,6 @@ function carriageText(reader: FieldsReader, carrierUri: string, part: CarriagePa
   return r && typeof r["text"] === "string" ? (r["text"] as string) : "";
 }
 
-// Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling).
-const KAHEA_AHU_REF_RE = /<<~\s*kahea\s+ahu\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)\s*>>/g;
-
 /**
  * Splice child definition blocks back over their kahea markers, full depth.
  * Quoted markers (fenced/inline-code) stay verbatim — the operator SHOWS
@@ -842,7 +837,7 @@ const KAHEA_AHU_REF_RE = /<<~\s*kahea\s+ahu\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāē
  */
 function expandRefs(reader: FieldsReader, rootUri: string, fragmentPrefix: string, text: string, parentFields: TiddlerFields): string {
   const mask = fencedSpans(text);
-  return text.replace(KAHEA_AHU_REF_RE, (marker, slot: string, offset: number) => {
+  return text.replace(KAHEA_REF_RE, (marker, slot: string, offset: number) => {
     if (inMask(mask, offset)) return marker;
     const slotPath = composeSlotPath(fragmentPrefix, slot);
     const child = reader(rootUri + slotPath);

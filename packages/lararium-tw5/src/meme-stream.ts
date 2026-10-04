@@ -24,6 +24,7 @@
  */
 
 import { fencedSpans, maskedExec, carrierHeadPattern, frameAlt, type MaskSpan } from "@lararium/memetic-frame";
+import { SLOT_PATH_SRC } from "./meme-ast/ahu-scan.js";
 
 // ---------------------------------------------------------------------------
 // Event types
@@ -65,9 +66,8 @@ const ETX_RE  = new RegExp(`<<\\^${INNER}${frameAlt("ETX")}${INNER}>>`);
 // EOT or a bare `-> ?` with no code at all used to close a carrier in silence; neither does now.
 const EOT_RE  = new RegExp(`<<\\^${INNER}${frameAlt("EOT")}${INNER}>>`);
 // `fragment` is an English surface alias for the same rooted ahu worksite event.
-// Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling) —
-// mirrors AHU_OPEN_RE in meme-ast/ahu-scan.ts.
-const AHU_OPEN_RE  = /<<(?:~(?:[^>\n]|>(?!>))*\bahu|fragment)\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)\s*>>/;
+// The slot path is the scanner's one spelling (meme-ast/ahu-scan.ts).
+const AHU_OPEN_RE  = new RegExp(`<<(?:~(?:[^>\\n]|>(?!>))*\\bahu|fragment)\\s+(${SLOT_PATH_SRC})\\s*>>`);
 const AHU_CLOSE_RE = /<<(?:~\s*\/\s*ahu|\/fragment)\s*>>/;
 
 type Hit = { index: number; end: number; cap: string | undefined };

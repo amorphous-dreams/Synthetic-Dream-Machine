@@ -30,6 +30,7 @@
  */
 
 import { fencedSpans, inMask, META_OPEN_RE } from "@lararium/memetic-frame";
+import { SLOT_SEGMENT_SRC } from "./meme-ast/ahu-scan.js";
 
 /** The five standings a governed carrier holds, in order. */
 export const LIFECYCLE_STAGES = ["designed", "standing", "folded", "harvest", "retiring"] as const;
@@ -128,8 +129,7 @@ interface Slot { readonly name: string; readonly body: string }
 function readSlots(text: string): Slot[] {
   const mask = fencedSpans(text);
   const out: Slot[] = [];
-  // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[a-z0-9-]` (operator ruling).
-  const open = /^<<~ ?ahu #\/([a-z0-9āēīōūʻ/-]+)[^\n]*>>$/gim;
+  const open = new RegExp(`^<<~ ?ahu #\\/(${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*)[^\\n]*>>$`, "gim");
   const close = /^<<~\/ahu\s*>>$/gim;
   const marks: Array<{ at: number; end: number; name?: string }> = [];
   for (const m of text.matchAll(open)) {

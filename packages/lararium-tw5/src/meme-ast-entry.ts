@@ -30,6 +30,9 @@ export {
 export {
   AHU_OPEN_RE,
   AHU_CLOSE_RE,
+  SLOT_SEGMENT_SRC,
+  SLOT_PATH_SRC,
+  KAHEA_REF_RE,
   findTopLevelAhuBlocks,
   composeSlotPath,
   childUri,

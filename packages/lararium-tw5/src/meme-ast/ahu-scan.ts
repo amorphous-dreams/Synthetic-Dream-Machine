@@ -31,8 +31,16 @@ import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
  * the base `[\w-]` — operator ruling. `normalizeMemeSource` is where NFC-folding a decomposed vowel
  * and folding an ʻokina LOOK-ALIKE (‘ ’ ') to U+02BB happen; by the time a slot name reaches this
  * scanner it already carries the one canonical spelling this charclass admits.
+ *
+ * ONE SPELLING OF THE PATH, exported (`SLOT_SEGMENT_SRC`, `SLOT_PATH_SRC`, `KAHEA_REF_RE`): every reader
+ * that names a slot composes from these rather than carrying its own copy of the charclass.
  */
-export const AHU_OPEN_RE  = /<<(?:~[^>]*\bahu|fragment)\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)(?:\s+->\s+\S+)?\s*>>/g;
+export const SLOT_SEGMENT_SRC = "[\\wāēīōūʻ-]+";
+/** A rooted slot path — `#/a`, `#/a/b/c` — as a regex source, uncaptured. The ONE spelling every reader composes. */
+export const SLOT_PATH_SRC = `#\\/${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*`;
+export const AHU_OPEN_RE  = new RegExp(`<<(?:~[^>]*\\bahu|fragment)\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+\\S+)?\\s*>>`, "g");
+/** A kahea call naming a slot — `<<~ kahea ahu #/a/b>>` — the path captured. Global: `replace` and the masked scans reset it. */
+export const KAHEA_REF_RE = new RegExp(`<<~\\s*kahea\\s+ahu\\s+(${SLOT_PATH_SRC})\\s*>>`, "g");
 export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
 
 /**

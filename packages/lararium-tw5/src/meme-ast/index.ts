@@ -43,7 +43,7 @@ export type { ParseMemeResult } from "./parse.js";
 export { parseMemeText, parseMemeNodes, parseMemeEdges } from "./parse.js";
 
 export type { AhuBlock } from "./ahu-scan.js";
-export { AHU_OPEN_RE, AHU_CLOSE_RE, findTopLevelAhuBlocks, composeSlotPath, childUri } from "./ahu-scan.js";
+export { AHU_OPEN_RE, AHU_CLOSE_RE, SLOT_SEGMENT_SRC, SLOT_PATH_SRC, KAHEA_REF_RE, findTopLevelAhuBlocks, composeSlotPath, childUri } from "./ahu-scan.js";
 
 export {
   severityOf,

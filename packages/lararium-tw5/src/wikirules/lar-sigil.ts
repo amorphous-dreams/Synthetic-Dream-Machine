@@ -19,6 +19,7 @@ module-type: wikirule
  */
 
 import { getGrammar } from "../grammar-cache.js";
+import { SLOT_PATH_SRC, SLOT_SEGMENT_SRC } from "../meme-ast/ahu-scan.js";
 import { positionalsOf, readSigilAttrs } from "../sigil-attrs.js";
 import { grammarHeadsOf } from "../grammar-heads.js";
 import type { SigilAttr } from "../sigil-attrs.js";
@@ -40,6 +41,11 @@ import {
   grammarInlineSigils,
   attrToTree,
 } from "./lar-sigil-shared.js";
+
+/** The English `fragment` opener, its rooted slot path the scanner's one spelling. */
+const FRAGMENT_OPEN_RE = new RegExp(`^<<fragment\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+[^>]+)?\\s*>>`);
+/** A slot written bare (`#name`), for the render pass's graceful read. */
+const BARE_SLOT_RE = new RegExp(`^#${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*$`);
 
 export const name  = "lar-sigil";
 export const types = { block: true, inline: true };
@@ -102,8 +108,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
     // English `fragment` shares the child-slot intent backend with `ahu`. Rendering uses that
     // shared shape; carrier decomposition retains the authored worksite spelling for projection.
     if (source.startsWith("<<fragment", pos)) {
-      // Slot segment admits the Hawaiian long vowels + ʻokina beside the base `[\w-]` (operator ruling).
-      const open = /^<<fragment\s+(#\/[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*)(?:\s+->\s+[^>]+)?\s*>>/.exec(source.slice(pos));
+      const open = FRAGMENT_OPEN_RE.exec(source.slice(pos));
       if (open) {
         const close = source.indexOf("<</fragment>>", pos + open[0].length);
         this.matchPos = pos;
@@ -159,7 +164,7 @@ export function findNextMatch(this: RuleInstance, startPos: number): number | un
       // through `lares meme normalize`'s own child-slot-roots clause, never silently through a
       // render.
       if ((compound.name === "ahu" || compound.name.endsWith("~ahu")) &&
-          /^#[\wāēīōūʻ-]+(?:\/[\wāēīōūʻ-]+)*$/.test(compound.p1)) {
+          BARE_SLOT_RE.test(compound.p1)) {
         compound = { ...compound, p1: `#/${compound.p1.slice(1)}` };
       }
       // ── A DECLARED CLOSER CLOSES ────────────────────────────────────────────────────────────────
