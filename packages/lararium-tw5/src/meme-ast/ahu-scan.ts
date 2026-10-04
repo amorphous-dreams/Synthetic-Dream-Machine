@@ -169,6 +169,15 @@ export function composeSlotPath(prefix: string, slot: string): string {
   const tail = (slot.startsWith("#") ? slot.slice(1) : slot).replace(/^\//, "");
   if (!prefix) return `#/${tail}`;                             // a root child is a path too
   const rooted = prefix.startsWith("#/") ? prefix : `#/${prefix.slice(1)}`;
+  // CANON (meme-normalize.ts's child-slot clause): a NESTED open already carries its WHOLE path
+  // from the carrier root by the time it reaches a scanner — `<<~ ahu #/observe/observe-ha>>`
+  // inside `<<~ ahu #/observe>>` names the full address, not a suffix to append under its parent.
+  // When the slot's own tail already begins with (or equals) the enclosing prefix's tail, it IS
+  // that full address already; re-prefixing would double the shared segment
+  // (`#/observe/observe/observe-ha`). Only a slot that does NOT carry the prefix is a fresh
+  // relative child, minted by appending it (the placeMeme/childUri mint path).
+  const prefixTail = rooted.slice(2);
+  if (tail === prefixTail || tail.startsWith(`${prefixTail}/`)) return `#/${tail}`;
   return `${rooted}/${tail}`;
 }
 

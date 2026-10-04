@@ -67,6 +67,16 @@ describe("★ childUri — one address helper beside composeSlotPath ★", () =>
   test("agrees with composeSlotPath over the root", () => {
     expect(childUri("lar:///t/x#/a/b", "#/c")).toBe("lar:///t/x" + composeSlotPath("#/a/b", "#/c"));
   });
+  test("a nested open's own full path under its own prefix stays that path, never re-prefixed", () => {
+    // CANON (meme-normalize.ts's child-slot clause): a nested open already carries its whole
+    // path from the carrier root by the time a scanner reads it — re-applying the parent prefix
+    // would double the shared segment (`#/observe/observe/observe-ha`).
+    expect(composeSlotPath("#/observe", "#/observe/observe-ha")).toBe("#/observe/observe-ha");
+    expect(composeSlotPath("#/a/b", "#/a/b/c")).toBe("#/a/b/c");
+    // A slot that does NOT carry its prefix is a fresh relative child — still appended (the
+    // placeMeme/childUri mint path, unaffected by the nested-open case above).
+    expect(composeSlotPath("#/a", "#/z")).toBe("#/a/z");
+  });
 });
 
 describe.skipIf(wikiSkip)("★ the field a slot child carries is the field the orphan scan filters by ★", () => {
