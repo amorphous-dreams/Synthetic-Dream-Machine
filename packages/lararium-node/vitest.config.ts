@@ -68,6 +68,18 @@ export const heavy = [
   "tests/embed-cap.test.ts",
   "tests/graph-cap.test.ts",
   "tests/search-cap.test.ts",
+  // Listener-binding suites surfaced by `tests/heavy-roster-is-complete.test.ts`: each stands a real
+  // HTTP/VM listener and was running in the parallel project — the exact condition the split exists
+  // to prevent.
+  "tests/daemon-vm-dvr-document-boundary.test.ts",
+  "tests/daemon-vm-replica-restart.test.ts",
+  "tests/daemon-vm-storage-accounting.test.ts",
+  "tests/http-face-dispatcher.test.ts",
+  "tests/http-face-integration.test.ts",
+  "tests/pronaos-adapter.test.ts",
+  "tests/pronaos-composition.test.ts",
+  "tests/pronaos-public-artifact.test.ts",
+  "tests/readiness-face.test.ts",
 ];
 
 /**
