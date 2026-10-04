@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;wgIk6a6APufF485M2vWzHOa-b_ebktDzrU9yjC6RiT0"
+source-check: "ni:///sha-256;2NaQFevYx-W3JyMv43ImKiIu5ko2vJkZM6uApSoHQw0"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -402,6 +402,17 @@ The `bcc` slot carries a check over the framed span. Normatively:
   a mark gaining a named parameter, a spacing rule settling — moves them, and every check computed
   before it would read `mismatch` over a body nobody touched, reporting corruption where a grammar
   merely evolved.
+- **The span's open and close are each a FIRST, never a choice.** The span opens on the first unmasked
+  STX and closes on the first unmasked ETX AFTER it, and that ETX MUST be the only one: a second
+  unmasked ETX inside the opened span — or an unmasked ETX standing ahead of the opened STX — is a frame
+  fault, named and reported, never a question of whether a reader should take the first terminator or
+  the last. Lineage: ISO 1745 and ECMA-16's basic mode, and IBM BSC beside them, read the first
+  unescaped terminator a transmission offers, because their transparency mechanism (DLE-stuffing)
+  guarantees exactly one stands unescaped; this frame's fence mask stands in that transparency's place,
+  masking every terminator a fenced example or quoted lesson wears so the one left unmasked is, by
+  construction, the only one. RFC 3230 fell to leaving a span's own anchor to interpretation, and its
+  2024 replacement [RFC9530] closed that by naming it outright — the same lesson lands here: name the
+  span's boundary, never leave a reader to decide between a first and a last.
 - **Computed, never stored.** A writer computes the check over the body it has assembled; a reader
   recomputes it over the bytes in front of it. Two computations of one fact, never a copy of one — a
   stored derivation goes stale the moment the thing it derives from moves.
@@ -1097,8 +1108,9 @@ a reader that takes an `ok` for authenticity has granted the check a standing it
   grammar-selector can all move under an `ok`. This bounds what the verdict means (did the TEXT survive
   carriage) and stands as the design's accepted boundary: heading integrity rides the outer layer. A
   consumer MUST NOT treat the verdict as covering bytes the span excludes.
-- **Smuggle a second frame.** The check covers the first STX..ETX span only, so a second framed body
-  would ride beneath a verdict computed over the first. The grammar admits one text frame per carrier
+- **Smuggle a second frame.** The check covers the first STX..ETX span only — the same first-STX,
+  first-following-ETX span the boundary rule names (#/control-set) — so a second framed body would ride
+  beneath a verdict computed over the first. The grammar admits one text frame per carrier
   (#/conformance), and the gradient surfaces a second as a fault rather than letting the first frame's
   `ok` speak for bytes it never covered.
 - **Cut the file ahead of its closer.** Truncation removes ETX and the check with it, and a reader that
