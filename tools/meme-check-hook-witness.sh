@@ -35,14 +35,14 @@ mkdir -p "$WORK/bags/t"
 # A carrier is whatever DECLARES itself, and this script declares nothing: the declaration assembles at run
 # time and every fixture line rides behind a tab the `<<-` heredoc strips — the corpus walk reads column-zero
 # declarations, never paths.
-DECL='<<!DOC''TYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/lares/api/pono/memetic-wikitext>>'
+DECL='<<!DOC''TYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>'
 { printf '%s\n\n' "$DECL"; cat <<-'MEM'; } > "$WORK/bags/t/stale.mem"
 	<<^ code="&#x0001;" from="?" -> to="lar:///t/witness/hook">>
+	<<^ code="&#x0002;">>
+
 	```toml meta
 	uri-path = "t/witness/hook"
 	```
-
-	<<^ code="&#x0002;">>
 
 	<<~ ahu #/a>>
 

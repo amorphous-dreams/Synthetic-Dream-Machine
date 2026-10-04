@@ -952,9 +952,9 @@ run_meme() {
   local BAG_LINE='bag = "backpack: rope, lantern"' BAG_RE='^bag +=  *"backpack: rope, lantern"$'
   # The witness meme, slots named by the caller: `meme_text a` · `meme_text a b`.
   meme_text() {
-    printf '<<^ code="&#x0001;" from=? -> to=%s>>\n```toml meta\nuri-path = "t.witness.npc/inventory"\n%s\n```\n\n<<^ code="&#x0002;">>\n\n' "$URI" "$BAG_LINE"
+    printf '<<^ code="&#x0001;" from="?" -> to="%s">>\n<<^ code="&#x0002;">>\n\n```toml meta\nuri-path = "t.witness.npc/inventory"\n%s\n```\n\n' "$URI" "$BAG_LINE"
     local s; for s in "$@"; do printf '<<~ ahu #/%s>>\n\n! %s\n\n<<~/ahu>>\n\n' "$s" "$s"; done
-    printf '<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n'
+    printf '<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n'
   }
   # One `meme get --bag lares --json` on a hearth — the whole JSON, for the caller to read fields off.
   meme_get() { $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --json 2>&1; }
@@ -1238,7 +1238,7 @@ run_climb() {
 
   step "the face is WORN and USED — a carrier lands under it"
   $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=? -> to=$URI>>\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\"&#x0002;\">>\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=?>>\n' > /tmp/climb.mem" 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=\"?\" -> to=\"$URI\">>\n<<^ code=\"&#x0002;\">>\n\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n' > /tmp/climb.mem" 2>/dev/null
   if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the climb has no inception to strand"; fi
 
@@ -1486,7 +1486,7 @@ run_title() {
   # link and a fenced block, each carrying a speaker-aim URI in the BODY.
   step "★ B — userinfo in the BODY passes UNTOUCHED (the over-enforcement trap) ★"
   local BODY_URI="lar:///t.title.context/capture"
-  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=? -> to=$BODY_URI>>\n\`\`\`toml meta\nuri-path = \"t.title.context/capture\"\n\`\`\`\n\n<<^ code=\"&#x0002;\">>\n\n<<~ lares aim from=\"lar://mara:operator@crossroads/operator.asks.the-cost\" -> to=\"lar://compita:agent@crossroads/clerk.reads.the-record\">>\n\nA quoted link: lar://alias:grant@host/some.path.here\n\n\`\`\`\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=?>>\n' > /tmp/capture.mem" 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=\"?\" -> to=\"$BODY_URI\">>\n<<^ code=\"&#x0002;\">>\n\n\`\`\`toml meta\nuri-path = \"t.title.context/capture\"\n\`\`\`\n\n<<~ lares aim from=\"lar://mara:operator@crossroads/operator.asks.the-cost\" -> to=\"lar://compita:agent@crossroads/clerk.reads.the-record\">>\n\nA quoted link: lar://alias:grant@host/some.path.here\n\n\`\`\`\n<<~ lares yield from=\"lar://compita:agent@crossroads/clerk.named.the-source\" -> to=\"?\">>\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n' > /tmp/capture.mem" 2>/dev/null
   local CPUT CGET
   CPUT=$($COMPOSE exec -T lararium-a $LARES meme put "$BODY_URI" --recipe lares --file /tmp/capture.mem --json 2>&1)
   if ! printf '%s' "$CPUT" | grep -q '"ok":true'; then
