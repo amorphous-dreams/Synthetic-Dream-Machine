@@ -124,7 +124,7 @@ Free-form roles; used when the relationship resists categorization.
 ''observe'' — monitoring, measurement, attention edges.
 confidence-bounded: an observer cannot claim more confidence than its source.
 
-''transclusion'' — content embedding edges (page / Story-River surface). `aka` (frozen/shadow) and `kahea` (live/subscription-fresh) carry a //content identity// into the source, not a computed value. confidence-bounded: a frozen embed can age from its source. //(English surface name retained — "transclusion" carries crisp, established semantics; operator 2026-06-06.)//
+''transclusion'' — content embedding edges (page / Story-River surface), one family split on PROPAGATION × SCOPE. `aka` (pinned/none — a head-position likeness declaration, or a body-position frozen-image embed) and `kahea` (push-forward — a live include at either scope) carry a //content identity// into the source, not a computed value. confidence-bounded: a frozen embed can age from its source. //(English surface name retained — "transclusion" carries crisp, established semantics; operator 2026-06-06.)//
 
 ''dataflow'' — value-wire edges (canvas / flow surface). Typed value or geometry transport between node pins (reads/writes/streams/buffers/pipes). Carries a computed value, not content — distinct from `transclusion`.
 
@@ -170,6 +170,6 @@ spatial    = "light-blue"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sjf2bhOSTWmHEDQ5TUGFU7CVhe43pZ0VxMChCdUudXY
+<<^ code="&#x0003;">>ni:///sha-256;qCD4n24QoQybLDtwDVyAi25f3h25yuDkjPfRLlPbntw
 
 <<^ code="&#x0004;" -> to="?">>

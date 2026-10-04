@@ -116,7 +116,7 @@ They fall into eight families:
 ''Edge-sugar sigils'' (pranala family shortcuts):
 * `pranala` — full edge with FROM → TO arrow + keyword attrs (permanent JS exception)
 * `kahea` / `\transclude` / `\import` — transclusion-family sugar; LIVE transclusion, weaves in English as `transclude`; `import` mirrors `kahea` read-only
-* `aka` / `\shadow` — transclusion-family sugar; SHADOW / frozen-image transclusion, a projection and its own sigil, never a mirror of `kahea`; weaves in English as `snapshot`; `shadow` mirrors `aka` read-only (TiddlyWiki already spends "shadow tiddler" on plugin defaults)
+* `aka` / `\shadow` — transclusion-family sugar; LIKENESS (head position) / FROZEN-IMAGE (body position) transclusion, a projection and its own sigil, never a mirror of `kahea`; weaves in English as `snapshot`; `shadow` mirrors `aka` read-only (TiddlyWiki already spends "shadow tiddler" on plugin defaults)
 * `loulou` / `\link` — relation-family sugar; outgoing semantic link; no execution pulse
 * `kau` — device-slot child-slot; capability hooks require JS (permanent JS exception)
 * `kapu` / `\guard` — compile-layer boundary annotation; access-control edge
@@ -179,10 +179,10 @@ here, and every alias-bearing sigil in this set reads through it:
 * `meme` ← `\tiddler`.
 * `kahea` ← `\transclude`; `\import` mirrors `kahea` read-only. `kahea` weaves LIVE — the English
   weave name reads `transclude`.
-* `aka` — its own sigil, never a mirror of `kahea`; the SHADOW / frozen-image transclude, a
-  projection. `\shadow` mirrors `aka` read-only. `aka` weaves FROZEN — the English weave name
-  reads `snapshot`; `shadow` stays a mirror rather than the weave name because TiddlyWiki already
-  spends "shadow tiddler" on plugin-default semantics.
+* `aka` — its own sigil, never a mirror of `kahea`; the LIKENESS (head position) / FROZEN-IMAGE
+  (body position) transclude, a projection. `\shadow` mirrors `aka` read-only. `aka` weaves
+  FROZEN — the English weave name reads `snapshot`; `shadow` stays a mirror rather than the weave
+  name because TiddlyWiki already spends "shadow tiddler" on plugin-default semantics.
 * `\widget` — a native TW5 pragma of its own; no Hawaiian headword, no mirror relation.
 * `kumu` — a native device-template declaration; `\type` / `\typos` run as native TW5 pragmas of
   their own, carrying no Hawaiian headword (`lar:///ha.ka.ba/lares/api/pono/kumu#/syntax`).
@@ -211,10 +211,11 @@ the same way a stone cairn accumulates placement until it becomes a landmark.
 transclusion summons value forward, as a call summons a response. `kahea` weaves in English as
 `transclude` (#/mirror-vocabulary).
 
-//Aka// — shadow, reflection; likeness without identity; resemblance. The shadow of a thing
-differs from the thing — it moves with it without owning it. The transclusion-family edge renders
-the shadow of a target as a frozen projection, its own sigil rather than a mirror of `kahea`.
-`aka` weaves in English as `snapshot` (#/mirror-vocabulary).
+//Aka// — image, reflection, likeness; resemblance without identity. An image of a thing holds a
+moment of it without holding the thing itself — it stays still once the thing has moved on. The
+transclusion-family edge renders a likeness of a target at a carrier's head, or a frozen image of a
+target in its body, its own sigil rather than a mirror of `kahea`. `aka` weaves in English as
+`snapshot` (#/mirror-vocabulary).
 
 //Loulou// — to tie, bind, fasten; to link together. A relation edge names what kind of
 connection holds without pulling either end toward the other.
@@ -313,6 +314,6 @@ lives in a tiddler.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SqX5CyR6hBPZODBVUqYV0-ACHoaOPreh3zUA8-dJFvU
+<<^ code="&#x0003;">>ni:///sha-256;Xxg0ZUZJKyHiAgp0doDEHLcROHKFhYzX6c8lSqE8uTM
 
 <<^ code="&#x0004;" -> to="?">>

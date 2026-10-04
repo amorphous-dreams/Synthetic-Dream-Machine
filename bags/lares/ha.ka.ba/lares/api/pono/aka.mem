@@ -10,7 +10,7 @@ mana      = 17
 manao     = 17
 manaoio   = 16
 namespace = "&#x2299;"
-role      = "transclusion-family edge sugar — frozen/shadow transclusion; read-only embed; shorthand for pranala family:transclusion"
+role      = "transclusion-family edge sugar — pinned likeness/frozen-image transclusion; read-only embed; shorthand for pranala family:transclusion"
 tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-aka"]
 title     = "lar:///ha.ka.ba/lares/api/pono/aka"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -25,9 +25,30 @@ uri-path  = "ha.ka.ba/lares/api/pono/aka"
 
 ! Aka
 
-//aka// — Hawaiian: shadow, reflection; to be like; also-known-as.
+//aka// — Hawaiian: image, reflection, likeness; to be like. The English //also-known-as// happens to
+share the same three letters, and it happens to share LIKENESS too — a happy accident this root leans
+on, never a borrowing.
 
-A transclusion-family edge sugar. Embeds a frozen shadow of the target at the source — read-only, no ownership stake. TW5 shadow-tiddler semantics: the target's content shows through at the source position.
+''One family, two axes.'' `aka` and `kahea` (`lar:///ha.ka.ba/lares/api/pono/kahea`) sugar the SAME
+`pranala family=transclusion` — one edge family, split on PROPAGATION (`kahea` push-forward · `aka`
+none/pinned) crossed with SCOPE (a head-position carrier-scope declaration · a body embed). `aka`
+holds the pinned pole of propagation at both scopes; the scope axis decides what the pin DOES.
+
+''Head position: a pinned likeness.'' Standing at a carrier's own head, `aka` declares the carrier's
+likeness to — conformance with — the target, a carrier-scope declaration rather than an embed: the
+carrier reads AS LIKE its target without inlining the target's bytes. Most of the corpus actually
+reaches for `aka` here: 218 of 249 canon uses sit in head position, and 188 of those declare
+RFC-2119's normative language.
+
+''Body position: a pinned frozen image.'' Inside a carrier's body, `aka` embeds a frozen image of the
+target instead — its content pinned at the moment the embed resolves, read-only, no ownership stake,
+the target's bytes inlining at the source position.
+
+A TW5 shadow tiddler names something else entirely, and the resemblance misleads: a shadow tiddler
+names a LIVE fallback layer, visible only while nothing overrides it — the opposite posture from a
+frozen pin, which never yields to an override and never falls back. `aka` pins once, at the moment the
+embed or declaration resolves, and holds that pin until the carrier re-weaves.
+
 Sugar for `<<~ pranala from=? -> to=URI family=transclusion>>`. The `transclusion` family is confidence-bounded:
 a frozen embed can age from its source, so edges SHOULD carry a confidence rating when the embed is uncertain.
 
@@ -59,8 +80,8 @@ target's current text, pinned with the target's own `ni:` check, whole-carrier o
 ✶ sense the target URI — this meme observes that one; note whether confidence bound is needed
 ⏿ orient: family:transclusion, traversal:source-to-target, propagation:none; read-only; no execution pulse
 ◇ confidence-bounded: if the observation carries uncertainty, SHOULD declare confidence on the edge
-▶ emit EdgeSugarNode with sigil:aka, family:transclusion; render shadow transclusion at source position
-↺ target content is live-readable at source; source holds no lifecycle stake in target; confirm shadow stable; target still resolvable; no ownership or mutation transferred
+▶ emit EdgeSugarNode with sigil:aka, family:transclusion; render the pinned likeness/frozen image at source position
+↺ target content is live-readable at source; source holds no lifecycle stake in target; confirm the pinned image stable; target still resolvable; no ownership or mutation transferred
 
 <<~/ahu>>
 
@@ -148,6 +169,6 @@ confidence-bounded = true
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-W-NRMGrnOtH8YlKmJ5GsbWJSZdBAxcFxkeCkWUgzpY
+<<^ code="&#x0003;">>ni:///sha-256;aMLl5QIWSmP_G4K7bdoCCjHLc7s_dYkq--7jyJ4-08A
 
 <<^ code="&#x0004;" -> to="?">>

@@ -36,13 +36,15 @@ Sugar for `<<~ pranala from=? -> to=URI family=transclusion propagation=push-for
 name, not a mirror of any other sigil. `import` rides beside it as a read-only mirror
 (`lar-mirror-of: kahea`).
 
-''Live/frozen split.'' `kahea` and `aka` (`lar:///ha.ka.ba/lares/api/pono/aka`) sugar the same
-`transclusion` family from opposite propagation postures, and each links the other directly.
-`kahea` weaves ''live'' — as an include, re-resolving the target on every render pass, kept fresh
-by subscription. `aka` weaves ''frozen'' — by inlining the target's content pinned at the moment
-the weave runs. Neither mirrors the other: `kahea` carries `propagation:push-forward` against
-`aka`'s `propagation:none`, and each names its own sigil, its own family-contract row, its own
-English weave name.
+''One family, two axes.'' `kahea` and `aka` (`lar:///ha.ka.ba/lares/api/pono/aka`) sugar the SAME
+`pranala family=transclusion` — one edge family, split on PROPAGATION (`kahea` push-forward · `aka`
+none/pinned) crossed with SCOPE (a head-position carrier-scope declaration · a body embed), and each
+links the other directly. `kahea` holds the push-forward pole of propagation: it weaves ''live'' — as
+an include, re-resolving the target on every render pass, kept fresh by subscription — at either
+scope. `aka` holds the pinned pole: it weaves ''frozen'' — a likeness declaration at a carrier's head,
+a frozen-image embed in its body. Neither mirrors the other: `kahea` carries
+`propagation:push-forward` against `aka`'s `propagation:none`, and each names its own sigil, its own
+family-contract row, its own English weave name.
 
 <<~/ahu>>
 
@@ -163,6 +165,6 @@ canonical-roles = []   # held — transclusion role vocab deferred with the pono
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BOlTFHIsO6erCJ661PJF29-0MNj-ZnV5zyP-1Pk6E7Y
+<<^ code="&#x0003;">>ni:///sha-256;JSTD1cQgRDDFzGrGgShO0aVVJW2hCIMcCTM6S5-OxWY
 
 <<^ code="&#x0004;" -> to="?">>
