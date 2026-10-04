@@ -18,15 +18,15 @@ const REPO = new URL("../../..", import.meta.url).pathname;
 
 const CARRIER = `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
-<<^ code="&#x0001;" namespace="⊙" from=? -> to=lar:///ha.ka.ba/lares/api/pono/probe>>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/probe">>
+<<^ code="&#x0002;">>
+
 \`\`\`toml meta
 l-space  = "adjacent"
 uri-path = "ha.ka.ba/lares/api/pono/probe"
 \`\`\`
 
-<<^ code="&#x0002;">>
-
-<<~ ahu #head>>
+<<~ ahu #/head>>
 
 ! Probe — a worked example
 
@@ -104,14 +104,14 @@ describe("the submission projection", () => {
 
   test("an `ahu #/a/b` opener drops the root slash and joins nested segments with `_`", () => {
     // Operator-approved: 0 of 2,011 canon slot names carry `_`, so the join is unambiguous.
-    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #head>>", "<<~ ahu #/a/b>>")).markdown;
+    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #/head>>", "<<~ ahu #/a/b>>")).markdown;
     expect(rooted).toContain('<a id="a_b"></a>');
     expect(rooted).not.toContain('id="/a/b"');
     expect(rooted).not.toContain('id="#/a/b"');
   });
 
   test("an `ahu #/x` opener drops the lone root slash too", () => {
-    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #head>>", "<<~ ahu #/x>>")).markdown;
+    const rooted = transposeMarkdown(CARRIER.replace("<<~ ahu #/head>>", "<<~ ahu #/x>>")).markdown;
     expect(rooted).toContain('<a id="x"></a>');
     expect(rooted).not.toContain('id="/x"');
   });
@@ -264,16 +264,16 @@ describe("against the live corpus", () => {
 
 describe("the tooth stands at one dispatch position", () => {
   const carrier = (open: string, close: string) =>
-    `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///ha.ka.ba/probe>>\n\n` +
-    `<<^ code="&#x0001;" from=? -> to=lar:///ha.ka.ba/probe>>\n` +
+    `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/probe">>\n\n` +
+    `<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/probe">>\n` +
     `<<^ code="&#x0002;">>\n\n${open}\n\n! A heading\n\n${close}\n\n` +
-    `<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to=?>>\n`;
+    `<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n`;
 
   const spellings: Array<[string, string, string]> = [
-    ["tooth then space", "<<~ ahu #entry>>", "<<~/ahu>>"],
-    ["close carries a space", "<<~ ahu #entry>>", "<<~ /ahu>>"],
-    ["tooth joined to the word", "<<~ahu #entry>>", "<<~/ahu>>"],
-    ["both joined", "<<~ahu #entry>>", "<<~ /ahu>>"],
+    ["tooth then space", "<<~ ahu #/entry>>", "<<~/ahu>>"],
+    ["close carries a space", "<<~ ahu #/entry>>", "<<~ /ahu>>"],
+    ["tooth joined to the word", "<<~ahu #/entry>>", "<<~/ahu>>"],
+    ["both joined", "<<~ahu #/entry>>", "<<~ /ahu>>"],
   ];
 
   // A close word carries its own slash, matching the plain register's
@@ -1202,14 +1202,12 @@ describe("the reverse mirror map and its round-trip property", () => {
 });
 
 describe("the projector reads a framing opener that names its ends", () => {
-  // One spelling reads. A carrier holding any earlier spelling arrives through `meme normalize`, which
-  // homes it — so the projector answers to the current form alone and keeps no second branch.
   const URI = "lar:///a.b.c/x";
   const body = (ends: string) =>
-    [`<<^ code="&#x0001;" ${ends}>>`, "", "A line of body.", "", '<<^ code="&#x0004;" -> to=?>>'].join("\n");
+    [`<<^ code="&#x0001;" ${ends}>>`, "", "A line of body.", "", '<<^ code="&#x0004;" -> to="?">>'].join("\n");
 
   test("the named end reaches the projection as the carrier's address", () => {
-    const p = projectSubmission(body(`from=? -> to=${URI}`), { title: "lar:///t" });
+    const p = projectSubmission(body(`from="?" -> to="${URI}"`), { title: "lar:///t" });
     expect(p.markdown).toBeTruthy();
     expect(p.markdown).not.toContain("to=lar:///");
   });

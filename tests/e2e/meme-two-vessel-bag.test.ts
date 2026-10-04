@@ -61,10 +61,9 @@ const BAG_LINE = new RegExp(`^bag\\s+= "${INVENTORY}"$`, "m");
 
 /** The NPC meme: the author's `bag` rides the meta, the named slots ride the body. */
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
-  `<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 function missing(): string[] {
   const out: string[] = [];

@@ -23,14 +23,14 @@ const CARRIER_SOH = /<<\^[^&\n]*&#x(?:0001|0011);/;
 
 describe("★ the carrier frame rides the control head ★", () => {
   test("a control-head frame with the SOH classifier opens a carrier", () => {
-    expect(CARRIER_SOH.test("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" ? -> lar:///ha.ka.ba/lares/api/noosphere-boot>>")).toBe(true);
-    expect(CARRIER_SOH.test("<<^ code=\"&#x0011;\" namespace=\"⚕\" ? -> lar:///ha.ka.ba/lararium/mesh/genesis-doc>>")).toBe(true);
+    expect(CARRIER_SOH.test("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" from=\"?\" -> to=\"lar:///ha.ka.ba/lares/api/noosphere-boot\">>")).toBe(true);
+    expect(CARRIER_SOH.test("<<^ code=\"&#x0011;\" namespace=\"⚕\" from=\"?\" -> to=\"lar:///ha.ka.ba/lararium/mesh/genesis-doc\">>")).toBe(true);
   });
 
   test("★ the SPEAKING head never opens a carrier — the domains stay split ★", () => {
     // Not a legacy form kept working: matching both heads would re-fuse exactly what the split holds
     // apart. A frame written with `<<~` reads as malformed, and reads that way loudly.
-    expect(CARRIER_SOH.test("<<~ code=\"&#x0001;\" namespace=\"ॐ ँ\" ? -> lar:///ha.ka.ba/lares/api/noosphere-boot>>")).toBe(false);
+    expect(CARRIER_SOH.test("<<~ code=\"&#x0001;\" namespace=\"ॐ ँ\" from=\"?\" -> to=\"lar:///ha.ka.ba/lares/api/noosphere-boot\">>")).toBe(false);
   });
 
   test("a sigil carrying NO classifier stays a plain sigil under either head", () => {

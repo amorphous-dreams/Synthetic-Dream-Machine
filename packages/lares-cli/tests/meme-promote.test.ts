@@ -49,13 +49,13 @@ const SEED = new Uint8Array(32).fill(9);
 function carrier(uriPath: string, filePath: string, tags: string): string {
   return [
     `<<^ code="&#x0001;" from="?" -> to="lar:///${uriPath}">>`,
+    '<<^ code="&#x0002;">>',
+    "",
     "```toml meta",
     `file-path  = "${filePath}"`,
     `tags       = [${tags}]`,
     `uri-path   = "${uriPath}"`,
     "```",
-    "",
-    '<<^ code="&#x0002;">>',
     "",
     "! A fixture that crosses nothing real",
     "",
@@ -69,12 +69,12 @@ function carrier(uriPath: string, filePath: string, tags: string): string {
 function pointer(uriPath: string, filePath: string, at: string): string {
   return [
     `<<^ code="&#x0001;" from="?" -> to="lar:///${uriPath}">>`,
+    '<<^ code="&#x0002;">>',
+    "",
     "```toml meta",
     `file-path  = "${filePath}"`,
     `uri-path   = "${uriPath}"`,
     "```",
-    "",
-    '<<^ code="&#x0002;">>',
     "",
     `<<~ loulou "lar:///${at}">>`,
     "",

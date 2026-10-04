@@ -620,19 +620,26 @@ describe("project --to mem reads the composition it just rendered", () => {
     `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>`,
     ``,
     `<<^ code="&#x0001;" namespace="&#x2299;" from="?" -> to="lar:///t/two-heads">>`,
+    `<<^ code="&#x0002;">>`,
+    ``,
+  ].join("\n");
+  const TWO_FRAMES = HEAD + [
     "```toml meta",
     `type     = "text/memetic-wikitext+tiddlywiki"`,
     `uri-path = "t/two-heads"`,
     "```",
-    ``,
-  ].join("\n");
-  const TWO_FRAMES = HEAD + [
-    `<<^ code="&#x0002;">>`, ``, `body one`, ``,
+    ``, `body one`, ``,
     `<<^ code="&#x0002;">>`, ``, `body two`, ``,
     `<<^ code="&#x0003;">>ni:///sha-256;AAAA`,
     `<<^ code="&#x0004;" -> to="?">>`, ``,
   ].join("\n");
-  const TORN = HEAD + [`<<^ code="&#x0002;">>`, ``, `body one`, ``].join("\n");
+  const TORN = HEAD + [
+    "```toml meta",
+    `type     = "text/memetic-wikitext+tiddlywiki"`,
+    `uri-path = "t/two-heads"`,
+    "```",
+    ``, `body one`, ``,
+  ].join("\n");
 
   /** Run the door on the human channel, gathering what each stream carried. */
   async function human(reply: Record<string, unknown>, options: Record<string, string> = {}): Promise<{ code: number; out: string; err: string }> {

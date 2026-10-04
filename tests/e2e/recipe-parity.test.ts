@@ -27,10 +27,9 @@ const URI  = `lar:///${PATH}`;
 const SERVER_PATH = `/recipes/default/memes/lar/${PATH}`;
 
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${URI}>>\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
-  `<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\n\`\`\`\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 function missing(): string[] {
   const out: string[] = [...forkMissing()];

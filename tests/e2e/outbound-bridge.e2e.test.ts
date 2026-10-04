@@ -31,10 +31,9 @@ const uriOf  = (p: string): string => `lar:///${p}`;
 const REL    = (p: string): string => `${p}.mem`;
 
 const meme = (path: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${uriOf(path)}>>\n\`\`\`toml meta\nuri-path = "${path}"\n\`\`\`\n\n` +
-  `<<^ code="&#x0002;">>\n\n` +
+  `<<^ code="&#x0001;" from="?" -> to="${uriOf(path)}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${path}"\n\`\`\`\n\n` +
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
