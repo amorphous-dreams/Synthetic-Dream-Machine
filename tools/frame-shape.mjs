@@ -44,10 +44,10 @@ for (const f of files) {
   // The enumeration read it; a parallel commit may have removed it since. Counted, never silent.
   if (t === null) continue;
   for (const [code, name] of MARKS) {
-    // A mark riding the SPEAKING head. Fenced examples legitimately quote frames, so only a mark
-    // standing at the start of its own line counts — a quotation sits inside prose or a fence.
-    const wrong = new RegExp(`^<<~[^>\\n]*${code}`, "m");
-    if (wrong.test(t)) faults.push([f, `${name} rides <<~ — the frame takes <<^`]);
+    // A mark riding the SPEAKING head. A quotation sits inside prose or a fence, so only a mark
+    // standing at the start of its own line OUTSIDE the fence mask counts.
+    const wrong = new RegExp(`^<<~[^>\\n]*${code}`, "gm");
+    if ([...maskedExecAll(t, wrong)].length > 0) faults.push([f, `${name} rides <<~ — the frame takes <<^`]);
   }
   // THE BEARING ARROW IS STRUCTURE, so a frame that lost it is malformed rather than terse.
   //
