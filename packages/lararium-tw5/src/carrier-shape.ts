@@ -131,6 +131,10 @@ export function readCarrierShape(text: string): CarrierShape {
   };
 
   const faults: string[] = [];
+  // CARRIERS REST AS UTF-8, LF, NO BOM. Every reader folds the two as a tolerant read; the gradient
+  // names them so normalize writes the canonical bytes back rather than the tolerance becoming the rest.
+  if (text.charCodeAt(0) === 0xfeff) faults.push("a byte-order mark opens the file — carriers rest as UTF-8 with no BOM; normalize folds it");
+  if (text.includes("\r")) faults.push("CR line endings stand — carriers rest LF; normalize folds them");
   if (!marks.doctype) faults.push("no declaration — nothing names the grammar that reads it");
   if (!marks.head)    faults.push("no head sigil — the file states no bearing and no namespace");
 

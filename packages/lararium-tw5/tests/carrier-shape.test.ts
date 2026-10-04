@@ -116,6 +116,12 @@ describe("carrier-shape — every source reads as a carrier, with its marks and 
       const both = framed('uri-path = "ha.ka.ba/x/y"').replace(`<<^ code="&#x0002;">>`, "```toml meta\ncustom = 1\n```\n<<^ code=\"&#x0002;\">>");
       expect(faultsOf(both)).toMatch(/root meta stands on both sides of STX/);
     });
+    test("a byte-order mark and CR line endings — the tolerant read folds them, the gradient names them", () => {
+      const canon = framed('uri-path = "ha.ka.ba/x/y"');
+      expect(faultsOf(`\uFEFF${canon}`)).toMatch(/byte-order mark/);
+      expect(faultsOf(canon.replace(/\n/g, "\r\n"))).toMatch(/CR line endings/);
+      expect(faultsOf(canon)).not.toMatch(/byte-order mark|CR line endings/);
+    });
     test("content between ETX and EOT", () => {
       expect(faultsOf(framed('uri-path = "ha.ka.ba/x/y"', "\nstranded prose"))).toMatch(/content stands between ETX and EOT/);
     });

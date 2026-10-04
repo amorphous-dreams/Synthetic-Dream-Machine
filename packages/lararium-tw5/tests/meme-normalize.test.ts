@@ -280,3 +280,17 @@ describe("ClauseSeat — the class declares itself on the clause, never a caller
     expect(seat.grammarChanged).toBe(false);
   });
 });
+
+describe("normalizeMemeSource — the carrier bytes: UTF-8, LF, no BOM", () => {
+  const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "");
+  test("a leading BOM and CRLF line endings fold to the canonical bytes, and the fold names itself", () => {
+    const r = normalizeMemeSource(`\uFEFF${src.replace(/\n/g, "\r\n")}`);
+    expect(r.text).toBe(normalizeMemeSource(src).text);
+    expect(r.changed).toBe(true);
+    expect(r.notes.join("\n")).toMatch(/carrier bytes/);
+  });
+  test("CONTROL: canonical bytes move nothing", () => {
+    expect(normalizeMemeSource(src).notes.join("\n")).not.toMatch(/carrier bytes/);
+  });
+});
+

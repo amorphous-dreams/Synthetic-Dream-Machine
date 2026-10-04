@@ -100,9 +100,10 @@ export function memeticWikitextDeserializer(
   // A plain server's sandbox lends no TextEncoder; the hashing below needs one whichever path reached
   // here, startup module or not.
   lendHostGlobals(globalThis, typeof process === "undefined" ? undefined : process);
-  // Carrier-bytes law (memetic-wikitext-framing #carrier-bytes): carriers rest as UTF-8, LF, no
-  // BOM. The boundary normalizes foreign line endings and a leading BOM at
-  // ingest — once, here, so every stratum downstream sees one byte law.
+  // Carrier-bytes law (memetic-wikitext-framing #carrier-bytes): carriers rest as UTF-8, LF, no BOM.
+  // A TOLERANT READ, documented: a platform wrote a BOM or CRLF, not an author, so the boundary folds
+  // them once, here, and every stratum downstream sees one byte law. The gradient names them and
+  // `lares meme normalize` writes the canonical bytes back — the tolerance is never the rest state.
   if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   if (text.includes("\r")) text = text.replace(/\r\n?/g, "\n");
   const baseUri = String(fields?.["title"] ?? "");

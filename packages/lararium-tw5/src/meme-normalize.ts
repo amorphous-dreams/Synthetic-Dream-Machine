@@ -327,6 +327,18 @@ export function normalizeMemeSource(src: string, opts: NormalizeOptions = {}): N
   const flags: string[] = [];
   const seat = new ClauseSeat(src, opts);
 
+  // ── The carrier bytes: UTF-8, LF, no BOM — FRAME AUTHORITY ──────────────────
+  //
+  // Carrier-bytes law (memetic-wikitext-framing #carrier-bytes). Every reader folds a leading BOM and
+  // foreign line endings as a tolerant read — a platform wrote them, not an author — and this is the
+  // gesture that writes the canonical bytes back, so the tolerance never becomes the rest state.
+  {
+    let next = seat.text;
+    if (next.charCodeAt(0) === 0xfeff) next = next.slice(1);
+    if (next.includes("\r")) next = next.replace(/\r\n?/g, "\n");
+    if (next !== seat.text) seat.apply("frame", next, () => "carrier bytes: BOM and CR line endings folded (UTF-8, LF, no BOM)");
+  }
+
   // ── 0. The declaration ────────────────────────────────────────────────────
   //
   // ONE DECLARATION, minted by the frame writer. A carrier holding a shorter or older one is a retired
