@@ -42,7 +42,6 @@ import {
   FRAME_MARKS,
   frameAlt,
   frameHex,
-  classifyPostamble,
   readFrame,
   frameCarrier,
 } from "@lararium/memetic-frame";
@@ -227,18 +226,11 @@ export function memeticWikitextDeserializer(
     // holds the why). A carrier that wrote prose there lost it: the render never reproduced it, and
     // nothing said so. Two `#edges` blocks vanished that way before anyone diffed a round-trip.
     //
-    // So the slot gets classified rather than stored blind. A block check survives as the trailer it
-    // is; foreign content raises an ERROR the gate refuses on, which is the NAK the original protocol
-    // would have answered with.
+    // Foreign content in that slot is the carrier check's to refuse (`carrier-check.ts`); this reader
+    // stamps no reading onto a record. A block check needs no record either: the emitter mints one over
+    // every framed body, so an arriving check is a fact already true of the bytes.
     if ((postamble.trim().length > 0 || slotText.trim().length > 0)
         && tiddlers.length > 0 && ev === closes[closes.length - 1]) {
-      // A block check needs no record: the emitter mints one over every framed body, so an arriving
-      // check is a fact already true of the bytes and nothing has to remember that it stood.
-      const slot = classifyPostamble(slotText);
-      if (slot.kind === "foreign") {
-        tiddlers[0]!["$postamble-foreign"] = String(slot.lines);
-      }
-      // The raw slot rides on regardless, so a refusal can still show the operator their own bytes.
       carriage.push(...carriageRecord(String(tiddlers[0]!["title"]), "postamble", postamble));
     }
     result.push(...tiddlers);
@@ -949,7 +941,7 @@ function emitMetaToml(fields: TiddlerFields, deny: ReadonlySet<string>, parentFi
  * The `$` marks the host's slot and keeps the address whole; a `$:/`-prefixed system title would break
  * the carriage away from the thing it belongs to.
  *
- * Scalars stay fields. `$slot`, `$fragment-parent`, `$carrier-soh`, `$postamble-foreign` hold single
+ * Scalars stay fields. `$slot`, `$fragment-parent`, `$carrier-soh` hold single
  * values that never carry a newline, and a record for each would cost the native filter surface and buy
  * nothing. The split runs scalar-or-multiline, never reserved-or-free.
  */

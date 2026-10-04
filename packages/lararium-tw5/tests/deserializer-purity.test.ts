@@ -15,4 +15,14 @@ describe("★ the deserializer stamps no reading onto a record ★", () => {
     const text = frameCarrier({ head: { uri: URI }, body: "```toml meta\ntext = \"x\"\n```\n\n<<~ ahu #dangling>>\n" });
     for (const r of recordsOf(text)) expect(r["failure-count"]).toBeUndefined();
   });
+
+  test("content stranded between ETX and EOT stamps no `$postamble-foreign` onto any record", () => {
+    const text = frameCarrier({ head: { uri: URI }, body: "body" })
+      .replace(/(ni:\/\/\/sha-256;[A-Za-z0-9_-]+)\n/, "$1\nstranded prose\n");
+    const records = recordsOf(text);
+    for (const r of records) expect(r["$postamble-foreign"]).toBeUndefined();
+    // The slot's bytes reach no record at all — which is exactly why the carrier check refuses them.
+    expect(records.some((r) => String(r.text ?? "").includes("stranded prose"))).toBe(false);
+  });
 });
+
