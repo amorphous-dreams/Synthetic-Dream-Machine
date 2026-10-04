@@ -23,6 +23,14 @@ module-type: library
  * past it read as a CONFLICT, never a silent overwrite. No base = a fresh adoption — the gate lands
  * it unless the records already carry an equivalent render (a noop).
  *
+ * ONE RAW `#`, EVER. A `lar:` URI never carries a second raw `#` (bags/lares/ha.ka.ba/lares/docs/pono/
+ * child-grade-decision.mem row 16): `placeMeme` may land against ANY group member's own address, not
+ * only a founding's — a slot child of a slot child places by calling `placeMeme` with a slot URI
+ * (already carrying `#/a`) as the root. A nested slot then composes onto the fragment the root
+ * ALREADY HAS (`#/a/z`), never opens a second one beside it (`#/a#/z`). The deserializer's split
+ * reads the fragment off the given root — not a bare `""` prefix — before it recurses, so the one
+ * fragment a URI carries stays the only one it ever carries.
+ *
  * Meme: lar:///ha.ka.ba/lararium/tw5/place-meme
  */
 
@@ -110,8 +118,9 @@ export function memePathOf(uri: string, container: { kind: "bags" | "recipes"; n
  * THE MARK IS NOT THE THING. A slot child carries the carrier type by construction and its text is the
  * author's, so a child into which someone pasted a whole framed carrier wears every mark a founding
  * wears. Reading the mark alone, this answered the CHILD's own address — and three doors believed it:
- * the charm re-addressed a fragment to `/memes/` and the split minted `uri#/a#/z`, a title the group law
- * admits and the address grammar forbids; the native door's gate answered 422 over the same record,
+ * the charm re-addressed a fragment to `/memes/` and the split once minted `uri#/a#/z`, a title the
+ * group law admits and the address grammar forbids (ROW 16 — one raw `#`, ever, see above); the native
+ * door's gate answered 422 over the same record,
  * which stalls the stock syncer's queue permanently; the backstop took a child for a founding. So the
  * root law arrives FIRST, in the one spelling `isMemeRoot` already carries — a second copy of it would
  * drift the day one of them moved, which is exactly how this seam opened.
