@@ -80,6 +80,9 @@ class FakeTW5Engine {
     ["lar:///ha.ka.ba/lararium/config/current-wiki-personal", wikiSlotUri("test-wiki", "personal")],
   ]);
 
+  /** Tiddlers the fake wiki holds, for the `[field:…]` query the orphan scan runs. */
+  readonly tiddlerFields = new Map<string, TW5FieldsMap>();
+
   readonly wiki = {
     addTiddler:      (tiddler: { fields?: TW5FieldsMap } | TW5FieldsMap): void => {
       const fields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields)
@@ -98,6 +101,13 @@ class FakeTW5Engine {
       // ⚠ Each MUST read the SOURCE: TW5's `[[X]]` and `[title[X]]` are CONSTRUCTORS that yield X
       // whatever the source holds, so an exclusion written that way withholds every write in the
       // vessel. Measured against the real engine before it shipped.
+      // `[field:<name>[<value>]]` over the wiki's own tiddlers — the orphan scan's query.
+      const fieldQ = /^\[field:([^[\]]+)\[([^\]]*)\]\]$/.exec(filter);
+      if (fieldQ) {
+        return [...this.tiddlerFields.values()]
+          .filter((f) => f[fieldQ[1]!] === fieldQ[2])
+          .map((f) => String(f["title"]));
+      }
       const re = /^\[(prefix|match|regexp|is|lar-kind\[\]match)\[([^\]]*)\]then(?:\[([^\]]*)\]|\{([^}]+)\})\]$/;
       const m  = re.exec(filter);
       if (!m) return [];
@@ -347,6 +357,19 @@ describe("IslandAdaptor — outbound saveTiddler", () => {
   });
 
   const flush = () => vi.advanceTimersByTimeAsync(IslandAdaptor.DEBOUNCE_MS + 1);
+
+  test("★ a slot the saved body no longer declares tombstones — the scan reads `$fragment-parent`, the field the split mints ★", async () => {
+    tw5.tiddlerFields.set(`${LAR_URI}#/old`, { title: `${LAR_URI}#/old`, "$fragment-parent": LAR_URI, text: "old" });
+    const tombstoned: string[] = [];
+    const orig = store.tombstone.bind(store);
+    store.tombstone = async (title, origin) => { tombstoned.push(title); return orig(title, origin); };
+
+    const done = adaptor.saveTiddler({ fields: { title: LAR_URI, text: "<<~ ahu #/new>>\n\nfresh\n\n<<~/ahu>>" } });
+    await flush();
+    await done;
+
+    expect(tombstoned).toEqual([`${LAR_URI}#/old`]);
+  });
 
   test("lar: URI → store.put() called", async () => {
     const puts: string[] = [];

@@ -50,6 +50,7 @@ import type { MemeStreamEvent } from "./meme-stream.js";
 import {
   findTopLevelAhuBlocks,
   composeSlotPath,
+  childUri as childUriOf,
 } from "./meme-ast/ahu-scan.js";
 
 // ── THE CODE SETS COME FROM THE DECLARATION; THE HEAD SCANS STAY THIS READER'S OWN (marks.ts) ───────
@@ -444,14 +445,6 @@ export function divideCarrier(text: string): CarrierDivision {
   return { noSoh, frame, headerMeta, bodyMeta, recoveredBody };
 }
 
-/** A URI's carrier root and the fragment it already carries ("" at a root). */
-export function splitFragment(uri: string): { rootUri: string; fragmentPrefix: string } {
-  const hashIdx = uri.indexOf("#");
-  return hashIdx < 0
-    ? { rootUri: uri, fragmentPrefix: "" }
-    : { rootUri: uri.slice(0, hashIdx), fragmentPrefix: uri.slice(hashIdx) };
-}
-
 function splitMemeToTiddlers(
   uri:        string,
   text:       string,
@@ -462,11 +455,9 @@ function splitMemeToTiddlers(
     ...(headerMeta ? fieldifyToml(headerMeta.content) : {}),
     ...(bodyMeta ? fieldifyToml(bodyMeta.content) : {}),
   };
-  // `uri` may already CARRY a fragment (a slot re-descending into its own child) — handing
-  // splitRecursive a bare "" prefix every time drops that standing fragment, so a slot child
-  // of a slot child loses its ancestry and its kahea refs compose against the wrong parent.
-  const { rootUri, fragmentPrefix } = splitFragment(uri);
-  const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, recoveredBody);
+  // A CARRIER IS A ROOT: every door refuses a fragment-carrying address before a split runs, so the
+  // carrier's own URI is the root its slots compose under.
+  const { children, rewrittenText } = splitRecursive(uri, "", recoveredBody);
 
   const parent: TiddlerFields = {
     ...baseFields,
@@ -504,7 +495,7 @@ function splitRecursive(
   for (const block of blocks) {
     rewritten += text.slice(cursor, block.openStart);
     const childSlotPath = composeSlotPath(fragmentPrefix, block.slot);
-    const childUri      = rootUri + childSlotPath;
+    const childUri      = childUriOf(enclosingUri, block.slot);
     // ONE SLOT, ONE ADDRESS. The scanner admits the rooted spelling only; the record, parent ref, and
     // `$slot` carry that same spelling, so a reader needs no compatibility normalization.
     const slot          = composeSlotPath("", block.slot);
@@ -705,16 +696,15 @@ export { memeticWikitextDeserializer as "text/memetic-wikitext+tiddlywiki" };
 // ---------------------------------------------------------------------------
 
 export function splitBodyTiddler(
-  uri:       string,
-  bodyText:  string,
-  baseFields: TiddlerFields,
+  rootUri:        string,
+  fragmentPrefix: string,  // "" for a root; "#/a" for a slot child saved at its own address
+  bodyText:       string,
+  baseFields:     TiddlerFields,
 ): { parent: TiddlerFields; children: TiddlerFields[] } {
-  const hasAhu = bodyText.includes("<<~ ahu");
-  if (!hasAhu) {
+  const uri = rootUri + fragmentPrefix;
+  if (!bodyText.includes("<<~ ahu")) {
     return { parent: { ...baseFields, title: uri, text: bodyText }, children: [] };
   }
-
-  const { rootUri, fragmentPrefix } = splitFragment(uri);
   const { children, rewrittenText } = splitRecursive(rootUri, fragmentPrefix, bodyText);
   const parent: TiddlerFields = { ...baseFields, title: uri, text: rewrittenText };
   return { parent, children };

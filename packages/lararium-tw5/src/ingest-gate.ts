@@ -25,6 +25,7 @@
  * gate compares, never computes, so it stays isomorphic and hash-agnostic.
  *
  * Decision law (in order):
+ *   0. a fragment address        → REFUSE (a slot never founds a meme; framed families only)
  *   1. disk == synced            → NOOP (nothing happened on disk)
  *   1½. the frame reads BARE     → hold the bytes verbatim as ONE record, flagged UNSTABLE — bare
  *      data found on the internet is not a meme, so it is never parsed as one and never refused as
@@ -52,7 +53,7 @@ import { parseMemeText } from "./meme-ast/parse.js";
 import { failuresToDiagnostics, gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { MemeDiagnostic, DiagnosticSeverity } from "./meme-ast/diagnostics.js";
 import { getGrammar } from "./grammar-cache.js";
-import { verdict, type FrameVerdict } from "@lararium/memetic-frame";
+import { headUriOf, verdict, type FrameVerdict } from "@lararium/memetic-frame";
 import { checkCarrier } from "./carrier-check.js";
 
 export type IngestDecision<R = TiddlerFields> =
@@ -180,6 +181,17 @@ export function decideIngest<R = TiddlerFields>(
   // Default to the memetic congruence — a caller that names none reads the memetic
   // family, so the memetic gate + its vectors stay byte-identical to the single-family era.
   const congruence = ops ?? (memeticIngestOps as unknown as IngestOps<R>);
+
+  // 0 — A FRAGMENT ADDRESS NEVER FOUNDS A MEME. `#` may not repeat in a lar address, so a placement at
+  // `uri#/slot` (or under a head naming one) could mint only `uri#/slot#/z` — a title the group law
+  // admits and the address grammar has no name for. Every door that places through this gate refuses
+  // it here; the `/memes/` PUT route answers the same wall before it reaches the gate.
+  if (congruence.frame && (uri.includes("#") || (headUriOf(diskText) ?? "").includes("#"))) {
+    const wall = diagnostic("error", "fragment-address",
+      `${uri}: a fragment address never founds a meme — \`#\` may not repeat; place the ROOT and let the slot ride its body`,
+      diskText.length);
+    return { kind: "refuse", warnings: [wall.message], diagnostics: [wall] };
+  }
 
   // 1 — echo gate: the disk holds exactly what the projector last wrote.
   // `digestsEqual` normalizes the tag boundary: `diskHash` rides freshly computed

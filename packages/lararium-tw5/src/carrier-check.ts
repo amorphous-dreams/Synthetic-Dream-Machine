@@ -15,8 +15,8 @@
  */
 
 import { classifyPostamble, fencedSpans, frameAlt, markCode, maskedExec, maskedExecAll, readFrame } from "@lararium/memetic-frame";
-import { SOH_PREFIX_RE, carrierTexts, divideCarrier, findMetaFence, splitFragment } from "./deserializer.js";
-import { findTopLevelAhuBlocks, composeSlotPath } from "./meme-ast/ahu-scan.js";
+import { SOH_PREFIX_RE, carrierTexts, divideCarrier, findMetaFence } from "./deserializer.js";
+import { findTopLevelAhuBlocks, childUri } from "./meme-ast/ahu-scan.js";
 import { MEMETIC_SOURCE, shoreDiagnostic, type MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { parseTaploFields } from "./toml-ast.js";
 
@@ -80,13 +80,13 @@ const tomlOf = (fence: { readonly content: string } | null): Record<string, unkn
  * Every slot's meta, full depth, in the order the split visits them (a slot's own children first):
  * an authored `text` key is ignored there — the body is the text — and named here.
  */
-function slotTextKeys(rootUri: string, fragmentPrefix: string, text: string, out: string[]): void {
+function slotTextKeys(parent: string, text: string, out: string[]): void {
   for (const block of findTopLevelAhuBlocks(text)) {
-    const slotPath = composeSlotPath(fragmentPrefix, block.slot);
+    const child = childUri(parent, block.slot);
     const body = text.slice(block.bodyStart, block.bodyEnd);
-    slotTextKeys(rootUri, slotPath, body, out);
+    slotTextKeys(child, body, out);
     const meta = findMetaFence(body, false);
-    if (meta && body.slice(0, meta.start).trim() === "" && "text" in tomlOf(meta)) out.push(TEXT_KEY(rootUri + slotPath));
+    if (meta && body.slice(0, meta.start).trim() === "" && "text" in tomlOf(meta)) out.push(TEXT_KEY(child));
   }
 }
 
@@ -115,8 +115,7 @@ function advisories(uri: string, text: string): string[] {
       out.push(`${uri}: root TOML uri-path "${String(root["uri-path"])}" does not match SOH target path "${expected}"`);
     }
   }
-  const { rootUri, fragmentPrefix } = splitFragment(uri);
-  slotTextKeys(rootUri, fragmentPrefix, d.recoveredBody, out);
+  slotTextKeys(uri, d.recoveredBody, out);
   return out;
 }
 

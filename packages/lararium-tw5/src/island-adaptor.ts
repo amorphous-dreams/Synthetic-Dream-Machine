@@ -374,7 +374,7 @@ export class IslandAdaptor implements MemeProjection {
   // ---------------------------------------------------------------------------
 
   private _childUrisOf(parentUri: string): string[] {
-    return this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${parentUri}]]`) as string[];
+    return this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`) as string[];
   }
 
   /**
@@ -405,7 +405,7 @@ export class IslandAdaptor implements MemeProjection {
 
   /** Remove ahu-slot child tiddlers from TW5 during outbound delete. */
   private _removeSlotChildren(parentUri: string): void {
-    const children = this.tw5.$tw.wiki.filterTiddlers(`[field:fragment-parent[${parentUri}]]`);
+    const children = this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`);
     for (const t of children) this.tw5.$tw.wiki.deleteTiddler(t);
   }
 
@@ -419,7 +419,12 @@ export class IslandAdaptor implements MemeProjection {
     origin: ChangeOrigin,
   ): Promise<void> {
     const bodyText = fields["text"] ?? "";
-    const { parent, children } = splitBodyTiddler(title, bodyText, fields);
+    // A slot child saved at its own address splits under the fragment it already carries: its own
+    // slots compose onto that ONE path (`#/a/z`), never a second fragment (`#/a#/z`).
+    const cut = title.indexOf("#");
+    const { parent, children } = cut < 0
+      ? splitBodyTiddler(title, "", bodyText, fields)
+      : splitBodyTiddler(title.slice(0, cut), title.slice(cut), bodyText, fields);
     // The in-wiki cascade (lar:///ha.ka.ba/lararium/config/bag-paths) names the bag a save lands in;
     // null when no rule matches or an explicit-skip rule fires (e.g. $:/* system tiddlers).
     const targetBag = this._destination(title) ?? undefined;

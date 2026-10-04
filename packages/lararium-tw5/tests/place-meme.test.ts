@@ -18,14 +18,6 @@ const meme = (slots: readonly string[]): string =>
   slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
   `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
 
-/** Same framing as `meme`, but targeted at any URI (root or a slot URI already carrying `#/…`) — the
- *  fixture for row 16: placing text directly at a slot child's own address. */
-const memeAt = (uri: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from=? -> to=${uri}>>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.startsWith("lar:///") ? uri.slice(7) : uri}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
-
 /** An in-memory sink: the smallest thing that holds tiddlers by title. */
 function memorySink(): MemeSink & { store: Map<string, TiddlerFields> } {
   const store = new Map<string, TiddlerFields>();
@@ -102,26 +94,24 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
 
 /**
  * ROW 16 (bags/lares/ha.ka.ba/lares/docs/pono/child-grade-decision.mem:355) — a `lar:` URI never
- * carries a second raw `#`. Placing a slot child OF A SLOT CHILD — `placeMeme` called with a
- * slot URI as its own root — must compose the nested fragment onto the ONE path the parent
- * already carries (`#/a/z`), never open a second fragment (`#/a#/z`).
+ * carries a second raw `#`. Placing text AT A SLOT CHILD'S OWN ADDRESS would have to mint `#/a#/z`;
+ * a fragment address never founds a meme, so the placement refuses and lands nothing (the doors
+ * suite, fragment-doors.test.ts, holds every skin).
  */
-describe("★ ROW 16 — a slot child of a slot child never doubles the fragment mark ★", () => {
-  test("placing text directly at a slot URI composes the nested slot path with ONE '#', not two", async () => {
+describe("★ ROW 16 — a slot address never founds a meme ★", () => {
+  test("placing text at a slot URI refuses, lands nothing, and never mints `#/a#/z`", async () => {
     const sink = memorySink();
     await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
+    const before = [...sink.store.keys()].sort();
     const child = `${URI}#/a`;
-    const r = await placeMeme({ uri: child, text: memeAt(child, ["z"]) }, sink);
-    expect(r.decision).toBe("ingest");
-    expect(r.landed).toContain(child);
-    expect(sink.store.has(`${URI}#/a/z`)).toBe(true);
+    const r = await placeMeme({ uri: child, text: meme(["z"]).replace(`to=${URI}`, `to=${child}`) }, sink);
+    expect(r.decision).toBe("refuse");
+    expect(r.landed).toEqual([]);
+    expect([...sink.store.keys()].sort()).toEqual(before);
     expect(sink.store.has(`${URI}#/a#/z`)).toBe(false);
-    for (const title of r.landed) {
-      expect(title.match(/#/g)?.length ?? 0).toBeLessThanOrEqual(1);
-    }
   });
 
-  test("CONTROL: a slot child of a ROOT still lands with one '#' (unaffected by the fix)", async () => {
+  test("CONTROL: a slot child of a ROOT still lands with one '#'", async () => {
     const sink = memorySink();
     const r = await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
     expect(r.decision).toBe("ingest");

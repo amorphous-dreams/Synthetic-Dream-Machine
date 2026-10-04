@@ -163,3 +163,18 @@ export function composeSlotPath(prefix: string, slot: string): string {
   const rooted = prefix.startsWith("#/") ? prefix : `#/${prefix.slice(1)}`;
   return `${rooted}/${tail}`;
 }
+
+/**
+ * A child's address under its parent's — fragment-aware, the way `carriageUri` is: a root parent
+ * gains the slot as its fragment, a parent already carrying one composes the slot onto that SAME
+ * fragment. `#` never repeats.
+ *
+ *   childUri("lar:///x",     "#/a")  → "lar:///x#/a"
+ *   childUri("lar:///x#/a",  "#/z")  → "lar:///x#/a/z"
+ */
+export function childUri(parent: string, slot: string): string {
+  const cut = parent.indexOf("#");
+  return cut < 0
+    ? parent + composeSlotPath("", slot)
+    : parent.slice(0, cut) + composeSlotPath(parent.slice(cut), slot);
+}

@@ -36,7 +36,7 @@ describe("child declared meta type (default-before-spread)", () => {
       "",
       "<<~/ahu>>",
     ].join("\n");
-    const { children } = splitBodyTiddler(ROOT, body, base);
+    const { children } = splitBodyTiddler(ROOT, "", body, base);
     const kid = childByTitleEnd(children, "#source-text");
     expect(kid).toBeDefined();
     expect(kid!.type).toBe("text/markdown");   // declared, no longer clobbered
@@ -45,7 +45,7 @@ describe("child declared meta type (default-before-spread)", () => {
 
   test("an undeclared child DEFAULTS to memetic-wikitext", () => {
     const body = "<<~ ahu #plain>>\n\nplain body\n\n<<~/ahu>>";
-    const { children } = splitBodyTiddler(ROOT, body, base);
+    const { children } = splitBodyTiddler(ROOT, "", body, base);
     const kid = childByTitleEnd(children, "#plain");
     expect(kid).toBeDefined();
     expect(kid!.type).toBe(CARRIER_TYPE);
