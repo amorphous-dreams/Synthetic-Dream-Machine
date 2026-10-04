@@ -1,6 +1,22 @@
+---
+author: "Joshua Fontany <joshua.fontany@gmail.com>"
+cat: "info"
+date: "2026-10-03"
+docname: "draft-fontany-memetic-wikitext-framing-00"
+ipr: "trust200902"
+lang: "en"
+source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
+source-check: "ni:///sha-256;eD7sST41Ls3pXmHdALIFzvafBJ6UAibf7wXnObVcOAo"
+title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
+tongue: "x-lares>en"
+variant: "kramdown-rfc2629"
+normative:
+  RFC2119:
+  RFC8174:
+---
 
 
-- `aka lar:///ha.ka.ba/lares/api/pono/RFC-2119#/normative-language` — pinned `ni:///sha-256;9Hs6XmpIui_TZVAtVuZw8vPdihkN9Nn_L8Nd3K6m26s`
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all capitals, as shown here.
 
 <a id="abstract"></a>
 
@@ -592,6 +608,28 @@ a moment, in-house. A woven projection does the same thing outward, across the c
 rather than across a carrier/carrier one. Whether one law covers both, or whether the boundary the
 target crosses makes them two laws that merely rhyme, stands open (#/annex-open) — this document marks
 the resemblance and settles nothing about it.
+
+### Tangle's Deferral
+
+The law reads WEAVE and TANGLE as a pair, and today the house builds only the WEAVE half. Tangle
+stays deferred, named here as law rather than left silent, with the acceptance criteria that close the
+deferral:
+
+- **A real return trip.** Tangle builds against a grammar that can PARSE the woven Gaia format back
+  into the carrier's own AST — not a hand-rolled scanner bent to one profile's shape.
+- **A tree-sitter grammar, regenerated whole, with English-mirror pairing.** The grammar that reads a
+  woven file home MUST regenerate in full from the same sigil table weave reads — never a hand-patched
+  fork — and MUST recognize an English mirror's weave spelling alongside its Hawaiian canonical, so
+  tangle can fold a mirror home (`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/mirror-vocabulary`).
+- **A shipped round-trip test.** `print(parse(x)) == x` MUST run as a shipped, CI-witnessed test over
+  the live corpus — not a one-off manual check — before tangle carries normative weight.
+- **Markdown injection into guest spans.** A `hana` guest-grammar span (#/the-woven-dialect, Mixed
+  grammar) MUST accept Markdown content tangle folds back without the guest grammar's own rules
+  mistaking that content for structure.
+
+Until every criterion above holds, tangle's law stands written ahead of its code
+(`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/the-putback-law` carries the matching
+confidence markers for the putback law specifically; this entry names tangle's own build gate).
 
 <a id="the-putback-law"></a>
 

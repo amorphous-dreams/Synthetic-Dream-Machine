@@ -1,6 +1,8 @@
 title: lar:///ha.ka.ba/lares/api/pono/submissions/memetic-wikitext-framing
 type: text/markdown
 source: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing
-source-check: ni:///sha-256;njl4kzlRudHT9IggPv4p5i-wlWmCazvjg4lP9iEXHdQ
+source-check: ni:///sha-256;eD7sST41Ls3pXmHdALIFzvafBJ6UAibf7wXnObVcOAo
+variant: kramdown-rfc2629
+tongue: en
 projected-by: weave (lares meme project --to md · meme-project)
 law: projected artifact — hand edits do not survive re-projection
