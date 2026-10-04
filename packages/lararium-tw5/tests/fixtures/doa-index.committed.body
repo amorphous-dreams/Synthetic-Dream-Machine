@@ -12,6 +12,7 @@ manaoio    = 14
 rating     = "meme"
 retain     = true
 role       = "skinny handle for the Discordian Oracle AppleKation reliquary — bytes ride the genesis/cas KIND-plane by content address; this meme carries the names, cids, provenance, and rites"
+title      = "lar:///ha.ka.ba/lares/library/oracles/doa/index"
 type       = "{CARRIER_TYPE}"
 uri-path   = "ha.ka.ba/lares/library/oracles/doa/index"
 ```
@@ -71,6 +72,6 @@ opening the DOA.html blob in any browser, offline, forever.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;m_NzY35b6w-36y4rSMBrWlbwcTRf3sOLtEZZC8olUR0
+<<^ code="&#x0003;">>ni:///sha-256;CbTCL-UTCxG3-2XL0Yrv1uwQgQ_jrIGnRxfG9k6GW0Q
 
 <<^ code="&#x0004;" -> to="?">>
