@@ -4,7 +4,7 @@
  *
  * The CLI shells out for two reasons:
  *   1. The underlying scripts are sizeable and self-contained (build-genesis,
- *      test-quine, heleuma) — re-importing them as library functions would
+ *      test-quine) — re-importing them as library functions would
  *      balloon the CLI diff for no behavioral gain.
  *   2. Composition scripts (root `pnpm dev`) already wrap concurrency
  *      orchestration; re-implementing here would duplicate config.

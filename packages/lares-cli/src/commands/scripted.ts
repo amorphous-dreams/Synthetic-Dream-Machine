@@ -41,12 +41,6 @@ export async function cmdTestQuine(_args: ParsedArgs): Promise<number> {
   return runTsxScript(join(NODE_PKG, "scripts", "test-quine.ts"));
 }
 
-export async function cmdHeleuma(args: ParsedArgs): Promise<number> {
-  const scriptArgs: string[] = [];
-  if (args.flags["write"]) scriptArgs.push("--write");
-  return runTsxScript(join(REPO_ROOT, "scripts", "heleuma.ts"), scriptArgs);
-}
-
 /** `lares vessel stand --foreground` — boot the lararium node only (no Vite).
  *
  *  Runs the BUILT dist, never tsx-source: the sovereign island workers spawn from
