@@ -135,12 +135,7 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
-export type { BagTiddler } from "@lararium/mesh";
-export { bagDescriptorUri, recipeUri } from "@lararium/mesh/lar-uris";
-export { parseBagStack } from "@lararium/mesh";
-
-export { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "@lararium/mesh";
-export type { CeremonyTiddler } from "@lararium/mesh";
+export { recipeUri } from "@lararium/mesh/lar-uris";
 
 export type { IslandContext, IslandBehavior } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";

@@ -5,10 +5,13 @@
  * so @lararium/keyhive and any future vessel can import it without pulling the
  * TW5 render stack.
  *
- * The TW5 wiki includes its own self-contained CJS copy in
- * lararium-tw5/src/cold-boot-ceremony.ts (that file inlines helpers to avoid
- * ESM imports inside the CJS wiki context). The two copies MUST stay in sync
- * on the logic; the authoritative TS version lives here.
+ * ONE copy. A self-contained CJS twin used to stand at
+ * lararium-tw5/src/cold-boot-ceremony.ts (inlined to dodge ESM imports inside
+ * the CJS wiki context); it had zero live callers — every real consumer
+ * (lararium-node's kindle.ts, lararium-keyhive's ceremony-core.ts) already
+ * imported THIS module from @lararium/mesh, including from inside the TW5
+ * package's own index.ts re-export — so it was deleted rather than kept in
+ * lockstep.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/cold-boot-ceremony
  */
