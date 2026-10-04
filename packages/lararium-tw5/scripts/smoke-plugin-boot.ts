@@ -17,6 +17,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { frameCarrier } from "@lararium/memetic-frame";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { exportMemeText } from "../src/meme-write.js";
@@ -94,28 +95,14 @@ async function main(): Promise<void> {
   // emitter mints it, so the prologue record keeps only what the author wrote beyond it.
   // A section child titles as a rooted path, `uri#/head`.
   const carrierUri = "lar:///probe-meme";
-  const memeWithFraming = [
-    "prose above the declaration",
-    "",
-    "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>",
-    "",
-    `<<^ code="&#x0001;" from=? -> to=${carrierUri}>>`,
-    "```toml meta",
-    "uri-path = \"probe-meme\"",
-    "```",
-    "",
-    "<<^ code=\"&#x0002;\">>",
-    "",
-    "<<~ ahu #/head>>",
-    "body",
-    "<<~/ahu>>",
-    "",
-    "<<^ code=\"&#x0003;\">>",
-    "<<^ code=\"&#x0004;\" -> to=?>>",
-    "",
-    "trailing prose past the frame",
-    "",
-  ].join("\n");
+  // THE FRAME WRITER MINTS THE CARRIER; the probe supplies only what an author writes — the prose
+  // above the declaration, the body, the prose past the release.
+  const memeWithFraming = frameCarrier({
+    head: { uri: carrierUri },
+    prologue: "prose above the declaration\n\n",
+    body: "```toml meta\nuri-path = \"probe-meme\"\n```\n\n<<~ ahu #/head>>\nbody\n<<~/ahu>>",
+    postamble: "\ntrailing prose past the frame\n",
+  });
   type DeserializedFields = Record<string, string | string[]>;
   const deserializeTiddlers = (tw as unknown as { wiki: { deserializeTiddlers(t: string, x: string, b: Record<string, string>): DeserializedFields[] } }).wiki.deserializeTiddlers;
   const deserialized = deserializeTiddlers.call((tw as unknown as { wiki: unknown }).wiki, "text/memetic-wikitext+tiddlywiki", memeWithFraming, { title: carrierUri });
@@ -149,28 +136,25 @@ async function main(): Promise<void> {
   // nothing, so the grammar forbids that shape and `preamble` retired with it.)
   const slotUri = "lar:///probe-slot-meme";
   const parentSlotUri = `${slotUri}#/parent`;
-  const slotMeme = [
-    `<<^ code="&#x0001;" from=? -> to=${slotUri}>>`,
-    "```toml meta",
-    "uri-path = \"probe-slot-meme\"",
-    "```",
-    "",
-    "<<^ code=\"&#x0002;\">>",
-    "",
-    "<<~ ahu #/parent>>",
-    "```toml meta",
-    "field = \"value\"",
-    "```",
-    "<<~ ahu #/child>>",
-    "child body",
-    "<<~/ahu>>",
-    "trailing slot prose",
-    "<<~/ahu>>",
-    "",
-    "<<^ code=\"&#x0003;\">>",
-    "<<^ code=\"&#x0004;\" -> to=?>>",
-    "",
-  ].join("\n");
+  const slotMeme = frameCarrier({
+    head: { uri: slotUri },
+    declaration: null,
+    body: [
+      "```toml meta",
+      "uri-path = \"probe-slot-meme\"",
+      "```",
+      "",
+      "<<~ ahu #/parent>>",
+      "```toml meta",
+      "field = \"value\"",
+      "```",
+      "<<~ ahu #/child>>",
+      "child body",
+      "<<~/ahu>>",
+      "trailing slot prose",
+      "<<~/ahu>>",
+    ].join("\n"),
+  });
   const slotResults = deserializeTiddlers.call(
     (tw as unknown as { wiki: unknown }).wiki,
     "text/memetic-wikitext+tiddlywiki",

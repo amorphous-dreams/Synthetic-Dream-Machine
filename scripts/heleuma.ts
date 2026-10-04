@@ -22,7 +22,8 @@
  */
 
 import { existsSync, readFileSync, readdirSync, writeFileSync, mkdirSync } from "fs";
-import { CARRIER_TYPE, DECLARATION } from "../packages/lararium-mesh/src/carrier-type.js";
+import { CARRIER_TYPE } from "../packages/lararium-mesh/src/carrier-type.js";
+import { frameCarrier } from "../packages/lararium-memetic-frame/src/index.js";
 import { join, dirname, basename, relative, resolve } from "path";
 
 const WORKSPACE = resolve(dirname(new URL(import.meta.url).pathname), "..");
@@ -161,10 +162,11 @@ function template(opts: {
   const uriPath  = `ha.ka.ba/${opts.uriScope}/${opts.uriVersion}/${opts.slug}`;
   const memeRel  = relative(WORKSPACE, memePathFor(opts.uriScope, opts.uriVersion, opts.slug));
   const sourceRel = relative(WORKSPACE, opts.sourceFile);
-  return `${DECLARATION}
-
-<<^ code="&#x0001;" ? -> lar:///${uriPath}>>
-\`\`\`toml iam
+  // THE FRAME WRITER MINTS THE FRAME — declaration, head, STX/ETX, check, release. The scaffold
+  // writes the body alone: its root meta first, then the slot an author fills.
+  return frameCarrier({
+    head: { uri: `lar:///${uriPath}` },
+    body: `\`\`\`toml meta
 uri-path     = "${uriPath}"
 file-path    = "${memeRel}"
 source-file  = "${sourceRel}"
@@ -177,12 +179,11 @@ l-space      = "lararium"
 cacheable    = true
 retain       = true
 \`\`\`
-<<^ code="&#x0002;">>
 
-<<~ ahu #contract>>
+<<~ ahu #/contract>>
 TODO: describe the load-bearing surface this file owns.
-<<~/ahu>>
-`;
+<<~/ahu>>`,
+  });
 }
 
 // ---------------------------------------------------------------------------

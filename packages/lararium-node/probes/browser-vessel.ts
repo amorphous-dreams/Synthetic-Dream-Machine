@@ -38,6 +38,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { readFileSync, existsSync } from "node:fs";
 import { join, extname, resolve } from "node:path";
 import { chromium, type Browser, type Page, type Worker } from "playwright";
+import { frameCarrier } from "@lararium/memetic-frame";
 
 const WEB_DIR   = process.env["LAR_WEB_DIR"]  ?? resolve("packages/lararium-web/dist");
 const WEB_PORT  = Number.parseInt(process.env["LAR_WEB_PORT"] ?? "5173", 10);
@@ -51,9 +52,11 @@ const FACE_BOOT_MS = Number.parseInt(process.env["LAR_FACE_BOOT_MS"] ?? "180000"
 const WITNESS_PATH = "t.witness.browser/inventory";
 const WITNESS_URI  = `lar:///${WITNESS_PATH}`;
 const WITNESS_BAG  = "backpack: rope, lantern";
-const WITNESS_MEME =
-  `<<^ code="&#x0001;" from=? -> to=${WITNESS_URI}>>\n\`\`\`toml meta\nuri-path = "${WITNESS_PATH}"\nbag = "${WITNESS_BAG}"\n\`\`\`\n\n` +
-  `<<^ code="&#x0002;">>\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to=?>>\n`;
+const WITNESS_MEME = frameCarrier({
+  head: { uri: WITNESS_URI },
+  declaration: null,
+  body: `\`\`\`toml meta\nbag      = "${WITNESS_BAG}"\nuri-path = "${WITNESS_PATH}"\n\`\`\`\n\n<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>`,
+});
 
 const MIME: Record<string, string> = {
   ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript",

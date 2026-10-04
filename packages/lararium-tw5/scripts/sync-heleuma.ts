@@ -43,7 +43,8 @@ import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
 import { repoRoot } from "@lararium/mesh/node";
 import { tagDigest, digestsEqual } from "@lararium/mesh/agile-digest";
-import { DECLARATION } from "@lararium/mesh/carrier-type";
+import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
+import { moduleBodyDigest, applyBodySha256Patch } from "./heleuma-digest.js";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
@@ -64,7 +65,6 @@ const SYNC_MODULES     = args.includes("--sync-modules");
 // Regex patterns
 // ---------------------------------------------------------------------------
 
-const SOH_URI_RE     = /<<\^[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
 const TOML_RE        = /```toml([\s\S]*?)```/;
 const SOURCE_SLOT_RE = /<<~ ahu #source\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const FENCE_RE       = /```[^\n]*\n([\s\S]*?)\n```/;
@@ -147,15 +147,6 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
 // ALGORITHM-TAGGED (`sha256:<hex>`) — `verifySha256` (the runtime cold-boot reader)
 // and this script's own drift check both dual-read via `digestsEqual`, so a field
 // stored bare pre-agile keeps comparing equal until the next commit rewrites it.
-function applyBodySha256Patch(content: string, sha256: string): string {
-  const tagged = tagDigest(sha256);
-  const SHA_FIELD = /^body-sha256\s*=\s*"[^"]*"/m;
-  if (SHA_FIELD.test(content)) {
-    return content.replace(SHA_FIELD, `body-sha256 = "${tagged}"`);
-  }
-  // Insert before the closing ``` of the first toml fence
-  return content.replace(/(```toml[\s\S]*?)(\n```)/, `$1\nbody-sha256 = "${tagged}"$2`);
-}
 
 // ---------------------------------------------------------------------------
 // --scan: find candidates in packages/ lacking a heleuma pair
@@ -402,26 +393,11 @@ function runScanPromote(): void {
 
 // ---------------------------------------------------------------------------
 // --sync-modules: walk lares/ for anchors with module-ref, verify/patch
-//   body-sha256 against the actual module tiddler body (between STX and ETX).
+//   body-sha256 against the module record's text — the bytes the boot gate verifies.
 //   In --commit mode: also re-extracts and strips TypeScript source from
 //   source-file/source-symbol, injects into module tiddler body if drifted.
 // ---------------------------------------------------------------------------
 
-/** Extract the body text a module tiddler frames between its STX and ETX marks. */
-function extractModuleBody(content: string): string | null {
-  // A mark rides the head as a NAMED PARAM (`code:"&#x0002;"`), and a hand-written carrier may still
-  // spell it as a raw control character. Both scans admit either, and both admit whatever else the head
-  // carries — a pattern that demanded the mark alone matched only the one spelling it was written for.
-  const stxRe = /<<\^[^>\n]*(?:&#x0002;|[\x02])[^>\n]*>>/;
-  const etxRe = /<<\^[^>\n]*(?:&#x0003;|[\x03])[^>\n]*>>/;
-  const stxM = stxRe.exec(content);
-  const etxM = etxRe.exec(content);
-  if (!stxM || !etxM) return null;
-  const start = stxM.index + stxM[0].length;
-  const end   = etxM.index;
-  if (end <= start) return null;
-  return content.slice(start, end);
-}
 
 
 function runSyncModules(): { drift: number; missing: number; patched: number } {
@@ -460,14 +436,14 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
       continue;
     }
 
-    const modBody = extractModuleBody(modContent);
-    if (modBody === null) {
-      console.warn(`[sync-modules] MISSING STX/ETX markers  ${moduleRef}`);
+    // THE GATE'S OWN HASH: SHA-256 of the module record's `text`, read through the deserializer that
+    // hands the gate its tiddler — never the STX..ETX span, which carries the module carrier's meta.
+    const liveHash = moduleBodyDigest(modContent, moduleRef);
+    if (liveHash === null) {
+      console.warn(`[sync-modules] MISSING module record  ${moduleRef}`);
       missing++;
       continue;
     }
-
-    const liveHash     = createHash("sha256").update(modBody, "utf8").digest("hex");
     const existingHash = toml["body-sha256"] ?? "";
     // Dual-read across the tag boundary: `existingHash` may ride bare (pre-agile) OR
     // tagged (`sha256:…`); `digestsEqual` normalizes both, so a merely-reformatted
@@ -608,10 +584,11 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   // ka handles a single symbol; ba handles multiple space-separated symbols
   const heleumaMode = d.symbols.length === 1 ? "ka" : "ba";
 
-  const meme = `${DECLARATION}
-
-<<^ code="&#x0001;" ? -> lar:///${uriPath}>>
-\`\`\`toml meta
+  // THE FRAME WRITER MINTS THE FRAME — declaration, head, STX/ETX, check, release. This scaffold
+  // writes only the body: the root meta first, then the slots.
+  const meme = frameCarrier({
+    head: { uri: `lar:///${uriPath}` },
+    body: `\`\`\`toml meta
 uri-path    = "${uriPath}"
 file-path   = "${filePath}"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -629,9 +606,7 @@ cacheable   = true
 status-date = "${new Date().toISOString().slice(0, 10)}"
 \`\`\`
 
-<<^ code="&#x0002;">>
-
-<<~ ahu #head>>
+<<~ ahu #/head>>
 
 # ${d.slug}
 
@@ -639,26 +614,22 @@ ${kindLabel} from \`${d.pkgName}\`.
 
 <<~/ahu>>
 
-<<~ ahu #contract>>
+<<~ ahu #/contract>>
 
 Exported symbols: \`${d.symbols.join("`, `")}\`.
 
 <<~/ahu>>
 
-<<~ ahu #source>>
+<<~ ahu #/source>>
 
 <$transclude $tiddler="lar:///${uriPath}" $mode="block"/>
 
 <<~/ahu>>
 
-<<~ ahu #edges>>
+<<~ ahu #/edges>>
 
-<<~/ahu>>
-
-<<^ code="&#x0003;">>
-
-<<^ code="&#x0004;" -> ?>>
-`;
+<<~/ahu>>`,
+  });
 
   writeFileSync(memePath, meme, "utf8");
   console.log(`[heleuma/decorators] scaffolded  ${uriPath}`);
@@ -753,8 +724,8 @@ for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
   const mode = toml["heleuma"];
   if (mode !== "ha" && mode !== "ka" && mode !== "ba") continue;
 
-  const uriM = SOH_URI_RE.exec(content);
-  const uri  = uriM?.[1] ?? mdPath;
+  // The address the head names, read by the frame's one head reader — quotes stripped, fences masked.
+  const uri  = headUriOf(content) ?? mdPath;
 
   totalChecked++;
 
