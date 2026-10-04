@@ -17,6 +17,7 @@ manaoio   = 14
 namespace = "&#x2299;"
 retain    = true
 role      = "memetic-wikitext runtime kernel face: grammar kernel, sigil registry, parse rules, family contracts, boot grammar (the specification face lives at …/api/pono/memetic-wikitext)"
+title     = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/kernel"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/memetic-wikitext/kernel"
 ```
@@ -385,6 +386,6 @@ Adding a sigil: tag a tiddler with `lar:///ha.ka.ba/tags/SharktoothSigil` and po
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ApZUtV5SCugh73nB7FXSWXIgp0fox9t9PM3zdFRbORs
+<<^ code="&#x0003;">>ni:///sha-256;xAfqSTwOKhBmWJ16PwIwCN2yckbcA3h0mjXDIuNt-nk
 
 <<^ code="&#x0004;" -> to="?">>
