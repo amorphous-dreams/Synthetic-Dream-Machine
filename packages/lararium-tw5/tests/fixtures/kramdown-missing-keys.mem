@@ -5,6 +5,7 @@
 
 ```toml meta
 title    = "lar:///ha.ka.ba/lares/api/pono/draft-probe-missing-keys"
+type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lares/api/pono/draft-probe-missing-keys"
 ```
 
@@ -13,5 +14,5 @@ uri-path = "ha.ka.ba/lares/api/pono/draft-probe-missing-keys"
 Fixture for the REFUSAL control: title stands, but docname/cat/ipr/author/date do not — this must
 never weave under kramdown-rfc2629, whatever the live corpus carries on any given day.
 
-<<^ code="&#x0003;">>ni:///sha-256;3kHlqE6Y4JKOGc00VLqGJnjwNvvlztSGPXEqPJDKPgY
+<<^ code="&#x0003;">>ni:///sha-256;MYTAvMb9JaKa2IX4W614JA4gGDEWRoIjcQp2b079SQk
 <<^ code="&#x0004;" -> to="?">>
