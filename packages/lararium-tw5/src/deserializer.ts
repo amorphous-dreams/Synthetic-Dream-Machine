@@ -15,7 +15,7 @@ module-type: tiddlerdeserializer
  * TiddlerFields[] (parent + ahu-slot children) leave.
  * Non-TW5 adaptation stops at this shore; decomposition law begins here.
  *
- * Uses parseMemeText() from @lararium/tw5/meme-ast — isomorphic, no TW5 dep.
+ * Isomorphic: no TW5 dep.
  *
  * Incoming (disk → wiki):
  *   memeticWikitextDeserializer — TW5 tiddlerdeserializer contract.
@@ -82,7 +82,6 @@ import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
 
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { getGrammar, resetGrammar } from "./grammar-cache.js";
-import { parseMemeText } from "./meme-ast/parse.js";
 export type { GrammarRules } from "./meme-ast/types.js";
 export { getGrammar, resetGrammar };
 
@@ -136,7 +135,7 @@ export function memeticWikitextDeserializer(
     e.kind === "carrier-close"
   );
 
-  // ◇ Route — each carrier-close → parseMemeText → split ahu slots → batch.
+  // ◇ Route — each carrier-close → split ahu slots → batch.
   // Pre-SOH content (the declaration + leading prose) sits OUTSIDE
   // ev.fullText because MemeStreamParser frames on SOH/ETX. Capture
   // everything before the first SOH as `prologue` on the first carrier's
@@ -256,48 +255,21 @@ export function memeticWikitextDeserializer(
 }
 
 // ---------------------------------------------------------------------------
-// safeSplitMeme — LOSS-LESS split (Goal B): the gradient guards the write path.
+// safeSplitMeme — LOSS-LESS split (Goal B).
 //
 // A split failure NEVER truncates — it falls back to the verbatim whole, flagged (drop-honesty): one
-// un-split tiddler holding every byte beats a silent truncation. The grammar's own recovery count
-// joins the advisory envelope where one stands (below), so a degraded parse reaches a person at the
-// address they already query. AI-session turns arrive bare (no carrier sigils) and ride this via the
-// no-SOH fallback — they split clean (no ahu → verbatim parent) or, if malformed, degrade legibly.
+// un-split tiddler holding every byte beats a silent truncation. AI-session turns arrive bare (no
+// carrier sigils) and ride this via the no-SOH fallback — they split clean (no ahu → verbatim parent)
+// or, if malformed, degrade legibly.
 // ---------------------------------------------------------------------------
 
 function safeSplitMeme(uri: string, text: string, fields: TiddlerFields): TiddlerFields[] {
-  let tiddlers: TiddlerFields[];
   try {
-    tiddlers = splitMemeToTiddlers(uri, text, fields);
+    return splitMemeToTiddlers(uri, text, fields);
   } catch (err) {
     console.warn(`[memetic-deserializer] split failed for ${uri} — verbatim fallback (drop-honesty): ${err instanceof Error ? err.message : String(err)}`);
-    tiddlers = [{ ...fields, title: uri, text } as TiddlerFields];
+    return [{ ...fields, title: uri, text } as TiddlerFields];
   }
-  let failures = 0;
-  try {
-    failures = parseMemeText(uri, text, getGrammar() ?? undefined).failures.length;
-  } catch { /* gradient validation is best-effort (no wiki/grammar in scope) */ }
-
-  // ── SURFACE THE CHOICE; DO NOT COVER THE EDGE ───────────────────────────────────────────────────
-  //
-  // The carrier frame is the one place in this grammar where failing on a gradient has repeatedly
-  // snarled, and the reason is always the same: an edge case invites code that DECIDES for the
-  // operator. Deciding needs coverage, coverage needs maintenance, and every rule added to cover an
-  // edge becomes a rule someone must later discover before they can trust the result.
-  //
-  // So the standing preference: where a carrier reads ambiguously, SURFACE THE CONFLICT to the human
-  // who can settle it rather than resolve it quietly. It is the same law the house stands at the
-  // talk-story layer — auto-arbitration is anti-pono — arriving one altitude down, at a parse.
-  //
-  // This function honours it by ADDING NOTHING. The splitter raises an envelope where it has something
-  // to tell a person, and the grammar's count joins that envelope where one stands. Where the splitter
-  // found nothing worth a person's attention, this reader mints no record to say so: a carrier that
-  // parsed with recoveries and no advisories carries no grade, and that silence is honest. Minting one
-  // anyway put a record in front of every reader who had not asked, and moved every downstream count
-  // that the ingest merge model rests on — coverage, arriving as damage.
-  const envelope = tiddlers.find((t) => String(t["tags"] ?? "").includes(PARSE_WARNING_TAG));
-  if (envelope) envelope["failure-count"] = String(failures);
-  return tiddlers;
 }
 
 // ---------------------------------------------------------------------------
@@ -536,11 +508,8 @@ function splitMemeToTiddlers(
   // the parser fell back to. Summing them into one count would blur a nudge to a person with a
   // recovery by a machine.
   //
-  // They ride ONE tiddler under TWO counts, which is the host's own shape: TiddlyWiki stages many
-  // findings from one operation in a single `$:/Import` tiddler rather than scattering them, keeping a
-  // reader's query at one address. `warning-count` names the advisories raised here; `safeSplitMeme`
-  // adds `failure-count` for the grammar's recoveries by ENRICHING this tiddler, never by pushing a
-  // second one. An emitter added here would move every downstream record count.
+  // The parser's recoveries ride the gate's diagnostics channel (`failuresToDiagnostics`), never this
+  // tiddler. An emitter added here would move every downstream record count.
   result.push(...parseAdvisories(uri, warnings));
 
   return result;
