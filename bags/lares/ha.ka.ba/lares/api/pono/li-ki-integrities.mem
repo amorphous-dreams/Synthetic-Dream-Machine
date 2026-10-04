@@ -10,7 +10,7 @@ l-space   = "stable"
 mana      = 17
 manao     = 17
 manaoio   = 17
-namespace = "ॐ ँ"
+namespace = "&#x0950; &#x0901;"
 reflexive = true
 title     = "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -154,6 +154,6 @@ Named empty seats, held open: ''value/preference'' (nothing yet reads what the n
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2GXjr2lv7bEtnuZeBLp7ONYbf-SQkvOvJWL4xyEsx7E
+<<^ code="&#x0003;">>ni:///sha-256;BLPrpN12GjmC28tfVCevyStKgCL2gBKAKbosjmBW5ws
 
 <<^ code="&#x0004;" -> to="?">>
