@@ -2,18 +2,11 @@
  * THE DENY-LIST FILTERS RULE CLASSES BEFORE THE PARSE, NOT RULE INSTANCES AFTER IT.
  *
  * `lar:///ha.ka.ba/config/memetic-rules-except` names wikitext rules that a memetic-typed parse must
- * never run. MemeticParser used to call `stdParser.call(this, type, text, options)` first and filter
- * `this.pragmaRules`/`blockRules`/`inlineRules` afterwards — but TiddlyWiki5's WikiParser constructor
- * instantiates the rules AND runs `parsePragmas`/`parseBlocks` inside itself
- * (TiddlyWiki5/core/modules/parsers/wikiparser/wikiparser.js:79-90), so the post-filter acted on a
- * finished parse: too late to stop a denied rule from firing. A second defect compounded it —
- * `instantiateRules` returns `{rule, matchIndex}` wrapper objects, not rule instances, so `r.name` read
- * `undefined` and the filter denied nothing even in principle.
- *
- * This suite pins the fix: filtering the rule CLASS map before `instantiateRules` runs, so a denied
- * rule never instantiates and never matches — scoping every parse of a memetic-typed tiddler, whether
- * transcluded or not — while the SHARED `WikiParser.prototype.*RuleClasses` maps that every
- * `text/vnd.tiddlywiki` parse also reads stay untouched.
+ * never run. The deny-list config removes those rule classes from the class map before any rule of a
+ * memetic-typed parse instantiates, so a denied rule never matches — scoping every parse of a
+ * memetic-typed tiddler, whether transcluded or not. The SHARED `WikiParser.prototype.*RuleClasses`
+ * maps that every `text/vnd.tiddlywiki` parse also reads stay untouched: a `text/vnd.tiddlywiki`
+ * parse is unaffected by this suite.
  */
 import { describe, test, expect, afterEach } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";

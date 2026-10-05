@@ -7,17 +7,15 @@ module-type: parser
  * memetic-parser — WikiParser subclass for `text/memetic-wikitext+tiddlywiki`.
  *
  * Inherits the standard wikitext parser, but filters the rule CLASS maps
- * before `instantiateRules` runs rather than filtering rule instances
- * after the parse. TiddlyWiki5's WikiParser constructor instantiates the
- * pragma/block/inline rules AND runs `parsePragmas`/`parseBlocks` inside
- * itself (core/modules/parsers/wikiparser/wikiparser.js:79-90), so a
- * post-construction filter acts on an already-finished parse: too late to
- * stop a denied rule from firing even once. Overriding `instantiateRules`
- * to hand the standard constructor a filtered COPY of the class map
- * — never the shared `WikiParser.prototype.*RuleClasses` maps every
- * `text/vnd.tiddlywiki` parse also reads — runs before any matching or
- * parsing happens, so a denied rule never instantiates and never has a
- * chance to match. Per Jermolene (TW5 GH discussion #6712):
+ * before `instantiateRules` runs. Overriding `instantiateRules` to hand
+ * the standard constructor a filtered COPY of the class map — never the
+ * shared `WikiParser.prototype.*RuleClasses` maps every `text/vnd.tiddlywiki`
+ * parse also reads — runs before any matching or parsing happens, so a
+ * denied rule class never instantiates and never has a chance to match.
+ * This scopes per-type: every memetic-typed tiddler instantiates THIS
+ * parser, transclude or not, so the scoping propagates through
+ * `<$transclude>` where a `\rules` pragma would not. Per Jermolene
+ * (TW5 GH discussion #6712):
  *
  *   "The `\rules` pragma scope does not propagate through `<$transclude>`.
  *    Transcluded content reparses under its own type's full ruleset."
