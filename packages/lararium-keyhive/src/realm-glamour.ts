@@ -34,7 +34,7 @@
  * leaks version / activity / membership-change timing — Pfitzmann-Hansen) and at the
  * members-only STORE (its own sync + access patterns), never inside the projector.
  *
- * Platform-blind: rides ./cabal-realm + ./oracle-substrate + automerge only. NO
+ * Platform-blind: rides @lararium/mesh's cabal-realm + oracle-substrate + pinned-doc only. NO
  * node: imports.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm

@@ -20,7 +20,7 @@
  * This floor holds pure MODEL (survivor computation · re-point · continuity link); the actual
  * founding of the fresh realm rides the Keyhive ceremony (fork-realm-ceremony.ts).
  *
- * Platform-blind: rides ./cabal-realm only. NO node: imports.
+ * Platform-blind: rides @lararium/mesh's CabalRealm only. NO node: imports.
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */
 
