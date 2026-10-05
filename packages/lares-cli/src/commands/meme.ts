@@ -80,7 +80,7 @@ import { stdin, stdout } from "node:process";
 import { basename, dirname, isAbsolute, join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
-import { projectSubmission, PROFILES, type WeaveProfile } from "@lararium/tw5/weave";
+import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
 import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
 import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
 import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
@@ -797,18 +797,13 @@ async function memeProject(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `--dialect <variant>` names an RFC 7764-registered Markdown variant, matched case-insensitively
- * against the profile table's own keys (`CommonMark`, `GFM`, `kramdown-rfc2629`) — never a house
- * abbreviation. Absent, CommonMark: today's shelf-pair output, unchanged.
+ * `profileOf` (`@lararium/tw5/weave`) names an RFC 7764 variant or throws a plain Error; this wraps
+ * that Error in `UsageError` at the CALL SITE so `--dialect foo` still exits `usage` here, exactly
+ * as it did before `profileFor` moved — the CLI is the one door that turns "throws" into an exit
+ * class, and the weave module (read by the filter and the verb too) has no exit classes of its own.
  */
-function profileFor(name: string): WeaveProfile {
-  const key = (Object.keys(PROFILES) as Array<keyof typeof PROFILES>)
-    .find((k) => k.toLowerCase() === name.toLowerCase());
-  if (!key) {
-    const names = Object.keys(PROFILES).join(" · ");
-    throw new UsageError(`--dialect names an RFC 7764 variant, one of ${names} (got "${name}")`);
-  }
-  return PROFILES[key];
+function profileForCli(name: string): WeaveProfile {
+  try { return profileOf(name); } catch (err) { throw new UsageError((err as Error).message); }
 }
 
 /**
@@ -831,22 +826,6 @@ export function bagsResolver(root: string): (uri: string) => string | null {
   };
 }
 
-/**
- * The existing pair's OWN target record, read back off its `.md.meta` sidecar — the same two keys
- * `projectMdCheck` already reads to know what a recorded pair re-projects WITH (#/the-woven-dialect's
- * placement law: the sidecar is the target record). Absent sidecar, or absent key, answers `undefined`
- * for that key — never a guess — so a first-time projection keeps today's CommonMark/no-tongue default.
- */
-function recordedTarget(mdPath: string): { variant?: string; tongue?: string } {
-  const metaPath = `${mdPath}.meta`;
-  if (!existsSync(metaPath)) return {};
-  let meta: string;
-  try { meta = readFileSync(metaPath, "utf8"); } catch { return {}; }
-  const variant = /^variant: (\S+)$/m.exec(meta)?.[1];
-  const tongue = /^tongue: (\S+)$/m.exec(meta)?.[1];
-  return { ...(variant ? { variant } : {}), ...(tongue ? { tongue } : {}) };
-}
-
 /** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`
  * — or, under a standalone `--dialect` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
  * inside it per RFC 7763.
@@ -866,15 +845,25 @@ function projectMdLocal(args: ParsedArgs, file: string): number {
   const base = basename(file).replace(/\.mem$/, "");
   const dir = out ?? dirname(file);
   const mdPath = join(dir, `${base}.md`);
-  const recorded = recordedTarget(mdPath);
+  // The existing pair's OWN target record, read back off its `.md.meta` sidecar — the same two
+  // keys `projectMdCheck` already reads (#/the-woven-dialect's placement law: the sidecar is the
+  // target record). Absent the sidecar or a key, `recordedTargetOf` answers `undefined` for it —
+  // never a guess — so a first-time projection keeps today's CommonMark/no-tongue default.
+  const metaPath = `${mdPath}.meta`;
+  const recordedMetaText = existsSync(metaPath) ? (() => { try { return readFileSync(metaPath, "utf8"); } catch { return ""; } })() : "";
+  const recorded = recordedMetaText ? recordedTargetOf(recordedMetaText) : {};
 
   const dialectFlag = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
-  const dialect = dialectFlag || recorded.variant || "";
-  const profile = dialect ? profileFor(dialect) : PROFILES.CommonMark;
   // BCP 47 — absent both the flag and the pair's own record, every sigil head name weaves canonical,
   // byte-identical to before this flag existed (#/the-woven-dialect's Tongue clause).
   const tongueFlag = typeof args.options["tongue"] === "string" ? args.options["tongue"] : undefined;
-  const tongue = tongueFlag ?? recorded.tongue;
+  let profile: WeaveProfile;
+  let tongue: string | undefined;
+  try {
+    ({ profile, tongue } = resolveWeaveTarget({ dialect: dialectFlag, tongue: tongueFlag ?? null, recorded }));
+  } catch (err) {
+    throw new UsageError((err as Error).message);
+  }
 
   const p = projectSubmission(text, {
     ...(titleBase ? { title: `${titleBase}/${base}` } : {}),
@@ -958,7 +947,7 @@ function projectMdCheck(args: ParsedArgs): number {
     // key, the pair stays CommonMark with no tongue (the default both channels share).
     const variant = /^variant: (\S+)$/m.exec(meta)?.[1];
     const recordedTongue = /^tongue: (\S+)$/m.exec(meta)?.[1];
-    const profile = variant ? profileFor(variant) : PROFILES.CommonMark;
+    const profile = variant ? profileForCli(variant) : PROFILES.CommonMark;
     if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
     const srcPath = join(root, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
     if (!existsSync(srcPath)) { console.log(`  ${name}: source GONE — ${source}`); failed += 1; continue; }

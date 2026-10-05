@@ -186,6 +186,23 @@ export interface WeaveProfile {
   readonly requiredMeta?: readonly string[];
 }
 
+/**
+ * `--dialect <variant>` names an RFC 7764-registered Markdown variant, matched case-insensitively
+ * against {@link PROFILES}' own keys (`CommonMark`, `GFM`, `kramdown-rfc2629`) — never a house
+ * abbreviation. Every door that reads a dialect name (the CLI's `--dialect`, the `meme-project`
+ * filter's second operand, the daemon verb's `dialect` arg) reads it through this ONE function, so
+ * "unknown dialect" is one error message rather than three hand-written ones.
+ */
+export function profileOf(name: string): WeaveProfile {
+  const key = (Object.keys(PROFILES) as Array<keyof typeof PROFILES>)
+    .find((k) => k.toLowerCase() === name.toLowerCase());
+  if (!key) {
+    const names = Object.keys(PROFILES).join(" · ");
+    throw new Error(`--dialect names an RFC 7764 variant, one of ${names} (got "${name}")`);
+  }
+  return PROFILES[key];
+}
+
 export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629", WeaveProfile>> = {
   // The kahea marker reads plain text, one spelling across every profile: a
   // glyph (`↻`, `🔁`) reads fine inside this wiki but a reader outward of it — a screen reader, a
@@ -201,6 +218,45 @@ export const PROFILES: Readonly<Record<"CommonMark" | "GFM" | "kramdown-rfc2629"
     requiredMeta: ["title", "docname", "cat", "ipr", "author", "date"],
   },
 };
+
+/**
+ * The TARGET RECORD a projected `.md.meta` sidecar carries — `variant:`/`tongue:`, present only when
+ * non-default (the placement law in {@link projectSubmission}'s header comment). Every door that
+ * reads a RECORDED target back — the CLI's `--check` and its bare re-project, the `meme-project`
+ * filter's recorded-default read off the wiki tiddler — reads it through this one function, over
+ * whatever TEXT carries those two field lines (a `.md.meta` file's bytes, or a wiki tiddler's own
+ * `text` field, which TW5 loads a `.meta` file's body into unchanged).
+ */
+export function recordedTargetOf(metaText: string): { variant?: string; tongue?: string } {
+  const variant = /^variant: (\S+)$/m.exec(metaText)?.[1];
+  const tongue = /^tongue: (\S+)$/m.exec(metaText)?.[1];
+  return { ...(variant ? { variant } : {}), ...(tongue ? { tongue } : {}) };
+}
+
+/** The `.md.meta` sidecar's default title for a carrier's root `uri` — {@link projectSubmission}'s
+ * own default, named here so a caller that needs to FIND the record (never project it) does not
+ * re-spell the `/submission` suffix by hand. */
+export function submissionTitleOf(uri: string): string {
+  return `${uri}/submission`;
+}
+
+/**
+ * ONE TARGET LAW FOR EVERY DOOR: an explicit `dialect`/`tongue` wins; absent, the pair's own RECORDED
+ * target (read by the caller, off whatever text carries it, through {@link recordedTargetOf}) wins;
+ * absent that too, CommonMark with no tongue — today's default, unchanged. `projectMdLocal` held this
+ * exact law inline before this function existed; every other door (the filter, the store-path verb)
+ * now reads the SAME law rather than a hand-matching copy of it.
+ */
+export function resolveWeaveTarget(opts: {
+  readonly dialect?: string | null;
+  readonly tongue?: string | null;
+  readonly recorded: { readonly variant?: string; readonly tongue?: string };
+}): { profile: WeaveProfile; tongue?: string } {
+  const dialect = opts.dialect || opts.recorded.variant || "";
+  const profile = dialect ? profileOf(dialect) : PROFILES.CommonMark;
+  const tongue = opts.tongue || opts.recorded.tongue;
+  return { profile, ...(tongue ? { tongue } : {}) };
+}
 
 /**
  * Line-standing frame sigil (every mark the frame declares), with whatever rides after the closer.
@@ -249,6 +305,32 @@ const LOULOU_LINE = new RegExp(`^<<~\\s*(${LOULOU_NAMES.join("|")}) ((?:[^>\\n]|
 // rule). Both families' names derive from the table, never hand-listed.
 const AKA_NAMES = ["aka", ...mirrorsOf("aka"), "kanawai", ...mirrorsOf("kanawai")];
 const AKA_LINE = new RegExp(`^<<~\\s*(${AKA_NAMES.join("|")}) ((?:[^>\\n]|>(?!>))*?)\\s*>>\\s*$`);
+
+/**
+ * Every BASE URI (fragment stripped, quotes stripped) an `aka`/`kanawai` pin names in `text` — the
+ * SAME line recognizer ({@link AKA_LINE}) and fence-tracking the walk itself reads below, so a
+ * caller that needs to know what a carrier pins BEFORE weaving it (a store-path verb's prefetch,
+ * which has no live resolver to call synchronously mid-walk) sees exactly the pins the walk would
+ * meet. A fence (the same rule {@link extractAhuSlot} and `transposeMarkdown` read) may SHOW an
+ * `aka` line as literal teaching text, and a line inside one never names a real pin.
+ */
+export function pinTargetsOf(text: string): string[] {
+  const targets = new Set<string>();
+  let fence: FenceOpen | null = null;
+  for (const line of text.split("\n")) {
+    if (fence === null) {
+      const opened = fenceLineOpen(line);
+      if (opened) { fence = opened; continue; }
+    } else if (fenceLineClose(line, fence)) { fence = null; continue; }
+    if (fence !== null) continue;
+    const aka = AKA_LINE.exec(line);
+    if (!aka) continue;
+    const raw = (aka[2] ?? "").trim().replace(/^"|"$/g, "");
+    const base = raw.split("#")[0];
+    if (base) targets.add(base);
+  }
+  return [...targets];
+}
 // CENSUS LANE B: the word set derives from the table (`mirrorsOf`), matching AHU/LOULOU/AKA above —
 // a hand-typed "kahea" alone would silently miss `import`/`transclude` the tiddlers already declare.
 const KAHEA_NAMES = ["kahea", ...mirrorsOf("kahea")];
@@ -604,6 +686,55 @@ function pinOf(resolved: string, slot: string | null, profile: WeaveProfile, ton
   return { check: bccOfSpan(span), body: transposeMarkdown(span, profile, undefined, tongue).markdown };
 }
 
+export interface ReadPinReference {
+  readonly kind: "reference";
+  readonly check: string;
+  /** The citation fields present on the target's own meta — absent where none are. */
+  readonly citation?: Readonly<Record<string, string>>;
+  /** The target's whole root toml meta — what decided `kind` and what a reference shape (the BCP 14
+   * boilerplate, a kramdown anchor) reads further off, kept whole rather than re-read a second time. */
+  readonly anchorMeta: Readonly<Record<string, unknown>>;
+}
+export interface ReadPinContent {
+  readonly kind: "content";
+  readonly check: string;
+  /** The target's (or slot's) woven body — absent only when resolution itself failed, which {@link readPin} instead answers `null` for. */
+  readonly body?: string;
+}
+
+/**
+ * THE ONE READ a pin's target answers, for every door that pins one: `weaveAka` here (the outward
+ * markdown weave) and C2's live render alike. Resolution already happened (the caller hands the
+ * TARGET'S OWN RESOLVED TEXT, never a uri); this reads that text's own root meta to tell a
+ * REFERENCE meme from a CONTENT slot ({@link isReferenceMeme}), and answers the one check and (for
+ * content) the one woven body either shape needs. `null` names the one failure both kinds share: a
+ * `#slot` fragment naming a slot the target does not carry.
+ */
+export function readPin(
+  resolvedText: string,
+  slot: string | null,
+  profile: WeaveProfile = PROFILES.CommonMark,
+  tongue?: string,
+): ReadPinReference | ReadPinContent | null {
+  const wholeWoven = transposeMarkdown(resolvedText, profile, undefined, tongue);
+  const targetMeta = wholeWoven.metaFence ? parseTaploFields(wholeWoven.metaFence) : {};
+  if (isReferenceMeme(targetMeta)) {
+    let check: string;
+    if (slot === null) {
+      check = wholeWoven.check ?? "unchecked";
+    } else {
+      const span = extractAhuSlot(resolvedText, slot);
+      if (span === null) return null;
+      check = bccOfSpan(span);
+    }
+    const citation = citationFields(targetMeta);
+    return { kind: "reference", check, anchorMeta: targetMeta, ...(citation ? { citation } : {}) };
+  }
+  const pin = pinOf(resolvedText, slot, profile, tongue);
+  if (pin === null) return null;
+  return { kind: "content", check: pin.check, body: pin.body };
+}
+
 /**
  * A FROZEN `aka` edge's TARGET decides EVERYTHING: how much it pins, AND what shape the pin weaves
  * as. Operator ruling (LOOP 7): `aka` PINS a `lar:` target; rendering follows the TARGET, never
@@ -654,25 +785,20 @@ function weaveAka(
     return { lines: [`- \`${headWord} ${target}\` (unresolved — no corpus to pin)`] };
   }
 
-  // The target's OWN root toml meta decides the kind — read once, off the WHOLE carrier (a
-  // reference meme's `reference-kind` lives at carrier scope, never inside one slot).
-  const wholeWoven = transposeMarkdown(resolved, profile, undefined, tongue);
-  const targetMeta = wholeWoven.metaFence ? parseTaploFields(wholeWoven.metaFence) : {};
+  // THE ONE READ — the target's own root toml meta decides reference vs content, and either shape's
+  // check + body comes back through it, so this weave and a live render read the SAME law.
+  const pin = readPin(resolved, slot, profile, tongue);
+  if (pin === null) {
+    return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
+  }
 
-  if (isReferenceMeme(targetMeta)) {
-    const check = slot === null
-      ? (wholeWoven.check ?? "unchecked")
-      : bccOfSpan(extractAhuSlot(resolved, slot) ?? "");
-    if (slot !== null && extractAhuSlot(resolved, slot) === null) {
-      return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
-    }
-
+  if (pin.kind === "reference") {
     if (profile.dialect !== "kramdown-rfc2629") {
-      return { lines: [`- \`${headWord} ${target}\` — pinned \`${check}\``] };
+      return { lines: [`- \`${headWord} ${target}\` — pinned \`${pin.check}\``] };
     }
     // The BCP 14 boilerplate fires on a `kanawai` (binding) pin of the key-words source alone — the
     // SAME target pinned by `aka` (informative) weaves its ordinary bracketed citation instead.
-    if (canonical === "kanawai" && isBcp14KeyWordsSource(targetMeta)) {
+    if (canonical === "kanawai" && isBcp14KeyWordsSource(pin.anchorMeta)) {
       return {
         lines: [BCP14_BOILERPLATE],
         references: [
@@ -681,23 +807,15 @@ function weaveAka(
         ],
       };
     }
-    const anchor = referenceAnchor(base, targetMeta);
+    const anchor = referenceAnchor(base, pin.anchorMeta);
     const category = referenceCategory(canonical);
-    const fields = isStandardRfcAnchor(anchor) ? undefined : citationFields(targetMeta);
+    const fields = isStandardRfcAnchor(anchor) ? undefined : pin.citation;
     return { lines: [`[${anchor}]`], references: [{ anchor, category, ...(fields ? { fields } : {}) }] };
   }
 
   // CONTENT SLOT: the frozen image, unchanged from before this loop — position never entered this
-  // decision; only the target's own meta (just read, above) did.
-  if (slot === null) {
-    const pin = pinOf(resolved, null, profile, tongue);
-    return { lines: [`<!-- ${headWord}: ${target} pinned ${pin!.check} -->`, ...pin!.body.split("\n"), `<!-- /${headWord} -->`] };
-  }
-  const pin = pinOf(resolved, slot, profile, tongue);
-  if (pin === null) {
-    return { lines: [`- \`${headWord} ${target}\` (unresolved — slot #${slot} not found)`] };
-  }
-  return { lines: [`<!-- ${headWord}: ${target} pinned ${pin.check} -->`, ...pin.body.split("\n"), `<!-- /${headWord} -->`] };
+  // decision; only the target's own meta (just read, through {@link readPin}) did.
+  return { lines: [`<!-- ${headWord}: ${target} pinned ${pin.check} -->`, ...(pin.body ?? "").split("\n"), `<!-- /${headWord} -->`] };
 }
 
 /**
@@ -971,7 +1089,7 @@ export function projectSubmission(
   const uri = opts?.uri ?? t.uri ?? "";
   if (!uri) throw new Error("projectSubmission: the carrier declares no address and none was supplied");
   const check = t.check ?? "unchecked";
-  const title = opts?.title ?? `${uri}/submission`;
+  const title = opts?.title ?? submissionTitleOf(uri);
 
   // THE PLACEMENT LAW — ONE AUTHORITY PER QUESTION, both channels written from these SAME inputs so
   // they never disagree in practice: the `.md.meta` SIDECAR is authoritative for what TW5 loads as
