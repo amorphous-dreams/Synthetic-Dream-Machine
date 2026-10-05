@@ -26,13 +26,13 @@
  * Meme: lar:///ha.ka.ba/lararium/api/capture-annotation-model#/isomorphic-telemetry-vm
  */
 
-import { CaptureNalu, PONO_FLUSH_GATE } from "./capture-nalu.js";
-import type { CaptureFlush, CaptureRecord, CaptureStats, FlushGate } from "./capture-nalu.js";
+import { CaptureNalu, PONO_FLUSH_GATE } from "../capture-nalu.js";
+import type { CaptureFlush, CaptureRecord, CaptureStats, FlushGate } from "../capture-nalu.js";
 import type { BranchContext } from "./build-patch.js";
-import { CoalesceGate } from "./projection-nalu.js";
-import { adaptGate, deriveGate } from "./gate-tuning.js";
-import { defaultCryptoProvider, sha256Hex, utf8Bytes } from "./crypto.js";
-import type { DigestProvider } from "./crypto.js";
+import { CoalesceGate } from "../projection-nalu.js";
+import { adaptGate, deriveGate } from "../gate-tuning.js";
+import { defaultCryptoProvider, sha256Hex, utf8Bytes } from "../crypto.js";
+import type { DigestProvider } from "../crypto.js";
 
 /** The forward annotate pass: a raw turn → its `lar_*` metadata. Each vessel injects its
  *  own (node: harvestTurnGradient + buildPatch; browser: the pure twin). The optional `branch`

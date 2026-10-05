@@ -402,7 +402,7 @@ if (unclassified.length) {
 // So the law reads the two sets directly and compares them, and it fails. A hand-written enumeration
 // stands honest only while something proves it complete — the harvester keeps its purity (no I/O in
 // the parse path, by its own design) and this witness carries the proof.
-const HARVEST_SRC = join(REPO, "packages/lararium-mesh/src/turn-harvest.ts");
+const HARVEST_SRC = join(REPO, "packages/lararium-mesh/src/capture/turn-harvest.ts");
 const KNOWN_BODY = /const KNOWN_KINDS = new Set\(\[([\s\S]*?)\]\)/.exec(readFileSync(HARVEST_SRC, "utf8"))?.[1] ?? "";
 const KNOWN = new Set([...KNOWN_BODY.matchAll(/"([^"]+)"/g)].map((m) => m[1].toLowerCase()));
 

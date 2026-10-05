@@ -21,7 +21,7 @@
 import { openMemorySensorium, sensoriumLenses, sensoriumNames, sensoriumDir, memorySensoriumDir } from "@lararium/node";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
-import { cmdHarvest, cmdCapture, cmdSweep } from "./harvest.js";
+import { cmdHarvest, cmdCapture, cmdSweep } from "./capture/harvest.js";
 import { cmdWorldline } from "./worldline.js";
 import { cmdTelemetry } from "./telemetry.js";
 import { cmdPalaceTeardown } from "./palace-teardown.js";

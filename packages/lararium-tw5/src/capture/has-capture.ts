@@ -21,8 +21,8 @@
 import type { CaptureEngine, CapturePost } from "@lararium/mesh";
 import type { SensoriumContract } from "@lararium/mesh/sensorium-contract";
 
-import type { IslandCap } from "./island-caps.js";
-import type { IslandContext } from "./island-context.js";
+import type { IslandCap } from "../island-caps.js";
+import type { IslandContext } from "../island-context.js";
 
 /** The OUT-frame listenable (the telemetry twin of PROJECTION_FRAME). */
 export const TELEMETRY_FRAME = "telemetry:frame";

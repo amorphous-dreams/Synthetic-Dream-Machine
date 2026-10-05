@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import { makeSourceCapture, type SourceCapture, type SourceCaptureRequest } from "../src/capture-source.js";
+import { makeSourceCapture, type SourceCapture, type SourceCaptureRequest } from "../src/capture/capture-source.js";
 import type { PalaceHolderProc, PalaceHolderSpawn } from "../src/sensorium.js";
 
 function fakeSpawn(seen: Array<{ op: string; fields: Record<string, unknown> }>): PalaceHolderSpawn {

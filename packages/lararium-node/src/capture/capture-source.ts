@@ -12,7 +12,7 @@ import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { resolveCaptureSessionSpawn, resolveHolderCapEnv } from "@lararium/mempalace";
 import type { SubagentEdgePair } from "@lararium/tw5";
 
-import { composePalace, type PalaceHolderProc, type PalaceHolderSpawn } from "./sensorium.js";
+import { composePalace, type PalaceHolderProc, type PalaceHolderSpawn } from "../sensorium.js";
 
 const LABEL = "capture-source";
 

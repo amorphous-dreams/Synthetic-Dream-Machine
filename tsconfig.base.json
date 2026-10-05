@@ -31,6 +31,9 @@
       ],
       "@lararium/mesh/node": [
         "./packages/lararium-mesh/src/node.ts"
+      ],
+      "@lararium/mesh/harvest": [
+        "./packages/lararium-mesh/src/capture/harvest.ts"
       ]
     },
     "strict": true,

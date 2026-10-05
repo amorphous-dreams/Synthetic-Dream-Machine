@@ -6,7 +6,7 @@
 
 import { describe, expect, test } from "vitest";
 import { createHash } from "node:crypto";
-import { captureSourceFile, sha } from "../src/commands/harvest.js";
+import { captureSourceFile, sha } from "../src/commands/capture/harvest.js";
 
 const wing = "wing_synthetic_dream_machine";
 const run = "session-123.jsonl";

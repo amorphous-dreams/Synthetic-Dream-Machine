@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { harvest, isDrifted, BEARING_STANDING } from "../src/bearing-harvest.js";
+import { harvest, isDrifted, BEARING_STANDING } from "../src/capture/bearing-harvest.js";
 
 describe("bearing-harvest parser", () => {
   it("harvests a clean local-form frame at full standing", () => {

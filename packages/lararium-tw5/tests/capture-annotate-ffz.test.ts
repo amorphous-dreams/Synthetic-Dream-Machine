@@ -23,7 +23,7 @@ import {
   type CaptureRecord,
   type CaptureReserve,
 } from "@lararium/mesh";
-import { captureAnnotate } from "../src/capture-annotate-vm.js";
+import { captureAnnotate } from "../src/capture/capture-annotate-vm.js";
 
 const TURN = "Lares (Scryer): the map holds <<~ hud Aperture(10) OODA-HA(3)>> <<~ ward ! L-Prime>>";
 const SRC = "claude__run-abc.jsonl";

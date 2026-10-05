@@ -347,8 +347,8 @@ export { makeLaresQuery, openMemorySensorium } from "./lares-query.js";
 export type { LaresQuery, Lens } from "./lares-query.js";
 export { makeEmbedCap } from "./embed-cap.js";
 export type { EmbedCap, EmbedResult, EmbedCapOptions } from "./embed-cap.js";
-export { makeSourceCapture } from "./capture-source.js";
-export type { SourceCapture, SourceCaptureRequest, SourceCaptureResult, SourceCaptureSpawn } from "./capture-source.js";
+export { makeSourceCapture } from "./capture/capture-source.js";
+export type { SourceCapture, SourceCaptureRequest, SourceCaptureResult, SourceCaptureSpawn } from "./capture/capture-source.js";
 export { startMembershipRelay, WSMembershipChannel } from "./ws-membership-channel.js";
 // The AUTHENTICATED live-WS membership transport — Ed25519 proof-of-possession binds each envelope's `from` to a
 // proven key (no impersonation of the cas-wire member gate), reusing the DaemonAuthGate's own challenge/verify.

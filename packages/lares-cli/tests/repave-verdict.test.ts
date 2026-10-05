@@ -17,7 +17,7 @@
  * shrinks the corpus has lost something the sources still hold.
  */
 import { describe, it, expect } from "vitest";
-import { repaveVerdict } from "../src/commands/harvest.js";
+import { repaveVerdict } from "../src/commands/capture/harvest.js";
 
 describe("repave-verdict — counts, against the sources they came from", () => {
   it("★ sources stood and nothing landed reads BARREN, never success ★", () => {

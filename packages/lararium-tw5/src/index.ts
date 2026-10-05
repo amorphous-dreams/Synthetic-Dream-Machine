@@ -140,8 +140,8 @@ export { recipeUri } from "@lararium/mesh/lar-uris";
 export type { IslandContext, IslandBehavior } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
-export { hasCapture, TELEMETRY_FRAME } from "./has-capture.js";
-export type { CaptureCapOptions } from "./has-capture.js";
+export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
+export type { CaptureCapOptions } from "./capture/has-capture.js";
 export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface } from "./verb-dispatcher.js";
 export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, SurfaceDeclared } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
@@ -197,7 +197,7 @@ export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handler
 export { makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
 export type { MemeVerbOptions } from "./meme-verbs.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
-export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
+export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
 export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
 export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
 export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";

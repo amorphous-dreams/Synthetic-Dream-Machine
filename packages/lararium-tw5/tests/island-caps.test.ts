@@ -7,7 +7,7 @@
 import { describe, expect, test } from "vitest";
 
 import { composeIsland } from "../src/island-caps.js";
-import { hasCapture } from "../src/has-capture.js";
+import { hasCapture } from "../src/capture/has-capture.js";
 import type { IslandCap } from "../src/island-caps.js";
 import type { IslandContext } from "../src/island-context.js";
 

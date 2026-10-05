@@ -25,7 +25,7 @@
  * is the BEARING leg (the navigational structure the stream already authored).
  *
  * One surface, two actors: prose on a TTY, deterministic JSON off-TTY / under
- * --json (../render.ts #actor-parity).
+ * --json (../../render.ts #actor-parity).
  */
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, appendFileSync, statSync } from "node:fs";
@@ -34,14 +34,14 @@ import { basename, join } from "node:path";
 import { harvestTurnGradient, detectGoneTurns, liveKeysForRewind, sha256HexSync, type KeyedBranchNode } from "@lararium/mesh";
 import { TIMEOUT_CEIL_MS } from "@lararium/mempalace";
 import { writebackWing, resolveLociIo, kapaeTurn, KgUnavailable, isoWholeSeconds } from "@lararium/sensorium";
-import { larRoot, larHarvestDir, vesselDid } from "../env.js";
-import { wingFromDir } from "../wing-law.js";
-import { partitionEphemeral } from "../ephemeral.js";
+import { larRoot, larHarvestDir, vesselDid } from "../../env.js";
+import { wingFromDir } from "../../wing-law.js";
+import { partitionEphemeral } from "../../ephemeral.js";
 import { atomicWriteFileSync } from "@lararium/node";
-import { runVerb } from "../verb-call.js";
-import { readVerbOutcome } from "../verb-result.js";
-import { emit, exitFor, type LaresError } from "../render.js";
-import type { ParsedArgs } from "../parse-args.js";
+import { runVerb } from "../../verb-call.js";
+import { readVerbOutcome } from "../../verb-result.js";
+import { emit, exitFor, type LaresError } from "../../render.js";
+import type { ParsedArgs } from "../../parse-args.js";
 
 const HARVEST_DIR = larHarvestDir();   // <state>/harvest — XDG; LAR_ROOT-isolated for staged instances
 
@@ -488,7 +488,7 @@ async function runRepaveLeg(stage: RepaveStageName, args: ParsedArgs): Promise<n
       return await cmdSweep({ ...args, options: { ...args.options, surface: args.options["surface"] ?? "all" } });
     case "bearing": return runWriteback(args, repaveWing(args));
     case "projection": {
-      const { cmdRefresh } = await import("./refresh.js");
+      const { cmdRefresh } = await import("../refresh.js");
       return await cmdRefresh({ ...args, positional: [] });
     }
     case "verify": return await runVerify(args);
@@ -525,7 +525,7 @@ function countSources(): number {
 
 /** Hold or hand back the capture hooks, through the lever that owns the marker. */
 async function runHooks(verb: "pause" | "resume"): Promise<number> {
-  const { cmdHooks } = await import("./hooks.js");
+  const { cmdHooks } = await import("../hooks.js");
   return await cmdHooks({ positional: [verb], flags: {}, options: {} } as unknown as ParsedArgs);
 }
 

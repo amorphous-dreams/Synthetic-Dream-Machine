@@ -107,7 +107,7 @@ import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
 import { readCasBlobFromFs } from "./node-cas.js";
-import { makeSourceCapture, type SourceCapture } from "./capture-source.js";
+import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
 import { runFlow } from "./flow-run.js";
 

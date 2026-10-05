@@ -23,9 +23,9 @@ module-type: startup
 
 // PURE subpath (no Automerge) — the barrel `@lararium/mesh` drags in wasm the plugin build can't bundle.
 import { harvestTurnGradient, buildPatch, fnv1a8, type BranchContext } from "@lararium/mesh/harvest";
-import { parseMemeText } from "./meme-ast/index.js";
-import { getGrammar } from "./grammar-cache.js";
-import { emitMoveSkeleton, buildConstructiconBasis } from "./form-layer/index.js";
+import { parseMemeText } from "../meme-ast/index.js";
+import { getGrammar } from "../grammar-cache.js";
+import { emitMoveSkeleton, buildConstructiconBasis } from "../form-layer/index.js";
 
 // TW5 injects $tw as a module parameter (vm.runInContext sandbox); reach it as the injected var.
 declare const $tw: { lares?: Record<string, unknown> } | undefined;

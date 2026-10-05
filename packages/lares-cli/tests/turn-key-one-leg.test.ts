@@ -17,7 +17,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 
-const HARVEST = join(repoRoot, "packages", "lares-cli", "src", "commands", "harvest.ts");
+const HARVEST = join(repoRoot, "packages", "lares-cli", "src", "commands", "capture", "harvest.ts");
 const PY_CAPTURE = join(repoRoot, "packages", "lararium-sensorium", "scripts", "capture_sources.py");
 
 const harvestSrc = () => readFileSync(HARVEST, "utf8");

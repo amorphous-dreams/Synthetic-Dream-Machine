@@ -17,7 +17,7 @@
  * wing two different ways, so an unflagged re-pave split its own corpus across two names.
  */
 import { describe, it, expect } from "vitest";
-import { repaveStages, runRepave, repaveWing } from "../src/commands/harvest.js";
+import { repaveStages, runRepave, repaveWing } from "../src/commands/capture/harvest.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 
 const args = (flags: Record<string, boolean> = {}, options: Record<string, string> = {}): ParsedArgs =>

@@ -10,7 +10,7 @@
  */
 
 import type { TurnHarvest } from "./turn-harvest.js";
-import { ffzMembershipAddress } from "./ffz-project.js";
+import { ffzMembershipAddress } from "../ffz-project.js";
 
 /**
  * CaptureContext — the turn's MEMBERSHIP cells, what the drawer already holds.

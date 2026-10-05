@@ -37,7 +37,7 @@ ADAPTER_NAME = "lares"
 ADAPTER_VERSION = "0.1.0"
 
 # The declared lar_* schema — MUST stay in lockstep with buildPatch() in
-# packages/lares-cli/src/commands/harvest.ts. Every key harvest writes appears
+# packages/lares-cli/src/commands/capture/harvest.ts. Every key harvest writes appears
 # here; loci_io validates the write set against it.
 LAR_SCHEMA = AdapterSchema(
     version=ADAPTER_VERSION,

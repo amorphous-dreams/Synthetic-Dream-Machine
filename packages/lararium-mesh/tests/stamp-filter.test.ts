@@ -12,7 +12,7 @@ import {
   readStampFilters,
   hitPassesStampFilters,
   drawerPassesStampFilters,
-} from "../src/stamp-filter.js";
+} from "../src/capture/stamp-filter.js";
 
 const CODEX_MAIN = "codex__run-cdx-1.jsonl";
 const CLAUDE_MAIN = "claude__run-cl-1.jsonl";

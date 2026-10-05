@@ -133,6 +133,12 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
           ...(mod.name === "memetic-frame"
             ? [{ find: /^@lararium\/memetic-frame$/, replacement: path.resolve(ROOT, "../lararium-memetic-frame/src/index.ts") }]
             : []),
+          // harvest lives under mesh's own capture/ cell now; the generic rule below still maps
+          // every other `@lararium/mesh/*` subpath flat into mesh's src/.
+          {
+            find: /^@lararium\/mesh\/harvest$/,
+            replacement: path.resolve(ROOT, "../lararium-mesh/src/capture/harvest.ts"),
+          },
           {
             find: /^@lararium\/mesh\/(.+)$/,
             replacement: `${path.resolve(ROOT, "../lararium-mesh/src")}/$1`,
