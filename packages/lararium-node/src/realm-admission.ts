@@ -153,7 +153,7 @@ export interface LineageAdmission extends AdmissionVerdict {
  * What the fold turned away rides back in `capped` rather than vanishing, so a caller reads the budget it
  * spent instead of trusting a graph that came back quietly shorter than the invites it handed in.
  *
- * Platform-blind, like everything here: node and browser compose the identical shore.
+ * Platform-blind, like everything here: pure, no node: imports.
  * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 export async function admitOnLineage(args: {
