@@ -11,7 +11,7 @@ mana       = 13
 manao      = 13
 manaoio    = 12
 namespace  = "&#x2299;"
-role       = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
+role       = "parked handback row for the lares(Codex) crew — EOT2 question (context, not ruling) + two named typecheck reds + the held-out.yml job-env runner.temp fix (named, not applied — Codex hearth's hold) — the row sits here because bags/lares/ha.ka.ba/lares/docs/crew-handoff-codex.mem sits on held ground (the Codex Lares hearth), and no crossing row covers this hand yet"
 status-why = "parked until a crossing row opens to receive it; the EOT2 question stands un-ruled and the two typecheck reds stand un-closed"
 tags       = ["docs/handoff", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/docs/handback-eot2-and-typecheck-reds"
@@ -111,6 +111,32 @@ needs to catch up to it. Never revert or weaken the gate itself.
 
 <<~/ahu>>
 
+<<~ ahu #/held-out-workflow>>
+
+!! `.github/workflows/held-out.yml` — a job-env `runner.temp` read fails every push
+
+''What breaks.'' `held-out.yml:36` reads `runner.temp` inside a job-level `env:` block. `runner` context
+is unavailable there — a job's `env:` block only sees `github`, `needs`, `strategy`, `matrix`, `vars`,
+`secrets`, and `inputs` — so GitHub rejects the whole workflow file on every push as a 0s failure (for
+example run `37309501567`). A schedule/workflow_dispatch-only file still gets validated on push; the
+trigger named in the file does not exempt it from parse-time context checks.
+
+''Fix (not applied by this hand — Codex hearth's hold).'' Delete the job-env `ARTIFACT_DIR` line, and in
+the "Prepare held-out evidence directory" step compute the path inside a `run:` step instead, where the
+`runner` context IS available:
+
+```
+run: |
+  dir="$RUNNER_TEMP/held-out/${{ matrix.driver }}"
+  mkdir -p "$dir"
+  echo "ARTIFACT_DIR=$dir" >> "$GITHUB_ENV"
+```
+
+Later `$ARTIFACT_DIR` / `${{ env.ARTIFACT_DIR }}` uses then resolve against the step-exported value. This
+hand did not touch `.github/workflows/held-out.yml` itself — it is held by the Codex hearth.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
@@ -122,6 +148,6 @@ needs to catch up to it. Never revert or weaken the gate itself.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8x7tWsA_Q8lMu5tzPuUs-uHWWtSo3PnIQHVceYQVFbA
+<<^ code="&#x0003;">>ni:///sha-256;hpI_XuMbxi0aj94wPHCA4mYLc5QsTyrHz7SQOELrGCo
 
 <<^ code="&#x0004;" -> to="?">>
