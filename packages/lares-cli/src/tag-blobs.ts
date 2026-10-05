@@ -32,7 +32,7 @@
 import { writeFileSync, existsSync, readFileSync } from "node:fs";
 import { utf8Bytes, ridesAsPointer, isOversizedBody, mediaTypeFromExt, SKINNY_CARRIER_THRESHOLD } from "@lararium/mesh";
 import { findTopLevelAhuBlocks } from "@lararium/tw5/meme-ast";
-import { META_OPEN_RE } from "@lararium/memetic-frame";
+import { metaFenceAt } from "@lararium/tw5/root-meta";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 
 /** The minimal carrier view the writer reads — a subset of `ScanRow`. */
@@ -77,17 +77,13 @@ export function carrierNeedsTag(c: TagCarrier): boolean {
  *  offset of its closing fence (the ``` line) so a field inserts just above it, or
  *  null when the span carries no meta fence.
  *
- *  THE OPENER IS THE HOUSE'S ONE SPELLING, and here it guards a WRITE. A local reader took `\s+`
- *  between the label and the word — and `\s` crosses a newline, so a plain ```toml fence whose first
- *  body line read `meta` matched and this door stamped `_lar_cas` into operator content. It also took
- *  any trailing prose on the opener line. `[ \t]+` / `[ \t]*` admits every spelling a carrier is
- *  actually written in and neither of those. */
+ *  Composes the house's one meta-fence locator (`metaFenceAt`, @lararium/tw5/root-meta) — the one
+ *  spelling every reader admits, here guarding a WRITE. */
 function metaFenceCloseOffset(text: string, start: number, end: number): number | null {
-  const span = text.slice(start, end);
-  const m = new RegExp(META_OPEN_RE.source + "[\\s\\S]*?\\n```").exec(span);
-  if (!m) return null;
-  // m[0] ends with "\n```" — the closing backticks sit at the last three chars.
-  return start + m.index + m[0].length - 3;
+  const fence = metaFenceAt(text.slice(start, end));
+  // `bodyEnd` is the index of the `\n` before the closer; a field inserts one past it, directly
+  // above the closing backticks — the same point the prior hand-rolled offset landed on.
+  return fence ? start + fence.bodyEnd + 1 : null;
 }
 
 /**
