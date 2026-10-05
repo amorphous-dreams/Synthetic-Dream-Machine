@@ -304,7 +304,7 @@ jobs:
   # contact line for the pinned version: a run that met no engine, or met the wrong one, fails here
   # even though vitest exited 0.
   pristine-upstream:
-    name: Pristine upstream (tiddlywiki@${{ env.TW5_PRISTINE }})
+    name: Pristine upstream (stock tiddlywiki from npm)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
