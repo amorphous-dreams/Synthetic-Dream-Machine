@@ -14,8 +14,13 @@ gb() { awk -v kb="$1" 'BEGIN{printf "%.0f", kb/1048576}'; }
 grep -qi microsoft /proc/version || { echo "not WSL2"; exit 0; }
 
 mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo); swap_kb=$(awk '/SwapTotal/{print $2}' /proc/meminfo)
-# powershell.exe by absolute path: appendWindowsPath=false (our intent) takes it off $PATH
-PS_EXE=$(command -v powershell.exe 2>/dev/null || echo /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe)
+# Windows binaries by absolute path: appendWindowsPath=false (our intent) takes them off $PATH.
+# pwsh (PowerShell 7) is the runbook engine; Windows PowerShell 5.1 serves as the read-only fallback.
+PWSH_EXE=$(command -v pwsh.exe 2>/dev/null || { [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]] && echo "/mnt/c/Program Files/PowerShell/7/pwsh.exe"; })
+PS_EXE=${PWSH_EXE:-$(command -v powershell.exe 2>/dev/null || echo /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe)}
+if [[ -n "$PWSH_EXE" ]]; then
+  row ok "PowerShell 7 (pwsh) on the host" "$("$PWSH_EXE" -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' 2>/dev/null | tr -d '\r')"
+else row drift "PowerShell 7 (pwsh) on the host" "absent — winget install --id Microsoft.PowerShell; stand-windows.ps1 runs degraded under 5.1"; fi
 host_kb=$("$PS_EXE" -NoProfile -Command '[int64]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB)' 2>/dev/null | tr -d '\r' | cut -d. -f1)
 if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
   # intent: VM holds at most ~5/8 of the host (Windows keeps a quarter-plus) AND is not sitting at the default half.

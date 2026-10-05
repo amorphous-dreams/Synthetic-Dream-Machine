@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-  stand-windows — Windows half of lar:///ha.ka.ba/wsl2/setup, idempotent by intent.
+  stand-windows - Windows half of lar:///ha.ka.ba/wsl2/setup, idempotent by intent.
 
 .DESCRIPTION
   It merges only resource keys owned by this runbook, preserves other `.wslconfig` sections and
@@ -9,9 +9,15 @@
 
   -DryRun shows the plan without writes.
   -Distro optionally names the WSL distro whose vhdx should become sparse.
+  -NoRelaunch keeps the run in the current PowerShell even when pwsh (7+) is installed.
+
+  The runbook's PowerShell is 7 (pwsh). Step 0 reads the running engine: under Windows PowerShell
+  5.1 with pwsh installed it relaunches itself there once; without pwsh it reports needs-you and
+  continues, since every later step tolerates 5.1. The file keeps a UTF-8 BOM and ASCII-only code
+  so that 5.1 bootstrap parse holds.
 #>
 [CmdletBinding()]
-param([switch]$DryRun, [string]$Distro = '')
+param([switch]$DryRun, [string]$Distro = '', [switch]$NoRelaunch)
 
 $ErrorActionPreference = 'Stop'
 function Already($m) { Write-Host ("  {0,-10} {1}" -f 'already', $m) -ForegroundColor DarkGray }
@@ -20,6 +26,29 @@ function Plan($m)    { Write-Host ("  {0,-10} {1}" -f 'would-set', $m) -Foregrou
 function Need($m)    { Write-Host ("  {0,-10} {1}" -f 'needs-you', $m) -ForegroundColor Red }
 function Step($m)    { Write-Host "`n$m" -ForegroundColor White }
 function Act($label, [scriptblock]$do) { if ($DryRun) { Plan $label } else { & $do; Set_ $label } }
+
+Step '0 | PowerShell 7 - the runbook engine'
+$psMajor = $PSVersionTable.PSVersion.Major
+$pwsh = Get-Command pwsh.exe -ErrorAction SilentlyContinue
+if (-not $pwsh) {
+  $candidate = Join-Path $env:ProgramFiles 'PowerShell\7\pwsh.exe'
+  if (Test-Path $candidate) { $pwsh = Get-Item $candidate }
+}
+if ($psMajor -ge 7) {
+  Already "pwsh $($PSVersionTable.PSVersion) running"
+} elseif ($pwsh -and -not $NoRelaunch) {
+  $pwshPath = if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }
+  $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath, '-NoRelaunch')
+  if ($DryRun) { $forward += '-DryRun' }
+  if ($Distro) { $forward += @('-Distro', $Distro) }
+  Set_ "relaunching under $pwshPath (was Windows PowerShell $($PSVersionTable.PSVersion))"
+  & $pwshPath @forward
+  exit $LASTEXITCODE
+} elseif ($pwsh) {
+  Already "pwsh present at $(if ($pwsh.Source) { $pwsh.Source } else { $pwsh.FullName }); staying in $($PSVersionTable.PSVersion) by -NoRelaunch"
+} else {
+  Need "install PowerShell 7: winget install --id Microsoft.PowerShell --source winget   (continuing under Windows PowerShell $($PSVersionTable.PSVersion))"
+}
 
 $hostGB = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
 $cpus = (Get-CimInstance Win32_Processor | Measure-Object NumberOfLogicalProcessors -Sum).Sum
@@ -36,7 +65,7 @@ if (-not $Distro) {
   if ($selected) { $Distro = [string]$selected.DistributionName }
 }
 
-Step "1 | $env:USERPROFILE\.wslconfig — bounded VM resource ceiling"
+Step "1 | $env:USERPROFILE\.wslconfig - bounded VM resource ceiling"
 $cfgPath = Join-Path $env:USERPROFILE '.wslconfig'
 $want = [ordered]@{
   'wsl2' = [ordered]@{
@@ -92,10 +121,10 @@ if ($changed -and -not $DryRun) {
     $out += ''
   }
   [IO.File]::WriteAllText($cfgPath, (($out -join "`r`n") + "`r`n"), $utf8)
-  Need 'run wsl --shutdown at a session boundary — .wslconfig changes apply on the next VM start'
+  Need 'run wsl --shutdown at a session boundary - .wslconfig changes apply on the next VM start'
 }
 
-Step '2 | selected distro vhdx — opt into sparse allocation'
+Step '2 | selected distro vhdx - opt into sparse allocation'
 if (-not $Distro) {
   Need 'no non-Docker WSL distro is registered; install one with wsl --install -d <DistroName>'
 } else {
@@ -109,7 +138,9 @@ if (-not $Distro) {
       $sizeGB = [math]::Round((Get-Item $vhd).Length / 1GB, 1)
       if ((Get-Item $vhd).Attributes -band [IO.FileAttributes]::SparseFile) { Already "$Distro sparse ($sizeGB GB on disk)" }
       else {
-        $listing = wsl.exe -l -v | Out-String
+        # wsl.exe writes UTF-16LE to a redirected stdout; decoded as the OEM code page every letter grows a NUL and no regex matches
+        $oldEnc = [Console]::OutputEncoding
+        try { [Console]::OutputEncoding = [Text.Encoding]::Unicode; $listing = (wsl.exe -l -v | Out-String) } finally { [Console]::OutputEncoding = $oldEnc }
         $state = $listing -split "`n" | Where-Object { $_ -match "\b$([regex]::Escape($Distro))\b" }
         if (-not $state) { Need "wsl -l -v did not list '$Distro'; inspect it before using wsl --manage '$Distro' --set-sparse true" }
         elseif ($state -match 'Running') { Need "run wsl --shutdown, then re-run to set '$Distro' sparse ($sizeGB GB on disk)" }
@@ -119,7 +150,7 @@ if (-not $Distro) {
   }
 }
 
-Step '3 | registered distros — inventory only'
+Step '3 | registered distros - inventory only'
 foreach ($d in ($lxss | Sort-Object DistributionName)) {
   $name = [string]$d.DistributionName
   if ($name -eq $Distro) { Already "$name (selected)" }

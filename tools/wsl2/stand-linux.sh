@@ -19,6 +19,7 @@ SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$SELF_DIR/../.." && pwd)"
 WINDIR=/mnt/c/Windows
 CMD_EXE=$(command -v cmd.exe 2>/dev/null || echo "$WINDIR/System32/cmd.exe")
+PWSH_EXE=$(command -v pwsh.exe 2>/dev/null || { [[ -x "/mnt/c/Program Files/PowerShell/7/pwsh.exe" ]] && echo "/mnt/c/Program Files/PowerShell/7/pwsh.exe"; })
 
 already() { printf '  \e[2m%-10s\e[0m %s\n' already "$1"; }
 set_()    { printf '  \e[32m%-10s\e[0m %s\n' set "$1"; }
@@ -162,6 +163,8 @@ if [[ -f "$WSLCFG" ]] && grep -qE '^[[:space:]]*memory[[:space:]]*=' "$WSLCFG" &
 else
   need 'run tools/wsl2/stand-windows.ps1 in PowerShell (writes only the owned WSL resource keys and inventories distros)'
 fi
+if [[ -n "$PWSH_EXE" ]]; then already "PowerShell 7 at $PWSH_EXE (the runbook engine for stand-windows.ps1)"
+else need 'install PowerShell 7 on Windows: winget install --id Microsoft.PowerShell --source winget   (stand-windows.ps1 degrades to Windows PowerShell 5.1 without it)'; fi
 (( RESTART_NEEDED )) && need 'run wsl --shutdown from Windows at a session boundary — /etc/wsl.conf changes wait on it'
 
 step '9 · witness'

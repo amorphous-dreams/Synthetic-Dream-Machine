@@ -42,7 +42,10 @@ wsl --update
 wsl --list --online
 wsl --install -d <DistroName>
 wsl --list --verbose
+winget install --id Microsoft.PowerShell --source winget   # PowerShell 7 (pwsh), the runbook engine
 ```
+
+PowerShell 7 (`pwsh`) runs the Windows stand. Windows PowerShell 5.1 ships with Windows and stays as the bootstrap: `stand-windows.ps1` reads its own engine first and, under 5.1 with `pwsh` installed, relaunches itself there once; without `pwsh` it reports `needs-you` and continues degraded, since every later step tolerates 5.1. The script keeps a UTF-8 BOM and ASCII-only code so the 5.1 bootstrap parse holds. `witness.sh` and the Linux stand read for `pwsh` by absolute path and report its absence.
 
 Complete the distro's first-launch user creation before running the Linux script. Install Docker Desktop only when this machine will run containerized Lararium or mesh scenarios; enable its WSL integration for the chosen distro. Docker Desktop's own `docker-desktop` distributions are expected and are never setup-script targets.
 
@@ -62,9 +65,11 @@ tools/wsl2/stand-linux.sh --dry-run
 tools/wsl2/stand-linux.sh
 tools/wsl2/stand-linux.sh --with-project       # explicit pnpm workspace install
 
-# From Windows PowerShell; omit -Distro to use the registered default:
+# From pwsh (PowerShell 7); omit -Distro to use the registered default:
+pwsh -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -DryRun
+pwsh -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -Distro <DistroName>
+# From inside WSL, or from Windows PowerShell 5.1 (it relaunches under pwsh when present):
 powershell.exe -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -DryRun
-powershell.exe -ExecutionPolicy Bypass -File tools/wsl2/stand-windows.ps1 -Distro <DistroName>
 
 tools/wsl2/witness.sh                          # writes nothing; nonzero means drift
 ```
@@ -166,5 +171,5 @@ A witness drift states the local condition it could not verify. Repair only that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;" -> to="?">>ni:///sha-256;ieM4Efo9x-LYOITYnb4lFF4wjp6DsfG_DsPdqYRc0N0
+<<^ code="&#x0003;">>ni:///sha-256;3klJyTwKd-sX3ksn6jwCQIOeujhg0VR3cHyct4IPhHg
 <<^ code="&#x0004;" -> to="?">>
