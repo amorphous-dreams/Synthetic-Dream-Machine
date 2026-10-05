@@ -155,7 +155,7 @@ mesh 224 · node 140 (139 + 1 orphan under `tests/e2e/`) · tw5 80 · lares-cli 
 
 - `wiki-sensorium-consistency` (node + browser) and `wiki-sensorium-cap` (tw5 + browser) run the **identical hull** (`runWikiConsistencyWitness()` / `runWikiSensoriumWitness()` from `@lararium/tw5`) on **two substrates**. The node≡browser agreement *is* the island-isomorphism proof. Collapsing either kills the proof and leaves a green suite.
 - `wiki-sense-supervision` — tw5 proves the supervisor's hull **in-process**; browser proves the whole crossing **over a real Chromium worker wire**.
-- `seal-reserve` — mesh proves the **pure crypto floor** (SLIP-0010 derivation, 2-of-3 quorum); lares-cli proves the **CLI ceremony against a real identity home on disk**, including that the seed lands in *no* file.
+- `seal-reserve` — both weld halves live in `lares-cli/tests` now: `seal-reserve-split.test.ts` proves the **pure crypto floor** (SLIP-0010 derivation, 2-of-3 quorum) against `lares-cli/src/seal-reserve.ts`; `seal-reserve.test.ts` proves the **CLI ceremony against a real identity home on disk**, including that the seed lands in *no* file, against the on-disk store at `lararium-node/src/seal-reserve-store.ts`.
 - `capture-source` — cli tests `captureSourceFile` (a string identity); node tests `makeSourceCapture` (a python-holder shore). Same name, unrelated surfaces.
 - `worldline-trajectory-source` — mempalace against a **fake NDJSON holder**; node against the **in-VM functor composition**.
 
@@ -261,6 +261,6 @@ The canonical vocabulary and failure-state mapping live in [[mandate-activity-pr
 
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;lo5lbHCK3RmFnP6PLVRT7T_S9Ycm6DzAqTMNT_MLZH8
+<<^ code="&#x0003;">>ni:///sha-256;yJLyLnxe_iLcj9ZtwQGHuPt1iUM4RzBbFhIgR6_GIYs
 
 <<^ code="&#x0004;" -> to="?">>
