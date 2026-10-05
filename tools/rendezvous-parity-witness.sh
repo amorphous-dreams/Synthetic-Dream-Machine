@@ -17,6 +17,15 @@ cd "$(dirname "$0")/.."
 
 fail=0
 
+# DIST-FRESHNESS PREFLIGHT. Every inline import below reads `packages/lararium-mesh/dist` and
+# `packages/lararium-node/dist` BY PATH, outside `distModule`'s own guard — so this witness checks
+# the one digest itself before trusting either side's reading. The exit code is read directly, never
+# through a pipe, so a refusal here reads 2 and names its cure rather than silently falling through
+# into comparing two stale readings against each other.
+node tools/corpus-read.mjs --assert-fresh \
+  packages/lararium-mesh/dist/rendezvous-path.js \
+  packages/lararium-node/dist/src/vessel-paths.js
+
 # ── THE THIRD SPELLING ──────────────────────────────────────────────────────────────────────────
 # TS and python were gated against each other while the E2E HARNESS carried a third derivation
 # nobody checked — it walked an instance root hunting a file named `lares.sock`, found nothing, and

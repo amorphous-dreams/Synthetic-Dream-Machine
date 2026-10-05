@@ -25,6 +25,13 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 REPO=$PWD
 
+# DIST-FRESHNESS PREFLIGHT. The two inline `node --input-type=module -e` blocks below import
+# `packages/lararium-mesh/dist/index.js` BY PATH, outside `distModule`'s own guard. `vessel found`
+# and `persona new` run through the CLI's own fresh-build gate (`build-freshness.ts`) and need no
+# second check here; this witness's own direct reads of the mesh dist do.
+node "$REPO/tools/corpus-read.mjs" --assert-fresh "$REPO/packages/lararium-mesh/dist/index.js"
+if [ $? -ne 0 ]; then exit 2; fi
+
 TB=$(mktemp -d -t lares-founding-witness-XXXXXX)
 trap 'rm -rf "$TB"' EXIT
 

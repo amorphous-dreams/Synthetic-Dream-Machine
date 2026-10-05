@@ -16,7 +16,8 @@
 // line says so when the count is non-zero. The honest reading is "I checked 733 of 734; one left the
 // tree while I walked it."
 import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
+import { sourceDigest, packageStampPath, workspacePackageDirs } from "./stamp-build.mjs";
 
 let vanished = 0;
 
@@ -45,6 +46,108 @@ export function vanishedNote() {
 // the cure line itself; one drifted the moment a twelfth was added with a typo in the package name.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Dist freshness — a witness reads only a dist BUILT FROM the tree's bytes; freshness reads content,
+// never clocks. `assertDistFresh` is the one door every dist-shore boot above passes through before
+// it imports: it resolves the dist's OWNING package, walks that package's workspace dependency
+// closure, and refuses (exit 2, naming the stale package and its cure) the moment any member of that
+// closure carries a dist whose per-package stamp disagrees with what its source reads right now.
+//
+// REUSES THE ONE DIGEST. `sourceDigest` and `packageStampPath` come from `stamp-build.mjs` — the
+// same function that WRITES a package's stamp is the function that reads it back here, so the two
+// can never name different bytes "the same build".
+// ---------------------------------------------------------------------------
+
+/**
+ * `{ repo, dir }` for the `packages/<dir>` that holds `distPath`, derived from the path ITSELF by
+ * finding its last `packages` segment — never from a caller-supplied repo root, which some callers
+ * (`distModule`, `bootTW5Engine`) pass as the package's own `dist/` dir rather than the repo's. Null
+ * when the path carries no `packages` segment at all (nothing here owns a stamp to compare against).
+ */
+function owningPackage(distPath) {
+  const parts = resolve(distPath).split(/[\\/]/);
+  const at = parts.lastIndexOf("packages");
+  if (at === -1 || at + 1 >= parts.length) return null;
+  return { repo: parts.slice(0, at).join("/") || "/", dir: parts[at + 1] };
+}
+
+/** `{ packageName → dir }`, derived from every workspace package's own `package.json#name` — never a hand list. */
+function packageNameToDir(repo) {
+  const map = new Map();
+  for (const dir of workspacePackageDirs(repo)) {
+    try {
+      const pkg = JSON.parse(readFileSync(join(repo, "packages", dir, "package.json"), "utf8"));
+      if (pkg.name) map.set(pkg.name, dir);
+    } catch { /* unreadable package.json — excluded from the closure */ }
+  }
+  return map;
+}
+
+/** `dir`'s own `package.json#dependencies` entries that read `"workspace:…"`, as `{ name → dir }`. */
+function workspaceDepDirs(repo, dir, nameToDir) {
+  let pkg;
+  try { pkg = JSON.parse(readFileSync(join(repo, "packages", dir, "package.json"), "utf8")); }
+  catch { return []; }
+  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+  return Object.entries(deps)
+    .filter(([, version]) => typeof version === "string" && version.startsWith("workspace:"))
+    .map(([name]) => nameToDir.get(name))
+    .filter((d) => d !== undefined);
+}
+
+/** `dir` plus every workspace dependency it reaches, transitively — the set a stale LEAF can taint. */
+function workspaceClosure(repo, dir, nameToDir, seen = new Set()) {
+  if (seen.has(dir)) return seen;
+  seen.add(dir);
+  for (const dep of workspaceDepDirs(repo, dir, nameToDir)) workspaceClosure(repo, dep, nameToDir, seen);
+  return seen;
+}
+
+// MEMOIZED PER PROCESS — a witness calls this once per dist it opens, and the same package can sit
+// in several closures within one run; digesting its source twice would cost real wall-clock for an
+// answer that cannot have changed between the two calls.
+const freshnessCache = new Map();
+
+function packageFreshness(repo, dir) {
+  if (freshnessCache.has(dir)) return freshnessCache.get(dir);
+  const distDir = join(repo, "packages", dir, "dist");
+  let result;
+  if (!existsSync(distDir)) {
+    // No dist to go stale — a package the closure reaches but which builds nothing (or has not been
+    // built yet) is the missing-dist case the direct `existsSync` cures above already own.
+    result = { stale: false };
+  } else {
+    const digest = sourceDigest(join(repo, "packages", dir));
+    let stamped = null;
+    try { stamped = readFileSync(packageStampPath(repo, dir), "utf8").trim(); } catch { stamped = null; }
+    result = { stale: stamped !== digest };
+  }
+  freshnessCache.set(dir, result);
+  return result;
+}
+
+/**
+ * Refuse (exit 2) when `distPath`'s owning package, or any workspace package it depends on, carries
+ * a dist whose stamp disagrees with the source the tree holds right now. A no-op when `distPath`
+ * runs outside `packages/` — nothing here owns a per-package stamp to compare against. `repo` is
+ * accepted for callers that already hold it, but the package root is always DERIVED from `distPath`
+ * itself (see `owningPackage`), since several callers pass a dist-local root, not the repo's.
+ */
+export function assertDistFresh(repo, distPath, toolName) {
+  const owning = owningPackage(distPath);
+  if (!owning) return;
+  const absRepo = resolve(owning.repo);
+  const dir = owning.dir;
+  const nameToDir = packageNameToDir(absRepo);
+  for (const d of workspaceClosure(absRepo, dir, nameToDir)) {
+    if (!packageFreshness(absRepo, d).stale) continue;
+    let name = d;
+    try { name = JSON.parse(readFileSync(join(absRepo, "packages", d, "package.json"), "utf8")).name ?? d; } catch { /* fall back to dir */ }
+    console.error(`[${toolName}] stale build: ${name} dist was not built from the current source\n  cure: pnpm --filter ${name} build && node tools/stamp-build.mjs . --pkg ${d}`);
+    process.exit(2);
+  }
+}
+
 /**
  * THE ONE FINDER of the corpus, loaded from the built shore. A hardcoded glob answers a question
  * about PATHS; the law asks about DECLARATIONS, and the two disagreed on the runtime kernel face for
@@ -59,6 +162,7 @@ export async function distCarrierFiles(repo, toolName) {
     console.error(`[${toolName}] no built shore at ${distCarriers}\n  cure: pnpm --filter @lararium/tw5 build`);
     process.exit(2);
   }
+  assertDistFresh(repo, distCarriers, toolName);
   return import(distCarriers);
 }
 
@@ -73,6 +177,7 @@ export async function distModule(dist, relOrAbs, toolName, cure = "pnpm --filter
     console.error(`[${toolName}] no built shore at ${at}\n  cure: ${cure}`);
     process.exit(2);
   }
+  assertDistFresh(dist, at, toolName);
   return import(at);
 }
 
@@ -93,4 +198,21 @@ export async function bootTW5Engine(dist, toolName) {
   await engine.boot(new Uint8Array(readFileSync(core)));
   const wiki = engine.wiki ?? engine._tw?.wiki;
   return { engine, wiki };
+}
+
+// ---------------------------------------------------------------------------
+// CLI preflight — a shell witness that imports a dist by its own inline `node -e`, rather than through
+// `distModule`, cannot call `assertDistFresh` as a function. This gives it a process to call instead:
+// one dist path per argument, same refusal, same exit code, no pipe needed to read it.
+//
+//   node tools/corpus-read.mjs --assert-fresh <dist-path> [<dist-path> …]
+// ---------------------------------------------------------------------------
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const flagAt = process.argv.indexOf("--assert-fresh");
+  if (flagAt === -1) {
+    console.error("usage: node tools/corpus-read.mjs --assert-fresh <dist-path> [<dist-path> …]");
+    process.exit(1);
+  }
+  const paths = process.argv.slice(flagAt + 1);
+  for (const p of paths) assertDistFresh(process.cwd(), p, "corpus-read");
 }
