@@ -4,24 +4,28 @@
  * Boots a fresh TW5Engine in-process, passing LARES_MEMETIC_WIKITEXT_PLUGIN
  * as boot()'s plugin argument (the caller supplies plugins explicitly — the
  * engine preloads nothing by itself); TW5's standard plugin loader unpacks
- * it. We then assert that the unpacked artifacts are present in the running
- * wiki:
- *   - cascade config tiddlers at lar:///config/Lar/AhuTemplate/... (html
- *     scope — the markdown-meme templates burned at 07866b34)
- *   - template tiddlers at lar:///ha.ka.ba/lararium/templates/...
- *   - parser registered for text/memetic-wikitext+tiddlywiki
- *   - sigil widget tiddlers present (kau, ahu, aka, kahea, loulou, pranala — all TW5 \\widget)
+ * it. We then assert that every static tiddler the plugin build packed is
+ * present in the running wiki — the roll is DERIVED from the same source
+ * manifest `build-plugin-tiddler.ts` reads, never hand-enumerated — plus
+ * the plugin's own title and the parser's registration in TW5's own
+ * registry (`tw.Wiki.parsers`), each a named assertion.
  *
  * Exit nonzero if any check fails.
  */
 import { readFileSync } from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
 import { frameCarrier } from "@lararium/memetic-frame";
 import { TW5Engine } from "../src/tw5-vm.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { exportMemeText } from "../src/meme-write.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "../src/generated-tw5-version.js";
+import { readPluginSourceManifest } from "../plugin-build/source-manifest.js";
+import { SOURCE_MANIFEST } from "../plugin-build/paths.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PKG_ROOT = path.resolve(__dirname, "..");
 
 async function main(): Promise<void> {
   const corePath = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -32,61 +36,30 @@ async function main(): Promise<void> {
   const failures: string[] = [];
   const wiki = engine.wiki;
 
-  // The html-scope survivors — the markdown-meme template twins burned at 07866b34 (pre-tide).
-  const expectedTitles = [
-    LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
-    "lar:///config/Lar/AhuTemplate/html",
-    "lar:///config/Lar/AkaTemplate/html",
-    "lar:///config/Lar/PranalaHeaderTemplate/html",
-    "lar:///config/Lar/KaheaTemplate/html",
-    "lar:///config/Lar/LoulouTemplate/html",
-    "lar:///config/Lar/PranalaTemplate/html",
-    "lar:///ha.ka.ba/lararium/templates/ahu/html",
-    "lar:///ha.ka.ba/lararium/templates/aka/html",
-    "lar:///ha.ka.ba/lararium/templates/pranala-header/html",
-    "lar:///ha.ka.ba/lararium/templates/kahea/html",
-    "lar:///ha.ka.ba/lararium/templates/loulou/html",
-    "lar:///ha.ka.ba/lararium/templates/pranala/html",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-dispatcher",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-aka",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kahea",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-loulou",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala-header",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala",
-    "lar:///config/Lar/KauTemplate/html",
-    "lar:///ha.ka.ba/lararium/templates/kau/html",
-    "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kau",
-  ];
+  // THE SHADOW ROLL IS DERIVED, NEVER ENUMERATED: every static tiddler the plugin build packed,
+  // read from the same source manifest `build-plugin-tiddler.ts` itself writes and reads
+  // (`readPluginSourceManifest` / `staticTiddlers`) — so a tiddler added to `tiddlers/*.tid` enters
+  // this roll with no code change here, and a renamed or removed one leaves it the same way.
+  const { manifest: sourceManifest } = readPluginSourceManifest(path.join(PKG_ROOT, SOURCE_MANIFEST));
+  const expectedTitles = sourceManifest.staticTiddlers.map((t) => t.title);
   for (const title of expectedTitles) {
     if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);
   }
 
-  // Probe TW5 module registry for the parser + widgets.
+  // The plugin's own title and the parser registry are named assertions, not part of the derived
+  // roll: pluginInfo is metadata ABOUT the packed tiddlers, not one of them, and the parser check
+  // reads TW5's own registry (`tw.Wiki.parsers`), the house's real record of what registered.
+  if (!wiki.getTiddler(LARES_MEMETIC_WIKITEXT_PLUGIN_URI)) {
+    failures.push(`missing tiddler: ${LARES_MEMETIC_WIKITEXT_PLUGIN_URI}`);
+  }
   const tw = (engine as unknown as { _tw: { Wiki?: { parsers?: Record<string, unknown> }; modules?: { types?: Record<string, Record<string, unknown>> } } })._tw;
   const parsers = tw?.Wiki?.parsers ?? {};
   if (!parsers["text/memetic-wikitext+tiddlywiki"]) failures.push("parser not registered: text/memetic-wikitext+tiddlywiki");
 
-  // All sigil widgets (ahu, aka, kahea, kau, loulou, pranala, pranala-header)
-  // now live as TW5 \widget definitions in tiddler text — no JS module-type:widget.
-  // The only JS widgets are internal infra (not checked here).
-  // Tiddler-presence checks above verify kau, ahu, etc. loaded from the plugin.
-
-  // Probe ahu cascade tiddler presence — sigil-ahu.tid carries ~ahu + ~kahea~ahu.
-  // Full render probe deferred: engine.renderText does not load $:/tags/Global
-  // wikitext into macro scope, so wikitext widget probes are pre-existing-broken
-  // across all sigils (aka, kahea, loulou, etc.). Tiddler-presence checks above
-  // cover sigil-ahu loading. Integration render coverage lives in test:tw5-flow.
-  if (!wiki.getTiddler("lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu")) {
-    failures.push("sigil-ahu tiddler missing from plugin");
-  }
-
-  // Render probes for wikitext-defined sigils do not belong in this low-level
-  // boot smoke. engine.renderText() parses anonymous text without importing the
-  // plugin's $:/tags/Global macro definitions into scope, so it strips the
-  // macrocall nodes after the JS wikirule fires. Presence checks above verify
-  // the plugin unpacked the wikitext sigil tiddlers; integration TW5 flow tests
-  // own rendered widget behavior.
+  // Sigil widgets (ahu, aka, kahea, kau, loulou, pranala, pranala-header) live as TW5 \widget
+  // definitions in tiddler text, carried by the derived roll above — a render probe does not belong
+  // in this low-level boot smoke, since `engine.renderText()` parses anonymous text without the
+  // plugin's `$:/tags/Global` macro scope; integration flow tests own rendered widget behavior.
 
   // Probe the carriage the deserializer stands: the prologue above the declaration and the
   // postamble past the frame ride as RECORDS at `uri#/$prologue` and `uri#/$postamble`, each
@@ -193,9 +166,6 @@ async function main(): Promise<void> {
       failures.push(`slot round-trip lost meta toml; got: ${rendered.slice(0, 300)}`);
     }
   }
-
-  // (J.2d retired: the pranala markdown-meme template burned at 07866b34; its html twin renders an
-  // inline span — no wrapped-blank-lines shape to probe, so no trivial stand-in exists.)
 
   if (failures.length > 0) {
     console.error("✖ smoke FAILED");
