@@ -102,20 +102,19 @@ def hold(text: str, *, uri: str, file_path: str, role: str, held_type: str) -> s
         raise ValueError("held_text: a meta value carries no double quote")
     longest = max((len(r) for r in re.findall(r"`+", text)), default=0)
     fence = "`" * (max(3, longest) + 1)
-    return (
-        f"{DECLARATION}\n"
-        "\n"
-        f'<<^ code="&#x0001;" from="?" -> to="lar:///{uri}">>\n'
+    # The body: everything STX bounds and the check covers — root meta, then the holding ahu.
+    # Per the canonical writer (`@lararium/memetic-frame` `frameCarrier`), root meta rides INSIDE
+    # STX..ETX, never above STX; a meta fence standing before STX is the `meta-before-stx` torn fault.
+    body = (
         "```toml meta\n"
         "cacheable = false\n"
         f'file-path = "{file_path}"\n'
         'l-space   = "stable"\n'
         f'role      = "{role}"\n'
+        f'title     = "lar:///{uri}"\n'
         f'type      = "{CARRIER_TYPE}"\n'
         f'uri-path  = "{uri}"\n'
         "```\n"
-        "\n"
-        '<<^ code="&#x0002;">>\n'
         "\n"
         "<<~ ahu #/held>>\n"
         "```toml meta\n"
@@ -126,7 +125,15 @@ def hold(text: str, *, uri: str, file_path: str, role: str, held_type: str) -> s
         f"{text}"
         f"{fence}\n"
         "\n"
-        "<<~/ahu>>\n"
+        "<<~/ahu>>"
+    )
+    return (
+        f"{DECLARATION}\n"
+        "\n"
+        f'<<^ code="&#x0001;" from="?" -> to="lar:///{uri}">>\n'
+        '<<^ code="&#x0002;">>\n'
+        "\n"
+        f"{body}\n"
         "\n"
         '<<^ code="&#x0003;">>\n'
         "\n"
