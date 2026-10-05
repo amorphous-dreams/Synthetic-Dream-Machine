@@ -130,6 +130,14 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
       `  Run \`lares vessel found --force\` to re-establish the founding ceremony.`,
     );
   }
+  // An admit payload carries the PersonaGroup plane's url, required: a joinee never mints a fresh local
+  // persona doc in its place. A founding with no recorded plane re-founds rather than admits.
+  if (!personaUrl) {
+    throw new Error(
+      `[lares device-admit] the PersonaGroup plane url is missing from social-bootstrap.json.\n` +
+      `  Run \`lares vessel found --force\` to re-found with a recorded plane before admitting a device.`,
+    );
+  }
   if (!daemonUrl) {
     throw new Error(`[lares device-admit] daemon doc URL missing from social-bootstrap.json.`);
   }
