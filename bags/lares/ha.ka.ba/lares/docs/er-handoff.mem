@@ -18,18 +18,19 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 !! Vitals
 
-* ''Branch'' `feature/lararium-node-5`. Working tree clean apart from crew-held paths: `mempalace` (submodule), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`. Never commit, stash, or revert those.
+* ''Branch'' `feature/lararium-node-5`, far ahead of `origin` — the work stands unpushed until the operator pushes. Working tree clean apart from crew-held paths: `mempalace` (submodule), `tests/harness/instance.ts`, untracked `tests/e2e/nexus-offering-replication.test.ts`, `bags/lares/ha.ka.ba/lares/docs/research/`, `.worktrees/`. Never commit, stash, or revert those.
 * ''Corpus'': every tracked `bags/*.mem` reads canonical under `lares meme check`; `tools/bcc-witness.sh` reads every block check `ok`; the submissions shelf (`bags/lares/ha.ka.ba/lares/api/pono/submissions/`) reads 6 pairs, 0 out of step.
-* ''Witnesses green'': `tools/turn-parity.mjs` (every divergence in a named class), `tools/head-parity.mjs`, `tools/frame-shape.mjs`, `tools/frame-parity.mjs`, `tools/grammar-table-witness.sh` (0 disagreements). Each reads built `dist/` and refuses a stale build by name — rebuild the named package, run `node tools/stamp-build.mjs`, re-run.
+* ''The witness fleet'' (`tools/witness-all.sh`, what CI runs) reads red on four witnesses: `hearths-gate-witness` (a second live hold in `bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem` arms with an empty trailer), `vessel-parity-witness` (`makePersonaGroupIdentityRing` composes on node only — the browser side is owed), `contract-witness` ("A's members board folds B IN" — see `#/wounds` P2), `symbol-anchor-witness` (43 absent symbols against a ceiling of 42). Green: `founding-witness`, `doctype-witness`, `mirror-parity-witness`, `tools/turn-parity.mjs`, `tools/head-parity.mjs`, `tools/frame-shape.mjs`, `tools/frame-parity.mjs`, `tools/grammar-table-witness.sh`, and the rest. Each dist-reading witness refuses a stale build by name — rebuild the named package, run `node tools/stamp-build.mjs`, re-run.
+* ''CI'' (`.github/workflows/ci.yml`) validates again — no job-level `name:`, `if:` or `runs-on:` may read the `env` context, or GitHub rejects the whole file and runs nothing. Its jobs have not yet run on this branch; the first push is the first real witness of `build-freshness`, `test`, `witnesses`, `e2e`.
+* ''The tree is shared'': a parallel lane edits `bags/lares/ha.ka.ba/wsl2/**` and `tools/wsl2/**` and re-stamps after editing — a witness run mid-edit reads its carriers as drifted for a minute. Re-run before believing a red there.
 * ''Typecheck'' (`tools/typecheck-witness.sh`): two reds, both crew-held — `packages/lararium-web/src/main.ts:98` and `tests/harness/scenario-action-graph.ts:175`.
 * ''Every package builds'' from clean (`pnpm -r build`).
 * ''Known test reds'' and their owners:
 ** `lararium-node` `tests/bind-under-handle.test.ts` — crew: the joinee boot path never supplies `expectedEpoch` (the binding gate needs the live lease epoch, as `face-join.ts` supplies it); never revert the gate.
 ** `lares-cli` `tests/help-door-meme.test.ts`, `tests/nexus-verb-reach.test.ts` — crew: `nexus offering` keeps its help text outside the command registry.
 ** `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` — environmental (browser / server sockets).
-** `lararium-tw5` corpus suites fail on `bags/lares/ha.ka.ba/wsl2/setup.mem` — that carrier and its tree belong to the WSL2 host-floor work, not this lane; align or excuse it with its owner.
+** `lararium-tw5` corpus suites can fail on `bags/lares/ha.ka.ba/wsl2/*.mem` while that lane edits them — its owner's to settle.
 ** `lararium-tw5` `tests/grammar-in-a-wiki.test.ts` — a corpus-wide walk that times out at the default 5 s under load; passes alone.
-** `tests/meme-backstop.test.ts` PHASE 5 — two cases name the open backstop question in `#/wounds` P2.
 
 <<~/ahu>>
 
@@ -41,7 +42,8 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 # `pnpm install --frozen-lockfile`, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob `head-parity` and `scripts/smoke-plugin-boot.ts` need — `pnpm -r build` does not produce it), then `node tools/stamp-build.mjs`.
 # A fresh `git worktree` holds empty submodules (`TiddlyWiki5`, `VSCode-TW5-Syntax`, `mempalace`); populate them before building there.
 # `lares-cli` `tests/pour-repave.test.ts` needs the dev-root marker (`LAR_DEV_REPO_ROOT=1` or the gitignored `lar-dev-root.json`).
-# The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) is tracked and must equal a fresh build — rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job enforces it.
+# The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) is tracked and must equal a fresh build — rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job checks it once CI runs.
+# Run `bash tools/witness-all.sh` for the whole fleet — a hand-picked subset of witnesses reads greener than the tree.
 # Read `lar:///ha.ka.ba/lares/api/noosphere-boot` (the boot seed), then this carrier, then the rulings memory (`project_grammar_as_tiddlers_rulings.md`) before touching grammar, frame, or ingest code.
 
 <<~/ahu>>
@@ -51,12 +53,15 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 !! Open wounds, by priority
 
 ''P1 — owed now, no ruling needed''
+* ''Push, then read CI.'' The first CI run on this branch witnesses build-from-clean, the e2e set and bundle freshness for the first time; treat whatever it reds as P1.
+* ''`tools/symbol-anchor-witness.sh`'' reads 43 absent symbols against its ceiling of 42; no carrier in the list carries a new anchor and no listed symbol left the source, so the extra count's cause is untraced. Trace it (bisect the witness), then re-aim or retire the carrier it names.
 * ''`bags/lares/ha.ka.ba/lares/docs/pono/testing-architecture-scout.mem`'' counts "six" duplicate-named test files; the tree holds ten. Re-true the count and list.
 * ''The quoteblock floor in live use.'' `packages/lararium-tw5/src/modules/meme-backstop.ts` `runChildGate` fences a child body whose splice breaks the composed root and raises `quoteblocked` on `surfaceChildGateAlert`; attribution fences only the child whose fence heals the composition. Unit-tested; not yet exercised against real concurrent browser saves — watch it, and add a test for any shape it mis-attributes.
 * ''Whole-chunk grain of the floor'' (a carrier arriving whole and partially un-decomposable → fence the whole chunk at the ingest seat) — specified in `lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor`, unbuilt.
 * ''The `retired-spelling` fault kind'' and `retiredEnds` name the faults by a history word; consider an invariant name (a spelling outside the frame grammar) across the six files that read it.
 
 ''P2 — needs the operator''
+* ''The members-board fold'' (`tools/contract-witness.sh`, "A's members board folds B IN"): a vessel's admit-write resolves its board through `nodeNexusIsland` (the charter-keyed island once its charter seats), while `runNexusMembersList` reads its own-key carriage by ruling (a partner's board must never widen this vessel's carriage). A founder whose charter has seated therefore cannot read its own admits. Two rulings meet here; `git log --follow -- packages/lararium-mesh/src/members-board-root.ts` holds the attempts. A ruling on the authority boundary, not a code fix.
 * ''Backstop seam (b), PHASE 5'' (`tests/meme-backstop.test.ts`): two child-edit cases the test marks as the operator's call.
 * ''Ruling-gated mesh modules'' (listed in `packages/lararium-mesh/src/index.ts`'s header): `contract-relation-witness` (sole user of signing domain `CARRIAGE_RELATION_WITNESS_DOMAIN` — retiring it retires a domain), `recipe`, `readiness`, `reaction-graph` (canon memes pin their mesh `source-file`), `pronaos`, `offering-inspection` (own mesh-namespace memes). Each moves or stays only by ruling.
 * ''The capture cell'' sits isolated for review in `packages/lararium-mesh/src/capture/`, `packages/lararium-node/src/capture/`, `packages/lararium-tw5/src/capture/`, `packages/lares-cli/src/commands/capture/`. Canon (`lar:///ha.ka.ba/lararium/api/capture-annotation-model`, the sensorium-machina S5 ruling) places capture in Python per stream with the TS @daemon coordinating only; the TS cell is the live path. Rule: retire it to Python, or re-home it.
@@ -121,6 +126,6 @@ uri-path  = "ha.ka.ba/lares/docs/er-handoff"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sw_kPv8KzQGUagajOH4i1D_QftbixheZy513WYCqafQ
+<<^ code="&#x0003;">>ni:///sha-256;0fXotB4OwyNOV2AjYd1ovgZV1MgyoaZGRCETuvrWWpI
 
 <<^ code="&#x0004;" -> to="?">>
