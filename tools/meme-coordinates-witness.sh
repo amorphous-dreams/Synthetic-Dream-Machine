@@ -37,7 +37,7 @@ read_file_path = 0
 read_uri_path = 0
 for f in _carriers:
     # THE WHOLE CARRIER, NEVER A BYTE PREFIX. This read `[:4000]`, and a meta block is not obliged to
-    # fit in it: MEASURED 2026-09-13, three carriers declare `uri-path` past that mark —
+    # fit in it: measured once, three carriers declare `uri-path` past that mark —
     # `mesh/founding-runbook.mem` at char 5276, `pono/antigonish-driving-test.mem` at 4495,
     # `pono/sensorium-machina.mem` at 4949. The walk was structurally blind to all three, and blind in
     # the direction that reports clean: a field it cannot see is a field it never disagrees with. A

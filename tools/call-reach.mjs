@@ -33,9 +33,9 @@
  *   ✗ SILENT   renders its own text while the grammar DECLARES the head and names no reason —
  *              a call that looks live on the page and reaches nothing
  *
- * The last class is the one that hid every defect of the 2026-09-08 grammar session: a sigil defined
- * under a retired spelling, a shelf entry whose calls all wore the tight form, thirty-one closers
- * built and never reached. Each read green through every byte-level gate the house owns.
+ * The last class is the one that hides a defect from every byte-level gate the house owns: a sigil
+ * defined under a spelling outside the frame grammar, a shelf entry whose calls all wear the tight
+ * form, a closer built and never reached — each reads green until something walks the call graph.
  *
  * ── EVERY DISTINCT CALL, NEVER A SAMPLE PER HEAD ────────────────────────────────────────────────
  * A first cut rendered ONE call per head and read green while a dead call stood in the corpus: the

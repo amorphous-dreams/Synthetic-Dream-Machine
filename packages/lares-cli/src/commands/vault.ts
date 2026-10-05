@@ -85,8 +85,7 @@ function warnIfWeak(pass: string): void {
 function sealDayPath(): string { return join(larIdentityDir(), ".archive-seal-day.json"); }
 
 /**
- * Record the seal-day in the clear — a STAMP ON the passphrase, never a PART of it (operator ruling,
- * 2026-08-08).
+ * Record the seal-day in the clear — a STAMP ON the passphrase, never a PART of it (operator ruling).
  *
  * ── WHY IT STAMPS RATHER THAN COMPOSES ───────────────────────────────────────────────────────────
  * An earlier shape concatenated the day INTO the passphrase. It would have added no strength — the

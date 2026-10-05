@@ -203,8 +203,8 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
  * `lares handle attest --surface <kind> --subject <name> [--return-locator <where>]` — mint a STRUCTURED edge.
  *
  * ★ TWO FLAGS, NOT A SENTENCE AND NOT A JSON BLOB. ★ A claim asserts that this Handle stands in a NAMED
- * relation to a NAMED foreign subject, readable by a peer sharing none of our context (the operator's ruling,
- * 2026-09-13). `--surface` names the adapter family's row and therefore WHOSE authority answers the check;
+ * relation to a NAMED foreign subject, readable by a peer sharing none of our context (the operator's
+ * ruling). `--surface` names the adapter family's row and therefore WHOSE authority answers the check;
  * `--subject` names the foreign name in that surface's own grammar. The subject rides ONE flag across every
  * surface, so a NEW adapter opens this door by naming a new `--surface` value and adds no flag — the union's
  * "a new adapter is a new MEMBER" law, spoken at the door. `--return-locator` carries where the surface half

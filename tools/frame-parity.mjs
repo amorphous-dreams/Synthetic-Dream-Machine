@@ -90,7 +90,7 @@ const corpus = carrierFiles(REPO).slice(0, 400)
 // a frame pattern must go blind when the head flips. One that still fires never depended on the head.
 //
 // THE PROBE BINDS BOTH BINDINGS, AND THAT IS WHY THIS SEAM RAN DEAD. A call binds with `=` and a
-// definition with `:`, and this probe read the COLON form alone. Measured 2026-09-13: the corpus writes
+// definition with `:`, and this probe read the COLON form alone. Measured: the corpus writes
 // `code="&#x00NN;"` 2848 times and `code:"&#x00NN;"` ZERO times, so every one of the seven marks routed
 // to `onPaper` and BOTH seams below — the pattern that finds nothing, and the pattern that fires without
 // the control head — were skipped for every mark on every run. The witness printed a green line about

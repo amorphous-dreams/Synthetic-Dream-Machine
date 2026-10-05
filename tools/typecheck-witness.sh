@@ -20,7 +20,7 @@ cd "$(dirname "$0")/.." || exit 1
 status=0
 walked=0
 # `tests/` is a workspace project too (the e2e harness); a witness that walks packages/* alone typechecks
-# the suites by nothing — measured 2026-09-12.
+# the suites by nothing.
 for dir in packages/*/ tests/; do
   pkg=$(basename "$dir")
   [ -f "$dir/tsconfig.json" ] || continue

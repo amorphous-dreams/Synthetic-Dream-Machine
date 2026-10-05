@@ -85,7 +85,7 @@ type Verb = (typeof VERBS)[number];
  * stale daemon dist or a dirty sovereign store, never a wrong-store read.
  */
 const LIFECYCLE: Readonly<Record<string, (a: ParsedArgs) => Promise<number> | number>> = {
-  // `setup` STANDS the sovereign organs, and founding never reaches it (operator ruling, 2026-08-08).
+  // `setup` STANDS the sovereign organs, and founding never reaches it (operator ruling).
   // A vessel founds and serves without a single sensorium, so standing one rides its own act — on the
   // door that already owns every other thing done to a sensorium. Folding it into `vessel stand --install`
   // would make the memory tooling read as part of the base install.

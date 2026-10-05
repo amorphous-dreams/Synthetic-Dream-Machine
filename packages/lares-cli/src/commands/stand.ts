@@ -8,7 +8,7 @@
  * caller — a session hook, a cron, anything that only wants a reading — holds the first alone, so
  * looking never decides what stands.
  *
- * FOUNDING STANDS THE VESSEL AND NOTHING ELSE (operator ruling, 2026-08-08). The mempalace library and
+ * FOUNDING STANDS THE VESSEL AND NOTHING ELSE (operator ruling). The mempalace library and
  * the sensorium organs keep their own doors (`lares mempalace install`, `lares sense setup`), so a
  * founding stays isolated to the vessel root. A stand still REPORTS what stands, because naming a missing
  * tool serves the operator and installing one behind them does not.
@@ -139,7 +139,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     (args.flags["init"] === true || args.flags["install"] === true || args.options["admit"] !== undefined);
   if (doStandup) founding = await foundIfAbsent(args, { root, bootstrap });
 
-  // THE MEMPALACE RIDES AS A SIDECAR, AND FOUNDING ASSUMES NOTHING OF IT (operator ruling, 2026-08-08).
+  // THE MEMPALACE RIDES AS A SIDECAR, AND FOUNDING ASSUMES NOTHING OF IT (operator ruling).
   //
   // Standing the library or the sensorium organs from here reaches OUTSIDE the vessel root, so a founding
   // could never be isolated: a throwaway rehearsal writes into the operator's real Python environment.

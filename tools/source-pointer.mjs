@@ -6,7 +6,7 @@
 //
 // WHEN THE CODE MOVES AND THE POINTER DOES NOT, the meme becomes unfalsifiable. A reader cannot check it
 // against anything, so its claims stand unchallenged however far they have drifted — and a high-mana
-// carrier's claims are exactly the ones a reader will not think to doubt. Measured 2026-09-12:
+// carrier's claims are exactly the ones a reader will not think to doubt. Measured once:
 // `mesh/causal-island.mem` (mana 18) pointed at a deleted `causal-island.ts` and, unanchored, had grown a
 // four-level `ABILITY_LADDER` that exists in no source file, promising a tiered gate its own sibling meme
 // warns readers not to expect.

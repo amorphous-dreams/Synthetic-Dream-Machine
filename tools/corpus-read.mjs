@@ -8,7 +8,7 @@
 //
 // A WITNESS THAT CRASHES REPORTS RED FOR A REASON THAT IS NOT ABOUT THE CORPUS. That is the instrument
 // lying: the operator reads a failing gate and goes looking for a malformed carrier that does not exist.
-// Measured 2026-09-12: `frame-shape` died on `bags/lares-history/.../AUTH-ATPROTO.mem` mid-run and passed
+// Measured once: `frame-shape` died on `bags/lares-history/.../AUTH-ATPROTO.mem` mid-run and passed
 // clean seconds later, the corpus never having held a fault.
 //
 // SKIPPING IS NOT ENOUGH — a silent skip trades a false red for a false green, and a gate that quietly

@@ -82,9 +82,9 @@ export function globToRegExp(glob) {
  *
  * THE LEDGER BELONGS TO NO HEARTH. A hearth crossing another's ground owes a `#/crossings` row in this
  * very file, so a hold that reaches the ledger refuses the hand reaching for the pen — the book whose
- * whole purpose records that somebody stepped across a line, forbidding the record. Measured 2026-09-13:
- * two spirits owed rows and neither could write one, and the fix that day was a hearth closing rather
- * than a cure. The carve-out stands so the deadlock cannot return by a hearth claiming the docs ground,
+ * whole purpose records that somebody stepped across a line, forbidding the record. Measured once: two
+ * spirits owed rows and neither could write one, closed only by a hearth closing rather than a cure.
+ * The carve-out stands so the deadlock cannot return by a hearth claiming the docs ground,
  * which reads as the natural claim to make.
  *
  * A hearth may still hold the ledger in PROSE — the row saying who tends it. What no hold may do is

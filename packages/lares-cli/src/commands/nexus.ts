@@ -39,7 +39,7 @@
  *   design, and it carries NO live command into a vessel — "the Cabal authors; the protocol
  *   distributes; the vessels enforce." No delegation grants it today and no sentinel names it.
  *
- * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling 2026-08-09). This door is the metal.
+ * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
 import {
@@ -167,7 +167,7 @@ async function cmdNexusRefresh(args: ParsedArgs): Promise<number> {
 
 /**
  * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
- * (realm-bag-brief, ruled 2026-09-11). The bag's doc is the one this vessel names for the URI; the record
+ * (realm-bag-brief). The bag's doc is the one this vessel names for the URI; the record
  * rides the steward's persona-root signature; @crossroads carries only that the bag exists and who keeps it.
  * A contracted member reads it through `meme get --bag <slug>`; the stewards alone write.
  */

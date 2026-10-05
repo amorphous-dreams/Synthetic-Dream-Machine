@@ -43,7 +43,7 @@
 #                            takes it up alone, this names the shore that stayed thin.
 #
 # ── WHY IT CANNOT GO GREEN BY INERTNESS ─────────────────────────────────────────────────────────
-# This session measured two gates satisfied by their own emptiness: a control set made only of negatives,
+# Two gates once read satisfied by their own emptiness: a control set made only of negatives,
 # and an ordering assertion over an absent call (`indexOf` answers −1, and −1 sits below everything). So
 # every arm here carries a positive floor or a both-directions assertion:
 #   ① the shores must EXIST and each must read a NON-EMPTY composition set — a renamed package would
