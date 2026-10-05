@@ -46,7 +46,7 @@ Both share the same sigil grammar. Their outputs differ in shape and consumer.
 Implementation: `packages/lararium-tw5/src/memetic-parser.ts`
 TW5 registration path: `module-type: parser`, export key `"text/memetic-wikitext"`.
 
-On construction it filters the inherited rule arrays (`pragmaRules`, `blockRules`, `inlineRules`) against a deny list. The deny list defaults to empty — all inherited TW5 rules fire. An operator may override it by writing space-separated rule names to `lar:///ha.ka.ba/config/memetic-rules-except`.
+On construction it records a deny list; the deny list filters the inherited rule CLASSES (`pragmaRules`, `blockRules`, `inlineRules`) by name, inside the overridden `instantiateRules` — before the standard constructor instantiates any of them — so a denied rule class never constructs. The deny list defaults to empty — all inherited TW5 rules fire. An operator may override it by writing space-separated rule names to `lar:///ha.ka.ba/config/memetic-rules-except`.
 
 `lar-sigil` claims all `<<~ …>>` forms at both block and inline phase. Standard TW5 macro rules (`<<macroname>>`) fire normally — they do not match the `<<~` prefix.
 
@@ -289,6 +289,6 @@ trigger = "end of stream"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8r1D4R62S64Rf3YxQZb7Sho2z42Bs5yB4MVDjGzu2Yw
+<<^ code="&#x0003;">>ni:///sha-256;5FnJGl5_ANSxqbIZmkIisSxyp_bdUoIOrrElSnwjoXQ
 
 <<^ code="&#x0004;" -> to="?">>
