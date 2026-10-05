@@ -36,7 +36,7 @@ module-type: library
  */
 
 import { expandMemeRefs, type TiddlerFields } from "./deserializer.js";
-import { projectSubmission } from "./weave/index.js";
+import { projectSubmission, type WeaveProfile } from "./weave/index.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
 
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -85,10 +85,24 @@ export interface MemeProjection {
   readonly meta?: string;
 }
 
-/** The text targets, answered over the carrier text alone. */
-export function projectCarrierText(text: string, uri: string, to: "mem" | "md"): MemeProjection {
+/** The text targets, answered over the carrier text alone. `opts.profile`/`opts.tongue` thread
+ * through to {@link projectSubmission} unchanged (absent: CommonMark, no tongue — today's default);
+ * `opts.resolve` is the frozen-`aka`-edge resolver, when the caller has one (a store seat's
+ * PREFETCH map, a wiki's {@link wikiResolver}) — absent, every pin falls back unresolved, exactly
+ * as it always has. */
+export function projectCarrierText(
+  text: string,
+  uri: string,
+  to: "mem" | "md",
+  opts?: { readonly profile?: WeaveProfile; readonly tongue?: string; readonly resolve?: (uri: string) => string | null },
+): MemeProjection {
   if (to === "mem") return { uri, to, text, contentType: PROJECT_TARGETS.mem.contentType };
-  const pair = projectSubmission(text, { uri });
+  const pair = projectSubmission(text, {
+    uri,
+    ...(opts?.profile ? { profile: opts.profile } : {}),
+    ...(opts?.tongue ? { tongue: opts.tongue } : {}),
+    ...(opts?.resolve ? { resolve: opts.resolve } : {}),
+  });
   return { uri, to, text: pair.markdown, meta: pair.meta, contentType: PROJECT_TARGETS.md.contentType };
 }
 
@@ -101,18 +115,54 @@ export function recomposeMeme(wiki: WikiReader, uri: string): string | null {
   return expandMemeRefs(reader, uri);
 }
 
-/** Render one template with `currentTiddler` bound to the root — the `--render` command's own law. */
-function renderRoot(wiki: Pick<TW5Wiki, "renderTiddler">, template: string, uri: string): string {
-  return wiki.renderTiddler("text/plain", template, { variables: { currentTiddler: uri, storyTiddler: uri } });
+/**
+ * THE LIVE RESOLVER — a frozen `aka` edge's target, read off THIS wiki's own records rather than a
+ * disk corpus (the CLI's `bagsResolver`) or a prefetched map (a store seat's pin prefetch). Same
+ * interface as both: a uri in, the target's whole carrier text out, `null` where no root stands —
+ * so `projectSubmission`'s `resolve` option never has to know which kind of corpus answered it. The
+ * fragment strips before resolving: `aka` always pins the whole target carrier (never one slot of
+ * it) to decide reference-vs-content, exactly as {@link projectCarrierText}'s other resolvers do.
+ */
+export function wikiResolver(wiki: WikiReader): (uri: string) => string | null {
+  return (uri: string): string | null => recomposeMeme(wiki, uri.split("#")[0]!);
 }
 
-/** Project a meme root the wiki holds to a target. Throws on an unknown target or an absent root. */
-export function projectMeme(wiki: Pick<TW5Wiki, "getTiddler" | "renderTiddler">, uri: string, to: string): MemeProjection {
+/** Render one template with `currentTiddler` bound to the root — the `--render` command's own law.
+ * `dialect`/`tongue`, when given, ride as template VARIABLES — the `md` template's own filter
+ * reads them as the `meme-project` operator's second/third operand (`<<dialect>>`/`<<tongue>>`). */
+function renderRoot(
+  wiki: Pick<TW5Wiki, "renderTiddler">,
+  template: string,
+  uri: string,
+  opts?: { readonly dialect?: string; readonly tongue?: string },
+): string {
+  return wiki.renderTiddler("text/plain", template, {
+    variables: {
+      currentTiddler: uri,
+      storyTiddler: uri,
+      ...(opts?.dialect ? { dialect: opts.dialect } : {}),
+      ...(opts?.tongue ? { tongue: opts.tongue } : {}),
+    },
+  });
+}
+
+/** Project a meme root the wiki holds to a target. Throws on an unknown target or an absent root,
+ * and on a `dialect`/`tongue` given for any target but `md` — those two weave the markdown target
+ * alone, and a silent ignore would carry the flag nowhere while reading like it had taken effect. */
+export function projectMeme(
+  wiki: Pick<TW5Wiki, "getTiddler" | "renderTiddler">,
+  uri: string,
+  to: string,
+  opts?: { readonly dialect?: string; readonly tongue?: string },
+): MemeProjection {
   const target = projectTargetOf(to);
   if (recomposeMeme(wiki, uri) === null) throw new Error(`meme project: no carrier root stands under ${uri}`);
+  if (target !== "md" && (opts?.dialect || opts?.tongue)) {
+    throw new Error(`meme project: --dialect/--tongue weave the "md" target alone; got "${target}"`);
+  }
   const route = PROJECT_TARGETS[target];
-  const text = renderRoot(wiki, route.template, uri);
+  const text = renderRoot(wiki, route.template, uri, opts);
   return route.sidecar
-    ? { uri, to: target, text, meta: renderRoot(wiki, route.sidecar, uri), contentType: route.contentType }
+    ? { uri, to: target, text, meta: renderRoot(wiki, route.sidecar, uri, opts), contentType: route.contentType }
     : { uri, to: target, text, contentType: route.contentType };
 }

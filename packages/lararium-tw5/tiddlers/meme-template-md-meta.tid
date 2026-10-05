@@ -2,4 +2,4 @@ title: lar:///ha.ka.ba/lararium/templates/meme/md.meta
 type: text/vnd.tiddlywiki
 
 \whitespace trim
-<$text text={{{ [<currentTiddler>meme-project[md.meta]] }}}/>
+<$text text={{{ [<currentTiddler>meme-project[md.meta],<dialect>,<tongue>] }}}/>

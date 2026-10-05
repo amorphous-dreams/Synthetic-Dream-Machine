@@ -66,7 +66,7 @@ export function memeFaceOf(wiki: TW5Instance["wiki"]): LaresMemeFace {
         diagnostics,
       };
     },
-    project: (uri, to) => projectMeme(wiki, uri, to),
+    project: (uri, to, opts) => projectMeme(wiki, uri, to, opts),
     recompose: (uri) => recomposeMeme(wiki, uri),
     parse: (uri, text, grammar) => parseMemeText(uri, text, grammar ?? getGrammar() ?? undefined),
   };

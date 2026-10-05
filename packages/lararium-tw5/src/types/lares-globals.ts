@@ -45,9 +45,11 @@ export interface LaresMemeFace {
   remove(uri: string, base?: string | null): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string }>;
   normalize(text: string): NormalizeResult;
   check(text: string): MemeCheck;
-  /** The root rendered through its target's template: mem · md · html · tid · json. Throws on an
-   *  unknown target (naming the targets) and on an absent root (naming the URI). */
-  project(uri: string, to: string): MemeProjection;
+  /** The root rendered through its target's template: mem · md · html · tid · json. `opts.dialect`/
+   *  `opts.tongue` weave the `md` target alone (RFC 7764 variant / BCP 47 tongue); given for any
+   *  other target, or naming an unknown dialect, this throws. Throws too on an unknown target
+   *  (naming the targets) and on an absent root (naming the URI). */
+  project(uri: string, to: string, opts?: { dialect?: string; tongue?: string }): MemeProjection;
   /** The whole carrier the wiki's records recompose to, synchronous; null where no carrier root stands. */
   recompose(uri: string): string | null;
   /** The graded meme-ast over any text — the self-hosted grammar, callable from a widget, a filter, a module. */

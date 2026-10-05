@@ -8,7 +8,7 @@
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
  *   meme-list     { recipe?, bag?, tree? }              → { bag, roots: MemeListing[] }
  *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash? }
- *   meme-project  { recipe?, bag?, uri, to }            → { uri, to, text, contentType, meta? }
+ *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
  *
  * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base;
  * `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
@@ -59,6 +59,7 @@ import type { IslandContext } from "./island-context.js";
 import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
+import { pinTargetsOf, profileOf } from "./weave/index.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -335,6 +336,11 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     const to = stringArg(args, "to");
     if (!to) throw new Error("meme-project: args.to is required (mem · md · html · tid · json)");
     const projectTarget = projectTargetOf(to);
+    const dialect = optionalStringArg(args, "dialect") ?? undefined;
+    const tongue = optionalStringArg(args, "tongue") ?? undefined;
+    if (projectTarget !== "md" && (dialect || tongue)) {
+      throw new Error(`meme-project: --dialect/--tongue weave the "md" target alone; got "${projectTarget}"`);
+    }
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     const { bag, sink, anchor } = await resolveSink(opts, target, origin, "get");
     const proof = await ctx.cap("read", bag);
@@ -342,13 +348,31 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     if (anchor) {
       const face = (opts.tw5.$tw as LaresTw5Extension).lares?.meme;
       if (!face) throw new Error("meme-project: the anchor wiki publishes no $tw.lares.meme (the meme-face startup module is absent)");
-      return { ...face.project(target.uri, projectTarget) };
+      return { ...face.project(target.uri, projectTarget, { ...(dialect ? { dialect } : {}), ...(tongue ? { tongue } : {}) }) };
     }
     if (projectTarget !== "mem" && projectTarget !== "md") {
       throw new Error(`meme-project: "${projectTarget}" renders through a wiki and projects from the anchor only; a recipe or bag target projects mem · md`);
     }
     const meme = await readMeme(target.uri, sink);
     if (!meme) throw new Error(`meme-project: no meme stands under ${target.uri} in ${bag}`);
-    return { ...projectCarrierText(meme.text, target.uri, projectTarget) };
+    if (projectTarget === "mem") return { ...projectCarrierText(meme.text, target.uri, projectTarget) };
+
+    // THE STORE PATH, `md`: the recorded-target record (`submissionTitleOf(uri)`) is a RENDERED
+    // pair's sidecar, never a carrier a store's `readMeme` can answer — a store seat holds carrier
+    // text alone. So the store path's target is the explicit flag, or CommonMark/no-tongue, NEVER a
+    // recorded default (that default belongs to a door that already holds the rendered pair, which
+    // this one does not). Pins resolve by PREFETCH: every `aka`/`kanawai` target this carrier names
+    // ({@link pinTargetsOf} — the one place the AKA line is read before the weave, since this
+    // reactor has no live resolver to call synchronously mid-walk) reads once, up front, into a
+    // plain map; the weave's `resolve` option is then a synchronous lookup over it.
+    const pinMap = new Map<string, string | null>();
+    for (const t of pinTargetsOf(meme.text)) pinMap.set(t, (await readMeme(t, sink))?.text ?? null);
+    return {
+      ...projectCarrierText(meme.text, target.uri, projectTarget, {
+        ...(dialect ? { profile: profileOf(dialect) } : {}),
+        ...(tongue ? { tongue } : {}),
+        resolve: (t: string) => pinMap.get(t) ?? null,
+      }),
+    };
   };
 }
