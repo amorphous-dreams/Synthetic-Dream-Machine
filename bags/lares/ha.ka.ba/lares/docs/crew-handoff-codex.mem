@@ -603,6 +603,8 @@ Founding-hearth commits in play, for reference: `4571c394b` (carriage dedupe) ·
 
 ''Precondition.'' RULED, no operator fork pending — build red-first (#/what-a-fresh-hand-reads-first, and the shift ledger's eight ordered moves). The design carries no separate `.mem` yet; this entry holds it. Author a canon carrier only if the crew wants the reasoning to stand outside the roadmap.
 
+''CANONIZED at lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor (2026-10-04).''
+
 <<~/ahu>>
 
 <<~ ahu #/set-c-staged>>
@@ -1527,6 +1529,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2l2yAkJE_LCp6Uja0zIcSl4DP0rnBOB0CiSLY5kn_x0
+<<^ code="&#x0003;">>ni:///sha-256;xC7SSZ-nvtlTrV43eJB9O4fRcZuXt_FH4IK4WaS20Ts
 
 <<^ code="&#x0004;" -> to="?">>

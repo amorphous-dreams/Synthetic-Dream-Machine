@@ -3,7 +3,7 @@
  *
  * Three callers consume this module identically:
  *   - `@lararium/tw5/src/deserializer.ts` (CLI / sync ingest)
- *   - `@lararium/tw5/src/widgets/lar-meme-split.ts` (TW5 UX save)
+ *   - `@lararium/tw5/src/widgets/action-meme-place.ts` (TW5 UX save)
  *   - `@lararium/tw5/src/wikirules/memetic-wikitext-sigil.ts` (render-time
  *      parse via TW5 wikifier)
  *

@@ -110,15 +110,38 @@ slot = 1
 
 <<~/ahu>>
 
+<<~ ahu #/quoteblock-floor>>
+
+!! The quoteblock floor — un-decomposable content fences, never drops
+
+Content that will not decompose fences to a quoteblock. The fence stands as the artifact a writer surfaces to the operator: a demotion, never an overwrite, never a drop.
+
+The grain matches the write that produces the un-decomposable content:
+
+* ''Whole-chunk ingest'' — a carrier arrives through the deserializer, or from outside the wiki into it, whole and partially un-decomposable. The whole chunk quoteblocks; no family stands yet at that point, so the carrier is the only grain available.
+* ''In-place ahu update'' — an ahu tiddler that already stands, edited to un-decomposable content. ONLY that ahu's body quoteblocks; the `<<~ ahu #/slot>>…<<~/ahu>>` wrapper survives untouched, and the rest of the family stands untouched. A paste into the live TW5 browser counts as a write: the save lands in the CRDT store, and the house projects it back to disk — so this grain governs there too (fix on write).
+
+A fenced span needs no new law to keep the ahu-fidelity guard honest. Fence-mask covers it (#/syntax, #/schema; the shared scanner at `packages/lararium-tw5/src/meme-ast/ahu-scan.ts`), so the span declares zero slots, so `collectAhuSlots` finds nothing to drop. Un-decomposable content can never mint a phantom slot or a false conflict — the guard passes by construction.
+
+Quoteblocking runs as a one-way demotion: every sigil inside goes inert until the operator resolves it. The surfacing rail that carries that demotion to the operator is NOT optional — a quoteblock nobody sees reads as a drop wearing a cure's face. Blast radius equals the write's grain: a per-tiddler edit never demotes the whole meme.
+
+The ingest gate's composed-root dry run surfaces composition faults — a second live ETX, `frame-malformed`, `postamble-content`, an unbalanced ahu opener/closer — on the SAME alert rail the quoteblock uses. Refusal never happens on the stock syncer path.
+
+This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy]]'s panic-to-water floor from Layer 1 (the meme-ast builder, one sigil) to Layer 2 (the family split, one ahu or one whole carrier): water never regresses, never lies about structure, and composes with repair added later.
+
+<<~/ahu>>
+
 <<~ ahu #/edges>>
 
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;H2lh_nTMKxYeoM0ES6qFkwP-gGuNaxEQy3lxcMtkqko
+<<^ code="&#x0003;">>ni:///sha-256;Wv23zi9_X2Yya73QocYPz2nzyNVSWhhGVbBMqAP5kRs
 
 <<^ code="&#x0004;" -> to="?">>
