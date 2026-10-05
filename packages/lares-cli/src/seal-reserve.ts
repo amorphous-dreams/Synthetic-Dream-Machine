@@ -28,14 +28,11 @@
  * Meme: lar:///ha.ka.ba/lararium/api/seal-reserve
  */
 
-import { derivePersonaKeypair, HARDENED_OFFSET } from "./persona-hd.js";
-import { sealKeySetHash } from "./wax-stamp.js";
-import type { RecoveryShare } from "./recovery-share.js";
 import {
+  derivePersonaKeypair, HARDENED_OFFSET, sealKeySetHash,
   splitToGuardianCards, guardianShareFromCard,
-  type GuardianCard, type GuardianCardSlot, type GuardianCardSplit,
-} from "./guardian-card.js";
-import type { RandomProvider } from "./crypto.js";
+  type RecoveryShare, type GuardianCard, type GuardianCardSlot, type GuardianCardSplit, type RandomProvider,
+} from "@lararium/mesh";
 
 /** The founding reserve derives THREE next-epoch kahu keypairs (the operator stands all three at founding). */
 export const RESERVE_KAHU_COUNT = 3;

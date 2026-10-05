@@ -29,7 +29,7 @@
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes } from "../src/crypto.js";
+import { hex, hexToBytes } from "@lararium/mesh";
 import {
   mintPromotionReceipt, verifyPromotionReceipt, promotionAssertionBytes,
   PROMOTION_RECEIPT_DOMAIN, type PromotionReceipt,

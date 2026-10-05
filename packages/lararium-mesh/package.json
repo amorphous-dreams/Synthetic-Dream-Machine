@@ -88,10 +88,6 @@
       "import": "./dist/tiddler-store.js",
       "types": "./dist/tiddler-store.d.ts"
     },
-    "./vessel-condition": {
-      "import": "./dist/vessel-condition.js",
-      "types": "./dist/vessel-condition.d.ts"
-    },
     "./windowed-coupling": {
       "import": "./dist/windowed-coupling.js",
       "types": "./dist/windowed-coupling.d.ts"

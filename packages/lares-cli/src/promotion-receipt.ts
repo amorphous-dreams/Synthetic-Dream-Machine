@@ -44,10 +44,9 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { canonicalJsonBytes, hexToBytes } from "./crypto.js";
-import { PROMOTION_RECEIPT_DOMAIN } from "./domains.js";
+import { canonicalJsonBytes, hexToBytes, PROMOTION_RECEIPT_DOMAIN } from "@lararium/mesh";
 
-export { PROMOTION_RECEIPT_DOMAIN } from "./domains.js";
+export { PROMOTION_RECEIPT_DOMAIN };
 
 /** THE SIGNED REGION — what the approver asserts, and nothing a reader could check for themselves. */
 export interface PromotionAssertion {

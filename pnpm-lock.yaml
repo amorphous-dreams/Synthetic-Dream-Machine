@@ -363,6 +363,9 @@ importers:
       '@lararium/tw5':
         specifier: workspace:*
         version: link:../lararium-tw5
+      '@noble/ed25519':
+        specifier: 3.2.0
+        version: 3.2.0
     devDependencies:
       tsx:
         specifier: 4.23.13

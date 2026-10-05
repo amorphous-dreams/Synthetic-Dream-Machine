@@ -26,7 +26,6 @@ export * from "./vessel-identity-core.js";
 export * from "./anchor-store.js";
 export * from "./persona-vault.js";
 export * from "./vessel-standing.js";
-export * from "./vessel-condition.js";
 export * from "./raise-challenge.js";
 export * from "./persona-petname.js";
 export * from "./persona-declare.js";
@@ -35,8 +34,6 @@ export * from "./persona-glamour.js";
 export * from "./recovery-keel-core.js";
 export * from "./guardian-card.js";
 export * from "./recovery-registration.js";
-export * from "./reserve-transition.js";
-export * from "./seal-reserve.js";
 export * from "./capability.js";
 export * from "./domains.js";
 export * from "./crypto.js";
@@ -144,7 +141,6 @@ export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
-export * from "./promotion-receipt.js";
 export { carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX } from "./carriage-board.js";
 // The TRACELESS boot-invite — a sealed single-use capability spent-on-boot; no voucher, no board record.
 export * from "./boot-invite.js";
@@ -217,7 +213,6 @@ export * from "./cas-caps.js";
 export * from "./handle-book.js";
 // The card-arrival front door — decode a carried (paste / QR / URL-fragment) HandleCard so a follow can admit
 // an unmet nym WITHOUT the CLI's `--card <file>` (the card arrives as data, boot-invite posture).
-export * from "./handle-carriage.js";
 // The type-blind PERSONA-ADMISSION ceremony (airgapped device-to-device persona handoff) — the 3-hop ECDH-sealed
 // choreography + its carried QR envelopes. A photographed tabletop stays inert; the join writes per-vessel only.
 export * from "./persona-admit.js";
@@ -324,8 +319,6 @@ export * from "./persona-planes.js";
 export * from "./holdings-witness.js";
 export * from "./crossroads-cry.js";
 
-export { rosterStanding, type RosterStanding } from "./roster-standing.js";
-export { nexusPhase, type NexusPhase, type NexusPhaseName } from "./nexus-phase.js";
 export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, nexusIslandsBelow, admittedJoineeIsland,
          type NexusIdentity, type NexusIdentityAt } from "./nexus-identity.js";
 // The boards a CLIMB moves. THREE of the seven are deliberately absent from this surface — WHO, carriage
@@ -340,8 +333,6 @@ export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from
 export { nexusScopeIndex } from "./persona-identity.js";
 export { bagCopyPlan, type BagCopyPlan, type TitleAtRest } from "./bag-copy-plan.js";
 export { crossingDirection, type CrossingDirection, type CrossingCost } from "./crossing-direction.js";
-export { sealImportVerdict, foreignSeats,
-         type SealImportVerdict, type ForeignSeatVerdict, type CharterChair } from "./seal-import.js";
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";
 export { KEY_CLASSES, isKeyClass } from "./key-class.js";
 export type { KeyClass } from "./key-class.js";

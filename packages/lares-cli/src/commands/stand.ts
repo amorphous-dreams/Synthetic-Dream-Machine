@@ -26,7 +26,7 @@ import { faceStandsOnDisk } from "../floor-cure.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive, reapStaleSocket } from "../local-connector.js";
-import { readVesselStanding, conditionOk } from "@lararium/mesh/vessel-condition";
+import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";

@@ -12,11 +12,13 @@
 import { describe, test, expect } from "vitest";
 import {
   generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed, reserveShareFromCard,
-  confirmationPhrase, RESERVE_THRESHOLD, RESERVE_KAHU_COUNT,
-  sealKeySetHash, assembleQuorum, reconstructFromQuorum,
+  RESERVE_THRESHOLD, RESERVE_KAHU_COUNT,
   type ReserveCard,
-} from "../src/index.js";
-import type { RandomProvider } from "../src/crypto.js";
+} from "../src/seal-reserve.js";
+import {
+  confirmationPhrase, sealKeySetHash, assembleQuorum, reconstructFromQuorum,
+  type RandomProvider,
+} from "@lararium/mesh";
 
 /** A deterministic RNG so the split is reproducible — a counter byte stream (tests never need entropy). */
 function counterRng(start = 1): RandomProvider {

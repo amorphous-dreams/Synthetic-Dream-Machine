@@ -29,9 +29,9 @@
 import { readFileSync } from "node:fs";
 import {
   composeFollow, composeUnfollow, listFollows, FollowRefused,
-  parseHandleCardCarriage,
   type HandleCard,
 } from "@lararium/mesh";
+import { parseHandleCardCarriage } from "../handle-carriage.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "@lararium/node";
 import { makeDaemonCircleStore } from "../daemon-circle-store.js";
 import { vesselDid } from "../env.js";

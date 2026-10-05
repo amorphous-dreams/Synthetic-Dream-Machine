@@ -38,9 +38,8 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  verifyPromotionReceipt, promotionReceiptPath, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-} from "@lararium/mesh";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { verifyPromotionReceipt, promotionReceiptPath } from "../src/promotion-receipt.js";
 import { promoteCarrier, type PromotionSeat } from "../src/commands/meme-promote.js";
 
 const SEED = new Uint8Array(32).fill(9);

@@ -16,10 +16,10 @@
  */
 
 import * as ed25519 from "@noble/ed25519";
-import { sha256HexSync, hexToBytes, hex, canonicalJson, canonicalJsonBytes } from "./crypto.js";
-import { sealKeySetHash } from "./wax-stamp.js";
-import { RESERVE_TRANSITION_DOMAIN } from "./domains.js";
-import type { QuorumSignature } from "./kapae-antigen.js";
+import {
+  sha256HexSync, hexToBytes, hex, canonicalJson, canonicalJsonBytes,
+  sealKeySetHash, RESERVE_TRANSITION_DOMAIN, type QuorumSignature,
+} from "@lararium/mesh";
 
 /** The authority fields the transition binds — both epochs, both key-set digests, and the rite walked. */
 export interface ReserveTransitionCore {

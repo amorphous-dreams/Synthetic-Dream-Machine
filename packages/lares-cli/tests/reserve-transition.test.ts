@@ -8,8 +8,7 @@
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
-import { hex } from "../src/crypto.js";
-import { sealKeySetHash } from "../src/wax-stamp.js";
+import { hex, sealKeySetHash } from "@lararium/mesh";
 import {
   reserveTransitionBytes, mintReserveTransition, verifyReserveTransition,
 } from "../src/reserve-transition.js";

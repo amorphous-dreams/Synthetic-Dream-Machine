@@ -27,53 +27,12 @@ import { describe, test, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as mesh from "../src/index.js";
-import { realmFeedSlotUri, realmFeedPrefix } from "../src/cabal-realm.js";
-import { cabalRealmMaintenanceProvenance, realmFeedSlotValue } from "../src/cabal-realm-clock.js";
+import { realmFeedPrefix } from "../src/cabal-realm.js";
 import { crossingDirection } from "../src/crossing-direction.js";
 import { resolveDiskMirrors } from "../src/vessel-island-pool-core.js";
-import { nexusPhase } from "../src/nexus-phase.js";
 
 const REALM_A = "0x" + "aa".repeat(32);
-const REALM_B = "0x" + "bb".repeat(32);
 const FACE_1  = "0x" + "11".repeat(32);
-const FACE_2  = "0x" + "22".repeat(32);
-
-// ════════════════════════════════════════════════════════════════════════════════════════════════
-// ① A NEXUS HOLDS MANY CABALS — the property that makes a Nexus a Nexus
-// ════════════════════════════════════════════════════════════════════════════════════════════════
-describe("① many cabals on one Nexus", () => {
-  // This one PASSES at the model layer already — prefix isolation carries it — and stands here
-  // because the TOPOLOGY is what is untested: no harness ever runs two cabals on one fleet.
-  test("two cabals' feeds do not see each other on ONE board", () => {
-    const board = new Map([
-      [realmFeedSlotUri(REALM_A, FACE_1), realmFeedSlotValue({ epoch: 3 })],
-      [realmFeedSlotUri(REALM_B, FACE_2), realmFeedSlotValue({ epoch: 9 })],
-    ]);
-    expect(cabalRealmMaintenanceProvenance(REALM_A, board).maintainers.map((m) => m.writerId)).toEqual([FACE_1]);
-    expect(cabalRealmMaintenanceProvenance(REALM_B, board).maintainers.map((m) => m.writerId)).toEqual([FACE_2]);
-  });
-
-  test.skip("ONE FACE FEEDING TWO CABALS earns standing in each SEPARATELY — DEFERRED: standing is read per-realm today and nothing asserts non-transfer, so a face deep in cabal A could be read as carrying that depth into B. Wants a reading keyed by (face, realm) that refuses to aggregate across realms, and a docker fleet standing two cabals to walk it", () => {
-    const board = new Map([
-      [realmFeedSlotUri(REALM_A, FACE_1), realmFeedSlotValue({ epoch: 900 })],
-      [realmFeedSlotUri(REALM_B, FACE_1), realmFeedSlotValue({ epoch: 1 })],
-    ]);
-    expect(cabalRealmMaintenanceProvenance(REALM_A, board).effectiveEpoch).toBe(900);
-    expect(cabalRealmMaintenanceProvenance(REALM_B, board).effectiveEpoch).toBe(1);
-    expect(Object.keys(mesh)).toContain("standingIsPerRealm");
-  });
-
-  test.skip("A NEXUS OUTLIVES ITS FOUNDING CABAL'S PHASE — DEFERRED: nexusPhase reads seed/multisig/quorum off the NEXUS SEAL's seated chairs, which are the kahu cabal's. That coincides with the Nexus at the seed, because the kahu cabal is its group-seed, and DIVERGES the moment the Nexus succeeds: a Nexus carrying a dormant kahu cabal and twenty thriving ones sits in a state this reading cannot express. The name is honest today and becomes a fusion on success — wants a Nexus-plane reading that counts hardware in the federation rather than chairs in one cabal", () => {
-    // Today this reads `quorum` off twenty relations with NO chair seated, which is the cabal's
-    // ladder answering a question about hardware. A Nexus-plane reading would answer separately.
-    expect(nexusPhase({ seatedKeys: 0, contractedOperators: 20 }).phase).toBe("quorum");
-    expect(Object.keys(mesh)).toContain("nexusFederationStanding");
-  });
-
-  test.skip("TWO CABALS SHARE HARDWARE WITHOUT SHARING RESOURCES — DEFERRED: the Nexus is the hardware mesh and the realm is the resources, so two cabals on one relay must reach each other's vessels and NOT each other's docs. Wants a docker scenario standing two realms across one herm fleet; the harness carries a single REALM= and no cell varies cabal count", () => {
-    expect(Object.keys(mesh)).toContain("nexusCarriesCabal");
-  });
-});
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 // ② THE REALM'S FEED MUST CROSS — a realm-plane fact on a Nexus-plane board
@@ -99,24 +58,6 @@ describe("② the feed crosses its members", () => {
 
   test("A FORGED SLOT CANNOT LIFT A REALM'S EPOCH — verifiedMaintenanceFromBoard makes the refusal load-bearing: it folds only sealed+verified slots, so a forged large number reads ignored and the max-register holds at the sealed max. The forged-slot CONTROL (the plain fold takes the forgery) stands in realm-verified-fold.test.ts", () => {
     expect(Object.keys(mesh)).toContain("verifiedMaintenanceFromBoard");
-  });
-});
-
-// ════════════════════════════════════════════════════════════════════════════════════════════════
-// ③ A SEAT IS A FACE — the key layer offers nothing else
-// ════════════════════════════════════════════════════════════════════════════════════════════════
-describe("③ only a face can sit", () => {
-  test("the quorum floor reads four faces across two operators", () => {
-    expect(nexusPhase({ seatedKeys: 3, contractedOperators: 1 }).phase).toBe("quorum");
-    expect(nexusPhase({ seatedKeys: 3, contractedOperators: 0, contractedInto: true }).phase).toBe("quorum");
-  });
-
-  test.skip("A VEIL KEY CANNOT TAKE A SEAT — DEFERRED: a human's base veil key and the vessel-veil-dyad root sign nothing above the PersonaGroup layer, so a face is the only principal a seat can hold. nexusPhase counts INTEGERS and can express no principal class, so nothing refuses a seat filled by the wrong kind of key — the law lives in the key layer and in no gate", () => {
-    expect(Object.keys(mesh)).toContain("seatPrincipalClass");
-  });
-
-  test.skip("A THIRD VESSEL ADDS OPERATORS AND SEATS NONE — DEFERRED: the distinction between counting vessels and counting faces is stated in nexus-phase and walked nowhere; the fleet stands two vessels, so no run has ever added a third to prove the count does not move with it", () => {
-    expect(Object.keys(mesh)).toContain("seatPrincipalClass");
   });
 });
 

@@ -37,15 +37,22 @@ import {
 import {
   emptyFoundingCharterDoc, rosterFromNexusDoc, foundingQuorumSeated, sealLineageHead,
   personasStandingForSeat, majorityThreshold, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
-  generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed,
-  RESERVE_THRESHOLD, RESERVE_KAHU_COUNT, defaultCryptoProvider,
-  rosterStanding, nexusPhase, sealImportVerdict, foreignSeats, federationPostureFromDoc,
-  reserveTransitionCidOf, verifyReserveTransition, witnessSignBytes,
-  reserveTransitionBytes, transitionSignerFromSeed,
-  type NexusDoc, type NexusCharterKahu, type SealEpoch, type ReserveCard,
-  type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
+  defaultCryptoProvider, federationPostureFromDoc,
+  type NexusDoc, type NexusCharterKahu, type SealEpoch,
   type QuorumSignature,
 } from "@lararium/mesh";
+import {
+  generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed,
+  RESERVE_THRESHOLD, RESERVE_KAHU_COUNT, type ReserveCard,
+} from "../seal-reserve.js";
+import { rosterStanding } from "../roster-standing.js";
+import { nexusPhase } from "../nexus-phase.js";
+import { sealImportVerdict, foreignSeats } from "../seal-import.js";
+import {
+  reserveTransitionCidOf, verifyReserveTransition, witnessSignBytes,
+  reserveTransitionBytes, transitionSignerFromSeed,
+  type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
+} from "../reserve-transition.js";
 import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

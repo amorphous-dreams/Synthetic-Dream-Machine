@@ -13,13 +13,15 @@
 import { describe, test, expect } from "vitest";
 import {
   HandleBook, signHandleCard, ed25519SignerFromSeed,
-  parseHandleCardCarriage, toHandleCardCarriage, carriageMode, fitsQrCarriage, QR_CARRIAGE_MAX_EVENTS,
   composeFollow, FollowRefused,
-  type CircleStore, type HandleCard,
-} from "../src/index.js";
-import { mintHandleInception, mintHandleRotation, type HandleKelEvent } from "../src/handle-kel.js";
+  mintHandleInception, mintHandleRotation,
+  hex,
+  type CircleStore, type HandleCard, type HandleKelEvent,
+} from "@lararium/mesh";
+import {
+  parseHandleCardCarriage, toHandleCardCarriage, carriageMode, fitsQrCarriage, QR_CARRIAGE_MAX_EVENTS,
+} from "../src/handle-carriage.js";
 import * as ed from "@noble/ed25519";
-import { hex } from "../src/crypto.js";
 
 function spyCircleStore(): CircleStore {
   const map = new Map<string, Set<string>>();

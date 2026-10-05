@@ -50,18 +50,19 @@ python3 - <<'PY'
 import pathlib, re, sys, itertools
 
 MESH = pathlib.Path("packages/lararium-mesh/src")
+CLI  = pathlib.Path("packages/lares-cli/src")
 SCEN = pathlib.Path("tools/mesh-scenarios.sh")
 
-def union(path: str, pattern: str) -> list[str]:
+def union(path: str, pattern: str, root: pathlib.Path = MESH) -> list[str]:
     """Read a closed string union from the module that declares it — never transcribed here."""
-    src = (MESH / path).read_text()
+    src = (root / path).read_text()
     m = re.search(pattern, src)
     if not m:
         print(f"[mesh-coverage] cannot read the state union from {path} — the matrix is underivable")
         sys.exit(1)
     return re.findall(r'"([a-z-]+)"', m.group(1))
 
-phases  = union("nexus-phase.ts",    r'export type NexusPhaseName\s*=\s*([^;]+);')
+phases  = union("nexus-phase.ts",    r'export type NexusPhaseName\s*=\s*([^;]+);', root=CLI)
 realms  = union("realm-standing.ts", r'export type RealmStandingName\s*=\s*([^;]+);')
 posture = union("federation-gate.ts", r'FederationPosture\s*=\s*([^;]+);') if (MESH / "federation-gate.ts").exists() else []
 if not posture:

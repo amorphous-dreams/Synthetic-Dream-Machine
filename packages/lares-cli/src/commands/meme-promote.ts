@@ -61,7 +61,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { mintPromotionReceipt, promotionReceiptPath } from "@lararium/mesh";
+import { mintPromotionReceipt, promotionReceiptPath } from "../promotion-receipt.js";
 import { bccOf } from "@lararium/memetic-frame";
 
 /** The residency MOVE this door asks for — `executeMove`'s own shape. The title never changes. */

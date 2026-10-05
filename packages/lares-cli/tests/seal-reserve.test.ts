@@ -16,10 +16,8 @@ import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larIdentityDir } from "../src/env.js";
-import {
-  reserveShareFromCard, assembleQuorum, reconstructFromQuorum, sealKeySetHash,
-  type ReserveCard,
-} from "@lararium/mesh";
+import { assembleQuorum, reconstructFromQuorum, sealKeySetHash } from "@lararium/mesh";
+import { reserveShareFromCard, type ReserveCard } from "../src/seal-reserve.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
