@@ -25,23 +25,42 @@ if [[ "$host_kb" =~ ^[0-9]+$ ]]; then
     row ok "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host"
   else row drift "memory= set, not the default half" "$(gb "$mem_kb") GB of $(gb "$host_kb") GB host (default = half; .wslconfig waits on wsl --shutdown?)"; fi
 else row drift "memory= set, not the default half" "host RAM unreadable via $PS_EXE — is [interop] enabled=true?"; fi
-(( swap_kb <= 4300000 )) && row ok "swap= ≤ 4 GB" "$(gb $swap_kb) GB" || row drift "swap= ≤ 4 GB" "$(gb $swap_kb) GB — buys the kernel time to thrash"
+if (( swap_kb <= 4300000 )); then
+  row ok "swap= ≤ 4 GB" "$(gb "$swap_kb") GB"
+else
+  row drift "swap= ≤ 4 GB" "$(gb "$swap_kb") GB — buys the kernel time to thrash"
+fi
 
 if [[ "$(systemctl is-active earlyoom 2>/dev/null)" == active ]]; then
   args=$(tr '\0' ' ' < /proc/"$(systemctl show -p MainPID --value earlyoom)"/cmdline 2>/dev/null)
-  [[ "$args" == *"-m 5"* || "$args" == *"-m5"* ]] && row ok "earlyoom active, -m 5" "$args" || row drift "earlyoom active, -m 5" "running with: $args"
+  if [[ "$args" == *"-m 5"* || "$args" == *"-m5"* ]]; then
+    row ok "earlyoom active, -m 5" "$args"
+  else
+    row drift "earlyoom active, -m 5" "running with: $args"
+  fi
 else s=$(systemctl is-active earlyoom 2>/dev/null); row drift "earlyoom active" "${s:-not-installed}"; fi
 
-sw=$(sysctl -n vm.swappiness 2>/dev/null); (( ${sw:-999} <= 10 )) && row ok "vm.swappiness ≤ 10" "$sw" || row drift "vm.swappiness ≤ 10" "${sw:-unreadable}"
+sw=$(sysctl -n vm.swappiness 2>/dev/null)
+if (( ${sw:-999} <= 10 )); then row ok "vm.swappiness ≤ 10" "$sw"
+else row drift "vm.swappiness ≤ 10" "${sw:-unreadable}"; fi
 
-[[ "$(systemctl is-system-running 2>/dev/null)" =~ running|degraded ]] && row ok "systemd running" "$(systemctl is-system-running)" || row drift "systemd running" "off — /etc/wsl.conf [boot] systemd=true, then wsl --shutdown"
+systemd_state=$(systemctl is-system-running 2>/dev/null)
+if [[ "$systemd_state" =~ running|degraded ]]; then row ok "systemd running" "$systemd_state"
+else row drift "systemd running" "off — /etc/wsl.conf [boot] systemd=true, then wsl --shutdown"; fi
 
-n=$(echo "$PATH" | tr ':' '\n' | grep -c '^/mnt/'); (( n <= 6 )) && row ok "Windows PATH entries ≤ 6" "$n" || row drift "Windows PATH entries ≤ 6" "$n on \$PATH ride 9p — appendWindowsPath=false"
+n=$(echo "$PATH" | tr ':' '\n' | grep -c '^/mnt/')
+if (( n <= 6 )); then row ok "Windows PATH entries ≤ 6" "$n"
+else row drift "Windows PATH entries ≤ 6" "$n on \$PATH ride 9p — appendWindowsPath=false"; fi
 
-root_fs=$(findmnt -no FSTYPE,OPTIONS / 2>/dev/null); [[ "$root_fs" == ext4* && "$root_fs" == *discard* ]] && row ok "root ext4 + discard" "$root_fs" || row drift "root ext4 + discard" "$root_fs"
+root_fs=$(findmnt -no FSTYPE,OPTIONS / 2>/dev/null)
+if [[ "$root_fs" == ext4* && "$root_fs" == *discard* ]]; then row ok "root ext4 + discard" "$root_fs"
+else row drift "root ext4 + discard" "$root_fs"; fi
 
-repo="$(cd "$(dirname "$0")/../.." && pwd)"; [[ "$repo" == /mnt/* ]] && row drift "repo on ext4, not /mnt" "$repo" || row ok "repo on ext4, not /mnt" "$repo"
+repo="$(cd "$(dirname "$0")/../.." && pwd)"
+if [[ "$repo" == /mnt/* ]]; then row drift "repo on ext4, not /mnt" "$repo"
+else row ok "repo on ext4, not /mnt" "$repo"; fi
 
-[[ -x "$HOME/.venv/bin/python" ]] && row ok "~/.venv present" "$("$HOME/.venv/bin/python" --version 2>&1)" || row drift "~/.venv present" "missing"
+if [[ -x "$HOME/.venv/bin/python" ]]; then row ok "$HOME/.venv present" "$("$HOME/.venv/bin/python" --version 2>&1)"
+else row drift "$HOME/.venv present" "missing"; fi
 
 exit $rc
