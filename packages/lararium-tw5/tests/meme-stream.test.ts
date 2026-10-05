@@ -179,4 +179,14 @@ describe("MemeStreamParser — EOT reads the control head only, never the speaki
     expect(events.some((e) => e.kind === "carrier-open")).toBe(true);
     expect(events.some((e) => e.kind === "carrier-close")).toBe(true);
   });
+
+  // EOT2 (&#x0014;) is retired — `frameAlt("EOT")` matched it by NAME PREFIX while EOT2 stood as a
+  // mark named with "EOT" as a prefix. A byte never minted at rest closed a carrier the same as EOT.
+  test("a retired EOT2 byte (<<^ code=\"&#x0014;\" -> to=\"?\">>) never closes a carrier", () => {
+    const uri    = "lar:///ha.ka.ba/lares/api/pono/invariant";
+    const text   = `${openBody(uri)}\n<<^ code="&#x0014;" -> to="?">>`;
+    const events = new MemeStreamParser().push(text);
+    expect(events.some((e) => e.kind === "carrier-open")).toBe(true);
+    expect(events.some((e) => e.kind === "carrier-close")).toBe(false);
+  });
 });

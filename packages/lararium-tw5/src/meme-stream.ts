@@ -10,8 +10,8 @@
  *   <<~ -> "?">>                               return-throat — EOT variant
  *   <<~ ahu #/slot>>...<<~/ahu>>            ahu section — incremental child event
  *
- * Kapu extended range: &#x0011; = SOH₂ (Kapu SOH variant); &#x0014; = EOT₂, reserved for the relay
- * stream — no at-rest office (SOH₂ keeps the Kapu office; EOT closes a Kapu carrier at rest).
+ * Kapu extended range: &#x0011; = SOH₂ (Kapu SOH variant) — the ONLY kapu alias this grammar stands.
+ * EOT2 (DC4) is RETIRED: a Kapu carrier closes on plain EOT at rest, the same as every other carrier.
  *
  * MemeStreamParser uses an index-based scan (no buffer slicing mid-frame)
  * so fullText in carrier-close is always the complete SOH→ETX span.

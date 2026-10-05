@@ -47,8 +47,23 @@ export const FRAME_MARKS: readonly FrameMark[] = [
   { code: "&#x0003;", name: "ETX",  slots: ["code", "bcc"] },
   { code: "&#x0017;", name: "ETB",  slots: ["code", "hash"] },
   { code: "&#x0004;", name: "EOT",  slots: ["code", "target"] },
-  { code: "&#x0014;", name: "EOT2", slots: ["code", "target"] },
 ] as const;
+
+/**
+ * Explicit family membership — NEVER a name prefix. `SOH2` is the one Kapu alias a `"SOH"` family
+ * query also returns; every other mark's family is itself alone. Retiring EOT2 removed the one case
+ * a `startsWith` scan used to alias correctly by accident (`"EOT2".startsWith("EOT")`) — the risk a
+ * FUTURE mark named with an existing mark as its prefix would alias into that family with nothing
+ * declaring it. This table is the one place that can happen, and it must be written down to happen.
+ */
+const FAMILY_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  SOH: ["SOH", "SOH2"],
+};
+
+/** Every mark NAME a family query returns — itself alone, unless {@link FAMILY_ALIASES} says more. */
+function familyNames(family: string): readonly string[] {
+  return FAMILY_ALIASES[family] ?? [family];
+}
 
 /** The mark a code names, or undefined where the grammar stands none. */
 export function frameMark(code: string): FrameMark | undefined {
@@ -59,13 +74,15 @@ export function frameMark(code: string): FrameMark | undefined {
 export const FRAME_CODES: readonly string[] = FRAME_MARKS.map((m) => m.code);
 
 /**
- * The hex bodies of every mark whose name opens with `family`, joined as a regex alternation —
- * `frameHex("SOH")` reads `0001|0011`. A family is a NAME PREFIX, so a variant added as `SOH3` joins
- * the readers of `SOH` without any of them being told.
+ * The hex bodies of every mark EXACTLY named by `family`'s entry in {@link FAMILY_ALIASES} —
+ * `frameHex("SOH")` reads `0001|0011` because that table says so, not because `"SOH2"` happens to
+ * start with `"SOH"`. A mark named with another mark's name as its prefix (the EOT2/EOT shape this
+ * grammar once carried) no longer joins that family's readers unless this table is told to let it.
  */
 export function frameHex(family: string): string {
+  const names = new Set(familyNames(family));
   return FRAME_MARKS
-    .filter((m) => m.name.startsWith(family))
+    .filter((m) => names.has(m.name))
     .map((m) => m.code.replace(/^&#x|;$/g, ""))
     .join("|");
 }

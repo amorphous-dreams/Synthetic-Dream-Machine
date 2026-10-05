@@ -79,12 +79,14 @@ describe("classifyPostEot", () => {
     expect(classifyPostEot(frame("") )?.kind).toBe("empty");
   });
 
-  test("EOT2 alone is a canonical terminating mark", () => {
+  // EOT2 (&#x0014;) is retired — no mark at all stands where it once closed a transmission, so a
+  // carrier spelling only EOT2 carries no terminator the reader recognises.
+  test("a retired EOT2 mints no terminator — classifyPostEot finds none", () => {
     const eot2 = frame("").replace('code="&#x0004;"', 'code="&#x0014;"');
-    expect(classifyPostEot(eot2)?.kind).toBe("empty");
+    expect(classifyPostEot(eot2)).toBe(null);
   });
 
-  test("a second terminator after EOT is foreign boundary drift", () => {
+  test("a stray EOT2-shaped tail after the real EOT is foreign boundary drift, same as any other content", () => {
     expect(classifyPostEot(frame("").replace(/(<<\^ code="&#x0004;"[^\n]*>>\n)$/, "$1<<^ code=\"&#x0014;\" -> to=\"?\">>\n"))?.kind).toBe("foreign");
   });
 });

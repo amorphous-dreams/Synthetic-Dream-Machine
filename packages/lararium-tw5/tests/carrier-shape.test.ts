@@ -315,13 +315,15 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
   /**
    * THE SECOND CODE OF A FAMILY, READ OVER REAL CARRIERS.
    *
-   * A fixture pins the GRAMMAR; only the CORPUS pins the READER — and the corpus writes no carrier
-   * whose release stands on `&#x0014;` alone. So this takes the corpus AS IT IS and moves one thing:
-   * every declared code is rewritten to its family's sibling. The bytes stay a real carrier's, the
-   * reading must not move, and a scan that spells one code of a family by hand goes red on all 700.
+   * A fixture pins the GRAMMAR; only the CORPUS pins the READER. SOH is the one family this grammar
+   * still aliases (SOH2, `&#x0011;`) — EOT2 (`&#x0014;`) is RETIRED and carries no sibling at all, so
+   * re-spelling EOT as EOT2 is no longer a same-family substitution and does not belong in this map.
+   * This takes the corpus AS IT IS and moves one thing: every declared SOH is rewritten to SOH2. The
+   * bytes stay a real carrier's, the reading must not move, and a scan that spells SOH by hand alone
+   * goes red on every carrier this reaches.
    */
   test("★ every corpus carrier re-spelled in its family's OTHER code reads the same marks ★", () => {
-    const sibling = new Map<string, string>([["&#x0004;", "&#x0014;"], ["&#x0001;", "&#x0011;"]]);
+    const sibling = new Map<string, string>([["&#x0001;", "&#x0011;"]]);
     const files = carrierFiles(REPO);
     let moved = 0;
     const drifted: string[] = [];

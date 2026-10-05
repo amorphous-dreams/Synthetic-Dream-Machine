@@ -408,7 +408,6 @@ parser reads both and a reader narrower than the parser refuses a sigil the wiki
 |`&#x0003;` |ETX |`code` `bcc` |text ends; the block check follows the mark directly |
 |`&#x0017;` |ETB |`code` `hash` |the attestation block ends |
 |`&#x0004;` |EOT |`code` `target` |transmission ends, bearing forward |
-|`&#x0014;` |EOT₂ |`code` `target` |reserved for the relay stream; no at-rest office |
 
 !!! The block check
 
@@ -540,9 +539,9 @@ Each kernel-tier control character carries ''three simultaneous roles'', bound a
 |---|---|---|---|---|
 | ''operator'' | no control character | operator | base | all |
 | ''kernel'' | `0x01`–`0x0F` | kernel | standard | operator+ |
-| ''kapu / elevated'' | DC1–DC4 (`0x11`–`0x14`) | kapu | elevated | admin-only |
+| ''kapu / elevated'' | DC1 (`0x11`) | kapu | elevated | admin-only |
 
-SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias at rest — a kapu-tier carrier still closes on plain EOT (`0x04`); DC4 (`0x14`, EOT₂) is reserved for the relay stream, with no at-rest office. The kapu alias rides SOH alone.
+SOH substitutes DC1 (`0x11`, SOH₂) in kapu-tier carriers; the parser accepts both. EOT carries no kapu alias — a kapu-tier carrier still closes on plain EOT (`0x04`), at rest and in flight. SOH₂ is the ONLY kapu alias this grammar stands; DC4 (`0x14`, formerly EOT₂) is retired — stream/batch framing belongs to a future transport envelope, not a second at-rest EOT spelling. `&#x0016;` SYN stays the one reserved stream mark (#/the-marks-held-in-reserve).
 
 <<~/ahu>>
 
@@ -1130,7 +1129,6 @@ STX  = { role = "Start of Text — body open; bare pragma",                     
 ETX  = { role = "End of Text — body close; bare pragma",                      code = "code", byte = "0x03",               required = true }
 ETB  = { role = "End of Transmission Block — attestation block close",        code = "code", byte = "0x17",               required = false }
 EOT  = { role = "End of Transmission — throat close; return -> \"?\"",        code = "code", byte = "0x04",               required = true }
-EOT2 = { role = "End of Transmission, second form — reserved for the relay stream; no at-rest office", code = "code", byte = "0x14", required = false }
 
 # Namespace resonance — prefixes the SOH opener only; EOT always bare
 # Open set: more resonance glyphs MAY register here as layers/tiers emerge.
@@ -1143,7 +1141,7 @@ base     = { glyph = "",     layers = ["docs", "library", "SKILL"] }
 [control-char-tiers]
 operator      = { range = "none",        trust = "operator", resonance = "base",     writable-by = "all" }
 kernel        = { range = "0x01–0x0F",   trust = "kernel",   resonance = "standard", writable-by = "operator+" }
-kapu-elevated = { range = "0x11–0x14",   trust = "kapu",     resonance = "elevated", writable-by = "admin-only" }
+kapu-elevated = { range = "0x11",        trust = "kapu",     resonance = "elevated", writable-by = "admin-only" }
 ```
 
 <<~/ahu>>
@@ -1283,6 +1281,6 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8adoxcXcctGLSbHp7d-Kt09veDzPRMg6FBHK6sMv6sk
+<<^ code="&#x0003;">>ni:///sha-256;FcP-9exfvXqYiyD0AR2MEtQWekvLhhThMQZtr-OUDuY
 
 <<^ code="&#x0004;" -> to="?">>

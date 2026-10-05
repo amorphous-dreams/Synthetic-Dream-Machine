@@ -138,7 +138,9 @@ describe("the check", () => {
 describe("the marks", () => {
   test("a family alternation spells every variant, non-capturing", () => {
     expect(frameAlt("SOH")).toBe("&#x(?:0001|0011);");
-    expect(new RegExp(frameAlt("EOT")).test("&#x0014;")).toBe(true);
+    // EOT2 is retired — EOT carries no alias, so its family matches its own code alone, exactly.
+    expect(frameAlt("EOT")).toBe("&#x(?:0004);");
+    expect(new RegExp(frameAlt("EOT")).test("&#x0014;")).toBe(false);
     expect(() => markCode("NOPE")).toThrow();
     // NO FAMILY NAMES EVERY MARK — a line-walker's "is this a frame sigil at all?"
     const every = new RegExp(`^${frameAlt()}$`);

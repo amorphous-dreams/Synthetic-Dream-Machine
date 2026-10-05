@@ -250,7 +250,7 @@ export function classifyPostamble(postamble: string): Postamble {
 }
 
 /**
- * Read the bytes after the carrier's terminating EOT/EOT2 mark.
+ * Read the bytes after the carrier's terminating EOT mark.
  *
  * A postamble between ETX and EOT is the BCC slot and may be empty or carry one BCC. Bytes after
  * EOT have no carrier boundary left to receive them. Keep this as a separate reading: a shifted
@@ -258,7 +258,7 @@ export function classifyPostamble(postamble: string): Postamble {
  * that normalization must refuse to guess over.
  */
 export function classifyPostEot(text: string): Postamble | null {
-  // Find the first actual terminator across EOT/EOT2. We inspect the raw tail afterwards rather
+  // Find the first actual EOT terminator. We inspect the raw tail afterwards rather
   // than passing it through `classifyPostamble`, whose ETX-slot reader intentionally strips all EOT
   // variants and would therefore launder a second terminator as empty postamble.
   const eot = maskedExec(text, new RegExp(EOT_STRIP_SRC, "g"), fencedSpans(text));

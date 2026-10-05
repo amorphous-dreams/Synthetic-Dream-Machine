@@ -61,6 +61,19 @@ simply close on EOT like every other carrier.
 ''Ruled (operator, 2026-10-04):'' `kapu.mem` closes on regular EOT for now, like every other carrier
 at rest. No emitter carve-out. EOT2's office stays open until the relay-stream layer settles.
 
+''Superseding ruling (operator, 2026-10-04):'' EOT2 (`&#x0014;`) is RETIRED as a frame mark outright —
+the question above resolves, not by settling a relay-stream office for it, but by removing the mark.
+Every carrier closes on plain EOT, at rest and in flight; stream/batch framing belongs to a future
+transport envelope and gets its own mark when that envelope lands, never a repurposed EOT2. SYN
+(`&#x0016;`) stays the one reserved stream mark; SOH2 (`&#x0011;`) is the ONLY kapu alias this grammar
+stands. Dropped from `packages/lararium-memetic-frame/src/marks.ts` (FRAME_MARKS), the
+`sigil-frame-eot2.tid` tiddler (deleted, grammar-table regenerated), the control-set table and TOML
+schema rows and trust-tier range in this grammar's own framing law, and the bootstrap scanner's DC4
+scan (`packages/lararium-tw5/src/meme-ast/scanner.ts`). `marks.ts`'s `frameHex`/`frameAlt` also moved
+off NAME-PREFIX family matching (which let `"EOT2".startsWith("EOT")` alias it into EOT's own readers
+with nothing declaring that) onto an explicit `FAMILY_ALIASES` table — SOH2's alias into SOH stays
+explicit there; no family aliases silently by spelling again.
+
 <<~/ahu>>
 
 <<~ ahu #/typecheck-reds>>
@@ -109,6 +122,6 @@ needs to catch up to it. Never revert or weaken the gate itself.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lnVWN1Yu0LmmolDMiubvIW_SnUbuHqp6fziSDl3gjDA
+<<^ code="&#x0003;">>ni:///sha-256;8x7tWsA_Q8lMu5tzPuUs-uHWWtSo3PnIQHVceYQVFbA
 
 <<^ code="&#x0004;" -> to="?">>

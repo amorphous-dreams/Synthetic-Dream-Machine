@@ -23,8 +23,9 @@ import { resolve } from "node:path";
 
 const PKG = resolve(__dirname, "..");
 
-/** A regex literal that matches a control classifier — whatever head it happens to accept. */
-const CONTROL_MATCHER = /\/\^?<<(\\\^|\[~\^\]|~)(?:[^\n]{0,80}?)&#x\(?:?0*(?:0001|0002|0003|0004|0011|0014)/g;
+/** A regex literal that matches a control classifier — whatever head it happens to accept. EOT2
+ *  (`0014`) is retired and carries no scan left to match here. */
+const CONTROL_MATCHER = /\/\^?<<(\\\^|\[~\^\]|~)(?:[^\n]{0,80}?)&#x\(?:?0*(?:0001|0002|0003|0004|0011)/g;
 
 /** Every tracked source file in this package that could carry one. */
 function trackedSources(): string[] {
@@ -79,7 +80,9 @@ describe("★ every control matcher reads the control head, and only that ★", 
       catch { return n; }
     }, 0);
     const scanner = [...readFileSync(resolve(PKG, "src/meme-ast/scanner.ts"), "utf8").matchAll(CONTROL_MATCHER)].length;
-    expect(scanner).toBeGreaterThanOrEqual(6);
+    // EOT2's row is retired; SOH · SOH2 · STX · ETX · EOT remain = 5 (ETB's 0017 sits outside this
+    // matcher's range, per the comment above).
+    expect(scanner).toBeGreaterThanOrEqual(5);
     expect(found).toBeGreaterThanOrEqual(scanner);
   });
 });

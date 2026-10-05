@@ -27,7 +27,6 @@ export const GENERATED_SIGILS: SigilRule[] = [
   { name: "fragment", kind: "child-slot", openPattern: "<<fragment\\s+(#\\/[\\wāēīōūʻ-]+(?:\\/[\\wāēīōūʻ-]+)*)(?:\\s+->\\s+\"?((?:[^\"\\s>]|>(?!>))+)?\"?)?\\s*>>", closePattern: "<</fragment\\s*>>", aliasFor: "ahu" },
   { name: "frame", kind: "relation", pattern: "<<~\\s*frame\\s+([\\w.-]+)(?:\\s+\"?((?:[^\"]|\"(?!\\s*>>))*)\"?)?\\s*>>" },
   { name: "frame-eot", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0004;" },
-  { name: "frame-eot2", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0014;" },
   { name: "frame-etb", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0017;" },
   { name: "frame-etx", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0003;" },
   { name: "frame-soh", kind: "frame", pattern: "<<\\^[^>\\n]*&#x0001;" },
@@ -143,7 +142,7 @@ export const GENERATED_ALIAS_MAP: Record<string, string> = {
 };
 
 /** every sigil name that is NOT an alias (canonical sigils only). */
-export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","aperture","carry","confidence","config","dispatcher","drift-ward","frame","frame-eot","frame-eot2","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kanawai","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","ooda-ha","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","type","typos","ui","waiho","ward","wehe","widget"];
+export const GENERATED_CANONICAL_NAMES: string[] = ["ahu","aka","aperture","carry","confidence","config","dispatcher","drift-ward","frame","frame-eot","frame-etb","frame-etx","frame-soh","frame-soh2","frame-stx","function","hana","has","heihei","helu","holo","hoolele","hud","hui","huli","integrity","kahawai","kahea","kanawai","kapu","kau","kukali","kumu","lares","lele","loops","loulou","meme","mu","mukuwai","ooda-ha","oracle","papalohe","persona","pono","pranala","pranala-header","puka","scale","season","set","shrine","stage","stance","syad","tick","toml","type","typos","ui","waiho","ward","wehe","widget"];
 
 /**
  * CANONICAL x TONGUE -> PRIMARY MIRROR: the one name a tongue weaves a canonical sigil

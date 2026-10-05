@@ -482,7 +482,7 @@ function normalizeFiles(args: ParsedArgs, write: boolean): number {
     if (afterEot?.kind === "foreign") {
       faulted++;
       console.log(`boundary: ${f}`);
-      console.log("  ✗ content follows the terminating EOT/EOT2 mark — separate the carrier by hand; normalization refused to guess");
+      console.log("  ✗ content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
       continue;
     }
 
