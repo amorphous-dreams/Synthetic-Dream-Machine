@@ -4,11 +4,13 @@
  * Boots a fresh TW5Engine in-process, passing LARES_MEMETIC_WIKITEXT_PLUGIN
  * as boot()'s plugin argument (the caller supplies plugins explicitly — the
  * engine preloads nothing by itself); TW5's standard plugin loader unpacks
- * it. We then assert that every static tiddler the plugin build packed is
- * present in the running wiki — the roll is DERIVED from the same source
- * manifest `build-plugin-tiddler.ts` reads, never hand-enumerated — plus
- * the plugin's own title and the parser's registration in TW5's own
- * registry (`tw.Wiki.parsers`), each a named assertion.
+ * it. We then assert that every static tiddler the tracked source declares
+ * is present in the running wiki — the roll is DERIVED by reading
+ * `tiddlers/*.tid` directly (`witnessStaticTiddlers`, the same reader the
+ * plugin build itself calls), never hand-enumerated and never routed
+ * through the build's own output — plus the plugin's own title and the
+ * parser's registration in TW5's own registry (`tw.Wiki.parsers`), each a
+ * named assertion.
  *
  * Exit nonzero if any check fails.
  */
@@ -21,11 +23,9 @@ import { TW5Engine } from "../src/tw5-vm.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN } from "../src/plugin-tiddler.generated.js";
 import { exportMemeText } from "../src/meme-write.js";
 import { TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "../src/generated-tw5-version.js";
-import { readPluginSourceManifest } from "../plugin-build/source-manifest.js";
-import { SOURCE_MANIFEST } from "../plugin-build/paths.js";
+import { witnessStaticTiddlers } from "../plugin-build/source-manifest.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PKG_ROOT = path.resolve(__dirname, "..");
 
 async function main(): Promise<void> {
   const corePath = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -36,12 +36,12 @@ async function main(): Promise<void> {
   const failures: string[] = [];
   const wiki = engine.wiki;
 
-  // THE SHADOW ROLL IS DERIVED, NEVER ENUMERATED: every static tiddler the plugin build packed,
-  // read from the same source manifest `build-plugin-tiddler.ts` itself writes and reads
-  // (`readPluginSourceManifest` / `staticTiddlers`) — so a tiddler added to `tiddlers/*.tid` enters
-  // this roll with no code change here, and a renamed or removed one leaves it the same way.
-  const { manifest: sourceManifest } = readPluginSourceManifest(path.join(PKG_ROOT, SOURCE_MANIFEST));
-  const expectedTitles = sourceManifest.staticTiddlers.map((t) => t.title);
+  // THE SHADOW ROLL IS DERIVED, NEVER ENUMERATED: every static tiddler expected comes from reading
+  // the TRACKED source directly — `witnessStaticTiddlers` walks `tiddlers/*.tid`, the same reader
+  // the plugin build itself calls to populate its (gitignored, build-produced) source manifest — so
+  // this check never depends on that manifest existing, and a tiddler added to, renamed in, or
+  // removed from `tiddlers/*.tid` enters or leaves this roll with no code change here.
+  const expectedTitles = witnessStaticTiddlers().map((t) => t.title);
   for (const title of expectedTitles) {
     if (!wiki.getTiddler(title)) failures.push(`missing tiddler: ${title}`);
   }

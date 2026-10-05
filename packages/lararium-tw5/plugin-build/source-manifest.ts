@@ -4,6 +4,11 @@ import { MODULE_MANIFEST } from "./paths.js";
 import { type ModuleManifest, sha256 } from "./module-manifest.js";
 import { witnessPluginInfo, witnessStaticTiddlers } from "./source-witness.js";
 
+// Re-exported so a reader of the tracked source (`tiddlers/*.tid`) never needs the built,
+// gitignored manifest this module also produces — the same function the build calls to
+// populate `staticTiddlers` below is the one a pre-build witness calls directly.
+export { witnessStaticTiddlers };
+
 export const SOURCE_MANIFEST_FORMAT = "lararium-tw5-plugin-source-manifest/v2";
 
 export interface SourceManifestFile {
