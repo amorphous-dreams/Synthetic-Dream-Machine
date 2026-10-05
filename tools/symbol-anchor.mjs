@@ -10,7 +10,9 @@
 // prints the new low and asks for the ceiling to come down. So the class stays visible and cannot quietly
 // grow, while nobody is blocked on a canon sweep somebody else's hands are in.
 //
-// WHAT THE CURRENT DEBT IS. Measured 2026-09-12, after the TW5 canon sweep: 43 of 70 named symbols stand
+// WHAT THE CURRENT DEBT IS. Measured 2026-10-05, after the-law-of-5s.mem dropped its stale
+// `source-symbol`/`source-sha256` pair (the-law-of-5s names its TOML the source of truth, not a
+// TypeScript export list — heleuma "ba" needs no source-symbol): 37 of 56 named symbols stand
 // in no source file. The TW5 widget-class anchors that made up the bulk (`AhuWidget`, `SigilWidget`,
 // `PranalaWidget` …) are gone — those carriers now name the `.tid` that declares each sigil and the
 // template cascade that renders it, and the ones naming a surface nothing replaced were retired. What
@@ -30,8 +32,9 @@ import { readCarrier } from "./corpus-read.mjs";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** The debt as measured 2026-09-12. RATCHET: this number may only ever come DOWN. */
-const CEILING = 42;
+/** The debt as last measured 2026-10-05, after the-law-of-5s.mem's stale source-symbol pair came off.
+ *  RATCHET: this number may only ever come DOWN. */
+const CEILING = 37;
 
 /** Placeholders a carrier writes where it names no single export. */
 const NOT_A_SYMBOL = /^([*]|<.*>|~.*)$/;
