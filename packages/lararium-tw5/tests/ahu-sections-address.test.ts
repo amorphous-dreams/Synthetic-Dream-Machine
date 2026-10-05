@@ -1,3 +1,6 @@
+// vm-grammar-boundary: exempt — reads fence-mask.ts's OWN fenceLineOpen/fenceLineClose to
+// toggle fences the same way the compile layer does — it drives no meme-ast parse at all, only
+// the mask layer's line-fence rule, the same reasoning as fence-mask-info-string.test.ts.
 /**
  * ahu-sections-address — every named `ahu` section becomes an addressable tiddler.
  *

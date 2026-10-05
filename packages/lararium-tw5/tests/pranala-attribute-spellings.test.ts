@@ -1,3 +1,7 @@
+// vm-grammar-boundary: exempt — the unit test of the compile layer's ATTRIBUTE reading — which
+// separator and which quoting a sigil's trailing parameters may carry. The blessed edge reader
+// anchors on `to=` alone and never exposes family or role, so the claim has no other surface.
+// It blesses no grammar; it holds one layer to the range TiddlyWiki itself parses.
 /**
  * A PRANALA'S FAMILY AND ROLE READ IN EVERY SPELLING THE GRAPH WRITES.
  *

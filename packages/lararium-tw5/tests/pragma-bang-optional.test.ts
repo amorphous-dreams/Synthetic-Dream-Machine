@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — (lar:///sigil.grammar.lane) is the same class of
+// scan+build-layer RED control as wehe-open-paren.test.ts — whether the tiddler-derived grammar
+// PAIRS open/close on the `<<~!`-prefixed pragma register canon's own prefix table illustrates,
+// and whether waiho/const's carrier-scoped `!` form still fires as a standalone pragma event
+// (no closer). Neither question has any other surface.
 /**
  * PRAGMA `!` — graceful read, canonical write.
  *

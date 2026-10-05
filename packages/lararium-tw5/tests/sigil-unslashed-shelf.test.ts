@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — reads the scanner as SOURCE TEXT to hold one naming law: no
+// bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
+// value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
+// asks only how it is spelled. The boundary guards the RUNTIME surface, which this never
+// touches.
 /**
  * The unslashed shelf — every English mirror answers to a PURE NAME.
  *

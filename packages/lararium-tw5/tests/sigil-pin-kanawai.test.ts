@@ -1,3 +1,7 @@
+// vm-grammar-boundary: exempt — the scan+build-layer RED control for the aka/pin + kanawai/law
+// split (lar:///sigil.grammar.lane loop 7) — same reasoning as wehe-open-paren.test.ts: whether
+// the tiddler-derived grammar scans and erases these two mirror pairs correctly has no other
+// surface than this layer.
 /**
  * `aka`'s PIN splits into an INFORMATIVE/BINDING pair (operator ruling, lar:///sigil.grammar.lane
  * loop 7): `aka` (informative pin, English weave `pin`) and `kanawai` (binding pin, Hawaiian

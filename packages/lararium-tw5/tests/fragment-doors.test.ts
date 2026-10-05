@@ -1,3 +1,7 @@
+// vm-grammar-boundary: exempt — drives placeMeme (the blessed entry point) for its own tests;
+// its second describe block is the unit test of composeChildPath/childUri — ahu-scan.ts's own
+// pure address-composition helpers — same reasoning as ahu-sections-address.test.ts (ONE
+// helper's own shape, no parse, no AST, no canonical bless).
 /**
  * A FRAGMENT ADDRESS NEVER FOUNDS A MEME — at every door.
  *

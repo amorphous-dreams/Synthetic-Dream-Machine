@@ -1,3 +1,7 @@
+// vm-grammar-boundary: exempt — reads GENERATED_SIGILS and BOOTSTRAP_SCANS only to compare
+// their code sets against @lararium/memetic-frame's own FRAME_MARKS declaration — same
+// reasoning as meme-normalize-mirror-fold.test.ts (a read-only parity check, never a parse
+// driver).
 /**
  * THE TWO KEPT LITERAL COPIES OF THE FRAME CODES AGREE WITH THE DECLARATION.
  *

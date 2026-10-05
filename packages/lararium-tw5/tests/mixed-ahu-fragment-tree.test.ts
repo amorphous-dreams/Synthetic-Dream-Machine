@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — drives memeticWikitextDeserializer (the blessed entry point)
+// for every record-shape assertion; it calls parseMemeText ONLY to reach a diagnostic
+// (`partial-form:ahu`, the raw node tree's Ahu count) the deserializer's own surface never
+// exposes — the same compile-layer-diagnostic reasoning as waiho-equals-separator.test.ts and
+// fence-mask-info-string.test.ts.
 /**
  * A single carrier may use both first-class ahu spellings. The worksite is
  * path-addressed, so authored surface cannot change the projected tree.

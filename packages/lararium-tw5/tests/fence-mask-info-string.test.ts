@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — the unit test of the compile layer's OWN quoted-code span rule
+// (fence-mask.ts) — whether a line's info string carrying a backtick opens no fence (CommonMark
+// §4.5). That question lives at the mask layer alone; nothing downstream can tell a torn frame
+// from a correctly-open one without re-deriving this exact rule, so this claim has no other
+// surface. It blesses no grammar; it holds one mask rule to spec.
 /**
  * FENCE-MASK: a backtick fence's info string admits no backtick (CommonMark §4.5).
  *

@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — the unit test of meme-normalize.ts's own read-only mirror fold
+// — it reads GENERATED_SIGILS to enumerate every `lar-mirror-of` entry the fold must cover, the
+// same derivation meme-normalize.ts itself performs. It drives normalizeMemeSource(), never
+// collectEvents/buildMemeAst, and blesses no grammar as canonical — it holds the fold to the
+// tiddlers' own declared mirror set.
 /**
  * `lares meme normalize` folds every READ-ONLY mirror's HEAD TOKEN to its canonical house name —
  * every `lar-mirror-of` entry the generated table carries, `define`->`wehe` included.

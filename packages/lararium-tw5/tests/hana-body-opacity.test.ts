@@ -1,3 +1,10 @@
+// vm-grammar-boundary: exempt — the unit test of the scanner's own worksite exclusion (the same
+// mechanism pranala's block body already gets) — whether a `<<~ …>>` written INSIDE a hana body
+// fires as an event at all. That question lives entirely at the scan layer: the render path can
+// only observe whether the final tree/HTML differs, never whether the SCANNER specifically
+// excluded the position, so this claim has no other surface. It blesses no grammar; it holds
+// the scan layer to guest-grammar.mem's #/hana-worksite law (a hana body carries a FOREIGN
+// grammar, never this house's own sigils).
 /**
  * HANA BODY OPACITY — a hana block's body carries a FOREIGN grammar, not TW5 wikitext.
  *

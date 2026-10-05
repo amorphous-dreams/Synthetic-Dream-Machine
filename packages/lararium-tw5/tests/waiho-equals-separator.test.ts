@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — the unit test of the compile layer's OWN capture-group split
+// for waiho/const's `name = value` shape — whether the `=` separator rides into the captured
+// VALUE or is consumed as a separator. That question lives at the scan+build layer alone (the
+// render path never exposes waiho's raw captured groups), so it has no other surface. It
+// blesses no grammar; it holds one sigil's own capture shape to canon.
 /**
  * waiho's space-form pattern captured the stray `=` (lar:///sigil.grammar.lane).
  *

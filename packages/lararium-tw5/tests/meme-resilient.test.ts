@@ -1,3 +1,8 @@
+// vm-grammar-boundary: exempt — the EXPLICIT unit test of the meme-ast compile-layer's
+// resilient recovery (Error nodes / the failure-gradient). That layer has no other test surface
+// — the VM render is a separate layer (the wikirule), and the deserializer yields tiddlers, not
+// the AST. It tests parser RESILIENCE, never blesses the grammar surface as canonical.
+// (Operator: redirect if you'd rather route recovery through a blessed surface.)
 /**
  * meme-ast resilient recovery — the builder-as-driver contains malformation on a gradient
  * (graceful-parsing#sigil-self-defined-gradient): an orphan close becomes a water Error node, an

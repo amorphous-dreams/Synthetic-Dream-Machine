@@ -1,3 +1,7 @@
+// vm-grammar-boundary: exempt — reads scanner.ts (and every tracked source) as SOURCE TEXT via
+// readFileSync, walking the control-matcher regex off the files themselves — same reasoning as
+// sigil-unslashed-shelf.test.ts. It imports no value from meme-ast and drives no parse; it only
+// greps source bytes for a literal the scanner's own BOOTSTRAP_SCANS kept.
 /**
  * A control sigil identifies by its CLASSIFIER, never by which head carries it.
  *

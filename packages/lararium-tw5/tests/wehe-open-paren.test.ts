@@ -1,3 +1,11 @@
+// vm-grammar-boundary: exempt — the missing RED control for lar:///sigil.wehe.pairs
+// (10d14e51a): whether the tiddler-derived scanner PAIRS open/close on the corpus's own
+// `name(params)` invocation form. The grammar-table snapshot (--check / plugin-artifact-parity)
+// asserts the TABLE's shape; only a scan+build-layer test can catch an orphan-close the render
+// path would only ever report as "different HTML," never as which closer went unmatched. It
+// drives grammar-table.generated.ts — itself derived from the tiddlers, never a hand-typed
+// fixture — so it blesses no grammar as canonical; it holds the derived scan+build layer to the
+// corpus.
 /**
  * WEHE/HELU/PROCEDURE/DEFINE — the `name(params)` open-pattern pairs (lar:///sigil.wehe.pairs).
  *

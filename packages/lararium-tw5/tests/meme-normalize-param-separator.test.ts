@@ -1,3 +1,6 @@
+// vm-grammar-boundary: exempt — reads GENERATED_ALIAS_MAP only to compute its OWN expected fold
+// target per shelf head (so the colon-preservation check keeps working once a head folds) —
+// same reasoning as meme-normalize-mirror-fold.test.ts.
 /**
  * A NAMED PARAMETER CARRIES AN EQUALS SIGN.
  *

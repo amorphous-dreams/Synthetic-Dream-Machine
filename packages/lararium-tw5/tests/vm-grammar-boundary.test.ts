@@ -182,106 +182,29 @@ describe("pono grammar boundary", () => {
     expect(offenders, "a sigil parameter read belongs in sigil-attrs.ts — see its header").toEqual([]);
   });
 
+  // DERIVE, DON'T ENUMERATE. Each exempt file declares ITS OWN exemption, in its own header, as
+  // `// vm-grammar-boundary: exempt — <reason>` — the reason moved here verbatim from the hand-kept
+  // filter chain this replaced. A list beside this test drifted the moment a file was renamed, split,
+  // or deleted (the reason named a filename nobody re-checked); a marker on the file itself cannot
+  // drift that way — rename the file and the marker renames with it, delete it and the marker is gone
+  // with it. Removing the marker from an exempt file is exactly what re-admits it to the boundary's
+  // own check below, by construction (no separate enable/disable list to fall out of sync).
+  const EXEMPT_MARKER = /^\/\/\s*vm-grammar-boundary:\s*exempt\b/m;
+
   test("tests do not import meme-ast internals as the canonical grammar surface", () => {
     const testDir = join(ROOT, "tests");
     const offenders = walk(testDir)
       .filter((f) => f.endsWith(".test.ts"))
       .filter((f) => !f.endsWith("vm-grammar-boundary.test.ts"))
-      // meme-resilient.test.ts is the EXPLICIT unit test of the meme-ast compile-layer's resilient
-      // recovery (Error nodes / the failure-gradient). That layer has no other test surface — the VM
-      // render is a separate layer (the wikirule), and the deserializer yields tiddlers, not the AST.
-      // It tests parser RESILIENCE, never blesses the grammar surface as canonical. (Operator: redirect
-      // if you'd rather route recovery through a blessed surface.)
-      .filter((f) => !f.endsWith("meme-resilient.test.ts"))
-      // pranala-attribute-spellings.test.ts is the unit test of the compile layer's ATTRIBUTE reading —
-      // which separator and which quoting a sigil's trailing parameters may carry. The blessed edge reader
-      // anchors on `to=` alone and never exposes family or role, so the claim has no other surface. It
-      // blesses no grammar; it holds one layer to the range TiddlyWiki itself parses.
-      .filter((f) => !f.endsWith("pranala-attribute-spellings.test.ts"))
-      // hana-body-opacity.test.ts is the unit test of the scanner's own worksite exclusion (the same
-      // mechanism pranala's block body already gets) — whether a `<<~ …>>` written INSIDE a hana body
-      // fires as an event at all. That question lives entirely at the scan layer: the render path can
-      // only observe whether the final tree/HTML differs, never whether the SCANNER specifically
-      // excluded the position, so this claim — like pranala-attribute-spellings.test.ts just above —
-      // has no other surface. It blesses no grammar; it holds the scan layer to guest-grammar.mem's
-      // #/hana-worksite law (a hana body carries a FOREIGN grammar, never this house's own sigils).
-      .filter((f) => !f.endsWith("hana-body-opacity.test.ts"))
-      // wehe-open-paren.test.ts is the missing RED control for lar:///sigil.wehe.pairs (10d14e51a):
-      // whether the tiddler-derived scanner PAIRS open/close on the corpus's own `name(params)`
-      // invocation form. The grammar-table snapshot (--check / plugin-artifact-parity) asserts the
-      // TABLE's shape; only a scan+build-layer test can catch an orphan-close the render path would
-      // only ever report as "different HTML," never as which closer went unmatched. It drives
-      // grammar-table.generated.ts — itself derived from the tiddlers, never a hand-typed fixture —
-      // so it blesses no grammar as canonical; it holds the derived scan+build layer to the corpus.
-      .filter((f) => !f.endsWith("wehe-open-paren.test.ts"))
-      // pragma-bang-optional.test.ts (lar:///sigil.grammar.lane) is the same class of
-      // scan+build-layer RED control as wehe-open-paren.test.ts just above — whether the tiddler-
-      // derived grammar PAIRS open/close on the `<<~!`-prefixed pragma register canon's own prefix
-      // table illustrates, and whether waiho/const's carrier-scoped `!` form still fires as a
-      // standalone pragma event (no closer). Neither question has any other surface.
-      .filter((f) => !f.endsWith("pragma-bang-optional.test.ts"))
-      // fence-mask-info-string.test.ts is the unit test of the compile layer's OWN quoted-code
-      // span rule (fence-mask.ts) — whether a line's info string carrying a backtick opens no
-      // fence (CommonMark §4.5). That question lives at the mask layer alone; nothing downstream
-      // can tell a torn frame from a correctly-open one without re-deriving this exact rule, so
-      // this claim has no other surface. It blesses no grammar; it holds one mask rule to spec.
-      .filter((f) => !f.endsWith("fence-mask-info-string.test.ts"))
-      // waiho-equals-separator.test.ts is the unit test of the compile layer's OWN capture-group
-      // split for waiho/const's `name = value` shape — whether the `=` separator rides into the
-      // captured VALUE or is consumed as a separator. That question lives at the scan+build layer
-      // alone (the render path never exposes waiho's raw captured groups), so it has no other
-      // surface. It blesses no grammar; it holds one sigil's own capture shape to canon.
-      .filter((f) => !f.endsWith("waiho-equals-separator.test.ts"))
-      // meme-normalize-mirror-fold.test.ts is the unit test of meme-normalize.ts's own read-only
-      // mirror fold — it reads GENERATED_SIGILS to enumerate every `lar-mirror-of` entry the fold
-      // must cover, the same derivation meme-normalize.ts itself performs. It drives
-      // normalizeMemeSource(), never collectEvents/buildMemeAst, and blesses no grammar as
-      // canonical — it holds the fold to the tiddlers' own declared mirror set.
-      .filter((f) => !f.endsWith("meme-normalize-mirror-fold.test.ts"))
-      // meme-normalize-param-separator.test.ts reads GENERATED_ALIAS_MAP only to compute its OWN
-      // expected fold target per shelf head (so the colon-preservation check keeps working once a
-      // head folds) — same reasoning as the mirror-fold test just above.
-      .filter((f) => !f.endsWith("meme-normalize-param-separator.test.ts"))
-      // ahu-sections-address.test.ts reads fence-mask.ts's OWN fenceLineOpen/fenceLineClose to toggle
-      // fences the same way the compile layer does — it drives no meme-ast parse at all, only the
-      // mask layer's line-fence rule, the same reasoning as fence-mask-info-string.test.ts above.
-      .filter((f) => !f.endsWith("ahu-sections-address.test.ts"))
-      // sigil-pin-kanawai.test.ts is the scan+build-layer RED control for the aka/pin + kanawai/law
-      // split (lar:///sigil.grammar.lane loop 7) — same reasoning as wehe-open-paren.test.ts: whether
-      // the tiddler-derived grammar scans and erases these two mirror pairs correctly has no other
-      // surface than this layer.
-      .filter((f) => !f.endsWith("sigil-pin-kanawai.test.ts"))
-      // sigil-unslashed-shelf.test.ts reads the scanner as SOURCE TEXT to hold one naming law: no
-      // bootstrap scan reports a name the grammar retired. It drives no compile layer, imports no
-      // value, and blesses nothing as canonical — a `sigilName` is a string in a file, and the law
-      // asks only how it is spelled. The boundary guards the RUNTIME surface, which this never touches.
-      .filter((f) => !f.endsWith("sigil-unslashed-shelf.test.ts"))
-      // classifier-decides.test.ts reads scanner.ts (and every tracked source) as SOURCE TEXT via
-      // readFileSync, walking the control-matcher regex off the files themselves — same reasoning as
-      // sigil-unslashed-shelf.test.ts just above. It imports no value from meme-ast and drives no
-      // parse; it only greps source bytes for a literal the scanner's own BOOTSTRAP_SCANS kept.
-      .filter((f) => !f.endsWith("classifier-decides.test.ts"))
-      // fragment-doors.test.ts drives placeMeme (the blessed entry point) for its own tests; its
-      // second describe block is the unit test of composeChildPath/childUri — ahu-scan.ts's own pure
-      // address-composition helpers — same reasoning as ahu-sections-address.test.ts above (ONE
-      // helper's own shape, no parse, no AST, no canonical bless).
-      .filter((f) => !f.endsWith("fragment-doors.test.ts"))
-      // frame-literals-agree.test.ts reads GENERATED_SIGILS and BOOTSTRAP_SCANS only to compare their
-      // code sets against @lararium/memetic-frame's own FRAME_MARKS declaration — same reasoning as
-      // meme-normalize-mirror-fold.test.ts above (a read-only parity check, never a parse driver).
-      .filter((f) => !f.endsWith("frame-literals-agree.test.ts"))
-      // slot-spelling-one-address.test.ts and mixed-ahu-fragment-tree.test.ts drive
-      // memeticWikitextDeserializer (the blessed entry point) for every record-shape assertion; each
-      // calls parseMemeText ONLY to reach a diagnostic (`partial-form:ahu`, the raw node tree's Ahu
-      // count) the deserializer's own surface never exposes — the same compile-layer-diagnostic
-      // reasoning as waiho-equals-separator.test.ts and fence-mask-info-string.test.ts above.
-      .filter((f) => !f.endsWith("slot-spelling-one-address.test.ts"))
-      .filter((f) => !f.endsWith("mixed-ahu-fragment-tree.test.ts"))
       .filter((f) => {
+        const raw = readFileSync(f, "utf8");
+        // The file says why, so this reads it rather than carrying a parallel list of the same
+        // filenames (see EXEMPT_MARKER above).
+        if (EXEMPT_MARKER.test(raw)) return false;
         // The boundary guards the RUNTIME grammar surface — reaching past a blessed entry point to
         // drive the compile layer directly. A `import type` of a rule SHAPE binds no runtime surface
         // and blesses nothing, so it crosses no boundary; a value import or a direct call does.
-        const src = readFileSync(f, "utf8").replace(/^\s*import\s+type\s+[^;]*?;$/gm, "");
+        const src = raw.replace(/^\s*import\s+type\s+[^;]*?;$/gm, "");
         return /src\/meme-ast|collectEvents|buildMemeAst|parseMemeText/.test(src);
       })
       .map((f) => relative(ROOT, f));
