@@ -19,16 +19,16 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { Repo, interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { hex } from "../src/crypto.js";
 import {
+  hex,
   signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
   writeRealmBagRegistration, RealmBagGate, realmDocUrl, type RealmCharterConsult,
-} from "../src/realm-bag.js";
-import { deterministicDocUrl } from "../src/deterministic-doc.js";
-import { emptyLarDoc, mutableLarRecord, type LarDoc } from "../src/base-doc.js";
+  deterministicDocUrl,
+  emptyLarDoc, mutableLarRecord, type LarDoc,
+  type NexusDoc,
+  type FederationGate, type NexusMembership,
+} from "@lararium/mesh";
 import { makeRealmPlane } from "../src/realm-plane.js";
-import type { NexusDoc } from "../src/nexus-seal-seed.js";
-import type { FederationGate, NexusMembership } from "../src/federation-gate.js";
 
 const REALM = "epoch-cid-genesis";
 const BAG   = "lar:///ha.ka.ba/bags/lares";

@@ -34,14 +34,13 @@ import type {
   CompositeStore, DiskMirrorGrant,
 } from "@lararium/mesh";
 import {
-  makeDurableMailbox, verifyingKeyFromDid,
-  type DurableMailbox,
+  verifyingKeyFromDid,
   emptyLarDoc, mutableLarRecord, tiddlerText,
   LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, recipeHostFacets,
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
-  makeRealmPlane, type RealmPlaneHolder, type RealmBagRegistration, type CapTier, ed25519SignerFromSeed,
+  type RealmBagRegistration, type CapTier, ed25519SignerFromSeed,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage, pluginCidsFromIslandBlobs,
@@ -51,6 +50,8 @@ import {
   climbNexusBoards, sha256HexBytesSync,
   genesisCasCidsFromOracle,
 }                                       from "@lararium/mesh";
+import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
+import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
 import { realmMaintenanceFromBoard, shareConfigOf } from "@lararium/mesh";
@@ -80,7 +81,8 @@ import { repoRoot }                       from "@lararium/mesh/node";
 import { daemonGenesisDir }               from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { LarEventBusImpl, DEFAULT_RINGS, DeterministicFederationGate, federationPostureFromDoc, sealLineageHead, utf8Bytes, makeCidResolver } from "@lararium/mesh";
+import { DeterministicFederationGate, federationPostureFromDoc, sealLineageHead, utf8Bytes, makeCidResolver } from "@lararium/mesh";
+import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SparseFormVector, AntigenRing, FederationGate, FederationPosture, NexusMembership, PeerClass } from "@lararium/mesh";

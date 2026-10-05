@@ -13,8 +13,7 @@
  * ports — the caller supplies `placeVerb` (its own live-delivery path).
  */
 
-import { DAEMON_BAG_ID } from "./lar-uris.js";
-import type { CompositeStore } from "./composite-store.js";
+import { DAEMON_BAG_ID, type CompositeStore } from "@lararium/mesh";
 
 const MAILBOX_PREFIX = "lar:///ha.ka.ba/bags/daemon/mailbox/";
 

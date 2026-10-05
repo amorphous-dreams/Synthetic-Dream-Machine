@@ -20,14 +20,16 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   mintEnrollmentOffer, sealPersonaGrant, openPersonaGrant, mintJoinAck, verifyJoinAck,
-  toEnrollmentCarriage, parseEnrollmentCarriage, toGrantCarriage, parseGrantCarriage,
-  toAckCarriage, parseAckCarriage,
   headOpKey, personaKelChainForPrefix, personaKelBoardDocUrl, materializeSharedLarDoc,
   sealKeyringEnvelope, openKeyringEnvelope, KEYRING_ENVELOPE_DOMAIN,
   base64UrlEncode, base64UrlDecode, utf8Bytes, hex, sha256HexSync,
   type PersonaRef, type AdmitSigner, type JoinRecord, type EnrollmentOffer, type SealedGrant, type JoinAck,
   type KeyringEnvelope, type EnrollmentSecret,
 } from "@lararium/mesh";
+import {
+  toEnrollmentCarriage, parseEnrollmentCarriage, toGrantCarriage, parseGrantCarriage,
+  toAckCarriage, parseAckCarriage,
+} from "./persona-admit-carriage.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { larDataDir } from "./vessel-paths.js";

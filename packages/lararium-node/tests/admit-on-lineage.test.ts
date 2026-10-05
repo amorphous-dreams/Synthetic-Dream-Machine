@@ -11,10 +11,11 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  admitOnLineage, admitToRealm, signCabalInvite, vouchDagFromInvites, DEFAULT_JOIN_POLICY,
+  signCabalInvite, vouchDagFromInvites, DEFAULT_JOIN_POLICY,
   type AdmissionDials, type CabalInvite,
-} from "../src/index.js";
-import { hex, hexToBytes } from "../src/crypto.js";
+  hex, hexToBytes,
+} from "@lararium/mesh";
+import { admitOnLineage, admitToRealm } from "../src/realm-admission.js";
 
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 const pubOf  = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);

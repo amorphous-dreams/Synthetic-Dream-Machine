@@ -1,9 +1,9 @@
 /**
- * lar-event-bus-impl — the ONE concrete LarEventBus, platform-blind.
+ * lar-event-bus-impl — the ONE concrete LarEventBus, standing in @lararium/node.
  *
- * Carries zero node imports, so it belongs at this platform-blind layer —
- * every vessel inherits the bus (equal vessels: capability differs by grant,
- * never by hull).
+ * The LarEventBus interface it implements stays platform-blind in @lararium/mesh;
+ * every vessel this runtime opens inherits the SAME bus (equal vessels: capability
+ * differs by grant, never by hull).
  *
  * Architecture (from LARARIUM-TICK-CLOCK.md):
  *   Layer 1: ingress rings, one per source (crdt, vm, session, tool)
@@ -31,7 +31,7 @@ import type {
   LarEventStream,
   IngressRingDescriptor,
   LarEventBus,
-} from "./lar-event-bus.js";
+} from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Internal types

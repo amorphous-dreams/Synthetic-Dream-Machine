@@ -14,7 +14,8 @@ import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, statSync
 import { join } from "node:path";
 import { larIdentityDir } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-import { readIdentityAnchors, type AnchorStore, type IdentityAnchors, identityHomeClosure } from "@lararium/mesh";
+import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
+import { identityHomeClosure } from "./identity-home-closure.js";
 import { resolveSealPolicy, sealArchiveBytes, openArchiveBytes, asSelfSovereignSecret, ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 import { refuseWriteOverUnopenableSeal } from "./archive-write-guard.js";
 

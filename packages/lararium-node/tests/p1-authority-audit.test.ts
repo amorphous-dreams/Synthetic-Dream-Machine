@@ -9,7 +9,6 @@
 import { describe, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import {
-  admitToRealm,
   buildDeviceDelegation,
   buildAuthResponse,
   DEFAULT_JOIN_POLICY,
@@ -27,6 +26,7 @@ import {
   type DeviceDelegationTiddler,
 } from "@lararium/mesh";
 import { hex, hexToBytes } from "@lararium/mesh/crypto";
+import { admitToRealm } from "../src/realm-admission.js";
 import { contractNymOf } from "../src/nexus-carriage.js";
 
 type AuditRow = {

@@ -11,8 +11,9 @@
  *     bridging, not one unified clock.
  *   - `branch` tasks scope to session lifetime, not UEFN actor lifetime.
  *
- * Runtime implementation lives next door (lar-event-bus-impl.ts, LarEventBusImpl).
- * This file carries only the interface contracts and supporting types.
+ * The runtime implementation (LarEventBusImpl) stands in @lararium/node — every vessel this
+ * runtime opens inherits the same bus. This file carries only the interface contracts and
+ * supporting types, platform-blind.
  *
  * Prior art: Verse subscribable<T>/listenable<T> (Epic UEFN), Nakama MatchLoop,
  * Flecs RateFilter, Akka timer+mailbox, structured concurrency (Kotlinx/Swift).

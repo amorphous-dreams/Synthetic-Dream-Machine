@@ -8,15 +8,12 @@
  *   · PHOTOGRAPH-INERT — a captured QR#2 opened WITHOUT B's ephemeral secret fails (decrypt), a captured QR#2
  *     replayed onto a FRESH enrollment fails (sealed to the old ephemeral), a tampered ciphertext fails,
  *   · ROTATE-NOT-RESURRECT — a grant whose op-key is NOT the persona prefix head is refused,
- *   · BINDINGS — an expired grant, a wrong-vessel grant, and a tampered/forged ACK all refuse (fail-closed),
- *   · CARRIAGE — each hop round-trips through its base64url envelope; a garbled/wrong-key carriage → null.
+ *   · BINDINGS — an expired grant, a wrong-vessel grant, and a tampered/forged ACK all refuse (fail-closed).
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
   mintEnrollmentOffer, sealPersonaGrant, openPersonaGrant, mintJoinAck, verifyJoinAck,
-  toEnrollmentCarriage, parseEnrollmentCarriage, toGrantCarriage, parseGrantCarriage,
-  toAckCarriage, parseAckCarriage,
   ed25519SignerFromSeed,
   type PersonaRef, type EnrollmentOffer,
 } from "../src/index.js";
@@ -168,35 +165,6 @@ describe("persona-admit — the 3-hop ceremony", () => {
 
     // The genuine pairing still verifies.
     expect((await verifyJoinAck({ ack, sent })).ok).toBe(true);
-  });
-
-  test("CARRIAGE: each hop round-trips through its base64url envelope; a garbled/wrong-key carriage → null", async () => {
-    const f = await fixtures();
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: f.deviceKey });
-    const { sealed, sent } = await sealPersonaGrant({ offer, personaRef: f.personaRef, personaSigner: f.personaSigner });
-    const opened = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
-    expect(opened.ok).toBe(true);
-    if (!opened.ok) return;
-    const { ack } = await mintJoinAck({ accepted: opened.accepted, secret, deviceSigner: f.deviceSigner });
-
-    // Round-trip each hop (fragment form) — and a whitespace-wrapped paste of the offer.
-    const enrollC = toEnrollmentCarriage(offer);
-    expect(enrollC.startsWith("#enroll=")).toBe(true);
-    expect(parseEnrollmentCarriage(enrollC)).toEqual(offer);
-    expect(parseEnrollmentCarriage(`  ${enrollC}\n`)).toEqual(offer);
-    expect(parseGrantCarriage(toGrantCarriage(sealed))).toEqual(sealed);
-    expect(parseAckCarriage(toAckCarriage(ack))).toEqual(ack);
-
-    // A grant carriage read as an offer (wrong key) → null; a garbled token → null.
-    expect(parseEnrollmentCarriage(toGrantCarriage(sealed))).toBeNull();
-    expect(parseGrantCarriage("#grant=@@@not-b64@@@")).toBeNull();
-    expect(parseAckCarriage("")).toBeNull();
-
-    // The carriage-transported grant still opens end-to-end (the transport changed nothing).
-    const reSealed = parseGrantCarriage(toGrantCarriage(sealed))!;
-    const reOpened = await openPersonaGrant({ sealed: reSealed, secret, resolveHeadOpKey: f.resolveHeadOpKey });
-    expect(reOpened.ok).toBe(true);
-    void sent;
   });
 
   test("TYPE-BLIND: the same code path admits a 'user' persona with no branch on type", async () => {

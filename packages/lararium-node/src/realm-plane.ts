@@ -14,17 +14,14 @@
  */
 
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
-import { materializeSharedLarDoc } from "./deterministic-doc.js";
-import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
-import type { NexusDoc } from "./nexus-seal-seed.js";
-import type { FederationGate, NexusMembership } from "./federation-gate.js";
-import type { CapTier } from "./cap-tier.js";
 import {
+  materializeSharedLarDoc, mutableLarRecord, tiddlerText, type LarDoc,
+  type NexusDoc, type FederationGate, type NexusMembership, type CapTier,
   REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, realmIdOfCharter, realmDocUrl, RealmBagGate,
   signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult,
-} from "./realm-bag.js";
+} from "@lararium/mesh";
 
 export interface RealmPlaneHolder {
   /** The composed wire gate — the base's federatable shelf plus the realm's member-read lane. */

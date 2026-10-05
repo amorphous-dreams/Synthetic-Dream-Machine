@@ -15,11 +15,12 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import * as ed from "@noble/ed25519";
 import {
-  admitOnLineage, verifiedVouchesFromBoard, vouchBoardDocUrl, materializeSharedLarDoc,
+  verifiedVouchesFromBoard, vouchBoardDocUrl, materializeSharedLarDoc,
   leaseEpochPrefix, effectiveLeaseEpoch, DAEMON_BAG_ID,
   DEFAULT_JOIN_POLICY, alphaFromHalfLife, hexToBytes,
-  type CabalInvite, type CabalJoinPolicy, type AdmissionDials, type LineageAdmission,
+  type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
+import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larDataDir, larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 

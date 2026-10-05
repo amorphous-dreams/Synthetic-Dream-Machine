@@ -11,10 +11,11 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  admitToRealm, signCabalInvite, DEFAULT_JOIN_POLICY,
+  signCabalInvite, DEFAULT_JOIN_POLICY,
   type AdmissionDials, type VouchEdge,
-} from "../src/index.js";
-import { hex, hexToBytes } from "../src/crypto.js";
+  hex, hexToBytes,
+} from "@lararium/mesh";
+import { admitToRealm } from "../src/realm-admission.js";
 
 const VOUCHER_SEED = new Uint8Array(32).fill(7);
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);

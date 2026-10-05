@@ -11,17 +11,17 @@
  * persona-admit (open / verifyJoinAck). WITHHOLD-not-forge: a garbled / wrong-key / wrong-domain carriage
  * decodes to `null`, never a throw (a bad paste means the hop DID NOT ARRIVE, never an attack).
  *
- * Platform-blind: rides ./crypto (base64url) + ./persona-admit (the hop shapes) only. NO node imports — the CLI,
- * the node daemon, and the browser all consume it.
+ * Platform-blind: rides @lararium/mesh's crypto (base64url) + persona-admit (the hop shapes) only — it carries
+ * no runtime of its own, standing wherever the node vessel that opens the ceremony stands.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/persona-admit#/carriage
  */
 
-import { base64UrlEncode, base64UrlDecode, utf8Bytes } from "./crypto.js";
 import {
+  base64UrlEncode, base64UrlDecode, utf8Bytes,
   PERSONA_ENROLL_DOMAIN, PERSONA_SEALED_DOMAIN, PERSONA_JOIN_DOMAIN,
   type EnrollmentOffer, type SealedGrant, type JoinAck,
-} from "./persona-admit.js";
+} from "@lararium/mesh";
 
 /** The fragment keys each hop rides under — distinct, so a hop is never mistaken for another. */
 export const ENROLL_CARRIAGE_KEY = "enroll" as const;

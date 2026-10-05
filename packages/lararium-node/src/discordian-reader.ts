@@ -26,7 +26,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { discordianDate, discordianDateString, discordianStamp } from "@lararium/mesh";
+import { discordianDate, discordianDateString, discordianStamp } from "./discordian-date.js";
 
 /** Where the prose came from. A caller reporting a date should say which. */
 export type DiscordianSource = "ddate" | "computed";
